@@ -1,6 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
-ctaGuiFront/ctaGuiFront/py/*.py linguist-detectable=true
-*.py linguist-detectable=true
 *.py linguist-vendored=false
 *.js linguist-vendored=false
