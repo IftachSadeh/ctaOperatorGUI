@@ -27,8 +27,7 @@ telPos0 = [0, 90]
 # --------------------------------------------------------------------------------------------------
 hasACS = ('ACSROOT' in os.environ)  # (os.uname()[1] == "dawn.ifh.de")
 
-userName = os.getlogin()
-
+# userName = os.getlogin()
 # redisPort = dict()
 # redisPort = 6379
 # #  ugly temporery hack for development:
