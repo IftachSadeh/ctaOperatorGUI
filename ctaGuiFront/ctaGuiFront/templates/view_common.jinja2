@@ -1,0 +1,127 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <meta http-equiv="Expires" content="-1">
+    
+    <!-- set a global variable (must come before anything else) -->
+    <script>
+        window.__appPrefix__  = '{{app_prefix}}';
+        window.__nsType__     = '{{ns_type}}';
+        window.__widgetName__ = '{{widget_name}}';
+    </script>
+
+    <meta charset="UTF-8" />
+    <title>CTA</title>
+    
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <meta name="author" content="" />
+    <!-- <link rel="icon" type="image/x-icon" href="/static/siteIcon.png"/> -->
+    <link rel="icon" type="image/x-icon" href="/static/icon-batman.png"/>
+
+    <script src="/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <!-- <script src="https://polygit.org/components/webcomponentsjs/webcomponents-loader.js"></script> -->
+    <!-- <link rel="import" href="/bower_components/polymer/polymer.html"> -->
+
+    <!-- Iron elements -->
+    <link rel="import" href="/bower_components/iron-icon/iron-icon.html">
+    <link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+    <link rel="import" href="/bower_components/iron-icons/social-icons.html">
+    <link rel="import" href="/bower_components/iron-icons/image-icons.html">
+    <link rel="import" href="/bower_components/iron-icons/av-icons.html">
+    <link rel="import" href="/bower_components/iron-icons/hardware-icons.html">
+    <link rel="import" href="/bower_components/iron-icons/communication-icons.html">
+    <link rel="import" href="/bower_components/iron-icons/editor-icons.html">
+    <link rel="import" href="/bower_components/iron-icons/maps-icons.html">
+    <link rel="import" href="/bower_components/iron-icons/notification-icons.html">
+    <link rel="import" href="/bower_components/iron-pages/iron-pages.html">
+    <link rel="import" href="/bower_components/iron-selector/iron-selector.html">
+    <link rel="import" href="/bower_components/iron-collapse/iron-collapse.html">
+    <link rel="import" href="/bower_components/iron-form/iron-form.html">
+    <link rel="import" href="/bower_components/iron-a11y-keys/iron-a11y-keys.html">
+
+    <link rel="import" href="/bower_components/paper-button/paper-button.html">
+    <link rel="import" href="/bower_components/paper-fab/paper-fab.html">
+    <link rel="import" href="/bower_components/paper-card/paper-card.html">
+    <link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="/bower_components/paper-item/paper-item.html">
+    <link rel="import" href="/bower_components/paper-spinner/paper-spinner.html">
+    <link rel="import" href="/bower_components/paper-material/paper-material.html">
+    <link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
+    <link rel="import" href="/bower_components/paper-header-panel/paper-header-panel.html">
+    <link rel="import" href="/bower_components/paper-scroll-header-panel/paper-scroll-header-panel.html">
+    <link rel="import" href="/bower_components/paper-toast/paper-toast.html">
+    <link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
+    <link rel="import" href="/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+    <link rel="import" href="/bower_components/paper-dialog-behavior/demo/simple-dialog.html">
+    <link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
+    <link rel="import" href="/bower_components/paper-toggle-button/paper-toggle-button.html">
+    <link rel="import" href="/bower_components/paper-slider/paper-slider.html">
+    <link rel="import" href="/bower_components/paper-input/paper-input.html">
+    <link rel="import" href="/bower_components/paper-checkbox/paper-checkbox.html">
+    <link rel="import" href="/bower_components/paper-radio-button/paper-radio-button.html">
+    <link rel="import" href="/bower_components/paper-radio-group/paper-radio-group.html">
+    <link rel="import" href="/bower_components/paper-tabs/paper-tab.html">
+    <link rel="import" href="/bower_components/paper-tabs/paper-tabs.html">
+
+    <link rel="import" href="/bower_components/app-layout/app-layout.html">
+
+    <!-- extra repos for material design -->
+    <!-- see https://vaadin.com/icons -->
+    <link rel="import" href="/bower_components/vaadin-icons/vaadin-icons.html">
+
+    <!-- executed sed 's/d3/d3_3_5_17/g' bower_components/d3/d3.min.js -->
+    <!-- <script type="text/javascript" src="/js/dc_d3_3_5_17/d3_3_5_17.min.js"></script> -->
+    <script type="text/javascript" src="/bower_components/d3/d3.js"></script>
+    <script type="text/javascript" src="/js/d3_hexbin/d3-hexbin.v0.2.min.js"></script>
+    <!-- <script type="text/javascript" src="/bower_components/crossfilter/crossfilter.min.js"></script> -->
+
+    <!-- executed: sed 's/d3/d3_3_5_17/g' bower_components/dcjs/dc.js -->
+    <!-- <link rel="stylesheet" type="text/css" href="/js/dc_d3_3_5_17/dc.min.css"> -->
+
+    <script type="text/javascript" src="/bower_components/textures/dist/textures.js"></script>
+    <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <!-- <script type="text/javascript" src="/bower_components/jquery-ui/jquery-ui.min.js"></script> -->
+    <!-- <script type="text/javascript" src="/bower_components/jszip/dist/jszip.min.js"></script> -->
+    <!-- <script type="text/javascript" src="/bower_components/moment/min/moment.min.js"></script> -->
+    <!-- <script type="text/javascript" src="/bower_components/sprintf/dist/sprintf.min.js"></script> -->
+
+    <!-- socket.io -->
+    <script type="text/javascript" src="/bower_components/gevent-socketio/examples/simple_pyramid_chat/chatter2/static/socket.io.js"></script>
+
+    <!-- ==================================================================================================== -->
+    <!-- costomized elements - must come after everything except for the style and
+     the local {{widget_name}} components) -->
+    <!-- ==================================================================================================== -->
+    <!-- <link rel="import" href="/bower_components/paper-range-slider/paper-range-slider.html"> -->
+    <!-- <link rel="import" href="/templates/range-date-time-picker.html"> -->
+
+    <!-- ==================================================================================================== -->
+    <!-- themes and styles -->
+    <!-- ==================================================================================================== -->
+    <!-- additional fonts (need to be here and not in app-theme.html for e.g., firefox) -->
+    <link rel="import" href="/bower_components/font-roboto/roboto.html">
+    <link rel="stylesheet" type="text/css" href="/styles/fonts.css"/>
+    <link rel="import" href="/styles/app-theme.html">
+
+    <!-- ==================================================================================================== -->
+    <!-- module components -->
+    <!-- ==================================================================================================== -->
+    <link rel="import" href="/templates/utils_widgets.html">
+    <link rel="import" href="/templates/utils_webComp.html">
+    <!-- ==================================================================================================== -->
+  </head>
+  
+  <body>
+    <!-- on the document-level, need to wrap my style with a custom-style tag -->
+    <custom-style>
+      <style include="app-theme"></style>
+    </custom-style>
+    <!-- the baseApp itself must be defined as part of one of the imports (not in this file) .... ! -->
+    <base-app id="baseApp" widget-name={{widget_name}}></base-app>
+  </body>
+</html>
+

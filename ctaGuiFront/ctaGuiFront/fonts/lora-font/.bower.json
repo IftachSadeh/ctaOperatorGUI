@@ -1,0 +1,13 @@
+{
+  "name": "lora-font",
+  "homepage": "https://github.com/cyrealtype/Lora-Cyrillic",
+  "_release": "eeea0aee5e",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "eeea0aee5e4d5a361ef32c88321799ceed42d28a"
+  },
+  "_source": "git://github.com/cyrealtype/Lora-Cyrillic.git",
+  "_target": "master",
+  "_originalSource": "git://github.com/cyrealtype/Lora-Cyrillic"
+}

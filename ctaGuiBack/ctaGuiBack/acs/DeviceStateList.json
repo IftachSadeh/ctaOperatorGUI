@@ -1,0 +1,191 @@
+{
+  "L0": {
+    "id": "L0",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "L_0": {
+    "id": "L_0",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "L_1": {
+    "id": "L_1",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "L_2": {
+    "id": "L_2",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "L_3": {
+    "id": "L_3",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "L_4": {
+    "id": "L_4",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_0": {
+    "id": "M_0",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_1": {
+    "id": "M_1",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_2": {
+    "id": "M_2",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_3": {
+    "id": "M_3",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_4": {
+    "id": "M_4",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_5": {
+    "id": "M_5",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_6": {
+    "id": "M_6",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_7": {
+    "id": "M_7",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_8": {
+    "id": "M_8",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_9": {
+    "id": "M_9",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_10": {
+    "id": "M_10",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_11": {
+    "id": "M_11",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_12": {
+    "id": "M_12",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_13": {
+    "id": "M_13",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  },
+  "M_14": {
+    "id": "M_14",
+    "type": {
+      "value": 0
+    },
+    "status": {
+      "value": 1
+    }
+  }
+}
