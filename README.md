@@ -72,7 +72,7 @@ Best performance is likely to be achieved using the Chrome browser.
 
 ### Running the package
 
-Run the two servers (in two separate sessions) after sourcing `setEnv.sh`:
+Run the two servers (in two separate sessions) after sourcing the environment variables defined above:
 ```bash
   cd $ctaBaseDir/ctaGuiBack/
   $VENV/bin/gunicorn --reload --bind 0.0.0.0:8888 --paste development.ini
