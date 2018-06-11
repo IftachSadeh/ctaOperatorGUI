@@ -35,7 +35,7 @@ Best performance is likely to be achieved using the Chrome browser.
     export PYTHONPATH=$ctaBaseDir:$PYTHONPATH
     export POLICY_SERVER=False
   ```
-  These are also defined in the `setEnv.sh` script. This script should be sourced before the package is run in a new session.
+  These should be sourced before the package is run in a new session.
 
 - Check that setuptools work (should just exit with no error):
   ```bash
