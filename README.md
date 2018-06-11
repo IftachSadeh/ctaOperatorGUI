@@ -91,6 +91,30 @@ Best performance is likely to be achieved using the Chrome browser.
 
 - View the client in a web browser, by navigating to `http://localhost:8090/cta/index`.
 
+## Adding a new widget in a new view
+
+The following details the minimal procedure to add a new widget, `myTestExample`, bootstrapped from the `emptyExample` widget. In this example, the new widget will be added to a new view, called `myNewView`. In general, any widget may be added to an existing view (i.e., skip steps 3-4 below, to avoid creating a dedicated view).
+
+- Create a copy of the `emptyExample` JavaScript/python files with the new widget name. Notice that we need to replace the three listed permutations of capitalisation in different places...
+```bash
+  cd ctaGuiFront/ctaGuiFront
+
+  tag0="myTestExample"
+  tag1="mytestexample"
+  tag2="MyTestExample"
+
+  sed "s/emptyExample/${tag0}/g" js/widget_emptyExample.js | sed "s/emptyexample/${tag1}/g" | sed "s/EmptyExample/${tag2}/g" > js/widget_${tag0}.js
+
+  sed "s/emptyExample/${tag0}/g" py/widget_emptyExample.py | sed "s/emptyexample/${tag1}/g" | sed "s/EmptyExample/${tag2}/g" > py/widget_${tag0}.py
+  ```
+
+- Make the following modifications:
+  1. In `ctaGuiUtils/py/utils.py`: add the new widget (`myTestExample`) to `allowedWidgetTypeV`. This `dict` is used in `ctaGuiFront/ctaGuiFront/py/mySock.py` to make sure that a dynamically added widget-class (i.e., `ctaGuiFront/ctaGuiFront/py/widget_myTestExample.py`) is valid.
+  2. In `ctaGuiFront/ctaGuiFront/js/utils_setupView.js`: add the new view and the new widget to `setupView`. Here the widgets which are loaded in a given view are defined. The new widget may also be added to an existing view.
+  3. In `ctaGuiFront/ctaGuiFront/templates/utils_webComp.html`: add the new view (`myNewView`) to the `main-site-nav` element. This just adds an entry to the new view in the main navigation menu in the index page and in side-menu.
+  4. In `ctaGuiFront/ctaGuiFront/__init__.py`: add the new view (`myNewView`) to `utils.allWidgets`. This lets the server know that the new URL (`http://localhost:8090/cta/myNewView`) is valid.
+
+
 ## Comments
 
 ### General
@@ -99,9 +123,9 @@ Best performance is likely to be achieved using the Chrome browser.
 
 - If running the server on a remote machine, one may connect using an ssh tunnel. From the local machine, run
 ```bash
-ssh MyUserName@myServer -L8092:localhost:8090
-```
-then, for this example, navigate to `http://127.0.0.1:8092/cta`.
+  ssh MyUserName@myServer -L8092:localhost:8090
+  ```
+  then, for this example, navigate to `http://127.0.0.1:8092/cta`.
 
 - Here that we use version `1.0.2` of `gevent`. This is due to a bug with version `0.2.1` of `gevent_socketio`. (The latter has been fixed, but has not yet made it to a release version, as of July 2016). If for some reason the latest version of `gevent` is used, the bug in `gevent_socketio` can easily be fixed by hand. The solution is given in the first comment at [gevent-socketio/issues/233](https://github.com/abourget/gevent-socketio/issues/233).
 
@@ -211,7 +235,6 @@ app_prefix = myOwnPrefix
 host       = 127.0.0.1
 port       = 8095
 ```
-
 
 ### Logging streams
 
