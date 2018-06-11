@@ -2,5 +2,5 @@
 * text=auto
 ctaGuiFront/ctaGuiFront/py/*.py linguist-detectable=true
 *.py linguist-detectable=true
-*.py linguist-vendored=true
-*.js linguist-vendored=true
+*.py linguist-vendored=false
+*.js linguist-vendored=false
