@@ -19,6 +19,7 @@ The package is based on several open source projects:
 - The design of the front end is based on the [Polymer](https://www.polymer-project.org/1.0/) web component framework (see also the [element catalogue](https://elements.polymer-project.org/browse?package=paper-elements)).
 - Visualizations are performed using the [d3.js](https://d3js.org/) JavaScript library.
 - JavaScript dependencies are handles by the [`bower` package manager](https://bower.io/).
+- The package uses the `redis` database.
 
 Development is being done using the following:
 `python v2.7`, `Polymer v2.0.x`, and `d3.js v4.1`.
@@ -74,18 +75,20 @@ Best performance is likely to be achieved using the Chrome browser.
 
 ### Running the package
 
-Run the two servers (in two separate sessions) after sourcing the environment variables defined above:
-```bash
-  cd $ctaBaseDir/ctaGuiBack/
-  $VENV/bin/gunicorn --reload --bind 0.0.0.0:8888 --paste development.ini
-```
+- `redis` must be running on port `6379` (configurable by setting the variable `redisPort` in `ctaGuiUtils/py/utils_redis.py`).
 
-```bash  
-  cd $ctaBaseDir/ctaGuiFront/
-  $VENV/bin/gunicorn --reload --bind 0.0.0.0:8090 --paste development.ini
-```
+- Run the two servers (in two separate sessions) after sourcing the environment variables defined above:
+  ```bash
+    cd $ctaBaseDir/ctaGuiBack/
+    $VENV/bin/gunicorn --reload --bind 0.0.0.0:8888 --paste development.ini
+  ```
 
-View the client in a web browser, by navigating to `http://localhost:8090/cta/index`.
+  ```bash  
+    cd $ctaBaseDir/ctaGuiFront/
+    $VENV/bin/gunicorn --reload --bind 0.0.0.0:8090 --paste development.ini
+  ```
+
+- View the client in a web browser, by navigating to `http://localhost:8090/cta/index`.
 
 ## Comments
 
