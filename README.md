@@ -26,7 +26,7 @@ Best performance is likely to be achieved using the Chrome browser.
 
 ### First-time setup
 
-- Define some environment variables (modify `absolute-path-to-install-dir` accordingly):
+- Define some environment variables:
   ```bash
     export ctaBaseDir="<absolute-path-to-install-dir>"
     export VENV=$ctaBaseDir/venv
@@ -35,7 +35,9 @@ Best performance is likely to be achieved using the Chrome browser.
     export PYTHONPATH=$ctaBaseDir:$PYTHONPATH
     export POLICY_SERVER=False
   ```
-  These should be sourced before the package is run in a new session.
+    - Modify `absolute-path-to-install-dir` to be the top directory of the package.
+    - These variables should be defined before the package is run in a new session.
+    - Modify `python2.7` in the above, depending on your version of python.
 
 - Check that setuptools work (should just exit with no error):
   ```bash
@@ -68,7 +70,7 @@ Best performance is likely to be achieved using the Chrome browser.
     $VENV/bin/initialize_tutorial_db development.ini
     bower install
   ```
-  Notice that the `bower` package manager should be pre-installed.
+    - Notice that the `bower` package manager should be pre-installed.
 
 ### Running the package
 
@@ -76,6 +78,9 @@ Run the two servers (in two separate sessions) after sourcing the environment va
 ```bash
   cd $ctaBaseDir/ctaGuiBack/
   $VENV/bin/gunicorn --reload --bind 0.0.0.0:8888 --paste development.ini
+```
+
+```bash  
   cd $ctaBaseDir/ctaGuiFront/
   $VENV/bin/gunicorn --reload --bind 0.0.0.0:8090 --paste development.ini
 ```
@@ -136,7 +141,7 @@ ProxyPreserveHost On
 # may also configure on a given ip only (with a specific port) using <VirtualHost 127.0.0.4:80>
 Listen 8070
 <VirtualHost *:8070>
-  Define appPrefix startup_gui
+  Define appPrefix cta
   Define appPort 8090
 
   ServerName ${appPrefix}.com
@@ -190,7 +195,7 @@ Notice that you need to first generate the `htpasswdFile` file, as e.g.,
 htpasswd -c htpasswdFile myUserName
 ```
 with a given user name for log-in, `myUserName`. The `htpasswdFile` file should be place in the `ServerRoot` directory of apache.
-The local server, running under `http://localhost:8090/startup_gui`, will then be served by `apache` under `https://localhost:8070/startup_gui`.
+The local server, running under `http://localhost:8090/cta`, will then be served by `apache` under `https://localhost:8070/cta`.
 
 ### Server domain
 
