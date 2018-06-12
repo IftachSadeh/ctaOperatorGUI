@@ -40,29 +40,29 @@ window.BlockQueue = function () {
     }
 
     com.mainTag = optIn.tag
-    com.checkFree = optIn.checkFree
+    com.locker = optIn.locker
     com.runLoop = optIn.runLoop
 
-    let checkFreeZoom = optIn.checkFreeZoom
-    if (!hasVar(checkFreeZoom)) {
-      checkFreeZoom = {
+    let lockerZoom = optIn.lockerZoom
+    if (!hasVar(lockerZoom)) {
+      lockerZoom = {
         all: com.mainTag + 'zoom',
         during: com.mainTag + 'zoomDuring',
         end: com.mainTag + 'zoomEnd'
       }
     }
-    com.checkFreeZoom = checkFreeZoom
+    com.lockerZoom = lockerZoom
 
-    let checkFreeV = {}
-    checkFreeV.checkFreeV = hasVar(optIn.checkFreeV) ? optIn.checkFreeV : []
-    checkFreeV.zoomDuring = checkFreeV.checkFreeV
+    let lockerV = {}
+    lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
+    lockerV.zoomDuring = lockerV.lockerV
       .slice()
-      .concat([checkFreeZoom.during])
-    checkFreeV.zoomEnd = checkFreeV.checkFreeV
+      .concat([lockerZoom.during])
+    lockerV.zoomEnd = lockerV.lockerV
       .slice()
-      .concat([checkFreeZoom.end])
-    // console.log(checkFreeV.zoomDuring);
-    com.checkFreeV = checkFreeV
+      .concat([lockerZoom.end])
+    // console.log(lockerV.zoomDuring);
+    com.lockerV = lockerV
 
     com.scrollTrans = {
       now: 0,
@@ -111,9 +111,9 @@ window.BlockQueue = function () {
       boxData: com.outerBox,
       useRelativeCoords: false,
       title: optIn.title,
-      checkFree: optIn.checkFree,
-      checkFreeV: optIn.checkFreeV,
-      checkFreeZoom: optIn.checkFreeZoom,
+      locker: optIn.locker,
+      lockerV: optIn.lockerV,
+      lockerZoom: optIn.lockerZoom,
       runLoop: optIn.runLoop
     })
 

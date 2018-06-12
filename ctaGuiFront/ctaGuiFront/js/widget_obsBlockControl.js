@@ -19,7 +19,7 @@ var mainScriptTag = 'obsBlockControl'
 /* global hasVar */
 /* global telInfo */
 /* global RunLoop */
-/* global CheckFree */
+/* global Locker */
 /* global colsYellows */
 /* global colsPurples */
 /* global appendToDom */
@@ -84,7 +84,7 @@ let sockObsBlockControl = function (optIn) {}
 // here we go with the content of this particular widget
 // ---------------------------------------------------------------------------------------------------
 let mainObsBlockControl = function (optIn) {
-  // let _0_ = uniqId()
+  // let myUniqueId = unique()
   let widgetType = optIn.widgetType
   let tagArrZoomerPlotsSvg = optIn.baseName
   let widgetId = optIn.widgetId
@@ -105,8 +105,8 @@ let mainObsBlockControl = function (optIn) {
   })
 
   // delay counters
-  let checkFree = new CheckFree()
-  checkFree.add('inInit')
+  let locker = new Locker()
+  locker.add('inInit')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -361,9 +361,9 @@ let mainObsBlockControl = function (optIn) {
           blockFocus({ id: d.id })
         },
         boxData: blockBoxData,
-        checkFree: checkFree,
-        checkFreeV: [tagObsBlkCnt + 'updateData'],
-        checkFreeZoom: {
+        locker: locker,
+        lockerV: [tagObsBlkCnt + 'updateData'],
+        lockerZoom: {
           all: tagBlockQueue + 'zoom',
           during: tagBlockQueue + 'zoomDuring',
           end: tagBlockQueue + 'zoomEnd'
@@ -400,10 +400,10 @@ let mainObsBlockControl = function (optIn) {
         vorClick: function (d) {
           blockFocus({ id: d.data.id })
         },
-        checkFreeV: [tagObsBlkCnt + 'updateData'],
+        lockerV: [tagObsBlkCnt + 'updateData'],
         utils: utils,
         runLoop: runLoop,
-        checkFree: checkFree
+        locker: locker
       })
 
       // ---------------------------------------------------------------------------------------------------
@@ -437,10 +437,10 @@ let mainObsBlockControl = function (optIn) {
             target: optIn.data.id
           })
         },
-        checkFreeV: [tagObsBlkCnt + 'updateData'],
+        lockerV: [tagObsBlkCnt + 'updateData'],
         utils: utils,
         runLoop: runLoop,
-        checkFree: checkFree
+        locker: locker
       })
 
       // ---------------------------------------------------------------------------------------------------
@@ -503,9 +503,9 @@ let mainObsBlockControl = function (optIn) {
           useRelativeCoords: true,
           title: { text: 'title...' },
           boxData: scrollTableData,
-          checkFree: checkFree,
-          checkFreeV: [tagObsBlkCnt + 'updateData'],
-          checkFreeZoom: {
+          locker: locker,
+          lockerV: [tagObsBlkCnt + 'updateData'],
+          lockerZoom: {
             all: tagBlockQueue + 'zoom',
             during: tagBlockQueue + 'zoomDuring',
             end: tagBlockQueue + 'zoomEnd'
@@ -622,9 +622,9 @@ let mainObsBlockControl = function (optIn) {
           useRelativeCoords: true,
           // title: { h:scrollBoxData.h*0.2, text:"asldklksdj" },
           boxData: scrollBoxData,
-          checkFree: checkFree,
-          checkFreeV: [tagObsBlkCnt + 'updateData'],
-          checkFreeZoom: {
+          locker: locker,
+          lockerV: [tagObsBlkCnt + 'updateData'],
+          lockerZoom: {
             all: tagBlockQueue + 'zoom',
             during: tagBlockQueue + 'zoomDuring',
             end: tagBlockQueue + 'zoomEnd'
@@ -846,7 +846,7 @@ let mainObsBlockControl = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      _updateData(dataIn)
+      updateDataOnce(dataIn)
 
       // ---------------------------------------------------------------------------------------------------
       // for debugging
@@ -869,10 +869,10 @@ let mainObsBlockControl = function (optIn) {
 
       runWhenReady({
         pass: function () {
-          return checkFree.isFree(tagObsBlkCnt + 'updateData')
+          return locker.isFree(tagObsBlkCnt + 'updateData')
         },
         execute: function () {
-          checkFree.remove('inInit')
+          locker.remove('inInit')
         }
       })
     }
@@ -881,10 +881,10 @@ let mainObsBlockControl = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'updateData', func: _updateData, nKeep: 1 })
+    runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
     function updateData (dataIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
@@ -894,23 +894,23 @@ let mainObsBlockControl = function (optIn) {
       runLoop.push({ tag: 'updateData', data: dataIn })
     }
 
-    function _updateData (dataIn) {
+    function updateDataOnce (dataIn) {
       // return;
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           tagObsBlkCnt + 'updateData',
           tagTelScroll + 'zoom',
           tagBlockQueue + 'zoom'
         ])
       ) {
-        // console.log('will delay updateRecData',checkFree.getActiveV([tagObsBlkCnt+"_updateData", tagTelScroll+"_zoom", tagBlockQueue+"_zoom"]));
+        // console.log('will delay updateRecData',locker.getActiveV([tagObsBlkCnt+"updateDataOnce", tagTelScroll+"_zoom", tagBlockQueue+"_zoom"]));
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
         return
       }
-      checkFree.add(tagObsBlkCnt + 'updateData')
-      // checkFree.add({ id:tagObsBlkCnt+"_updateData", override:true });
+      locker.add(tagObsBlkCnt + 'updateData')
+      // locker.add({ id:tagObsBlkCnt+"updateDataOnce", override:true });
 
       // ---------------------------------------------------------------------------------------------------
       //
@@ -955,8 +955,8 @@ let mainObsBlockControl = function (optIn) {
       telSummary.set({ tag: 'telHealth', data: telHealth })
       telSummary.update()
 
-      checkFree.remove({ id: tagObsBlkCnt + 'updateData' })
-      // checkFree.remove({ id:tagObsBlkCnt+"_updateData", override:true });
+      locker.remove({ id: tagObsBlkCnt + 'updateData' })
+      // locker.remove({ id:tagObsBlkCnt+"updateDataOnce", override:true });
 
       blockFocus({ id: com.focus.obId })
     }
@@ -965,16 +965,16 @@ let mainObsBlockControl = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'blockFocus', func: _blockFocus, nKeep: 1 })
+    runLoop.init({ tag: 'blockFocus', func: blockFocusOnce, nKeep: 1 })
 
     function blockFocus (dataIn) {
       runLoop.push({ tag: 'blockFocus', data: dataIn })
     }
     this.blockFocus = blockFocus
 
-    function _blockFocus (optIn) {
+    function blockFocusOnce (optIn) {
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           tagObsBlkCnt + 'updateData',
           tagTelScroll + 'zoom',
           tagBlockQueue + 'zoom'
@@ -986,7 +986,7 @@ let mainObsBlockControl = function (optIn) {
         }, 10)
         return
       }
-      checkFree.add(tagObsBlkCnt + 'updateData')
+      locker.add(tagObsBlkCnt + 'updateData')
       // console.log(' will run _blockFocus_...',optIn);
 
       let obId = hasVar(optIn.id) ? optIn.id : ''
@@ -1032,7 +1032,7 @@ let mainObsBlockControl = function (optIn) {
         obId: com.focus.obId
       })
 
-      checkFree.remove({ id: tagObsBlkCnt + 'updateData' })
+      locker.remove({ id: tagObsBlkCnt + 'updateData' })
     }
     // ---------------------------------------------------------------------------------------------------
 
@@ -1468,10 +1468,10 @@ let TelSummary = function () {
       .duration(timeD.animTxt)
       .style('opacity', 1)
       // .tween("text", function(d) {
-      //   let _this       = d3.select(this);
-      //   let prevText    = _this.text();
+      //   let topThis       = d3.select(this);
+      //   let prevText    = topThis.text();
       //   let interpolate = d3.interpolate(prevText, 0);
-      //   return function(t) { _this.text(formatPercent(interpolate(t))); };
+      //   return function(t) { topThis.text(formatPercent(interpolate(t))); };
       // })
       .tween('text', function (d) {
         return tweenText(d3.select(this), +telStates[d.textTag])
@@ -1503,11 +1503,11 @@ let TelSummary = function () {
   }
 
   let formatInt = d3.format('d')
-  function tweenText (_this, newVal) {
-    let prevText = _this.text()
+  function tweenText (thisIn, newVal) {
+    let prevText = thisIn.text()
     let interpolate = d3.interpolate(prevText, newVal)
     return function (t) {
-      _this.text(formatInt(interpolate(t)))
+      thisIn.text(formatInt(interpolate(t)))
     }
   }
 
@@ -1612,14 +1612,14 @@ let TelScroll = function () {
       gBox: com.recD.gBase,
       bckRecOpt: { textureOrient: '5/8', frontProp: { strkWOcp: 0.2 } },
       vorOpt: { click: optIn.vorClick },
-      checkFreeV: optIn.checkFreeV,
+      lockerV: optIn.lockerV,
       onZoom: {
         start: onZoomStart,
         during: onZoomDuring,
         end: onZoomDuring
       },
       runLoop: optIn.runLoop,
-      checkFree: optIn.checkFree
+      locker: optIn.locker
     })
 
     com.recD.dataG = com.scrollGrid.getBackDataG()
@@ -1871,14 +1871,14 @@ let _obScroll = function () {
       },
       // bckRecOpt: { textureOrient: "2/8",  frontProp: { strkWOcp: 0.2 } },
       vorOpt: { click: optIn.vorClick },
-      checkFreeV: optIn.checkFreeV,
+      lockerV: optIn.lockerV,
       onZoom: {
         start: onZoomStart,
         during: onZoomDuring,
         end: onZoomDuring
       },
       runLoop: optIn.runLoop,
-      checkFree: optIn.checkFree
+      locker: optIn.locker
     })
 
     com.recD.dataG = com.scrollGrid.getBackDataG()

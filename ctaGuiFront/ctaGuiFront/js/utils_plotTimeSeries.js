@@ -32,28 +32,28 @@ window.PlotTimeSeries = function () {
     }
 
     com.mainTag = optIn.tag
-    com.checkFree = optIn.checkFree
+    com.locker = optIn.locker
     com.runLoop = optIn.runLoop
 
-    let checkFreeZoom = optIn.checkFreeZoom
-    if (!hasVar(checkFreeZoom)) {
-      checkFreeZoom = {
+    let lockerZoom = optIn.lockerZoom
+    if (!hasVar(lockerZoom)) {
+      lockerZoom = {
         all: com.mainTag + 'zoom',
         during: com.mainTag + 'zoomDuring',
         end: com.mainTag + 'zoomEnd'
       }
     }
-    com.checkFreeZoom = checkFreeZoom
+    com.lockerZoom = lockerZoom
 
-    let checkFreeV = {}
-    checkFreeV.checkFreeV = hasVar(optIn.checkFreeV) ? optIn.checkFreeV : []
-    checkFreeV.zoomDuring = checkFreeV.checkFreeV
+    let lockerV = {}
+    lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
+    lockerV.zoomDuring = lockerV.lockerV
       .slice()
-      .concat([checkFreeZoom.during])
-    checkFreeV.zoomEnd = checkFreeV.checkFreeV
+      .concat([lockerZoom.during])
+    lockerV.zoomEnd = lockerV.lockerV
       .slice()
-      .concat([checkFreeZoom.end])
-    com.checkFreeV = checkFreeV
+      .concat([lockerZoom.end])
+    com.lockerV = lockerV
 
     com.yAxisMarginFrac = hasVar(optIn.yAxisMarginFrac)
       ? optIn.yAxisMarginFrac
@@ -590,9 +590,9 @@ window.PlotTimeSeries = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   function setupZoomBrush () {
-    let checkFree = com.checkFree
-    let checkFreeV = com.checkFreeV
-    let checkFreeZoom = com.checkFreeZoom
+    let locker = com.locker
+    let lockerV = com.lockerV
+    let lockerZoom = com.lockerZoom
 
     function initZoomBrush () {
       com.zoom = {}
@@ -692,9 +692,9 @@ window.PlotTimeSeries = function () {
 
       com.inUserZoom = hasVar(d3.event.sourceEvent)
 
-      if (checkFree.isFreeV(checkFreeV.zoomDuring)) {
-        checkFree.add({ id: checkFreeZoom.all, override: true })
-        checkFree.add({ id: checkFreeZoom.during, override: true })
+      if (locker.isFreeV(lockerV.zoomDuring)) {
+        locker.add({ id: lockerZoom.all, override: true })
+        locker.add({ id: lockerZoom.during, override: true })
 
         let trans = d3.event.transform
         // console.log('zoomDuring',trans,ele,d3.select(ele).attr('class'));
@@ -711,7 +711,7 @@ window.PlotTimeSeries = function () {
           )
         }
 
-        checkFree.remove({ id: checkFreeZoom.during })
+        locker.remove({ id: lockerZoom.during })
       }
     }
 
@@ -734,8 +734,8 @@ window.PlotTimeSeries = function () {
       }
 
       com.isInZoom = false
-      checkFree.remove({
-        id: checkFreeZoom.all,
+      locker.remove({
+        id: lockerZoom.all,
         override: true,
         delay: timeD.animArc
       })
@@ -757,9 +757,9 @@ window.PlotTimeSeries = function () {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return // ignore brush-by-zoom
       // console.log('brushDuring');
 
-      if (checkFree.isFreeV(checkFreeV.zoomDuring)) {
-        checkFree.add({ id: checkFreeZoom.all, override: true })
-        checkFree.add({ id: checkFreeZoom.during, override: true })
+      if (locker.isFreeV(lockerV.zoomDuring)) {
+        locker.add({ id: lockerZoom.all, override: true })
+        locker.add({ id: lockerZoom.during, override: true })
 
         let s = d3.event.selection || com.bot.scale.x.range()
 
@@ -777,7 +777,7 @@ window.PlotTimeSeries = function () {
           selFunc().call(com.zoom.zoom.transform, t)
         })
 
-        checkFree.remove({ id: checkFreeZoom.during })
+        locker.remove({ id: lockerZoom.during })
       }
     }
 
@@ -795,8 +795,8 @@ window.PlotTimeSeries = function () {
       }
 
       com.isInBrush = false
-      checkFree.remove({
-        id: checkFreeZoom.all,
+      locker.remove({
+        id: lockerZoom.all,
         override: true,
         delay: timeD.animArc
       })

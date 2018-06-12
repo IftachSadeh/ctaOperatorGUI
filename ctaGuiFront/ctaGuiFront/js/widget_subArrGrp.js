@@ -28,7 +28,7 @@ var mainScriptTag = 'subArrGrp'
 /* global thisTrans */
 /* global unitArcMin */
 /* global unitArcSec */
-/* global CheckFree */
+/* global Locker */
 /* global colsYellows */
 /* global colsPurples */
 /* global appendToDom */
@@ -94,7 +94,7 @@ let sockSubArrGrp = function (optIn) {
 }
 
 let mainSubArrGrp = function (optIn) {
-  // let _0_ = uniqId()
+  // let myUniqueId = unique()
   // let widgetType = optIn.widgetType
   let tagSubArrGrpSvg = optIn.baseName
   let widgetId = optIn.widgetId
@@ -119,10 +119,10 @@ let mainSubArrGrp = function (optIn) {
   })
 
   // delay counters
-  let checkFree = new CheckFree()
-  checkFree.add('inInit')
-  checkFree.add('inInitSubArr')
-  checkFree.add('inInitSkyPos')
+  let locker = new Locker()
+  locker.add('inInit')
+  locker.add('inInitSubArr')
+  locker.add('inInitSkyPos')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -242,7 +242,7 @@ let mainSubArrGrp = function (optIn) {
   // }
   // function _askInitData(optIn) {
   //   // create delay if currently in data update or a previous call of _askInitData
-  //   if(!checkFree.isFree("dataChange")) {
+  //   if(!locker.isFree("dataChange")) {
   //     // console.log('delay askInitData')
   //     setTimeout(function () { askInitData(optIn); }, timeD.animArc*2);
   //     return;
@@ -257,7 +257,7 @@ let mainSubArrGrp = function (optIn) {
   function initData (dataInit) {
     if (sock.multipleInit({ id: widgetId, data: dataInit })) return
 
-    checkFree.add('dataChange')
+    locker.add('dataChange')
 
     let dataIn = dataInit.data
     let hasJoinedData = joinTelProps(dataIn, true)
@@ -274,13 +274,13 @@ let mainSubArrGrp = function (optIn) {
     svgSubArr.initData(hasJoinedData)
     svgSkyPos.initData(hasJoinedData)
 
-    checkFree.remove('dataChange')
+    locker.remove('dataChange')
 
     setState({ type: 'initData', data: null })
 
     runWhenReady({
       pass: function () {
-        return checkFree.isFreeV([
+        return locker.isFreeV([
           'inInitSubArr',
           'inInitSkyPos',
           'dataChange',
@@ -289,7 +289,7 @@ let mainSubArrGrp = function (optIn) {
         ])
       },
       execute: function () {
-        checkFree.remove('inInit')
+        locker.remove('inInit')
       }
     })
   }
@@ -298,15 +298,15 @@ let mainSubArrGrp = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  runLoop.init({ tag: 'updateData', func: _updateData, nKeep: -1 })
+  runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: -1 })
 
   function updateData (dataIn) {
     runLoop.push({ tag: 'updateData', data: dataIn.data }) //, time:dataIn.emitTime
   }
 
-  function _updateData (dataIn) {
+  function updateDataOnce (dataIn) {
     if (
-      !checkFree.isFreeV([
+      !locker.isFreeV([
         'zoom',
         'zoomToTarget',
         'dataChange',
@@ -315,12 +315,12 @@ let mainSubArrGrp = function (optIn) {
       ])
     ) {
       setTimeout(function () {
-        _updateData(dataIn)
+        updateDataOnce(dataIn)
       }, 10)
       return
     }
     // console.log('updateData')
-    checkFree.add('dataChange')
+    locker.add('dataChange')
 
     let hasJoinedData = joinTelProps(dataIn, false)
 
@@ -329,7 +329,7 @@ let mainSubArrGrp = function (optIn) {
       svgSkyPos.updateData(dataIn)
     }
 
-    checkFree.remove({ id: 'dataChange' })
+    locker.remove({ id: 'dataChange' })
 
     setState({ type: 'dataChange', data: null })
   }
@@ -338,17 +338,17 @@ let mainSubArrGrp = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  runLoop.init({ tag: 'setState', func: _setState, nKeep: 1 })
+  runLoop.init({ tag: 'setState', func: setStateOnce, nKeep: 1 })
 
   function setState (dataIn) {
     runLoop.push({ tag: 'setState', data: dataIn })
   }
 
-  function _setState (optIn) {
+  function setStateOnce (optIn) {
     // console.log('SetState');
     // console.log(telData)
 
-    svgSubArr._setState(optIn)
+    svgSubArr.setStateOnce(optIn)
     svgSkyPos.setFocused()
   }
 
@@ -356,7 +356,7 @@ let mainSubArrGrp = function (optIn) {
   //
   // ---------------------------------------------------------------------------------------------------
   function joinTelProps (dataIn, isInit) {
-    checkFree.add('dataChange')
+    locker.add('dataChange')
 
     if (isInit) {
       telData = dataIn
@@ -490,7 +490,7 @@ let mainSubArrGrp = function (optIn) {
     // // if there is some inconsistency with the unpdated data, ask for a complete initialization
     // // ---------------------------------------------------------------------------------------------------
     // if(needInitData) {
-    //   checkFree.remove("dataChange");
+    //   locker.remove("dataChange");
     //   console.log('askInitData',widgetId);
     //   askInitData({widgetId:widgetId});
     //   return false;
@@ -521,7 +521,7 @@ let mainSubArrGrp = function (optIn) {
       telData.tel[index].col = colNow
     })
 
-    checkFree.remove('dataChange')
+    locker.remove('dataChange')
 
     return true
   }
@@ -552,7 +552,7 @@ let mainSubArrGrp = function (optIn) {
 
     let type = dataIn.type
     if (type === 'syncTelFocus') {
-      // checkFree.add("syncStateGet");
+      // locker.add("syncStateGet");
 
       let target = dataIn.data.target
       let zoomState = dataIn.data.zoomState
@@ -575,7 +575,7 @@ let mainSubArrGrp = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   runLoop.init({
     tag: 'syncStateSend',
-    func: _syncStateSend,
+    func: syncStateSendOnce,
     nKeep: 1,
     wait: timeD.waitSyncState
   })
@@ -584,11 +584,11 @@ let mainSubArrGrp = function (optIn) {
     runLoop.push({ tag: 'syncStateSend', data: dataIn })
   }
 
-  function _syncStateSend (dataIn) {
+  function syncStateSendOnce (dataIn) {
     if (sock.conStat.isOffline()) return
 
     if (
-      !checkFree.isFreeV([
+      !locker.isFreeV([
         'inInit',
         'zoom',
         'autoZoomTarget',
@@ -656,7 +656,7 @@ let mainSubArrGrp = function (optIn) {
 
     // initialize a global function (to be overriden below)
     let zoomToTarget = function (optIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           zoomToTarget(optIn)
         }, timeD.waitLoop)
@@ -702,8 +702,8 @@ let mainSubArrGrp = function (optIn) {
       let scaleStart = 0
       com.svgZoomStart = function () {
         scaleStart = d3.event.transform.k
-        checkFree.add({ id: 'zoom', override: true })
-        checkFree.add({ id: 'zoomEndFunc', override: true })
+        locker.add({ id: 'zoom', override: true })
+        locker.add({ id: 'zoomEndFunc', override: true })
       }
 
       com.svgZoomDuring = function () {
@@ -714,8 +714,8 @@ let mainSubArrGrp = function (optIn) {
       com.svgZoomUpdState = function () {}
 
       com.svgZoomEnd = function () {
-        checkFree.remove('zoom')
-        checkFree.remove({
+        locker.remove('zoom')
+        locker.remove({
           id: 'zoomEndFunc',
           delay: timeD.animArc * 1.2,
           override: true
@@ -729,7 +729,7 @@ let mainSubArrGrp = function (optIn) {
         // if on minimal zoom, center
         if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
           if (Math.abs(d3.event.transform.k - lenSkyPos.z['0.0']) < 0.00001) {
-            if (checkFree.isFreeV(['autoZoomTarget'])) {
+            if (locker.isFreeV(['autoZoomTarget'])) {
               zoomToTarget({
                 target: 'init',
                 scale: d3.event.transform.k,
@@ -743,15 +743,15 @@ let mainSubArrGrp = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      runLoop.init({ tag: 'doZoomFuncEnd', func: _doZoomFuncEnd, nKeep: 1 })
+      runLoop.init({ tag: 'doZoomFuncEnd', func: doZoomFuncEndOnce, nKeep: 1 })
 
       function doZoomFuncEnd () {
         runLoop.push({ tag: 'doZoomFuncEnd' })
       }
 
-      function _doZoomFuncEnd () {
+      function doZoomFuncEndOnce () {
         if (
-          checkFree.isFreeV([
+          locker.isFreeV([
             'zoomEndFunc',
             'setState',
             'zoom',
@@ -789,13 +789,13 @@ let mainSubArrGrp = function (optIn) {
 
       // the actual function to be called when a zoom needs to be put in the queue
       zoomToTarget = function (optIn) {
-        if (!checkFree.isFree('inInit')) {
+        if (!locker.isFree('inInit')) {
           setTimeout(function () {
             zoomToTarget(optIn)
           }, timeD.waitLoop)
           return
         }
-        if (!checkFree.isFreeV(['autoZoomTarget'])) return
+        if (!locker.isFreeV(['autoZoomTarget'])) return
 
         let targetName = optIn.target
         let targetScale = optIn.scale
@@ -814,11 +814,11 @@ let mainSubArrGrp = function (optIn) {
         }
 
         let funcStart = function () {
-          checkFree.add({ id: 'autoZoomTarget', override: true })
+          locker.add({ id: 'autoZoomTarget', override: true })
         }
         let funcDuring = function () {}
         let funcEnd = function () {
-          checkFree.remove('autoZoomTarget')
+          locker.remove('autoZoomTarget')
         }
 
         let outD = {
@@ -940,7 +940,7 @@ let mainSubArrGrp = function (optIn) {
       // initi overlay coordinate text
       setOverText()
 
-      checkFree.remove('inInitSkyPos')
+      locker.remove('inInitSkyPos')
     }
     this.initData = initData
 
@@ -1645,24 +1645,24 @@ let mainSubArrGrp = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'setFocused', func: _setFocused, nKeep: 1 })
+    runLoop.init({ tag: 'setFocused', func: setFocusedOnce, nKeep: 1 })
 
     function setFocused (dataIn) {
       runLoop.push({ tag: 'setFocused', data: dataIn })
     }
     this.setFocused = setFocused
 
-    function _setFocused () {
+    function setFocusedOnce () {
       // create delay if currently in data update or a previous call of setFocused
       if (
-        !checkFree.isFreeV(['setState', 'zoom', 'zoomToTarget', 'dataChange'])
+        !locker.isFreeV(['setState', 'zoom', 'zoomToTarget', 'dataChange'])
       ) {
         setTimeout(function () {
           setFocused(optIn)
         }, timeD.animArc)
         return
       }
-      checkFree.add({ id: 'setFocused', override: true })
+      locker.add({ id: 'setFocused', override: true })
 
       let tagTelLbl = 'telTitle'
       let tagTrgLbl = 'trgTitle'
@@ -1716,7 +1716,7 @@ let mainSubArrGrp = function (optIn) {
           return isFocused(d.id) ? 1 : fadeOpac
         })
 
-      checkFree.remove({ id: 'setFocused', delay: timeD.animArc })
+      locker.remove({ id: 'setFocused', delay: timeD.animArc })
     }
 
     // ---------------------------------------------------------------------------------------------------
@@ -2164,7 +2164,7 @@ let mainSubArrGrp = function (optIn) {
 
     // initialize a global function (to be overriden below)
     let zoomToTarget = function (optIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           zoomToTarget(optIn)
         }, timeD.waitLoop)
@@ -2214,7 +2214,7 @@ let mainSubArrGrp = function (optIn) {
         let scaleStart = 0
         com.svgZoomStart = function () {
           scaleStart = d3.event.transform.k
-          checkFree.add({ id: 'zoom', override: true })
+          locker.add({ id: 'zoom', override: true })
         }
 
         com.svgZoomDuring = function () {
@@ -2247,13 +2247,13 @@ let mainSubArrGrp = function (optIn) {
         }
 
         com.svgZoomEnd = function () {
-          checkFree.remove('zoom')
+          locker.remove('zoom')
           com.svgZoomUpdState()
 
           // if on minimal zoom, center
           if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
             if (Math.abs(d3.event.transform.k - com.z['0.0']) < 0.00001) {
-              if (checkFree.isFreeV(['autoZoomTarget'])) {
+              if (locker.isFreeV(['autoZoomTarget'])) {
                 zoomToTarget({
                   target: 'init',
                   scale: d3.event.transform.k,
@@ -2290,13 +2290,13 @@ let mainSubArrGrp = function (optIn) {
 
         // the actual function to be called when a zoom needs to be put in the queue
         zoomToTarget = function (optIn) {
-          if (!checkFree.isFree('inInit')) {
+          if (!locker.isFree('inInit')) {
             setTimeout(function () {
               zoomToTarget(optIn)
             }, timeD.waitLoop)
             return
           }
-          if (!checkFree.isFreeV(['autoZoomTarget'])) return
+          if (!locker.isFreeV(['autoZoomTarget'])) return
 
           let targetName = optIn.target
           let targetScale = optIn.scale
@@ -2334,12 +2334,12 @@ let mainSubArrGrp = function (optIn) {
           }
 
           let funcStart = function () {
-            checkFree.add({ id: 'autoZoomTarget', override: true })
+            locker.add({ id: 'autoZoomTarget', override: true })
             // if(targetName != "") zoomTarget = targetName;
           }
           let funcDuring = function () {}
           let funcEnd = function () {
-            checkFree.remove('autoZoomTarget')
+            locker.remove('autoZoomTarget')
 
             let isDone = true
             if (Math.abs(getScale() - com.z['0.0']) < 0.00001) {
@@ -2474,7 +2474,7 @@ let mainSubArrGrp = function (optIn) {
       //   // zoomToTarget({ target:'init', scale:com.z["0.0"], durFact:1.5 } )
       // }, 2000);
 
-      checkFree.remove('inInitSubArr')
+      locker.remove('inInitSubArr')
     }
     thisSvgSubArr.initData = initData
 
@@ -2634,14 +2634,14 @@ let mainSubArrGrp = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function setHirch (isInit) {
       // create delay if currently in data update or a previous call of setHirch
-      if (!(checkFree.isFree('setState') && checkFree.isFree('setHirch'))) {
+      if (!(locker.isFree('setState') && locker.isFree('setHirch'))) {
         setTimeout(function () {
           setHirch(isInit)
         }, timeD.animArc)
         return
       }
 
-      checkFree.add('setHirch')
+      locker.add('setHirch')
 
       let tagNow
 
@@ -2658,7 +2658,7 @@ let mainSubArrGrp = function (optIn) {
             return hirchStyleFill(d)
           })
 
-        checkFree.remove({ id: 'setHirch', delay: timeD.animArc })
+        locker.remove({ id: 'setHirch', delay: timeD.animArc })
 
         return
       }
@@ -2700,7 +2700,7 @@ let mainSubArrGrp = function (optIn) {
 
       setCircTxt(com.hirch.descendants())
 
-      checkFree.remove({ id: 'setHirch', delay: timeD.animArc * 2 })
+      locker.remove({ id: 'setHirch', delay: timeD.animArc * 2 })
     }
 
     function setCircTxt (dataIn) {
@@ -2916,23 +2916,23 @@ let mainSubArrGrp = function (optIn) {
 
     function hirchStyleClick (d) {
       // console.log('wwwwwww',d);
-      function _setOnTelId () {
-        if (checkFree.isFree('dataChange')) {
+      function setOnTelIdTry () {
+        if (locker.isFree('dataChange')) {
           // console.log('hov... ',d.data.id)
           setOnTelId(d)
 
           svgSkyPos.updateData()
 
-          if (checkFree.isFree('zoom') && checkFree.isFree('zoomToTarget')) {
+          if (locker.isFree('zoom') && locker.isFree('zoomToTarget')) {
             setState({ type: 'hover', data: d })
           }
         } else {
           setTimeout(function () {
-            _setOnTelId()
+            setOnTelIdTry()
           }, timeD.animArc / 2)
         }
       }
-      _setOnTelId()
+      setOnTelIdTry()
     }
     thisSvgSubArr.hirchStyleClick = hirchStyleClick
 
@@ -2991,7 +2991,7 @@ let mainSubArrGrp = function (optIn) {
 
     function setOnTelId (dataIn) {
       if (dataIn.depth === 0) return
-      checkFree.add('dataChange')
+      locker.add('dataChange')
 
       let subArrId = getSubArrId(dataIn)
 
@@ -3010,18 +3010,18 @@ let mainSubArrGrp = function (optIn) {
         }
       }
 
-      checkFree.remove('dataChange')
+      locker.remove('dataChange')
     }
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function _setState (optIn) {
+    function setStateOnce (optIn) {
       let type = optIn.type
       // let dataIn = optIn.data
 
       // create delay if currently in data update or a previous call of setState
-      if (!checkFree.isFreeV(['setState', 'setHirch', 'dataChange'])) {
+      if (!locker.isFreeV(['setState', 'setHirch', 'dataChange'])) {
         // console.log('delay setState')
         setTimeout(function () {
           setState(optIn)
@@ -3029,8 +3029,8 @@ let mainSubArrGrp = function (optIn) {
         return
       }
       // console.log('setState',optIn)
-      checkFree.add('dataChange')
-      checkFree.add('setState')
+      locker.add('dataChange')
+      locker.add('setState')
 
       let scale = getScale()
       let isChangeFocus =
@@ -3122,10 +3122,10 @@ let mainSubArrGrp = function (optIn) {
         })
       }
 
-      checkFree.remove('dataChange')
-      checkFree.remove({ id: 'setState', delay: timeD.animArc })
+      locker.remove('dataChange')
+      locker.remove({ id: 'setState', delay: timeD.animArc })
     }
-    this._setState = _setState
+    this.setStateOnce = setStateOnce
 
     // ---------------------------------------------------------------------------------------------------
     //
@@ -3164,7 +3164,7 @@ let mainSubArrGrp = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      let tagState = 's_01'
+      let tagState = 's01'
 
       let width = com.packNodeR * 1.7
       let lblSize = width / 22
@@ -3228,7 +3228,7 @@ let mainSubArrGrp = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      tagState = 's_10'
+      tagState = 's10'
 
       width = com.packNodeR * 1.5
       lblSize = width / 30
@@ -3316,14 +3316,14 @@ let mainSubArrGrp = function (optIn) {
         com[tagState]['scaleRad0' + index] = scaleRad0 * scaleRadNow
         com[tagState]['scaleRad1' + index] = scaleRad1 * scaleRadNow
         com[tagState]['scaleRad2' + index] = scaleRad2 * scaleRadNow
-        com[tagState]['scl_r_3' + index] =
+        com[tagState]['sclR3' + index] =
           scaleRad1 *
           (index === 2 ? (scaleRad[0] + scaleRad[1]) / 2 : scaleRad[1])
         com[tagState]['scaleStroke0' + index] = scaleStroke0 * scaleRadNow
 
-        com[tagState]['centre1_' + index] = centre1[index]
-        com[tagState]['wh_1_' + index] = wh1[index]
-        com[tagState]['centreLabel3_' + index] = centLblV[index]
+        com[tagState]['centre1' + index] = centre1[index]
+        com[tagState]['wh1' + index] = wh1[index]
+        com[tagState]['centreLabel3' + index] = centLblV[index]
       })
     }
 
@@ -3335,7 +3335,7 @@ let mainSubArrGrp = function (optIn) {
       let tagBck = 'subArr'
       let tagG = tagBck + 'telG'
       let tagTel = tagG + 'ele'
-      // let tagState = 's_01'
+      // let tagState = 's01'
 
       let dataIn = {}
       dataIn.azm = []
@@ -3378,7 +3378,7 @@ let mainSubArrGrp = function (optIn) {
       let opt = {}
       opt.index = 0
       opt.isArc = false
-      opt.tagState = 's_01'
+      opt.tagState = 's01'
       opt.tagType = '0'
       opt.scaleRad0 = 'scaleRad0'
       opt.scaleRad1 = 'scaleRad1'
@@ -3393,7 +3393,7 @@ let mainSubArrGrp = function (optIn) {
       opt = {}
       opt.index = 0
       opt.isArc = true
-      opt.tagState = 's_01'
+      opt.tagState = 's01'
       opt.tagType = '1'
       opt.scaleRad0 = 'scaleRad2'
       opt.scaleRad1 = 'scaleRad1'
@@ -3413,7 +3413,7 @@ let mainSubArrGrp = function (optIn) {
       let tagBck = 'subArr'
       let tagG = tagBck + 'telG'
       let tagTel = tagG + 'ele'
-      // let tagState = 's_10'
+      // let tagState = 's10'
 
       let showByPercision = true
 
@@ -3516,7 +3516,7 @@ let mainSubArrGrp = function (optIn) {
         let opt = {}
         opt.index = index
         opt.isArc = false
-        opt.tagState = 's_10'
+        opt.tagState = 's10'
         opt.tagType = '0'
         opt.scaleRad0 = 'scaleRad0' + index
         opt.scaleRad1 = 'scaleRad1' + index
@@ -3535,7 +3535,7 @@ let mainSubArrGrp = function (optIn) {
       $.each([0, 1, 2], function (index_, index) {
         let opt = {}
         opt.index = index
-        opt.tagState = 's_10'
+        opt.tagState = 's10'
         opt.tagType = '1'
         opt.scaleRad0 = (index === 0 ? 'scaleRad2' : 'scaleRad0') + index
         opt.scaleRad1 = 'scaleRad1' + index
@@ -3558,13 +3558,13 @@ let mainSubArrGrp = function (optIn) {
       $.each([0, 1, 2], function (index_, index) {
         let opt = {}
         opt.index = index
-        opt.tagState = 's_10'
-        opt.scaleRad1 = 'scl_r_3' + index
+        opt.tagState = 's10'
+        opt.scaleRad1 = 'sclR3' + index
         opt.scaleStroke0 = 'scaleStroke0' + index
         opt.lblProps = 'lblProps'
-        opt.center = 'centre1_' + index
-        opt.centLbl = 'centreLabel3_' + index
-        opt.wh = 'wh_1_' + index
+        opt.center = 'centre1' + index
+        opt.centLbl = 'centreLabel3' + index
+        opt.wh = 'wh1' + index
         opt.data = dataIn.posDiff
 
         addStretchBand(opt)
@@ -3712,13 +3712,13 @@ let mainSubArrGrp = function (optIn) {
         }
 
         let scaleIndex = 0
-        let scaleV_ = []
+        let scaleVnow = []
         $.each(scaleV, function (index_, scaleNow) {
           if (index_ < scaleV.length - 1) {
             if (posDiff > scaleV[index_] && posDiff <= scaleV[index_ + 1]) {
               scaleIndex = index_
             }
-            scaleV_.push([scaleV[index_], scaleV[index_ + 1]])
+            scaleVnow.push([scaleV[index_], scaleV[index_ + 1]])
           }
         })
 
@@ -3726,11 +3726,11 @@ let mainSubArrGrp = function (optIn) {
         let wNow
         let xNow
         let x0 = 0
-        let w0 = wh[0] * wFrac / (scaleV_.length - 1)
+        let w0 = wh[0] * wFrac / (scaleVnow.length - 1)
         let w1 = wh[0] * (1 - wFrac)
         let w2 = w0 * 0.3
 
-        $.each(scaleV_, function (index_, scaleNow) {
+        $.each(scaleVnow, function (index_, scaleNow) {
           rng = scaleNow[1] - scaleNow[0]
           wNow = index_ === scaleIndex ? w1 : w0
           xNow = x0

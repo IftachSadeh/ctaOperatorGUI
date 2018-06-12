@@ -18,9 +18,9 @@ var mainScriptTag = 'arrZoomer'
 /* global hasVar */
 /* global tau */
 /* global RunLoop */
-/* global CheckFree */
+/* global Locker */
 /* global deepCopy */
-/* global uniqId */
+/* global unique */
 /* global appendToDom */
 /* global runWhenReady */
 /* global colsPurples */
@@ -188,7 +188,7 @@ let sockArrZoomer = function (optIn) {
 }
 
 let mainArrZoomer = function (optIn) {
-  let _0_ = uniqId()
+  let myUniqueId = unique()
   let widgetType = optIn.widgetType
   let tagArrZoomerSvg = optIn.baseName
   let widgetId = optIn.widgetId
@@ -209,11 +209,11 @@ let mainArrZoomer = function (optIn) {
   })
 
   // delay counters
-  let checkFree = new CheckFree()
-  checkFree.add('inInit')
-  checkFree.add('inInitMain')
-  checkFree.add('inInitDetail')
-  checkFree.add('inInitQuick')
+  let locker = new Locker()
+  locker.add('inInit')
+  locker.add('inInitMain')
+  locker.add('inInitDetail')
+  locker.add('inInitQuick')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -258,10 +258,10 @@ let mainArrZoomer = function (optIn) {
   let telData = {}
   telData.tel = []
   telData.idToIndex = {}
-  telData.s1_dataBase = {}
-  telData.s1_propData = {}
-  telData.s1_propParent = {}
-  telData.s1_propTitle = {}
+  telData.dataBaseS1 = {}
+  telData.propDataS1 = {}
+  telData.propParentS1 = {}
+  telData.propTitleS1 = {}
 
   let telFocus = {}
 
@@ -394,10 +394,10 @@ let mainArrZoomer = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  function initData (_dataIn) {
-    if (sock.multipleInit({ id: widgetId, data: _dataIn })) return
+  function initData (dataDictIn) {
+    if (sock.multipleInit({ id: widgetId, data: dataDictIn })) return
 
-    let dataIn = _dataIn.data
+    let dataIn = dataDictIn.data
 
     // fill the local data list - element properties
     setTelData(dataIn.arrProp, true)
@@ -406,7 +406,7 @@ let mainArrZoomer = function (optIn) {
 
     window.sideDiv = sock.setSideDiv({
       id: sideId,
-      nIcon: _dataIn.nIcon,
+      nIcon: dataDictIn.nIcon,
       iconDivV: iconDivV
     })
 
@@ -417,14 +417,14 @@ let mainArrZoomer = function (optIn) {
     svgDetail.initData(dataIn)
     svgQuick.initData(dataIn)
 
-    if (checkFree.isFree('inInit') && hasVar(dataIn.arrProp.type)) {
+    if (locker.isFree('inInit') && hasVar(dataIn.arrProp.type)) {
       console.error('double init ?!?!', dataIn)
       updateData(dataIn.arrProp)
     }
 
     runWhenReady({
       pass: function () {
-        return checkFree.isFreeV([
+        return locker.isFreeV([
           'inInitMain',
           'inInitDetail',
           'inInitQuick',
@@ -433,7 +433,7 @@ let mainArrZoomer = function (optIn) {
         ])
       },
       execute: function () {
-        checkFree.remove('inInit')
+        locker.remove('inInit')
       }
     })
   }
@@ -455,7 +455,7 @@ let mainArrZoomer = function (optIn) {
   })
 
   function updateData (dataIn) {
-    if (!checkFree.isFree('inInit')) return
+    if (!locker.isFree('inInit')) return
 
     // if     (dataIn.type == "s10") { console.log('ask...',dataIn.emitTime); }
     if (dataIn.type === 's00') {
@@ -477,7 +477,7 @@ let mainArrZoomer = function (optIn) {
   // update the data for s0
   // ---------------------------------------------------------------------------------------------------
   function updateS0 (dataIn) {
-    if (!checkFree.isFreeV(['zoom', 'autoZoomTarget', 'dataChange'])) {
+    if (!locker.isFreeV(['zoom', 'autoZoomTarget', 'dataChange'])) {
       // console.log('delay-s0 ....',dataIn.type,dataIn.emitTime )
       setTimeout(function () {
         updateS0(dataIn)
@@ -486,7 +486,7 @@ let mainArrZoomer = function (optIn) {
     }
     // console.log('do   -s0 ....',dataIn.type,dataIn.emitTime )
 
-    checkFree.add('dataChange')
+    locker.add('dataChange')
 
     // ---------------------------------------------------------------------------------------------------
     // fill the updated properties (accumilate all updates in order, so that if some id was updated
@@ -499,24 +499,24 @@ let mainArrZoomer = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     setState()
 
-    checkFree.remove('dataChange')
-    // checkFree.remove({id:"dataChange",delay:1500}); // for testing... never delay this...
+    locker.remove('dataChange')
+    // locker.remove({id:"dataChange",delay:1500}); // for testing... never delay this...
   }
 
   // ---------------------------------------------------------------------------------------------------
   // update the data for s1
   // ---------------------------------------------------------------------------------------------------
-  function updateS1 (_dataIn) {
+  function updateS1 (dataDictIn) {
     if (svgMain.getZoomS() === 0) return
 
-    if (!checkFree.isFreeV(['zoom', 'autoZoomTarget', 'dataChange'])) {
+    if (!locker.isFreeV(['zoom', 'autoZoomTarget', 'dataChange'])) {
       setTimeout(function () {
-        updateS1(_dataIn)
+        updateS1(dataDictIn)
       }, 10)
       return
     }
 
-    let dataIn = _dataIn.data
+    let dataIn = dataDictIn.data
     let updtData = dataIn.data
     let telId = dataIn.id
     let telIndex = telData.idToIndex[telId]
@@ -524,23 +524,23 @@ let mainArrZoomer = function (optIn) {
     // console.log('updateS1',dataIn);
 
     // if by the time the update has arrived, were already gone from this element...
-    if (!hasVar(telData.s1_propData[telId])) {
-      // console.log('-+-> updateS1: could not find',telId,'in telData.s1_propData')
+    if (!hasVar(telData.propDataS1[telId])) {
+      // console.log('-+-> updateS1: could not find',telId,'in telData.propDataS1')
       return
     }
-    // console.log('````',dataIn,telData.s1_propData[telId]);
+    // console.log('````',dataIn,telData.propDataS1[telId]);
 
-    checkFree.add('dataChange')
+    locker.add('dataChange')
 
     // ---------------------------------------------------------------------------------------------------
     // update the underlying data
     // ---------------------------------------------------------------------------------------------------
     $.each(propD, function (index, porpNow) {
       // update the data container with the s0 updated health
-      telData.s1_propData[telId][porpNow].val = telData.tel[telIndex][porpNow]
+      telData.propDataS1[telId][porpNow].val = telData.tel[telIndex][porpNow]
 
       // now go through the hirch
-      let dataNow = telData.s1_propData[telId][porpNow]
+      let dataNow = telData.propDataS1[telId][porpNow]
       updateDataNow(dataNow)
 
       function updateDataNow (d) {
@@ -564,14 +564,14 @@ let mainArrZoomer = function (optIn) {
     svgMain.updateS1(dataIn)
     svgDetail.updateS1(dataIn)
 
-    checkFree.remove('dataChange')
+    locker.remove('dataChange')
   }
 
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
   function subArrUpdate (dataIn) {
-    if (!checkFree.isFreeV(['zoom', 'autoZoomTarget', 'dataChange'])) {
+    if (!locker.isFreeV(['zoom', 'autoZoomTarget', 'dataChange'])) {
       setTimeout(function () {
         subArrUpdate(dataIn)
       }, 10)
@@ -589,17 +589,17 @@ let mainArrZoomer = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  runLoop.init({ tag: 'setState', func: _setState, nKeep: 1 })
+  runLoop.init({ tag: 'setState', func: setStateOnce, nKeep: 1 })
 
   function setState () {
     runLoop.push({ tag: 'setState' })
   }
   thisArrZoomer.setState = setState
 
-  function _setState () {
-    // create delay if currently in data update or a previous call of _setState
-    if (!checkFree.isFreeV(['setStateLock', 'dataChange'])) {
-      // console.log('delay _setState',' :',checkFree.isFree({id:"setStateLock"}),' - dataUpdate:',checkFree.isFree({id:"setStateLock"}))
+  function setStateOnce () {
+    // create delay if currently in data update or a previous call of setStateOnce
+    if (!locker.isFreeV(['setStateLock', 'dataChange'])) {
+      // console.log('delay setStateOnce',' :',locker.isFree({id:"setStateLock"}),' - dataUpdate:',locker.isFree({id:"setStateLock"}))
       setTimeout(function () {
         setState()
       }, timeD.animArc)
@@ -607,13 +607,13 @@ let mainArrZoomer = function (optIn) {
     }
     // console.log("setState");
 
-    checkFree.add('setStateLock')
+    locker.add('setStateLock')
 
-    svgMain._setState()
-    svgDetail._setState()
-    svgQuick._setState()
+    svgMain.setStateOnce()
+    svgDetail.setStateOnce()
+    svgQuick.setStateOnce()
 
-    checkFree.remove({ id: 'setStateLock', delay: timeD.animArc * 2 })
+    locker.remove({ id: 'setStateLock', delay: timeD.animArc * 2 })
   }
 
   function svgZoomEnd (scale, target) {
@@ -623,7 +623,7 @@ let mainArrZoomer = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  runLoop.init({ tag: '_s1props_', func: _propsS1, nKeep: -1 })
+  runLoop.init({ tag: '_s1props_', func: propsS1Once, nKeep: -1 })
 
   function propsS1 (optIn) {
     // console.log('setState',svgMain.getZoomS(),getScale())
@@ -631,15 +631,15 @@ let mainArrZoomer = function (optIn) {
   }
   // this.propsS1 = propsS1;
 
-  function _propsS1 (optIn) {
+  function propsS1Once (optIn) {
     // not sure i need "dataChange" or others here .... FIXME
-    if (!checkFree.isFreeV(['s1propsChange', 'dataChange'])) {
-      // console.log('delay _propsS1....')
+    if (!locker.isFreeV(['s1propsChange', 'dataChange'])) {
+      // console.log('delay propsS1Once....')
       propsS1(optIn)
       return
     }
 
-    checkFree.add('s1propsChange')
+    locker.add('s1propsChange')
 
     let doFunc = optIn.doFunc
     let doBckArcClick = hasVar(doFunc)
@@ -656,7 +656,7 @@ let mainArrZoomer = function (optIn) {
       svgMain.bckArcClick(optIn)
     }
 
-    checkFree.remove('s1propsChange')
+    locker.remove('s1propsChange')
   }
 
   // ---------------------------------------------------------------------------------------------------
@@ -664,7 +664,7 @@ let mainArrZoomer = function (optIn) {
   // then once (can happen if one element is requested, but by the time the transitions to open it
   // has ended, another was already requested too).
   // ---------------------------------------------------------------------------------------------------
-  runLoop.init({ tag: '_getDataS1_', func: _getDataS1, nKeep: 1 })
+  runLoop.init({ tag: '_getDataS1_', func: getDataS1Once, nKeep: 1 })
 
   function getDataS1 (widgetIdIn, dataIn) {
     // just in case... should not be needed
@@ -680,7 +680,7 @@ let mainArrZoomer = function (optIn) {
   }
   this.getDataS1 = getDataS1
 
-  function _getDataS1 (dataIn) {
+  function getDataS1Once (dataIn) {
     if (
       svgMain.getZoomS() === 1 &&
       svgMain.syncD.zoomTarget !== dataIn.data.id
@@ -694,7 +694,7 @@ let mainArrZoomer = function (optIn) {
         clickIn: false,
         propIn: '',
         doFunc: ['bckArcClick'],
-        debug: '_getDataS1'
+        debug: 'getDataS1Once'
       })
     }
   }
@@ -719,7 +719,7 @@ let mainArrZoomer = function (optIn) {
 
     let type = dataIn.type
     if (type === 'syncTelFocus') {
-      // checkFree.add("syncStateGet");
+      // locker.add("syncStateGet");
 
       let target = dataIn.data.target
       let zoomState = dataIn.data.zoomState
@@ -732,7 +732,7 @@ let mainArrZoomer = function (optIn) {
         scale: scale,
         durFact: 1,
         endFunc: function () {
-          // checkFree.remove("syncStateGet");
+          // locker.remove("syncStateGet");
           svgMain.askDataS1()
         }
       })
@@ -759,7 +759,7 @@ let mainArrZoomer = function (optIn) {
 
     if (dataIn.type === 'syncTelFocus') {
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           'inInit',
           'zoom',
           'autoZoomTarget',
@@ -813,7 +813,7 @@ let mainArrZoomer = function (optIn) {
 
     // initialize a global function (to be overriden below)
     let zoomToTrgQuick = function (optIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           zoomToTrgQuick(optIn)
         }, timeD.waitLoop)
@@ -881,7 +881,7 @@ let mainArrZoomer = function (optIn) {
       // zoom start/on/end functions, attachd to com.svgZoom
       // ---------------------------------------------------------------------------------------------------
       com.svgZoomStart = function () {
-        checkFree.add({ id: 'zoom', override: true })
+        locker.add({ id: 'zoom', override: true })
       }
 
       // initialize the target name for hovering->zoom
@@ -892,13 +892,13 @@ let mainArrZoomer = function (optIn) {
         svg.gMiniZoomed.attr('transform', d3.event.transform)
 
         if (
-          checkFree.isFreeV([
+          locker.isFreeV([
             'autoZoomTarget',
             'zoomToTargetMini',
             'zoomToTargetChes'
           ])
         ) {
-          _zoomToTarget(
+          zoomToTargetNow(
             { target: '', scale: d3.event.transform.k, durFact: -1 },
             'ches'
           )
@@ -914,13 +914,13 @@ let mainArrZoomer = function (optIn) {
         svg.gChesZoomed.attr('transform', d3.event.transform)
 
         if (
-          checkFree.isFreeV([
+          locker.isFreeV([
             'autoZoomTarget',
             'zoomToTargetMini',
             'zoomToTargetChes'
           ])
         ) {
-          _zoomToTarget(
+          zoomToTargetNow(
             { target: '', scale: d3.event.transform.k, durFact: -1 },
             'mini'
           )
@@ -933,7 +933,7 @@ let mainArrZoomer = function (optIn) {
       }
 
       com.svgZoomEnd = function () {
-        checkFree.remove('zoom')
+        locker.remove('zoom')
       }
 
       com.svgMiniZoom = d3.zoom().scaleExtent([zoomLen['0.0'], zoomLen['1.3']])
@@ -967,12 +967,12 @@ let mainArrZoomer = function (optIn) {
 
       // the actual function to be called when a zoom needs to be put in the queue
       zoomToTrgQuick = function (optIn) {
-        _zoomToTarget(optIn, 'mini')
-        _zoomToTarget(optIn, 'ches')
+        zoomToTargetNow(optIn, 'mini')
+        zoomToTargetNow(optIn, 'ches')
       }
       thisQuick.zoomToTrgQuick = zoomToTrgQuick
 
-      function _zoomToTarget (optIn, tagNow) {
+      function zoomToTargetNow (optIn, tagNow) {
         let tagNowUp = tagNow
         if (tagNowUp === 'mini') {
           tagNowUp = 'Mini'
@@ -981,13 +981,13 @@ let mainArrZoomer = function (optIn) {
           tagNowUp = 'Ches'
         }
 
-        if (!checkFree.isFree('inInit')) {
+        if (!locker.isFree('inInit')) {
           setTimeout(function () {
-            _zoomToTarget(optIn, tagNow)
+            zoomToTargetNow(optIn, tagNow)
           }, timeD.waitLoop)
           return
         }
-        if (!checkFree.isFreeV(['autoZoomTarget', 'zoomToTarget' + tagNowUp])) {
+        if (!locker.isFreeV(['autoZoomTarget', 'zoomToTarget' + tagNowUp])) {
           return
         }
 
@@ -1012,12 +1012,12 @@ let mainArrZoomer = function (optIn) {
         }
 
         let funcStart = function () {
-          checkFree.add({ id: 'zoomToTarget' + tagNowUp, override: true })
+          locker.add({ id: 'zoomToTarget' + tagNowUp, override: true })
           // console.log('xxx',targetName);
         }
         let funcDuring = function () {}
         let funcEnd = function () {
-          checkFree.remove('zoomToTarget' + tagNowUp)
+          locker.remove('zoomToTarget' + tagNowUp)
         }
 
         let outD = {
@@ -1264,14 +1264,14 @@ let mainArrZoomer = function (optIn) {
 
       com.gChes.vor = vorFunc.polygons(vorData)
 
-      checkFree.remove('inInitQuick')
+      locker.remove('inInitQuick')
     }
     this.initData = initData
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function _setState (dataIn) {
+    function setStateOnce (dataIn) {
       svgMain.s00circ({
         dataV: telData.tel,
         gNow: com.gMini.circ,
@@ -1280,7 +1280,7 @@ let mainArrZoomer = function (optIn) {
 
       chesCirc(telData.tel, isSouth ? 2.7 : 5, false)
     }
-    this._setState = _setState
+    this.setStateOnce = setStateOnce
 
     // ---------------------------------------------------------------------------------------------------
     //
@@ -1365,7 +1365,7 @@ let mainArrZoomer = function (optIn) {
         .text(function (d) {
           return telInfo.getTitle(d.id)
         })
-        // .attr("id",      function(d) { return _0_+d.id+tagTxt; })
+        // .attr("id",      function(d) { return myUniqueId+d.id+tagTxt; })
         .attr('class', tagState + ' ' + tagLbl)
         .style('font-weight', 'normal')
         .attr('stroke-width', textStrk)
@@ -1408,14 +1408,14 @@ let mainArrZoomer = function (optIn) {
       // the highlight function
       // ---------------------------------------------------------------------------------------------------
       function focusTel (dIn, isOn) {
-        checkFree.add('svgQuickFocusTel')
+        locker.add('svgQuickFocusTel')
 
         let delay = 250
         setTimeout(function () {
-          if (checkFree.nActive('svgQuickFocusTel') === 1) {
+          if (locker.nActive('svgQuickFocusTel') === 1) {
             _focusTel(dIn, isOn)
           }
-          checkFree.remove('svgQuickFocusTel')
+          locker.remove('svgQuickFocusTel')
         }, delay)
       }
 
@@ -1577,16 +1577,16 @@ let mainArrZoomer = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'miniZoomViewRec', func: _miniZoomViewRec, nKeep: 1 })
+    runLoop.init({ tag: 'miniZoomViewRec', func: miniZoomViewRecOnce, nKeep: 1 })
 
     function miniZoomViewRec () {
       runLoop.push({ tag: 'miniZoomViewRec' })
     }
     this.miniZoomViewRec = miniZoomViewRec
 
-    function _miniZoomViewRec () {
+    function miniZoomViewRecOnce () {
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           'autoZoomTarget',
           'zoomToTargetMini',
           'zoomToTargetChes'
@@ -1789,7 +1789,7 @@ let mainArrZoomer = function (optIn) {
 
     // initialize a global function (to be overriden below)
     let zoomToPos = function (optIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           zoomToPos(optIn)
         }, timeD.waitLoop)
@@ -1924,7 +1924,7 @@ let mainArrZoomer = function (optIn) {
         // if on minimal zoom, center
         if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
           if (Math.abs(d3.event.transform.k - zoomLen['0.0']) < 0.00001) {
-            if (checkFree.isFreeV(['autoZoomPos'])) {
+            if (locker.isFreeV(['autoZoomPos'])) {
               zoomToPos({ target: null, scale: 1, durFact: 0.5 })
             }
           }
@@ -1947,7 +1947,7 @@ let mainArrZoomer = function (optIn) {
 
       // the actual function to be called when a zoom needs to be put in the queue
       zoomToPos = function (optIn) {
-        if (!checkFree.isFree('inInit')) {
+        if (!locker.isFree('inInit')) {
           setTimeout(function () {
             zoomToPos(optIn)
           }, timeD.waitLoop)
@@ -1958,16 +1958,16 @@ let mainArrZoomer = function (optIn) {
         let targetScale = optIn.scale
         let durFact = optIn.durFact
 
-        if (!checkFree.isFreeV(['autoZoomPos'])) return
+        if (!locker.isFreeV(['autoZoomPos'])) return
 
         let transTo = hasVar(zoomPos) ? zoomPos : [lenD.w[1] / 2, lenD.h[1] / 2]
 
         let funcStart = function () {
-          checkFree.add({ id: 'autoZoomPos', override: true })
+          locker.add({ id: 'autoZoomPos', override: true })
         }
         let funcDuring = function () {}
         let funcEnd = function () {
-          checkFree.remove('autoZoomPos')
+          locker.remove('autoZoomPos')
         }
 
         let outD = {
@@ -2130,14 +2130,14 @@ let mainArrZoomer = function (optIn) {
       com.s10 = {}
       com.s10.g = svg.gS1.append('g')
 
-      checkFree.remove('inInitDetail')
+      locker.remove('inInitDetail')
     }
     this.initData = initData
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function _setState () {
+    function setStateOnce () {
       // console.log('setStateDetail ----',getScale(),optIn)
       let scale = svgMain.getScale()
 
@@ -2159,7 +2159,7 @@ let mainArrZoomer = function (optIn) {
         }
       }
     }
-    this._setState = _setState
+    this.setStateOnce = setStateOnce
 
     // ---------------------------------------------------------------------------------------------------
     //
@@ -2169,7 +2169,7 @@ let mainArrZoomer = function (optIn) {
       let telId = optIn.telId
       let propIn = optIn.propIn
       let parentName =
-        propIn === '' ? null : telData.s1_propParent[telId][propIn]
+        propIn === '' ? null : telData.propParentS1[telId][propIn]
 
       telPropTitle({ telId: telId, propIn: propIn, parentName: parentName })
     }
@@ -2188,7 +2188,7 @@ let mainArrZoomer = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       // title on top
       // ---------------------------------------------------------------------------------------------------
-      let tagState = 'state_10'
+      let tagState = 'state10'
       let tagNow = tagState + '_title'
 
       let ttlData = []
@@ -2214,7 +2214,7 @@ let mainArrZoomer = function (optIn) {
         if (propIn !== parentName) {
           ttlData.push({
             id: tagNow + propIn,
-            text: telData.s1_propTitle[telId][propIn],
+            text: telData.propTitleS1[telId][propIn],
             x: 10,
             y: avgTelD[1].h / 2,
             h: 25,
@@ -2317,7 +2317,7 @@ let mainArrZoomer = function (optIn) {
       let porpNow =
         propD.indexOf(propIn) >= 0 || propIn === ''
           ? propIn
-          : telData.s1_propParent[telId][propIn]
+          : telData.propParentS1[telId][propIn]
       // let porpX   = ((porpNow == "" || !clickIn) ? prop0: porpNow) + "x";
       let porpX = (porpNow === '' ? prop0 : porpNow) + 'x'
       let recH = avgTelD[1].h
@@ -2370,7 +2370,7 @@ let mainArrZoomer = function (optIn) {
     // innner arcs for the different properties
     // ---------------------------------------------------------------------------------------------------
     function telArcs (dataV, state) {
-      let tagState = 'state_01'
+      let tagState = 'state01'
 
       if (!hasVar(com.s01.inner)) {
         com.s01.inner = true
@@ -2392,7 +2392,7 @@ let mainArrZoomer = function (optIn) {
             arcFunc[tagNow].ang00 = function (d) {
               return index * tauFrac + tauSpace
             }
-            arcFunc[tagNow].ang0_1 = function (d) {
+            arcFunc[tagNow].ang01 = function (d) {
               return (
                 index * tauFrac +
                 tauSpace +
@@ -2418,7 +2418,7 @@ let mainArrZoomer = function (optIn) {
       $.each(propDv, function (index, porpNow) {
         if (state === 0) {
           pos[porpNow] = { x: avgTelD[state].x, y: avgTelD[state].y }
-          angState = { angStr1: 'ang00', angEnd1: 'ang0_1' }
+          angState = { angStr1: 'ang00', angEnd1: 'ang01' }
           radState = { radInr1: 'rad00', radOut1: 'rad01' }
         } else {
           pos[porpNow] = {
@@ -2454,7 +2454,7 @@ let mainArrZoomer = function (optIn) {
             .style('stroke-width', '0.05')
             .style('pointer-events', 'none')
             .attr('vector-effect', 'non-scaling-stroke')
-            // .attr("id",        function(d) { return _0_+d.id+tagNow; })
+            // .attr("id",        function(d) { return myUniqueId+d.id+tagNow; })
             .attr('class', tagState + ' ' + tagNow)
             // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
             .style('opacity', function (d) {
@@ -2559,7 +2559,7 @@ let mainArrZoomer = function (optIn) {
           arcFunc[tagNow].ang00 = function (d) {
             return 0
           }
-          arcFunc[tagNow].ang0_1 = function (d) {
+          arcFunc[tagNow].ang01 = function (d) {
             return is0 ? tau : tau * telHealthFrac(d[prop0])
           }
         })
@@ -2591,7 +2591,7 @@ let mainArrZoomer = function (optIn) {
           .style('stroke-width', 0.05)
           .style('pointer-events', 'none')
           .attr('vector-effect', 'non-scaling-stroke')
-          // .attr("id",        function(d) { return _0_+d.id+tagNow; })
+          // .attr("id",        function(d) { return myUniqueId+d.id+tagNow; })
           .attr('class', tagState + ' ' + tagNow)
           // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
           .style('opacity', function (d) {
@@ -2639,7 +2639,7 @@ let mainArrZoomer = function (optIn) {
             angStr0: null,
             angStr1: null,
             angEnd0: null,
-            angEnd1: 'ang0_1',
+            angEnd1: 'ang01',
             radInr0: null,
             radInr1: radState.radInr1,
             radOut0: null,
@@ -2703,7 +2703,7 @@ let mainArrZoomer = function (optIn) {
       title
         .enter()
         .append('text')
-        // .attr("id", function(d) { return _0_+d.id; })
+        // .attr("id", function(d) { return myUniqueId+d.id; })
         .text(function (d) {
           return d.text
         })
@@ -2811,7 +2811,7 @@ let mainArrZoomer = function (optIn) {
         // ---------------------------------------------------------------------------------------------------
         function click (d, i) {
           if (
-            !checkFree.isFreeV([
+            !locker.isFreeV([
               's10bckArcChange',
               'dataChange',
               's10clickHirch'
@@ -2850,7 +2850,7 @@ let mainArrZoomer = function (optIn) {
     let prevTelHirchProp = ''
     function telHirch (optIn) {
       function mayUpdate () {
-        return checkFree.isFree([
+        return locker.isFree([
           'updateTelHirchDetail',
           'dataChange',
           's10bckArcChange',
@@ -2871,7 +2871,7 @@ let mainArrZoomer = function (optIn) {
       // if(!hasVar(optIn)) return;
       // console.log('telHirch',optIn);
 
-      let tagState = 'state_10'
+      let tagState = 'state10'
       let tagNodes = tagState + 'circ'
       let tagText = tagState + '_text'
       let tagVor = tagState + '_vor'
@@ -2901,7 +2901,7 @@ let mainArrZoomer = function (optIn) {
         clickIn = propIn !== ''
       }
 
-      if (zoomTarget !== telId || !hasVar(telData.s1_propData[telId])) {
+      if (zoomTarget !== telId || !hasVar(telData.propDataS1[telId])) {
         clickIn = false
         remove = true
       } else if (propIn === '') {
@@ -2917,12 +2917,12 @@ let mainArrZoomer = function (optIn) {
       //
       // ---------------------------------------------------------------------------------------------------
       if (!remove && propIn !== '') {
-        if (!hasVar(telData.s1_propData[telId][propIn])) {
+        if (!hasVar(telData.propDataS1[telId][propIn])) {
           return
         }
       }
 
-      checkFree.add({ id: 'updateTelHirchDetail', override: true })
+      locker.add({ id: 'updateTelHirchDetail', override: true })
 
       // show/hide the svg
       // ---------------------------------------------------------------------------------------------------
@@ -2943,7 +2943,7 @@ let mainArrZoomer = function (optIn) {
       }
 
       let hasDataBase =
-        !clickIn && !remove && hasVar(telData.s1_dataBase[telId])
+        !clickIn && !remove && hasVar(telData.dataBaseS1[telId])
 
       // ---------------------------------------------------------------------------------------------------
       // the tree hierarchy
@@ -2960,12 +2960,12 @@ let mainArrZoomer = function (optIn) {
         })
 
         let dataHirch = clickIn
-          ? telData.s1_propData[telId][propIn]
-          : telData.s1_dataBase[telId]
+          ? telData.propDataS1[telId][propIn]
+          : telData.dataBaseS1[telId]
         let hirch = d3.hierarchy(dataHirch)
 
-        // if(!clickIn) console.log('----===--',telData.s1_dataBase[telId])
-        // console.log('--==--',telId,propIn,hasVar(telData.s1_propData[telId][propIn]),clickIn,dataHirch)
+        // if(!clickIn) console.log('----===--',telData.dataBaseS1[telId])
+        // console.log('--==--',telId,propIn,hasVar(telData.propDataS1[telId][propIn]),clickIn,dataHirch)
 
         let tree = d3.tree().size([treeH, treeW])
         tree(hirch)
@@ -3022,7 +3022,7 @@ let mainArrZoomer = function (optIn) {
         .enter()
         .append('circle')
         .attr('class', tagNodes)
-        // .attr("id", function(d) { return _0_+tagNodes+d.data.id; })
+        // .attr("id", function(d) { return myUniqueId+tagNodes+d.data.id; })
         .attr('r', 0)
         .attr('transform', function (d) {
           return 'translate(' + d.y + ',' + d.x + ')'
@@ -3234,7 +3234,7 @@ let mainArrZoomer = function (optIn) {
         let dId = d.data.data.id
         let idNow = hasVar(d.data.parent) ? d.data.parent.data.id : dId
 
-        let parentName = telData.s1_propParent[telId][dId]
+        let parentName = telData.propParentS1[telId][dId]
         if (parentName === dId) {
           idNow = parentName
         }
@@ -3322,7 +3322,7 @@ let mainArrZoomer = function (optIn) {
         }
       }
 
-      checkFree.remove({ id: 'updateTelHirchDetail', delay: timeD.animArc })
+      locker.remove({ id: 'updateTelHirchDetail', delay: timeD.animArc })
     }
     this.telHirch = telHirch
 
@@ -3331,7 +3331,7 @@ let mainArrZoomer = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function updateS1 (dataIn) {
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           's10bckArcChange',
           's10clickHirch',
           'updateTelHirch'
@@ -3344,7 +3344,7 @@ let mainArrZoomer = function (optIn) {
         }, timeD.animArc / 3)
         return
       }
-      checkFree.add('updateTelHirch')
+      locker.add('updateTelHirch')
 
       com.s10.gHirch
         .selectAll('circle')
@@ -3366,7 +3366,7 @@ let mainArrZoomer = function (optIn) {
           return telHealthCol(d.data.val)
         })
 
-      checkFree.remove('updateTelHirch')
+      locker.remove('updateTelHirch')
     }
     this.updateS1 = updateS1
   }
@@ -3434,7 +3434,7 @@ let mainArrZoomer = function (optIn) {
 
     // initialize a global function (to be overriden below)
     let zoomToTrgMain = function (optIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           zoomToTrgMain(optIn)
         }, timeD.waitLoop)
@@ -3498,7 +3498,7 @@ let mainArrZoomer = function (optIn) {
       let scaleStart = 0
       com.svgZoomStart = function () {
         scaleStart = d3.event.transform.k
-        checkFree.add({ id: 'zoom', override: true })
+        locker.add({ id: 'zoom', override: true })
       }
 
       com.svgZoomDuring = function () {
@@ -3507,7 +3507,7 @@ let mainArrZoomer = function (optIn) {
         svg.g.attr('transform', d3.event.transform)
 
         if (
-          checkFree.isFreeV([
+          locker.isFreeV([
             'autoZoomTarget',
             'zoomToTargetMini',
             'zoomToTargetChes'
@@ -3564,15 +3564,15 @@ let mainArrZoomer = function (optIn) {
         telFocus.scale = d3.event.transform.k
 
         // must come last here !
-        checkFree.remove('zoom')
+        locker.remove('zoom')
 
-        // common actions (after releasing checkFree)
+        // common actions (after releasing locker)
         svgZoomEnd(d3.event.transform.k, zoomTarget)
 
         // if on minimal zoom, center
         if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
           if (Math.abs(d3.event.transform.k - zoomLen['0.0']) < 0.00001) {
-            if (checkFree.isFreeV(['autoZoomTarget'])) {
+            if (locker.isFreeV(['autoZoomTarget'])) {
               thisMain.zoomToTrgMain({
                 target: 'init',
                 scale: d3.event.transform.k,
@@ -3612,13 +3612,13 @@ let mainArrZoomer = function (optIn) {
 
       // the actual function to be called when a zoom needs to be put in the queue
       zoomToTrgMain = function (optIn) {
-        if (!checkFree.isFree('inInit')) {
+        if (!locker.isFree('inInit')) {
           setTimeout(function () {
             zoomToTrgMain(optIn)
           }, timeD.waitLoop)
           return
         }
-        if (!checkFree.isFreeV(['autoZoomTarget'])) return
+        if (!locker.isFreeV(['autoZoomTarget'])) return
 
         let targetName = optIn.target
         let targetScale = optIn.scale
@@ -3660,14 +3660,14 @@ let mainArrZoomer = function (optIn) {
             durFact: -1
           })
 
-          checkFree.add({ id: 'autoZoomTarget', override: true })
+          locker.add({ id: 'autoZoomTarget', override: true })
           if (targetName !== '' && targetName !== 'init') {
             zoomTarget = targetName
           }
         }
         let funcDuring = function () {}
         let funcEnd = function () {
-          checkFree.remove('autoZoomTarget')
+          locker.remove('autoZoomTarget')
 
           let isDone = true
           if (Math.abs(getScale() - zoomLen['0.0']) < 0.00001) {
@@ -3983,7 +3983,7 @@ let mainArrZoomer = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       telData.vorHov = function (d) {
         if (zoomTarget === d.data.id) return
-        if (!checkFree.isFreeV(['zoom', 'autoZoomTarget'])) return
+        if (!locker.isFreeV(['zoom', 'autoZoomTarget'])) return
 
         let scale = getScale()
         if (scale >= zoomLen['1.0']) return
@@ -3995,22 +3995,22 @@ let mainArrZoomer = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      runLoop.init({ tag: '_vorClick', func: _vorClick, nKeep: 1 })
+      runLoop.init({ tag: 'vorClickOnce', func: vorClickOnce, nKeep: 1 })
 
       telData.vorClick = function (optIn) {
-        if (checkFree.isFreeV(['zoom', 'autoZoomTarget'])) {
-          runLoop.push({ tag: '_vorClick', data: optIn })
+        if (locker.isFreeV(['zoom', 'autoZoomTarget'])) {
+          runLoop.push({ tag: 'vorClickOnce', data: optIn })
         }
       }
 
-      function _vorClick (d) {
-        if (!checkFree.isFree('vorZoomClick')) {
+      function vorClickOnce (d) {
+        if (!locker.isFree('vorZoomClick')) {
           setTimeout(function () {
             telData.vorClick(d)
           }, timeD.waitLoop / 2)
           return
         }
-        checkFree.add({ id: 'vorZoomClick', override: true })
+        locker.add({ id: 'vorZoomClick', override: true })
 
         let scale = getScale()
         // console.log((scale >= zoomLen["1.0"]),(zoomTarget == d.data.id))
@@ -4024,28 +4024,28 @@ let mainArrZoomer = function (optIn) {
           setState()
         }
 
-        checkFree.remove({ id: 'vorZoomClick', delay: timeD.animArc })
+        locker.remove({ id: 'vorZoomClick', delay: timeD.animArc })
       }
 
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      runLoop.init({ tag: '_vorDblclick', func: _vorDblclick, nKeep: 1 })
+      runLoop.init({ tag: 'vorDblclickOnce', func: vorDblclickOnce, nKeep: 1 })
 
       telData.vorDblclick = function (optIn) {
-        if (checkFree.isFreeV(['zoom', 'autoZoomTarget'])) {
-          runLoop.push({ tag: '_vorDblclick', data: optIn })
+        if (locker.isFreeV(['zoom', 'autoZoomTarget'])) {
+          runLoop.push({ tag: 'vorDblclickOnce', data: optIn })
         }
       }
 
-      function _vorDblclick (optIn) {
-        if (!checkFree.isFree('vorZoomDblclick')) {
+      function vorDblclickOnce (optIn) {
+        if (!locker.isFree('vorZoomDblclick')) {
           setTimeout(function () {
             telData.vorDblclick(optIn)
           }, timeD.waitLoop / 2)
           return
         }
-        checkFree.add({ id: 'vorZoomDblclick', override: true })
+        locker.add({ id: 'vorZoomDblclick', override: true })
 
         let d = optIn.d
         let zoomInOut = optIn.isInOut
@@ -4078,7 +4078,7 @@ let mainArrZoomer = function (optIn) {
           propsS1({ telId: zoomTarget, clickIn: false, propIn: '' })
         }
 
-        checkFree.remove({ id: 'vorZoomDblclick', delay: timeD.animArc })
+        locker.remove({ id: 'vorZoomDblclick', delay: timeD.animArc })
       }
 
       function setVor () {
@@ -4147,7 +4147,7 @@ let mainArrZoomer = function (optIn) {
           setVor()
           thisMain.subArrGrpCirc([])
 
-          if (checkFree.isFree('inInit')) {
+          if (locker.isFree('inInit')) {
             if (hasVar(telFocus.target)) {
               if (hasVar(telData.xyr[telFocus.target])) {
                 svgMain.zoomToTrgMain({
@@ -4175,7 +4175,7 @@ let mainArrZoomer = function (optIn) {
 
           thisMain.subArrGrpCirc(telData.xyrSubArrGrp)
 
-          if (checkFree.isFree('inInit')) {
+          if (locker.isFree('inInit')) {
             if (hasVar(telFocus.target)) {
               if (hasVar(telData.xyr[telFocus.target])) {
                 // console.log('222222222222');
@@ -4313,7 +4313,7 @@ let mainArrZoomer = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       setState()
 
-      checkFree.remove('inInitMain')
+      locker.remove('inInitMain')
     }
     this.initData = initData
 
@@ -4322,7 +4322,7 @@ let mainArrZoomer = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function setTelLayout (optIn) {
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           'setStateLock',
           'dataChange',
           'zoom',
@@ -4344,7 +4344,7 @@ let mainArrZoomer = function (optIn) {
       let isChange = telData.layout !== id
 
       if (isChange || hasVar(data)) {
-        checkFree.expires({ id: 'setStateLock', duration: timeD.animArc / 2 })
+        locker.expires({ id: 'setStateLock', duration: timeD.animArc / 2 })
       }
 
       if (id === 'physical') {
@@ -4449,7 +4449,7 @@ let mainArrZoomer = function (optIn) {
     this.s00circ = s00circ
 
     function subArrGrpCirc (dataV) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           subArrGrpCirc(dataV)
         }, timeD.waitLoop)
@@ -4645,7 +4645,7 @@ let mainArrZoomer = function (optIn) {
     // innner arcs for the different properties
     // ---------------------------------------------------------------------------------------------------
     function s01inner (dataV, focusV) {
-      let tagState = 'state_01'
+      let tagState = 'state01'
 
       if (!hasVar(com.s01.inner)) {
         com.s01.inner = true
@@ -4671,7 +4671,7 @@ let mainArrZoomer = function (optIn) {
             arcFunc[tagNow].ang00 = function (d) {
               return index * tauFrac + tauSpace
             }
-            arcFunc[tagNow].ang0_1 = function (d) {
+            arcFunc[tagNow].ang01 = function (d) {
               return (
                 index * tauFrac +
                 tauSpace +
@@ -4717,7 +4717,7 @@ let mainArrZoomer = function (optIn) {
             .style('pointer-events', 'none')
             .attr('vector-effect', 'non-scaling-stroke')
             .attr('id', function (d) {
-              return _0_ + d.id + tagNow
+              return myUniqueId + d.id + tagNow
             })
             .attr('class', tagState + ' ' + tagNow)
             // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
@@ -4767,13 +4767,13 @@ let mainArrZoomer = function (optIn) {
               angStr0: null,
               angStr1: null,
               angEnd0: null,
-              angEnd1: 'ang0_1',
+              angEnd1: 'ang01',
               radInr0: null,
               radInr1: null,
               radOut0: null,
               radOut1: null
             })
-            // angStr0:"ang00", angStr1:"ang00", angEnd0:"ang00", angEnd1:"ang0_1",
+            // angStr0:"ang00", angStr1:"ang00", angEnd0:"ang00", angEnd1:"ang01",
             // radInr0:"rad00", radInr1:"rad00", radOut0:"rad01", radOut1:"rad01"
             .transition('update')
             .duration(timeD.animArc)
@@ -4833,7 +4833,7 @@ let mainArrZoomer = function (optIn) {
     // outer rings for the prop0 (equivalent of s00_D metric in s01_D)
     // ---------------------------------------------------------------------------------------------------
     function s01outer (dataV, focusV) {
-      let tagState = 'state_01'
+      let tagState = 'state01'
       let porpNow = prop0
 
       if (!hasVar(com.s01.outer)) {
@@ -4859,7 +4859,7 @@ let mainArrZoomer = function (optIn) {
           arcFunc[tagNow].ang00 = function (d) {
             return 0
           }
-          arcFunc[tagNow].ang0_1 = function (d) {
+          arcFunc[tagNow].ang01 = function (d) {
             return is0 ? tau : tau * telHealthFrac(d[prop0])
           }
         })
@@ -4899,7 +4899,7 @@ let mainArrZoomer = function (optIn) {
           .style('pointer-events', 'none')
           .attr('vector-effect', 'non-scaling-stroke')
           .attr('id', function (d) {
-            return _0_ + d.id + tagNow
+            return myUniqueId + d.id + tagNow
           })
           .attr('class', tagState + ' ' + tagNow)
           // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
@@ -4949,13 +4949,13 @@ let mainArrZoomer = function (optIn) {
             angStr0: null,
             angStr1: null,
             angEnd0: null,
-            angEnd1: 'ang0_1',
+            angEnd1: 'ang01',
             radInr0: null,
             radInr1: null,
             radOut0: null,
             radOut1: null
           })
-          // angStr0:"ang00", angStr1:"ang00", angEnd0:"ang00", angEnd1:"ang0_1",
+          // angStr0:"ang00", angStr1:"ang00", angEnd0:"ang00", angEnd1:"ang01",
           // radInr0:"rad00", radInr1:"rad00", radOut0:"rad01", radOut1:"rad01"
           .transition('update')
           .duration(timeD.animArc)
@@ -5033,33 +5033,33 @@ let mainArrZoomer = function (optIn) {
         let telId = dataIn.id
 
         $.each(propD, function (index, porpNow) {
-          telData.s1_propData[telId] = {}
-          telData.s1_propData[telId][porpNow] = null
-          telData.s1_propParent[telId] = {}
-          telData.s1_propParent[telId][porpNow] = ''
-          telData.s1_propTitle[telId] = {}
-          telData.s1_propTitle[telId][porpNow] = ''
+          telData.propDataS1[telId] = {}
+          telData.propDataS1[telId][porpNow] = null
+          telData.propParentS1[telId] = {}
+          telData.propParentS1[telId][porpNow] = ''
+          telData.propTitleS1[telId] = {}
+          telData.propTitleS1[telId][porpNow] = ''
         })
 
         // construct the dataBase object b hand, as some properties may not be included in propD
-        telData.s1_dataBase[telId] = {}
-        telData.s1_dataBase[telId].id = prop0
-        telData.s1_dataBase[telId].val = dataIn[prop0]
-        telData.s1_dataBase[telId].children = []
+        telData.dataBaseS1[telId] = {}
+        telData.dataBaseS1[telId].id = prop0
+        telData.dataBaseS1[telId].val = dataIn[prop0]
+        telData.dataBaseS1[telId].children = []
         // console.log('qqqqqqqq',telId,dataIn.data.val,dataIn.data)
 
         $.each(childV, function (indexData, childNow) {
           let porpNow = childNow.id
           if (propD.indexOf(porpNow) >= 0) {
             // add a reference to each property
-            telData.s1_propData[telId][porpNow] = childNow
-            telData.s1_propParent[telId][porpNow] = porpNow
+            telData.propDataS1[telId][porpNow] = childNow
+            telData.propParentS1[telId][porpNow] = porpNow
 
             // also add a reference for each level of the hierarchy which has a sub-hierarchy of its own
             addChildren(childNow, telId, porpNow)
 
             // build up the baseData object
-            telData.s1_dataBase[telId].children.push(childNow)
+            telData.dataBaseS1[telId].children.push(childNow)
           }
         })
       }
@@ -5068,11 +5068,11 @@ let mainArrZoomer = function (optIn) {
         if (dataNow.children) {
           dataNow.children.forEach(function (d, i) {
             if (d.children) {
-              telData.s1_propData[telId][d.id] = d
+              telData.propDataS1[telId][d.id] = d
               addChildren(d, telId, porpNow)
             }
-            telData.s1_propParent[telId][d.id] = porpNow
-            telData.s1_propTitle[telId][d.id] = d.ttl
+            telData.propParentS1[telId][d.id] = porpNow
+            telData.propTitleS1[telId][d.id] = d.ttl
           })
         }
       }
@@ -5225,7 +5225,7 @@ let mainArrZoomer = function (optIn) {
           //
           // ---------------------------------------------------------------------------------------------------
           function setPropLbl (optIn) {
-            // due to delays from checkFree, this function could be called after the S10obj has
+            // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
             if (!hasVar(gBase)) return
 
@@ -5236,8 +5236,8 @@ let mainArrZoomer = function (optIn) {
 
             if (propIn !== '') {
               if (propD.indexOf(propIn) < 0) {
-                if (hasVar(telData.s1_propParent[telId][propIn])) {
-                  propIn = telData.s1_propParent[telId][propIn]
+                if (hasVar(telData.propParentS1[telId][propIn])) {
+                  propIn = telData.propParentS1[telId][propIn]
                 }
               }
             }
@@ -5281,7 +5281,7 @@ let mainArrZoomer = function (optIn) {
             title
               .enter()
               .append('text')
-              // .attr("id", function(d) { return _0_+d.id; })
+              // .attr("id", function(d) { return myUniqueId+d.id; })
               .text(function (d) {
                 return d.text
               })
@@ -5341,12 +5341,12 @@ let mainArrZoomer = function (optIn) {
           //
           // ---------------------------------------------------------------------------------------------------
           function initBckArc () {
-            // due to delays from checkFree, this function could be called after the S10obj has
+            // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
             if (!hasVar(gBase)) return
 
             // console.log('initBckArc')
-            $.each(telData.s1_propData[telId], function (porpNow, dataNow) {
+            $.each(telData.propDataS1[telId], function (porpNow, dataNow) {
               if (dataNow) {
                 let baseTag = 's10arc'
                 let tagNow = baseTag + porpNow
@@ -5378,7 +5378,7 @@ let mainArrZoomer = function (optIn) {
                     arcFunc[tagNow].ang00 = function (d) {
                       return nProp * tauFrac + tauSpace
                     }
-                    arcFunc[tagNow].ang0_1 = function (d) {
+                    arcFunc[tagNow].ang01 = function (d) {
                       return (nProp + 1) * tauFrac - tauSpace
                     }
                     arcFunc[tagNow].ang10 = function (d) {
@@ -5417,14 +5417,14 @@ let mainArrZoomer = function (optIn) {
                     .enter()
                     .append('path')
                     .style('stroke-width', '1')
-                    // .attr("id",        function(d) { return _0_+d.id; })
+                    // .attr("id",        function(d) { return myUniqueId+d.id; })
                     .attr('class', function (d) {
                       return baseTag + ' ' + tagNow + ' ' + d.id
                     })
                     .each(function (d, i) {
                       arcs[tagNow].ang[d.id] = [
                         arcFunc[tagNow].ang00(d),
-                        arcFunc[tagNow].ang0_1(d)
+                        arcFunc[tagNow].ang01(d)
                       ]
                       arcs[tagNow].rad[d.id] = [
                         arcFunc[tagNow].rad00(d),
@@ -5464,7 +5464,7 @@ let mainArrZoomer = function (optIn) {
                       angStr0: null,
                       angStr1: 'ang00',
                       angEnd0: null,
-                      angEnd1: 'ang0_1',
+                      angEnd1: 'ang01',
                       radInr0: null,
                       radInr1: 'rad00',
                       radOut0: null,
@@ -5477,7 +5477,7 @@ let mainArrZoomer = function (optIn) {
               function getCol (d) {
                 d.col =
                   d.nArc === 0
-                    ? telHealthCol(telData.s1_propData[telId][d.porpNow].val)
+                    ? telHealthCol(telData.propDataS1[telId][d.porpNow].val)
                     : '#383b42'
                 return d.col
               }
@@ -5510,11 +5510,11 @@ let mainArrZoomer = function (optIn) {
           //
           // ---------------------------------------------------------------------------------------------------
           function bckArcRemove () {
-            // due to delays from checkFree, this function could be called after the S10obj has
+            // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
             if (!hasVar(gBase)) return
 
-            checkFree.add('s10bckArcChange')
+            locker.add('s10bckArcChange')
 
             //
             hirchStyleClick({ propIn: '', id: '', isOpen: false })
@@ -5545,7 +5545,7 @@ let mainArrZoomer = function (optIn) {
             })
 
             setPrevProp('')
-            checkFree.remove('s10bckArcChange')
+            locker.remove('s10bckArcChange')
 
             setPropLbl({ propIn: '', remove: true })
 
@@ -5557,7 +5557,7 @@ let mainArrZoomer = function (optIn) {
           //
           // ---------------------------------------------------------------------------------------------------
           function bckArcClick (optIn) {
-            // due to delays from checkFree, this function could be called after the S10obj has
+            // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
             if (!hasVar(gBase)) return
 
@@ -5569,7 +5569,7 @@ let mainArrZoomer = function (optIn) {
             if (propD.indexOf(propIn) < 0 && propIn != '') return
 
             if (
-              !checkFree.isFreeV([
+              !locker.isFreeV([
                 's10bckArcChange',
                 'dataChange',
                 's10clickHirch'
@@ -5583,9 +5583,9 @@ let mainArrZoomer = function (optIn) {
               return
             }
 
-            checkFree.add({ id: 's10bckArcChange', override: true })
+            locker.add({ id: 's10bckArcChange', override: true })
             function freeMe (doDelay) {
-              checkFree.remove({
+              locker.remove({
                 id: 's10bckArcChange',
                 delay: doDelay ? timeD.animArc * 1.5 : 0,
                 override: true
@@ -5760,7 +5760,7 @@ let mainArrZoomer = function (optIn) {
           // ---------------------------------------------------------------------------------------------------
           function hirchHovTitleIn (dIn) {
             if (
-              !checkFree.isFreeV([
+              !locker.isFreeV([
                 's10bckArcChange',
                 'dataChange',
                 's10clickHirch'
@@ -5827,7 +5827,7 @@ let mainArrZoomer = function (optIn) {
           //
           // ---------------------------------------------------------------------------------------------------
           function initHirch () {
-            // due to delays from checkFree, this function could be called after the S10obj has
+            // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
             if (!hasVar(gBase)) return
 
@@ -5971,7 +5971,7 @@ let mainArrZoomer = function (optIn) {
                       .enter()
                       .append('circle')
                       .attr('class', hirchName)
-                      // .attr("id",            function(d){ return _0_+hirchName+"_"+d.data.id; })
+                      // .attr("id",            function(d){ return myUniqueId+hirchName+"_"+d.data.id; })
                       .style('opacity', function (d) {
                         return hirchStyleOpac(d, hirchNow, 0)
                       })
@@ -6004,7 +6004,7 @@ let mainArrZoomer = function (optIn) {
 
                     function click (d) {
                       if (
-                        !checkFree.isFreeV([
+                        !locker.isFreeV([
                           's10bckArcChange',
                           'dataChange',
                           's10clickHirch'
@@ -6049,20 +6049,20 @@ let mainArrZoomer = function (optIn) {
 
           //
           function hirchStyleClick (optIn) {
-            // due to delays from checkFree, this function could be called after the S10obj has
+            // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
             if (!hasVar(gBase)) return
 
-            if (!checkFree.isFreeV(['dataChange', 's10clickHirch'])) {
+            if (!locker.isFreeV(['dataChange', 's10clickHirch'])) {
               setTimeout(function () {
                 hirchStyleClick(optIn)
               }, timeD.animArc / 3)
               return
             }
 
-            checkFree.add({ id: 's10clickHirch', override: true })
+            locker.add({ id: 's10clickHirch', override: true })
             function freeMe (doDelay) {
-              checkFree.remove({
+              locker.remove({
                 id: 's10clickHirch',
                 delay: doDelay ? timeD.animArc * 1.5 : 0,
                 override: true
@@ -6177,12 +6177,12 @@ let mainArrZoomer = function (optIn) {
           //
           // ---------------------------------------------------------------------------------------------------
           function updateHirch (dataIn) {
-            // due to delays from checkFree, this function could be called after the S10obj has
+            // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
             if (!hasVar(gBase)) return
 
             if (
-              !checkFree.isFreeV([
+              !locker.isFreeV([
                 's10bckArcChange',
                 's10clickHirch',
                 'updateHirch'
@@ -6194,7 +6194,7 @@ let mainArrZoomer = function (optIn) {
               }, timeD.animArc / 3)
               return
             }
-            checkFree.add('updateHirch')
+            locker.add('updateHirch')
 
             //
             $.each(propD, function (index, porpNow) {
@@ -6208,7 +6208,7 @@ let mainArrZoomer = function (optIn) {
                 .each(function (d) {
                   if (d.nArc === 0) {
                     d.col = telHealthCol(
-                      telData.s1_propData[telId][porpNow].val
+                      telData.propDataS1[telId][porpNow].val
                     )
                   }
                 })
@@ -6235,7 +6235,7 @@ let mainArrZoomer = function (optIn) {
             })
             // console.log('--------------------------------')
 
-            checkFree.remove('updateHirch')
+            locker.remove('updateHirch')
           }
           this.updateHirch = updateHirch
 
@@ -6305,11 +6305,11 @@ let mainArrZoomer = function (optIn) {
             eleNow.s10.cleanup()
             eleNow.s10 = null
 
-            if (hasVar(telData.s1_propData[eleNow.id])) {
-              delete telData.s1_propData[eleNow.id]
-              delete telData.s1_propParent[eleNow.id]
-              delete telData.s1_propTitle[eleNow.id]
-              delete telData.s1_dataBase[eleNow.id]
+            if (hasVar(telData.propDataS1[eleNow.id])) {
+              delete telData.propDataS1[eleNow.id]
+              delete telData.propParentS1[eleNow.id]
+              delete telData.propTitleS1[eleNow.id]
+              delete telData.dataBaseS1[eleNow.id]
             }
           })
 
@@ -6347,7 +6347,7 @@ let mainArrZoomer = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function _setState () {
+    function setStateOnce () {
       // console.log('setState_main main',getScale())
       let scale = getScale()
       let zoomS = getZoomS()
@@ -6410,7 +6410,7 @@ let mainArrZoomer = function (optIn) {
         arrPropVtarget = null
       }
     }
-    this._setState = _setState
+    this.setStateOnce = setStateOnce
 
     function askDataS1 () {
       let zoomS = getZoomS()

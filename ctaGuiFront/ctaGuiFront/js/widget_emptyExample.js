@@ -16,13 +16,14 @@ var mainScriptTag = 'emptyExample'
 /* global timeD */
 /* global hasVar */
 /* global sock */
-/* global CheckFree */
+/* global Locker */
 /* global RunLoop */
 /* global appendToDom */
 /* global runWhenReady */
 /* global disableScrollSVG */
 /* global bckPattern */
 /* global colsMix */
+/* global unique */
 
 // // load additional js files:
 // window.loadScript({ source:mainScriptTag, script:"/js/utils_scrollGrid.js"});
@@ -65,8 +66,9 @@ let sockEmptyExample = function (optIn) {}
 // here we go with the content of this particular widget
 // ---------------------------------------------------------------------------------------------------
 let mainEmptyExample = function (optIn) {
-  // let _0_ = uniqId()
-  // let widgetType = optIn.widgetType
+  // let myUniqueId = unique()
+  let widgetType = optIn.widgetType
+  let widgetSource = optIn.widgetSource
   let tagArrZoomerPlotsSvg = optIn.baseName
   let widgetId = optIn.widgetId
   let widgetEle = optIn.widgetEle
@@ -86,8 +88,8 @@ let mainEmptyExample = function (optIn) {
   })
 
   // delay counters
-  let checkFree = new CheckFree()
-  checkFree.add('inInit')
+  let locker = new Locker()
+  locker.add('inInit')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -216,14 +218,14 @@ let mainEmptyExample = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      _updateData(dataIn.data)
+      updateDataOnce(dataIn.data)
 
       runWhenReady({
         pass: function () {
-          return checkFree.isFree(tagEmptyExample + 'updateData')
+          return locker.isFree(tagEmptyExample + 'updateData')
         },
         execute: function () {
-          checkFree.remove('inInit')
+          locker.remove('inInit')
         }
       })
     }
@@ -232,10 +234,10 @@ let mainEmptyExample = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'updateData', func: _updateData, nKeep: 1 })
+    runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
     function updateData (dataIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
@@ -245,50 +247,39 @@ let mainEmptyExample = function (optIn) {
       runLoop.push({ tag: 'updateData', data: dataIn }) //, time:dataIn.emitTime
     }
 
-    function _updateData (dataIn) {
-      if (!checkFree.isFreeV([tagEmptyExample + 'updateData'])) {
+    // ---------------------------------------------------------------------------------------------------
+    // some random stuff for illustration
+    // ---------------------------------------------------------------------------------------------------
+    function updateDataOnce (dataIn) {
+      if (!locker.isFreeV([tagEmptyExample + 'updateData'])) {
         // console.log('will delay updateData');
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
         return
       }
-      checkFree.add(tagEmptyExample + 'updateData')
+      locker.add(tagEmptyExample + 'updateData')
 
       // ---------------------------------------------------------------------------------------------------
+      // send some random message to the server ...
       // ---------------------------------------------------------------------------------------------------
-      // do stuff on updates........
+      let myMessageData = {}
+      myMessageData.widgetId = optIn.widgetId
+      myMessageData.myMessage = 'myMessage' + unique()
+
+      let dataEmit = {
+        widgetSource: widgetSource,
+        widgetName: widgetType,
+        widgetId: myMessageData.widgetId,
+        methodName: 'sendRndomMessage',
+        methodArgs: myMessageData
+      }
+
+      sock.socket.emit('widget', dataEmit)
+
       // ---------------------------------------------------------------------------------------------------
-      // let time = dataIn.time;
-      // let tagPath1 = 'aaaa'
-      // let upData = [ {id:0, x:100, y:111}, {id:1, x:210, y:115}, {id:2, x:120, y:111+(10* (+time%15))} ]
-      // // console.log(JSON.stringify(upData),time%5);
-      // let upData_ = []
-      // if(time%2==0) {upData_.push(upData[0]); upData_.push(upData[1])}
-      // else          {upData_.push(upData[1]); upData_.push(upData[0])}
-      // upData_.push(upData[2])
-
-      // let selection1 = svg.g.selectAll("circle."+tagPath1)
-      //     .data(upData_, function(d) { return d.id; });
-
-      // let selEnter = selection1
-      //   .enter()
-      //     .append("circle")
-      //     .attr("class", function() { return tagPath1; })
-      //     .attr("cx", function(d, i) { return  d.x; })
-      //     .attr("cy", function(d, i) { return  d.y; })
-      //     .attr("r", 5)
-      //     .style("fill", "blue")
-      //   .merge(selection1)
-      //     .transition().duration(1500)
-      //     .attr("cx", function(d, i) { return  d.x; })
-      //     .attr("cy", function(d, i) { return  d.y; })
-      //     .attr("r", 5)
-      //     .style("fill", "red");
-
-      // selection1.exit()
-      //     .remove();
-
+      // do random stuff on updates ...
+      // ---------------------------------------------------------------------------------------------------
       let tagCirc = 'myCirc'
       let rnd = Math.max(0.1, Math.min(0.9, dataIn.rnd))
       let opac = Math.max(0.1, Math.min(0.9, Math.pow(1 - rnd, 2)))
@@ -341,10 +332,8 @@ let mainEmptyExample = function (optIn) {
         .style('opacity', 0)
         .remove()
       // ---------------------------------------------------------------------------------------------------
-      // ---------------------------------------------------------------------------------------------------
-      // ---------------------------------------------------------------------------------------------------
 
-      checkFree.remove(tagEmptyExample + 'updateData')
+      locker.remove(tagEmptyExample + 'updateData')
     }
     this.updateData = updateData
   }

@@ -354,11 +354,11 @@ window.TelInfo = function () {
   this.getTitle = function (id) {
     if (hasVar(title[id])) return title[id]
     else {
-      var _id = String(id)
-      while (_id.includes('_')) {
-        _id = _id.replace('_', faD.space)
+      var idStr = String(id)
+      while (idStr.includes('_')) {
+        idStr = idStr.replace('_', faD.space)
       }
-      return _id
+      return idStr
     }
   }
 }
@@ -665,7 +665,7 @@ var sortByFunc = window.sortByFunc
 // ---------------------------------------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------------------------------------
-window.CheckFree = function (optInit) {
+window.Locker = function (optInit) {
   var counters = {}
   var defCounter = 'common'
 
@@ -690,7 +690,7 @@ window.CheckFree = function (optInit) {
     if (expire > 0) {
       remove({ id: id, delay: expire })
     }
-    // if(id == 'zoomToTarget') console.log('CheckFree add',id,counters[id]);
+    // if(id == 'zoomToTarget') console.log('Locker add',id,counters[id]);
   }
   this.add = add
 
@@ -707,20 +707,20 @@ window.CheckFree = function (optInit) {
       }
     }
 
-    if (delay <= 0) _remove()
+    if (delay <= 0) removeNow()
     else {
       setTimeout(function () {
-        _remove()
+        removeNow()
       }, delay)
     }
 
-    function _remove () {
+    function removeNow () {
       if (!hasVar(counters[id])) counters[id] = 0 // just in case - should not happen...
       if (override) counters[id] = 0
       else counters[id] = Math.max(0, counters[id] - 1)
     }
 
-    // if(id == 'zoomToTarget') console.log('CheckFree remove('+delay+')',id,counters[id]);
+    // if(id == 'zoomToTarget') console.log('Locker remove('+delay+')',id,counters[id]);
   }
   this.remove = remove
 
@@ -745,7 +745,7 @@ window.CheckFree = function (optInit) {
       }, duration)
     } else {
       console.error(
-        'ignoring CheckFree.expires() with non-positive duration:',
+        'ignoring Locker.expires() with non-positive duration:',
         optIn
       )
     }
@@ -820,7 +820,7 @@ window.CheckFree = function (optInit) {
   }
   this.getActiveV = getActiveV
 }
-var CheckFree = window.CheckFree
+var Locker = window.Locker
 
 window.RunLoop = function (optIn) {
   var baseTag = optIn.tag
@@ -829,7 +829,7 @@ window.RunLoop = function (optIn) {
   var nKeep = {}
   var wait = {}
   var func = {}
-  var checkFree = new CheckFree()
+  var locker = new Locker()
 
   // ---------------------------------------------------------------------------------------------------
   //
@@ -863,7 +863,7 @@ window.RunLoop = function (optIn) {
   //
   // ---------------------------------------------------------------------------------------------------
   function run (tag) {
-    if (!checkFree.isFree(tag)) {
+    if (!locker.isFree(tag)) {
       setTimeout(function () {
         run(tag)
       }, pushWait)
@@ -875,7 +875,7 @@ window.RunLoop = function (optIn) {
 
     if (runV[tag].length === 0) return
 
-    checkFree.add(tag)
+    locker.add(tag)
 
     // console.log('000',tag,runV[tag].map(function(d){ return d.time}));
     var nEle = runV[tag].length
@@ -906,14 +906,14 @@ window.RunLoop = function (optIn) {
     })
     runV[tag] = []
 
-    checkFree.remove(tag)
+    locker.remove(tag)
   }
 
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
   function push (optIn) {
-    if (!checkFree.isFree(optIn.tag)) {
+    if (!locker.isFree(optIn.tag)) {
       setTimeout(function () {
         push(optIn)
       }, pushWait)
@@ -954,13 +954,13 @@ window.runWhenReady = function (optIn) {
     }
 
   var nTries = 0
-  function _checkReady () {
+  function checkReady () {
     if (!optIn.pass()) {
       if (nTries > maxTries) {
         msgFail()
       } else {
         setTimeout(function () {
-          _checkReady()
+          checkReady()
         }, wait)
       }
       nTries += 1
@@ -969,7 +969,7 @@ window.runWhenReady = function (optIn) {
 
     optIn.execute()
   }
-  _checkReady()
+  checkReady()
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -982,24 +982,24 @@ window.IconBadge = function () {
 
     if (!hasVar(optIn.iconDiv)) return
 
-    var iconDivId = optIn.iconDiv.id
+    var iconDivIdIn = optIn.iconDiv.id
     var iconDivEle = optIn.iconDiv.ele
     var pulseHovIn = hasVar(optIn.pulseHovIn) ? optIn.pulseHovIn : false
 
-    if (!hasVar(iconDivId) || !hasVar(nIcon) || nIcon < 0) return
+    if (!hasVar(iconDivIdIn) || !hasVar(nIcon) || nIcon < 0) return
 
     // make sure we don't add the same badge twice
-    var _iconDivId
+    var iconDivId
     if (hasVar(iconDivEle)) {
-      _iconDivId = iconDivEle
+      iconDivId = iconDivEle
     } else {
-      _iconDivId = iconDivId
-      if (!(_iconDivId.indexOf('#') === 0)) _iconDivId = '#' + _iconDivId
+      iconDivId = iconDivIdIn
+      if (!(iconDivId.indexOf('#') === 0)) iconDivId = '#' + iconDivId
     }
 
     // remove possible existing element before adding a new one
     d3
-      .select(_iconDivId)
+      .select(iconDivId)
       .selectAll('svg')
       .style('position', 'absolute')
       .transition('inOut')
@@ -1009,7 +1009,7 @@ window.IconBadge = function () {
 
     var isEmptySel = true
     var svg = d3
-      .select(_iconDivId)
+      .select(iconDivId)
       .style('width', '100%')
       .style('position', 'relative')
       .style('margin', 'auto')
@@ -1017,7 +1017,7 @@ window.IconBadge = function () {
         isEmptySel = false
       })
       .append('svg')
-      .attr('id', iconDivId)
+      .attr('id', iconDivIdIn)
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .attr('viewBox', '-0.5 -0.5 1 1')
       .style('display', 'block')
@@ -1277,7 +1277,7 @@ window.IconBadge = function () {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    var idNow = 'badge' + uniqId()
+    var idNow = 'badge' + unique()
     getSvgFromFile({
       g: gSvg,
       iconPath: iconFile,
@@ -1523,10 +1523,10 @@ window.IconBadge = function () {
 
     if (nIcon < 0) return ['', null]
 
-    var _nIcon = nIcon % iconV.length
+    var nIconNow = nIcon % iconV.length
     var iconTxt = Math.floor(0.000001 + nIcon / iconV.length)
     if (iconTxt === 0) iconTxt = null
-    return [iconV[_nIcon], iconTxt]
+    return [iconV[nIconNow], iconTxt]
 
     // else if(nIcon >= iconV.length) {
     //   console.error('trying to get iconV[',nIcon,'] which is out of bounds (size is ',iconV.length,')')
@@ -1785,13 +1785,13 @@ var deepCopy = window.deepCopy
 //
 // ---------------------------------------------------------------------------------------------------
 
-window.uniqId = function () {
+window.unique = function () {
   var postPad = '00000'
   var rndNow = Math.floor(Math.random() * 1e5).toString()
   var postfix = (postPad + rndNow).slice(-postPad.length)
   return '_' + Date.now().toString() + postfix
 }
-var uniqId = window.uniqId
+var unique = window.unique
 
 window.uniqArray = function (dataIn) {
   return dataIn.filter(function (d, i) {

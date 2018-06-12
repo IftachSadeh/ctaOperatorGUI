@@ -6,7 +6,7 @@
 /* global vorPloyFunc */
 /* global doZoomToTarget */
 /* global runLoop */
-/* global checkFree */
+/* global locker */
 /* global colsMix */
 
 // ---------------------------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ window.ScrollGrid = function (optIn) {
   // let recOrder = optIn.recOrder
   let isHorz = optIn.isHorz
   // let tagVecDataIn = optIn.tagVecDataIn
-  let checkFree = optIn.checkFree
+  let locker = optIn.locker
   // let gIn = optIn.g
   let xy = isHorz ? 'x' : 'y'
   let wh0 = isHorz ? w0 : h0
@@ -73,21 +73,21 @@ window.ScrollGrid = function (optIn) {
   if (!hasVar(scrollRec.marg)) scrollRec.marg = 0.6
   if (!hasVar(scrollRec.fontSize)) scrollRec.fontSize = scrollRec.w
 
-  let checkFreeZoom = optIn.checkFreeZoom
-  if (!hasVar(checkFreeZoom)) {
-    checkFreeZoom = {
+  let lockerZoom = optIn.lockerZoom
+  if (!hasVar(lockerZoom)) {
+    lockerZoom = {
       all: mainTag + 'zoom',
       during: mainTag + 'zoomDuring',
       end: mainTag + 'zoomEnd'
     }
   }
 
-  let checkFreeV = {}
-  checkFreeV.checkFreeV = hasVar(optIn.checkFreeV) ? optIn.checkFreeV : []
-  checkFreeV.zoomDuring = checkFreeV.checkFreeV
+  let lockerV = {}
+  lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
+  lockerV.zoomDuring = lockerV.lockerV
     .slice()
-    .concat([checkFreeZoom.during])
-  checkFreeV.zoomEnd = checkFreeV.checkFreeV.slice().concat([checkFreeZoom.end])
+    .concat([lockerZoom.during])
+  lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
 
   let vorShowLines = hasVar(vorOpt.vorShowLines) ? vorOpt.vorShowLines : false
   let vorMouseover = hasVar(vorOpt.mouseover) ? vorOpt.mouseover : null
@@ -426,9 +426,9 @@ window.ScrollGrid = function (optIn) {
       // isInZoom = true
       inUserZoom = hasVar(d3.event.sourceEvent)
 
-      if (checkFree.isFreeV(checkFreeV.zoomDuring)) {
-        checkFree.add({ id: checkFreeZoom.all, override: true })
-        checkFree.add({ id: checkFreeZoom.during, override: true })
+      if (locker.isFreeV(lockerV.zoomDuring)) {
+        locker.add({ id: lockerZoom.all, override: true })
+        locker.add({ id: lockerZoom.during, override: true })
 
         let trans = null
         delay = 0
@@ -443,7 +443,7 @@ window.ScrollGrid = function (optIn) {
 
         com.doTrans(trans)
 
-        checkFree.remove({ id: checkFreeZoom.during, delay: delay })
+        locker.remove({ id: lockerZoom.during, delay: delay })
       }
 
       // console.log(d3.zoomTransform(com[tagZoom+"zoomNode"]).k);
@@ -503,8 +503,8 @@ window.ScrollGrid = function (optIn) {
       if (!hasBotTop) return
 
       let hasUpdCount = false
-      if (checkFree.isFreeV(checkFreeV.zoomEnd)) {
-        checkFree.add({ id: checkFreeZoom.end, override: true })
+      if (locker.isFreeV(lockerV.zoomEnd)) {
+        locker.add({ id: lockerZoom.end, override: true })
 
         // let delta    = zoomD.delta;
         let recLastI = recD[mainTag].length - 1
@@ -547,8 +547,8 @@ window.ScrollGrid = function (optIn) {
           wh: [w0, h0],
           cent: null,
           funcEnd: function () {
-            checkFree.remove({
-              id: checkFreeZoom.end,
+            locker.remove({
+              id: lockerZoom.end,
               override: true,
               delay: zoomD.duration
             })
@@ -572,8 +572,8 @@ window.ScrollGrid = function (optIn) {
       }
 
       if (!isInDrag) {
-        checkFree.remove({
-          id: checkFreeZoom.all,
+        locker.remove({
+          id: lockerZoom.all,
           override: true,
           delay: zoomD.duration
         })
@@ -585,7 +585,7 @@ window.ScrollGrid = function (optIn) {
     }
 
     com.dragStart = function (coords) {
-      checkFree.add({ id: checkFreeZoom.all, override: true })
+      locker.add({ id: lockerZoom.all, override: true })
 
       // if has a scrill bar and the mouse is over it (otherwise it will interfere with click)
       isInScrollDrag = false
@@ -610,7 +610,7 @@ window.ScrollGrid = function (optIn) {
         if (isHorz) coords[0] -= zoomD.drag.xy
         else coords[1] -= zoomD.drag.xy
 
-        _recBckClick({ coords: coords, duration: 0 })
+        recBckClickOnce({ coords: coords, duration: 0 })
       } else {
         let trans = isHorz ? -d3.event.dx : d3.event.dy
         com.doTrans(trans)
@@ -618,7 +618,7 @@ window.ScrollGrid = function (optIn) {
     }
 
     com.dragEnd = function () {
-      checkFree.remove({ id: checkFreeZoom.all, override: true })
+      locker.remove({ id: lockerZoom.all, override: true })
 
       if (!isInScrollDrag) com.zoomEnd()
 
@@ -683,9 +683,9 @@ window.ScrollGrid = function (optIn) {
   //
   // ---------------------------------------------------------------------------------------------------
   function zoomScrollBarInit () {
-    if (!checkFree.isFree(mainTag + 'zoomScrollBarInit')) return
+    if (!locker.isFree(mainTag + 'zoomScrollBarInit')) return
 
-    checkFree.add({ id: mainTag + 'zoomScrollBarInit', override: true })
+    locker.add({ id: mainTag + 'zoomScrollBarInit', override: true })
     scrollBarRec = null
 
     // ---------------------------------------------------------------------------------------------------
@@ -712,7 +712,7 @@ window.ScrollGrid = function (optIn) {
       .attr('width', isHorz ? w0 : 0)
       .attr('height', isHorz ? 0 : h0)
       .on('click', function (d) {
-        _recBckClick({ coords: d3.mouse(this) })
+        recBckClickOnce({ coords: d3.mouse(this) })
       })
       .call(com[tagDrag])
       .style('opacity', 1)
@@ -757,7 +757,7 @@ window.ScrollGrid = function (optIn) {
           }
 
           scrollBarRec = com.gVor.selectAll('rect.' + tagScrollBar + 'scroll')
-          checkFree.remove({ id: mainTag + 'zoomScrollBarInit' })
+          locker.remove({ id: mainTag + 'zoomScrollBarInit' })
         }
         nTries += 1
       }, timeD.animArc / 5)
@@ -766,7 +766,7 @@ window.ScrollGrid = function (optIn) {
     if (hasBotTop) {
       scrollBarRecSet()
     } else {
-      checkFree.remove({ id: mainTag + 'zoomScrollBarInit' })
+      locker.remove({ id: mainTag + 'zoomScrollBarInit' })
     }
   }
 
@@ -861,14 +861,14 @@ window.ScrollGrid = function (optIn) {
   }
 
   // ---------------------------------------------------------------------------------------------------
-  runLoop.init({ tag: mainTag + 'recBckClick', func: _recBckClick, nKeep: 1 })
+  runLoop.init({ tag: mainTag + 'recBckClick', func: recBckClickOnce, nKeep: 1 })
 
   function recBckClick (dataIn) {
     runLoop.push({ tag: mainTag + 'recBckClick', data: dataIn })
   }
 
-  function _recBckClick (dataIn) {
-    if (!checkFree.isFreeV(checkFreeV.zoomDuring)) {
+  function recBckClickOnce (dataIn) {
+    if (!locker.isFreeV(lockerV.zoomDuring)) {
       setTimeout(function () {
         recBckClick(dataIn)
       }, timeD.animArc / 2)
@@ -943,12 +943,12 @@ window.ScrollGrid = function (optIn) {
     let xCent = x0
     let yCent = y0
     if (isHorz) {
-      let _h0 = hasBotTop ? h0 - scrollRec.w : h0
+      let h1 = hasBotTop ? h0 - scrollRec.w : h0
       xCent += recE
-      yCent += (_h0 - (recH + (nRows0 - 1) * (recH + recM))) / 2
+      yCent += (h1 - (recH + (nRows0 - 1) * (recH + recM))) / 2
     } else {
-      let _w0 = hasBotTop ? w0 - scrollRec.w : w0
-      xCent += (_w0 - (recW + (nRows0 - 1) * (recW + recM))) / 2
+      let w1 = hasBotTop ? w0 - scrollRec.w : w0
+      xCent += (w1 - (recW + (nRows0 - 1) * (recW + recM))) / 2
       yCent += recE
     }
 
@@ -1173,7 +1173,7 @@ window.ScrollGrid = function (optIn) {
 // ---------------------------------------------------------------------------------------------------
 // simple example 2017_11_30
 // ---------------------------------------------------------------------------------------------------
-function _scrollGridExampleUse (com, svg) {
+function scrollGridExampleUse (com, svg) {
   com.gBase = svg.g.append('g')
   com.gBckData = com.gBase.append('g')
   com.gVor = com.gBase.append('g')
@@ -1220,7 +1220,7 @@ function _scrollGridExampleUse (com, svg) {
     // the global let of the queue loop
     runLoop: runLoop,
     // the global let for the locking variable
-    checkFree: checkFree
+    locker: locker
   }
 
   com.scrollGrid = new window.ScrollGrid(scrollGridOpt)

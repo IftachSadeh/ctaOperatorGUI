@@ -19,7 +19,7 @@ For additional information, see:
   - The design of the front end is based on the [Polymer](https://www.polymer-project.org/1.0/) web component framework (see also the [element catalogue](https://elements.polymer-project.org/browse?package=paper-elements)).
   - Visualizations are performed using the [d3.js](https://d3js.org/) JavaScript library.
   - JavaScript dependencies are handles by the [`bower` package manager](https://bower.io/).
-  - The package uses the `redis` database.
+  - The package uses the [`redis`](https://redis.io/) database.
 
   Additionally, `ctaGuiBack` implements an interface to the ALMA Common Software (ACS). However, ACS is not required in order to run the package.
 
@@ -34,7 +34,7 @@ Best performance is likely to be achieved using the Chrome browser.
     export VENV=$ctaBaseDir/venv
     export PATH=$VENV:$PATH
     export PYTHONPATH=$VENV/lib/python2.7/:$VENV/lib/python2.7/site-packages/:$VENV:$PYTHONPATH
-    export PYTHONPATH=$ctaBaseDir:$PYTHONPATH
+    export PYTHONPATH=$ctaBaseDir:$ctaBaseDir/ctaGuiUtils/py/:$ctaBaseDir/ctaGuiBack/ctaGuiBack/py/:$ctaBaseDir/ctaGuiFront/ctaGuiFront/py/:$PYTHONPATH
     export POLICY_SERVER=False
   ```
     - Modify `absolute-path-to-install-dir` to be the top directory of the package.
@@ -57,7 +57,7 @@ Best performance is likely to be achieved using the Chrome browser.
     $VENV/bin/easy_install gevent-websocket gevent-socketio
     $VENV/bin/easy_install gunicorn pyramid_jinja2
     $VENV/bin/easy_install zope.interface zope.sqlalchemy zope.deprecation SQLAlchemy sqlalchemy transaction
-    $VENV/bin/easy_install msgpack-python redis numpy
+    $VENV/bin/easy_install msgpack-python redis numpy autopep8
   ```
 
 - Setup the two sub-packages, `ctaGuiBack` and `ctaGuiFront`:
@@ -97,14 +97,12 @@ The following details the minimal procedure to add a new widget, `myTestExample`
 
 - Create a copy of the `emptyExample` JavaScript/python files with the new widget name. Notice that we need to replace the three listed permutations of capitalisation in different places...
 ```bash
-  cd ctaGuiFront/ctaGuiFront
-
   tag0="myTestExample"
   tag1="mytestexample"
   tag2="MyTestExample"
 
+  cd ctaGuiFront/ctaGuiFront
   sed "s/emptyExample/${tag0}/g" js/widget_emptyExample.js | sed "s/emptyexample/${tag1}/g" | sed "s/EmptyExample/${tag2}/g" > js/widget_${tag0}.js
-
   sed "s/emptyExample/${tag0}/g" py/widget_emptyExample.py | sed "s/emptyexample/${tag1}/g" | sed "s/EmptyExample/${tag2}/g" > py/widget_${tag0}.py
   ```
 
@@ -127,7 +125,7 @@ The following details the minimal procedure to add a new widget, `myTestExample`
   ```
   then, for this example, navigate to `http://127.0.0.1:8092/cta`.
 
-- Here that we use version `1.0.2` of `gevent`. This is due to a bug with version `0.2.1` of `gevent_socketio`. (The latter has been fixed, but has not yet made it to a release version, as of July 2016). If for some reason the latest version of `gevent` is used, the bug in `gevent_socketio` can easily be fixed by hand. The solution is given in the first comment at [gevent-socketio/issues/233](https://github.com/abourget/gevent-socketio/issues/233).
+- Here we use version `1.0.2` of `gevent`. This is due to a bug with version `0.2.1` of `gevent_socketio`. (The latter has been fixed, but has not yet made it to a release version, as of July 2016). If for some reason the latest version of `gevent` is used, the bug in `gevent_socketio` can easily be fixed by hand. The solution is given in the first comment at [gevent-socketio/issues/233](https://github.com/abourget/gevent-socketio/issues/233).
 
 ### Authentication
 
@@ -256,9 +254,15 @@ timeout = 600
 ```
 The `timeout` sets the maximal time for a greenlet (a gunicorn thread) to be able to block with a a CPU intensive task or while waiting for some external function call.
 
+### Styling conventions
+
+- The python code complies with `pep8`. (One can e.g., do `autopep8 -i ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py`.)
+- The JavaScript code complies with the [`standard`](https://github.com/standard/standard). (One can e.g., do `prettier-standard ctaGuiFront/ctaGuiFront/js/widget_emptyExample.js`.)
+
+
 ### Credits
 
-- The SVG icons used to identify widgets were made by [Freepik](www.flaticon.com).
+- The SVG icons used to identify widgets were made by [Freepik](https://www.freepik.com/) from [www.flaticon.com](https://www.flaticon.com/).
 
 ---
 

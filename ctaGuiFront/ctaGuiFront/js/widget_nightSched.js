@@ -23,7 +23,7 @@ var mainScriptTag = 'nightSched'
 /* global BlockQueue */
 /* global bckPattern */
 /* global telHealthCol */
-/* global CheckFree */
+/* global Locker */
 /* global appendToDom */
 /* global runWhenReady */
 
@@ -71,7 +71,7 @@ let sockNightSched = function (optIn) {
   //   data.propId   = optIn.propId;
   //   let dataEmit = {
   //     "widgetSource":widgetSource, "widgetName":widgetType, "widgetId":widgetId,
-  //     "methodName":"nightSched_askTelData",
+  //     "methodName":"nightSchedAskTelData",
   //     "methodArgs":data
   //   };
   //   sock.socket.emit("widget", dataEmit);
@@ -84,7 +84,7 @@ let sockNightSched = function (optIn) {
 // here we go with the content of this particular widget
 // ---------------------------------------------------------------------------------------------------
 let mainNightSched = function (optIn) {
-  // let _0_ = uniqId()
+  // let myUniqueId = unique()
   let widgetType = optIn.widgetType
   let tagArrZoomerPlotsSvg = optIn.baseName
   let widgetId = optIn.widgetId
@@ -105,8 +105,8 @@ let mainNightSched = function (optIn) {
   })
 
   // delay counters
-  let checkFree = new CheckFree()
-  checkFree.add('inInit')
+  let locker = new Locker()
+  locker.add('inInit')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -278,9 +278,9 @@ let mainNightSched = function (optIn) {
           blockFocus({ id: d.id })
         },
         boxData: blockBoxData,
-        checkFree: checkFree,
-        checkFreeV: [tagNightSched + 'updateData'],
-        checkFreeZoom: {
+        locker: locker,
+        lockerV: [tagNightSched + 'updateData'],
+        lockerZoom: {
           all: tagBlockQueue + 'zoom',
           during: tagBlockQueue + 'zoomDuring',
           end: tagBlockQueue + 'zoomEnd'
@@ -339,14 +339,14 @@ let mainNightSched = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      _updateData(dataIn)
+      updateDataOnce(dataIn)
 
       runWhenReady({
         pass: function () {
-          return checkFree.isFree(tagNightSched + 'updateData')
+          return locker.isFree(tagNightSched + 'updateData')
         },
         execute: function () {
-          checkFree.remove('inInit')
+          locker.remove('inInit')
         }
       })
     }
@@ -355,10 +355,10 @@ let mainNightSched = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'updateData', func: _updateData, nKeep: 1 })
+    runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
     function updateData (dataIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
@@ -369,20 +369,20 @@ let mainNightSched = function (optIn) {
     }
     this.updateData = updateData
 
-    function _updateData (dataIn) {
+    function updateDataOnce (dataIn) {
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           tagNightSched + 'updateData',
           tagBlockQueue + 'zoom'
         ])
       ) {
-        // console.log('will delay updateRecData',checkFree.getActiveV([tagNightSched+"_updateData", tagBlockQueue+"_zoom"]));
+        // console.log('will delay updateRecData',locker.getActiveV([tagNightSched+"updateDataOnce", tagBlockQueue+"_zoom"]));
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
         return
       }
-      checkFree.add(tagNightSched + 'updateData')
+      locker.add(tagNightSched + 'updateData')
 
       // ---------------------------------------------------------------------------------------------------
       //
@@ -402,7 +402,7 @@ let mainNightSched = function (optIn) {
       telTreeMap.set({ tag: 'telHealth', data: telHealth })
       telTreeMap.update(dataIn)
 
-      checkFree.remove(tagNightSched + 'updateData')
+      locker.remove(tagNightSched + 'updateData')
     }
 
     // ---------------------------------------------------------------------------------------------------
@@ -427,7 +427,7 @@ let mainNightSched = function (optIn) {
   //   let type = dataIn.type;
   //   if(type == "sync_arrZoomerProp") {
   //     // console.log(' - mainNightSched - syncStateGet ',dataIn.data);
-  //     // checkFree.add("syncStateGet");
+  //     // locker.add("syncStateGet");
 
   //     let telId  = dataIn.data.telId;
   //     let propId = dataIn.data.propId;

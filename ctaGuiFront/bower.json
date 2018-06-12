@@ -1,5 +1,5 @@
 {
-  "name": "cta_gui",
+  "name": "ctaOperatorGUI",
   "private": false,
   "dependencies": {
     "iron-icon": "PolymerElements/iron-icon#^2.0.0",
@@ -9,7 +9,6 @@
     "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
     "iron-form": "PolymerElements/iron-form#^2.0.0",
     "iron-a11y-keys": "PolymerElements/iron-a11y-keys#^2.0.0",
-
     "paper-card": "PolymerElements/paper-card#^2.0.0",
     "paper-button": "PolymerElements/paper-button#^2.0.0",
     "paper-fab": "PolymerElements/paper-fab#^2.0.0",
@@ -34,25 +33,19 @@
     "paper-dialog-behavior": "PolymerElements/paper-dialog-behavior#^2.0.0",
     "app-layout": "PolymerElements/app-layout#^2.0.1",
     "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
-
     "paper-range-slider": "git://github.com/IftachSadeh/paper-range-slider#^1.0.1",
-
     "gevent-socketio": "git://github.com/abourget/gevent-socketio.git#master",
     "polymer": "Polymer/polymer#^2.0.0",
     "webcomponentsjs": "Polymer/webcomponentsjs#^1.0.8",
-    
     "gridstack.js": "git://github.com/troolee/gridstack.js#master",
     "lodash": "^4.14.2",
     "jquery": "^3.1.0",
-    
     "d3": "^4.12.2",
     "textures": "^1.2.0",
-
     "vaadin-icons": "^4.1.0"
   },
   "resolutions": {
     "polymer": "^2.0.0",
-
     "paper-card": "^2.0.0",
     "paper-input": "^2.0.0",
     "paper-button": "^2.0.0",

@@ -19,7 +19,7 @@ import sb
 import jsonAcs
 
 # install scripts by eg:
-#   ln -s $PWD/cta_gui/py/guiACS_schedBlocks_script0.py $INTROOT/config/scripts/.
+#   ln -s $PWD/ctaOperatorGUI/py/guiACS_schedBlocks_script0.py $INTROOT/config/scripts/.
 
 
 # -----------------------------------------------------------------------------------------------------------

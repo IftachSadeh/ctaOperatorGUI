@@ -14,7 +14,7 @@ var mainScriptTag = 'azPlots'
 /* global d3 */
 /* global sock */
 /* global hasVar */
-/* global CheckFree */
+/* global Locker */
 /* global runWhenReady */
 /* global RunLoop */
 /* global appendToDom */
@@ -66,7 +66,7 @@ let sockAzPlots = function (optIn) {}
 // here we go with the content of this particular widget
 // ---------------------------------------------------------------------------------------------------
 let mainAzPlots = function (optIn) {
-  // let _0_ = uniqId()
+  // let myUniqueId = unique()
   // let widgetType = optIn.widgetType
   let tagArrZoomerPlotsSvg = optIn.baseName
   let widgetId = optIn.widgetId
@@ -90,8 +90,8 @@ let mainAzPlots = function (optIn) {
   })
 
   // delay counters
-  let checkFree = new CheckFree()
-  checkFree.add('inInit')
+  let locker = new Locker()
+  locker.add('inInit')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -271,10 +271,10 @@ let mainAzPlots = function (optIn) {
         },
         scrollRec: { w: scrollGridBox[0].w * 0.03 },
         // vorOpt: { click: vorClick },
-        checkFreeV: [tagScrollGridBox + 'updateData'],
+        lockerV: [tagScrollGridBox + 'updateData'],
         onZoom: { start: onZoomStart, during: onZoomDuring, end: onZoomEnd },
         runLoop: runLoop,
-        checkFree: checkFree
+        locker: locker
       })
 
       com.recD.dataG = com.scrollGrid[0].getFrontDataG()
@@ -285,14 +285,14 @@ let mainAzPlots = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      _updateData(dataIn.data)
+      updateDataOnce(dataIn.data)
 
       runWhenReady({
         pass: function () {
-          return checkFree.isFree(tagAzPlots + 'updateData')
+          return locker.isFree(tagAzPlots + 'updateData')
         },
         execute: function () {
-          checkFree.remove('inInit')
+          locker.remove('inInit')
         }
       })
     }
@@ -301,10 +301,10 @@ let mainAzPlots = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'updateData', func: _updateData, nKeep: 1 })
+    runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
     function updateData (dataIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
@@ -314,15 +314,15 @@ let mainAzPlots = function (optIn) {
       runLoop.push({ tag: 'updateData', data: dataIn }) //, time:dataIn.emitTime
     }
 
-    function _updateData (dataIn) {
-      if (!checkFree.isFreeV([tagAzPlots + 'updateData', tagPlot + 'zoom'])) {
+    function updateDataOnce (dataIn) {
+      if (!locker.isFreeV([tagAzPlots + 'updateData', tagPlot + 'zoom'])) {
         // console.log('will delay updateData');
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
         return
       }
-      checkFree.add(tagAzPlots + 'updateData')
+      locker.add(tagAzPlots + 'updateData')
 
       $.each(dataIn, function (i, d) {
         dataIn[i] = dataIn[i].map(function (d) {
@@ -344,7 +344,7 @@ let mainAzPlots = function (optIn) {
         com.plot[d.id].update(d.data)
       })
 
-      checkFree.remove(tagAzPlots + 'updateData')
+      locker.remove(tagAzPlots + 'updateData')
     }
     this.updateData = updateData
 
@@ -386,9 +386,9 @@ let mainAzPlots = function (optIn) {
         hasBotPlot: true,
         style: { hasOutline: true },
         boxData: plotBoxData,
-        checkFree: checkFree,
-        checkFreeV: [tagPlot + 'updateData'],
-        checkFreeZoom: {
+        locker: locker,
+        lockerV: [tagPlot + 'updateData'],
+        lockerZoom: {
           all: tagPlot + 'zoom',
           during: tagPlot + 'zoomDuring',
           end: tagPlot + 'zoomEnd'

@@ -471,7 +471,7 @@
       // -----------------------------------------------------------------------------------------------------------
       _ready() {
         this.widget = null;
-        // this.collapseId = this.uniqId();
+        // this.collapseId = this.unique();
         
         // for debugging.....
         var _this = this;
@@ -727,8 +727,8 @@
       }
 
       _ready() {
-        // setTimeout(function() { window.location.replace('/'+window.__appPrefix__+'/index'); }, 5000);
-        console.log('nnnnnnnnnnnnnnnnnn');
+        // console.log('NotFoundMain:','/'+window.__appPrefix__+'/index');
+        setTimeout(function() { window.location.replace('/'+window.__appPrefix__+'/index'); }, 2000);
       }
 
     }

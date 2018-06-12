@@ -24,7 +24,7 @@ __phases__ = [
 
 # install the script by:
 #   cd $INTROOT/config/scripts
-#   ln -s $guiInstalDir/cta_gui/ctaGuiBack/ctaGuiBack/acs/guiACS_schedBlocks_script0.py
+#   ln -s $guiInstalDir/ctaOperatorGUI/ctaGuiBack/ctaGuiBack/acs/guiACS_schedBlocks_script0.py
 
 # -----------------------------------------------------------------------------------------------------------
 def configuring():

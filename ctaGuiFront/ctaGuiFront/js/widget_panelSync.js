@@ -18,9 +18,9 @@ var mainScriptTag = 'panelSync'
 /* global hasVar */
 /* global moveNodeUp */
 /* global RunLoop */
-/* global CheckFree */
+/* global Locker */
 /* global iconBadge */
-/* global uniqId */
+/* global unique */
 /* global appendToDom */
 /* global runWhenReady */
 /* global vorPloyFunc */
@@ -101,7 +101,7 @@ let sockPanelSync = function (optIn) {
 }
 
 let mainPanelSync = function (optIn) {
-  // let _0_ = uniqId()
+  // let myUniqueId = unique()
   let widgetType = optIn.widgetType
   let tagpanelSyncSvg = optIn.baseName
   let widgetId = optIn.widgetId
@@ -125,8 +125,8 @@ let mainPanelSync = function (optIn) {
   })
 
   // delay counters
-  let checkFree = new CheckFree()
-  checkFree.add('inInit')
+  let locker = new Locker()
+  locker.add('inInit')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -406,8 +406,8 @@ let mainPanelSync = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      function doDragMainStart (dIn, _this) {
-        moveNodeUp(_this, 2)
+      function doDragMainStart (dIn, thisIn) {
+        moveNodeUp(thisIn, 2)
 
         com.icons.g.selectAll('g.' + tagIcon).style('pointer-events', 'none')
 
@@ -419,21 +419,21 @@ let mainPanelSync = function (optIn) {
         grpD.hovIdGrpStart = dIn.parent.data.id
       }
 
-      com.dragMainStart = function (dIn, _this) {
-        checkFree.add({ id: tagMain + 'inDrag', override: true })
+      com.dragMainStart = function (dIn, thisIn) {
+        locker.add({ id: tagMain + 'inDrag', override: true })
 
-        doDragMainStart(dIn, _this)
+        doDragMainStart(dIn, thisIn)
       }
 
-      com.dragMainDuring = function (dIn, _this) {
-        d3.select(_this).attr('transform', function (d) {
+      com.dragMainDuring = function (dIn, thisIn) {
+        d3.select(thisIn).attr('transform', function (d) {
           d.x = d3.event.x
           d.y = d3.event.y
           return 'translate(' + d.x + ',' + d.y + ')'
         })
       }
 
-      function doDragMainEnd (dIn, _this) {
+      function doDragMainEnd (dIn, thisIn) {
         com.icons.g
           .selectAll('g.' + tagIcon)
           .style('pointer-events', iconPntEvt)
@@ -449,10 +449,10 @@ let mainPanelSync = function (optIn) {
         grpD.hovIdGrpStart = null
       }
 
-      com.dragMainEnd = function (dIn, _this) {
-        doDragMainEnd(dIn, _this)
+      com.dragMainEnd = function (dIn, thisIn) {
+        doDragMainEnd(dIn, thisIn)
 
-        checkFree.remove({
+        locker.remove({
           id: tagMain + 'inDrag',
           override: true,
           delay: delayAfterDrag
@@ -477,7 +477,7 @@ let mainPanelSync = function (optIn) {
       let iconSide = null
       let iconSideSel = null
       com.dragSideStart = function (dIn) {
-        checkFree.add({ id: tagMain + 'inDrag', override: true })
+        locker.add({ id: tagMain + 'inDrag', override: true })
 
         let idSide = sideColClick(dIn)
         let iconV = com.hirchDesc.filter(function (d) {
@@ -519,7 +519,7 @@ let mainPanelSync = function (optIn) {
         iconSide = null
         iconSideSel = null
 
-        checkFree.remove({
+        locker.remove({
           id: tagMain + 'inDrag',
           override: true,
           delay: delayAfterDrag
@@ -569,9 +569,9 @@ let mainPanelSync = function (optIn) {
         vorOpt: { mouseover: sideColHov, call: com.dragSide },
         onZoom: { during: updSideColOnZoom, end: updSideColOnZoom },
         runLoop: runLoop,
-        checkFree: checkFree,
-        checkFreeV: [tagMain + 'updateData', tagMain + 'inDrag'],
-        checkFreeZoom: {
+        locker: locker,
+        lockerV: [tagMain + 'updateData', tagMain + 'inDrag'],
+        lockerZoom: {
           all: tagGridRec + 'zoom',
           during: tagGridRec + 'zoomDuring',
           end: tagGridRec + 'zoomEnd'
@@ -592,10 +592,10 @@ let mainPanelSync = function (optIn) {
 
       runWhenReady({
         pass: function () {
-          return checkFree.isFreeV(com.checkFreeUpdateV)
+          return locker.isFreeV(com.lockerUpdateV)
         },
         execute: function () {
-          checkFree.remove('inInit')
+          locker.remove('inInit')
         }
       })
     }
@@ -647,7 +647,7 @@ let mainPanelSync = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    com.checkFreeUpdateV = [
+    com.lockerUpdateV = [
       tagMain + 'dataChange',
       tagMain + 'updateData',
       tagMain + 'updateGroups',
@@ -655,10 +655,10 @@ let mainPanelSync = function (optIn) {
       tagGridRec + 'zoom'
     ]
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'updateData', func: _updateData, nKeep: 1 })
+    runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
     function updateData (dataIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
@@ -672,23 +672,23 @@ let mainPanelSync = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function _updateData (dataIn) {
-      if (!checkFree.isFree(tagMain + 'inDrag')) return
+    function updateDataOnce (dataIn) {
+      if (!locker.isFree(tagMain + 'inDrag')) return
 
-      if (!checkFree.isFreeV(com.checkFreeUpdateV)) {
-        // console.log('will delay _updateData_',checkFree.getActiveV(com.checkFreeUpdateV));
+      if (!locker.isFreeV(com.lockerUpdateV)) {
+        // console.log('will delay _updateData_',locker.getActiveV(com.lockerUpdateV));
         setTimeout(function () {
           updateData(dataIn)
         }, timeD.animArc / 2)
         return
       }
 
-      checkFree.add(tagMain + 'updateData')
-      checkFree.expires({
+      locker.add(tagMain + 'updateData')
+      locker.expires({
         id: tagMain + 'dataChange',
         duration: delayAfterDrag
       })
-      checkFree.expires({
+      locker.expires({
         id: tagMain + 'clickEmptyGrp',
         duration: delayAfterDrag
       })
@@ -735,7 +735,7 @@ let mainPanelSync = function (optIn) {
       // reference the new data in the local obj
       grpD.data = dataIn
 
-      checkFree.remove({
+      locker.remove({
         id: tagMain + 'updateData',
         delay: timeD.animArc * 2
       })
@@ -791,7 +791,7 @@ let mainPanelSync = function (optIn) {
       circ
         .enter()
         .append('circle')
-        // .attr("id", function(d,i) { return _0_+tagCirc+"_"+d.data.id; })
+        // .attr("id", function(d,i) { return myUniqueId+tagCirc+"_"+d.data.id; })
         .attr('class', tagEmpty)
         .attr('cx', function (d, i) {
           return d.x
@@ -863,7 +863,7 @@ let mainPanelSync = function (optIn) {
         })
         .on('click', function (d) {
           if (
-            !checkFree.isFreeV([
+            !locker.isFreeV([
               tagMain + 'clickEmptyGrp',
               tagMain + 'inDrag',
               tagMain + 'setAll',
@@ -874,8 +874,8 @@ let mainPanelSync = function (optIn) {
             return
           }
 
-          checkFree.add({ id: tagMain + 'clickEmptyGrp', override: true })
-          checkFree.add({ id: tagMain + 'addedEmptyGrp', override: true })
+          locker.add({ id: tagMain + 'clickEmptyGrp', override: true })
+          locker.add({ id: tagMain + 'addedEmptyGrp', override: true })
 
           // if(allowPermEmptyGrp) com.addEmptyGrp = !com.addEmptyGrp;
 
@@ -884,12 +884,12 @@ let mainPanelSync = function (optIn) {
           if (com.emptyGrpIndex >= 0) updateGroups()
           else sideColClick()
 
-          checkFree.remove({
+          locker.remove({
             id: tagMain + 'clickEmptyGrp',
             override: true,
             delay: timeD.animArc * 2
           })
-          checkFree.remove({
+          locker.remove({
             id: tagMain + 'addedEmptyGrp',
             override: true,
             delay: delayAfterAddEmpty
@@ -927,7 +927,7 @@ let mainPanelSync = function (optIn) {
       circ
         .enter()
         .append('circle')
-        // .attr("id", function(d,i) { return _0_+tagCirc+"_"+d.data.id; })
+        // .attr("id", function(d,i) { return myUniqueId+tagCirc+"_"+d.data.id; })
         .attr('class', tagCirc)
         .attr('cx', function (d, i) {
           return d.x
@@ -1080,7 +1080,7 @@ let mainPanelSync = function (optIn) {
     }
 
     function sideColClick (dIn) {
-      let idNow = 'icn' + uniqId()
+      let idNow = 'icn' + unique()
       if (hasVar(dIn)) {
         let nIcon = dIn.data.data.data.nIcon
         let trgWidgId = dIn.data.data.data.trgWidgId
@@ -1514,14 +1514,14 @@ let mainPanelSync = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function updateGroups () {
       if (
-        !checkFree.isFreeV([tagMain + 'updateData', tagMain + 'updateGroups'])
+        !locker.isFreeV([tagMain + 'updateData', tagMain + 'updateGroups'])
       ) {
         setTimeout(function () {
           updateGroups()
         }, timeD.animArc / 2)
         return
       }
-      checkFree.add({ id: tagMain + 'updateGroups' })
+      locker.add({ id: tagMain + 'updateGroups' })
 
       // ---------------------------------------------------------------------------------------------------
       //
@@ -1562,7 +1562,7 @@ let mainPanelSync = function (optIn) {
         // // add an empty iconBadge if needed
         // if(grpD.data.children[ rmInd[0] ].children[ rmInd[1] ].children.length == 0) {
         //   grpD.data.children[ rmInd[0] ].children[ rmInd[1] ].children
-        //     .push({ id:"icn_empty_"+uniqId(), trgWidgId:"", ttl:"", nIcon:nEmptyIcon });
+        //     .push({ id:"icn_empty_"+unique(), trgWidgId:"", ttl:"", nIcon:nEmptyIcon });
         // }
       }
 
@@ -1594,7 +1594,7 @@ let mainPanelSync = function (optIn) {
         // group names must be unique and of the pattern "grp_0", with sub
         // groups ["grp_0_0","grp_0_1","grp_0_2"], as defined exactly by the server
         // ---------------------------------------------------------------------------------------------------
-        let idNow = uniqId()
+        let idNow = unique()
         let newGrp = {
           id: 'grp' + nGrp,
           ttl: 'Group ' + nGrp,
@@ -1643,7 +1643,7 @@ let mainPanelSync = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       // order groups by name
       // ---------------------------------------------------------------------------------------------------
-      if (checkFree.isFree(tagMain + 'inDrag')) {
+      if (locker.isFree(tagMain + 'inDrag')) {
         grpD.data.children = grpD.data.children.sort(function (x, y) {
           let idX = parseInt(x.id.replace('grp', ''))
           let idY = parseInt(y.id.replace('grp', ''))
@@ -1665,7 +1665,7 @@ let mainPanelSync = function (optIn) {
 
       initSideCol()
 
-      checkFree.remove({ id: tagMain + 'updateGroups' })
+      locker.remove({ id: tagMain + 'updateGroups' })
     }
 
     // ---------------------------------------------------------------------------------------------------
@@ -1673,7 +1673,7 @@ let mainPanelSync = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function updateEmptyGrp () {
       com.emptyGrpIndex = -1
-      com.emptyGrpId = uniqId()
+      com.emptyGrpId = unique()
 
       // let nEmptyGrps = 0
       $.each(grpD.data.children, function (nChild0, childNow0) {
@@ -1766,7 +1766,7 @@ let mainPanelSync = function (optIn) {
         $.each(childNow0.children, function (nChild1, childNow1) {
           if (childNow1.children.length === 0) {
             childNow1.children.push({
-              id: 'icnEmpty' + uniqId(),
+              id: 'icnEmpty' + unique(),
               trgWidgId: '',
               ttl: '',
               nIcon: nEmptyIcon
@@ -1804,21 +1804,21 @@ let mainPanelSync = function (optIn) {
     //
     // ---------------------------------------------------------------------------------------------------
     function setAll () {
-      checkFree.add({ id: tagMain + 'setAll' })
+      locker.add({ id: tagMain + 'setAll' })
 
       setHirch()
       setIcons()
       setTtl()
       setVor()
 
-      checkFree.remove({ id: tagMain + 'setAll', delay: timeD.animArc * 2 })
+      locker.remove({ id: tagMain + 'setAll', delay: timeD.animArc * 2 })
     }
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
     function highlight (optIn) {
-      if (checkFree.isFree(tagMain + 'inDrag')) return
+      if (locker.isFree(tagMain + 'inDrag')) return
 
       let id = optIn.id
       let data = optIn.data

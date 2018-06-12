@@ -64,9 +64,9 @@ window.ScrollTable = function () {
       boxData: com.outerBox,
       useRelativeCoords: optIn.useRelativeCoords,
       title: optIn.title,
-      checkFree: optIn.checkFree,
-      checkFreeV: optIn.checkFreeV,
-      checkFreeZoom: optIn.checkFreeZoom,
+      locker: optIn.locker,
+      lockerV: optIn.lockerV,
+      lockerZoom: optIn.lockerZoom,
       runLoop: optIn.runLoop,
       sameInnerBoxMarg: false
       // canScroll: optIn.canScroll,

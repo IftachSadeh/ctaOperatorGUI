@@ -18,9 +18,9 @@ var mainScriptTag = 'schedBlocks'
 /* global hasVar */
 /* global BlockQueue */
 /* global RunLoop */
-/* global CheckFree */
+/* global Locker */
 /* global deepCopy */
-/* global uniqId */
+/* global unique */
 /* global appendToDom */
 /* global runWhenReady */
 /* global colsPurples */
@@ -64,7 +64,7 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
 function sockSchedBlocks (optIn) {}
 
 function mainSchedBlocks (optIn) {
-  let _0_ = uniqId()
+  let myUniqueId = unique()
   // let widgetType = optIn.widgetType
   let tagSchedBlocksSvg = optIn.baseName
   let widgetId = optIn.widgetId
@@ -89,8 +89,8 @@ function mainSchedBlocks (optIn) {
   })
 
   // delay counters
-  let checkFree = new CheckFree()
-  checkFree.add('inInit')
+  let locker = new Locker()
+  locker.add('inInit')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -381,9 +381,9 @@ function mainSchedBlocks (optIn) {
           blockFocus({ id: d.id })
         },
         boxData: blockBoxData,
-        checkFree: checkFree,
-        checkFreeV: [sbTag + 'updateData'],
-        checkFreeZoom: {
+        locker: locker,
+        lockerV: [sbTag + 'updateData'],
+        lockerZoom: {
           all: bqTag + 'zoom',
           during: bqTag + 'zoomDuring',
           end: bqTag + 'zoomEnd'
@@ -738,7 +738,7 @@ function mainSchedBlocks (optIn) {
           return d.txt
         })
         .attr('id', function (d) {
-          return _0_ + sbTag + d.id + tagTtl
+          return myUniqueId + sbTag + d.id + tagTtl
         })
         .style('font-weight', function (d) {
           return d.type === 0 ? 'bold' : 'normal'
@@ -801,14 +801,14 @@ function mainSchedBlocks (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      _updateRecData(dataIn)
+      updateRecDataOnce(dataIn)
 
       runWhenReady({
         pass: function () {
-          return checkFree.isFree(sbTag + 'updateData')
+          return locker.isFree(sbTag + 'updateData')
         },
         execute: function () {
-          checkFree.remove('inInit')
+          locker.remove('inInit')
         }
       })
     }
@@ -873,7 +873,7 @@ function mainSchedBlocks (optIn) {
     //
     // ---------------------------------------------------------------------------------------------------
     function updateData (dataIn) {
-      if (!checkFree.isFree('inInit')) {
+      if (!locker.isFree('inInit')) {
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
@@ -887,27 +887,27 @@ function mainSchedBlocks (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'updateRecData', func: _updateRecData, nKeep: 1 })
+    runLoop.init({ tag: 'updateRecData', func: updateRecDataOnce, nKeep: 1 })
 
     function updateRecData (dataIn) {
       runLoop.push({ tag: 'updateRecData', data: dataIn }) //, time:dataIn.emitTime
     }
 
-    function _updateRecData (dataIn) {
+    function updateRecDataOnce (dataIn) {
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           sbTag + 'updateData',
           sbTag + 'zoom',
           bqTag + 'zoom'
         ])
       ) {
-        // console.log('will delay updateRecData',checkFree.getActiveV([sbTag+"UpdateData", sbTag+"Zoom", bqTag+"Zoom"]));
+        // console.log('will delay updateRecData',locker.getActiveV([sbTag+"UpdateData", sbTag+"Zoom", bqTag+"Zoom"]));
         setTimeout(function () {
           updateRecData(dataIn)
         }, 10)
         return
       }
-      checkFree.add(sbTag + 'updateData')
+      locker.add(sbTag + 'updateData')
 
       // ---------------------------------------------------------------------------------------------------
       //
@@ -925,8 +925,8 @@ function mainSchedBlocks (optIn) {
           optIn.scrollRecW = lenD.w[0] * 0.015
           optIn.recD = recD
           // optIn.showCounts    = false;
-          optIn.checkFreeV = [sbTag + 'updateData']
-          optIn.checkFreeZoom = {
+          optIn.lockerV = [sbTag + 'updateData']
+          optIn.lockerZoom = {
             all: sbTag + 'zoom',
             during: sbTag + 'zoomDuring',
             end: sbTag + 'zoomEnd'
@@ -939,7 +939,7 @@ function mainSchedBlocks (optIn) {
           // optIn.vorOpt        = { onlyMid:true, mouseover:null, click:null, dblclick:null };
           optIn.vorOpt = { mouseover: null, click: onVorClick, dblclick: null }
           optIn.runLoop = runLoop
-          optIn.checkFree = checkFree
+          optIn.locker = locker
 
           scrollGrid[optIn.id] = new ScrollGrid(optIn)
         })
@@ -990,28 +990,28 @@ function mainSchedBlocks (optIn) {
       // ---------------------------------------------------------------------------------------------------
       if (hasNewData) {
         updateRecs()
-        checkFree.remove({
+        locker.remove({
           id: sbTag + 'updateData',
           delay: timeD.animArc * 2
         })
       } else {
-        checkFree.remove({ id: sbTag + 'updateData' })
+        locker.remove({ id: sbTag + 'updateData' })
       }
     }
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'blockFocus', func: _blockFocus, nKeep: 1 })
+    runLoop.init({ tag: 'blockFocus', func: blockFocusOnce, nKeep: 1 })
 
     function blockFocus (dataIn) {
       runLoop.push({ tag: 'blockFocus', data: dataIn }) //, time:dataIn.emitTime
     }
     this.blockFocus = blockFocus
 
-    function _blockFocus (optIn) {
+    function blockFocusOnce (optIn) {
       if (
-        !checkFree.isFreeV([
+        !locker.isFreeV([
           sbTag + 'updateData',
           sbTag + 'zoom',
           bqTag + 'zoom'
@@ -1023,7 +1023,7 @@ function mainSchedBlocks (optIn) {
         }, 10)
         return
       }
-      checkFree.add(sbTag + 'updateData')
+      locker.add(sbTag + 'updateData')
       // console.log(' will run _blockFocus_...');
 
       if (!hasVar(optIn)) optIn = {}
@@ -1045,7 +1045,7 @@ function mainSchedBlocks (optIn) {
         obId: com.focusId
       })
 
-      checkFree.remove({ id: sbTag + 'updateData' })
+      locker.remove({ id: sbTag + 'updateData' })
     }
 
     // ---------------------------------------------------------------------------------------------------

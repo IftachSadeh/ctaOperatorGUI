@@ -41,28 +41,28 @@ window.ScrollBox = function () {
       ? optIn.useRelativeCoords
       : false
 
-    com.checkFree = optIn.checkFree
+    com.locker = optIn.locker
     com.runLoop = optIn.runLoop
 
-    let checkFreeZoom = optIn.checkFreeZoom
-    if (!hasVar(checkFreeZoom)) {
-      checkFreeZoom = {
+    let lockerZoom = optIn.lockerZoom
+    if (!hasVar(lockerZoom)) {
+      lockerZoom = {
         all: com.mainTag + 'zoom',
         during: com.mainTag + 'zoomDuring',
         end: com.mainTag + 'zoomEnd'
       }
     }
-    com.checkFreeZoom = checkFreeZoom
+    com.lockerZoom = lockerZoom
 
-    let checkFreeV = {}
-    checkFreeV.checkFreeV = hasVar(optIn.checkFreeV) ? optIn.checkFreeV : []
-    checkFreeV.zoomDuring = checkFreeV.checkFreeV
+    let lockerV = {}
+    lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
+    lockerV.zoomDuring = lockerV.lockerV
       .slice()
-      .concat([checkFreeZoom.during])
-    checkFreeV.zoomEnd = checkFreeV.checkFreeV
+      .concat([lockerZoom.during])
+    lockerV.zoomEnd = lockerV.lockerV
       .slice()
-      .concat([checkFreeZoom.end])
-    com.checkFreeV = checkFreeV
+      .concat([lockerZoom.end])
+    com.lockerV = lockerV
 
     com.sameInnerBoxMarg = hasVar(optIn.sameInnerBoxMarg)
       ? optIn.sameInnerBoxMarg
@@ -261,9 +261,9 @@ window.ScrollBox = function () {
 
     let tagZoom = com.tagZoom
     let tagDrag = com.tagDrag
-    let checkFree = com.checkFree
-    let checkFreeV = com.checkFreeV
-    let checkFreeZoom = com.checkFreeZoom
+    let locker = com.locker
+    let lockerV = com.lockerV
+    let lockerZoom = com.lockerZoom
 
     // ---------------------------------------------------------------------------------------------------
     //
@@ -277,9 +277,9 @@ window.ScrollBox = function () {
 
       com.inUserZoom = hasVar(d3.event.sourceEvent)
 
-      if (checkFree.isFreeV(checkFreeV.zoomDuring)) {
-        checkFree.add({ id: checkFreeZoom.all, override: true })
-        checkFree.add({ id: checkFreeZoom.during, override: true })
+      if (locker.isFreeV(lockerV.zoomDuring)) {
+        locker.add({ id: lockerZoom.all, override: true })
+        locker.add({ id: lockerZoom.during, override: true })
 
         let trans = null
         if (com.inUserZoom) {
@@ -293,13 +293,13 @@ window.ScrollBox = function () {
 
         let delay = doTrans({ trans: trans, duration: 0 })
 
-        checkFree.remove({ id: checkFreeZoom.during, delay: delay })
+        locker.remove({ id: lockerZoom.during, delay: delay })
       }
     }
 
     com[tagZoom + 'zoomEnd'] = function () {
       com.isInZoom = false
-      checkFree.remove({ id: checkFreeZoom.all, override: true })
+      locker.remove({ id: lockerZoom.all, override: true })
     }
 
     // ---------------------------------------------------------------------------------------------------
@@ -321,7 +321,7 @@ window.ScrollBox = function () {
       com.scrollTrans.drag.y = hasVar(d3.event) ? d3.event.y : com.innerBox.y
       com.scrollTrans.drag.frac = com.scrollTrans.frac
 
-      checkFree.add({ id: checkFreeZoom.all, override: true })
+      locker.add({ id: lockerZoom.all, override: true })
     }
 
     com[tagDrag + 'dragDuring'] = function () {
@@ -329,9 +329,9 @@ window.ScrollBox = function () {
       if (!hasVar(d3.event)) return
       if (!hasVar(d3.event.dy)) return
 
-      if (checkFree.isFreeV(checkFreeV.zoomDuring)) {
-        checkFree.add({ id: checkFreeZoom.all, override: true })
-        checkFree.add({ id: checkFreeZoom.during, override: true })
+      if (locker.isFreeV(lockerV.zoomDuring)) {
+        locker.add({ id: lockerZoom.all, override: true })
+        locker.add({ id: lockerZoom.during, override: true })
 
         let trans = -1 * d3.event.dy
         // let frac  = (d3.event.y - com.innerBox.y)/com.innerBox.h;
@@ -341,13 +341,13 @@ window.ScrollBox = function () {
         let delay =
           Math.abs(trans) > 0 ? doTrans({ frac: frac, duration: 0 }) : 0
 
-        checkFree.remove({ id: checkFreeZoom.during, delay: delay })
+        locker.remove({ id: lockerZoom.during, delay: delay })
       }
     }
 
     com[tagDrag + 'dragEnd'] = function () {
       com.isInDrag = false
-      checkFree.remove({ id: checkFreeZoom.all, override: true })
+      locker.remove({ id: lockerZoom.all, override: true })
     }
 
     // ---------------------------------------------------------------------------------------------------
@@ -469,9 +469,9 @@ window.ScrollBox = function () {
       .on('start', com[tagDrag + 'dragStart'])
       .on('drag', com[tagDrag + 'dragDuring'])
       .on('end', com[tagDrag + 'dragEnd'])
-    // .on("start", function(d) { com[tagDrag+"_dragStart"](); })
+    // .on("start", function(d) { com[tagDrag+"dragStart"](); })
     // .on("drag",  function(d) { let coords = d3.mouse(this); com[tagDrag+"_dragDuring"](coords); })
-    // .on("end",   function(d) { com[tagDrag+"_dragEnd"](); })
+    // .on("end",   function(d) { com[tagDrag+"dragEnd"](); })
 
     com.scrollOuterG.call(com[tagDrag])
     com.scrollBarG.call(com[tagDrag])
@@ -496,9 +496,9 @@ window.ScrollBox = function () {
     //
     // ---------------------------------------------------------------------------------------------------
     function zoomScrollBarInit () {
-      if (!com.checkFree.isFree(com.mainTag + 'zoomScrollBarInit')) return
+      if (!com.locker.isFree(com.mainTag + 'zoomScrollBarInit')) return
 
-      com.checkFree.add({
+      com.locker.add({
         id: com.mainTag + 'zoomScrollBarInit',
         override: true
       })
@@ -528,9 +528,9 @@ window.ScrollBox = function () {
         .attr('y', box.y)
         .attr('width', 0)
         .attr('height', box.h)
-        // click also does _dragStart, but we need it for the smooth transition
+        // click also does dragStart, but we need it for the smooth transition
         .on('click', function (d) {
-          _recBckClick({ coords: d3.mouse(this) })
+          recBckClickOnce({ coords: d3.mouse(this) })
         })
         .style('opacity', 1)
         .transition('inOut')
@@ -573,7 +573,7 @@ window.ScrollBox = function () {
             com.scrollBarRec = com.scrollBarG.selectAll(
               'rect.' + com.tagScrollBar + 'scroll'
             )
-            com.checkFree.remove({ id: com.mainTag + 'zoomScrollBarInit' })
+            com.locker.remove({ id: com.mainTag + 'zoomScrollBarInit' })
           }
           nTries += 1
         }, timeD.animArc / 5)
@@ -582,7 +582,7 @@ window.ScrollBox = function () {
       if (com.scrollTrans.active) {
         scrollBarRecSet()
       } else {
-        com.checkFree.remove({ id: com.mainTag + 'zoomScrollBarInit' })
+        com.locker.remove({ id: com.mainTag + 'zoomScrollBarInit' })
       }
     }
     com.zoomScrollBarInit = zoomScrollBarInit
@@ -674,7 +674,7 @@ window.ScrollBox = function () {
     // ---------------------------------------------------------------------------------------------------
     com.runLoop.init({
       tag: com.mainTag + 'recBckClick',
-      func: _recBckClick,
+      func: recBckClickOnce,
       nKeep: 1
     })
 
@@ -684,13 +684,13 @@ window.ScrollBox = function () {
     com.recBckClick = recBckClick
 
     let nClickTries = 0
-    function _recBckClick (dataIn) {
+    function recBckClickOnce (dataIn) {
       if (
         com.isInZoom ||
         com.isInDrag ||
         (com.scrollTrans.active && !hasVar(com.scrollBarRec))
       ) {
-        // console.log('delay _recBckClick',[com.isInZoom,com.isInDrag],[com.scrollTrans.active,hasVar(com.scrollBarRec)]);
+        // console.log('delay recBckClickOnce',[com.isInZoom,com.isInDrag],[com.scrollTrans.active,hasVar(com.scrollBarRec)]);
         if (nClickTries < 100) {
           setTimeout(function () {
             nClickTries += 1

@@ -4,7 +4,7 @@
 /* global io */
 /* global d3 */
 /* global timeD */
-/* global uniqId */
+/* global unique */
 /* global hasVar */
 /* global baseApp */
 /* global deepCopy */
@@ -31,7 +31,7 @@
 // manager for sockets
 // -----------------------------------------------------------------------------------------------------------
 function SocketManager () {
-  let _this = this
+  let topThis = this
   let debugMode = true
   let gsIdV = []
   let viewInitV = {}
@@ -48,22 +48,22 @@ function SocketManager () {
   // -----------------------------------------------------------------------------------------------------------
   function setupSocket () {
     let widgetName = window.__widgetName__
-    _this.socket = io.connect('/' + widgetName)
+    topThis.socket = io.connect('/' + widgetName)
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    _this.socket.on('initialConnect', function (dataIn) {
+    topThis.socket.on('initialConnect', function (dataIn) {
       // console.log('initialConnect',dataIn);
 
       validateServer(dataIn.serverName)
 
       let sockId = this.socket.sessionid
 
-      _this.socket.emit('joinSession', sockId)
+      topThis.socket.emit('joinSession', sockId)
 
-      _this.conStat = new ConnectionState()
-      _this.conStat.setState(true)
+      topThis.conStat = new ConnectionState()
+      topThis.conStat.setState(true)
 
       checkIsHidden()
       checkWasOffline()
@@ -72,7 +72,7 @@ function SocketManager () {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    _this.socket.on('reConnect', function (dataIn) {
+    topThis.socket.on('reConnect', function (dataIn) {
       // console.log('reConnect',dataIn);
       validateServer(dataIn.serverName)
     })
@@ -105,14 +105,14 @@ function SocketManager () {
     let socketWasOffline = false
     function checkWasOffline () {
       setTimeout(function () {
-        let isOffline = _this.conStat.isOffline()
+        let isOffline = topThis.conStat.isOffline()
         if (isOffline) socketWasOffline = true
 
         if (socketWasOffline) {
           if (!isOffline) {
             socketWasOffline = false
-            if (hasVar(_this.socket)) {
-              _this.socket.emit('backFromOffline')
+            if (hasVar(topThis.socket)) {
+              topThis.socket.emit('backFromOffline')
             }
           }
         }
@@ -125,9 +125,9 @@ function SocketManager () {
     // ---------------------------------------------------------------------------------------------------
     window.addEventListener('beforeunload', function (event, doReload) {
       // explicitly needed for firefox, but good in any case...
-      if (_this.socket) {
-        _this.socket.disconnect()
-        _this.socket = null
+      if (topThis.socket) {
+        topThis.socket.disconnect()
+        topThis.socket = null
       }
       if (debugMode) {
         window.location.reload() // clear cache
@@ -135,22 +135,22 @@ function SocketManager () {
     })
 
     // in case we disconnect (internet is off or server is down)
-    _this.socket.on('disconnect', function () {
+    topThis.socket.on('disconnect', function () {
       // console.log('disconnect............');
-      _this.conStat.setState(false)
+      topThis.conStat.setState(false)
     })
 
-    // _this.socket.on('error', function(obj) {
+    // topThis.socket.on('error', function(obj) {
     //   console.log("error", obj);
     // });
 
     // ---------------------------------------------------------------------------------------------------
     // run the respective syncStateGet() function for each widget
     // ---------------------------------------------------------------------------------------------------
-    _this.socket.on('syncStateGet', function (dataIn) {
-      if (_this.conStat.isOffline()) return
+    topThis.socket.on('syncStateGet', function (dataIn) {
+      if (topThis.conStat.isOffline()) return
 
-      $.each(_this.widgetV, function (index0, ele0) {
+      $.each(topThis.widgetV, function (index0, ele0) {
         $.each(ele0.widgets, function (index1, ele1) {
           if (hasVar(ele1.syncStateGet)) ele1.syncStateGet(dataIn)
         })
@@ -161,7 +161,7 @@ function SocketManager () {
     // ---------------------------------------------------------------------------------------------------
     // for development...
     // ---------------------------------------------------------------------------------------------------
-    _this.socket.on('refreshAll', function (data) {
+    topThis.socket.on('refreshAll', function (data) {
       if (widgetName !== 'viewRefreshAll') {
         debugMode = false // prevent double reloadding
         window.location.reload()
@@ -174,10 +174,10 @@ function SocketManager () {
     //
     // ---------------------------------------------------------------------------------------------------
     let hasLoaded = false
-    _this.socket.on('joinSessionData', function (data) {
+    topThis.socket.on('joinSessionData', function (data) {
       if (debugServerName) {
-        _this.conStat.setUserName(data.sessProps.userId + '/' + serverName)
-      } else _this.conStat.setUserName(data.sessProps.userId)
+        topThis.conStat.setUserName(data.sessProps.userId + '/' + serverName)
+      } else topThis.conStat.setUserName(data.sessProps.userId)
 
       if (!hasLoaded) {
         if (hasVar(setupView[widgetName])) {
@@ -213,7 +213,7 @@ function SocketManager () {
 
       txt.innerHTML = isOnline ? 'Online' : 'Offline'
 
-      _this.socket.emit('setOnlineState', { isOnline: isOnline })
+      topThis.socket.emit('setOnlineState', { isOnline: isOnline })
     }
 
     function setState (isConnect) {
@@ -250,7 +250,7 @@ function SocketManager () {
   // ---------------------------------------------------------------------------------------------------
   function sockSyncStateSend (optIn) {
     if (document.hidden) return
-    if (_this.conStat.isOffline()) return
+    if (topThis.conStat.isOffline()) return
 
     let dataNow = {}
     dataNow.NS = optIn.NS
@@ -258,7 +258,7 @@ function SocketManager () {
     dataNow.type = optIn.type
     dataNow.data = optIn.data
 
-    if (hasVar(_this.socket)) _this.socket.emit('syncStateSend', dataNow)
+    if (hasVar(topThis.socket)) topThis.socket.emit('syncStateSend', dataNow)
   }
   this.sockSyncStateSend = sockSyncStateSend
 
@@ -309,8 +309,8 @@ function SocketManager () {
       if (Date.now() - prevMouseMove < waitMouseMove) return
       prevMouseMove = Date.now()
 
-      if (!_this.conStat.isOffline() && hasVar(_this.socket)) {
-        _this.socket.emit('setActiveWidget', optIn.data)
+      if (!topThis.conStat.isOffline() && hasVar(topThis.socket)) {
+        topThis.socket.emit('setActiveWidget', optIn.data)
       }
       // console.log("onmousemove",optIn.data.widgetId)
     })
@@ -328,24 +328,24 @@ function SocketManager () {
     let widgetFunc = optIn.widgetFunc
     let widgetSource = optIn.widgetSource
 
-    let isFirst = !hasVar(_this.widgetV[widgetType])
+    let isFirst = !hasVar(topThis.widgetV[widgetType])
 
-    if (isFirst) _this.widgetV[widgetType] = { SockFunc: null, widgets: {} }
+    if (isFirst) topThis.widgetV[widgetType] = { SockFunc: null, widgets: {} }
 
-    if (!hasVar(_this.widgetV[widgetType].widgets[widgetId])) {
-      _this.widgetV[widgetType].widgets[widgetId] = new widgetFunc.MainFunc(
+    if (!hasVar(topThis.widgetV[widgetType].widgets[widgetId])) {
+      topThis.widgetV[widgetType].widgets[widgetId] = new widgetFunc.MainFunc(
         optIn
       )
       viewInitV[widgetId] = false
 
       if (isFirst) {
-        _this.widgetV[widgetType].SockFunc = new widgetFunc.SockFunc(optIn)
+        topThis.widgetV[widgetType].SockFunc = new widgetFunc.SockFunc(optIn)
 
         // common sicket calls, which should be added only once!
-        _this.socket.on('initData', function (dataIn) {
+        topThis.socket.on('initData', function (dataIn) {
           if (dataIn.widgetType === widgetType) {
-            if (hasVar(_this.widgetV[widgetType].widgets[dataIn.widgetId])) {
-              _this.widgetV[widgetType].widgets[dataIn.widgetId].initData(
+            if (hasVar(topThis.widgetV[widgetType].widgets[dataIn.widgetId])) {
+              topThis.widgetV[widgetType].widgets[dataIn.widgetId].initData(
                 dataIn
               )
               viewInitV[dataIn.widgetId] = true
@@ -353,26 +353,26 @@ function SocketManager () {
           }
         })
 
-        _this.socket.on('updateData', function (dataIn) {
-          if (_this.conStat.isOffline()) return
+        topThis.socket.on('updateData', function (dataIn) {
+          if (topThis.conStat.isOffline()) return
           if (dataIn.widgetType !== widgetType) return
 
           let nWigitNow = 0
-          let nWigits = Object.keys(_this.widgetV[widgetType].widgets).length
+          let nWigits = Object.keys(topThis.widgetV[widgetType].widgets).length
 
-          $.each(_this.widgetV[widgetType].widgets, function (
+          $.each(topThis.widgetV[widgetType].widgets, function (
             widgetIdNow,
             modNow
           ) {
             if (dataIn.sessWidgetIds.indexOf(widgetIdNow) >= 0) {
               // make sure we dont sent the same data twice (as it could be modified)
               nWigitNow += 1
-              let _dataIn =
+              let dataUpd =
                 nWigits === 1 || nWigitNow === nWigits
                   ? dataIn
                   : deepCopy(dataIn)
 
-              _this.widgetV[widgetType].widgets[widgetIdNow].updateData(_dataIn)
+              topThis.widgetV[widgetType].widgets[widgetIdNow].updateData(dataUpd)
             }
           })
         })
@@ -381,7 +381,7 @@ function SocketManager () {
       // ---------------------------------------------------------------------------------------------------
       // add the widget
       // ---------------------------------------------------------------------------------------------------
-      _this.socket.emit('widget', {
+      topThis.socket.emit('widget', {
         widgetSource: widgetSource,
         widgetName: widgetType,
         widgetId: widgetId,
@@ -389,7 +389,7 @@ function SocketManager () {
       })
     }
 
-    return _this.widgetV[widgetType].widgets[widgetId]
+    return topThis.widgetV[widgetType].widgets[widgetId]
   }
   // this.setSocketModule = setSocketModule;
 
@@ -475,8 +475,8 @@ function SocketManager () {
     let iconDivV = [null, null]
 
     // create the table element
-    let tabTableId = uniqId()
-    let widgetId = uniqId()
+    let tabTableId = unique()
+    let widgetId = unique()
     let mainId = widgetId + 'main'
     let sideId = widgetId + 'side'
     let gsName = tabTableId + 'tbl'
@@ -539,7 +539,7 @@ function SocketManager () {
       }
 
       if (!hasVar(sideDiv)) {
-        _this.widgetTable[nameTag](widgetOpt)
+        topThis.widgetTable[nameTag](widgetOpt)
         return
       }
 
@@ -556,7 +556,7 @@ function SocketManager () {
           iconDivV[1].ele = sideMenu.getEle(iconDivV[1].id)
         }
 
-        _this.widgetTable[nameTag](widgetOpt)
+        topThis.widgetTable[nameTag](widgetOpt)
 
         runWhenReady({
           pass: function () {
@@ -670,12 +670,12 @@ function SocketManager () {
     if (hasVar(prevResize)) return
     prevResize = Date.now()
 
-    runLoopCom.init({ tag: 'winResize', func: _resizeNow, nKeep: 1 })
+    runLoopCom.init({ tag: 'winResize', func: resizeNowOnce, nKeep: 1 })
     function resizeNow () {
       runLoopCom.push({ tag: 'winResize' })
     }
 
-    function _resizeNow () {
+    function resizeNowOnce () {
       if (Date.now() - prevResize < timeD.animArc) {
         resizeNow()
         return
