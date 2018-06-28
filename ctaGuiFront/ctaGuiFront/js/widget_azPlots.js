@@ -17,6 +17,7 @@ var mainScriptTag = 'azPlots'
 /* global Locker */
 /* global runWhenReady */
 /* global RunLoop */
+/* global bckPattern */
 /* global appendToDom */
 /* global disableScrollSVG */
 /* global ScrollGrid */

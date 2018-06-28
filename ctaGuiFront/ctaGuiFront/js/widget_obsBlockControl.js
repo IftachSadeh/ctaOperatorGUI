@@ -479,6 +479,7 @@ let mainObsBlockControl = function (optIn) {
       //
       // ---------------------------------------------------------------------------------------------------
       let try0 = true
+      let scrollTableData
       if (try0) {
         let gScrollTable = svg.g.append('g')
 
@@ -488,7 +489,7 @@ let mainObsBlockControl = function (optIn) {
         y0 = telScrolBoxData.y + telScrolBoxData.h + telScrolBoxData.marg * 3
         marg = telScrolBoxData.marg
 
-        let scrollTableData = {
+        scrollTableData = {
           x: x0,
           y: y0,
           w: w0,
@@ -572,6 +573,7 @@ let mainObsBlockControl = function (optIn) {
       //
       // ---------------------------------------------------------------------------------------------------
       let try1 = false
+      let scrlDataG
       if (try1) {
         // ---------------------------------------------------------------------------------------------------
         //
@@ -640,7 +642,7 @@ let mainObsBlockControl = function (optIn) {
         // setTimeout(function() { console.log('xxxxxxxxxxx'); let title = scrollBox.get('titleData'); title.text = "77777777"; scrollBox.set({tag:'titleData', data:title}); scrollBox.setTitle(); }, 2000);
 
         // let scrlBox   = scrollBox.get('innerBox');
-        let scrlDataG = scrollBox.get('innerG')
+        scrlDataG = scrollBox.get('innerG')
 
         let dd = [
           { id: 0, x: 0, y: 0, w: 30, h: 30 },
@@ -685,12 +687,12 @@ let mainObsBlockControl = function (optIn) {
       let try2 = false
       if (try2) {
         let g = scrlDataG
-        let n = 40,
-          random = d3.randomNormal(0, 0.2),
-          data = d3.range(n).map(random),
-          margin = { top: 20, right: 20, bottom: 20, left: 40 },
-          width = w0,
-          height = h0
+        let n = 40
+        let random = d3.randomNormal(0, 0.2)
+        let data = d3.range(n).map(random)
+        // let margin = { top: 20, right: 20, bottom: 20, left: 40 }
+        let width = w0
+        let height = h0
 
         let x = d3
           .scaleLinear()
@@ -725,20 +727,8 @@ let mainObsBlockControl = function (optIn) {
           .append('g')
           .attr('class', 'axis axis--y')
           .call(d3.axisLeft(y))
-        g
-          .append('g')
-          .attr('clip-path', 'url(#clip)')
-          .append('path')
-          .datum(data)
-          .style('fill', 'transparent')
-          .style('stroke', 'red')
-          .attr('class', 'line')
-          .transition()
-          .duration(200)
-          .ease(d3.easeLinear)
-          .on('start', tick)
 
-        function tick () {
+        let tick = function () {
           // Push a new data point onto the back.
           data.push(random())
           // Redraw the line.
@@ -756,6 +746,19 @@ let mainObsBlockControl = function (optIn) {
           // Pop the old data point off the front.
           data.shift()
         }
+
+        g
+          .append('g')
+          .attr('clip-path', 'url(#clip)')
+          .append('path')
+          .datum(data)
+          .style('fill', 'transparent')
+          .style('stroke', 'red')
+          .attr('class', 'line')
+          .transition()
+          .duration(200)
+          .ease(d3.easeLinear)
+          .on('start', tick)
       }
 
       // ---------------------------------------------------------------------------------------------------
@@ -787,21 +790,21 @@ let mainObsBlockControl = function (optIn) {
 
         let form = ff.append('form')
 
-        let p = form
+        form
           .selectAll('p')
           .data(schema.fields)
           .enter()
           .append('p')
           .each(function (d) {
             let self = d3.select(this)
-            let label = self
+            self
               .append('label')
               .text(d.display)
               .style('width', '100px')
               .style('display', 'inline-block')
 
-            if (d.type == 'text') {
-              let input = self.append('input').attr({
+            if (d.type === 'text') {
+              self.append('input').attr({
                 type: function (d) {
                   return d.type
                 },
@@ -811,8 +814,8 @@ let mainObsBlockControl = function (optIn) {
               })
             }
 
-            if (d.type == 'dropdown') {
-              let select = self
+            if (d.type === 'dropdown') {
+              self
                 .append('select')
                 .attr('name', 'country')
                 .selectAll('option')

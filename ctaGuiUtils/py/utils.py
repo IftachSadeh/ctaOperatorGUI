@@ -61,11 +61,11 @@ class myLog():
     # --------------------------------------------------------------------------------------------------
     def __init__(self, name='', title='', doParseMsg=True, useColors=True):
         self.doParseMsg = doParseMsg
-        self.name = "root" if name is "" else name
+        self.name = "root" if name == "" else name
         self.log = logging.getLogger(self.name)
 
         self.setColors(useColors)
-        self.title = self.colorV['c']("" if title is "" else (
+        self.title = self.colorV['c']("" if title == "" else (
             " ["+title+"]" if useLogTitle else ""))
 
         # common lock for all loggers

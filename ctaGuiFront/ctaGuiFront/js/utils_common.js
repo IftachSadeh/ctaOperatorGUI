@@ -1923,7 +1923,7 @@ window.dmsToDeg = function (valIn) {
   var sign = valIn[0] > 0 ? 1 : -1
   return valIn[0] + sign * valIn[1] / 60 + sign * valIn[2] / 3600
 }
-var dmsToDeg = window.dmsToDeg
+// var dmsToDeg = window.dmsToDeg
 
 window.degToHms = function (valIn) {
   var scale = 24 / 360
@@ -1931,7 +1931,7 @@ window.degToHms = function (valIn) {
   // console. log('---',valIn,valOut)
   return valOut
 }
-var degToHms = window.degToHms
+// var degToHms = window.degToHms
 
 window.azimToRa = function (valIn) {
   // return valIn;

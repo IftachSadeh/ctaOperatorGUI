@@ -323,12 +323,12 @@ window.BlockQueue = function () {
       func: 'endTime',
       defVal: 0
     })
-    let minRun = minMaxObj({
-      minMax: 'min',
-      data: com.blocksIn.run,
-      func: 'startTime',
-      defVal: 0
-    })
+    // let minRun = minMaxObj({
+    //   minMax: 'min',
+    //   data: com.blocksIn.run,
+    //   func: 'startTime',
+    //   defVal: 0
+    // })
     // let maxRun = minMaxObj({
     //   minMax: 'max',
     //   data: com.blocksIn.run,

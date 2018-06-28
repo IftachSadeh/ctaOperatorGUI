@@ -5,9 +5,6 @@
 /* global bckPattern */
 /* global vorPloyFunc */
 /* global doZoomToTarget */
-/* global runLoop */
-/* global locker */
-/* global colsMix */
 
 // ---------------------------------------------------------------------------------------------------
 //
@@ -1170,127 +1167,127 @@ window.ScrollGrid = function (optIn) {
   update({ isInit: true })
 }
 
-// ---------------------------------------------------------------------------------------------------
-// simple example 2017_11_30
-// ---------------------------------------------------------------------------------------------------
-function scrollGridExampleUse (com, svg) {
-  com.gBase = svg.g.append('g')
-  com.gBckData = com.gBase.append('g')
-  com.gVor = com.gBase.append('g')
+// // ---------------------------------------------------------------------------------------------------
+// // simple example 2017_11_30
+// // ---------------------------------------------------------------------------------------------------
+// function scrollGridExampleUse (com, svg) {
+//   com.gBase = svg.g.append('g')
+//   com.gBckData = com.gBase.append('g')
+//   com.gVor = com.gBase.append('g')
 
-  let sbD = {}
-  let x0 = 120
-  let y0 = 120
-  let w0 = 400
-  let h0 = 100
-  let myId = 'myScrollBox'
-  let tagClipPath = 'myScrollBoxPath'
+//   let sbD = {}
+//   let x0 = 120
+//   let y0 = 120
+//   let w0 = 400
+//   let h0 = 100
+//   let myId = 'myScrollBox'
+//   let tagClipPath = 'myScrollBoxPath'
 
-  let scrollGridOpt = {
-    // unique id for a given box
-    id: myId,
-    // the group elements (vor in front of data)
-    g: { gBckData: com.gBckData, gVor: com.gVor },
-    // the id of the clip-path element corresponding to the geometry of the box
-    tagClipPath: tagClipPath,
-    // if to aplly automatic clip-path to the entire data-g
-    autoClipPath: true,
-    // dictionary which will be filled with the results
-    recD: sbD,
-    // list of data (can be updated later)
-    recV: [],
-    // dimensions of the box
-    x0: x0,
-    y0: y0,
-    w0: w0,
-    h0: h0,
-    // dimentions of data elements inside the box
-    recH: h0 * 0.5,
-    recW: h0 * 0.5,
-    // boolean to show the number of overflow data elements
-    showCounts: false,
-    // horizonthal/vertical geometry of the box
-    isHorz: true,
-    // properties of the background
-    bckRecOpt: { textureOrient: '5/8', frontProp: { strkWOcp: 0.2 } },
-    // options for the voronoii grid
-    vorOpt: { click: onVorClick },
-    // options for the zooming/scrolling
-    onZoom: { during: onZoomDuring, end: onZoomDuring },
-    // the global let of the queue loop
-    runLoop: runLoop,
-    // the global let for the locking variable
-    locker: locker
-  }
+//   let scrollGridOpt = {
+//     // unique id for a given box
+//     id: myId,
+//     // the group elements (vor in front of data)
+//     g: { gBckData: com.gBckData, gVor: com.gVor },
+//     // the id of the clip-path element corresponding to the geometry of the box
+//     tagClipPath: tagClipPath,
+//     // if to aplly automatic clip-path to the entire data-g
+//     autoClipPath: true,
+//     // dictionary which will be filled with the results
+//     recD: sbD,
+//     // list of data (can be updated later)
+//     recV: [],
+//     // dimensions of the box
+//     x0: x0,
+//     y0: y0,
+//     w0: w0,
+//     h0: h0,
+//     // dimentions of data elements inside the box
+//     recH: h0 * 0.5,
+//     recW: h0 * 0.5,
+//     // boolean to show the number of overflow data elements
+//     showCounts: false,
+//     // horizonthal/vertical geometry of the box
+//     isHorz: true,
+//     // properties of the background
+//     bckRecOpt: { textureOrient: '5/8', frontProp: { strkWOcp: 0.2 } },
+//     // options for the voronoii grid
+//     vorOpt: { click: onVorClick },
+//     // options for the zooming/scrolling
+//     onZoom: { during: onZoomDuring, end: onZoomDuring },
+//     // the global let of the queue loop
+//     runLoop: runLoop,
+//     // the global let for the locking variable
+//     locker: locker
+//   }
 
-  com.scrollGrid = new window.ScrollGrid(scrollGridOpt)
+//   com.scrollGrid = new window.ScrollGrid(scrollGridOpt)
 
-  let recVnow = [
-    { id: 'data0', data: { name: 'xxx', number: 10 } },
-    { id: 'data1', data: { name: 'yyy', number: 9 } },
-    { id: 'data2', data: { name: 'zzz', number: 98 } },
-    { id: 'data3', data: { name: 'eee', number: 1 } },
-    { id: 'data4', data: { name: 'yyy', number: 83 } },
-    { id: 'data5', data: { name: 'dgd', number: 14 } },
-    { id: 'data6', data: { name: '344', number: 18 } },
-    { id: 'data7', data: { name: 'opi', number: 44 } }
-  ]
-  com.scrollGrid.update({ recV: recVnow })
+//   let recVnow = [
+//     { id: 'data0', data: { name: 'xxx', number: 10 } },
+//     { id: 'data1', data: { name: 'yyy', number: 9 } },
+//     { id: 'data2', data: { name: 'zzz', number: 98 } },
+//     { id: 'data3', data: { name: 'eee', number: 1 } },
+//     { id: 'data4', data: { name: 'yyy', number: 83 } },
+//     { id: 'data5', data: { name: 'dgd', number: 14 } },
+//     { id: 'data6', data: { name: '344', number: 18 } },
+//     { id: 'data7', data: { name: 'opi', number: 44 } }
+//   ]
+//   com.scrollGrid.update({ recV: recVnow })
 
-  // console.log(sbD[myId]);
-  let rect = com.gBckData
-    .selectAll('rect.' + 'myScrollBoxRecs')
-    .data(sbD[myId], function (d) {
-      return d.id
-    })
+//   // console.log(sbD[myId]);
+//   let rect = com.gBckData
+//     .selectAll('rect.' + 'myScrollBoxRecs')
+//     .data(sbD[myId], function (d) {
+//       return d.id
+//     })
 
-  rect
-    .enter()
-    .append('rect')
-    .attr('class', 'myScrollBoxRecs')
-    .attr('stroke-width', '0.5')
-    .style('stroke-opacity', '0.9')
-    .style('fill-opacity', 0.2)
-    .style('stroke', function (d, i) {
-      return d3.rgb(colsMix[i % colsMix.length]).darker(0.5)
-    })
-    .style('fill', function (d, i) {
-      return colsMix[i % colsMix.length]
-    })
-    .style('opacity', 0)
-    .attr('x', function (d) {
-      return d.x
-    })
-    .attr('y', function (d) {
-      return d.y
-    })
-    .attr('width', function (d) {
-      return d.w
-    })
-    .attr('height', function (d) {
-      return d.h
-    })
-    // .attr("clip-path", function(d){ return "url(#"+tagClipPath+d.scrollGridId+")"; })
-    .transition('newEle')
-    .duration(timeD.animArc)
-    .style('opacity', 1)
+//   rect
+//     .enter()
+//     .append('rect')
+//     .attr('class', 'myScrollBoxRecs')
+//     .attr('stroke-width', '0.5')
+//     .style('stroke-opacity', '0.9')
+//     .style('fill-opacity', 0.2)
+//     .style('stroke', function (d, i) {
+//       return d3.rgb(colsMix[i % colsMix.length]).darker(0.5)
+//     })
+//     .style('fill', function (d, i) {
+//       return colsMix[i % colsMix.length]
+//     })
+//     .style('opacity', 0)
+//     .attr('x', function (d) {
+//       return d.x
+//     })
+//     .attr('y', function (d) {
+//       return d.y
+//     })
+//     .attr('width', function (d) {
+//       return d.w
+//     })
+//     .attr('height', function (d) {
+//       return d.h
+//     })
+//     // .attr("clip-path", function(d){ return "url(#"+tagClipPath+d.scrollGridId+")"; })
+//     .transition('newEle')
+//     .duration(timeD.animArc)
+//     .style('opacity', 1)
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function onZoomDuring (optIn) {
-    let xy = optIn.xy
-    let rect = com.gBckData.selectAll('rect.' + 'myScrollBoxRecs')
-    rect.attr(xy, function (d, i) {
-      return d[xy]
-    })
-  }
+//   // ---------------------------------------------------------------------------------------------------
+//   //
+//   // ---------------------------------------------------------------------------------------------------
+//   function onZoomDuring (optIn) {
+//     let xy = optIn.xy
+//     let rect = com.gBckData.selectAll('rect.' + 'myScrollBoxRecs')
+//     rect.attr(xy, function (d, i) {
+//       return d[xy]
+//     })
+//   }
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function onVorClick (optIn) {
-    let dataNow = optIn.data.data
-    console.log('------------ click my name is :', dataNow.data.name)
-  }
-}
+//   // ---------------------------------------------------------------------------------------------------
+//   //
+//   // ---------------------------------------------------------------------------------------------------
+//   function onVorClick (optIn) {
+//     let dataNow = optIn.data.data
+//     console.log('------------ click my name is :', dataNow.data.name)
+//   }
+// }

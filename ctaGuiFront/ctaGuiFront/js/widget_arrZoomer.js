@@ -5566,7 +5566,7 @@ let mainArrZoomer = function (optIn) {
             let onlyOpen = hasVar(optIn.onlyOpen) ? optIn.onlyOpen : false
             let canIgnore = hasVar(optIn.canIgnore) ? optIn.canIgnore : true
 
-            if (propD.indexOf(propIn) < 0 && propIn != '') return
+            if (propD.indexOf(propIn) < 0 && propIn !== '') return
 
             if (
               !locker.isFreeV([

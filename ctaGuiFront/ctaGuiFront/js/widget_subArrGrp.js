@@ -1527,14 +1527,16 @@ let mainSubArrGrp = function (optIn) {
         .style('stroke-opacity', 0)
         .remove()
 
+      let prevTickAnim
+      let minAnimWait
       if (hasVar(com.telPos[tagTelLbl + 'force'])) {
         com.telPos[tagTelLbl + 'force']
           .alpha(1)
           .nodes(forceNodes)
           .restart()
       } else {
-        let prevTickAnim = Date.now()
-        let minAnimWait = timeD.animArc * 2 // minAnimWait must be >= timeD.animArc !!!
+        prevTickAnim = Date.now()
+        minAnimWait = timeD.animArc * 2 // minAnimWait must be >= timeD.animArc !!!
 
         // update the positions
         com.nodeUpdateTickPos = function (animFrac) {
@@ -3094,7 +3096,7 @@ let mainSubArrGrp = function (optIn) {
 
       // set the main display according to the focused tel/sub-array by zoom state
       if (scale < com.z['1.0']) {
-        if (type !== 'dataChange' || telData.prevState != 0) {
+        if (type !== 'dataChange' || telData.prevState !== 0) {
           telData.prevState = 0
           telData.telHover.focusedSubArr = ''
 
@@ -3104,7 +3106,7 @@ let mainSubArrGrp = function (optIn) {
       } else if (scale < com.z['2.0']) {
         setState01(true, '')
 
-        if (type !== 'dataChange' || telData.prevState != 1 || isChangeFocus) {
+        if (type !== 'dataChange' || telData.prevState !== 1 || isChangeFocus) {
           telData.prevState = 1
           setState10(false, '')
         }

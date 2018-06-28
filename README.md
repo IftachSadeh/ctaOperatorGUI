@@ -120,7 +120,7 @@ The following details the minimal procedure to add a new widget, `myTestExample`
 - Strictly speaking, the `ctaGuiBack` sub-package doesn't have to be run with `gunicorn` (it does not act as a web server, nor does it really need to occupy a socket). Using `gunicorn` is just convenient for development purposes, and may in the future be used to serve a debugging interface for the `redis` server.
 
 - If running the server on a remote machine, one may connect using an ssh tunnel. From the local machine, run
-```bash
+  ```bash
   ssh MyUserName@myServer -L8092:localhost:8090
   ```
   then, for this example, navigate to `http://127.0.0.1:8092/cta`.
