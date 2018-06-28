@@ -367,9 +367,9 @@ class PropertyMonitorLocal:
         """
         cb = MonitorCB(rkey_local)
         # creates the monitor from the generated string
-        exec self.sub_monitoring(props[key]['component_name'],
+        exec(self.sub_monitoring(props[key]['component_name'],
                                  props[key]["Monitor"]["additional_parameters"],
-                                 props[key]["Monitor"]["monitoring_command"])
+                                 props[key]["Monitor"]["monitoring_command"]))
         # adds the reference to the newly created monitor to monitors dict
         encoded_mon = jsonAcs.encode(mon)
         # add the newly created monitor reference to the hset in redis

@@ -584,9 +584,10 @@ class mockSched():
                     obsBlocks = blocks[schedBlockId]['schedBlock'].observation_blocks
                     for obsBlock in obsBlocks:
                         obsBlockId = obsBlock.id
-                        if self.rndGen.random() < 0.05:
+                        rndNow = self.rndGen.random()
+                        if rndNow < 0.05:
                             metaData[obsBlockId]['status'] = sb.OB_CANCELED
-                        elif self.rndGen.random() < 0.05:
+                        elif rndNow < 0.1:
                             metaData[obsBlockId]['status'] = sb.OB_FAILED
                         else:
                             metaData[obsBlockId]['status'] = sb.OB_SUCCEEDED

@@ -66,25 +66,24 @@ class mockSched():
     print '---',self.supervisor.getSbOperationStatus(active[0]).ob_statuses[-1].status
     activeNow = self.supervisor.listSchedulingBlocks()
     print 'active now ....',activeNow
-    return
 
 
 
-    self.threads = []
-    run_event = threading.Event()
-    run_event.set()
+    # self.threads = []
+    # run_event = threading.Event()
+    # run_event.set()
 
-    t = threading.Thread(target=self.loop, args = (run_event,))
-    t.start()
-    self.threads.append(t)
+    # t = threading.Thread(target=self.loop, args = (run_event,))
+    # t.start()
+    # self.threads.append(t)
 
-    try:
-      while 1:
-        sleep(.1)
-    except KeyboardInterrupt:
-      run_event.clear()
-      for t in self.threads:
-        t.join()
+    # try:
+    #   while 1:
+    #     sleep(.1)
+    # except KeyboardInterrupt:
+    #   run_event.clear()
+    #   for t in self.threads:
+    #     t.join()
 
     return
 
@@ -666,7 +665,6 @@ class myLock():
       nChecked += 1
       if nChecked > self.maxChecks:
         raise Warning(" - could not get lock for "+self.name+" ...")
-        break
       sleep(self.checkEvery)
 
     myLock.locks[self.name] = True

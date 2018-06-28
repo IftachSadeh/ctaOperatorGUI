@@ -273,7 +273,6 @@ class myLock():
             nChecked += 1
             if nChecked > self.maxChecks:
                 raise Warning(" - could not get lock for "+self.name+" ...")
-                break
             sleep(self.checkEvery)
 
         myLock.locks[self.name] = True

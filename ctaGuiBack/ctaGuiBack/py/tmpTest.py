@@ -101,37 +101,37 @@ class tmpTest():
         # print opstatus
         # print ""
 
-        return
-        active_scheduling_blocks = supervisor.listSchedulingBlocks()
-        print active_scheduling_blocks
 
-        zz = jsonAcs.classFactory.defaultValues[sb.SchedulingBlock]
-        print zz
-        print '--------------------------------'
-        for block in zz.observation_blocks:
-            block.observing_conditions.duration = 30  # .observing_conditions
-        print zz.observation_blocks
-        zz = jsonAcs.encode(zz)
+        # active_scheduling_blocks = supervisor.listSchedulingBlocks()
+        # print active_scheduling_blocks
 
-        sb3 = jsonAcs.decode(zz)
-        sb3.id = 'sb3'
+        # zz = jsonAcs.classFactory.defaultValues[sb.SchedulingBlock]
+        # print zz
+        # print '--------------------------------'
+        # for block in zz.observation_blocks:
+        #     block.observing_conditions.duration = 30  # .observing_conditions
+        # print zz.observation_blocks
+        # zz = jsonAcs.encode(zz)
 
-        supervisor.putSchedulingBlock(sb3)
-        active_scheduling_blocks = supervisor.listSchedulingBlocks()
-        self.log.info([['y', " - active_scheduling_blocks - "],
-                       ['g', active_scheduling_blocks]])
+        # sb3 = jsonAcs.decode(zz)
+        # sb3.id = 'sb3'
 
-        while len(active_scheduling_blocks) > 0:
-            self.log.info([['y', " - active_scheduling_blocks - "],
-                           ['g', active_scheduling_blocks]])
-            sleep(.5)
-            active_scheduling_blocks = supervisor.listSchedulingBlocks()
+        # supervisor.putSchedulingBlock(sb3)
+        # active_scheduling_blocks = supervisor.listSchedulingBlocks()
+        # self.log.info([['y', " - active_scheduling_blocks - "],
+        #                ['g', active_scheduling_blocks]])
 
-        print 'ended!', active_scheduling_blocks
+        # while len(active_scheduling_blocks) > 0:
+        #     self.log.info([['y', " - active_scheduling_blocks - "],
+        #                    ['g', active_scheduling_blocks]])
+        #     sleep(.5)
+        #     active_scheduling_blocks = supervisor.listSchedulingBlocks()
 
-        # self.init()
+        # print 'ended!', active_scheduling_blocks
 
-        # gevent.spawn(self.loop)
+        # # self.init()
+
+        # # gevent.spawn(self.loop)
 
         return
 

@@ -129,54 +129,53 @@ class schedBlocks():
         #   bb['exeState']['state'] = 'run'
         # self.doDataUpdates = False
 
-        return
 
-        self.redis.pipe.reset()
-        self.redis.pipe.get('obsBlockIds_'+'wait')
-        self.redis.pipe.get('obsBlockIds_'+'run')
-        self.redis.pipe.get('obsBlockIds_'+'done')
-        self.redis.pipe.get('obsBlockIds_'+'cancel')
-        self.redis.pipe.get('obsBlockIds_'+'fail')
+        # self.redis.pipe.reset()
+        # self.redis.pipe.get('obsBlockIds_'+'wait')
+        # self.redis.pipe.get('obsBlockIds_'+'run')
+        # self.redis.pipe.get('obsBlockIds_'+'done')
+        # self.redis.pipe.get('obsBlockIds_'+'cancel')
+        # self.redis.pipe.get('obsBlockIds_'+'fail')
 
-        data = self.redis.pipe.execute(packed=True)
-        obsBlockIds = sum(data, [])  # flatten the list of lists
-        # print 'wwwwwwww',obsBlockIds
-        # obsBlockIds = self.redis.get(key=('obsBlockIds_'+'all'), packed=True, defVal=[])
-        # print 'xxxxxxxx',obsBlockIds
+        # data = self.redis.pipe.execute(packed=True)
+        # obsBlockIds = sum(data, [])  # flatten the list of lists
+        # # print 'wwwwwwww',obsBlockIds
+        # # obsBlockIds = self.redis.get(key=('obsBlockIds_'+'all'), packed=True, defVal=[])
+        # # print 'xxxxxxxx',obsBlockIds
 
-        self.redis.pipe.reset()
-        for obId in obsBlockIds:
-            self.redis.pipe.get(obId)
+        # self.redis.pipe.reset()
+        # for obId in obsBlockIds:
+        #     self.redis.pipe.get(obId)
 
-        blocks = self.redis.pipe.execute(packed=True)
-        schedBlocks.blocks = sorted(blocks, cmp=lambda a, b: int(
-            a['timeStamp']) - int(b['timeStamp']))
-        # print schedBlocks.blocks
+        # blocks = self.redis.pipe.execute(packed=True)
+        # schedBlocks.blocks = sorted(blocks, cmp=lambda a, b: int(
+        #     a['timeStamp']) - int(b['timeStamp']))
+        # # print schedBlocks.blocks
 
-        # dur = [x['duration'] for x in schedBlocks.blocks] ; print dur
+        # # dur = [x['duration'] for x in schedBlocks.blocks] ; print dur
 
-        # schedBlocks.blocks = [ unpackb(x) for x in redData ]
+        # # schedBlocks.blocks = [ unpackb(x) for x in redData ]
 
-        # schedBlocks.blocks = []
-        # for block in redData:
-        #   schedBlocks.blocks.append(unpackb(block))
+        # # schedBlocks.blocks = []
+        # # for block in redData:
+        # #   schedBlocks.blocks.append(unpackb(block))
 
-        # self.sortBlocks()
+        # # self.sortBlocks()
 
-        # if len(schedBlocks.blocks) > 10: schedBlocks.blocks = schedBlocks.blocks[0:9]
-        # # if len(schedBlocks.blocks) > 25: schedBlocks.blocks = schedBlocks.blocks[0:14]
-        # if len(schedBlocks.blocks) > 20: schedBlocks.blocks = schedBlocks.blocks[0:13]
-        # print schedBlocks.blocks
-        # # for bb in range(9):
-        # for bb in range(25):
-        #   if len(schedBlocks.blocks) <= bb: break
-        #   # schedBlocks.blocks[bb]['exeState'] = 'done'
-        #   schedBlocks.blocks[bb]['exeState'] = 'run'
-        #   print schedBlocks.blocks[bb]
-        # schedBlocks.blocks[bb]['runPhase'] = ['run_takeData']
-        #   # schedBlocks.blocks[bb]['runPhase'] = ['run_config_mount']
-        #   # print schedBlocks.blocks[bb]
-        #   # if bb < 10: schedBlocks.blocks[bb]['exeState'] = 'run'
-        #   # else:     schedBlocks.blocks[bb]['exeState'] = 'wait'
+        # # if len(schedBlocks.blocks) > 10: schedBlocks.blocks = schedBlocks.blocks[0:9]
+        # # # if len(schedBlocks.blocks) > 25: schedBlocks.blocks = schedBlocks.blocks[0:14]
+        # # if len(schedBlocks.blocks) > 20: schedBlocks.blocks = schedBlocks.blocks[0:13]
+        # # print schedBlocks.blocks
+        # # # for bb in range(9):
+        # # for bb in range(25):
+        # #   if len(schedBlocks.blocks) <= bb: break
+        # #   # schedBlocks.blocks[bb]['exeState'] = 'done'
+        # #   schedBlocks.blocks[bb]['exeState'] = 'run'
+        # #   print schedBlocks.blocks[bb]
+        # # schedBlocks.blocks[bb]['runPhase'] = ['run_takeData']
+        # #   # schedBlocks.blocks[bb]['runPhase'] = ['run_config_mount']
+        # #   # print schedBlocks.blocks[bb]
+        # #   # if bb < 10: schedBlocks.blocks[bb]['exeState'] = 'run'
+        # #   # else:     schedBlocks.blocks[bb]['exeState'] = 'wait'
 
         return

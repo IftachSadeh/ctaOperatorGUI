@@ -256,7 +256,7 @@ The `timeout` sets the maximal time for a greenlet (a gunicorn thread) to be abl
 
 ### Styling conventions
 
-- The python code complies with `pep8`. (One can e.g., do `autopep8 -i ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py`.)
+- The python code complies with `flake8`. (One can e.g., do `autopep8 -i ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py`.)
 - The JavaScript code complies with the [`standard`](https://github.com/standard/standard). (One can e.g., do `prettier-standard ctaGuiFront/ctaGuiFront/js/widget_emptyExample.js`.)
 
 
