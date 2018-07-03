@@ -1,14 +1,5 @@
-import os
-import copy
-import gevent
-from gevent import sleep
 from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
-from datetime import datetime
-import random
-from random import Random
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, getTimeOfNight
+from ctaGuiUtils.py.utils import myLog, Assert, telIds, getTimeOfNight
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
@@ -43,8 +34,9 @@ class nightSched():
         self.widgetId = widgetId
         # the parent of this widget
         self.mySock = mySock
-        Assert(log=self.log, msg=[
-               " - no mySock handed to", self.__class__.__name__], state=(self.mySock is not None))
+        Assert(log=self.log,
+               msg=[" - no mySock handed to", self.__class__.__name__],
+               state=(self.mySock is not None))
 
         # widget-class and widget group names
         self.widgetName = self.__class__.__name__
@@ -67,16 +59,18 @@ class nightSched():
                 name='widgetV', key=self.widgetId, packed=True)
             self.nIcon = wgt["nIcon"]
 
-        # override the global logging variable with a name corresponding to the current session id
-        self.log = myLog(title=str(self.mySock.userId)+"/" +
-                         str(self.mySock.sessId)+"/"+__name__+"/"+self.widgetId)
+        # override the global logging variable with a name
+        # corresponding to the current session id
+        self.log = myLog(title=str(self.mySock.userId) + "/" +
+                         str(self.mySock.sessId) + "/" + __name__ + "/"
+                         + self.widgetId)
 
         # initial dataset and send to client
         optIn = {'widget': self, 'dataFunc': self.getData}
         self.mySock.sendWidgetInit(optIn=optIn)
 
-        # start a thread which will call updateData() and send 1Hz data updates to
-        # all sessions in the group
+        # start a thread which will call updateData() and send
+        # 1Hz data updates to all sessions in the group
         optIn = {'widget': self, 'dataFunc': self.getData}
         self.mySock.addWidgetTread(optIn=optIn)
 
@@ -141,36 +135,8 @@ class nightSched():
             key = keyV[0]
             blocks = self.redis.pipe.execute(packed=True)
             nightSched.blocks[key] = sorted(
-                blocks, cmp=lambda a, b: int(a['startTime']) - int(b['startTime']))
-
-        # print nightSched.blocks
-
-        # dur = [x['timeStamp'] for x in nightSched.blocks] ; print dur
-        # print nightSched.blocks[0]
-
-        # xxx = nightSched.blocks['wait'][5]
-        # xxx['exeState'] = {'state': 'wait', 'canRun': False}
-
-        # nightSched.blocks = [ unpackb(x) for x in redData ]
-
-        # nightSched.blocks = []
-        # for block in redData:
-        #   nightSched.blocks.append(unpackb(block))
-
-        # self.sortBlocks()
-
-        # if len(nightSched.blocks) > 10: nightSched.blocks = nightSched.blocks[0:9]
-        # # if len(nightSched.blocks) > 25: nightSched.blocks = nightSched.blocks[0:14]
-        # if len(nightSched.blocks) > 20: nightSched.blocks = nightSched.blocks[0:11]
-        # # # # print nightSched.blocks
-        # # for bb in range(9):
-        # for bb in range(20):
-        #   if len(nightSched.blocks) <= bb: break
-        #   nightSched.blocks[bb]['exeState'] = 'run'
-        #   nightSched.blocks[bb]['runPhase'] = ['run_takeData']
-        #   # nightSched.blocks[bb]['runPhase'] = ['run_config_mount']
-        #   # print nightSched.blocks[bb]
-        #   # if bb < 10: nightSched.blocks[bb]['exeState'] = 'run'
-        #   # else:     nightSched.blocks[bb]['exeState'] = 'wait'
+                blocks,
+                cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])
+            )
 
         return

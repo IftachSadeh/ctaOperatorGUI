@@ -46,7 +46,7 @@ Best performance is likely to be achieved using the Chrome browser.
     python -c 'import setuptools'
   ```
 
-- Create a `virtualenv` and install some packages:
+- Create a `virtualenv` and install some packages (formatting/linter packages optional):
   ```bash
     mkdir -p $VENV
 
@@ -57,7 +57,8 @@ Best performance is likely to be achieved using the Chrome browser.
     $VENV/bin/easy_install gevent-websocket gevent-socketio
     $VENV/bin/easy_install gunicorn pyramid_jinja2
     $VENV/bin/easy_install zope.interface zope.sqlalchemy zope.deprecation SQLAlchemy sqlalchemy transaction
-    $VENV/bin/easy_install msgpack-python redis numpy autopep8
+    $VENV/bin/easy_install msgpack-python redis numpy
+    $VENV/bin/easy_install pep8 flake8 pep8-naming autopep8 autoflake
   ```
 
 - Setup the two sub-packages, `ctaGuiBack` and `ctaGuiFront`:
@@ -256,13 +257,14 @@ The `timeout` sets the maximal time for a greenlet (a gunicorn thread) to be abl
 
 ### Styling conventions
 
-- The python code complies with `flake8`. (One can e.g., do `autopep8 -i ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py`.)
+- The python code complies with `pep8`/`flake8`. (One can e.g., do `$VENV/bin/autopep8 -i ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py`, `$VENV/bin/flake8 ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py` etc.)
 - The JavaScript code complies with the [`standard`](https://github.com/standard/standard). (One can e.g., do `prettier-standard ctaGuiFront/ctaGuiFront/js/widget_emptyExample.js`.)
 
 
 ### Credits
 
 - The SVG icons used to identify widgets were made by [Freepik](https://www.freepik.com/) from [www.flaticon.com](https://www.flaticon.com/).
+
 
 ---
 
