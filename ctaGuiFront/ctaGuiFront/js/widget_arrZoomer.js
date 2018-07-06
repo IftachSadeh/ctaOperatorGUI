@@ -23,17 +23,15 @@ var mainScriptTag = 'arrZoomer'
 /* global unique */
 /* global appendToDom */
 /* global runWhenReady */
-/* global colsPurples */
 /* global doZoomToTarget */
 /* global telHealthCol */
 /* global bckPattern */
-/* global colsBlues */
 /* global telInfo */
-/* global moveNodeUp */
 /* global vorPloyFunc */
 /* global getNodeWidthById */
 /* global getNodeHeightById */
 /* global telHealthFrac */
+/* global QuickMap */
 /* global  */
 /* global  */
 /* global  */
@@ -49,7 +47,10 @@ var mainScriptTag = 'arrZoomer'
 // double check formatting.........
 // double check formatting.........
 // double check formatting.........
-
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/utils_quickMap.js'
+})
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
@@ -122,6 +123,7 @@ let sockArrZoomer = function (optIn) {
     data.widgetId = optIn.widgetId
     data.zoomState = optIn.zoomState
     data.zoomTarget = optIn.zoomTarget
+    data.zoomTargetProp = optIn.zoomTargetProp
 
     let dataEmit = {
       widgetSource: widgetSource,
@@ -213,7 +215,6 @@ let mainArrZoomer = function (optIn) {
   locker.add('inInit')
   locker.add('inInitMain')
   locker.add('inInitDetail')
-  locker.add('inInitQuick')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -223,9 +224,6 @@ let mainArrZoomer = function (optIn) {
   // see: http://colors.findthedata.com/saved_search/Pastel-Colors
   //      https://www.google.de/design/spec/style/color.html#color-color-palette
   //      http://riccardoscalco.github.io/crayon/
-  let miniMapCol = {}
-  miniMapCol.b = ['#64B5F6']
-  miniMapCol.p = ['#9575CD']
 
   // // ---------------------------------------------------------------------------------------------------
   // // colours for different states (red, yellow, green)
@@ -415,7 +413,10 @@ let mainArrZoomer = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     svgMain.initData(dataIn)
     svgDetail.initData(dataIn)
-    svgQuick.initData(dataIn)
+
+    svgQuick.initData({
+      telData: {tel: telData.tel, vor: {data: telData.vor.data}, mini: telData.mini, xyr: telData.xyr, vorDblclick: telData.vorDblclick},
+      telTypeV: telTypeV})
 
     if (locker.isFree('inInit') && hasVar(dataIn.arrProp.type)) {
       console.error('double init ?!?!', dataIn)
@@ -667,6 +668,7 @@ let mainArrZoomer = function (optIn) {
   runLoop.init({ tag: '_getDataS1_', func: getDataS1Once, nKeep: 1 })
 
   function getDataS1 (widgetIdIn, dataIn) {
+    console.log("GETDATAS1");
     // just in case... should not be needed
     if (widgetIdIn !== widgetId) {
       console.error('id mismatch', widgetIdIn, widgetId)
@@ -674,6 +676,7 @@ let mainArrZoomer = function (optIn) {
     }
     // console.log('-client- getDataS1',dataIn)
 
+    console.log("need to be 1", svgMain.getZoomS());
     if (svgMain.getZoomS() === 1) {
       runLoop.push({ tag: '_getDataS1_', data: dataIn }) //, time:dataIn.emitTime
     }
@@ -681,6 +684,8 @@ let mainArrZoomer = function (optIn) {
   this.getDataS1 = getDataS1
 
   function getDataS1Once (dataIn) {
+    console.log(svgMain.getZoomS() === 1,
+    svgMain.syncD.zoomTarget !== dataIn.data.id)
     if (
       svgMain.getZoomS() === 1 &&
       svgMain.syncD.zoomTarget !== dataIn.data.id
@@ -788,933 +793,6 @@ let mainArrZoomer = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  let SvgQuick = function () {
-    let thisQuick = this
-
-    let com = {}
-    let svg = {}
-
-    let lenD = {}
-    lenD.mini = {}
-    lenD.ches = {}
-    lenD.mini.w = {}
-    lenD.ches.w = {}
-    lenD.mini.h = {}
-    lenD.ches.h = {}
-
-    let baseW = 500
-    lenD.mini.w[0] = baseW // isSouth ? 900 : 400;
-    lenD.mini.h[0] = baseW
-
-    lenD.ches.w[0] = baseW * 5
-    lenD.ches.h[0] = baseW
-
-    // let rScale = svgMain.rScale
-
-    // initialize a global function (to be overriden below)
-    let zoomToTrgQuick = function (optIn) {
-      if (!locker.isFree('inInit')) {
-        setTimeout(function () {
-          zoomToTrgQuick(optIn)
-        }, timeD.waitLoop)
-      }
-    }
-    thisQuick.zoomToTrgQuick = zoomToTrgQuick
-
-    // initialize a couple of functions to be overriden below
-    let getScale = function () {
-      return zoomLen['0.0']
-    }
-    this.getScale = getScale
-    let getTrans = function () {
-      return [0, 0]
-    }
-    this.getTrans = getTrans
-
-    function initData (dataIn) {
-      if (hasVar(svg.svgMini)) return
-
-      // ---------------------------------------------------------------------------------------------------
-      // create the main svg element
-      // ---------------------------------------------------------------------------------------------------
-      let svgDivId = sgvTag.quick.id + '_svg'
-      let svgDiv = sgvTag.quick.widget.getEle(svgDivId)
-
-      if (!hasVar(svgDiv)) {
-        let parent = sgvTag.quick.widget.getEle(sgvTag.quick.id)
-        let svgDiv = document.createElement('div')
-        svgDiv.id = svgDivId
-
-        appendToDom(parent, svgDiv)
-
-        runWhenReady({
-          pass: function () {
-            return hasVar(sgvTag.quick.widget.getEle(svgDivId))
-          },
-          execute: function () {
-            initData(dataIn)
-          }
-        })
-
-        return
-      }
-      sock.emitMouseMove({ eleIn: svgDiv, data: { widgetId: widgetId } })
-
-      // ---------------------------------------------------------------------------------------------------
-      // background container & zoom behaviour
-      // ---------------------------------------------------------------------------------------------------
-      let whRatio = sgvTag.quick.whRatio
-      let whFracMini = 1
-      let whFracChes = whRatio - whFracMini
-
-      let svgMiniW = 100 * whFracMini / whRatio + '%'
-      // let svgMiniH = '100%'
-      // let svgMiniT  = "0px";
-      // let svgMiniL  = "0px";
-
-      let svgChesW = 100 * whFracChes / whRatio + '%'
-      // let svgChesH = '100%'
-      // let svgChesT  = "0px";
-      // let svgChesL  = (100*whFracMini/whRatio)+"%";
-
-      // ---------------------------------------------------------------------------------------------------
-      // zoom start/on/end functions, attachd to com.svgZoom
-      // ---------------------------------------------------------------------------------------------------
-      com.svgZoomStart = function () {
-        locker.add({ id: 'zoom', override: true })
-      }
-
-      // initialize the target name for hovering->zoom
-      thisQuick.target = zoomTarget
-
-      com.svgZoomDuringMini = function () {
-        // console.log('svgZoomDuring',d3.event.transform)
-        svg.gMiniZoomed.attr('transform', d3.event.transform)
-
-        if (
-          locker.isFreeV([
-            'autoZoomTarget',
-            'zoomToTargetMini',
-            'zoomToTargetChes'
-          ])
-        ) {
-          zoomToTargetNow(
-            { target: '', scale: d3.event.transform.k, durFact: -1 },
-            'ches'
-          )
-          svgMain.zoomToTrgMain({
-            target: '',
-            scale: d3.event.transform.k,
-            durFact: -1
-          })
-        }
-      }
-
-      com.svgZoomDuringChes = function () {
-        svg.gChesZoomed.attr('transform', d3.event.transform)
-
-        if (
-          locker.isFreeV([
-            'autoZoomTarget',
-            'zoomToTargetMini',
-            'zoomToTargetChes'
-          ])
-        ) {
-          zoomToTargetNow(
-            { target: '', scale: d3.event.transform.k, durFact: -1 },
-            'mini'
-          )
-          svgMain.zoomToTrgMain({
-            target: '',
-            scale: d3.event.transform.k,
-            durFact: -1
-          })
-        }
-      }
-
-      com.svgZoomEnd = function () {
-        locker.remove('zoom')
-      }
-
-      com.svgMiniZoom = d3.zoom().scaleExtent([zoomLen['0.0'], zoomLen['1.3']])
-      com.svgChesZoom = d3.zoom().scaleExtent([zoomLen['0.0'], zoomLen['1.3']])
-
-      com.svgMiniZoom.on('start', com.svgZoomStart)
-      com.svgChesZoom.on('start', com.svgZoomStart)
-      com.svgMiniZoom.on('zoom', com.svgZoomDuringMini)
-      com.svgChesZoom.on('zoom', com.svgZoomDuringChes)
-      com.svgMiniZoom.on('end', com.svgZoomEnd)
-      com.svgChesZoom.on('end', com.svgZoomEnd)
-
-      // ---------------------------------------------------------------------------------------------------
-      // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
-      // ---------------------------------------------------------------------------------------------------
-      let zoomToTargetTag = {
-        mini: 'zoomToTargetMini',
-        ches: 'zoomToTargetChes'
-      }
-
-      runLoop.init({
-        tag: zoomToTargetTag.mini,
-        func: doZoomToTarget,
-        nKeep: -1
-      })
-      runLoop.init({
-        tag: zoomToTargetTag.ches,
-        func: doZoomToTarget,
-        nKeep: -1
-      })
-
-      // the actual function to be called when a zoom needs to be put in the queue
-      zoomToTrgQuick = function (optIn) {
-        zoomToTargetNow(optIn, 'mini')
-        zoomToTargetNow(optIn, 'ches')
-      }
-      thisQuick.zoomToTrgQuick = zoomToTrgQuick
-
-      function zoomToTargetNow (optIn, tagNow) {
-        let tagNowUp = tagNow
-        if (tagNowUp === 'mini') {
-          tagNowUp = 'Mini'
-        }
-        if (tagNowUp === 'ches') {
-          tagNowUp = 'Ches'
-        }
-
-        if (!locker.isFree('inInit')) {
-          setTimeout(function () {
-            zoomToTargetNow(optIn, tagNow)
-          }, timeD.waitLoop)
-          return
-        }
-        if (!locker.isFreeV(['autoZoomTarget', 'zoomToTarget' + tagNowUp])) {
-          return
-        }
-
-        // if(tagNow=='mini')console.log('zoomToTrgQuick');
-
-        let targetName = optIn.target
-        let targetScale = optIn.scale
-        let durFact = optIn.durFact
-
-        if (targetScale < zoomLen['0.0']) targetScale = getScale()
-
-        // let transTo = [ telData.mini[targetName].x, telData.mini[targetName].y ];
-        let transTo
-        if (targetName === '' || !hasVar(telData.mini[targetName])) {
-          let scale = getScale()
-          let trans = getTrans()
-          let x = (lenD.mini.w[0] / 2 - trans[0]) / scale
-          let y = (lenD.mini.h[0] / 2 - trans[1]) / scale
-          transTo = [x, y]
-        } else {
-          transTo = [telData.mini[targetName].x, telData.mini[targetName].y]
-        }
-
-        let funcStart = function () {
-          locker.add({ id: 'zoomToTarget' + tagNowUp, override: true })
-          // console.log('xxx',targetName);
-        }
-        let funcDuring = function () {}
-        let funcEnd = function () {
-          locker.remove('zoomToTarget' + tagNowUp)
-        }
-
-        let outD = {
-          trgScale: targetScale,
-          durFact: durFact,
-          baseTime: 300,
-          transTo: transTo,
-          wh: [lenD.mini.w[0], lenD.mini.h[0]],
-          cent: null,
-          funcStart: funcStart,
-          funcEnd: funcEnd,
-          funcDuring: funcDuring,
-          svg: svg['svg' + tagNowUp],
-          svgZoom: com['svg' + tagNowUp + 'Zoom'],
-          svgBox: svg['g' + tagNowUp + 'Zoomed'],
-          svgZoomNode: svg['svg' + tagNowUp + 'ZoomNode']
-        }
-
-        if (durFact < 0) {
-          outD.durFact = 0
-          doZoomToTarget(outD)
-        } else {
-          runLoop.push({ tag: zoomToTargetTag[tagNow], data: outD })
-        }
-      }
-
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      svg.svgMini = d3
-        .select(svgDiv)
-        // svg.svgMini = d3.select("#"+(svgDiv.id))
-        // .classed("svgInGridStack_outer", true)
-        .append('svg')
-        .attr('viewBox', '0 0 ' + lenD.mini.w[0] + ' ' + lenD.mini.h[0])
-        .style('position', 'relative')
-        .style('width', svgMiniW) // .style('height',svgMiniH).style('top',svgMiniT).style('left',svgMiniL)
-        // .style("background", "transparent")
-        .style('background', '#383B42') // .style('opacity',0.92)//.style("border","1px solid red")
-        .call(com.svgMiniZoom)
-        .on('dblclick.zoom', null)
-        .on('wheel', function () {
-          d3.event.preventDefault()
-        })
-
-      // save the svg node to use for d3.zoomTransform() later
-      svg.svgMiniZoomNode = svg.svgMini.nodes()[0]
-
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      getScale = function () {
-        return d3.zoomTransform(svg.svgMiniZoomNode).k
-      }
-      getTrans = function () {
-        return [
-          d3.zoomTransform(svg.svgMiniZoomNode).x,
-          d3.zoomTransform(svg.svgMiniZoomNode).y
-        ]
-      }
-      thisQuick.getScale = getScale
-      thisQuick.getTrans = getTrans
-
-      // add one rectangle as background
-      // ---------------------------------------------------------------------------------------------------
-      svg.svgMini
-        .append('g')
-        .selectAll('rect')
-        .data([0])
-        .enter()
-        .append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', lenD.mini.w[0])
-        .attr('height', lenD.mini.h[0])
-        .attr('stroke', '#383B42')
-        .attr('stroke-width', 2)
-        .attr('fill', '#383B42')
-      // .style("opacity", 0.1)
-      // .attr("fill", "transparent")//.attr("fill", "red")
-
-      svg.gMiniZoomed = svg.svgMini.append('g')
-      svg.gMini = svg.svgMini.append('g')
-      // svg.gMiniZoomed = svg.gMini // to actually see the zoom...
-
-      // add one circle as background
-      // ---------------------------------------------------------------------------------------------------
-      svg.gMini
-        .append('g')
-        .selectAll('circle')
-        .data([0])
-        .enter()
-        .append('circle')
-        .attr('r', 0)
-        .attr('cx', lenD.mini.w[0] / 2)
-        .attr('cy', lenD.mini.h[0] / 2)
-        .attr('fill', '#F2F2F2')
-        .transition('inOut')
-        .duration(timeD.animArc / 3)
-        .attr('r', lenD.mini.w[0] / 2.1)
-
-      // the background grid
-      bckPattern({
-        com: com,
-        gNow: svg.gMini,
-        gTag: 'svgMini',
-        lenWH: [lenD.mini.w[0], lenD.mini.h[0]],
-        opac: 0.2,
-        hexR: 50
-      })
-
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      svg.svgChes = d3
-        .select(svgDiv)
-        // svg.svgChes = d3.select("#"+(svgDiv.id))
-        // .classed("svgInGridStack_outer", true)
-        .append('svg')
-        .attr('viewBox', '0 0 ' + lenD.ches.w[0] + ' ' + lenD.ches.h[0])
-        .style('position', 'relative')
-        .style('width', svgChesW) // .style('height',svgChesH).style('top',svgChesT).style('left',svgChesL)
-        .style('background', 'transparent') // .style("background", "red").style('opacity',0.2)//.style("border","1px solid red")
-        .call(com.svgChesZoom)
-        .on('dblclick.zoom', null)
-        .on('wheel', function () {
-          d3.event.preventDefault()
-        })
-
-      // save the svg node to use for d3.zoomTransform() later
-      svg.svgChesZoomNode = svg.svgChes.nodes()[0]
-
-      svg.gChesZoomed = svg.svgChes.append('g')
-      svg.gChes = svg.svgChes.append('g')
-
-      // add one rectangle as background, and to allow click to zoom
-      // ---------------------------------------------------------------------------------------------------
-      svg.gChes
-        .append('g')
-        .selectAll('rect')
-        .data([0])
-        .enter()
-        .append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', lenD.ches.w[0])
-        .attr('height', lenD.ches.h[0])
-        .attr('stroke-width', '0')
-        // .attr("fill", "#F2F2F2")//.attr("fill", "red")
-        .attr('fill', '#383b42')
-
-      // // the background grid
-      // bckPattern({
-      //   com:com, gNow:svg.gChes, gTag:"gChes", lenWH:[lenD.ches.w[0],lenD.ches.h[0]],
-      //   opac:0.1, textureOrient:"5/8", textureSize:120
-      // });
-
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      com.gMini = {}
-      com.gMini.circ = svg.gMini.append('g')
-      com.gMini.rect = svg.gMini.append('g')
-      com.gMini.vor = svg.gMini.append('g')
-
-      miniZoomViewRec()
-      miniZoomClick()
-
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      com.gChes = {}
-      com.gChes.g = svg.gChes.append('g')
-      com.gChes.xyr = {}
-
-      // let nRows     = isSouth ? 5 : 2;
-      // let nEle = isSouth ? 99 : 19
-      let nEleInRow = isSouth ? [20, 20, 20, 20] : [10]
-      let eleR = isSouth ? lenD.ches.h[0] / 13 : lenD.ches.h[0] / 6.5
-      let eleSpace = isSouth ? [3.15, 2.5] : [3.1, 2.5]
-      let eleShift = isSouth ? [2, 2] : [2, 1.1]
-
-      let vorData = []
-      let nEleRow = 0
-      let maxX = 0
-      $.each(telTypeV, function (index, idNow) {
-        let nEleNowInRow = nEleRow
-        let nEleNowInCol = 0
-        if (nEleInRow.length > 0) {
-          if (nEleNowInRow >= nEleInRow[0]) {
-            nEleNowInRow -= nEleInRow[0]
-            nEleNowInCol++
-          }
-        }
-        if (nEleInRow.length > 1) {
-          if (nEleNowInRow >= nEleInRow[1]) {
-            nEleNowInRow -= nEleInRow[1]
-            nEleNowInCol++
-          }
-        }
-        if (nEleInRow.length > 2) {
-          if (nEleNowInRow >= nEleInRow[2]) {
-            nEleNowInRow -= nEleInRow[2]
-            nEleNowInCol++
-          }
-        }
-        if (nEleInRow.length > 3) {
-          if (nEleNowInRow >= nEleInRow[3]) {
-            nEleNowInRow -= nEleInRow[3]
-            nEleNowInCol++
-          }
-        }
-        nEleRow++
-
-        let x =
-          eleR / eleShift[0] +
-          eleR +
-          ((isSouth ? 0.3 : 0.15) + nEleNowInRow) * (eleSpace[0] * eleR)
-        let y = eleR / eleShift[1] + eleR + nEleNowInCol * (eleSpace[1] * eleR)
-
-        com.gChes.xyr[idNow] = {
-          id: idNow,
-          rc: [nEleNowInRow, nEleNowInCol],
-          x: x,
-          y: y,
-          r: eleR * 1.5
-        }
-        vorData.push({ id: idNow, x: x, y: y })
-
-        if (x + eleR * eleShift[0] > maxX) maxX = x + eleR * eleShift[0]
-        // console.log(nEleInRow,nEleRow,nEleNowInRow,nEleNowInCol,com.gChes.xyr[idNow])
-      })
-      // console.log(Object.keys(telData.mini).length, telData.mini)
-
-      let vorFunc = d3
-        .voronoi()
-        .x(function (d) {
-          return d.x
-        })
-        .y(function (d) {
-          return d.y
-        })
-        .extent([[0, 0], [maxX, lenD.ches.h[0]]])
-
-      com.gChes.vor = vorFunc.polygons(vorData)
-
-      locker.remove('inInitQuick')
-    }
-    this.initData = initData
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    function setStateOnce (dataIn) {
-      svgMain.s00circ({
-        dataV: telData.tel,
-        gNow: com.gMini.circ,
-        posTag: 'mini'
-      })
-
-      chesCirc(telData.tel, isSouth ? 2.7 : 5, false)
-    }
-    this.setStateOnce = setStateOnce
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    function chesCirc (dataV, fontScale, shiftY) {
-      let tagCirc = prop0
-      let tagLbl = 'lbls00title'
-      let tagState = 'state_00'
-      // let tagTxt = tagState + tagLbl
-      let titleSize = (isSouth ? 16 : 17) * fontScale
-      let circStrk = 0
-      let textStrk = isSouth ? 0.3 : 0.8
-      let fillOpac = 1
-
-      //
-      let circ = com.gChes.g
-        .selectAll('circle.' + tagCirc)
-        .data(dataV, function (d) {
-          return d.id
-        })
-
-      circ
-        .enter()
-        .append('circle')
-        .attr('class', tagCirc)
-        .attr('stroke-width', circStrk)
-        .style('stroke-opacity', 1)
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('pointer-events', 'none')
-        .attr('transform', function (d) {
-          return (
-            'translate(' +
-            com.gChes.xyr[d.id].x +
-            ',' +
-            com.gChes.xyr[d.id].y +
-            ')'
-          )
-        })
-        .style('fill-opacity', fillOpac)
-        .attr('r', function (d) {
-          return com.gChes.xyr[d.id].r
-        })
-        .style('opacity', 1)
-        .style('fill', '#383b42')
-        .merge(circ)
-        .transition('inOut')
-        .duration(timeD.animArc)
-        // .style("fill", function(d) { return telHealthCol(d[tagCirc],0.5); } )
-        .style('stroke', function (d) {
-          return telHealthCol(d[tagCirc], 0.5)
-        })
-
-      circ
-        .exit()
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .attr('r', 0)
-        .remove()
-
-      function txtColRC (d) {
-        let index = com.gChes.xyr[d.id].rc[0] + com.gChes.xyr[d.id].rc[1]
-        return index % 2 === 0
-          ? d3.rgb(colsPurples[4]).brighter(0.5)
-          : d3.rgb(colsBlues[3]).brighter(0.1)
-        // return (index%2 == 0) ? d3.rgb(colsYellows[1]).brighter(0.5) : d3.rgb(colsGreens[4]).brighter(0.1);
-      }
-      function txtColRCb (d) {
-        return d3.rgb(txtColRC(d)).brighter(0.2)
-      }
-
-      // attach new data (select by id, and so will override existing data if has the same id)
-      let text = com.gChes.g
-        .selectAll('text.' + tagLbl)
-        .data(dataV, function (d) {
-          return d.id
-        })
-
-      // operate on new elements only
-      text
-        .enter()
-        .append('text')
-        .text(function (d) {
-          return telInfo.getTitle(d.id)
-        })
-        // .attr("id",      function(d) { return myUniqueId+d.id+tagTxt; })
-        .attr('class', tagState + ' ' + tagLbl)
-        .style('font-weight', 'normal')
-        .attr('stroke-width', textStrk)
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('pointer-events', 'none')
-        .each(function (d, i) {
-          d.fontScale = String(fontScale)
-          d.shiftY = shiftY
-        })
-        // .style("stroke",    function(d) { return "#F2F2F2";  return "#383b42"; })
-        // .style("stroke",   function(d) { return telHealthCol(d[tagCirc]); } )
-        .style('stroke', txtColRCb)
-        .style('fill', txtColRC)
-        .style('font-size', titleSize + 'px')
-        .attr('transform', function (d, i) {
-          return (
-            'translate(' +
-            com.gChes.xyr[d.id].x +
-            ',' +
-            com.gChes.xyr[d.id].y +
-            ')'
-          )
-        })
-        .attr('dy', titleSize / 3 + 'px')
-        .attr('text-anchor', 'middle')
-        .style('font-size', titleSize + 'px')
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .delay(100)
-        .style('opacity', '1')
-
-      text
-        .exit()
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .style('opacity', 0)
-        .remove()
-
-      // ---------------------------------------------------------------------------------------------------
-      // the highlight function
-      // ---------------------------------------------------------------------------------------------------
-      function focusTel (dIn, isOn) {
-        locker.add('svgQuickFocusTel')
-
-        let delay = 250
-        setTimeout(function () {
-          if (locker.nActive('svgQuickFocusTel') === 1) {
-            _focusTel(dIn, isOn)
-          }
-          locker.remove('svgQuickFocusTel')
-        }, delay)
-      }
-
-      function _focusTel (dIn, isOn) {
-        let rScale = isSouth ? 2.0 : 1.1
-
-        let isEleOn
-        let dInId = hasVar(dIn.data) ? dIn.data.id : ''
-        if (isOn) {
-          isEleOn = function (d) {
-            return d.id === dInId
-          }
-        } else {
-          isEleOn = function () {
-            return false
-          }
-        }
-
-        //
-        let circ = com.gChes.g.selectAll('circle.' + tagCirc)
-        let text = com.gChes.g.selectAll('text.' + tagLbl)
-
-        circ.each(function (d) {
-          if (isEleOn(d)) moveNodeUp(this, 2)
-        })
-        text.each(function (d) {
-          if (isEleOn(d)) moveNodeUp(this, 2)
-        })
-
-        //
-        circ
-          .transition('update')
-          .duration(timeD.animArc * (isOn ? 0.5 : 0.5))
-          // .style("opacity", function(d) { return isEleOn(d) ? 1 : (isOn?0.5:1);  })
-          .style('fill-opacity', function (d) {
-            return isEleOn(d) ? 1 : fillOpac
-          })
-          .attr('r', function (d) {
-            return com.gChes.xyr[d.id].r * (isEleOn(d) ? rScale : 1)
-          })
-          .attr('stroke-width', function (d) {
-            return isEleOn(d) ? circStrk + 1.5 : circStrk
-          })
-
-        //
-        text
-          .transition('update')
-          .duration(timeD.animArc * (isOn ? 1 : 0.5))
-          .style('font-size', function (d) {
-            return (isEleOn(d) ? titleSize * rScale : titleSize) + 'px'
-          })
-          .attr('dy', function (d) {
-            return (isEleOn(d) ? titleSize * rScale : titleSize) / 3 + 'px'
-          })
-          .attr('stroke-width', function (d) {
-            return isEleOn(d) ? textStrk + 0.7 : textStrk
-          })
-          .style('font-weight', function (d) {
-            return isEleOn(d) ? 'bold' : 'normal'
-          })
-
-        //
-        let hovData = []
-        if (isOn && hasVar(telData.mini[dInId])) hovData.push({ id: dInId })
-
-        miniHoverViewCirc(hovData)
-      }
-
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      function miniHoverViewCirc (dataV) {
-        let tagNow = 'miniHoverViewCirc'
-
-        let circ = com.gMini.circ
-          .selectAll('circle.' + tagNow)
-          .data(dataV, function (d) {
-            return d.i
-          })
-
-        circ
-          .enter()
-          .append('circle')
-          .attr('class', tagNow)
-          .style('opacity', '0')
-          .style('fill-opacity', 0.2)
-          .style('stroke-width', 0.5)
-          .attr('vector-effect', 'non-scaling-stroke')
-          .style('pointer-events', 'none')
-          .attr('transform', function (d) {
-            return (
-              'translate(' +
-              telData.mini[d.id].x +
-              ',' +
-              telData.mini[d.id].y +
-              ')'
-            )
-          })
-          .attr('r', function (d) {
-            return telData.mini[d.id].r * (isSouth ? 12 : 5)
-          })
-          .merge(circ)
-          .transition('inOut')
-          .duration(timeD.animArc)
-          .attr('transform', function (d) {
-            return (
-              'translate(' +
-              telData.mini[d.id].x +
-              ',' +
-              telData.mini[d.id].y +
-              ')'
-            )
-          })
-          .style('fill', function (d) {
-            return miniMapCol.p
-          })
-          .style('stroke', function (d) {
-            return d3.rgb(miniMapCol.p[0]).darker(0.5)
-          })
-          .style('opacity', 1)
-
-        circ
-          .exit()
-          .transition('inOut')
-          .duration(timeD.animArc)
-          .style('opacity', 0)
-          .remove()
-      }
-
-      // ---------------------------------------------------------------------------------------------------
-      // vor cels for selection
-      // ---------------------------------------------------------------------------------------------------
-      com.gChes.g
-        .selectAll('path')
-        .data(com.gChes.vor)
-        .enter()
-        .append('path')
-        .style('fill', 'transparent')
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('opacity', '0')
-        .style('stroke-width', 0)
-        .style('stroke', '#383B42')
-        // .style("opacity", "0.25").style("stroke-width", "0.75").style("stroke", "#E91E63")//.style("stroke", "white")
-        .call(function (d) {
-          d.attr('d', vorPloyFunc)
-        })
-        .on('click', function (d) {
-          telData.vorDblclick({ d: d, isInOut: false })
-        })
-        // .on("dblclick",  function(d) { telData.vorDblclick({ d:d, isInOut:true }); }) // dousnt work well...
-        .on('mouseover', function (d) {
-          focusTel(d, true)
-        })
-        .on('mouseout', function (d) {
-          focusTel(d, false)
-        })
-    }
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'miniZoomViewRec', func: miniZoomViewRecOnce, nKeep: 1 })
-
-    function miniZoomViewRec () {
-      runLoop.push({ tag: 'miniZoomViewRec' })
-    }
-    this.miniZoomViewRec = miniZoomViewRec
-
-    function miniZoomViewRecOnce () {
-      if (
-        !locker.isFreeV([
-          'autoZoomTarget',
-          'zoomToTargetMini',
-          'zoomToTargetChes'
-        ])
-      ) {
-        miniZoomViewRec()
-        return
-      }
-
-      let tagNow = 'miniZoomViewRec'
-      let scale = getScale()
-      let trans = getTrans()
-      let data = []
-
-      if (scale < (isSouth ? 2 : 1.5)) {
-        scale = 1
-        trans = [0, 0]
-      } else data = [{ id: 0 }]
-
-      let w =
-        (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) *
-        lenD.mini.w[0] /
-        scale
-      let h =
-        (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) *
-        lenD.mini.h[0] /
-        scale
-      let x = (lenD.mini.w[0] / 2 - trans[0]) / scale - w / 2
-      let y = (lenD.mini.h[0] / 2 - trans[1]) / scale - h / 2
-
-      let strkW = 1 + 0.1 * scale / (zoomLen['1.3'] - zoomLen['0.0'])
-      let opac = 0.95 * Math.sqrt(scale / (zoomLen['1.3'] - zoomLen['0.0']))
-
-      // operate on new elements only
-      let rect = com.gMini.rect
-        .selectAll('rect.' + tagNow)
-        .data(data, function (d) {
-          return d.id
-        })
-
-      rect
-        .enter()
-        .append('rect')
-        .attr('class', tagNow)
-        .style('fill-opacity', 0)
-        .attr('stroke-opacity', 0)
-        .attr('x', x)
-        .attr('y', y)
-        .attr('width', w)
-        .attr('height', h)
-        .attr('stroke', d3.rgb(miniMapCol.b).darker(0.5))
-        .attr('stroke-width', '1')
-        .attr('fill', miniMapCol.b) // .attr("fill", "red")
-        .attr('vector-effect', 'non-scaling-stroke')
-        .merge(rect)
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .attr('x', x)
-        .attr('y', y)
-        .attr('width', w)
-        .attr('height', h)
-        .attr('stroke-width', strkW)
-        .style('opacity', 1)
-        .style('fill-opacity', opac)
-        .attr('stroke-opacity', opac)
-
-      rect
-        .exit()
-        .transition('out')
-        .duration(timeD.animArc)
-        .style('opacity', '0')
-        .attr('x', x)
-        .attr('y', y)
-        .attr('width', w)
-        .attr('height', h)
-        .remove()
-    }
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    function miniZoomClick () {
-      // let tagNow = 'miniZoomClick'
-
-      let vorFunc = d3
-        .voronoi()
-        .x(function (d) {
-          return d.x
-        })
-        .y(function (d) {
-          return d.y
-        })
-        .extent([[0, 0], [lenD.mini.w[0], lenD.mini.h[0]]])
-
-      com.gMini.vor
-        .selectAll('path')
-        .data(vorFunc.polygons(telData.vor.data))
-        .enter()
-        .append('path')
-        .style('fill', 'transparent')
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('stroke-width', 0)
-        .style('opacity', 0)
-        .style('stroke', '#383B42')
-        // .style("opacity", "0.25").style("stroke-width", "0.75").style("stroke", "#E91E63")//.style("stroke", "white")
-        .call(function (d) {
-          d.attr('d', vorPloyFunc)
-        })
-        .on('click', function (d) {
-          telData.vorDblclick({ d: d, isInOut: false })
-        })
-        // .on("click", function(d) {
-        //   let scaleToZoom = telData.vorDblclick({d:d, isInOut:false });
-        //   thisQuick.zoomToTrgQuick({ target:d.data.id, scale:scaleToZoom, durFact:-1 });
-        // })
-        // .on("dblclick", function(d) {  // dousnt work well...
-        //   let scaleToZoom = telData.vorDblclick({d:d, isInOut:true });
-        //   thisQuick.zoomToTrgQuick({ target:d.data.id, scale:scaleToZoom, durFact:-1 });
-        // })
-        .on('mouseover', function (d) {
-          thisQuick.target = d.data.id
-        })
-    }
-  }
-
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
   let SvgDetail = function () {
     let com = {}
     let svg = {}
@@ -1757,6 +835,7 @@ let mainArrZoomer = function (optIn) {
     lenD.h[0] = 500
     // isSouth ? 900 : 400;
 
+    let zoomTargetProp = ''
     // lenD.r = {}
     // lenD.r.s00 = [ 12, 13, 14 ];
     // if(isSouth) lenD.r.s00 = [ 12*siteScale, 13*siteScale, 14*siteScale ];
@@ -2166,6 +1245,7 @@ let mainArrZoomer = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function setSubProp (optIn) {
       // console.log('setSubProp',optIn)
+      zoomTargetProp = optIn.propIn
       let telId = optIn.telId
       let propIn = optIn.propIn
       let parentName =
@@ -2901,6 +1981,7 @@ let mainArrZoomer = function (optIn) {
         clickIn = propIn !== ''
       }
 
+      console.log("zoomTarget", zoomTarget, " !== telId || !hasVar(telData.propDataS1[telId])" , telId , !hasVar(telData.propDataS1[telId]));
       if (zoomTarget !== telId || !hasVar(telData.propDataS1[telId])) {
         clickIn = false
         remove = true
@@ -2942,6 +2023,7 @@ let mainArrZoomer = function (optIn) {
         // com.s10.gHirch.append("rect").style('opacity',0.3).style("fill",'transparent').attr("height", treeH).attr("width", treeW).style("stroke","red")
       }
 
+      console.log("!clickIn && !remove && hasVar(telData.dataBaseS1[telId])", !clickIn , !remove , hasVar(telData.dataBaseS1[telId]));
       let hasDataBase =
         !clickIn && !remove && hasVar(telData.dataBaseS1[telId])
 
@@ -3246,6 +2328,8 @@ let mainArrZoomer = function (optIn) {
         }
         // console.log('---',[parentName,dId,propIn,idNow],clickIn); console.log('-------------------------------------');
 
+        setWidgetState()
+
         svgMain.bckArcClick({
           clickIn: clickIn,
           propIn: parentName,
@@ -3369,6 +2453,13 @@ let mainArrZoomer = function (optIn) {
       locker.remove('updateTelHirch')
     }
     this.updateS1 = updateS1
+
+    function getWidgetState () {
+      return {
+        zoomTargetProp: zoomTargetProp
+      }
+    }
+    this.getWidgetState = getWidgetState
   }
 
   // ---------------------------------------------------------------------------------------------------
@@ -3513,11 +2604,7 @@ let mainArrZoomer = function (optIn) {
             'zoomToTargetChes'
           ])
         ) {
-          svgQuick.zoomToTrgQuick({
-            target: zoomTarget,
-            scale: d3.event.transform.k,
-            durFact: -1
-          })
+          svgQuick.zoomToTrgQuick({ target: zoomTarget, scale: d3.event.transform.k, durFact: -1 })
         }
 
         svgZoomUpdState()
@@ -3654,11 +2741,7 @@ let mainArrZoomer = function (optIn) {
         }
 
         let funcStart = function () {
-          svgQuick.zoomToTrgQuick({
-            target: targetName,
-            scale: targetScale,
-            durFact: -1
-          })
+          svgQuick.zoomToTrgQuick({ target: targetName, scale: targetScale, durFact: -1 })
 
           locker.add({ id: 'autoZoomTarget', override: true })
           if (targetName !== '' && targetName !== 'init') {
@@ -3822,6 +2905,7 @@ let mainArrZoomer = function (optIn) {
       //
       // ---------------------------------------------------------------------------------------------------
       function setTelDataPhysical (dataIn) {
+        console.log("dataphyzoom", dataIn);
         telData.xyrPhysical = {}
         telData.vor.dataPhysical = []
 
@@ -3898,7 +2982,6 @@ let mainArrZoomer = function (optIn) {
 
         telData.mini = telData.xyrPhysical
       }
-
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
@@ -3906,7 +2989,6 @@ let mainArrZoomer = function (optIn) {
         telData.xyrSubArr = {}
         telData.vor.dataSubArr = []
         telData.xyrSubArrGrp = []
-
         let hirchScale = 0.9
         let hirch = d3.hierarchy(dataIn).sum(function (d) {
           return 1
@@ -4033,6 +3115,7 @@ let mainArrZoomer = function (optIn) {
       runLoop.init({ tag: 'vorDblclickOnce', func: vorDblclickOnce, nKeep: 1 })
 
       telData.vorDblclick = function (optIn) {
+        console.log( optIn.source);
         if (locker.isFreeV(['zoom', 'autoZoomTarget'])) {
           runLoop.push({ tag: 'vorDblclickOnce', data: optIn })
         }
@@ -4295,6 +3378,8 @@ let mainArrZoomer = function (optIn) {
         }
       }
       // state-01 initialization (needed before s01inner(), s01outer())
+
+
       if (!hasVar(com.s00)) {
         com.s00 = {}
         com.s00.g = svg.g.append('g')
@@ -4369,84 +3454,6 @@ let mainArrZoomer = function (optIn) {
       }
     }
     this.setTelLayout = setTelLayout
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    function s00circ (optIn) {
-      let dataV = hasVar(optIn.dataV) ? optIn.dataV : telData.tel
-      let gNow = hasVar(optIn.gNow) ? optIn.gNow : com.s00.g
-      let posTag = hasVar(optIn.posTag) ? optIn.posTag : 'xyr'
-      let focusV0 = hasVar(optIn.focusV0) ? optIn.focusV0 : []
-      let focusV1 = hasVar(optIn.focusV1) ? optIn.focusV1 : []
-      let tagNow = prop0
-
-      let focusIdV = [
-        focusV0.map(function (d) {
-          return d.id
-        }),
-        focusV1.map(function (d) {
-          return d.id
-        })
-      ]
-      function isFocused (d, nFocus) {
-        return focusIdV[nFocus].indexOf(d.id) >= 0
-      }
-
-      // operate on new elements only
-      let circ = gNow.selectAll('circle.' + tagNow).data(dataV, function (d) {
-        return d.id
-      })
-
-      circ
-        .enter()
-        .append('circle')
-        .attr('class', tagNow)
-        .style('opacity', '0')
-        .attr('r', 0)
-        .style('stroke-width', '0.5')
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('pointer-events', 'none')
-        .attr('transform', function (d) {
-          return (
-            'translate(' +
-            telData[posTag][d.id].x +
-            ',' +
-            telData[posTag][d.id].y +
-            ')'
-          )
-        })
-        .merge(circ)
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .attr('transform', function (d) {
-          return (
-            'translate(' +
-            telData[posTag][d.id].x +
-            ',' +
-            telData[posTag][d.id].y +
-            ')'
-          )
-        })
-        .style('fill', function (d) {
-          return telHealthCol(d[tagNow])
-        })
-        .style('stroke', function (d) {
-          return telHealthCol(d[tagNow], 0.5)
-        })
-        .style('opacity', function (d) {
-          if (isFocused(d, 1)) return 0.01
-          else if (isFocused(d, 0)) return 0.07
-          else return 1
-        })
-        .attr('r', function (d) {
-          let r = telData[posTag][d.id].r * rScale[0].health2
-          if (isFocused(d, 1)) return r * 2
-          else if (isFocused(d, 0)) return r * 1.1
-          else return r
-        })
-    }
-    this.s00circ = s00circ
 
     function subArrGrpCirc (dataV) {
       if (!locker.isFree('inInit')) {
@@ -5566,7 +4573,7 @@ let mainArrZoomer = function (optIn) {
             let onlyOpen = hasVar(optIn.onlyOpen) ? optIn.onlyOpen : false
             let canIgnore = hasVar(optIn.canIgnore) ? optIn.canIgnore : true
 
-            if (propD.indexOf(propIn) < 0 && propIn !== '') return
+            if (propD.indexOf(propIn) < 0 && propIn != '') return
 
             if (
               !locker.isFreeV([
@@ -6357,7 +5364,7 @@ let mainArrZoomer = function (optIn) {
       }
 
       if (scale <= zoomLen['0.1']) {
-        s00circ({})
+        updateMap({})
         s00title([], [])
         s01inner([])
         s01outer([])
@@ -6383,7 +5390,7 @@ let mainArrZoomer = function (optIn) {
           }
         })
 
-        s00circ({ focusV0: arrPropVon, focusV1: arrPropVtarget })
+        updateMap({ focusV0: arrPropVon, focusV1: arrPropVtarget })
 
         if (zoomS === 0) {
           s01inner(arrPropVtarget)
@@ -6412,6 +5419,83 @@ let mainArrZoomer = function (optIn) {
     }
     this.setStateOnce = setStateOnce
 
+    function updateMap (optIn) {
+      let dataV = telData.tel
+      let gNow = com.s00.g
+      let posTag = 'xyr'
+      let focusV0 = hasVar(optIn.focusV0) ? optIn.focusV0 : []
+      let focusV1 = hasVar(optIn.focusV1) ? optIn.focusV1 : []
+      let tagNow = prop0
+
+      let focusIdV = [
+        focusV0.map(function (d) {
+          return d.id
+        }),
+        focusV1.map(function (d) {
+          return d.id
+        })
+      ]
+      function isFocused (d, nFocus) {
+        return focusIdV[nFocus].indexOf(d.id) >= 0
+      }
+
+      // operate on new elements only
+
+      let circ = gNow.selectAll('circle.' + tagNow).data(dataV, function (d) {
+        return d.id
+      })
+
+      circ
+        .enter()
+        .append('circle')
+        .attr('class', tagNow)
+        .style('opacity', '0')
+        .attr('r', function (d) {
+          return 0
+        })
+        .style('stroke-width', '0.5')
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .attr('transform', function (d) {
+          return (
+            'translate(' +
+            telData[posTag][d.id].x +
+            ',' +
+            telData[posTag][d.id].y +
+            ')'
+          )
+        })
+        .merge(circ)
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .attr('transform', function (d) {
+          return (
+            'translate(' +
+            telData[posTag][d.id].x +
+            ',' +
+            telData[posTag][d.id].y +
+            ')'
+          )
+        })
+        .style('fill', function (d) {
+          return telHealthCol(d[tagNow])
+        })
+        .style('stroke', function (d) {
+          return telHealthCol(d[tagNow], 0.5)
+        })
+        .style('opacity', function (d) {
+          if (isFocused(d, 1)) return 0.01
+          else if (isFocused(d, 0)) return 0.07
+          else return 1
+        })
+        .attr('r', function (d) {
+          let r = telData[posTag][d.id].r * rScale[0].health2
+          if (isFocused(d, 1)) return r * 2
+          else if (isFocused(d, 0)) return r * 1.1
+          else return r
+        })
+    }
+
     function askDataS1 () {
       let zoomS = getZoomS()
       if (zoomS === 0) return
@@ -6424,18 +5508,34 @@ let mainArrZoomer = function (optIn) {
     }
     this.askDataS1 = askDataS1
 
-    function setWidgetState () {
-      sock.widgetV[widgetType].SockFunc.setWidgetState({
-        widgetId: widgetId,
+    function getWidgetState () {
+      return {
         zoomState: getZoomS(),
         zoomTarget: zoomTarget
-      })
+      }
     }
+    this.getWidgetState = getWidgetState
+  }
+
+  function setWidgetState () {
+    let dataWidget = {
+      widgetId: widgetId,
+      zoomState: '',
+      zoomTarget: '',
+      zoomTargetProp: ''
+    }
+    let mainWidgetState = svgMain.getWidgetState()
+    let detailWidgetState = svgDetail.getWidgetState()
+    dataWidget['zoomState'] = mainWidgetState['zoomState']
+    dataWidget['zoomTarget'] = mainWidgetState['zoomTarget']
+    dataWidget['zoomTargetProp'] = detailWidgetState['zoomTargetProp']
+    sock.widgetV[widgetType].SockFunc.setWidgetState(dataWidget)
+    return dataWidget
   }
 
   let svgMain = new SvgMain() // must come first
   let svgDetail = new SvgDetail()
-  let svgQuick = new SvgQuick()
+  let svgQuick = new QuickMap({runLoop: runLoop, sgvTag: sgvTag, widgetId: widgetId, locker: locker, isSouth: isSouth})
 
   // // ---------------------------------------------------------------------------------------------------
   // // ---------------------------------------------------------------------------------------------------

@@ -42,7 +42,8 @@ allWidgets = []
 allowedWidgetTypeV = {
     "synced": [
         "arrZoomer", "azPlots", "telPos_0", "subArrGrp", "telPntSky",
-        "schedBlocks", "nightSched", "obsBlockControl", "emptyExample"
+        "schedBlocks", "nightSched", "obsBlockControl", "emptyExample",
+        "myTestExample"
     ],
     "notSynced": [
         "panelSync"
@@ -61,11 +62,11 @@ class myLog():
     # --------------------------------------------------------------------------------------------------
     def __init__(self, name='', title='', doParseMsg=True, useColors=True):
         self.doParseMsg = doParseMsg
-        self.name = "root" if name == "" else name
+        self.name = "root" if name is "" else name
         self.log = logging.getLogger(self.name)
 
         self.setColors(useColors)
-        self.title = self.colorV['c']("" if title == "" else (
+        self.title = self.colorV['c']("" if title is "" else (
             " ["+title+"]" if useLogTitle else ""))
 
         # common lock for all loggers
@@ -273,6 +274,7 @@ class myLock():
             nChecked += 1
             if nChecked > self.maxChecks:
                 raise Warning(" - could not get lock for "+self.name+" ...")
+                break
             sleep(self.checkEvery)
 
         myLock.locks[self.name] = True
