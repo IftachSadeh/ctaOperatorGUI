@@ -54,6 +54,7 @@ function SocketManager () {
     //
     // ---------------------------------------------------------------------------------------------------
     topThis.socket.on('initialConnect', function (dataIn) {
+      console.log("initialConnect");
       // console.log('initialConnect',dataIn);
 
       validateServer(dataIn.serverName)

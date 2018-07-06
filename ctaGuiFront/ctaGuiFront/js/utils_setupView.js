@@ -98,6 +98,12 @@ setupView.view200 = function () {
     hasIcon: true,
     hasDrawer: true
   })
+  sock.addWidget({
+    nameTag: 'azPlots',
+    tableTitle: 'Telescope health plots',
+    hasIcon: true,
+    hasDrawer: false
+  })
 }
 
 // -----------------------------------------------------------------------------------------------------------
@@ -207,6 +213,13 @@ setupView.view206 = function () {
 // emptyExample
 // -----------------------------------------------------------------------------------------------------------
 setupView.view000 = function () {
+  sock.addWidget({
+    nameTag: 'myTestExample',
+    tableTitle: 'myTestExample',
+    hasIcon: true,
+    hasDrawer: false
+  })
+
   sock.addWidget({
     nameTag: 'emptyExample',
     tableTitle: 'emptyExample',

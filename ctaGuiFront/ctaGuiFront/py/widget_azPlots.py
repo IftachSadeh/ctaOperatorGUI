@@ -47,6 +47,7 @@ class azPlots():
         self.logSendPkt = False
         #
         self.nIcon = -1
+        self.widgetState = None
 
     # -----------------------------------------------------------------------------------------------------------
     #
@@ -61,10 +62,13 @@ class azPlots():
         self.log = myLog(title=str(self.mySock.userId)+"/" +
                          str(self.mySock.sessId)+"/"+__name__+"/"+self.widgetId)
 
+        self.widgetState = wgt["widgetState"]
+        self.widgetState["zoomTarget"] = ""
+
         self.initTelHealth()
 
         # initial dataset and send to client
-        optIn = {'widget': self, 'dataFunc': self.getData}
+        optIn = {'widget': self, 'dataFunc': self.getInitData}
         self.mySock.sendWidgetInit(optIn=optIn)
 
         # start a thread which will call updateData() and send 1Hz
@@ -72,7 +76,51 @@ class azPlots():
         optIn = {'widget': self, 'dataFunc': self.getData}
         self.mySock.addWidgetTread(optIn=optIn)
 
+        self.PrimaryKey = ['mirror','camera','mount','aux']
+        self.telId = ''
+        self.propId = ''
+
+        with self.mySock.lock:
+            if self.mySock.getThreadId(self.mySock.usrGrpId, "azPlotsUpdateData") == -1:
+                if self.logSendPkt:
+                    self.log.info([
+                      ['y', " - starting azPlotsUpdateData("],
+                      ['g', self.mySock.usrGrpId], ['y', ")"]
+                    ])
+
+                threadId = self.mySock.setThreadState(
+                    self.mySock.usrGrpId, "azPlotsUpdateData", True)
+                aThread = gevent.spawn(self.azPlotsUpdateData, threadId)
+
         return
+
+    # -----------------------------------------------------------------------------------------------------------
+    # get info of telescope 0-100 for each fields
+    # -----------------------------------------------------------------------------------------------------------
+    def getTelHealthS0(self, idIn=None):
+        #print 'getTelHealthS0'
+        data = dict()
+
+        fields = ["health", "status", "camera",
+                  "mirror", "mount", "daq", "aux"]
+        nFilelds = len(fields)
+
+        idV = telIds if (idIn is None) else [idIn]
+
+        self.redis.pipe.reset()
+        for idNow in idV:
+            self.redis.pipe.zGet('telHealth;'+idNow+';'+'mirror')
+            #self.redis.pipe.hMget(name="telHealth;"+str(idNow), key=fields)
+        redData = self.redis.pipe.execute()
+
+        for i in range(len(redData)):
+            idNow = idV[i]
+            data[idNow] = dict()
+
+            for j in range(nFilelds):
+                data[idNow][fields[j]] = redData[i][j]
+
+        return data if (idIn is None) else data[idNow]
 
     # -----------------------------------------------------------------------------------------------------------
     #
@@ -86,6 +134,9 @@ class azPlots():
     #
     # -----------------------------------------------------------------------------------------------------------
     def initTelHealth(self):
+        self.telHealth = dict()
+        self.telSubHealthFields = dict()
+
         self.telSubHealth = self.mySock.arrayData.getTelHealthD()
 
         # a flat dict with references to each level of the original dict
@@ -94,21 +145,63 @@ class azPlots():
             self.telSubHealthFlat[idNow] = flatDictById(
                 self.telSubHealth[idNow])
 
+        # for idNow in telIds:
+        #     self.telHealth[idNow] = {
+        #         "id": idNow, "health": 0, "status": "",
+        #         "data": [
+        #             self.telSubHealth[idNow]["camera"],
+        #             self.telSubHealth[idNow]["mirror"],
+        #             self.telSubHealth[idNow]["mount"],
+        #             self.telSubHealth[idNow]["daq"],
+        #             self.telSubHealth[idNow]["aux"]
+        #         ]
+        #     }
+        #     self.telSubHealthFields[idNow] = []
+        #     for key, val in self.telSubHealthFlat[idNow].iteritems():
+        #         if 'val' in val['data']:
+        #             self.telSubHealthFields[idNow] += [key]
         return
 
+    # -----------------------------------------------------------------------------------------------------------
+    #   Retrieve health of all Telescope and create a mean
+    # -----------------------------------------------------------------------------------------------------------
+    def getGeneralData(self):
+        fields = ['mirror','camera','mount','aux']
+        self.redis.pipe.reset()
+
+        for idNow in telIds:
+            for key in fields:
+                self.redis.pipe.zGet('telHealth;'+idNow+';'+key)
+        data = self.redis.pipe.execute(packedScore=True)
+        return data[0]
+
+    def getInitData(self):
+        data = {
+            "arrPosD": self.mySock.arrayData.getTelPosD(),
+            "arrInit": self.getData(),
+            "arrProp": self.getTelHealthS0()
+        }
+        return data
     # -----------------------------------------------------------------------------------------------------------
     #
     # -----------------------------------------------------------------------------------------------------------
     def getData(self):
+        #print self.getTelHealthS0()['S_65']
+        # print " "
+        # print " "
+        # print " "
+        # print " "
+        # print self.getGeneralData()
         idNow = telIds[0]
 
-        key0 = 'mount_1_1'
-        keyParent = self.telSubHealthFlat[idNow][key0]['parent']
+        key0 = 'mirror'
+        #keyParent = self.telSubHealthFlat[idNow][key0]['parent']
 
         keyV = {}
-        keyV[0] = self.telSubHealthFlat[idNow][keyParent]['siblings'] + [keyParent]
-        keyV[1] = self.telSubHealthFlat[idNow][key0]['siblings'] + [key0]
-        keyV[2] = self.telSubHealthFlat[idNow][key0]['children']
+        keyV[0] = ['mirror','camera','mount','aux']
+        # keyV[0] = self.telSubHealthFlat[idNow][keyParent]['siblings'] + [keyParent]
+        # keyV[1] = self.telSubHealthFlat[idNow][key0]['siblings'] + [key0]
+        # keyV[2] = self.telSubHealthFlat[idNow][key0]['children']
 
         # print key0, keyParent
         # print keyV[0]
@@ -163,5 +256,118 @@ class azPlots():
         # # ww = dataOut[0:6]
         # # ww = dataOut
         # # for w in ww: print '  --  ',w['x']
-
+        # dataOut["arrProp"] = self.getTelHealthS0()
         return dataOut
+
+    def getTelHealthS0(self, idIn=None):
+        #print 'getTelHealthS0'
+        data = dict()
+
+        fields = ["health", "status", "camera",
+                  "mirror", "mount", "daq", "aux"]
+        nFilelds = len(fields)
+
+        idV = telIds if (idIn is None) else [idIn]
+
+        self.redis.pipe.reset()
+        for idNow in idV:
+            self.redis.pipe.hMget(name="telHealth;"+str(idNow), key=fields)
+        redData = self.redis.pipe.execute()
+
+        for i in range(len(redData)):
+            idNow = idV[i]
+            data[idNow] = dict()
+
+            for j in range(nFilelds):
+                data[idNow][fields[j]] = redData[i][j]
+
+        return data if (idIn is None) else data[idNow]
+
+
+    # -----------------------------------------------------------------------------------------------------------
+    #
+    # -----------------------------------------------------------------------------------------------------------
+    def azPlotsUpdateDataOnce(self):
+        # get the current set of widgest which need an update
+        # with self.mySock.lock:
+        #     with azPlots.lock:
+        #         azPlots.sendV["s_0"] = {"sessId": [], "widgetId": []}
+        #         azPlots.sendV["s_1"] = dict()
+        #
+        #         widgetD = self.redis.hGetAll(name='widgetV', packed=True)
+        #         for widgetId, widgetNow in widgetD.iteritems():
+        #             if widgetNow["widgetName"] != self.widgetName:
+        #                 continue
+        #             if widgetId not in self.mySock.widgetInitV:
+        #                 continue
+        #
+        #             azPlots.sendV["s_0"]["sessId"].append(
+        #                 widgetNow["sessId"])
+        #             azPlots.sendV["s_0"]["widgetId"].append(widgetId)
+        #
+        #             if self.mySock.widgetInitV[widgetId].widgetState["zoomState"] == 1:
+        #                 zoomTarget = self.mySock.widgetInitV[widgetId].widgetState["zoomTarget"]
+        #                 if zoomTarget not in azPlots.sendV["s_1"]:
+        #                     azPlots.sendV["s_1"][zoomTarget] = {
+        #                         "sessId": [], "widgetId": []
+        #                     }
+        #                 azPlots.sendV["s_1"][zoomTarget]["sessId"].append(
+        #                     widgetNow["sessId"])
+        #                 azPlots.sendV["s_1"][zoomTarget]["widgetId"].append(
+        #                     widgetId)
+        #
+        # # -----------------------------------------------------------------------------------------------------------
+        # #
+        # # -----------------------------------------------------------------------------------------------------------
+        # propDs1 = dict()
+        # for zoomTarget in azPlots.sendV["s_1"]:
+        #     self.updateTelHealthS1(idIn=zoomTarget)
+        #
+        #     propDs1[zoomTarget] = self.getFlatTelHealth(zoomTarget)
+        #
+        # # -----------------------------------------------------------------------------------------------------------
+        # # transmit the values
+        # # -----------------------------------------------------------------------------------------------------------
+        # dataEmitS0 = {
+        #     "widgetId": "",
+        #     "type": "s00",
+        #     "data": self.getTelHealthS0()
+        # }
+        #
+        # self.mySock.socketEvtWidgetV(
+        #     evtName="azPlotsUpdateData",
+        #     data=dataEmitS0,
+        #     sessIdV=azPlots.sendV["s_0"]["sessId"],
+        #     widgetIdV=azPlots.sendV["s_0"]["widgetId"]
+        # )
+        #
+        # for zoomTarget in azPlots.sendV["s_1"]:
+        #     dataEmitS1 = {
+        #         "widgetId": "",
+        #         "type": "s11",
+        #         "data": propDs1[zoomTarget]
+        #     }
+        #
+        #     self.mySock.socketEvtWidgetV(
+        #         evtName="azPlotsUpdateData",
+        #         data=dataEmitS1,
+        #         sessIdV=azPlots.sendV["s_1"][zoomTarget]["sessId"],
+        #         widgetIdV=azPlots.sendV["s_1"][zoomTarget]["widgetId"]
+        #     )
+
+        return
+
+    # -----------------------------------------------------------------------------------------------------------
+    #
+    # -----------------------------------------------------------------------------------------------------------
+    def azPlotsUpdateData(self, threadId):
+        if not self.doDataUpdates:
+            return
+
+        sleep(3)
+
+        while (threadId == self.mySock.getThreadId(self.mySock.usrGrpId, "azPlotsUpdateData")):
+            self.azPlotsUpdateDataOnce()
+            sleep(10)
+
+        return

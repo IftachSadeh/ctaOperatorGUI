@@ -397,7 +397,6 @@ class mySock(BaseNamespace, BroadcastMixin):
             return
         if not self.redis.hExists(name='activeWidget', key=self.userId):
             return
-
         allSyncIds = []
         with mySock.lock:
             if self.redis.hGet(name='activeWidget', key=self.userId) != dataIn["widgetId"]:
@@ -423,13 +422,11 @@ class mySock(BaseNamespace, BroadcastMixin):
 
             self.redis.hSet(name='syncGroups', key=self.userId,
                             data=syncGroupV, packed=True)
-
         data = {
             "widgetId": dataIn["widgetId"],
             "type": dataIn["type"],
             "data": dataIn["data"]
         }
-
         self.socketEvtWidgetV(evtName="syncStateGet",
                               data=data, widgetIdV=allSyncIds)
 
