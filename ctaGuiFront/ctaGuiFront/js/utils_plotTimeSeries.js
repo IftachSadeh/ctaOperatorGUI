@@ -36,6 +36,8 @@ window.PlotTimeSeries = function () {
     com.locker = optIn.locker
     com.runLoop = optIn.runLoop
     com.hasBotPlot = !optIn.hasBotPlot
+    com.updateDomainY = optIn.updateDomainY
+    com.overviewLine = optIn.overviewLine
 
     let lockerZoom = optIn.lockerZoom
     if (!hasVar(lockerZoom)) {
@@ -281,13 +283,17 @@ window.PlotTimeSeries = function () {
     com.dataIds = dataIds
 
     for (var i = 0; i < com.timeBar.length; i++) {
+      // probably need to modify
       com.timeBar[i].updateBottomAxisDomain(com.data)
-      com.timeBar[i].updateLine(com.data)
+      if (com.overviewLine) com.timeBar[i].updateLine({data: com.data, tag: com.mainTag})
     }
   }
   this.update = update
 
   function updateAxisPlot (optIn) {
+    let data = hasVar(optIn.data) ? optIn.data : com.data
+    if (!data) return
+
     com.top.scale.x.domain(optIn.topScaleX.domain())
     updateDomainY()
 
@@ -348,7 +354,7 @@ window.PlotTimeSeries = function () {
       .style('pointer-events', 'none')
       .style('vector-effect', 'non-scaling-stroke')
       // .style("stroke-dasharray",  "5,1")
-      .attr('stroke', colsMix[0])
+      .attr('stroke', '#000099')
       .merge(line)
       .transition('inOut')
       .duration(timeD.animArc)
@@ -382,56 +388,57 @@ window.PlotTimeSeries = function () {
       if (!hasVar(com.circClass)) com.circClass = {}
       com.circClass[nTopBot] = com.mainTag + 'circ' + nTopBot
 
-      let circ = topBot.g.data
-        .selectAll('circle.' + com.circClass[nTopBot])
-        .data(data, function (d) {
-          return d.id
-        })
-      circ
-        .enter()
-        .append('circle')
-        .attr('class', com.circClass[nTopBot])
-        .style('opacity', 0)
-        .attr('stroke-opacity', 1)
-        .style('fill-opacity', 0.7)
-        .attr('vector-effect', 'non-scaling-stroke')
-        .attr('cx', function (d) {
-          return com.top.scale.x(d.x)
-        })
-        .attr('cy', function (d) {
-          return com.top.scale.y(d.y)
-        })
-        .attr('r', 2)
-        .attr('fill', colsMix[nTopBot])
-        // .attr("stroke-width", com.style.strokeWidth)
-        // .attr("fill", function(d,i) { return
-        // com.style.fill(d,d.data.nBlock); }) .attr("stroke", function(d,i) {
-        // return com.style.stroke(d,d.data.nBlock); })
-        // .attr("stroke-opacity", com.style.strokeOpacity)
-        .attr('pointer-events', pointerEvents)
-        // .call(com.zoom.zoom)
-        // .on('click', com.style.click)
-        .merge(circ)
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .style('opacity', 1)
-        .attr('cx', function (d) {
-          return topBot.scale.x(d.x)
-        })
-        .attr('cy', function (d) {
-          return topBot.scale.y(d.y)
-        })
-
-      circ
-        .exit()
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .style('opacity', 0)
-        .remove()
+      // let circ = topBot.g.data
+      //   .selectAll('circle.' + com.circClass[nTopBot])
+      //   .data(data, function (d) {
+      //     return d.id
+      //   })
+      // circ
+      //   .enter()
+      //   .append('circle')
+      //   .attr('class', com.circClass[nTopBot])
+      //   .style('opacity', 0)
+      //   .attr('stroke-opacity', 1)
+      //   .style('fill-opacity', 0.7)
+      //   .attr('vector-effect', 'non-scaling-stroke')
+      //   .attr('cx', function (d) {
+      //     return com.top.scale.x(d.x)
+      //   })
+      //   .attr('cy', function (d) {
+      //     return com.top.scale.y(d.y)
+      //   })
+      //   .attr('r', 2)
+      //   .attr('fill', colsMix[nTopBot])
+      //   // .attr("stroke-width", com.style.strokeWidth)
+      //   // .attr("fill", function(d,i) { return
+      //   // com.style.fill(d,d.data.nBlock); }) .attr("stroke", function(d,i) {
+      //   // return com.style.stroke(d,d.data.nBlock); })
+      //   // .attr("stroke-opacity", com.style.strokeOpacity)
+      //   .attr('pointer-events', pointerEvents)
+      //   // .call(com.zoom.zoom)
+      //   // .on('click', com.style.click)
+      //   .merge(circ)
+      //   .transition('inOut')
+      //   .duration(timeD.animArc)
+      //   .style('opacity', 1)
+      //   .attr('cx', function (d) {
+      //     return topBot.scale.x(d.x)
+      //   })
+      //   .attr('cy', function (d) {
+      //     return topBot.scale.y(d.y)
+      //   })
+      //
+      // circ
+      //   .exit()
+      //   .transition('inOut')
+      //   .duration(timeD.animArc)
+      //   .style('opacity', 0)
+      //   .remove()
     })
   }
   function updateDomainY (optIn) {
     if (!hasVar(optIn)) optIn = {}
+
     let data = hasVar(optIn.data) ? optIn.data : com.data
     let domain = hasVar(optIn.domain) ? optIn.domain : com.top.scale.x.domain()
 
@@ -449,7 +456,11 @@ window.PlotTimeSeries = function () {
       else deltaY = com.yAxisMarginFrac * yMinMax[0]
     }
     // yMinMax = [yMinMax[0] - deltaY, yMinMax[1] + deltaY]
-    yMinMax = [yMinMax[0] - deltaY, yMinMax[1] + deltaY]
+    if (!com.updateDomainY) {
+      yMinMax = [0, 100.5]
+    } else {
+      yMinMax = [yMinMax[0] - deltaY, yMinMax[1] + deltaY]
+    }
     com.top.scale.y.domain(yMinMax)
     com.top.g.axis
       .selectAll('.axisY')

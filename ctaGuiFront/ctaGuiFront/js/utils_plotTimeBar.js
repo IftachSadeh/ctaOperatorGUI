@@ -76,12 +76,12 @@ window.PlotTimeBar = function () {
     com.bot.scale.x = d3.scaleTime().range([0, com.bot.box.w])
 
     com.bot.scale.y = d3.scaleLinear().range([0, com.bot.box.h])
-    com.bot.scale.y.domain([102, -2])
+    com.bot.scale.y.domain([105, 0])
 
     com.top.axis.x = d3.axisTop(com.top.scale.x)
     if (optIn.isPartofPlot) com.top.axis.x = d3.axisBottom(com.top.scale.x)
     com.bot.axis.x = d3.axisBottom(com.bot.scale.x)
-    com.bot.axis.y = d3.axisLeft(com.top.scale.y)
+    // com.bot.axis.y = d3.axisLeft(com.top.scale.y)
 
     com.top.g.axis
       .append('g')
@@ -93,11 +93,11 @@ window.PlotTimeBar = function () {
       .attr('class', 'axisX')
       .attr('transform', com.bot.axis.transX)
       .call(com.bot.axis.x)
-    com.top.g.axis
-      .append('g')
-      .attr('class', 'axisY')
-      .attr('transform', com.top.axis.transX)
-      .call(com.bot.axis.y)
+    // com.top.g.axis
+    //   .append('g')
+    //   .attr('class', 'axisY')
+    //   .attr('transform', com.top.axis.transX)
+    //   .call(com.bot.axis.y)
   }
   function initMiddle (optIn) {
     com.parse = {}
@@ -316,8 +316,8 @@ window.PlotTimeBar = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   // com.updateupdateupdate=0;
-  function updateLine (data) {
-    updateCirc({ data: data })
+  function updateLine (dataIn) {
+    updateCirc(dataIn)
     updateBrushPosition()
   }
   this.updateLine = updateLine
@@ -355,8 +355,9 @@ window.PlotTimeBar = function () {
   }
   this.updateBottomAxisDomain = updateBottomAxisDomain
 
-  function updateCirc (optIn) {
-    let data = optIn.data
+  function updateCirc (dataIn) {
+    let data = dataIn.data
+    let tag = dataIn.tag
 
     let lineData = []
     $.each(data, function (i, d) {
@@ -373,7 +374,7 @@ window.PlotTimeBar = function () {
       })
     })
 
-    com.lineClass = com.mainTag + 'line'
+    com.lineClass = tag + 'line'
     let line = com.bot.g.data
       .selectAll('line.' + com.lineClass)
       .data(lineData, function (d) {
@@ -400,7 +401,7 @@ window.PlotTimeBar = function () {
       .style('pointer-events', 'none')
       .style('vector-effect', 'non-scaling-stroke')
       // .style("stroke-dasharray",  "5,1")
-      .attr('stroke', colsMix[0])
+      .attr('stroke', '#000099')
       .merge(line)
       .transition('inOut')
       .duration(timeD.animArc)
@@ -425,8 +426,6 @@ window.PlotTimeBar = function () {
       .attr('stroke-opacity', 0)
       .remove()
 
-    let topBot = com.bot
-    let pointerEvents = 'none'
     let nTopBot = 1
     if (!hasVar(com.circClass)) com.circClass = {}
     com.circClass[nTopBot] = com.mainTag + 'circ' + nTopBot

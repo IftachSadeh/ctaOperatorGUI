@@ -88,7 +88,6 @@ let sockAzPlots = function (optIn) {
 
   sock.socket.on('azPlotsUpdateData', function (data) {
     if (sock.conStat.isOffline()) return
-    console.log("azPlotsUpdateData from py");
     $.each(sock.widgetV[widgetType].widgets, function (widgetIdNow, modNow) {
       if (data.sessWidgetIds.indexOf(widgetIdNow) >= 0) {
         sock.widgetV[widgetType].widgets[widgetIdNow].updateData(data)
@@ -210,6 +209,7 @@ let mainAzPlots = function (optIn) {
       nIcon: dataIn.nIcon,
       iconDivV: iconDivV
     })
+
     setTelData(dataIn.data.arrProp, true)
     setTelDataPhysical(dataIn.data.arrPosD)
     telData.vor.data = telData.vor.dataPhysical
@@ -219,9 +219,8 @@ let mainAzPlots = function (optIn) {
     svgMain.initData(dataMain)
 
     svgQuick.initData({
-      telData: {tel: telData.tel, vor: {data: telData.vor.data}, mini: telData.mini, xyr: telData.xyr, vorDblclick: telData.vorDblclick},
+      telData: {tel: telData.tel, vor: {data: telData.vor.data}, mini: telData.mini, vorDblclick: telData.vorDblclick},
       telTypeV: telTypeV})
-
     svgQuick.setStateOnce()
   }
   this.initData = initData
@@ -231,6 +230,7 @@ let mainAzPlots = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
     svgMain.updateData(dataIn.data)
+    svgQuick.setStateOnce()
   }
   this.updateData = updateData
 
@@ -739,13 +739,13 @@ let mainAzPlots = function (optIn) {
       svg.title = svg.svg.append('g')
       initSVGPanel(svg.title, 'title', '#efefef')
       svg.mirror = svg.svg.append('g')
-      initSVGPanel(svg.mirror, 'mirror', '#dddddd')
+      initSVGPanel(svg.mirror, 'mirror', '#eeeeee')
       svg.camera = svg.svg.append('g')
-      initSVGPanel(svg.camera, 'camera', '#777777')
+      initSVGPanel(svg.camera, 'camera', '#dddddd')
       svg.mount = svg.svg.append('g')
-      initSVGPanel(svg.mount, 'mount', '#aaaaaa')
+      initSVGPanel(svg.mount, 'mount', '#dddddd')
       svg.aux = svg.svg.append('g')
-      initSVGPanel(svg.aux, 'aux', '#999999')
+      initSVGPanel(svg.aux, 'aux', '#eeeeee')
       svg.associate = svg.svg.append('g')
       initSVGPanel(svg.associate, 'associate', '#eeeeee')
 
@@ -772,9 +772,9 @@ let mainAzPlots = function (optIn) {
 
       addTimeBar({ plotId: 'associate', propId: 'associate' })
       addPlot({ plotId: 'mirror', propId: 'mirror' })
-      // addPlot({ plotId: 'camera', propId: 'camera' })
-      // addPlot({ plotId: 'mount', propId: 'mount' })
-      // addPlot({ plotId: 'aux', propId: 'aux' })
+      addPlot({ plotId: 'camera', propId: 'camera' })
+      addPlot({ plotId: 'mount', propId: 'mount' })
+      addPlot({ plotId: 'aux', propId: 'aux' })
       //initSinglePlot('mirror')
 
       // // ---------------------------------------------------------------------------------------------------
@@ -816,8 +816,11 @@ let mainAzPlots = function (optIn) {
         }, 10)
       }
       locker.add(tagAzPlots + 'updateData')
-      $.each(dataIn, function (i, d) {
-        dataIn[i] = dataIn[i].map(function (d) {
+      console.log(dataIn.telHealthAggregate);
+      setTelData(dataIn.telHealth, false)
+
+      $.each(dataIn.dataOut, function (i, d) {
+        dataIn.dataOut[i] = dataIn.dataOut[i].map(function (d) {
           return { id: replaceAll(d.id, ';', ''), data: d.data }
         })
       })
@@ -831,13 +834,12 @@ let mainAzPlots = function (optIn) {
       //   //if (!hasVar(com.plot[d.id])) addPlot({ plotId: d.id, propId: 'mirror' })
       // })
       //onZoomDuring()
-
-      $.each(dataIn[0], function (i, d) {
+      $.each(dataIn.dataOut[0], function (i, d) {
         if (i === 0) com.plot['mirror'].update(d.data)
-        //if (i === 0) com.plot['associate'].update(d.data)
-        //if (i === 1) com.plot['camera'].update(d.data)
-        //if (i === 2) com.plot['mount'].update(d.data)
-        //if (i === 3) com.plot['aux'].update(d.data)
+        // if (i === 0) com.plot['associate'].update(d.data)
+        if (i === 1) com.plot['camera'].update(d.data)
+        if (i === 2) com.plot['mount'].update(d.data)
+        if (i === 3) com.plot['aux'].update(d.data)
       })
 
       locker.remove(tagAzPlots + 'updateData')
@@ -913,6 +915,8 @@ let mainAzPlots = function (optIn) {
         tag: tagPlot + plotId,
         gBox: svg[propId].plot,
         hasBotPlot: false,
+        updateDomainY: false,
+        overviewLine: true,
         style: { hasOutline: true },
         boxData: plotBoxData,
         locker: locker,

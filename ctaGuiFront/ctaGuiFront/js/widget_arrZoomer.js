@@ -668,7 +668,6 @@ let mainArrZoomer = function (optIn) {
   runLoop.init({ tag: '_getDataS1_', func: getDataS1Once, nKeep: 1 })
 
   function getDataS1 (widgetIdIn, dataIn) {
-    console.log("GETDATAS1");
     // just in case... should not be needed
     if (widgetIdIn !== widgetId) {
       console.error('id mismatch', widgetIdIn, widgetId)
@@ -676,7 +675,6 @@ let mainArrZoomer = function (optIn) {
     }
     // console.log('-client- getDataS1',dataIn)
 
-    console.log("need to be 1", svgMain.getZoomS());
     if (svgMain.getZoomS() === 1) {
       runLoop.push({ tag: '_getDataS1_', data: dataIn }) //, time:dataIn.emitTime
     }
@@ -684,8 +682,6 @@ let mainArrZoomer = function (optIn) {
   this.getDataS1 = getDataS1
 
   function getDataS1Once (dataIn) {
-    console.log(svgMain.getZoomS() === 1,
-    svgMain.syncD.zoomTarget !== dataIn.data.id)
     if (
       svgMain.getZoomS() === 1 &&
       svgMain.syncD.zoomTarget !== dataIn.data.id
@@ -1981,7 +1977,6 @@ let mainArrZoomer = function (optIn) {
         clickIn = propIn !== ''
       }
 
-      console.log("zoomTarget", zoomTarget, " !== telId || !hasVar(telData.propDataS1[telId])" , telId , !hasVar(telData.propDataS1[telId]));
       if (zoomTarget !== telId || !hasVar(telData.propDataS1[telId])) {
         clickIn = false
         remove = true
@@ -2023,7 +2018,6 @@ let mainArrZoomer = function (optIn) {
         // com.s10.gHirch.append("rect").style('opacity',0.3).style("fill",'transparent').attr("height", treeH).attr("width", treeW).style("stroke","red")
       }
 
-      console.log("!clickIn && !remove && hasVar(telData.dataBaseS1[telId])", !clickIn , !remove , hasVar(telData.dataBaseS1[telId]));
       let hasDataBase =
         !clickIn && !remove && hasVar(telData.dataBaseS1[telId])
 
