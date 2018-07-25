@@ -18,8 +18,8 @@
         --paper-fab-keyboard-focus-background: var(--primary-background-color);
       }
       .tabControlFab paper-fab {
-        -moz-transform: scale(.75); 
-        -webkit-transform: scale(.75); 
+        -moz-transform: scale(.75);
+        -webkit-transform: scale(.75);
         transform: scale(.75);
       }
       #tabBckDiv {
@@ -49,9 +49,9 @@
     <!-- ==================================================================================================== -->
     <!-- -->
     <!-- ==================================================================================================== -->
-    <div id="tabDiv">  
-      <div class="horizEle" id="tabBckDiv">.</div>      
-        
+    <div id="tabDiv">
+      <div class="horizEle" id="tabBckDiv">.</div>
+
       <div class="horizEle" style="width: 100%;">
         <div id="iconDiv"></div>
         <div class="horizEle tabControlFab" id="tabHead" style="width: 100%;"> <!-- border: 2px solid #383B42 -->
@@ -169,7 +169,7 @@
 
 
       // ---------------------------------------------------------------------------------------------------
-      // 
+      //
       // ---------------------------------------------------------------------------------------------------
       _addTable(optIn) {
         var tableId       = optIn["tableId"];
@@ -214,7 +214,7 @@
 
         var tabApp         = document.createElement("paper-tab");
         tabApp.id          = tableId+"_tab";
-        tabApp.textContent = tableTitle;        
+        tabApp.textContent = tableTitle;
 
         // ---------------------------------------------------------------------------------------------------
         // a possible placement for an icon-svg
@@ -247,9 +247,9 @@
           Polymer.dom(this.shadowRoot.querySelector("#iconDiv")).appendChild(iconDiv);
 
           // (!)AFTER(!) the iconDiv is placed, calculate the top pos and adjust the background stripe
-          var tabT = this.shadowRoot.querySelector("#table_tabs").getBoundingClientRect().top 
+          var tabT = this.shadowRoot.querySelector("#table_tabs").getBoundingClientRect().top
                      - this.shadowRoot.querySelector("#tabBckDiv").getBoundingClientRect().top;
-          
+
           this.shadowRoot.querySelector("#tabBckDiv").setAttribute(
             "style", "line-height:"+tabH+"px;width:"+tabW+"px;top:"+tabT+"px"
           );
@@ -260,13 +260,13 @@
         Polymer.flush();
 
         // notify the outside that this function has completed
-        this.dispatchEvent(new CustomEvent('_addTable'+tableId, { bubbles:true, composed:true, detail:{} })) 
+        this.dispatchEvent(new CustomEvent('_addTable'+tableId, { bubbles:true, composed:true, detail:{} }))
 
         return;
       }
 
       // ---------------------------------------------------------------------------------------------------
-      // 
+      //
       // ---------------------------------------------------------------------------------------------------
       _addWidget(tableId,eleProps) {
         var _this = this;
@@ -279,7 +279,7 @@
         var gsY = (eleProps.y != undefined) ? eleProps.y : 0;
         var gsW = (eleProps.w != undefined) ? eleProps.w : 6;
         var gsH = (eleProps.h != undefined) ? eleProps.h : 6;
-        
+
         var autoPos = (eleProps["autoPos"]   != undefined) ? (eleProps["autoPos"]   ? 1    : 0    ) : 0;
         var isDark  = (eleProps["isDarkEle"] != undefined) ? (eleProps["isDarkEle"] ? true : false) : false;
         var gsId    = (eleProps["gsId"]      != undefined) ? eleProps["gsId"]
@@ -350,21 +350,21 @@
       }
 
       // ---------------------------------------------------------------------------------------------------
-      // 
+      //
       // ---------------------------------------------------------------------------------------------------
       getEle(tag) {
         return this.shadowRoot.querySelector("#"+tag);
       }
 
       // ---------------------------------------------------------------------------------------------------
-      // 
+      //
       // ---------------------------------------------------------------------------------------------------
       getTableWidgetV(tableId) {
         return this.widgetV[tableId];
       }
 
       // ---------------------------------------------------------------------------------------------------
-      // 
+      //
       // ---------------------------------------------------------------------------------------------------
       setAllWidgetWH(tableId) {
         $.each(this.widgetV[tableId], function(index,objNow) {
@@ -493,6 +493,9 @@
         <paper-item class="iconListItem" onclick="window.location.href='view206'">
           <iron-icon icon="av:stop"></iron-icon> Scheduling Block Control
         </paper-item>
+        <paper-item class="iconListItem" onclick="window.location.href='view207'">
+          <iron-icon icon="av:stop"></iron-icon> Tag and Report
+        </paper-item>
         <paper-item class="iconListItem" onclick="window.location.href='view205'">
           <iron-icon icon="icons:view-day"></iron-icon> Nightly Schedule
         </paper-item>
@@ -504,7 +507,7 @@
         <!-- <paper-item class="iconListItem" onclick="window.location.href='view203'">
           <iron-icon icon="icons:settings-input-composite"></iron-icon> Panel synchronization
         </paper-item> -->
-    </paper-listbox> 
+    </paper-listbox>
 
   </template>
 
@@ -574,7 +577,7 @@
 
           Polymer.dom(this.shadowRoot.querySelector("#siteNavMenu")).appendChild(itemNow);
         }
-        
+
         return;
       }
     }
@@ -609,14 +612,14 @@
       }
 
       .spinnerBig {
-        -moz-transform: scale(2.3); 
-        -webkit-transform: scale(2.3); 
+        -moz-transform: scale(2.3);
+        -webkit-transform: scale(2.3);
         transform: scale(2.3);
         --paper-spinner-stroke-width: 1px;
       }
       .spinnerMini {
-        -moz-transform: scale(1.7); 
-        -webkit-transform: scale(1.7); 
+        -moz-transform: scale(1.7);
+        -webkit-transform: scale(1.7);
         transform: scale(1.7);
         --paper-spinner-stroke-width: 1px;
       }
@@ -723,4 +726,3 @@
     customElements.define(PaperFabSpinner.is, PaperFabSpinner);
   </script>
 </dom-module>
-

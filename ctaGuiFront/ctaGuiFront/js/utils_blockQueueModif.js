@@ -8,12 +8,14 @@
 /* global minMaxObj */
 /* global colsBlues */
 /* global loadScript */
+/* global PlotTimeBar */
 /* global ScrollBox */
 /* global colsGreens */
 /* global colsYellows */
 /* global colsPurplesBlues */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
+loadScript({ source: 'utils_plotTimeBar', script: '/js/utils_plotTimeBar.js' })
 
 // ---------------------------------------------------------------------------------------------------
 //
@@ -103,31 +105,86 @@ window.BlockQueue = function () {
     com.outerBox = deepCopy(optIn.boxData)
     com.outerG = gBox.append('g')
     com.scrollBoxG = com.outerG.append('g')
+    com.timeBarG = com.outerG.append('g')
 
-    com.scrollBox = new ScrollBox()
-    com.scrollBox.init({
-      tag: com.mainTag,
-      gBox: com.scrollBoxG,
-      boxData: com.outerBox,
-      useRelativeCoords: false,
-      title: optIn.title,
-      locker: optIn.locker,
-      lockerV: optIn.lockerV,
-      lockerZoom: optIn.lockerZoom,
-      runLoop: optIn.runLoop
-    })
+    com.scroll = {}
+    com.scroll.vertical = optIn.verticalScroll
+    com.scroll.horizontal = optIn.horizontalScroll
 
-    com.innerG = com.scrollBox.get('innerG')
-    com.innerBox = com.scrollBox.get('innerBox')
-
+    if (com.scroll.vertical) {
+      com.scrollBox = new ScrollBox()
+      com.scrollBox.init({
+        tag: com.mainTag,
+        gBox: com.scrollBoxG,
+        boxData: com.outerBox,
+        useRelativeCoords: false,
+        title: optIn.title,
+        locker: optIn.locker,
+        lockerV: optIn.lockerV,
+        lockerZoom: optIn.lockerZoom,
+        runLoop: optIn.runLoop
+      })
+      com.innerG = com.scrollBox.get('innerG')
+      com.innerBox = com.scrollBox.get('innerBox')
+    } else {
+      com.innerG = com.scrollBoxG
+      com.innerBox = com.outerBox
+    }
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
+    if (optIn.hasAxis) initAxis(optIn)
     setStyle(optIn.style)
 
     update()
   }
   this.init = init
+
+  function initAxis (optIn) {
+
+    // let plotBoxData = {
+    //   w: com.outerBox.w,
+    //   h: com.outerBox.h / 10,
+    //   x: com.outerBox.x,
+    //   y: com.outerBox.y + com.outerBox.h,
+    //   margWidth: 0,
+    //   margHeight: 0
+    // }
+    //
+    // com.plot = new PlotTimeBar()
+    //
+    // com.plot.init({
+    //   tag: 'testplot',
+    //   gBox: com.timeBarG,
+    //
+    //   showTopAxis: true,
+    //   topAxisOrientation: 'bottom',
+    //   showBottomAxis: false,
+    //   bottomAxisOrientation: 'top',
+    //
+    //   hasBotPlot: true,
+    //   isPartofPlot: false,
+    //   style: { hasOutline: true },
+    //   boxData: plotBoxData,
+    //   locker: com.locker,
+    //   lockerV: ['testplot' + 'updateData'],
+    //   lockerZoom: {
+    //     all: 'testplot' + 'zoom',
+    //     during: 'testplot' + 'zoomDuring',
+    //     end: 'testplot' + 'zoomEnd'
+    //   },
+    //   runLoop: com.runLoop
+    // })
+    com.axis = {}
+    com.axis.scaleX = d3.scaleLinear().range([0, com.outerBox.w]).domain([0, 28000])
+    com.axis.translate = 'translate(' + com.outerBox.x + ',' + (com.outerBox.h + com.outerBox.y) + ')'
+    com.axis.bottom = d3.axisBottom(com.axis.scaleX)
+    com.scrollBoxG
+      .append('g')
+      .attr('class', 'axisX')
+      .attr('transform', com.axis.translate)
+      .call(com.axis.bottom)
+  }
 
   // ---------------------------------------------------------------------------------------------------
   // styling
@@ -227,10 +284,15 @@ window.BlockQueue = function () {
     return dataIn
   }
 
+  function updateAxis (dataIn) {
+    console.log(dataIn);
+  }
+
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
   function update (dataIn) {
+    updateAxis(dataIn)
     dataIn = filterBlocks(dataIn)
 
     com.blocksIn = dataIn
@@ -380,6 +442,7 @@ window.BlockQueue = function () {
         end: com.time.end,
         data: dataIn
       })
+      console.log(com.blockRow[typeNow][0]);
 
       if (!com.doPhase) return
       if (com.blockRow[typeNow].length === 0) return
@@ -448,9 +511,10 @@ window.BlockQueue = function () {
     })
     let yDif = yMax - yMin
 
-    let hasScroll = yDif > com.innerBox.h + 0.01
-
-    com.scrollBox.resetScroller({ canScroll: hasScroll, scrollHeight: yDif })
+    if (com.scroll.vertical) {
+      let hasScroll = yDif > com.innerBox.h + 0.01
+      com.scrollBox.resetScroller({ canScroll: hasScroll, scrollHeight: yDif })
+    }
   }
   this.getBlocks = getBlocks
 
@@ -461,10 +525,12 @@ window.BlockQueue = function () {
     let dataIn = optIn.data
     let box = com.innerBox
     let xScale = box.w / (optIn.end - optIn.start)
-    let yScale = box.h / com.telIds.length
+    let yScale = box.h / (com.telIds.length + 2)
 
     let blocks = []
     let nBlocksType = {}
+
+    // compute width/height/x/y of blocks, only y need to be modified (so far)
     $.each(dataIn, function (index, dataNow) {
       let id = dataNow.obId
       let state = dataNow.exeState.state
@@ -532,97 +598,97 @@ window.BlockQueue = function () {
     // ---------------------------------------------------------------------------------------------------
     let sortedIds = []
     $.each(blocks, function (index0, dataNow0) {
-      // if(typeNow=='run') return
-      // if(sortedIds.indexOf(dataNow0.id) >= 0) console.log('will skip sorted',index0,dataNow0.data.metaData.blockName);
-      if (sortedIds.indexOf(dataNow0.id) >= 0) return
-      sortedIds.push(dataNow0.id)
+                      // if(typeNow=='run') return
+                      // if(sortedIds.indexOf(dataNow0.id) >= 0) console.log('will skip sorted',index0,dataNow0.data.metaData.blockName);
+                      if (sortedIds.indexOf(dataNow0.id) >= 0) return
+                      sortedIds.push(dataNow0.id)
 
-      let x0 = dataNow0.x
-      let y0 = dataNow0.y
-      let w0 = dataNow0.w
-      let h0 = dataNow0.h
-      // let o0 = dataNow0.o
+                      let x0 = dataNow0.x
+                      let y0 = dataNow0.y
+                      let w0 = dataNow0.w
+                      let h0 = dataNow0.h
+                      // let o0 = dataNow0.o
 
-      let telV = [].concat(dataNow0.data.telIds)
-      let minMax = { minX: x0, minY: y0, maxX: x0 + w0, maxY: y0 + h0 }
+                      let telV = [].concat(dataNow0.data.telIds)
+                      let minMax = { minX: x0, minY: y0, maxX: x0 + w0, maxY: y0 + h0 }
 
-      let ovelaps = [{ index: index0, data: dataNow0 }]
+                      let ovelaps = [{ index: index0, data: dataNow0 }]
 
-      for (let nTries = 0; nTries < 10; nTries++) {
-        let nOver = ovelaps.length
+                      for (let nTries = 0; nTries < 10; nTries++) {
+                        let nOver = ovelaps.length
 
-        $.each(blocks, function (index1, dataNow1) {
-          if (sortedIds.indexOf(dataNow1.id) >= 0) return
-          if (
-            ovelaps
-              .map(function (d) {
-                return d.data.id
-              })
-              .indexOf(dataNow1.id) >= 0
-          ) {
-            return
-          }
+                        $.each(blocks, function (index1, dataNow1) {
+                          if (sortedIds.indexOf(dataNow1.id) >= 0) return
+                          if (
+                            ovelaps
+                              .map(function (d) {
+                                return d.data.id
+                              })
+                              .indexOf(dataNow1.id) >= 0
+                          ) {
+                            return
+                          }
 
-          let x1 = dataNow1.x
-          let y1 = dataNow1.y
-          let w1 = dataNow1.w
-          let h1 = dataNow1.h
-          let o01 = Math.max(dataNow0.o, dataNow1.o)
+                          let x1 = dataNow1.x
+                          let y1 = dataNow1.y
+                          let w1 = dataNow1.w
+                          let h1 = dataNow1.h
+                          let o01 = Math.max(dataNow0.o, dataNow1.o)
 
-          let hasOverlap =
-            x1 < minMax.maxX - o01 &&
-            x1 + w1 > minMax.minX + o01 &&
-            y1 < minMax.maxY &&
-            y1 + h1 > minMax.minY
-          // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName]);
+                          let hasOverlap =
+                            x1 < minMax.maxX - o01 &&
+                            x1 + w1 > minMax.minX + o01 &&
+                            y1 < minMax.maxY &&
+                            y1 + h1 > minMax.minY
+                          // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName]);
 
-          // XXXXXXXXXXXXXXXXXX
-          // let hasOverlap = (
-          //   (x1 < minMax.maxX+margX/2) && (x1+w1 > minMax.minX) &&
-          //   (y1 < minMax.maxY)         && (y1+h1 > minMax.minY)
-          // );
-          // XXXXXXXXXXXXXXXXXX
+                          // XXXXXXXXXXXXXXXXXX
+                          // let hasOverlap = (
+                          //   (x1 < minMax.maxX+margX/2) && (x1+w1 > minMax.minX) &&
+                          //   (y1 < minMax.maxY)         && (y1+h1 > minMax.minY)
+                          // );
+                          // XXXXXXXXXXXXXXXXXX
 
-          if (hasOverlap) {
-            let intersect = telV.filter(n => dataNow1.data.telIds.includes(n))
-            if (intersect.length === 0) {
-              sortedIds.push(dataNow1.id)
-            }
-            telV = telV.concat(dataNow1.data.telIds)
+                          if (hasOverlap) {
+                            let intersect = telV.filter(n => dataNow1.data.telIds.includes(n))
+                            if (intersect.length === 0) {
+                              sortedIds.push(dataNow1.id)
+                            }
+                            telV = telV.concat(dataNow1.data.telIds)
 
-            minMax = {
-              minX: Math.min(minMax.minX, x1),
-              minY: Math.min(minMax.minY, y1),
-              maxX: Math.max(minMax.maxX, x1 + w1),
-              maxY: Math.max(minMax.maxY, y1 + h1)
-            }
+                            minMax = {
+                              minX: Math.min(minMax.minX, x1),
+                              minY: Math.min(minMax.minY, y1),
+                              maxX: Math.max(minMax.maxX, x1 + w1),
+                              maxY: Math.max(minMax.maxY, y1 + h1)
+                            }
 
-            ovelaps.push({ index: index1, data: dataNow1 })
-          }
-        })
-        // console.log('xxxxxxxxxxxxxxx',nTries,ovelaps,ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
-        if (nOver === ovelaps.length) break
-      }
+                            ovelaps.push({ index: index1, data: dataNow1 })
+                          }
+                        })
+                        // console.log('xxxxxxxxxxxxxxx',nTries,ovelaps,ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
+                        if (nOver === ovelaps.length) break
+                      }
 
-      if (ovelaps.length > 1) {
-        let origIndices = ovelaps.map(function (d) {
-          return d.index
-        })
+                      if (ovelaps.length > 1) {
+                        let origIndices = ovelaps.map(function (d) {
+                          return d.index
+                        })
 
-        ovelaps.sort(function (a, b) {
-          let diffTime = a.data.data.startTime - b.data.data.startTime
-          let diffTel = b.data.data.telIds.length - a.data.data.telIds.length
-          return diffTel !== 0 ? diffTel : diffTime
-        })
+                        ovelaps.sort(function (a, b) {
+                          let diffTime = a.data.data.startTime - b.data.data.startTime
+                          let diffTel = b.data.data.telIds.length - a.data.data.telIds.length
+                          return diffTel !== 0 ? diffTel : diffTime
+                        })
 
-        // if(typeNow=='run') console.log('will sort',ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
-        $.each(ovelaps, function (index1, dataNow1) {
-          // if(typeNow=='run') console.log('-=-=-',index1,origIndices[index1], dataNow1.index);
-          let origIndex = origIndices[index1]
-          // if(canSort) blocks[origIndex] = dataNow1.data;
-          blocks[origIndex] = dataNow1.data
-        })
-      }
+                        // if(typeNow=='run') console.log('will sort',ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
+                        $.each(ovelaps, function (index1, dataNow1) {
+                          // if(typeNow=='run') console.log('-=-=-',index1,origIndices[index1], dataNow1.index);
+                          let origIndex = origIndices[index1]
+                          // if(canSort) blocks[origIndex] = dataNow1.data;
+                          blocks[origIndex] = dataNow1.data
+                        })
+                      }
     })
 
     $.each(blocks, function (index0, dataNow0) {
@@ -645,14 +711,17 @@ window.BlockQueue = function () {
         // XXXXXXXXXXXXXXXXXX
         // let hasOverlap = ((x1 < x0+w0+margX/2) && (x1+w1 > x0) && (y1 < y0+h0) && (y1+h1 > y0));
         // XXXXXXXXXXXXXXXXXX
-        let hasOverlap =
-          x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
+        let hasOverlap = x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
         if (hasOverlap) {
           dataNow1.y = y0 + h0 + margY / 2
           // dataNow1.y += h0 + margY/2;
         }
         // if(hasOverlap) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName],(h0 + margY/2));
       })
+    })
+
+    $.each(blocks, function (index0, dataNow0) {
+      dataNow0.y = (2 * box.y + box.h) - dataNow0.y - dataNow0.h
     })
 
     return blocks
@@ -692,18 +761,20 @@ window.BlockQueue = function () {
       .append('rect')
       .attr('class', com.mainTag + 'blocks')
       .style('opacity', 0)
+
       .attr('x', function (d, i) {
-        return d.x
+        return com.axis.scaleX(d.data.startTime)
       })
       .attr('y', function (d, i) {
         return d.y
       })
       .attr('width', function (d, i) {
-        return d.w
+        return com.axis.scaleX(d.data.endTime) - com.axis.scaleX(d.data.startTime)
       })
       .attr('height', function (d, i) {
         return d.h
       })
+
       .attr('stroke', function (d, i) {
         return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
       })
@@ -734,13 +805,13 @@ window.BlockQueue = function () {
       })
       .style('stroke-opacity', com.style.recStrokeOpac)
       .attr('x', function (d, i) {
-        return d.x
+        return com.axis.scaleX(d.data.startTime) + com.innerBox.x
       })
       .attr('y', function (d, i) {
         return d.y
       })
       .attr('width', function (d, i) {
-        return d.w
+        return com.axis.scaleX(d.data.endTime) - com.axis.scaleX(d.data.startTime)
       })
       .attr('height', function (d, i) {
         return d.h

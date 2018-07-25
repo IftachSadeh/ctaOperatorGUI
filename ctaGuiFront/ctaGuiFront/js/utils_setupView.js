@@ -173,9 +173,15 @@ setupView.view204 = function () {
 // nightSched
 // -----------------------------------------------------------------------------------------------------------
 setupView.view205 = function () {
+  // sock.addWidget({
+  //   nameTag: 'nightSched',
+  //   tableTitle: 'Nightly Schedule',
+  //   hasIcon: true,
+  //   hasDrawer: false
+  // })
   sock.addWidget({
-    nameTag: 'nightSched',
-    tableTitle: 'Nightly Schedule',
+    nameTag: 'tagBlocks',
+    tableTitle: 'tag Blocks',
     hasIcon: true,
     hasDrawer: false
   })

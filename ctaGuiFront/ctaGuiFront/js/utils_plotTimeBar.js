@@ -27,6 +27,11 @@ window.PlotTimeBar = function () {
   // ---------------------------------------------------------------------------------------------------
 
   function initAxis (optIn) {
+    if (!hasVar(optIn.showTopAxis)) optIn.showTopAxis = true
+    if (!hasVar(optIn.showBottomAxis)) optIn.showTopAxis = true
+    if (!hasVar(optIn.topAxisOrientation)) optIn.topAxisOrientation = 'top'
+    if (!hasVar(optIn.bottomAxisOrientation)) optIn.bottomAxisOrientation = 'bottom'
+
     com.top = {}
     com.top.axis = {}
     com.top.scale = {}
@@ -79,20 +84,23 @@ window.PlotTimeBar = function () {
     com.bot.scale.y.domain([105, 0])
 
     com.top.axis.x = d3.axisTop(com.top.scale.x)
-    if (optIn.isPartofPlot) com.top.axis.x = d3.axisBottom(com.top.scale.x)
+    if (optIn.topAxisOrientation === 'bottom') com.top.axis.x = d3.axisBottom(com.top.scale.x)
     com.bot.axis.x = d3.axisBottom(com.bot.scale.x)
     // com.bot.axis.y = d3.axisLeft(com.top.scale.y)
-
-    com.top.g.axis
-      .append('g')
-      .attr('class', 'axisX')
-      .attr('transform', com.top.axis.transX)
-      .call(com.top.axis.x)
-    com.bot.g.axis
-      .append('g')
-      .attr('class', 'axisX')
-      .attr('transform', com.bot.axis.transX)
-      .call(com.bot.axis.x)
+    if (optIn.showTopAxis) {
+      com.top.g.axis
+        .append('g')
+        .attr('class', 'axisX')
+        .attr('transform', com.top.axis.transX)
+        .call(com.top.axis.x)
+    }
+    if (optIn.showBottomAxis) {
+      com.bot.g.axis
+        .append('g')
+        .attr('class', 'axisX')
+        .attr('transform', com.bot.axis.transX)
+        .call(com.bot.axis.x)
+    }
     // com.top.g.axis
     //   .append('g')
     //   .attr('class', 'axisY')
