@@ -140,8 +140,7 @@ window.BlockQueue = function () {
   }
   this.init = init
 
-  function initAxis (optIn) {
-
+  function initAxis () {
     // let plotBoxData = {
     //   w: com.outerBox.w,
     //   h: com.outerBox.h / 10,
@@ -176,10 +175,10 @@ window.BlockQueue = function () {
     //   runLoop: com.runLoop
     // })
     com.axis = {}
-    com.axis.scaleX = d3.scaleLinear().range([0, com.outerBox.w]).domain([0, 28000])
+    com.axis.scaleX = d3.scaleLinear().range([0, com.outerBox.w]).domain([com.time.start, com.time.end])
     com.axis.translate = 'translate(' + com.outerBox.x + ',' + (com.outerBox.h + com.outerBox.y) + ')'
     com.axis.bottom = d3.axisBottom(com.axis.scaleX)
-    com.scrollBoxG
+    com.axis.axisG = com.scrollBoxG
       .append('g')
       .attr('class', 'axisX')
       .attr('transform', com.axis.translate)
@@ -211,16 +210,16 @@ window.BlockQueue = function () {
           ? optIn.canRun
           : optIn.d.data.exeState.canRun
 
-        if (state === 'wait') return colsYellows[2]
-        else if (state === 'done') return colsGreens[4]
+        if (state === 'wait') return "#e6e6e6"
+        else if (state === 'done') return colsGreens[0]
         else if (state === 'run') {
-          return colsPurplesBlues[nObs % colsPurplesBlues.length]
+          return colsPurplesBlues[0] // [nObs % colsPurplesBlues.length]
         } else if (state === 'cancel') {
           if (hasVar(canRun)) {
-            if (!canRun) return colsYellows[1]
+            if (!canRun) return "#000000"
           }
-          return colsYellows[4]
-        } else if (state === 'fail') return colsReds[0]
+          return "#000000"
+        } else if (state === 'fail') return "#cf1717"
         else return colPrime
       }
     }
@@ -285,14 +284,19 @@ window.BlockQueue = function () {
   }
 
   function updateAxis (dataIn) {
-    console.log(dataIn);
+    com.axis.scaleX.domain([com.time.start, com.time.end])
+    com.axis.bottom.scale(com.axis.scaleX)
+    com.axis.axisG.call(com.axis.bottom)
   }
 
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
   function update (dataIn) {
-    updateAxis(dataIn)
+
+    if (!hasVar(com.axis)) initAxis()
+    else updateAxis()
+
     dataIn = filterBlocks(dataIn)
 
     com.blocksIn = dataIn
@@ -442,7 +446,6 @@ window.BlockQueue = function () {
         end: com.time.end,
         data: dataIn
       })
-      console.log(com.blockRow[typeNow][0]);
 
       if (!com.doPhase) return
       if (com.blockRow[typeNow].length === 0) return
@@ -598,97 +601,97 @@ window.BlockQueue = function () {
     // ---------------------------------------------------------------------------------------------------
     let sortedIds = []
     $.each(blocks, function (index0, dataNow0) {
-                      // if(typeNow=='run') return
-                      // if(sortedIds.indexOf(dataNow0.id) >= 0) console.log('will skip sorted',index0,dataNow0.data.metaData.blockName);
-                      if (sortedIds.indexOf(dataNow0.id) >= 0) return
-                      sortedIds.push(dataNow0.id)
+      // if(typeNow=='run') return
+      // if(sortedIds.indexOf(dataNow0.id) >= 0) console.log('will skip sorted',index0,dataNow0.data.metaData.blockName);
+      if (sortedIds.indexOf(dataNow0.id) >= 0) return
+      sortedIds.push(dataNow0.id)
 
-                      let x0 = dataNow0.x
-                      let y0 = dataNow0.y
-                      let w0 = dataNow0.w
-                      let h0 = dataNow0.h
-                      // let o0 = dataNow0.o
+      let x0 = dataNow0.x
+      let y0 = dataNow0.y
+      let w0 = dataNow0.w
+      let h0 = dataNow0.h
+      // let o0 = dataNow0.o
 
-                      let telV = [].concat(dataNow0.data.telIds)
-                      let minMax = { minX: x0, minY: y0, maxX: x0 + w0, maxY: y0 + h0 }
+      let telV = [].concat(dataNow0.data.telIds)
+      let minMax = { minX: x0, minY: y0, maxX: x0 + w0, maxY: y0 + h0 }
 
-                      let ovelaps = [{ index: index0, data: dataNow0 }]
+      let ovelaps = [{ index: index0, data: dataNow0 }]
 
-                      for (let nTries = 0; nTries < 10; nTries++) {
-                        let nOver = ovelaps.length
+      for (let nTries = 0; nTries < 1; nTries++) {
+        let nOver = ovelaps.length
 
-                        $.each(blocks, function (index1, dataNow1) {
-                          if (sortedIds.indexOf(dataNow1.id) >= 0) return
-                          if (
-                            ovelaps
-                              .map(function (d) {
-                                return d.data.id
-                              })
-                              .indexOf(dataNow1.id) >= 0
-                          ) {
-                            return
-                          }
+        $.each(blocks, function (index1, dataNow1) {
+          if (sortedIds.indexOf(dataNow1.id) >= 0) return
+          if (
+            ovelaps
+              .map(function (d) {
+                return d.data.id
+              })
+              .indexOf(dataNow1.id) >= 0
+          ) {
+            return
+          }
 
-                          let x1 = dataNow1.x
-                          let y1 = dataNow1.y
-                          let w1 = dataNow1.w
-                          let h1 = dataNow1.h
-                          let o01 = Math.max(dataNow0.o, dataNow1.o)
+          let x1 = dataNow1.x
+          let y1 = dataNow1.y
+          let w1 = dataNow1.w
+          let h1 = dataNow1.h
+          let o01 = Math.max(dataNow0.o, dataNow1.o)
 
-                          let hasOverlap =
+          let hasOverlap =
                             x1 < minMax.maxX - o01 &&
                             x1 + w1 > minMax.minX + o01 &&
                             y1 < minMax.maxY &&
                             y1 + h1 > minMax.minY
-                          // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName]);
+          // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName]);
 
-                          // XXXXXXXXXXXXXXXXXX
-                          // let hasOverlap = (
-                          //   (x1 < minMax.maxX+margX/2) && (x1+w1 > minMax.minX) &&
-                          //   (y1 < minMax.maxY)         && (y1+h1 > minMax.minY)
-                          // );
-                          // XXXXXXXXXXXXXXXXXX
+          // XXXXXXXXXXXXXXXXXX
+          // let hasOverlap = (
+          //   (x1 < minMax.maxX+margX/2) && (x1+w1 > minMax.minX) &&
+          //   (y1 < minMax.maxY)         && (y1+h1 > minMax.minY)
+          // );
+          // XXXXXXXXXXXXXXXXXX
 
-                          if (hasOverlap) {
-                            let intersect = telV.filter(n => dataNow1.data.telIds.includes(n))
-                            if (intersect.length === 0) {
-                              sortedIds.push(dataNow1.id)
-                            }
-                            telV = telV.concat(dataNow1.data.telIds)
+          if (hasOverlap) {
+            let intersect = telV.filter(n => dataNow1.data.telIds.includes(n))
+            if (intersect.length === 0) {
+              sortedIds.push(dataNow1.id)
+            }
+            telV = telV.concat(dataNow1.data.telIds)
 
-                            minMax = {
-                              minX: Math.min(minMax.minX, x1),
-                              minY: Math.min(minMax.minY, y1),
-                              maxX: Math.max(minMax.maxX, x1 + w1),
-                              maxY: Math.max(minMax.maxY, y1 + h1)
-                            }
+            minMax = {
+              minX: Math.min(minMax.minX, x1),
+              minY: Math.min(minMax.minY, y1),
+              maxX: Math.max(minMax.maxX, x1 + w1),
+              maxY: Math.max(minMax.maxY, y1 + h1)
+            }
 
-                            ovelaps.push({ index: index1, data: dataNow1 })
-                          }
-                        })
-                        // console.log('xxxxxxxxxxxxxxx',nTries,ovelaps,ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
-                        if (nOver === ovelaps.length) break
-                      }
+            ovelaps.push({ index: index1, data: dataNow1 })
+          }
+        })
+        // console.log('xxxxxxxxxxxxxxx',nTries,ovelaps,ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
+        if (nOver === ovelaps.length) break
+      }
 
-                      if (ovelaps.length > 1) {
-                        let origIndices = ovelaps.map(function (d) {
-                          return d.index
-                        })
+      if (ovelaps.length > 1) {
+        let origIndices = ovelaps.map(function (d) {
+          return d.index
+        })
 
-                        ovelaps.sort(function (a, b) {
-                          let diffTime = a.data.data.startTime - b.data.data.startTime
-                          let diffTel = b.data.data.telIds.length - a.data.data.telIds.length
-                          return diffTel !== 0 ? diffTel : diffTime
-                        })
+        ovelaps.sort(function (a, b) {
+          let diffTime = a.data.data.startTime - b.data.data.startTime
+          let diffTel = b.data.data.telIds.length - a.data.data.telIds.length
+          return diffTel !== 0 ? diffTel : diffTime
+        })
 
-                        // if(typeNow=='run') console.log('will sort',ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
-                        $.each(ovelaps, function (index1, dataNow1) {
-                          // if(typeNow=='run') console.log('-=-=-',index1,origIndices[index1], dataNow1.index);
-                          let origIndex = origIndices[index1]
-                          // if(canSort) blocks[origIndex] = dataNow1.data;
-                          blocks[origIndex] = dataNow1.data
-                        })
-                      }
+        // if(typeNow=='run') console.log('will sort',ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
+        $.each(ovelaps, function (index1, dataNow1) {
+          // if(typeNow=='run') console.log('-=-=-',index1,origIndices[index1], dataNow1.index);
+          let origIndex = origIndices[index1]
+          // if(canSort) blocks[origIndex] = dataNow1.data;
+          blocks[origIndex] = dataNow1.data
+        })
+      }
     })
 
     $.each(blocks, function (index0, dataNow0) {
@@ -733,7 +736,7 @@ window.BlockQueue = function () {
   // ---------------------------------------------------------------------------------------------------
   function setBlockRect () {
     let box = com.innerBox
-    let minTxtSize = box.w * 0.03
+    let minTxtSize = box.w * 0.016
     let rect = com.innerG
       .selectAll('rect.' + com.mainTag + 'blocks')
       .data(com.blocksAll, function (d) {
@@ -793,17 +796,19 @@ window.BlockQueue = function () {
       .merge(rect)
       .transition('inOut')
       .duration(timeD.animArc)
+
       .style('opacity', 1)
       .attr('stroke', function (d, i) {
-        return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
+        return "black"//d3.rgb(com.style.recCol({ d: d })).darker(1.0)
       })
       .style('fill', function (d, i) {
         return com.style.recCol({ d: d })
       })
       .style('fill-opacity', function (d) {
-        return com.style.recFillOpac(d, d.data.exeState.state)
+        return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
       })
       .style('stroke-opacity', com.style.recStrokeOpac)
+
       .attr('x', function (d, i) {
         return com.axis.scaleX(d.data.startTime) + com.innerBox.x
       })

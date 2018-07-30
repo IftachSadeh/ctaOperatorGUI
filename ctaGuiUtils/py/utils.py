@@ -355,7 +355,7 @@ class timeOfNight():
         # 28800 -> 8 hour night
         self.endTime = 28800 if endTime is None else endTime
         # 0.035 -> have 30 minutes last for one minute in real time
-        self.timeScale = 0.07 if endTime is None else timeScale
+        self.timeScale = 0.01 if endTime is None else timeScale
         # 0.0035 -> have 30 minutes last for 6 sec in real time
         # if not hasACS:
         #   self.timeScale /= 2

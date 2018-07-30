@@ -363,14 +363,24 @@ class obsBlocks_noACS():
         self.exePhases["finish"] = ["run_finish_mount",
                                     "run_finish_camera", "run_finish_clenaUp"]
 
+        self.errorRndFrac = dict()
+        self.errorRndFrac["E1"] = 0.3
+        self.errorRndFrac["E2"] = 0.4
+        self.errorRndFrac["E3"] = 0.5
+        self.errorRndFrac["E4"] = 0.6
+        self.errorRndFrac["E5"] = 0.7
+        self.errorRndFrac["E6"] = 0.8
+        self.errorRndFrac["E7"] = 0.9
+        self.errorRndFrac["E8"] = 1
+
         self.phaseRndFrac = dict()
         self.phaseRndFrac["start"] = 0.29
         self.phaseRndFrac["finish"] = 0.1
-        self.phaseRndFrac["cancel"] = 0.1
-        self.phaseRndFrac["fail"] = 0.05
+        self.phaseRndFrac["cancel"] = 0.2
+        self.phaseRndFrac["fail"] = 0
         self.loopSleep = 2
 
-        self.obsBlockDuration = 1800  # 30 minutes
+        self.obsBlockDuration = 900  # 1800 = 30 minutes
 
         self.timeOfNight.resetNight()
         # self.durationScale = self.timeOfNight.getTimeScale() #  0.035 -> one
@@ -778,6 +788,22 @@ class obsBlocks_noACS():
                 block['exeState']['state'] = "cancel"
             elif self.rndGen.random() < self.phaseRndFrac["fail"]:
                 block['exeState']['state'] = "fail"
+                if self.rndGen.random() < self.errorRndFrac["E1"]:
+                    block['exeState']['error'] = "E1"
+                elif self.rndGen.random() < self.errorRndFrac["E2"]:
+                    block['exeState']['error'] = "E2"
+                elif self.rndGen.random() < self.errorRndFrac["E3"]:
+                    block['exeState']['error'] = "E3"
+                elif self.rndGen.random() < self.errorRndFrac["E4"]:
+                    block['exeState']['error'] = "E4"
+                elif self.rndGen.random() < self.errorRndFrac["E5"]:
+                    block['exeState']['error'] = "E5"
+                elif self.rndGen.random() < self.errorRndFrac["E6"]:
+                    block['exeState']['error'] = "E6"
+                elif self.rndGen.random() < self.errorRndFrac["E7"]:
+                    block['exeState']['error'] = "E7"
+                elif self.rndGen.random() < self.errorRndFrac["E8"]:
+                    block['exeState']['error'] = "E8"
             else:
                 block['exeState']['state'] = "done"
 
