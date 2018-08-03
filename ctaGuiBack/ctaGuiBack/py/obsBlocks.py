@@ -376,8 +376,8 @@ class obsBlocks_noACS():
         self.phaseRndFrac = dict()
         self.phaseRndFrac["start"] = 0.29
         self.phaseRndFrac["finish"] = 0.1
-        self.phaseRndFrac["cancel"] = 0.2
-        self.phaseRndFrac["fail"] = 0
+        self.phaseRndFrac["cancel"] = 0.1
+        self.phaseRndFrac["fail"] = 0.81
         self.loopSleep = 2
 
         self.obsBlockDuration = 900  # 1800 = 30 minutes
@@ -687,6 +687,16 @@ class obsBlocks_noACS():
 
                 if timeNow >= block["endTime"] or (self.rndGen.random() < self.phaseRndFrac["cancel"] * 0.1):
                     block['exeState']['state'] = "cancel"
+                    if self.rndGen.random() < self.errorRndFrac["E1"]:
+                        block['exeState']['error'] = "E1"
+                    elif self.rndGen.random() < self.errorRndFrac["E2"]:
+                        block['exeState']['error'] = "E2"
+                    elif self.rndGen.random() < self.errorRndFrac["E3"]:
+                        block['exeState']['error'] = "E3"
+                    elif self.rndGen.random() < self.errorRndFrac["E4"]:
+                        block['exeState']['error'] = "E4"
+                    elif self.rndGen.random() < self.errorRndFrac["E8"]:
+                        block['exeState']['error'] = "E8"
                     block['exeState']['canRun'] = False
                     block['runPhase'] = []
 
@@ -786,6 +796,16 @@ class obsBlocks_noACS():
 
             if self.rndGen.random() < self.phaseRndFrac["cancel"]:
                 block['exeState']['state'] = "cancel"
+                if self.rndGen.random() < self.errorRndFrac["E1"]:
+                    block['exeState']['error'] = "E1"
+                elif self.rndGen.random() < self.errorRndFrac["E2"]:
+                    block['exeState']['error'] = "E2"
+                elif self.rndGen.random() < self.errorRndFrac["E3"]:
+                    block['exeState']['error'] = "E3"
+                elif self.rndGen.random() < self.errorRndFrac["E4"]:
+                    block['exeState']['error'] = "E4"
+                elif self.rndGen.random() < self.errorRndFrac["E8"]:
+                    block['exeState']['error'] = "E8"
             elif self.rndGen.random() < self.phaseRndFrac["fail"]:
                 block['exeState']['state'] = "fail"
                 if self.rndGen.random() < self.errorRndFrac["E1"]:
@@ -796,12 +816,6 @@ class obsBlocks_noACS():
                     block['exeState']['error'] = "E3"
                 elif self.rndGen.random() < self.errorRndFrac["E4"]:
                     block['exeState']['error'] = "E4"
-                elif self.rndGen.random() < self.errorRndFrac["E5"]:
-                    block['exeState']['error'] = "E5"
-                elif self.rndGen.random() < self.errorRndFrac["E6"]:
-                    block['exeState']['error'] = "E6"
-                elif self.rndGen.random() < self.errorRndFrac["E7"]:
-                    block['exeState']['error'] = "E7"
                 elif self.rndGen.random() < self.errorRndFrac["E8"]:
                     block['exeState']['error'] = "E8"
             else:

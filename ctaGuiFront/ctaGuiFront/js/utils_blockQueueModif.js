@@ -22,6 +22,7 @@ loadScript({ source: 'utils_plotTimeBar', script: '/js/utils_plotTimeBar.js' })
 // ---------------------------------------------------------------------------------------------------
 window.BlockQueue = function () {
   let com = {}
+  let filters = {states: [], errors: []}
 
   this.set = function (optIn) {
     if (hasVar(optIn.data)) com[optIn.tag] = optIn.data
@@ -216,10 +217,10 @@ window.BlockQueue = function () {
           return colsPurplesBlues[0] // [nObs % colsPurplesBlues.length]
         } else if (state === 'cancel') {
           if (hasVar(canRun)) {
-            if (!canRun) return "#000000"
+            if (!canRun) return colsYellows[5]
           }
-          return "#000000"
-        } else if (state === 'fail') return "#cf1717"
+          return colsYellows[5]
+        } else if (state === 'fail') return colsReds[3]
         else return colPrime
       }
     }
@@ -282,6 +283,30 @@ window.BlockQueue = function () {
 
     return dataIn
   }
+
+  function addStateFilter (id, data) {
+    filters.states.push({id: id, data: data})
+  }
+  this.addStateFilter = addStateFilter
+
+  function removeStateFilter (id, data) {
+    for (var i = 0; i < filters.states.length; i++) {
+      if (filters.states[i].id === id) filters.states.splice(i, 1)
+    }
+  }
+  this.removeStateFilter = removeStateFilter
+
+  function addErrorFilter (id, data) {
+    filters.errors.push({id: id, data: data})
+  }
+  this.addErrorFilter = addErrorFilter
+
+  function removeErrorFilter (id, data) {
+    for (var i = 0; i < filters.errors.length; i++) {
+      if (filters.errors[i].id === id) filters.errors.splice(i, 1)
+    }
+  }
+  this.removeErrorFilter = removeErrorFilter
 
   function updateAxis (dataIn) {
     com.axis.scaleX.domain([com.time.start, com.time.end])
@@ -792,6 +817,31 @@ window.BlockQueue = function () {
       // .style("pointer-events", "none")
       .attr('vector-effect', 'non-scaling-stroke')
       .on('click', com.click)
+      .on('mouseover', function () {
+        d3.select(this).attr('stroke-width', 4)
+        d3.select(this).style('stroke-opacity', 1)
+      })
+      .on('mouseout', function () {
+        d3.select(this).attr('stroke-width', 1)
+        d3.select(this).style('stroke-opacity', function (d) {
+          if (filters.states.length === 0 && filters.errors.length === 0) return 0.7
+          else {
+            let inState, inError
+            filters.states.length === 0 ? inState = true : inState = false
+            filters.errors.length === 0 ? inError = true : inError = false
+            for (var i = 0; i < filters.states.length; i++) {
+              if (d.data.exeState.state === filters.states[i].id) inState = true
+            }
+            for (var j = 0; j < filters.errors.length; j++) {
+              if (d.data.exeState.error === filters.errors[j].id) inError = true
+            }
+
+            if (inState && inError) return 0.7
+            return 0.05
+          }
+          // return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
+        })
+      })
       // .attr("clip-path", "url(#"+com.tagClipPath.inner+")")
       .merge(rect)
       .transition('inOut')
@@ -805,9 +855,41 @@ window.BlockQueue = function () {
         return com.style.recCol({ d: d })
       })
       .style('fill-opacity', function (d) {
-        return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
+        if (filters.states.length === 0 && filters.errors.length === 0) return 0.7
+        else {
+          let inState, inError
+          filters.states.length === 0 ? inState = true : inState = false
+          filters.errors.length === 0 ? inError = true : inError = false
+          for (var i = 0; i < filters.states.length; i++) {
+            if (d.data.exeState.state === filters.states[i].id) inState = true
+          }
+          for (var j = 0; j < filters.errors.length; j++) {
+            if (d.data.exeState.error === filters.errors[j].id) inError = true
+          }
+
+          if (inState && inError) return 0.7
+          return 0.05
+        }
+        // return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
       })
-      .style('stroke-opacity', com.style.recStrokeOpac)
+      .style('stroke-opacity', function (d) {
+        if (filters.states.length === 0 && filters.errors.length === 0) return 0.7
+        else {
+          let inState, inError
+          filters.states.length === 0 ? inState = true : inState = false
+          filters.errors.length === 0 ? inError = true : inError = false
+          for (var i = 0; i < filters.states.length; i++) {
+            if (d.data.exeState.state === filters.states[i].id) inState = true
+          }
+          for (var j = 0; j < filters.errors.length; j++) {
+            if (d.data.exeState.error === filters.errors[j].id) inError = true
+          }
+
+          if (inState && inError) return 0.7
+          return 0.05
+        }
+        // return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
+      })
 
       .attr('x', function (d, i) {
         return com.axis.scaleX(d.data.startTime) + com.innerBox.x
