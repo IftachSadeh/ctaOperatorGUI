@@ -24,6 +24,7 @@ var mainScriptTag = 'tagBlocks'
 /* global bckPattern */
 /* global telHealthCol */
 /* global colsGreens */
+/* global colPrime */
 /* global Locker */
 /* global appendToDom */
 /* global runWhenReady */
@@ -353,7 +354,13 @@ let mainTagBlocks = function (optIn) {
 
         doPhase: false,
         click: function (d) {
-          blockFocus({ id: d.id })
+          svgBlocksInfo.blockFocus(d.data)
+        },
+        mouseover: function (d) {
+          svgBlocksInfo.blockPreview(d.data)
+        },
+        mouseout: function () {
+          svgBlocksInfo.cleanPreview()
         },
 
         verticalScroll: false,
@@ -443,18 +450,6 @@ let mainTagBlocks = function (optIn) {
 
       locker.remove(tagTagBlocks + 'updateData')
     }
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    function blockFocus (optIn) {
-      let data = { type: 'syncObFocus', syncTime: Date.now(), obId: optIn.id }
-      sock.sockSyncStateSend({
-        widgetId: widgetId,
-        type: data.type,
-        data: data
-      })
-    }
     // ---------------------------------------------------------------------------------------------------
   }
   let SvgFilter = function () {
@@ -479,6 +474,13 @@ let mainTagBlocks = function (optIn) {
       }
       gBlockBox.attr('transform', 'translate(' + blockBoxData.x + ',' + blockBoxData.y + ')')
       gBlockBox.append('line')
+        .attr('x1', blockBoxData.w * 0)
+        .attr('y1', blockBoxData.h * 0.166)
+        .attr('x2', blockBoxData.w * 0.98)
+        .attr('y2', blockBoxData.h * 0.166)
+        .attr('stroke', 'black')
+        .attr('stroke-width', 1)
+      gBlockBox.append('line')
         .attr('x1', blockBoxData.w * 0.6)
         .attr('y1', blockBoxData.h * 0.166)
         .attr('x2', blockBoxData.w * 0.6)
@@ -496,37 +498,37 @@ let mainTagBlocks = function (optIn) {
       gBlockInfo = gBlockBox.append('g')
       gBlockState = gBlockBox.append('g')
       gBlockError = gBlockBox.append('g')
-      gBlockInfo.append('circle')
-        .attr('cx', blockBoxData.w * 0.5)
-        .attr('cy', blockBoxData.h * 0.1)
-        .attr('r', blockBoxData.w * 0.43)
-        .attr('fill', 'none')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.4)
-      gBlockInfo.append('circle')
-        .attr('class', 'done')
-        .attr('cx', blockBoxData.w * 0.5)
-        .attr('cy', blockBoxData.h * 0.1)
-        .attr('fill', 'none')
-        .attr('stroke', colsGreens[0])
-        .style('opacity', 0.6)
-        .attr('vector-effect', 'non-scaling-stroke')
-      gBlockInfo.append('circle')
-        .attr('class', 'fail')
-        .attr('cx', blockBoxData.w * 0.5)
-        .attr('cy', blockBoxData.h * 0.1)
-        .attr('fill', 'none')
-        .attr('stroke', '#cf1717')
-        .style('opacity', 0.6)
-        .attr('vector-effect', 'non-scaling-stroke')
-      gBlockInfo.append('circle')
-        .attr('class', 'cancel')
-        .attr('cx', blockBoxData.w * 0.5)
-        .attr('cy', blockBoxData.h * 0.1)
-        .attr('fill', 'none')
-        .attr('stroke', 'grey')
-        .style('opacity', 0.6)
-        .attr('vector-effect', 'non-scaling-stroke')
+      // gBlockInfo.append('circle')
+      //   .attr('cx', blockBoxData.w * 0.5)
+      //   .attr('cy', blockBoxData.h * 0.1)
+      //   .attr('r', blockBoxData.w * 0.43)
+      //   .attr('fill', 'none')
+      //   .attr('stroke', 'black')
+      //   .attr('stroke-width', 0.4)
+      // gBlockInfo.append('circle')
+      //   .attr('class', 'done')
+      //   .attr('cx', blockBoxData.w * 0.5)
+      //   .attr('cy', blockBoxData.h * 0.1)
+      //   .attr('fill', 'none')
+      //   .attr('stroke', colsGreens[0])
+      //   .style('opacity', 0.6)
+      //   .attr('vector-effect', 'non-scaling-stroke')
+      // gBlockInfo.append('circle')
+      //   .attr('class', 'fail')
+      //   .attr('cx', blockBoxData.w * 0.5)
+      //   .attr('cy', blockBoxData.h * 0.1)
+      //   .attr('fill', 'none')
+      //   .attr('stroke', '#cf1717')
+      //   .style('opacity', 0.6)
+      //   .attr('vector-effect', 'non-scaling-stroke')
+      // gBlockInfo.append('circle')
+      //   .attr('class', 'cancel')
+      //   .attr('cx', blockBoxData.w * 0.5)
+      //   .attr('cy', blockBoxData.h * 0.1)
+      //   .attr('fill', 'none')
+      //   .attr('stroke', 'grey')
+      //   .style('opacity', 0.6)
+      //   .attr('vector-effect', 'non-scaling-stroke')
 
       gBlockState.attr('transform', 'translate(' + 0 + ',' + blockBoxData.h * 0.24 + ')')
       gBlockState.append('line')
@@ -1081,13 +1083,83 @@ let mainTagBlocks = function (optIn) {
   let SvgBlocksInfo = function () {
     let gBlockBox
     let blockBoxData = {}
+    let blockFocusOn = {}
+    let blockFocusHistory = []
+
+    function blockPreview (optIn) {
+      gBlockBox.select('text.startTime')
+        .text('StartTime: ' + optIn.startTime)
+      gBlockBox.select('text.duration')
+        .text('Duration: ' + optIn.duration)
+      gBlockBox.select('text.endTime')
+        .text('EndTime: ' + optIn.endTime)
+      gBlockBox.select('text.id')
+        .text('Id: ' + optIn.obId)
+      gBlockBox.select('rect.exeStateRect')
+        .attr('stroke', function () {
+          let state = optIn.exeState.state
+          let canRun = optIn.exeState.canRun
+
+          if (state === 'wait') return "#e6e6e6"
+          else if (state === 'done') return colsGreens[0]
+          else if (state === 'run') {
+            return colsPurplesBlues[0] // [nObs % colsPurplesBlues.length]
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return colsYellows[5]
+            }
+            return colsYellows[5]
+          } else if (state === 'fail') return colsReds[3]
+          else return colPrime
+        })
+    }
+    this.blockPreview = blockPreview
+    function cleanPreview () {
+
+    }
+    this.cleanPreview = cleanPreview
+    function blockFocus (optIn) {
+      console.log(optIn)
+      blockFocusOn = optIn
+
+      gBlockBox.select('text.startTime')
+        .style('opacity', 1)
+      gBlockBox.select('text.duration')
+        .style('opacity', 1)
+      gBlockBox.select('text.endTime')
+        .style('opacity', 1)
+      gBlockBox.select('text.id')
+        .style('opacity', 1)
+      // gBlockBox.select('rect.blockFocusOn')
+      //   .transition()
+      //   .duration(timeD.animArc * 2)
+      //   .attr('x', blockBoxData.w / 2)
+      //   .attr('y', blockBoxData.h * 0.94)
+      //   .attr('width', 0)
+      //   .attr('height', 0)
+      //   .remove()
+      // gBlockBox.append('rect')
+      //   .attr('class', 'blockFocusOn')
+      //   .attr('x', blockBoxData.w / 2)
+      //   .attr('y', 0)
+      //   .attr('width', 0)
+      //   .attr('height', 0)
+      //   .attr('fill', '#aaaaaa')
+      //   .transition()
+      //   .duration(timeD.animArc * 2)
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', blockBoxData.w)
+      //   .attr('height', blockBoxData.h * 0.94)
+    }
+    this.blockFocus = blockFocus
 
     function initData (dataIn) {
       gBlockBox = svg.g.append('g')
 
       let x0, y0, w0, h0, marg
       w0 = lenD.w[0] * 0.6
-      h0 = lenD.h[0] * 0.6 // h0 *= 2.5;
+      h0 = lenD.h[0] * 0.65 // h0 *= 2.5;
       x0 = (lenD.w[0] * 0.12)
       y0 = lenD.h[0] * 0.32
       marg = w0 * 0.01
@@ -1103,34 +1175,87 @@ let mainTagBlocks = function (optIn) {
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', blockBoxData.w)
-        .attr('height', blockBoxData.h)
-        .attr('fill', '#dddddd')
+        .attr('height', blockBoxData.h * 0.94)
+        .attr('fill', '#ffffff')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray',
+          [blockBoxData.w * 0.1, blockBoxData.w * 0.8, blockBoxData.w * 0.1 + blockBoxData.h * 0.94 * 0.1, blockBoxData.h * 0.94 * 0.8,
+            blockBoxData.h * 0.94 * 0.1 + blockBoxData.w * 0.1, blockBoxData.w * 0.8, blockBoxData.w * 0.1 + blockBoxData.h * 0.94 * 0.1, blockBoxData.h * 0.94 * 0.8])
+      gBlockBox.append('text')
+        .attr('class', 'id')
+        .text('Id:')
+        .attr('x', (blockBoxData.w * 0.5))
+        .attr('y', (blockBoxData.h * 0.5) - 30)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 16)
+        .style('opacity', 0.4)
+      gBlockBox.append('text')
+        .attr('class', 'startTime')
+        .text('StartTime:')
+        .attr('x', (blockBoxData.w * 0.5))
+        .attr('y', (blockBoxData.h * 0.5) - 10)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 16)
+        .style('opacity', 0.4)
+      gBlockBox.append('text')
+        .attr('class', 'duration')
+        .text('Duration:')
+        .attr('x', (blockBoxData.w * 0.5))
+        .attr('y', (blockBoxData.h * 0.5) + 10)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 16)
+        .style('opacity', 0.4)
+      gBlockBox.append('text')
+        .attr('class', 'endTime')
+        .text('endTime:')
+        .attr('x', (blockBoxData.w * 0.5))
+        .attr('y', (blockBoxData.h * 0.5) + 30)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 16)
+        .style('opacity', 0.4)
+      gBlockBox.append('rect')
+        .attr('class', 'exeStateRect')
+        .attr('x', 3)
+        .attr('y', 3)
+        .attr('width', blockBoxData.w - 5)
+        .attr('height', blockBoxData.h * 0.94 - 5)
+        .attr('fill', '#ffffff')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 6)
+        .style('opacity', 0.4)
+
+      gBlockBox.append('line')
+        .attr('x1', blockBoxData.w * 0.05)
+        .attr('y1', blockBoxData.h)
+        .attr('x2', blockBoxData.w * 0.95)
+        .attr('y2', blockBoxData.h)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 1)
+      gBlockBox.append('line')
+        .attr('x1', blockBoxData.w * 0.05)
+        .attr('y1', blockBoxData.h - 10)
+        .attr('x2', blockBoxData.w * 0.05)
+        .attr('y2', blockBoxData.h + 10)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 1)
+      gBlockBox.append('line')
+        .attr('x1', blockBoxData.w * 0.95)
+        .attr('y1', blockBoxData.h - 10)
+        .attr('x2', blockBoxData.w * 0.95)
+        .attr('y2', blockBoxData.h + 10)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 1)
     }
     this.initData = initData
 
     function updateData (dataIn) {
-      drawDoneCircle()
     }
     this.updateData = updateData
-
-    function drawDoneCircle () {
-    //   let path = []
-    //   for (let i = 0; i < 60; i++) {
-    //     let angle = ((2 * Math.PI) / 60) * i
-    //     let cx = (0 + (blockBoxData.w / 2)) + 180 * Math.cos(angle)
-    //     let cy = (0 + (blockBoxData.h / 2)) + 180 * Math.sin(angle)
-    //     path.push({x: cx, y: cy})
-    //   }
-    //
-    //   let valueline = d3.line()
-    //     .x(function (d) { return d.x })
-    //     .y(function (d) { return d.y })
-    //   gBlockBox.append('path')
-    //     .attr('d', valueline(path))
-    //     .attr('fill', 'none')
-    //     .attr('stroke', 'green')
-    //     .attr('stroke-width', 20)
-    }
   }
 
   let svgMain = new SvgMain()

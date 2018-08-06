@@ -79,6 +79,9 @@ window.BlockQueue = function () {
     com.telIds = ['placeholder']
 
     com.click = hasVar(optIn.click) ? optIn.click : null
+    com.mouseover = hasVar(optIn.mouseover) ? optIn.mouseover : null
+    com.mouseout = hasVar(optIn.mouseout) ? optIn.mouseout : null
+
     com.doText = hasVar(optIn.doText) ? optIn.doText : true
     com.doPhase = hasVar(optIn.doPhase) ? optIn.doPhase : true
     com.doRunRect = hasVar(optIn.doRunRect) ? optIn.doRunRect : true
@@ -817,11 +820,12 @@ window.BlockQueue = function () {
       // .style("pointer-events", "none")
       .attr('vector-effect', 'non-scaling-stroke')
       .on('click', com.click)
-      .on('mouseover', function () {
+      .on('mouseover', function (d) {
         d3.select(this).attr('stroke-width', 4)
         d3.select(this).style('stroke-opacity', 1)
+        com.mouseover(d)
       })
-      .on('mouseout', function () {
+      .on('mouseout', function (d) {
         d3.select(this).attr('stroke-width', 1)
         d3.select(this).style('stroke-opacity', function (d) {
           if (filters.states.length === 0 && filters.errors.length === 0) return 0.7
@@ -841,6 +845,7 @@ window.BlockQueue = function () {
           }
           // return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
         })
+        com.mouseout(d)
       })
       // .attr("clip-path", "url(#"+com.tagClipPath.inner+")")
       .merge(rect)
