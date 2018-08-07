@@ -380,7 +380,7 @@ class obsBlocks_noACS():
         self.phaseRndFrac["fail"] = 0.81
         self.loopSleep = 2
 
-        self.obsBlockDuration = 900  # 1800 = 30 minutes
+        self.obsBlockDuration = 1800  # 1800 = 30 minutes
 
         self.timeOfNight.resetNight()
         # self.durationScale = self.timeOfNight.getTimeScale() #  0.035 -> one

@@ -79,8 +79,8 @@ window.BlockQueue = function () {
     com.telIds = ['placeholder']
 
     com.click = hasVar(optIn.click) ? optIn.click : null
-    com.mouseover = hasVar(optIn.mouseover) ? optIn.mouseover : null
-    com.mouseout = hasVar(optIn.mouseout) ? optIn.mouseout : null
+    com.mouseover = hasVar(optIn.mouseover) ? optIn.mouseover : () => {}
+    com.mouseout = hasVar(optIn.mouseout) ? optIn.mouseout : () => {}
 
     com.doText = hasVar(optIn.doText) ? optIn.doText : true
     com.doPhase = hasVar(optIn.doPhase) ? optIn.doPhase : true
