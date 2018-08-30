@@ -21,6 +21,7 @@ var mainScriptTag = 'tagBlocks'
 /* global disableScrollSVG */
 /* global RunLoop */
 /* global BlockQueueModif */
+/* global PanelManager */
 /* global bckPattern */
 /* global telHealthCol */
 /* global colsPurplesBlues */
@@ -33,6 +34,7 @@ var mainScriptTag = 'tagBlocks'
 /* global runWhenReady */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
 
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
@@ -344,9 +346,9 @@ let mainTagBlocks = function (optIn) {
       let x0, y0, w0, h0, marg
       let gBlockBox = svg.g.append('g')
 
-      w0 = lenD.w[0] * 0.8
+      w0 = lenD.w[0] * 0.82
       h0 = lenD.h[0] * 0.18 // h0 *= 2.5;
-      x0 = (lenD.w[0] * 0.1)
+      x0 = (lenD.w[0] * 0.13)
       y0 = (lenD.h[0] * 0.02)
       marg = w0 * 0.01
       let blockBoxData = {
@@ -364,7 +366,7 @@ let mainTagBlocks = function (optIn) {
 
         doPhase: false,
         click: function (d) {
-          svgMiddleInfo.blockFocus(d.data)
+          svgMiddleInfo.createMiddlePanel(d.data)
         },
         // mouseover: function (d) {
         //   svgMiddleInfo.blockPreview(d.data)
@@ -474,9 +476,9 @@ let mainTagBlocks = function (optIn) {
       let x0, y0, w0, h0, marg
       gBlockBox = svg.g.append('g')
 
-      w0 = lenD.w[0] * 0.8
+      w0 = lenD.w[0] * 0.82
       h0 = lenD.h[0] * 0.09 // h0 *= 2.5;
-      x0 = (lenD.w[0] * 0.1)
+      x0 = (lenD.w[0] * 0.13)
       y0 = 3 * (lenD.h[0] * 0.02) + lenD.h[0] * 0.18
       marg = w0 * 0.01
       blockBoxData = {
@@ -553,6 +555,9 @@ let mainTagBlocks = function (optIn) {
         .on('mouseout', function (d) {
           d3.select(this).attr('stroke-width', 1)
           d3.select(this).style('stroke-opacity', 0.7)
+        })
+        .on('click', function (d) {
+          svgMiddleInfo.createMiddlePanel(d.data)
         })
       newRect.each(function (d) {
         if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleX(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
@@ -1952,117 +1957,93 @@ let mainTagBlocks = function (optIn) {
   let SvgMiddleInfo = function () {
     let gBlockBox, gMiddleBox, gPreviewBox, gHistoryBox
     let blockBoxData = {}
-    let focusOn = {}
+    let panelManager = null
     let focusHistory = []
 
-    function blockPreview (optIn) {
-      gBlockBox.select('text.startTime')
-        .text('StartTime: ' + optIn.startTime)
-      gBlockBox.select('text.duration')
-        .text('Duration: ' + optIn.duration)
-      gBlockBox.select('text.endTime')
-        .text('EndTime: ' + optIn.endTime)
-      gBlockBox.select('text.id')
-        .text('Id: ' + optIn.obId)
-      gBlockBox.select('rect.exeStateRect')
-        .attr('stroke', function () {
-          let state = optIn.exeState.state
-          let canRun = optIn.exeState.canRun
+    function createMiddlePanel (data) {
+      if (panelManager === null) {
+        panelManager = new PanelManager()
+        let optIn = {
+          x: 60,
+          y: 10,
+          width: -40 + blockBoxData.w * 0.75,
+          height: -20 + blockBoxData.h * 0.86,
+          g: gMiddleBox.append('g')
+        }
+        panelManager.init(optIn)
+        panelManager.addPanel(data)
+      } else {
+        panelManager.addPanel(data)
+      }
+    }
+    this.createMiddlePanel = createMiddlePanel
 
-          if (state === 'wait') return "#e6e6e6"
-          else if (state === 'done') return colsGreens[0]
-          else if (state === 'run') {
-            return colsPurplesBlues[0] // [nObs % colsPurplesBlues.length]
-          } else if (state === 'cancel') {
-            if (hasVar(canRun)) {
-              if (!canRun) return colsYellows[5]
-            }
-            return colsYellows[5]
-          } else if (state === 'fail') return colsReds[3]
-          else return colPrime
-        })
+    function createRightViewver () {
+      gHistoryBox.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', blockBoxData.w * 0.1)
+        .attr('height', blockBoxData.h)
+        .attr('fill', '#cccccc')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 1.5)
     }
-    this.blockPreview = blockPreview
-    function blockFocus (optIn) {
-      console.log(optIn);
-      focusOn = optIn
-      let mid = gMiddleBox.selectAll('rect.blockFocusOn')
-        .data([focusOn])
-      mid.enter()
-        .append('rect')
-        .attr('class', 'blockFocusOn')
-        .attr('x', 20)
-        .attr('y', 10)
-        .attr('width', -40 + blockBoxData.w * 0.8)
-        .attr('height', -20 + blockBoxData.h * 1)
-        .attr('fill', '#efefef')
-        .attr('stroke-width', 0.5)
-        .attr('stroke-opacity', 0.4)
-        .merge(mid)
-        .attr('stroke', function () {
-          let state = optIn.exeState.state
-          let canRun = optIn.exeState.canRun
-          if (state === 'wait') return '#e6e6e6'
-          else if (state === 'done') return colsGreens[0]
-          else if (state === 'run') {
-            return colsPurplesBlues[0] // [nObs % colsPurplesBlues.length]
-          } else if (state === 'cancel') {
-            if (hasVar(canRun)) {
-              if (!canRun) return colsYellows[5]
-            }
-            return colsYellows[5]
-          } else if (state === 'fail') return colsReds[3]
-          else return colPrime
-        })
-      // gBlockBox.select('text.startTime')
-      //   .style('opacity', 1)
-      // gBlockBox.select('text.duration')
-      //   .style('opacity', 1)
-      // gBlockBox.select('text.endTime')
-      //   .style('opacity', 1)
-      // gBlockBox.select('text.id')
-      //   .style('opacity', 1)
-      // gBlockBox.select('rect.blockFocusOn')
-      //   .transition()
-      //   .duration(timeD.animArc * 2)
-      //   .attr('x', blockBoxData.w / 2)
-      //   .attr('y', blockBoxData.h * 0.94)
-      //   .attr('width', 0)
-      //   .attr('height', 0)
-      //   .remove()
-      // gBlockBox.append('rect')
-      //   .attr('class', 'blockFocusOn')
-      //   .attr('x', blockBoxData.w / 2)
-      //   .attr('y', 0)
-      //   .attr('width', 0)
-      //   .attr('height', 0)
-      //   .attr('fill', '#aaaaaa')
-      //   .transition()
-      //   .duration(timeD.animArc * 2)
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', blockBoxData.w)
-      //   .attr('height', blockBoxData.h * 0.94)
+    function createLeftButton () {
+      gPreviewBox.append('circle')
+        .attr('cx', (blockBoxData.w * 0.1) * 0.5)
+        .attr('cy', blockBoxData.h * 0.1)
+        .attr('r', 26)
+        .attr('fill', '#eeeeee')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.4)
+      gPreviewBox.append('rect')
+        .attr('x', (blockBoxData.w * 0.1) * 0.5 - (blockBoxData.w * 0.025))
+        .attr('y', blockBoxData.h * 0.2)
+        .attr('width', blockBoxData.w * 0.05)
+        .attr('height', blockBoxData.h * 0.1)
+        .attr('fill', '#eeeeee')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.4)
+      gPreviewBox.append('rect')
+        .attr('x', (blockBoxData.w * 0.1) * 0.5 - (blockBoxData.w * 0.025))
+        .attr('y', blockBoxData.h * 0.2 + blockBoxData.h * 0.11)
+        .attr('width', blockBoxData.w * 0.05)
+        .attr('height', blockBoxData.h * 0.1)
+        .attr('fill', '#eeeeee')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.4)
+      gPreviewBox.append('rect')
+        .attr('x', (blockBoxData.w * 0.1) * 0.5 - (blockBoxData.w * 0.025))
+        .attr('y', blockBoxData.h * 0.2 + blockBoxData.h * 0.22)
+        .attr('width', blockBoxData.w * 0.05)
+        .attr('height', blockBoxData.h * 0.1)
+        .attr('fill', '#eeeeee')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.4)
+      gPreviewBox.append('circle')
+        .attr('cx', (blockBoxData.w * 0.1) * 0.5)
+        .attr('cy', blockBoxData.h * 0.64)
+        .attr('r', 26)
+        .attr('fill', '#eeeeee')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.4)
+      gPreviewBox.append('rect')
+        .attr('x', 0)
+        .attr('y', blockBoxData.h * 0.8)
+        .attr('width', blockBoxData.w * 0.1)
+        .attr('height', blockBoxData.h * 0.1)
+        .attr('fill', '#eeeeee')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.4)
     }
-    this.blockFocus = blockFocus
-    function cleanPreview () {
-
-    }
-    this.cleanPreview = cleanPreview
-    function TelPreview (optIn) {
-    }
-    this.blockPreview = blockPreview
-    function TelFocus (optIn) {
-    }
-    this.blockFocus = blockFocus
 
     function initData (dataIn) {
       gBlockBox = svg.g.append('g')
 
       let x0, y0, w0, h0, marg
-      w0 = lenD.w[0] * 0.9
-      h0 = lenD.h[0] * 0.56 // h0 *= 2.5;
-      x0 = (lenD.w[0] * 0.05)
+      w0 = lenD.w[0] * 0.96
+      h0 = lenD.h[0] * 0.59 // h0 *= 2.5;
+      x0 = (lenD.w[0] * 0.02)
       y0 = lenD.h[0] * 0.38
       marg = w0 * 0.01
       blockBoxData = {
@@ -2082,14 +2063,16 @@ let mainTagBlocks = function (optIn) {
       //   .attr('stroke', 'black')
       //   .attr('stroke-width', 1.5)
       gPreviewBox = gBlockBox.append('g').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-      gPreviewBox.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', blockBoxData.w * 0.1)
-        .attr('height', blockBoxData.h)
-        .attr('fill', '#cccccc')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 1.5)
+      // gPreviewBox.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', blockBoxData.w * 0.1)
+      //   .attr('height', blockBoxData.h)
+      //   .attr('fill', '#cccccc')
+      //   .attr('stroke', 'black')
+      //   .attr('stroke-width', 1.5)
+      createLeftButton()
+
       gMiddleBox = gBlockBox.append('g').attr('transform', 'translate(' + blockBoxData.w * 0.1 + ',' + 0 + ')')
       // gMiddleBox.append('rect')
       //   .attr('x', 0)
