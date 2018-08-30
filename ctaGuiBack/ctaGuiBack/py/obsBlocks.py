@@ -376,7 +376,7 @@ class obsBlocks_noACS():
         self.phaseRndFrac = dict()
         self.phaseRndFrac["start"] = 0.29
         self.phaseRndFrac["finish"] = 0.1
-        self.phaseRndFrac["cancel"] = 0.1
+        self.phaseRndFrac["cancel"] = 0.2
         self.phaseRndFrac["fail"] = 0.81
         self.loopSleep = 2
 
@@ -407,6 +407,7 @@ class obsBlocks_noACS():
 
         self.exePhase = dict()
         self.allBlocks = []
+        self.external_events = []
 
         self.timeOfNight.resetNight()
         self.prevResetTime = self.timeOfNight.getResetTime()
@@ -563,6 +564,8 @@ class obsBlocks_noACS():
 
             # the maximal duration of all blocks within this cycle
             totBlockDuration += max(totSchedBlockDuration)
+
+        self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
 
         self.redis.pipe.execute()
 
@@ -917,6 +920,19 @@ class obsBlocks_noACS():
 
         return
 
+    def external_generateEvents(self):
+        if self.rndGen.random() < 0.2:
+            newEvent = {'time': self.timeOfNight.getCurrentTime()}
+            newEvent['priority'] = random.randint(1, 4)
+            if self.rndGen.random() < 0.33:
+                newEvent['name'] = 'alarm'
+            elif self.rndGen.random() < 0.66:
+                newEvent['name'] = 'grb'
+            elif self.rndGen.random() < 1:
+                newEvent['name'] = 'hardware'
+            self.external_events.append(newEvent)
+        self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
+
     # -----------------------------------------------------------------------------------------------------------
     #
     # -----------------------------------------------------------------------------------------------------------
@@ -938,6 +954,7 @@ class obsBlocks_noACS():
                     self.waitToRun()
                     self.runPhases()
                     self.runToDone()
+                    self.external_generateEvents()
 
             self.updateExeStatusLists()
 

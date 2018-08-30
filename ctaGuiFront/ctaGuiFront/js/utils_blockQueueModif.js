@@ -7,15 +7,14 @@
 /* global deepCopy */
 /* global minMaxObj */
 /* global colsBlues */
+/* global colsPurples */
 /* global loadScript */
-/* global PlotTimeBar */
 /* global ScrollBox */
 /* global colsGreens */
 /* global colsYellows */
 /* global colsPurplesBlues */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
-loadScript({ source: 'utils_plotTimeBar', script: '/js/utils_plotTimeBar.js' })
 
 // ---------------------------------------------------------------------------------------------------
 //
@@ -107,9 +106,16 @@ window.BlockQueue = function () {
     // ---------------------------------------------------------------------------------------------------
     let gBox = optIn.gBox
     com.outerBox = deepCopy(optIn.boxData)
+    com.innerBoxBottom = deepCopy(optIn.boxData)
+    com.innerBoxTop = deepCopy(optIn.boxData)
+
     com.outerG = gBox.append('g')
     com.scrollBoxG = com.outerG.append('g')
     com.timeBarG = com.outerG.append('g')
+
+    com.innerBoxBottom.h = com.outerBox.h * 0.5
+    com.innerBoxBottom.y = com.innerBoxBottom.y + com.outerBox.h * (1 - 0.5)
+    com.innerBoxTop.h = com.outerBox.h * (1 - 0.7)
 
     com.scroll = {}
     com.scroll.vertical = optIn.verticalScroll
@@ -143,7 +149,6 @@ window.BlockQueue = function () {
     update()
   }
   this.init = init
-
   function initAxis () {
     // let plotBoxData = {
     //   w: com.outerBox.w,
@@ -220,9 +225,9 @@ window.BlockQueue = function () {
           return colsPurplesBlues[0] // [nObs % colsPurplesBlues.length]
         } else if (state === 'cancel') {
           if (hasVar(canRun)) {
-            if (!canRun) return colsYellows[5]
+            if (!canRun) return colsPurples[3]
           }
-          return colsYellows[5]
+          return colsPurples[4]
         } else if (state === 'fail') return colsReds[3]
         else return colPrime
       }
@@ -286,31 +291,26 @@ window.BlockQueue = function () {
 
     return dataIn
   }
-
   function addStateFilter (id, data) {
     filters.states.push({id: id, data: data})
   }
   this.addStateFilter = addStateFilter
-
   function removeStateFilter (id, data) {
     for (var i = 0; i < filters.states.length; i++) {
       if (filters.states[i].id === id) filters.states.splice(i, 1)
     }
   }
   this.removeStateFilter = removeStateFilter
-
   function addErrorFilter (id, data) {
     filters.errors.push({id: id, data: data})
   }
   this.addErrorFilter = addErrorFilter
-
   function removeErrorFilter (id, data) {
     for (var i = 0; i < filters.errors.length; i++) {
       if (filters.errors[i].id === id) filters.errors.splice(i, 1)
     }
   }
   this.removeErrorFilter = removeErrorFilter
-
   function updateAxis (dataIn) {
     com.axis.scaleX.domain([com.time.start, com.time.end])
     com.axis.bottom.scale(com.axis.scaleX)
@@ -321,16 +321,19 @@ window.BlockQueue = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   function update (dataIn) {
-
     if (!hasVar(com.axis)) initAxis()
     else updateAxis()
-
     dataIn = filterBlocks(dataIn)
 
-    com.blocksIn = dataIn
+
+    com.blocksIn = {done: [], cancel: [], fail: [], run: {}, wait: []}
+    for (var i in dataIn['done']) {
+      com.blocksIn[dataIn['done'][i].exeState.state].push(dataIn['done'][i])
+    }
+    com.blocksIn.run = dataIn.run
+    com.blocksIn.wait = dataIn.wait
 
     let thisUpdate = { ids: [], props: {} }
-
     $.each(dataIn, function (typeNow, blocksNow) {
       $.each(blocksNow, function (i, d) {
         // the list of properties which will be monitored for change
@@ -341,7 +344,6 @@ window.BlockQueue = function () {
           canRun: d.exeState.canRun,
           state: d.exeState.state
         }
-
         thisUpdate.ids.push(d.obId)
       })
     })
@@ -351,16 +353,18 @@ window.BlockQueue = function () {
       let hasSameIds = true
       let intersect = thisUpdate.ids.filter(n => com.prevUpdate.ids.includes(n))
       if (intersect.length !== com.prevUpdate.ids.length) hasSameIds = false
-
+      // if lenght different need a block update
       if (hasSameIds) {
         hasBlockUpdate = false
         $.each(thisUpdate.props, function (obIdNow, dataNow) {
+          // if a block with an id that was not recorded is present, need an update
           if (!hasVar(com.prevUpdate.props[obIdNow])) {
             hasBlockUpdate = true
           }
           if (hasBlockUpdate) return
 
           $.each(dataNow, function (propName, propVal) {
+            // if a property of a bloc has changed need an update
             if (com.prevUpdate.props[obIdNow][propName] !== propVal) {
               hasBlockUpdate = true
             }
@@ -378,7 +382,6 @@ window.BlockQueue = function () {
       hasBlockUpdate = 1
     }
     // // ====================================================
-
     if (hasBlockUpdate) {
       getBlocks()
       setBlockRect()
@@ -406,146 +409,176 @@ window.BlockQueue = function () {
     // com.blocksIn.run   = []//com.blocksIn.doneNow.slice(2, 3);
     // com.blocksIn.wait  = []//com.blocksIn.wait.slice(0, 7);
     // // ---------------------------------------------------------------------------------------------------
-    let box = com.innerBox
-    let runFrac = com.blocksIn.run.length === 0 ? 0 : 0.2
-    let runMarg =
-      com.blocksIn.run.length === 0 ? 0 : 2 * (box.x - com.outerBox.x)
-
-    let maxDone = minMaxObj({
-      minMax: 'max',
-      data: com.blocksIn.done,
-      func: 'endTime',
-      defVal: 0
-    })
-    // let minRun = minMaxObj({
-    //   minMax: 'min',
-    //   data: com.blocksIn.run,
-    //   func: 'startTime',
-    //   defVal: 0
-    // })
-    // let maxRun = minMaxObj({
+    // let box = com.innerBox
+    // let runFrac = com.blocksIn.run.length === 0 ? 0 : 0.2
+    // let runMarg =
+    //   com.blocksIn.run.length === 0 ? 0 : 2 * (box.x - com.outerBox.x)
+    //
+    // let maxDone = minMaxObj({
     //   minMax: 'max',
-    //   data: com.blocksIn.run,
+    //   data: com.blocksIn.done,
     //   func: 'endTime',
     //   defVal: 0
     // })
-    let minWait = minMaxObj({
-      minMax: 'min',
-      data: com.blocksIn.wait,
-      func: 'startTime',
-      defVal: 0
-    })
-
-    let doneWaitW = com.time.end - minWait + maxDone - com.time.start
-
-    let frac = {}
-    frac.done = (1 - runFrac) * (maxDone - com.time.start) / doneWaitW
-    frac.run = runFrac - 2 * runMarg / box.w
-    frac.wait = (1 - runFrac) * (com.time.end - minWait) / doneWaitW
-
-    if (com.blocksIn.done.length === 0) {
-      frac.done = 0
-      frac.wait = 1 - runFrac
-    }
-    if (com.blocksIn.wait.length === 0) {
-      frac.done = 1 - runFrac
-      frac.wait = 0
-    }
+    // // let minRun = minMaxObj({
+    // //   minMax: 'min',
+    // //   data: com.blocksIn.run,
+    // //   func: 'startTime',
+    // //   defVal: 0
+    // // })
+    // // let maxRun = minMaxObj({
+    // //   minMax: 'max',
+    // //   data: com.blocksIn.run,
+    // //   func: 'endTime',
+    // //   defVal: 0
+    // // })
+    // let minWait = minMaxObj({
+    //   minMax: 'min',
+    //   data: com.blocksIn.wait,
+    //   func: 'startTime',
+    //   defVal: 0
+    // })
+    //
+    //
+    // let doneWaitW = com.time.end - minWait + maxDone - com.time.start
+    //
+    // let frac = {}
+    // frac.done = (1 - runFrac) * (maxDone - com.time.start) / doneWaitW
+    // frac.run = runFrac - 2 * runMarg / box.w
+    // frac.wait = (1 - runFrac) * (com.time.end - minWait) / doneWaitW
+    //
+    // if (com.blocksIn.done.length === 0) {
+    //   frac.done = 0
+    //   frac.wait = 1 - runFrac
+    // }
+    // if (com.blocksIn.wait.length === 0) {
+    //   frac.done = 1 - runFrac
+    //   frac.wait = 0
+    // }
 
     com.blockRow = {}
-    $.each(['done', 'run', 'wait'], function (index, typeNow) {
-      let dataIn = com.blocksIn[typeNow]
+    com.blockRow.run = []
+    com.blockRow.wait = []
 
-      if (!com.doPhase) {
-        if (index > 0) return
+    let dataBottom = []
+      .concat(com.blocksIn.done)
+      .concat(com.blocksIn.fail)
+      .concat(com.blocksIn.run)
+      .concat(com.blocksIn.wait)
 
-        com.blockRow.run = []
-        com.blockRow.wait = []
-
-        dataIn = []
-          .concat(com.blocksIn.done)
-          .concat(com.blocksIn.run)
-          .concat(com.blocksIn.wait)
-      }
-
-      com.blockRow[typeNow] = calcBlockRow({
-        typeNow: typeNow,
-        start: com.time.start,
-        end: com.time.end,
-        data: dataIn
-      })
-
-      if (!com.doPhase) return
-      if (com.blockRow[typeNow].length === 0) return
-
-      let xMin = minMaxObj({
-        minMax: 'min',
-        data: com.blockRow[typeNow],
-        func: 'x'
-      })
-      let xMax = minMaxObj({
-        minMax: 'max',
-        data: com.blockRow[typeNow],
-        func: function (d, i) {
-          return d.x + d.w
-        }
-      })
-      let scale = frac[typeNow] / ((xMax - xMin) / box.w)
-
-      let xShift = null
-      let xShiftType = 0
-      if (typeNow === 'run') xShiftType = frac.done * box.w + runMarg
-      if (typeNow === 'wait') {
-        xShiftType = (frac.done + frac.run) * box.w + 2 * runMarg
-      }
-      // if(typeNow=='run')console.log('----',xMin,xMax,scale,xShiftType);
-
-      $.each(com.blockRow[typeNow], function (index, dataNow) {
-        dataNow.x = (dataNow.x - box.x) * scale + box.x
-      })
-
-      $.each(com.blockRow[typeNow], function (index, dataNow) {
-        if (!hasVar(xShift)) {
-          let xMinNow = minMaxObj({
-            minMax: 'min',
-            data: com.blockRow[typeNow],
-            func: 'x'
-          })
-          xShift = box.x - xMinNow + xShiftType
-          // xShift = box.x - com.blockRow[typeNow][0].x + xShiftType;
-        }
-
-        dataNow.x += xShift
-        dataNow.w = dataNow.w * scale
-      })
+    com.blockRow['bottom'] = calcBlockRow({
+      typeNow: 'bottom',
+      start: com.time.start,
+      end: com.time.end,
+      data: dataBottom,
+      box: com.innerBoxBottom,
+      yScale: true
     })
 
+    let dataTop = []
+      .concat(com.blocksIn.cancel)
+    com.blockRow['top'] = calcBlockRow({
+      typeNow: 'top',
+      start: com.time.start,
+      end: com.time.end,
+      data: dataTop,
+      box: com.innerBoxTop,
+      yScale: false
+    })
+    // $.each(['done', 'run', 'wait'], function (index, typeNow) {
+    //   let dataIn = com.blocksIn[typeNow]
+    //   if (!com.doPhase) {
+    //     if (index > 0) return
+    //
+    //     com.blockRow.run = []
+    //     com.blockRow.wait = []
+    //
+    //     dataIn = []
+    //       .concat(com.blocksIn.done)
+    //       .concat(com.blocksIn.fail)
+    //       .concat(com.blocksIn.run)
+    //       .concat(com.blocksIn.wait)
+    //       //.concat(com.blocksIn.cancel)
+    //   }
+    //   com.blockRow[typeNow] = calcBlockRow({
+    //     typeNow: typeNow,
+    //     start: com.time.start,
+    //     end: com.time.end,
+    //     data: dataIn
+    //   })
+    //
+    //   if (!com.doPhase) return
+    // if (com.blockRow[typeNow].length === 0) return
+    //
+    // let xMin = minMaxObj({
+      //   minMax: 'min',
+      //   data: com.blockRow[typeNow],
+      //   func: 'x'
+      // })
+    // let xMax = minMaxObj({
+      //   minMax: 'max',
+      //   data: com.blockRow[typeNow],
+      //   func: function (d, i) {
+      //     return d.x + d.w
+      //   }
+      // })
+    // let scale = frac[typeNow] / ((xMax - xMin) / box.w)
+    //
+    // let xShift = null
+    // let xShiftType = 0
+    // if (typeNow === 'run') xShiftType = frac.done * box.w + runMarg
+    // if (typeNow === 'wait') {
+      //   xShiftType = (frac.done + frac.run) * box.w + 2 * runMarg
+      // }
+    // // if(typeNow=='run')console.log('----',xMin,xMax,scale,xShiftType);
+    //
+    // $.each(com.blockRow[typeNow], function (index, dataNow) {
+      //   dataNow.x = (dataNow.x - box.x) * scale + box.x
+      // })
+    //
+    // $.each(com.blockRow[typeNow], function (index, dataNow) {
+      //   if (!hasVar(xShift)) {
+      //     let xMinNow = minMaxObj({
+      //       minMax: 'min',
+      //       data: com.blockRow[typeNow],
+      //       func: 'x'
+      //     })
+      //     xShift = box.x - xMinNow + xShiftType
+      //     // xShift = box.x - com.blockRow[typeNow][0].x + xShiftType;
+      //   }
+      //
+      //   dataNow.x += xShift
+      //   dataNow.w = dataNow.w * scale
+      // })
+    // })
+
     com.blocksAll = []
-      .concat(com.blockRow.done)
+      .concat(com.blockRow.bottom)
+      .concat(com.blockRow.top)
       .concat(com.blockRow.run)
       .concat(com.blockRow.wait)
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    let yMin = minMaxObj({
-      minMax: 'min',
-      data: com.blocksAll,
-      func: 'y'
-    })
-    let yMax = minMaxObj({
-      minMax: 'max',
-      data: com.blocksAll,
-      func: function (d, i) {
-        return d.y + d.h
-      }
-    })
-    let yDif = yMax - yMin
+    // let yMin = minMaxObj({
+    //   minMax: 'min',
+    //   data: com.blocksAll,
+    //   func: 'y'
+    // })
+    // let yMax = minMaxObj({
+    //   minMax: 'max',
+    //   data: com.blocksAll,
+    //   func: function (d, i) {
+    //     return d.y + d.h
+    //   }
+    // })
+    // let yDif = yMax - yMin
 
-    if (com.scroll.vertical) {
-      let hasScroll = yDif > com.innerBox.h + 0.01
-      com.scrollBox.resetScroller({ canScroll: hasScroll, scrollHeight: yDif })
-    }
+    // if (com.scroll.vertical) {
+    //   let hasScroll = yDif > com.innerBox.h + 0.01
+    //   com.scrollBox.resetScroller({ canScroll: hasScroll, scrollHeight: yDif })
+    // }
   }
   this.getBlocks = getBlocks
 
@@ -554,7 +587,7 @@ window.BlockQueue = function () {
   // ---------------------------------------------------------------------------------------------------
   function calcBlockRow (optIn) {
     let dataIn = optIn.data
-    let box = com.innerBox
+    let box = optIn.box
     let xScale = box.w / (optIn.end - optIn.start)
     let yScale = box.h / (com.telIds.length + 2)
 
@@ -571,7 +604,7 @@ window.BlockQueue = function () {
       let overlap = dataNow.duration * xScale * 0.2 // allow small overlap in x between blocks
       let x0 = box.x + start
       let w0 = end - start
-      let h0 = nTels * yScale
+      let h0 = optIn.yScale ? (nTels * yScale) : (box.h * 0.3)
       let y0 = box.y
 
       if (
@@ -763,7 +796,7 @@ window.BlockQueue = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   function setBlockRect () {
-    let box = com.innerBox
+    let box = com.innerBoxBottom
     let minTxtSize = box.w * 0.016
     let rect = com.innerG
       .selectAll('rect.' + com.mainTag + 'blocks')
@@ -897,7 +930,7 @@ window.BlockQueue = function () {
       })
 
       .attr('x', function (d, i) {
-        return com.axis.scaleX(d.data.startTime) + com.innerBox.x
+        return com.axis.scaleX(d.data.startTime) + com.innerBoxBottom.x
       })
       .attr('y', function (d, i) {
         return d.y

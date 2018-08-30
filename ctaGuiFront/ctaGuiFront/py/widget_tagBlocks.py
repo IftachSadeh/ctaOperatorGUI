@@ -92,14 +92,28 @@ class tagBlocks():
 
         self.getBlocks()
         self.getTelHealth()
+        self.getEvents()
 
         data = {
             "timeOfNight": tagBlocks.timeOfNight,
             "telHealth": tagBlocks.telHealth,
-            "blocks": tagBlocks.blocks
+            "blocks": tagBlocks.blocks,
+            "external_events": tagBlocks.external_events
         }
 
         return data
+
+    # -----------------------------------------------------------------------------------------------------------
+    #
+    # -----------------------------------------------------------------------------------------------------------
+    def getEvents(self):
+        self.redis.pipe.reset()
+        self.redis.pipe.get(name="external_events")
+        readData = self.redis.pipe.execute(packed=True)
+
+        tagBlocks.external_events = readData
+
+        return
 
     # -----------------------------------------------------------------------------------------------------------
     #
