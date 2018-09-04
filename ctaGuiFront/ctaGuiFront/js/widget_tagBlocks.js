@@ -1964,16 +1964,21 @@ let mainTagBlocks = function (optIn) {
       if (panelManager === null) {
         panelManager = new PanelManager()
         let optIn = {
-          x: 60,
-          y: 10,
-          width: -40 + blockBoxData.w * 0.75,
-          height: -20 + blockBoxData.h * 0.86,
-          g: gMiddleBox.append('g')
+          transX: 60,
+          transY: 10,
+          width: (-40 + blockBoxData.w * 0.75) / 1,
+          height: (-20 + blockBoxData.h * 0.86) / 1,
+          g: gMiddleBox.append('g'),
+          manager: panelManager
         }
         panelManager.init(optIn)
-        panelManager.addPanel(data)
+        let customPanel = new CustomPanel()
+        customPanel.bindData(data)
+        panelManager.addNewPanel(customPanel)
       } else {
-        panelManager.addPanel(data)
+        let customPanel = new CustomPanel()
+        customPanel.bindData(data)
+        panelManager.addNewPanel(customPanel)
       }
     }
     this.createMiddlePanel = createMiddlePanel
