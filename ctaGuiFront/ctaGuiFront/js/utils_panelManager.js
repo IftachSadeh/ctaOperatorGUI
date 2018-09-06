@@ -33,14 +33,24 @@ window.PanelManager = function () {
   this.init = init
 
   function createNewPanelGroup (optIn) {
+    if (optIn.transX) {
+      com.prevX = 0
+    } else {
+      com.prevX += 6
+    }
+    if (optIn.transY) {
+      com.prevY = 0
+    } else {
+      com.prevY += 6
+    }
     let newOptIn = {
       manager: com.manager,
       panels: [],
       optIn: optIn,
       g: com.mainG,
       index: com.panelsGroup.length,
-      transX: (optIn.transX ? optIn.transX : 0),
-      transY: (optIn.transY ? optIn.transY : 0),
+      transX: (optIn.transX ? optIn.transX : com.prevX),
+      transY: (optIn.transY ? optIn.transY : com.prevY),
       width: (optIn.width) ? optIn.width : 300,
       height: (optIn.height) ? optIn.height : 200
     }
@@ -50,12 +60,26 @@ window.PanelManager = function () {
     com.panelsGroupOnFocus = newGroup
   }
   this.createNewPanelGroup = createNewPanelGroup
+  function removePanelGroup (id) {
+    let index = -1
+    for (var i = 0; i < com.panelsGroup.length; i++) {
+      if (com.panelsGroup[i].get('idGroup') === id) index = i
+    }
+    com.panelsGroup.splice(index, 1)
+    if (com.panelsGroupOnFocus.get('idGroup') === id) com.panelsGroupOnFocus = null
+  }
+  this.removePanelGroup = removePanelGroup
 
   function setFocusOnGroup (group) {
-    console.log('setFocusonGroup', group);
     com.panelsGroupOnFocus = group
   }
   this.setFocusOnGroup = setFocusOnGroup
+  function setFocusOnGroupByID (id) {
+    for (var i = 0; i < com.panelsGroup.length; i++) {
+      if (com.panelsGroup[i].get('idGroup') === id) com.panelsGroupOnFocus = com.panelsGroup[i]
+    }
+  }
+  this.setFocusOnGroupByID = setFocusOnGroupByID
   function addNewPanel (panel) {
     if (!com.panelsGroupOnFocus) {
       createNewPanelGroup(com.defaultOptIn)
@@ -69,6 +93,8 @@ window.PanelManager = function () {
 window.PanelGroup = function () {
   let com = {}
   com.manager = null
+  com.idGroup = Math.floor(Math.random() * Math.floor(100000))
+
   com.width = 600
   com.height = 400
   com.panels = []
@@ -79,6 +105,7 @@ window.PanelGroup = function () {
   com.gLabel = null
   com.gPanel = null
   com.gTemplate = null
+  com.drag = {transX: 0, transY: 0, startDragX: null, startDragY: null}
 
   com.index = null
 
@@ -87,21 +114,56 @@ window.PanelGroup = function () {
   com.tabHeight = 18
   com.margin = 20
 
+  this.set = function (optIn) {
+    if (hasVar(optIn.data)) com[optIn.tag] = optIn.data
+    else if (hasVar(optIn.def)) com[optIn.tag] = optIn.def
+    else com[optIn.tag] = null
+  }
+  this.get = function (type) {
+    return com[type]
+  }
+
   function createTemplate () {
     com.gTemplate.append('rect')
       .attr('x', 0)
-      .attr('y', 0)
-      .attr('rx', 3)
-      .attr('ry', 3)
-      .attr('width', com.width)
-      .attr('height', com.tabHeight + 2)
+      .attr('y', 0 - 2)
+      .attr('rx', 1)
+      .attr('ry', 1)
+      .attr('width', com.width + 4)
+      .attr('height', com.height + 6)
       .attr('fill', '#888888')
+      .attr('stroke', '#444444')
+      .attr('stroke-width', 0.5)
+    com.g.call(dragGroup)
+    com.gPanel.call(d3.drag()
+      .on('start', function () {})
+      .on('drag', function () {})
+      .on('end', function () {}))
   }
+  let dragGroup = d3.drag()
+    .on('start', function () {
+      d3.event.sourceEvent.stopPropagation()
+      com.manager.setFocusOnGroupByID(com.idGroup)
+      com.drag.startDragX = d3.event.x
+      com.drag.startDragY = d3.event.y
+    })
+    .on('drag', function () {
+      let offsetX = com.drag.transX + (d3.event.x - com.drag.startDragX)
+      let offsetY = com.drag.transY + (d3.event.y - com.drag.startDragY)
+      com.g.attr('transform', 'translate(' + offsetX + ',' + offsetY + ')')
+    })
+    .on('end', function () {
+      com.drag.transX = com.drag.transX + (d3.event.x - com.drag.startDragX)
+      com.drag.transY = com.drag.transY + (d3.event.y - com.drag.startDragY)
+    })
+
   function createGroup (optIn) {
     com.manager = optIn.manager
 
+    com.drag.transX = optIn.transX
+    com.drag.transY = optIn.transY
     com.g = optIn.g.append('g')
-      .attr('transform', 'translate(' + optIn.transX + ',' + optIn.transY + ')')
+      .attr('transform', 'translate(' + com.drag.transX + ',' + com.drag.transY + ')')
     com.gTemplate = com.g.append('g')
     com.gLabel = com.g.append('g')
       .attr('transform', 'translate(' + com.margin + ',' + 0 + ')')
@@ -131,10 +193,10 @@ window.PanelGroup = function () {
   }
   this.addPanel = addPanel
   function removePanel (panel, i) {
-    console.log(com.panels);
     com.panels.splice(i, 1)
     if (com.panels.length === 0) {
-      console.log('TODO')
+      com.g.selectAll('*').remove()
+      com.manager.removePanelGroup(com.idGroup)
       // com.panelsGroupOnFocus.g.selectAll('*').remove()
       // com.panelsGroup.splice(com.panelsGroupOnFocus.index, 1)
       // com.panelsGroupOnFocus = null
@@ -240,19 +302,19 @@ window.PanelGroup = function () {
       })
       .style('pointer-events', 'none')
 
-    // let fo = com.gPanel.append('foreignObject')
-    //   .attr('x', 0)
-    //   .attr('y', 0)
-    //   .attr('width', com.width)
-    //   .attr('height', com.height)
-    // let div = fo.append('xhtml:div')
-    // div.append('textarea')
-    //   .text('This is a test comment')
-    //   .attr('rows', 14 / 2)
-    //   .attr('cols', 73 / 2)
-    //   .style('border', 'none')
-    //   .style('margin-top', '27px')
-    //   .style('margin-left', '10px')
+    let fo = com.gPanel.append('foreignObject')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', com.width)
+      .attr('height', com.height)
+    let div = fo.append('xhtml:div')
+    div.append('textarea')
+      .text('This is a test comment')
+      .attr('rows', 16)
+      .attr('cols', 22)
+      .style('border', 'none')
+      .style('margin-top', '27px')
+      .style('margin-left', '10px')
   }
   this.updateInformation = updateInformation
 }

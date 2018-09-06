@@ -2077,8 +2077,6 @@ let mainTagBlocks = function (optIn) {
       //   .attr('stroke', 'black')
       //   .attr('stroke-width', 1.5)
       createLeftButton()
-
-      gMiddleBox = gBlockBox.append('g').attr('transform', 'translate(' + blockBoxData.w * 0.1 + ',' + 0 + ')')
       // gMiddleBox.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
@@ -2096,6 +2094,8 @@ let mainTagBlocks = function (optIn) {
         .attr('fill', '#cccccc')
         .attr('stroke', 'black')
         .attr('stroke-width', 1.5)
+
+      gMiddleBox = gBlockBox.append('g').attr('transform', 'translate(' + blockBoxData.w * 0.1 + ',' + 0 + ')')
       //
       // gBlockBox.append('rect')
       //   .attr('x', blockBoxData.w * 0.35)
