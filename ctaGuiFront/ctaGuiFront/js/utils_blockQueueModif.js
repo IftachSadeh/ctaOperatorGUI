@@ -291,26 +291,27 @@ window.BlockQueue = function () {
 
     return dataIn
   }
-  function addStateFilter (id, data) {
-    filters.states.push({id: id, data: data})
+  function addStateFilter (id) {
+    console.log(id);
+    filters.states.push({id: id})
   }
   this.addStateFilter = addStateFilter
-  function removeStateFilter (id, data) {
+  function removeStateFilter (id) {
     for (var i = 0; i < filters.states.length; i++) {
       if (filters.states[i].id === id) filters.states.splice(i, 1)
     }
   }
   this.removeStateFilter = removeStateFilter
-  function addErrorFilter (id, data) {
-    filters.errors.push({id: id, data: data})
-  }
-  this.addErrorFilter = addErrorFilter
-  function removeErrorFilter (id, data) {
-    for (var i = 0; i < filters.errors.length; i++) {
-      if (filters.errors[i].id === id) filters.errors.splice(i, 1)
-    }
-  }
-  this.removeErrorFilter = removeErrorFilter
+  // function addErrorFilter (id, data) {
+  //   filters.errors.push({id: id, data: data})
+  // }
+  // this.addErrorFilter = addErrorFilter
+  // function removeErrorFilter (id, data) {
+  //   for (var i = 0; i < filters.errors.length; i++) {
+  //     if (filters.errors[i].id === id) filters.errors.splice(i, 1)
+  //   }
+  // }
+  // this.removeErrorFilter = removeErrorFilter
   function updateAxis (dataIn) {
     com.axis.scaleX.domain([com.time.start, com.time.end])
     com.axis.bottom.scale(com.axis.scaleX)
@@ -887,7 +888,7 @@ window.BlockQueue = function () {
 
       .style('opacity', 1)
       .attr('stroke', function (d, i) {
-        return "black"//d3.rgb(com.style.recCol({ d: d })).darker(1.0)
+        return "black"
       })
       .style('fill', function (d, i) {
         return com.style.recCol({ d: d })
