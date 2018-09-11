@@ -184,7 +184,7 @@ window.BlockQueue = function () {
     //   runLoop: com.runLoop
     // })
     com.axis = {}
-    com.axis.scaleX = d3.scaleLinear().range([0, com.outerBox.w]).domain([com.time.start, com.time.end])
+    com.axis.scaleX = d3.scaleTime().range([0, com.outerBox.w]).domain([])
     com.axis.translate = 'translate(' + com.outerBox.x + ',' + (com.outerBox.h + com.outerBox.y) + ')'
     com.axis.bottom = d3.axisBottom(com.axis.scaleX)
     com.axis.axisG = com.scrollBoxG
@@ -313,7 +313,7 @@ window.BlockQueue = function () {
   // }
   // this.removeErrorFilter = removeErrorFilter
   function updateAxis (dataIn) {
-    com.axis.scaleX.domain([com.time.start, com.time.end])
+    com.axis.scaleX.domain([new Date(com.time.start), new Date(com.time.end)])
     com.axis.bottom.scale(com.axis.scaleX)
     com.axis.axisG.call(com.axis.bottom)
   }
@@ -324,8 +324,8 @@ window.BlockQueue = function () {
   function update (dataIn) {
     if (!hasVar(com.axis)) initAxis()
     else updateAxis()
-    dataIn = filterBlocks(dataIn)
 
+    dataIn = filterBlocks(dataIn)
 
     com.blocksIn = {done: [], cancel: [], fail: [], run: {}, wait: []}
     for (var i in dataIn['done']) {
@@ -589,7 +589,7 @@ window.BlockQueue = function () {
   function calcBlockRow (optIn) {
     let dataIn = optIn.data
     let box = optIn.box
-    let xScale = box.w / (optIn.end - optIn.start)
+    let xScale = box.w / (new Date(optIn.end) - new Date(optIn.start))
     let yScale = box.h / (com.telIds.length + 2)
 
     let blocks = []
@@ -600,9 +600,9 @@ window.BlockQueue = function () {
       let id = dataNow.obId
       let state = dataNow.exeState.state
       let nTels = dataNow.telIds.length
-      let start = dataNow.startTime * xScale
-      let end = dataNow.endTime * xScale
-      let overlap = dataNow.duration * xScale * 0.2 // allow small overlap in x between blocks
+      let start = (new Date(dataNow.startTime) - new Date(optIn.start)) * xScale
+      let end = (new Date(dataNow.endTime) - new Date(optIn.start)) * xScale
+      let overlap = (new Date(dataNow.endTime) - new Date(dataNow.startTime)) * xScale * 0.2 // allow small overlap in x between blocks
       let x0 = box.x + start
       let w0 = end - start
       let h0 = optIn.yScale ? (nTels * yScale) : (box.h * 0.3)
@@ -828,13 +828,13 @@ window.BlockQueue = function () {
       .style('opacity', 0)
 
       .attr('x', function (d, i) {
-        return com.axis.scaleX(d.data.startTime)
+        return com.axis.scaleX(new Date(d.data.startTime))
       })
       .attr('y', function (d, i) {
         return d.y
       })
       .attr('width', function (d, i) {
-        return com.axis.scaleX(d.data.endTime) - com.axis.scaleX(d.data.startTime)
+        return com.axis.scaleX(new Date(d.data.endTime)) - com.axis.scaleX(new Date(d.data.startTime))
       })
       .attr('height', function (d, i) {
         return d.h
@@ -888,7 +888,7 @@ window.BlockQueue = function () {
 
       .style('opacity', 1)
       .attr('stroke', function (d, i) {
-        return "black"
+        return 'black'
       })
       .style('fill', function (d, i) {
         return com.style.recCol({ d: d })
@@ -931,13 +931,13 @@ window.BlockQueue = function () {
       })
 
       .attr('x', function (d, i) {
-        return com.axis.scaleX(d.data.startTime) + com.innerBoxBottom.x
+        return com.axis.scaleX(new Date(d.data.startTime)) + com.innerBoxBottom.x
       })
       .attr('y', function (d, i) {
         return d.y
       })
       .attr('width', function (d, i) {
-        return com.axis.scaleX(d.data.endTime) - com.axis.scaleX(d.data.startTime)
+        return com.axis.scaleX(new Date(d.data.endTime)) - com.axis.scaleX(new Date(d.data.startTime))
       })
       .attr('height', function (d, i) {
         return d.h
@@ -950,7 +950,6 @@ window.BlockQueue = function () {
       .attr('width', 0)
       .style('opacity', 0)
       .remove()
-
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
@@ -980,6 +979,7 @@ window.BlockQueue = function () {
         return '#383b42'
       })
       .attr('x', function (d, i) {
+        console.log(d);
         return d.x + d.w / 2
       })
       .attr('y', function (d, i) {
@@ -1142,8 +1142,8 @@ window.BlockQueue = function () {
       } else if (timeFrac < 0 || timeFrac > 1) {
         // refData = [].concat(com.blockRow.done).concat(com.blockRow.run).concat(com.blockRow.wait);
 
-        timeFrac = com.time.now - com.time.start
-        timeFrac /= com.time.end - com.time.start
+        timeFrac = new Date(com.time.now) - new Date(com.time.start)
+        timeFrac /= new Date(com.time.end) - new Date(com.time.start)
       }
     }
 
@@ -1160,7 +1160,6 @@ window.BlockQueue = function () {
           }
         })
       }
-
       rectNowData = [
         {
           id: com.mainTag + 'now',

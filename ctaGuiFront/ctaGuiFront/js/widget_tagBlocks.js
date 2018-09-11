@@ -216,6 +216,7 @@ let mainTagBlocks = function (optIn) {
       .attr('fill', '#ffffff')
 
     com.dataIn = dataIn
+    console.log(com.dataIn);
 
     svgBlocks.initData(dataIn.data)
     svgEvents.initData(dataIn.data)
@@ -239,6 +240,7 @@ let mainTagBlocks = function (optIn) {
     // svgTels.updateData(dataIn.data)
     //svgFilterBlocks.updateData(dataIn.data)
     svgMiddleInfo.updateData(dataIn.data)
+    svgBottomInfo.updateData(dataIn.data)
   }
   this.updateData = updateData
 
@@ -621,7 +623,7 @@ let mainTagBlocks = function (optIn) {
         h: h0,
         marg: marg
       }
-      axis.scaleX = d3.scaleLinear().range([0, blockBoxData.w]).domain([dataIn.timeOfNight.start, dataIn.timeOfNight.end])
+      axis.scaleX = d3.scaleTime().range([0, blockBoxData.w]).domain([new Date(dataIn.timeOfNight.start), new Date(dataIn.timeOfNight.end)])
       axis.translate = 'translate(' + blockBoxData.x + ',' + (blockBoxData.y) + ')'
       axis.bottom = d3.axisTop(axis.scaleX).tickFormat('')
       axis.axisG = gBlockBox
@@ -792,7 +794,7 @@ let mainTagBlocks = function (optIn) {
         .attr('class', 'events')
       newRect.append('rect')
         .attr('x', function (d, i) {
-          return axis.scaleX(d.data.time)
+          return axis.scaleX(new Date(d.data.time))
         })
         .attr('y', function (d, i) {
           return d.y
@@ -829,9 +831,9 @@ let mainTagBlocks = function (optIn) {
           svgMiddleInfo.createMiddlePanel(d.data)
         })
       newRect.each(function (d) {
-        if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleX(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
-        if (d.data.name === 'hardware') drawHardware(d3.select(this), axis.scaleX(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
-        if (d.data.name === 'alarm') drawAlarm(d3.select(this), axis.scaleX(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
+        if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleX(new Date(d.data.time)) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
+        if (d.data.name === 'hardware') drawHardware(d3.select(this), axis.scaleX(new Date(d.data.time)) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
+        if (d.data.name === 'alarm') drawAlarm(d3.select(this), axis.scaleX(new Date(d.data.time)) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
       })
       rect.merge(newRect)
     }
@@ -884,14 +886,14 @@ let mainTagBlocks = function (optIn) {
     function calcBlockRow (optIn) {
       let dataIn = optIn.data
       let box = optIn.box
-      let xScale = box.w / (optIn.end - optIn.start)
+      let xScale = box.w / (new Date(optIn.end) - new Date(optIn.start))
 
       let blocks = []
 
       // compute width/height/x/y of blocks, only y need to be modified (so far)
       $.each(dataIn, function (index, dataNow) {
         let sizeBlocks = (12 * (dataNow.priority + 1) / 2.2)
-        let start = dataNow.time * xScale
+        let start = new Date(dataNow.time) * xScale
         let x0 = box.x + start - (sizeBlocks / 2)
         let w0 = sizeBlocks
         let h0 = sizeBlocks
@@ -2460,7 +2462,7 @@ let mainTagBlocks = function (optIn) {
     function initData (dataIn) {
       gBlockBox = svg.g.append('g')
 
-      let x0, y0, w0, h0, marg
+      let x0, y0, w0, h0
       w0 = lenD.w[0] * 0.96
       h0 = lenD.h[0] * 0.08 // h0 *= 2.5;
       x0 = (lenD.w[0] * 0.02)
@@ -2478,11 +2480,22 @@ let mainTagBlocks = function (optIn) {
         box: blockBoxData,
         background: '#ffffff'
       })
-      clockEvents.setHour(new Date('September 27, 2018 19:44:00'))
+      clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.now))
+
+      // let startEvent = new Date(com.dataIn.data.timeOfNight.now).getTime() + ((Math.random() * 3) + 2) * 60000
+      // let endEvent = new Date(startEvent).getTime() + 10000
+      // clockEvents.addEvent({id: 'E' + Math.floor(Math.random() * 1000000), name: 'moonrise', icon: null, startTime: startEvent, endTime: endEvent})
     }
     this.initData = initData
 
     function updateData (dataIn) {
+      clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.now))
+      let rnd = Math.random()
+      if (rnd < 0.6) {
+        let startEvent = new Date(com.dataIn.data.timeOfNight.now).getTime() + ((Math.random() * 8) + 0.4) * 60000
+        let endEvent = new Date(startEvent).getTime() + 10000
+        clockEvents.addEvent({id: Math.floor(Math.random() * 100000), name: 'moonrise', icon: null, startTime: startEvent, endTime: endEvent})
+      }
     }
     this.updateData = updateData
   }

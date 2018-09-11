@@ -1,6 +1,8 @@
 from gevent.coros import BoundedSemaphore
 from ctaGuiUtils.py.utils import myLog, Assert, telIds, getTimeOfNight
 from ctaGuiUtils.py.utils_redis import redisManager
+from datetime import timedelta
+from datetime import datetime
 
 
 # -----------------------------------------------------------------------------------------------------------
@@ -93,7 +95,7 @@ class tagBlocks():
         self.getBlocks()
         self.getTelHealth()
         self.getEvents()
-
+        
         data = {
             "timeOfNight": tagBlocks.timeOfNight,
             "telHealth": tagBlocks.telHealth,
@@ -150,7 +152,8 @@ class tagBlocks():
             blocks = self.redis.pipe.execute(packed=True)
             tagBlocks.blocks[key] = sorted(
                 blocks,
-                cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])
+                cmp=lambda a,
+                b: int((datetime.strptime(a['startTime'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['startTime'],"%Y-%m-%d %H:%M:%S")).total_seconds())
             )
 
         return
