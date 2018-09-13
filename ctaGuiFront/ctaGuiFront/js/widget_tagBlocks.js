@@ -213,7 +213,7 @@ let mainTagBlocks = function (optIn) {
       .attr('y', 0)
       .attr('width', lenD.w[0])
       .attr('height', lenD.h[0])
-      .attr('fill', '#ffffff')
+      .attr('fill', '#263238')
 
     com.dataIn = dataIn
     console.log(com.dataIn);
@@ -331,6 +331,7 @@ let mainTagBlocks = function (optIn) {
     let tagTagBlocks = widgetType
     let tagBlockQueue = 'blockQueue'
 
+    let gBlockBoxFilter
     let buttonPanel
 
     // ---------------------------------------------------------------------------------------------------
@@ -344,12 +345,12 @@ let mainTagBlocks = function (optIn) {
 
     function initFilters (dataIn) {
       let x0, y0, w0, h0
-      let gBlockBox = svg.g.append('g')
-
-      w0 = lenD.w[0] * 0.105
-      h0 = lenD.h[0] * 0.16
-      x0 = (lenD.w[0] * 0.024)
-      y0 = (lenD.h[0] * 0.035)
+      gBlockBoxFilter = svg.g.append('g')
+      y0 = (lenD.h[0] * 0.02)
+      w0 = lenD.w[0] * 0.127
+      h0 = lenD.h[0] * 0.18
+      x0 = (lenD.w[0] * 0.015)
+      // y0 = 3 * (lenD.h[0] * 0.02) + lenD.h[0] * 0.18
       let blockBoxData = {
         x: x0,
         y: y0,
@@ -357,26 +358,40 @@ let mainTagBlocks = function (optIn) {
         height: h0
       }
       let margin = {
-        inner: 9,
+        inner: 5,
         extern: 5
       }
 
       buttonPanel = new ButtonPanel()
       buttonPanel.init({
-        g: gBlockBox,
+        g: gBlockBoxFilter,
         box: blockBoxData,
         margin: margin,
         rows: 3,
-        cols: 2,
-        background: '#cdcdcd'
+        cols: 3,
+        background: 'none'
       })
 
-      createButton({row: 0, col: 0}, 'Cancel')
-      createButton({row: 0, col: 1}, 'Cancel')
-      createButton({row: 1, col: 0}, 'Done')
-      createButton({row: 1, col: 1}, 'Fail')
-      createButton({row: 2, col: 0}, 'Run')
-      createButton({row: 2, col: 1}, 'Wait')
+      let newButton = buttonPanel.addButton({row: 0, col: 1})
+      newButton.append('text')
+        .text('SBs Filters')
+        .attr('x', Number(newButton.attr('width')) * 0.5)
+        .attr('y', Number(newButton.attr('height')) * 0.35)
+        .attr('dy', 6)
+        .attr('stroke', '#CFD8DC')
+        .attr('fill', '#CFD8DC')
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 18)
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+
+      createButton({row: 1, col: 0}, 'Fail')
+      createButton({row: 1, col: 1}, 'Done')
+      createButton({row: 1, col: 2}, 'Run')
+      createButton({row: 2, col: 0}, 'Cancel')
+      createButton({row: 2, col: 1}, 'Cancel')
+      createButton({row: 2, col: 2}, 'Wait')
     }
     this.initFilters = initFilters
 
@@ -384,37 +399,72 @@ let mainTagBlocks = function (optIn) {
       let newButton = buttonPanel.addButton(position)
       newButton.attr('status', 'disabled')
 
-      let clickFunction = function (id) {
+      let clickFunction = function (rect, id) {
         if (newButton.attr('status') === 'enabled') {
           newButton.attr('status', 'disabled')
           newButton.selectAll('line.checkboxBar').remove()
+          rect.attr('stroke', function (d, i) {
+            return '#000000'
+          })
+            .attr('stroke-width', 3.5)
+            .style('stroke-opacity', 0.7)
+          newButton.append('line')
+            .attr('class', 'checkboxBar')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', (Number(newButton.attr('width'))))
+            .attr('y2', (Number(newButton.attr('height'))))
+            .attr('stroke', '#000000')
+            .style('stroke-opacity', 0.7)
+            .attr('stroke-width', 3)
+            .style('pointer-events', 'none')
+          newButton.append('line')
+            .attr('class', 'checkboxBar')
+            .attr('x1', 0)
+            .attr('y1', (Number(newButton.attr('height'))))
+            .attr('x2', (Number(newButton.attr('width'))))
+            .attr('y2', 0)
+            .attr('stroke', '#000000')
+            .style('stroke-opacity', 0.7)
+            .attr('stroke-width', 3)
+            .style('pointer-events', 'none')
           blockQueue.removeStateFilter(id.toLowerCase())
         } else {
           newButton.attr('status', 'enabled')
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', (Number(newButton.attr('width')) * 0.7) + 2)
-            .attr('y1', Number(newButton.attr('height')) + 5)
-            .attr('x2', (Number(newButton.attr('width')) * 0.7) + 9)
-            .attr('y2', Number(newButton.attr('height')) - 5)
-            .attr('stroke', 'black')
-            .attr('stroke-width', 2.5)
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', (Number(newButton.attr('width')) * 0.7) + 2)
-            .attr('y1', Number(newButton.attr('height')) + 5)
-            .attr('x2', (Number(newButton.attr('width')) * 0.7) - 3)
-            .attr('y2', Number(newButton.attr('height')) - 0)
-            .attr('stroke', 'black')
-            .attr('stroke-width', 2.5)
+          newButton.selectAll('line.checkboxBar').remove()
+          rect.attr('stroke', function (d, i) {
+            return 'black'
+          })
+            .attr('stroke-width', 0.5)
+            .style('stroke-opacity', 1)
+          // newButton.append('line')
+          //   .attr('class', 'checkboxBar')
+          //   .attr('x1', (Number(newButton.attr('width')) * 0.5) + 2)
+          //   .attr('y1', (Number(newButton.attr('height')) * 0.6) + 5)
+          //   .attr('x2', (Number(newButton.attr('width')) * 0.5) + 9)
+          //   .attr('y2', (Number(newButton.attr('height')) * 0.6) - 5)
+          //   .attr('stroke', 'black')
+          //   .attr('stroke-width', 2.5)
+          //   .style('pointer-events', 'none')
+          // newButton.append('line')
+          //   .attr('class', 'checkboxBar')
+          //   .attr('x1', (Number(newButton.attr('width')) * 0.5) + 2)
+          //   .attr('y1', (Number(newButton.attr('height')) * 0.6) + 5)
+          //   .attr('x2', (Number(newButton.attr('width')) * 0.5) - 3)
+          //   .attr('y2', (Number(newButton.attr('height')) * 0.6) - 0)
+          //   .attr('stroke', 'black')
+          //   .attr('stroke-width', 2.5)
+          //   .style('pointer-events', 'none')
           blockQueue.addStateFilter(id.toLowerCase())
         }
       }
 
-      newButton.append('rect')
+      let newRect = newButton.append('rect')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', Number(newButton.attr('width')) * 0.7)
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('width', Number(newButton.attr('width')))
         .attr('height', newButton.attr('height'))
         .attr('fill', recCol(type))
         .attr('stroke', function (d, i) {
@@ -428,29 +478,56 @@ let mainTagBlocks = function (optIn) {
           return 0.7
         })
         .on('click', function () {
-          clickFunction(type)
+          clickFunction(d3.select(this), type)
         })
-      newButton.append('text')
-        .text(type)
-        .attr('x', Number(newButton.attr('width')) * 0.35)
-        .attr('y', -2)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 8)
-        .style('pointer-events', 'none')
-        .style('user-select', 'none')
-      newButton.append('circle')
-        .attr('cx', (Number(newButton.attr('width')) * 0.7) + 2)
-        .attr('cy', Number(newButton.attr('height')) + 2)
-        .attr('r', 6)
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.5)
-        .attr('fill', 'white')
-        .on('click', function () {
-          clickFunction(type)
+        .on('mouseover', function () {
+          let ginfo = gBlockBoxFilter.append('g')
+            .attr('class', 'info')
+            .attr('transform', newButton.attr('transform'))
+          ginfo.append('rect')
+            .attr('x', -Number(newButton.attr('width')) * 0.5)
+            .attr('y', -20)
+            .attr('width', Number(newButton.attr('width')) * 2)
+            .attr('height', 18)
+            .attr('rx', 3)
+            .attr('ry', 3)
+            .attr('fill', '#eeeeee')
+            .style('fill-opacity', 0.82)
+          ginfo.append('text')
+            .text(type)
+            .attr('x', Number(newButton.attr('width')) * 0.5)
+            .attr('y', -5)
+            .style('fill-opacity', 0.82)
+            .style('font-weight', 'normal')
+            .attr('text-anchor', 'middle')
+            .style('font-size', 16)
+            .style('pointer-events', 'none')
+            .style('user-select', 'none')
         })
+        .on('mouseout', function () {
+          gBlockBoxFilter.select('g.info').remove()
+        })
+      // newButton.append('text')
+      //   .text(type)
+      //   .attr('x', Number(newButton.attr('width')) * 0.35)
+      //   .attr('y', -2)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', 8)
+      //   .style('pointer-events', 'none')
+      //   .style('user-select', 'none')
+      // newButton.append('circle')
+      //   .attr('cx', (Number(newButton.attr('width')) * 0.7) + 2)
+      //   .attr('cy', Number(newButton.attr('height')) + 2)
+      //   .attr('r', 6)
+      //   .attr('stroke', 'black')
+      //   .attr('stroke-width', 0.5)
+      //   .attr('fill', 'white')
+      //   .on('click', function () {
+      //     clickFunction(type)
+      //   })
 
-      clickFunction(type)
+      clickFunction(newRect, type)
     }
 
     function recCol (state) {
@@ -594,7 +671,7 @@ let mainTagBlocks = function (optIn) {
   }
   let SvgEvents = function () {
     let axis = {}
-    let gBlockBox, gEvents
+    let gBlockBox, gEvents, gBlockBoxFilter
     let blockBoxData
     let eventsBlocks
 
@@ -631,6 +708,9 @@ let mainTagBlocks = function (optIn) {
         .attr('class', 'axisX')
         .attr('transform', axis.translate)
         .call(axis.bottom)
+      axis.axisG.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
+      axis.axisG.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
+      axis.axisG.selectAll('g.tick').selectAll('text').attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
 
       gEvents = gBlockBox
         .append('g')
@@ -640,10 +720,10 @@ let mainTagBlocks = function (optIn) {
     this.initEventQueue = initEventQueue
     function initFilters (dataIn) {
       let x0, y0, w0, h0
-      let gBlockBox = svg.g.append('g')
+      gBlockBoxFilter = svg.g.append('g')
 
       w0 = lenD.w[0] * 0.127
-      h0 = lenD.h[0] * 0.12
+      h0 = lenD.h[0] * 0.18
       x0 = (lenD.w[0] * 0.015)
       y0 = 3 * (lenD.h[0] * 0.02) + lenD.h[0] * 0.18
       let blockBoxData = {
@@ -653,60 +733,86 @@ let mainTagBlocks = function (optIn) {
         height: h0
       }
       let margin = {
-        inner: 9,
+        inner: 5,
         extern: 5
       }
       buttonPanel = new ButtonPanel()
 
       buttonPanel.init({
-        g: gBlockBox,
+        g: gBlockBoxFilter,
         box: blockBoxData,
         margin: margin,
-        rows: 2,
+        rows: 3,
         cols: 3,
-        background: '#cdcdcd'
+        background: '#78909C'
       })
 
-      createButton({row: 0, col: 0}, 'Weak', 1)
+      createButton({row: 0, col: 0}, 'Low', 1)
       createButton({row: 0, col: 1}, 'Medium', 2)
       createButton({row: 0, col: 2}, 'High', 3)
       createButton({row: 1, col: 0}, 'Alarm', 3)
       createButton({row: 1, col: 1}, 'GRB', 3)
       createButton({row: 1, col: 2}, 'Hardw.', 3)
+
+      let newButton = buttonPanel.addButton({row: 2, col: 1})
+      newButton.append('text')
+        .text('Events Filters')
+        .attr('x', Number(newButton.attr('width')) * 0.5)
+        .attr('y', Number(newButton.attr('height')) * 0.35)
+        .attr('dy', 8)
+        .attr('stroke', '#263238')
+        .attr('fill', '#263238')
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 18)
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
     }
     this.initFilters = initFilters
     function createButton (position, type, priority) {
       let newButton = buttonPanel.addButton(position)
       newButton.attr('status', 'disabled')
 
-      let clickFunction = function (id) {
+      let clickFunction = function (rect, id) {
         if (newButton.attr('status') === 'enabled') {
           newButton.attr('status', 'disabled')
-          newButton.selectAll('line.checkboxBar').remove()
+          rect.attr('stroke', function (d, i) {
+            return '#444444'
+          })
+            .attr('stroke-width', 3.5)
+            .style('stroke-opacity', 0.6)
+          newButton.append('line')
+            .attr('class', 'checkboxBar')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', (Number(newButton.attr('width'))))
+            .attr('y2', (Number(newButton.attr('height'))))
+            .attr('stroke', '#444444')
+            .style('stroke-opacity', 0.6)
+            .attr('stroke-width', 3)
+            .style('pointer-events', 'none')
+          newButton.append('line')
+            .attr('class', 'checkboxBar')
+            .attr('x1', 0)
+            .attr('y1', (Number(newButton.attr('height'))))
+            .attr('x2', (Number(newButton.attr('width'))))
+            .attr('y2', 0)
+            .attr('stroke', '#444444')
+            .style('stroke-opacity', 0.6)
+            .attr('stroke-width', 3)
+            .style('pointer-events', 'none')
+          blockQueue.removeStateFilter(id.toLowerCase())
         } else {
           newButton.attr('status', 'enabled')
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', (Number(newButton.attr('width')) * 0.7) + 2)
-            .attr('y1', Number(newButton.attr('height')) + 5)
-            .attr('x2', (Number(newButton.attr('width')) * 0.7) + 9)
-            .attr('y2', Number(newButton.attr('height')) - 5)
-            .attr('stroke', 'black')
-            .attr('stroke-width', 2.5)
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', (Number(newButton.attr('width')) * 0.7) + 2)
-            .attr('y1', Number(newButton.attr('height')) + 5)
-            .attr('x2', (Number(newButton.attr('width')) * 0.7) - 3)
-            .attr('y2', Number(newButton.attr('height')) - 0)
-            .attr('stroke', 'black')
-            .attr('stroke-width', 2.5)
+          newButton.selectAll('line.checkboxBar').remove()
+          rect.attr('stroke', function (d, i) {
+            return 'black'
+          })
+            .attr('stroke-width', 0.5)
+            .style('stroke-opacity', 1)
         }
       }
 
-      if (type === 'Alarm') drawAlarm(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
-      if (type === 'GRB') drawGrb(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
-      if (type === 'Hardw.') drawHardware(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
       // newButton.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
@@ -735,44 +841,91 @@ let mainTagBlocks = function (optIn) {
       //   .style('font-size', 8)
       //   .style('pointer-events', 'none')
       //   .style('user-select', 'none')
-      newButton.append('rect')
-        .attr('x', -5 + (3 - priority) * 2)
-        .attr('y', -2 + (3 - priority) * 2)
-        .attr('rx', 2)
-        .attr('ry', 2)
+      let newRect = newButton.append('rect')
+        .attr('x', (Number(newButton.attr('width')) - ((Number(newButton.attr('width'))) * (priority) / 3)) / 2)
+        .attr('y', (Number(newButton.attr('height')) - ((Number(newButton.attr('height'))) * (priority) / 3)) / 2)
         .attr('width', function (d, i) {
-          return (12 * (priority + 1) / 2.2)
+          return ((Number(newButton.attr('width'))) * (priority) / 3)
         })
         .attr('height', function (d, i) {
-          return (12 * (priority + 1) / 2.2)
+          return ((Number(newButton.attr('height'))) * (priority) / 3)
         })
+        .attr('rx', 2)
+        .attr('ry', 2)
         .attr('stroke', function (d, i) {
           return 'black'
         })
-        .style('stroke-opacity', function (d) {
-          return 0.7
-        })
+        .attr('stroke-width', 0.5)
         .style('fill', function (d, i) {
-          return colsYellows[0]
+          return '#efefef'// colsYellows[0]
         })
         .style('fill-opacity', function (d, i) {
-          return 0.1
+          return 1
         })
         .on('click', function () {
-          clickFunction(type)
+          clickFunction(d3.select(this), type)
         })
-      newButton.append('circle')
-        .attr('cx', (Number(newButton.attr('width')) * 0.7) + 2)
-        .attr('cy', Number(newButton.attr('height')) + 2)
-        .attr('r', 6)
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.5)
-        .attr('fill', 'white')
-        .on('click', function () {
-          clickFunction(type)
+        .on('mouseover', function () {
+          let ginfo = gBlockBoxFilter.append('g')
+            .attr('class', 'info')
+            .attr('transform', newButton.attr('transform'))
+          ginfo.append('rect')
+            .attr('x', -Number(newButton.attr('width')) * 0.5)
+            .attr('y', -20)
+            .attr('width', Number(newButton.attr('width')) * 2)
+            .attr('height', 18)
+            .attr('rx', 3)
+            .attr('ry', 3)
+            .attr('fill', '#eeeeee')
+            .style('fill-opacity', 0.82)
+          ginfo.append('text')
+            .text(type)
+            .attr('x', Number(newButton.attr('width')) * 0.5)
+            .attr('y', -5)
+            .style('fill-opacity', 0.82)
+            .style('font-weight', 'normal')
+            .attr('text-anchor', 'middle')
+            .style('font-size', 16)
+            .style('pointer-events', 'none')
+            .style('user-select', 'none')
+        })
+        .on('mouseout', function () {
+          gBlockBoxFilter.select('g.info').remove()
         })
 
-      clickFunction(type)
+        // .attr('x', -5 + (3 - priority) * 2)
+        // .attr('y', -2 + (3 - priority) * 2)
+        // .attr('rx', 2)
+        // .attr('ry', 2)
+        // .attr('width', function (d, i) {
+        //   return (12 * (priority + 1) / 2.2)
+        // })
+        // .attr('height', function (d, i) {
+        //   return (12 * (priority + 1) / 2.2)
+        // })
+        // .attr('stroke', function (d, i) {
+        //   return 'black'
+        // })
+        // .style('stroke-opacity', function (d) {
+        //   return 0.7
+        // })
+
+
+      if (type === 'Alarm') drawAlarm(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
+      if (type === 'GRB') drawGrb(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
+      if (type === 'Hardw.') drawHardware(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
+      // newButton.append('circle')
+      //   .attr('cx', (Number(newButton.attr('width')) * 0.7) + 2)
+      //   .attr('cy', Number(newButton.attr('height')) + 2)
+      //   .attr('r', 6)
+      //   .attr('stroke', 'black')
+      //   .attr('stroke-width', 0.5)
+      //   .attr('fill', 'white')
+      //   .on('click', function () {
+      //     clickFunction(type)
+      //   })
+
+      clickFunction(newRect, type)
     }
 
     function updateData (dataIn) {
@@ -797,7 +950,7 @@ let mainTagBlocks = function (optIn) {
           return axis.scaleX(new Date(d.data.time))
         })
         .attr('y', function (d, i) {
-          return d.y
+          return d.y + 2
         })
         .attr('rx', 2)
         .attr('ry', 2)
@@ -808,16 +961,16 @@ let mainTagBlocks = function (optIn) {
           return d.h
         })
         .attr('stroke', function (d, i) {
-          return 'black'
+          return '#CFD8DC'
         })
         .style('stroke-opacity', function (d) {
           return 0.7
         })
         .style('fill', function (d, i) {
-          return colsYellows[0]
+          return '#CFD8DC'
         })
         .style('fill-opacity', function (d, i) {
-          return 0.1
+          return 1
         })
         .on('mouseover', function (d) {
           d3.select(this).attr('stroke-width', 4)
@@ -844,6 +997,8 @@ let mainTagBlocks = function (optIn) {
         .text('A')
         .attr('x', x)
         .attr('y', y)
+        .attr('stroke', '#263238')
+        .attr('fill', '#263238')
         .style('font-weight', 'normal')
         .attr('text-anchor', 'middle')
         .style('font-size', function (d) {
@@ -859,6 +1014,8 @@ let mainTagBlocks = function (optIn) {
       g.append('circle')
         .attr('cx', x)
         .attr('cy', y)
+        .attr('stroke', '#263238')
+        .attr('fill', '#263238')
         .attr('r', 1 * priority)
         .attr('fill', '#444444')
         .style('pointer-events', 'none')
@@ -868,6 +1025,8 @@ let mainTagBlocks = function (optIn) {
         .text('H')
         .attr('x', x)
         .attr('y', y)
+        .attr('stroke', '#263238')
+        .attr('fill', '#263238')
         .style('font-weight', 'normal')
         .attr('text-anchor', 'middle')
         .style('font-size', function (d) {
@@ -2478,7 +2637,7 @@ let mainTagBlocks = function (optIn) {
       clockEvents.init({
         g: gBlockBox,
         box: blockBoxData,
-        background: '#ffffff'
+        background: '#263238'
       })
       clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.now))
 
@@ -2491,8 +2650,8 @@ let mainTagBlocks = function (optIn) {
     function updateData (dataIn) {
       clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.now))
       let rnd = Math.random()
-      if (rnd < 0.6) {
-        let startEvent = new Date(com.dataIn.data.timeOfNight.now).getTime() + ((Math.random() * 8) + 0.4) * 60000
+      if (rnd < 0.8) {
+        let startEvent = new Date(com.dataIn.data.timeOfNight.now).getTime() + ((Math.random() * 3) + 0.4) * 60000
         let endEvent = new Date(startEvent).getTime() + 10000
         clockEvents.addEvent({id: Math.floor(Math.random() * 100000), name: 'moonrise', icon: null, startTime: startEvent, endTime: endEvent})
       }

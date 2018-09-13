@@ -49,63 +49,72 @@ window.ClockEvents = function () {
       .attr('class', 'axisX')
       .attr('transform', com.axis.translate)
       .call(com.axis.bottom)
-    com.axis.axisG.select('path').attr('stroke-width', 2)
+    com.axis.axisG.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
 
     com.eventG = com.g.append('g').attr('transform', com.axis.translate)
 
     com.shrinkButton = com.g.append('g')
-      .attr('transform', 'translate(' + ((com.box.width * 0.9) + 10) + ',' + (com.box.height * 0.62) + ')')
-    com.shrinkButton.append('rect')
-      .attr('x', -12)
-      .attr('y', -(com.box.height * 0.62))
-      .attr('width', com.box.width * 0.1)
-      .attr('height', com.box.height)
-      .attr('fill', 'white')
-    com.shrinkButton.append('circle')
-      .attr('cx', 0)
-      .attr('cy', 0)
-      .attr('r', 12)
-      .attr('stroke', '#000000')
-      .attr('stroke-width', 0.2)
-      .attr('fill', '#eeeeee')
+      .attr('transform', 'translate(' + ((com.box.width * 0.9)) + ',' + 0 + ')')
     com.shrinkButton.append('rect')
       .attr('x', 0)
-      .attr('y', -12)
-      .attr('height', 24)
-      .attr('width', 60)
-      .attr('stroke', '#000000')
-      .attr('stroke-width', 0.2)
-      .attr('fill', '#eeeeee')
-      .attr('stroke-dasharray', [(60) * 2 + 24, 24])
-      .on('mouseover', drawFuturEvents)
-      .on('mouseout', function () {
-        com.futurEventsG.selectAll('*').remove()
-      })
-    com.shrinkButton.append('line')
-      .attr('x1', 6 - 3 - 2)
-      .attr('y1', -6)
-      .attr('x2', 1 - 4 - 2)
-      .attr('y2', 1)
-      .attr('stroke', '#000000')
-      .attr('stroke-width', 3)
-    com.shrinkButton.append('line')
-      .attr('x1', 6 - 3 - 2)
-      .attr('y1', 6)
-      .attr('x2', 1 - 4 - 2)
-      .attr('y2', -1)
-      .attr('stroke', '#000000')
-      .attr('stroke-width', 3)
-    com.shrinkButton.append('text')
-      .attr('class', 'futurEvent')
-      .text('+0')
-      .attr('x', 30)
-      .attr('y', 0)
-      .style('font-weight', 'normal')
-      .attr('text-anchor', 'middle')
-      .style('font-size', com.box.height * 0.4)
-      .attr('dy', com.box.height * 0.16)
-      .style('pointer-events', 'none')
-      .style('user-select', 'none')
+      .attr('y', com.box.height * 0.2)
+      .attr('width', com.box.width * 0.1)
+      .attr('height', com.box.height * 0.8)
+      .attr('fill', '#263238')
+      .attr('stroke', '#CFD8DC')
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', [(com.box.width * 0.1), (com.box.height * 0.8) + (com.box.width * 0.1), (com.box.height * 0.8)])
+    // com.shrinkButton.append('rect')
+    //   .attr('x', -12)
+    //   .attr('y', -(com.box.height * 0.62))
+    //   .attr('width', com.box.width * 0.1)
+    //   .attr('height', com.box.height)
+    //   .attr('fill', '#263238')
+    // com.shrinkButton.append('circle')
+    //   .attr('cx', 0)
+    //   .attr('cy', 0)
+    //   .attr('r', 12)
+    //   .attr('stroke', '#000000')
+    //   .attr('stroke-width', 0.2)
+    //   .attr('fill', '#263238')
+    // com.shrinkButton.append('rect')
+    //   .attr('x', 0)
+    //   .attr('y', -12)
+    //   .attr('height', 24)
+    //   .attr('width', 60)
+    //   .attr('stroke', '#000000')
+    //   .attr('stroke-width', 0.2)
+    //   .attr('fill', '#37474F')
+    //   .attr('stroke-dasharray', [(60) * 2 + 24, 24])
+    //   .on('mouseover', drawFuturEvents)
+    //   .on('mouseout', function () {
+    //     com.futurEventsG.selectAll('*').remove()
+    //   })
+    // com.shrinkButton.append('line')
+    //   .attr('x1', 6 - 3 - 2)
+    //   .attr('y1', -6)
+    //   .attr('x2', 1 - 4 - 2)
+    //   .attr('y2', 1)
+    //   .attr('stroke', '#CFD8DC')
+    //   .attr('stroke-width', 3)
+    // com.shrinkButton.append('line')
+    //   .attr('x1', 6 - 3 - 2)
+    //   .attr('y1', 6)
+    //   .attr('x2', 1 - 4 - 2)
+    //   .attr('y2', -1)
+    //   .attr('stroke', '#CFD8DC')
+    //   .attr('stroke-width', 3)
+    // com.shrinkButton.append('text')
+    //   .attr('class', 'futurEvent')
+    //   .text('+0')
+    //   .attr('x', 30)
+    //   .attr('y', 0)
+    //   .style('font-weight', 'normal')
+    //   .attr('text-anchor', 'middle')
+    //   .style('font-size', com.box.height * 0.4)
+    //   .attr('dy', com.box.height * 0.16)
+    //   .style('pointer-events', 'none')
+    //   .style('user-select', 'none')
 
     // com.moreEvent = com.g.append('g')
     //   .attr('transform', 'translate(' + ((com.box.width * 0.965)) + ',' + (com.box.height * 0.62) + ')')
@@ -124,12 +133,23 @@ window.ClockEvents = function () {
       .attr('y', com.box.height * 0.2)
       .attr('width', com.box.width * 0.1)
       .attr('height', com.box.height * 0.8)
-      .attr('fill', 'white')
-      .attr('stroke', 'black')
+      .attr('fill', '#263238')
+      .attr('stroke', '#CFD8DC')
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', [(com.box.width * 0.1) + (com.box.height * 0.8), (com.box.width * 0.1) + (com.box.height * 0.8)])
 
-    com.g.append('text').attr('class', 'currentHour')
+    com.g.append('text')
+      .attr('class', 'currentHour')
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .attr('x', com.box.width * 0.045)
+      .attr('y', com.box.height * 0.7)
+      .style('font-weight', 'bold')
+      .attr('text-anchor', 'middle')
+      .style('font-size', com.box.height * 0.5)
+      .attr('dy', com.box.height * 0.12)
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
 
     com.popup = com.g.append('g')
       .attr('transform', 'translate(0,' + com.box.height * 0.2 + ')')
@@ -142,14 +162,6 @@ window.ClockEvents = function () {
     com.limitDate = new Date(date.getTime()).setMinutes(date.getMinutes() + 5)
     com.g.select('text.currentHour')
       .text(com.currentDate.getHours() + ' : ' + (com.currentDate.getMinutes() < 10 ? ('0' + com.currentDate.getMinutes()) : com.currentDate.getMinutes()))
-      .attr('x', com.box.width * 0.045)
-      .attr('y', com.box.height * 0.7)
-      .style('font-weight', 'normal')
-      .attr('text-anchor', 'middle')
-      .style('font-size', com.box.height * 0.5)
-      .attr('dy', com.box.height * 0.12)
-      .style('pointer-events', 'none')
-      .style('user-select', 'none')
 
     com.axis.scaleX.domain([com.currentDate, com.limitDate])
     com.axis.bottom.scale(com.axis.scaleX)
@@ -168,8 +180,8 @@ window.ClockEvents = function () {
     //     }
     //   })
       .call(com.axis.bottom)
-    com.axis.axisG.selectAll('g.tick').selectAll('line').attr('stroke-width', 2)
-    com.axis.axisG.selectAll('g.tick').selectAll('text').style('font-size', com.box.height * 0.28)
+    com.axis.axisG.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
+    com.axis.axisG.selectAll('g.tick').selectAll('text').style('font-size', com.box.height * 0.26).attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
 
     drawEvents()
   }
@@ -345,63 +357,68 @@ window.ClockEvents = function () {
       .enter()
       .append('g')
       .attr('class', 'timelineEvent')
-    enterG.append('rect')
+    enterG.append('text')
+      .text(function (d) {
+        return new Date(d.startTime).getHours() + ':' + new Date(d.startTime).getMinutes()
+      })
       .attr('class', 'area')
       .attr('x', function (d, i) {
-        console.log(d.startTime, com.axis.scaleX(d.startTime));
         return com.axis.scaleX(d.startTime)
       })
       .attr('y', function (d, i) {
-        return -10
+        return -2
       })
-      .attr('width', function (d, i) {
-        return com.axis.scaleX(d.endTime) - com.axis.scaleX(d.startTime)
-      })
-      .attr('height', function (d, i) {
-        return 10
-      })
-      .attr('stroke', 'none')
-      .style('fill', function (d, i) {
-        return 'blue'
-      })
-      .attr('vector-effect', 'non-scaling-stroke')
-    enterG.append('rect')
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .attr('text-anchor', 'middle')
+      .style('font-size', com.box.height * 0.22)
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    enterG.append('svg:image')
       .attr('class', 'icon')
+      .attr('xlink:href', '/static/moon.svg')
+      .attr('width', 30)
+      .attr('height', 30)
       .attr('x', function (d, i) {
-        return (com.axis.scaleX(d.endTime) + com.axis.scaleX(d.startTime)) * 0.5 - 5
+        return com.axis.scaleX(d.startTime) - 15
       })
       .attr('y', function (d, i) {
-        return -30
+        return -45
       })
-      .attr('width', function (d, i) {
-        return 10
-      })
-      .attr('height', function (d, i) {
-        return 10
-      })
-      .attr('stroke', 'black')
-      .attr('stroke-width', 1)
-      .style('fill', function (d, i) {
-        return 'red'
-      })
-      .attr('vector-effect', 'non-scaling-stroke')
+    // enterG.append('rect')
+    //   .attr('class', 'icon')
+    //   .attr('x', function (d, i) {
+    //     return com.axis.scaleX(d.startTime) - 15
+    //   })
+    //   .attr('y', function (d, i) {
+    //     return -32
+    //   })
+    //   .attr('rx', 10)
+    //   .attr('ry', 10)
+    //   .attr('width', function (d, i) {
+    //     return 30
+    //   })
+    //   .attr('height', function (d, i) {
+    //     return 30
+    //   })
+    //   .attr('stroke', '#CFD8DC')
+    //   .attr('stroke-width', 1)
+    //   .style('fill', function (d, i) {
+    //     return 'none'
+    //   })
+    //   .attr('stroke-dasharray', [0, 30 + 25, 5 + 30 + 5, 25])
+    //   .attr('vector-effect', 'non-scaling-stroke')
 
     let mergedG = enterG.merge(eventGroup)
-    mergedG.selectAll('rect.area')
+    mergedG.selectAll('text.area')
       .transition().duration(2000)
       .attr('x', function (d, i) {
         return com.axis.scaleX(d.startTime)
       })
-      .attr('y', function (d, i) {
-        return -10
-      })
-    mergedG.selectAll('rect.icon')
+    mergedG.selectAll('image.icon')
       .transition().duration(2000)
       .attr('x', function (d, i) {
-        return (com.axis.scaleX(d.endTime) + com.axis.scaleX(d.startTime)) * 0.5 - 5
-      })
-      .attr('y', function (d, i) {
-        return -30
+        return com.axis.scaleX(d.startTime) - 15
       })
 
     eventGroup

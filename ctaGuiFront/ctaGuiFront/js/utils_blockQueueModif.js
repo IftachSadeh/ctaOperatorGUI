@@ -316,6 +316,9 @@ window.BlockQueue = function () {
     com.axis.scaleX.domain([new Date(com.time.start), new Date(com.time.end)])
     com.axis.bottom.scale(com.axis.scaleX)
     com.axis.axisG.call(com.axis.bottom)
+    com.axis.axisG.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
+    com.axis.axisG.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
+    com.axis.axisG.selectAll('g.tick').selectAll('text').style('font-size', 14).attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
   }
 
   // ---------------------------------------------------------------------------------------------------
@@ -831,7 +834,7 @@ window.BlockQueue = function () {
         return com.axis.scaleX(new Date(d.data.startTime))
       })
       .attr('y', function (d, i) {
-        return d.y
+        return d.y - 2
       })
       .attr('width', function (d, i) {
         return com.axis.scaleX(new Date(d.data.endTime)) - com.axis.scaleX(new Date(d.data.startTime))
@@ -888,7 +891,7 @@ window.BlockQueue = function () {
 
       .style('opacity', 1)
       .attr('stroke', function (d, i) {
-        return 'black'
+        return '#111111'
       })
       .style('fill', function (d, i) {
         return com.style.recCol({ d: d })
@@ -912,7 +915,7 @@ window.BlockQueue = function () {
         // return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
       })
       .style('stroke-opacity', function (d) {
-        if (filters.states.length === 0 && filters.errors.length === 0) return 0.7
+        if (filters.states.length === 0 && filters.errors.length === 0) return 1
         else {
           let inState, inError
           filters.states.length === 0 ? inState = true : inState = false
@@ -934,7 +937,7 @@ window.BlockQueue = function () {
         return com.axis.scaleX(new Date(d.data.startTime)) + com.innerBoxBottom.x
       })
       .attr('y', function (d, i) {
-        return d.y
+        return d.y - 2
       })
       .attr('width', function (d, i) {
         return com.axis.scaleX(new Date(d.data.endTime)) - com.axis.scaleX(new Date(d.data.startTime))
@@ -970,13 +973,13 @@ window.BlockQueue = function () {
       .style('font-weight', 'normal')
       .style('opacity', 0)
       .style('fill-opacity', 0.7)
-      .style('fill', '#383b42')
+      .style('fill', '#111111')
       .style('stroke-width', 0.3)
       .style('stroke-opacity', 1)
       .attr('vector-effect', 'non-scaling-stroke')
       .style('pointer-events', 'none')
       .style('stroke', function (d) {
-        return '#383b42'
+        return '#111111'
       })
       .attr('x', function (d, i) {
         console.log(d);
