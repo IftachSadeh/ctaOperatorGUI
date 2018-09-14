@@ -37,6 +37,8 @@ window.ButtonPanel = function () {
       .attr('width', com.box.width)
       .attr('height', com.box.height)
       .attr('fill', optIn.background)
+      .attr('stroke', optIn.stroke)
+      .attr('stroke-width', 1)
 
     computeButtonsPositions()
   }

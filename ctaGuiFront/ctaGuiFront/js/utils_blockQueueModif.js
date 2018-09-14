@@ -313,7 +313,11 @@ window.BlockQueue = function () {
   // }
   // this.removeErrorFilter = removeErrorFilter
   function updateAxis (dataIn) {
-    com.axis.scaleX.domain([new Date(com.time.start), new Date(com.time.end)])
+    com.axis.scaleX.domain([new Date(com.time.date_start), new Date(com.time.date_end)])
+    com.axis.scaleXBlocks = d3.scaleLinear()
+      .domain([com.time.start, com.time.end])
+      .range([0, com.outerBox.w])
+
     com.axis.bottom.scale(com.axis.scaleX)
     com.axis.axisG.call(com.axis.bottom)
     com.axis.axisG.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
@@ -592,7 +596,7 @@ window.BlockQueue = function () {
   function calcBlockRow (optIn) {
     let dataIn = optIn.data
     let box = optIn.box
-    let xScale = box.w / (new Date(optIn.end) - new Date(optIn.start))
+    let xScale = box.w / (optIn.end - optIn.start)
     let yScale = box.h / (com.telIds.length + 2)
 
     let blocks = []
@@ -603,9 +607,9 @@ window.BlockQueue = function () {
       let id = dataNow.obId
       let state = dataNow.exeState.state
       let nTels = dataNow.telIds.length
-      let start = (new Date(dataNow.startTime) - new Date(optIn.start)) * xScale
-      let end = (new Date(dataNow.endTime) - new Date(optIn.start)) * xScale
-      let overlap = (new Date(dataNow.endTime) - new Date(dataNow.startTime)) * xScale * 0.2 // allow small overlap in x between blocks
+      let start = (dataNow.startTime - optIn.start) * xScale
+      let end = (dataNow.endTime - optIn.start) * xScale
+      let overlap = (dataNow.endTime - dataNow.startTime) * xScale * 0.2 // allow small overlap in x between blocks
       let x0 = box.x + start
       let w0 = end - start
       let h0 = optIn.yScale ? (nTels * yScale) : (box.h * 0.3)
@@ -831,13 +835,13 @@ window.BlockQueue = function () {
       .style('opacity', 0)
 
       .attr('x', function (d, i) {
-        return com.axis.scaleX(new Date(d.data.startTime))
+        return com.axis.scaleXBlocks(d.data.startTime)
       })
       .attr('y', function (d, i) {
         return d.y - 2
       })
       .attr('width', function (d, i) {
-        return com.axis.scaleX(new Date(d.data.endTime)) - com.axis.scaleX(new Date(d.data.startTime))
+        return com.axis.scaleXBlocks(d.data.endTime) - com.axis.scaleXBlocks(d.data.startTime)
       })
       .attr('height', function (d, i) {
         return d.h
@@ -934,13 +938,13 @@ window.BlockQueue = function () {
       })
 
       .attr('x', function (d, i) {
-        return com.axis.scaleX(new Date(d.data.startTime)) + com.innerBoxBottom.x
+        return com.axis.scaleXBlocks(d.data.startTime) + com.innerBoxBottom.x
       })
       .attr('y', function (d, i) {
         return d.y - 2
       })
       .attr('width', function (d, i) {
-        return com.axis.scaleX(new Date(d.data.endTime)) - com.axis.scaleX(new Date(d.data.startTime))
+        return com.axis.scaleXBlocks(d.data.endTime) - com.axis.scaleXBlocks(d.data.startTime)
       })
       .attr('height', function (d, i) {
         return d.h
@@ -1145,8 +1149,8 @@ window.BlockQueue = function () {
       } else if (timeFrac < 0 || timeFrac > 1) {
         // refData = [].concat(com.blockRow.done).concat(com.blockRow.run).concat(com.blockRow.wait);
 
-        timeFrac = new Date(com.time.now) - new Date(com.time.start)
-        timeFrac /= new Date(com.time.end) - new Date(com.time.start)
+        timeFrac = new Date(com.time.date_now) - new Date(com.time.date_start)
+        timeFrac /= new Date(com.time.date_end) - new Date(com.time.date_start)
       }
     }
 

@@ -95,12 +95,14 @@ class tagBlocks():
         self.getBlocks()
         self.getTelHealth()
         self.getEvents()
-        
+        self.getClockEvents()
+
         data = {
             "timeOfNight": tagBlocks.timeOfNight,
             "telHealth": tagBlocks.telHealth,
             "blocks": tagBlocks.blocks,
-            "external_events": tagBlocks.external_events
+            "external_events": tagBlocks.external_events,
+            "external_clockEvents": tagBlocks.external_clockEvents
         }
 
         return data
@@ -114,6 +116,15 @@ class tagBlocks():
         readData = self.redis.pipe.execute(packed=True)
 
         tagBlocks.external_events = readData
+
+        return
+
+    def getClockEvents(self):
+        self.redis.pipe.reset()
+        self.redis.pipe.get(name="external_clockEvents")
+        readData = self.redis.pipe.execute(packed=True)
+
+        tagBlocks.external_clockEvents = readData
 
         return
 
@@ -152,8 +163,8 @@ class tagBlocks():
             blocks = self.redis.pipe.execute(packed=True)
             tagBlocks.blocks[key] = sorted(
                 blocks,
-                cmp=lambda a,
-                b: int((datetime.strptime(a['startTime'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['startTime'],"%Y-%m-%d %H:%M:%S")).total_seconds())
+                #cmp=lambda a, b: int((datetime.strptime(a['startTime'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['startTime'],"%Y-%m-%d %H:%M:%S")).total_seconds())
+                cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])
             )
 
         return

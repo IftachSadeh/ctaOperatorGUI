@@ -382,12 +382,12 @@ class obsBlocks_noACS():
         self.phaseRndFrac["fail"] = 0.81
         self.loopSleep = 2
 
-        self.obsBlockDuration = timedelta(weeks = 0, days = 0, hours = 0, minutes = 30 * self.timeOfNight.getTimeScale(), seconds = 0, milliseconds = 0, microseconds = 0)  # 1800 = 30 minutes
+        self.obsBlockDuration = 1800 # timedelta(weeks = 0, days = 0, hours = 0, minutes = 30 * self.timeOfNight.getTimeScale(), seconds = 0, milliseconds = 0, microseconds = 0)  # 1800 = 30 minutes
 
         self.timeOfNight.resetNight()
         # self.durationScale = self.timeOfNight.getTimeScale() #  0.035 -> one
         # minute instead of 30 for gui testing
-        self.endOfNight = self.timeOfNight.getTotalTime()  # 28800 -> 8 hour night
+        self.durationNight = self.timeOfNight.getTotalTime()  # 28800 -> 8 hour night
         self.prevResetTime = self.timeOfNight.getResetTime()
 
         rndSeed = getTime()
@@ -410,25 +410,26 @@ class obsBlocks_noACS():
         self.exePhase = dict()
         self.allBlocks = []
         self.external_events = []
+        self.external_clockEvents = []
 
         self.timeOfNight.resetNight()
-        self.endOfNight = self.timeOfNight.getTotalTime()
         self.prevResetTime = self.timeOfNight.getResetTime()
         # startTime = self.timeOfNight.getStartTime()
         self.nInitCycle += 1
 
+        self.external_generateClockEvents()
+
         isCycleDone = False
         nCycleNow = 0
         nSchedBlocks = -1
-        totBlockDuration = self.timeOfNight.getStartTime()
-        print self.endOfNight , self.obsBlockDuration
-        maxBlockDuration = self.endOfNight - self.obsBlockDuration
-        overheadDuration = timedelta(seconds = 90 * 0.05 * self.timeOfNight.getTimeScale()) # self.obsBlockDuration * 0.05
-        print totBlockDuration , maxBlockDuration
+        totBlockDuration = 0
+        maxBlockDuration = self.durationNight - self.obsBlockDuration
+        overheadDuration = self.obsBlockDuration * 0.05 # timedelta(seconds = 90 * 0.05 * self.timeOfNight.getTimeScale()) # self.obsBlockDuration * 0.05
+
         while totBlockDuration < maxBlockDuration and \
                 nCycleNow < self.maxNcycles and \
                 not isCycleDone:
-            print totBlockDuration , maxBlockDuration
+
             baseName = self.namePrefix+"_" + \
                 str(self.nInitCycle)+"_"+str(nCycleNow)+"_"
             nCycleNow += 1
@@ -443,7 +444,7 @@ class obsBlocks_noACS():
             if debugTmp:
                 print '-------------------------------------------------------------------------'
                 print ('- nCycleNow', nCycleNow, 'totBlockDuration / percentage:',
-                       totBlockDuration, (totBlockDuration/self.endOfNight))
+                       totBlockDuration, (totBlockDuration/self.durationNight))
 
             trgPos = dict()
 
@@ -488,7 +489,7 @@ class obsBlocks_noACS():
                 if debugTmp:
                     print ' -- nSchedNow / nTelNow:', nSchedNow, nTelNow, '-------', schedBlockId
 
-                totObsBlockDuration = timedelta(seconds = 0)
+                totObsBlockDuration = 0
                 obsBlockStartTime = totBlockDuration
 
                 for nObsNow in range(nObsBlocks):
@@ -498,16 +499,16 @@ class obsBlocks_noACS():
                     self.exePhase[obsBlockId] = ""
 
                     rnd = self.rndGen.random()
-                    obsBlockDuration = self.obsBlockDuration.total_seconds()
+                    obsBlockDuration = self.obsBlockDuration
                     if rnd < 0.05:
                         obsBlockDuration /= 1.8
                     elif rnd < 0.3:
                         obsBlockDuration /= 1.5
                     elif rnd < 0.5:
                         obsBlockDuration /= 1.1
-                    obsBlockDuration = timedelta(seconds = obsBlockDuration)
+                    obsBlockDuration = int(floor(obsBlockDuration)) # timedelta(seconds = obsBlockDuration)
 
-                    if obsBlockStartTime + obsBlockDuration > self.endOfNight:
+                    if obsBlockStartTime + obsBlockDuration > self.durationNight:
                         isCycleDone = True
                         if debugTmp:
                             print (' - isCycleDone - nObsNow / startTime / duration:',
@@ -539,9 +540,12 @@ class obsBlocks_noACS():
                     block["metaData"] = metaData
                     block["timeStamp"] = getTime()
                     block["telIds"] = schedTelIds
-                    block["startTime"] = obsBlockStartTime.strftime("%Y-%m-%d %H:%M:%S")
-                    block["duration"] = (obsBlockDuration-overheadDuration).total_seconds()
-                    block["endTime"] = (obsBlockStartTime+(obsBlockDuration-overheadDuration)).strftime("%Y-%m-%d %H:%M:%S")
+                    # block["startTime"] = obsBlockStartTime.strftime("%Y-%m-%d %H:%M:%S")
+                    # block["duration"] = (obsBlockDuration-overheadDuration).total_seconds()
+                    # block["endTime"] = (obsBlockStartTime+(obsBlockDuration-overheadDuration)).strftime("%Y-%m-%d %H:%M:%S")
+                    block["startTime"] = obsBlockStartTime
+                    block["duration"] = obsBlockDuration-overheadDuration
+                    block["endTime"] = block["startTime"]+block["duration"]
                     block["exeState"] = exeState
                     block["runPhase"] = []
                     block["targetId"] = targetId
@@ -561,7 +565,7 @@ class obsBlocks_noACS():
                     obsBlockStartTime += obsBlockDuration
 
                 # list of duration of all sched blocks within this cycle
-                if totObsBlockDuration > timedelta(seconds = 0):
+                if totObsBlockDuration >  0: # timedelta(seconds = 0):
                     totSchedBlockDuration += [totObsBlockDuration]
             # -----------------------------------------------------------------------------------------------------------
 
@@ -569,12 +573,11 @@ class obsBlocks_noACS():
             totBlockDuration += max(totSchedBlockDuration)
 
         self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
+        self.redis.pipe.set(name="external_clockEvents", data=self.external_clockEvents, packed=True)
 
         self.redis.pipe.execute()
 
         self.updateExeStatusLists()
-
-        print self.allBlocks[0]
 
         return
 
@@ -667,7 +670,7 @@ class obsBlocks_noACS():
 
         hasChange = False
         for block in waitV:
-            if timeNow < datetime.strptime(block["startTime"], "%Y-%m-%d %H:%M:%S"): # - deltatime(self.loopSleep):
+            if timeNow < block["startTime"] - self.loopSleep: # datetime.strptime(block["startTime"], "%Y-%m-%d %H:%M:%S"): # - deltatime(self.loopSleep):
                 continue
 
             block['exeState']['state'] = "run"
@@ -693,7 +696,7 @@ class obsBlocks_noACS():
                 # # adjust the starting/ending time
                 # block["endTime"] = block["startTime"] + block["duration"]
 
-                if timeNow >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") or (self.rndGen.random() < self.phaseRndFrac["cancel"] * 0.1):
+                if timeNow >= block["endTime"] or (self.rndGen.random() < self.phaseRndFrac["cancel"] * 0.1): # datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") or (self.rndGen.random() < self.phaseRndFrac["cancel"] * 0.1):
                     block['exeState']['state'] = "cancel"
                     if self.rndGen.random() < self.errorRndFrac["E1"]:
                         block['exeState']['error'] = "E1"
@@ -757,11 +760,11 @@ class obsBlocks_noACS():
 
                     elif phaseNow in self.exePhases["during"]:
                         isDone = (
-                            timeNow >= (datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") -
-                                        timedelta(seconds = int(block["duration"]) * self.phaseRndFrac['finish'])))
+                            timeNow >= (block["endTime"] -
+                                        block["duration"] * self.phaseRndFrac['finish']))# (datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") - timedelta(seconds = int(block["duration"]) * self.phaseRndFrac['finish'])))
 
                     else:
-                        isDone = (timeNow >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"))
+                        isDone = (timeNow >= block["endTime"]) # isDone = (timeNow >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"))
 
                     if isDone:
                         block['runPhase'].remove(phaseNow)
@@ -799,7 +802,7 @@ class obsBlocks_noACS():
 
         hasChange = False
         for block in runV:
-            if timeNow < datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"):
+            if  timeNow < block["endTime"]: #timeNow < datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"):
                 continue
 
             if self.rndGen.random() < self.phaseRndFrac["cancel"]:
@@ -927,7 +930,7 @@ class obsBlocks_noACS():
 
     def external_generateEvents(self):
         if self.rndGen.random() < 0.2:
-            newEvent = {'time': self.timeOfNight.getCurrentTime().strftime("%Y-%m-%d %H:%M:%S")}
+            newEvent = {'time': self.timeOfNight.getCurrentTime(), 'date': self.timeOfNight.getCurrentDate().strftime("%Y-%m-%d %H:%M:%S")}
             newEvent['priority'] = random.randint(1, 4)
             if self.rndGen.random() < 0.33:
                 newEvent['name'] = 'alarm'
@@ -937,6 +940,54 @@ class obsBlocks_noACS():
                 newEvent['name'] = 'hardware'
             self.external_events.append(newEvent)
         self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
+
+    def external_generateClockEvents(self):
+        newEvent = {}
+        newEvent['start_date'] = datetime(2018, 9, 16, 21, 38).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['end_date'] = ''
+        newEvent['icon'] = 'moon.svg'
+        newEvent['name'] = 'Moonrise'
+        newEvent['comment'] = ''
+        newEvent['id'] = 'CE' + str(self.rndGen.randint(0, 100000000))
+        self.external_clockEvents.append(newEvent)
+
+        newEvent = {}
+        newEvent['start_date'] = datetime(2018, 9, 16, 21, 42).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['end_date'] = ''
+        newEvent['icon'] = 'moon.svg'
+        newEvent['name'] = 'Moonrise'
+        newEvent['comment'] = ''
+        newEvent['id'] = 'CE' + str(self.rndGen.randint(0, 100000000))
+        self.external_clockEvents.append(newEvent)
+
+        newEvent = {}
+        newEvent['start_date'] = datetime(2018, 9, 16, 21, 48).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['end_date'] = ''
+        newEvent['icon'] = 'moon.svg'
+        newEvent['name'] = 'Moonrise'
+        newEvent['comment'] = ''
+        newEvent['id'] = 'CE' + str(self.rndGen.randint(0, 100000000))
+        self.external_clockEvents.append(newEvent)
+
+        newEvent = {}
+        newEvent['start_date'] = datetime(2018, 9, 16, 21, 57).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['end_date'] = ''
+        newEvent['icon'] = 'moon.svg'
+        newEvent['name'] = 'Moonrise'
+        newEvent['comment'] = ''
+        newEvent['id'] = 'CE' + str(self.rndGen.randint(0, 100000000))
+        self.external_clockEvents.append(newEvent)
+
+        newEvent = {}
+        newEvent['start_date'] = datetime(2018, 9, 17, 4, 56).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['end_date'] = ''
+        newEvent['icon'] = 'sun.svg'
+        newEvent['name'] = 'Sunrise'
+        newEvent['comment'] = ''
+        newEvent['id'] = 'CE' + str(self.rndGen.randint(0, 100000000))
+        self.external_clockEvents.append(newEvent)
+
+        self.redis.pipe.set(name="external_clockEvents", data=self.external_clockEvents, packed=True)
 
     # -----------------------------------------------------------------------------------------------------------
     #

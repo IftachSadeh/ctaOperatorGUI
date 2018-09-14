@@ -233,8 +233,11 @@ let mainTagBlocks = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
     com.dataIn = dataIn
+    console.log(com.dataIn);
+
     clusterData(com.dataIn.data)
     filterData(com.dataIn.data)
+
     svgBlocks.updateData(dataIn.data)
     svgEvents.updateData(dataIn.data)
     // svgTels.updateData(dataIn.data)
@@ -369,7 +372,8 @@ let mainTagBlocks = function (optIn) {
         margin: margin,
         rows: 3,
         cols: 3,
-        background: 'none'
+        background: 'none',
+        stroke: '#CFD8DC'
       })
 
       let newButton = buttonPanel.addButton({row: 0, col: 1})
@@ -700,7 +704,12 @@ let mainTagBlocks = function (optIn) {
         h: h0,
         marg: marg
       }
-      axis.scaleX = d3.scaleTime().range([0, blockBoxData.w]).domain([new Date(dataIn.timeOfNight.start), new Date(dataIn.timeOfNight.end)])
+
+      axis.scaleXBlocks = d3.scaleLinear()
+        .domain([dataIn.timeOfNight.start, dataIn.timeOfNight.end])
+        .range([0, blockBoxData.w])
+
+      axis.scaleX = d3.scaleTime().range([0, blockBoxData.w]).domain([new Date(dataIn.timeOfNight.date_start), new Date(dataIn.timeOfNight.date_end)])
       axis.translate = 'translate(' + blockBoxData.x + ',' + (blockBoxData.y) + ')'
       axis.bottom = d3.axisTop(axis.scaleX).tickFormat('')
       axis.axisG = gBlockBox
@@ -744,7 +753,8 @@ let mainTagBlocks = function (optIn) {
         margin: margin,
         rows: 3,
         cols: 3,
-        background: '#78909C'
+        background: 'none',
+        stroke: '#CFD8DC'
       })
 
       createButton({row: 0, col: 0}, 'Low', 1)
@@ -760,8 +770,8 @@ let mainTagBlocks = function (optIn) {
         .attr('x', Number(newButton.attr('width')) * 0.5)
         .attr('y', Number(newButton.attr('height')) * 0.35)
         .attr('dy', 8)
-        .attr('stroke', '#263238')
-        .attr('fill', '#263238')
+        .attr('stroke', '#CFD8DC')
+        .attr('fill', '#CFD8DC')
         .style('font-weight', 'normal')
         .attr('text-anchor', 'middle')
         .style('font-size', 18)
@@ -777,9 +787,9 @@ let mainTagBlocks = function (optIn) {
         if (newButton.attr('status') === 'enabled') {
           newButton.attr('status', 'disabled')
           rect.attr('stroke', function (d, i) {
-            return '#444444'
+            return '#000000'
           })
-            .attr('stroke-width', 3.5)
+            .attr('stroke-width', 4.5)
             .style('stroke-opacity', 0.6)
           newButton.append('line')
             .attr('class', 'checkboxBar')
@@ -787,8 +797,8 @@ let mainTagBlocks = function (optIn) {
             .attr('y1', 0)
             .attr('x2', (Number(newButton.attr('width'))))
             .attr('y2', (Number(newButton.attr('height'))))
-            .attr('stroke', '#444444')
-            .style('stroke-opacity', 0.6)
+            .attr('stroke', '#000000')
+            .style('stroke-opacity', 0.9)
             .attr('stroke-width', 3)
             .style('pointer-events', 'none')
           newButton.append('line')
@@ -797,8 +807,8 @@ let mainTagBlocks = function (optIn) {
             .attr('y1', (Number(newButton.attr('height'))))
             .attr('x2', (Number(newButton.attr('width'))))
             .attr('y2', 0)
-            .attr('stroke', '#444444')
-            .style('stroke-opacity', 0.6)
+            .attr('stroke', '#000000')
+            .style('stroke-opacity', 0.9)
             .attr('stroke-width', 3)
             .style('pointer-events', 'none')
           blockQueue.removeStateFilter(id.toLowerCase())
@@ -806,7 +816,7 @@ let mainTagBlocks = function (optIn) {
           newButton.attr('status', 'enabled')
           newButton.selectAll('line.checkboxBar').remove()
           rect.attr('stroke', function (d, i) {
-            return 'black'
+            return '#000000'
           })
             .attr('stroke-width', 0.5)
             .style('stroke-opacity', 1)
@@ -947,7 +957,7 @@ let mainTagBlocks = function (optIn) {
         .attr('class', 'events')
       newRect.append('rect')
         .attr('x', function (d, i) {
-          return axis.scaleX(new Date(d.data.time))
+          return axis.scaleXBlocks(d.data.time)
         })
         .attr('y', function (d, i) {
           return d.y + 2
@@ -961,8 +971,9 @@ let mainTagBlocks = function (optIn) {
           return d.h
         })
         .attr('stroke', function (d, i) {
-          return '#CFD8DC'
+          return '#000000'
         })
+        .attr('stroke-width', 0.5)
         .style('stroke-opacity', function (d) {
           return 0.7
         })
@@ -973,20 +984,24 @@ let mainTagBlocks = function (optIn) {
           return 1
         })
         .on('mouseover', function (d) {
-          d3.select(this).attr('stroke-width', 4)
-          d3.select(this).style('stroke-opacity', 1)
+          d3.select(this).attr('stroke-width', 3.5)
+            .style('stroke-opacity', 1)
+            .style('stroke', '#000000')
+            .style('fill', '#ffffff')
         })
         .on('mouseout', function (d) {
-          d3.select(this).attr('stroke-width', 1)
-          d3.select(this).style('stroke-opacity', 0.7)
+          d3.select(this).attr('stroke-width', 0.5)
+            .style('stroke-opacity', 0.7)
+            .style('stroke', '#000000')
+            .style('fill', '#CFD8DC')
         })
         .on('click', function (d) {
           svgMiddleInfo.createMiddlePanel(d.data)
         })
       newRect.each(function (d) {
-        if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleX(new Date(d.data.time)) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
-        if (d.data.name === 'hardware') drawHardware(d3.select(this), axis.scaleX(new Date(d.data.time)) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
-        if (d.data.name === 'alarm') drawAlarm(d3.select(this), axis.scaleX(new Date(d.data.time)) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
+        if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleXBlocks(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
+        if (d.data.name === 'hardware') drawHardware(d3.select(this), axis.scaleXBlocks(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
+        if (d.data.name === 'alarm') drawAlarm(d3.select(this), axis.scaleXBlocks(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
       })
       rect.merge(newRect)
     }
@@ -1045,7 +1060,7 @@ let mainTagBlocks = function (optIn) {
     function calcBlockRow (optIn) {
       let dataIn = optIn.data
       let box = optIn.box
-      let xScale = box.w / (new Date(optIn.end) - new Date(optIn.start))
+      let xScale = box.w / (optIn.end - optIn.start)
 
       let blocks = []
 
@@ -2639,7 +2654,7 @@ let mainTagBlocks = function (optIn) {
         box: blockBoxData,
         background: '#263238'
       })
-      clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.now))
+      clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.date_now))
 
       // let startEvent = new Date(com.dataIn.data.timeOfNight.now).getTime() + ((Math.random() * 3) + 2) * 60000
       // let endEvent = new Date(startEvent).getTime() + 10000
@@ -2648,13 +2663,15 @@ let mainTagBlocks = function (optIn) {
     this.initData = initData
 
     function updateData (dataIn) {
-      clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.now))
-      let rnd = Math.random()
-      if (rnd < 0.8) {
-        let startEvent = new Date(com.dataIn.data.timeOfNight.now).getTime() + ((Math.random() * 3) + 0.4) * 60000
-        let endEvent = new Date(startEvent).getTime() + 10000
-        clockEvents.addEvent({id: Math.floor(Math.random() * 100000), name: 'moonrise', icon: null, startTime: startEvent, endTime: endEvent})
-      }
+      clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.date_now))
+      console.log(com.dataIn.data.external_clockEvents)
+      clockEvents.addEvent(com.dataIn.data.external_clockEvents[0])
+      // let rnd = Math.random()
+      // if (rnd < 0.8) {
+      //   let startEvent = new Date(com.dataIn.data.timeOfNight.now).getTime() + ((Math.random() * 3) + 0.4) * 60000
+      //   let endEvent = new Date(startEvent).getTime() + 10000
+      //   clockEvents.addEvent({id: Math.floor(Math.random() * 100000), name: 'moonrise', icon: null, startTime: startEvent, endTime: endEvent})
+      // }
     }
     this.updateData = updateData
   }

@@ -354,9 +354,15 @@ class timeOfNight():
 
         # 28800 -> 8 hour night
         self.timeScale = 0.01 if timeScale is None else timeScale
-        self.startTime = datetime.now()
-        nightDuration = timedelta(weeks = 0, days = 0, hours = 8 * self.timeScale, minutes = 0, seconds = 0, milliseconds = 0, microseconds = 0)
-        self.endTime = self.startTime + nightDuration if endTime is None else endTime # 28000
+
+        self.startDate = datetime(2018, 9, 16, 21, 30)
+        self.startTime = 0
+
+        self.endDate = datetime(2018, 9, 17, 5, 30)
+        self.endTime = (self.endDate - self.startDate).total_seconds() if endTime is None else endTime # self.startTime + nightDuration if endTime is None else endTime # 28000
+
+        self.timeNow = 0
+        self.dateNow = self.startDate
         # 0.035 -> have 30 minutes last for one minute in real time
         # 0.0035 -> have 30 minutes last for 6 sec in real time
         # if not hasACS:
@@ -384,11 +390,11 @@ class timeOfNight():
     # -----------------------------------------------------------------------------------------------------------
     def getTotalTime(self):
         return self.endTime
-
+    def getEndDate(self):
+        return self.endDate
     # -----------------------------------------------------------------------------------------------------------
     def getNnight(self):
         return self.nNight
-
     # -----------------------------------------------------------------------------------------------------------
     def getTimeScale(self):
         return self.timeScale
@@ -400,7 +406,8 @@ class timeOfNight():
         #     return int(floor(self.timeNow)) if nDigits == 0 else round(self.timeNow, nDigits)
         # else:
         #     return self.timeNow
-
+    def getCurrentDate(self):
+        return self.dateNow
     # -----------------------------------------------------------------------------------------------------------
     def getSecondScale(self):
         return self.secondScale
@@ -422,18 +429,17 @@ class timeOfNight():
     # -----------------------------------------------------------------------------------------------------------
     def getStartTime(self):
         return self.startTime
+    def getStartDate(self):
+        return self.startDate
 
-    # -----------------------------------------------------------------------------------------------------------
+    # -------------------------------------------'time': self.timeOfNight.getCurrentTime(), ----------------------------------------------------------------
     def resetNight(self, log=None):
         self.nNight += 1
         self.realResetTime = self.getRealTime()
 
-        self.startTime = datetime.now()
-        nightDuration = timedelta(weeks = 0, days = 0, hours = 8 * self.timeScale, minutes = 0, seconds = 0, milliseconds = 0, microseconds = 0)
-        self.endTime = self.startTime + nightDuration
-
         # timeNow = int(floor(self.getStartTime()))
-        self.timeNow = datetime.now()
+        self.timeNow = self.getStartTime()
+        self.dateNow = self.getStartDate()
 
         if log is not None:
             self.log.info([
@@ -447,6 +453,9 @@ class timeOfNight():
         self.redis.pipe.set(name='timeOfNight_'+'start', data=self.startTime)
         self.redis.pipe.set(name='timeOfNight_'+'end', data=self.endTime)
         self.redis.pipe.set(name='timeOfNight_'+'now', data=self.timeNow)
+        self.redis.pipe.set(name='timeOfNight_'+'date_start', data=self.startDate)
+        self.redis.pipe.set(name='timeOfNight_'+'date_end', data=self.endDate)
+        self.redis.pipe.set(name='timeOfNight_'+'date_now', data=self.dateNow)
 
         self.redis.pipe.execute()
 
@@ -460,12 +469,14 @@ class timeOfNight():
 
         nSleep = 1
         while True:
-            self.timeNow = datetime.now() # nSleep / self.timeScale
+            self.timeNow += nSleep / self.timeScale # nSleep / self.timeScale
+            self.dateNow = self.startDate + timedelta(seconds = self.timeNow)
             if self.timeNow > self.endTime:
                 self.resetNight()
 
-            self.redis.set(name='timeOfNight_'+'now',
-                           data=self.timeNow)# data=int(floor(self.timeNow)))
+            self.redis.pipe.set(name='timeOfNight_'+'now', data=self.timeNow)
+            self.redis.pipe.set(name='timeOfNight_'+'date_now', data=self.dateNow)
+            self.redis.pipe.execute()
 
             sleep(nSleep)
 
@@ -479,10 +490,13 @@ def getTimeOfNight(parent):
     parent.redis.pipe.get('timeOfNight_'+'start')
     parent.redis.pipe.get('timeOfNight_'+'end')
     parent.redis.pipe.get('timeOfNight_'+'now')
+    parent.redis.pipe.get('timeOfNight_'+'date_start')
+    parent.redis.pipe.get('timeOfNight_'+'date_end')
+    parent.redis.pipe.get('timeOfNight_'+'date_now')
 
     timeOfNight = parent.redis.pipe.execute()
 
-    if len(timeOfNight) != 3:
+    if len(timeOfNight) != 6:
         parent.log.warning([
             ['r', ' - ', parent.widgetName, " - could not get timeOfNight - "],
             ['p', str(timeOfNight)], ['r', ' - will use fake range ...']
@@ -492,7 +506,10 @@ def getTimeOfNight(parent):
     data = {
         'start': timeOfNight[0],
         'end': timeOfNight[1],
-        'now': timeOfNight[2]
+        'now': timeOfNight[2],
+        'date_start': timeOfNight[3],
+        'date_end': timeOfNight[4],
+        'date_now': timeOfNight[5]
     }
 
     return data
