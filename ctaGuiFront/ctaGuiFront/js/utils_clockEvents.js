@@ -40,6 +40,9 @@ window.ClockEvents = function () {
       .attr('height', com.box.height)
       .attr('fill', optIn.background)
 
+    com.popup = com.g.append('g')
+      .attr('transform', 'translate(0,' + com.box.height * 0.2 + ')')
+
     com.axis = {}
     com.axis.scaleX = d3.scaleTime().range([0, com.box.width * 0.8]).domain([])
     com.axis.translate = 'translate(' + com.box.width * 0.1 + ',' + com.box.height * 0.62 + ')'
@@ -130,29 +133,26 @@ window.ClockEvents = function () {
 
     com.g.append('rect')
       .attr('x', 0)
-      .attr('y', com.box.height * 0.2)
-      .attr('width', com.box.width * 0.1)
+      .attr('y', com.box.height * 0.19)
+      .attr('width', com.box.width * 0.12)
       .attr('height', com.box.height * 0.8)
       .attr('fill', '#263238')
       .attr('stroke', '#CFD8DC')
       .attr('stroke-width', 2)
-      .attr('stroke-dasharray', [(com.box.width * 0.1) + (com.box.height * 0.8), (com.box.width * 0.1) + (com.box.height * 0.8)])
+      .attr('stroke-dasharray', [(com.box.width * 0.12) + (com.box.height * 0.8), (com.box.width * 0.12) + (com.box.height * 0.8)])
 
     com.g.append('text')
       .attr('class', 'currentHour')
       .attr('stroke', '#CFD8DC')
       .attr('fill', '#CFD8DC')
-      .attr('x', com.box.width * 0.045)
+      .attr('x', com.box.width * 0.06)
       .attr('y', com.box.height * 0.7)
       .style('font-weight', 'bold')
       .attr('text-anchor', 'middle')
-      .style('font-size', com.box.height * 0.5)
+      .style('font-size', com.box.height * 0.6)
       .attr('dy', com.box.height * 0.12)
       .style('pointer-events', 'none')
       .style('user-select', 'none')
-
-    com.popup = com.g.append('g')
-      .attr('transform', 'translate(0,' + com.box.height * 0.2 + ')')
 
   }
   this.init = init
@@ -191,7 +191,9 @@ window.ClockEvents = function () {
     drawPopupEvents()
     for (let i = com.popupEvents.length - 1; i >= 0; i--) {
       let d = new Date(com.popupEvents[i].endTime)
-      if (!(d instanceof Date && !isNaN(d)) || new Date(com.popupEvents[i].endTime) < com.currentDate) com.pastEvents.push(com.popupEvents.splice(i, 1)[0])
+      if (!(d instanceof Date && !isNaN(d)) || new Date(com.popupEvents[i].endTime) < com.currentDate) {
+        if (com.popupEvents[i].state === 'finished') com.pastEvents.push(com.popupEvents.splice(i, 1)[0])
+      }
     }
   }
 
@@ -288,36 +290,62 @@ window.ClockEvents = function () {
         return d.id
       })
 
+    let max = com.popupEvents.length
+
     let enterG = eventGroup
       .enter()
       .append('g')
       .attr('class', 'popupEvent')
+    enterG
       .attr('transform', function (d, i) {
-        return 'translate(0,' + -35 * (i + 1) + ')'
+        return 'translate(0,' + 0 + ')'
+      })
+      .transition()
+      .delay(function (d, i) {
+        return 1000 * i
+      })
+      .duration(1000)
+      .ease(d3.easeLinear)
+      .attr('transform', function (d, i) {
+        return 'translate(0,' + -35 * (max - i) + ')'
       })
     enterG.append('rect')
       .attr('class', 'back')
       .attr('x', 5)
       .attr('y', 0)
-      .attr('width', com.box.width * 0.1 - 5)
+      .attr('width', com.box.width * 0.12 - 5)
       .attr('height', 33)
       .attr('stroke-width', 0.2)
       .attr('stroke', '#000000')
       .style('fill', function (d, i) {
-        return '#37474F'
+        return '#546E7A'
       })
       .attr('vector-effect', 'non-scaling-stroke')
+      .transition()
+      .delay(7000)
+      .duration(2000)
+      .ease(d3.easeLinear)
+      .attr('width', 0)
+      .attr('stroke-width', 0)
+      .on('end', function (d) {
+        d.state = 'finished'
+      })
     enterG.append('rect')
       .attr('class', 'filler')
-      .attr('x', 5)
+      .attr('x', com.box.width * 0.12 - 5)
       .attr('y', 0)
-      .attr('width', com.box.width * 0.1 - 5)
+      .attr('width', 5)
       .attr('height', 33)
       .attr('stroke', 'none')
       .style('fill', function (d, i) {
-        return '#455A64'
+        return '#90A4AE'
       })
       .attr('vector-effect', 'non-scaling-stroke')
+      .transition()
+      .duration(7000)
+      .ease(d3.easeLinear)
+      .attr('height', 0)
+      .attr('y', 33)
     // enterG.append('rect')
     //   .attr('class', 'icon')
     //   .attr('x', function (d, i) {
@@ -347,30 +375,21 @@ window.ClockEvents = function () {
     //     return -30
     //   })
 
-    let exitG = eventGroup
+    eventGroup
       .exit()
-    exitG.each(function () {
-      let that = this
-      d3.select(this).select('rect.filler')
-        .transition()
-        .duration(7000)
-        .attr('width', 0)
-      d3.select(this).select('rect.back')
-        .transition()
-        .delay(7000)
-        .duration(2000)
-        .attr('y', 33)
-        .attr('height', 0)
-        .attr('stroke-width', 0)
-        .on('end', function () {
-          d3.select(that).remove()
-        })
-    })
+      .remove()
+      // .each(function () {
+      //   let that = this
+      //   d3.select(this).select('rect.back')
+      // })
 
-    let mergedG = enterG.merge(eventGroup).merge(exitG)
-    mergedG.attr('transform', function (d, i) {
-      return 'translate(0,' + -35 * (i + 1) + ')'
-    })
+    let mergedG = enterG.merge(eventGroup)
+    eventGroup.transition()
+      .duration(1000)
+      .ease(d3.easeLinear)
+      .attr('transform', function (d, i) {
+        return 'translate(0,' + -35 * (max - i) + ')'
+      })
   }
 
   function drawTimelineEvents () {

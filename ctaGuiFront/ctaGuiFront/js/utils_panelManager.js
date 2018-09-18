@@ -11,7 +11,6 @@
 
 window.PanelManager = function () {
   let com = {}
-
   this.set = function (optIn) {
     if (hasVar(optIn.data)) com[optIn.tag] = optIn.data
     else if (hasVar(optIn.def)) com[optIn.tag] = optIn.def
@@ -29,6 +28,8 @@ window.PanelManager = function () {
     com.mainG = optIn.g
     com.defaultOptIn = optIn
     com.manager = optIn.manager
+    com.dragable = optIn.dragable
+    com.closable = optIn.closable
   }
   this.init = init
 
@@ -52,7 +53,9 @@ window.PanelManager = function () {
       transX: (optIn.transX ? optIn.transX : com.prevX),
       transY: (optIn.transY ? optIn.transY : com.prevY),
       width: (optIn.width) ? optIn.width : 300,
-      height: (optIn.height) ? optIn.height : 200
+      height: (optIn.height) ? optIn.height : 200,
+      dragable: optIn.dragable,
+      closable: optIn.closable
     }
     let newGroup = new PanelGroup()
     newGroup.createGroup(newOptIn)
@@ -69,7 +72,10 @@ window.PanelManager = function () {
     if (com.panelsGroupOnFocus.get('idGroup') === id) com.panelsGroupOnFocus = null
   }
   this.removePanelGroup = removePanelGroup
-
+  function removePanel (panel) {
+    panel.get('panelGroup').removePanel(panel, -1)
+  }
+  this.removePanel = removePanel
   function setFocusOnGroup (group) {
     com.panelsGroupOnFocus = group
   }
@@ -111,7 +117,7 @@ window.PanelGroup = function () {
 
   com.spaceBetweenLabel = 4
   com.labelSize = com.width
-  com.tabHeight = 18
+  com.tabHeight = 26
   com.margin = 20
 
   this.set = function (optIn) {
@@ -131,14 +137,16 @@ window.PanelGroup = function () {
       .attr('ry', 1)
       .attr('width', com.width + 4)
       .attr('height', com.height + 6)
-      .attr('fill', '#888888')
-      .attr('stroke', '#444444')
+      .attr('fill', 'none')
+      .attr('stroke', 'none')
       .attr('stroke-width', 0.5)
-    com.g.call(dragGroup)
-    com.gPanel.call(d3.drag()
-      .on('start', function () {})
-      .on('drag', function () {})
-      .on('end', function () {}))
+    if (com.dragable.general) {
+      com.g.call(dragGroup)
+      com.gPanel.call(d3.drag()
+        .on('start', function () {})
+        .on('drag', function () {})
+        .on('end', function () {}))
+    }
   }
   let dragGroup = d3.drag()
     .on('start', function () {
@@ -170,6 +178,9 @@ window.PanelGroup = function () {
     com.gPanel = com.g.append('g')
       .attr('transform', 'translate(' + com.margin + ',' + (com.tabHeight + 2) + ')')
 
+    com.dragable = optIn.dragable
+    com.closable = optIn.closable
+
     com.optIn = optIn
     com.width = optIn.width
     com.labelSize = com.width
@@ -181,18 +192,24 @@ window.PanelGroup = function () {
   }
   this.createGroup = createGroup
   function resizeTab () {
-    com.labelSize = ((com.width - (com.margin * 2)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
+    // ((com.width - (com.margin * 2)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
+    com.labelSize = ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
   }
   this.resizeTab = resizeTab
   function addPanel (newPanel) {
     com.panels.push(newPanel)
-    console.log(com.panels);
     resizeTab()
     updateTab()
     setFocusOnPanel(newPanel)
   }
   this.addPanel = addPanel
   function removePanel (panel, i) {
+    if (i === -1) {
+      for (i = 0; i < com.panels.length; i++) {
+        if (com.panels[i].get('id') === panel.get('id')) break
+      }
+    }
+
     com.panels.splice(i, 1)
     if (com.panels.length === 0) {
       com.g.selectAll('*').remove()
@@ -223,8 +240,9 @@ window.PanelGroup = function () {
 
     mergedLabels.each(function (d, i) {
       com.panels[i].setTabProperties('g', d3.select(this))
+      d3.select(this).attr('width', com.labelSize).attr('height', com.tabHeight)
       com.panels[i].setTabProperties('dimension', {width: com.labelSize, height: com.tabHeight})
-      com.panels[i].drawTab()
+      com.panels[i].repaintTab()
       com.panels[i].translateTabTo((com.labelSize * i + (com.spaceBetweenLabel * i)), 0)
     })
 
@@ -232,10 +250,8 @@ window.PanelGroup = function () {
       com.panels[i].setTabEvent('click', function () {
         setFocusOnPanel(d)
       })
-      com.panels[i].setTabEvent('drag', drag)
-      com.panels[i].setTabEvent('close', function () {
-        removePanel(d, i)
-      })
+      if (com.dragable.tab) com.panels[i].setTabEvent('drag', drag)
+      if (com.closable) com.panels[i].setTabEvent('close', function () { removePanel(d, i) })
     })
 
     labels.exit().remove()
@@ -277,44 +293,9 @@ window.PanelGroup = function () {
 
   function updateInformation () {
     com.gPanel.selectAll().remove()
-    com.gPanel.append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('rx', 3)
-      .attr('ry', 3)
-      .attr('width', com.width - com.margin)
+    com.gPanel.attr('width', com.width - com.margin)
       .attr('height', com.height - com.tabHeight)
-      .attr('fill', '#efefef')
-      .attr('stroke-width', 0.5)
-      .attr('stroke-opacity', 0)
-      .attr('stroke', 'black')
-    com.gPanel.append('text')
-      .text(function () {
-        return 'Comments:'
-      })
-      .attr('x', 60 / 1.5)
-      .attr('y', 40 / 2)
-      .style('font-weight', 'normal')
-      .attr('text-anchor', 'middle')
-      .style('font-size', 16 / 1.5)
-      .attr('dy', function (d) {
-        return 4
-      })
-      .style('pointer-events', 'none')
-
-    let fo = com.gPanel.append('foreignObject')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', com.width)
-      .attr('height', com.height)
-    let div = fo.append('xhtml:div')
-    div.append('textarea')
-      .text('This is a test comment')
-      .attr('rows', 16)
-      .attr('cols', 22)
-      .style('border', 'none')
-      .style('margin-top', '27px')
-      .style('margin-left', '10px')
+    com.panelOnFocus.repaintPanel(com.gPanel)
   }
   this.updateInformation = updateInformation
 }
@@ -322,8 +303,10 @@ var PanelGroup = window.PanelGroup
 
 window.CustomPanel = function () {
   let com = {}
+  com.id = Math.random() * 10000000
   com.tab = {}
   com.panel = {}
+  com.tab.events = {}
 
   com.transX = 0
   com.transY = 0
@@ -349,44 +332,61 @@ window.CustomPanel = function () {
     com['tab'][prop] = value
   }
   this.setTabProperties = setTabProperties
-  function drawTab (optIn) {
-    com.tab.g.selectAll('*').remove()
-    com.tab.g.append('rect')
-      .attr('class', 'back')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .attr('width', com.tab.dimension.width)
-      .attr('height', com.tab.dimension.height)
-      .attr('fill', '#cccccc')
-      .attr('stroke-width', 0.5)
-      .attr('stroke-opacity', 0)
-      .attr('stroke', 'black')
-    com.tab.g.append('rect')
-      .attr('class', 'close')
-      .attr('x', com.tab.dimension.width - 16)
-      .attr('y', (com.tab.dimension.height / 2) - 8)
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .attr('width', 13)
-      .attr('height', 13)
-      .attr('fill', '#aaaaaa')
-    com.tab.g.append('text')
-      .text(function (data) {
-        return 'Name' + Math.random()
-      })
-      .attr('x', com.tab.dimension.width / 2)
-      .attr('y', com.tab.dimension.height / 2)
-      .style('font-weight', 'normal')
-      .attr('text-anchor', 'middle')
-      .style('font-size', 11)
-      .attr('dy', 3)
-      .style('pointer-events', 'none')
+  function getTabProperties (prop) {
+    return com['tab'][prop]
   }
-  this.drawTab = drawTab
+  this.getTabProperties = getTabProperties
+  // function setStyle (style, transition = {duration: 0, delay: 0, ease: d3.easeLinear}) {
+  //   if (style.tab.back) {
+  //     for (let key in style.tab.back) {
+  //       console.log(key, style.tab.back[key]);
+  //       com.tab.g.select('rect.back')
+  //         // .transition()
+  //         // .duration(transition.duration)
+  //         // .delay(transition.delay)
+  //         // .ease(transition.ease)
+  //         .style(key, '#000000')
+  //       com.tab.g.select('rect.back')
+  //         .transition()
+  //         .duration(transition.duration)
+  //         .delay(transition.delay)
+  //         .ease(transition.ease)
+  //         .style(key, '#37474F')
+  //     }
+  //   }
+  //   if (style.tab.close) {
+  //     com.tab.g.select('rect.close')
+  //       .transition()
+  //       .duration(transition.duration)
+  //       .delay(transition.delay)
+  //       .ease(transition.ease)
+  //       .attr('fill', style.tab.close)
+  //   }
+  //   if (style.tab.tabName) {
+  //     com.tab.g.select('text.tabName')
+  //       .transition()
+  //       .duration(transition.duration)
+  //       .delay(transition.delay)
+  //       .ease(transition.ease)
+  //       .attr('stroke', 'none')
+  //       .attr('fill', style.tab.tabName)
+  //   }
+  // }
+  // this.setStyle = setStyle
+  function setRepaintTab (fun) {
+    com.tab.repaint = fun
+  }
+  this.setRepaintTab = setRepaintTab
+  function repaintTab () {
+    if (com.tab.repaint) com.tab.repaint(com.tab.g)
+  }
+  this.repaintTab = repaintTab
+  // function drawTab (optIn) {
+  //
+  // }
+  // this.drawTab = drawTab
   function selectTab (optIn) {
-    com.tab.g.select('rect.back').attr('height', 35).attr('fill', '#efefef')
+    com.tab.g.select('rect.back').attr('height', 35)
   }
   this.selectTab = selectTab
   function unselectTab (optIn) {
@@ -399,29 +399,60 @@ window.CustomPanel = function () {
     com.tab.g.attr('transform', 'translate(' + com.transX + ',' + com.transY + ')')
   }
   this.translateTabTo = translateTabTo
+
   function setTabEvent (type, fun) {
-    if (type === 'close') {
-      com.tab.g.select('rect.close').on('click', function () {
-        fun()
-      })
-    } else if (type === 'click') {
-      com.tab.g.select('rect.back').on('click', function (d) {
-        fun()
-      })
-    } else if (type === 'drag') {
-      com.tab.g.call(fun)
-    }
+    com.tab.events[type] = fun
+    // if (type === 'close') {
+    //   com.tab.g.select('rect.close').on('click', function () {
+    //     fun()
+    //   })
+    // } else if (type === 'click') {
+    //   com.tab.g.select('rect.back').on('click', function (d) {
+    //     fun()
+    //   })
+    // } else if (type === 'drag') {
+    //   com.tab.g.call(fun)
+    // }
   }
   this.setTabEvent = setTabEvent
+  function getTabEvent (type) {
+    return com.tab.events[type]
+  }
+  this.getTabEvent = getTabEvent
+
   /* ********************* MiDDLE INFO ************************** */
 
   function setPanelProperties (prop, value) {
     com['panel'][prop] = value
   }
   this.setPanelProperties = setPanelProperties
+  function getPanelGroup () {
+    return com.panel.g
+  }
+  this.getPanelGroup = getPanelGroup
+  function setRepaintPanel (fun) {
+    com.panel.repaint = fun
+  }
+  this.setRepaintPanel = setRepaintPanel
+  function repaintPanel (g) {
+    com.panel.g = g
+    if (com.panel.repaint) com.panel.repaint(com.panel.g)
+  }
+  this.repaintPanel = repaintPanel
 
-  function drawInfo (d, i) {}
-  this.drawInfo = drawInfo
+  // function setDrawInfo (fun) {
+  //   com.drawInfo = fun
+  // }
+  // this.setDrawInfo = setDrawInfo
+  // function drawInfo (g) {
+  //   com.panel.g = g
+  //   if (com.drawInfo) com.drawInfo(g)
+  // }
+  // this.drawInfo = drawInfo
+  // function callFun (fun) {
+  //   fun(com.panel.g)
+  // }
+  // this.callFun = callFun
 }
 var CustomPanel = window.CustomPanel
 

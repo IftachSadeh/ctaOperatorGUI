@@ -350,7 +350,7 @@ let mainTagBlocks = function (optIn) {
       let x0, y0, w0, h0
       gBlockBoxFilter = svg.g.append('g')
       y0 = (lenD.h[0] * 0.02)
-      w0 = lenD.w[0] * 0.127
+      w0 = lenD.w[0] * 0.12
       h0 = lenD.h[0] * 0.18
       x0 = (lenD.w[0] * 0.015)
       // y0 = 3 * (lenD.h[0] * 0.02) + lenD.h[0] * 0.18
@@ -585,7 +585,7 @@ let mainTagBlocks = function (optIn) {
 
         doPhase: false,
         click: function (d) {
-          svgMiddleInfo.createMiddlePanel(d.data)
+          svgMiddleInfo.changeFocusElement('block', d.data)
         },
         // mouseover: function (d) {
         //   svgMiddleInfo.blockPreview(d.data)
@@ -731,7 +731,7 @@ let mainTagBlocks = function (optIn) {
       let x0, y0, w0, h0
       gBlockBoxFilter = svg.g.append('g')
 
-      w0 = lenD.w[0] * 0.127
+      w0 = lenD.w[0] * 0.12
       h0 = lenD.h[0] * 0.18
       x0 = (lenD.w[0] * 0.015)
       y0 = 3 * (lenD.h[0] * 0.02) + lenD.h[0] * 0.18
@@ -996,7 +996,7 @@ let mainTagBlocks = function (optIn) {
             .style('fill', '#CFD8DC')
         })
         .on('click', function (d) {
-          svgMiddleInfo.createMiddlePanel(d.data)
+          svgMiddleInfo.changeFocusElement('event', d.data)
         })
       newRect.each(function (d) {
         if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleXBlocks(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
@@ -2400,91 +2400,230 @@ let mainTagBlocks = function (optIn) {
   //   }
   // }
   let SvgMiddleInfo = function () {
-    let gBlockBox, gMiddleBox, gPreviewBox, gHistoryBox
+    let gBlockBox, gMiddleBox, gBackPattern, gHistoryBox
     let blockBoxData = {}
     let panelManager = null
-    let focusHistory = []
+    let currentPanels = []
+    let commentPanel
 
-    function createMiddlePanel (data) {
-      if (panelManager === null) {
-        panelManager = new PanelManager()
-        let optIn = {
-          transX: 60,
-          transY: 10,
-          width: (-40 + blockBoxData.w * 0.75) / 1,
-          height: (-20 + blockBoxData.h * 0.86) / 1,
-          g: gMiddleBox.append('g'),
-          manager: panelManager
-        }
-        panelManager.init(optIn)
-        let customPanel = new CustomPanel()
-        customPanel.bindData(data)
-        panelManager.addNewPanel(customPanel)
-      } else {
-        let customPanel = new CustomPanel()
-        customPanel.bindData(data)
-        panelManager.addNewPanel(customPanel)
+    function createMiddlePanel () {
+      panelManager = new PanelManager()
+      let optIn = {
+        transX: 8,
+        transY: 40,
+        width: (-40 + blockBoxData.w * 0.93) / 1,
+        height: (-20 + blockBoxData.h * 0.91) / 1,
+        g: gMiddleBox.append('g'),
+        manager: panelManager,
+        dragable: {
+            general: false,
+            tab: false
+          },
+        closable: true
       }
+      panelManager.init(optIn)
+
+      commentPanel = new CustomPanel()
+      commentPanel.setTabProperties('dragable', optIn.dragable)
+      commentPanel.setTabProperties('closable', optIn.closable)
+      commentPanel.bindData({'tabName': 'INFORMATIONS'})
+
+      commentPanel.setRepaintPanel(drawCommentDisabled)
+      commentPanel.setRepaintTab(drawTabDisabled)
+
+      panelManager.addNewPanel(commentPanel)
+      currentPanels.push(commentPanel)
+
+      // backPattern.append('path')
+      //   .attr('stroke', '#37474F')
+      //   .attr('fill', '#37474F')
+      //   .attr('stroke-width', 2)
+      //   .attr('d', 'M 250 30 L 350 60 L 300 60 L 300 80 L 200 80 L 200 60 L 150 60 L 250 30')
     }
     this.createMiddlePanel = createMiddlePanel
 
-    function createRightViewver () {
-      gHistoryBox.append('rect')
+    function changeFocusElement (type, data) {
+      for (let i = 0; i < currentPanels.length; i++) {
+        panelManager.removePanel(currentPanels[i])
+      }
+      currentPanels = []
+
+      for (let i = 0; i < 4; i++) {
+        let newCustomPanel = new CustomPanel()
+        newCustomPanel.setTabProperties('dragable', optIn.dragable)
+        newCustomPanel.setTabProperties('closable', optIn.closable)
+        newCustomPanel.bindData({'tabName': 'INFORMATIONS'})
+        newCustomPanel.setRepaintPanel(drawCommentDisabled)
+        newCustomPanel.setRepaintTab(drawTabDisabled)
+
+        panelManager.addNewPanel(newCustomPanel)
+        currentPanels.push(newCustomPanel)
+      }
+
+      // commentPanel.callFunInfo(transitionDisabledToEnabled)
+      // transitionDisabledToEnabled(commentPanel.getTabProperties('g'), commentPanel.getPanelGroup())
+      // commentPanel.setRepaintPanel(drawCommentEnabled)
+      // commentPanel.setRepaintTab(drawTabEnabled)
+    }
+    this.changeFocusElement = changeFocusElement
+    function drawCommentDisabled (g) {
+      g.selectAll('*').remove()
+      g.append('rect')
+        .attr('class', 'back')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', blockBoxData.w * 0.1)
-        .attr('height', blockBoxData.h)
-        .attr('fill', '#cccccc')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 1.5)
-    }
-    function createLeftButton () {
-      gPreviewBox.append('circle')
-        .attr('cx', (blockBoxData.w * 0.1) * 0.5)
-        .attr('cy', blockBoxData.h * 0.1)
-        .attr('r', 26)
-        .attr('fill', '#eeeeee')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.4)
-      gPreviewBox.append('rect')
-        .attr('x', (blockBoxData.w * 0.1) * 0.5 - (blockBoxData.w * 0.025))
-        .attr('y', blockBoxData.h * 0.2)
-        .attr('width', blockBoxData.w * 0.05)
-        .attr('height', blockBoxData.h * 0.1)
-        .attr('fill', '#eeeeee')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.4)
-      gPreviewBox.append('rect')
-        .attr('x', (blockBoxData.w * 0.1) * 0.5 - (blockBoxData.w * 0.025))
-        .attr('y', blockBoxData.h * 0.2 + blockBoxData.h * 0.11)
-        .attr('width', blockBoxData.w * 0.05)
-        .attr('height', blockBoxData.h * 0.1)
-        .attr('fill', '#eeeeee')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.4)
-      gPreviewBox.append('rect')
-        .attr('x', (blockBoxData.w * 0.1) * 0.5 - (blockBoxData.w * 0.025))
-        .attr('y', blockBoxData.h * 0.2 + blockBoxData.h * 0.22)
-        .attr('width', blockBoxData.w * 0.05)
-        .attr('height', blockBoxData.h * 0.1)
-        .attr('fill', '#eeeeee')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.4)
-      gPreviewBox.append('circle')
-        .attr('cx', (blockBoxData.w * 0.1) * 0.5)
-        .attr('cy', blockBoxData.h * 0.64)
-        .attr('r', 26)
-        .attr('fill', '#eeeeee')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.4)
-      gPreviewBox.append('rect')
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('width', g.attr('width'))
+        .attr('height', g.attr('height'))
+        .attr('stroke', '#37474F')
+        .attr('fill', '#37474F')
+        .attr('stroke-width', 3.5)
+        .attr('stroke-opacity', 1)
+      let fo = g.append('foreignObject')
         .attr('x', 0)
-        .attr('y', blockBoxData.h * 0.8)
-        .attr('width', blockBoxData.w * 0.1)
-        .attr('height', blockBoxData.h * 0.1)
-        .attr('fill', '#eeeeee')
+        .attr('y', 0)
+        .attr('width', g.attr('width'))
+        .attr('height', g.attr('height'))
+      let div = fo.append('xhtml:div')
+      div.append('textarea')
+        .attr('class', 'comment')
+        // .text('This is a test comment')
+        .style('background-color', '#263238')
+        .style('border', 'none')
+        .style('width', '98.5%')
+        .style('height', Number(g.attr('height')) * 0.96 + 'px')
+        .style('margin-top', '1px')
+        .style('margin-left', '4px')
+        .style('resize', 'none')
+        .style('pointer-events', 'none')
+    }
+    function drawTabDisabled (g) {
+      g.selectAll('*').remove()
+      g.append('rect')
+        .attr('class', 'back')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('rx', 4)
+        .attr('ry', 4)
+        .attr('width', g.attr('width'))
+        .attr('height', g.attr('height'))
+        .attr('fill', '#37474F')
+        .attr('stroke-width', 3.5)
+        .attr('stroke-opacity', 1)
+        .attr('stroke', '#37474F')
+      // if (com.tab.closable) {
+      //   com.tab.g.append('rect')
+      //     .attr('class', 'close')
+      //     .attr('x', com.tab.dimension.width - 16)
+      //     .attr('y', (com.tab.dimension.height / 2) - 8)
+      //     .attr('rx', 4)
+      //     .attr('ry', 4)
+      //     .attr('width', 13)
+      //     .attr('height', 13)
+      //     .attr('fill', '#aaaaaa')
+      // }
+      g.append('text')
+        .attr('class', 'tabName')
+        .text(function (data) {
+          return 'COMMENTS'
+        })
+        .attr('x', Number(g.attr('width')) / 2)
+        .attr('y', Number(g.attr('height')) / 2)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 18)
+        .attr('dy', 9)
+        .style('pointer-events', 'none')
+        .attr('fill', '#263238')
+        .attr('stroke', 'none')
+    }
+    function drawCommentEnabled (g) {
+      g.append('rect')
+        .attr('class', 'back')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('width', g.attr('width'))
+        .attr('height', g.attr('height'))
+        .attr('fill', '#efefef')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-opacity', 1)
         .attr('stroke', 'black')
-        .attr('stroke-width', 0.4)
+      let fo = g.append('foreignObject')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', g.attr('width'))
+        .attr('height', g.attr('height'))
+      let div = fo.append('xhtml:div')
+      div.append('textarea')
+        .attr('class', 'comment')
+        // .text('This is a test comment')
+        .style('background-color', '#ffffff')
+        .style('border', 'none')
+        .style('width', '98%')
+        .style('height', Number(g.attr('height')) * 0.8 + 'px')
+        .style('margin-top', '1px')
+        .style('margin-left', '1px')
+        .style('resize', 'none')
+    }
+    function transitionDisabledToEnabled (gTab, gPanel) {
+      gTab.select('rect.back')
+        .transition()
+        .duration(400)
+        .ease(d3.easeLinear)
+        .attr('fill', '#455A64')
+        .attr('stroke', '#455A64')
+      gTab.select('text.tabName')
+        .transition()
+        .duration(400)
+        .ease(d3.easeLinear)
+        .attr('fill', '#CFD8DC')
+
+      gPanel.select('rect.back')
+        .transition()
+        .duration(400)
+        .ease(d3.easeLinear)
+        .attr('stroke', '#455A64')
+        .attr('fill', '#455A64')
+      gPanel.select('textarea.comment')
+        .transition()
+        .duration(400)
+        .ease(d3.easeLinear)
+        .style('background-color', '#CFD8DC')
+        .style('pointer-events', 'auto')
+        // .on('end', function () {
+        //   commentPanel.setDrawInfo(drawCommentEnabled)
+        // })
+    }
+    function createCommentPanel () {
+      return
+      let panelManager = new PanelManager()
+      let optIn = {
+        transX: 475,
+        transY: 40,
+        width: (-40 + blockBoxData.w * 0.35) / 1,
+        height: (-20 + blockBoxData.h * 0.83) / 1,
+        g: gMiddleBox.append('g'),
+        manager: panelManager,
+        dragable: {
+          general: false,
+          tab: false
+        },
+        closable: false
+      }
+      panelManager.init(optIn)
+
+      commentPanel = new CustomPanel()
+      commentPanel.setTabProperties('dragable', optIn.dragable)
+      commentPanel.setTabProperties('closable', optIn.closable)
+      commentPanel.bindData({'tabName': 'COMMENTS'})
+
+      commentPanel.setRepaintPanel(drawCommentDisabled)
+      commentPanel.setRepaintTab(drawTabDisabled)
+
+      panelManager.addNewPanel(commentPanel)
     }
 
     function initData (dataIn) {
@@ -2492,9 +2631,9 @@ let mainTagBlocks = function (optIn) {
 
       let x0, y0, w0, h0, marg
       w0 = lenD.w[0] * 0.96
-      h0 = lenD.h[0] * 0.52 // h0 *= 2.5;
+      h0 = lenD.h[0] * 0.5 // h0 *= 2.5;
       x0 = (lenD.w[0] * 0.02)
-      y0 = lenD.h[0] * 0.38
+      y0 = lenD.h[0] * 0.39
       marg = w0 * 0.01
       blockBoxData = {
         x: x0,
@@ -2504,123 +2643,89 @@ let mainTagBlocks = function (optIn) {
         marg: marg
       }
       gBlockBox.attr('transform', 'translate(' + blockBoxData.x + ',' + blockBoxData.y + ')')
-      // gBlockBox.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', blockBoxData.w)
-      //   .attr('height', blockBoxData.h)
-      //   .attr('fill', '#cccccc')
-      //   .attr('stroke', 'black')
-      //   .attr('stroke-width', 1.5)
-      gPreviewBox = gBlockBox.append('g').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-      // gPreviewBox.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', blockBoxData.w * 0.1)
-      //   .attr('height', blockBoxData.h)
-      //   .attr('fill', '#cccccc')
-      //   .attr('stroke', 'black')
-      //   .attr('stroke-width', 1.5)
-      // createLeftButton()
-      // gMiddleBox.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', blockBoxData.w * 0.8)
-      //   .attr('height', blockBoxData.h)
-      //   .attr('fill', '#cccccc')
-      //   .attr('stroke', 'black')
-      //   .attr('stroke-width', 1.5)
-      // gHistoryBox = gBlockBox.append('g').attr('transform', 'translate(' + blockBoxData.w * 0.9 + ',' + 0 + ')')
-      // gHistoryBox.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', blockBoxData.w * 0.1)
-      //   .attr('height', blockBoxData.h)
-      //   .attr('fill', '#cccccc')
-      //   .attr('stroke', 'black')
-      //   .attr('stroke-width', 1.5)
-
+      gBackPattern = gBlockBox.append('g').attr('transform', 'translate(' + 0 + ',' + 40 + ')')
       gMiddleBox = gBlockBox.append('g').attr('transform', 'translate(' + blockBoxData.w * 0.1 + ',' + 0 + ')')
-      //
-      // gBlockBox.append('rect')
-      //   .attr('x', blockBoxData.w * 0.35)
-      //   .attr('y', 0)
-      //   .attr('width', blockBoxData.w * 0.3)
-      //   .attr('height', blockBoxData.h * 0.2)
-      //   .attr('fill', '#eeeeee')
-      //   .attr('stroke', 'black')
-      //   .attr('stroke-width', 1.5)
-      //   // .attr('stroke-dasharray',
-      //   //   [blockBoxData.w * 0.05, blockBoxData.w * 0.8, blockBoxData.w * 0.05 + blockBoxData.h * 0.94 * 0.05, blockBoxData.h * 0.94 * 0.8,
-      //   //     blockBoxData.h * 0.94 * 0.05 + blockBoxData.w * 0.05, blockBoxData.w * 0.8, blockBoxData.w * 0.05 + blockBoxData.h * 0.94 * 0.05, blockBoxData.h * 0.94 * 0.8])
-      // gBlockBox.append('text')
-      //   .attr('class', 'id')
-      //   .text('Id:')
-      //   .attr('x', (blockBoxData.w * 0.5))
-      //   .attr('y', (blockBoxData.h * 0.1) - 30)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 13)
-      //   .style('opacity', 0.4)
-      // gBlockBox.append('text')
-      //   .attr('class', 'startTime')
-      //   .text('StartTime:')
-      //   .attr('x', (blockBoxData.w * 0.5))
-      //   .attr('y', (blockBoxData.h * 0.1) - 10)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 13)
-      //   .style('opacity', 0.4)
-      // gBlockBox.append('text')
-      //   .attr('class', 'duration')
-      //   .text('Duration:')
-      //   .attr('x', (blockBoxData.w * 0.5))
-      //   .attr('y', (blockBoxData.h * 0.1) + 10)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 13)
-      //   .style('opacity', 0.4)
-      // gBlockBox.append('text')
-      //   .attr('class', 'endTime')
-      //   .text('endTime:')
-      //   .attr('x', (blockBoxData.w * 0.5))
-      //   .attr('y', (blockBoxData.h * 0.1) + 30)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 13)
-      //   .style('opacity', 0.4)
-      // gBlockBox.append('rect')
-      //   .attr('class', 'exeStateRect')
-      //   .attr('x', blockBoxData.w * 0.35 + 3)
-      //   .attr('y', 3)
-      //   .attr('width', blockBoxData.w * 0.3 - 5)
-      //   .attr('height', blockBoxData.h * 0.2 - 5)
-      //   .attr('fill', '#ffffff')
-      //   .attr('stroke', 'black')
-      //   .attr('stroke-width', 6)
-      //   .style('opacity', 0.4)
 
-      // gBlockBox.append('line')
-      //   .attr('x1', blockBoxData.w * 0.05)
-      //   .attr('y1', blockBoxData.h)
-      //   .attr('x2', blockBoxData.w * 0.95)
-      //   .attr('y2', blockBoxData.h)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 1)
-      // gBlockBox.append('line')
-      //   .attr('x1', blockBoxData.w * 0.05)
-      //   .attr('y1', blockBoxData.h - 10)
-      //   .attr('x2', blockBoxData.w * 0.05)
-      //   .attr('y2', blockBoxData.h + 10)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 1)
-      // gBlockBox.append('line')
-      //   .attr('x1', blockBoxData.w * 0.95)
-      //   .attr('y1', blockBoxData.h - 10)
-      //   .attr('x2', blockBoxData.w * 0.95)
-      //   .attr('y2', blockBoxData.h + 10)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 1)
+      gBackPattern.append('rect')
+        .attr('x', -3)
+        .attr('y', 0)
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('width', 41)
+        .attr('height', 30)
+        .attr('stroke', '#37474F')
+        .attr('fill', '#37474F')
+        .attr('stroke-width', 3.5)
+        .attr('stroke-opacity', 1)
+      gBackPattern.append('rect')
+        .attr('x', 5)
+        .attr('y', 3)
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('width', 24)
+        .attr('height', 24)
+        .attr('stroke', '#CFD8DC')
+        .attr('fill', '#CFD8DC')
+        .attr('stroke-width', 0.5)
+        .attr('stroke-opacity', 1)
+      gBackPattern.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/commit.svg')
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('x', 2)
+        .attr('y', 0)
+
+      gBackPattern.append('rect')
+        .attr('x', 47)
+        .attr('y', 0)
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('width', 68)
+        .attr('height', 30)
+        .attr('stroke', '#37474F')
+        .attr('fill', '#37474F')
+        .attr('stroke-width', 3.5)
+        .attr('stroke-opacity', 1)
+      gBackPattern.append('rect')
+        .attr('x', 53)
+        .attr('y', 3)
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('width', 24)
+        .attr('height', 24)
+        .attr('stroke', '#000000')
+        .attr('fill', '#CFD8DC')
+        .attr('stroke-width', 3.5)
+        .attr('stroke-opacity', 1)
+      gBackPattern.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/plus.svg')
+        .attr('width', 18)
+        .attr('height', 18)
+        .attr('x', 56)
+        .attr('y', 6)
+      gBackPattern.append('rect')
+        .attr('x', 86)
+        .attr('y', 3)
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('width', 24)
+        .attr('height', 24)
+        .attr('stroke', '#000000')
+        .attr('fill', '#CFD8DC')
+        .attr('stroke-width', 3.5)
+        .attr('stroke-opacity', 1)
+      gBackPattern.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/option.svg')
+        .attr('width', 28)
+        .attr('height', 28)
+        .attr('x', 84)
+        .attr('y', 2)
+
+      createMiddlePanel()
+      //createCommentPanel()
     }
     this.initData = initData
 
