@@ -68,7 +68,8 @@ window.ScrollTable = function () {
       lockerV: optIn.lockerV,
       lockerZoom: optIn.lockerZoom,
       runLoop: optIn.runLoop,
-      sameInnerBoxMarg: false
+      sameInnerBoxMarg: false,
+      background: optIn.background
       // canScroll: optIn.canScroll,
       // scrollHeight: com.outerBox.h*2,
       // scrollHeight: optIn.scrollHeight,

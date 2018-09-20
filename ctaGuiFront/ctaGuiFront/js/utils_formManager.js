@@ -133,6 +133,7 @@ window.FormManager = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   function setForm (optIn) {
+    console.log(optIn);
     let id = optIn.id
     let formSubFunc = optIn.formSubFunc
     let preventDefault = hasVar(optIn.preventDefault)
@@ -150,13 +151,14 @@ window.FormManager = function () {
           if (preventDefault) d3.event.preventDefault()
           if (formSubFunc) formSubFunc(optIn)
         }
-      })
+      }).style('background', optIn.background.input)
     // .style("width", window.svgWidthScale[tagForm]())
 
     com.input[id] = form
       .append('input')
       .attr('class', 'formMngrInput')
       .attr('type', 'text')
+      .attr('value', optIn.data.data.text ? optIn.data.data.text : '')
       .attr('required', 'true')
       // .attr("maxlength", 10).attr("type", 'radio')
       .style('font-size', fontSize)
@@ -167,6 +169,7 @@ window.FormManager = function () {
       .append('div')
       .attr('class', 'formMngrTitle')
       .style('font-size', fontSize)
+      .style('background', optIn.background.title)
   }
 
   // ---------------------------------------------------------------------------------------------------

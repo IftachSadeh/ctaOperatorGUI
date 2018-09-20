@@ -175,7 +175,7 @@ window.ScrollBox = function () {
       .attr('stroke', '#383B42')
       .attr('stroke-width', '1')
       .attr('stroke-opacity', 0.2)
-      .attr('fill', '#F2F2F2')
+      .attr('fill', optIn.background ? optIn.background : '#F2F2F2')
       .attr('fill-opacity', 1)
       .style('pointer-events', 'none')
 
@@ -211,16 +211,16 @@ window.ScrollBox = function () {
 
     com.scrollBarG = com.gBox.append('g')
 
-    bckPattern({
-      com: com,
-      gNow: com.outerG,
-      gTag: com.mainTag + 'blockBoxBack',
-      lenWH: [com.outerBox.w, com.outerBox.h],
-      trans: [com.outerBox.x, com.outerBox.y], // opac:0.06, textureOrient:"2/8"
-      opac: 0.06,
-      circType: 'lighter',
-      size: 10
-    })
+    // bckPattern({
+    //   com: com,
+    //   gNow: com.outerG,
+    //   gTag: com.mainTag + 'blockBoxBack',
+    //   lenWH: [com.outerBox.w, com.outerBox.h],
+    //   trans: [com.outerBox.x, com.outerBox.y], // opac:0.06, textureOrient:"2/8"
+    //   opac: 0.06,
+    //   circType: 'lighter',
+    //   size: 10
+    // })
 
     // ---------------------------------------------------------------------------------------------------
     //

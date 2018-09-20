@@ -28,11 +28,13 @@ var mainScriptTag = 'tagBlocks'
 /* global telHealthCol */
 /* global colsPurplesBlues */
 /* global colsYellows */
+/* global ScrollTable */
 /* global colsReds */
 /* global colsPurples */
 /* global colsGreens */
 /* global colPrime */
 /* global Locker */
+/* global FormManager */
 /* global appendToDom */
 /* global runWhenReady */
 
@@ -40,6 +42,8 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_buttonPanel.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollTable.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_formManager.js' })
 
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
@@ -98,7 +102,9 @@ let sockTagBlocks = function (optIn) {
 let mainTagBlocks = function (optIn) {
   // let myUniqueId = unique()
   let widgetType = optIn.widgetType
+  let tagBlockQueue = 'blockQueue'
   let tagArrZoomerPlotsSvg = optIn.baseName
+
   let widgetId = optIn.widgetId
   let widgetEle = optIn.widgetEle
   let iconDivV = optIn.iconDivV
@@ -332,7 +338,6 @@ let mainTagBlocks = function (optIn) {
     // let thisMain = this
 
     let tagTagBlocks = widgetType
-    let tagBlockQueue = 'blockQueue'
 
     let gBlockBoxFilter
     let buttonPanel
@@ -921,9 +926,9 @@ let mainTagBlocks = function (optIn) {
         // })
 
 
-      if (type === 'Alarm') drawAlarm(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
-      if (type === 'GRB') drawGrb(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
-      if (type === 'Hardw.') drawHardware(newButton, (12 * (priority + 1) / 2.2) / 2 - 5, (12 * (priority + 1) / 2.2) / 2 - 2, 3)
+      if (type === 'Alarm') drawAlarm(newButton, 0, 0, 27, 27)
+      if (type === 'GRB') drawGrb(newButton, 0, 0, 27, 27)
+      if (type === 'Hardw.') drawHardware(newButton, 0, 0, 27, 27)
       // newButton.append('circle')
       //   .attr('cx', (Number(newButton.attr('width')) * 0.7) + 2)
       //   .attr('cy', Number(newButton.attr('height')) + 2)
@@ -999,58 +1004,42 @@ let mainTagBlocks = function (optIn) {
           svgMiddleInfo.changeFocusElement('event', d.data)
         })
       newRect.each(function (d) {
-        if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleXBlocks(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
-        if (d.data.name === 'hardware') drawHardware(d3.select(this), axis.scaleXBlocks(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
-        if (d.data.name === 'alarm') drawAlarm(d3.select(this), axis.scaleXBlocks(d.data.time) + (d.w / 2), d.y + (d.h / 2), d.data.priority)
+        if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleXBlocks(d.data.time), d.y, d.w, d.h, d.data.priority)
+        if (d.data.name === 'hardware') drawHardware(d3.select(this), axis.scaleXBlocks(d.data.time), d.y, d.w, d.h, d.data.priority)
+        if (d.data.name === 'alarm') drawAlarm(d3.select(this), axis.scaleXBlocks(d.data.time), d.y, d.w, d.h, d.data.priority)
       })
       rect.merge(newRect)
     }
     this.updateData = updateData
 
-    function drawAlarm (g, x, y, priority) {
-      g.append('text')
-        .text('A')
-        .attr('x', x)
-        .attr('y', y)
-        .attr('stroke', '#263238')
-        .attr('fill', '#263238')
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', function (d) {
-          let size = 6 * priority
-          return size + 'px'
-        })
-        .attr('dy', function (d) {
-          return (6 * priority) / 3
-        })
+    function drawAlarm (g, x, y, w, h, priority) {
+      g.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/alarm.svg')
+        .attr('width', w * 0.8)
+        .attr('height', h * 0.8)
+        .attr('x', x + w * 0.1)
+        .attr('y', y + h * 0.1)
         .style('pointer-events', 'none')
     }
-    function drawGrb (g, x, y, priority) {
-      g.append('circle')
-        .attr('cx', x)
-        .attr('cy', y)
-        .attr('stroke', '#263238')
-        .attr('fill', '#263238')
-        .attr('r', 1 * priority)
-        .attr('fill', '#444444')
+    function drawGrb (g, x, y, w, h, priority) {
+      g.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/grb.svg')
+        .attr('width', w * 0.8)
+        .attr('height', h * 0.8)
+        .attr('x', x + w * 0.1)
+        .attr('y', y + h * 0.1)
         .style('pointer-events', 'none')
     }
-    function drawHardware (g, x, y, priority) {
-      g.append('text')
-        .text('H')
-        .attr('x', x)
-        .attr('y', y)
-        .attr('stroke', '#263238')
-        .attr('fill', '#263238')
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', function (d) {
-          let size = 6 * priority
-          return size + 'px'
-        })
-        .attr('dy', function (d) {
-          return (6 * priority) / 3
-        })
+    function drawHardware (g, x, y, w, h, priority) {
+      g.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/hardwareBreak.svg')
+        .attr('width', w * 0.8)
+        .attr('height', h * 0.8)
+        .attr('x', x + w * 0.1)
+        .attr('y', y + h * 0.1)
         .style('pointer-events', 'none')
     }
 
@@ -1066,7 +1055,7 @@ let mainTagBlocks = function (optIn) {
 
       // compute width/height/x/y of blocks, only y need to be modified (so far)
       $.each(dataIn, function (index, dataNow) {
-        let sizeBlocks = (12 * (dataNow.priority + 1) / 2.2)
+        let sizeBlocks = (12 * (4.5 + 1) / 2.2)
         let start = new Date(dataNow.time) * xScale
         let x0 = box.x + start - (sizeBlocks / 2)
         let w0 = sizeBlocks
@@ -2442,24 +2431,294 @@ let mainTagBlocks = function (optIn) {
     }
     this.createMiddlePanel = createMiddlePanel
 
+    function createBlockPanels (data) {
+      let generalCommentLayout = function (g) {
+        let scrollTable = new ScrollTable()
+        let formManager = new FormManager()
+
+        let scrollTableData = {
+          x: 0,
+          y: 0,
+          w: Number(g.attr('width')),
+          h: Number(g.attr('height')),
+          marg: 10
+        }
+        scrollTable.init({
+          tag: 'tagScrollTable1',
+          gBox: g,
+          canScroll: true,
+          useRelativeCoords: true,
+          boxData: scrollTableData,
+          locker: locker,
+          lockerV: [widgetType + 'updateData'],
+          lockerZoom: {
+            all: tagBlockQueue + 'zoom',
+            during: tagBlockQueue + 'zoomDuring',
+            end: tagBlockQueue + 'zoomEnd'
+          },
+          runLoop: runLoop,
+          background: '#ECEFF1'
+        })
+
+        let innerBox = scrollTable.get('innerBox')
+        let table = {
+          id: 'xxx',
+          x: innerBox.marg,
+          y: innerBox.marg,
+          marg: innerBox.marg,
+          rowW: innerBox.w,
+          rowH: innerBox.h / 4,
+          rowsIn: []
+        }
+
+        // table.rowsIn.push({ h: 9, colsIn: [{id:'01', w:0.3}], marg: innerBox.marg })
+        table.rowsIn.push({
+          h: 2,
+          colsIn: [
+            { id: '00', w: 1, title: 'BlockName', disabled: 1, text: data.metaData.blockName }
+          ],
+          marg: innerBox.marg
+        })
+        table.rowsIn.push({
+          h: 2,
+          colsIn: [
+            { id: '01', w: 0.5, title: 'State', disabled: 1, text: data.exeState.state },
+            { id: '02', w: 0.5, title: 'Schedule', disabled: 1, text: data.startTime + '-' + data.endTime + '(' + data.duration + ')' }
+          ],
+          marg: innerBox.marg
+        })
+        table.rowsIn.push({
+          h: 2,
+          colsIn: [
+            { id: '10', w: 1, title: 'Pointing', disabled: 1 }
+          ],
+          marg: innerBox.marg
+        })
+        table.rowsIn.push({
+          h: 2,
+          colsIn: [
+            { id: '20', w: 0.333, title: 'Id', disabled: 1, text: data.pointingId },
+            { id: '21', w: 0.333, title: 'Name', disabled: 1, text: data.pointingName },
+            { id: '22', w: 0.333, title: 'Pos', disabled: 1, text: '' + (data.pointingPos) }
+          ],
+          marg: innerBox.marg
+        })
+        table.rowsIn.push({
+          h: 2,
+          colsIn: [
+            { id: '30', w: 1, title: 'Target', disabled: 1 }
+          ],
+          marg: innerBox.marg
+        })
+        table.rowsIn.push({
+          h: 2,
+          colsIn: [
+            { id: '40', w: 0.5, title: 'Id', disabled: 1, text: data.targetId },
+            { id: '41', w: 0.5, title: 'Position', disabled: 1, text: '' + data.targetPos }
+          ],
+          marg: innerBox.marg
+        })
+        scrollTable.updateTable({ table: table })
+
+        let innerG = scrollTable.get('innerG')
+        let tagForms = 'tagForeignObject'
+
+        formManager.init({
+          tag: 'tagFormManager'
+        })
+        com.getScaleWH = function () {
+          return {
+            w: lenD.w[0] / +svg.svg.node().getBoundingClientRect().width,
+            h: lenD.h[0] / +svg.svg.node().getBoundingClientRect().height
+          }
+        }
+        $.each(table.recV, function (i, d) {
+          formManager.addForm({
+            id: d.id,
+            data: d,
+            selection: innerG,
+            formSubFunc: function (optIn) {
+              console.log('formSubFunc:', optIn)
+            },
+            tagForm: tagForms,
+            disabled: d.data.disabled ? d.data.disabled : 0,
+            getScaleWH: com.getScaleWH,
+            background: {
+              input: '#ECEFF1',
+              title: '#ECEFF1'
+            }
+          })
+        })
+
+        // g.selectAll('*').remove()
+        // g.append('rect')
+        //   .attr('class', 'back')
+        //   .attr('x', 0)
+        //   .attr('y', 0)
+        //   .attr('rx', 3)
+        //   .attr('ry', 3)
+        //   .attr('width', g.attr('width'))
+        //   .attr('height', g.attr('height'))
+        //   .attr('stroke', '#607D8B')
+        //   .attr('fill', '#607D8B')
+        //   .attr('stroke-width', 3.5)
+        //   .attr('stroke-opacity', 1)
+        // let fo = g.append('foreignObject')
+        //   .attr('x', 0)
+        //   .attr('y', 0)
+        //   .attr('width', g.attr('width'))
+        //   .attr('height', g.attr('height'))
+        // let div = fo.append('xhtml:div')
+        // div.append('textarea')
+        //   .attr('class', 'comment')
+        //   // .text('This is a test comment')
+        //   .style('background-color', '#263238')
+        //   .style('border', 'none')
+        //   .style('width', '98.5%')
+        //   .style('height', Number(g.attr('height')) * 0.96 + 'px')
+        //   .style('margin-top', '1px')
+        //   .style('margin-left', '4px')
+        //   .style('resize', 'none')
+        //   .style('pointer-events', 'none')
+        // console.log(g);
+      }
+      let generalTabLayout = function (g) {
+        g.selectAll('*').remove()
+        g.append('rect')
+          .attr('class', 'back')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('width', g.attr('width'))
+          .attr('height', g.attr('height'))
+          .attr('fill', '#B0BEC5')
+          .attr('stroke-width', 3.5)
+          .attr('stroke-opacity', 1)
+          .attr('stroke', '#B0BEC5')
+        g.append('text')
+          .attr('class', 'tabName')
+          .text(function (data) {
+            return 'General'
+          })
+          .attr('x', Number(g.attr('width')) / 2)
+          .attr('y', Number(g.attr('height')) / 2)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('font-size', 18)
+          .attr('dy', 9)
+          .style('pointer-events', 'none')
+          .attr('fill', '#263238')
+          .attr('stroke', 'none')
+      }
+      let generalCustomPanel = new CustomPanel()
+      generalCustomPanel.setTabProperties('dragable', optIn.dragable)
+      generalCustomPanel.setTabProperties('closable', optIn.closable)
+      generalCustomPanel.bindData({'tabName': 'INFORMATIONS'})
+      generalCustomPanel.setRepaintPanel(generalCommentLayout)
+      generalCustomPanel.setRepaintTab(generalTabLayout)
+      panelManager.addNewPanel(generalCustomPanel)
+      currentPanels.push(generalCustomPanel)
+
+      // let tlsCommentLayout = function (g) {
+      //   g.selectAll('*').remove()
+      //   g.append('rect')
+      //     .attr('class', 'back')
+      //     .attr('x', 0)
+      //     .attr('y', 0)
+      //     .attr('rx', 3)
+      //     .attr('ry', 3)
+      //     .attr('width', g.attr('width'))
+      //     .attr('height', g.attr('height'))
+      //     .attr('stroke', '#37474F')
+      //     .attr('fill', '#37474F')
+      //     .attr('stroke-width', 3.5)
+      //     .attr('stroke-opacity', 1)
+      //   let fo = g.append('foreignObject')
+      //     .attr('x', 0)
+      //     .attr('y', 0)
+      //     .attr('width', g.attr('width'))
+      //     .attr('height', g.attr('height'))
+      //   let div = fo.append('xhtml:div')
+      //   div.append('textarea')
+      //     .attr('class', 'comment')
+      //     // .text('This is a test comment')
+      //     .style('background-color', '#263238')
+      //     .style('border', 'none')
+      //     .style('width', '98.5%')
+      //     .style('height', Number(g.attr('height')) * 0.96 + 'px')
+      //     .style('margin-top', '1px')
+      //     .style('margin-left', '4px')
+      //     .style('resize', 'none')
+      //     .style('pointer-events', 'none')
+      // }
+      // let tlsTabLayout = function (g) {
+      //   g.selectAll('*').remove()
+      //   g.append('rect')
+      //     .attr('class', 'back')
+      //     .attr('x', 0)
+      //     .attr('y', 0)
+      //     .attr('rx', 4)
+      //     .attr('ry', 4)
+      //     .attr('width', g.attr('width'))
+      //     .attr('height', g.attr('height'))
+      //     .attr('fill', '#37474F')
+      //     .attr('stroke-width', 3.5)
+      //     .attr('stroke-opacity', 1)
+      //     .attr('stroke', '#37474F')
+      //   // if (com.tab.closable) {
+      //   //   com.tab.g.append('rect')
+      //   //     .attr('class', 'close')
+      //   //     .attr('x', com.tab.dimension.width - 16)
+      //   //     .attr('y', (com.tab.dimension.height / 2) - 8)
+      //   //     .attr('rx', 4)
+      //   //     .attr('ry', 4)
+      //   //     .attr('width', 13)
+      //   //     .attr('height', 13)
+      //   //     .attr('fill', '#aaaaaa')
+      //   // }
+      //   g.append('text')
+      //     .attr('class', 'tabName')
+      //     .text(function (data) {
+      //       return 'COMMENTS'
+      //     })
+      //     .attr('x', Number(g.attr('width')) / 2)
+      //     .attr('y', Number(g.attr('height')) / 2)
+      //     .style('font-weight', 'bold')
+      //     .attr('text-anchor', 'middle')
+      //     .style('font-size', 18)
+      //     .attr('dy', 9)
+      //     .style('pointer-events', 'none')
+      //     .attr('fill', '#263238')
+      //     .attr('stroke', 'none')
+      // }
+      // let tlsCustomPanel = new CustomPanel()
+      // tlsCustomPanel.setTabProperties('dragable', optIn.dragable)
+      // tlsCustomPanel.setTabProperties('closable', optIn.closable)
+      // tlsCustomPanel.bindData({'tabName': 'INFORMATIONS'})
+      // tlsCustomPanel.setRepaintPanel(tlsCommentLayout)
+      // tlsCustomPanel.setRepaintTab(tlsTabLayout)
+      // panelManager.addNewPanel(tlsCustomPanel)
+      // currentPanels.push(tlsCustomPanel)
+    }
+    this.createBlockPanels = createBlockPanels
+
+    function createEventPanels (data) {
+
+    }
+    this.createEventPanels = createEventPanels
+
     function changeFocusElement (type, data) {
       for (let i = 0; i < currentPanels.length; i++) {
         panelManager.removePanel(currentPanels[i])
       }
       currentPanels = []
 
-      for (let i = 0; i < 4; i++) {
-        let newCustomPanel = new CustomPanel()
-        newCustomPanel.setTabProperties('dragable', optIn.dragable)
-        newCustomPanel.setTabProperties('closable', optIn.closable)
-        newCustomPanel.bindData({'tabName': 'INFORMATIONS'})
-        newCustomPanel.setRepaintPanel(drawCommentDisabled)
-        newCustomPanel.setRepaintTab(drawTabDisabled)
-
-        panelManager.addNewPanel(newCustomPanel)
-        currentPanels.push(newCustomPanel)
+      if (type === 'block') {
+        createBlockPanels(data)
+      } else if (type === 'event') {
+        createEventPanels(data)
       }
-
       // commentPanel.callFunInfo(transitionDisabledToEnabled)
       // transitionDisabledToEnabled(commentPanel.getTabProperties('g'), commentPanel.getPanelGroup())
       // commentPanel.setRepaintPanel(drawCommentEnabled)
@@ -2538,93 +2797,93 @@ let mainTagBlocks = function (optIn) {
         .attr('fill', '#263238')
         .attr('stroke', 'none')
     }
-    function drawCommentEnabled (g) {
-      g.append('rect')
-        .attr('class', 'back')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('rx', 3)
-        .attr('ry', 3)
-        .attr('width', g.attr('width'))
-        .attr('height', g.attr('height'))
-        .attr('fill', '#efefef')
-        .attr('stroke-width', 1.5)
-        .attr('stroke-opacity', 1)
-        .attr('stroke', 'black')
-      let fo = g.append('foreignObject')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', g.attr('width'))
-        .attr('height', g.attr('height'))
-      let div = fo.append('xhtml:div')
-      div.append('textarea')
-        .attr('class', 'comment')
-        // .text('This is a test comment')
-        .style('background-color', '#ffffff')
-        .style('border', 'none')
-        .style('width', '98%')
-        .style('height', Number(g.attr('height')) * 0.8 + 'px')
-        .style('margin-top', '1px')
-        .style('margin-left', '1px')
-        .style('resize', 'none')
-    }
-    function transitionDisabledToEnabled (gTab, gPanel) {
-      gTab.select('rect.back')
-        .transition()
-        .duration(400)
-        .ease(d3.easeLinear)
-        .attr('fill', '#455A64')
-        .attr('stroke', '#455A64')
-      gTab.select('text.tabName')
-        .transition()
-        .duration(400)
-        .ease(d3.easeLinear)
-        .attr('fill', '#CFD8DC')
-
-      gPanel.select('rect.back')
-        .transition()
-        .duration(400)
-        .ease(d3.easeLinear)
-        .attr('stroke', '#455A64')
-        .attr('fill', '#455A64')
-      gPanel.select('textarea.comment')
-        .transition()
-        .duration(400)
-        .ease(d3.easeLinear)
-        .style('background-color', '#CFD8DC')
-        .style('pointer-events', 'auto')
-        // .on('end', function () {
-        //   commentPanel.setDrawInfo(drawCommentEnabled)
-        // })
-    }
-    function createCommentPanel () {
-      return
-      let panelManager = new PanelManager()
-      let optIn = {
-        transX: 475,
-        transY: 40,
-        width: (-40 + blockBoxData.w * 0.35) / 1,
-        height: (-20 + blockBoxData.h * 0.83) / 1,
-        g: gMiddleBox.append('g'),
-        manager: panelManager,
-        dragable: {
-          general: false,
-          tab: false
-        },
-        closable: false
-      }
-      panelManager.init(optIn)
-
-      commentPanel = new CustomPanel()
-      commentPanel.setTabProperties('dragable', optIn.dragable)
-      commentPanel.setTabProperties('closable', optIn.closable)
-      commentPanel.bindData({'tabName': 'COMMENTS'})
-
-      commentPanel.setRepaintPanel(drawCommentDisabled)
-      commentPanel.setRepaintTab(drawTabDisabled)
-
-      panelManager.addNewPanel(commentPanel)
-    }
+    // function drawCommentEnabled (g) {
+    //   g.append('rect')
+    //     .attr('class', 'back')
+    //     .attr('x', 0)
+    //     .attr('y', 0)
+    //     .attr('rx', 3)
+    //     .attr('ry', 3)
+    //     .attr('width', g.attr('width'))
+    //     .attr('height', g.attr('height'))
+    //     .attr('fill', '#efefef')
+    //     .attr('stroke-width', 1.5)
+    //     .attr('stroke-opacity', 1)
+    //     .attr('stroke', 'black')
+    //   let fo = g.append('foreignObject')
+    //     .attr('x', 0)
+    //     .attr('y', 0)
+    //     .attr('width', g.attr('width'))
+    //     .attr('height', g.attr('height'))
+    //   let div = fo.append('xhtml:div')
+    //   div.append('textarea')
+    //     .attr('class', 'comment')
+    //     // .text('This is a test comment')
+    //     .style('background-color', '#ffffff')
+    //     .style('border', 'none')
+    //     .style('width', '98%')
+    //     .style('height', Number(g.attr('height')) * 0.8 + 'px')
+    //     .style('margin-top', '1px')
+    //     .style('margin-left', '1px')
+    //     .style('resize', 'none')
+    // }
+    // function transitionDisabledToEnabled (gTab, gPanel) {
+    //   gTab.select('rect.back')
+    //     .transition()
+    //     .duration(400)
+    //     .ease(d3.easeLinear)
+    //     .attr('fill', '#455A64')
+    //     .attr('stroke', '#455A64')
+    //   gTab.select('text.tabName')
+    //     .transition()
+    //     .duration(400)
+    //     .ease(d3.easeLinear)
+    //     .attr('fill', '#CFD8DC')
+    //
+    //   gPanel.select('rect.back')
+    //     .transition()
+    //     .duration(400)
+    //     .ease(d3.easeLinear)
+    //     .attr('stroke', '#455A64')
+    //     .attr('fill', '#455A64')
+    //   gPanel.select('textarea.comment')
+    //     .transition()
+    //     .duration(400)
+    //     .ease(d3.easeLinear)
+    //     .style('background-color', '#CFD8DC')
+    //     .style('pointer-events', 'auto')
+    //     // .on('end', function () {
+    //     //   commentPanel.setDrawInfo(drawCommentEnabled)
+    //     // })
+    // }
+    // function createCommentPanel () {
+    //   return
+    //   let panelManager = new PanelManager()
+    //   let optIn = {
+    //     transX: 475,
+    //     transY: 40,
+    //     width: (-40 + blockBoxData.w * 0.35) / 1,
+    //     height: (-20 + blockBoxData.h * 0.83) / 1,
+    //     g: gMiddleBox.append('g'),
+    //     manager: panelManager,
+    //     dragable: {
+    //       general: false,
+    //       tab: false
+    //     },
+    //     closable: false
+    //   }
+    //   panelManager.init(optIn)
+    //
+    //   commentPanel = new CustomPanel()
+    //   commentPanel.setTabProperties('dragable', optIn.dragable)
+    //   commentPanel.setTabProperties('closable', optIn.closable)
+    //   commentPanel.bindData({'tabName': 'COMMENTS'})
+    //
+    //   commentPanel.setRepaintPanel(drawCommentDisabled)
+    //   commentPanel.setRepaintTab(drawTabDisabled)
+    //
+    //   panelManager.addNewPanel(commentPanel)
+    // }
 
     function initData (dataIn) {
       gBlockBox = svg.g.append('g')

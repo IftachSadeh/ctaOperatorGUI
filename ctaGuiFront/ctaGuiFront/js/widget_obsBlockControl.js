@@ -526,7 +526,7 @@ let mainObsBlockControl = function (optIn) {
           rowsIn: []
         }
 
-        // table.rowsIn.push({ h: 9, colsIn: [{id:'01', w:0.3}], marg: innerBox.marg })
+        // table.rowsIn.push({ h: 9, colsIn: [{id: '01', w: 0.3}], marg: innerBox.marg })
         table.rowsIn.push({
           h: 2,
           colsIn: [
