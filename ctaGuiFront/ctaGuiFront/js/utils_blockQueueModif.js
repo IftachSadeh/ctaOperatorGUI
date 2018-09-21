@@ -186,7 +186,7 @@ window.BlockQueue = function () {
     com.axis = {}
     com.axis.scaleX = d3.scaleTime().range([0, com.outerBox.w]).domain([])
     com.axis.translate = 'translate(' + com.outerBox.x + ',' + (com.outerBox.h + com.outerBox.y) + ')'
-    com.axis.bottom = d3.axisBottom(com.axis.scaleX)
+    com.axis.bottom = d3.axisBottom(com.axis.scaleX).tickFormat(d3.timeFormat('%H:%M'))
     com.axis.axisG = com.scrollBoxG
       .append('g')
       .attr('class', 'axisX')
@@ -211,7 +211,7 @@ window.BlockQueue = function () {
     if (!hasVar(com.style.recCol)) {
       com.style.recCol = function (optIn) {
         // let colsPurplesBlues = colsMix;
-        let nObs = hasVar(optIn.nObs) ? optIn.nObs : optIn.d.nBlock
+        // let nObs = hasVar(optIn.nObs) ? optIn.nObs : optIn.d.nBlock
         let state = hasVar(optIn.state)
           ? optIn.state
           : optIn.d.data.exeState.state
@@ -220,16 +220,16 @@ window.BlockQueue = function () {
           : optIn.d.data.exeState.canRun
 
         if (state === 'wait') return "#e6e6e6"
-        else if (state === 'done') return colsGreens[0]
+        else if (state === 'done') return d3.color(colsGreens[0]).brighter()
         else if (state === 'run') {
-          return colsPurplesBlues[0] // [nObs % colsPurplesBlues.length]
+          return d3.color(colsPurplesBlues[0]).brighter() // [nObs % colsPurplesBlues.length]
         } else if (state === 'cancel') {
           if (hasVar(canRun)) {
-            if (!canRun) return colsPurples[3]
+            if (!canRun) return d3.color(colsPurples[3]).brighter()
           }
-          return colsPurples[4]
-        } else if (state === 'fail') return colsReds[3]
-        else return colPrime
+          return d3.color(colsPurples[4])
+        } else if (state === 'fail') return d3.color(colsReds[3]).brighter()
+        else return d3.color(colPrime).brighter()
       }
     }
 
@@ -292,7 +292,6 @@ window.BlockQueue = function () {
     return dataIn
   }
   function addStateFilter (id) {
-    console.log(id);
     filters.states.push({id: id})
   }
   this.addStateFilter = addStateFilter
@@ -986,7 +985,6 @@ window.BlockQueue = function () {
         return '#111111'
       })
       .attr('x', function (d, i) {
-        console.log(d);
         return d.x + d.w / 2
       })
       .attr('y', function (d, i) {
@@ -1116,6 +1114,55 @@ window.BlockQueue = function () {
   }
   this.setRunRect = setRunRect
 
+  function addExtraBar (date) {
+    let data = []
+    if (date === null) {
+      let rectNow = com.outerG
+        .selectAll('rect.' + com.mainTag + 'extra')
+        .data(data)
+      rectNow.exit().remove()
+    } else {
+      data = [date]
+      let rectNow = com.outerG
+        .selectAll('rect.' + com.mainTag + 'extra')
+        .data(data)
+
+      rectNow
+        .enter()
+        .append('rect')
+        .attr('class', com.mainTag + 'extra')
+        .style('opacity', 1)
+        .attr('x', function (d, i) {
+          return com.axis.scaleX(d)
+        })
+        .attr('y', function (d, i) {
+          return com.outerBox.y - com.outerBox.marg
+        })
+        .attr('width', 0)
+        .attr('height', function (d, i) {
+          return com.outerBox.h + com.outerBox.marg * 2
+        })
+        .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
+        .attr('fill', colsYellows[0])
+        .attr('fill-opacity', 0.3)
+        .style('stroke-opacity', 0.15)
+        .attr('stroke-width', 3)
+        .style('pointer-events', 'none')
+        .attr('vector-effect', 'non-scaling-stroke')
+        .merge(rectNow)
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .attr('x', function (d, i) {
+          console.log(d);
+          return com.axis.scaleX(d)
+        })
+        // .attr("y", function(d,i) { return d.y; })
+        .attr('width', function (d, i) {
+          return com.outerBox.marg
+        })
+    }
+  }
+  this.addExtraBar = addExtraBar
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------

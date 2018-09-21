@@ -379,7 +379,7 @@ class obsBlocks_noACS():
         self.phaseRndFrac["start"] = 0.29
         self.phaseRndFrac["finish"] = 0.1
         self.phaseRndFrac["cancel"] = 0.2
-        self.phaseRndFrac["fail"] = 0.81
+        self.phaseRndFrac["fail"] = 0.41
         self.loopSleep = 2
 
         self.obsBlockDuration = 1800 # timedelta(weeks = 0, days = 0, hours = 0, minutes = 30 * self.timeOfNight.getTimeScale(), seconds = 0, milliseconds = 0, microseconds = 0)  # 1800 = 30 minutes
@@ -394,8 +394,11 @@ class obsBlocks_noACS():
         # rndSeed = 10987268332
         self.rndGen = Random(rndSeed)
 
-        self.init()
+        self.external_clockEvents = []
+        self.external_generateClockEvents()
 
+        self.init()
+        
         gevent.spawn(self.loop)
 
         return
@@ -410,14 +413,11 @@ class obsBlocks_noACS():
         self.exePhase = dict()
         self.allBlocks = []
         self.external_events = []
-        self.external_clockEvents = []
 
         self.timeOfNight.resetNight()
         self.prevResetTime = self.timeOfNight.getResetTime()
         # startTime = self.timeOfNight.getStartTime()
         self.nInitCycle += 1
-
-        self.external_generateClockEvents()
 
         isCycleDone = False
         nCycleNow = 0
@@ -943,7 +943,7 @@ class obsBlocks_noACS():
 
     def external_generateClockEvents(self):
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 16, 21, 38).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['start_date'] = datetime(2018, 9, 16, 21, 45).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['end_date'] = ''
         newEvent['icon'] = 'moon.svg'
         newEvent['name'] = 'Moonrise'
@@ -952,34 +952,34 @@ class obsBlocks_noACS():
         self.external_clockEvents.append(newEvent)
 
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 16, 21, 42).strftime("%Y-%m-%d %H:%M:%S")
-        newEvent['end_date'] = ''
-        newEvent['icon'] = 'moon.svg'
-        newEvent['name'] = 'Moonrise'
+        newEvent['start_date'] = datetime(2018, 9, 16, 23, 00).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['end_date'] = datetime(2018, 9, 17, 4, 30).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['icon'] = 'rain.svg'
+        newEvent['name'] = 'Raining'
         newEvent['comment'] = ''
         newEvent['id'] = 'CE' + str(self.rndGen.randint(0, 100000000))
         self.external_clockEvents.append(newEvent)
 
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 16, 21, 48).strftime("%Y-%m-%d %H:%M:%S")
-        newEvent['end_date'] = ''
-        newEvent['icon'] = 'moon.svg'
-        newEvent['name'] = 'Moonrise'
+        newEvent['start_date'] = datetime(2018, 9, 17, 1, 00).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['end_date'] = datetime(2018, 9, 17, 2, 00).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['icon'] = 'storm.svg'
+        newEvent['name'] = 'Storm'
         newEvent['comment'] = ''
         newEvent['id'] = 'CE' + str(self.rndGen.randint(0, 100000000))
         self.external_clockEvents.append(newEvent)
 
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 16, 21, 57).strftime("%Y-%m-%d %H:%M:%S")
-        newEvent['end_date'] = ''
-        newEvent['icon'] = 'moon.svg'
-        newEvent['name'] = 'Moonrise'
+        newEvent['start_date'] = datetime(2018, 9, 17, 1, 30).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['end_date'] = datetime(2018, 9, 17, 2, 30).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['icon'] = 'handshake.svg'
+        newEvent['name'] = 'Collab'
         newEvent['comment'] = ''
         newEvent['id'] = 'CE' + str(self.rndGen.randint(0, 100000000))
         self.external_clockEvents.append(newEvent)
 
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 17, 4, 56).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['start_date'] = datetime(2018, 9, 17, 5, 20).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['end_date'] = ''
         newEvent['icon'] = 'sun.svg'
         newEvent['name'] = 'Sunrise'

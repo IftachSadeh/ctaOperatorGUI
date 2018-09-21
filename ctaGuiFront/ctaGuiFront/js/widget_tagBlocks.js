@@ -219,7 +219,7 @@ let mainTagBlocks = function (optIn) {
       .attr('y', 0)
       .attr('width', lenD.w[0])
       .attr('height', lenD.h[0])
-      .attr('fill', '#263238')
+      .attr('fill', '#37474F')
 
     com.dataIn = dataIn
     console.log(com.dataIn);
@@ -398,7 +398,7 @@ let mainTagBlocks = function (optIn) {
       createButton({row: 1, col: 0}, 'Fail')
       createButton({row: 1, col: 1}, 'Done')
       createButton({row: 1, col: 2}, 'Run')
-      createButton({row: 2, col: 0}, 'Cancel')
+      createButton({row: 2, col: 0}, 'Cancel.canrun')
       createButton({row: 2, col: 1}, 'Cancel')
       createButton({row: 2, col: 2}, 'Wait')
     }
@@ -503,7 +503,7 @@ let mainTagBlocks = function (optIn) {
             .attr('fill', '#eeeeee')
             .style('fill-opacity', 0.82)
           ginfo.append('text')
-            .text(type)
+            .text(type.split('.')[0])
             .attr('x', Number(newButton.attr('width')) * 0.5)
             .attr('y', -5)
             .style('fill-opacity', 0.82)
@@ -541,15 +541,15 @@ let mainTagBlocks = function (optIn) {
 
     function recCol (state) {
       if (state === 'Wait') return '#e6e6e6'
-      else if (state === 'Done') return colsGreens[0]
+      else if (state === 'Done') return d3.color(colsGreens[0]).brighter()
       else if (state === 'Run') {
-        return colsPurplesBlues[0] // [nObs % colsPurplesBlues.length]
+        return d3.color(colsPurplesBlues[0]).brighter()
+      } else if (state === 'Cancel.canrun') {
+        return d3.color(colsPurples[3]).brighter()
       } else if (state === 'Cancel') {
-        return colsPurples[4]
-      } else if (state === 'Cancel') {
-        return colsPurples[3]
-      } else if (state === 'Fail') return colsReds[3]
-      else return colPrime
+        return d3.color(colsPurples[4])
+      } else if (state === 'Fail') return d3.color(colsReds[3]).brighter()
+      else return d3.color(colPrime).brighter()
     }
     this.recCol = recCol
 
@@ -2424,8 +2424,8 @@ let mainTagBlocks = function (optIn) {
       currentPanels.push(commentPanel)
 
       // backPattern.append('path')
-      //   .attr('stroke', '#37474F')
-      //   .attr('fill', '#37474F')
+      //   .attr('stroke', '#546E7A')
+      //   .attr('fill', '#546E7A')
       //   .attr('stroke-width', 2)
       //   .attr('d', 'M 250 30 L 350 60 L 300 60 L 300 80 L 200 80 L 200 60 L 150 60 L 250 30')
     }
@@ -2572,7 +2572,7 @@ let mainTagBlocks = function (optIn) {
         // div.append('textarea')
         //   .attr('class', 'comment')
         //   // .text('This is a test comment')
-        //   .style('background-color', '#263238')
+        //   .style('background-color', '#37474F')
         //   .style('border', 'none')
         //   .style('width', '98.5%')
         //   .style('height', Number(g.attr('height')) * 0.96 + 'px')
@@ -2608,7 +2608,7 @@ let mainTagBlocks = function (optIn) {
           .style('font-size', 18)
           .attr('dy', 9)
           .style('pointer-events', 'none')
-          .attr('fill', '#263238')
+          .attr('fill', '#37474F')
           .attr('stroke', 'none')
       }
       let generalCustomPanel = new CustomPanel()
@@ -2630,8 +2630,8 @@ let mainTagBlocks = function (optIn) {
       //     .attr('ry', 3)
       //     .attr('width', g.attr('width'))
       //     .attr('height', g.attr('height'))
-      //     .attr('stroke', '#37474F')
-      //     .attr('fill', '#37474F')
+      //     .attr('stroke', '#546E7A')
+      //     .attr('fill', '#546E7A')
       //     .attr('stroke-width', 3.5)
       //     .attr('stroke-opacity', 1)
       //   let fo = g.append('foreignObject')
@@ -2643,7 +2643,7 @@ let mainTagBlocks = function (optIn) {
       //   div.append('textarea')
       //     .attr('class', 'comment')
       //     // .text('This is a test comment')
-      //     .style('background-color', '#263238')
+      //     .style('background-color', '#37474F')
       //     .style('border', 'none')
       //     .style('width', '98.5%')
       //     .style('height', Number(g.attr('height')) * 0.96 + 'px')
@@ -2662,10 +2662,10 @@ let mainTagBlocks = function (optIn) {
       //     .attr('ry', 4)
       //     .attr('width', g.attr('width'))
       //     .attr('height', g.attr('height'))
-      //     .attr('fill', '#37474F')
+      //     .attr('fill', '#546E7A')
       //     .attr('stroke-width', 3.5)
       //     .attr('stroke-opacity', 1)
-      //     .attr('stroke', '#37474F')
+      //     .attr('stroke', '#546E7A')
       //   // if (com.tab.closable) {
       //   //   com.tab.g.append('rect')
       //   //     .attr('class', 'close')
@@ -2689,7 +2689,7 @@ let mainTagBlocks = function (optIn) {
       //     .style('font-size', 18)
       //     .attr('dy', 9)
       //     .style('pointer-events', 'none')
-      //     .attr('fill', '#263238')
+      //     .attr('fill', '#37474F')
       //     .attr('stroke', 'none')
       // }
       // let tlsCustomPanel = new CustomPanel()
@@ -2735,8 +2735,8 @@ let mainTagBlocks = function (optIn) {
         .attr('ry', 3)
         .attr('width', g.attr('width'))
         .attr('height', g.attr('height'))
-        .attr('stroke', '#37474F')
-        .attr('fill', '#37474F')
+        .attr('stroke', '#546E7A')
+        .attr('fill', '#546E7A')
         .attr('stroke-width', 3.5)
         .attr('stroke-opacity', 1)
       let fo = g.append('foreignObject')
@@ -2748,7 +2748,7 @@ let mainTagBlocks = function (optIn) {
       div.append('textarea')
         .attr('class', 'comment')
         // .text('This is a test comment')
-        .style('background-color', '#263238')
+        .style('background-color', '#37474F')
         .style('border', 'none')
         .style('width', '98.5%')
         .style('height', Number(g.attr('height')) * 0.96 + 'px')
@@ -2767,10 +2767,10 @@ let mainTagBlocks = function (optIn) {
         .attr('ry', 4)
         .attr('width', g.attr('width'))
         .attr('height', g.attr('height'))
-        .attr('fill', '#37474F')
+        .attr('fill', '#546E7A')
         .attr('stroke-width', 3.5)
         .attr('stroke-opacity', 1)
-        .attr('stroke', '#37474F')
+        .attr('stroke', '#546E7A')
       // if (com.tab.closable) {
       //   com.tab.g.append('rect')
       //     .attr('class', 'close')
@@ -2794,7 +2794,7 @@ let mainTagBlocks = function (optIn) {
         .style('font-size', 18)
         .attr('dy', 9)
         .style('pointer-events', 'none')
-        .attr('fill', '#263238')
+        .attr('fill', '#37474F')
         .attr('stroke', 'none')
     }
     // function drawCommentEnabled (g) {
@@ -2912,8 +2912,8 @@ let mainTagBlocks = function (optIn) {
         .attr('ry', 2)
         .attr('width', 41)
         .attr('height', 30)
-        .attr('stroke', '#37474F')
-        .attr('fill', '#37474F')
+        .attr('stroke', '#546E7A')
+        .attr('fill', '#546E7A')
         .attr('stroke-width', 3.5)
         .attr('stroke-opacity', 1)
       gBackPattern.append('rect')
@@ -2942,8 +2942,8 @@ let mainTagBlocks = function (optIn) {
         .attr('ry', 2)
         .attr('width', 68)
         .attr('height', 30)
-        .attr('stroke', '#37474F')
-        .attr('fill', '#37474F')
+        .attr('stroke', '#546E7A')
+        .attr('fill', '#546E7A')
         .attr('stroke-width', 3.5)
         .attr('stroke-opacity', 1)
       gBackPattern.append('rect')
@@ -3016,9 +3016,13 @@ let mainTagBlocks = function (optIn) {
       clockEvents.init({
         g: gBlockBox,
         box: blockBoxData,
-        background: '#263238'
+        background: '#37474F'
       })
       clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.date_now))
+      clockEvents.setSendFunction(function (date) {
+        blockQueue.addExtraBar(date)
+      })
+      clockEvents.addEvent(com.dataIn.data.external_clockEvents[0])
 
       // let startEvent = new Date(com.dataIn.data.timeOfNight.now).getTime() + ((Math.random() * 3) + 2) * 60000
       // let endEvent = new Date(startEvent).getTime() + 10000
@@ -3027,8 +3031,8 @@ let mainTagBlocks = function (optIn) {
     this.initData = initData
 
     function updateData (dataIn) {
+      console.log('ADD EVENT CLOCK', com.dataIn.data);
       clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.date_now))
-      console.log(com.dataIn.data.external_clockEvents)
       clockEvents.addEvent(com.dataIn.data.external_clockEvents[0])
       // let rnd = Math.random()
       // if (rnd < 0.8) {
