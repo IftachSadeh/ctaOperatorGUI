@@ -16,6 +16,11 @@ window.ClockEvents = function () {
   com.popupEvents = []
   com.pastEvents = []
   com.floor = 1
+  com.timeRange = {}
+  com.timeRange.total = 21600
+  com.timeRange.day = 0
+  com.timeRange.hour = 21600
+  com.timeRange.minute = 0
 
   // to init
   com.maxPopups = 3
@@ -27,6 +32,25 @@ window.ClockEvents = function () {
   }
   this.get = function (type) {
     return com[type]
+  }
+
+  let formatMillisecond = d3.timeFormat('.%L')
+  let formatSecond = d3.timeFormat(':%S')
+  let formatMinute = d3.timeFormat('%I:%M')
+  let formatHour = d3.timeFormat('%H:%M')
+  let formatDay = d3.timeFormat('%a %d')
+  let formatWeek = d3.timeFormat('%b %d')
+  let formatMonth = d3.timeFormat('%B')
+  let formatYear = d3.timeFormat('%Y')
+
+  function multiFormat (date) {
+    return (d3.timeSecond(date) < date ? formatMillisecond
+      : d3.timeMinute(date) < date ? formatSecond
+        : d3.timeHour(date) < date ? formatMinute
+          : d3.timeDay(date) < date ? formatHour
+            : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
+              : d3.timeYear(date) < date ? formatMonth
+                : formatYear)(date)
   }
 
   function reset () {
@@ -65,7 +89,9 @@ window.ClockEvents = function () {
     com.axis = {}
     com.axis.scaleX = d3.scaleTime().range([0, com.box.width * 0.78]).domain([])
     com.axis.translate = 'translate(' + com.box.width * 0.12 + ',' + com.box.height * 0.62 + ')'
-    com.axis.bottom = d3.axisBottom(com.axis.scaleX).tickSize(6).tickFormat(d3.timeFormat('%H:%M'))
+    com.axis.bottom = d3.axisBottom(com.axis.scaleX).tickSize(6).tickFormat(function (d) {
+      return multiFormat(d)
+    })
     com.axis.axisG = com.g
       .append('g')
       .attr('class', 'axisX')
@@ -102,15 +128,7 @@ window.ClockEvents = function () {
 
     com.shrinkButton = com.g.append('g')
       .attr('transform', 'translate(' + ((com.box.width * 0.9)) + ',' + 0 + ')')
-    com.shrinkButton.append('rect')
-      .attr('x', 0)
-      .attr('y', com.box.height * 0.2)
-      .attr('width', com.box.width * 0.1)
-      .attr('height', com.box.height * 0.8)
-      .attr('fill', '#37474F')
-      .attr('stroke', '#CFD8DC')
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', [(com.box.width * 0.1), (com.box.height * 0.8) + (com.box.width * 0.1), (com.box.height * 0.8)])
+    changeDomainHourFront()
     // com.shrinkButton.append('rect')
     //   .attr('x', -12)
     //   .attr('y', -(com.box.height * 0.62))
@@ -201,13 +219,9 @@ window.ClockEvents = function () {
   }
   this.init = init
 
-  function setHour (date) {
-    if (date < com.currentDate) reset()
-    com.currentDate = date
-    com.limitDate = new Date(date.getTime()).setHours(date.getHours() + 6)
-    com.g.select('text.currentHour')
-      .text(com.currentDate.getHours() + ' : ' + (com.currentDate.getMinutes() < 10 ? ('0' + com.currentDate.getMinutes()) : com.currentDate.getMinutes()))
-
+  function changeDomainHourBack () {
+    com.timeRange.total = com.timeRange.day + com.timeRange.hour + com.timeRange.minute
+    com.limitDate = new Date(com.currentDate.getTime()).setSeconds(com.currentDate.getSeconds() + com.timeRange.total)
     com.axis.scaleX.domain([com.currentDate, com.limitDate])
     com.axis.bottom.scale(com.axis.scaleX)
     com.axis.axisG
@@ -216,9 +230,200 @@ window.ClockEvents = function () {
       .duration(1000)
       .call(com.axis.bottom)
     com.axis.axisG.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.axisG.selectAll('g.tick').selectAll('text').style('font-size', com.box.height * 0.26).attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
+    com.axis.axisG.selectAll('g.tick').selectAll('text')
+      .style('font-size', com.box.height * 0.26)
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
 
     drawEvents()
+  }
+
+  function changeDomainHourFront () {
+    com.shrinkButton.append('rect')
+      .attr('x', 0)
+      .attr('y', com.box.height * 0.2)
+      .attr('width', com.box.width * 0.1)
+      .attr('height', com.box.height * 0.8)
+      .attr('fill', '#37474F')
+      .attr('stroke', '#CFD8DC')
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', [(com.box.width * 0.1), (com.box.height * 0.8) + (com.box.width * 0.1), (com.box.height * 0.8)])
+
+    let timerange = com.timeRange.total
+    let newtime = Math.floor(timerange / 86400)
+    com.shrinkButton.append('text')
+      .attr('class', 'day')
+      .text((newtime < 10 ? '0' + newtime : newtime) + ' :')
+      .attr('x', com.box.width * 0.01)
+      .attr('y', com.box.height * 0.5)
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .attr('text-anchor', 'start')
+      .style('font-size', com.box.height * 0.3)
+      .attr('dy', com.box.height * 0.07)
+      .style('user-select', 'none')
+    timerange = timerange % 86400
+    newtime = Math.floor(timerange / 3600)
+    com.shrinkButton.append('text')
+      .attr('class', 'hour')
+      .text((newtime < 10 ? '0' + newtime : newtime) + ' :')
+      .attr('x', com.box.width * 0.04)
+      .attr('y', com.box.height * 0.5)
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .attr('text-anchor', 'start')
+      .style('font-size', com.box.height * 0.3)
+      .attr('dy', com.box.height * 0.07)
+      .style('user-select', 'none')
+    timerange = timerange % 3600
+    newtime = Math.floor(timerange / 60)
+    com.shrinkButton.append('text')
+      .attr('class', 'minute')
+      .text((newtime < 10 ? '0' + newtime : newtime))
+      .attr('x', com.box.width * 0.07)
+      .attr('y', com.box.height * 0.5)
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .attr('text-anchor', 'start')
+      .style('font-size', com.box.height * 0.3)
+      .attr('dy', com.box.height * 0.07)
+      .style('user-select', 'none')
+
+    com.shrinkButton.append('rect')
+      .attr('x', com.box.width * 0.005)
+      .attr('y', com.box.height * 0.3)
+      .attr('width', com.box.width * 0.03)
+      .attr('height', com.box.height * 0.5)
+      .attr('fill', 'red')
+      .attr('opacity', 0)
+      .on('mouseover', function () {
+        com.shrinkButton.select('text.day')
+          .attr('stroke', '#ffffff')
+          .attr('fill', '#ffffff')
+      })
+      .on('mouseout', function () {
+        com.shrinkButton.select('text.day')
+          .attr('stroke', '#CFD8DC')
+          .attr('fill', '#CFD8DC')
+      })
+      .on('wheel', function (d) {
+        let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+        if (direction === 'down') {
+          com.timeRange.day -= 86400
+          if (com.timeRange.day < 0) com.timeRange.day = 8553600
+        }
+        if (direction === 'up') {
+          com.timeRange.day += 86400
+          if (com.timeRange.day > 8553600) com.timeRange.day = 0
+        }
+        let temp = Math.floor(com.timeRange.day / 86400)
+        com.shrinkButton.select('text.day').text((temp < 10 ? '0' + temp : temp) + ' :')
+        changeDomainHourBack()
+      })
+    com.shrinkButton.append('rect')
+      .attr('x', com.box.width * 0.035)
+      .attr('y', com.box.height * 0.3)
+      .attr('width', com.box.width * 0.03)
+      .attr('height', com.box.height * 0.5)
+      .attr('fill', 'yellow')
+      .attr('opacity', 0)
+      .on('mouseover', function () {
+        com.shrinkButton.select('text.hour')
+          .attr('stroke', '#ffffff')
+          .attr('fill', '#ffffff')
+      })
+      .on('mouseout', function () {
+        com.shrinkButton.select('text.hour')
+          .attr('stroke', '#CFD8DC')
+          .attr('fill', '#CFD8DC')
+      })
+      .on('wheel', function (d) {
+        let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+        if (direction === 'down') {
+          com.timeRange.hour -= 3600
+          if (com.timeRange.hour < 0) com.timeRange.hour = 82800
+        }
+        if (direction === 'up') {
+          com.timeRange.hour += 3600
+          if (com.timeRange.hour > 82800) com.timeRange.hour = 0
+        }
+        let temp = Math.floor(com.timeRange.hour / 3600)
+        com.shrinkButton.select('text.hour').text((temp < 10 ? '0' + temp : temp) + ' :')
+        changeDomainHourBack()
+      })
+    com.shrinkButton.append('rect')
+      .attr('x', com.box.width * 0.065)
+      .attr('y', com.box.height * 0.3)
+      .attr('width', com.box.width * 0.03)
+      .attr('height', com.box.height * 0.5)
+      .attr('fill', 'blue')
+      .attr('opacity', 0)
+      .on('mouseover', function () {
+        com.shrinkButton.select('text.minute')
+          .attr('stroke', '#ffffff')
+          .attr('fill', '#ffffff')
+      })
+      .on('mouseout', function () {
+        com.shrinkButton.select('text.minute')
+          .attr('stroke', '#CFD8DC')
+          .attr('fill', '#CFD8DC')
+      })
+      .on('wheel', function (d) {
+        let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+        if (direction === 'down') {
+          com.timeRange.minute -= 60
+          if (com.timeRange.minute < 0) com.timeRange.minute = 3540
+        }
+        if (direction === 'up') {
+          com.timeRange.minute += 60
+          if (com.timeRange.minute > 3540) com.timeRange.minute = 0
+        }
+        let temp = Math.floor(com.timeRange.minute / 60)
+        com.shrinkButton.select('text.minute').text((temp < 10 ? '0' + temp : temp))
+        changeDomainHourBack()
+      })
+
+    com.shrinkButton.append('text')
+      .text('DD')
+      .attr('x', com.box.width * 0.012)
+      .attr('y', com.box.height * 0.8)
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .attr('text-anchor', 'start')
+      .style('font-size', com.box.height * 0.2)
+      .attr('dy', com.box.height * 0.07)
+      .style('user-select', 'none')
+      .style('pointer-events', 'none')
+    com.shrinkButton.append('text')
+      .text('HH')
+      .attr('x', com.box.width * 0.04)
+      .attr('y', com.box.height * 0.8)
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .attr('text-anchor', 'start')
+      .style('font-size', com.box.height * 0.2)
+      .attr('dy', com.box.height * 0.07)
+      .style('user-select', 'none')
+      .style('pointer-events', 'none')
+    com.shrinkButton.append('text')
+      .text('MM')
+      .attr('x', com.box.width * 0.07)
+      .attr('y', com.box.height * 0.8)
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .attr('text-anchor', 'start')
+      .style('font-size', com.box.height * 0.2)
+      .attr('dy', com.box.height * 0.07)
+      .style('user-select', 'none')
+      .style('pointer-events', 'none')
+  }
+
+  function setHour (date) {
+    if (date < com.currentDate) reset()
+    com.currentDate = date
+    com.g.select('text.currentHour')
+      .text(com.currentDate.getHours() + ' : ' + (com.currentDate.getMinutes() < 10 ? ('0' + com.currentDate.getMinutes()) : com.currentDate.getMinutes()))
+    changeDomainHourBack()
   }
   this.setHour = setHour
 

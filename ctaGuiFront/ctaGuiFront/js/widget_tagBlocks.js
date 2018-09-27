@@ -21,6 +21,7 @@ var mainScriptTag = 'tagBlocks'
 /* global disableScrollSVG */
 /* global RunLoop */
 /* global BlockQueueModif */
+/* global EventQueue */
 /* global ClockEvents */
 /* global ButtonPanel */
 /* global PanelManager */
@@ -39,6 +40,8 @@ var mainScriptTag = 'tagBlocks'
 /* global runWhenReady */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_EventQueue.js' })
+
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_buttonPanel.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
@@ -222,15 +225,14 @@ let mainTagBlocks = function (optIn) {
       .attr('fill', '#37474F')
 
     com.dataIn = dataIn
-    console.log(com.dataIn);
 
     svgBlocks.initData(dataIn.data)
     svgEvents.initData(dataIn.data)
     // svgTels.initData(dataIn.data)
     //svgFilterBlocks.initData()
     // svgFilterTels.initData()
-    svgMiddleInfo.initData()
-    svgBottomInfo.initData()
+    svgMiddleInfo.initData(dataIn.data)
+    svgBottomInfo.initData(dataIn.data)
   }
   this.initData = initData
 
@@ -239,10 +241,9 @@ let mainTagBlocks = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
     com.dataIn = dataIn
-    console.log(com.dataIn);
 
-    clusterData(com.dataIn.data)
-    filterData(com.dataIn.data)
+    // clusterData(com.dataIn.data)
+    // filterData(com.dataIn.data)
 
     svgBlocks.updateData(dataIn.data)
     svgEvents.updateData(dataIn.data)
@@ -335,372 +336,19 @@ let mainTagBlocks = function (optIn) {
   //
   // ---------------------------------------------------------------------------------------------------
   let SvgBlocks = function () {
-    // let thisMain = this
-
-    let tagTagBlocks = widgetType
-
-    let gBlockBoxFilter
-    let buttonPanel
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    function initData (dataIn) {
-      initBlockQueue(dataIn)
-      initFilters()
-    }
-    this.initData = initData
-
-    function initFilters (dataIn) {
-      let x0, y0, w0, h0
-      gBlockBoxFilter = svg.g.append('g')
-      y0 = (lenD.h[0] * 0.02)
-      w0 = lenD.w[0] * 0.12
-      h0 = lenD.h[0] * 0.18
-      x0 = (lenD.w[0] * 0.015)
-      // y0 = 3 * (lenD.h[0] * 0.02) + lenD.h[0] * 0.18
-      let blockBoxData = {
-        x: x0,
-        y: y0,
-        width: w0,
-        height: h0
-      }
-      let margin = {
-        inner: 5,
-        extern: 5
-      }
-
-      buttonPanel = new ButtonPanel()
-      buttonPanel.init({
-        g: gBlockBoxFilter,
-        box: blockBoxData,
-        margin: margin,
-        rows: 3,
-        cols: 3,
-        background: 'none',
-        stroke: '#CFD8DC'
-      })
-
-      let newButton = buttonPanel.addButton({row: 0, col: 1})
-      newButton.append('text')
-        .text('SBs Filters')
-        .attr('x', Number(newButton.attr('width')) * 0.5)
-        .attr('y', Number(newButton.attr('height')) * 0.35)
-        .attr('dy', 6)
-        .attr('stroke', '#CFD8DC')
-        .attr('fill', '#CFD8DC')
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 18)
-        .style('pointer-events', 'none')
-        .style('user-select', 'none')
-
-      createButton({row: 1, col: 0}, 'Fail')
-      createButton({row: 1, col: 1}, 'Done')
-      createButton({row: 1, col: 2}, 'Run')
-      createButton({row: 2, col: 0}, 'Cancel.canrun')
-      createButton({row: 2, col: 1}, 'Cancel')
-      createButton({row: 2, col: 2}, 'Wait')
-    }
-    this.initFilters = initFilters
-
-    function createButton (position, type) {
-      let newButton = buttonPanel.addButton(position)
-      newButton.attr('status', 'disabled')
-
-      let clickFunction = function (rect, id) {
-        if (newButton.attr('status') === 'enabled') {
-          newButton.attr('status', 'disabled')
-          newButton.selectAll('line.checkboxBar').remove()
-          rect.attr('stroke', function (d, i) {
-            return '#000000'
-          })
-            .attr('stroke-width', 3.5)
-            .style('stroke-opacity', 0.7)
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', 0)
-            .attr('y1', 0)
-            .attr('x2', (Number(newButton.attr('width'))))
-            .attr('y2', (Number(newButton.attr('height'))))
-            .attr('stroke', '#000000')
-            .style('stroke-opacity', 0.7)
-            .attr('stroke-width', 3)
-            .style('pointer-events', 'none')
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', 0)
-            .attr('y1', (Number(newButton.attr('height'))))
-            .attr('x2', (Number(newButton.attr('width'))))
-            .attr('y2', 0)
-            .attr('stroke', '#000000')
-            .style('stroke-opacity', 0.7)
-            .attr('stroke-width', 3)
-            .style('pointer-events', 'none')
-          blockQueue.removeStateFilter(id.toLowerCase())
-        } else {
-          newButton.attr('status', 'enabled')
-          newButton.selectAll('line.checkboxBar').remove()
-          rect.attr('stroke', function (d, i) {
-            return 'black'
-          })
-            .attr('stroke-width', 0.5)
-            .style('stroke-opacity', 1)
-          // newButton.append('line')
-          //   .attr('class', 'checkboxBar')
-          //   .attr('x1', (Number(newButton.attr('width')) * 0.5) + 2)
-          //   .attr('y1', (Number(newButton.attr('height')) * 0.6) + 5)
-          //   .attr('x2', (Number(newButton.attr('width')) * 0.5) + 9)
-          //   .attr('y2', (Number(newButton.attr('height')) * 0.6) - 5)
-          //   .attr('stroke', 'black')
-          //   .attr('stroke-width', 2.5)
-          //   .style('pointer-events', 'none')
-          // newButton.append('line')
-          //   .attr('class', 'checkboxBar')
-          //   .attr('x1', (Number(newButton.attr('width')) * 0.5) + 2)
-          //   .attr('y1', (Number(newButton.attr('height')) * 0.6) + 5)
-          //   .attr('x2', (Number(newButton.attr('width')) * 0.5) - 3)
-          //   .attr('y2', (Number(newButton.attr('height')) * 0.6) - 0)
-          //   .attr('stroke', 'black')
-          //   .attr('stroke-width', 2.5)
-          //   .style('pointer-events', 'none')
-          blockQueue.addStateFilter(id.toLowerCase())
-        }
-      }
-
-      let newRect = newButton.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('rx', 2)
-        .attr('ry', 2)
-        .attr('width', Number(newButton.attr('width')))
-        .attr('height', newButton.attr('height'))
-        .attr('fill', recCol(type))
-        .attr('stroke', function (d, i) {
-          return 'black'
-        })
-        .attr('stroke-width', 0.5)
-        .style('fill-opacity', function (d) {
-          return 0.7
-        })
-        .style('stroke-opacity', function (d) {
-          return 0.7
-        })
-        .on('click', function () {
-          clickFunction(d3.select(this), type)
-        })
-        .on('mouseover', function () {
-          let ginfo = gBlockBoxFilter.append('g')
-            .attr('class', 'info')
-            .attr('transform', newButton.attr('transform'))
-          ginfo.append('rect')
-            .attr('x', -Number(newButton.attr('width')) * 0.5)
-            .attr('y', -20)
-            .attr('width', Number(newButton.attr('width')) * 2)
-            .attr('height', 18)
-            .attr('rx', 3)
-            .attr('ry', 3)
-            .attr('fill', '#eeeeee')
-            .style('fill-opacity', 0.82)
-          ginfo.append('text')
-            .text(type.split('.')[0])
-            .attr('x', Number(newButton.attr('width')) * 0.5)
-            .attr('y', -5)
-            .style('fill-opacity', 0.82)
-            .style('font-weight', 'normal')
-            .attr('text-anchor', 'middle')
-            .style('font-size', 16)
-            .style('pointer-events', 'none')
-            .style('user-select', 'none')
-        })
-        .on('mouseout', function () {
-          gBlockBoxFilter.select('g.info').remove()
-        })
-      // newButton.append('text')
-      //   .text(type)
-      //   .attr('x', Number(newButton.attr('width')) * 0.35)
-      //   .attr('y', -2)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 8)
-      //   .style('pointer-events', 'none')
-      //   .style('user-select', 'none')
-      // newButton.append('circle')
-      //   .attr('cx', (Number(newButton.attr('width')) * 0.7) + 2)
-      //   .attr('cy', Number(newButton.attr('height')) + 2)
-      //   .attr('r', 6)
-      //   .attr('stroke', 'black')
-      //   .attr('stroke-width', 0.5)
-      //   .attr('fill', 'white')
-      //   .on('click', function () {
-      //     clickFunction(type)
-      //   })
-
-      clickFunction(newRect, type)
-    }
-
-    function recCol (state) {
-      if (state === 'Wait') return '#e6e6e6'
-      else if (state === 'Done') return d3.color(colsGreens[0]).brighter()
-      else if (state === 'Run') {
-        return d3.color(colsPurplesBlues[0]).brighter()
-      } else if (state === 'Cancel.canrun') {
-        return d3.color(colsPurples[3]).brighter()
-      } else if (state === 'Cancel') {
-        return d3.color(colsPurples[4])
-      } else if (state === 'Fail') return d3.color(colsReds[3]).brighter()
-      else return d3.color(colPrime).brighter()
-    }
-    this.recCol = recCol
-
-    function initBlockQueue (dataIn) {
-      // ---------------------------------------------------------------------------------------------------
-      // create the main svg element
-      // ---------------------------------------------------------------------------------------------------
-      // the background grid
-      // bckPattern({
-      //   com: com,
-      //   gNow: svg.g,
-      //   gTag: 'hex',
-      //   lenWH: [lenD.w[0], lenD.h[0]],
-      //   opac: 0.1,
-      //   hexR: 15
-      // })
-
-      let x0, y0, w0, h0, marg
-      let gBlockBox = svg.g.append('g')
-
-      w0 = lenD.w[0] * 0.82
-      h0 = lenD.h[0] * 0.18 // h0 *= 2.5;
-      x0 = (lenD.w[0] * 0.16)
-      y0 = (lenD.h[0] * 0.02)
-      marg = w0 * 0.01
-      let blockBoxData = {
-        x: x0,
-        y: y0,
-        w: w0,
-        h: h0,
-        marg: marg
-      }
-
-      blockQueue.init({
-        tag: tagBlockQueue,
-        gBox: gBlockBox,
-        boxData: blockBoxData,
-
-        doPhase: false,
-        click: function (d) {
-          svgMiddleInfo.changeFocusElement('block', d.data)
-        },
-        // mouseover: function (d) {
-        //   svgMiddleInfo.blockPreview(d.data)
-        // },
-        // mouseout: function () {
-        //   svgMiddleInfo.cleanPreview()
-        // },
-
-        verticalScroll: false,
-        horizontalScroll: false,
-        mainShift: 'timeBar',
-
-        hasAxis: true,
-
-        locker: locker,
-        lockerV: [tagTagBlocks + 'updateData'],
-        lockerZoom: {
-          all: tagBlockQueue + 'zoom',
-          during: tagBlockQueue + 'zoomDuring',
-          end: tagBlockQueue + 'zoomEnd'
-        },
-        runLoop: runLoop
-      })
-
-      // ---------------------------------------------------------------------------------------------------
-
-      updateDataOnce(dataIn)
-
-      runWhenReady({
-        pass: function () {
-          return locker.isFree(tagTagBlocks + 'updateData')
-        },
-        execute: function () {
-          locker.remove('inInit')
-        }
-      })
-    }
-    this.initBlockQueue = initBlockQueue
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
-
-    function updateData (dataIn) {
-      if (!locker.isFree('inInit')) {
-        setTimeout(function () {
-          updateData(dataIn)
-        }, 10)
-        return
-      }
-
-      runLoop.push({ tag: 'updateData', data: dataIn }) //, time:dataIn.emitTime
-    }
-    this.updateData = updateData
-
-    function updateDataOnce (dataIn) {
-      if (
-        !locker.isFreeV([
-          tagTagBlocks + 'updateData',
-          tagBlockQueue + 'zoom'
-        ])
-      ) {
-        // console.log('will delay updateRecData',locker.getActiveV([tagTagBlocks+"updateDataOnce", tagBlockQueue+"_zoom"]));
-        setTimeout(function () {
-          updateData(dataIn)
-        }, 10)
-        return
-      }
-      locker.add(tagTagBlocks + 'updateData')
-
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      let telIds = []
-      let telHealth = {}
-      $.each(dataIn.telHealth, function (index, dataNow) {
-        telIds.push(dataNow.id)
-        telHealth[dataNow.id] = dataNow.val
-      })
-      blockQueue.set({ tag: 'telIds', data: telIds })
-      blockQueue.set({ tag: 'time', data: dataIn.timeOfNight })
-      blockQueue.update(dataIn.blocks)
-
-      locker.remove(tagTagBlocks + 'updateData')
-    }
-    // ---------------------------------------------------------------------------------------------------
-  }
-  let SvgEvents = function () {
-    let axis = {}
-    let gBlockBox, gEvents, gBlockBoxFilter
+    // let axis = {}
+    let gBlockBox // , gEvents
     let blockBoxData
-    let eventsBlocks
-
-    let buttonPanel
+    let tagBlockQueue = 'tagBlockQueue'
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
     function initData (dataIn) {
-      initEventQueue(dataIn)
-      initFilters(dataIn)
-    }
-    this.initData = initData
-    function initEventQueue (dataIn) {
       let x0, y0, w0, h0, marg
-      gBlockBox = svg.g.append('g')
-
-      w0 = lenD.w[0] * 0.82
-      h0 = lenD.h[0] * 0.09 // h0 *= 2.5;
-      x0 = (lenD.w[0] * 0.16)
-      y0 = 3 * (lenD.h[0] * 0.02) + lenD.h[0] * 0.18
+      w0 = lenD.w[0] * 0.94
+      h0 = lenD.h[0] * 0.18 // h0 *= 2.5;
+      x0 = (lenD.w[0] * 0.015)
+      y0 = (lenD.h[0] * 0.02)
       marg = w0 * 0.01
       blockBoxData = {
         x: x0,
@@ -709,514 +357,186 @@ let mainTagBlocks = function (optIn) {
         h: h0,
         marg: marg
       }
-
-      axis.scaleXBlocks = d3.scaleLinear()
-        .domain([dataIn.timeOfNight.start, dataIn.timeOfNight.end])
-        .range([0, blockBoxData.w])
-
-      axis.scaleX = d3.scaleTime().range([0, blockBoxData.w]).domain([new Date(dataIn.timeOfNight.date_start), new Date(dataIn.timeOfNight.date_end)])
-      axis.translate = 'translate(' + blockBoxData.x + ',' + (blockBoxData.y) + ')'
-      axis.bottom = d3.axisTop(axis.scaleX).tickFormat('')
-      axis.axisG = gBlockBox
-        .append('g')
-        .attr('class', 'axisX')
-        .attr('transform', axis.translate)
-        .call(axis.bottom)
-      axis.axisG.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-      axis.axisG.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-      axis.axisG.selectAll('g.tick').selectAll('text').attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
-
-      gEvents = gBlockBox
-        .append('g')
-        .attr('class', 'events')
-        .attr('transform', 'translate(' + blockBoxData.x + ',1)')
-    }
-    this.initEventQueue = initEventQueue
-    function initFilters (dataIn) {
-      let x0, y0, w0, h0
-      gBlockBoxFilter = svg.g.append('g')
-
-      w0 = lenD.w[0] * 0.12
-      h0 = lenD.h[0] * 0.18
-      x0 = (lenD.w[0] * 0.015)
-      y0 = 3 * (lenD.h[0] * 0.02) + lenD.h[0] * 0.18
-      let blockBoxData = {
-        x: x0,
-        y: y0,
-        width: w0,
-        height: h0
-      }
-      let margin = {
-        inner: 5,
-        extern: 5
-      }
-      buttonPanel = new ButtonPanel()
-
-      buttonPanel.init({
-        g: gBlockBoxFilter,
+      gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
+      blockQueue.init({
+        tag: 'blockQueueDefaultTag',
+        g: gBlockBox,
         box: blockBoxData,
-        margin: margin,
-        rows: 3,
-        cols: 3,
-        background: 'none',
-        stroke: '#CFD8DC'
+        axis: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x:(lenD.w[0] * 0.145), y:blockBoxData.h, w: lenD.w[0] * 0.82, h:0, marg: 0}
+          },
+          axis: undefined,
+          scale: undefined,
+          domain: [0, 1000],
+          range: [0,0],
+          showText: true,
+          orientation: 'axisTop'
+        },
+        blocks: {
+          enabled: true,
+          group: {
+            run: {
+              g: undefined,
+              box: {x:(lenD.w[0] * 0.145), y:blockBoxData.h * 0.45, w:lenD.w[0] * 0.82, h:blockBoxData.h * 0.55, marg: blockBoxData.marg}
+            },
+            cancel: {
+              g: undefined,
+              box: {x:(lenD.w[0] * 0.145), y:0, w:lenD.w[0] * 0.82, h:blockBoxData.h * 0.3, marg: blockBoxData.marg}
+            }
+          },
+          events: {
+            click: () => {},
+            mouseover: () => {},
+            mouseout: () => {}
+          }
+        },
+        filters: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x:0, y:0, w:lenD.w[0] * 0.12, h:blockBoxData.h, marg: 0}
+          },
+          filters: []
+        },
+        timeBars: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x:0, y:0, w:0, h:0, marg: 0}
+          }
+        },
+        data: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined},
+          lastRawData: undefined,
+          formatedData: undefined
+        },
+        debug: {
+          enabled: false
+        }
       })
 
-      createButton({row: 0, col: 0}, 'Low', 1)
-      createButton({row: 0, col: 1}, 'Medium', 2)
-      createButton({row: 0, col: 2}, 'High', 3)
-      createButton({row: 1, col: 0}, 'Alarm', 3)
-      createButton({row: 1, col: 1}, 'GRB', 3)
-      createButton({row: 1, col: 2}, 'Hardw.', 3)
-
-      let newButton = buttonPanel.addButton({row: 2, col: 1})
-      newButton.append('text')
-        .text('Events Filters')
-        .attr('x', Number(newButton.attr('width')) * 0.5)
-        .attr('y', Number(newButton.attr('height')) * 0.35)
-        .attr('dy', 8)
-        .attr('stroke', '#CFD8DC')
-        .attr('fill', '#CFD8DC')
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 18)
-        .style('pointer-events', 'none')
-        .style('user-select', 'none')
+      updateData(dataIn)
     }
-    this.initFilters = initFilters
-    function createButton (position, type, priority) {
-      let newButton = buttonPanel.addButton(position)
-      newButton.attr('status', 'disabled')
-
-      let clickFunction = function (rect, id) {
-        if (newButton.attr('status') === 'enabled') {
-          newButton.attr('status', 'disabled')
-          rect.attr('stroke', function (d, i) {
-            return '#000000'
-          })
-            .attr('stroke-width', 4.5)
-            .style('stroke-opacity', 0.6)
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', 0)
-            .attr('y1', 0)
-            .attr('x2', (Number(newButton.attr('width'))))
-            .attr('y2', (Number(newButton.attr('height'))))
-            .attr('stroke', '#000000')
-            .style('stroke-opacity', 0.9)
-            .attr('stroke-width', 3)
-            .style('pointer-events', 'none')
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', 0)
-            .attr('y1', (Number(newButton.attr('height'))))
-            .attr('x2', (Number(newButton.attr('width'))))
-            .attr('y2', 0)
-            .attr('stroke', '#000000')
-            .style('stroke-opacity', 0.9)
-            .attr('stroke-width', 3)
-            .style('pointer-events', 'none')
-          blockQueue.removeStateFilter(id.toLowerCase())
-        } else {
-          newButton.attr('status', 'enabled')
-          newButton.selectAll('line.checkboxBar').remove()
-          rect.attr('stroke', function (d, i) {
-            return '#000000'
-          })
-            .attr('stroke-width', 0.5)
-            .style('stroke-opacity', 1)
-        }
-      }
-
-      // newButton.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', Number(newButton.attr('width')) * 0.7)
-      //   .attr('height', newButton.attr('height'))
-      //   .attr('fill', recCol(type))
-      //   .attr('stroke', function (d, i) {
-      //     return 'black'
-      //   })
-      //   .attr('stroke-width', 0.5)
-      //   .style('fill-opacity', function (d) {
-      //     return 0.7
-      //   })
-      //   .style('stroke-opacity', function (d) {
-      //     return 0.7
-      //   })
-      //   .on('click', function () {
-      //     clickFunction(type)
-      //   })
-      // newButton.append('text')
-      //   .text(type)
-      //   .attr('x', Number(newButton.attr('width')) * 0.35)
-      //   .attr('y', -2)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 8)
-      //   .style('pointer-events', 'none')
-      //   .style('user-select', 'none')
-      let newRect = newButton.append('rect')
-        .attr('x', (Number(newButton.attr('width')) - ((Number(newButton.attr('width'))) * (priority) / 3)) / 2)
-        .attr('y', (Number(newButton.attr('height')) - ((Number(newButton.attr('height'))) * (priority) / 3)) / 2)
-        .attr('width', function (d, i) {
-          return ((Number(newButton.attr('width'))) * (priority) / 3)
-        })
-        .attr('height', function (d, i) {
-          return ((Number(newButton.attr('height'))) * (priority) / 3)
-        })
-        .attr('rx', 2)
-        .attr('ry', 2)
-        .attr('stroke', function (d, i) {
-          return 'black'
-        })
-        .attr('stroke-width', 0.5)
-        .style('fill', function (d, i) {
-          return '#efefef'// colsYellows[0]
-        })
-        .style('fill-opacity', function (d, i) {
-          return 1
-        })
-        .on('click', function () {
-          clickFunction(d3.select(this), type)
-        })
-        .on('mouseover', function () {
-          let ginfo = gBlockBoxFilter.append('g')
-            .attr('class', 'info')
-            .attr('transform', newButton.attr('transform'))
-          ginfo.append('rect')
-            .attr('x', -Number(newButton.attr('width')) * 0.5)
-            .attr('y', -20)
-            .attr('width', Number(newButton.attr('width')) * 2)
-            .attr('height', 18)
-            .attr('rx', 3)
-            .attr('ry', 3)
-            .attr('fill', '#eeeeee')
-            .style('fill-opacity', 0.82)
-          ginfo.append('text')
-            .text(type)
-            .attr('x', Number(newButton.attr('width')) * 0.5)
-            .attr('y', -5)
-            .style('fill-opacity', 0.82)
-            .style('font-weight', 'normal')
-            .attr('text-anchor', 'middle')
-            .style('font-size', 16)
-            .style('pointer-events', 'none')
-            .style('user-select', 'none')
-        })
-        .on('mouseout', function () {
-          gBlockBoxFilter.select('g.info').remove()
-        })
-
-        // .attr('x', -5 + (3 - priority) * 2)
-        // .attr('y', -2 + (3 - priority) * 2)
-        // .attr('rx', 2)
-        // .attr('ry', 2)
-        // .attr('width', function (d, i) {
-        //   return (12 * (priority + 1) / 2.2)
-        // })
-        // .attr('height', function (d, i) {
-        //   return (12 * (priority + 1) / 2.2)
-        // })
-        // .attr('stroke', function (d, i) {
-        //   return 'black'
-        // })
-        // .style('stroke-opacity', function (d) {
-        //   return 0.7
-        // })
-
-
-      if (type === 'Alarm') drawAlarm(newButton, 0, 0, 27, 27)
-      if (type === 'GRB') drawGrb(newButton, 0, 0, 27, 27)
-      if (type === 'Hardw.') drawHardware(newButton, 0, 0, 27, 27)
-      // newButton.append('circle')
-      //   .attr('cx', (Number(newButton.attr('width')) * 0.7) + 2)
-      //   .attr('cy', Number(newButton.attr('height')) + 2)
-      //   .attr('r', 6)
-      //   .attr('stroke', 'black')
-      //   .attr('stroke-width', 0.5)
-      //   .attr('fill', 'white')
-      //   .on('click', function () {
-      //     clickFunction(type)
-      //   })
-
-      clickFunction(newRect, type)
-    }
+    this.initData = initData
 
     function updateData (dataIn) {
-      eventsBlocks = calcBlockRow({
-        typeNow: 'events',
-        start: com.dataIn.data.timeOfNight.start,
-        end: com.dataIn.data.timeOfNight.end,
-        data: com.dataIn.data.external_events[0],
-        box: blockBoxData
+      let telIds = []
+      $.each(dataIn.telHealth, function (index, dataNow) {
+        telIds.push(dataNow.id)
       })
 
-      let rect = gEvents
-        .selectAll('g.events')
-        .data(eventsBlocks)
-
-      let newRect = rect
-        .enter()
-        .append('g')
-        .attr('class', 'events')
-      newRect.append('rect')
-        .attr('x', function (d, i) {
-          return axis.scaleXBlocks(d.data.time)
-        })
-        .attr('y', function (d, i) {
-          return d.y + 2
-        })
-        .attr('rx', 2)
-        .attr('ry', 2)
-        .attr('width', function (d, i) {
-          return d.w
-        })
-        .attr('height', function (d, i) {
-          return d.h
-        })
-        .attr('stroke', function (d, i) {
-          return '#000000'
-        })
-        .attr('stroke-width', 0.5)
-        .style('stroke-opacity', function (d) {
-          return 0.7
-        })
-        .style('fill', function (d, i) {
-          return '#CFD8DC'
-        })
-        .style('fill-opacity', function (d, i) {
-          return 1
-        })
-        .on('mouseover', function (d) {
-          d3.select(this).attr('stroke-width', 3.5)
-            .style('stroke-opacity', 1)
-            .style('stroke', '#000000')
-            .style('fill', '#ffffff')
-        })
-        .on('mouseout', function (d) {
-          d3.select(this).attr('stroke-width', 0.5)
-            .style('stroke-opacity', 0.7)
-            .style('stroke', '#000000')
-            .style('fill', '#CFD8DC')
-        })
-        .on('click', function (d) {
-          svgMiddleInfo.changeFocusElement('event', d.data)
-        })
-      newRect.each(function (d) {
-        if (d.data.name === 'grb') drawGrb(d3.select(this), axis.scaleXBlocks(d.data.time), d.y, d.w, d.h, d.data.priority)
-        if (d.data.name === 'hardware') drawHardware(d3.select(this), axis.scaleXBlocks(d.data.time), d.y, d.w, d.h, d.data.priority)
-        if (d.data.name === 'alarm') drawAlarm(d3.select(this), axis.scaleXBlocks(d.data.time), d.y, d.w, d.h, d.data.priority)
+      blockQueue.update({
+        currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
+        startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
+        endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)},
+        data: dataIn.blocks,
+        telIds: telIds
       })
-      rect.merge(newRect)
     }
     this.updateData = updateData
-
-    function drawAlarm (g, x, y, w, h, priority) {
-      g.append('svg:image')
-        .attr('class', 'icon')
-        .attr('xlink:href', '/static/alarm.svg')
-        .attr('width', w * 0.8)
-        .attr('height', h * 0.8)
-        .attr('x', x + w * 0.1)
-        .attr('y', y + h * 0.1)
-        .style('pointer-events', 'none')
-    }
-    function drawGrb (g, x, y, w, h, priority) {
-      g.append('svg:image')
-        .attr('class', 'icon')
-        .attr('xlink:href', '/static/grb.svg')
-        .attr('width', w * 0.8)
-        .attr('height', h * 0.8)
-        .attr('x', x + w * 0.1)
-        .attr('y', y + h * 0.1)
-        .style('pointer-events', 'none')
-    }
-    function drawHardware (g, x, y, w, h, priority) {
-      g.append('svg:image')
-        .attr('class', 'icon')
-        .attr('xlink:href', '/static/hardwareBreak.svg')
-        .attr('width', w * 0.8)
-        .attr('height', h * 0.8)
-        .attr('x', x + w * 0.1)
-        .attr('y', y + h * 0.1)
-        .style('pointer-events', 'none')
-    }
-
+  }
+  let SvgEvents = function () {
+    // let axis = {}
+    let gBlockBox // , gEvents
+    let blockBoxData
+    let eventQueue
+    let tagEventQueue = 'tagEventQueue'
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function calcBlockRow (optIn) {
-      let dataIn = optIn.data
-      let box = optIn.box
-      let xScale = box.w / (optIn.end - optIn.start)
+    function initData (dataIn) {
+      let x0, y0, w0, h0, marg
+      w0 = lenD.w[0] * 0.94
+      h0 = lenD.h[0] * 0.18 // h0 *= 2.5;
+      x0 = (lenD.w[0] * 0.015)
+      y0 = 3 * (lenD.h[0] * 0.022) + lenD.h[0] * 0.18
+      marg = w0 * 0.01
+      blockBoxData = {
+        x: x0,
+        y: y0,
+        w: w0,
+        h: h0,
+        marg: marg
+      }
+      gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
 
-      let blocks = []
-
-      // compute width/height/x/y of blocks, only y need to be modified (so far)
-      $.each(dataIn, function (index, dataNow) {
-        let sizeBlocks = (12 * (4.5 + 1) / 2.2)
-        let start = new Date(dataNow.time) * xScale
-        let x0 = box.x + start - (sizeBlocks / 2)
-        let w0 = sizeBlocks
-        let h0 = sizeBlocks
-        let y0 = box.y
-
-
-        blocks.push({
-          x: x0,
-          y: y0,
-          w: w0,
-          h: h0,
-          data: dataNow
-        })
-      })
-
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      let wMin = minMaxObj({ minMax: 'min', data: blocks, func: 'w' })
-      let hMin = minMaxObj({ minMax: 'min', data: blocks, func: 'h' })
-      if (!hasVar(hMin) || !hasVar(wMin)) return []
-
-      let margX = wMin * 0.2
-      let margY = blocks.length === 1 ? 0 : Math.min(hMin * 0.5, box.h * 0.05)
-      $.each(blocks, function (index0, dataNow0) {
-        dataNow0.x += margX / 2
-        dataNow0.w -= margX
-        dataNow0.h -= margY / 2
-
-        // precaution against negative width values
-        dataNow0.w = Math.max(dataNow0.w, box.marg / 10)
-        dataNow0.h = Math.max(dataNow0.h, box.marg)
-      })
-      let sortedIds = []
-      $.each(blocks, function (index0, dataNow0) {
-        // if(typeNow=='run') return
-        // if(sortedIds.indexOf(dataNow0.id) >= 0) console.log('will skip sorted',index0,dataNow0.data.metaData.blockName);
-        if (sortedIds.indexOf(dataNow0.id) >= 0) return
-        sortedIds.push(dataNow0.id)
-
-        let x0 = dataNow0.x
-        let y0 = dataNow0.y
-        let w0 = dataNow0.w
-        let h0 = dataNow0.h
-        // let o0 = dataNow0.o
-
-        let telV = [].concat(dataNow0.data.telIds)
-        let minMax = { minX: x0, minY: y0, maxX: x0 + w0, maxY: y0 + h0 }
-
-        let ovelaps = [{ index: index0, data: dataNow0 }]
-
-        for (let nTries = 0; nTries < 1; nTries++) {
-          let nOver = ovelaps.length
-
-          $.each(blocks, function (index1, dataNow1) {
-            if (sortedIds.indexOf(dataNow1.id) >= 0) return
-            if (
-              ovelaps
-                .map(function (d) {
-                  return d.data.id
-                })
-                .indexOf(dataNow1.id) >= 0
-            ) {
-              return
-            }
-
-            let x1 = dataNow1.x
-            let y1 = dataNow1.y
-            let w1 = dataNow1.w
-            let h1 = dataNow1.h
-            let o01 = Math.max(dataNow0.o, dataNow1.o)
-
-            let hasOverlap =
-                              x1 < minMax.maxX - o01 &&
-                              x1 + w1 > minMax.minX + o01 &&
-                              y1 < minMax.maxY &&
-                              y1 + h1 > minMax.minY
-            // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName]);
-
-            // XXXXXXXXXXXXXXXXXX
-            // let hasOverlap = (
-            //   (x1 < minMax.maxX+margX/2) && (x1+w1 > minMax.minX) &&
-            //   (y1 < minMax.maxY)         && (y1+h1 > minMax.minY)
-            // );
-            // XXXXXXXXXXXXXXXXXX
-
-            if (hasOverlap) {
-              let intersect = telV.filter(n => dataNow1.data.telIds.includes(n))
-              if (intersect.length === 0) {
-                sortedIds.push(dataNow1.id)
-              }
-              telV = telV.concat(dataNow1.data.telIds)
-
-              minMax = {
-                minX: Math.min(minMax.minX, x1),
-                minY: Math.min(minMax.minY, y1),
-                maxX: Math.max(minMax.maxX, x1 + w1),
-                maxY: Math.max(minMax.maxY, y1 + h1)
-              }
-
-              ovelaps.push({ index: index1, data: dataNow1 })
-            }
-          })
-          // console.log('xxxxxxxxxxxxxxx',nTries,ovelaps,ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
-          if (nOver === ovelaps.length) break
-        }
-
-        if (ovelaps.length > 1) {
-          let origIndices = ovelaps.map(function (d) {
-            return d.index
-          })
-
-          ovelaps.sort(function (a, b) {
-            let diffTime = a.data.data.startTime - b.data.data.startTime
-            let diffTel = b.data.data.telIds.length - a.data.data.telIds.length
-            return diffTel !== 0 ? diffTel : diffTime
-          })
-
-          // if(typeNow=='run') console.log('will sort',ovelaps.map(function(d){return d.data.data.metaData.blockName;}));
-          $.each(ovelaps, function (index1, dataNow1) {
-            // if(typeNow=='run') console.log('-=-=-',index1,origIndices[index1], dataNow1.index);
-            let origIndex = origIndices[index1]
-            // if(canSort) blocks[origIndex] = dataNow1.data;
-            blocks[origIndex] = dataNow1.data
-          })
-        }
-      })
-      $.each(blocks, function (index0, dataNow0) {
-        let x0 = dataNow0.x
-        let y0 = dataNow0.y
-        let w0 = dataNow0.w
-        let h0 = dataNow0.h
-
-        // let telV = [].concat(dataNow0.data.telIds)
-
-        let isSkip = false
-        $.each(blocks, function (index1, dataNow1) {
-          if (index0 >= index1 || isSkip) return
-
-          let x1 = dataNow1.x
-          let y1 = dataNow1.y
-          let w1 = dataNow1.w
-          let h1 = dataNow1.h
-
-          // XXXXXXXXXXXXXXXXXX
-          // let hasOverlap = ((x1 < x0+w0+margX/2) && (x1+w1 > x0) && (y1 < y0+h0) && (y1+h1 > y0));
-          // XXXXXXXXXXXXXXXXXX
-          let hasOverlap = x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
-          if (hasOverlap) {
-            dataNow1.y = y0 + h0 + margY / 2
-            // dataNow1.y += h0 + margY/2;
+      eventQueue = new EventQueue()
+      eventQueue.init({
+        tag: 'eventQueueDefaultTag',
+        g: gBlockBox,
+        box: blockBoxData,
+        axis: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x:(lenD.w[0] * 0.145), y:0, w: lenD.w[0] * 0.82, h:0, marg: 0}
+          },
+          axis: undefined,
+          scale: undefined,
+          domain: [0, 1000],
+          range: [0,0],
+          showText: true,
+          orientation: 'axisTop'
+        },
+        blocks: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x:(lenD.w[0] * 0.145), y:0, w:lenD.w[0] * 0.82, h:blockBoxData.h, marg: blockBoxData.marg}
+          },
+          events: {
+            click: () => {},
+            mouseover: () => {},
+            mouseout: () => {}
           }
-          // if(hasOverlap) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName],(h0 + margY/2));
-        })
+        },
+        filters: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x:0, y:0, w:lenD.w[0] * 0.12, h:blockBoxData.h, marg: 0}
+          },
+          filters: []
+        },
+        timeBars: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x:0, y:0, w:0, h: 0, marg: 0}
+          }
+        },
+        data: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined},
+          lastRawData: undefined,
+          formatedData: undefined
+        },
+        debug: {
+          enabled: false
+        }
       })
 
-      return blocks
+      updateData(dataIn)
     }
-    this.calcBlockRow = calcBlockRow
+    this.initData = initData
 
+    function updateData (dataIn) {
+      eventQueue.update({
+        currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
+        startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
+        endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)},
+        data: dataIn.external_events[0]
+      })
+    }
+    this.updateData = updateData
   }
   // let SvgTels = function () {
   //   let gBlockBox, blockBoxData
@@ -3031,7 +2351,6 @@ let mainTagBlocks = function (optIn) {
     this.initData = initData
 
     function updateData (dataIn) {
-      console.log('ADD EVENT CLOCK', com.dataIn.data);
       clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.date_now))
       clockEvents.addEvent(com.dataIn.data.external_clockEvents[0])
       // let rnd = Math.random()

@@ -398,7 +398,7 @@ class obsBlocks_noACS():
         self.external_generateClockEvents()
 
         self.init()
-        
+
         gevent.spawn(self.loop)
 
         return
@@ -930,8 +930,8 @@ class obsBlocks_noACS():
 
     def external_generateEvents(self):
         if self.rndGen.random() < 0.2:
-            newEvent = {'time': self.timeOfNight.getCurrentTime(), 'date': self.timeOfNight.getCurrentDate().strftime("%Y-%m-%d %H:%M:%S")}
-            newEvent['priority'] = random.randint(1, 4)
+            newEvent = {'id': getTime() + random.randint(1, 99999), 'time': self.timeOfNight.getCurrentTime(), 'date': self.timeOfNight.getCurrentDate().strftime("%Y-%m-%d %H:%M:%S")}
+            newEvent['priority'] = random.randint(1, 3)
             if self.rndGen.random() < 0.33:
                 newEvent['name'] = 'alarm'
             elif self.rndGen.random() < 0.66:
@@ -943,7 +943,7 @@ class obsBlocks_noACS():
 
     def external_generateClockEvents(self):
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 16, 21, 45).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['start_date'] = datetime(2018, 9, 16, 21, 42).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['end_date'] = ''
         newEvent['icon'] = 'moon.svg'
         newEvent['name'] = 'Moonrise'
@@ -952,7 +952,7 @@ class obsBlocks_noACS():
         self.external_clockEvents.append(newEvent)
 
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 16, 23, 00).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['start_date'] = datetime(2018, 9, 16, 23, 07).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['end_date'] = datetime(2018, 9, 17, 4, 30).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['icon'] = 'rain.svg'
         newEvent['name'] = 'Raining'
@@ -961,7 +961,7 @@ class obsBlocks_noACS():
         self.external_clockEvents.append(newEvent)
 
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 17, 1, 00).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['start_date'] = datetime(2018, 9, 17, 1, 03).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['end_date'] = datetime(2018, 9, 17, 2, 00).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['icon'] = 'storm.svg'
         newEvent['name'] = 'Storm'
@@ -970,7 +970,7 @@ class obsBlocks_noACS():
         self.external_clockEvents.append(newEvent)
 
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 17, 1, 30).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['start_date'] = datetime(2018, 9, 17, 1, 28).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['end_date'] = datetime(2018, 9, 17, 2, 30).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['icon'] = 'handshake.svg'
         newEvent['name'] = 'Collab'
@@ -979,7 +979,7 @@ class obsBlocks_noACS():
         self.external_clockEvents.append(newEvent)
 
         newEvent = {}
-        newEvent['start_date'] = datetime(2018, 9, 17, 5, 20).strftime("%Y-%m-%d %H:%M:%S")
+        newEvent['start_date'] = datetime(2018, 9, 17, 5, 21).strftime("%Y-%m-%d %H:%M:%S")
         newEvent['end_date'] = ''
         newEvent['icon'] = 'sun.svg'
         newEvent['name'] = 'Sunrise'

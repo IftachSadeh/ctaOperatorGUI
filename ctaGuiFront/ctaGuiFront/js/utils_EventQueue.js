@@ -9,44 +9,36 @@
 /* global colsBlues */
 /* global colsPurples */
 /* global loadScript */
+/* global ScrollBox */
 /* global colsGreens */
 /* global colsYellows */
 /* global colsPurplesBlues */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
 
-// ---------------------------------------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------------------------------------
-window.BlockQueue = function () {
+window.EventQueue = function () {
   let template = {
-    tag: 'blockQueueDefaultTag',
+    tag: 'eventQueueDefaultTag',
     g: undefined,
-    box: {x: 0, y: 0, w: 0, h: 0},
+    box: {x:0, y:0, w:0, h:0},
     axis: {
       enabled: true,
       group: {
         g: undefined,
-        box: {x: 0, y: 0, w: 0, h: 0}
+        box: {x:0, y:0, w:0, h:0}
       },
       main: undefined,
       scale: undefined,
       domain: [0, 1000],
       range: [0,0],
       showText: true,
-      orientation: 'axisBottom'
+      orientation: 'axisTop'
     },
     blocks: {
       enabled: true,
       group: {
-        run: {
-          g: undefined,
-          box: {x: 0, y: 0, w: 0, h: 0}
-        },
-        cancel: {
-          g: undefined,
-          box: {x: 0, y: 0, w: 0, h: 0}
-        }
+        g: undefined,
+        box: {x:0, y:0, w:0, h:0}
       },
       events: {
         click: () => {},
@@ -58,7 +50,7 @@ window.BlockQueue = function () {
       enabled: false,
       group: {
         g: undefined,
-        box: {x: 0, y: 0, w: 0, h: 0}
+        box: {x:0, y:0, w:0, h:0}
       },
       filters: []
     },
@@ -66,7 +58,7 @@ window.BlockQueue = function () {
       enabled: true,
       group: {
         g: undefined,
-        box: {x: 0, y: 0, w: 0, h: 0}
+        box: {x:0, y:0, w:0, h:0}
       }
     },
     data: {
@@ -91,70 +83,8 @@ window.BlockQueue = function () {
     return com[type]
   }
 
-  function setStyle (optIn) {
-    if (!hasVar(optIn)) optIn = {}
-
-    com.style = {}
-
-    com.style.runRecCol = optIn.runRecCol
-    if (!hasVar(com.style.runRecCol)) {
-      com.style.runRecCol = colsBlues[2]
-    }
-
-    com.style.recCol = optIn.recCol
-    if (!hasVar(com.style.recCol)) {
-      com.style.recCol = function (optIn) {
-        // let colsPurplesBlues = colsMix;
-        // let nObs = hasVar(optIn.nObs) ? optIn.nObs : optIn.d.nBlock
-        let state = hasVar(optIn.state)
-          ? optIn.state
-          : optIn.d.data.exeState.state
-        let canRun = hasVar(optIn.canRun)
-          ? optIn.canRun
-          : optIn.d.data.exeState.canRun
-
-        if (state === 'wait') return "#e6e6e6"
-        else if (state === 'done') return d3.color(colsGreens[0]).brighter()
-        else if (state === 'run') {
-          return d3.color(colsPurplesBlues[0]).brighter() // [nObs % colsPurplesBlues.length]
-        } else if (state === 'cancel') {
-          if (hasVar(canRun)) {
-            if (!canRun) return d3.color(colsPurples[3]).brighter()
-          }
-          return d3.color(colsPurples[4])
-        } else if (state === 'fail') return d3.color(colsReds[3]).brighter()
-        else return d3.color(colPrime).brighter()
-      }
-    }
-
-    com.style.recFillOpac = optIn.recFillOpac
-    if (!hasVar(com.style.recFillOpac)) {
-      com.style.recFillOpac = function (d, state) {
-        // return (d.data.exeState.state == 'wait') ? 0.1 : ((d.data.exeState.state == 'run') ? 0.4 : 0.2);
-        return state === 'run' ? 0.4 : 0.15
-      }
-    }
-
-    com.style.recStrokeOpac = optIn.recStrokeOpac
-    if (!hasVar(com.style.recStrokeOpac)) {
-      com.style.recStrokeOpac = function (d) {
-        return 0.7
-      }
-    }
-
-    com.style.textOpac = optIn.textOpac
-    if (!hasVar(com.style.textOpac)) {
-      com.style.textOpac = function (d) {
-        return 1
-      }
-    }
-  }
-  this.setStyle = setStyle
-
   function init (optIn) {
     com = optIn
-
-    setStyle()
     initAxis()
     initBlocks()
     initFilters()
@@ -170,8 +100,8 @@ window.BlockQueue = function () {
     com.axis.scale = d3.scaleTime()
       .range(com.axis.range)
       .domain(com.axis.domain)
-    com.axis.main = d3.axisBottom(com.axis.scale)
-      .tickFormat(d3.timeFormat('%H:%M'))
+    com.axis.main = d3.axisTop(com.axis.scale)
+      .tickFormat('')
     com.axis.group.g
       .attr('class', 'axis')
       .call(com.axis.main)
@@ -181,27 +111,12 @@ window.BlockQueue = function () {
   }
   function initBlocks () {
     if (!com.blocks.enabled) return
-    com.blocks.group.run.g = com.g.append('g')
-      .attr('transform', 'translate(' + com.blocks.group.run.box.x + ',' + com.blocks.group.run.box.y + ')')
-    com.blocks.group.cancel.g = com.g.append('g')
-      .attr('transform', 'translate(' + com.blocks.group.cancel.box.x + ',' + com.blocks.group.cancel.box.y + ')')
+    com.blocks.group.g = com.g.append('g')
+      .attr('transform', 'translate(' + com.blocks.group.box.x + ',' + com.blocks.group.box.y + ')')
   }
   function initFilters () {
     if (!com.filters.enabled) return
-
-    function recCol (state) {
-      if (state === 'Wait') return '#e6e6e6'
-      else if (state === 'Done') return d3.color(colsGreens[0]).brighter()
-      else if (state === 'Run') {
-        return d3.color(colsPurplesBlues[0]).brighter()
-      } else if (state === 'Cancel.canrun') {
-        return d3.color(colsPurples[3]).brighter()
-      } else if (state === 'Cancel') {
-        return d3.color(colsPurples[4])
-      } else if (state === 'Fail') return d3.color(colsReds[3]).brighter()
-      else return d3.color(colPrime).brighter()
-    }
-    function createButton (position, type, filter) {
+    function createButton (position, type, priority, filter) {
       let newButton = buttonPanel.addButton(position)
       newButton.attr('status', 'disabled')
 
@@ -233,10 +148,10 @@ window.BlockQueue = function () {
             .style('stroke-opacity', 0.9)
             .attr('stroke-width', 3)
             .style('pointer-events', 'none')
-          // if (filter !== undefined) {
-          //   com.filters.filters.push(filter)
-          //   updateBlocks()
-          // }
+          if (filter !== undefined) {
+            com.filters.filters.push(filter)
+            updateBlocks()
+          }
         } else {
           newButton.attr('status', 'enabled')
           newButton.selectAll('line.checkboxBar').remove()
@@ -245,22 +160,22 @@ window.BlockQueue = function () {
           })
             .attr('stroke-width', 0.5)
             .style('stroke-opacity', 1)
-          // if (filter !== undefined) {
-          //   let index = com.filters.filters.indexOf(filter)
-          //   com.filters.filters.splice(index, 1)
-          //   updateBlocks()
-          // }
+          if (newButton.attr('status', 'disabled')) {
+            let index = com.filters.filters.indexOf(filter)
+            com.filters.filters.splice(index, 1)
+            updateBlocks()
+          }
         }
       }
 
       let newRect = newButton.append('rect')
-        .attr('x', (Number(newButton.attr('width')) - ((Number(newButton.attr('width'))) * (3) / 3)) / 2)
-        .attr('y', (Number(newButton.attr('height')) - ((Number(newButton.attr('height'))) * (3) / 3)) / 2)
+        .attr('x', (Number(newButton.attr('width')) - ((Number(newButton.attr('width'))) * (priority) / 3)) / 2)
+        .attr('y', (Number(newButton.attr('height')) - ((Number(newButton.attr('height'))) * (priority) / 3)) / 2)
         .attr('width', function (d, i) {
-          return ((Number(newButton.attr('width'))) * (3) / 3)
+          return ((Number(newButton.attr('width'))) * (priority) / 3)
         })
         .attr('height', function (d, i) {
-          return ((Number(newButton.attr('height'))) * (3) / 3)
+          return ((Number(newButton.attr('height'))) * (priority) / 3)
         })
         .attr('rx', 2)
         .attr('ry', 2)
@@ -269,7 +184,7 @@ window.BlockQueue = function () {
         })
         .attr('stroke-width', 0.5)
         .style('fill', function (d, i) {
-          return recCol(type)
+          return '#efefef'// colsYellows[0]
         })
         .style('fill-opacity', function (d, i) {
           return 1
@@ -300,38 +215,24 @@ window.BlockQueue = function () {
             .style('font-size', 16)
             .style('pointer-events', 'none')
             .style('user-select', 'none')
-
-          newButton.attr('status-over', newButton.attr('status'))
-          if (newButton.attr('status') === 'enabled') {
-            if (filter !== undefined) {
-              com.filters.filters.push(filter)
-              updateBlocks()
-            }
-          } else if (newButton.attr('status') === 'disabled') {
-            if (filter !== undefined) {
-              let index = com.filters.filters.indexOf(filter)
-              com.filters.filters.splice(index, 1)
-              updateBlocks()
-            }
+          if (filter !== undefined) {
+            com.filters.filters.push(filter)
+            updateBlocks()
           }
         })
         .on('mouseout', function () {
           com.filters.group.g.select('g.info').remove()
-          if (newButton.attr('status') !== newButton.attr('status-over')) {
-            return
-          } else if (newButton.attr('status') === 'disabled') {
-            if (filter !== undefined) {
-              com.filters.filters.push(filter)
-              updateBlocks()
-            }
-          } else if (newButton.attr('status') === 'enabled') {
-            if (filter !== undefined) {
-              let index = com.filters.filters.indexOf(filter)
-              com.filters.filters.splice(index, 1)
-              updateBlocks()
-            }
+          if (newButton.attr('status', 'disabled')) {
+            let index = com.filters.filters.indexOf(filter)
+            com.filters.filters.splice(index, 1)
+            updateBlocks()
           }
         })
+
+
+      if (type === 'Alarm') drawAlarm(newButton, 0, 0, 27, 27)
+      if (type === 'GRB') drawGrb(newButton, 0, 0, 27, 27)
+      if (type === 'Hardw.') drawHardware(newButton, 0, 0, 27, 27)
 
       clickFunction(newRect, type)
     }
@@ -355,12 +256,19 @@ window.BlockQueue = function () {
       stroke: '#CFD8DC'
     })
 
-    let newButton = buttonPanel.addButton({row: 0, col: 1})
+    createButton({row: 0, col: 0}, 'Low', 1, [{keys: ['priority'], value: 1}])
+    createButton({row: 0, col: 1}, 'Medium', 2, [{keys: ['priority'], value: 2}])
+    createButton({row: 0, col: 2}, 'High', 3, [{keys: ['priority'], value: 3}])
+    createButton({row: 1, col: 0}, 'Alarm', 3, [{keys: ['name'], value: 'alarm'}])
+    createButton({row: 1, col: 1}, 'GRB', 3, [{keys: ['name'], value: 'grb'}])
+    createButton({row: 1, col: 2}, 'Hardw.', 3, [{keys: ['name'], value: 'hardware'}])
+
+    let newButton = buttonPanel.addButton({row: 2, col: 1})
     newButton.append('text')
-      .text('SBs Filters')
+      .text('Events Filters')
       .attr('x', Number(newButton.attr('width')) * 0.5)
       .attr('y', Number(newButton.attr('height')) * 0.35)
-      .attr('dy', 6)
+      .attr('dy', 8)
       .attr('stroke', '#CFD8DC')
       .attr('fill', '#CFD8DC')
       .style('font-weight', 'normal')
@@ -368,21 +276,15 @@ window.BlockQueue = function () {
       .style('font-size', 18)
       .style('pointer-events', 'none')
       .style('user-select', 'none')
-
-    createButton({row: 1, col: 0}, 'Fail', [{keys: ['exeState', 'state'], value: 'fail'}])
-    createButton({row: 1, col: 1}, 'Done', [{keys: ['exeState', 'state'], value: 'done'}])
-    createButton({row: 1, col: 2}, 'Run', [{keys: ['exeState', 'state'], value: 'run'}])
-    createButton({row: 2, col: 0}, 'Cancel.canrun', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}])
-    createButton({row: 2, col: 1}, 'Cancel', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}])
-    createButton({row: 2, col: 2}, 'Wait', [{keys: ['exeState', 'state'], value: 'wait'}])
   }
-
   function initTimeBars () {
     if (!com.timeBars.enabled) return
     com.timeBars.group.g = com.g.append('g')
       .attr('transform', 'translate(' + com.timeBars.group.box.x + ',' + com.timeBars.group.box.y + ')')
   }
-
+  // ---------------------------------------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------------------------------------
   function filterData () {
     function checkPropertiesValue (d, keys, value) {
       let target = d
@@ -392,45 +294,8 @@ window.BlockQueue = function () {
       if (target === value) return true
       return false
     }
-    let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
-    for (var z = 0; z < com.data.raw.done.length; z++) {
-      let dataNow = com.data.raw.done[z]
-      if (com.filters.filters.length === 0) {
-        if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
-        if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
-        if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
-      } else {
-        let insert = true
-        for (var i = 0; i < com.filters.filters.length; i++) {
-          let filterNow = com.filters.filters[i]
-          let allPropValidate = true
-          for (var j = 0; j < filterNow.length; j++) {
-            if (!checkPropertiesValue(dataNow, filterNow[j].keys, filterNow[j].value)) allPropValidate = false
-          }
-          if (allPropValidate) insert = false
-        }
-        if (insert) {
-          if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
-          if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
-          if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
-        }
-      }
-    }
-    filtered.wait = com.data.raw.wait.filter(function (d) {
-      if (com.filters.filters.length === 0) return true
-      for (var i = 0; i < com.filters.filters.length; i++) {
-        let filterNow = com.filters.filters[i]
-        let ok = true
-        for (var j = 0; j < filterNow.length; j++) {
-          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) ok = false
-        }
-        if (ok) return false
-      }
-      return true
-    })
-    filtered.run = com.data.raw.run.filter(function (d) {
-      if (com.filters.filters.length === 0) return true
-      let ok = true
+    if (com.filters.filters.length === 0) return com.data.raw
+    let filtered = com.data.raw.filter(function (d) {
       for (var i = 0; i < com.filters.filters.length; i++) {
         let filterNow = com.filters.filters[i]
         let ok = true
@@ -458,39 +323,20 @@ window.BlockQueue = function () {
     com.axis.group.g.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
     com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
     com.axis.group.g.selectAll('g.tick').selectAll('text').style('font-size', 14).attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
-  }
 
+  }
   function updateBlocks () {
-    if (com.data.raw === undefined) return
     com.data.filtered = filterData()
-    let dataBottom = []
-      .concat(com.data.filtered.done)
-      .concat(com.data.filtered.fail)
-      .concat(com.data.filtered.run)
-      .concat(com.data.filtered.wait)
-
-    let bottomRow = calcBlockRow({
-      typeNow: 'bottom',
+    com.data.formatedData = calcBlockRow({
+      typeNow: 'events',
       start: com.data.startTime.time,
       end: com.data.endTime.time,
-      data: dataBottom,
-      box: {x: 0, y: 0, w: com.blocks.group.run.box.w, h: com.blocks.group.run.box.h, marg: com.blocks.group.run.box.marg},
-      yScale: true
+      data: com.data.filtered,
+      box: com.blocks.group.box
     })
-    setBlockRect(bottomRow, com.blocks.group.run)
-
-    let dataTop = []
-      .concat(com.data.filtered.cancel)
-    let topRow = calcBlockRow({
-      typeNow: 'top',
-      start: com.data.startTime.time,
-      end: com.data.endTime.time,
-      data: dataTop,
-      box: {x: 0, y: 0, w: com.blocks.group.cancel.box.w, h: com.blocks.group.cancel.box.h, marg: com.blocks.group.cancel.box.marg},
-      yScale: false
-    })
-    setBlockRect(topRow, com.blocks.group.cancel)
+    setBlockRect()
   }
+  function mergeOptIn (newOptIn) {}
 
   function update (dataIn) {
     com.data.lastRawData = com.data.raw
@@ -498,7 +344,7 @@ window.BlockQueue = function () {
     com.data.startTime = dataIn.startTime
     com.data.endTime = dataIn.endTime
     com.data.raw = dataIn.data
-    com.data.telIds = dataIn.telIds
+
 
     if (com.axis.enabled) updateAxis()
     if (com.blocks.enabled) updateBlocks()
@@ -511,48 +357,33 @@ window.BlockQueue = function () {
     let dataIn = optIn.data
     let box = optIn.box
     let xScale = box.w / (optIn.end - optIn.start)
-    let yScale = box.h / (com.data.telIds.length + 2)
 
     let blocks = []
-    let nBlocksType = {}
-    // console.log(dataIn);
+
     // compute width/height/x/y of blocks, only y need to be modified (so far)
     $.each(dataIn, function (index, dataNow) {
-      // console.log(dataNow);
-
-      let id = dataNow.obId
-      let state = dataNow.exeState.state
-      let nTels = dataNow.telIds.length
-      let start = (dataNow.startTime - optIn.start) * xScale
-      let end = (dataNow.endTime - optIn.start) * xScale
-      let overlap = (dataNow.endTime - dataNow.startTime) * xScale * 0.2 // allow small overlap in x between blocks
-      let x0 = box.x + start
-      let w0 = end - start
-      let h0 = optIn.yScale ? (nTels * yScale) : (box.h * 0.3)
+      let sizeBlocks = (12 * (4.5 + 1) / 2.2)
+      let start = new Date(dataNow.time) * xScale
+      let x0 = box.x + start - (sizeBlocks / 2)
+      let w0 = sizeBlocks
+      let h0 = sizeBlocks / 1.3
       let y0 = box.y
 
-      if (!hasVar(nBlocksType[state])) nBlocksType[state] = 0
-      else nBlocksType[state] += 1
-
       blocks.push({
-        id: id,
         x: x0,
         y: y0,
         w: w0,
         h: h0,
-        o: overlap,
-        nBlock: nBlocksType[state],
-        // nTel: nTels,
         data: dataNow
       })
     })
+
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
     let wMin = minMaxObj({ minMax: 'min', data: blocks, func: 'w' })
     let hMin = minMaxObj({ minMax: 'min', data: blocks, func: 'h' })
     if (!hasVar(hMin) || !hasVar(wMin)) return []
-
     let margX = wMin * 0.2
     let margY = blocks.length === 1 ? 0 : Math.min(hMin * 0.5, box.h * 0.05)
     $.each(blocks, function (index0, dataNow0) {
@@ -564,9 +395,10 @@ window.BlockQueue = function () {
       dataNow0.w = Math.max(dataNow0.w, box.marg / 10)
       dataNow0.h = Math.max(dataNow0.h, box.marg)
     })
-    // ---------------------------------------------------------------------------------------------------
     let sortedIds = []
     $.each(blocks, function (index0, dataNow0) {
+      // if(typeNow=='run') return
+      // if(sortedIds.indexOf(dataNow0.id) >= 0) console.log('will skip sorted',index0,dataNow0.data.metaData.blockName);
       if (sortedIds.indexOf(dataNow0.id) >= 0) return
       sortedIds.push(dataNow0.id)
 
@@ -657,7 +489,6 @@ window.BlockQueue = function () {
         })
       }
     })
-
     $.each(blocks, function (index0, dataNow0) {
       let x0 = dataNow0.x
       let y0 = dataNow0.y
@@ -686,186 +517,100 @@ window.BlockQueue = function () {
         // if(hasOverlap) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName],(h0 + margY/2));
       })
     })
-    $.each(blocks, function (index0, dataNow0) {
-      dataNow0.y = (2 * box.y + box.h) - dataNow0.y - dataNow0.h
-    })
+
     return blocks
   }
   this.calcBlockRow = calcBlockRow
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function setBlockRect (data, group) {
-    let box = group.box
-    let minTxtSize = box.w * 0.016
-    let timeScale = d3.scaleLinear()
-      .range(com.axis.range)
-      .domain([com.data.startTime.time, com.data.endTime.time])
-
-    let rect = group.g
-      .selectAll('rect.' + com.mainTag + 'blocks')
-      .data(data, function (d) {
-        return d.id
+  function setBlockRect () {
+    let rect = com.blocks.group.g
+      .selectAll('g.events')
+      .data(com.data.formatedData, function (d) {
+        return d.data.id
       })
-    rect
+    // console.log(com.blocks.group.g);
+    let newRect = rect
       .enter()
-      .append('rect')
-      .attr('class', com.mainTag + 'blocks')
-      .style('opacity', 0)
-
+      .append('g')
+      .attr('class', 'events')
+    newRect.append('rect')
       .attr('x', function (d, i) {
-        return timeScale(d.data.startTime)
+        return com.axis.scale(new Date(d.data.date)) + d.w / 2
       })
       .attr('y', function (d, i) {
-        return d.y - 2
+        return d.y + 2 + d.h / 2
       })
+      .attr('rx', 2)
+      .attr('ry', 2)
       .attr('width', function (d, i) {
-        return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        return 0
       })
       .attr('height', function (d, i) {
-        return d.h
+        return 0
       })
-
       .attr('stroke', function (d, i) {
-        return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
+        return '#000000'
       })
+      .attr('stroke-width', 0.5)
+      .style('stroke-opacity', function (d) {
+        return 0.7
+      })
+      // .style('fill', function (d, i) {
+      //   return '#CFD8DC'
+      // })
       .style('fill', function (d, i) {
-        return com.style.recCol({ d: d })
+        return '#CFD8DC'
+        // if (d.data.priority === 1) { return '#FFECB3' }
+        // if (d.data.priority === 2) { return '#FFCA28' }
+        // if (d.data.priority === 3) { return '#FFA000' }
       })
-      .style('fill-opacity', function (d) {
-        return com.style.recFillOpac(d, d.data.exeState.state)
-      })
-      .attr('stroke-width', 1)
-      .style('stroke-opacity', com.style.recStrokeOpac)
-      // .style("pointer-events", "none")
-      .attr('vector-effect', 'non-scaling-stroke')
-      .on('click', com.blocks.events.click)
       .on('mouseover', function (d) {
-        d3.select(this).attr('stroke-width', 4)
-        d3.select(this).style('stroke-opacity', 1)
-        com.blocks.events.mouseover(d)
+        d3.select(this).attr('stroke-width', 3.5)
+          .style('stroke-opacity', 1)
+          .style('stroke', '#000000')
+          .style('fill', '#ffffff')
+          .style('fill-opacity', '1')
       })
       .on('mouseout', function (d) {
-        d3.select(this).attr('stroke-width', 1)
-        d3.select(this).style('stroke-opacity', function (d) {
-          return 0.7
-          // if (filters.states.length === 0 && filters.errors.length === 0) return 0.7
-          // else {
-          //   let inState, inError
-          //   filters.states.length === 0 ? inState = true : inState = false
-          //   filters.errors.length === 0 ? inError = true : inError = false
-          //   for (var i = 0; i < filters.states.length; i++) {
-          //     if (d.data.exeState.state === filters.states[i].id) inState = true
-          //   }
-          //   for (var j = 0; j < filters.errors.length; j++) {
-          //     if (d.data.exeState.error === filters.errors[j].id) inError = true
-          //   }
-          //
-          //   if (inState && inError) return 0.7
-          //   return 0.05
-          // }
-          // return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
-        })
-        com.blocks.events.mouseout(d)
+        d3.select(this).attr('stroke-width', 0.5)
+          .style('stroke-opacity', 0.7)
+          .style('stroke', '#000000')
+          // .style('fill', '#CFD8DC')
+          .style('fill', function (d, i) {
+            return '#CFD8DC'
+            // if (d.data.priority === 1) { return '#FFECB3' }
+            // if (d.data.priority === 2) { return '#FFCA28' }
+            // if (d.data.priority === 3) { return '#FFA000' }
+          })
+      })
+      .on('click', function (d) {
+        com.blocks.events.click()
       })
       .merge(rect)
       .transition('inOut')
       .duration(timeD.animArc)
-
-      .style('opacity', 1)
-      .attr('stroke', function (d, i) {
-        return '#111111'
-      })
-      .style('fill', function (d, i) {
-        return com.style.recCol({ d: d })
-      })
-      .style('fill-opacity', function (d) {
-        return 0.7
-      })
-      .style('stroke-opacity', function (d) {
-        return 1
-      })
-
       .attr('x', function (d, i) {
-        return timeScale(d.data.startTime)
+        return com.axis.scale(new Date(d.data.date))
       })
       .attr('y', function (d, i) {
-        return d.y - 2
+        return d.y + 2
       })
       .attr('width', function (d, i) {
-        return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        return d.w
       })
       .attr('height', function (d, i) {
         return d.h
       })
-    rect
-      .exit()
-      .transition('inOut')
-      .duration(timeD.animArc / 2)
-      .attr('width', 0)
-      .style('opacity', 0)
-      .remove()
+    newRect.each(function (d) {
+      if (d.data.name === 'grb') drawGrb(d3.select(this), com.axis.scale(new Date(d.data.date)), d.y, d.w, d.h, d.data.priority)
+      if (d.data.name === 'hardware') drawHardware(d3.select(this), com.axis.scale(new Date(d.data.date)), d.y, d.w, d.h, d.data.priority)
+      if (d.data.name === 'alarm') drawAlarm(d3.select(this), com.axis.scale(new Date(d.data.date)), d.y, d.w, d.h, d.data.priority)
+    })
 
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    let text = group.g
-      .selectAll('text.' + com.mainTag + 'blocks')
-      .data(data, function (d) {
-        return d.id
-      })
-    text
-      .enter()
-      .append('text')
-      .attr('class', com.mainTag + 'blocks')
-      .text(function (d, i) {
-        return d.data.metaData.blockName
-      })
-      .style('font-weight', 'normal')
-      .style('opacity', 0)
-      .style('fill-opacity', 0.7)
-      .style('fill', '#111111')
-      .style('stroke-width', 0.3)
-      .style('stroke-opacity', 1)
-      .attr('vector-effect', 'non-scaling-stroke')
-      .style('pointer-events', 'none')
-      .style('stroke', function (d) {
-        return '#111111'
-      })
-      .attr('x', function (d, i) {
-        return d.x + d.w / 2
-      })
-      .attr('y', function (d, i) {
-        return d.y + d.h / 2
-      })
-      .attr('text-anchor', 'middle')
-      .merge(text)
-      .style('font-size', function (d) {
-        d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
-        if (!hasVar(d.size)) {
-          console.error('_blockQueue_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
-        } // should not happen....
-        if (!hasVar(d.size)) d.size = 0
-        // d.size = d.w/3;
-        return d.size + 'px'
-      })
-      .attr('dy', function (d) {
-        return d.size / 3 + 'px'
-      })
+    rect.exit()
       .transition('inOut')
       .duration(timeD.animArc)
-      .style('opacity', com.style.textOpac)
-      .attr('x', function (d, i) {
-        return d.x + d.w / 2
-      })
-      .attr('y', function (d, i) {
-        return d.y + d.h / 2
-      })
-    text
-      .exit()
-      .transition('inOut')
-      .duration(timeD.animArc)
+      .attr('width', 0)
       .style('opacity', 0)
       .remove()
   }
@@ -1039,4 +784,53 @@ window.BlockQueue = function () {
     //   .remove()
   }
   this.setTimeRect = setTimeRect
+
+  function drawAlarm (g, x, y, w, h, priority) {
+    g.append('svg:image')
+      .attr('class', 'icon')
+      .attr('xlink:href', '/static/alarm.svg')
+      .attr('width', 0)
+      .attr('height', 0)
+      .attr('x', x + w * 0.5)
+      .attr('y', y + h * 0.5)
+      .style('pointer-events', 'none')
+      .transition('inOut')
+      .duration(timeD.animArc)
+      .attr('width', w * 0.8)
+      .attr('height', h * 0.8)
+      .attr('x', x + w * 0.1)
+      .attr('y', y + h * 0.1)
+  }
+  function drawGrb (g, x, y, w, h, priority) {
+    g.append('svg:image')
+      .attr('class', 'icon')
+      .attr('xlink:href', '/static/grb.svg')
+      .attr('width', 0)
+      .attr('height', 0)
+      .attr('x', x + w * 0.5)
+      .attr('y', y + h * 0.5)
+      .style('pointer-events', 'none')
+      .transition('inOut')
+      .duration(timeD.animArc)
+      .attr('width', w * 0.8)
+      .attr('height', h * 0.8)
+      .attr('x', x + w * 0.1)
+      .attr('y', y + h * 0.1)
+  }
+  function drawHardware (g, x, y, w, h, priority) {
+    g.append('svg:image')
+      .attr('class', 'icon')
+      .attr('xlink:href', '/static/hardwareBreak.svg')
+      .attr('width', 0)
+      .attr('height', 0)
+      .attr('x', x + w * 0.5)
+      .attr('y', y + h * 0.5)
+      .style('pointer-events', 'none')
+      .transition('inOut')
+      .duration(timeD.animArc)
+      .attr('width', w * 0.8)
+      .attr('height', h * 0.8)
+      .attr('x', x + w * 0.1)
+      .attr('y', y + h * 0.1)
+  }
 }

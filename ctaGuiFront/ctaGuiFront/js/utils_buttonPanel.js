@@ -34,8 +34,8 @@ window.ButtonPanel = function () {
       .attr('y', 0)
       .attr('rx', 2)
       .attr('ry', 2)
-      .attr('width', com.box.width)
-      .attr('height', com.box.height)
+      .attr('width', com.box.w)
+      .attr('height', com.box.h)
       .attr('fill', optIn.background)
       .attr('stroke', optIn.stroke)
       .attr('stroke-width', 1)
@@ -51,10 +51,10 @@ window.ButtonPanel = function () {
       com.buttonPositions.push([])
       com.button.push([])
       for (var j = 0; j < com.cols; j++) {
-        let x = (((com.box.width - (2 * com.margin.extern)) / com.cols) * j) + com.margin.inner + com.margin.extern
-        let y = (((com.box.height - (2 * com.margin.extern)) / com.rows) * i) + com.margin.inner + com.margin.extern
-        let width = ((com.box.width - (2 * com.margin.extern)) / com.cols) - (com.margin.inner * 2)
-        let height = ((com.box.height - (2 * com.margin.extern)) / com.rows) - (com.margin.inner * 2)
+        let x = (((com.box.w - (2 * com.margin.extern)) / com.cols) * j) + com.margin.inner + com.margin.extern
+        let y = (((com.box.h - (2 * com.margin.extern)) / com.rows) * i) + com.margin.inner + com.margin.extern
+        let width = ((com.box.w - (2 * com.margin.extern)) / com.cols) - (com.margin.inner * 2)
+        let height = ((com.box.h - (2 * com.margin.extern)) / com.rows) - (com.margin.inner * 2)
         com.buttonPositions[i].push({x: x, y: y, width: width, height: height})
         com.button.push(null)
       }
