@@ -32,7 +32,7 @@ from ctaGuiFront.py.views import viewLogin, viewLogout, viewIndex, viewNotFound,
 from ctaGuiFront.py.views import viewCommon
 
 # -----------------------------------------------------------------------------------------------------------
-# 
+#
 # -----------------------------------------------------------------------------------------------------------
 def main(global_config, **settings):
   log.info([['wg'," - Starting pyramid app ..."]])
@@ -51,7 +51,7 @@ def main(global_config, **settings):
 
   # global setting to allow panel syncronization
   utils.allowPanelSync = bool(settings['allow_panel_sync'])
-  
+
   # set the list of telescopes for this particular site
   utils.telIds = utils.initTelIds(utils.nsType)
 
@@ -64,7 +64,7 @@ def main(global_config, **settings):
 
   authn_policy = AuthTktAuthenticationPolicy('sosecret', callback=groupFinder, hashalg='sha512')
   authz_policy = ACLAuthorizationPolicy()
-  
+
   config = Configurator(settings=settings,root_factory=appName+'.py.models.RootFactory')
 
   config.set_authentication_policy(authn_policy)
@@ -118,7 +118,7 @@ def main(global_config, **settings):
   # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
   utils.allWidgets = [
     "view102", "view000", "viewRefreshAll",
-    "view200", "view201", "view202", "view203", "view204", "view205", "view206"
+    "view200", "view201", "view202", "view203", "view204", "view205", "view206", "view2051"
   ]
 
   for viewName in utils.allWidgets:
@@ -143,4 +143,3 @@ def main(global_config, **settings):
   app = config.make_wsgi_app()
 
   return app
-

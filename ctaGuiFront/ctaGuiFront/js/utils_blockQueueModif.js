@@ -70,9 +70,9 @@ window.BlockQueue = function () {
       }
     },
     data: {
-      currentTime: 0,
-      startTime: 0,
-      endTime: 0,
+      currentTime: {date: undefined, time: undefined},
+      startTime: {date: undefined, time: undefined},
+      endTime: {date: undefined, time: undefined},
       lastRawData: undefined,
       formatedData: undefined
     },
@@ -502,8 +502,7 @@ window.BlockQueue = function () {
 
     if (com.axis.enabled) updateAxis()
     if (com.blocks.enabled) updateBlocks()
-
-    // setTimeRect()
+    if (com.timeBars.enabled) setTimeRect()
   }
   this.update = update
 
@@ -874,16 +873,16 @@ window.BlockQueue = function () {
   function addExtraBar (date) {
     let data = []
     if (date === null) {
-      let rectNow = com.outerG
+      let rectNow = com.g
         .selectAll('rect.' + com.mainTag + 'extra')
         .data(data)
       rectNow.exit().remove()
     } else {
       data = [date]
-      let rectNow = com.outerG
+      let rectNow = com.g
         .selectAll('rect.' + com.mainTag + 'extra')
         .data(data)
-        .attr('transform', 'translate(' + com.outerBox.x + ',' + 0 + ')')
+        .attr('transform', 'translate(' + com.axis.group.box.x + ',' + 0 + ')')
 
       rectNow
         .enter()
@@ -891,16 +890,16 @@ window.BlockQueue = function () {
         .attr('class', com.mainTag + 'extra')
         .style('opacity', 1)
         .attr('x', function (d, i) {
-          if (d > com.axis.scaleX.domain()[1]) return com.axis.scaleX(com.axis.scaleX.domain()[1])
-          else if (d < com.axis.scaleX.domain()[0]) return com.axis.scaleX(com.axis.scaleX.domain()[0])
-          return com.axis.scaleX(d)
+          if (d > com.axis.scale.domain()[1]) return com.axis.scale(com.axis.scale.domain()[1])
+          else if (d < com.axis.scale.domain()[0]) return com.axis.scale(com.axis.scale.domain()[0])
+          return com.axis.scale(d)
         })
         .attr('y', function (d, i) {
-          return com.outerBox.y - com.outerBox.marg
+          return com.box.y - 1 * com.box.marg
         })
         .attr('width', 0)
         .attr('height', function (d, i) {
-          return com.outerBox.h + com.outerBox.marg * 2
+          return com.box.h + 1 * com.box.marg
         })
         .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
         .attr('fill', colsYellows[0])
@@ -913,13 +912,13 @@ window.BlockQueue = function () {
         .transition('inOut')
         .duration(50)
         .attr('x', function (d, i) {
-          if (d > com.axis.scaleX.domain()[1]) return com.axis.scaleX(com.axis.scaleX.domain()[1])
-          else if (d < com.axis.scaleX.domain()[0]) return com.axis.scaleX(com.axis.scaleX.domain()[0])
-          return com.axis.scaleX(d)
+          if (d > com.axis.scale.domain()[1]) return com.axis.scale(com.axis.scale.domain()[1])
+          else if (d < com.axis.scale.domain()[0]) return com.axis.scale(com.axis.scale.domain()[0])
+          return com.axis.scale(d)
         })
         // .attr("y", function(d,i) { return d.y; })
         .attr('width', function (d, i) {
-          return com.outerBox.marg
+          return com.box.marg
         })
     }
   }
@@ -928,75 +927,30 @@ window.BlockQueue = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   function setTimeRect () {
-    let box = com.innerBox
-    let timeFrac = -1
     let rectNowData = []
-    let refData = null
 
-    if (com.doTimeRect) {
-      if (com.blockRow.run.length > 0 && com.doPhase) {
-        refData = com.blockRow.run
-
-        let timeMin = minMaxObj({
-          minMax: 'min',
-          data: com.blockRow.run,
-          func: function (d, i) {
-            return d.data.startTime
-          }
-        })
-        let timeMax = minMaxObj({
-          minMax: 'max',
-          data: com.blockRow.run,
-          func: function (d, i) {
-            return d.data.endTime
-          }
-        })
-
-        timeFrac = (com.time.now - timeMin) / (timeMax - timeMin)
-        // console.log('-----',timeMin,timeMax,timeFrac);
-      } else if (timeFrac < 0 || timeFrac > 1) {
-        // refData = [].concat(com.blockRow.done).concat(com.blockRow.run).concat(com.blockRow.wait);
-
-        timeFrac = new Date(com.time.date_now) - new Date(com.time.date_start)
-        timeFrac /= new Date(com.time.date_end) - new Date(com.time.date_start)
+    rectNowData = [
+      {
+        id: com.mainTag + 'now',
+        x: com.axis.scale(com.data.currentTime.date),
+        y: com.timeBars.group.box.y,
+        w: com.timeBars.group.box.marg,
+        h: com.timeBars.group.box.h + com.timeBars.group.box.marg * 2
       }
-    }
-
-    if (timeFrac >= 0 && timeFrac <= 1) {
-      let xMin = box.x
-      let xMax = box.x + box.w
-      if (hasVar(refData)) {
-        xMin = minMaxObj({ minMax: 'min', data: refData, func: 'x' })
-        xMax = minMaxObj({
-          minMax: 'max',
-          data: refData,
-          func: function (d, i) {
-            return d.x + d.w
-          }
-        })
-      }
-      rectNowData = [
-        {
-          id: com.mainTag + 'now',
-          x: xMin + timeFrac * (xMax - xMin) - com.outerBox.marg / 2,
-          y: com.outerBox.y - com.outerBox.marg,
-          w: com.outerBox.marg,
-          h: com.outerBox.h + com.outerBox.marg * 2
-        }
-      ]
-    }
-
+    ]
     // console.log('timeFrac',timeFrac,rectNowData);
     // console.log('rectNowData',(com.blockRow.run.length > 0),com.time.now,timeFrac,rectNowData[0]);
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    let rectNow = com.outerG
+    let rectNow = com.timeBars.group.g
       .selectAll('rect.' + com.mainTag + 'now')
       .data(rectNowData, function (d) {
         return d.id
       })
+
+    console.log(rectNowData, com.timeBars.group.g.select('rect.' + com.mainTag + 'now'));
 
     rectNow
       .enter()
@@ -1007,13 +961,12 @@ window.BlockQueue = function () {
         return d.x
       })
       .attr('y', function (d, i) {
-        return d.y
+        return d.y - 1 * com.box.marg
       })
       .attr('width', 0)
       .attr('height', function (d, i) {
         return d.h
       })
-      .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
       .attr('fill', com.style.runRecCol)
       .attr('fill-opacity', 0.3)
       .style('stroke-opacity', 0.15)

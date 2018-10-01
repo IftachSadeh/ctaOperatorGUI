@@ -6,9 +6,9 @@ from datetime import datetime
 
 
 # -----------------------------------------------------------------------------------------------------------
-#  tagBlocks
+#  commentNightSched
 # -----------------------------------------------------------------------------------------------------------
-class tagBlocks():
+class commentNightSched():
     # privat lock for this widget type
     lock = BoundedSemaphore(1)
 
@@ -82,7 +82,7 @@ class tagBlocks():
     #
     # -----------------------------------------------------------------------------------------------------------
     def backFromOffline(self):
-        # with tagBlocks.lock:
+        # with commentNightSched.lock:
         #   print '-- backFromOffline',self.widgetName, self.widgetId
         return
 
@@ -90,7 +90,7 @@ class tagBlocks():
     #
     # -----------------------------------------------------------------------------------------------------------
     def getData(self):
-        tagBlocks.timeOfNight = getTimeOfNight(self)
+        commentNightSched.timeOfNight = getTimeOfNight(self)
 
         self.getBlocks()
         self.getTelHealth()
@@ -98,11 +98,11 @@ class tagBlocks():
         self.getClockEvents()
 
         data = {
-            "timeOfNight": tagBlocks.timeOfNight,
-            "telHealth": tagBlocks.telHealth,
-            "blocks": tagBlocks.blocks,
-            "external_events": tagBlocks.external_events,
-            "external_clockEvents": tagBlocks.external_clockEvents
+            "timeOfNight": commentNightSched.timeOfNight,
+            "telHealth": commentNightSched.telHealth,
+            "blocks": commentNightSched.blocks,
+            "external_events": commentNightSched.external_events,
+            "external_clockEvents": commentNightSched.external_clockEvents
         }
 
         return data
@@ -115,7 +115,7 @@ class tagBlocks():
         self.redis.pipe.get(name="external_events")
         readData = self.redis.pipe.execute(packed=True)
 
-        tagBlocks.external_events = readData
+        commentNightSched.external_events = readData
 
         return
 
@@ -124,7 +124,7 @@ class tagBlocks():
         self.redis.pipe.get(name="external_clockEvents")
         readData = self.redis.pipe.execute(packed=True)
 
-        tagBlocks.external_clockEvents = readData
+        commentNightSched.external_clockEvents = readData
 
         return
 
@@ -139,7 +139,7 @@ class tagBlocks():
 
         for i in range(len(redData)):
             idNow = telIds[i]
-            tagBlocks.telHealth[i]["val"] = redData[i]
+            commentNightSched.telHealth[i]["val"] = redData[i]
 
         return
 
@@ -147,7 +147,7 @@ class tagBlocks():
     #
     # -----------------------------------------------------------------------------------------------------------
     def getBlocks(self):
-        for keyV in tagBlocks.blockKeys:
+        for keyV in commentNightSched.blockKeys:
             self.redis.pipe.reset()
             for key in keyV:
                 self.redis.pipe.get('obsBlockIds_'+key)
@@ -161,7 +161,7 @@ class tagBlocks():
 
             key = keyV[0]
             blocks = self.redis.pipe.execute(packed=True)
-            tagBlocks.blocks[key] = sorted(
+            commentNightSched.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['startTime'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['startTime'],"%Y-%m-%d %H:%M:%S")).total_seconds())
                 cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])

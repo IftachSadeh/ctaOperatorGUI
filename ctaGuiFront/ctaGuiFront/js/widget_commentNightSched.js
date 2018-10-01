@@ -8,7 +8,7 @@
 // mainScriptTag used locally (will be overriden by other scripts...)
 // must be compatible with the name of this js file, according to:
 //    "/js/widget_"+mainScriptTag+".js"
-var mainScriptTag = 'tagBlocks'
+var mainScriptTag = 'commentNightSched'
 // ---------------------------------------------------------------------------------------------------
 
 /* global $ */
@@ -56,7 +56,7 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   let w0 = 12
   let divKey = 'main'
 
-  optIn.widgetFunc = { SockFunc: sockTagBlocks, MainFunc: mainTagBlocks }
+  optIn.widgetFunc = { SockFunc: sockCommentNightSched, MainFunc: mainCommentNightSched }
   optIn.widgetDivId = optIn.widgetId + 'widgetDiv'
   optIn.eleProps = {}
   optIn.eleProps[divKey] = {
@@ -76,7 +76,7 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
 // ---------------------------------------------------------------------------------------------------
 // additional socket events for this particular widget type
 // ---------------------------------------------------------------------------------------------------
-let sockTagBlocks = function (optIn) {
+let sockCommentNightSched = function (optIn) {
   // let widgetType   = optIn.widgetType;
   // let widgetSource = optIn.widgetSource;
   // // ---------------------------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ let sockTagBlocks = function (optIn) {
   //   data.propId   = optIn.propId;
   //   let dataEmit = {
   //     "widgetSource":widgetSource, "widgetName":widgetType, "widgetId":widgetId,
-  //     "methodName":"tagBlocksAskTelData",
+  //     "methodName":"commentNightSchedAskTelData",
   //     "methodArgs":data
   //   };
   //   sock.socket.emit("widget", dataEmit);
@@ -102,7 +102,7 @@ let sockTagBlocks = function (optIn) {
 // ---------------------------------------------------------------------------------------------------
 // here we go with the content of this particular widget
 // ---------------------------------------------------------------------------------------------------
-let mainTagBlocks = function (optIn) {
+let mainCommentNightSched = function (optIn) {
   // let myUniqueId = unique()
   let widgetType = optIn.widgetType
   let tagBlockQueue = 'blockQueue'
@@ -123,8 +123,9 @@ let mainTagBlocks = function (optIn) {
   let filteredTokens = { blockState: {}, blockError: {} }
 
   let blockQueue = new BlockQueue()
+  let eventQueue = new EventQueue()
 
-  // let thisTagBlocks = this
+  // let thisCommentNightSched = this
   // let isSouth = window.__nsType__ === 'S'
 
   let sgvTag = {}
@@ -367,7 +368,7 @@ let mainTagBlocks = function (optIn) {
           enabled: true,
           group: {
             g: undefined,
-            box: {x:(lenD.w[0] * 0.145), y:blockBoxData.h, w: lenD.w[0] * 0.82, h:0, marg: 0}
+            box: {x: (lenD.w[0] * 0.145), y: blockBoxData.h, w: lenD.w[0] * 0.82, h: 0, marg: blockBoxData.marg}
           },
           axis: undefined,
           scale: undefined,
@@ -406,7 +407,7 @@ let mainTagBlocks = function (optIn) {
           enabled: true,
           group: {
             g: undefined,
-            box: {x:0, y:0, w:0, h:0, marg: 0}
+            box: {x: (lenD.w[0] * 0.145), y:0, w: lenD.w[0] * 0.82, h: blockBoxData.h, marg: blockBoxData.marg}
           }
         },
         data: {
@@ -445,7 +446,6 @@ let mainTagBlocks = function (optIn) {
     // let axis = {}
     let gBlockBox // , gEvents
     let blockBoxData
-    let eventQueue
     let tagEventQueue = 'tagEventQueue'
     // ---------------------------------------------------------------------------------------------------
     //
@@ -467,7 +467,6 @@ let mainTagBlocks = function (optIn) {
       gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
 
-      eventQueue = new EventQueue()
       eventQueue.init({
         tag: 'eventQueueDefaultTag',
         g: gBlockBox,
@@ -509,7 +508,7 @@ let mainTagBlocks = function (optIn) {
           enabled: true,
           group: {
             g: undefined,
-            box: {x:0, y:0, w:0, h: 0, marg: 0}
+            box: {x:(lenD.w[0] * 0.145), y:0, w: lenD.w[0] * 0.82, h: blockBoxData.h, marg: marg}
           }
         },
         data: {
@@ -2341,6 +2340,7 @@ let mainTagBlocks = function (optIn) {
       clockEvents.setHour(new Date(com.dataIn.data.timeOfNight.date_now))
       clockEvents.setSendFunction(function (date) {
         blockQueue.addExtraBar(date)
+        eventQueue.addExtraBar(date)
       })
       clockEvents.addEvent(com.dataIn.data.external_clockEvents[0])
 

@@ -173,25 +173,21 @@ setupView.view204 = function () {
 // nightSched
 // -----------------------------------------------------------------------------------------------------------
 setupView.view205 = function () {
-  // sock.addWidget({
-  //   nameTag: 'nightSched',
-  //   tableTitle: 'Nightly Schedule',
-  //   hasIcon: true,
-  //   hasDrawer: false
-  // })
   sock.addWidget({
-    nameTag: 'tagBlocks',
-    tableTitle: 'tag Blocks',
+    nameTag: 'nightSched',
+    tableTitle: 'Nightly Schedule',
     hasIcon: true,
     hasDrawer: false
   })
-  // sock.addWidget({
-  //   nameTag:"schedBlocks", tableTitle:"Observing blocks", hasIcon:true, hasDrawer:false
-  // })
+}
 
-  // sock.addWidget({
-  //   nameTag:"arrZoomer", tableTitle:"Telescope health", hasIcon:true, hasDrawer:false
-  // })
+setupView.view2051 = function () {
+  sock.addWidget({
+    nameTag: 'commentNightSched',
+    tableTitle: 'Comment Night Schedule',
+    hasIcon: true,
+    hasDrawer: false
+  })
 }
 
 // -----------------------------------------------------------------------------------------------------------
