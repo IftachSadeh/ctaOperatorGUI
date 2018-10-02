@@ -166,7 +166,7 @@ let mainNightSched = function (optIn) {
     let tagBlockQueue = 'blockQueue'
     let tagTelTreeMap = 'treeMap'
 
-    let blockQueue = new BlockQueue()
+    let blockQueue = new BlockQueueOld()
     let telTreeMap = new TelTreeMap()
 
     // ---------------------------------------------------------------------------------------------------

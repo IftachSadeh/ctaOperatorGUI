@@ -188,7 +188,7 @@ let mainObsBlockControl = function (optIn) {
     lenD.h[0] = lenD.w[0] / sgvTag.main.whRatio
 
     let tagObsBlkCnt = widgetType
-    let tagBlockQueue = tagObsBlkCnt + 'blockQueue'
+    let tagBlockQueueOld = tagObsBlkCnt + 'blockQueueOld'
     let tagBlockTitle = tagObsBlkCnt + 'blockTitle'
     let tagTelScroll = tagObsBlkCnt + 'telScroll'
     let tagObScroll = tagObsBlkCnt + 'obScroll'
@@ -197,7 +197,7 @@ let mainObsBlockControl = function (optIn) {
     let tagScrollTable = tagObsBlkCnt + 'scrollTable'
     let tagFormManager = tagObsBlkCnt + 'formManager'
 
-    let blockQueue = new BlockQueue()
+    let blockQueueOld = new BlockQueueOld()
     let telScroll = new TelScroll()
     let obScroll = new _obScroll()
     let telSummary = new TelSummary()
@@ -337,23 +337,23 @@ let mainObsBlockControl = function (optIn) {
         marg: marg
       }
 
-      blockQueue.init({
-        tag: tagBlockQueue,
+      blockQueueOld.init({
+        tag: tagBlockQueueOld,
         gBox: gBlockBox,
         doPhase: false,
         doText: true,
         style: {
           recCol: function (optIn) {
-            if (optIn.d.id === blockQueue.get('focusId')) return colsPurples[1]
+            if (optIn.d.id === blockQueueOld.get('focusId')) return colsPurples[1]
             else return colsYellows[2]
           },
           recFillOpac: function (d, state) {
-            if (d.id === blockQueue.get('focusId')) return 0.5
+            if (d.id === blockQueueOld.get('focusId')) return 0.5
             else if (state === 'run') return 0.3
             else return 0.1
           },
           textOpac: function (d) {
-            return d.id === blockQueue.get('focusId') ? 1 : 0
+            return d.id === blockQueueOld.get('focusId') ? 1 : 0
           }
         },
         futureCanceled: { hide: false, shiftY: false },
@@ -364,14 +364,14 @@ let mainObsBlockControl = function (optIn) {
         locker: locker,
         lockerV: [tagObsBlkCnt + 'updateData'],
         lockerZoom: {
-          all: tagBlockQueue + 'zoom',
-          during: tagBlockQueue + 'zoomDuring',
-          end: tagBlockQueue + 'zoomEnd'
+          all: tagBlockQueueOld + 'zoom',
+          during: tagBlockQueueOld + 'zoomDuring',
+          end: tagBlockQueueOld + 'zoomEnd'
         },
         runLoop: runLoop
       })
 
-      let blockQueueBox = blockQueue.get('outerBox')
+      let blockQueueOldBox = blockQueueOld.get('outerBox')
 
       // ---------------------------------------------------------------------------------------------------
       //
@@ -379,10 +379,10 @@ let mainObsBlockControl = function (optIn) {
       let gObBox = svg.g.append('g')
 
       w0 = (1 - w0 / blockTitleData.w) * blockTitleData.w - blockTitleData.marg // w0/=3
-      h0 = blockQueueBox.h
+      h0 = blockQueueOldBox.h
       x0 = blockTitleData.x
-      y0 = blockQueueBox.y
-      marg = blockQueueBox.marg
+      y0 = blockQueueOldBox.y
+      marg = blockQueueOldBox.marg
 
       let obScrolBoxData = {
         x: x0,
@@ -411,11 +411,11 @@ let mainObsBlockControl = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       let gTelBox = svg.g.append('g')
 
-      h0 = blockQueueBox.h * 1.25
+      h0 = blockQueueOldBox.h * 1.25
       w0 = blockTitleData.w - h0 // w0/=3
       x0 = blockTitleData.x
-      y0 = blockQueueBox.y + blockQueueBox.h + 2 * blockQueueBox.marg
-      marg = blockQueueBox.marg
+      y0 = blockQueueOldBox.y + blockQueueOldBox.h + 2 * blockQueueOldBox.marg
+      marg = blockQueueOldBox.marg
 
       let telScrolBoxData = {
         x: x0,
@@ -507,9 +507,9 @@ let mainObsBlockControl = function (optIn) {
           locker: locker,
           lockerV: [tagObsBlkCnt + 'updateData'],
           lockerZoom: {
-            all: tagBlockQueue + 'zoom',
-            during: tagBlockQueue + 'zoomDuring',
-            end: tagBlockQueue + 'zoomEnd'
+            all: tagBlockQueueOld + 'zoom',
+            during: tagBlockQueueOld + 'zoomDuring',
+            end: tagBlockQueueOld + 'zoomEnd'
           },
           runLoop: runLoop
         })
@@ -605,16 +605,16 @@ let mainObsBlockControl = function (optIn) {
           gBox: gScrollBox,
           // style: {
           //   recCol: function(optIn) {
-          //     if(optIn.d.id == blockQueue.get('focusId')) return colsPurples[1];
+          //     if(optIn.d.id == blockQueueOld.get('focusId')) return colsPurples[1];
           //     else                                        return colsYellows[2];
           //   },
           //   recFillOpac: function(d,state) {
-          //     if(d.id == blockQueue.get('focusId')) return 0.5;
+          //     if(d.id == blockQueueOld.get('focusId')) return 0.5;
           //     else if(state == 'run')               return 0.3;
           //     else                                  return 0.1;
           //   },
           //   textOpac: function(d) {
-          //     return (d.id == blockQueue.get('focusId')) ? 1 : 0;
+          //     return (d.id == blockQueueOld.get('focusId')) ? 1 : 0;
           //   }
           // },
           // futureCanceled: { hide:false, shiftY:false },
@@ -627,9 +627,9 @@ let mainObsBlockControl = function (optIn) {
           locker: locker,
           lockerV: [tagObsBlkCnt + 'updateData'],
           lockerZoom: {
-            all: tagBlockQueue + 'zoom',
-            during: tagBlockQueue + 'zoomDuring',
-            end: tagBlockQueue + 'zoomEnd'
+            all: tagBlockQueueOld + 'zoom',
+            during: tagBlockQueueOld + 'zoomDuring',
+            end: tagBlockQueueOld + 'zoomEnd'
           },
           runLoop: runLoop
         })
@@ -903,10 +903,10 @@ let mainObsBlockControl = function (optIn) {
         !locker.isFreeV([
           tagObsBlkCnt + 'updateData',
           tagTelScroll + 'zoom',
-          tagBlockQueue + 'zoom'
+          tagBlockQueueOld + 'zoom'
         ])
       ) {
-        // console.log('will delay updateRecData',locker.getActiveV([tagObsBlkCnt+"updateDataOnce", tagTelScroll+"_zoom", tagBlockQueue+"_zoom"]));
+        // console.log('will delay updateRecData',locker.getActiveV([tagObsBlkCnt+"updateDataOnce", tagTelScroll+"_zoom", tagBlockQueueOld+"_zoom"]));
         setTimeout(function () {
           updateData(dataIn)
         }, 10)
@@ -944,10 +944,10 @@ let mainObsBlockControl = function (optIn) {
       if (hasVar(com.focus.type) && hasVar(com.focus.sb)) {
         blocks[com.focus.type] = com.focus.sb.obV
       }
-      blockQueue.update(blocks)
-      blockQueue.set({ tag: 'telIds', data: telIds })
-      blockQueue.set({ tag: 'time', data: com.timeOfNight })
-      blockQueue.setTimeRect()
+      blockQueueOld.update(blocks)
+      blockQueueOld.set({ tag: 'telIds', data: telIds })
+      blockQueueOld.set({ tag: 'time', data: com.timeOfNight })
+      blockQueueOld.setTimeRect()
 
       //
       // ---------------------------------------------------------------------------------------------------
@@ -980,7 +980,7 @@ let mainObsBlockControl = function (optIn) {
         !locker.isFreeV([
           tagObsBlkCnt + 'updateData',
           tagTelScroll + 'zoom',
-          tagBlockQueue + 'zoom'
+          tagBlockQueueOld + 'zoom'
         ])
       ) {
         // console.log('will delay _blockFocus_');
@@ -998,14 +998,14 @@ let mainObsBlockControl = function (optIn) {
       setBlockTitle()
 
       // ---------------------------------------------------------------------------------------------------
-      if (blockQueue.get('focusId') !== com.focus.obId) {
+      if (blockQueueOld.get('focusId') !== com.focus.obId) {
         if (hasVar(com.focus.type) && hasVar(com.focus.sb)) {
           let blocks = {}
           blocks[com.focus.type] = com.focus.sb.obV
-          blockQueue.update(blocks)
+          blockQueueOld.update(blocks)
         }
-        blockQueue.set({ tag: 'focusId', data: com.focus.obId })
-        blockQueue.setBlockRect()
+        blockQueueOld.set({ tag: 'focusId', data: com.focus.obId })
+        blockQueueOld.setBlockRect()
       }
 
       // ---------------------------------------------------------------------------------------------------

@@ -43,7 +43,7 @@ allowedWidgetTypeV = {
     "synced": [
         "arrZoomer", "azPlots", "telPos_0", "subArrGrp", "telPntSky",
         "schedBlocks", "nightSched", "obsBlockControl", "emptyExample",
-        "myTestExample", "commentNightSched"
+        "myTestExample", "commentNightSched", "schedBlocksController"
     ],
     "notSynced": [
         "panelSync"

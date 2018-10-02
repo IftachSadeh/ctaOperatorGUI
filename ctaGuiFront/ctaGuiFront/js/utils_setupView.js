@@ -195,6 +195,12 @@ setupView.view2051 = function () {
 // -----------------------------------------------------------------------------------------------------------
 setupView.view206 = function () {
   sock.addWidget({
+    nameTag: 'schedBlocksController',
+    tableTitle: 'Scheduling Blocks Controller',
+    hasIcon: true,
+    hasDrawer: false
+  })
+  sock.addWidget({
     nameTag: 'obsBlockControl',
     tableTitle: 'Scheduling Block Control',
     hasIcon: true,

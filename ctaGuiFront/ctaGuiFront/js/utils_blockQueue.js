@@ -18,7 +18,7 @@ loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
 // ---------------------------------------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------------------------------------
-window.BlockQueue = function () {
+window.BlockQueueOld = function () {
   let com = {}
 
   this.set = function (optIn) {
@@ -794,7 +794,7 @@ window.BlockQueue = function () {
       .style('font-size', function (d) {
         d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
         if (!hasVar(d.size)) {
-          console.error('_blockQueue_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
+          console.error('_BlockQueueOld_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
         } // should not happen....
         if (!hasVar(d.size)) d.size = 0
         // d.size = d.w/3;
