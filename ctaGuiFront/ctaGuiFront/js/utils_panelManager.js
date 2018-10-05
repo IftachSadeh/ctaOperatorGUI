@@ -34,6 +34,7 @@ window.PanelManager = function () {
   this.init = init
 
   function createNewPanelGroup (optIn) {
+    com.prevY = 0
     if (optIn.transX) {
       com.prevX = 0
     } else {
@@ -390,7 +391,7 @@ window.CustomPanel = function () {
   }
   this.selectTab = selectTab
   function unselectTab (optIn) {
-    com.tab.g.select('rect.back').attr('height', com.tab.dimension.height).attr('fill', '#cccccc')
+    com.tab.g.select('rect.back').attr('height', com.tab.dimension.height).attr('fill', '#546E7A')
   }
   this.unselectTab = unselectTab
   function translateTabTo (x, y) {
@@ -402,7 +403,7 @@ window.CustomPanel = function () {
 
   function setTabEvent (type, fun) {
     com.tab.events[type] = fun
-    // if (type === 'close') {
+    // if (type === 'close') {78909C
     //   com.tab.g.select('rect.close').on('click', function () {
     //     fun()
     //   })
