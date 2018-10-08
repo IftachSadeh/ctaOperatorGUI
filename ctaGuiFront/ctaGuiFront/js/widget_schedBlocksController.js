@@ -1563,6 +1563,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-width', 1.8)
         .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
         .on('mouseover', function () {
+          if (com.data.focusOn === this) return
           d3.select(this)
             .attr('fill', '#546E7A')
             .attr('stroke', '#90A4AE')
@@ -1572,6 +1573,7 @@ let mainSchedBlocksController = function (optIn) {
             .attr('stroke-dasharray', [dim.w * 2, 0])
         })
         .on('mouseout', function () {
+          if (com.data.focusOn === this) return
           d3.select(this)
             .attr('fill', '#455A64')
             .attr('stroke', '#78909C')
@@ -1579,6 +1581,46 @@ let mainSchedBlocksController = function (optIn) {
             .duration(400)
             .attr('stroke-width', 1.8)
             .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
+        })
+        .on('click', function (d) {
+          function loop () {
+            d3.select(this).transition()
+              .duration(4000)
+              .ease(d3.easeLinear)
+              .attr('stroke-dashoffset', function () {
+                return Number(d3.select(this).attr('stroke-dashoffset')) + dim.w
+              })
+              .on('end', loop)
+          }
+          if (com.data.focusOn === this) {
+            svgSchedulingBlock.unfocusOnSchedulingBlocks(d)
+            com.data.focusOn = undefined
+            d3.select(this)
+              .attr('fill', '#455A64')
+              .attr('stroke', '#78909C')
+              .transition()
+              .duration(400)
+              .attr('stroke-width', 1.8)
+              .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
+          } else {
+            if (com.data.focusOn !== undefined) {
+              d3.select(com.data.focusOn)
+                .attr('fill', '#455A64')
+                .attr('stroke', '#78909C')
+                .transition()
+                .duration(400)
+                .attr('stroke-width', 1.8)
+                .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
+            }
+            svgSchedulingBlock.focusOnSchedulingBlocks(d)
+            com.data.focusOn = this
+            d3.select(this)
+              .attr('stroke-dashoffset', 0)
+              .transition()
+              .duration(400)
+              .attr('stroke-dasharray', [dim.w * 0.1, dim.w * 0.1])
+              .on('end', loop)
+          }
         })
       enterSchedulingBlocks.append('text')
         .attr('class', 'name')
@@ -1763,54 +1805,167 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.initData = initData
 
-    function extend () {
-      com.child.back.transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .attr('width', com.extended.box.w)
-        .attr('height', com.extended.box.h)
+    function focusOnSchedulingBlocks (data) {
+      // let length = com.data.formatedData.length
+      // let lineLeftColumn = Math.floor((length + 1) / 2)
+      let dim = {w: (com.extended.box.w) * 0.98, h: (com.shrinked.box.h) * 0.98}
+      // let lineRigthColumn = Math.floor((Object.keys(com.data.formatedData).length) / 2)
 
-      let pathShrinkButton =
-        'M' + com.extended.box.w * 0.99 + ' ' + com.extended.box.h * 0.45 + ' ' +
-        'L' + com.extended.box.w * 0.98 + ' ' + com.extended.box.h * 0.5 + ' ' +
-        'L' + com.extended.box.w * 0.99 + ' ' + com.extended.box.h * 0.55 + ' '
-      com.child.shrinkButton.transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .attr('d', pathShrinkButton)
-      com.child.shrinkButtonHitBox
-        .on('click', shrink)
-        .transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .attr('x', com.extended.box.w * 0.97)
-        .attr('y', com.extended.box.h * 0.43)
-    }
-    this.extend = extend
-    function shrink () {
-      com.child.back.transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .attr('width', com.shrinked.box.w)
-        .attr('height', com.shrinked.box.h)
+      com.data.SBFocus = data
+      com.shrinked.child.SBFocus = com.g
+        .selectAll('g.schedulingBlocksFocus')
+        .data([data])
 
-      let pathShrinkButton =
-        'M' + com.shrinked.box.w * 1.05 + ' ' + com.shrinked.box.h * 0.45 + ' ' +
-        'L' + com.shrinked.box.w * 1.16 + ' ' + com.shrinked.box.h * 0.5 + ' ' +
-        'L' + com.shrinked.box.w * 1.05 + ' ' + com.shrinked.box.h * 0.55 + ' '
-      com.child.shrinkButton.transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .attr('d', pathShrinkButton)
-      com.child.shrinkButtonHitBox
-        .on('click', extend)
+      let enterSchedulingBlocks = com.shrinked.child.SBFocus
+        .enter()
+        .append('g')
+        .attr('class', 'schedulingBlocksFocus')
+        .attr('transform', function (d, i) {
+          return 'translate(' +
+          (com.extended.box.w / 2) +
+          ',' +
+          (com.extended.box.h / 2) +
+          ')'
+        })
+      enterSchedulingBlocks.append('rect')
+        .attr('class', 'background')
+        .attr('x', function (d, i) {
+          return 0
+        })
+        .attr('y', function (d, i) {
+          return 0
+        })
+        .attr('rx', 0)
+        .attr('ry', 0)
+        .attr('width', function (d, i) {
+          return 0
+        })
+        .attr('height', function (d, i) {
+          return 0
+        })
+        .attr('fill', function (d, i) {
+          return '#455A64'
+        })
+        .attr('stroke', '#78909C')
+        .attr('stroke-width', 1.8)
+        .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
+        // .on('mouseover', function () {
+        //   d3.select(this)
+        //     .attr('fill', '#546E7A')
+        //     .attr('stroke', '#90A4AE')
+        //     .transition()
+        //     .duration(400)
+        //     .attr('stroke-width', 2.2)
+        //     .attr('stroke-dasharray', [dim.w * 2, 0])
+        // })
+        // .on('mouseout', function () {
+        //   d3.select(this)
+        //     .attr('fill', '#455A64')
+        //     .attr('stroke', '#78909C')
+        //     .transition()
+        //     .duration(400)
+        //     .attr('stroke-width', 1.8)
+        //     .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
+        // })
+        // .on('click', function (d) {
+        //   svgSchedulingBlock.focusOnSchedulingBlocks(d)
+        // })
+      enterSchedulingBlocks.append('text')
+        .attr('class', 'name')
+        .text(function (d) {
+          return 'SB ' + d.scheduleId
+        })
+        .attr('x', function (d, i) {
+          return 0
+        })
+        .attr('y', function (d, i) {
+          return 0
+        })
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 0)
+        .attr('dy', 9)
+        .style('pointer-events', 'none')
+        .attr('fill', '#CFD8DC')
+        .attr('stroke', 'none')
+      enterSchedulingBlocks.each(function (d) {
+        let group = d3.select(this)
+        let dimBlocks = dim.h * 0.1
+        let length = d.blocks.length
+        let offset = ((dim.h /* - dimBlocks * 2 */) - (length < 7 ? (dimBlocks * 1.4 * length) : (length % 2 === 0 ? (dimBlocks * 0.6 * length) : (dimBlocks * 0.7 * length)))) * 0.6
+
+        let subBlocks = group
+          .selectAll('rect.subBlocks')
+          .data(d.blocks)
+
+        let enterSubBlocks = subBlocks
+          .enter()
+          .append('rect')
+          .attr('class', 'subBlocks')
+          .attr('y', function (d, i) {
+            return offset + (length < 7 ? (dimBlocks * i * 1.4) : (length % 2 === 0 ? (0.6 * dimBlocks * (i - (i % 2))) : (dimBlocks * i * 0.6)))
+          })
+          .attr('x', function (d, i) {
+            return dim.w * 0.6
+          })
+          .attr('width', function (d, i) {
+            return dimBlocks
+          })
+          .attr('height', function (d, i) {
+            return dimBlocks
+          })
+          .attr('fill', function (d, i) {
+            return '#aaaaaa'//com.style.recCol(d.blocks)
+          })
+          .attr('stroke', 'black')
+          .attr('stroke-width', 0.2)
+          .style('pointer-events', 'none')
+      })
+      let mergeSchedulingBlocks = enterSchedulingBlocks.merge(com.shrinked.child.SBFocus)
+      mergeSchedulingBlocks.transition()
+        .duration(1000)
+        .attr('transform', function (d, i) {
+          return 'translate(' +
+          (com.extended.box.w * 0.02) +
+          ',' +
+          (com.extended.box.h * 0.02) +
+          ')'
+        })
+      mergeSchedulingBlocks.select('rect.background')
         .transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .attr('x', com.shrinked.box.w * 1)
-        .attr('y', com.shrinked.box.h * 0.43)
+        .duration(1000)
+        .attr('rx', 6)
+        .attr('ry', 6)
+        .attr('width', function (d, i) {
+          return com.extended.box.w * 0.98
+        })
+        .attr('height', function (d, i) {
+          return com.extended.box.h * 0.98
+        })
+        .attr('stroke-width', 1.8)
+        .attr('stroke-dasharray', [com.extended.box.w * 0.98 * 1, com.extended.box.h * 0.98 * 0.7])
+      mergeSchedulingBlocks.select('text.name')
+        .transition()
+        .duration(1000)
+        .attr('x', function (d, i) {
+          return com.extended.box.w * 0.5
+        })
+        .attr('y', function (d, i) {
+          return com.extended.box.h * 0.06
+        })
+        .style('font-size', 16)
     }
-    this.shrink = shrink
+    this.focusOnSchedulingBlocks = focusOnSchedulingBlocks
+
+    function unfocusOnSchedulingBlocks () {
+
+    }
+    this.unfocusOnSchedulingBlocks = unfocusOnSchedulingBlocks
+
+    function focusOnBlock () {
+
+    }
+    this.focusOnBlock = focusOnBlock
 
     function updateData (dataIn) {
 
