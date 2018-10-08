@@ -235,15 +235,35 @@ let mainSchedBlocksController = function (optIn) {
     svgSchedulingBlocksOverview.initData({
       tag: 'schedulingBlocksOverview',
       g: svg.g.append('g'),
-      box: {x: (lenD.w[0] * 0.02), y: lenD.h[0] * 0.62, w: lenD.w[0] * 0.96, h: lenD.h[0] * 0.36},
+      box: {x: (lenD.w[0] * 0.02), y: lenD.h[0] * 0.62, w: lenD.w[0] * 0.11, h: lenD.h[0] * 0.36},
       shrinked: {
         g: undefined,
-        box: {x: 0, y: 0, w: 0.1, h: 1},
+        box: {x: 0, y: 0, w: 1, h: 1},
+        child: {}
+      },
+      data: {
+        lastRawData: dataIn.data.blocks,
+        formatedData: undefined,
+        currentTime: {date: new Date(dataIn.data.timeOfNight.date_now), time: Number(dataIn.data.timeOfNight.now)},
+        startTime: {date: new Date(dataIn.data.timeOfNight.date_start), time: Number(dataIn.data.timeOfNight.start)},
+        endTime: {date: new Date(dataIn.data.timeOfNight.date_end), time: Number(dataIn.data.timeOfNight.end)}
+      },
+      debug: {
+        enabled: false
+      }
+    })
+    svgSchedulingBlock.initData({
+      tag: 'schedulingBlocksOverview',
+      g: svg.g.append('g'),
+      box: {x: lenD.w[0] * 0.14, y: lenD.h[0] * 0.62, w: lenD.w[0] * 0.7, h: lenD.h[0] * 0.36},
+      shrinked: {
+        g: undefined,
+        box: {x: 0, y: 0, w: 0.2, h: 1},
         child: {}
       },
       extended: {
         g: undefined,
-        box: {x: 0.1, y: 0, w: 0.89, h: 1},
+        box: {x: 0, y: 0, w: 1, h: 1},
         child: {}
       },
       data: {
@@ -254,25 +274,6 @@ let mainSchedBlocksController = function (optIn) {
         enabled: false
       }
     })
-    // svgSchedulingBlock.initData({
-    //   tag: 'schedulingBlocksOverview',
-    //   g: svg.g.append('g'),
-    //   child: {},
-    //   box: {x: (lenD.w[0] * 0.125), y: lenD.h[0] * 0.62, w: lenD.w[0] * 0.855, h: lenD.h[0] * 0.36},
-    //   shrinked: {
-    //     box: {x: (lenD.w[0] * 0.125), y: lenD.h[0] * 0.62, w: lenD.w[0] * 0.10, h: lenD.h[0] * 0.36}
-    //   },
-    //   extended: {
-    //     box: {x: (lenD.w[0] * 0.125), y: lenD.h[0] * 0.62, w: lenD.w[0] * 0.855, h: lenD.h[0] * 0.36}
-    //   },
-    //   data: {
-    //     lastRawData: dataIn.data.blocks,
-    //     formatedData: undefined
-    //   },
-    //   debug: {
-    //     enabled: false
-    //   }
-    // })
     svgBlocks.initData(dataIn.data)
   }
   this.initData = initData
@@ -1485,9 +1486,6 @@ let mainSchedBlocksController = function (optIn) {
       shrinked: {
         box: {x: 0, y: 0, w: 0, h: 0}
       },
-      extended: {
-        box: {x: 0, y: 0, w: 0, h: 0}
-      },
       data: {
         lastRawData: undefined,
         formatedData: undefined
@@ -1498,47 +1496,6 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.template = template
 
-    function initExtended () {
-      com.extended.box.x = com.box.w * com.extended.box.x
-      com.extended.box.y = com.box.h * com.extended.box.y
-      com.extended.box.w = com.box.w * com.extended.box.w
-      com.extended.box.h = com.box.h * com.extended.box.h
-
-      com.extended.g = com.g.append('g')
-        .attr('transform', 'translate(' + com.extended.box.x + ',' + com.extended.box.y + ')')
-      com.extended.child.back = com.extended.g.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', com.extended.box.w)
-        .attr('height', com.extended.box.h)
-        .attr('fill', '#546E7A')
-        .attr('stroke', 'none')
-
-      let pathShrinkButton =
-      'M' + com.extended.box.w * 0.99 + ' ' + com.extended.box.h * 0.45 + ' ' +
-      'L' + com.extended.box.w * 0.98 + ' ' + com.extended.box.h * 0.5 + ' ' +
-      'L' + com.extended.box.w * 0.99 + ' ' + com.extended.box.h * 0.55 + ' '
-      com.extended.child.shrinkButton = com.extended.g.append('path')
-        .attr('stroke', '#222222')
-        .attr('fill', 'none')
-        .attr('stroke-width', 6)
-        .attr('d', pathShrinkButton)
-        .style('pointer-events', 'none')
-      com.extended.child.shrinkButtonHitBox = com.extended.g.append('rect')
-        .attr('x', com.extended.box.w * 0.97)
-        .attr('y', com.extended.box.h * 0.43)
-        .attr('width', com.extended.box.w * 0.03)
-        .attr('height', com.extended.box.h * 0.14)
-        .attr('fill-opacity', '0')
-        .attr('stroke', 'none')
-        .on('mouseover', function () {
-          com.extended.child.shrinkButton.attr('stroke', '#90A4AE')
-        })
-        .on('mouseout', function () {
-          com.extended.child.shrinkButton.attr('stroke', '#222222')
-        })
-        .on('click', shrink)
-    }
     function initShrink () {
       com.shrinked.box.x = com.box.w * com.shrinked.box.x
       com.shrinked.box.y = com.box.h * com.shrinked.box.y
@@ -1547,70 +1504,169 @@ let mainSchedBlocksController = function (optIn) {
 
       com.shrinked.g = com.g.append('g')
         .attr('transform', 'translate(' + com.shrinked.box.x + ',' + com.shrinked.box.y + ')')
-      com.shrinked.child.back = com.shrinked.g.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', com.shrinked.box.w)
-        .attr('height', com.shrinked.box.h)
-        .attr('fill', '#546E7A')
-        .attr('stroke', 'none')
+    }
+    function formatData () {
+      let res = {}
+      for (var key in com.data.lastRawData) {
+        for (var i = 0; i < com.data.lastRawData[key].length; i++) {
+          let ns = com.data.lastRawData[key][i].metaData.nSched
+          if (ns in res) res[ns].push(com.data.lastRawData[key][i])
+          else res[ns] = [com.data.lastRawData[key][i]]
+        }
+      }
+      com.data.formatedData = []
+      Object.keys(res).map(function (key, index) {
+        com.data.formatedData.push({scheduleId: key, blocks: res[key]})
+      })
+    }
+    function populateShrink () {
+      let length = com.data.formatedData.length
+      let lineLeftColumn = Math.floor((length + 1) / 2)
+      let dim = {w: (com.shrinked.box.w / 2) * 0.98, h: (com.shrinked.box.h / (lineLeftColumn)) * 0.98}
+      // let lineRigthColumn = Math.floor((Object.keys(com.data.formatedData).length) / 2)
 
-      let pathShrinkButton =
-        'M' + com.shrinked.box.w * 1.05 + ' ' + com.shrinked.box.h * 0.45 + ' ' +
-        'L' + com.shrinked.box.w * 1.16 + ' ' + com.shrinked.box.h * 0.5 + ' ' +
-        'L' + com.shrinked.box.w * 1.05 + ' ' + com.shrinked.box.h * 0.55 + ' '
-      com.shrinked.child.shrinkButton = com.shrinked.g.append('path')
-        .attr('stroke', '#222222')
-        .attr('fill', 'none')
-        .attr('stroke-width', 6)
-        .attr('d', pathShrinkButton)
-        .style('opacity', 0)
-        .style('pointer-events', 'none')
-      com.shrinked.child.shrinkButtonHitBox = com.shrinked.g.append('rect')
-        .attr('x', com.shrinked.box.w * 1)
-        .attr('y', com.shrinked.box.h * 0.43)
-        .attr('width', com.shrinked.box.w * 0.25)
-        .attr('height', com.shrinked.box.h * 0.14)
-        .attr('fill-opacity', '0')
-        .attr('stroke', 'none')
-        .style('pointer-events', 'none')
+      com.shrinked.child.schedulingBlocks = com.shrinked.g
+        .selectAll('g.schedulingBlocks')
+        .data(com.data.formatedData)
+
+      let enterSchedulingBlocks = com.shrinked.child.schedulingBlocks
+        .enter()
+        .append('g')
+        .attr('class', 'schedulingBlocks')
+        .attr('transform', function (d, i) {
+          return 'translate(' +
+          ((com.shrinked.box.w / 2) * (i % 2)) +
+          ',' +
+          (length % 2 === 0 ? ((com.shrinked.box.h / length) * (i - (i % 2))) : ((com.shrinked.box.h / (lineLeftColumn) / 2) * i)) +
+          ')'
+        })
+      enterSchedulingBlocks.append('rect')
+        .attr('class', 'background')
+        .attr('x', function (d, i) {
+          return dim.w * 0.05
+        })
+        .attr('y', function (d, i) {
+          return dim.h * 0.05
+        })
+        .attr('rx', 6)
+        .attr('ry', 6)
+        .attr('width', function (d, i) {
+          return dim.w * 0.9
+        })
+        .attr('height', function (d, i) {
+          return dim.h * 0.9
+        })
+        .attr('fill', function (d, i) {
+          return '#455A64'
+        })
+        .attr('stroke', '#78909C')
+        .attr('stroke-width', 1.8)
+        .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
         .on('mouseover', function () {
-          com.shrinked.child.shrinkButton.attr('stroke', '#90A4AE')
+          d3.select(this)
+            .attr('fill', '#546E7A')
+            .attr('stroke', '#90A4AE')
+            .transition()
+            .duration(400)
+            .attr('stroke-width', 2.2)
+            .attr('stroke-dasharray', [dim.w * 2, 0])
         })
         .on('mouseout', function () {
-          com.shrinked.child.shrinkButton.attr('stroke', '#222222')
+          d3.select(this)
+            .attr('fill', '#455A64')
+            .attr('stroke', '#78909C')
+            .transition()
+            .duration(400)
+            .attr('stroke-width', 1.8)
+            .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
         })
-        .on('click', extend)
+      enterSchedulingBlocks.append('text')
+        .attr('class', 'name')
+        .text(function (d) {
+          return 'SB ' + d.scheduleId
+        })
+        .attr('x', function (d, i) {
+          return dim.w * 0.5
+        })
+        .attr('y', function (d, i) {
+          return dim.h * 0.2
+        })
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 12)
+        .attr('dy', 9)
+        .style('pointer-events', 'none')
+        .attr('fill', '#CFD8DC')
+        .attr('stroke', 'none')
+      enterSchedulingBlocks.each(function (d) {
+        let group = d3.select(this)
+        let dimBlocks = dim.h * 0.16
+        let length = d.blocks.length
+        let offset = ((dim.w /* - dimBlocks * 2 */) - (length < 4 ? (dimBlocks * 1.2 * length) : (length % 2 === 0 ? (dimBlocks * 0.6 * length) : (dimBlocks * 0.7 * length)))) * 0.5
+
+        let subBlocks = group
+          .selectAll('rect.subBlocks')
+          .data(d.blocks)
+
+        let enterSubBlocks = subBlocks
+          .enter()
+          .append('rect')
+          .attr('class', 'subBlocks')
+          .attr('x', function (d, i) {
+            return offset + (length < 4 ? (dimBlocks * i * 1.2) : (length % 2 === 0 ? (0.6 * dimBlocks * (i - (i % 2))) : (dimBlocks * i * 0.6)))
+          })
+          .attr('y', function (d, i) {
+            return dim.h - dimBlocks * 1.8 - (length < 4 ? dimBlocks * 0.5 : dimBlocks * 1.2 * (i % 2))
+          })
+          .attr('width', function (d, i) {
+            return dimBlocks
+          })
+          .attr('height', function (d, i) {
+            return dimBlocks
+          })
+          .attr('fill', function (d, i) {
+            return '#aaaaaa'//com.style.recCol(d.blocks)
+          })
+          .attr('stroke', 'black')
+          .attr('stroke-width', 0.2)
+          .style('pointer-events', 'none')
+      })
     }
     function initData (dataIn) {
       com = dataIn
       com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
 
-      initExtended()
+      com.style = {}
+      com.style.recCol = optIn.recCol
+      if (!hasVar(com.style.recCol)) {
+        com.style.recCol = function (optIn) {
+          if (optIn.endTime < com.data.currentTime.time) return '#424242'
+          let state = hasVar(optIn.state)
+            ? optIn.state
+            : optIn.exeState.state
+          let canRun = hasVar(optIn.canRun)
+            ? optIn.canRun
+            : optIn.exeState.canRun
+
+          if (state === 'wait') return '#e6e6e6'
+          else if (state === 'run') {
+            return d3.color(colsPurplesBlues[0]).brighter()
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return d3.color(colsPurples[3]).brighter()
+            }
+            return d3.color(colsPurples[4])
+          } else return d3.color(colPrime).brighter()
+        }
+      }
+
       initShrink()
+
+      formatData()
+      populateShrink()
     }
     this.initData = initData
 
-    function extend () {
-      com.extended.child.back.transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .style('opacity', 1)
-      com.extended.child.shrinkButton.transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .style('opacity', 1)
-      com.extended.child.shrinkButtonHitBox
-        .style('pointer-events', 'auto')
-
-      com.shrinked.child.shrinkButton.transition()
-        .duration(1500)
-        .ease(d3.easeLinear)
-        .style('opacity', 0)
-      com.shrinked.child.shrinkButtonHitBox
-        .style('pointer-events', 'none')
-    }
-    this.extend = extend
     function shrink () {
       com.extended.child.back.transition()
         .duration(1500)
@@ -1661,47 +1717,49 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.template = template
 
+    function initShrink () {
+      com.shrinked.box.x = com.box.w * com.shrinked.box.x
+      com.shrinked.box.y = com.box.h * com.shrinked.box.y
+      com.shrinked.box.w = com.box.w * com.shrinked.box.w
+      com.shrinked.box.h = com.box.h * com.shrinked.box.h
+    }
+    function initExtend () {
+      com.extended.box.x = com.box.w * com.extended.box.x
+      com.extended.box.y = com.box.h * com.extended.box.y
+      com.extended.box.w = com.box.w * com.extended.box.w
+      com.extended.box.h = com.box.h * com.extended.box.h
+    }
+
     function initData (dataIn) {
       com = dataIn
       com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
 
-      com.child.back = com.g.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', com.extended.box.w)
-        .attr('height', com.extended.box.h)
-        .attr('fill', '#546E7A')
-        .attr('stroke', 'none')
-        .style('opacity', 0)
+      com.style = {}
+      com.style.recCol = optIn.recCol
+      if (!hasVar(com.style.recCol)) {
+        com.style.recCol = function (optIn) {
+          if (optIn.endTime < com.data.currentTime.time) return '#424242'
+          let state = hasVar(optIn.state)
+            ? optIn.state
+            : optIn.exeState.state
+          let canRun = hasVar(optIn.canRun)
+            ? optIn.canRun
+            : optIn.exeState.canRun
 
-      let pathShrinkButton =
-      'M' + com.extended.box.w * 0.99 + ' ' + com.extended.box.h * 0.45 + ' ' +
-      'L' + com.extended.box.w * 0.98 + ' ' + com.extended.box.h * 0.5 + ' ' +
-      'L' + com.extended.box.w * 0.99 + ' ' + com.extended.box.h * 0.55 + ' '
-      com.child.shrinkButton = com.g.append('path')
-        .attr('stroke', '#222222')
-        .attr('fill', 'none')
-        .attr('stroke-width', 6)
-        .attr('d', pathShrinkButton)
-        .style('pointer-events', 'none')
-        .style('opacity', 0)
-      com.child.shrinkButtonHitBox = com.g.append('rect')
-        .attr('x', com.extended.box.w * 0.97)
-        .attr('y', com.extended.box.h * 0.43)
-        .attr('width', com.extended.box.w * 0.03)
-        .attr('height', com.extended.box.h * 0.14)
-        .attr('fill-opacity', '0')
-        .attr('stroke', 'none')
-        .style('opacity', 0)
-        .on('mouseover', function () {
-          com.child.shrinkButton.attr('stroke', '#90A4AE')
-        })
-        .on('mouseout', function () {
-          com.child.shrinkButton.attr('stroke', '#222222')
-        })
-        .on('click', shrink)
+          if (state === 'wait') return '#e6e6e6'
+          else if (state === 'run') {
+            return d3.color(colsPurplesBlues[0]).brighter()
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return d3.color(colsPurples[3]).brighter()
+            }
+            return d3.color(colsPurples[4])
+          } else return d3.color(colPrime).brighter()
+        }
+      }
 
-      console.log(com.data.lastRawData);
+      initShrink()
+      initExtend()
     }
     this.initData = initData
 
