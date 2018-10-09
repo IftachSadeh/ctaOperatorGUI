@@ -113,10 +113,8 @@ window.BlockQueueCreator = function () {
           : optIn.d.data.exeState.canRun
 
         if (state === 'wait') return '#e6e6e6'
-        // else if (state === 'done') return '#212121'
-        // else if (state === 'fail') return '#212121'
         else if (state === 'run') {
-          return d3.color(colsPurplesBlues[0]).brighter() // [nObs % colsPurplesBlues.length]
+          return d3.color(colsPurplesBlues[0]).brighter()
         } else if (state === 'cancel') {
           if (hasVar(canRun)) {
             if (!canRun) return d3.color(colsPurples[3]).brighter()
@@ -125,6 +123,7 @@ window.BlockQueueCreator = function () {
         } else return d3.color(colPrime).brighter()
       }
     }
+
     com.style.txtCol = optIn.txtCol
     if (!hasVar(com.style.txtCol)) {
       com.style.txtCol = function (optIn) {
@@ -957,8 +956,6 @@ window.BlockQueueCreator = function () {
       .data(rectNowData, function (d) {
         return d.id
       })
-
-    console.log(rectNowData, com.timeBars.group.g.select('rect.' + com.mainTag + 'now'));
 
     rectNow
       .enter()

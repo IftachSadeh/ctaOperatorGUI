@@ -20,7 +20,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global BlockQueueModif */
 /* global BlockQueueCreator */
 /* global ClockEvents */
-/* global ButtonPanel */
+/* global GridBagLayout */
 /* global PanelManager */
 /* global bckPattern */
 /* global telHealthCol */
@@ -39,7 +39,7 @@ var mainScriptTag = 'schedBlocksController'
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_buttonPanel.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_gridBagLayout.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollTable.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_formManager.js' })
@@ -235,7 +235,7 @@ let mainSchedBlocksController = function (optIn) {
     svgSchedulingBlocksOverview.initData({
       tag: 'schedulingBlocksOverview',
       g: svg.g.append('g'),
-      box: {x: (lenD.w[0] * 0.02), y: lenD.h[0] * 0.62, w: lenD.w[0] * 0.11, h: lenD.h[0] * 0.36},
+      box: {x: (lenD.w[0] * 0.02), y: lenD.h[0] * 0.59, w: lenD.w[0] * 0.96, h: lenD.h[0] * 0.1},
       shrinked: {
         g: undefined,
         box: {x: 0, y: 0, w: 1, h: 1},
@@ -255,7 +255,7 @@ let mainSchedBlocksController = function (optIn) {
     svgSchedulingBlock.initData({
       tag: 'schedulingBlocksOverview',
       g: svg.g.append('g'),
-      box: {x: lenD.w[0] * 0.14, y: lenD.h[0] * 0.62, w: lenD.w[0] * 0.7, h: lenD.h[0] * 0.36},
+      box: {x: lenD.w[0] * 0.03, y: lenD.h[0] * 0.66, w: lenD.w[0] * 0.45, h: lenD.h[0] * 0.3},
       shrinked: {
         g: undefined,
         box: {x: 0, y: 0, w: 0.2, h: 1},
@@ -275,6 +275,33 @@ let mainSchedBlocksController = function (optIn) {
       }
     })
     svgBlocks.initData(dataIn.data)
+    svgMiddleInfo.initData({
+      tag: 'scheduleModification',
+      g: svg.g.append('g'),
+      box: {x: lenD.w[0] * 0.52, y: lenD.h[0] * 0.66, w: lenD.w[0] * 0.45, h: lenD.h[0] * 0.3},
+      panelManager: undefined,
+      panel: {
+        current: undefined,
+        all: []
+      },
+      tab: {
+        g: undefined,
+        box: {x: 0, y: 0, w: 1, h: 0.1},
+        child: {}
+      },
+      content: {
+        g: undefined,
+        box: {x: 0, y: 0.1, w: 1, h: 0.9},
+        child: {}
+      },
+      data: {
+        lastRawData: dataIn.data.blocks,
+        formatedData: undefined
+      },
+      debug: {
+        enabled: false
+      }
+    })
   }
   this.initData = initData
 
@@ -819,663 +846,6 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.initData = initData
   }
-  // let SvgMiddleInfo = function () {
-  //   let gBlockBox, gMiddleBox, gBackPattern, gHistoryBox
-  //   let blockBoxData = {}
-  //   let panelManager = null
-  //   let currentPanels = []
-  //   let commentPanel
-  //
-  //   function createMiddlePanel () {
-  //     panelManager = new PanelManager()
-  //     let optIn = {
-  //       transX: blockBoxData.w * 0.19,
-  //       transY: -1,
-  //       width: blockBoxData.w * 0.8,
-  //       height: (blockBoxData.h * 0.88) / 1,
-  //       g: gMiddleBox.append('g'),
-  //       manager: panelManager,
-  //       dragable: {
-  //           general: false,
-  //           tab: false
-  //         },
-  //       closable: true
-  //     }
-  //     panelManager.init(optIn)
-  //
-  //     commentPanel = new CustomPanel()
-  //     commentPanel.setTabProperties('dragable', optIn.dragable)
-  //     commentPanel.setTabProperties('closable', optIn.closable)
-  //     commentPanel.bindData({'tabName': 'INFORMATIONS'})
-  //
-  //     commentPanel.setRepaintPanel(drawCommentDisabled)
-  //     commentPanel.setRepaintTab(drawTabDisabled)
-  //
-  //     panelManager.addNewPanel(commentPanel)
-  //
-  //     commentPanel = new CustomPanel()
-  //     commentPanel.setTabProperties('dragable', optIn.dragable)
-  //     commentPanel.setTabProperties('closable', optIn.closable)
-  //     commentPanel.bindData({'tabName': 'INFORMATIONS'})
-  //
-  //     commentPanel.setRepaintPanel(drawCommentDisabled)
-  //     commentPanel.setRepaintTab(drawTabDisabled)
-  //
-  //     panelManager.addNewPanel(commentPanel)
-  //     currentPanels.push(commentPanel)
-  //
-  //     let panelManager2 = new PanelManager()
-  //     let optIn2 = {
-  //       transX: 0,
-  //       transY: 0,
-  //       width: blockBoxData.w * 0.20,
-  //       height: (blockBoxData.h * 0.88) / 1,
-  //       g: gMiddleBox.append('g'),
-  //       manager: panelManager2,
-  //       dragable: {
-  //         general: false,
-  //         tab: false
-  //       },
-  //       closable: true
-  //     }
-  //     panelManager2.init(optIn2)
-  //
-  //     let commentPanel2 = new CustomPanel()
-  //     commentPanel2.setTabProperties('dragable', optIn.dragable)
-  //     commentPanel2.setTabProperties('closable', optIn.closable)
-  //     commentPanel2.bindData({'tabName': 'INFORMATIONS'})
-  //
-  //     commentPanel2.setRepaintPanel(drawCommentDisabled)
-  //     commentPanel2.setRepaintTab(drawTabDisabled)
-  //
-  //     panelManager2.addNewPanel(commentPanel2)
-  //     currentPanels.push(commentPanel2)
-  //
-  //     // backPattern.append('path')
-  //     //   .attr('stroke', '#546E7A')
-  //     //   .attr('fill', '#546E7A')
-  //     //   .attr('stroke-width', 2)
-  //     //   .attr('d', 'M 250 30 L 350 60 L 300 60 L 300 80 L 200 80 L 200 60 L 150 60 L 250 30')
-  //   }
-  //   this.createMiddlePanel = createMiddlePanel
-  //
-  //   function createBlockPanels (data) {
-  //     let generalCommentLayout = function (g) {
-  //       return
-  //       let scrollTable = new ScrollTable()
-  //       let formManager = new FormManager()
-  //
-  //       let scrollTableData = {
-  //         x: 0,
-  //         y: 0,
-  //         w: Number(g.attr('width')),
-  //         h: Number(g.attr('height')),
-  //         marg: 10
-  //       }
-  //       scrollTable.init({
-  //         tag: 'tagScrollTable1',
-  //         gBox: g,
-  //         canScroll: true,
-  //         useRelativeCoords: true,
-  //         boxData: scrollTableData,
-  //         locker: locker,
-  //         lockerV: [widgetType + 'updateData'],
-  //         lockerZoom: {
-  //           all: tagBlockQueue + 'zoom',
-  //           during: tagBlockQueue + 'zoomDuring',
-  //           end: tagBlockQueue + 'zoomEnd'
-  //         },
-  //         runLoop: runLoop,
-  //         background: '#ECEFF1'
-  //       })
-  //
-  //       let innerBox = scrollTable.get('innerBox')
-  //       let table = {
-  //         id: 'xxx',
-  //         x: innerBox.marg,
-  //         y: innerBox.marg,
-  //         marg: innerBox.marg,
-  //         rowW: innerBox.w,
-  //         rowH: innerBox.h / 4,
-  //         rowsIn: []
-  //       }
-  //
-  //       // table.rowsIn.push({ h: 9, colsIn: [{id:'01', w:0.3}], marg: innerBox.marg })
-  //       table.rowsIn.push({
-  //         h: 2,
-  //         colsIn: [
-  //           { id: '00', w: 1, title: 'BlockName', disabled: 1, text: data.metaData.blockName }
-  //         ],
-  //         marg: innerBox.marg
-  //       })
-  //       table.rowsIn.push({
-  //         h: 2,
-  //         colsIn: [
-  //           { id: '01', w: 0.5, title: 'State', disabled: 1, text: data.exeState.state },
-  //           { id: '02', w: 0.5, title: 'Schedule', disabled: 1, text: data.startTime + '-' + data.endTime + '(' + data.duration + ')' }
-  //         ],
-  //         marg: innerBox.marg
-  //       })
-  //       table.rowsIn.push({
-  //         h: 2,
-  //         colsIn: [
-  //           { id: '10', w: 1, title: 'Pointing', disabled: 1 }
-  //         ],
-  //         marg: innerBox.marg
-  //       })
-  //       table.rowsIn.push({
-  //         h: 2,
-  //         colsIn: [
-  //           { id: '20', w: 0.333, title: 'Id', disabled: 1, text: data.pointingId },
-  //           { id: '21', w: 0.333, title: 'Name', disabled: 1, text: data.pointingName },
-  //           { id: '22', w: 0.333, title: 'Pos', disabled: 1, text: '' + (data.pointingPos) }
-  //         ],
-  //         marg: innerBox.marg
-  //       })
-  //       table.rowsIn.push({
-  //         h: 2,
-  //         colsIn: [
-  //           { id: '30', w: 1, title: 'Target', disabled: 1 }
-  //         ],
-  //         marg: innerBox.marg
-  //       })
-  //       table.rowsIn.push({
-  //         h: 2,
-  //         colsIn: [
-  //           { id: '40', w: 0.5, title: 'Id', disabled: 1, text: data.targetId },
-  //           { id: '41', w: 0.5, title: 'Position', disabled: 1, text: '' + data.targetPos }
-  //         ],
-  //         marg: innerBox.marg
-  //       })
-  //       scrollTable.updateTable({ table: table })
-  //
-  //       let innerG = scrollTable.get('innerG')
-  //       let tagForms = 'tagForeignObject'
-  //
-  //       formManager.init({
-  //         tag: 'tagFormManager'
-  //       })
-  //       com.getScaleWH = function () {
-  //         return {
-  //           w: lenD.w[0] / +svg.svg.node().getBoundingClientRect().width,
-  //           h: lenD.h[0] / +svg.svg.node().getBoundingClientRect().height
-  //         }
-  //       }
-  //       $.each(table.recV, function (i, d) {
-  //         formManager.addForm({
-  //           id: d.id,
-  //           data: d,
-  //           selection: innerG,
-  //           formSubFunc: function (optIn) {
-  //             console.log('formSubFunc:', optIn)
-  //           },
-  //           tagForm: tagForms,
-  //           disabled: d.data.disabled ? d.data.disabled : 0,
-  //           getScaleWH: com.getScaleWH,
-  //           background: {
-  //             input: '#ECEFF1',
-  //             title: '#ECEFF1'
-  //           }
-  //         })
-  //       })
-  //
-  //       // g.selectAll('*').remove()
-  //       // g.append('rect')
-  //       //   .attr('class', 'back')
-  //       //   .attr('x', 0)
-  //       //   .attr('y', 0)
-  //       //   .attr('rx', 3)
-  //       //   .attr('ry', 3)
-  //       //   .attr('width', g.attr('width'))
-  //       //   .attr('height', g.attr('height'))
-  //       //   .attr('stroke', '#546E7A')
-  //       //   .attr('fill', '#546E7A')
-  //       //   .attr('stroke-width', 3.5)
-  //       //   .attr('stroke-opacity', 1)
-  //       // let fo = g.append('foreignObject')
-  //       //   .attr('x', 0)
-  //       //   .attr('y', 0)
-  //       //   .attr('width', g.attr('width'))
-  //       //   .attr('height', g.attr('height'))
-  //       // let div = fo.append('xhtml:div')
-  //       // div.append('textarea')
-  //       //   .attr('class', 'comment')
-  //       //   // .text('This is a test comment')
-  //       //   .style('background-color', '#37474F')
-  //       //   .style('border', 'none')
-  //       //   .style('width', '98.5%')
-  //       //   .style('height', Number(g.attr('height')) * 0.96 + 'px')
-  //       //   .style('margin-top', '1px')
-  //       //   .style('margin-left', '4px')
-  //       //   .style('resize', 'none')
-  //       //   .style('pointer-events', 'none')
-  //       // console.log(g);
-  //     }
-  //     let generalTabLayout = function (g) {
-  //       g.selectAll('*').remove()
-  //       g.append('rect')
-  //         .attr('class', 'back')
-  //         .attr('x', 0)
-  //         .attr('y', 0)
-  //         .attr('rx', 4)
-  //         .attr('ry', 4)
-  //         .attr('width', g.attr('width'))
-  //         .attr('height', g.attr('height'))
-  //         .attr('fill', '#B0BEC5')
-  //         .attr('stroke-width', 3.5)
-  //         .attr('stroke-opacity', 1)
-  //         .attr('stroke', '#B0BEC5')
-  //       g.append('text')
-  //         .attr('class', 'tabName')
-  //         .text(function (data) {
-  //           return 'General'
-  //         })
-  //         .attr('x', Number(g.attr('width')) / 2)
-  //         .attr('y', Number(g.attr('height')) / 2)
-  //         .style('font-weight', 'bold')
-  //         .attr('text-anchor', 'middle')
-  //         .style('font-size', 18)
-  //         .attr('dy', 9)
-  //         .style('pointer-events', 'none')
-  //         .attr('fill', '#37474F')
-  //         .attr('stroke', 'none')
-  //     }
-  //     let generalCustomPanel = new CustomPanel()
-  //     generalCustomPanel.setTabProperties('dragable', optIn.dragable)
-  //     generalCustomPanel.setTabProperties('closable', optIn.closable)
-  //     generalCustomPanel.bindData({'tabName': 'INFORMATIONS'})
-  //     generalCustomPanel.setRepaintPanel(generalCommentLayout)
-  //     generalCustomPanel.setRepaintTab(generalTabLayout)
-  //     panelManager.addNewPanel(generalCustomPanel)
-  //     currentPanels.push(generalCustomPanel)
-  //
-  //     let resultPanel = new CustomPanel()
-  //     resultPanel.setTabProperties('dragable', optIn.dragable)
-  //     resultPanel.setTabProperties('closable', optIn.closable)
-  //     resultPanel.bindData({'tabName': 'INFORMATIONS'})
-  //     resultPanel.setRepaintPanel(() => {})
-  //     resultPanel.setRepaintTab(generalTabLayout)
-  //     panelManager.addNewPanel(resultPanel)
-  //
-  //     let emptyPanel = new CustomPanel()
-  //     emptyPanel.setTabProperties('dragable', optIn.dragable)
-  //     emptyPanel.setTabProperties('closable', optIn.closable)
-  //     emptyPanel.bindData({'tabName': 'INFORMATIONS'})
-  //     emptyPanel.setRepaintPanel(() => {})
-  //     emptyPanel.setRepaintTab(() => {})
-  //     panelManager.addNewPanel(emptyPanel)
-  //     // let tlsCommentLayout = function (g) {
-  //     //   g.selectAll('*').remove()
-  //     //   g.append('rect')
-  //     //     .attr('class', 'back')
-  //     //     .attr('x', 0)
-  //     //     .attr('y', 0)
-  //     //     .attr('rx', 3)
-  //     //     .attr('ry', 3)
-  //     //     .attr('width', g.attr('width'))
-  //     //     .attr('height', g.attr('height'))
-  //     //     .attr('stroke', '#546E7A')
-  //     //     .attr('fill', '#546E7A')
-  //     //     .attr('stroke-width', 3.5)
-  //     //     .attr('stroke-opacity', 1)
-  //     //   let fo = g.append('foreignObject')
-  //     //     .attr('x', 0)
-  //     //     .attr('y', 0)
-  //     //     .attr('width', g.attr('width'))
-  //     //     .attr('height', g.attr('height'))
-  //     //   let div = fo.append('xhtml:div')
-  //     //   div.append('textarea')
-  //     //     .attr('class', 'comment')
-  //     //     // .text('This is a test comment')
-  //     //     .style('background-color', '#37474F')
-  //     //     .style('border', 'none')
-  //     //     .style('width', '98.5%')
-  //     //     .style('height', Number(g.attr('height')) * 0.96 + 'px')
-  //     //     .style('margin-top', '1px')
-  //     //     .style('margin-left', '4px')
-  //     //     .style('resize', 'none')
-  //     //     .style('pointer-events', 'none')
-  //     // }
-  //     // let tlsTabLayout = function (g) {
-  //     //   g.selectAll('*').remove()
-  //     //   g.append('rect')
-  //     //     .attr('class', 'back')
-  //     //     .attr('x', 0)
-  //     //     .attr('y', 0)
-  //     //     .attr('rx', 4)
-  //     //     .attr('ry', 4)
-  //     //     .attr('width', g.attr('width'))
-  //     //     .attr('height', g.attr('height'))
-  //     //     .attr('fill', '#546E7A')
-  //     //     .attr('stroke-width', 3.5)
-  //     //     .attr('stroke-opacity', 1)
-  //     //     .attr('stroke', '#546E7A')
-  //     //   // if (com.tab.closable) {
-  //     //   //   com.tab.g.append('rect')
-  //     //   //     .attr('class', 'close')
-  //     //   //     .attr('x', com.tab.dimension.width - 16)
-  //     //   //     .attr('y', (com.tab.dimension.height / 2) - 8)
-  //     //   //     .attr('rx', 4)
-  //     //   //     .attr('ry', 4)
-  //     //   //     .attr('width', 13)
-  //     //   //     .attr('height', 13)
-  //     //   //     .attr('fill', '#aaaaaa')
-  //     //   // }
-  //     //   g.append('text')
-  //     //     .attr('class', 'tabName')
-  //     //     .text(function (data) {
-  //     //       return 'COMMENTS'
-  //     //     })
-  //     //     .attr('x', Number(g.attr('width')) / 2)
-  //     //     .attr('y', Number(g.attr('height')) / 2)
-  //     //     .style('font-weight', 'bold')
-  //     //     .attr('text-anchor', 'middle')
-  //     //     .style('font-size', 18)
-  //     //     .attr('dy', 9)
-  //     //     .style('pointer-events', 'none')
-  //     //     .attr('fill', '#37474F')
-  //     //     .attr('stroke', 'none')
-  //     // }
-  //     // let tlsCustomPanel = new CustomPanel()
-  //     // tlsCustomPanel.setTabProperties('dragable', optIn.dragable)
-  //     // tlsCustomPanel.setTabProperties('closable', optIn.closable)
-  //     // tlsCustomPanel.bindData({'tabName': 'INFORMATIONS'})
-  //     // tlsCustomPanel.setRepaintPanel(tlsCommentLayout)
-  //     // tlsCustomPanel.setRepaintTab(tlsTabLayout)
-  //     // panelManager.addNewPanel(tlsCustomPanel)
-  //     // currentPanels.push(tlsCustomPanel)
-  //   }
-  //   this.createBlockPanels = createBlockPanels
-  //
-  //   function createEventPanels (data) {
-  //
-  //   }
-  //   this.createEventPanels = createEventPanels
-  //
-  //   function changeFocusElement (type, data) {
-  //     for (let i = 0; i < currentPanels.length; i++) {
-  //       panelManager.removePanel(currentPanels[i])
-  //     }
-  //     currentPanels = []
-  //
-  //     if (type === 'block') {
-  //       createBlockPanels(data)
-  //     } else if (type === 'event') {
-  //       createEventPanels(data)
-  //     }
-  //     // commentPanel.callFunInfo(transitionDisabledToEnabled)
-  //     // transitionDisabledToEnabled(commentPanel.getTabProperties('g'), commentPanel.getPanelGroup())
-  //     // commentPanel.setRepaintPanel(drawCommentEnabled)
-  //     // commentPanel.setRepaintTab(drawTabEnabled)
-  //   }
-  //   this.changeFocusElement = changeFocusElement
-  //   function drawCommentDisabled (g) {
-  //     g.selectAll('*').remove()
-  //     g.append('rect')
-  //       .attr('class', 'back')
-  //       .attr('x', 0)
-  //       .attr('y', 0)
-  //       .attr('rx', 3)
-  //       .attr('ry', 3)
-  //       .attr('width', g.attr('width'))
-  //       .attr('height', g.attr('height'))
-  //       .attr('stroke', '#546E7A')
-  //       .attr('fill', '#546E7A')
-  //       .attr('stroke-width', 3.5)
-  //       .attr('stroke-opacity', 1)
-  //     let fo = g.append('foreignObject')
-  //       .attr('x', 0)
-  //       .attr('y', 0)
-  //       .attr('width', g.attr('width'))
-  //       .attr('height', g.attr('height'))
-  //     let div = fo.append('xhtml:div')
-  //     div.append('textarea')
-  //       .attr('class', 'comment')
-  //       // .text('This is a test comment')
-  //       .style('background-color', '#37474F')
-  //       .style('border', 'none')
-  //       .style('width', '98.5%')
-  //       .style('height', Number(g.attr('height')) * 0.96 + 'px')
-  //       .style('margin-top', '1px')
-  //       .style('margin-left', '4px')
-  //       .style('resize', 'none')
-  //       .style('pointer-events', 'none')
-  //   }
-  //   function drawTabDisabled (g) {
-  //     g.selectAll('*').remove()
-  //     g.append('rect')
-  //       .attr('class', 'back')
-  //       .attr('x', 0)
-  //       .attr('y', 0)
-  //       .attr('rx', 4)
-  //       .attr('ry', 4)
-  //       .attr('width', g.attr('width'))
-  //       .attr('height', g.attr('height'))
-  //       .attr('fill', '#546E7A')
-  //       .attr('stroke-width', 3.5)
-  //       .attr('stroke-opacity', 1)
-  //       .attr('stroke', '#546E7A')
-  //     // if (com.tab.closable) {
-  //     //   com.tab.g.append('rect')
-  //     //     .attr('class', 'close')
-  //     //     .attr('x', com.tab.dimension.width - 16)
-  //     //     .attr('y', (com.tab.dimension.height / 2) - 8)
-  //     //     .attr('rx', 4)
-  //     //     .attr('ry', 4)
-  //     //     .attr('width', 13)
-  //     //     .attr('height', 13)
-  //     //     .attr('fill', '#aaaaaa')
-  //     // }
-  //     g.append('text')
-  //       .attr('class', 'tabName')
-  //       .text(function (data) {
-  //         return 'BLOCKS'
-  //       })
-  //       .attr('x', Number(g.attr('width')) / 2)
-  //       .attr('y', Number(g.attr('height')) / 2)
-  //       .style('font-weight', 'bold')
-  //       .attr('text-anchor', 'middle')
-  //       .style('font-size', 18)
-  //       .attr('dy', 9)
-  //       .style('pointer-events', 'none')
-  //       .attr('fill', '#37474F')
-  //       .attr('stroke', 'none')
-  //   }
-  //   // function drawCommentEnabled (g) {
-  //   //   g.append('rect')
-  //   //     .attr('class', 'back')
-  //   //     .attr('x', 0)
-  //   //     .attr('y', 0)
-  //   //     .attr('rx', 3)
-  //   //     .attr('ry', 3)
-  //   //     .attr('width', g.attr('width'))
-  //   //     .attr('height', g.attr('height'))
-  //   //     .attr('fill', '#efefef')
-  //   //     .attr('stroke-width', 1.5)
-  //   //     .attr('stroke-opacity', 1)
-  //   //     .attr('stroke', 'black')
-  //   //   let fo = g.append('foreignObject')
-  //   //     .attr('x', 0)
-  //   //     .attr('y', 0)
-  //   //     .attr('width', g.attr('width'))
-  //   //     .attr('height', g.attr('height'))
-  //   //   let div = fo.append('xhtml:div')
-  //   //   div.append('textarea')
-  //   //     .attr('class', 'comment')
-  //   //     // .text('This is a test comment')
-  //   //     .style('background-color', '#ffffff')
-  //   //     .style('border', 'none')
-  //   //     .style('width', '98%')
-  //   //     .style('height', Number(g.attr('height')) * 0.8 + 'px')
-  //   //     .style('margin-top', '1px')
-  //   //     .style('margin-left', '1px')
-  //   //     .style('resize', 'none')
-  //   // }
-  //   // function transitionDisabledToEnabled (gTab, gPanel) {
-  //   //   gTab.select('rect.back')
-  //   //     .transition()
-  //   //     .duration(400)
-  //   //     .ease(d3.easeLinear)
-  //   //     .attr('fill', '#455A64')
-  //   //     .attr('stroke', '#455A64')
-  //   //   gTab.select('text.tabName')
-  //   //     .transition()
-  //   //     .duration(400)
-  //   //     .ease(d3.easeLinear)
-  //   //     .attr('fill', '#CFD8DC')
-  //   //
-  //   //   gPanel.select('rect.back')
-  //   //     .transition()
-  //   //     .duration(400)
-  //   //     .ease(d3.easeLinear)
-  //   //     .attr('stroke', '#455A64')
-  //   //     .attr('fill', '#455A64')
-  //   //   gPanel.select('textarea.comment')
-  //   //     .transition()
-  //   //     .duration(400)
-  //   //     .ease(d3.easeLinear)
-  //   //     .style('background-color', '#CFD8DC')
-  //   //     .style('pointer-events', 'auto')
-  //   //     // .on('end', function () {
-  //   //     //   commentPanel.setDrawInfo(drawCommentEnabled)
-  //   //     // })
-  //   // }
-  //   // function createCommentPanel () {
-  //   //   return
-  //   //   let panelManager = new PanelManager()
-  //   //   let optIn = {
-  //   //     transX: 475,
-  //   //     transY: 40,
-  //   //     width: (-40 + blockBoxData.w * 0.35) / 1,
-  //   //     height: (-20 + blockBoxData.h * 0.83) / 1,
-  //   //     g: gMiddleBox.append('g'),
-  //   //     manager: panelManager,
-  //   //     dragable: {
-  //   //       general: false,
-  //   //       tab: false
-  //   //     },
-  //   //     closable: false
-  //   //   }
-  //   //   panelManager.init(optIn)
-  //   //
-  //   //   commentPanel = new CustomPanel()
-  //   //   commentPanel.setTabProperties('dragable', optIn.dragable)
-  //   //   commentPanel.setTabProperties('closable', optIn.closable)
-  //   //   commentPanel.bindData({'tabName': 'COMMENTS'})
-  //   //
-  //   //   commentPanel.setRepaintPanel(drawCommentDisabled)
-  //   //   commentPanel.setRepaintTab(drawTabDisabled)
-  //   //
-  //   //   panelManager.addNewPanel(commentPanel)
-  //   // }
-  //
-  //   function initData (dataIn) {
-  //     gBlockBox = svg.g.append('g')
-  //
-  //     let x0, y0, w0, h0, marg
-  //     w0 = lenD.w[0] * 0.96
-  //     h0 = lenD.h[0] * 0.4 // h0 *= 2.5;
-  //     x0 = (lenD.w[0] * 0.01)
-  //     y0 = lenD.h[0] * 0.62
-  //     marg = w0 * 0.01
-  //     blockBoxData = {
-  //       x: x0,
-  //       y: y0,
-  //       w: w0,
-  //       h: h0,
-  //       marg: marg
-  //     }
-  //     gBlockBox.attr('transform', 'translate(' + blockBoxData.x + ',' + blockBoxData.y + ')')
-  //     gBackPattern = gBlockBox.append('g').attr('transform', 'translate(' + 0 + ',' + 40 + ')')
-  //     gMiddleBox = gBlockBox.append('g').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-  //
-  //     // gBackPattern.append('rect')
-  //     //   .attr('x', -3)
-  //     //   .attr('y', 0)
-  //     //   .attr('rx', 2)
-  //     //   .attr('ry', 2)
-  //     //   .attr('width', 41)
-  //     //   .attr('height', 30)
-  //     //   .attr('stroke', '#546E7A')
-  //     //   .attr('fill', '#546E7A')
-  //     //   .attr('stroke-width', 3.5)
-  //     //   .attr('stroke-opacity', 1)
-  //     // gBackPattern.append('rect')
-  //     //   .attr('x', 5)
-  //     //   .attr('y', 3)
-  //     //   .attr('rx', 2)
-  //     //   .attr('ry', 2)
-  //     //   .attr('width', 24)
-  //     //   .attr('height', 24)
-  //     //   .attr('stroke', '#CFD8DC')
-  //     //   .attr('fill', '#CFD8DC')
-  //     //   .attr('stroke-width', 0.5)
-  //     //   .attr('stroke-opacity', 1)
-  //     // gBackPattern.append('svg:image')
-  //     //   .attr('class', 'icon')
-  //     //   .attr('xlink:href', '/static/commit.svg')
-  //     //   .attr('width', 30)
-  //     //   .attr('height', 30)
-  //     //   .attr('x', 2)
-  //     //   .attr('y', 0)
-  //     //
-  //     // gBackPattern.append('rect')
-  //     //   .attr('x', 47)
-  //     //   .attr('y', 0)
-  //     //   .attr('rx', 2)
-  //     //   .attr('ry', 2)
-  //     //   .attr('width', 68)
-  //     //   .attr('height', 30)
-  //     //   .attr('stroke', '#546E7A')
-  //     //   .attr('fill', '#546E7A')
-  //     //   .attr('stroke-width', 3.5)
-  //     //   .attr('stroke-opacity', 1)
-  //     // gBackPattern.append('rect')
-  //     //   .attr('x', 53)
-  //     //   .attr('y', 3)
-  //     //   .attr('rx', 2)
-  //     //   .attr('ry', 2)
-  //     //   .attr('width', 24)
-  //     //   .attr('height', 24)
-  //     //   .attr('stroke', '#000000')
-  //     //   .attr('fill', '#CFD8DC')
-  //     //   .attr('stroke-width', 3.5)
-  //     //   .attr('stroke-opacity', 1)
-  //     // gBackPattern.append('svg:image')
-  //     //   .attr('class', 'icon')
-  //     //   .attr('xlink:href', '/static/plus.svg')
-  //     //   .attr('width', 18)
-  //     //   .attr('height', 18)
-  //     //   .attr('x', 56)
-  //     //   .attr('y', 6)
-  //     // gBackPattern.append('rect')
-  //     //   .attr('x', 86)
-  //     //   .attr('y', 3)
-  //     //   .attr('rx', 2)
-  //     //   .attr('ry', 2)
-  //     //   .attr('width', 24)
-  //     //   .attr('height', 24)
-  //     //   .attr('stroke', '#000000')
-  //     //   .attr('fill', '#CFD8DC')
-  //     //   .attr('stroke-width', 3.5)
-  //     //   .attr('stroke-opacity', 1)
-  //     // gBackPattern.append('svg:image')
-  //     //   .attr('class', 'icon')
-  //     //   .attr('xlink:href', '/static/option.svg')
-  //     //   .attr('width', 28)
-  //     //   .attr('height', 28)
-  //     //   .attr('x', 84)
-  //     //   .attr('y', 2)
-  //
-  //     createMiddlePanel()
-  //     //createCommentPanel()
-  //   }
-  //   this.initData = initData
-  //
-  //   function updateData (dataIn) {
-  //   }
-  //   this.updateData = updateData
-  // }
   let SvgSchedulingBlocksOverview = function () {
     let com = {}
     let template = {
@@ -1521,23 +891,31 @@ let mainSchedBlocksController = function (optIn) {
     }
     function populateShrink () {
       let length = com.data.formatedData.length
-      let lineLeftColumn = Math.floor((length + 1) / 2)
-      let dim = {w: (com.shrinked.box.w / 2) * 0.98, h: (com.shrinked.box.h / (lineLeftColumn)) * 0.98}
-      // let lineRigthColumn = Math.floor((Object.keys(com.data.formatedData).length) / 2)
+      let dim = {h: (com.shrinked.box.h / 2) * 0.9, w: (com.shrinked.box.h / 2) * 0.9}
+      length += 1
+      let offset = (com.box.w - (length < 18
+        ? (dim.w * 1.1) * length
+        : (length % 2 === 0
+          ? ((dim.w * 1.1) * (length - (length % 2)) - ((dim.w * 1.1) * (length - (length % 2))) / 2)
+          : ((dim.w * 1.1) / 2 * length)))) * 0.5
+      length -= 1
 
       com.shrinked.child.schedulingBlocks = com.shrinked.g
         .selectAll('g.schedulingBlocks')
         .data(com.data.formatedData)
-
       let enterSchedulingBlocks = com.shrinked.child.schedulingBlocks
         .enter()
         .append('g')
         .attr('class', 'schedulingBlocks')
         .attr('transform', function (d, i) {
           return 'translate(' +
-          ((com.shrinked.box.w / 2) * (i % 2)) +
+          ((dim.w * 1.1) + offset + (length < 18
+            ? (dim.w * 1.1) * i
+            : (length % 2 === 0
+              ? ((dim.w * 1.1) * (i - (i % 2)) - ((dim.w * 1.1) * (i - (i % 2))) / 2)
+              : ((dim.w * 1.1) / 2 * i)))) +
           ',' +
-          (length % 2 === 0 ? ((com.shrinked.box.h / length) * (i - (i % 2))) : ((com.shrinked.box.h / (lineLeftColumn) / 2) * i)) +
+          (length < 18 ? 0 : ((com.shrinked.box.h / 2) * (i % 2))) +
           ')'
         })
       enterSchedulingBlocks.append('rect')
@@ -1673,7 +1051,68 @@ let mainSchedBlocksController = function (optIn) {
           .attr('stroke-width', 0.2)
           .style('pointer-events', 'none')
       })
+
+      com.shrinked.child.newButton = com.shrinked.g
+        .append('g')
+        .attr('class', 'newButton')
+        .attr('transform', 'translate(' + offset + ',' + (length < 18 ? 0 : (com.shrinked.box.h * 0.25)) + ')')
+      com.shrinked.child.newButton.append('rect')
+        .attr('x', function (d, i) {
+          return dim.w * 0.05
+        })
+        .attr('y', function (d, i) {
+          return dim.h * 0.05
+        })
+        .attr('rx', 6)
+        .attr('ry', 6)
+        .attr('width', function (d, i) {
+          return dim.w * 0.9
+        })
+        .attr('height', function (d, i) {
+          return dim.h * 0.9
+        })
+        .attr('fill', function (d, i) {
+          return '#607D8B'
+        })
+        .attr('stroke', 'none')
+        .attr('stroke-width', 1.8)
+        .on('mouseover', function () {
+          if (com.data.focusOn === this) return
+          d3.select(this)
+            .attr('fill', '#90A4AE')
+            .attr('stroke', '#90A4AE')
+            .transition()
+            .duration(400)
+        })
+        .on('mouseout', function () {
+          if (com.data.focusOn === this) return
+          d3.select(this)
+            .attr('fill', '#607D8B')
+            .attr('stroke', 'none')
+            .transition()
+            .duration(400)
+        })
+        .on('click', function (d) {
+          console.log('new')
+        })
+      com.shrinked.child.newButton.append('line')
+        .attr('x1', dim.h * 0.5)
+        .attr('x2', dim.h * 0.5)
+        .attr('y1', dim.h * 0.3)
+        .attr('y2', dim.h * 0.7)
+        .attr('stroke', '#263238')
+        .attr('stroke-width', 4)
+        .style('pointer-events', 'none')
+      com.shrinked.child.newButton.append('line')
+        .attr('x1', dim.h * 0.3)
+        .attr('x2', dim.h * 0.7)
+        .attr('y1', dim.h * 0.5)
+        .attr('y2', dim.h * 0.5)
+        .attr('stroke', '#263238')
+        .attr('stroke-width', 4)
+        .style('pointer-events', 'none')
     }
+
     function initData (dataIn) {
       com = dataIn
       com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
@@ -1982,13 +1421,233 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.updateData = updateData
   }
+  let SvgMiddleInfo = function () {
+    let template = {
+      tag: 'scheduleModification',
+      g: undefined,
+      box: {x: 1, y: 1, w: 1, h: 1},
+      panelManager: undefined,
+      panel: {
+        current: undefined,
+        all: []
+      },
+      tab: {
+        g: undefined,
+        box: {x: 1, y: 1, w: 1, h: 1},
+        child: {}
+      },
+      content: {
+        g: undefined,
+        box: {x: 1, y: 1, w: 1, h: 1},
+        child: {}
+      },
+      data: {
+        lastRawData: undefined,
+        formatedData: undefined
+      },
+      debug: {
+        enabled: false
+      }
+    }
+    let com = template
+
+    function createDefaultPanel () {
+      com.panelManager = new PanelManager()
+      com.panelManager.init({
+        tag: 'tagDefaultPanelManager',
+        g: com.g,
+        box: com.box,
+        tab: {
+          enabled: true,
+          g: com.g.append('g'),
+          box: com.tab.box,
+          dimension: {w: 0, h: 0},
+          dragable: false,
+          closable: false
+        },
+        content: {
+          enabled: true,
+          g: com.g.append('g'),
+          box: com.content.box
+        },
+        panels: {
+          current: undefined,
+          all: []
+        },
+        options: {
+          dragable: false,
+          closable: false
+        }
+      })
+
+      let defaultPanel = new CustomPanel()
+      defaultPanel.init({
+        id: 'test1',
+        tab: {
+          g: undefined,
+          repaint: drawDefaultTab(defaultPanel),
+          select: selectTab,
+          unselect: unselectTab,
+          close: () => {}
+        },
+        content: {
+          g: undefined,
+          repaint: drawDefaultContent
+        }
+      })
+      // defaultPanel.setRepaintPanel(drawDefaultContent)
+      // defaultPanel.setRepaintTab(drawDefaultTab)
+      com.panelManager.addNewPanel(defaultPanel)
+
+      let defaultPanel2 = new CustomPanel()
+      defaultPanel2.init({
+        id: 'test2',
+        tab: {
+          g: undefined,
+          repaint: drawDefaultTab(defaultPanel2),
+          select: selectTab,
+          unselect: unselectTab,
+          close: () => {}
+        },
+        content: {
+          g: undefined,
+          repaint: drawDefaultContent
+        }
+      })
+      com.panelManager.addNewPanel(defaultPanel2)
+    }
+    this.createDefaultPanel = createDefaultPanel
+
+    function changeFocusElement (type, data) {
+      for (let i = 0; i < currentPanels.length; i++) {
+        panelManager.removePanel(currentPanels[i])
+      }
+      currentPanels = []
+
+      if (type === 'block') {
+        createBlockPanels(data)
+      } else if (type === 'event') {
+        createEventPanels(data)
+      }
+    }
+    this.changeFocusElement = changeFocusElement
+    function drawDefaultContent (g) {
+      let gridB = new GridBagLayout()
+      gridB.init({
+        size: {r: 6, c: 4},
+        merge: [{s: {r: 0, c: 0}, e: {r: 2, c: 0}},
+          {s: {r: 4, c: 0}, e: {r: 5, c: 0}},
+          {s: {r: 1, c: 1}, e: {r: 2, c: 1}}],
+        grid: []
+      })
+
+
+      g.selectAll('*').remove()
+      g.append('rect')
+        .attr('class', 'back')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('width', g.attr('width'))
+        .attr('height', g.attr('height'))
+        .attr('stroke', '#CFD8DC')
+        .attr('fill', '#CFD8DC')
+        .attr('stroke-width', 5.5)
+        .attr('stroke-opacity', 1)
+      let fo = g.append('foreignObject')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', g.attr('width'))
+        .attr('height', g.attr('height'))
+      let div = fo.append('xhtml:div')
+      div.append('input')
+        //.attr('class', 'formMngrInput')
+        .attr('type', 'text')
+        .attr('value', 'none')
+        .attr('required', 'true')
+        .style('height', '100%')
+      // div.append('textarea')
+      //   .attr('class', 'comment')
+      //   // .text('This is a test comment')
+      //   .style('background-color', '#37474F')
+      //   .style('border', 'none')
+      //   .style('width', '98.5%')
+      //   .style('height', Number(g.attr('height')) * 0.96 + 'px')
+      //   .style('margin-top', '1px')
+      //   .style('margin-left', '4px')
+      //   .style('resize', 'none')
+      //   .style('pointer-events', 'none')
+    }
+    function unselectTab (g) {
+      g.select('rect.back')
+        .attr('fill', '#546E7A')
+        .attr('stroke', '#546E7A')
+        .attr('height', Number(g.attr('height')) - 6)
+    }
+    function selectTab (g) {
+      g.select('rect.back')
+        .attr('fill', '#CFD8DC')
+        .attr('stroke', '#CFD8DCs')
+        .attr('height', g.attr('height'))
+    }
+    function drawDefaultTab (panel) {
+      return function (g) {
+        g.selectAll('*').remove()
+        g.append('rect')
+          .attr('class', 'back')
+          .attr('x', 3)
+          .attr('y', 0)
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('width', Number(g.attr('width')) - 6)
+          .attr('height', Number(g.attr('height')) - 6)
+          .attr('fill', '#546E7A')
+          .attr('stroke-width', 3.5)
+          .attr('stroke-opacity', 1)
+          .attr('stroke', '#546E7A')
+          .on('click', function () {
+            console.log(panel.get('id'))
+          })
+        g.append('text')
+          .attr('class', 'tabName')
+          .text(function (data) {
+            return 'COMMENTS'
+          })
+          .attr('x', Number(g.attr('width')) / 2)
+          .attr('y', Number(g.attr('height')) / 2)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('font-size', 18)
+          .attr('dy', 7)
+          .style('pointer-events', 'none')
+          .attr('fill', '#37474F')
+          .attr('stroke', 'none')
+      }
+    }
+    function initData (dataIn) {
+      com = dataIn
+
+      com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
+      // gBackPattern = gBlockBox.append('g').attr('transform', 'translate(' + 0 + ',' + 40 + ')')
+      // gMiddleBox = gBlockBox.append('g').attr('transform', 'translate(' + blockBoxData.w * 0.1 + ',' + 0 + ')')
+
+      createDefaultPanel()
+      //createCommentPanel()
+    }
+    this.initData = initData
+
+    function updateData (dataIn) {
+    }
+    this.updateData = updateData
+  }
 
   let svgBlocksQueue = new SvgBlocksQueue()
   let svgBlocksQueueCreator = new SvgBlocksQueueCreator()
   let svgCommitCopyStrip = new SvgCommitCopyStrip()
-  // let svgMiddleInfo = new SvgMiddleInfo()
 
   let svgSchedulingBlocksOverview = new SvgSchedulingBlocksOverview()
   let svgSchedulingBlock = new SvgSchedulingBlock()
   let svgBlocks = new SvgBlocksQueue()
+  let svgMiddleInfo = new SvgMiddleInfo()
 }

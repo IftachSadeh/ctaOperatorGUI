@@ -950,8 +950,6 @@ window.BlockQueue = function () {
         return d.id
       })
 
-    console.log(rectNowData, com.timeBars.group.g.select('rect.' + com.mainTag + 'now'));
-
     rectNow
       .enter()
       .append('rect')
