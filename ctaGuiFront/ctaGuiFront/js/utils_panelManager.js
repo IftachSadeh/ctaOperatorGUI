@@ -79,15 +79,25 @@ window.PanelManager = function () {
   }
   function init (optIn) {
     com = optIn
+
     com.tab.box.x = com.box.w * com.tab.box.x
     com.tab.box.y = com.box.h * com.tab.box.y
-    com.tab.box.w = com.box.w * com.tab.box.w
-    com.tab.box.h = com.box.h * com.tab.box.h
+    com.tab.box.w = 70
+    com.tab.box.h = 15
 
     com.content.box.x = com.box.w * com.content.box.x
-    com.content.box.y = com.box.h * com.content.box.y
+    com.content.box.y = com.tab.box.h
     com.content.box.w = com.box.w * com.content.box.w
-    com.content.box.h = com.box.h * com.content.box.h
+    com.content.box.h = com.box.h - com.content.box.y
+    // com.tab.box.x = com.box.w * com.tab.box.x
+    // com.tab.box.y = com.box.h * com.tab.box.y
+    // com.tab.box.w = com.box.w * com.tab.box.w
+    // com.tab.box.h = com.box.h * com.tab.box.h
+    //
+    // com.content.box.x = com.box.w * com.content.box.x
+    // com.content.box.y = com.box.h * com.content.box.y
+    // com.content.box.w = com.box.w * com.content.box.w
+    // com.content.box.h = com.box.h * com.content.box.h
 
     com.tab.g.attr('transform', 'translate(' + com.tab.box.x + ',' + com.tab.box.y + ')')
     com.content.g.attr('transform', 'translate(' + com.content.box.x + ',' + com.content.box.y + ')')
@@ -118,7 +128,9 @@ window.PanelManager = function () {
   this.removePanel = removePanel
 
   function resizeTab () {
-    com.tab.dimension = {w: com.tab.box.w / com.panels.all.length, h: com.tab.box.h} // ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
+    let w = com.tab.box.w
+    let h = com.tab.box.h
+    com.tab.dimension = {w: w, h: h} // ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
   }
   function updateTab (data) {
     let labels = com.tab.g.selectAll('g.label')

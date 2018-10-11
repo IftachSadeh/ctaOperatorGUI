@@ -73,7 +73,6 @@ window.GridBagLayout = function () {
         }
       }
     }
-    console.log(com.grid);
   }
   // function computeWeight () {
   //   for (var z = 0; z < com.weight.length; z++) {

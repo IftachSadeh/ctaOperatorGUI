@@ -21,6 +21,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global BlockQueueCreator */
 /* global ClockEvents */
 /* global GridBagLayout */
+/* global ScrollBox */
 /* global PanelManager */
 /* global bckPattern */
 /* global telHealthCol */
@@ -43,12 +44,13 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_gridBagLayout.js' 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollTable.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_formManager.js' })
+loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
 
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 12
+  let h0 = 6.75
   let w0 = 12
   let divKey = 'main'
 
@@ -223,8 +225,8 @@ let mainSchedBlocksController = function (optIn) {
     //   .attr('height', lenD.h[0] * 0.3)
     //   .style('fill', '#455A64')
 
-    createPullPanel()
-    createPushPanel()
+    // createPullPanel()
+    // createPushPanel()
     com.dataIn = dataIn
 
     svgBlocksQueue.initData(dataIn.data)
@@ -235,7 +237,7 @@ let mainSchedBlocksController = function (optIn) {
     svgSchedulingBlocksOverview.initData({
       tag: 'schedulingBlocksOverview',
       g: svg.g.append('g'),
-      box: {x: (lenD.w[0] * 0.02), y: lenD.h[0] * 0.59, w: lenD.w[0] * 0.96, h: lenD.h[0] * 0.1},
+      box: {x: (lenD.w[0] * 0.02), y: lenD.h[0] * 0.59, w: lenD.w[0] * 0.6, h: lenD.h[0] * 0.1},
       shrinked: {
         g: undefined,
         box: {x: 0, y: 0, w: 1, h: 1},
@@ -255,7 +257,7 @@ let mainSchedBlocksController = function (optIn) {
     svgSchedulingBlock.initData({
       tag: 'schedulingBlocksOverview',
       g: svg.g.append('g'),
-      box: {x: lenD.w[0] * 0.03, y: lenD.h[0] * 0.66, w: lenD.w[0] * 0.45, h: lenD.h[0] * 0.3},
+      box: {x: lenD.w[0] * 0.01, y: lenD.h[0] * 0.66, w: lenD.w[0] * 0.6, h: lenD.h[0] * 0.3},
       shrinked: {
         g: undefined,
         box: {x: 0, y: 0, w: 0.2, h: 1},
@@ -278,7 +280,7 @@ let mainSchedBlocksController = function (optIn) {
     svgMiddleInfo.initData({
       tag: 'scheduleModification',
       g: svg.g.append('g'),
-      box: {x: lenD.w[0] * 0.52, y: lenD.h[0] * 0.66, w: lenD.w[0] * 0.45, h: lenD.h[0] * 0.3},
+      box: {x: lenD.w[0] * 0.63, y: lenD.h[0] * 0.36, w: lenD.w[0] * 0.37, h: lenD.h[0] * 0.66},
       panelManager: undefined,
       panel: {
         current: undefined,
@@ -578,9 +580,9 @@ let mainSchedBlocksController = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function initData (dataIn) {
       let x0, y0, w0, h0, marg
-      w0 = lenD.w[0] * 0.68
+      w0 = lenD.w[0] * 0.6
       h0 = lenD.h[0] * 0.18 // h0 *= 2.5;
-      x0 = (lenD.w[0] * 0.16)
+      x0 = (lenD.w[0] * 0.02)
       y0 = (lenD.h[0] * 0.02)
       marg = w0 * 0.01
       blockBoxData = {
@@ -593,11 +595,11 @@ let mainSchedBlocksController = function (optIn) {
       gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
       gBlockBox.append('rect')
-        .attr('x', -6)
+        .attr('x', 0)
         .attr('y', -10)
-        .attr('rx', 2)
-        .attr('ry', 2)
-        .attr('width', blockBoxData.w + 12)
+        // .attr('rx', 2)
+        // .attr('ry', 2)
+        .attr('width', blockBoxData.w + 0)
         .attr('height', blockBoxData.h + 12) // + 35)
         // .attr('stroke', '#546E7A')
         // .attr('stroke-width', 12)
@@ -696,9 +698,9 @@ let mainSchedBlocksController = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function initData (dataIn) {
       let x0, y0, w0, h0, marg
-      w0 = lenD.w[0] * 0.68
+      w0 = lenD.w[0] * 0.6
       h0 = lenD.h[0] * 0.18 // h0 *= 2.5;
-      x0 = (lenD.w[0] * 0.16)
+      x0 = (lenD.w[0] * 0.02)
       y0 = lenD.h[0] * 0.37
       marg = w0 * 0.01
       blockBoxData = {
@@ -711,11 +713,11 @@ let mainSchedBlocksController = function (optIn) {
       gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
       gBlockBox.append('rect')
-        .attr('x', -6)
+        .attr('x', -0)
         .attr('y', -10) // - 15)
-        .attr('rx', 2)
-        .attr('ry', 2)
-        .attr('width', blockBoxData.w + 12)
+        // .attr('rx', 2)
+        // .attr('ry', 2)
+        .attr('width', blockBoxData.w + 0)
         .attr('height', blockBoxData.h + 12) // + 45)
         // .attr('stroke', '#546E7A')
         // .attr('stroke-width', 12)
@@ -1013,8 +1015,8 @@ let mainSchedBlocksController = function (optIn) {
         })
         .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
-        .style('font-size', 12)
-        .attr('dy', 9)
+        .style('font-size', dim.h * 0.25)
+        .attr('dy', dim.h * 0.15)
         .style('pointer-events', 'none')
         .attr('fill', '#CFD8DC')
         .attr('stroke', 'none')
@@ -1245,9 +1247,10 @@ let mainSchedBlocksController = function (optIn) {
     this.initData = initData
 
     function focusOnSchedulingBlocks (data) {
+      console.log(data);
       // let length = com.data.formatedData.length
       // let lineLeftColumn = Math.floor((length + 1) / 2)
-      let dim = {w: (com.extended.box.w) * 0.98, h: (com.shrinked.box.h) * 0.98}
+      let dim = {w: (com.extended.box.w) * 1, h: (com.shrinked.box.h) * 1}
       // let lineRigthColumn = Math.floor((Object.keys(com.data.formatedData).length) / 2)
 
       com.data.SBFocus = data
@@ -1259,13 +1262,13 @@ let mainSchedBlocksController = function (optIn) {
         .enter()
         .append('g')
         .attr('class', 'schedulingBlocksFocus')
-        .attr('transform', function (d, i) {
-          return 'translate(' +
-          (com.extended.box.w / 2) +
-          ',' +
-          (com.extended.box.h / 2) +
-          ')'
-        })
+        // .attr('transform', function (d, i) {
+        //   return 'translate(' +
+        //   (com.extended.box.w / 2) +
+        //   ',' +
+        //   (com.extended.box.h / 2) +
+        //   ')'
+        // })
       enterSchedulingBlocks.append('rect')
         .attr('class', 'background')
         .attr('x', function (d, i) {
@@ -1327,6 +1330,27 @@ let mainSchedBlocksController = function (optIn) {
         .style('pointer-events', 'none')
         .attr('fill', '#CFD8DC')
         .attr('stroke', 'none')
+      enterSchedulingBlocks.append('rect')
+      .attr('x', function (d, i) {
+        return com.extended.box.w * 0.02
+      })
+      .attr('y', function (d, i) {
+        return com.extended.box.w * 0.02
+      })
+      .attr('rx', 0)
+      .attr('ry', 0)
+      .attr('width', function (d, i) {
+        return com.extended.box.w * 0.46
+      })
+      .attr('height', function (d, i) {
+        return com.extended.box.h * 0.86
+      })
+      .attr('fill', function (d, i) {
+        return '#455A64'
+      })
+      .attr('stroke', '#aaaaaa')
+      .attr('stroke-width', 1.8)
+
       enterSchedulingBlocks.each(function (d) {
         let group = d3.select(this)
         let dimBlocks = dim.h * 0.1
@@ -1499,22 +1523,22 @@ let mainSchedBlocksController = function (optIn) {
       // defaultPanel.setRepaintTab(drawDefaultTab)
       com.panelManager.addNewPanel(defaultPanel)
 
-      let defaultPanel2 = new CustomPanel()
-      defaultPanel2.init({
-        id: 'test2',
-        tab: {
-          g: undefined,
-          repaint: drawDefaultTab(defaultPanel2),
-          select: selectTab,
-          unselect: unselectTab,
-          close: () => {}
-        },
-        content: {
-          g: undefined,
-          repaint: drawDefaultContent
-        }
-      })
-      com.panelManager.addNewPanel(defaultPanel2)
+      // let defaultPanel2 = new CustomPanel()
+      // defaultPanel2.init({
+      //   id: 'test2',
+      //   tab: {
+      //     g: undefined,
+      //     repaint: drawDefaultTab(defaultPanel2),
+      //     select: selectTab,
+      //     unselect: unselectTab,
+      //     close: () => {}
+      //   },
+      //   content: {
+      //     g: undefined,
+      //     repaint: drawDefaultContent
+      //   }
+      // })
+      // com.panelManager.addNewPanel(defaultPanel2)
     }
     this.createDefaultPanel = createDefaultPanel
 
@@ -1532,41 +1556,315 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.changeFocusElement = changeFocusElement
     function drawDefaultContent (g) {
-      let gridB = new GridBagLayout()
-      gridB.init({
-        size: {r: 6, c: 4},
-        merge: [{s: {r: 0, c: 0}, e: {r: 2, c: 0}},
-          {s: {r: 4, c: 0}, e: {r: 5, c: 0}},
-          {s: {r: 1, c: 1}, e: {r: 2, c: 1}}],
-        grid: []
-      })
+      let defaultChangeNotification = {
+        SB1: {
+          B2: {
+            startTime: {
+              old: 12000,
+              new: 7800
+            },
+            tels: {
+              old: 'S_67',
+              new: 'X'
+            }
+          },
+          B3: {
+            startTime: {
+              old: 8300,
+              new: 17000
+            }
+          }
+        },
+        SB3: {
+          B2: {
+            startTime: {
+              old: 15000,
+              new: 16000
+            }
+          }
+        },
+        SB7: {
+          B1: {
+            canRun: {
+              old: 'actived',
+              new: 'canceled'
+            }
+          },
+          B5: {
+            startTime: {
+              old: 200,
+              new: 11800
+            }
+          }
+        }
+      }
+      let dim = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.11, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.5)}
+      let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) - 3, h: Number(g.attr('height') * 1)}
+      let dimBottom = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.6), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.35 - 5}
 
+      // let gridB = new GridBagLayout()
+      // gridB.init({
+      //   size: {r: 6, c: 4},
+      //   merge: [{s: {r: 0, c: 0}, e: {r: 2, c: 0}},
+      //     {s: {r: 4, c: 0}, e: {r: 5, c: 0}},
+      //     {s: {r: 1, c: 1}, e: {r: 2, c: 1}}],
+      //   grid: []
+      // })
 
       g.selectAll('*').remove()
       g.append('rect')
         .attr('class', 'back')
-        .attr('x', 0)
-        .attr('y', 0)
+        .attr('x', dimBack.x)
+        .attr('y', dimBack.y)
         .attr('rx', 3)
         .attr('ry', 3)
-        .attr('width', g.attr('width'))
-        .attr('height', g.attr('height'))
-        .attr('stroke', '#CFD8DC')
-        .attr('fill', '#CFD8DC')
-        .attr('stroke-width', 5.5)
+        .attr('width', dimBack.w)
+        .attr('height', dimBack.h)
+        .attr('stroke', 'none')
+        .attr('fill', '#ECEFF1')
+        .attr('stroke-width', 6)
         .attr('stroke-opacity', 1)
+      g.append('text')
+        .text(function (data) {
+          return 'Modifications'
+        })
+        .attr('x', dimBack.x + dimBack.w * 0.5)
+        .attr('y', dimBack.y + dimBack.h * 0.05)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 10)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', '#000000')
+        .attr('stroke', 'none')
+
+      g.append('text')
+        .text(function (data) {
+          return 'Sched. Blocks'
+        })
+        .attr('x', dim.x + dim.w * 0.1)
+        .attr('y', dimBack.y + dimBack.h * 0.08)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 8)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', '#000000')
+        .attr('stroke', 'none')
+      g.append('text')
+        .text(function (data) {
+          return 'Blocks'
+        })
+        .attr('x', dim.x + dim.w * 0.3)
+        .attr('y', dimBack.y + dimBack.h * 0.08)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 8)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', '#000000')
+        .attr('stroke', 'none')
+      g.append('text')
+        .text(function (data) {
+          return 'Properties'
+        })
+        .attr('x', dimBack.x + dimBack.w * 0.7)
+        .attr('y', dimBack.y + dimBack.h * 0.08)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 8)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', '#000000')
+        .attr('stroke', 'none')
+
+      g.append('rect')
+        .attr('class', 'back_modif')
+        .attr('x', dim.x)
+        .attr('y', dim.y - 19)
+        .attr('width', dim.w)
+        .attr('height', dim.h + 19)
+        .attr('stroke', '#37474F')
+        .attr('fill', 'none')
+        .attr('stroke-width', 0.5)
+        .attr('stroke-opacity', 1)
+        .attr('stroke-dasharray', [dim.w * 0.4, dim.w * 0.2, dim.w * 0.4, dim.h + 19 + dim.w + dim.h + 19])
+
       let fo = g.append('foreignObject')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', g.attr('width'))
         .attr('height', g.attr('height'))
       let div = fo.append('xhtml:div')
-      div.append('input')
-        //.attr('class', 'formMngrInput')
-        .attr('type', 'text')
-        .attr('value', 'none')
-        .attr('required', 'true')
-        .style('height', '100%')
+
+      let evenSB = 0
+      let evenBLC = 0
+      let evenProp = 0
+      let allLine = 0
+      let sizeProp = 18
+      for (var SB in defaultChangeNotification) {
+        let allBlocks = defaultChangeNotification[SB]
+        let totLine = 0
+        let nbBLC = -1
+        let svgSB = div.append('label')
+          .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+
+        for (var BLC in allBlocks) {
+          nbBLC += 1
+          let allProp = allBlocks[BLC]
+          let totProp = 0
+          let svgBLC = div.append('label')
+            .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+
+          for (var prop in allProp) {
+            let currentProp = allProp[prop]
+            div.append('label')
+              .html(prop)
+              .style('display', 'block')
+              .style('position', 'absolute')
+              // .style('border-radius', '2px')
+              .style('width', (0.15 * dim.w) + 'px')
+              .style('height', sizeProp - 2 + 'px')
+              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+              .style('margin-left', (0.4 * dim.w) + dim.x + 'px')
+              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+            div.append('label')
+              .html(':')
+              .style('display', 'block')
+              .style('position', 'absolute')
+              // .style('border-radius', '2px')
+              .style('width', (0.025 * dim.w) + 'px')
+              .style('height', sizeProp - 2 + 'px')
+              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + dim.x + 'px')
+              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+            div.append('label')
+              .html(currentProp.old)
+              .style('display', 'block')
+              .style('position', 'absolute')
+              // .style('border-radius', '2px')
+              .style('width', (0.15 * dim.w) + 'px')
+              .style('height', sizeProp - 2 + 'px')
+              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+            div.append('label')
+              .html('-> ')
+              .style('display', 'block')
+              .style('position', 'absolute')
+              // .style('border-radius', '2px')
+              .style('width', (0.025 * dim.w) + 'px')
+              .style('height', sizeProp - 2 + 'px')
+              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+            div.append('label')
+              .html(currentProp.new)
+              .style('display', 'block')
+              .style('position', 'absolute')
+              // .style('border-radius', '2px')
+              .style('width', (0.15 * dim.w) + 'px')
+              .style('height', sizeProp - 2 + 'px')
+              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+            div.append('label')
+              .style('display', 'block')
+              .style('position', 'absolute')
+              .style('border-radius', '0px 2px 2px 0px')
+              .style('width', (0.1 * dim.w) + 'px')
+              .style('height', sizeProp - 2 + 'px')
+              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+            totProp += 1
+            evenProp += 1
+          }
+          svgBLC.html(BLC)
+            .style('display', 'block')
+            .style('position', 'absolute')
+            .style('border-radius', '0px 0px 0px 0px')
+            .style('width', (0.2 * dim.w) + 'px')
+            .style('height', (totProp * sizeProp) - 2 + 'px')
+            .style('margin-left', (0.2 * dim.w) + dim.x + 'px')
+            .style('background-color', (evenBLC % 2 ? '#B0BEC5' : '#B0BEC5'))
+            .style('color', '#000000')
+            .style('font-size', 12 + 'px')
+          evenBLC += 1
+          totLine += totProp
+        }
+        svgSB.html(SB)
+          .style('display', 'block')
+          .style('position', 'absolute')
+          .style('border-radius', '2px 0px 0px 2px')
+          .style('width', (0.2 * dim.w) + 'px')
+          .style('height', (totLine * sizeProp) + (6 * nbBLC) - 2 + 'px')
+          .style('margin-left', (0 * dim.w) + dim.x + 'px')
+          .style('background-color', (evenSB % 2 ? '#90A4AE' : '#90A4AE'))
+          .style('color', '#000000')
+          .style('font-size', 14 + 'px')
+        evenSB += 1
+      }
+
+      g.append('rect')
+        .attr('class', 'bottom-back')
+        .attr('x', dimBottom.x)
+        .attr('y', dimBottom.y - 4)
+        .attr('width', dimBottom.w)
+        .attr('height', dimBottom.h)
+        .attr('stroke', '#37474F')
+        .attr('stroke-dasharray', [dim.w * 0.4, dim.w * 0.2, dim.w * 0.4, dim.h + dim.w + dim.h])
+        .attr('fill', '#ECEFF1')
+        .attr('stroke-width', 0.5)
+        .attr('stroke-opacity', 1)
+      g.append('text')
+        .text(function (data) {
+          return 'Conflicts'
+        })
+        .attr('x', dimBottom.x + dimBottom.w * 0.5)
+        .attr('y', dimBottom.y)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 10)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', '#000000')
+        .attr('stroke', 'none')
+
+      g.append('circle')
+        .attr('cx', dimBottom.x + dimBottom.w * 0.5)
+        .attr('cy', dimBottom.y + dimBottom.h * 0.5)
+        .attr('r', dimBottom.h * 0.25)
+        .attr('stroke-width', 8)
+        .attr('stroke', '#CFD8DC')
+        .attr('fill', 'none')
+      g.append('line')
+        .attr('x1', dimBottom.x + dimBottom.w * 0.5 + dimBottom.h * 0.3)
+        .attr('y1', dimBottom.y + dimBottom.h * 0.5 - dimBottom.h * 0.3)
+        .attr('x2', dimBottom.x + dimBottom.w * 0.5 - dimBottom.h * 0.3)
+        .attr('y2', dimBottom.y + dimBottom.h * 0.5 + dimBottom.h * 0.3)
+        .attr('r', dimBottom.h * 0.25)
+        .attr('stroke-width', 8)
+        .attr('stroke', '#CFD8DC')
+      // div.append('input')
+      //   //.attr('class', 'formMngrInput')
+      //   .attr('type', 'text')
+      //   .attr('value', 'none')
+      //   .attr('required', 'true')
+      //   .style('height', '100%')
+
       // div.append('textarea')
       //   .attr('class', 'comment')
       //   // .text('This is a test comment')
@@ -1574,7 +1872,7 @@ let mainSchedBlocksController = function (optIn) {
       //   .style('border', 'none')
       //   .style('width', '98.5%')
       //   .style('height', Number(g.attr('height')) * 0.96 + 'px')
-      //   .style('margin-top', '1px')
+      //   .style('margin-top', (evenSB * 8) + (evenBLC * 6) + '1px')
       //   .style('margin-left', '4px')
       //   .style('resize', 'none')
       //   .style('pointer-events', 'none')
@@ -1583,13 +1881,13 @@ let mainSchedBlocksController = function (optIn) {
       g.select('rect.back')
         .attr('fill', '#546E7A')
         .attr('stroke', '#546E7A')
-        .attr('height', Number(g.attr('height')) - 6)
+        .attr('height', Number(g.attr('height')) - 1)
     }
     function selectTab (g) {
       g.select('rect.back')
-        .attr('fill', '#CFD8DC')
-        .attr('stroke', '#CFD8DCs')
-        .attr('height', g.attr('height'))
+        .attr('fill', '#ECEFF1')
+        .attr('stroke', '#ECEFF1')
+        .attr('height', Number(g.attr('height')) + 16)
     }
     function drawDefaultTab (panel) {
       return function (g) {
@@ -1598,10 +1896,10 @@ let mainSchedBlocksController = function (optIn) {
           .attr('class', 'back')
           .attr('x', 3)
           .attr('y', 0)
-          .attr('rx', 4)
-          .attr('ry', 4)
+          // .attr('rx', 4)
+          // .attr('ry', 4)
           .attr('width', Number(g.attr('width')) - 6)
-          .attr('height', Number(g.attr('height')) - 6)
+          .attr('height', Number(g.attr('height')) - 1)
           .attr('fill', '#546E7A')
           .attr('stroke-width', 3.5)
           .attr('stroke-opacity', 1)
@@ -1612,14 +1910,14 @@ let mainSchedBlocksController = function (optIn) {
         g.append('text')
           .attr('class', 'tabName')
           .text(function (data) {
-            return 'COMMENTS'
+            return 'Schedule 1'
           })
           .attr('x', Number(g.attr('width')) / 2)
           .attr('y', Number(g.attr('height')) / 2)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'middle')
-          .style('font-size', 18)
-          .attr('dy', 7)
+          .style('font-size', Number(g.attr('height')) * 0.6)
+          .attr('dy', Number(g.attr('height')) * 0.3)
           .style('pointer-events', 'none')
           .attr('fill', '#37474F')
           .attr('stroke', 'none')

@@ -169,6 +169,7 @@ window.BlockQueueCreator = function () {
 
   function initAxis () {
     if (!com.axis.enabled) return
+
     com.axis.group.g = com.g.append('g')
       .attr('transform', 'translate(' + com.axis.group.box.x + ',' + com.axis.group.box.y + ')')
 
@@ -180,9 +181,6 @@ window.BlockQueueCreator = function () {
     com.axis.group.g
       .attr('class', 'axis')
       .call(com.axis.main)
-    com.axis.group.g.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.group.g.selectAll('g.tick').selectAll('text').attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
   }
   function initBlocks () {
     if (!com.blocks.enabled) return
@@ -450,6 +448,8 @@ window.BlockQueueCreator = function () {
   }
 
   function updateAxis () {
+    let minTxtSize = com.box.h * 0.1
+
     com.axis.domain = [com.data.startTime.date, com.data.endTime.date]
     com.axis.range = [0, com.axis.group.box.w]
 
@@ -460,9 +460,12 @@ window.BlockQueueCreator = function () {
     // console.log(com.axis.domain, com.axis.range);
     com.axis.main.scale(com.axis.scale)
     com.axis.group.g.call(com.axis.main)
-    com.axis.group.g.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.group.g.selectAll('g.tick').selectAll('text').style('font-size', 14).attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
+    com.axis.group.g.select('path').attr('stroke-width', 1.5).attr('stroke', '#CFD8DC')
+    com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', '#CFD8DC')
+    com.axis.group.g.selectAll('g.tick').selectAll('text')
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .style('font-size', minTxtSize + 'px')
   }
 
   function updateBlocks () {
