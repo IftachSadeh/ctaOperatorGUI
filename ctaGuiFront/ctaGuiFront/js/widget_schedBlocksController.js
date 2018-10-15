@@ -237,10 +237,15 @@ let mainSchedBlocksController = function (optIn) {
     svgSchedulingBlocksOverview.initData({
       tag: 'schedulingBlocksOverview',
       g: svg.g.append('g'),
-      box: {x: (lenD.w[0] * 0.02), y: lenD.h[0] * 0.59, w: lenD.w[0] * 0.6, h: lenD.h[0] * 0.1},
+      box: {x: (lenD.w[0] * 0.02), y: lenD.h[0] * 0.59, w: lenD.w[0] * 0.6, h: lenD.h[0] * 0.37},
       shrinked: {
         g: undefined,
-        box: {x: 0, y: 0, w: 1, h: 1},
+        box: {x: 0, y: 0, w: 1, h: 0.18},
+        child: {}
+      },
+      content: {
+        g: undefined,
+        box: {x: 0, y: 0.15, w: 1, h: 0.85},
         child: {}
       },
       data: {
@@ -254,28 +259,28 @@ let mainSchedBlocksController = function (optIn) {
         enabled: false
       }
     })
-    svgSchedulingBlock.initData({
-      tag: 'schedulingBlocksOverview',
-      g: svg.g.append('g'),
-      box: {x: lenD.w[0] * 0.01, y: lenD.h[0] * 0.66, w: lenD.w[0] * 0.6, h: lenD.h[0] * 0.3},
-      shrinked: {
-        g: undefined,
-        box: {x: 0, y: 0, w: 0.2, h: 1},
-        child: {}
-      },
-      extended: {
-        g: undefined,
-        box: {x: 0, y: 0, w: 1, h: 1},
-        child: {}
-      },
-      data: {
-        lastRawData: dataIn.data.blocks,
-        formatedData: undefined
-      },
-      debug: {
-        enabled: false
-      }
-    })
+    // svgSchedulingBlock.initData({
+    //   tag: 'schedulingBlocksOverview',
+    //   g: svg.g.append('g'),
+    //   box: {x: lenD.w[0] * 0.01, y: lenD.h[0] * 0.66, w: lenD.w[0] * 0.6, h: lenD.h[0] * 0.3},
+    //   shrinked: {
+    //     g: undefined,
+    //     box: {x: 0, y: 0, w: 0.2, h: 1},
+    //     child: {}
+    //   },
+    //   extended: {
+    //     g: undefined,
+    //     box: {x: 0, y: 0, w: 1, h: 1},
+    //     child: {}
+    //   },
+    //   data: {
+    //     lastRawData: dataIn.data.blocks,
+    //     formatedData: undefined
+    //   },
+    //   debug: {
+    //     enabled: false
+    //   }
+    // })
     svgBlocks.initData(dataIn.data)
     svgMiddleInfo.initData({
       tag: 'scheduleModification',
@@ -483,7 +488,13 @@ let mainSchedBlocksController = function (optIn) {
     svgBlocksQueue.updateData(dataIn.data)
     svgBlocksQueueCreator.updateData(dataIn.data)
     // svgMiddleInfo.updateData(dataIn.data)
-    svgSchedulingBlocksOverview.updateData(dataIn.data)
+    svgSchedulingBlocksOverview.updateData({
+      lastRawData: dataIn.data.blocks,
+      formatedData: undefined,
+      currentTime: {date: new Date(dataIn.data.timeOfNight.date_now), time: Number(dataIn.data.timeOfNight.now)},
+      startTime: {date: new Date(dataIn.data.timeOfNight.date_start), time: Number(dataIn.data.timeOfNight.start)},
+      endTime: {date: new Date(dataIn.data.timeOfNight.date_end), time: Number(dataIn.data.timeOfNight.end)}
+    })
     // svgSchedulingBlock.updateData(dataIn.data)
     svgBlocks.updateData(dataIn.data)
   }
@@ -876,6 +887,29 @@ let mainSchedBlocksController = function (optIn) {
 
       com.shrinked.g = com.g.append('g')
         .attr('transform', 'translate(' + com.shrinked.box.x + ',' + com.shrinked.box.y + ')')
+      // com.shrinked.g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', com.shrinked.box.w)
+      //   .attr('height', com.shrinked.box.h)
+      //   .attr('fill', '#aaaaaa')
+      com.shrinked.child.centralBlockG = com.shrinked.g.append('g')
+    }
+    function initContent () {
+      com.content.box.x = com.box.w * com.content.box.x
+      com.content.box.y = com.box.h * com.content.box.y
+      com.content.box.w = com.box.w * com.content.box.w
+      com.content.box.h = com.box.h * com.content.box.h
+
+      com.content.g = com.g.append('g')
+        .attr('transform', 'translate(' + com.content.box.x + ',' + com.content.box.y + ')')
+      // com.content.g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', com.content.box.w)
+      //   .attr('height', com.content.box.h)
+      //   .attr('fill', '#cccccc')
+      com.content.child.centralBlockG = com.content.g.append('g')
     }
     function formatData () {
       let res = {}
@@ -893,9 +927,10 @@ let mainSchedBlocksController = function (optIn) {
     }
     function populateShrink () {
       let length = com.data.formatedData.length
-      let dim = {h: (com.shrinked.box.h / 2) * 0.9, w: (com.shrinked.box.h / 2) * 0.9}
+      let dim = {h: (com.shrinked.box.h) * 0.9, w: (com.shrinked.box.h) * 0.9}
+      com.shrinked.dim = dim
       length += 1
-      let offset = (com.box.w - (length < 18
+      let offset = (com.box.w - (length < 22
         ? (dim.w * 1.1) * length
         : (length % 2 === 0
           ? ((dim.w * 1.1) * (length - (length % 2)) - ((dim.w * 1.1) * (length - (length % 2))) / 2)
@@ -904,21 +939,24 @@ let mainSchedBlocksController = function (optIn) {
 
       com.shrinked.child.schedulingBlocks = com.shrinked.g
         .selectAll('g.schedulingBlocks')
-        .data(com.data.formatedData)
+        .data(com.data.formatedData, function (d) {
+          return d.scheduleId
+        })
       let enterSchedulingBlocks = com.shrinked.child.schedulingBlocks
         .enter()
         .append('g')
         .attr('class', 'schedulingBlocks')
         .attr('transform', function (d, i) {
-          return 'translate(' +
-          ((dim.w * 1.1) + offset + (length < 18
-            ? (dim.w * 1.1) * i
-            : (length % 2 === 0
-              ? ((dim.w * 1.1) * (i - (i % 2)) - ((dim.w * 1.1) * (i - (i % 2))) / 2)
-              : ((dim.w * 1.1) / 2 * i)))) +
-          ',' +
-          (length < 18 ? 0 : ((com.shrinked.box.h / 2) * (i % 2))) +
-          ')'
+          let translate = {
+            x: ((dim.w * 1.1) + offset + (length < 22
+              ? (dim.w * 1.1) * i
+              : (length % 2 === 0
+                ? ((dim.w * 1.1) * (i - (i % 2)) - ((dim.w * 1.1) * (i - (i % 2))) / 2)
+                : ((dim.w * 1.1) / 2 * i)))),
+            y: (length < 22 ? 0 : ((com.shrinked.box.h / 2) * (i % 2)))
+          }
+          d.translate = translate
+          return 'translate(' + translate.x + ',' + translate.y + ')'
         })
       enterSchedulingBlocks.append('rect')
         .attr('class', 'background')
@@ -942,8 +980,8 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke', '#78909C')
         .attr('stroke-width', 1.8)
         .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
-        .on('mouseover', function () {
-          if (com.data.focusOn === this) return
+        .on('mouseover', function (d) {
+          if (com.data.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', '#546E7A')
             .attr('stroke', '#90A4AE')
@@ -952,8 +990,8 @@ let mainSchedBlocksController = function (optIn) {
             .attr('stroke-width', 2.2)
             .attr('stroke-dasharray', [dim.w * 2, 0])
         })
-        .on('mouseout', function () {
-          if (com.data.focusOn === this) return
+        .on('mouseout', function (d) {
+          if (com.data.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', '#455A64')
             .attr('stroke', '#78909C')
@@ -972,8 +1010,8 @@ let mainSchedBlocksController = function (optIn) {
               })
               .on('end', loop)
           }
-          if (com.data.focusOn === this) {
-            svgSchedulingBlock.unfocusOnSchedulingBlocks(d)
+          if (com.data.focusOn === d.scheduleId) {
+            unfocusOnSchedulingBlocks(d)
             com.data.focusOn = undefined
             d3.select(this)
               .attr('fill', '#455A64')
@@ -992,8 +1030,8 @@ let mainSchedBlocksController = function (optIn) {
                 .attr('stroke-width', 1.8)
                 .attr('stroke-dasharray', [dim.w * 1, dim.h * 0.7])
             }
-            svgSchedulingBlock.focusOnSchedulingBlocks(d)
-            com.data.focusOn = this
+            com.data.focusOn = d.scheduleId
+            focusOnSchedulingBlocks(d)
             d3.select(this)
               .attr('stroke-dashoffset', 0)
               .transition()
@@ -1021,16 +1059,14 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', '#CFD8DC')
         .attr('stroke', 'none')
       enterSchedulingBlocks.each(function (d) {
-        let group = d3.select(this)
         let dimBlocks = dim.h * 0.16
         let length = d.blocks.length
         let offset = ((dim.w /* - dimBlocks * 2 */) - (length < 4 ? (dimBlocks * 1.2 * length) : (length % 2 === 0 ? (dimBlocks * 0.6 * length) : (dimBlocks * 0.7 * length)))) * 0.5
 
-        let subBlocks = group
-          .selectAll('rect.subBlocks')
-          .data(d.blocks)
-
-        let enterSubBlocks = subBlocks
+        d3.select(this).selectAll('rect.subBlocks')
+          .data(d.blocks, function (d) {
+            return d.obId
+          })
           .enter()
           .append('rect')
           .attr('class', 'subBlocks')
@@ -1047,17 +1083,31 @@ let mainSchedBlocksController = function (optIn) {
             return dimBlocks
           })
           .attr('fill', function (d, i) {
-            return '#aaaaaa'//com.style.recCol(d.blocks)
+            return com.style.recCol(d)
           })
+          .style('opacity', 0.7)
           .attr('stroke', 'black')
           .attr('stroke-width', 0.2)
           .style('pointer-events', 'none')
       })
 
+      enterSchedulingBlocks.merge(com.shrinked.child.schedulingBlocks).each(function (d) {
+        d3.select(this).selectAll('rect.subBlocks')
+          .data(d.blocks, function (d) {
+            return d.obId
+          })
+          .transition()
+          .duration(800)
+          .attr('fill', function (d, i) {
+            return com.style.recCol(d)
+          })
+      })
+
+      if (com.shrinked.child.newButton) return
       com.shrinked.child.newButton = com.shrinked.g
         .append('g')
         .attr('class', 'newButton')
-        .attr('transform', 'translate(' + offset + ',' + (length < 18 ? 0 : (com.shrinked.box.h * 0.25)) + ')')
+        .attr('transform', 'translate(' + offset + ',' + (length < 22 ? 0 : (com.shrinked.box.h * 0.25)) + ')')
       com.shrinked.child.newButton.append('rect')
         .attr('x', function (d, i) {
           return dim.w * 0.05
@@ -1078,16 +1128,16 @@ let mainSchedBlocksController = function (optIn) {
         })
         .attr('stroke', 'none')
         .attr('stroke-width', 1.8)
-        .on('mouseover', function () {
-          if (com.data.focusOn === this) return
+        .on('mouseover', function (d) {
+          if (com.data.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', '#90A4AE')
             .attr('stroke', '#90A4AE')
             .transition()
             .duration(400)
         })
-        .on('mouseout', function () {
-          if (com.data.focusOn === this) return
+        .on('mouseout', function (d) {
+          if (com.data.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', '#607D8B')
             .attr('stroke', 'none')
@@ -1123,15 +1173,14 @@ let mainSchedBlocksController = function (optIn) {
       com.style.recCol = optIn.recCol
       if (!hasVar(com.style.recCol)) {
         com.style.recCol = function (optIn) {
-          if (optIn.endTime < com.data.currentTime.time) return '#424242'
+          if (optIn.endTime < com.data.currentTime.time) return '#626262'
           let state = hasVar(optIn.state)
             ? optIn.state
             : optIn.exeState.state
           let canRun = hasVar(optIn.canRun)
             ? optIn.canRun
             : optIn.exeState.canRun
-
-          if (state === 'wait') return '#e6e6e6'
+          if (state === 'wait') return '#dddddd'
           else if (state === 'run') {
             return d3.color(colsPurplesBlues[0]).brighter()
           } else if (state === 'cancel') {
@@ -1144,11 +1193,329 @@ let mainSchedBlocksController = function (optIn) {
       }
 
       initShrink()
-
+      initContent()
       formatData()
       populateShrink()
     }
     this.initData = initData
+
+    function createSchedulingBlocksInfoPanel (data) {
+      let dim = {
+        w: com.content.box.w * 0.35,
+        h: com.content.box.h * 0.9,
+        margH: com.content.box.h * 0.05
+      }
+      let borderSize = 2
+
+      com.content.child.schedulingBlocksInfoPanelG = com.content.g.append('g')
+      let heightLine = 16
+      let fo = com.content.g.append('foreignObject')
+        .style('width', dim.w + 'px')
+        .style('height', dim.h + 'px')
+        .style('x', 0 + 'px')
+        .style('y', dim.margH + 'px')
+      let div = fo.append('xhtml:div')
+        .attr('class', 'overflowVerticalDiv')
+        .style('border', borderSize + 'px solid #78909C')
+        .style('background-color', '#ECEFF1')
+      div.append('input')
+        .attr('type', 'text')
+        .attr('value', 'SB ' + data.scheduleId)
+        .text('SB ' + data.scheduleId)
+        .style('text-align', 'center')
+        // .style('position', 'absolute')
+        // .style('border-radius', '2px')
+        .style('width', dim.w - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', borderSize + 'px')
+        .style('margin-left', borderSize + 'px')
+        .style('background-color', '#ECEFF1')
+        .style('border-style', 'solid')
+        .style('border', '0px solid #ffffff')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+
+      div.append('label')
+        .html('Target')
+        .style('display', 'block')
+        // .style('position', 'absolute')
+        .style('text-align', 'center')
+        // .style('border-radius', '2px')
+        .style('width', dim.w - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', heightLine + 'px')
+        .style('margin-left', 1.8 + 'px')
+        .style('background-color', '#ECEFF1')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+      let color = 0
+      div.append('label')
+        .html('Name')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+      div.append('label')
+        .html(': ' + data.blocks[0].targetName)
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', borderSize * 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('text-align', 'left')
+      color += 1
+      div.append('label')
+        .html('Id')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+      div.append('label')
+        .html(': ' + data.blocks[0].targetId)
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', borderSize * 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('text-align', 'left')
+      color += 1
+      div.append('label')
+        .html('Position')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+      div.append('label')
+        .html(': ' + data.blocks[0].targetPos)
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', borderSize * 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('text-align', 'left')
+
+      div.append('label')
+        .html('Other')
+        .style('display', 'inline-block')
+        // .style('position', 'absolute')
+        .style('text-align', 'center')
+        // .style('border-radius', '2px')
+        .style('width', dim.w - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', heightLine * 0.5 + 'px')
+        .style('margin-left', 1.8 + 'px')
+        .style('background-color', '#ECEFF1')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+      color = 0
+      div.append('label')
+        .html('other1:')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+      div.append('label')
+        .html('value1')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', borderSize * 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('text-align', 'left')
+      color += 1
+      div.append('label')
+        .html('other2:')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+      div.append('label')
+        .html('value2')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', borderSize * 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('text-align', 'left')
+      color += 1
+      div.append('label')
+        .html('other3:')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+      div.append('label')
+        .html('value3')
+        .style('float', 'left')
+        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+        .style('height', heightLine + 'px')
+        .style('margin-top', 0 + 'px')
+        .style('margin-left', borderSize * 0 + 'px')
+        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('text-align', 'left')
+    }
+    function createCentralBlock (data) {
+      let position = {
+        x: com.content.box.w * 0.4,
+        y: com.content.box.h * 0.5
+      }
+
+      com.shrinked.child.centralBlockLine1 = com.shrinked.child.centralBlockG.append('line')
+        .attr('x1', data.translate.x + com.shrinked.dim.w * 0.5)
+        .attr('y1', data.translate.y + com.shrinked.dim.w * 0.5)
+        .attr('x2', data.translate.x + com.shrinked.dim.w * 0.5)
+        .attr('y2', com.shrinked.box.h)
+        .attr('stroke', '#78909C')
+        .attr('stroke-width', 4)
+      com.shrinked.child.centralBlockLine2 = com.shrinked.child.centralBlockG.append('line')
+        .attr('x1', data.translate.x + com.shrinked.dim.w * 0.5)
+        .attr('y1', com.shrinked.box.h)
+        .attr('x2', position.x)
+        .attr('y2', com.shrinked.box.h)
+        .attr('stroke', '#78909C')
+        .attr('stroke-width', 4)
+
+      com.content.child.centralBlockLine = com.content.child.centralBlockG.append('line')
+        .attr('x1', position.x)
+        .attr('y1', 0)
+        .attr('x2', position.x)
+        .attr('y2', position.y)
+        .attr('stroke', '#78909C')
+        .attr('stroke-width', 4)
+
+      com.content.child.centralBlock = com.content.g.append('circle')
+        .attr('cx', position.x)
+        .attr('cy', position.y)
+        .attr('r', 10)
+        .attr('fill', '#78909C')
+        .attr('stroke', 'none')
+
+      com.content.child.centralBlockLine = com.content.child.centralBlockG.append('line')
+        .attr('x1', position.x)
+        .attr('y1', position.y)
+        .attr('x2', position.x + com.content.box.w * 0.05)
+        .attr('y2', position.y)
+        .attr('stroke', '#78909C')
+        .attr('stroke-width', 4)
+      com.content.child.centralBlockLine = com.content.child.centralBlockG.append('line')
+        .attr('x1', position.x)
+        .attr('y1', position.y)
+        .attr('x2', position.x - com.content.box.w * 0.05)
+        .attr('y2', position.y)
+        .attr('stroke', '#78909C')
+        .attr('stroke-width', 4)
+    }
+    function createBlocksInScheduleIcons (data) {
+      let dim = {
+        w: com.content.box.w * 0.55,
+        h: com.content.box.h * 0.9,
+        margH: com.content.box.h * 0.05
+      }
+      let position = {
+        x: com.content.box.w * 0.45,
+        y: 0
+      }
+      let dimBlocks = {h: (com.shrinked.box.h) * 0.6, w: (com.shrinked.box.h) * 0.6}
+      let length = data.blocks.length
+      let subBlocks = com.content.g
+        .selectAll('g.subBlocks')
+        .data(data.blocks, function (d) {
+          return d.metaData.blockName
+        })
+
+      let enterSubBlocks = subBlocks
+        .enter()
+        .append('g')
+        .attr('class', 'subBlocks')
+        .attr('transform', function (d, i) {
+          let transX = position.x
+          let transY = (dim.h / (length + 1)) * (i + 1)
+          return 'translate(' + transX + ',' + transY + ')'
+        })
+      enterSubBlocks.append('rect')
+        .attr('class', 'block')
+        .attr('y', function (d, i) {
+          return 0
+        })
+        .attr('x', function (d, i) {
+          return 0
+        })
+        .attr('width', function (d, i) {
+          return dimBlocks.h
+        })
+        .attr('height', function (d, i) {
+          return dimBlocks.h
+        })
+        .attr('fill', function (d, i) {
+          return com.style.recCol(d)
+        })
+        .style('opacity', 0.7)
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.2)
+        .style('pointer-events', 'auto')
+
+      subBlocks.each(function (d, i) {
+        d3.select(this).select('rect.block')
+          .transition()
+          .duration(800)
+          .attr('fill', function () {
+            console.log(d.exeState.state);
+            return com.style.recCol(d)
+          })
+      })
+    }
+
+    function focusOnSchedulingBlocks (data) {
+      createCentralBlock(data)
+      createSchedulingBlocksInfoPanel(data)
+      createBlocksInScheduleIcons(data)
+    }
+    this.focusOnSchedulingBlocks = focusOnSchedulingBlocks
+    function unfocusOnSchedulingBlocks () {
+
+    }
+    this.unfocusOnSchedulingBlocks = unfocusOnSchedulingBlocks
 
     function shrink () {
       com.extended.child.back.transition()
@@ -1173,7 +1540,26 @@ let mainSchedBlocksController = function (optIn) {
     this.shrink = shrink
 
     function updateData (dataIn) {
-
+      dataIn.focusOn = com.data.focusOn
+      com.data = dataIn
+      formatData()
+      populateShrink()
+      // for (let i = 0; i < com.data.formatedData.length; i++) {
+      //   if (com.data.formatedData[i].scheduleId === com.data.focusOn) {
+      //     for (let j = 0; j < com.data.formatedData[i].blocks.length; j++) {
+      //       console.log(com.data.formatedData[i].blocks[j].exeState.state);
+      //     }
+      //   }
+      // }
+      if (com.data.focusOn) {
+        for (let i = 0; i < com.data.formatedData.length; i++) {
+          if (com.data.formatedData[i].scheduleId === com.data.focusOn) createBlocksInScheduleIcons(com.data.formatedData[i])
+        }
+      }
+      // com.shrinked.child.schedulingBlocks.selectAll('rect.subBlocks')
+      //   .attr('fill', function (d, i) {
+      //     return com.style.recCol(d)
+      //   })
     }
     this.updateData = updateData
   }

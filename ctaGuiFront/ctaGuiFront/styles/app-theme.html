@@ -19,7 +19,7 @@
         --color-purple-0: #5E35B1;
         --color-purple-1: #9575CD;
         --color-purple-2: #D1C4E9;
-        
+
         --color-orange-0: #FF9800;
         --color-orange-1: #F57C00;
         --color-orange-2: #E65100;
@@ -108,7 +108,7 @@
         outline: none;
       }
 
-      a:link { 
+      a:link {
         color: var(--color-blue-0);
       }
 
@@ -137,6 +137,32 @@
         overflow-y: scroll;
         height: 100%;
         width: 100%;
+      }
+
+      .overflowVerticalDiv {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: 100%;
+        width: 100%;
+      }
+      /* width */
+      .overflowVerticalDiv::-webkit-scrollbar {
+          width: 6px;
+      }
+
+      /* Track */
+      .overflowVerticalDiv::-webkit-scrollbar-track {
+          background: #78909C;
+      }
+
+      /* Handle */
+      .overflowVerticalDiv::-webkit-scrollbar-thumb {
+          background: #263238;
+      }
+
+      /* Handle on hover */
+      .overflowVerticalDiv::-webkit-scrollbar-thumb:hover {
+          background: #000000;
       }
 
       .headerPanel {
@@ -251,7 +277,7 @@
       /*input::-webkit-calendar-picker-indicator{
           display: none;
       }*/
-      /*  input[type="date"]::-webkit-input-placeholder{ 
+      /*  input[type="date"]::-webkit-input-placeholder{
           visibility: hidden !important;
       }*/
 
@@ -261,8 +287,8 @@
         position: fixed;
         right: 0px;
         top: 0px;
-        -moz-transform: scale(0.85); 
-        -webkit-transform: scale(0.85); 
+        -moz-transform: scale(0.85);
+        -webkit-transform: scale(0.85);
         transform: scale(0.85);
       }
       .buttonsTopRight_0 {
@@ -285,8 +311,8 @@
         margin-right: 10px;
         padding: 0px;
         pointer-events: none;
-        -moz-transform: scale(2.1); 
-        -webkit-transform: scale(2.1); 
+        -moz-transform: scale(2.1);
+        -webkit-transform: scale(2.1);
         transform: scale(2.1);
 
         --paper-spinner-layer-1-color: var(--primary-color);
@@ -413,7 +439,7 @@
       /* datetimepicker */
       /* -------------------------------------------------------------------------------------------------- */
       .datePick  {
-        width:     80%; 
+        width:     80%;
         font-size: var(--font-size);
         padding:   0px 0px 0px;
       }
@@ -541,9 +567,9 @@
       .buttonRow paper-fab, .buttonRow paper-fab-spinner {
         margin-left: 1px;
         margin-right: 1px;
-        padding: 0px; 
-        -moz-transform: scale(.75); 
-        -webkit-transform: scale(.75); 
+        padding: 0px;
+        -moz-transform: scale(.75);
+        -webkit-transform: scale(.75);
         transform: scale(.75);
       }
 
@@ -557,7 +583,7 @@
       .normalTxtButtonCntr, .normalTxtButtonCntr paper-button {
         text-transform: none;
       }
-      
+
       paper-listbox a {
         @apply(--layout-horizontal);
         @apply(--layout-center);
@@ -674,16 +700,16 @@
         @apply(--paper-font-subhead);
       }*/
 
-      
-      /* -------------------------------------------------------------------------------------------------- 
-        material design inspired text inputs 
-          see: https://codepen.io/sevilayha/pen/IdGKH 
+
+      /* --------------------------------------------------------------------------------------------------
+        material design inspired text inputs
+          see: https://codepen.io/sevilayha/pen/IdGKH
       -------------------------------------------------------------------------------------------------- */
       .formMngrDiv {
         background-color: transparent;
         /*border:1px solid var(--color-blue-0);*/
 
-        /* align vertically such that approxp. the bottom of the input will 
+        /* align vertically such that approxp. the bottom of the input will
           be centred (only approx due to line-height not exactly corresponding to font-size)*/
         /*position: fixed; top: calc(50% - 20px - var(--font-size) * 2); left: 0;*/
         /*padding-top: calc(50% - 20px - var(--font-size) * 2);*/
@@ -712,14 +738,14 @@
       }
 /*      .formInput:focus {
         border-bottom:4px solid var(--primary-color);
-        transition:0.2s ease all; 
-        -moz-transition:0.2s ease all; 
+        transition:0.2s ease all;
+        -moz-transition:0.2s ease all;
         -webkit-transition:0.2s ease all;
       }
       .formInput:not(:focus) {
         border-bottom:1px solid var(--primary-color);
-        transition:0.2s ease all; 
-        -moz-transition:0.2s ease all; 
+        transition:0.2s ease all;
+        -moz-transition:0.2s ease all;
         -webkit-transition:0.2s ease all;
       }*/
 
@@ -732,19 +758,19 @@
         width: 100%;
         border-bottom:2px solid var(--primary-color);
 
-        transition:0.2s ease all; 
-        -moz-transition:0.2s ease all; 
+        transition:0.2s ease all;
+        -moz-transition:0.2s ease all;
         -webkit-transition:0.2s ease all;
       }
       .formMngrInput:not(:focus) ~ .formMngrBar {
-        transition:0.2s ease all; 
-        -moz-transition:0.2s ease all; 
+        transition:0.2s ease all;
+        -moz-transition:0.2s ease all;
         -webkit-transition:0.2s ease all;
       }
 
       .formMngrTitle {
         pointer-events: none;
-        color: var(--light-primary-color); 
+        color: var(--light-primary-color);
         margin-top: calc(var(--font-size) / 2);
         text-align: left;
       }
@@ -874,7 +900,7 @@
         --color-purple-0: #5E35B1;
         --color-purple-1: #9575CD;
         --color-purple-2: #D1C4E9;
-        
+
         --color-orange-0: #FF9800;
         --color-orange-1: #F57C00;
         --color-orange-2: #E65100;
@@ -964,7 +990,7 @@
         outline: none;
       }
 
-      a:link { 
+      a:link {
         color: var(--color-blue-0);
       }
 
@@ -1104,7 +1130,7 @@
       /*input::-webkit-calendar-picker-indicator{
           display: none;
       }*/
-      /*  input[type="date"]::-webkit-input-placeholder{ 
+      /*  input[type="date"]::-webkit-input-placeholder{
           visibility: hidden !important;
       }*/
 
@@ -1114,8 +1140,8 @@
         position: fixed;
         right: 0px;
         top: 0px;
-        -moz-transform: scale(0.85); 
-        -webkit-transform: scale(0.85); 
+        -moz-transform: scale(0.85);
+        -webkit-transform: scale(0.85);
         transform: scale(0.85);
       }
       .buttonsTopRight_0 {
@@ -1138,8 +1164,8 @@
         margin-right: 10px;
         padding: 0px;
         pointer-events: none;
-        -moz-transform: scale(2.1); 
-        -webkit-transform: scale(2.1); 
+        -moz-transform: scale(2.1);
+        -webkit-transform: scale(2.1);
         transform: scale(2.1);
 
         --paper-spinner-layer-1-color: var(--primary-color);
@@ -1266,7 +1292,7 @@
       /* datetimepicker */
       /* -------------------------------------------------------------------------------------------------- */
       .datePick  {
-        width:     80%; 
+        width:     80%;
         font-size: var(--font-size);
         padding:   0px 0px 0px;
       }
@@ -1394,9 +1420,9 @@
       .buttonRow paper-fab, .buttonRow paper-fab-spinner {
         margin-left: 1px;
         margin-right: 1px;
-        padding: 0px; 
-        -moz-transform: scale(.75); 
-        -webkit-transform: scale(.75); 
+        padding: 0px;
+        -moz-transform: scale(.75);
+        -webkit-transform: scale(.75);
         transform: scale(.75);
       }
 
@@ -1410,7 +1436,7 @@
       .normalTxtButtonCntr, .normalTxtButtonCntr paper-button {
         text-transform: none;
       }
-      
+
       paper-listbox a {
         @apply(--layout-horizontal);
         @apply(--layout-center);
@@ -1429,8 +1455,8 @@
       }
 
       .animChangeWH {
-        transition:0.3s ease all; 
-        -moz-transition:0.3s ease all; 
+        transition:0.3s ease all;
+        -moz-transition:0.3s ease all;
         -webkit-transition:0.3s ease all;
       }
 
