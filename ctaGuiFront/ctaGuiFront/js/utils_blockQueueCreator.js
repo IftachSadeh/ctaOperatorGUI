@@ -379,7 +379,6 @@ window.BlockQueueCreator = function () {
     createButton({row: 2, col: 1}, 'Cancel', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}])
     createButton({row: 2, col: 2}, 'Wait', [{keys: ['exeState', 'state'], value: 'wait'}])
   }
-
   function initTimeBars () {
     if (!com.timeBars.enabled) return
     com.timeBars.group.g = com.g.append('g')
@@ -467,7 +466,6 @@ window.BlockQueueCreator = function () {
       .attr('fill', '#CFD8DC')
       .style('font-size', minTxtSize + 'px')
   }
-
   function updateBlocks () {
     if (com.data.raw === undefined) return
     com.data.filtered = filterData()
@@ -703,6 +701,129 @@ window.BlockQueueCreator = function () {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
+  function blocksMouseOver (data) {
+    let totBlocks = com.blocks.group.run.g.selectAll('rect.' + com.mainTag + 'blocks')
+      .merge(com.blocks.group.cancel.g.selectAll('rect.' + com.mainTag + 'blocks'))
+
+    totBlocks.each(function (d) {
+      if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
+        d3.select(this).attr('stroke-width', 6)
+          .style('opacity', 1)
+          .attr('stroke-dasharray', [4, 2])
+      }
+    })
+  }
+  function blocksMouseOut (data) {
+    let totBlocks = com.blocks.group.run.g.selectAll('rect.' + com.mainTag + 'blocks')
+      .merge(com.blocks.group.cancel.g.selectAll('rect.' + com.mainTag + 'blocks'))
+
+    totBlocks.each(function (d) {
+      if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
+        d3.select(this).attr('stroke-width', 1)
+          .style('opacity', 0.55)
+          .attr('stroke-dasharray', [])
+      }
+    })
+  }
+  function focusOnSchedBlocks (data) {
+    blocksMouseOver({data: {metaData: {nSched: Number(data.scheduleId)}}})
+  }
+  this.focusOnSchedBlocks = focusOnSchedBlocks
+  function unfocusOnSchedBlocks (data) {
+    blocksMouseOut({data: {metaData: {nSched: Number(data.scheduleId)}}})
+  }
+  this.unfocusOnSchedBlocks = unfocusOnSchedBlocks
+  function changeTimeOfBlockStart (d) {
+    com.interaction = {}
+    com.interaction.firstDrag = false
+  }
+  function changeTimeOfBlock (d) {
+    if (!com.interaction.firstDrag) {
+      com.interaction.firstDrag = true
+      let timeScale = d3.scaleLinear()
+        .range(com.axis.range)
+        .domain([com.data.startTime.time, com.data.endTime.time])
+      com.interaction.position = {
+        center: (timeScale(d.data.startTime) + timeScale(d.data.endTime)) * 0.5,
+        left: timeScale(d.data.startTime),
+        right: timeScale(d.data.endTime)
+      }
+      com.interaction.g = com.blocks.group.cancel.g.append('g')
+      com.interaction.box = com.blocks.group.cancel.box
+      com.interaction.box.h = com.box.h
+
+      com.interaction.mousecursor = d3.event
+
+      com.interaction.g.append('circle')
+        .attr('cx', com.interaction.position.center)
+        .attr('cy', com.interaction.box.h * 0.5)
+        .attr('r', 3)
+        .attr('fill', '#000000')
+      com.interaction.g.append('line')
+        .attr('class', 'left')
+        .attr('x1', com.interaction.position.left)
+        .attr('y1', 0)
+        .attr('x2', com.interaction.position.left)
+        .attr('y2', com.interaction.box.h)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray', [com.interaction.box.h * 0.02, com.interaction.box.h * 0.02])
+      com.interaction.g.append('line')
+        .attr('class', 'right')
+        .attr('x1', com.interaction.position.right)
+        .attr('y1', 0)
+        .attr('x2', com.interaction.position.right)
+        .attr('y2', com.interaction.box.h)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray', [com.interaction.box.h * 0.02, com.interaction.box.h * 0.02])
+      com.interaction.g.append('line')
+        .attr('class', 'center')
+        .attr('x1', com.interaction.position.left)
+        .attr('y1', com.interaction.box.h * 0.5)
+        .attr('x2', com.interaction.position.right)
+        .attr('y2', com.interaction.box.h * 0.5)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 1)
+      com.interaction.g.append('rect')
+        .attr('class', 'timeline')
+        .attr('x', com.interaction.position.left)
+        .attr('y', -10)
+        .attr('width', com.interaction.position.right - com.interaction.position.left)
+        .attr('height', 10)
+        .attr('fill', '#CFD8DC')
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+    } else {
+      let delta = {
+        x: d3.event.x - com.interaction.mousecursor.x,
+        y: d3.event.y - com.interaction.mousecursor.y
+      }
+      com.interaction.mousecursor = d3.event
+
+      if (Number(com.interaction.g.select('line.left').attr('x1')) + delta.x > 0 &&
+        Number(com.interaction.g.select('line.right').attr('x1')) + delta.x < com.interaction.box.w) {
+        com.interaction.g.select('circle')
+          .attr('cx', Number(com.interaction.g.select('circle').attr('cx')) + delta.x)
+        com.interaction.g.select('line.left')
+          .attr('x1', Number(com.interaction.g.select('line.left').attr('x1')) + delta.x)
+          .attr('x2', Number(com.interaction.g.select('line.left').attr('x2')) + delta.x)
+        com.interaction.g.select('line.right')
+          .attr('x1', Number(com.interaction.g.select('line.right').attr('x1')) + delta.x)
+          .attr('x2', Number(com.interaction.g.select('line.right').attr('x2')) + delta.x)
+        com.interaction.g.select('line.center')
+          .attr('x1', Number(com.interaction.g.select('line.center').attr('x1')) + delta.x)
+          .attr('x2', Number(com.interaction.g.select('line.center').attr('x2')) + delta.x)
+        com.interaction.g.select('rect.timeline')
+          .attr('x', Number(com.interaction.g.select('rect.timeline').attr('x')) + delta.x)
+      }
+    }
+  }
+  function changeTimeOfBlockEnd (d) {
+    com.interaction.g.remove()
+    com.interaction = {}
+  }
+
   function setBlockRect (data, group) {
     let box = group.box
     let minTxtSize = box.w * 0.016
@@ -749,38 +870,28 @@ window.BlockQueueCreator = function () {
       .attr('vector-effect', 'non-scaling-stroke')
       .on('click', com.blocks.events.click)
       .on('mouseover', function (d) {
+        blocksMouseOver(d)
         d3.select(this).attr('stroke-width', 4)
-        d3.select(this).style('stroke-opacity', 1)
+        d3.select(this).style('opacity', 1)
         com.blocks.events.mouseover(d)
       })
       .on('mouseout', function (d) {
+        blocksMouseOut(d)
         d3.select(this).attr('stroke-width', 1)
-        d3.select(this).style('stroke-opacity', function (d) {
-          return 0.7
-          // if (filters.states.length === 0 && filters.errors.length === 0) return 0.7
-          // else {
-          //   let inState, inError
-          //   filters.states.length === 0 ? inState = true : inState = false
-          //   filters.errors.length === 0 ? inError = true : inError = false
-          //   for (var i = 0; i < filters.states.length; i++) {
-          //     if (d.data.exeState.state === filters.states[i].id) inState = true
-          //   }
-          //   for (var j = 0; j < filters.errors.length; j++) {
-          //     if (d.data.exeState.error === filters.errors[j].id) inError = true
-          //   }
-          //
-          //   if (inState && inError) return 0.7
-          //   return 0.05
-          // }
-          // return 0.6// com.style.recFillOpac(d, d.data.exeState.state)
+        d3.select(this).style('opacity', function (d) {
+          return 0.55
         })
         com.blocks.events.mouseout(d)
       })
+      .call(d3.drag()
+        .on('start', changeTimeOfBlockStart)
+        .on('drag', changeTimeOfBlock)
+        .on('end', changeTimeOfBlockEnd))
       .merge(rect)
       .transition('inOut')
       .duration(timeD.animArc)
 
-      .style('opacity', 1)
+      .style('opacity', 0.55)
       .attr('stroke', function (d, i) {
         return '#111111'
       })
