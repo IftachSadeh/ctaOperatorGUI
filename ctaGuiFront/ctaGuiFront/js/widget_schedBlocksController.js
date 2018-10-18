@@ -463,7 +463,7 @@ let mainSchedBlocksController = function (optIn) {
     com.dataIn = dataIn
 
     svgBlocksQueue.updateData(dataIn.data)
-    // svgBlocksQueueCreator.updateData(dataIn.data)
+    svgBlocksQueueCreator.update(dataIn.data)
     // svgMiddleInfo.updateData(dataIn.data)
     svgSchedulingBlocksOverview.updateData({
       lastRawData: dataIn.data.blocks,
@@ -685,9 +685,9 @@ let mainSchedBlocksController = function (optIn) {
     function initData (dataIn) {
       let x0, y0, w0, h0, marg
       w0 = lenD.w[0] * 0.6
-      h0 = lenD.h[0] * 0.18 // h0 *= 2.5;
+      h0 = lenD.h[0] * 0.25 // h0 *= 2.5;
       x0 = (lenD.w[0] * 0.02)
-      y0 = lenD.h[0] * 0.37
+      y0 = lenD.h[0] * 0.3
       marg = w0 * 0.01
       blockBoxData = {
         x: x0,
@@ -732,11 +732,15 @@ let mainSchedBlocksController = function (optIn) {
           group: {
             run: {
               g: undefined,
-              box: {x: 0, y:blockBoxData.h * 0.45, w:blockBoxData.w, h:blockBoxData.h * 0.55, marg: blockBoxData.marg}
+              box: {x: 0, y: blockBoxData.h * 0.66, w: blockBoxData.w, h: blockBoxData.h * 0.34, marg: blockBoxData.marg}
             },
             cancel: {
               g: undefined,
-              box: {x: 0, y:0, w: blockBoxData.w, h:blockBoxData.h * 0.3, marg: blockBoxData.marg}
+              box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.2, marg: blockBoxData.marg}
+            },
+            modification: {
+              g: undefined,
+              box: {x: 0, y: blockBoxData.h * 0.24, w: blockBoxData.w, h: blockBoxData.h * 0.36, marg: blockBoxData.marg}
             }
           },
           events: {
@@ -769,7 +773,8 @@ let mainSchedBlocksController = function (optIn) {
         },
         debug: {
           enabled: false
-        }
+        },
+        pattern: {}
       })
 
       updateData(dataIn)
@@ -782,7 +787,7 @@ let mainSchedBlocksController = function (optIn) {
         telIds.push(dataNow.id)
       })
 
-      blockQueueCreator.update({
+      blockQueueCreator.updateData({
         currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
         startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
         endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)},
@@ -791,6 +796,15 @@ let mainSchedBlocksController = function (optIn) {
       })
     }
     this.updateData = updateData
+
+    function update (dataIn) {
+      blockQueueCreator.update({
+        currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
+        startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
+        endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)}
+      })
+    }
+    this.update = update
   }
   let SvgCommitCopyStrip = function () {
     let gBlockBox

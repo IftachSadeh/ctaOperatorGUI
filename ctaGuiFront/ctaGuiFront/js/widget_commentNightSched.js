@@ -1708,7 +1708,7 @@ let mainCommentNightSched = function (optIn) {
   //   }
   // }
   let SvgMiddleInfo = function () {
-    let gBlockBox, gMiddleBox, gBackPattern, gHistoryBox
+    let gBlockBox, gMiddleBox, gBackPattern
     let blockBoxData = {}
     let panelManager = null
     let currentPanels = []
@@ -1724,17 +1724,58 @@ let mainCommentNightSched = function (optIn) {
         g: gMiddleBox.append('g'),
         manager: panelManager,
         dragable: {
-            general: false,
-            tab: false
-          },
+          general: false,
+          tab: false
+        },
         closable: true
+      }
+      let g = gMiddleBox.append('g').attr('transform','translate(60,0)')
+      optIn = {
+        tag: 'tagDefaultPanelManager',
+        g: g,
+        box: {
+          x: 1000,
+          y: 40,
+          w: (blockBoxData.w * 0.8),
+          h: (-20 + blockBoxData.h * 0.91)
+        },
+        tab: {
+          enabled: true,
+          g: g.append('g'),
+          box: {
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 0.1
+          },
+          dimension: {w: 0, h: 0},
+          dragable: false,
+          closable: false
+        },
+        content: {
+          enabled: true,
+          g: g.append('g'),
+          box: {
+            x: 0,
+            y: 0.1,
+            w: 1,
+            h: 0.9
+          }
+        },
+        panels: {
+          current: undefined,
+          all: []
+        },
+        options: {
+          dragable: false,
+          closable: false
+        }
       }
       panelManager.init(optIn)
 
       commentPanel = new CustomPanel()
       commentPanel.setTabProperties('dragable', optIn.dragable)
       commentPanel.setTabProperties('closable', optIn.closable)
-      commentPanel.bindData({'tabName': 'INFORMATIONS'})
 
       commentPanel.setRepaintPanel(drawCommentDisabled)
       commentPanel.setRepaintTab(drawTabDisabled)

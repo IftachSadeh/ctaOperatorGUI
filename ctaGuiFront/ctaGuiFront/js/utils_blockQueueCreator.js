@@ -12,6 +12,7 @@
 /* global colsGreens */
 /* global colsYellows */
 /* global colsPurplesBlues */
+/* global bckPattern */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
 
@@ -447,7 +448,7 @@ window.BlockQueueCreator = function () {
   }
 
   function updateAxis () {
-    let minTxtSize = com.box.h * 0.1
+    let minTxtSize = com.box.h * 0.07
 
     com.axis.domain = [com.data.startTime.date, com.data.endTime.date]
     com.axis.range = [0, com.axis.group.box.w]
@@ -458,6 +459,7 @@ window.BlockQueueCreator = function () {
 
     // console.log(com.axis.domain, com.axis.range);
     com.axis.main.scale(com.axis.scale)
+    com.axis.main.tickSize(4)
     com.axis.group.g.call(com.axis.main)
     com.axis.group.g.select('path').attr('stroke-width', 1.5).attr('stroke', '#CFD8DC')
     com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', '#CFD8DC')
@@ -498,13 +500,26 @@ window.BlockQueueCreator = function () {
     setBlockRect(topRow, com.blocks.group.cancel)
   }
 
-  function update (dataIn) {
+  function updateData (dataIn) {
     com.data.lastRawData = com.data.raw
     com.data.currentTime = dataIn.currentTime
     com.data.startTime = dataIn.startTime
     com.data.endTime = dataIn.endTime
     com.data.raw = dataIn.data
     com.data.telIds = dataIn.telIds
+
+    com.data.modified = []
+
+    if (com.axis.enabled) updateAxis()
+    if (com.blocks.enabled) updateBlocks()
+    if (com.timeBars.enabled) setTimeRect()
+  }
+  this.updateData = updateData
+
+  function update (dataIn) {
+    com.data.currentTime = dataIn.currentTime
+    com.data.startTime = dataIn.startTime
+    com.data.endTime = dataIn.endTime
 
     if (com.axis.enabled) updateAxis()
     if (com.blocks.enabled) updateBlocks()
@@ -702,25 +717,25 @@ window.BlockQueueCreator = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   function blocksMouseOver (data) {
-    let totBlocks = com.blocks.group.run.g.selectAll('rect.' + com.mainTag + 'blocks')
-      .merge(com.blocks.group.cancel.g.selectAll('rect.' + com.mainTag + 'blocks'))
+    let totBlocks = com.blocks.group.run.g.selectAll('g.' + com.mainTag + 'blocks')
+      .merge(com.blocks.group.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
 
     totBlocks.each(function (d) {
       if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
-        d3.select(this).attr('stroke-width', 6)
-          .style('opacity', 1)
+        d3.select(this).select('rect.back').attr('stroke-width', 6)
+          .style('stroke-opacity', 1)
           .attr('stroke-dasharray', [4, 2])
       }
     })
   }
   function blocksMouseOut (data) {
-    let totBlocks = com.blocks.group.run.g.selectAll('rect.' + com.mainTag + 'blocks')
-      .merge(com.blocks.group.cancel.g.selectAll('rect.' + com.mainTag + 'blocks'))
+    let totBlocks = com.blocks.group.run.g.selectAll('g.' + com.mainTag + 'blocks')
+      .merge(com.blocks.group.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
 
     totBlocks.each(function (d) {
       if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
-        d3.select(this).attr('stroke-width', 1)
-          .style('opacity', 0.55)
+        d3.select(this).select('rect.back').attr('stroke-width', 1)
+          .style('stroke-opacity', 0.4)
           .attr('stroke-dasharray', [])
       }
     })
@@ -734,31 +749,39 @@ window.BlockQueueCreator = function () {
   }
   this.unfocusOnSchedBlocks = unfocusOnSchedBlocks
   function changeTimeOfBlockStart (d) {
-    com.interaction = {}
     com.interaction.firstDrag = false
   }
   function changeTimeOfBlock (d) {
+    let timeScale = d3.scaleLinear()
+      .range(com.axis.range)
+      .domain([com.data.startTime.time, com.data.endTime.time])
     if (!com.interaction.firstDrag) {
       com.interaction.firstDrag = true
-      let timeScale = d3.scaleLinear()
-        .range(com.axis.range)
-        .domain([com.data.startTime.time, com.data.endTime.time])
       com.interaction.position = {
         center: (timeScale(d.data.startTime) + timeScale(d.data.endTime)) * 0.5,
         left: timeScale(d.data.startTime),
         right: timeScale(d.data.endTime)
       }
       com.interaction.g = com.blocks.group.cancel.g.append('g')
-      com.interaction.box = com.blocks.group.cancel.box
+      com.interaction.box = deepCopy(com.blocks.group.cancel.box)
       com.interaction.box.h = com.box.h
 
       com.interaction.mousecursor = d3.event
 
-      com.interaction.g.append('circle')
-        .attr('cx', com.interaction.position.center)
-        .attr('cy', com.interaction.box.h * 0.5)
-        .attr('r', 3)
-        .attr('fill', '#000000')
+      // com.interaction.g.append('circle')
+      //   .attr('cx', com.interaction.position.center)
+      //   .attr('cy', com.interaction.box.h * 0.5)
+      //   .attr('r', 3)
+      //   .attr('fill', '#000000')
+      com.interaction.g.append('rect')
+        .attr('class', 'area')
+        .attr('x', com.interaction.position.left)
+        .attr('y', 0) // - Number(com.interaction.oldRect.attr('height')))
+        .attr('width', com.interaction.position.right - com.interaction.position.left)
+        .attr('height', com.interaction.box.h)
+        .attr('fill', '#ffffff')
+        .attr('stroke', 'none')
+        .attr('fill-opacity', 0.2)
       com.interaction.g.append('line')
         .attr('class', 'left')
         .attr('x1', com.interaction.position.left)
@@ -766,7 +789,7 @@ window.BlockQueueCreator = function () {
         .attr('x2', com.interaction.position.left)
         .attr('y2', com.interaction.box.h)
         .attr('stroke', '#000000')
-        .attr('stroke-width', 1.5)
+        .attr('stroke-width', 0.5)
         .attr('stroke-dasharray', [com.interaction.box.h * 0.02, com.interaction.box.h * 0.02])
       com.interaction.g.append('line')
         .attr('class', 'right')
@@ -775,25 +798,97 @@ window.BlockQueueCreator = function () {
         .attr('x2', com.interaction.position.right)
         .attr('y2', com.interaction.box.h)
         .attr('stroke', '#000000')
-        .attr('stroke-width', 1.5)
+        .attr('stroke-width', 0.5)
         .attr('stroke-dasharray', [com.interaction.box.h * 0.02, com.interaction.box.h * 0.02])
-      com.interaction.g.append('line')
-        .attr('class', 'center')
-        .attr('x1', com.interaction.position.left)
-        .attr('y1', com.interaction.box.h * 0.5)
-        .attr('x2', com.interaction.position.right)
-        .attr('y2', com.interaction.box.h * 0.5)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 1)
-      com.interaction.g.append('rect')
-        .attr('class', 'timeline')
+      // com.interaction.g.append('line')
+      //   .attr('class', 'center')
+      //   .attr('x1', com.interaction.position.left)
+      //   .attr('y1', com.interaction.box.h * 0.5)
+      //   .attr('x2', com.interaction.position.right)
+      //   .attr('y2', com.interaction.box.h * 0.5)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 1)
+      com.interaction.oldG.append('rect')
+        .attr('class', 'modified')
         .attr('x', com.interaction.position.left)
-        .attr('y', -10)
+        .attr('y', com.blocks.group.modification.box.y - com.blocks.group.run.box.h - Number(com.interaction.oldG.select('rect.back').attr('height')))
+        .attr('width', com.interaction.position.right - com.interaction.position.left)
+        .attr('height', Number(com.interaction.oldG.select('rect.back').attr('height')))
+        .attr('fill', com.interaction.oldG.select('rect.back').style('fill'))
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+      com.interaction.oldG.append('text')
+        .attr('class', 'modified')
+        .text(function (d, i) {
+          return d.data.metaData.blockName
+        })
+        .style('font-weight', 'normal')
+        .style('opacity', 1)
+        .style('fill-opacity', 0.7)
+        .style('fill', function (d) {
+          return com.style.txtCol({d: d})
+        })
+        .style('stroke-width', 0.3)
+        .style('stroke-opacity', 1)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', function (d) {
+          return com.style.txtCol({d: d})
+        })
+        .attr('x', function (d, i) {
+          return d.x + d.w / 2
+        })
+        .attr('y', function (d, i) {
+          return com.blocks.group.modification.box.y - com.blocks.group.run.box.h - (Number(com.interaction.oldG.select('rect.back').attr('height')) * 0.5)
+        })
+        .attr('text-anchor', 'middle')
+        .style('font-size', function (d) {
+          let minTxtSize = 11
+          return Math.max(minTxtSize, Math.min(d.w, d.h)) / 3 + 'px'
+        })
+        .attr('dy', function (d) {
+          return d.size / 3 + 'px'
+        })
+      com.interaction.g.append('rect')
+        .attr('class', 'timelineCursor')
+        .attr('x', com.interaction.position.left)
+        .attr('y', com.box.h) // - Number(com.interaction.oldRect.attr('height')))
+        .attr('width', com.interaction.position.right - com.interaction.position.left)
+        .attr('height', 2)
+        .attr('fill', '#CFD8DC')
+        .attr('stroke', '#333333')
+        .attr('fill-opacity', 0.99)
+      com.interaction.g.append('rect')
+        .attr('class', 'timelineOpacity')
+        .attr('x', com.interaction.position.left - 20)
+        .attr('y', com.box.h) // - Number(com.interaction.oldRect.attr('height')))
         .attr('width', com.interaction.position.right - com.interaction.position.left)
         .attr('height', 10)
         .attr('fill', '#CFD8DC')
+        .attr('stroke', '#ffffff')
+        .attr('fill-opacity', 0.9)
+
+      com.interaction.oldG.select('rect.back').style('fill-opacity', 1)
+      com.interaction.oldG.select('rect.back').style('stroke-opacity', 1)
+
+      com.pattern.moved = {}
+      com.pattern.moved.defs = com.g.append('defs')
+      com.pattern.moved.pattern = com.pattern.moved.defs.append('pattern')
+        .attr('id', 'patternMoved')
+        .attr('x', '0')
+        .attr('y', '0')
+        .attr('width', 8)
+        .attr('height', 5)
+        .attr('fill', '#ffffff')
+        .attr('patternUnits', 'userSpaceOnUse')
+      com.pattern.moved.pattern.append('line')
+        .attr('x1', 0)
+        .attr('y1', 0)
+        .attr('x2', 8)
+        .attr('y2', 5)
         .attr('stroke', '#000000')
-        .attr('stroke-width', 0.5)
+        .attr('stroke-width', 1)
+      com.interaction.oldG.select('rect.pattern').style('fill', 'url(#patternMoved)')
     } else {
       let delta = {
         x: d3.event.x - com.interaction.mousecursor.x,
@@ -801,25 +896,62 @@ window.BlockQueueCreator = function () {
       }
       com.interaction.mousecursor = d3.event
 
+      com.interaction.position.left += delta.x
+
+      com.axis.group.g.selectAll('g.tick line')
+        .attr('y2', function (d) {
+          if (Math.abs(com.axis.scale(d) - com.interaction.position.left) < 20) {
+            return 13
+          }
+          return 4
+        })
+      com.axis.group.g.selectAll('g.tick text')
+        .attr('y', function (d) {
+          if (Math.abs(com.axis.scale(d) - com.interaction.position.left) < 20) {
+            return 14
+          }
+          return 6
+        })
+
       if (Number(com.interaction.g.select('line.left').attr('x1')) + delta.x > 0 &&
         Number(com.interaction.g.select('line.right').attr('x1')) + delta.x < com.interaction.box.w) {
-        com.interaction.g.select('circle')
-          .attr('cx', Number(com.interaction.g.select('circle').attr('cx')) + delta.x)
+        // com.interaction.g.select('circle')
+        //   .attr('cx', Number(com.interaction.g.select('circle').attr('cx')) + delta.x)
         com.interaction.g.select('line.left')
           .attr('x1', Number(com.interaction.g.select('line.left').attr('x1')) + delta.x)
           .attr('x2', Number(com.interaction.g.select('line.left').attr('x2')) + delta.x)
         com.interaction.g.select('line.right')
           .attr('x1', Number(com.interaction.g.select('line.right').attr('x1')) + delta.x)
           .attr('x2', Number(com.interaction.g.select('line.right').attr('x2')) + delta.x)
-        com.interaction.g.select('line.center')
-          .attr('x1', Number(com.interaction.g.select('line.center').attr('x1')) + delta.x)
-          .attr('x2', Number(com.interaction.g.select('line.center').attr('x2')) + delta.x)
-        com.interaction.g.select('rect.timeline')
-          .attr('x', Number(com.interaction.g.select('rect.timeline').attr('x')) + delta.x)
+        // com.interaction.g.select('line.center')
+        //   .attr('x1', Number(com.interaction.g.select('line.center').attr('x1')) + delta.x)
+        //   .attr('x2', Number(com.interaction.g.select('line.center').attr('x2')) + delta.x)
+        com.interaction.oldG.select('rect.modified')
+          .attr('x', Number(com.interaction.oldG.select('rect.modified').attr('x')) + delta.x)
+        com.interaction.oldG.select('text.modified')
+          .attr('x', Number(com.interaction.oldG.select('text.modified').attr('x')) + delta.x)
+        com.interaction.g.select('rect.timelineCursor')
+          .attr('x', Number(com.interaction.g.select('rect.timelineCursor').attr('x')) + delta.x)
+        com.interaction.g.select('rect.timelineOpacity')
+          .attr('x', Number(com.interaction.g.select('rect.timelineOpacity').attr('x')) + delta.x)
+        com.interaction.g.select('rect.area')
+          .attr('x', Number(com.interaction.g.select('rect.area').attr('x')) + delta.x)
       }
     }
   }
   function changeTimeOfBlockEnd (d) {
+    let timeScale = d3.scaleLinear()
+      .range(com.axis.range)
+      .domain([com.data.startTime.time, com.data.endTime.time])
+
+    let newBlock = deepCopy(d.data)
+    newBlock.startTime = timeScale.invert(com.interaction.oldG.select('rect.modified').attr('x'))
+    newBlock.endTime = newBlock.startTime + newBlock.duration
+    com.data.modified.push(newBlock)
+    com.interaction.oldG.select('rect.back')
+      .style('fill-opacity', 0.1)
+      .style('stroke-opacity', 0.1)
+      .style('pointer-events', 'none')
     com.interaction.g.remove()
     com.interaction = {}
   }
@@ -832,162 +964,185 @@ window.BlockQueueCreator = function () {
       .domain([com.data.startTime.time, com.data.endTime.time])
 
     let rect = group.g
-      .selectAll('rect.' + com.mainTag + 'blocks')
+      .selectAll('g.' + com.mainTag + 'blocks')
       .data(data, function (d) {
         return d.id
       })
-    rect
+    let rectEnter = rect
       .enter()
-      .append('rect')
+      .append('g')
       .attr('class', com.mainTag + 'blocks')
-      .style('opacity', 0)
-
-      .attr('x', function (d, i) {
-        return timeScale(d.data.startTime)
-      })
-      .attr('y', function (d, i) {
-        return d.y - 2
-      })
-      .attr('width', function (d, i) {
-        return timeScale(d.data.endTime) - timeScale(d.data.startTime)
-      })
-      .attr('height', function (d, i) {
-        return d.h
-      })
-
-      .attr('stroke', function (d, i) {
-        return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
-      })
-      .style('fill', function (d, i) {
-        return com.style.recCol({ d: d })
-      })
-      .style('fill-opacity', function (d) {
-        return com.style.recFillOpac(d, d.data.exeState.state)
-      })
-      .attr('stroke-width', 1)
-      .style('stroke-opacity', com.style.recStrokeOpac)
-      // .style("pointer-events", "none")
-      .attr('vector-effect', 'non-scaling-stroke')
-      .on('click', com.blocks.events.click)
-      .on('mouseover', function (d) {
-        blocksMouseOver(d)
-        d3.select(this).attr('stroke-width', 4)
-        d3.select(this).style('opacity', 1)
-        com.blocks.events.mouseover(d)
-      })
-      .on('mouseout', function (d) {
-        blocksMouseOut(d)
-        d3.select(this).attr('stroke-width', 1)
-        d3.select(this).style('opacity', function (d) {
-          return 0.55
+    rectEnter.each(function (d, i) {
+      let parent = d3.select(this)
+      d3.select(this).append('rect')
+        .attr('class', 'back')
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime)
         })
-        com.blocks.events.mouseout(d)
-      })
-      .call(d3.drag()
-        .on('start', changeTimeOfBlockStart)
-        .on('drag', changeTimeOfBlock)
-        .on('end', changeTimeOfBlockEnd))
-      .merge(rect)
-      .transition('inOut')
-      .duration(timeD.animArc)
+        .attr('y', function (d, i) {
+          return d.y - 2
+        })
+        .attr('width', function (d, i) {
+          return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        })
+        .attr('height', function (d, i) {
+          return d.h
+        })
 
-      .style('opacity', 0.55)
-      .attr('stroke', function (d, i) {
-        return '#111111'
-      })
-      .style('fill', function (d, i) {
-        return com.style.recCol({ d: d })
-      })
-      .style('fill-opacity', function (d) {
-        return 0.7
-      })
-      .style('stroke-opacity', function (d) {
-        return 1
-      })
+        .attr('stroke', function (d, i) {
+          return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
+        })
+        .style('fill', function (d, i) {
+          return com.style.recCol({ d: d })
+        })
+        .style('fill-opacity', 0)
+        .attr('stroke-width', 1)
+        .style('stroke-opacity', 0)
+        // .style("pointer-events", "none")
+        .attr('vector-effect', 'non-scaling-stroke')
+        .on('click', com.blocks.events.click)
+        .on('mouseover', function (d) {
+          blocksMouseOver(d)
+          d3.select(this).attr('stroke-width', 4)
+          d3.select(this).style('stroke-opacity', 1)
+          com.blocks.events.mouseover(d)
+        })
+        .on('mouseout', function (d) {
+          blocksMouseOut(d)
+          d3.select(this).attr('stroke-width', 1)
+          d3.select(this).style('stroke-opacity', function (d) {
+            return 0.55
+          })
+          com.blocks.events.mouseout(d)
+        })
+        .call(d3.drag()
+          .on('start', function () {
+            com.interaction = {}
+            com.interaction.oldG = parent
+            changeTimeOfBlockStart()
+          })
+          .on('drag', changeTimeOfBlock)
+          .on('end', changeTimeOfBlockEnd))
 
-      .attr('x', function (d, i) {
-        return timeScale(d.data.startTime)
-      })
-      .attr('y', function (d, i) {
-        return d.y - 2
-      })
-      .attr('width', function (d, i) {
-        return timeScale(d.data.endTime) - timeScale(d.data.startTime)
-      })
-      .attr('height', function (d, i) {
-        return d.h
-      })
+      d3.select(this).append('rect')
+        .attr('class', 'pattern')
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime)
+        })
+        .attr('y', function (d, i) {
+          return d.y - 2
+        })
+        .attr('width', function (d, i) {
+          return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        })
+        .attr('height', function (d, i) {
+          return d.h
+        })
+
+        .attr('stroke', 'none')
+        .style('fill', 'none')
+        .style('fill-opacity', 1)
+        .style('stroke-opacity', 0)
+        .style('pointer-events', 'none')
+        .attr('vector-effect', 'non-scaling-stroke')
+
+      d3.select(this).append('text')
+        .attr('class', 'name')
+        .text(function (d, i) {
+          return d.data.metaData.blockName
+        })
+        .style('font-weight', 'normal')
+        .style('opacity', 0)
+        .style('fill-opacity', 0.7)
+        .style('fill', function (d) {
+          return com.style.txtCol({d: d})
+        })
+        .style('stroke-width', 0.3)
+        .style('stroke-opacity', 1)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', function (d) {
+          return com.style.txtCol({d: d})
+        })
+        .attr('x', function (d, i) {
+          return d.x + d.w / 2
+        })
+        .attr('y', function (d, i) {
+          return d.y + d.h / 2
+        })
+        .attr('text-anchor', 'middle')
+    })
+    rect.merge(rectEnter).each(function (d, i) {
+      d3.select(this).select('rect.back')
+        .transition('inOut')
+        .duration(timeD.animArc)
+
+        .style('fill-opacity', 0.4)
+        .style('stroke-opacity', 0.4)
+        .attr('stroke', function (d, i) {
+          return '#111111'
+        })
+        .style('fill', function (d, i) {
+          return com.style.recCol({ d: d })
+        })
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime)
+        })
+        .attr('y', function (d, i) {
+          return d.y - 2
+        })
+        .attr('width', function (d, i) {
+          return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        })
+        .attr('height', function (d, i) {
+          return d.h
+        })
+      d3.select(this).select('text')
+        .style('font-size', function (d) {
+          d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
+          if (!hasVar(d.size)) {
+            console.error('_blockQueue_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
+          } // should not happen....
+          if (!hasVar(d.size)) d.size = 0
+          // d.size = d.w/3;
+          return d.size + 'px'
+        })
+        .attr('dy', function (d) {
+          return d.size / 3 + 'px'
+        })
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', com.style.textOpac)
+        .attr('x', function (d, i) {
+          return d.x + d.w / 2
+        })
+        .attr('y', function (d, i) {
+          return d.y + d.h / 2
+        })
+    })
     rect
       .exit()
       .transition('inOut')
-      .duration(timeD.animArc / 2)
-      .attr('width', 0)
+      .duration(timeD.animArc)
       .style('opacity', 0)
       .remove()
-
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    let text = group.g
-      .selectAll('text.' + com.mainTag + 'blocks')
-      .data(data, function (d) {
-        return d.id
-      })
-    text
-      .enter()
-      .append('text')
-      .attr('class', com.mainTag + 'blocks')
-      .text(function (d, i) {
-        return d.data.metaData.blockName
-      })
-      .style('font-weight', 'normal')
-      .style('opacity', 0)
-      .style('fill-opacity', 0.7)
-      .style('fill', function (d) {
-        return com.style.txtCol({d: d})
-      })
-      .style('stroke-width', 0.3)
-      .style('stroke-opacity', 1)
-      .attr('vector-effect', 'non-scaling-stroke')
-      .style('pointer-events', 'none')
-      .style('stroke', function (d) {
-        return com.style.txtCol({d: d})
-      })
-      .attr('x', function (d, i) {
-        return d.x + d.w / 2
-      })
-      .attr('y', function (d, i) {
-        return d.y + d.h / 2
-      })
-      .attr('text-anchor', 'middle')
-      .merge(text)
-      .style('font-size', function (d) {
-        d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
-        if (!hasVar(d.size)) {
-          console.error('_blockQueue_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
-        } // should not happen....
-        if (!hasVar(d.size)) d.size = 0
-        // d.size = d.w/3;
-        return d.size + 'px'
-      })
-      .attr('dy', function (d) {
-        return d.size / 3 + 'px'
-      })
-      .transition('inOut')
-      .duration(timeD.animArc)
-      .style('opacity', com.style.textOpac)
-      .attr('x', function (d, i) {
-        return d.x + d.w / 2
-      })
-      .attr('y', function (d, i) {
-        return d.y + d.h / 2
-      })
-    text
-      .exit()
-      .transition('inOut')
-      .duration(timeD.animArc)
-      .style('opacity', 0)
-      .remove()
+    // let text = group.g
+    //   .selectAll('text.' + com.mainTag + 'blocks')
+    //   .data(data, function (d) {
+    //     return d.id
+    //   })
+    // text
+    //   .enter()
+
+    // text
+    //   .exit()
+    //   .transition('inOut')
+    //   .duration(timeD.animArc)
+    //   .style('opacity', 0)
+    //   .remove()
   }
   this.setBlockRect = setBlockRect
 
