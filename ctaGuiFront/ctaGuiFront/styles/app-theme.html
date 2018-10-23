@@ -145,7 +145,34 @@
         height: 100%;
         width: 100%;
       }
+      .overflowHorizontalDiv {
+        overflow-x: scroll;
+        overflow-y: hidden;
+        white-space:nowrap;
+        height: 100%;
+        width: 100%;
+      }
       /* width */
+      .overflowHorizontalDiv::-webkit-scrollbar {
+          height: 5px;
+      }
+      /* Track */
+      .overflowHorizontalDiv::-webkit-scrollbar-track {
+          background: #CFD8DC;
+          width: 2px;
+      }
+      /* Handle */
+      .overflowHorizontalDiv::-webkit-scrollbar-thumb {
+          background: #263238;
+          width: 2px;
+      }
+      /* Handle on hover */
+      .overflowHorizontalDiv::-webkit-scrollbar-thumb:hover {
+          background: #000000;
+          width: 2px;
+      }
+
+
       .overflowVerticalDiv::-webkit-scrollbar {
           width: 6px;
       }

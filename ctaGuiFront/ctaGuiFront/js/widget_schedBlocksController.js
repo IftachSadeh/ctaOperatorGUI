@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------------------------------
 // mainScriptTag used locally (will be overriden by other scripts...)
 // must be compatible with the name of this js file, according to:
-//    "/js/widget_"+mainScriptTag+".js"
+//    '/js/widget_'+mainScriptTag+'.js'
 var mainScriptTag = 'schedBlocksController'
 // ---------------------------------------------------------------------------------------------------
 
@@ -87,11 +87,11 @@ let sockSchedBlocksController = function (optIn) {
   //   data.telId    = optIn.telId;
   //   data.propId   = optIn.propId;
   //   let dataEmit = {
-  //     "widgetSource":widgetSource, "widgetName":widgetType, "widgetId":widgetId,
-  //     "methodName":"schedBlocksControllerAskTelData",
-  //     "methodArgs":data
+  //     'widgetSource':widgetSource, 'widgetName':widgetType, 'widgetId':widgetId,
+  //     'methodName':'schedBlocksControllerAskTelData',
+  //     'methodArgs':data
   //   };
-  //   sock.socket.emit("widget", dataEmit);
+  //   sock.socket.emit('widget', dataEmit);
   //   return;
   // }
 }
@@ -189,9 +189,9 @@ let mainSchedBlocksController = function (optIn) {
       .style('height', '100%')
       .style('top', '0px')
       .style('left', '0px')
-      // .attr("viewBox", "0 0 "+lenD.w[0]+" "+lenD.h[0] * whRatio)
-      // .classed("svgInGridStack_inner", true)
-      .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
+      // .attr('viewBox', '0 0 '+lenD.w[0]+' '+lenD.h[0] * whRatio)
+      // .classed('svgInGridStack_inner', true)
+      .style('background', '#383B42') // .style('background', 'red')// .style('border','1px solid red')
       // .call(com.svgZoom)
       .on('dblclick.zoom', null)
 
@@ -262,7 +262,7 @@ let mainSchedBlocksController = function (optIn) {
     svgMiddleInfo.initData({
       tag: 'scheduleModification',
       g: svg.g.append('g'),
-      box: {x: lenD.w[0] * 0.63, y: lenD.h[0] * 0.36, w: lenD.w[0] * 0.37, h: lenD.h[0] * 0.66},
+      box: {x: lenD.w[0] * 0.63, y: lenD.h[0] * 0.3, w: lenD.w[0] * 0.37, h: lenD.h[0] * 0.72},
       panelManager: undefined,
       panel: {
         current: undefined,
@@ -1785,10 +1785,54 @@ let mainSchedBlocksController = function (optIn) {
           }
         }
       }
-      let dim = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.11, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.5)}
-      let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) - 3, h: Number(g.attr('height') * 1)}
-      let dimBottom = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.6), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.35 - 5}
+      let modifications = [
+        {id: 'm1',
+          block: {sched: '2', 'block': '1'},
+          prop: 'startTime',
+          value: {old: 12000, new: 7800},
+          conflicts: ['c1', 'c3']
+        },
+        {id: 'm2',
+          block: {sched: '2', 'block': '2'},
+          prop: 'startTime',
+          value: {old: 4900, new: 11680},
+          conflicts: []
+        },
+        {id: 'm3',
+          block: {sched: '5', 'block': '0'},
+          prop: 'startTime',
+          value: {old: 2900, new: 500},
+          conflicts: ['c2']
+        },
+        {id: 'm4',
+          block: {sched: '6', 'block': '2'},
+          prop: 'startTime',
+          value: {old: 11459, new: 4900},
+          conflicts: []
+        },
+        {id: 'm5',
+          block: {sched: '6', 'block': '5'},
+          prop: 'startTime',
+          value: {old: 13000, new: 10680},
+          conflicts: ['c4']
+        }
+      ]
+      let conflicts = [
+        {id: 'c1', type: 'shareTels', blocks: [{id: 'b1(1)'}, {id: 'b2(2)'}, {id: 'b7(0)'}]},
+        {id: 'c2', type: 'shareTels', blocks: [{id: 'b9(2)'}, {id: 'b5(4)'}, {id: 'b2(1)'}]},
+        {id: 'c3', type: 'shareTels', blocks: [{id: 'b2(5)'}, {id: 'b2(1)'}, {id: 'b7(4)'}, {id: 'b9(3)'}]},
+        {id: 'c4', type: 'shareTels', blocks: [{id: 'b3(2)'}, {id: 'b5(3)'}]},
+        {id: 'c5', type: 'shareTels', blocks: [{id: 'b5(1)'}, {id: 'b2(1)'}, {id: 'b8(3)'}, {id: 'b9(3)'}]},
+        {id: 'c6', type: 'shareTels', blocks: [{id: 'b0(4)'}, {id: 'b3(3)'}, {id: 'b7(4)'}, {id: 'b11(1)'}]}
+      ]
 
+      let dim = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.11, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.5)}
+      let dimModifs = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.07, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.15)}
+      let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) - 3, h: Number(g.attr('height') * 1)}
+
+      let dimTop = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.12), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.12}
+      let dimMiddle = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.24, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.45)}
+      let dimBottom = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.69), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.25}
       // let gridB = new GridBagLayout()
       // gridB.init({
       //   size: {r: 6, c: 4},
@@ -1825,233 +1869,541 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', '#000000')
         .attr('stroke', 'none')
 
-      g.append('text')
-        .text(function (data) {
-          return 'Sched. Blocks'
-        })
-        .attr('x', dim.x + dim.w * 0.1)
-        .attr('y', dimBack.y + dimBack.h * 0.08)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 8)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', '#000000')
-        .attr('stroke', 'none')
-      g.append('text')
-        .text(function (data) {
-          return 'Blocks'
-        })
-        .attr('x', dim.x + dim.w * 0.3)
-        .attr('y', dimBack.y + dimBack.h * 0.08)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 8)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', '#000000')
-        .attr('stroke', 'none')
-      g.append('text')
-        .text(function (data) {
-          return 'Properties'
-        })
-        .attr('x', dimBack.x + dimBack.w * 0.7)
-        .attr('y', dimBack.y + dimBack.h * 0.08)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 8)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', '#000000')
-        .attr('stroke', 'none')
-
       g.append('rect')
-        .attr('class', 'back_modif')
-        .attr('x', dim.x)
-        .attr('y', dim.y - 19)
-        .attr('width', dim.w)
-        .attr('height', dim.h + 19)
-        .attr('stroke', '#37474F')
-        .attr('fill', 'none')
-        .attr('stroke-width', 0.5)
-        .attr('stroke-opacity', 1)
-        .attr('stroke-dasharray', [dim.w * 0.4, dim.w * 0.2, dim.w * 0.4, dim.h + 19 + dim.w + dim.h + 19])
+        .attr('x', dimTop.x)
+        .attr('y', dimTop.y)
+        .attr('width', dimTop.w)
+        .attr('height', dimTop.h)
+        .attr('stroke', 'none')
+        .attr('fill', '#ffffbb')
 
-      let fo = g.append('foreignObject')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', g.attr('width'))
-        .attr('height', g.attr('height'))
-      let div = fo.append('xhtml:div')
-
-      let evenSB = 0
-      let evenBLC = 0
-      let evenProp = 0
-      let allLine = 0
-      let sizeProp = 18
-      for (var SB in defaultChangeNotification) {
-        let allBlocks = defaultChangeNotification[SB]
-        let totLine = 0
-        let nbBLC = -1
-        let svgSB = div.append('label')
-          .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-
-        for (var BLC in allBlocks) {
-          nbBLC += 1
-          let allProp = allBlocks[BLC]
-          let totProp = 0
-          let svgBLC = div.append('label')
-            .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-
-          for (var prop in allProp) {
-            let currentProp = allProp[prop]
-            div.append('label')
-              .html(prop)
-              .style('display', 'block')
-              .style('position', 'absolute')
-              // .style('border-radius', '2px')
-              .style('width', (0.15 * dim.w) + 'px')
-              .style('height', sizeProp - 2 + 'px')
-              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-              .style('margin-left', (0.4 * dim.w) + dim.x + 'px')
-              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
-              .style('color', '#000000')
-              .style('font-size', 10 + 'px')
-            div.append('label')
-              .html(':')
-              .style('display', 'block')
-              .style('position', 'absolute')
-              // .style('border-radius', '2px')
-              .style('width', (0.025 * dim.w) + 'px')
-              .style('height', sizeProp - 2 + 'px')
-              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + dim.x + 'px')
-              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
-              .style('color', '#000000')
-              .style('font-size', 10 + 'px')
-            div.append('label')
-              .html(currentProp.old)
-              .style('display', 'block')
-              .style('position', 'absolute')
-              // .style('border-radius', '2px')
-              .style('width', (0.15 * dim.w) + 'px')
-              .style('height', sizeProp - 2 + 'px')
-              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
-              .style('color', '#000000')
-              .style('font-size', 10 + 'px')
-            div.append('label')
-              .html('-> ')
-              .style('display', 'block')
-              .style('position', 'absolute')
-              // .style('border-radius', '2px')
-              .style('width', (0.025 * dim.w) + 'px')
-              .style('height', sizeProp - 2 + 'px')
-              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
-              .style('color', '#000000')
-              .style('font-size', 10 + 'px')
-            div.append('label')
-              .html(currentProp.new)
-              .style('display', 'block')
-              .style('position', 'absolute')
-              // .style('border-radius', '2px')
-              .style('width', (0.15 * dim.w) + 'px')
-              .style('height', sizeProp - 2 + 'px')
-              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
-              .style('color', '#000000')
-              .style('font-size', 10 + 'px')
-            div.append('label')
-              .style('display', 'block')
-              .style('position', 'absolute')
-              .style('border-radius', '0px 2px 2px 0px')
-              .style('width', (0.1 * dim.w) + 'px')
-              .style('height', sizeProp - 2 + 'px')
-              .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-              .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-              .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
-              .style('color', '#000000')
-              .style('font-size', 10 + 'px')
-            totProp += 1
-            evenProp += 1
-          }
-          svgBLC.html(BLC)
-            .style('display', 'block')
-            .style('position', 'absolute')
-            .style('border-radius', '0px 0px 0px 0px')
-            .style('width', (0.2 * dim.w) + 'px')
-            .style('height', (totProp * sizeProp) - 2 + 'px')
-            .style('margin-left', (0.2 * dim.w) + dim.x + 'px')
-            .style('background-color', (evenBLC % 2 ? '#B0BEC5' : '#B0BEC5'))
-            .style('color', '#000000')
-            .style('font-size', 12 + 'px')
-          evenBLC += 1
-          totLine += totProp
-        }
-        svgSB.html(SB)
-          .style('display', 'block')
-          .style('position', 'absolute')
-          .style('border-radius', '2px 0px 0px 2px')
-          .style('width', (0.2 * dim.w) + 'px')
-          .style('height', (totLine * sizeProp) + (6 * nbBLC) - 2 + 'px')
-          .style('margin-left', (0 * dim.w) + dim.x + 'px')
-          .style('background-color', (evenSB % 2 ? '#90A4AE' : '#90A4AE'))
-          .style('color', '#000000')
-          .style('font-size', 14 + 'px')
-        evenSB += 1
-      }
-
+      // let defs = g.append('defs')
+      // let pattern = defs.append('pattern')
+      //   .attr('id', 'patternMoved')
+      //   .attr('x', '0')
+      //   .attr('y', '0')
+      //   .attr('width', 4)
+      //   .attr('height', 4)
+      //   .attr('fill', '#ffffff')
+      //   .attr('patternUnits', 'userSpaceOnUse')
+      // pattern.append('line')
+      //   .attr('x1', 2)
+      //   .attr('y1', 0)
+      //   .attr('x2', 2)
+      //   .attr('y2', 4)
+      //   .attr('stroke', '#444444')
+      //   .attr('stroke-width', 0.1)
+      // pattern.append('line')
+      //   .attr('x1', 0)
+      //   .attr('y1', 2)
+      //   .attr('x2', 4)
+      //   .attr('y2', 2)
+      //   .attr('stroke', '#444444')
+      //   .attr('stroke-width', 0.1)
+      // g.append('rect')
+      //   .attr('x', dimMiddle.x)
+      //   .attr('y', dimMiddle.y)
+      //   .attr('width', dimMiddle.w)
+      //   .attr('height', dimMiddle.h)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.2)
+      //   .style('fill', '#ffffff')
+      // g.append('rect')
+      //   .attr('x', dimMiddle.x)
+      //   .attr('y', dimMiddle.y)
+      //   .attr('width', dimMiddle.w)
+      //   .attr('height', dimMiddle.h)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.2)
+      //   .style('fill', 'url(#patternMoved)')
       g.append('rect')
-        .attr('class', 'bottom-back')
         .attr('x', dimBottom.x)
-        .attr('y', dimBottom.y - 4)
+        .attr('y', dimBottom.y)
         .attr('width', dimBottom.w)
         .attr('height', dimBottom.h)
-        .attr('stroke', '#37474F')
-        .attr('stroke-dasharray', [dim.w * 0.4, dim.w * 0.2, dim.w * 0.4, dim.h + dim.w + dim.h])
-        .attr('fill', '#ECEFF1')
-        .attr('stroke-width', 0.5)
-        .attr('stroke-opacity', 1)
-      g.append('text')
-        .text(function (data) {
-          return 'Conflicts'
-        })
-        .attr('x', dimBottom.x + dimBottom.w * 0.5)
-        .attr('y', dimBottom.y)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', '#000000')
         .attr('stroke', 'none')
+        .attr('fill', '#ddddbb')
 
-      g.append('circle')
-        .attr('cx', dimBottom.x + dimBottom.w * 0.5)
-        .attr('cy', dimBottom.y + dimBottom.h * 0.5)
-        .attr('r', dimBottom.h * 0.25)
-        .attr('stroke-width', 8)
-        .attr('stroke', '#CFD8DC')
-        .attr('fill', 'none')
-      g.append('line')
-        .attr('x1', dimBottom.x + dimBottom.w * 0.5 + dimBottom.h * 0.3)
-        .attr('y1', dimBottom.y + dimBottom.h * 0.5 - dimBottom.h * 0.3)
-        .attr('x2', dimBottom.x + dimBottom.w * 0.5 - dimBottom.h * 0.3)
-        .attr('y2', dimBottom.y + dimBottom.h * 0.5 + dimBottom.h * 0.3)
-        .attr('r', dimBottom.h * 0.25)
-        .attr('stroke-width', 8)
-        .attr('stroke', '#CFD8DC')
+      let sizeBlockModif = 20
+      let blocksModif = g.selectAll('rect.modification')
+        .data(modifications)
+      blocksModif.enter()
+        .append('rect')
+        .attr('class', 'modification')
+        .attr('x', function (d, i) {
+          let space = (dimTop.w / modifications.length)
+          d.position = {x: dimTop.x + (space * i) + space * 0.5 - sizeBlockModif * 0.5,
+            y: dimTop.y + dimTop.h * 0.5 - sizeBlockModif * 0.5}
+          return dimTop.x + (space * i) + space * 0.5 - sizeBlockModif * 0.5
+        })
+        .attr('y', dimTop.y + dimTop.h * 0.5 - sizeBlockModif * 0.5)
+        .attr('width', sizeBlockModif)
+        .attr('height', sizeBlockModif)
+        .attr('fill', '#ffffff')
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.2)
+
+      let data = {nodes: [], links: []}
+      // for (let i = 0; i < modifications.length; i++) {
+      //   data.nodes.push({type: 'modification', id: modifications[i].id, data: modifications[i], fx: modifications[i].position.x, fy: modifications[i].position.y})
+      //   for (let j = 0; j < modifications[i].conflicts.length; j++) {
+      //     data.links.push({source: modifications[i].id, target: modifications[i].conflicts[j]})
+      //   }
+      // }
+      for (let i = 0; i < conflicts.length; i++) {
+        data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
+        for (let j = 0; j < conflicts[i].blocks.length; j++) {
+          let insert = true
+          for (var z = 0; z < data.nodes.length; z++) {
+            if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
+          }
+          if (insert) {
+            data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
+          }
+          data.links.push({source: conflicts[i].id, target: conflicts[i].blocks[j].id})
+        }
+      }
+
+      let smallRadius = 7
+      let bigRadius = 14
+      let simulation = d3.forceSimulation()
+        .force('link', d3.forceLink().id(function (d) { return d.id }))
+        .force('collide', d3.forceCollide(function (d) { return (d.type === 'conflict' ? bigRadius * 1.5 : smallRadius * 1.5) }).iterations(32))
+        .force('charge', d3.forceManyBody().strength(function (d) {
+          return (d.type === 'conflict' ? -20 : -20)
+        }))
+        .force('center', d3.forceCenter(dimMiddle.x + (dimMiddle.w / 2), dimMiddle.y + (dimMiddle.h / 2)))
+        .force('y', d3.forceY(0))
+        .force('x', d3.forceX(0))
+      simulation.nodes(data.nodes)
+      simulation.force('link').links(data.links)
+
+      var link = g.append('g')
+        .attr('class', 'links')
+        .selectAll('line')
+        .data(data.links)
+        .enter()
+        .append('line')
+        .attr('stroke', 'black')
+
+      var node = g.append('g')
+        .attr('class', 'nodes')
+        .selectAll('circle')
+        .data(data.nodes)
+        .enter().append('circle')
+        .attr('id', function (d) { return d.id })
+        .attr('r', function (d) {
+          return (d.type === 'conflict' ? bigRadius : smallRadius)
+        })
+        .attr('fill', '#CFD8DC')
+        .attr('stroke', '#111111')// '#ECEFF1')
+        .attr('stroke-width', 0.5)
+
+      simulation.on('tick', function () {
+        link
+          .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.source.x)) })
+          .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.source.y)) })
+          .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.target.x)) })
+          .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.target.y)) })
+
+        node
+          .attr('cx', function (d) {
+            let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
+            d.x = Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.x))
+            return d.x
+          })
+          .attr('cy', function (d) {
+            let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
+            d.y = Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.y))
+            return d.y
+          })
+      })
+
+      // let lineGenerator = d3.line()
+      //   .x(function (d) { return d.x })
+      //   .y(function (d) { return d.y })
+      // let curveGenerator = d3.line()
+      //   .curve(d3.curveBasis)
+      //   .x(function (d) { return d.x })
+      //   .y(function (d) { return d.y })
+      // let dataPointsTop = [
+      //   {x: dimMiddle.x, y: dimMiddle.y},
+      //
+      //   {x: dimMiddle.x + (dimMiddle.w * 0.8), y: dimMiddle.y},
+      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
+      //
+      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: dimMiddle.y + dimMiddle.h},
+      //   {x: dimMiddle.x, y: dimMiddle.y + (dimMiddle.h * 0.75)},
+      //
+      //   {x: dimMiddle.x, y: dimMiddle.y}
+      // ]
+      // let dataPointsBottomIntern = [
+      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
+      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.7)},
+      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + dimMiddle.h},
+      //   {x: dimMiddle.x + (dimMiddle.w * 0.7), y: dimMiddle.y + dimMiddle.h},
+      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: dimMiddle.y + dimMiddle.h}
+      // ]
+      // let dataPointsBottomExtern = [
+      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
+      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: 20 + dimMiddle.y + (dimMiddle.h * 0.7)},
+      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: 20 + dimMiddle.y + dimMiddle.h},
+      //   {x: 20 + dimMiddle.x + (dimMiddle.w * 0.7), y: 20 + dimMiddle.y + dimMiddle.h},
+      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: 20 + dimMiddle.y + dimMiddle.h}
+      // ]
+      // let pathTop = g.append('path')
+      //   .data([dataPointsTop])
+      //   .attr('class', 'line')
+      //   .attr('d', lineGenerator)
+      //   .attr('fill', '#bbbbbb')
+      // let pathBottomExtern = g.append('path')
+      //   .data([dataPointsBottomExtern])
+      //   .attr('class', 'line')
+      //   .attr('d', curveGenerator)console.log(this);
+      //   .attr('fill', 'none')
+      // let pathBottomIntern = g.append('path')
+      // pathBottomIntern.data([dataPointsBottomIntern])
+      //   .attr('class', 'line')
+      //   .attr('d', curveGenerator)
+      //   .attr('fill', '#CFD8DC')
+      // let totBlocks = [].concat(com.data.lastRawData.run).concat(com.data.lastRawData.wait)
+      // let blocksConflicts = g.selectAll('rect.conflict')
+      //   .data(totBlocks)
+      //   .enter()
+      //   .append('rect')
+      //   .attr('class', 'conflict')
+      //   .attr('x', function (d, i) {
+      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
+      //     return pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)).x
+      //   })
+      //   .attr('y', function (d, i) {
+      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
+      //     return pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)).y
+      //   })
+      //   .attr('width', 16)
+      //   .attr('height', 16)
+      //   .attr('fill', '#bbbbbb')
+
+      // let blocksConflicts = g.selectAll('path.conflict')
+      //   .data(totBlocks)
+      //   .enter()
+      //   .append('path')
+      //   .attr('class', 'conflict')
+      //   .attr('d', function (d, i) {
+      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
+      //     let sizeExtern = pathBottomExtern.node().getTotalLength() / totBlocks.length
+      //     let points = [
+      //       pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)),
+      //       pathBottomExtern.node().getPointAtLength((sizeExtern * i) + (sizeExtern * 0.1)),
+      //       pathBottomExtern.node().getPointAtLength((sizeExtern * (i + 1)) - (sizeExtern * 0.1)),
+      //       pathBottomIntern.node().getPointAtLength((sizeIntern * (i + 1)) - (sizeIntern * 0.1))
+      //     ]
+      //     return lineGenerator(points)
+      //   })
+      //   .attr('fill', '#CFD8DC')
+      // g.append('text')
+      //   .text(function (data) {
+      //     return 'Sched. Blocks'
+      //   })
+      //   .attr('x', dim.x + dim.w * 0.1)
+      //   .attr('y', dimBack.y + dimBack.h * 0.08)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', 8)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', '#000000')
+      //   .attr('stroke', 'none')
+      // g.append('text')
+      //   .text(function (data) {
+      //     return 'Blocks'
+      //   })
+      //   .attr('x', dim.x + dim.w * 0.3)
+      //   .attr('y', dimBack.y + dimBack.h * 0.08)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', 8)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', '#000000')
+      //   .attr('stroke', 'none')
+      // g.append('text')
+      //   .text(function (data) {
+      //     return 'Properties'
+      //   })
+      //   .attr('x', dimBack.x + dimBack.w * 0.7)
+      //   .attr('y', dimBack.y + dimBack.h * 0.08)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', 8)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', '#000000')
+      //   .attr('stroke', 'none')
+      // g.append('rect')
+      //   .attr('class', 'back_modif')
+      //   .attr('x', dimModifs.x)
+      //   .attr('y', dimModifs.y - 4)
+      //   .attr('width', dimModifs.w)
+      //   .attr('height', dimModifs.h + 19)
+      //   .attr('stroke', '#37474F')
+      //   .attr('fill', 'none')
+      //   .attr('stroke-width', 0.5)
+      //   .attr('stroke-opacity', 1)
+      //   .attr('stroke-dasharray', [dimModifs.w * 0.4, dimModifs.w * 0.2, dimModifs.w * 0.4, dimModifs.h + 19 + dimModifs.w + dimModifs.h + 19])
+
+      // let fo = g.append('foreignObject')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', g.attr('width'))
+      //   .attr('height', g.attr('height'))
+      // let div = fo.append('xhtml:div')
+      // let sizeProp = 25
+      //
+      // let fo = g.append('foreignObject')
+      //   .style('width', dimModifs.w + 'px')
+      //   .style('height', dimModifs.h + 'px')
+      //   .style('x', dimModifs.x + 'px')
+      //   .style('y', dimModifs.y + 'px')
+      // let div = fo.append('xhtml:div')
+      //   .attr('class', 'overflowHorizontalDiv')
+      //   .style('border', 0 + 'px solid #78909C')
+      //   .style('background-color', '#ECEFF1')
+      //   .style('transform', 'scale(1,-1)')
+      //
+      // let space = 2.5
+      // let dimSB = {y: 0, h: dimModifs.h * 0.28}
+      // let dimBLC = {y: dimModifs.h * 0.3, h: dimModifs.h * 0.23}
+      // let dimProp = {y: dimModifs.h * 0.55, h: dimModifs.h * 0.45}
+      // for (var SB in defaultChangeNotification) {
+      //   let totalProp = 0
+      //   let totalBLC = 0
+      //   let currentX = 0
+      //   let allBlocks = defaultChangeNotification[SB]
+      //   let currentSVG = div.append('svg')
+      //     .style('display', 'inline-block')
+      //     .style('background', '#ECEFF1')
+      //     .style('border', 0 + 'px solid #78909C')
+      //     .style('transform', 'scale(1,-1)')
+      //     .style('margin-left', space)
+      //     .style('margin-right', space)
+      //     .attr('height', dimModifs.h)
+      //   let rectSB = currentSVG.append('rect')
+      //     .attr('x', 0)
+      //     .attr('y', dimSB.y)
+      //     .attr('height', dimSB.h)
+      //     .attr('fill', function (d, i) {
+      //       return '#455A64'
+      //     })
+      //     .attr('stroke', '#78909C')
+      //     .attr('stroke-width', 1.8)
+      //
+      //   for (var BLC in allBlocks) {
+      //     let allProp = allBlocks[BLC]
+      //     let totProp = 0
+      //     let rectBLC = currentSVG.append('rect')
+      //       .attr('x', currentX)
+      //       .attr('y', dimBLC.y)
+      //       .attr('height', dimBLC.h)
+      //       .attr('fill', '#bcbcbc')
+      //     for (var prop in allProp) {
+      //       let currentProp = allProp[prop]
+      //       currentSVG.append('rect')
+      //         .attr('x', currentX)
+      //         .attr('y', dimProp.y)
+      //         .attr('height', dimProp.h)
+      //         .attr('width', sizeProp)
+      //         .attr('fill', '#dddddd')
+      //       totProp += 1
+      //       totalProp += 1
+      //       currentX += (sizeProp + space)
+      //     }
+      //     rectBLC.attr('width', totProp * (sizeProp + space) - space)
+      //     currentX += space
+      //     totalBLC += 1
+      //   }
+      //   let width = totalProp * (sizeProp + space) - space + (totalBLC - 1) * (space)
+      //   currentSVG.attr('width', width)
+      //   rectSB.attr('width', width)
+      //   currentSVG.append('text')
+      //     .text(SB)
+      //     .attr('x', width * 0.5)
+      //     .attr('y', dimSB.h * 0.5)
+      //     .style('font-weight', 'bold')
+      //     .attr('text-anchor', 'middle')
+      //     .style('font-size', dimSB.h * 0.6)
+      //     .attr('dy', dimSB.h * 0.35)
+      //     .style('pointer-events', 'none')
+      //     .attr('fill', '#CFD8DC')
+      //     .attr('stroke', 'none')
+      // }
+
+      // let evenSB = 0
+      // let evenBLC = 0
+      // let evenProp = 0
+      // let allLine = 0
+      // let sizeProp = 18
+      // for (var SB in defaultChangeNotification) {
+      //   let allBlocks = defaultChangeNotification[SB]
+      //   let totLine = 0
+      //   let nbBLC = -1
+      //   let svgSB = div.append('label')
+      //     .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+      //
+      //   for (var BLC in allBlocks) {
+      //     nbBLC += 1
+      //     let allProp = allBlocks[BLC]
+      //     let totProp = 0
+      //     let svgBLC = div.append('label')
+      //       .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+      //
+      //     for (var prop in allProp) {
+      //       let currentProp = allProp[prop]
+      //       div.append('label')
+      //         .html(prop)
+      //         .style('display', 'block')
+      //         .style('position', 'absolute')
+      //         // .style('border-radius', '2px')
+      //         .style('width', (0.15 * dim.w) + 'px')
+      //         .style('height', sizeProp - 2 + 'px')
+      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+      //         .style('margin-left', (0.4 * dim.w) + dim.x + 'px')
+      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('color', '#000000')
+      //         .style('font-size', 10 + 'px')
+      //       div.append('label')
+      //         .html(':')
+      //         .style('display', 'block')
+      //         .style('position', 'absolute')
+      //         // .style('border-radius', '2px')
+      //         .style('width', (0.025 * dim.w) + 'px')
+      //         .style('height', sizeProp - 2 + 'px')
+      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + dim.x + 'px')
+      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('color', '#000000')
+      //         .style('font-size', 10 + 'px')
+      //       div.append('label')
+      //         .html(currentProp.old)
+      //         .style('display', 'block')
+      //         .style('position', 'absolute')
+      //         // .style('border-radius', '2px')
+      //         .style('width', (0.15 * dim.w) + 'px')
+      //         .style('height', sizeProp - 2 + 'px')
+      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('color', '#000000')
+      //         .style('font-size', 10 + 'px')
+      //       div.append('label')
+      //         .html('-> ')
+      //         .style('display', 'block')
+      //         .style('position', 'absolute')
+      //         // .style('border-radius', '2px')
+      //         .style('width', (0.025 * dim.w) + 'px')
+      //         .style('height', sizeProp - 2 + 'px')
+      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('color', '#000000')
+      //         .style('font-size', 10 + 'px')
+      //       div.append('label')
+      //         .html(currentProp.new)
+      //         .style('display', 'block')
+      //         .style('position', 'absolute')
+      //         // .style('border-radius', '2px')
+      //         .style('width', (0.15 * dim.w) + 'px')
+      //         .style('height', sizeProp - 2 + 'px')
+      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('color', '#000000')
+      //         .style('font-size', 10 + 'px')
+      //       div.append('label')
+      //         .style('display', 'block')
+      //         .style('position', 'absolute')
+      //         .style('border-radius', '0px 2px 2px 0px')
+      //         .style('width', (0.1 * dim.w) + 'px')
+      //         .style('height', sizeProp - 2 + 'px')
+      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('color', '#000000')
+      //         .style('font-size', 10 + 'px')
+      //       totProp += 1
+      //       evenProp += 1
+      //     }
+      //     svgBLC.html(BLC)
+      //       .style('display', 'block')
+      //       .style('position', 'absolute')
+      //       .style('border-radius', '0px 0px 0px 0px')
+      //       .style('width', (0.2 * dim.w) + 'px')
+      //       .style('height', (totProp * sizeProp) - 2 + 'px')
+      //       .style('margin-left', (0.2 * dim.w) + dim.x + 'px')
+      //       .style('background-color', (evenBLC % 2 ? '#B0BEC5' : '#B0BEC5'))
+      //       .style('color', '#000000')
+      //       .style('font-size', 12 + 'px')
+      //     evenBLC += 1
+      //     totLine += totProp
+      //   }
+      //   svgSB.html(SB)
+      //     .style('display', 'block')
+      //     .style('position', 'absolute')
+      //     .style('border-radius', '2px 0px 0px 2px')
+      //     .style('width', (0.2 * dim.w) + 'px')
+      //     .style('height', (totLine * sizeProp) + (6 * nbBLC) - 2 + 'px')
+      //     .style('margin-left', (0 * dim.w) + dim.x + 'px')
+      //     .style('background-color', (evenSB % 2 ? '#90A4AE' : '#90A4AE'))
+      //     .style('color', '#000000')
+      //     .style('font-size', 14 + 'px')
+      //   evenSB += 1
+      // }
+
+      // g.append('rect')
+      //   .attr('class', 'bottom-back')
+      //   .attr('x', dimBottom.x)
+      //   .attr('y', dimBottom.y - 4)
+      //   .attr('width', dimBottom.w)
+      //   .attr('height', dimBottom.h)
+      //   .attr('stroke', '#37474F')
+      //   .attr('stroke-dasharray', [dim.w * 0.4, dim.w * 0.2, dim.w * 0.4, dim.h + dim.w + dim.h])
+      //   .attr('fill', '#ECEFF1')
+      //   .attr('stroke-width', 0.5)
+      //   .attr('stroke-opacity', 1)
+      // g.append('text')
+      //   .text(function (data) {
+      //     return 'Conflicts'
+      //   })
+      //   .attr('x', dimBottom.x + dimBottom.w * 0.5)
+      //   .attr('y', dimBottom.y)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', 10)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', '#000000')
+      //   .attr('stroke', 'none')
+      // g.append('circle')
+      //   .attr('cx', dimBottom.x + dimBottom.w * 0.5)
+      //   .attr('cy', dimBottom.y + dimBottom.h * 0.5)
+      //   .attr('r', dimBottom.h * 0.25)
+      //   .attr('stroke-width', 8)
+      //   .attr('stroke', '#CFD8DC')
+      //   .attr('fill', 'none')
+      // g.append('line')
+      //   .attr('x1', dimBottom.x + dimBottom.w * 0.5 + dimBottom.h * 0.3)
+      //   .attr('y1', dimBottom.y + dimBottom.h * 0.5 - dimBottom.h * 0.3)
+      //   .attr('x2', dimBottom.x + dimBottom.w * 0.5 - dimBottom.h * 0.3)
+      //   .attr('y2', dimBottom.y + dimBottom.h * 0.5 + dimBottom.h * 0.3)
+      //   .attr('r', dimBottom.h * 0.25)
+      //   .attr('stroke-width', 8)
+      //   .attr('stroke', '#CFD8DC')
       // div.append('input')
       //   //.attr('class', 'formMngrInput')
       //   .attr('type', 'text')
       //   .attr('value', 'none')
       //   .attr('required', 'true')
       //   .style('height', '100%')
-
       // div.append('textarea')
       //   .attr('class', 'comment')
       //   // .text('This is a test comment')
