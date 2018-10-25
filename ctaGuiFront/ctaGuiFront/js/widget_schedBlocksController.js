@@ -262,7 +262,7 @@ let mainSchedBlocksController = function (optIn) {
     svgMiddleInfo.initData({
       tag: 'scheduleModification',
       g: svg.g.append('g'),
-      box: {x: lenD.w[0] * 0.63, y: lenD.h[0] * 0.3, w: lenD.w[0] * 0.37, h: lenD.h[0] * 0.72},
+      box: {x: lenD.w[0] * 0.63, y: lenD.h[0] * 0.01, w: lenD.w[0] * 0.37, h: lenD.h[0] * 0.98},
       panelManager: undefined,
       panel: {
         current: undefined,
@@ -1745,42 +1745,72 @@ let mainSchedBlocksController = function (optIn) {
     function drawDefaultContent (g) {
       let defaultChangeNotification = {
         SB1: {
-          B2: {
-            startTime: {
-              old: 12000,
-              new: 7800
+          modifications: [
+            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+          ],
+          blocks: {
+            B2: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+              ]
             },
-            tels: {
-              old: 'S_67',
-              new: 'X'
-            }
-          },
-          B3: {
-            startTime: {
-              old: 8300,
-              new: 17000
+            B3: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'}
+              ]
             }
           }
         },
         SB3: {
-          B2: {
-            startTime: {
-              old: 15000,
-              new: 16000
+          modifications: [
+            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+          ],
+          blocks: {
+            B2: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'}
+              ]
             }
           }
         },
         SB7: {
-          B1: {
-            canRun: {
-              old: 'actived',
-              new: 'canceled'
-            }
-          },
-          B5: {
-            startTime: {
-              old: 200,
-              new: 11800
+          modifications: [
+            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop5', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop6', old: 'Old Value', new: 'New Value'}
+          ],
+          blocks: {
+            B1: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+              ]
+            },
+            B5: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+              ]
             }
           }
         }
@@ -1817,22 +1847,14 @@ let mainSchedBlocksController = function (optIn) {
           conflicts: ['c4']
         }
       ]
-      let conflicts = [
-        {id: 'c1', type: 'shareTels', blocks: [{id: 'b1(1)'}, {id: 'b2(2)'}, {id: 'b7(0)'}]},
-        {id: 'c2', type: 'shareTels', blocks: [{id: 'b9(2)'}, {id: 'b5(4)'}, {id: 'b2(1)'}]},
-        {id: 'c3', type: 'shareTels', blocks: [{id: 'b2(5)'}, {id: 'b2(1)'}, {id: 'b7(4)'}, {id: 'b9(3)'}]},
-        {id: 'c4', type: 'shareTels', blocks: [{id: 'b3(2)'}, {id: 'b5(3)'}]},
-        {id: 'c5', type: 'shareTels', blocks: [{id: 'b5(1)'}, {id: 'b2(1)'}, {id: 'b8(3)'}, {id: 'b9(3)'}]},
-        {id: 'c6', type: 'shareTels', blocks: [{id: 'b0(4)'}, {id: 'b3(3)'}, {id: 'b7(4)'}, {id: 'b11(1)'}]}
-      ]
 
       let dim = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.11, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.5)}
       let dimModifs = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.07, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.15)}
       let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) - 3, h: Number(g.attr('height') * 1)}
 
-      let dimTop = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.12), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.12}
-      let dimMiddle = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.24, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.45)}
-      let dimBottom = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.69), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.25}
+      let dimTop = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.29}
+      let dimMiddle = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.4, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.29)}
+      let dimBottom = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 7), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.29}
       // let gridB = new GridBagLayout()
       // gridB.init({
       //   size: {r: 6, c: 4},
@@ -1855,12 +1877,23 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', '#ECEFF1')
         .attr('stroke-width', 6)
         .attr('stroke-opacity', 1)
+      g.append('rect')
+        .attr('class', 'bottom-back')
+        .attr('x', dimTop.x)
+        .attr('y', dimTop.y - 4)
+        .attr('width', dimTop.w)
+        .attr('height', dimMiddle.h)
+        .attr('stroke', '#37474F')
+        .attr('stroke-dasharray', [dimTop.w * 0.4, dimTop.w * 0.2, dimTop.w * 0.4, dimTop.h + dimTop.w + dimTop.h])
+        .attr('fill', '#ECEFF1')
+        .attr('stroke-width', 0.5)
+        .attr('stroke-opacity', 1)
       g.append('text')
         .text(function (data) {
           return 'Modifications'
         })
         .attr('x', dimBack.x + dimBack.w * 0.5)
-        .attr('y', dimBack.y + dimBack.h * 0.05)
+        .attr('y', dimTop.y - 4)
         .style('font-weight', 'normal')
         .attr('text-anchor', 'middle')
         .style('font-size', 10)
@@ -1869,155 +1902,155 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', '#000000')
         .attr('stroke', 'none')
 
-      g.append('rect')
-        .attr('x', dimTop.x)
-        .attr('y', dimTop.y)
-        .attr('width', dimTop.w)
-        .attr('height', dimTop.h)
-        .attr('stroke', 'none')
-        .attr('fill', '#ffffbb')
-
-      // let defs = g.append('defs')
-      // let pattern = defs.append('pattern')
-      //   .attr('id', 'patternMoved')
-      //   .attr('x', '0')
-      //   .attr('y', '0')
-      //   .attr('width', 4)
-      //   .attr('height', 4)
+      // g.append('rect')
+      //   .attr('x', dimTop.x)
+      //   .attr('y', dimTop.y)
+      //   .attr('width', dimTop.w)
+      //   .attr('height', dimTop.h)
+      //   .attr('stroke', 'none')
+      //   .attr('fill', '#ffffbb')
+      //
+      // // let defs = g.append('defs')
+      // // let pattern = defs.append('pattern')
+      // //   .attr('id', 'patternMoved')
+      // //   .attr('x', '0')
+      // //   .attr('y', '0')
+      // //   .attr('width', 4)
+      // //   .attr('height', 4)
+      // //   .attr('fill', '#ffffff')
+      // //   .attr('patternUnits', 'userSpaceOnUse')
+      // // pattern.append('line')
+      // //   .attr('x1', 2)
+      // //   .attr('y1', 0)
+      // //   .attr('x2', 2)
+      // //   .attr('y2', 4)
+      // //   .attr('stroke', '#444444')
+      // //   .attr('stroke-width', 0.1)
+      // // pattern.append('line')
+      // //   .attr('x1', 0)
+      // //   .attr('y1', 2)
+      // //   .attr('x2', 4)
+      // //   .attr('y2', 2)
+      // //   .attr('stroke', '#444444')
+      // //   .attr('stroke-width', 0.1)
+      // // g.append('rect')
+      // //   .attr('x', dimMiddle.x)
+      // //   .attr('y', dimMiddle.y)
+      // //   .attr('width', dimMiddle.w)
+      // //   .attr('height', dimMiddle.h)
+      // //   .attr('stroke', '#000000')
+      // //   .attr('stroke-width', 0.2)
+      // //   .style('fill', '#ffffff')
+      // // g.append('rect')
+      // //   .attr('x', dimMiddle.x)
+      // //   .attr('y', dimMiddle.y)
+      // //   .attr('width', dimMiddle.w)
+      // //   .attr('height', dimMiddle.h)
+      // //   .attr('stroke', '#000000')
+      // //   .attr('stroke-width', 0.2)
+      // //   .style('fill', 'url(#patternMoved)')
+      // g.append('rect')
+      //   .attr('x', dimBottom.x)
+      //   .attr('y', dimBottom.y)
+      //   .attr('width', dimBottom.w)
+      //   .attr('height', dimBottom.h)
+      //   .attr('stroke', 'none')
+      //   .attr('fill', '#ddddbb')
+      //
+      // let sizeBlockModif = 20
+      // let blocksModif = g.selectAll('rect.modification')
+      //   .data(modifications)
+      // blocksModif.enter()
+      //   .append('rect')
+      //   .attr('class', 'modification')
+      //   .attr('x', function (d, i) {
+      //     let space = (dimTop.w / modifications.length)
+      //     d.position = {x: dimTop.x + (space * i) + space * 0.5 - sizeBlockModif * 0.5,
+      //       y: dimTop.y + dimTop.h * 0.5 - sizeBlockModif * 0.5}
+      //     return dimTop.x + (space * i) + space * 0.5 - sizeBlockModif * 0.5
+      //   })
+      //   .attr('y', dimTop.y + dimTop.h * 0.5 - sizeBlockModif * 0.5)
+      //   .attr('width', sizeBlockModif)
+      //   .attr('height', sizeBlockModif)
       //   .attr('fill', '#ffffff')
-      //   .attr('patternUnits', 'userSpaceOnUse')
-      // pattern.append('line')
-      //   .attr('x1', 2)
-      //   .attr('y1', 0)
-      //   .attr('x2', 2)
-      //   .attr('y2', 4)
-      //   .attr('stroke', '#444444')
-      //   .attr('stroke-width', 0.1)
-      // pattern.append('line')
-      //   .attr('x1', 0)
-      //   .attr('y1', 2)
-      //   .attr('x2', 4)
-      //   .attr('y2', 2)
-      //   .attr('stroke', '#444444')
-      //   .attr('stroke-width', 0.1)
-      // g.append('rect')
-      //   .attr('x', dimMiddle.x)
-      //   .attr('y', dimMiddle.y)
-      //   .attr('width', dimMiddle.w)
-      //   .attr('height', dimMiddle.h)
       //   .attr('stroke', '#000000')
       //   .attr('stroke-width', 0.2)
-      //   .style('fill', '#ffffff')
-      // g.append('rect')
-      //   .attr('x', dimMiddle.x)
-      //   .attr('y', dimMiddle.y)
-      //   .attr('width', dimMiddle.w)
-      //   .attr('height', dimMiddle.h)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 0.2)
-      //   .style('fill', 'url(#patternMoved)')
-      g.append('rect')
-        .attr('x', dimBottom.x)
-        .attr('y', dimBottom.y)
-        .attr('width', dimBottom.w)
-        .attr('height', dimBottom.h)
-        .attr('stroke', 'none')
-        .attr('fill', '#ddddbb')
-
-      let sizeBlockModif = 20
-      let blocksModif = g.selectAll('rect.modification')
-        .data(modifications)
-      blocksModif.enter()
-        .append('rect')
-        .attr('class', 'modification')
-        .attr('x', function (d, i) {
-          let space = (dimTop.w / modifications.length)
-          d.position = {x: dimTop.x + (space * i) + space * 0.5 - sizeBlockModif * 0.5,
-            y: dimTop.y + dimTop.h * 0.5 - sizeBlockModif * 0.5}
-          return dimTop.x + (space * i) + space * 0.5 - sizeBlockModif * 0.5
-        })
-        .attr('y', dimTop.y + dimTop.h * 0.5 - sizeBlockModif * 0.5)
-        .attr('width', sizeBlockModif)
-        .attr('height', sizeBlockModif)
-        .attr('fill', '#ffffff')
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.2)
-
-      let data = {nodes: [], links: []}
-      // for (let i = 0; i < modifications.length; i++) {
-      //   data.nodes.push({type: 'modification', id: modifications[i].id, data: modifications[i], fx: modifications[i].position.x, fy: modifications[i].position.y})
-      //   for (let j = 0; j < modifications[i].conflicts.length; j++) {
-      //     data.links.push({source: modifications[i].id, target: modifications[i].conflicts[j]})
+      //
+      // let data = {nodes: [], links: []}
+      // // for (let i = 0; i < modifications.length; i++) {
+      // //   data.nodes.push({type: 'modification', id: modifications[i].id, data: modifications[i], fx: modifications[i].position.x, fy: modifications[i].position.y})
+      // //   for (let j = 0; j < modifications[i].conflicts.length; j++) {
+      // //     data.links.push({source: modifications[i].id, target: modifications[i].conflicts[j]})
+      // //   }
+      // // }
+      // for (let i = 0; i < conflicts.length; i++) {
+      //   data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
+      //   for (let j = 0; j < conflicts[i].blocks.length; j++) {
+      //     let insert = true
+      //     for (var z = 0; z < data.nodes.length; z++) {
+      //       if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
+      //     }
+      //     if (insert) {
+      //       data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
+      //     }
+      //     data.links.push({source: conflicts[i].id, target: conflicts[i].blocks[j].id})
       //   }
       // }
-      for (let i = 0; i < conflicts.length; i++) {
-        data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
-        for (let j = 0; j < conflicts[i].blocks.length; j++) {
-          let insert = true
-          for (var z = 0; z < data.nodes.length; z++) {
-            if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
-          }
-          if (insert) {
-            data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
-          }
-          data.links.push({source: conflicts[i].id, target: conflicts[i].blocks[j].id})
-        }
-      }
-
-      let smallRadius = 7
-      let bigRadius = 14
-      let simulation = d3.forceSimulation()
-        .force('link', d3.forceLink().id(function (d) { return d.id }))
-        .force('collide', d3.forceCollide(function (d) { return (d.type === 'conflict' ? bigRadius * 1.5 : smallRadius * 1.5) }).iterations(32))
-        .force('charge', d3.forceManyBody().strength(function (d) {
-          return (d.type === 'conflict' ? -20 : -20)
-        }))
-        .force('center', d3.forceCenter(dimMiddle.x + (dimMiddle.w / 2), dimMiddle.y + (dimMiddle.h / 2)))
-        .force('y', d3.forceY(0))
-        .force('x', d3.forceX(0))
-      simulation.nodes(data.nodes)
-      simulation.force('link').links(data.links)
-
-      var link = g.append('g')
-        .attr('class', 'links')
-        .selectAll('line')
-        .data(data.links)
-        .enter()
-        .append('line')
-        .attr('stroke', 'black')
-
-      var node = g.append('g')
-        .attr('class', 'nodes')
-        .selectAll('circle')
-        .data(data.nodes)
-        .enter().append('circle')
-        .attr('id', function (d) { return d.id })
-        .attr('r', function (d) {
-          return (d.type === 'conflict' ? bigRadius : smallRadius)
-        })
-        .attr('fill', '#CFD8DC')
-        .attr('stroke', '#111111')// '#ECEFF1')
-        .attr('stroke-width', 0.5)
-
-      simulation.on('tick', function () {
-        link
-          .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.source.x)) })
-          .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.source.y)) })
-          .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.target.x)) })
-          .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.target.y)) })
-
-        node
-          .attr('cx', function (d) {
-            let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
-            d.x = Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.x))
-            return d.x
-          })
-          .attr('cy', function (d) {
-            let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
-            d.y = Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.y))
-            return d.y
-          })
-      })
+      //
+      // let smallRadius = 7
+      // let bigRadius = 14
+      // let simulation = d3.forceSimulation()
+      //   .force('link', d3.forceLink().id(function (d) { return d.id }))
+      //   .force('collide', d3.forceCollide(function (d) { return (d.type === 'conflict' ? bigRadius * 1.5 : smallRadius * 1.5) }).iterations(32))
+      //   .force('charge', d3.forceManyBody().strength(function (d) {
+      //     return (d.type === 'conflict' ? -20 : -20)
+      //   }))
+      //   .force('center', d3.forceCenter(dimMiddle.x + (dimMiddle.w / 2), dimMiddle.y + (dimMiddle.h / 2)))
+      //   .force('y', d3.forceY(0))
+      //   .force('x', d3.forceX(0))
+      // simulation.nodes(data.nodes)
+      // simulation.force('link').links(data.links)
+      //
+      // var link = g.append('g')
+      //   .attr('class', 'links')
+      //   .selectAll('line')
+      //   .data(data.links)
+      //   .enter()
+      //   .append('line')
+      //   .attr('stroke', 'black')
+      //
+      // var node = g.append('g')
+      //   .attr('class', 'nodes')
+      //   .selectAll('circle')
+      //   .data(data.nodes)
+      //   .enter().append('circle')
+      //   .attr('id', function (d) { return d.id })
+      //   .attr('r', function (d) {
+      //     return (d.type === 'conflict' ? bigRadius : smallRadius)
+      //   })
+      //   .attr('fill', '#CFD8DC')
+      //   .attr('stroke', '#111111')// '#ECEFF1')
+      //   .attr('stroke-width', 0.5)
+      //
+      // simulation.on('tick', function () {
+      //   link
+      //     .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.source.x)) })
+      //     .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.source.y)) })
+      //     .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.target.x)) })
+      //     .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.target.y)) })
+      //
+      //   node
+      //     .attr('cx', function (d) {
+      //       let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
+      //       d.x = Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.x))
+      //       return d.x
+      //     })
+      //     .attr('cy', function (d) {
+      //       let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
+      //       d.y = Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.y))
+      //       return d.y
+      //     })
+      // })
 
       // let lineGenerator = d3.line()
       //   .x(function (d) { return d.x })
@@ -2159,18 +2192,33 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('height', g.attr('height'))
       // let div = fo.append('xhtml:div')
       // let sizeProp = 25
-      //
-      // let fo = g.append('foreignObject')
-      //   .style('width', dimModifs.w + 'px')
-      //   .style('height', dimModifs.h + 'px')
-      //   .style('x', dimModifs.x + 'px')
-      //   .style('y', dimModifs.y + 'px')
-      // let div = fo.append('xhtml:div')
-      //   .attr('class', 'overflowHorizontalDiv')
-      //   .style('border', 0 + 'px solid #78909C')
-      //   .style('background-color', '#ECEFF1')
-      //   .style('transform', 'scale(1,-1)')
-      //
+
+      let fo = g.append('foreignObject')
+        .style('width', dimTop.w + 'px')
+        .style('height', dimTop.h + 'px')
+        .style('x', dimTop.x + 'px')
+        .style('y', dimTop.y + 'px')
+      let rootDiv = fo.append('xhtml:div')
+        .style('display', 'inline-block')
+        .style('border', 0 + 'px solid #78909C')
+        .style('background-color', '#ECEFF1')
+        .style('width', '92%')
+        .style('height', 'calc(100% - 15px)')
+      let quickDiv = fo.append('xhtml:div')
+        .style('display', 'inline-block')
+        .style('background-color', '#333333')
+        .style('width', '8%')
+        .style('height', 'calc(100% - 15px)')
+      let titleDiv = rootDiv.append('div')
+        .style('height', '15px')
+        .style('border', 0 + 'px solid #78909C')
+        .style('background-color', '#ECEFF1')
+      let div = rootDiv.append('div')
+        .attr('class', 'overflowVerticalDiv')
+        .style('border', 0 + 'px solid #78909C')
+        .style('background-color', '#ECEFF1')
+        // .style('transform', 'scale(1,-1)')
+
       // let space = 2.5
       // let dimSB = {y: 0, h: dimModifs.h * 0.28}
       // let dimBLC = {y: dimModifs.h * 0.3, h: dimModifs.h * 0.23}
@@ -2238,6 +2286,155 @@ let mainSchedBlocksController = function (optIn) {
       //     .attr('stroke', 'none')
       // }
 
+      function fillModifDiv (div, modifs, title) {
+        let innerDiv = div.append('div')
+          .style('margin-bottom', '6px')
+          .style('background', '#cccccc')
+        innerDiv.append('label')
+          .html(title)
+          .style('display', 'block')
+          .style('color', '#ffffff')
+          .style('background', '#000000')
+          .style('font-size', 10 + 'px')
+        for (var i = 0; i < modifs.length; i++) {
+          let modif = modifs[i]
+          let lineDiv = innerDiv.append('div')
+          lineDiv.append('label')
+            .html(modif.prop)
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+          lineDiv.append('label')
+            .html(':')
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+          lineDiv.append('label')
+            .html(modif.old)
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+          lineDiv.append('label')
+            .html('-> ')
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+          lineDiv.append('label')
+            .html(modif.new)
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+        }
+      }
+
+      let titleSBModifDiv = titleDiv.append('div')
+        .style('display', 'inline-block')
+        .style('width', 'calc(50% - 4px)')
+        .style('height', '15px')
+        .style('background', '#dddddd')
+      let titleBLCModifDiv = titleDiv.append('div')
+        .style('display', 'inline-block')
+        .style('width', 'calc(50% - 4px)')
+        .style('height', '15px')
+        .style('background', '#acacac')
+
+      for (let SB in defaultChangeNotification) {
+        let modifAndBlocks = defaultChangeNotification[SB]
+        let parentDiv = div.append('div')
+          .attr('id', 'SB_' + SB)
+          .style('width', '100%')
+        let SBModifDiv = parentDiv.append('div')
+          .style('display', 'inline-block')
+          .style('width', 'calc(50% - 2px)')
+          .style('background', '#aaaaaa')
+          .style('vertical-align', 'top')
+          .style('border-rigth', '2px solid #ffffff')
+        let BLCModifDiv = parentDiv.append('div')
+          .style('display', 'inline-block')
+          .style('width', 'calc(50% - 2px)')
+          .style('border-left', '2px solid #ffffff')
+
+        fillModifDiv(SBModifDiv, modifAndBlocks.modifications, SB)
+
+        for (var BLC in modifAndBlocks.blocks) {
+          let allProp = modifAndBlocks.blocks[BLC]
+          fillModifDiv(BLCModifDiv, allProp.modifications, BLC)
+        }
+      }
+
+      let totOffset = 0
+      let totScrollHeight = div._groups[0][0].scrollHeight
+      let even = 0
+      for (let SB in defaultChangeNotification) {
+        let setOffsetTo = totOffset
+        let scrollHeight = div.select('div#SB_' + SB)._groups[0][0].scrollHeight
+
+        quickDiv.append('div')
+          .style('width', '100%')
+          .style('height', ((scrollHeight / totScrollHeight) * 100) + '%')
+          .style('background', (even % 2 === 1 ? '#dddddd' : '#bbbbbb'))
+          .on('mouseover', function () {
+            div
+              .transition()
+              .delay(300)
+              .duration(400)
+              .on('start', function () {
+                div.attr('canInterrupt', false)
+              })
+              .tween('scroll', function () {
+                let that = this
+                var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
+                return function (t) { that.scrollTop = i(t) }
+              })
+              .on('end', function () {
+                div.attr('canInterrupt', true)
+              })
+          })
+          .on('mouseout', function () {
+            if (div.attr('canInterrupt') === 'true') {
+              div.interrupt()
+            }
+          })
+          .on('wheel.zoom', function () {
+            d3.event.preventDefault()
+            let newScrollTop = div._groups[0][0].scrollTop + d3.event.deltaY
+            if (newScrollTop < setOffsetTo) {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            } else if ((newScrollTop + div._groups[0][0].clientHeight) > (setOffsetTo + scrollHeight)) {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, (setOffsetTo + scrollHeight - div._groups[0][0].clientHeight))
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            } else {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, newScrollTop)
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            }
+          })
+
+        totOffset += scrollHeight
+        even += 1
+      }
+
       // let evenSB = 0
       // let evenBLC = 0
       // let evenProp = 0
@@ -2262,7 +2459,6 @@ let mainSchedBlocksController = function (optIn) {
       //       div.append('label')
       //         .html(prop)
       //         .style('display', 'block')
-      //         .style('position', 'absolute')
       //         // .style('border-radius', '2px')
       //         .style('width', (0.15 * dim.w) + 'px')
       //         .style('height', sizeProp - 2 + 'px')
@@ -2274,7 +2470,6 @@ let mainSchedBlocksController = function (optIn) {
       //       div.append('label')
       //         .html(':')
       //         .style('display', 'block')
-      //         .style('position', 'absolute')
       //         // .style('border-radius', '2px')
       //         .style('width', (0.025 * dim.w) + 'px')
       //         .style('height', sizeProp - 2 + 'px')
@@ -2286,7 +2481,6 @@ let mainSchedBlocksController = function (optIn) {
       //       div.append('label')
       //         .html(currentProp.old)
       //         .style('display', 'block')
-      //         .style('position', 'absolute')
       //         // .style('border-radius', '2px')
       //         .style('width', (0.15 * dim.w) + 'px')
       //         .style('height', sizeProp - 2 + 'px')
@@ -2298,7 +2492,6 @@ let mainSchedBlocksController = function (optIn) {
       //       div.append('label')
       //         .html('-> ')
       //         .style('display', 'block')
-      //         .style('position', 'absolute')
       //         // .style('border-radius', '2px')
       //         .style('width', (0.025 * dim.w) + 'px')
       //         .style('height', sizeProp - 2 + 'px')
@@ -2310,7 +2503,6 @@ let mainSchedBlocksController = function (optIn) {
       //       div.append('label')
       //         .html(currentProp.new)
       //         .style('display', 'block')
-      //         .style('position', 'absolute')
       //         // .style('border-radius', '2px')
       //         .style('width', (0.15 * dim.w) + 'px')
       //         .style('height', sizeProp - 2 + 'px')
@@ -2321,7 +2513,6 @@ let mainSchedBlocksController = function (optIn) {
       //         .style('font-size', 10 + 'px')
       //       div.append('label')
       //         .style('display', 'block')
-      //         .style('position', 'absolute')
       //         .style('border-radius', '0px 2px 2px 0px')
       //         .style('width', (0.1 * dim.w) + 'px')
       //         .style('height', sizeProp - 2 + 'px')
@@ -2335,7 +2526,6 @@ let mainSchedBlocksController = function (optIn) {
       //     }
       //     svgBLC.html(BLC)
       //       .style('display', 'block')
-      //       .style('position', 'absolute')
       //       .style('border-radius', '0px 0px 0px 0px')
       //       .style('width', (0.2 * dim.w) + 'px')
       //       .style('height', (totProp * sizeProp) - 2 + 'px')
@@ -2348,7 +2538,6 @@ let mainSchedBlocksController = function (optIn) {
       //   }
       //   svgSB.html(SB)
       //     .style('display', 'block')
-      //     .style('position', 'absolute')
       //     .style('border-radius', '2px 0px 0px 2px')
       //     .style('width', (0.2 * dim.w) + 'px')
       //     .style('height', (totLine * sizeProp) + (6 * nbBLC) - 2 + 'px')
@@ -2359,45 +2548,164 @@ let mainSchedBlocksController = function (optIn) {
       //   evenSB += 1
       // }
 
-      // g.append('rect')
-      //   .attr('class', 'bottom-back')
-      //   .attr('x', dimBottom.x)
-      //   .attr('y', dimBottom.y - 4)
-      //   .attr('width', dimBottom.w)
-      //   .attr('height', dimBottom.h)
-      //   .attr('stroke', '#37474F')
-      //   .attr('stroke-dasharray', [dim.w * 0.4, dim.w * 0.2, dim.w * 0.4, dim.h + dim.w + dim.h])
-      //   .attr('fill', '#ECEFF1')
-      //   .attr('stroke-width', 0.5)
-      //   .attr('stroke-opacity', 1)
-      // g.append('text')
-      //   .text(function (data) {
-      //     return 'Conflicts'
-      //   })
-      //   .attr('x', dimBottom.x + dimBottom.w * 0.5)
-      //   .attr('y', dimBottom.y)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 10)
-      //   .attr('dy', 0)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', '#000000')
-      //   .attr('stroke', 'none')
+      g.append('rect')
+        .attr('class', 'bottom-back')
+        .attr('x', dimMiddle.x)
+        .attr('y', dimMiddle.y - 16)
+        .attr('width', dimMiddle.w)
+        .attr('height', dimMiddle.h)
+        .attr('stroke', '#37474F')
+        .attr('stroke-dasharray', [dimMiddle.w * 0.4, dimMiddle.w * 0.2, dimMiddle.w * 0.4, dimMiddle.h + dimMiddle.w + dimMiddle.h])
+        .attr('fill', '#ECEFF1')
+        .attr('stroke-width', 0.5)
+        .attr('stroke-opacity', 1)
+      g.append('text')
+        .text(function (data) {
+          return 'Conflicts'
+        })
+        .attr('x', dimMiddle.x + dimMiddle.w * 0.5)
+        .attr('y', dimMiddle.y - 12)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 10)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', '#000000')
+        .attr('stroke', 'none')
       // g.append('circle')
-      //   .attr('cx', dimBottom.x + dimBottom.w * 0.5)
-      //   .attr('cy', dimBottom.y + dimBottom.h * 0.5)
-      //   .attr('r', dimBottom.h * 0.25)
+      //   .attr('cx', dimMiddle.x + dimMiddle.w * 0.5)
+      //   .attr('cy', dimMiddle.y + dimMiddle.h * 0.5)
+      //   .attr('r', dimMiddle.h * 0.25)
       //   .attr('stroke-width', 8)
       //   .attr('stroke', '#CFD8DC')
       //   .attr('fill', 'none')
       // g.append('line')
-      //   .attr('x1', dimBottom.x + dimBottom.w * 0.5 + dimBottom.h * 0.3)
-      //   .attr('y1', dimBottom.y + dimBottom.h * 0.5 - dimBottom.h * 0.3)
-      //   .attr('x2', dimBottom.x + dimBottom.w * 0.5 - dimBottom.h * 0.3)
-      //   .attr('y2', dimBottom.y + dimBottom.h * 0.5 + dimBottom.h * 0.3)
-      //   .attr('r', dimBottom.h * 0.25)
+      //   .attr('x1', dimMiddle.x + dimMiddle.w * 0.5 + dimMiddle.h * 0.3)
+      //   .attr('y1', dimMiddle.y + dimMiddle.h * 0.5 - dimMiddle.h * 0.3)
+      //   .attr('x2', dimMiddle.x + dimMiddle.w * 0.5 - dimMiddle.h * 0.3)
+      //   .attr('y2', dimMiddle.y + dimMiddle.h * 0.5 + dimMiddle.h * 0.3)
+      //   .attr('r', dimMiddle.h * 0.25)
       //   .attr('stroke-width', 8)
       //   .attr('stroke', '#CFD8DC')
+
+      let conflicts = [
+        {id: 'c1', type: 'shareTels', blocks: [{id: 'b1(1)'}, {id: 'b2(2)'}, {id: 'b7(0)'}]},
+        {id: 'c2', type: 'shareTels', blocks: [{id: 'b9(2)'}, {id: 'b5(4)'}, {id: 'b2(1)'}]},
+        {id: 'c3', type: 'shareTels', blocks: [{id: 'b2(5)'}, {id: 'b2(1)'}, {id: 'b7(4)'}, {id: 'b9(3)'}]},
+        {id: 'c4', type: 'shareTels', blocks: [{id: 'b3(2)'}, {id: 'b5(3)'}]},
+        {id: 'c5', type: 'shareTels', blocks: [{id: 'b5(1)'}, {id: 'b2(1)'}, {id: 'b8(3)'}, {id: 'b9(3)'}]},
+        {id: 'c6', type: 'shareTels', blocks: [{id: 'b0(4)'}, {id: 'b3(3)'}, {id: 'b7(4)'}, {id: 'b11(1)'}]}
+      ]
+
+      let data = {nodes: [], links: []}
+      // for (let i = 0; i < modifications.length; i++) {
+      //   data.nodes.push({type: 'modification', id: modifications[i].id, data: modifications[i], fx: modifications[i].position.x, fy: modifications[i].position.y})
+      //   for (let j = 0; j < modifications[i].conflicts.length; j++) {
+      //     data.links.push({source: modifications[i].id, target: modifications[i].conflicts[j]})
+      //   }
+      // }
+      // for (let i = 0; i < conflicts.length; i++) {
+      //   data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
+      //   for (let j = 0; j < conflicts[i].blocks.length; j++) {
+      //     let insert = true
+      //     for (var z = 0; z < data.nodes.length; z++) {
+      //       if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
+      //     }
+      //     if (insert) {
+      //       data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
+      //     }
+      //     data.links.push({source: conflicts[i].id, target: conflicts[i].blocks[j].id})
+      //   }
+      // }
+
+      for (let i = 0; i < conflicts.length; i++) {
+        data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
+        for (let j = 0; j < (30 + Math.floor(Math.random() * Math.floor(60))); j++) {
+          data.nodes.push({type: 'tel', id: 'tel' + i + j, data: {}})
+          data.links.push({type: 'short', source: conflicts[i].id, target: 'tel' + i + j})
+        }
+        for (let j = 0; j < conflicts[i].blocks.length; j++) {
+          let insert = true
+          for (var z = 0; z < data.nodes.length; z++) {
+            if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
+          }
+          if (insert) {
+            // data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
+          }
+          // data.links.push({type: 'long', source: conflicts[i].id, target: conflicts[i].blocks[j].id})
+        }
+      }
+
+      let microRadius = 2
+      let smallRadius = 4
+      let bigRadius = 8
+      let simulation = d3.forceSimulation()
+        .force('link', d3.forceLink().id(function (d) { return d.id }))
+        .force('collide', d3.forceCollide(function (d) {
+          if (d.type === 'conflict') return bigRadius * 1.5
+          if (d.type === 'block') return smallRadius * 1.5
+          return microRadius
+        }).iterations(32))
+        .force('charge', d3.forceManyBody().strength(function (d) {
+          if (d.type === 'conflict') return -60
+          if (d.type === 'block') return -60
+          if (d.type === 'tel') return 0
+        }))
+        .force('center', d3.forceCenter((dimMiddle.w / 2), (dimMiddle.h / 2)))
+        .force('y', d3.forceY(0))
+        .force('x', d3.forceX(0))
+      simulation.nodes(data.nodes)
+      simulation.force('link').links(data.links).distance(function (d) {
+        if (d.type === 'short') return 1
+        else return 20
+      })
+
+      var middleGroup = g.append('g')
+        .attr('transform', 'translate(' + dimMiddle.x + ',' + dimMiddle.y + ')')
+      var link = middleGroup.append('g')
+        .attr('class', 'links')
+        .selectAll('line')
+        .data(data.links)
+        .enter()
+        .append('line')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.4)
+
+      var node = middleGroup.append('g')
+        .attr('class', 'nodes')
+        .selectAll('circle')
+        .data(data.nodes)
+        .enter().append('circle')
+        .attr('id', function (d) { return d.id })
+        .attr('r', function (d) {
+          if (d.type === 'conflict') return bigRadius * 1.5
+          if (d.type === 'block') return smallRadius * 1.5
+          return microRadius
+        })
+        .attr('fill', '#CFD8DC')
+        .attr('stroke', '#000000')// '#ECEFF1')
+        .attr('stroke-width', 0.2)
+
+      simulation.on('tick', function () {
+        link
+          .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(dimMiddle.w - radius, d.source.x)) })
+          .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(dimMiddle.h - radius, d.source.y)) })
+          .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(dimMiddle.w - radius, d.target.x)) })
+          .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(dimMiddle.h - radius, d.target.y)) })
+
+        node
+          .attr('cx', function (d) {
+            let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
+            d.x = Math.max(radius, Math.min(dimMiddle.w - radius, d.x))
+            return d.x
+          })
+          .attr('cy', function (d) {
+            let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
+            d.y = Math.max(radius, Math.min(dimMiddle.h - radius, d.y))
+            return d.y
+          })
+      })
+
       // div.append('input')
       //   //.attr('class', 'formMngrInput')
       //   .attr('type', 'text')
