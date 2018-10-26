@@ -102,6 +102,11 @@ let sockSchedBlocksController = function (optIn) {
 // ---------------------------------------------------------------------------------------------------
 let mainSchedBlocksController = function (optIn) {
   // let myUniqueId = unique()
+  let colorPalette = {dark: {}, bright: {}}
+  colorPalette.dark.greyBlue = ['#ECEFF1', '#CFD8DC', '#B0BEC5', '#90A4AE', '#78909C', '#607D8B', '#546E7A', '#455A64', '#37474F', '#263238']
+  colorPalette.dark.grey = ['#FAFAFA', '#F5F5F5', '#EEEEEE', '#E0E0E0', '#BDBDBD', '#9E9E9E', '#757575', '#616161', '#424242', '#212121']
+  colorPalette.bright.grey = ['#212121', '#424242', '#616161', '#757575', '#9E9E9E', '#BDBDBD', '#E0E0E0', '#EEEEEE', '#F5F5F5', '#FAFAFA']
+
   let widgetType = optIn.widgetType
   let tagBlockQueue = 'blockQueue'
   let tagArrZoomerPlotsSvg = optIn.baseName
@@ -217,23 +222,39 @@ let mainSchedBlocksController = function (optIn) {
       .attr('y', 0)
       .attr('width', lenD.w[0])
       .attr('height', lenD.h[0])
-      .attr('fill', '#37474F')
+      .attr('fill', colorPalette.dark.greyBlue[8])
     // svg.g.append('rect')
     //   .attr('x', 0)
     //   .attr('y', 0)
     //   .attr('width', lenD.w[0])
     //   .attr('height', lenD.h[0] * 0.3)
-    //   .style('fill', '#455A64')
+    //   .style('fill', colorPalette.dark.greyBlue[7])
 
     // createPullPanel()
     // createPushPanel()
     com.dataIn = dataIn
 
     svgBlocksQueue.initData(dataIn.data)
-    svgCommitCopyStrip.initData(dataIn.data)
     svgBlocksQueueCreator.initData(dataIn.data)
     // svgMiddleInfo.initData(dataIn.data)
-
+    svgWarningArea.initData({
+      tag: 'warningArea',
+      g: svg.g.append('g'),
+      box: {x: (lenD.w[0] * 0.475), y: lenD.h[0] * 0.022, w: lenD.w[0] * 0.145, h: lenD.h[0] * 0.25},
+      pull: {
+        g: undefined,
+        box: {x: 0, y: 0, w: 0.5, h: 1},
+        child: {}
+      },
+      push: {
+        g: undefined,
+        box: {x: 0.5, y: 0, w: 0.5, h: 1},
+        child: {}
+      },
+      debug: {
+        enabled: false
+      }
+    })
     svgSchedulingBlocksOverview.initData({
       tag: 'schedulingBlocksOverview',
       g: svg.g.append('g'),
@@ -288,174 +309,6 @@ let mainSchedBlocksController = function (optIn) {
     })
   }
   this.initData = initData
-
-  function createPullPanel () {
-    let x0, y0, w0, h0, marg
-    w0 = lenD.w[0] * 0.16
-    h0 = lenD.h[0] * 0.6 // h0 *= 2.5;
-    x0 = 0
-    y0 = 0
-    marg = w0 * 0.01
-    let box = {
-      x: x0,
-      y: y0,
-      w: w0,
-      h: h0,
-      marg: marg
-    }
-    let gBlockBox = svg.g.append('g')
-      .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
-    // gBlockBox.append('rect')
-    //   .attr('x', box.w * 0.95)
-    //   .attr('y', box.h * 0.04)
-    //   .attr('width', box.w * 0.04)
-    //   .attr('height', box.h * 0.3)
-    //   .style('fill', '#CFD8DC')
-
-    let path = 'M ' + box.w * 1 + ' ' + box.h * 0.2 + ' ' +
-    'L ' + box.w * 0.8 + ' ' + box.h * 0.2 + ' ' +
-    'L ' + box.w * 0.8 + ' ' + box.h * 0.8 + ' ' +
-    'L ' + box.w * 1 + ' ' + box.h * 0.8 + ' '
-    // 'L ' + box.w + ' ' + box.h + ' '
-    gBlockBox.append('path')
-      .attr('stroke', '#546E7A')
-      .attr('fill', 'none')
-      .attr('stroke-width', 12)
-      .attr('d', path)
-
-    gBlockBox.append('rect')
-      .attr('width', 32)
-      .attr('height', 32)
-      .attr('x', box.w * 0.26 + 4)
-      .attr('y', box.h * 0.35 + 4)
-      .attr('fill', '#CFD8DC')
-    gBlockBox.append('svg:image')
-      .attr('class', 'icon')
-      .attr('xlink:href', '/static/commit.svg')
-      .attr('width', 40)
-      .attr('height', 40)
-      .attr('x', box.w * 0.26)
-      .attr('y', box.h * 0.35)
-
-    gBlockBox.append('text')
-      .text('Duplicate')
-      .attr('x', box.w * 0.38)
-      .attr('y', box.h * 0.28)
-      .style('font-weight', 'bold')
-      .attr('text-anchor', 'middle')
-      .style('font-size', 16)
-      .attr('dy', 9)
-      .style('pointer-events', 'none')
-      .attr('fill', '#CFD8DC')
-      .attr('stroke', 'none')
-    gBlockBox.append('text')
-      .text('Schedule')
-      .attr('x', box.w * 0.38)
-      .attr('y', box.h * 0.31)
-      .style('font-weight', 'bold')
-      .attr('text-anchor', 'middle')
-      .style('font-size', 16)
-      .attr('dy', 9)
-      .style('pointer-events', 'none')
-      .attr('fill', '#CFD8DC')
-      .attr('stroke', 'none')
-
-    // gBlockBox.append('text')
-    //   .text('OR')
-    //   .attr('x', box.w * 0.38)
-    //   .attr('y', box.h * 0.49)
-    //   .style('font-weight', 'bold')
-    //   .attr('text-anchor', 'middle')
-    //   .style('font-size', 18)
-    //   .attr('dy', 9)
-    //   .style('pointer-events', 'none')
-    //   .attr('fill', '#CFD8DC')
-    //   .attr('stroke', 'none')
-
-    // gBlockBox.append('text')
-    //   .text('Load old')
-    //   .attr('x', box.w * 0.38)
-    //   .attr('y', box.h * 0.6)
-    //   .style('font-weight', 'bold')
-    //   .attr('text-anchor', 'middle')
-    //   .style('font-size', 16)
-    //   .attr('dy', 9)
-    //   .style('pointer-events', 'none')
-    //   .attr('fill', '#CFD8DC')
-    //   .attr('stroke', 'none')
-    // gBlockBox.append('text')
-    //   .text('Schedule')
-    //   .attr('x', box.w * 0.38)
-    //   .attr('y', box.h * 0.63)
-    //   .style('font-weight', 'bold')
-    //   .attr('text-anchor', 'middle')
-    //   .style('font-size', 16)
-    //   .attr('dy', 9)
-    //   .style('pointer-events', 'none')
-    //   .attr('fill', '#CFD8DC')
-    //   .attr('stroke', 'none')
-
-    // gBlockBox.append('rect')
-    //   .attr('width', 32)
-    //   .attr('height', 32)
-    //   .attr('x', box.w * 0.26 + 4)
-    //   .attr('y', box.h * 0.67 + 4)
-    //   .attr('fill', '#CFD8DC')
-    // gBlockBox.append('svg:image')
-    //   .attr('class', 'icon')
-    //   .attr('xlink:href', '/static/commit.svg')
-    //   .attr('width', 40)
-    //   .attr('height', 40)
-    //   .attr('x', box.w * 0.26)
-    //   .attr('y', box.h * 0.67)
-  }
-  function createPushPanel () {
-    let x0, y0, w0, h0, marg
-    w0 = lenD.w[0] * 0.16
-    h0 = lenD.h[0] * 0.6
-    x0 = lenD.w[0] * 0.84
-    y0 = 0
-    marg = w0 * 0.01
-    let box = {
-      x: x0,
-      y: y0,
-      w: w0,
-      h: h0,
-      marg: marg
-    }
-    let gBlockBox = svg.g.append('g')
-      .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
-    // gBlockBox.append('rect')
-    //   .attr('x', box.x)
-    //   .attr('y', box.y)
-    //   .attr('width', box.w)
-    //   .attr('height', box.h)
-    //   .style('fill', '#546E7A')
-    let path = 'M ' + box.w * 0.02 + ' ' + box.h * 0.2 + ' ' +
-    'L ' + box.w * 0.2 + ' ' + box.h * 0.2 + ' ' +
-    'L ' + box.w * 0.2 + ' ' + box.h * 0.8 + ' ' +
-    'L ' + box.w * 0.02 + ' ' + box.h * 0.8 + ' '
-    // 'L ' + box.w + ' ' + box.h + ' '
-    gBlockBox.append('path')
-      .attr('stroke', '#546E7A')
-      .attr('fill', 'none')
-      .attr('stroke-width', 12)
-      .attr('d', path)
-
-    gBlockBox.append('rect')
-      .attr('width', 32)
-      .attr('height', 32)
-      .attr('x', box.w * 0.5 + 4)
-      .attr('y', box.h * 0.25 + 4)
-      .attr('fill', '#CFD8DC')
-    gBlockBox.append('svg:image')
-      .attr('class', 'icon')
-      .attr('xlink:href', '/static/commit.svg')
-      .attr('width', 40)
-      .attr('height', 40)
-      .attr('x', box.w * 0.5)
-      .attr('y', box.h * 0.25)
-  }
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
@@ -566,10 +419,10 @@ let mainSchedBlocksController = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function initData (dataIn) {
       let x0, y0, w0, h0, marg
-      w0 = lenD.w[0] * 0.6
-      h0 = lenD.h[0] * 0.18 // h0 *= 2.5;
+      w0 = lenD.w[0] * 0.45 // 0.6
+      h0 = lenD.h[0] * 0.14 // 0.18
       x0 = (lenD.w[0] * 0.02)
-      y0 = (lenD.h[0] * 0.02)
+      y0 = (lenD.h[0] * 0.04)
       marg = w0 * 0.01
       blockBoxData = {
         x: x0,
@@ -587,10 +440,10 @@ let mainSchedBlocksController = function (optIn) {
         // .attr('ry', 2)
         .attr('width', blockBoxData.w + 0)
         .attr('height', blockBoxData.h + 12) // + 35)
-        // .attr('stroke', '#546E7A')
+        // .attr('stroke', colorPalette.dark.greyBlue[6])
         // .attr('stroke-width', 12)
         // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
-        .style('fill', '#546E7A')
+        .style('fill', colorPalette.dark.greyBlue[6])
 
       blockQueue.init({
         tag: 'blockQueueDefaultTag',
@@ -705,10 +558,10 @@ let mainSchedBlocksController = function (optIn) {
         // .attr('ry', 2)
         .attr('width', blockBoxData.w + 0)
         .attr('height', blockBoxData.h + 12) // + 45)
-        // .attr('stroke', '#546E7A')
+        // .attr('stroke', colorPalette.dark.greyBlue[6])
         // .attr('stroke-width', 12)
         // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
-        .style('fill', '#546E7A')
+        .style('fill', colorPalette.dark.greyBlue[6])
 
       blockQueueCreator.init({
         tag: 'blockQueueDefaultTag',
@@ -806,47 +659,216 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.update = update
   }
-  let SvgCommitCopyStrip = function () {
-    let gBlockBox
-    let blockBoxData
+  let SvgWarningArea = function () {
+    function createWarning (pullOrPush) {
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoints = [
+        {x: com[pullOrPush].box.w * 0.5, y: com[pullOrPush].box.h * 0.1},
+        {x: com[pullOrPush].box.w * 0.75, y: com[pullOrPush].box.h * 0.3},
+        {x: com[pullOrPush].box.w * 0.25, y: com[pullOrPush].box.h * 0.3},
+        {x: com[pullOrPush].box.w * 0.5, y: com[pullOrPush].box.h * 0.1}
+      ]
+      com[pullOrPush].child.warningTriangle = com[pullOrPush].g.append('path')
+        .data([dataPoints])
+        .attr('class', 'line')
+        .attr('d', lineGenerator)
+        .attr('fill', '#FFEA00')
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 3)
+        .attr('stroke-linejoin', 'round')
+        .attr('fill-opacity', 0.75)
+        .attr('stroke-dasharray', [6, 2])
+
+      com[pullOrPush].child.warningExclamation = com[pullOrPush].g.append('text')
+        .text(function (d) {
+          return '! '
+        })
+        .attr('x', com[pullOrPush].box.w * 0.5)
+        .attr('y', com[pullOrPush].box.h * 0.28)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', com[pullOrPush].box.h * 0.16)
+        .attr('dy', com[pullOrPush].box.h * 0)
+        .style('pointer-events', 'none')
+    }
+    function createPullButton () {
+      // let lineGenerator = d3.line()
+      //   .x(function (d) { return d.x })
+      //   .y(function (d) { return d.y })
+      // let dataPoints = [
+      //   {x: com.box.w * 0, y: com.box.h * 0.31},
+      //   {x: com.box.w * 0.56, y: com.box.h * 0.31},
+      //   {x: com.box.w * 0.56, y: com.box.h * 0.85},
+      //   {x: com.box.w * 0.33, y: com.box.h * 1},
+      //   {x: com.box.w * 0.1, y: com.box.h * 0.85},
+      //   {x: com.box.w * 0.1, y: com.box.h * 0.6},
+      //   {x: com.box.w * 0.1, y: com.box.h * 0.6},
+      //   {x: com.box.w * 0, y: com.box.h * 0.6}
+      // ]
+      // com.pull.child.warningTriangle = com.pull.g.append('path')
+      //   .data([dataPoints])
+      //   .attr('class', 'line')
+      //   .attr('d', lineGenerator)
+      //   .attr('fill', colorPalette.dark.greyBlue[7])
+      //   .attr('stroke-width', 3)
+
+      createWarning('pull')
+      com.pull.child.buttonBack = com.pull.g.append('rect')
+        .attr('width', 18)
+        .attr('height', 18)
+        .attr('x', com.pull.box.w * 0.5 - 9)
+        .attr('y', com.pull.box.h * 0.45 - 9)
+        .attr('fill', colorPalette.dark.greyBlue[1])
+      com.pull.child.buttonIcon = com.pull.g.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/commit.svg')
+        .attr('width', 25)
+        .attr('height', 25)
+        .attr('x', com.pull.box.w * 0.5 - 12.5)
+        .attr('y', com.pull.box.h * 0.45 - 12.5)
+
+      com.pull.child.infoText1 = com.pull.g.append('text')
+        .text(function (d) {
+          return 'Copy the'
+        })
+        .attr('x', com.pull.box.w * 0.5)
+        .attr('y', com.pull.box.h * 0.62)
+        .attr('text-anchor', 'middle')
+        .style('font-size', com.pull.box.h * 0.07)
+        .style('pointer-events', 'none')
+        .style('fill', colorPalette.dark.greyBlue[0])
+      com.pull.child.infoText2 = com.pull.g.append('text')
+        .text(function (d) {
+          return 'current'
+        })
+        .attr('x', com.pull.box.w * 0.5)
+        .attr('y', com.pull.box.h * 0.69)
+        .attr('text-anchor', 'middle')
+        .style('font-size', com.pull.box.h * 0.07)
+        .style('pointer-events', 'none')
+        .style('fill', colorPalette.dark.greyBlue[0])
+      com.pull.child.infoText3 = com.pull.g.append('text')
+        .text(function (d) {
+          return 'schedule'
+        })
+        .attr('x', com.pull.box.w * 0.5)
+        .attr('y', com.pull.box.h * 0.76)
+        .attr('text-anchor', 'middle')
+        .style('font-size', com.pull.box.h * 0.07)
+        .style('pointer-events', 'none')
+        .style('fill', colorPalette.dark.greyBlue[0])
+    }
+    function createPushButton () {
+      // let lineGenerator = d3.line()
+      //   .x(function (d) { return d.x })
+      //   .y(function (d) { return d.y })
+      // let dataPoints = [
+      //   {x: com.box.w * 0, y: com.box.h * 0.14},
+      //   {x: com.box.w * 0.2, y: com.box.h * 0},
+      //   {x: com.box.w * 1, y: com.box.h * 0},
+      //   {x: com.box.w * 1, y: com.box.h * 1},
+      //   {x: com.box.w * 0.6, y: com.box.h * 1},
+      //   {x: com.box.w * 0.6, y: com.box.h * 0.28},
+      //   {x: com.box.w * 0.2, y: com.box.h * 0.28}
+      // ]
+      // com.pull.child.warningTriangle = com.pull.g.append('path')
+      //   .data([dataPoints])
+      //   .attr('class', 'line')
+      //   .attr('d', lineGenerator)
+      //   .attr('fill', colorPalette.dark.greyBlue[7])
+      //   .attr('stroke-width', 3)
+
+      createWarning('push')
+      com.push.child.buttonBack = com.push.g.append('rect')
+        .attr('width', 18)
+        .attr('height', 18)
+        .attr('x', com.push.box.w * 0.5 - 9)
+        .attr('y', com.push.box.h * 0.45 - 9)
+        .attr('fill', colorPalette.dark.greyBlue[1])
+      com.push.child.buttonIcon = com.push.g.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/commit.svg')
+        .attr('width', 25)
+        .attr('height', 25)
+        .attr('x', com.push.box.w * 0.5 - 12.5)
+        .attr('y', com.push.box.h * 0.45 - 12.5)
+
+      com.push.child.infoText1 = com.push.g.append('text')
+        .text(function (d) {
+          return 'Override'
+        })
+        .attr('x', com.push.box.w * 0.5)
+        .attr('y', com.push.box.h * 0.62)
+        .attr('text-anchor', 'middle')
+        .style('font-size', com.push.box.h * 0.07)
+        .style('pointer-events', 'none')
+        .style('fill', colorPalette.dark.greyBlue[0])
+      com.push.child.infoText2 = com.push.g.append('text')
+        .text(function (d) {
+          return 'with the'
+        })
+        .attr('x', com.push.box.w * 0.5)
+        .attr('y', com.push.box.h * 0.69)
+        .attr('text-anchor', 'middle')
+        .style('font-size', com.push.box.h * 0.07)
+        .style('pointer-events', 'none')
+        .style('fill', colorPalette.dark.greyBlue[0])
+      com.push.child.infoText3 = com.push.g.append('text')
+        .text(function (d) {
+          return 'new schedule'
+        })
+        .attr('x', com.push.box.w * 0.5)
+        .attr('y', com.push.box.h * 0.76)
+        .attr('text-anchor', 'middle')
+        .style('font-size', com.push.box.h * 0.07)
+        .style('pointer-events', 'none')
+        .style('fill', colorPalette.dark.greyBlue[0])
+    }
+
+    function initPull () {
+      com.pull.box = {
+        x: com.pull.box.x * com.box.w,
+        y: com.pull.box.y * com.box.h,
+        w: com.pull.box.w * com.box.w,
+        h: com.pull.box.h * com.box.h
+      }
+      com.pull.g = com.g.append('g')
+        .attr('transform', 'translate(' + com.pull.box.x + ',' + com.pull.box.y + ')')
+    }
+    function initPush () {
+      com.push.box = {
+        x: com.push.box.x * com.box.w,
+        y: com.push.box.y * com.box.h,
+        w: com.push.box.w * com.box.w,
+        h: com.push.box.h * com.box.h
+      }
+      com.push.g = com.g.append('g')
+        .attr('transform', 'translate(' + com.push.box.x + ',' + com.push.box.y + ')')
+    }
 
     function initData (dataIn) {
-      let x0, y0, w0, h0, marg
-      w0 = lenD.w[0]
-      h0 = lenD.h[0] * 0.12 // h0 *= 2.5;
-      x0 = 0
-      y0 = lenD.h[0] * 0.23
-      marg = w0 * 0.01
-      blockBoxData = {
-        x: x0,
-        y: y0,
-        w: w0,
-        h: h0,
-        marg: marg
-      }
-      gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
+      com = dataIn
+      com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
 
-      // gBlockBox.append('rect')
+      initPull()
+      initPush()
+      // com.g.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
-      //   .attr('width', blockBoxData.w * 0.16)
-      //   .attr('height', blockBoxData.h)
-      //   .style('fill', '#546E7A')
-      gBlockBox.append('rect')
-        .attr('x', blockBoxData.w * 0.16)
-        .attr('y', 0)
-        .attr('width', blockBoxData.w * 0.68)
-        .attr('height', blockBoxData.h)
-        .style('fill', 'none')
-      // gBlockBox.append('rect')
-      //   .attr('x', blockBoxData.w * 0.862)
-      //   .attr('y', 0)
-      //   .attr('width', blockBoxData.w * 0.138)
-      //   .attr('height', blockBoxData.h)
-      //   .style('fill', '#546E7A')
+      //   .attr('width', com.box.w)
+      //   .attr('height', com.box.h)
+      //   .attr('fill', '#999999')
+      createPushButton()
+      createPullButton()
     }
     this.initData = initData
+
+    function updateData (dataIn) {
+
+    }
+    this.updateData = updateData
   }
   let SvgSchedulingBlocksOverview = function () {
     let com = {}
@@ -924,8 +946,8 @@ let mainSchedBlocksController = function (optIn) {
             let length = com.data.formatedData.length
             let dim = {h: (length < 19 ? ((com.shrinked.box.h) * 0.8) : ((com.shrinked.box.h) * 0.5)), w: (com.shrinked.box.h) * 0.8}
             d3.select(this)
-              .attr('fill', '#546E7A')
-              .attr('stroke', '#90A4AE')
+              .attr('fill', colorPalette.dark.greyBlue[6])
+              .attr('stroke', colorPalette.dark.greyBlue[3])
               .transition()
               .duration(400)
               .attr('stroke-width', 2.2)
@@ -944,8 +966,8 @@ let mainSchedBlocksController = function (optIn) {
             let length = com.data.formatedData.length
             let dim = {h: (length < 19 ? ((com.shrinked.box.h) * 0.8) : ((com.shrinked.box.h) * 0.5)), w: (com.shrinked.box.h) * 0.8}
             d3.select(this)
-              .attr('fill', '#455A64')
-              .attr('stroke', '#78909C')
+              .attr('fill', colorPalette.dark.greyBlue[7])
+              .attr('stroke', colorPalette.dark.greyBlue[4])
               .transition()
               .duration(400)
               .attr('stroke-width', 1.8)
@@ -1002,16 +1024,16 @@ let mainSchedBlocksController = function (optIn) {
           return dim.h
         })
         .attr('fill', function (d, i) {
-          return '#455A64'
+          return colorPalette.dark.greyBlue[7]
         })
-        .attr('stroke', '#78909C')
+        .attr('stroke', colorPalette.dark.greyBlue[4])
         .attr('stroke-width', 1.8)
         .attr('stroke-dasharray', [0, dim.w * 0.5, dim.w * 0.5 + dim.h * 0.5, dim.h * 0.5 + dim.w * 0.5, dim.h * 0.5 + dim.w * 0.5, dim.h * 0.5])
         .on('mouseover', function (d) {
           if (com.data.focusOn === d.scheduleId) return
           d3.select(this)
-            .attr('fill', '#546E7A')
-            .attr('stroke', '#90A4AE')
+            .attr('fill', colorPalette.dark.greyBlue[6])
+            .attr('stroke', colorPalette.dark.greyBlue[3])
             .transition()
             .duration(400)
             .attr('stroke-width', 2.2)
@@ -1021,8 +1043,8 @@ let mainSchedBlocksController = function (optIn) {
         .on('mouseout', function (d) {
           if (com.data.focusOn === d.scheduleId) return
           d3.select(this)
-            .attr('fill', '#455A64')
-            .attr('stroke', '#78909C')
+            .attr('fill', colorPalette.dark.greyBlue[7])
+            .attr('stroke', colorPalette.dark.greyBlue[4])
             .transition()
             .duration(400)
             .attr('stroke-width', 1.8)
@@ -1043,8 +1065,8 @@ let mainSchedBlocksController = function (optIn) {
             unfocusOnSchedulingBlocks()
             com.data.focusOn = undefined
             d3.select(this)
-              .attr('fill', '#455A64')
-              .attr('stroke', '#78909C')
+              .attr('fill', colorPalette.dark.greyBlue[7])
+              .attr('stroke', colorPalette.dark.greyBlue[4])
               .transition()
               .duration(400)
               .attr('stroke-width', 1.8)
@@ -1080,7 +1102,7 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', dim.h * 0.25)
         .attr('dy', dim.h * 0.15)
         .style('pointer-events', 'none')
-        .attr('fill', '#CFD8DC')
+        .attr('fill', colorPalette.dark.greyBlue[1])
         .attr('stroke', 'none')
       enterSchedulingBlocks.each(function (d) {
         let dimBlocks = dim.h * 0.16
@@ -1149,22 +1171,22 @@ let mainSchedBlocksController = function (optIn) {
           return dim.h * 0.9
         })
         .attr('fill', function (d, i) {
-          return '#607D8B'
+          return colorPalette.dark.greyBlue[5]
         })
         .attr('stroke', 'none')
         .attr('stroke-width', 1.8)
         .on('mouseover', function (d) {
           // if (com.data.focusOn === d.scheduleId) return
           d3.select(this)
-            .attr('fill', '#90A4AE')
-            .attr('stroke', '#90A4AE')
+            .attr('fill', colorPalette.dark.greyBlue[3])
+            .attr('stroke', colorPalette.dark.greyBlue[3])
             .transition()
             .duration(400)
         })
         .on('mouseout', function (d) {
           // if (com.data.focusOn === d.scheduleId) return
           d3.select(this)
-            .attr('fill', '#607D8B')
+            .attr('fill', colorPalette.dark.greyBlue[5])
             .attr('stroke', 'none')
             .transition()
             .duration(400)
@@ -1177,7 +1199,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('x2', dim.h * 0.5)
         .attr('y1', dim.h * 0.3)
         .attr('y2', dim.h * 0.7)
-        .attr('stroke', '#263238')
+        .attr('stroke', colorPalette.dark.greyBlue[9])
         .attr('stroke-width', 4)
         .style('pointer-events', 'none')
       com.shrinked.child.newButton.append('line')
@@ -1185,7 +1207,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('x2', dim.h * 0.7)
         .attr('y1', dim.h * 0.5)
         .attr('y2', dim.h * 0.5)
-        .attr('stroke', '#263238')
+        .attr('stroke', colorPalette.dark.greyBlue[9])
         .attr('stroke-width', 4)
         .style('pointer-events', 'none')
     }
@@ -1226,199 +1248,302 @@ let mainSchedBlocksController = function (optIn) {
 
     function createSchedulingBlocksInfoPanel (data) {
       let dim = {
-        w: com.content.box.w * 0.35,
+        w: com.content.box.w * 0.42,
         h: com.content.box.h * 0.9,
         margH: com.content.box.h * 0.05
       }
-      let borderSize = 2
 
       com.content.child.schedulingBlocksInfoPanelG = com.content.g.append('g')
-      let heightLine = 16
       let fo = com.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
         .style('width', dim.w + 'px')
         .style('height', dim.h + 'px')
         .style('x', 0 + 'px')
         .style('y', dim.margH + 'px')
-      let div = fo.append('xhtml:div')
-        .attr('class', 'overflowVerticalDiv')
-        .style('border', borderSize + 'px solid #78909C')
-        .style('background-color', '#ECEFF1')
-      div.append('input')
+
+      let titleBorder = 2
+      let titleHeight = 18
+      let titleDiv = fo.append('xhtml:div')
+        .style('border', titleBorder + 'px solid #78909C')
+        .style('width', 'cal(100% - ' + titleBorder + ')')
+        .style('height', titleHeight + 'px')
+        .style('background-color', colorPalette.dark.greyBlue[0])
+      titleDiv.append('input')
+        .style('display', 'block')
         .attr('type', 'text')
         .attr('value', 'SB ' + data.scheduleId)
         .text('SB ' + data.scheduleId)
         .style('text-align', 'center')
-        // .style('position', 'absolute')
-        // .style('border-radius', '2px')
-        .style('width', dim.w - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', borderSize + 'px')
-        .style('margin-left', borderSize + 'px')
-        .style('background-color', '#ECEFF1')
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('background-color', colorPalette.dark.greyBlue[0])
         .style('border-style', 'solid')
         .style('border', '0px solid #ffffff')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
+      let div = fo.append('xhtml:div')
+        .attr('class', 'overflowVerticalDiv')
+        .style('border', 0 + 'px solid #78909C')
+        .style('width', '100%')
+        .style('height', 'calc(100% - ' + (titleHeight) + 'px)')
+        .style('margin-top', titleBorder + 'px')
+        .style('background-color', colorPalette.dark.greyBlue[0])
 
-      div.append('label')
-        .html('Target')
-        .style('display', 'block')
-        // .style('position', 'absolute')
-        .style('text-align', 'center')
-        // .style('border-radius', '2px')
-        .style('width', dim.w - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', heightLine + 'px')
-        .style('margin-left', 1.8 + 'px')
-        .style('background-color', '#ECEFF1')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-      let color = 0
-      div.append('label')
-        .html('Name')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-      div.append('label')
-        .html(': ' + data.blocks[0].targetName)
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', borderSize * 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('text-align', 'left')
-      color += 1
-      div.append('label')
-        .html('Id')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-      div.append('label')
-        .html(': ' + data.blocks[0].targetId)
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', borderSize * 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('text-align', 'left')
-      color += 1
-      div.append('label')
-        .html('Position')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-      div.append('label')
-        .html(': ' + data.blocks[0].targetPos)
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', borderSize * 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('text-align', 'left')
+      function fillModifDiv (div, modifs, title) {
+        let innerDiv = div.append('div')
+          .style('background', '#cccccc')
+        let titleLabel = title.charAt(0).toUpperCase() + title.slice(1)
+        let subTitleDiv = innerDiv.append('div')
+          .attr('class', 'title')
+        subTitleDiv.append('label')
+          .attr('class', 'title')
+          .html(titleLabel)
+          .style('color', '#ffffff')
+          .style('background', '#000000')
+        for (let key in modifs) {
+          let lineDiv = innerDiv.append('div')
+          lineDiv.append('label')
+            .html(key)
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+            .style('width', '40%')
+            .style('padding-left', '5%')
+            .style('vertical-align', 'top')
+          lineDiv.append('label')
+            .html(':')
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+            .style('width', '10%')
+            .style('vertical-align', 'top')
+          lineDiv.append('label')
+            .html(modifs[key])
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+            .style('width', '45%')
+            .style('vertical-align', 'top')
+        }
+      }
 
-      div.append('label')
-        .html('Other')
-        .style('display', 'inline-block')
-        // .style('position', 'absolute')
-        .style('text-align', 'center')
-        // .style('border-radius', '2px')
-        .style('width', dim.w - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', heightLine * 0.5 + 'px')
-        .style('margin-left', 1.8 + 'px')
-        .style('background-color', '#ECEFF1')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-      color = 0
-      div.append('label')
-        .html('other1:')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-      div.append('label')
-        .html('value1')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', borderSize * 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('text-align', 'left')
-      color += 1
-      div.append('label')
-        .html('other2:')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-      div.append('label')
-        .html('value2')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', borderSize * 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('text-align', 'left')
-      color += 1
-      div.append('label')
-        .html('other3:')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-      div.append('label')
-        .html('value3')
-        .style('float', 'left')
-        .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
-        .style('height', heightLine + 'px')
-        .style('margin-top', 0 + 'px')
-        .style('margin-left', borderSize * 0 + 'px')
-        .style('background-color', color % 2 === 1 ? '#CFD8DC' : '#B0BEC5')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('text-align', 'left')
+      // data.blocks[0].targetName
+      // data.blocks[0].targetId
+      // data.blocks[0].targetPos
+
+      let schedulingBlock = {}
+      schedulingBlock.target = {}
+      schedulingBlock.target.id = data.blocks[0].targetId
+      schedulingBlock.target.name = data.blocks[0].targetName
+      schedulingBlock.target.pos = data.blocks[0].targetPos
+
+      schedulingBlock.information = {}
+      schedulingBlock.information.info1 = 'info'
+      schedulingBlock.information.info2 = 'info'
+      schedulingBlock.information.info3 = 'info'
+
+      schedulingBlock.comment = {}
+      schedulingBlock.comment.comment = 'This is a very very very very very very very very very very very very very very very very very very very very very very very very long comment'
+
+      for (let field in schedulingBlock) {
+        let info = schedulingBlock[field]
+        let parentDiv = div.append('div')
+          .attr('id', 'field' + field)
+          .style('width', '100%')
+        fillModifDiv(parentDiv, info, field)
+      }
+
+      // let dim = {
+      //   w: com.content.box.w * 0.35,
+      //   h: com.content.box.h * 0.9,
+      //   margH: com.content.box.h * 0.05
+      // }
+      // let borderSize = 2
+      //
+      // com.content.child.schedulingBlocksInfoPanelG = com.content.g.append('g')
+      // let heightLine = 16
+      // let fo = com.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
+      //   .style('width', dim.w + 'px')
+      //   .style('height', dim.h + 'px')
+      //   .style('x', 0 + 'px')
+      //   .style('y', dim.margH + 'px')
+      // let div = fo.append('xhtml:div')
+      //   .attr('class', 'overflowVerticalDiv')
+      //   .style('border', borderSize + 'px solid #78909C')
+      //   .style('background-color', colorPalette.dark.greyBlue[0])
+      // div.append('input')
+      //   .attr('type', 'text')
+      //   .attr('value', 'SB ' + data.scheduleId)
+      //   .text('SB ' + data.scheduleId)
+      //   .style('text-align', 'center')
+      //   .style('width', dim.w - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', borderSize + 'px')
+      //   .style('margin-left', borderSize + 'px')
+      //   .style('background-color', colorPalette.dark.greyBlue[0])
+      //   .style('border-style', 'solid')
+      //   .style('border', '0px solid #ffffff')
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      //
+      // div.append('label')
+      //   .html('Target')
+      //   .style('display', 'block')
+      //   // .style('position', 'absolute')
+      //   .style('text-align', 'center')
+      //   // .style('border-radius', '2px')
+      //   .style('width', dim.w - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', heightLine + 'px')
+      //   .style('margin-left', 1.8 + 'px')
+      //   .style('background-color', colorPalette.dark.greyBlue[0])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      // let color = 0
+      // div.append('label')
+      //   .html('Name')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      // div.append('label')
+      //   .html(': ' + data.blocks[0].targetName)
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', borderSize * 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      //   .style('text-align', 'left')
+      // color += 1
+      // div.append('label')
+      //   .html('Id')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      // div.append('label')
+      //   .html(': ' + data.blocks[0].targetId)
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', borderSize * 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      //   .style('text-align', 'left')
+      // color += 1
+      // div.append('label')
+      //   .html('Position')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      // div.append('label')
+      //   .html(': ' + data.blocks[0].targetPos)
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', borderSize * 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      //   .style('text-align', 'left')
+      //
+      // div.append('label')
+      //   .html('Other')
+      //   .style('display', 'inline-block')
+      //   // .style('position', 'absolute')
+      //   .style('text-align', 'center')
+      //   // .style('border-radius', '2px')
+      //   .style('width', dim.w - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', heightLine * 0.5 + 'px')
+      //   .style('margin-left', 1.8 + 'px')
+      //   .style('background-color', colorPalette.dark.greyBlue[0])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      // color = 0
+      // div.append('label')
+      //   .html('other1:')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      // div.append('label')
+      //   .html('value1')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', borderSize * 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      //   .style('text-align', 'left')
+      // color += 1
+      // div.append('label')
+      //   .html('other2:')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      // div.append('label')
+      //   .html('value2')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', borderSize * 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      //   .style('text-align', 'left')
+      // color += 1
+      // div.append('label')
+      //   .html('other3:')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 2 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      // div.append('label')
+      //   .html('value3')
+      //   .style('float', 'left')
+      //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
+      //   .style('height', heightLine + 'px')
+      //   .style('margin-top', 0 + 'px')
+      //   .style('margin-left', borderSize * 0 + 'px')
+      //   .style('background-color', color % 2 === 1 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[2])
+      //   .style('color', '#000000')
+      //   .style('font-size', 10 + 'px')
+      //   .style('text-align', 'left')
     }
     function createCentralBlock (data) {
       let position = {
@@ -1431,14 +1556,14 @@ let mainSchedBlocksController = function (optIn) {
         .attr('y1', data.translate.y + com.shrinked.dim.w * 0.5)
         .attr('x2', data.translate.x + com.shrinked.dim.w * 0.5)
         .attr('y2', com.shrinked.box.h)
-        .attr('stroke', '#78909C')
+        .attr('stroke', colorPalette.dark.greyBlue[4])
         .attr('stroke-width', 4)
       com.shrinked.child.centralBlockLine2 = com.shrinked.child.centralBlockG.append('line')
         .attr('x1', data.translate.x + com.shrinked.dim.w * 0.5)
         .attr('y1', com.shrinked.box.h)
         .attr('x2', position.x)
         .attr('y2', com.shrinked.box.h)
-        .attr('stroke', '#78909C')
+        .attr('stroke', colorPalette.dark.greyBlue[4])
         .attr('stroke-width', 4)
 
       com.content.child.centralBlockLine = com.content.child.centralBlockG.append('line')
@@ -1446,14 +1571,14 @@ let mainSchedBlocksController = function (optIn) {
         .attr('y1', 0)
         .attr('x2', position.x)
         .attr('y2', position.y)
-        .attr('stroke', '#78909C')
+        .attr('stroke', colorPalette.dark.greyBlue[4])
         .attr('stroke-width', 4)
 
       com.content.child.centralBlock = com.content.child.centralBlockG.append('circle')
         .attr('cx', position.x)
         .attr('cy', position.y)
         .attr('r', 10)
-        .attr('fill', '#78909C')
+        .attr('fill', colorPalette.dark.greyBlue[4])
         .attr('stroke', 'none')
 
       com.content.child.centralBlockLine1 = com.content.child.centralBlockG.append('line')
@@ -1461,14 +1586,14 @@ let mainSchedBlocksController = function (optIn) {
         .attr('y1', position.y)
         .attr('x2', position.x + com.content.box.w * 0.05)
         .attr('y2', position.y)
-        .attr('stroke', '#78909C')
+        .attr('stroke', colorPalette.dark.greyBlue[4])
         .attr('stroke-width', 4)
       com.content.child.centralBlockLine2 = com.content.child.centralBlockG.append('line')
         .attr('x1', position.x)
         .attr('y1', position.y)
         .attr('x2', position.x - com.content.box.w * 0.05)
         .attr('y2', position.y)
-        .attr('stroke', '#78909C')
+        .attr('stroke', colorPalette.dark.greyBlue[4])
         .attr('stroke-width', 4)
     }
     function createBlocksInScheduleIcons (data) {
@@ -1530,7 +1655,7 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', 10)
         .attr('dy', 0)
         .style('pointer-events', 'none')
-        .attr('fill', '#CFD8DC')
+        .attr('fill', colorPalette.dark.greyBlue[1])
         .attr('stroke', 'none')
       enterSubBlocks.append('text')
         .text(function (d) {
@@ -1543,7 +1668,7 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', 10)
         .attr('dy', 0)
         .style('pointer-events', 'none')
-        .attr('fill', '#CFD8DC')
+        .attr('fill', colorPalette.dark.greyBlue[1])
         .attr('stroke', 'none')
 
       subBlocks.each(function (d, i) {
@@ -1574,7 +1699,7 @@ let mainSchedBlocksController = function (optIn) {
 
     function focusOnSchedulingBlocks (data) {
       unfocusOnSchedulingBlocks()
-      createCentralBlock(data)
+      // createCentralBlock(data)
       createSchedulingBlocksInfoPanel(data)
       createBlocksInScheduleIcons(data)
     }
@@ -1874,7 +1999,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('width', dimBack.w)
         .attr('height', dimBack.h)
         .attr('stroke', 'none')
-        .attr('fill', '#ECEFF1')
+        .attr('fill', colorPalette.dark.greyBlue[0])
         .attr('stroke-width', 6)
         .attr('stroke-opacity', 1)
       g.append('rect')
@@ -1883,9 +2008,9 @@ let mainSchedBlocksController = function (optIn) {
         .attr('y', dimTop.y - 4)
         .attr('width', dimTop.w)
         .attr('height', dimMiddle.h)
-        .attr('stroke', '#37474F')
+        .attr('stroke', colorPalette.dark.greyBlue[8])
         .attr('stroke-dasharray', [dimTop.w * 0.4, dimTop.w * 0.2, dimTop.w * 0.4, dimTop.h + dimTop.w + dimTop.h])
-        .attr('fill', '#ECEFF1')
+        .attr('fill', colorPalette.dark.greyBlue[0])
         .attr('stroke-width', 0.5)
         .attr('stroke-opacity', 1)
       g.append('text')
@@ -1901,156 +2026,6 @@ let mainSchedBlocksController = function (optIn) {
         .style('pointer-events', 'none')
         .attr('fill', '#000000')
         .attr('stroke', 'none')
-
-      // g.append('rect')
-      //   .attr('x', dimTop.x)
-      //   .attr('y', dimTop.y)
-      //   .attr('width', dimTop.w)
-      //   .attr('height', dimTop.h)
-      //   .attr('stroke', 'none')
-      //   .attr('fill', '#ffffbb')
-      //
-      // // let defs = g.append('defs')
-      // // let pattern = defs.append('pattern')
-      // //   .attr('id', 'patternMoved')
-      // //   .attr('x', '0')
-      // //   .attr('y', '0')
-      // //   .attr('width', 4)
-      // //   .attr('height', 4)
-      // //   .attr('fill', '#ffffff')
-      // //   .attr('patternUnits', 'userSpaceOnUse')
-      // // pattern.append('line')
-      // //   .attr('x1', 2)
-      // //   .attr('y1', 0)
-      // //   .attr('x2', 2)
-      // //   .attr('y2', 4)
-      // //   .attr('stroke', '#444444')
-      // //   .attr('stroke-width', 0.1)
-      // // pattern.append('line')
-      // //   .attr('x1', 0)
-      // //   .attr('y1', 2)
-      // //   .attr('x2', 4)
-      // //   .attr('y2', 2)
-      // //   .attr('stroke', '#444444')
-      // //   .attr('stroke-width', 0.1)
-      // // g.append('rect')
-      // //   .attr('x', dimMiddle.x)
-      // //   .attr('y', dimMiddle.y)
-      // //   .attr('width', dimMiddle.w)
-      // //   .attr('height', dimMiddle.h)
-      // //   .attr('stroke', '#000000')
-      // //   .attr('stroke-width', 0.2)
-      // //   .style('fill', '#ffffff')
-      // // g.append('rect')
-      // //   .attr('x', dimMiddle.x)
-      // //   .attr('y', dimMiddle.y)
-      // //   .attr('width', dimMiddle.w)
-      // //   .attr('height', dimMiddle.h)
-      // //   .attr('stroke', '#000000')
-      // //   .attr('stroke-width', 0.2)
-      // //   .style('fill', 'url(#patternMoved)')
-      // g.append('rect')
-      //   .attr('x', dimBottom.x)
-      //   .attr('y', dimBottom.y)
-      //   .attr('width', dimBottom.w)
-      //   .attr('height', dimBottom.h)
-      //   .attr('stroke', 'none')
-      //   .attr('fill', '#ddddbb')
-      //
-      // let sizeBlockModif = 20
-      // let blocksModif = g.selectAll('rect.modification')
-      //   .data(modifications)
-      // blocksModif.enter()
-      //   .append('rect')
-      //   .attr('class', 'modification')
-      //   .attr('x', function (d, i) {
-      //     let space = (dimTop.w / modifications.length)
-      //     d.position = {x: dimTop.x + (space * i) + space * 0.5 - sizeBlockModif * 0.5,
-      //       y: dimTop.y + dimTop.h * 0.5 - sizeBlockModif * 0.5}
-      //     return dimTop.x + (space * i) + space * 0.5 - sizeBlockModif * 0.5
-      //   })
-      //   .attr('y', dimTop.y + dimTop.h * 0.5 - sizeBlockModif * 0.5)
-      //   .attr('width', sizeBlockModif)
-      //   .attr('height', sizeBlockModif)
-      //   .attr('fill', '#ffffff')
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 0.2)
-      //
-      // let data = {nodes: [], links: []}
-      // // for (let i = 0; i < modifications.length; i++) {
-      // //   data.nodes.push({type: 'modification', id: modifications[i].id, data: modifications[i], fx: modifications[i].position.x, fy: modifications[i].position.y})
-      // //   for (let j = 0; j < modifications[i].conflicts.length; j++) {
-      // //     data.links.push({source: modifications[i].id, target: modifications[i].conflicts[j]})
-      // //   }
-      // // }
-      // for (let i = 0; i < conflicts.length; i++) {
-      //   data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
-      //   for (let j = 0; j < conflicts[i].blocks.length; j++) {
-      //     let insert = true
-      //     for (var z = 0; z < data.nodes.length; z++) {
-      //       if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
-      //     }
-      //     if (insert) {
-      //       data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
-      //     }
-      //     data.links.push({source: conflicts[i].id, target: conflicts[i].blocks[j].id})
-      //   }
-      // }
-      //
-      // let smallRadius = 7
-      // let bigRadius = 14
-      // let simulation = d3.forceSimulation()
-      //   .force('link', d3.forceLink().id(function (d) { return d.id }))
-      //   .force('collide', d3.forceCollide(function (d) { return (d.type === 'conflict' ? bigRadius * 1.5 : smallRadius * 1.5) }).iterations(32))
-      //   .force('charge', d3.forceManyBody().strength(function (d) {
-      //     return (d.type === 'conflict' ? -20 : -20)
-      //   }))
-      //   .force('center', d3.forceCenter(dimMiddle.x + (dimMiddle.w / 2), dimMiddle.y + (dimMiddle.h / 2)))
-      //   .force('y', d3.forceY(0))
-      //   .force('x', d3.forceX(0))
-      // simulation.nodes(data.nodes)
-      // simulation.force('link').links(data.links)
-      //
-      // var link = g.append('g')
-      //   .attr('class', 'links')
-      //   .selectAll('line')
-      //   .data(data.links)
-      //   .enter()
-      //   .append('line')
-      //   .attr('stroke', 'black')
-      //
-      // var node = g.append('g')
-      //   .attr('class', 'nodes')
-      //   .selectAll('circle')
-      //   .data(data.nodes)
-      //   .enter().append('circle')
-      //   .attr('id', function (d) { return d.id })
-      //   .attr('r', function (d) {
-      //     return (d.type === 'conflict' ? bigRadius : smallRadius)
-      //   })
-      //   .attr('fill', '#CFD8DC')
-      //   .attr('stroke', '#111111')// '#ECEFF1')
-      //   .attr('stroke-width', 0.5)
-      //
-      // simulation.on('tick', function () {
-      //   link
-      //     .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.source.x)) })
-      //     .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.source.y)) })
-      //     .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.target.x)) })
-      //     .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.target.y)) })
-      //
-      //   node
-      //     .attr('cx', function (d) {
-      //       let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
-      //       d.x = Math.max(dimMiddle.x + radius, Math.min(dimMiddle.x + dimMiddle.w - radius, d.x))
-      //       return d.x
-      //     })
-      //     .attr('cy', function (d) {
-      //       let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
-      //       d.y = Math.max(dimMiddle.y + radius, Math.min(dimMiddle.y + dimMiddle.h - radius, d.y))
-      //       return d.y
-      //     })
-      // })
 
       // let lineGenerator = d3.line()
       //   .x(function (d) { return d.x })
@@ -2098,7 +2073,7 @@ let mainSchedBlocksController = function (optIn) {
       // pathBottomIntern.data([dataPointsBottomIntern])
       //   .attr('class', 'line')
       //   .attr('d', curveGenerator)
-      //   .attr('fill', '#CFD8DC')
+      //   .attr('fill', colorPalette.dark.greyBlue[1])
       // let totBlocks = [].concat(com.data.lastRawData.run).concat(com.data.lastRawData.wait)
       // let blocksConflicts = g.selectAll('rect.conflict')
       //   .data(totBlocks)
@@ -2133,7 +2108,7 @@ let mainSchedBlocksController = function (optIn) {
       //     ]
       //     return lineGenerator(points)
       //   })
-      //   .attr('fill', '#CFD8DC')
+      //   .attr('fill', colorPalette.dark.greyBlue[1])
       // g.append('text')
       //   .text(function (data) {
       //     return 'Sched. Blocks'
@@ -2179,7 +2154,7 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('y', dimModifs.y - 4)
       //   .attr('width', dimModifs.w)
       //   .attr('height', dimModifs.h + 19)
-      //   .attr('stroke', '#37474F')
+      //   .attr('stroke', colorPalette.dark.greyBlue[8])
       //   .attr('fill', 'none')
       //   .attr('stroke-width', 0.5)
       //   .attr('stroke-opacity', 1)
@@ -2201,7 +2176,7 @@ let mainSchedBlocksController = function (optIn) {
       let rootDiv = fo.append('xhtml:div')
         .style('display', 'inline-block')
         .style('border', 0 + 'px solid #78909C')
-        .style('background-color', '#ECEFF1')
+        .style('background-color', colorPalette.dark.greyBlue[0])
         .style('width', '92%')
         .style('height', 'calc(100% - 15px)')
       let quickDiv = fo.append('xhtml:div')
@@ -2212,11 +2187,11 @@ let mainSchedBlocksController = function (optIn) {
       let titleDiv = rootDiv.append('div')
         .style('height', '15px')
         .style('border', 0 + 'px solid #78909C')
-        .style('background-color', '#ECEFF1')
+        .style('background-color', colorPalette.dark.greyBlue[0])
       let div = rootDiv.append('div')
         .attr('class', 'overflowVerticalDiv')
         .style('border', 0 + 'px solid #78909C')
-        .style('background-color', '#ECEFF1')
+        .style('background-color', colorPalette.dark.greyBlue[0])
         // .style('transform', 'scale(1,-1)')
 
       // let space = 2.5
@@ -2230,7 +2205,7 @@ let mainSchedBlocksController = function (optIn) {
       //   let allBlocks = defaultChangeNotification[SB]
       //   let currentSVG = div.append('svg')
       //     .style('display', 'inline-block')
-      //     .style('background', '#ECEFF1')
+      //     .style('background', colorPalette.dark.greyBlue[0])
       //     .style('border', 0 + 'px solid #78909C')
       //     .style('transform', 'scale(1,-1)')
       //     .style('margin-left', space)
@@ -2241,9 +2216,9 @@ let mainSchedBlocksController = function (optIn) {
       //     .attr('y', dimSB.y)
       //     .attr('height', dimSB.h)
       //     .attr('fill', function (d, i) {
-      //       return '#455A64'
+      //       return colorPalette.dark.greyBlue[7]
       //     })
-      //     .attr('stroke', '#78909C')
+      //     .attr('stroke', colorPalette.dark.greyBlue[4])
       //     .attr('stroke-width', 1.8)
       //
       //   for (var BLC in allBlocks) {
@@ -2282,7 +2257,7 @@ let mainSchedBlocksController = function (optIn) {
       //     .style('font-size', dimSB.h * 0.6)
       //     .attr('dy', dimSB.h * 0.35)
       //     .style('pointer-events', 'none')
-      //     .attr('fill', '#CFD8DC')
+      //     .attr('fill', colorPalette.dark.greyBlue[1])
       //     .attr('stroke', 'none')
       // }
 
@@ -2464,7 +2439,7 @@ let mainSchedBlocksController = function (optIn) {
       //         .style('height', sizeProp - 2 + 'px')
       //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
       //         .style('margin-left', (0.4 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
       //         .style('color', '#000000')
       //         .style('font-size', 10 + 'px')
       //       div.append('label')
@@ -2475,7 +2450,7 @@ let mainSchedBlocksController = function (optIn) {
       //         .style('height', sizeProp - 2 + 'px')
       //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
       //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
       //         .style('color', '#000000')
       //         .style('font-size', 10 + 'px')
       //       div.append('label')
@@ -2486,7 +2461,7 @@ let mainSchedBlocksController = function (optIn) {
       //         .style('height', sizeProp - 2 + 'px')
       //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
       //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
       //         .style('color', '#000000')
       //         .style('font-size', 10 + 'px')
       //       div.append('label')
@@ -2497,7 +2472,7 @@ let mainSchedBlocksController = function (optIn) {
       //         .style('height', sizeProp - 2 + 'px')
       //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
       //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
       //         .style('color', '#000000')
       //         .style('font-size', 10 + 'px')
       //       div.append('label')
@@ -2508,7 +2483,7 @@ let mainSchedBlocksController = function (optIn) {
       //         .style('height', sizeProp - 2 + 'px')
       //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
       //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
       //         .style('color', '#000000')
       //         .style('font-size', 10 + 'px')
       //       div.append('label')
@@ -2518,7 +2493,7 @@ let mainSchedBlocksController = function (optIn) {
       //         .style('height', sizeProp - 2 + 'px')
       //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
       //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? '#CFD8DC' : '#CFD8DC'))
+      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
       //         .style('color', '#000000')
       //         .style('font-size', 10 + 'px')
       //       totProp += 1
@@ -2530,7 +2505,7 @@ let mainSchedBlocksController = function (optIn) {
       //       .style('width', (0.2 * dim.w) + 'px')
       //       .style('height', (totProp * sizeProp) - 2 + 'px')
       //       .style('margin-left', (0.2 * dim.w) + dim.x + 'px')
-      //       .style('background-color', (evenBLC % 2 ? '#B0BEC5' : '#B0BEC5'))
+      //       .style('background-color', (evenBLC % 2 ? colorPalette.dark.greyBlue[2] : colorPalette.dark.greyBlue[2]))
       //       .style('color', '#000000')
       //       .style('font-size', 12 + 'px')
       //     evenBLC += 1
@@ -2542,7 +2517,7 @@ let mainSchedBlocksController = function (optIn) {
       //     .style('width', (0.2 * dim.w) + 'px')
       //     .style('height', (totLine * sizeProp) + (6 * nbBLC) - 2 + 'px')
       //     .style('margin-left', (0 * dim.w) + dim.x + 'px')
-      //     .style('background-color', (evenSB % 2 ? '#90A4AE' : '#90A4AE'))
+      //     .style('background-color', (evenSB % 2 ? colorPalette.dark.greyBlue[3] : colorPalette.dark.greyBlue[3]))
       //     .style('color', '#000000')
       //     .style('font-size', 14 + 'px')
       //   evenSB += 1
@@ -2554,9 +2529,9 @@ let mainSchedBlocksController = function (optIn) {
         .attr('y', dimMiddle.y - 16)
         .attr('width', dimMiddle.w)
         .attr('height', dimMiddle.h)
-        .attr('stroke', '#37474F')
+        .attr('stroke', colorPalette.dark.greyBlue[8])
         .attr('stroke-dasharray', [dimMiddle.w * 0.4, dimMiddle.w * 0.2, dimMiddle.w * 0.4, dimMiddle.h + dimMiddle.w + dimMiddle.h])
-        .attr('fill', '#ECEFF1')
+        .attr('fill', colorPalette.dark.greyBlue[0])
         .attr('stroke-width', 0.5)
         .attr('stroke-opacity', 1)
       g.append('text')
@@ -2577,7 +2552,7 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('cy', dimMiddle.y + dimMiddle.h * 0.5)
       //   .attr('r', dimMiddle.h * 0.25)
       //   .attr('stroke-width', 8)
-      //   .attr('stroke', '#CFD8DC')
+      //   .attr('stroke', colorPalette.dark.greyBlue[1])
       //   .attr('fill', 'none')
       // g.append('line')
       //   .attr('x1', dimMiddle.x + dimMiddle.w * 0.5 + dimMiddle.h * 0.3)
@@ -2586,7 +2561,7 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('y2', dimMiddle.y + dimMiddle.h * 0.5 + dimMiddle.h * 0.3)
       //   .attr('r', dimMiddle.h * 0.25)
       //   .attr('stroke-width', 8)
-      //   .attr('stroke', '#CFD8DC')
+      //   .attr('stroke', colorPalette.dark.greyBlue[1])
 
       let conflicts = [
         {id: 'c1', type: 'shareTels', blocks: [{id: 'b1(1)'}, {id: 'b2(2)'}, {id: 'b7(0)'}]},
@@ -2596,6 +2571,7 @@ let mainSchedBlocksController = function (optIn) {
         {id: 'c5', type: 'shareTels', blocks: [{id: 'b5(1)'}, {id: 'b2(1)'}, {id: 'b8(3)'}, {id: 'b9(3)'}]},
         {id: 'c6', type: 'shareTels', blocks: [{id: 'b0(4)'}, {id: 'b3(3)'}, {id: 'b7(4)'}, {id: 'b11(1)'}]}
       ]
+      let conflictBox = {x: dimMiddle.x + dimMiddle.w * 0.3, y: dimMiddle.y, w: dimMiddle.w * 0.7, h: dimMiddle.h}
 
       let data = {nodes: [], links: []}
       // for (let i = 0; i < modifications.length; i++) {
@@ -2620,7 +2596,7 @@ let mainSchedBlocksController = function (optIn) {
 
       for (let i = 0; i < conflicts.length; i++) {
         data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
-        for (let j = 0; j < (30 + Math.floor(Math.random() * Math.floor(60))); j++) {
+        for (let j = 0; j < (1 + Math.floor(Math.random() * 600)); j++) {
           data.nodes.push({type: 'tel', id: 'tel' + i + j, data: {}})
           data.links.push({type: 'short', source: conflicts[i].id, target: 'tel' + i + j})
         }
@@ -2651,7 +2627,7 @@ let mainSchedBlocksController = function (optIn) {
           if (d.type === 'block') return -60
           if (d.type === 'tel') return 0
         }))
-        .force('center', d3.forceCenter((dimMiddle.w / 2), (dimMiddle.h / 2)))
+        .force('center', d3.forceCenter((conflictBox.w / 2), (conflictBox.h / 2)))
         .force('y', d3.forceY(0))
         .force('x', d3.forceX(0))
       simulation.nodes(data.nodes)
@@ -2661,7 +2637,82 @@ let mainSchedBlocksController = function (optIn) {
       })
 
       var middleGroup = g.append('g')
-        .attr('transform', 'translate(' + dimMiddle.x + ',' + dimMiddle.y + ')')
+        .attr('transform', 'translate(' + conflictBox.x + ',' + conflictBox.y + ')')
+
+      middleGroup.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('rx', 0)
+        .attr('ry', 0)
+        .attr('width', conflictBox.w)
+        .attr('height', conflictBox.h)
+        .attr('stroke', 'none')
+        .attr('fill', colorPalette.dark.greyBlue[5])
+        .attr('fill-opacity', 0.04)
+        .attr('stroke', colorPalette.dark.greyBlue[8])
+        .attr('stroke-width', 4)
+        .attr('stroke-opacity', 1)
+        .attr('stroke-dasharray', [
+          conflictBox.w * 0.3,
+          conflictBox.w * 0.4,
+          conflictBox.w * 0.3 + conflictBox.h * 0.3,
+          conflictBox.h * 0.4,
+          conflictBox.w * 0.3 + conflictBox.h * 0.3,
+          conflictBox.w * 0.4,
+          conflictBox.w * 0.3 + conflictBox.h * 0.3,
+          conflictBox.h * 0.4,
+          conflictBox.h * 0.3
+        ])
+        // .attr('stroke-dashoffset', conflictBox.w * 0.3)
+
+      let defs = g.append('defs')
+      let pattern = defs.append('pattern')
+        .attr('id', 'patternMoved')
+        .attr('x', '0')
+        .attr('y', '0')
+        .attr('width', conflictBox.w * 0.1)
+        .attr('height', conflictBox.h * 0.1)
+        .attr('fill', '#ffffff')
+        .attr('patternUnits', 'userSpaceOnUse')
+      pattern.append('line')
+        .attr('x1', 0)
+        .attr('y1', 0)
+        .attr('x2', conflictBox.w * 0.1)
+        .attr('y2', conflictBox.h * 0.1)
+        .attr('stroke', '#444444')
+        .attr('stroke-width', 0.1)
+      pattern.append('line')
+        .attr('x1', conflictBox.w * 0.1)
+        .attr('y1', 0)
+        .attr('x2', 0)
+        .attr('y2', conflictBox.h * 0.1)
+        .attr('stroke', '#444444')
+        .attr('stroke-width', 0.1)
+      middleGroup.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('rx', 0)
+        .attr('ry', 0)
+        .attr('width', conflictBox.w)
+        .attr('height', conflictBox.h)
+        .attr('stroke', colorPalette.dark.greyBlue[8])
+        .attr('stroke-opacity', 1)
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', [
+          0,
+          conflictBox.w * 0.3,
+          conflictBox.w * 0.4,
+          conflictBox.w * 0.3 + conflictBox.h * 0.3,
+          conflictBox.h * 0.4,
+          conflictBox.w * 0.3 + conflictBox.h * 0.3,
+          conflictBox.w * 0.4,
+          conflictBox.w * 0.3 + conflictBox.h * 0.3,
+          conflictBox.h * 0.4,
+          conflictBox.h * 0.3
+        ])
+        .style('fill', 'none')
+        // .style('fill', 'url(#patternMoved)')
+
       var link = middleGroup.append('g')
         .attr('class', 'links')
         .selectAll('line')
@@ -2682,26 +2733,26 @@ let mainSchedBlocksController = function (optIn) {
           if (d.type === 'block') return smallRadius * 1.5
           return microRadius
         })
-        .attr('fill', '#CFD8DC')
-        .attr('stroke', '#000000')// '#ECEFF1')
+        .attr('fill', colorPalette.dark.greyBlue[1])
+        .attr('stroke', '#000000')// colorPalette.dark.greyBlue[0])
         .attr('stroke-width', 0.2)
 
       simulation.on('tick', function () {
         link
-          .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(dimMiddle.w - radius, d.source.x)) })
-          .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(dimMiddle.h - radius, d.source.y)) })
-          .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(dimMiddle.w - radius, d.target.x)) })
-          .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(dimMiddle.h - radius, d.target.y)) })
+          .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.w - radius, d.source.x)) })
+          .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.h - radius, d.source.y)) })
+          .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.w - radius, d.target.x)) })
+          .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.h - radius, d.target.y)) })
 
         node
           .attr('cx', function (d) {
             let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
-            d.x = Math.max(radius, Math.min(dimMiddle.w - radius, d.x))
+            d.x = Math.max(radius, Math.min(conflictBox.w - radius, d.x))
             return d.x
           })
           .attr('cy', function (d) {
             let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
-            d.y = Math.max(radius, Math.min(dimMiddle.h - radius, d.y))
+            d.y = Math.max(radius, Math.min(conflictBox.h - radius, d.y))
             return d.y
           })
       })
@@ -2715,7 +2766,7 @@ let mainSchedBlocksController = function (optIn) {
       // div.append('textarea')
       //   .attr('class', 'comment')
       //   // .text('This is a test comment')
-      //   .style('background-color', '#37474F')
+      //   .style('background-color', colorPalette.dark.greyBlue[8])
       //   .style('border', 'none')
       //   .style('width', '98.5%')
       //   .style('height', Number(g.attr('height')) * 0.96 + 'px')
@@ -2726,14 +2777,14 @@ let mainSchedBlocksController = function (optIn) {
     }
     function unselectTab (g) {
       g.select('rect.back')
-        .attr('fill', '#546E7A')
-        .attr('stroke', '#546E7A')
+        .attr('fill', colorPalette.dark.greyBlue[6])
+        .attr('stroke', colorPalette.dark.greyBlue[6])
         .attr('height', Number(g.attr('height')) - 1)
     }
     function selectTab (g) {
       g.select('rect.back')
-        .attr('fill', '#ECEFF1')
-        .attr('stroke', '#ECEFF1')
+        .attr('fill', colorPalette.dark.greyBlue[0])
+        .attr('stroke', colorPalette.dark.greyBlue[0])
         .attr('height', Number(g.attr('height')) + 16)
     }
     function drawDefaultTab (panel) {
@@ -2747,10 +2798,10 @@ let mainSchedBlocksController = function (optIn) {
           // .attr('ry', 4)
           .attr('width', Number(g.attr('width')) - 6)
           .attr('height', Number(g.attr('height')) - 1)
-          .attr('fill', '#546E7A')
+          .attr('fill', colorPalette.dark.greyBlue[6])
           .attr('stroke-width', 3.5)
           .attr('stroke-opacity', 1)
-          .attr('stroke', '#546E7A')
+          .attr('stroke', colorPalette.dark.greyBlue[6])
           .on('click', function () {
             console.log(panel.get('id'))
           })
@@ -2766,7 +2817,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-size', Number(g.attr('height')) * 0.6)
           .attr('dy', Number(g.attr('height')) * 0.3)
           .style('pointer-events', 'none')
-          .attr('fill', '#37474F')
+          .attr('fill', colorPalette.dark.greyBlue[8])
           .attr('stroke', 'none')
       }
     }
@@ -2789,8 +2840,8 @@ let mainSchedBlocksController = function (optIn) {
 
   let svgBlocksQueue = new SvgBlocksQueue()
   let svgBlocksQueueCreator = new SvgBlocksQueueCreator()
-  let svgCommitCopyStrip = new SvgCommitCopyStrip()
 
+  let svgWarningArea = new SvgWarningArea()
   let svgSchedulingBlocksOverview = new SvgSchedulingBlocksOverview()
   let svgMiddleInfo = new SvgMiddleInfo()
 }
