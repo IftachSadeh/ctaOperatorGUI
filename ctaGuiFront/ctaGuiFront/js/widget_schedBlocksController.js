@@ -185,7 +185,7 @@ let mainSchedBlocksController = function (optIn) {
 
     svg.svg = d3
       .select(svgDiv)
-      .style('background', '#383B42')
+      // .style('background', '#383B42')
       .append('svg')
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
@@ -196,7 +196,6 @@ let mainSchedBlocksController = function (optIn) {
       .style('left', '0px')
       // .attr('viewBox', '0 0 '+lenD.w[0]+' '+lenD.h[0] * whRatio)
       // .classed('svgInGridStack_inner', true)
-      .style('background', '#383B42') // .style('background', 'red')// .style('border','1px solid red')
       // .call(com.svgZoom)
       .on('dblclick.zoom', null)
 
@@ -209,20 +208,10 @@ let mainSchedBlocksController = function (optIn) {
     com.svgZoomNode = svg.svg.nodes()[0]
 
     svg.g = svg.svg.append('g')
+    createBackground()
 
     // add one rect as background
     // ---------------------------------------------------------------------------------------------------
-    svg.g
-      .append('g')
-      .selectAll('rect')
-      .data([0])
-      .enter()
-      .append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', lenD.w[0])
-      .attr('height', lenD.h[0])
-      .attr('fill', colorPalette.dark.greyBlue[8])
     // svg.g.append('rect')
     //   .attr('x', 0)
     //   .attr('y', 0)
@@ -240,15 +229,15 @@ let mainSchedBlocksController = function (optIn) {
     svgWarningArea.initData({
       tag: 'warningArea',
       g: svg.g.append('g'),
-      box: {x: (lenD.w[0] * 0.475), y: lenD.h[0] * 0.022, w: lenD.w[0] * 0.145, h: lenD.h[0] * 0.25},
+      box: {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0, w: lenD.w[0] * 0.145, h: lenD.h[0] * 0.25},
       pull: {
         g: undefined,
-        box: {x: 0, y: 0, w: 0.5, h: 1},
+        box: {x: 0, y: 0, w: 1, h: 0.45},
         child: {}
       },
       push: {
         g: undefined,
-        box: {x: 0.5, y: 0, w: 0.5, h: 1},
+        box: {x: 0, y: 0.64, w: 1, h: 0.45},
         child: {}
       },
       debug: {
@@ -309,6 +298,92 @@ let mainSchedBlocksController = function (optIn) {
     })
   }
   this.initData = initData
+
+  function createBackground () {
+    let lineGenerator = d3.line()
+      .x(function (d) { return d.x })
+      .y(function (d) { return d.y })
+
+    svg.svg
+      .style('background', '#37474F')
+    svg.background = svg.g
+
+    let dataPoints1 = [
+      {x: lenD.w[0] * 0, y: lenD.h[0] * 0.25},
+      {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0.25},
+      {x: lenD.w[0] * 0.525, y: lenD.h[0] * 0.155},
+      {x: lenD.w[0] * 0.5525, y: lenD.h[0] * 0.155},
+      {x: lenD.w[0] * 0.5525, y: lenD.h[0] * 0.105},
+      {x: lenD.w[0] * 0.58, y: lenD.h[0] * 0.105},
+      {x: lenD.w[0] * 0.625, y: lenD.h[0] * 0}
+    ]
+    svg.background.append('path')
+      .data([dataPoints1])
+      .attr('class', 'line')
+      .attr('d', lineGenerator)
+      .attr('fill', 'none')
+      .attr('stroke', '#ffffff')
+      .attr('stroke-width', 0.5)
+      .attr('stroke-dasharray', [6, 2])
+    // let dataPoints1 = [
+    //   {x: lenD.w[0] * 0, y: lenD.h[0] * 0},
+    //   {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0},
+    //   {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0.25},
+    //   {x: lenD.w[0] * 0, y: lenD.h[0] * 0.25}
+    // ]
+    // svg.background.append('path')
+    //   .data([dataPoints1])
+    //   .attr('class', 'line')
+    //   .attr('d', lineGenerator)
+    //   .attr('fill', '#37474F')
+    //   .attr('stroke', '#37474F')
+    //   .attr('stroke-width', 1)
+    // let dataPoints2 = [
+    //   {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0},
+    //   {x: lenD.w[0] * 0.625, y: lenD.h[0] * 0},
+    //   {x: lenD.w[0] * 0.625, y: lenD.h[0] * 0.1},
+    //   {x: lenD.w[0] * 0.555, y: lenD.h[0] * 0.1},
+    //   {x: lenD.w[0] * 0.555, y: lenD.h[0] * 0.15},
+    //   {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0.15}
+    // ]
+    // svg.background.append('path')
+    //   .data([dataPoints2])
+    //   .attr('class', 'line')
+    //   .attr('d', lineGenerator)
+    //   .attr('fill', '#37474F')
+    //   .attr('stroke', '#37474F')
+    //   .attr('stroke-width', 1)
+    // let dataPoints3 = [
+    //   {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0.15},
+    //   {x: lenD.w[0] * 0.555, y: lenD.h[0] * 0.15},
+    //   {x: lenD.w[0] * 0.555, y: lenD.h[0] * 0.1},
+    //   {x: lenD.w[0] * 0.625, y: lenD.h[0] * 0.1},
+    //   {x: lenD.w[0] * 0.625, y: lenD.h[0] * 0.25},
+    //   {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0.25}
+    // ]
+    // svg.background.append('path')
+    //   .data([dataPoints3])
+    //   .attr('class', 'line')
+    //   .attr('d', lineGenerator)
+    //   .attr('fill', '#37474F')
+    //   .attr('stroke', '#37474F')
+    //   .attr('stroke-width', 1)
+    // let dataPoints4 = [
+    //   {x: lenD.w[0] * 0, y: lenD.h[0] * 0.25},
+    //   {x: lenD.w[0] * 0.625, y: lenD.h[0] * 0.25},
+    //   {x: lenD.w[0] * 0.625, y: lenD.h[0] * 0},
+    //   {x: lenD.w[0] * 1, y: lenD.h[0] * 0},
+    //   {x: lenD.w[0] * 1, y: lenD.h[0] * 1},
+    //   {x: lenD.w[0] * 0, y: lenD.h[0] * 1}
+    // ]
+    // svg.background.append('path')
+    //   .data([dataPoints4])
+    //   .attr('class', 'line')
+    //   .attr('d', lineGenerator)
+    //   .attr('fill', '#37474F')
+    //   .attr('stroke', '#37474F')
+    //   .attr('stroke-width', 1)
+  }
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
@@ -660,38 +735,109 @@ let mainSchedBlocksController = function (optIn) {
     this.update = update
   }
   let SvgWarningArea = function () {
+
     function createWarning (pullOrPush) {
       let lineGenerator = d3.line()
         .x(function (d) { return d.x })
         .y(function (d) { return d.y })
-      let dataPoints = [
-        {x: com[pullOrPush].box.w * 0.5, y: com[pullOrPush].box.h * 0.1},
-        {x: com[pullOrPush].box.w * 0.75, y: com[pullOrPush].box.h * 0.3},
-        {x: com[pullOrPush].box.w * 0.25, y: com[pullOrPush].box.h * 0.3},
-        {x: com[pullOrPush].box.w * 0.5, y: com[pullOrPush].box.h * 0.1}
+      let dataPointsPull = [
+        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.1},
+        {x: com[pullOrPush].box.w * 0.9, y: com[pullOrPush].box.h * 0.1},
+        {x: com[pullOrPush].box.w * 0.9, y: com[pullOrPush].box.h * 0.2},
+        {x: com[pullOrPush].box.w * 0.7, y: com[pullOrPush].box.h * 0.8},
+        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.8},
+        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.1}
       ]
+      let dataPointsPush = [
+        {x: com[pullOrPush].box.w * 0.28, y: com[pullOrPush].box.h * 0.1},
+        {x: com[pullOrPush].box.w * 0.9, y: com[pullOrPush].box.h * 0.1},
+        {x: com[pullOrPush].box.w * 0.9, y: com[pullOrPush].box.h * 0.8},
+        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.8},
+        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.6},
+        {x: com[pullOrPush].box.w * 0.28, y: com[pullOrPush].box.h * 0.1}
+      ]
+
+      function loop (bool, pullOrPush) {
+        com[pullOrPush].child.warningExclamation
+          .transition()
+          .delay(4000)
+          .duration(100)
+          .ease(d3.easeLinear)
+          .attr('font-size', function () {
+            return com[pullOrPush].box.h * 0.25
+          })
+          .attr('dy', function () {
+            return com[pullOrPush].box.h * 0.02
+          })
+          .transition()
+          .duration(100)
+          .ease(d3.easeLinear)
+          .attr('font-size', function () {
+            return com[pullOrPush].box.h * 0.45
+          })
+          .attr('dy', function () {
+            return com[pullOrPush].box.h * 0.1
+          })
+          .on('end', function () {
+            return loop(!bool, pullOrPush)
+          })
+        // com[pullOrPush].child.warningExclamationBack
+        //   .transition()
+        //   .delay(4000)
+        //   .duration(100)
+        //   .ease(d3.easeLinear)
+        //   .attr('fill', function () {
+        //     return '#FFEB3B'
+        //   })
+        //   .transition()
+        //   .duration(100)
+        //   .ease(d3.easeLinear)
+        //   .attr('fill', function () {
+        //     return '#FFEB3B'
+        //   })
+      }
       com[pullOrPush].child.warningTriangle = com[pullOrPush].g.append('path')
-        .data([dataPoints])
-        .attr('class', 'line')
+        .data(function () {
+          if (pullOrPush === 'pull') return [dataPointsPull]
+          else return [dataPointsPush]
+        })
         .attr('d', lineGenerator)
-        .attr('fill', '#FFEA00')
+        .attr('fill', '#ECEFF1')
+        .attr('stroke', '#ffffff')
+        .attr('stroke-width', 6)
+        .attr('stroke-opacity', 0.4)
+        .attr('fill-opacity', 1)
+
+      com[pullOrPush].child.warningExclamationBack = com[pullOrPush].g.append('rect')
+        .attr('width', com[pullOrPush].box.w * 0.13)
+        .attr('height', com[pullOrPush].box.h * 0.6)
+        .attr('x', function () {
+          if (pullOrPush === 'pull') return com[pullOrPush].box.w * 0.12
+          else return com[pullOrPush].box.w * (1 - 0.25)
+        })
+        .attr('y', com[pullOrPush].box.h * 0.15)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('fill', '#FFEB3B')
+        .attr('stroke-width', 0.5)
         .attr('stroke', '#000000')
-        .attr('stroke-width', 3)
-        .attr('stroke-linejoin', 'round')
-        .attr('fill-opacity', 0.75)
-        .attr('stroke-dasharray', [6, 2])
 
       com[pullOrPush].child.warningExclamation = com[pullOrPush].g.append('text')
         .text(function (d) {
           return '! '
         })
-        .attr('x', com[pullOrPush].box.w * 0.5)
-        .attr('y', com[pullOrPush].box.h * 0.28)
+        .attr('x', function () {
+          if (pullOrPush === 'pull') return com[pullOrPush].box.w * 0.18
+          else return com[pullOrPush].box.w * (1 - 0.185)
+        })
+        .attr('y', com[pullOrPush].box.h * 0.5)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
-        .style('font-size', com[pullOrPush].box.h * 0.16)
-        .attr('dy', com[pullOrPush].box.h * 0)
+        .attr('font-size', com[pullOrPush].box.h * 0.45)
+        .attr('dy', com[pullOrPush].box.h * 0.1)
         .style('pointer-events', 'none')
+        .style('fill', '#000000')
+      loop(true, pullOrPush)
     }
     function createPullButton () {
       // let lineGenerator = d3.line()
@@ -715,116 +861,74 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('stroke-width', 3)
 
       createWarning('pull')
-      com.pull.child.buttonBack = com.pull.g.append('rect')
+
+      com.pull.child.buttonBack = com.g.append('rect')
         .attr('width', 18)
         .attr('height', 18)
-        .attr('x', com.pull.box.w * 0.5 - 9)
-        .attr('y', com.pull.box.h * 0.45 - 9)
+        .attr('x', com.box.w * 0.4 - 9)
+        .attr('y', com.box.h * 0.52 - 9)
         .attr('fill', colorPalette.dark.greyBlue[1])
-      com.pull.child.buttonIcon = com.pull.g.append('svg:image')
+        .attr('stroke', '#000000')
+      com.pull.child.buttonIcon = com.g.append('svg:image')
         .attr('class', 'icon')
-        .attr('xlink:href', '/static/commit.svg')
+        .attr('xlink:href', '/static/arrow-up.svg')
         .attr('width', 25)
         .attr('height', 25)
-        .attr('x', com.pull.box.w * 0.5 - 12.5)
-        .attr('y', com.pull.box.h * 0.45 - 12.5)
+        .attr('x', com.box.w * 0.4 - 12.5)
+        .attr('y', com.box.h * 0.52 - 12.5)
 
-      com.pull.child.infoText1 = com.pull.g.append('text')
+      com.pull.child.infoText = com.g.append('text')
         .text(function (d) {
-          return 'Copy the'
+          return 'PULL'
         })
-        .attr('x', com.pull.box.w * 0.5)
-        .attr('y', com.pull.box.h * 0.62)
-        .attr('text-anchor', 'middle')
-        .style('font-size', com.pull.box.h * 0.07)
+        .attr('x', com.box.w * 0.4 - 15)
+        .attr('y', com.box.h * 0.55)
+        .attr('text-anchor', 'end')
+        .style('font-weight', 'bold')
+        .style('font-size', com.box.h * 0.07)
         .style('pointer-events', 'none')
         .style('fill', colorPalette.dark.greyBlue[0])
-      com.pull.child.infoText2 = com.pull.g.append('text')
-        .text(function (d) {
-          return 'current'
-        })
-        .attr('x', com.pull.box.w * 0.5)
-        .attr('y', com.pull.box.h * 0.69)
-        .attr('text-anchor', 'middle')
-        .style('font-size', com.pull.box.h * 0.07)
-        .style('pointer-events', 'none')
-        .style('fill', colorPalette.dark.greyBlue[0])
-      com.pull.child.infoText3 = com.pull.g.append('text')
-        .text(function (d) {
-          return 'schedule'
-        })
-        .attr('x', com.pull.box.w * 0.5)
-        .attr('y', com.pull.box.h * 0.76)
-        .attr('text-anchor', 'middle')
-        .style('font-size', com.pull.box.h * 0.07)
-        .style('pointer-events', 'none')
-        .style('fill', colorPalette.dark.greyBlue[0])
+
+      com.pull.g.attr('opacity', 0)
+        .transition()
+        .duration(1000)
+        .ease(d3.easeLinear)
+        .attr('opacity', 1)
     }
     function createPushButton () {
-      // let lineGenerator = d3.line()
-      //   .x(function (d) { return d.x })
-      //   .y(function (d) { return d.y })
-      // let dataPoints = [
-      //   {x: com.box.w * 0, y: com.box.h * 0.14},
-      //   {x: com.box.w * 0.2, y: com.box.h * 0},
-      //   {x: com.box.w * 1, y: com.box.h * 0},
-      //   {x: com.box.w * 1, y: com.box.h * 1},
-      //   {x: com.box.w * 0.6, y: com.box.h * 1},
-      //   {x: com.box.w * 0.6, y: com.box.h * 0.28},
-      //   {x: com.box.w * 0.2, y: com.box.h * 0.28}
-      // ]
-      // com.pull.child.warningTriangle = com.pull.g.append('path')
-      //   .data([dataPoints])
-      //   .attr('class', 'line')
-      //   .attr('d', lineGenerator)
-      //   .attr('fill', colorPalette.dark.greyBlue[7])
-      //   .attr('stroke-width', 3)
-
       createWarning('push')
-      com.push.child.buttonBack = com.push.g.append('rect')
+      com.push.child.buttonBack = com.g.append('rect')
         .attr('width', 18)
         .attr('height', 18)
-        .attr('x', com.push.box.w * 0.5 - 9)
-        .attr('y', com.push.box.h * 0.45 - 9)
+        .attr('x', com.box.w * 0.6 - 9)
+        .attr('y', com.box.h * 0.52 - 9)
         .attr('fill', colorPalette.dark.greyBlue[1])
-      com.push.child.buttonIcon = com.push.g.append('svg:image')
+        .attr('stroke', '#000000')
+      com.push.child.buttonIcon = com.g.append('svg:image')
         .attr('class', 'icon')
-        .attr('xlink:href', '/static/commit.svg')
+        .attr('xlink:href', '/static/arrow-up.svg')
         .attr('width', 25)
         .attr('height', 25)
-        .attr('x', com.push.box.w * 0.5 - 12.5)
-        .attr('y', com.push.box.h * 0.45 - 12.5)
+        .attr('x', com.box.w * 0.6 - 12.5)
+        .attr('y', com.box.h * 0.52 - 12.5)
 
-      com.push.child.infoText1 = com.push.g.append('text')
+      com.push.child.infoText = com.g.append('text')
         .text(function (d) {
-          return 'Override'
+          return 'PUSH'
         })
-        .attr('x', com.push.box.w * 0.5)
-        .attr('y', com.push.box.h * 0.62)
-        .attr('text-anchor', 'middle')
-        .style('font-size', com.push.box.h * 0.07)
+        .attr('x', com.box.w * 0.6 + 15)
+        .attr('y', com.box.h * 0.55)
+        .attr('text-anchor', 'start')
+        .style('font-weight', 'bold')
+        .style('font-size', com.box.h * 0.07)
         .style('pointer-events', 'none')
         .style('fill', colorPalette.dark.greyBlue[0])
-      com.push.child.infoText2 = com.push.g.append('text')
-        .text(function (d) {
-          return 'with the'
-        })
-        .attr('x', com.push.box.w * 0.5)
-        .attr('y', com.push.box.h * 0.69)
-        .attr('text-anchor', 'middle')
-        .style('font-size', com.push.box.h * 0.07)
-        .style('pointer-events', 'none')
-        .style('fill', colorPalette.dark.greyBlue[0])
-      com.push.child.infoText3 = com.push.g.append('text')
-        .text(function (d) {
-          return 'new schedule'
-        })
-        .attr('x', com.push.box.w * 0.5)
-        .attr('y', com.push.box.h * 0.76)
-        .attr('text-anchor', 'middle')
-        .style('font-size', com.push.box.h * 0.07)
-        .style('pointer-events', 'none')
-        .style('fill', colorPalette.dark.greyBlue[0])
+
+      com.push.g.attr('opacity', 0)
+        .transition()
+        .duration(1000)
+        .ease(d3.easeLinear)
+        .attr('opacity', 1)
     }
 
     function initPull () {
@@ -1262,11 +1366,16 @@ let mainSchedBlocksController = function (optIn) {
 
       let titleBorder = 2
       let titleHeight = 18
-      let titleDiv = fo.append('xhtml:div')
-        .style('border', titleBorder + 'px solid #78909C')
+      let rootDiv = fo.append('xhtml:div')
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('border', '3px solid #ECEFF1')
+        .style('border-opacity', 0.4)
+        .style('background-color', '#ECEFF1')
+      let titleDiv = rootDiv.append('xhtml:div')
         .style('width', 'cal(100% - ' + titleBorder + ')')
         .style('height', titleHeight + 'px')
-        .style('background-color', colorPalette.dark.greyBlue[0])
+        .style('background-color', '#ECEFF1')
       titleDiv.append('input')
         .style('display', 'block')
         .attr('type', 'text')
@@ -1275,27 +1384,32 @@ let mainSchedBlocksController = function (optIn) {
         .style('text-align', 'center')
         .style('width', '100%')
         .style('height', '100%')
-        .style('background-color', colorPalette.dark.greyBlue[0])
+        .style('background-color', '#ECEFF1')
         .style('border-style', 'solid')
         .style('border', '0px solid #ffffff')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
-      let div = fo.append('xhtml:div')
+        .style('font-weight', 'bold')
+      let div = rootDiv.append('xhtml:div')
         .attr('class', 'overflowVerticalDiv')
         .style('border', 0 + 'px solid #78909C')
-        .style('width', '100%')
-        .style('height', 'calc(100% - ' + (titleHeight) + 'px)')
+        .style('width', '85%')
+        .style('margin-left', '2%')
+        .style('height', 'calc(98% - ' + (titleHeight + titleBorder) + 'px)')
         .style('margin-top', titleBorder + 'px')
         .style('background-color', colorPalette.dark.greyBlue[0])
+        .style('border-left', '1px solid #000000')
+        .style('border-top', '1px solid #000000')
+        .style('border-bottom', '1px solid #000000')
 
       function fillModifDiv (div, modifs, title) {
         let innerDiv = div.append('div')
-          .style('background', '#cccccc')
+          .style('background', '#EEEEEE')
         let titleLabel = title.charAt(0).toUpperCase() + title.slice(1)
         let subTitleDiv = innerDiv.append('div')
           .attr('class', 'title')
         subTitleDiv.append('label')
-          .attr('class', 'title')
+          // .attr('class', 'title')
           .html(titleLabel)
           .style('color', '#ffffff')
           .style('background', '#000000')
@@ -1544,57 +1658,6 @@ let mainSchedBlocksController = function (optIn) {
       //   .style('color', '#000000')
       //   .style('font-size', 10 + 'px')
       //   .style('text-align', 'left')
-    }
-    function createCentralBlock (data) {
-      let position = {
-        x: com.content.box.w * 0.4,
-        y: com.content.box.h * 0.5
-      }
-
-      com.shrinked.child.centralBlockLine1 = com.shrinked.child.centralBlockG.append('line')
-        .attr('x1', data.translate.x + com.shrinked.dim.w * 0.5)
-        .attr('y1', data.translate.y + com.shrinked.dim.w * 0.5)
-        .attr('x2', data.translate.x + com.shrinked.dim.w * 0.5)
-        .attr('y2', com.shrinked.box.h)
-        .attr('stroke', colorPalette.dark.greyBlue[4])
-        .attr('stroke-width', 4)
-      com.shrinked.child.centralBlockLine2 = com.shrinked.child.centralBlockG.append('line')
-        .attr('x1', data.translate.x + com.shrinked.dim.w * 0.5)
-        .attr('y1', com.shrinked.box.h)
-        .attr('x2', position.x)
-        .attr('y2', com.shrinked.box.h)
-        .attr('stroke', colorPalette.dark.greyBlue[4])
-        .attr('stroke-width', 4)
-
-      com.content.child.centralBlockLine = com.content.child.centralBlockG.append('line')
-        .attr('x1', position.x)
-        .attr('y1', 0)
-        .attr('x2', position.x)
-        .attr('y2', position.y)
-        .attr('stroke', colorPalette.dark.greyBlue[4])
-        .attr('stroke-width', 4)
-
-      com.content.child.centralBlock = com.content.child.centralBlockG.append('circle')
-        .attr('cx', position.x)
-        .attr('cy', position.y)
-        .attr('r', 10)
-        .attr('fill', colorPalette.dark.greyBlue[4])
-        .attr('stroke', 'none')
-
-      com.content.child.centralBlockLine1 = com.content.child.centralBlockG.append('line')
-        .attr('x1', position.x)
-        .attr('y1', position.y)
-        .attr('x2', position.x + com.content.box.w * 0.05)
-        .attr('y2', position.y)
-        .attr('stroke', colorPalette.dark.greyBlue[4])
-        .attr('stroke-width', 4)
-      com.content.child.centralBlockLine2 = com.content.child.centralBlockG.append('line')
-        .attr('x1', position.x)
-        .attr('y1', position.y)
-        .attr('x2', position.x - com.content.box.w * 0.05)
-        .attr('y2', position.y)
-        .attr('stroke', colorPalette.dark.greyBlue[4])
-        .attr('stroke-width', 4)
     }
     function createBlocksInScheduleIcons (data) {
       let dim = {
