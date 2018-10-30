@@ -862,10 +862,10 @@ window.BlockQueueCreator = function () {
 
       let timelineG = com.interaction.g.append('g')
         .attr('class', 'timeline')
-        .attr('transform', 'translate(' + (com.interaction.position.left + 20) + ',' + com.box.h + ')')
+        .attr('transform', 'translate(' + (com.interaction.position.left) + ',' + com.box.h + ')')
       timelineG.append('rect')
         .attr('class', 'timelineOpacity')
-        .attr('x', -20)
+        .attr('x', 0)
         .attr('y', 0) // - Number(com.interaction.oldRect.attr('height')))
         .attr('width', 40)
         .attr('height', 10)
@@ -897,7 +897,6 @@ window.BlockQueueCreator = function () {
             changePosition()
           }
           function changePosition () {
-            console.log(com.interaction.finalTime);
             com.interaction.g.select('line.left')
               .attr('x1', com.axis.scale(com.interaction.finalTime))
               .attr('x2', com.axis.scale(com.interaction.finalTime))
@@ -918,7 +917,7 @@ window.BlockQueueCreator = function () {
             .text(function () {
               return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
             })
-            .attr('x', -5)
+            .attr('x', 15)
             .attr('y', 10.5)
             .style('font-weight', 'bold')
           timelineG.select('text.minute')
@@ -927,7 +926,7 @@ window.BlockQueueCreator = function () {
             .text(function () {
               return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
             })
-            .attr('x', 9)
+            .attr('x', 29)
             .attr('y', 6.5)
             .style('font-weight', 'bold').style('font-size', '7px')
           timelineG.append('text')
@@ -935,7 +934,7 @@ window.BlockQueueCreator = function () {
             .text(function () {
               return d3.timeFormat('%S')(com.axis.scale.invert(com.interaction.position.left))
             })
-            .attr('x', 9)
+            .attr('x', 29)
             .attr('y', 13) // - Number(com.interaction.oldRect.attr('height')))
             .style('font-weight', 'bold')
             .style('opacity', 1)
@@ -953,7 +952,7 @@ window.BlockQueueCreator = function () {
           d3.select(this)
             .transition()
             .duration(600)
-            .attr('x', -90)
+            .attr('x', -70)
             .attr('width', 180)
             .attr('height', 25)
             .attr('fill-opacity', 1)
@@ -965,7 +964,7 @@ window.BlockQueueCreator = function () {
                 date.setMinutes(date.getMinutes() - i)
                 return 'hourMin:' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes()
               })
-              .attr('x', -20)
+              .attr('x', 0)
               .attr('y', 0)
               .attr('width', 0)
               .attr('height', 15)
@@ -984,7 +983,7 @@ window.BlockQueueCreator = function () {
               })
               .transition()
               .duration(600)
-              .attr('x', -7 - 7.5 - 15 * i)
+              .attr('x', 5.5 - 15 * i)
               .attr('width', 15)
             hourMinG.append('text')
               .attr('class', 'hourMin-' + i)
@@ -993,7 +992,7 @@ window.BlockQueueCreator = function () {
                 date.setMinutes(date.getMinutes() - i)
                 return d3.timeFormat(':%M')(date)
               })
-              .attr('x', 0)
+              .attr('x', 20)
               .attr('y', 10)
               .style('font-weight', 'normal')
               .style('opacity', 1)
@@ -1008,7 +1007,7 @@ window.BlockQueueCreator = function () {
               .transition()
               .duration(600)
               .style('fill-opacity', 0.7)
-              .attr('x', -7 - 15 * i)
+              .attr('x', 13 - 15 * i)
           }
           for (let i = 1; i < 6; i++) {
             hourMinG.append('rect')
@@ -1017,7 +1016,7 @@ window.BlockQueueCreator = function () {
                 date.setMinutes(date.getMinutes() + (i - 1))
                 return 'hourMin:' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes()
               })
-              .attr('x', 20)
+              .attr('x', 0)
               .attr('y', 0)
               .attr('width', 0)
               .attr('height', 15)
@@ -1036,7 +1035,7 @@ window.BlockQueueCreator = function () {
               })
               .transition()
               .duration(600)
-              .attr('x', +7 - 7.5 + 15 * i)
+              .attr('x', 19.5 + 15 * i)
               .attr('width', 15)
             hourMinG.append('text')
               .attr('class', 'hourMin+' + (i - 1))
@@ -1045,7 +1044,7 @@ window.BlockQueueCreator = function () {
                 date.setMinutes(date.getMinutes() + (i - 1))
                 return d3.timeFormat(':%M')(date)
               })
-              .attr('x', +7 + 15 * i)
+              .attr('x', 27 + 15 * i)
               .attr('y', 10) // - Number(com.interaction.oldRect.attr('height')))
               .style('font-weight', 'normal')
               .style('opacity', 1)
@@ -1067,7 +1066,7 @@ window.BlockQueueCreator = function () {
                 date.setSeconds(5 * i)
                 return 'hourSec:' + date.getSeconds()
               })
-              .attr('x', 0)
+              .attr('x', 20)
               .attr('y', 14)
               .attr('width', 0)
               .attr('height', 12)
@@ -1085,7 +1084,7 @@ window.BlockQueueCreator = function () {
               })
               .transition()
               .duration(600)
-              .attr('x', -82 - 8 + 15 * i)
+              .attr('x', -62 - 8 + 15 * i)
               .attr('width', 15)
             hourMinG.append('text')
               .attr('class', 'Min_sec' + i)
@@ -1094,7 +1093,7 @@ window.BlockQueueCreator = function () {
                 date.setSeconds(5 * i)
                 return d3.timeFormat(':%S')(date)
               })
-              .attr('x', -82 + 15 * i)
+              .attr('x', -62 + 15 * i)
               .attr('y', 22) // - Number(com.interaction.oldRect.attr('height')))
               .style('font-weight', 'normal')
               .style('opacity', 1)
@@ -1115,7 +1114,7 @@ window.BlockQueueCreator = function () {
         .text(function () {
           return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
         })
-        .attr('x', -5)
+        .attr('x', 15)
         .attr('y', 9) // - Number(com.interaction.oldRect.attr('height')))
         .style('font-weight', 'normal')
         .style('opacity', 1)
@@ -1134,7 +1133,7 @@ window.BlockQueueCreator = function () {
         .text(function () {
           return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
         })
-        .attr('x', 7)
+        .attr('x', 27)
         .attr('y', 9) // - Number(com.interaction.oldRect.attr('height')))
         .style('font-weight', 'normal')
         .style('opacity', 1)
@@ -1156,8 +1155,8 @@ window.BlockQueueCreator = function () {
       com.pattern.moved.defs = com.g.append('defs')
       com.pattern.moved.pattern = com.pattern.moved.defs.append('pattern')
         .attr('id', 'patternMoved')
-        .attr('x', '0')
-        .attr('y', '0')
+        .attr('x', 0)
+        .attr('y', 0)
         .attr('width', 8)
         .attr('height', 5)
         .attr('fill', '#ffffff')
@@ -1193,9 +1192,12 @@ window.BlockQueueCreator = function () {
             }
             return 6
           })
-
         if (Number(com.interaction.g.select('line.left').attr('x1')) + delta.x > 0 &&
           Number(com.interaction.g.select('line.right').attr('x1')) + delta.x < com.interaction.box.w) {
+          if (delta.x > 0 &&
+            com.interaction.mousecursor.x < (Number(com.interaction.g.select('line.left').attr('x1')) + Number(com.interaction.g.select('line.left').attr('x2'))) * 0.5) return
+          if (delta.x < 0 &&
+            com.interaction.mousecursor.x > (Number(com.interaction.g.select('line.left').attr('x1')) + Number(com.interaction.g.select('line.left').attr('x2'))) * 0.5) return
           com.interaction.g.select('line.left')
             .attr('x1', Number(com.interaction.g.select('line.left').attr('x1')) + delta.x)
             .attr('x2', Number(com.interaction.g.select('line.left').attr('x2')) + delta.x)
@@ -1217,7 +1219,7 @@ window.BlockQueueCreator = function () {
               t = t.split(',')
               t[0] = Number(t[0].split('(')[1])
               t[1] = Number(t[1].split(')')[0])
-              return 'translate(' + (t[0] + delta.x) + ',' + t[1] + ')'
+              return 'translate(' + Number(com.interaction.g.select('line.left').attr('x1')) + ',' + t[1] + ')'
             })
           com.interaction.g.select('g.timeline text.hour').text(function () {
             return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
@@ -1235,7 +1237,7 @@ window.BlockQueueCreator = function () {
           .text(function () {
             return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
           })
-          .attr('x', -5)
+          .attr('x', 15)
           .attr('y', 9)
           .style('font-weight', 'normal')
         com.interaction.g.select('g.timeline text.minute')
@@ -1244,7 +1246,7 @@ window.BlockQueueCreator = function () {
           .text(function () {
             return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
           })
-          .attr('x', 7)
+          .attr('x', 27)
           .attr('y', 9)
           .style('font-weight', 'normal').style('font-size', '10px')
         com.interaction.g.select('g.timeline text.second')
@@ -1256,7 +1258,7 @@ window.BlockQueueCreator = function () {
         com.interaction.g.select('g.timeline rect.timelineOpacity')
           .transition()
           .duration(600)
-          .attr('x', -20)
+          .attr('x', 0)
           .attr('width', 40)
           .attr('height', 10)
           .attr('fill-opacity', 0.9)

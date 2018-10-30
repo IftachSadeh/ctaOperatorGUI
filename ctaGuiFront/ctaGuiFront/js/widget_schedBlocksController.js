@@ -735,7 +735,6 @@ let mainSchedBlocksController = function (optIn) {
     this.update = update
   }
   let SvgWarningArea = function () {
-
     function createWarning (pullOrPush) {
       let lineGenerator = d3.line()
         .x(function (d) { return d.x })
@@ -838,6 +837,169 @@ let mainSchedBlocksController = function (optIn) {
         .style('pointer-events', 'none')
         .style('fill', '#000000')
       loop(true, pullOrPush)
+
+      function pullWarning () {
+        com[pullOrPush].child.warningLine1 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'Something occur that'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.28
+          })
+          .attr('y', com[pullOrPush].box.h * 0.25)
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.12)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+        com[pullOrPush].child.warningLine2 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'could invalidate the'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.28
+          })
+          .attr('y', com[pullOrPush].box.h * 0.37)
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.12)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+        com[pullOrPush].child.warningLine3 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'new schedule.'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.28
+          })
+          .attr('y', com[pullOrPush].box.h * 0.49)
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.12)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+        com[pullOrPush].child.warningLine4 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'Please Pull'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.28
+          })
+          .attr('y', com[pullOrPush].box.h * 0.69)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.15)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+      }
+      function pushWarning () {
+        com[pullOrPush].child.warningLine1 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'Because of time'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.28
+          })
+          .attr('y', com[pullOrPush].box.h * 0.25)
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.12)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+        com[pullOrPush].child.warningLine2 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'constraints, some'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.24
+          })
+          .attr('y', com[pullOrPush].box.h * 0.37)
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.12)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+        com[pullOrPush].child.warningLine3 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'changes will be lost.'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.2
+          })
+          .attr('y', com[pullOrPush].box.h * 0.49)
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.12)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+        com[pullOrPush].child.warningLine41 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return '10:00'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.24
+          })
+          .attr('y', com[pullOrPush].box.h * 0.69)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .attr('font-size', com[pullOrPush].box.h * 0.15)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+        function countDown () {
+          var countDownDate = new Date()
+          countDownDate = countDownDate.setMinutes(countDownDate.getMinutes() + 10)
+          var cd = setInterval(function () {
+            var now = new Date()
+            var distance = countDownDate - now
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000)
+
+            com[pullOrPush].child.warningLine41
+              .text(function (d) {
+                return (minutes < 10 ? '0' + minutes : minutes) + ':' + (seconds < 10 ? '0' + seconds : seconds)
+              })
+
+            // If the count down is finished, write some text
+            if (distance < 0) {
+              clearInterval(cd)
+            }
+          }, 1000)
+        }
+        countDown()
+        com[pullOrPush].child.warningLine42 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'Please Push'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.35
+          })
+          .attr('y', com[pullOrPush].box.h * 0.69)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.15)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+        com[pullOrPush].child.warningLine1 = com[pullOrPush].g.append('text')
+          .text(function (d) {
+            return 'Please Push'
+          })
+          .attr('x', function () {
+            return com[pullOrPush].box.w * 0.35
+          })
+          .attr('y', com[pullOrPush].box.h * 0.69)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .attr('font-size', com[pullOrPush].box.h * 0.15)
+          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .style('pointer-events', 'none')
+          .style('fill', '#000000')
+      }
+
+      if (pullOrPush === 'pull') pullWarning()
+      else pushWarning()
     }
     function createPullButton () {
       // let lineGenerator = d3.line()
@@ -1391,6 +1553,7 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', 10 + 'px')
         .style('font-weight', 'bold')
       let div = rootDiv.append('xhtml:div')
+        .style('display', 'inline-block')
         .attr('class', 'overflowVerticalDiv')
         .style('border', 0 + 'px solid #78909C')
         .style('width', '85%')
@@ -1401,42 +1564,72 @@ let mainSchedBlocksController = function (optIn) {
         .style('border-left', '1px solid #000000')
         .style('border-top', '1px solid #000000')
         .style('border-bottom', '1px solid #000000')
+      let quickDiv = rootDiv.append('div')
+        .style('display', 'inline-block')
+        .style('background-color', '#333333')
+        .style('width', '8%')
+        .style('height', 'calc(98% - ' + (titleHeight + titleBorder) + 'px)')
 
-      function fillModifDiv (div, modifs, title) {
+      function fillModifDiv (div, modifs, title, style) {
+        function createDivForData (div, data) {
+          if (Array.isArray(data)) {
+            let subDiv = div.append('div')
+              .style('display', 'inline-block')
+              .style('width', '55%')
+            for (var i = 0; i < data.length; i++) {
+              subDiv.append('label')
+                .html(data[i])
+                .style('display', 'inline-block')
+                .style('color', '#000000')
+                .style('font-size', 10 + 'px')
+                .style('width', '100%')
+                .style('vertical-align', 'top')
+                .style('margin-top', '2%')
+            }
+          } else {
+            div.append('label')
+              .html(data)
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('width', '55%')
+              .style('vertical-align', 'top')
+              .style('margin-top', '2%')
+          }
+        }
         let innerDiv = div.append('div')
-          .style('background', '#EEEEEE')
+          .style('background', style.background)
         let titleLabel = title.charAt(0).toUpperCase() + title.slice(1)
         let subTitleDiv = innerDiv.append('div')
           .attr('class', 'title')
         subTitleDiv.append('label')
-          // .attr('class', 'title')
+          .attr('class', 'title')
           .html(titleLabel)
           .style('color', '#ffffff')
-          .style('background', '#000000')
+          .style('background', '#666666')
+        let count = 0
         for (let key in modifs) {
           let lineDiv = innerDiv.append('div')
+            .style('background', (count % 2 === 1 ? '#FAFAFA' : '#EEEEEE'))
           lineDiv.append('label')
             .html(key)
             .style('display', 'inline-block')
             .style('color', '#000000')
             .style('font-size', 10 + 'px')
-            .style('width', '40%')
+            .style('width', '35%')
             .style('padding-left', '5%')
             .style('vertical-align', 'top')
+            .style('margin-top', '2%')
           lineDiv.append('label')
             .html(':')
             .style('display', 'inline-block')
             .style('color', '#000000')
             .style('font-size', 10 + 'px')
-            .style('width', '10%')
+            .style('width', '5%')
             .style('vertical-align', 'top')
-          lineDiv.append('label')
-            .html(modifs[key])
-            .style('display', 'inline-block')
-            .style('color', '#000000')
-            .style('font-size', 10 + 'px')
-            .style('width', '45%')
-            .style('vertical-align', 'top')
+            .style('margin-top', '2%')
+          createDivForData(lineDiv, modifs[key])
+          count += 1
         }
       }
 
@@ -1463,7 +1656,82 @@ let mainSchedBlocksController = function (optIn) {
         let parentDiv = div.append('div')
           .attr('id', 'field' + field)
           .style('width', '100%')
-        fillModifDiv(parentDiv, info, field)
+        let style = {}
+        style.background = '#EEEEEE'
+        fillModifDiv(parentDiv, info, field, style)
+      }
+
+      let totOffset = 0
+      let totScrollHeight = div._groups[0][0].scrollHeight
+      let even = 0
+      for (let field in schedulingBlock) {
+        let setOffsetTo = totOffset
+        let scrollHeight = div.select('div#field' + field)._groups[0][0].scrollHeight
+
+        quickDiv.append('div')
+          .style('width', '100%')
+          .style('height', ((scrollHeight / totScrollHeight) * 100) + '%')
+          .style('background', (even % 2 === 1 ? '#dddddd' : '#bbbbbb'))
+          .on('mouseover', function () {
+            div
+              .transition()
+              .delay(300)
+              .duration(400)
+              .on('start', function () {
+                div.attr('canInterrupt', false)
+              })
+              .tween('scroll', function () {
+                let that = this
+                var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
+                return function (t) { that.scrollTop = i(t) }
+              })
+              .on('end', function () {
+                div.attr('canInterrupt', true)
+              })
+          })
+          .on('mouseout', function () {
+            if (div.attr('canInterrupt') === 'true') {
+              div.interrupt()
+            }
+          })
+          .on('wheel.zoom', function () {
+            d3.event.preventDefault()
+            let newScrollTop = div._groups[0][0].scrollTop + d3.event.deltaY
+            if (newScrollTop < setOffsetTo) {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            } else if ((newScrollTop + div._groups[0][0].clientHeight) > (setOffsetTo + scrollHeight)) {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, (setOffsetTo + scrollHeight - div._groups[0][0].clientHeight))
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            } else {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, newScrollTop)
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            }
+          })
+
+        totOffset += scrollHeight
+        even += 1
       }
 
       // let dim = {
@@ -1661,7 +1929,7 @@ let mainSchedBlocksController = function (optIn) {
     }
     function createBlocksInScheduleIcons (data) {
       let dim = {
-        w: com.content.box.w * 0.55,
+        w: com.content.box.w * 0.10,
         h: com.content.box.h * 0.9,
         margH: com.content.box.h * 0.05
       }
@@ -1687,7 +1955,7 @@ let mainSchedBlocksController = function (optIn) {
           return 'translate(' + transX + ',' + transY + ')'
         })
       enterSubBlocks.append('rect')
-        .attr('class', 'block')
+        .attr('class', 'back')
         .attr('y', function (d, i) {
           return 0
         })
@@ -1695,10 +1963,108 @@ let mainSchedBlocksController = function (optIn) {
           return 0
         })
         .attr('width', function (d, i) {
-          return dimBlocks.h
+          return dim.w
         })
         .attr('height', function (d, i) {
           return dimBlocks.h
+        })
+        .attr('fill', function (d, i) {
+          return '#455A64'
+        })
+        .attr('stroke', colorPalette.dark.greyBlue[4])
+        .attr('stroke-width', 1.8)
+        .attr('stroke-dasharray', [
+          0,
+          (dim.w) * 0.5,
+          (dim.w) * 0.5 + (dimBlocks.h) * 0.5,
+          (dimBlocks.h) * 0.5 + (dim.w) * 0.5,
+          (dimBlocks.h) * 0.5 + (dim.w) * 0.5,
+          (dimBlocks.h) * 0.5])
+        .on('mouseover', function (d) {
+          if (com.data.focusOn === d.scheduleId) return
+          d3.select(this)
+            .attr('fill', colorPalette.dark.greyBlue[6])
+            .attr('stroke', colorPalette.dark.greyBlue[3])
+            .transition()
+            .duration(400)
+            .attr('stroke-width', 2.2)
+            .attr('stroke-dasharray', [0, 0, (dim.w) + dimBlocks.h, 0, dimBlocks.h + (dim.w), 0])
+          schedBlocksOverEmiter(d)
+        })
+        .on('mouseout', function (d) {
+          if (com.data.focusOn === d.scheduleId) return
+          d3.select(this)
+            .attr('fill', colorPalette.dark.greyBlue[7])
+            .attr('stroke', colorPalette.dark.greyBlue[4])
+            .transition()
+            .duration(400)
+            .attr('stroke-width', 1.8)
+            .attr('stroke-dasharray', [
+              0,
+              (dim.w) * 0.5,
+              (dim.w) * 0.5 + (dimBlocks.h) * 0.5,
+              (dimBlocks.h) * 0.5 + (dim.w) * 0.5,
+              (dimBlocks.h) * 0.5 + (dim.w) * 0.5,
+              (dimBlocks.h) * 0.5])
+          schedBlocksOutEmiter(d)
+        })
+        .on('click', function (d) {
+          let that = d3.select(this)
+          that.attr('fill', colorPalette.dark.greyBlue[7])
+            .attr('stroke', colorPalette.dark.greyBlue[4])
+            .transition()
+            .duration(400)
+            .attr('stroke-width', 1.8)
+            .attr('stroke-dasharray', [4, 4])
+            .on('end', loop)
+          function loop () {
+            that.transition()
+              .duration(4000)
+              .ease(d3.easeLinear)
+              .attr('stroke-dashoffset', function () {
+                return Number(d3.select(this).attr('stroke-dashoffset')) + dimBlocks.w
+              })
+              .on('end', loop)
+          }
+          createBlocksInfoPanel(d)
+          // if (com.data.focusOn === d.scheduleId) {
+          //   unfocusOnSchedulingBlocks()
+          //   com.data.focusOn = undefined
+          //   d3.select(this)
+          //     .attr('fill', colorPalette.dark.greyBlue[7])
+          //     .attr('stroke', colorPalette.dark.greyBlue[4])
+          //     .transition()
+          //     .duration(400)
+          //     .attr('stroke-width', 1.8)
+          //     .attr('stroke-dasharray', [4, 4])
+          // } else {
+          //   if (com.data.focusOn !== undefined) {
+          //     schedBlocksOutRecepter({data: {metaData: {nSched: Number(com.data.focusOn)}}})
+          //     schedBlocksOutEmiter({scheduleId: com.data.focusOn})
+          //   }
+          //   com.data.focusOn = d.scheduleId
+          //   focusOnSchedulingBlocks(d)
+          //   d3.select(this)
+          //     .attr('stroke-dashoffset', 0)
+          //     .transition()
+          //     .duration(400)
+          //     .attr('stroke-dasharray', [dim.w * 0.1, dim.w * 0.1])
+          //     .on('end', loop)
+          // }
+        })
+      enterSubBlocks.append('rect')
+        .attr('class', 'block')
+        .attr('y', function (d, i) {
+          return 3
+        })
+        .attr('x', function (d, i) {
+          return 3
+        })
+        .attr('width', function (d, i) {
+          return dimBlocks.h - 6
+        })
+        .attr('height', function (d, i) {
+          return dimBlocks.h - 6
         })
         .attr('fill', function (d, i) {
           return com.style.recCol(d)
@@ -1706,33 +2072,33 @@ let mainSchedBlocksController = function (optIn) {
         .style('opacity', 0.7)
         .attr('stroke', 'black')
         .attr('stroke-width', 0.2)
-        .style('pointer-events', 'auto')
+        .style('pointer-events', 'none')
       enterSubBlocks.append('text')
         .text(function (d) {
-          return d.metaData.nObs
+          return 'Block-' + d.metaData.nObs
         })
-        .attr('x', dim.w * 0.1)
+        .attr('x', dim.w * 0.38)
         .attr('y', dimBlocks.h * 0.6)
         .style('font-weight', 'normal')
         .attr('text-anchor', 'start')
-        .style('font-size', 10)
+        .style('font-size', 9.5)
         .attr('dy', 0)
         .style('pointer-events', 'none')
         .attr('fill', colorPalette.dark.greyBlue[1])
         .attr('stroke', 'none')
-      enterSubBlocks.append('text')
-        .text(function (d) {
-          return 'Time:' + d.startTime + ' -> ' + d.endTime
-        })
-        .attr('x', dim.w * 0.2)
-        .attr('y', dimBlocks.h * 0.6)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'start')
-        .style('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', colorPalette.dark.greyBlue[1])
-        .attr('stroke', 'none')
+      // enterSubBlocks.append('text')
+      //   .text(function (d) {
+      //     return 'Time:' + d.startTime + ' -> ' + d.endTime
+      //   })
+      //   .attr('x', dim.w * 0.2)
+      //   .attr('y', dimBlocks.h * 0.6)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'start')
+      //   .style('font-size', 10)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', colorPalette.dark.greyBlue[1])
+      //   .attr('stroke', 'none')
 
       subBlocks.each(function (d, i) {
         d3.select(this).select('rect.block')
@@ -1742,6 +2108,232 @@ let mainSchedBlocksController = function (optIn) {
             return com.style.recCol(d)
           })
       })
+    }
+    function createBlocksInfoPanel (data) {
+      console.log(data);
+      let formatedData = {}
+      formatedData.title = data.metaData.blockName
+      formatedData.data = {}
+
+      formatedData.data.time = {}
+      formatedData.data.time.start = data.startTime
+      formatedData.data.time.end = data.endTime
+      formatedData.data.time.duration = data.duration
+
+      formatedData.data.state = {}
+      formatedData.data.state.state = data.exeState.state
+      formatedData.data.state.canRun = data.exeState.canRun
+
+      formatedData.data.pointing = {}
+      formatedData.data.pointing.id = data.pointingId
+      formatedData.data.pointing.name = data.pointingName
+      formatedData.data.pointing.pos = data.pointingPos
+
+      formatedData.data.telescopes = {}
+      formatedData.data.telescopes.telescopes = data.telIds
+
+      let dim = {
+        w: com.content.box.w * 0.42,
+        h: com.content.box.h * 0.9,
+        margH: com.content.box.h * 0.05
+      }
+
+      com.content.child.schedulingBlocksInfoPanelG = com.content.g.append('g')
+      let fo = com.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
+        .style('width', dim.w + 'px')
+        .style('height', dim.h + 'px')
+        .style('x', com.content.box.w * 0.57 + 'px')
+        .style('y', dim.margH + 'px')
+
+      let titleBorder = 2
+      let titleHeight = 18
+      let rootDiv = fo.append('xhtml:div')
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('border', '3px solid #ECEFF1')
+        .style('border-opacity', 0.4)
+        .style('background-color', '#ECEFF1')
+      let titleDiv = rootDiv.append('xhtml:div')
+        .style('width', 'cal(100% - ' + titleBorder + ')')
+        .style('height', titleHeight + 'px')
+        .style('background-color', '#ECEFF1')
+      titleDiv.append('input')
+        .style('display', 'block')
+        .attr('type', 'text')
+        .attr('value', formatedData.title)
+        .text(formatedData.title)
+        .style('text-align', 'center')
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('background-color', '#ECEFF1')
+        .style('border-style', 'solid')
+        .style('border', '0px solid #ffffff')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('font-weight', 'bold')
+      let div = rootDiv.append('xhtml:div')
+        .style('display', 'inline-block')
+        .attr('class', 'overflowVerticalDiv')
+        .style('border', 0 + 'px solid #78909C')
+        .style('width', '85%')
+        .style('margin-left', '2%')
+        .style('height', 'calc(98% - ' + (titleHeight + titleBorder) + 'px)')
+        .style('margin-top', titleBorder + 'px')
+        .style('background-color', colorPalette.dark.greyBlue[0])
+        .style('border-left', '1px solid #000000')
+        .style('border-top', '1px solid #000000')
+        .style('border-bottom', '1px solid #000000')
+      let quickDiv = rootDiv.append('div')
+        .style('display', 'inline-block')
+        .style('background-color', '#333333')
+        .style('width', '8%')
+        .style('height', 'calc(98% - ' + (titleHeight + titleBorder) + 'px)')
+
+      function fillModifDiv (div, modifs, title, style) {
+        function createDivForData (div, data) {
+          if (Array.isArray(data)) {
+            let subDiv = div.append('div')
+              .style('display', 'inline-block')
+              .style('width', '55%')
+            for (var i = 0; i < data.length; i++) {
+              subDiv.append('label')
+                .html(data[i])
+                .style('display', 'inline-block')
+                .style('color', '#000000')
+                .style('font-size', 10 + 'px')
+                .style('width', '100%')
+                .style('vertical-align', 'top')
+                .style('margin-top', '2%')
+            }
+          } else {
+            div.append('label')
+              .html(data)
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('width', '55%')
+              .style('vertical-align', 'top')
+              .style('margin-top', '2%')
+          }
+        }
+        let innerDiv = div.append('div')
+          .style('background', style.background)
+        let titleLabel = title.charAt(0).toUpperCase() + title.slice(1)
+        let subTitleDiv = innerDiv.append('div')
+          .attr('class', 'title')
+        subTitleDiv.append('label')
+          .attr('class', 'title')
+          .html(titleLabel)
+          .style('color', '#ffffff')
+          .style('background', '#666666')
+        let count = 0
+        for (let key in modifs) {
+          let lineDiv = innerDiv.append('div')
+            .style('background', (count % 2 === 1 ? '#FAFAFA' : '#EEEEEE'))
+          lineDiv.append('label')
+            .html(key)
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+            .style('width', '35%')
+            .style('padding-left', '5%')
+            .style('vertical-align', 'top')
+            .style('margin-top', '2%')
+          lineDiv.append('label')
+            .html(':')
+            .style('display', 'inline-block')
+            .style('color', '#000000')
+            .style('font-size', 10 + 'px')
+            .style('width', '5%')
+            .style('vertical-align', 'top')
+            .style('margin-top', '2%')
+          createDivForData(lineDiv, modifs[key])
+          count += 1
+        }
+      }
+
+      for (let field in formatedData.data) {
+        let info = formatedData.data[field]
+        let parentDiv = div.append('div')
+          .attr('id', 'field' + field)
+          .style('width', '100%')
+        let style = {}
+        style.background = '#EEEEEE'
+        fillModifDiv(parentDiv, info, field, style)
+      }
+
+      let totOffset = 0
+      let totScrollHeight = div._groups[0][0].scrollHeight
+      let even = 0
+      for (let field in formatedData.data) {
+        let setOffsetTo = totOffset
+        let scrollHeight = div.select('div#field' + field)._groups[0][0].scrollHeight
+
+        quickDiv.append('div')
+          .style('width', '100%')
+          .style('height', ((scrollHeight / totScrollHeight) * 100) + '%')
+          .style('background', (even % 2 === 1 ? '#dddddd' : '#bbbbbb'))
+          .on('mouseover', function () {
+            div
+              .transition()
+              .delay(300)
+              .duration(400)
+              .on('start', function () {
+                div.attr('canInterrupt', false)
+              })
+              .tween('scroll', function () {
+                let that = this
+                var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
+                return function (t) { that.scrollTop = i(t) }
+              })
+              .on('end', function () {
+                div.attr('canInterrupt', true)
+              })
+          })
+          .on('mouseout', function () {
+            if (div.attr('canInterrupt') === 'true') {
+              div.interrupt()
+            }
+          })
+          .on('wheel.zoom', function () {
+            d3.event.preventDefault()
+            let newScrollTop = div._groups[0][0].scrollTop + d3.event.deltaY
+            if (newScrollTop < setOffsetTo) {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            } else if ((newScrollTop + div._groups[0][0].clientHeight) > (setOffsetTo + scrollHeight)) {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, (setOffsetTo + scrollHeight - div._groups[0][0].clientHeight))
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            } else {
+              div
+                .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .tween('scroll', function () {
+                  let that = this
+                  var i = d3.interpolateNumber(that.scrollTop, newScrollTop)
+                  return function (t) { that.scrollTop = i(t) }
+                })
+            }
+          })
+
+        totOffset += scrollHeight
+        even += 1
+      }
     }
 
     function removeSchedulingBlocksInfoPanel (data) {
@@ -2042,7 +2634,7 @@ let mainSchedBlocksController = function (optIn) {
 
       let dimTop = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.29}
       let dimMiddle = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.4, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.29)}
-      let dimBottom = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 7), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.29}
+      let dimBottom = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.75), w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height')) * 0.29}
       // let gridB = new GridBagLayout()
       // gridB.init({
       //   size: {r: 6, c: 4},
@@ -2065,761 +2657,801 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', colorPalette.dark.greyBlue[0])
         .attr('stroke-width', 6)
         .attr('stroke-opacity', 1)
-      g.append('rect')
-        .attr('class', 'bottom-back')
-        .attr('x', dimTop.x)
-        .attr('y', dimTop.y - 4)
-        .attr('width', dimTop.w)
-        .attr('height', dimMiddle.h)
-        .attr('stroke', colorPalette.dark.greyBlue[8])
-        .attr('stroke-dasharray', [dimTop.w * 0.4, dimTop.w * 0.2, dimTop.w * 0.4, dimTop.h + dimTop.w + dimTop.h])
-        .attr('fill', colorPalette.dark.greyBlue[0])
-        .attr('stroke-width', 0.5)
-        .attr('stroke-opacity', 1)
-      g.append('text')
-        .text(function (data) {
-          return 'Modifications'
-        })
-        .attr('x', dimBack.x + dimBack.w * 0.5)
-        .attr('y', dimTop.y - 4)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', '#000000')
-        .attr('stroke', 'none')
 
-      // let lineGenerator = d3.line()
-      //   .x(function (d) { return d.x })
-      //   .y(function (d) { return d.y })
-      // let curveGenerator = d3.line()
-      //   .curve(d3.curveBasis)
-      //   .x(function (d) { return d.x })
-      //   .y(function (d) { return d.y })
-      // let dataPointsTop = [
-      //   {x: dimMiddle.x, y: dimMiddle.y},
-      //
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.8), y: dimMiddle.y},
-      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
-      //
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: dimMiddle.y + dimMiddle.h},
-      //   {x: dimMiddle.x, y: dimMiddle.y + (dimMiddle.h * 0.75)},
-      //
-      //   {x: dimMiddle.x, y: dimMiddle.y}
-      // ]
-      // let dataPointsBottomIntern = [
-      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
-      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.7)},
-      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + dimMiddle.h},
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.7), y: dimMiddle.y + dimMiddle.h},
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: dimMiddle.y + dimMiddle.h}
-      // ]
-      // let dataPointsBottomExtern = [
-      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
-      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: 20 + dimMiddle.y + (dimMiddle.h * 0.7)},
-      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: 20 + dimMiddle.y + dimMiddle.h},
-      //   {x: 20 + dimMiddle.x + (dimMiddle.w * 0.7), y: 20 + dimMiddle.y + dimMiddle.h},
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: 20 + dimMiddle.y + dimMiddle.h}
-      // ]
-      // let pathTop = g.append('path')
-      //   .data([dataPointsTop])
-      //   .attr('class', 'line')
-      //   .attr('d', lineGenerator)
-      //   .attr('fill', '#bbbbbb')
-      // let pathBottomExtern = g.append('path')
-      //   .data([dataPointsBottomExtern])
-      //   .attr('class', 'line')
-      //   .attr('d', curveGenerator)console.log(this);
-      //   .attr('fill', 'none')
-      // let pathBottomIntern = g.append('path')
-      // pathBottomIntern.data([dataPointsBottomIntern])
-      //   .attr('class', 'line')
-      //   .attr('d', curveGenerator)
-      //   .attr('fill', colorPalette.dark.greyBlue[1])
-      // let totBlocks = [].concat(com.data.lastRawData.run).concat(com.data.lastRawData.wait)
-      // let blocksConflicts = g.selectAll('rect.conflict')
-      //   .data(totBlocks)
-      //   .enter()
-      //   .append('rect')
-      //   .attr('class', 'conflict')
-      //   .attr('x', function (d, i) {
-      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
-      //     return pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)).x
-      //   })
-      //   .attr('y', function (d, i) {
-      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
-      //     return pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)).y
-      //   })
-      //   .attr('width', 16)
-      //   .attr('height', 16)
-      //   .attr('fill', '#bbbbbb')
-
-      // let blocksConflicts = g.selectAll('path.conflict')
-      //   .data(totBlocks)
-      //   .enter()
-      //   .append('path')
-      //   .attr('class', 'conflict')
-      //   .attr('d', function (d, i) {
-      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
-      //     let sizeExtern = pathBottomExtern.node().getTotalLength() / totBlocks.length
-      //     let points = [
-      //       pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)),
-      //       pathBottomExtern.node().getPointAtLength((sizeExtern * i) + (sizeExtern * 0.1)),
-      //       pathBottomExtern.node().getPointAtLength((sizeExtern * (i + 1)) - (sizeExtern * 0.1)),
-      //       pathBottomIntern.node().getPointAtLength((sizeIntern * (i + 1)) - (sizeIntern * 0.1))
-      //     ]
-      //     return lineGenerator(points)
-      //   })
-      //   .attr('fill', colorPalette.dark.greyBlue[1])
-      // g.append('text')
-      //   .text(function (data) {
-      //     return 'Sched. Blocks'
-      //   })
-      //   .attr('x', dim.x + dim.w * 0.1)
-      //   .attr('y', dimBack.y + dimBack.h * 0.08)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 8)
-      //   .attr('dy', 0)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', '#000000')
-      //   .attr('stroke', 'none')
-      // g.append('text')
-      //   .text(function (data) {
-      //     return 'Blocks'
-      //   })
-      //   .attr('x', dim.x + dim.w * 0.3)
-      //   .attr('y', dimBack.y + dimBack.h * 0.08)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 8)
-      //   .attr('dy', 0)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', '#000000')
-      //   .attr('stroke', 'none')
-      // g.append('text')
-      //   .text(function (data) {
-      //     return 'Properties'
-      //   })
-      //   .attr('x', dimBack.x + dimBack.w * 0.7)
-      //   .attr('y', dimBack.y + dimBack.h * 0.08)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 8)
-      //   .attr('dy', 0)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', '#000000')
-      //   .attr('stroke', 'none')
-      // g.append('rect')
-      //   .attr('class', 'back_modif')
-      //   .attr('x', dimModifs.x)
-      //   .attr('y', dimModifs.y - 4)
-      //   .attr('width', dimModifs.w)
-      //   .attr('height', dimModifs.h + 19)
-      //   .attr('stroke', colorPalette.dark.greyBlue[8])
-      //   .attr('fill', 'none')
-      //   .attr('stroke-width', 0.5)
-      //   .attr('stroke-opacity', 1)
-      //   .attr('stroke-dasharray', [dimModifs.w * 0.4, dimModifs.w * 0.2, dimModifs.w * 0.4, dimModifs.h + 19 + dimModifs.w + dimModifs.h + 19])
-
-      // let fo = g.append('foreignObject')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', g.attr('width'))
-      //   .attr('height', g.attr('height'))
-      // let div = fo.append('xhtml:div')
-      // let sizeProp = 25
-
-      let fo = g.append('foreignObject')
-        .style('width', dimTop.w + 'px')
-        .style('height', dimTop.h + 'px')
-        .style('x', dimTop.x + 'px')
-        .style('y', dimTop.y + 'px')
-      let rootDiv = fo.append('xhtml:div')
-        .style('display', 'inline-block')
-        .style('border', 0 + 'px solid #78909C')
-        .style('background-color', colorPalette.dark.greyBlue[0])
-        .style('width', '92%')
-        .style('height', 'calc(100% - 15px)')
-      let quickDiv = fo.append('xhtml:div')
-        .style('display', 'inline-block')
-        .style('background-color', '#333333')
-        .style('width', '8%')
-        .style('height', 'calc(100% - 15px)')
-      let titleDiv = rootDiv.append('div')
-        .style('height', '15px')
-        .style('border', 0 + 'px solid #78909C')
-        .style('background-color', colorPalette.dark.greyBlue[0])
-      let div = rootDiv.append('div')
-        .attr('class', 'overflowVerticalDiv')
-        .style('border', 0 + 'px solid #78909C')
-        .style('background-color', colorPalette.dark.greyBlue[0])
-        // .style('transform', 'scale(1,-1)')
-
-      // let space = 2.5
-      // let dimSB = {y: 0, h: dimModifs.h * 0.28}
-      // let dimBLC = {y: dimModifs.h * 0.3, h: dimModifs.h * 0.23}
-      // let dimProp = {y: dimModifs.h * 0.55, h: dimModifs.h * 0.45}
-      // for (var SB in defaultChangeNotification) {
-      //   let totalProp = 0
-      //   let totalBLC = 0
-      //   let currentX = 0
-      //   let allBlocks = defaultChangeNotification[SB]
-      //   let currentSVG = div.append('svg')
-      //     .style('display', 'inline-block')
-      //     .style('background', colorPalette.dark.greyBlue[0])
-      //     .style('border', 0 + 'px solid #78909C')
-      //     .style('transform', 'scale(1,-1)')
-      //     .style('margin-left', space)
-      //     .style('margin-right', space)
-      //     .attr('height', dimModifs.h)
-      //   let rectSB = currentSVG.append('rect')
-      //     .attr('x', 0)
-      //     .attr('y', dimSB.y)
-      //     .attr('height', dimSB.h)
-      //     .attr('fill', function (d, i) {
-      //       return colorPalette.dark.greyBlue[7]
-      //     })
-      //     .attr('stroke', colorPalette.dark.greyBlue[4])
-      //     .attr('stroke-width', 1.8)
-      //
-      //   for (var BLC in allBlocks) {
-      //     let allProp = allBlocks[BLC]
-      //     let totProp = 0
-      //     let rectBLC = currentSVG.append('rect')
-      //       .attr('x', currentX)
-      //       .attr('y', dimBLC.y)
-      //       .attr('height', dimBLC.h)
-      //       .attr('fill', '#bcbcbc')
-      //     for (var prop in allProp) {
-      //       let currentProp = allProp[prop]
-      //       currentSVG.append('rect')
-      //         .attr('x', currentX)
-      //         .attr('y', dimProp.y)
-      //         .attr('height', dimProp.h)
-      //         .attr('width', sizeProp)
-      //         .attr('fill', '#dddddd')
-      //       totProp += 1
-      //       totalProp += 1
-      //       currentX += (sizeProp + space)
-      //     }
-      //     rectBLC.attr('width', totProp * (sizeProp + space) - space)
-      //     currentX += space
-      //     totalBLC += 1
-      //   }
-      //   let width = totalProp * (sizeProp + space) - space + (totalBLC - 1) * (space)
-      //   currentSVG.attr('width', width)
-      //   rectSB.attr('width', width)
-      //   currentSVG.append('text')
-      //     .text(SB)
-      //     .attr('x', width * 0.5)
-      //     .attr('y', dimSB.h * 0.5)
-      //     .style('font-weight', 'bold')
-      //     .attr('text-anchor', 'middle')
-      //     .style('font-size', dimSB.h * 0.6)
-      //     .attr('dy', dimSB.h * 0.35)
-      //     .style('pointer-events', 'none')
-      //     .attr('fill', colorPalette.dark.greyBlue[1])
-      //     .attr('stroke', 'none')
-      // }
-
-      function fillModifDiv (div, modifs, title) {
-        let innerDiv = div.append('div')
-          .style('margin-bottom', '6px')
-          .style('background', '#cccccc')
-        innerDiv.append('label')
-          .html(title)
-          .style('display', 'block')
-          .style('color', '#ffffff')
-          .style('background', '#000000')
-          .style('font-size', 10 + 'px')
-        for (var i = 0; i < modifs.length; i++) {
-          let modif = modifs[i]
-          let lineDiv = innerDiv.append('div')
-          lineDiv.append('label')
-            .html(modif.prop)
-            .style('display', 'inline-block')
-            .style('color', '#000000')
-            .style('font-size', 10 + 'px')
-          lineDiv.append('label')
-            .html(':')
-            .style('display', 'inline-block')
-            .style('color', '#000000')
-            .style('font-size', 10 + 'px')
-          lineDiv.append('label')
-            .html(modif.old)
-            .style('display', 'inline-block')
-            .style('color', '#000000')
-            .style('font-size', 10 + 'px')
-          lineDiv.append('label')
-            .html('-> ')
-            .style('display', 'inline-block')
-            .style('color', '#000000')
-            .style('font-size', 10 + 'px')
-          lineDiv.append('label')
-            .html(modif.new)
-            .style('display', 'inline-block')
-            .style('color', '#000000')
-            .style('font-size', 10 + 'px')
-        }
-      }
-
-      let titleSBModifDiv = titleDiv.append('div')
-        .style('display', 'inline-block')
-        .style('width', 'calc(50% - 4px)')
-        .style('height', '15px')
-        .style('background', '#dddddd')
-      let titleBLCModifDiv = titleDiv.append('div')
-        .style('display', 'inline-block')
-        .style('width', 'calc(50% - 4px)')
-        .style('height', '15px')
-        .style('background', '#acacac')
-
-      for (let SB in defaultChangeNotification) {
-        let modifAndBlocks = defaultChangeNotification[SB]
-        let parentDiv = div.append('div')
-          .attr('id', 'SB_' + SB)
-          .style('width', '100%')
-        let SBModifDiv = parentDiv.append('div')
-          .style('display', 'inline-block')
-          .style('width', 'calc(50% - 2px)')
-          .style('background', '#aaaaaa')
-          .style('vertical-align', 'top')
-          .style('border-rigth', '2px solid #ffffff')
-        let BLCModifDiv = parentDiv.append('div')
-          .style('display', 'inline-block')
-          .style('width', 'calc(50% - 2px)')
-          .style('border-left', '2px solid #ffffff')
-
-        fillModifDiv(SBModifDiv, modifAndBlocks.modifications, SB)
-
-        for (var BLC in modifAndBlocks.blocks) {
-          let allProp = modifAndBlocks.blocks[BLC]
-          fillModifDiv(BLCModifDiv, allProp.modifications, BLC)
-        }
-      }
-
-      let totOffset = 0
-      let totScrollHeight = div._groups[0][0].scrollHeight
-      let even = 0
-      for (let SB in defaultChangeNotification) {
-        let setOffsetTo = totOffset
-        let scrollHeight = div.select('div#SB_' + SB)._groups[0][0].scrollHeight
-
-        quickDiv.append('div')
-          .style('width', '100%')
-          .style('height', ((scrollHeight / totScrollHeight) * 100) + '%')
-          .style('background', (even % 2 === 1 ? '#dddddd' : '#bbbbbb'))
-          .on('mouseover', function () {
-            div
-              .transition()
-              .delay(300)
-              .duration(400)
-              .on('start', function () {
-                div.attr('canInterrupt', false)
-              })
-              .tween('scroll', function () {
-                let that = this
-                var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
-                return function (t) { that.scrollTop = i(t) }
-              })
-              .on('end', function () {
-                div.attr('canInterrupt', true)
-              })
+      function drawModifications () {
+        g.append('rect')
+          .attr('class', 'bottom-back')
+          .attr('x', dimTop.x)
+          .attr('y', dimTop.y - 4)
+          .attr('width', dimTop.w)
+          .attr('height', dimMiddle.h)
+          .attr('stroke', colorPalette.dark.greyBlue[8])
+          .attr('stroke-dasharray', [dimTop.w * 0.4, dimTop.w * 0.2, dimTop.w * 0.4, dimTop.h + dimTop.w + dimTop.h])
+          .attr('fill', colorPalette.dark.greyBlue[0])
+          .attr('stroke-width', 0.5)
+          .attr('stroke-opacity', 1)
+        g.append('text')
+          .text(function (data) {
+            return 'Modifications'
           })
-          .on('mouseout', function () {
-            if (div.attr('canInterrupt') === 'true') {
-              div.interrupt()
-            }
-          })
-          .on('wheel.zoom', function () {
-            d3.event.preventDefault()
-            let newScrollTop = div._groups[0][0].scrollTop + d3.event.deltaY
-            if (newScrollTop < setOffsetTo) {
+          .attr('x', dimBack.x + dimBack.w * 0.5)
+          .attr('y', dimTop.y - 4)
+          .style('font-weight', 'normal')
+          .attr('text-anchor', 'middle')
+          .style('font-size', 10)
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', '#000000')
+          .attr('stroke', 'none')
+
+        // let lineGenerator = d3.line()
+        //   .x(function (d) { return d.x })
+        //   .y(function (d) { return d.y })
+        // let curveGenerator = d3.line()
+        //   .curve(d3.curveBasis)
+        //   .x(function (d) { return d.x })
+        //   .y(function (d) { return d.y })
+        // let dataPointsTop = [
+        //   {x: dimMiddle.x, y: dimMiddle.y},
+        //
+        //   {x: dimMiddle.x + (dimMiddle.w * 0.8), y: dimMiddle.y},
+        //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
+        //
+        //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: dimMiddle.y + dimMiddle.h},
+        //   {x: dimMiddle.x, y: dimMiddle.y + (dimMiddle.h * 0.75)},
+        //
+        //   {x: dimMiddle.x, y: dimMiddle.y}
+        // ]
+        // let dataPointsBottomIntern = [
+        //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
+        //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.7)},
+        //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + dimMiddle.h},
+        //   {x: dimMiddle.x + (dimMiddle.w * 0.7), y: dimMiddle.y + dimMiddle.h},
+        //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: dimMiddle.y + dimMiddle.h}
+        // ]
+        // let dataPointsBottomExtern = [
+        //   {x: 20 + dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
+        //   {x: 20 + dimMiddle.x + dimMiddle.w, y: 20 + dimMiddle.y + (dimMiddle.h * 0.7)},
+        //   {x: 20 + dimMiddle.x + dimMiddle.w, y: 20 + dimMiddle.y + dimMiddle.h},
+        //   {x: 20 + dimMiddle.x + (dimMiddle.w * 0.7), y: 20 + dimMiddle.y + dimMiddle.h},
+        //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: 20 + dimMiddle.y + dimMiddle.h}
+        // ]
+        // let pathTop = g.append('path')
+        //   .data([dataPointsTop])
+        //   .attr('class', 'line')
+        //   .attr('d', lineGenerator)
+        //   .attr('fill', '#bbbbbb')
+        // let pathBottomExtern = g.append('path')
+        //   .data([dataPointsBottomExtern])
+        //   .attr('class', 'line')
+        //   .attr('d', curveGenerator)console.log(this);
+        //   .attr('fill', 'none')
+        // let pathBottomIntern = g.append('path')
+        // pathBottomIntern.data([dataPointsBottomIntern])
+        //   .attr('class', 'line')
+        //   .attr('d', curveGenerator)
+        //   .attr('fill', colorPalette.dark.greyBlue[1])
+        // let totBlocks = [].concat(com.data.lastRawData.run).concat(com.data.lastRawData.wait)
+        // let blocksConflicts = g.selectAll('rect.conflict')
+        //   .data(totBlocks)
+        //   .enter()
+        //   .append('rect')
+        //   .attr('class', 'conflict')
+        //   .attr('x', function (d, i) {
+        //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
+        //     return pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)).x
+        //   })
+        //   .attr('y', function (d, i) {
+        //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
+        //     return pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)).y
+        //   })
+        //   .attr('width', 16)
+        //   .attr('height', 16)
+        //   .attr('fill', '#bbbbbb')
+
+        // let blocksConflicts = g.selectAll('path.conflict')
+        //   .data(totBlocks)
+        //   .enter()
+        //   .append('path')
+        //   .attr('class', 'conflict')
+        //   .attr('d', function (d, i) {
+        //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
+        //     let sizeExtern = pathBottomExtern.node().getTotalLength() / totBlocks.length
+        //     let points = [
+        //       pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)),
+        //       pathBottomExtern.node().getPointAtLength((sizeExtern * i) + (sizeExtern * 0.1)),
+        //       pathBottomExtern.node().getPointAtLength((sizeExtern * (i + 1)) - (sizeExtern * 0.1)),
+        //       pathBottomIntern.node().getPointAtLength((sizeIntern * (i + 1)) - (sizeIntern * 0.1))
+        //     ]
+        //     return lineGenerator(points)
+        //   })
+        //   .attr('fill', colorPalette.dark.greyBlue[1])
+        // g.append('text')
+        //   .text(function (data) {
+        //     return 'Sched. Blocks'
+        //   })
+        //   .attr('x', dim.x + dim.w * 0.1)
+        //   .attr('y', dimBack.y + dimBack.h * 0.08)
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('font-size', 8)
+        //   .attr('dy', 0)
+        //   .style('pointer-events', 'none')
+        //   .attr('fill', '#000000')
+        //   .attr('stroke', 'none')
+        // g.append('text')
+        //   .text(function (data) {
+        //     return 'Blocks'
+        //   })
+        //   .attr('x', dim.x + dim.w * 0.3)
+        //   .attr('y', dimBack.y + dimBack.h * 0.08)
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('font-size', 8)
+        //   .attr('dy', 0)
+        //   .style('pointer-events', 'none')
+        //   .attr('fill', '#000000')
+        //   .attr('stroke', 'none')
+        // g.append('text')
+        //   .text(function (data) {
+        //     return 'Properties'
+        //   })
+        //   .attr('x', dimBack.x + dimBack.w * 0.7)
+        //   .attr('y', dimBack.y + dimBack.h * 0.08)
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('font-size', 8)
+        //   .attr('dy', 0)
+        //   .style('pointer-events', 'none')
+        //   .attr('fill', '#000000')
+        //   .attr('stroke', 'none')
+        // g.append('rect')
+        //   .attr('class', 'back_modif')
+        //   .attr('x', dimModifs.x)
+        //   .attr('y', dimModifs.y - 4)
+        //   .attr('width', dimModifs.w)
+        //   .attr('height', dimModifs.h + 19)
+        //   .attr('stroke', colorPalette.dark.greyBlue[8])
+        //   .attr('fill', 'none')
+        //   .attr('stroke-width', 0.5)
+        //   .attr('stroke-opacity', 1)
+        //   .attr('stroke-dasharray', [dimModifs.w * 0.4, dimModifs.w * 0.2, dimModifs.w * 0.4, dimModifs.h + 19 + dimModifs.w + dimModifs.h + 19])
+
+        // let fo = g.append('foreignObject')
+        //   .attr('x', 0)
+        //   .attr('y', 0)
+        //   .attr('width', g.attr('width'))
+        //   .attr('height', g.attr('height'))
+        // let div = fo.append('xhtml:div')
+        // let sizeProp = 25
+
+        let fo = g.append('foreignObject')
+          .style('width', dimTop.w + 'px')
+          .style('height', dimTop.h + 'px')
+          .style('x', dimTop.x + 'px')
+          .style('y', dimTop.y + 'px')
+        let rootDiv = fo.append('xhtml:div')
+          .style('display', 'inline-block')
+          .style('border', 0 + 'px solid #78909C')
+          .style('background-color', colorPalette.dark.greyBlue[0])
+          .style('width', '92%')
+          .style('height', 'calc(100% - 15px)')
+        let quickDiv = fo.append('xhtml:div')
+          .style('display', 'inline-block')
+          .style('background-color', '#333333')
+          .style('width', '8%')
+          .style('height', 'calc(100% - 15px)')
+        let titleDiv = rootDiv.append('div')
+          .style('height', '15px')
+          .style('border', 0 + 'px solid #78909C')
+          .style('background-color', colorPalette.dark.greyBlue[0])
+        let div = rootDiv.append('div')
+          .attr('class', 'overflowVerticalDiv')
+          .style('border', 0 + 'px solid #78909C')
+          .style('background-color', colorPalette.dark.greyBlue[0])
+          // .style('transform', 'scale(1,-1)')
+
+        // let space = 2.5
+        // let dimSB = {y: 0, h: dimModifs.h * 0.28}
+        // let dimBLC = {y: dimModifs.h * 0.3, h: dimModifs.h * 0.23}
+        // let dimProp = {y: dimModifs.h * 0.55, h: dimModifs.h * 0.45}
+        // for (var SB in defaultChangeNotification) {
+        //   let totalProp = 0
+        //   let totalBLC = 0
+        //   let currentX = 0
+        //   let allBlocks = defaultChangeNotification[SB]
+        //   let currentSVG = div.append('svg')
+        //     .style('display', 'inline-block')
+        //     .style('background', colorPalette.dark.greyBlue[0])
+        //     .style('border', 0 + 'px solid #78909C')
+        //     .style('transform', 'scale(1,-1)')
+        //     .style('margin-left', space)
+        //     .style('margin-right', space)
+        //     .attr('height', dimModifs.h)
+        //   let rectSB = currentSVG.append('rect')
+        //     .attr('x', 0)
+        //     .attr('y', dimSB.y)
+        //     .attr('height', dimSB.h)
+        //     .attr('fill', function (d, i) {
+        //       return colorPalette.dark.greyBlue[7]
+        //     })
+        //     .attr('stroke', colorPalette.dark.greyBlue[4])
+        //     .attr('stroke-width', 1.8)
+        //
+        //   for (var BLC in allBlocks) {
+        //     let allProp = allBlocks[BLC]
+        //     let totProp = 0
+        //     let rectBLC = currentSVG.append('rect')
+        //       .attr('x', currentX)
+        //       .attr('y', dimBLC.y)
+        //       .attr('height', dimBLC.h)
+        //       .attr('fill', '#bcbcbc')
+        //     for (var prop in allProp) {
+        //       let currentProp = allProp[prop]
+        //       currentSVG.append('rect')
+        //         .attr('x', currentX)
+        //         .attr('y', dimProp.y)
+        //         .attr('height', dimProp.h)
+        //         .attr('width', sizeProp)
+        //         .attr('fill', '#dddddd')
+        //       totProp += 1
+        //       totalProp += 1
+        //       currentX += (sizeProp + space)
+        //     }
+        //     rectBLC.attr('width', totProp * (sizeProp + space) - space)
+        //     currentX += space
+        //     totalBLC += 1
+        //   }
+        //   let width = totalProp * (sizeProp + space) - space + (totalBLC - 1) * (space)
+        //   currentSVG.attr('width', width)
+        //   rectSB.attr('width', width)
+        //   currentSVG.append('text')
+        //     .text(SB)
+        //     .attr('x', width * 0.5)
+        //     .attr('y', dimSB.h * 0.5)
+        //     .style('font-weight', 'bold')
+        //     .attr('text-anchor', 'middle')
+        //     .style('font-size', dimSB.h * 0.6)
+        //     .attr('dy', dimSB.h * 0.35)
+        //     .style('pointer-events', 'none')
+        //     .attr('fill', colorPalette.dark.greyBlue[1])
+        //     .attr('stroke', 'none')
+        // }
+
+        function fillModifDiv (div, modifs, title) {
+          let innerDiv = div.append('div')
+            .style('margin-bottom', '6px')
+            .style('background', '#cccccc')
+          innerDiv.append('label')
+            .html(title)
+            .attr('class', 'title')
+            .style('display', 'block')
+            .style('color', '#ffffff')
+            .style('background', '#666666')
+          for (var i = 0; i < modifs.length; i++) {
+            let modif = modifs[i]
+            let lineDiv = innerDiv.append('div')
+              .style('background', (i % 2 === 1 ? '#FAFAFA' : '#EEEEEE'))
+            lineDiv.append('label')
+              .html(modif.prop)
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+            lineDiv.append('label')
+              .html(':')
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+            lineDiv.append('label')
+              .html(modif.old)
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+            lineDiv.append('label')
+              .html('-> ')
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+            lineDiv.append('label')
+              .html(modif.new)
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+          }
+        }
+
+        let titleSBModifDiv = titleDiv.append('div')
+          .style('display', 'inline-block')
+          .style('width', 'calc(50% - 4px)')
+          .style('height', '15px')
+          .style('background', '#dddddd')
+        let titleBLCModifDiv = titleDiv.append('div')
+          .style('display', 'inline-block')
+          .style('width', 'calc(50% - 4px)')
+          .style('height', '15px')
+          .style('background', '#acacac')
+
+        for (let SB in defaultChangeNotification) {
+          let modifAndBlocks = defaultChangeNotification[SB]
+          let parentDiv = div.append('div')
+            .attr('id', 'SB_' + SB)
+            .style('width', '100%')
+          let SBModifDiv = parentDiv.append('div')
+            .style('display', 'inline-block')
+            .style('width', 'calc(50% - 2px)')
+            .style('background', 'transparent')
+            .style('vertical-align', 'top')
+            .style('border-rigth', '2px solid #ffffff')
+          let BLCModifDiv = parentDiv.append('div')
+            .style('display', 'inline-block')
+            .style('width', 'calc(50% - 2px)')
+            .style('border-left', '2px solid #ffffff')
+
+          fillModifDiv(SBModifDiv, modifAndBlocks.modifications, SB)
+
+          for (var BLC in modifAndBlocks.blocks) {
+            let allProp = modifAndBlocks.blocks[BLC]
+            fillModifDiv(BLCModifDiv, allProp.modifications, BLC)
+          }
+        }
+
+        let totOffset = 0
+        let totScrollHeight = div._groups[0][0].scrollHeight
+        let even = 0
+        for (let SB in defaultChangeNotification) {
+          let setOffsetTo = totOffset
+          let scrollHeight = div.select('div#SB_' + SB)._groups[0][0].scrollHeight
+
+          quickDiv.append('div')
+            .style('width', '100%')
+            .style('height', ((scrollHeight / totScrollHeight) * 100) + '%')
+            .style('background', (even % 2 === 1 ? '#dddddd' : '#bbbbbb'))
+            .on('mouseover', function () {
               div
                 .transition()
-                .duration(300)
-                .ease(d3.easeLinear)
+                .delay(300)
+                .duration(400)
+                .on('start', function () {
+                  div.attr('canInterrupt', false)
+                })
                 .tween('scroll', function () {
                   let that = this
                   var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
                   return function (t) { that.scrollTop = i(t) }
                 })
-            } else if ((newScrollTop + div._groups[0][0].clientHeight) > (setOffsetTo + scrollHeight)) {
-              div
-                .transition()
-                .duration(300)
-                .ease(d3.easeLinear)
-                .tween('scroll', function () {
-                  let that = this
-                  var i = d3.interpolateNumber(that.scrollTop, (setOffsetTo + scrollHeight - div._groups[0][0].clientHeight))
-                  return function (t) { that.scrollTop = i(t) }
+                .on('end', function () {
+                  div.attr('canInterrupt', true)
                 })
-            } else {
-              div
-                .transition()
-                .duration(300)
-                .ease(d3.easeLinear)
-                .tween('scroll', function () {
-                  let that = this
-                  var i = d3.interpolateNumber(that.scrollTop, newScrollTop)
-                  return function (t) { that.scrollTop = i(t) }
-                })
+            })
+            .on('mouseout', function () {
+              if (div.attr('canInterrupt') === 'true') {
+                div.interrupt()
+              }
+            })
+            .on('wheel.zoom', function () {
+              d3.event.preventDefault()
+              let newScrollTop = div._groups[0][0].scrollTop + d3.event.deltaY
+              if (newScrollTop < setOffsetTo) {
+                div
+                  .transition()
+                  .duration(300)
+                  .ease(d3.easeLinear)
+                  .tween('scroll', function () {
+                    let that = this
+                    var i = d3.interpolateNumber(that.scrollTop, setOffsetTo)
+                    return function (t) { that.scrollTop = i(t) }
+                  })
+              } else if ((newScrollTop + div._groups[0][0].clientHeight) > (setOffsetTo + scrollHeight)) {
+                div
+                  .transition()
+                  .duration(300)
+                  .ease(d3.easeLinear)
+                  .tween('scroll', function () {
+                    let that = this
+                    var i = d3.interpolateNumber(that.scrollTop, (setOffsetTo + scrollHeight - div._groups[0][0].clientHeight))
+                    return function (t) { that.scrollTop = i(t) }
+                  })
+              } else {
+                div
+                  .transition()
+                  .duration(300)
+                  .ease(d3.easeLinear)
+                  .tween('scroll', function () {
+                    let that = this
+                    var i = d3.interpolateNumber(that.scrollTop, newScrollTop)
+                    return function (t) { that.scrollTop = i(t) }
+                  })
+              }
+            })
+
+          totOffset += scrollHeight
+          even += 1
+        }
+
+        // let evenSB = 0
+        // let evenBLC = 0
+        // let evenProp = 0
+        // let allLine = 0
+        // let sizeProp = 18
+        // for (var SB in defaultChangeNotification) {
+        //   let allBlocks = defaultChangeNotification[SB]
+        //   let totLine = 0
+        //   let nbBLC = -1
+        //   let svgSB = div.append('label')
+        //     .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+        //
+        //   for (var BLC in allBlocks) {
+        //     nbBLC += 1
+        //     let allProp = allBlocks[BLC]
+        //     let totProp = 0
+        //     let svgBLC = div.append('label')
+        //       .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+        //
+        //     for (var prop in allProp) {
+        //       let currentProp = allProp[prop]
+        //       div.append('label')
+        //         .html(prop)
+        //         .style('display', 'block')
+        //         // .style('border-radius', '2px')
+        //         .style('width', (0.15 * dim.w) + 'px')
+        //         .style('height', sizeProp - 2 + 'px')
+        //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+        //         .style('margin-left', (0.4 * dim.w) + dim.x + 'px')
+        //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
+        //         .style('color', '#000000')
+        //         .style('font-size', 10 + 'px')
+        //       div.append('label')
+        //         .html(':')
+        //         .style('display', 'block')
+        //         // .style('border-radius', '2px')
+        //         .style('width', (0.025 * dim.w) + 'px')
+        //         .style('height', sizeProp - 2 + 'px')
+        //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+        //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + dim.x + 'px')
+        //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
+        //         .style('color', '#000000')
+        //         .style('font-size', 10 + 'px')
+        //       div.append('label')
+        //         .html(currentProp.old)
+        //         .style('display', 'block')
+        //         // .style('border-radius', '2px')
+        //         .style('width', (0.15 * dim.w) + 'px')
+        //         .style('height', sizeProp - 2 + 'px')
+        //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+        //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+        //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
+        //         .style('color', '#000000')
+        //         .style('font-size', 10 + 'px')
+        //       div.append('label')
+        //         .html('-> ')
+        //         .style('display', 'block')
+        //         // .style('border-radius', '2px')
+        //         .style('width', (0.025 * dim.w) + 'px')
+        //         .style('height', sizeProp - 2 + 'px')
+        //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+        //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+        //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
+        //         .style('color', '#000000')
+        //         .style('font-size', 10 + 'px')
+        //       div.append('label')
+        //         .html(currentProp.new)
+        //         .style('display', 'block')
+        //         // .style('border-radius', '2px')
+        //         .style('width', (0.15 * dim.w) + 'px')
+        //         .style('height', sizeProp - 2 + 'px')
+        //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+        //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+        //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
+        //         .style('color', '#000000')
+        //         .style('font-size', 10 + 'px')
+        //       div.append('label')
+        //         .style('display', 'block')
+        //         .style('border-radius', '0px 2px 2px 0px')
+        //         .style('width', (0.1 * dim.w) + 'px')
+        //         .style('height', sizeProp - 2 + 'px')
+        //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
+        //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
+        //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
+        //         .style('color', '#000000')
+        //         .style('font-size', 10 + 'px')
+        //       totProp += 1
+        //       evenProp += 1
+        //     }
+        //     svgBLC.html(BLC)
+        //       .style('display', 'block')
+        //       .style('border-radius', '0px 0px 0px 0px')
+        //       .style('width', (0.2 * dim.w) + 'px')
+        //       .style('height', (totProp * sizeProp) - 2 + 'px')
+        //       .style('margin-left', (0.2 * dim.w) + dim.x + 'px')
+        //       .style('background-color', (evenBLC % 2 ? colorPalette.dark.greyBlue[2] : colorPalette.dark.greyBlue[2]))
+        //       .style('color', '#000000')
+        //       .style('font-size', 12 + 'px')
+        //     evenBLC += 1
+        //     totLine += totProp
+        //   }
+        //   svgSB.html(SB)
+        //     .style('display', 'block')
+        //     .style('border-radius', '2px 0px 0px 2px')
+        //     .style('width', (0.2 * dim.w) + 'px')
+        //     .style('height', (totLine * sizeProp) + (6 * nbBLC) - 2 + 'px')
+        //     .style('margin-left', (0 * dim.w) + dim.x + 'px')
+        //     .style('background-color', (evenSB % 2 ? colorPalette.dark.greyBlue[3] : colorPalette.dark.greyBlue[3]))
+        //     .style('color', '#000000')
+        //     .style('font-size', 14 + 'px')
+        //   evenSB += 1
+        // }
+      }
+      function drawConflicts () {
+        g.append('rect')
+          .attr('class', 'bottom-back')
+          .attr('x', dimMiddle.x)
+          .attr('y', dimMiddle.y - 16)
+          .attr('width', dimMiddle.w)
+          .attr('height', dimMiddle.h)
+          .attr('stroke', colorPalette.dark.greyBlue[8])
+          .attr('stroke-dasharray', [dimMiddle.w * 0.4, dimMiddle.w * 0.2, dimMiddle.w * 0.4, dimMiddle.h + dimMiddle.w + dimMiddle.h])
+          .attr('fill', colorPalette.dark.greyBlue[0])
+          .attr('stroke-width', 0.5)
+          .attr('stroke-opacity', 1)
+        g.append('text')
+          .text(function (data) {
+            return 'Conflicts'
+          })
+          .attr('x', dimMiddle.x + dimMiddle.w * 0.5)
+          .attr('y', dimMiddle.y - 12)
+          .style('font-weight', 'normal')
+          .attr('text-anchor', 'middle')
+          .style('font-size', 10)
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', '#000000')
+          .attr('stroke', 'none')
+        // g.append('circle')
+        //   .attr('cx', dimMiddle.x + dimMiddle.w * 0.5)
+        //   .attr('cy', dimMiddle.y + dimMiddle.h * 0.5)
+        //   .attr('r', dimMiddle.h * 0.25)
+        //   .attr('stroke-width', 8)
+        //   .attr('stroke', colorPalette.dark.greyBlue[1])
+        //   .attr('fill', 'none')
+        // g.append('line')
+        //   .attr('x1', dimMiddle.x + dimMiddle.w * 0.5 + dimMiddle.h * 0.3)
+        //   .attr('y1', dimMiddle.y + dimMiddle.h * 0.5 - dimMiddle.h * 0.3)
+        //   .attr('x2', dimMiddle.x + dimMiddle.w * 0.5 - dimMiddle.h * 0.3)
+        //   .attr('y2', dimMiddle.y + dimMiddle.h * 0.5 + dimMiddle.h * 0.3)
+        //   .attr('r', dimMiddle.h * 0.25)
+        //   .attr('stroke-width', 8)
+        //   .attr('stroke', colorPalette.dark.greyBlue[1])
+
+        let conflicts = [
+          {id: 'c1', type: 'shareTels', blocks: [{id: 'b1(1)'}, {id: 'b2(2)'}, {id: 'b7(0)'}]},
+          {id: 'c2', type: 'shareTels', blocks: [{id: 'b9(2)'}, {id: 'b5(4)'}, {id: 'b2(1)'}]},
+          {id: 'c3', type: 'shareTels', blocks: [{id: 'b2(5)'}, {id: 'b2(1)'}, {id: 'b7(4)'}, {id: 'b9(3)'}]},
+          {id: 'c4', type: 'shareTels', blocks: [{id: 'b3(2)'}, {id: 'b5(3)'}]},
+          {id: 'c5', type: 'shareTels', blocks: [{id: 'b5(1)'}, {id: 'b2(1)'}, {id: 'b8(3)'}, {id: 'b9(3)'}]},
+          {id: 'c6', type: 'shareTels', blocks: [{id: 'b0(4)'}, {id: 'b3(3)'}, {id: 'b7(4)'}, {id: 'b11(1)'}]}
+        ]
+        let conflictBox = {x: dimMiddle.x + dimMiddle.w * 0.3, y: dimMiddle.y, w: dimMiddle.w * 0.7, h: dimMiddle.h}
+
+        let data = {nodes: [], links: []}
+        // for (let i = 0; i < modifications.length; i++) {
+        //   data.nodes.push({type: 'modification', id: modifications[i].id, data: modifications[i], fx: modifications[i].position.x, fy: modifications[i].position.y})
+        //   for (let j = 0; j < modifications[i].conflicts.length; j++) {
+        //     data.links.push({source: modifications[i].id, target: modifications[i].conflicts[j]})
+        //   }
+        // }
+        // for (let i = 0; i < conflicts.length; i++) {
+        //   data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
+        //   for (let j = 0; j < conflicts[i].blocks.length; j++) {
+        //     let insert = true
+        //     for (var z = 0; z < data.nodes.length; z++) {
+        //       if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
+        //     }
+        //     if (insert) {
+        //       data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
+        //     }
+        //     data.links.push({source: conflicts[i].id, target: conflicts[i].blocks[j].id})
+        //   }
+        // }
+
+        for (let i = 0; i < conflicts.length; i++) {
+          data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
+          for (let j = 0; j < (1 + Math.floor(Math.random() * 600)); j++) {
+            data.nodes.push({type: 'tel', id: 'tel' + i + j, data: {}})
+            data.links.push({type: 'short', source: conflicts[i].id, target: 'tel' + i + j})
+          }
+          for (let j = 0; j < conflicts[i].blocks.length; j++) {
+            let insert = true
+            for (var z = 0; z < data.nodes.length; z++) {
+              if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
             }
-          })
+            if (insert) {
+              // data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
+            }
+            // data.links.push({type: 'long', source: conflicts[i].id, target: conflicts[i].blocks[j].id})
+          }
+        }
 
-        totOffset += scrollHeight
-        even += 1
+        let microRadius = 2
+        let smallRadius = 4
+        let bigRadius = 8
+        let simulation = d3.forceSimulation()
+          .force('link', d3.forceLink().id(function (d) { return d.id }))
+          .force('collide', d3.forceCollide(function (d) {
+            if (d.type === 'conflict') return bigRadius * 1.5
+            if (d.type === 'block') return smallRadius * 1.5
+            return microRadius
+          }).iterations(32))
+          .force('charge', d3.forceManyBody().strength(function (d) {
+            if (d.type === 'conflict') return -60
+            if (d.type === 'block') return -60
+            if (d.type === 'tel') return 0
+          }))
+          .force('center', d3.forceCenter((conflictBox.w / 2), (conflictBox.h / 2)))
+          .force('y', d3.forceY(0))
+          .force('x', d3.forceX(0))
+        simulation.nodes(data.nodes)
+        simulation.force('link').links(data.links).distance(function (d) {
+          if (d.type === 'short') return 1
+          else return 20
+        })
+
+        var middleGroup = g.append('g')
+          .attr('transform', 'translate(' + conflictBox.x + ',' + conflictBox.y + ')')
+
+        middleGroup.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('rx', 0)
+          .attr('ry', 0)
+          .attr('width', conflictBox.w)
+          .attr('height', conflictBox.h)
+          .attr('stroke', 'none')
+          .attr('fill', colorPalette.dark.greyBlue[5])
+          .attr('fill-opacity', 0.04)
+          .attr('stroke', colorPalette.dark.greyBlue[8])
+          .attr('stroke-width', 4)
+          .attr('stroke-opacity', 1)
+          .attr('stroke-dasharray', [
+            conflictBox.w * 0.3,
+            conflictBox.w * 0.4,
+            conflictBox.w * 0.3 + conflictBox.h * 0.3,
+            conflictBox.h * 0.4,
+            conflictBox.w * 0.3 + conflictBox.h * 0.3,
+            conflictBox.w * 0.4,
+            conflictBox.w * 0.3 + conflictBox.h * 0.3,
+            conflictBox.h * 0.4,
+            conflictBox.h * 0.3
+          ])
+          // .attr('stroke-dashoffset', conflictBox.w * 0.3)
+
+        let defs = g.append('defs')
+        let pattern = defs.append('pattern')
+          .attr('id', 'patternMoved')
+          .attr('x', '0')
+          .attr('y', '0')
+          .attr('width', conflictBox.w * 0.1)
+          .attr('height', conflictBox.h * 0.1)
+          .attr('fill', '#ffffff')
+          .attr('patternUnits', 'userSpaceOnUse')
+        pattern.append('line')
+          .attr('x1', 0)
+          .attr('y1', 0)
+          .attr('x2', conflictBox.w * 0.1)
+          .attr('y2', conflictBox.h * 0.1)
+          .attr('stroke', '#444444')
+          .attr('stroke-width', 0.1)
+        pattern.append('line')
+          .attr('x1', conflictBox.w * 0.1)
+          .attr('y1', 0)
+          .attr('x2', 0)
+          .attr('y2', conflictBox.h * 0.1)
+          .attr('stroke', '#444444')
+          .attr('stroke-width', 0.1)
+        middleGroup.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('rx', 0)
+          .attr('ry', 0)
+          .attr('width', conflictBox.w)
+          .attr('height', conflictBox.h)
+          .attr('stroke', colorPalette.dark.greyBlue[8])
+          .attr('stroke-opacity', 1)
+          .attr('stroke-width', 2)
+          .attr('stroke-dasharray', [
+            0,
+            conflictBox.w * 0.3,
+            conflictBox.w * 0.4,
+            conflictBox.w * 0.3 + conflictBox.h * 0.3,
+            conflictBox.h * 0.4,
+            conflictBox.w * 0.3 + conflictBox.h * 0.3,
+            conflictBox.w * 0.4,
+            conflictBox.w * 0.3 + conflictBox.h * 0.3,
+            conflictBox.h * 0.4,
+            conflictBox.h * 0.3
+          ])
+          .style('fill', 'none')
+          // .style('fill', 'url(#patternMoved)')
+
+        var link = middleGroup.append('g')
+          .attr('class', 'links')
+          .selectAll('line')
+          .data(data.links)
+          .enter()
+          .append('line')
+          .attr('stroke', 'black')
+          .attr('stroke-width', 0.4)
+
+        var node = middleGroup.append('g')
+          .attr('class', 'nodes')
+          .selectAll('circle')
+          .data(data.nodes)
+          .enter().append('circle')
+          .attr('id', function (d) { return d.id })
+          .attr('r', function (d) {
+            if (d.type === 'conflict') return bigRadius * 1.5
+            if (d.type === 'block') return smallRadius * 1.5
+            return microRadius
+          })
+          .attr('fill', colorPalette.dark.greyBlue[1])
+          .attr('stroke', '#000000')// colorPalette.dark.greyBlue[0])
+          .attr('stroke-width', 0.2)
+
+        simulation.on('tick', function () {
+          link
+            .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.w - radius, d.source.x)) })
+            .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.h - radius, d.source.y)) })
+            .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.w - radius, d.target.x)) })
+            .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.h - radius, d.target.y)) })
+
+          node
+            .attr('cx', function (d) {
+              let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
+              d.x = Math.max(radius, Math.min(conflictBox.w - radius, d.x))
+              return d.x
+            })
+            .attr('cy', function (d) {
+              let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
+              d.y = Math.max(radius, Math.min(conflictBox.h - radius, d.y))
+              return d.y
+            })
+        })
+      }
+      function drawResolve () {
+        let rect = g.append('rect')
+          .attr('class', 'bottom-back')
+          .attr('x', dimBottom.x)
+          .attr('y', dimBottom.y - 16)
+          .attr('width', dimBottom.w)
+          .attr('height', dimBottom.h)
+          .attr('stroke', colorPalette.dark.greyBlue[8])
+          .attr('stroke-dasharray', [dimBottom.w * 0.4, dimBottom.w * 0.2, dimBottom.w * 0.4, dimBottom.h + dimBottom.w + dimBottom.h])
+          .attr('fill', colorPalette.dark.greyBlue[0])
+          .attr('stroke-width', 0.5)
+          .attr('stroke-opacity', 1)
+        let text = g.append('text')
+          .text(function (data) {
+            return 'Resolve'
+          })
+          .attr('x', dimBottom.x + dimBottom.w * 0.5)
+          .attr('y', dimBottom.y - 12)
+          .style('font-weight', 'normal')
+          .attr('text-anchor', 'middle')
+          .style('font-size', 10)
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', '#000000')
+          .attr('stroke', 'none')
+        console.log(rect);
       }
 
-      // let evenSB = 0
-      // let evenBLC = 0
-      // let evenProp = 0
-      // let allLine = 0
-      // let sizeProp = 18
-      // for (var SB in defaultChangeNotification) {
-      //   let allBlocks = defaultChangeNotification[SB]
-      //   let totLine = 0
-      //   let nbBLC = -1
-      //   let svgSB = div.append('label')
-      //     .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-      //
-      //   for (var BLC in allBlocks) {
-      //     nbBLC += 1
-      //     let allProp = allBlocks[BLC]
-      //     let totProp = 0
-      //     let svgBLC = div.append('label')
-      //       .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-      //
-      //     for (var prop in allProp) {
-      //       let currentProp = allProp[prop]
-      //       div.append('label')
-      //         .html(prop)
-      //         .style('display', 'block')
-      //         // .style('border-radius', '2px')
-      //         .style('width', (0.15 * dim.w) + 'px')
-      //         .style('height', sizeProp - 2 + 'px')
-      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-      //         .style('margin-left', (0.4 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
-      //         .style('color', '#000000')
-      //         .style('font-size', 10 + 'px')
-      //       div.append('label')
-      //         .html(':')
-      //         .style('display', 'block')
-      //         // .style('border-radius', '2px')
-      //         .style('width', (0.025 * dim.w) + 'px')
-      //         .style('height', sizeProp - 2 + 'px')
-      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
-      //         .style('color', '#000000')
-      //         .style('font-size', 10 + 'px')
-      //       div.append('label')
-      //         .html(currentProp.old)
-      //         .style('display', 'block')
-      //         // .style('border-radius', '2px')
-      //         .style('width', (0.15 * dim.w) + 'px')
-      //         .style('height', sizeProp - 2 + 'px')
-      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
-      //         .style('color', '#000000')
-      //         .style('font-size', 10 + 'px')
-      //       div.append('label')
-      //         .html('-> ')
-      //         .style('display', 'block')
-      //         // .style('border-radius', '2px')
-      //         .style('width', (0.025 * dim.w) + 'px')
-      //         .style('height', sizeProp - 2 + 'px')
-      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
-      //         .style('color', '#000000')
-      //         .style('font-size', 10 + 'px')
-      //       div.append('label')
-      //         .html(currentProp.new)
-      //         .style('display', 'block')
-      //         // .style('border-radius', '2px')
-      //         .style('width', (0.15 * dim.w) + 'px')
-      //         .style('height', sizeProp - 2 + 'px')
-      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
-      //         .style('color', '#000000')
-      //         .style('font-size', 10 + 'px')
-      //       div.append('label')
-      //         .style('display', 'block')
-      //         .style('border-radius', '0px 2px 2px 0px')
-      //         .style('width', (0.1 * dim.w) + 'px')
-      //         .style('height', sizeProp - 2 + 'px')
-      //         .style('margin-top', (evenSB * 8) + (evenBLC * 6) + (evenProp * sizeProp) + dim.y + 'px')
-      //         .style('margin-left', (0.4 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.15 * dim.w) + (0.025 * dim.w) + (0.025 * dim.w) + dim.x + 'px')
-      //         .style('background-color', (evenProp % 2 ? colorPalette.dark.greyBlue[1] : colorPalette.dark.greyBlue[1]))
-      //         .style('color', '#000000')
-      //         .style('font-size', 10 + 'px')
-      //       totProp += 1
-      //       evenProp += 1
-      //     }
-      //     svgBLC.html(BLC)
-      //       .style('display', 'block')
-      //       .style('border-radius', '0px 0px 0px 0px')
-      //       .style('width', (0.2 * dim.w) + 'px')
-      //       .style('height', (totProp * sizeProp) - 2 + 'px')
-      //       .style('margin-left', (0.2 * dim.w) + dim.x + 'px')
-      //       .style('background-color', (evenBLC % 2 ? colorPalette.dark.greyBlue[2] : colorPalette.dark.greyBlue[2]))
-      //       .style('color', '#000000')
-      //       .style('font-size', 12 + 'px')
-      //     evenBLC += 1
-      //     totLine += totProp
-      //   }
-      //   svgSB.html(SB)
-      //     .style('display', 'block')
-      //     .style('border-radius', '2px 0px 0px 2px')
-      //     .style('width', (0.2 * dim.w) + 'px')
-      //     .style('height', (totLine * sizeProp) + (6 * nbBLC) - 2 + 'px')
-      //     .style('margin-left', (0 * dim.w) + dim.x + 'px')
-      //     .style('background-color', (evenSB % 2 ? colorPalette.dark.greyBlue[3] : colorPalette.dark.greyBlue[3]))
-      //     .style('color', '#000000')
-      //     .style('font-size', 14 + 'px')
-      //   evenSB += 1
-      // }
-
-      g.append('rect')
-        .attr('class', 'bottom-back')
-        .attr('x', dimMiddle.x)
-        .attr('y', dimMiddle.y - 16)
-        .attr('width', dimMiddle.w)
-        .attr('height', dimMiddle.h)
-        .attr('stroke', colorPalette.dark.greyBlue[8])
-        .attr('stroke-dasharray', [dimMiddle.w * 0.4, dimMiddle.w * 0.2, dimMiddle.w * 0.4, dimMiddle.h + dimMiddle.w + dimMiddle.h])
-        .attr('fill', colorPalette.dark.greyBlue[0])
-        .attr('stroke-width', 0.5)
-        .attr('stroke-opacity', 1)
-      g.append('text')
-        .text(function (data) {
-          return 'Conflicts'
-        })
-        .attr('x', dimMiddle.x + dimMiddle.w * 0.5)
-        .attr('y', dimMiddle.y - 12)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', '#000000')
-        .attr('stroke', 'none')
-      // g.append('circle')
-      //   .attr('cx', dimMiddle.x + dimMiddle.w * 0.5)
-      //   .attr('cy', dimMiddle.y + dimMiddle.h * 0.5)
-      //   .attr('r', dimMiddle.h * 0.25)
-      //   .attr('stroke-width', 8)
-      //   .attr('stroke', colorPalette.dark.greyBlue[1])
-      //   .attr('fill', 'none')
-      // g.append('line')
-      //   .attr('x1', dimMiddle.x + dimMiddle.w * 0.5 + dimMiddle.h * 0.3)
-      //   .attr('y1', dimMiddle.y + dimMiddle.h * 0.5 - dimMiddle.h * 0.3)
-      //   .attr('x2', dimMiddle.x + dimMiddle.w * 0.5 - dimMiddle.h * 0.3)
-      //   .attr('y2', dimMiddle.y + dimMiddle.h * 0.5 + dimMiddle.h * 0.3)
-      //   .attr('r', dimMiddle.h * 0.25)
-      //   .attr('stroke-width', 8)
-      //   .attr('stroke', colorPalette.dark.greyBlue[1])
-
-      let conflicts = [
-        {id: 'c1', type: 'shareTels', blocks: [{id: 'b1(1)'}, {id: 'b2(2)'}, {id: 'b7(0)'}]},
-        {id: 'c2', type: 'shareTels', blocks: [{id: 'b9(2)'}, {id: 'b5(4)'}, {id: 'b2(1)'}]},
-        {id: 'c3', type: 'shareTels', blocks: [{id: 'b2(5)'}, {id: 'b2(1)'}, {id: 'b7(4)'}, {id: 'b9(3)'}]},
-        {id: 'c4', type: 'shareTels', blocks: [{id: 'b3(2)'}, {id: 'b5(3)'}]},
-        {id: 'c5', type: 'shareTels', blocks: [{id: 'b5(1)'}, {id: 'b2(1)'}, {id: 'b8(3)'}, {id: 'b9(3)'}]},
-        {id: 'c6', type: 'shareTels', blocks: [{id: 'b0(4)'}, {id: 'b3(3)'}, {id: 'b7(4)'}, {id: 'b11(1)'}]}
-      ]
-      let conflictBox = {x: dimMiddle.x + dimMiddle.w * 0.3, y: dimMiddle.y, w: dimMiddle.w * 0.7, h: dimMiddle.h}
-
-      let data = {nodes: [], links: []}
-      // for (let i = 0; i < modifications.length; i++) {
-      //   data.nodes.push({type: 'modification', id: modifications[i].id, data: modifications[i], fx: modifications[i].position.x, fy: modifications[i].position.y})
-      //   for (let j = 0; j < modifications[i].conflicts.length; j++) {
-      //     data.links.push({source: modifications[i].id, target: modifications[i].conflicts[j]})
-      //   }
-      // }
-      // for (let i = 0; i < conflicts.length; i++) {
-      //   data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
-      //   for (let j = 0; j < conflicts[i].blocks.length; j++) {
-      //     let insert = true
-      //     for (var z = 0; z < data.nodes.length; z++) {
-      //       if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
-      //     }
-      //     if (insert) {
-      //       data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
-      //     }
-      //     data.links.push({source: conflicts[i].id, target: conflicts[i].blocks[j].id})
-      //   }
-      // }
-
-      for (let i = 0; i < conflicts.length; i++) {
-        data.nodes.push({type: 'conflict', id: conflicts[i].id, data: conflicts[i]})
-        for (let j = 0; j < (1 + Math.floor(Math.random() * 600)); j++) {
-          data.nodes.push({type: 'tel', id: 'tel' + i + j, data: {}})
-          data.links.push({type: 'short', source: conflicts[i].id, target: 'tel' + i + j})
-        }
-        for (let j = 0; j < conflicts[i].blocks.length; j++) {
-          let insert = true
-          for (var z = 0; z < data.nodes.length; z++) {
-            if (data.nodes[z].id === conflicts[i].blocks[j].id) insert = false
-          }
-          if (insert) {
-            // data.nodes.push({type: 'block', id: conflicts[i].blocks[j].id, data: conflicts[i].blocks[j]})
-          }
-          // data.links.push({type: 'long', source: conflicts[i].id, target: conflicts[i].blocks[j].id})
-        }
-      }
-
-      let microRadius = 2
-      let smallRadius = 4
-      let bigRadius = 8
-      let simulation = d3.forceSimulation()
-        .force('link', d3.forceLink().id(function (d) { return d.id }))
-        .force('collide', d3.forceCollide(function (d) {
-          if (d.type === 'conflict') return bigRadius * 1.5
-          if (d.type === 'block') return smallRadius * 1.5
-          return microRadius
-        }).iterations(32))
-        .force('charge', d3.forceManyBody().strength(function (d) {
-          if (d.type === 'conflict') return -60
-          if (d.type === 'block') return -60
-          if (d.type === 'tel') return 0
-        }))
-        .force('center', d3.forceCenter((conflictBox.w / 2), (conflictBox.h / 2)))
-        .force('y', d3.forceY(0))
-        .force('x', d3.forceX(0))
-      simulation.nodes(data.nodes)
-      simulation.force('link').links(data.links).distance(function (d) {
-        if (d.type === 'short') return 1
-        else return 20
-      })
-
-      var middleGroup = g.append('g')
-        .attr('transform', 'translate(' + conflictBox.x + ',' + conflictBox.y + ')')
-
-      middleGroup.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('rx', 0)
-        .attr('ry', 0)
-        .attr('width', conflictBox.w)
-        .attr('height', conflictBox.h)
-        .attr('stroke', 'none')
-        .attr('fill', colorPalette.dark.greyBlue[5])
-        .attr('fill-opacity', 0.04)
-        .attr('stroke', colorPalette.dark.greyBlue[8])
-        .attr('stroke-width', 4)
-        .attr('stroke-opacity', 1)
-        .attr('stroke-dasharray', [
-          conflictBox.w * 0.3,
-          conflictBox.w * 0.4,
-          conflictBox.w * 0.3 + conflictBox.h * 0.3,
-          conflictBox.h * 0.4,
-          conflictBox.w * 0.3 + conflictBox.h * 0.3,
-          conflictBox.w * 0.4,
-          conflictBox.w * 0.3 + conflictBox.h * 0.3,
-          conflictBox.h * 0.4,
-          conflictBox.h * 0.3
-        ])
-        // .attr('stroke-dashoffset', conflictBox.w * 0.3)
-
-      let defs = g.append('defs')
-      let pattern = defs.append('pattern')
-        .attr('id', 'patternMoved')
-        .attr('x', '0')
-        .attr('y', '0')
-        .attr('width', conflictBox.w * 0.1)
-        .attr('height', conflictBox.h * 0.1)
-        .attr('fill', '#ffffff')
-        .attr('patternUnits', 'userSpaceOnUse')
-      pattern.append('line')
-        .attr('x1', 0)
-        .attr('y1', 0)
-        .attr('x2', conflictBox.w * 0.1)
-        .attr('y2', conflictBox.h * 0.1)
-        .attr('stroke', '#444444')
-        .attr('stroke-width', 0.1)
-      pattern.append('line')
-        .attr('x1', conflictBox.w * 0.1)
-        .attr('y1', 0)
-        .attr('x2', 0)
-        .attr('y2', conflictBox.h * 0.1)
-        .attr('stroke', '#444444')
-        .attr('stroke-width', 0.1)
-      middleGroup.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('rx', 0)
-        .attr('ry', 0)
-        .attr('width', conflictBox.w)
-        .attr('height', conflictBox.h)
-        .attr('stroke', colorPalette.dark.greyBlue[8])
-        .attr('stroke-opacity', 1)
-        .attr('stroke-width', 2)
-        .attr('stroke-dasharray', [
-          0,
-          conflictBox.w * 0.3,
-          conflictBox.w * 0.4,
-          conflictBox.w * 0.3 + conflictBox.h * 0.3,
-          conflictBox.h * 0.4,
-          conflictBox.w * 0.3 + conflictBox.h * 0.3,
-          conflictBox.w * 0.4,
-          conflictBox.w * 0.3 + conflictBox.h * 0.3,
-          conflictBox.h * 0.4,
-          conflictBox.h * 0.3
-        ])
-        .style('fill', 'none')
-        // .style('fill', 'url(#patternMoved)')
-
-      var link = middleGroup.append('g')
-        .attr('class', 'links')
-        .selectAll('line')
-        .data(data.links)
-        .enter()
-        .append('line')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 0.4)
-
-      var node = middleGroup.append('g')
-        .attr('class', 'nodes')
-        .selectAll('circle')
-        .data(data.nodes)
-        .enter().append('circle')
-        .attr('id', function (d) { return d.id })
-        .attr('r', function (d) {
-          if (d.type === 'conflict') return bigRadius * 1.5
-          if (d.type === 'block') return smallRadius * 1.5
-          return microRadius
-        })
-        .attr('fill', colorPalette.dark.greyBlue[1])
-        .attr('stroke', '#000000')// colorPalette.dark.greyBlue[0])
-        .attr('stroke-width', 0.2)
-
-      simulation.on('tick', function () {
-        link
-          .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.w - radius, d.source.x)) })
-          .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.h - radius, d.source.y)) })
-          .attr('x2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.w - radius, d.target.x)) })
-          .attr('y2', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.h - radius, d.target.y)) })
-
-        node
-          .attr('cx', function (d) {
-            let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
-            d.x = Math.max(radius, Math.min(conflictBox.w - radius, d.x))
-            return d.x
-          })
-          .attr('cy', function (d) {
-            let radius = (d.type === 'conflict' ? bigRadius : smallRadius)
-            d.y = Math.max(radius, Math.min(conflictBox.h - radius, d.y))
-            return d.y
-          })
-      })
-
+      drawModifications()
+      drawConflicts()
+      drawResolve()
       // div.append('input')
       //   //.attr('class', 'formMngrInput')
       //   .attr('type', 'text')
