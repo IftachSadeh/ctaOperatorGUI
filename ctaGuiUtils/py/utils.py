@@ -353,7 +353,7 @@ class timeOfNight():
             timeOfNight.isActive = True
 
         # 28800 -> 8 hour night
-        self.timeScale = 0.01 if timeScale is None else timeScale
+        self.timeScale = 0.1 if timeScale is None else timeScale
 
         self.startDate = datetime(2018, 9, 16, 21, 30)
         self.startTime = 0

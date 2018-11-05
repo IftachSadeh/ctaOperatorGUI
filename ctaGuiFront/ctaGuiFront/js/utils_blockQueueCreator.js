@@ -33,7 +33,7 @@ window.BlockQueueCreator = function () {
       main: undefined,
       scale: undefined,
       domain: [0, 1000],
-      range: [0,0],
+      range: [0, 0],
       showText: true,
       orientation: 'axisBottom'
     },
@@ -161,6 +161,7 @@ window.BlockQueueCreator = function () {
     com = optIn
 
     setStyle()
+    initBackground()
     initAxis()
     initBlocks()
     initFilters()
@@ -168,6 +169,34 @@ window.BlockQueueCreator = function () {
   }
   this.init = init
 
+  function initBackground () {
+    com.background.g.append('rect')
+      .attr('x', -0)
+      .attr('y', -10)
+      .attr('width', com.box.w + 0)
+      .attr('height', com.box.h + 12)
+      .style('fill', com.background.attr.fill)
+    // com.background.child.runOverflow.group.back.append('rect')
+    //   .attr('x', com.blocks.group.run.box.x)
+    //   .attr('y', com.blocks.group.run.box.y - com.blocks.group.run.box.h * 0.25 - com.blocks.group.run.box.marg)
+    //   .attr('width', com.blocks.group.run.box.w)
+    //   .attr('height', com.blocks.group.run.box.h * 0.12)
+    //   .style('fill', com.background.child.runOverflow.fill)
+    //   .style('fill-opacity', com.background.child.runOverflow.fillOpacity)
+
+    for (var i = 0; i < 15; i++) {
+      com.background.child.runOverflow.group.text.append('text')
+        .text('Tels conflict')
+        .attr('x', (com.blocks.group.run.box.w / 30) + (com.blocks.group.run.box.w / 15) * i)
+        .attr('y', com.blocks.group.run.box.y - com.blocks.group.run.box.h * 0.14 - com.blocks.group.run.box.marg)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 6)
+        .style('fill', com.background.attr.fill)
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+    }
+  }
   function initAxis () {
     if (!com.axis.enabled) return
 
@@ -476,6 +505,7 @@ window.BlockQueueCreator = function () {
       .concat(com.data.filtered.fail)
       .concat(com.data.filtered.run)
       .concat(com.data.filtered.wait)
+      .concat(com.data.modified.wait)
 
     let bottomRow = calcBlockRow({
       typeNow: 'bottom',
@@ -508,7 +538,7 @@ window.BlockQueueCreator = function () {
     com.data.raw = dataIn.data
     com.data.telIds = dataIn.telIds
 
-    com.data.modified = []
+    com.data.modified = {wait: [], cancel: []}
 
     if (com.axis.enabled) updateAxis()
     if (com.blocks.enabled) updateBlocks()
@@ -527,6 +557,50 @@ window.BlockQueueCreator = function () {
   }
   this.update = update
 
+  function groupByTime (blocks) {
+    let groups = []
+    for (var i = 0; i < blocks.length; i++) {
+      let newGroup = [blocks[i]]
+      for (var j = 0; j < blocks.length; j++) {
+        if (i !== j && isSameTimeBeginAfter(blocks[i].x, blocks[i].x + blocks[i].w, blocks[j].x, blocks[j].x + blocks[j].w)) newGroup.push(blocks[j])
+      }
+      groups.push(newGroup)
+    }
+    return groups
+  }
+
+  function isSameTimeBeginAfter (s1, e1, s2, e2) {
+    if (s1 > s2 && s1 < e2) return true
+    return false
+  }
+  function isSameTime (s1, e1, s2, e2) {
+    if (s1 > s2 && s1 < e2) return true
+    if (e1 > s2 && e1 < e2) return true
+    if (s1 < s2 && e1 > e2) return true
+    return false
+  }
+
+  function isGeneratingTelsConflict (group) {
+    function useSameTels (tel1, tel2) {
+      for (var i = 0; i < tel1.length; i++) {
+        for (var j = 0; j < tel2.length; j++) {
+          if (tel1[i] === tel2[j]) {
+            console.log(tel1[i], tel2[j])
+            return true
+          }
+        }
+      }
+      return false
+    }
+    for (let i = 0; i < group.length; i++) {
+      for (let j = 0; j < group.length; j++) {
+        if (i !== j && useSameTels(group[i].data.telIds, group[j].data.telIds)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
   function calcBlockRow (optIn) {
     let dataIn = optIn.data
     let box = optIn.box
@@ -537,6 +611,7 @@ window.BlockQueueCreator = function () {
     let nBlocksType = {}
     // console.log(dataIn);
     // compute width/height/x/y of blocks, only y need to be modified (so far)
+
     $.each(dataIn, function (index, dataNow) {
       // console.log(dataNow);
 
@@ -560,10 +635,49 @@ window.BlockQueueCreator = function () {
         y: y0,
         w: w0,
         h: h0,
+        newH: h0,
         o: overlap,
         nBlock: nBlocksType[state],
         // nTel: nTels,
         data: dataNow
+      })
+    })
+
+    let groups = groupByTime(blocks)
+    $.each(groups, function (index, group) {
+      let tot = 0
+      $.each(group, function (index, dataNow) {
+        tot += dataNow.h
+      })
+      //console.log(isGeneratingTelsConflict(group), tot > box.h);
+      if (isGeneratingTelsConflict(group)) {
+        let coef = (box.h * 1) / tot
+        let x = group[0].x
+        let x2 = x + group[0].w
+        $.each(group, function (index, dataNow) {
+          dataNow.newH = ((dataNow.h * coef) < dataNow.newH ? (dataNow.h * coef) : dataNow.newH)
+          if (dataNow.x < x) x = dataNow.x
+          if (dataNow.x + dataNow.w > x2) x2 = dataNow.x + dataNow.w
+        })
+        com.background.child.runOverflow.group.back.append('rect')
+          .attr('class', 'conflictRect')
+          .attr('x', x)
+          .attr('y', com.blocks.group.run.box.y - com.blocks.group.run.box.h * 0.25 - com.blocks.group.run.box.marg)
+          .attr('width', x2 - x)
+          .attr('height', com.blocks.group.run.box.h * 0.12)
+          .attr('fill', com.background.child.runOverflow.fill)
+          .attr('fill-opacity', com.background.child.runOverflow.fillOpacity)
+      } else if (tot > box.h) {
+        let coef = box.h / tot
+        $.each(group, function (index, dataNow) {
+          dataNow.newH = ((dataNow.h * coef) > dataNow.newH ? (dataNow.h * coef) : dataNow.newH)
+        })
+      }
+    })
+
+    $.each(groups, function (index, group) {
+      $.each(group, function (index, dataNow) {
+        dataNow.h = dataNow.newH ? dataNow.newH : dataNow.h
       })
     })
     // ---------------------------------------------------------------------------------------------------
@@ -1274,15 +1388,25 @@ window.BlockQueueCreator = function () {
     let newBlock = deepCopy(d.data)
     newBlock.startTime = Math.floor(timeScale.invert(com.interaction.oldG.select('rect.modified').attr('x')))
     newBlock.endTime = newBlock.startTime + newBlock.duration
-    com.data.modified.push(newBlock)
-    com.interaction.oldG.select('rect.back')
-      .style('fill-opacity', 0.1)
-      .style('stroke-opacity', 0.1)
-      .style('pointer-events', 'none')
+    newBlock.modifications = []
+    newBlock.modifications.push('startTime')
+
+    com.data.modified.wait.push(newBlock)
+    // if (isGeneratingTelsConflict(newBlock)) {
+    //   com.data.modified.conflict.push(newBlock)
+    // } else {
+    //   com.data.modified.integrated.push(newBlock)
+    // }
+
+    // com.interaction.oldG.select('rect.back')
+    //   .style('fill-opacity', 0.1)
+    //   .style('stroke-opacity', 0.1)
+    //   .style('pointer-events', 'none')
+    com.interaction.oldG.remove()
     com.interaction.g.remove()
     com.interaction = {}
 
-    console.log(com.data.modified);
+    updateBlocks()
   }
 
   function setBlockRect (data, group) {

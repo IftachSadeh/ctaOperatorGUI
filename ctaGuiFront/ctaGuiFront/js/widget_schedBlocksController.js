@@ -626,17 +626,6 @@ let mainSchedBlocksController = function (optIn) {
       }
       gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
-      gBlockBox.append('rect')
-        .attr('x', -0)
-        .attr('y', -10) // - 15)
-        // .attr('rx', 2)
-        // .attr('ry', 2)
-        .attr('width', blockBoxData.w + 0)
-        .attr('height', blockBoxData.h + 12) // + 45)
-        // .attr('stroke', colorPalette.dark.greyBlue[6])
-        // .attr('stroke-width', 12)
-        // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
-        .style('fill', colorPalette.dark.greyBlue[6])
 
       blockQueueCreator.init({
         tag: 'blockQueueDefaultTag',
@@ -702,7 +691,23 @@ let mainSchedBlocksController = function (optIn) {
         debug: {
           enabled: false
         },
-        pattern: {}
+        pattern: {},
+        background: {
+          g: gBlockBox.append('g'),
+          attr: {
+            fill: colorPalette.dark.greyBlue[6]
+          },
+          child: {
+            runOverflow: {
+              group: {
+                back: gBlockBox.append('g'),
+                text: gBlockBox.append('g')
+              },
+              fill: '#FFEA00',
+              fillOpacity: 1
+            }
+          }
+        }
       })
 
       updateData(dataIn)
