@@ -168,7 +168,6 @@ window.BlockQueueCreator = function () {
     initTimeBars()
   }
   this.init = init
-
   function initBackground () {
     com.background.g.append('rect')
       .attr('x', -0)
@@ -211,6 +210,8 @@ window.BlockQueueCreator = function () {
     com.axis.group.g
       .attr('class', 'axis')
       .call(com.axis.main)
+
+    com.axis.group.g.style('opacity', 0)
   }
   function initBlocks () {
     if (!com.blocks.enabled) return
@@ -477,6 +478,7 @@ window.BlockQueueCreator = function () {
   }
 
   function updateAxis () {
+    com.axis.group.g.style('opacity', 1)
     let minTxtSize = com.box.h * 0.07
 
     com.axis.domain = [com.data.startTime.date, com.data.endTime.date]
@@ -556,6 +558,11 @@ window.BlockQueueCreator = function () {
     if (com.timeBars.enabled) setTimeRect()
   }
   this.update = update
+
+  function sendModification (newBlock) {
+    // com.data.modified.wait.push(newBlock)
+    com.event.modifications('blockQueueCreator', newBlock)
+  }
 
   function groupByTime (blocks) {
     let groups = []
@@ -1386,12 +1393,12 @@ window.BlockQueueCreator = function () {
       .domain([com.data.startTime.time, com.data.endTime.time])
 
     let newBlock = deepCopy(d.data)
-    newBlock.startTime = Math.floor(timeScale.invert(com.interaction.oldG.select('rect.modified').attr('x')))
+    if (!newBlock.modifications) newBlock.modifications = []
+    let newStart = Math.floor(timeScale.invert(com.interaction.oldG.select('rect.modified').attr('x')))
+    newBlock.modifications.push({prop: 'startTime', old: newBlock.startTime, new: newStart})
+    newBlock.startTime = newStart
     newBlock.endTime = newBlock.startTime + newBlock.duration
-    newBlock.modifications = []
-    newBlock.modifications.push('startTime')
 
-    com.data.modified.wait.push(newBlock)
     // if (isGeneratingTelsConflict(newBlock)) {
     //   com.data.modified.conflict.push(newBlock)
     // } else {
@@ -1407,6 +1414,7 @@ window.BlockQueueCreator = function () {
     com.interaction = {}
 
     updateBlocks()
+    sendModification(newBlock)
   }
 
   function setBlockRect (data, group) {

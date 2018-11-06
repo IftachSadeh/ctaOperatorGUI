@@ -36,6 +36,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global FormManager */
 /* global appendToDom */
 /* global runWhenReady */
+/* global deepCopy */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
@@ -44,7 +45,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_gridBagLayout.js' 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollTable.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_formManager.js' })
-loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
+window.loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
 
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
@@ -117,8 +118,11 @@ let mainSchedBlocksController = function (optIn) {
   let sideId = optIn.sideId
 
   let com = {}
+  let data = {
+    original: undefined,
+    copy: undefined
+  }
   let svg = {}
-
   let lenD = {}
 
   let blockQueue = new BlockQueue()
@@ -143,9 +147,6 @@ let mainSchedBlocksController = function (optIn) {
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
   function initData (dataIn) {
     if (sock.multipleInit({ id: widgetId, data: dataIn })) return
 
@@ -210,22 +211,10 @@ let mainSchedBlocksController = function (optIn) {
     svg.g = svg.svg.append('g')
     createBackground()
 
-    // add one rect as background
-    // ---------------------------------------------------------------------------------------------------
-    // svg.g.append('rect')
-    //   .attr('x', 0)
-    //   .attr('y', 0)
-    //   .attr('width', lenD.w[0])
-    //   .attr('height', lenD.h[0] * 0.3)
-    //   .style('fill', colorPalette.dark.greyBlue[7])
+    data.original = dataIn.data
 
-    // createPullPanel()
-    // createPushPanel()
-    com.dataIn = dataIn
-
-    svgBlocksQueue.initData(dataIn.data)
-    svgBlocksQueueCreator.initData(dataIn.data)
-    // svgMiddleInfo.initData(dataIn.data)
+    svgBlocksQueue.initData()
+    svgBlocksQueueCreator.initData()
     svgWarningArea.initData({
       tag: 'warningArea',
       g: svg.g.append('g'),
@@ -259,11 +248,7 @@ let mainSchedBlocksController = function (optIn) {
         child: {}
       },
       data: {
-        lastRawData: dataIn.data.blocks,
-        formatedData: undefined,
-        currentTime: {date: new Date(dataIn.data.timeOfNight.date_now), time: Number(dataIn.data.timeOfNight.now)},
-        startTime: {date: new Date(dataIn.data.timeOfNight.date_start), time: Number(dataIn.data.timeOfNight.start)},
-        endTime: {date: new Date(dataIn.data.timeOfNight.date_end), time: Number(dataIn.data.timeOfNight.end)}
+        formatedData: undefined
       },
       debug: {
         enabled: false
@@ -289,8 +274,7 @@ let mainSchedBlocksController = function (optIn) {
         child: {}
       },
       data: {
-        lastRawData: dataIn.data.blocks,
-        formatedData: undefined
+        modificationsFormated: undefined
       },
       debug: {
         enabled: false
@@ -298,7 +282,79 @@ let mainSchedBlocksController = function (optIn) {
     })
   }
   this.initData = initData
+  function updateData (dataIn) {
+    data.original = dataIn.data
 
+    svgBlocksQueue.updateData()
+    svgBlocksQueueCreator.update()
+    svgSchedulingBlocksOverview.update()
+  }
+  this.updateData = updateData
+  function syncStateSend (dataIn) {
+    if (sock.conStat.isOffline()) return
+
+    sock.sockSyncStateSend({
+      widgetId: widgetId,
+      type: dataIn.type,
+      data: dataIn
+    })
+  }
+
+  // ---------------------------------------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------------------------------------
+  function pullData () {
+    data.copy = deepCopy(data.original)
+    data.copy.blocks.modified = []
+    data.copy.schedBlocks = {
+      '1': {
+        modifications: [
+          {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+        ],
+        blocks: {}
+      },
+      '3': {
+        modifications: [
+          {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+        ],
+        blocks: {}
+      },
+      '7': {
+        modifications: [
+          {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop5', old: 'Old Value', new: 'New Value'},
+          {prop: 'prop6', old: 'Old Value', new: 'New Value'}
+        ],
+        blocks: {}
+      }
+    }
+    svgBlocksQueueCreator.updateData()
+    svgSchedulingBlocksOverview.updateData()
+  }
+  function addModifications (from, block) {
+    for (var key in data.copy.blocks) {
+      let group = data.copy.blocks[key]
+      for (var i = 0; i < group.length; i++) {
+        if (group[i].obId === block.obId) {
+          group.splice(i, 1)
+          break
+        }
+      }
+    }
+    data.copy.blocks.modified.push(block)
+    console.log(data.copy.blocks);
+    svgMiddleInfo.updateData()
+  }
   function createBackground () {
     let lineGenerator = d3.line()
       .x(function (d) { return d.x })
@@ -384,25 +440,6 @@ let mainSchedBlocksController = function (optIn) {
     //   .attr('stroke', '#37474F')
     //   .attr('stroke-width', 1)
   }
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function updateData (dataIn) {
-    com.dataIn = dataIn
-
-    svgBlocksQueue.updateData(dataIn.data)
-    svgBlocksQueueCreator.update(dataIn.data)
-    // svgMiddleInfo.updateData(dataIn.data)
-    svgSchedulingBlocksOverview.updateData({
-      lastRawData: dataIn.data.blocks,
-      formatedData: undefined,
-      currentTime: {date: new Date(dataIn.data.timeOfNight.date_now), time: Number(dataIn.data.timeOfNight.now)},
-      startTime: {date: new Date(dataIn.data.timeOfNight.date_start), time: Number(dataIn.data.timeOfNight.start)},
-      endTime: {date: new Date(dataIn.data.timeOfNight.date_end), time: Number(dataIn.data.timeOfNight.end)}
-    })
-  }
-  this.updateData = updateData
-
   // function clusterData (dataIn) {
   //   tokens.blockState = {}
   //   tokens.blockError = {}
@@ -471,42 +508,25 @@ let mainSchedBlocksController = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  function syncStateSend (dataIn) {
-    if (sock.conStat.isOffline()) return
-
-    sock.sockSyncStateSend({
-      widgetId: widgetId,
-      type: dataIn.type,
-      data: dataIn
-    })
-  }
-
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
   let SvgBlocksQueue = function () {
-    // let axis = {}
-    let gBlockBox // , gEvents
-    let blockBoxData
-    let tagBlockQueue = 'tagBlockQueue'
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function initData (dataIn) {
+    function initData () {
       let x0, y0, w0, h0, marg
       w0 = lenD.w[0] * 0.45 // 0.6
       h0 = lenD.h[0] * 0.14 // 0.18
       x0 = (lenD.w[0] * 0.02)
       y0 = (lenD.h[0] * 0.04)
       marg = w0 * 0.01
-      blockBoxData = {
+      let blockBoxData = {
         x: x0,
         y: y0,
         w: w0,
         h: h0,
         marg: marg
       }
-      gBlockBox = svg.g.append('g')
+      let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
       gBlockBox.append('rect')
         .attr('x', 0)
@@ -533,7 +553,7 @@ let mainSchedBlocksController = function (optIn) {
           axis: undefined,
           scale: undefined,
           domain: [0, 1000],
-          range: [0,0],
+          range: [0, 0],
           showText: true,
           orientation: 'axisTop'
         },
@@ -542,11 +562,11 @@ let mainSchedBlocksController = function (optIn) {
           group: {
             run: {
               g: undefined,
-              box: {x: 0, y:blockBoxData.h * 0.45, w: blockBoxData.w, h:blockBoxData.h * 0.55, marg: blockBoxData.marg}
+              box: {x: 0, y: blockBoxData.h * 0.45, w: blockBoxData.w, h: blockBoxData.h * 0.55, marg: blockBoxData.marg}
             },
             cancel: {
               g: undefined,
-              box: {x: 0, y:0, w: blockBoxData.w, h:blockBoxData.h * 0.3, marg: blockBoxData.marg}
+              box: {x: 0, y:0, w: blockBoxData.w, h: blockBoxData.h * 0.3, marg: blockBoxData.marg}
             }
           },
           events: {
@@ -582,49 +602,44 @@ let mainSchedBlocksController = function (optIn) {
         }
       })
 
-      updateData(dataIn)
+      updateData()
     }
     this.initData = initData
 
-    function updateData (dataIn) {
+    function updateData () {
       let telIds = []
-      $.each(dataIn.telHealth, function (index, dataNow) {
+      $.each(data.original.telHealth, function (index, dataNow) {
         telIds.push(dataNow.id)
       })
-
       blockQueue.update({
-        currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
-        startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
-        endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)},
-        data: dataIn.blocks,
+        currentTime: {date: new Date(data.original.timeOfNight.date_now), time: Number(data.original.timeOfNight.now)},
+        startTime: {date: new Date(data.original.timeOfNight.date_start), time: Number(data.original.timeOfNight.start)},
+        endTime: {date: new Date(data.original.timeOfNight.date_end), time: Number(data.original.timeOfNight.end)},
+        data: data.original.blocks,
         telIds: telIds
       })
     }
     this.updateData = updateData
   }
   let SvgBlocksQueueCreator = function () {
-    // let axis = {}
-    let gBlockBox // , gEvents
-    let blockBoxData
-    let tagEventQueue = 'tagBlocksCopyQueue'
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function initData (dataIn) {
+    function initData () {
       let x0, y0, w0, h0, marg
       w0 = lenD.w[0] * 0.6
       h0 = lenD.h[0] * 0.25 // h0 *= 2.5;
       x0 = (lenD.w[0] * 0.02)
       y0 = lenD.h[0] * 0.3
       marg = w0 * 0.01
-      blockBoxData = {
+      let blockBoxData = {
         x: x0,
         y: y0,
         w: w0,
         h: h0,
         marg: marg
       }
-      gBlockBox = svg.g.append('g')
+      let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
 
       blockQueueCreator.init({
@@ -640,7 +655,7 @@ let mainSchedBlocksController = function (optIn) {
           axis: undefined,
           scale: undefined,
           domain: [0, 1000],
-          range: [0,0],
+          range: [0, 0],
           showText: true,
           orientation: 'axisTop'
         },
@@ -670,7 +685,7 @@ let mainSchedBlocksController = function (optIn) {
           enabled: false,
           group: {
             g: undefined,
-            box: {x:0, y:blockBoxData.h * 0.15, w:lenD.w[0] * 0.12, h:blockBoxData.h * 0.7, marg: 0}
+            box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0}
           },
           filters: []
         },
@@ -678,13 +693,13 @@ let mainSchedBlocksController = function (optIn) {
           enabled: true,
           group: {
             g: undefined,
-            box: {x: 0, y:0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
+            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
           }
         },
         data: {
-          currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
-          startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
-          endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)},
+          currentTime: {date: new Date(data.original.timeOfNight.date_now), time: Number(data.original.timeOfNight.now)},
+          startTime: {date: new Date(data.original.timeOfNight.date_start), time: Number(data.original.timeOfNight.start)},
+          endTime: {date: new Date(data.original.timeOfNight.date_end), time: Number(data.original.timeOfNight.end)},
           lastRawData: undefined,
           formatedData: undefined
         },
@@ -703,38 +718,40 @@ let mainSchedBlocksController = function (optIn) {
                 back: gBlockBox.append('g'),
                 text: gBlockBox.append('g')
               },
-              fill: '#FFEA00',
+              fill: '#FFFDE7',
               fillOpacity: 1
             }
           }
+        },
+        event: {
+          modifications: addModifications
         }
       })
 
-      updateData(dataIn)
+      update()
     }
     this.initData = initData
 
-    function updateData (dataIn) {
+    function updateData () {
       let telIds = []
-      $.each(dataIn.telHealth, function (index, dataNow) {
+      $.each(data.copy.telHealth, function (index, dataNow) {
         telIds.push(dataNow.id)
       })
-
       blockQueueCreator.updateData({
-        currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
-        startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
-        endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)},
-        data: dataIn.blocks,
+        currentTime: {date: new Date(data.original.timeOfNight.date_now), time: Number(data.original.timeOfNight.now)},
+        startTime: {date: new Date(data.original.timeOfNight.date_start), time: Number(data.original.timeOfNight.start)},
+        endTime: {date: new Date(data.original.timeOfNight.date_end), time: Number(data.original.timeOfNight.end)},
+        data: data.copy.blocks,
         telIds: telIds
       })
     }
     this.updateData = updateData
 
-    function update (dataIn) {
+    function update () {
       blockQueueCreator.update({
-        currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
-        startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
-        endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)}
+        currentTime: {date: new Date(data.original.timeOfNight.date_now), time: Number(data.original.timeOfNight.now)},
+        startTime: {date: new Date(data.original.timeOfNight.date_start), time: Number(data.original.timeOfNight.start)},
+        endTime: {date: new Date(data.original.timeOfNight.date_end), time: Number(data.original.timeOfNight.end)}
       })
     }
     this.update = update
@@ -1043,7 +1060,9 @@ let mainSchedBlocksController = function (optIn) {
         .attr('height', 25)
         .attr('x', com.box.w * 0.4 - 12.5)
         .attr('y', com.box.h * 0.52 - 12.5)
-
+        .on('click', function () {
+          pullData()
+        })
       com.pull.child.infoText = com.g.append('text')
         .text(function (d) {
           return 'PULL'
@@ -1119,8 +1138,8 @@ let mainSchedBlocksController = function (optIn) {
         .attr('transform', 'translate(' + com.push.box.x + ',' + com.push.box.y + ')')
     }
 
-    function initData (dataIn) {
-      com = dataIn
+    function initData (optIn) {
+      com = optIn
       com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
 
       initPull()
@@ -1136,7 +1155,7 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.initData = initData
 
-    function updateData (dataIn) {
+    function updateData () {
 
     }
     this.updateData = updateData
@@ -1195,11 +1214,11 @@ let mainSchedBlocksController = function (optIn) {
     }
     function formatData () {
       let res = {}
-      for (var key in com.data.lastRawData) {
-        for (var i = 0; i < com.data.lastRawData[key].length; i++) {
-          let ns = com.data.lastRawData[key][i].metaData.nSched
-          if (ns in res) res[ns].push(com.data.lastRawData[key][i])
-          else res[ns] = [com.data.lastRawData[key][i]]
+      for (var key in data.blocks) {
+        for (var i = 0; i < data.blocks[key].length; i++) {
+          let ns = data.blocks[key][i].metaData.nSched
+          if (ns in res) res[ns].push(data.blocks[key][i])
+          else res[ns] = [data.blocks[key][i]]
         }
       }
       com.data.formatedData = []
@@ -1483,8 +1502,8 @@ let mainSchedBlocksController = function (optIn) {
         .style('pointer-events', 'none')
     }
 
-    function initData (dataIn) {
-      com = dataIn
+    function initData (optIn) {
+      com = optIn
       com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
 
       com.style = {}
@@ -1512,8 +1531,8 @@ let mainSchedBlocksController = function (optIn) {
 
       initShrink()
       initContent()
-      formatData()
-      populateShrink()
+      // formatData()
+      // populateShrink()
     }
     this.initData = initData
 
@@ -2393,9 +2412,12 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.shrink = shrink
 
-    function updateData (dataIn) {
-      dataIn.focusOn = com.data.focusOn
-      com.data = dataIn
+
+    function update () {
+
+    }
+    this.update = update
+    function updateData () {
       formatData()
       populateShrink()
       // for (let i = 0; i < com.data.formatedData.length; i++) {
@@ -2405,9 +2427,9 @@ let mainSchedBlocksController = function (optIn) {
       //     }
       //   }
       // }
-      if (com.data.focusOn) {
+      if (data.focusOn) {
         for (let i = 0; i < com.data.formatedData.length; i++) {
-          if (com.data.formatedData[i].scheduleId === com.data.focusOn) createBlocksInScheduleIcons(com.data.formatedData[i])
+          if (com.data.formatedData[i].scheduleId === data.focusOn) createBlocksInScheduleIcons(com.data.formatedData[i])
         }
       }
       // com.shrinked.child.schedulingBlocks.selectAll('rect.subBlocks')
@@ -2439,13 +2461,86 @@ let mainSchedBlocksController = function (optIn) {
       },
       data: {
         lastRawData: undefined,
-        formatedData: undefined
+        formatedData: undefined,
+        modifications: {
+          SB1: {
+            modifications: [
+              {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+            ],
+            blocks: {
+              B2: {
+                modifications: [
+                  {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+                ]
+              },
+              B3: {
+                modifications: [
+                  {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop2', old: 'Old Value', new: 'New Value'}
+                ]
+              }
+            }
+          },
+          SB3: {
+            modifications: [
+              {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+            ],
+            blocks: {
+              B2: {
+                modifications: [
+                  {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop2', old: 'Old Value', new: 'New Value'}
+                ]
+              }
+            }
+          },
+          SB7: {
+            modifications: [
+              {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop5', old: 'Old Value', new: 'New Value'},
+              {prop: 'prop6', old: 'Old Value', new: 'New Value'}
+            ],
+            blocks: {
+              B1: {
+                modifications: [
+                  {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+                ]
+              },
+              B5: {
+                modifications: [
+                  {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+                  {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+                ]
+              }
+            }
+          }
+        }
       },
       debug: {
         enabled: false
       }
     }
     let com = template
+    let defaultPanel
 
     function createDefaultPanel () {
       com.panelManager = new PanelManager()
@@ -2476,7 +2571,7 @@ let mainSchedBlocksController = function (optIn) {
         }
       })
 
-      let defaultPanel = new CustomPanel()
+      defaultPanel = new CustomPanel()
       defaultPanel.init({
         id: 'test1',
         tab: {
@@ -2489,7 +2584,8 @@ let mainSchedBlocksController = function (optIn) {
         content: {
           g: undefined,
           repaint: drawDefaultContent
-        }
+        },
+        data: {}
       })
       // defaultPanel.setRepaintPanel(drawDefaultContent)
       // defaultPanel.setRepaintTab(drawDefaultTab)
@@ -2528,111 +2624,6 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.changeFocusElement = changeFocusElement
     function drawDefaultContent (g) {
-      let defaultChangeNotification = {
-        SB1: {
-          modifications: [
-            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop4', old: 'Old Value', new: 'New Value'}
-          ],
-          blocks: {
-            B2: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop4', old: 'Old Value', new: 'New Value'}
-              ]
-            },
-            B3: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'}
-              ]
-            }
-          }
-        },
-        SB3: {
-          modifications: [
-            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop4', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop5', old: 'Old Value', new: 'New Value'}
-          ],
-          blocks: {
-            B2: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'}
-              ]
-            }
-          }
-        },
-        SB7: {
-          modifications: [
-            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop4', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop5', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop6', old: 'Old Value', new: 'New Value'}
-          ],
-          blocks: {
-            B1: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop4', old: 'Old Value', new: 'New Value'}
-              ]
-            },
-            B5: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop4', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop5', old: 'Old Value', new: 'New Value'}
-              ]
-            }
-          }
-        }
-      }
-      let modifications = [
-        {id: 'm1',
-          block: {sched: '2', 'block': '1'},
-          prop: 'startTime',
-          value: {old: 12000, new: 7800},
-          conflicts: ['c1', 'c3']
-        },
-        {id: 'm2',
-          block: {sched: '2', 'block': '2'},
-          prop: 'startTime',
-          value: {old: 4900, new: 11680},
-          conflicts: []
-        },
-        {id: 'm3',
-          block: {sched: '5', 'block': '0'},
-          prop: 'startTime',
-          value: {old: 2900, new: 500},
-          conflicts: ['c2']
-        },
-        {id: 'm4',
-          block: {sched: '6', 'block': '2'},
-          prop: 'startTime',
-          value: {old: 11459, new: 4900},
-          conflicts: []
-        },
-        {id: 'm5',
-          block: {sched: '6', 'block': '5'},
-          prop: 'startTime',
-          value: {old: 13000, new: 10680},
-          conflicts: ['c4']
-        }
-      ]
-
       let dim = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.11, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.5)}
       let dimModifs = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.07, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.15)}
       let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) - 3, h: Number(g.attr('height') * 1)}
@@ -2736,7 +2727,7 @@ let mainSchedBlocksController = function (optIn) {
         //   .attr('class', 'line')
         //   .attr('d', curveGenerator)
         //   .attr('fill', colorPalette.dark.greyBlue[1])
-        // let totBlocks = [].concat(com.data.lastRawData.run).concat(com.data.lastRawData.wait)
+        // let totBlocks = [].concat(data.blocks.run).concat(data.blocks.wait)
         // let blocksConflicts = g.selectAll('rect.conflict')
         //   .data(totBlocks)
         //   .enter()
@@ -2860,11 +2851,11 @@ let mainSchedBlocksController = function (optIn) {
         // let dimSB = {y: 0, h: dimModifs.h * 0.28}
         // let dimBLC = {y: dimModifs.h * 0.3, h: dimModifs.h * 0.23}
         // let dimProp = {y: dimModifs.h * 0.55, h: dimModifs.h * 0.45}
-        // for (var SB in defaultChangeNotification) {
+        // for (var SB in com.data.modifications) {
         //   let totalProp = 0
         //   let totalBLC = 0
         //   let currentX = 0
-        //   let allBlocks = defaultChangeNotification[SB]
+        //   let allBlocks = com.data.modifications[SB]
         //   let currentSVG = div.append('svg')
         //     .style('display', 'inline-block')
         //     .style('background', colorPalette.dark.greyBlue[0])
@@ -2980,9 +2971,9 @@ let mainSchedBlocksController = function (optIn) {
           .style('width', 'calc(50% - 4px)')
           .style('height', '15px')
           .style('background', '#acacac')
-
-        for (let SB in defaultChangeNotification) {
-          let modifAndBlocks = defaultChangeNotification[SB]
+        console.log(com.data.modifications);
+        for (let SB in com.data.modifications) {
+          let modifAndBlocks = com.data.modifications[SB]
           let parentDiv = div.append('div')
             .attr('id', 'SB_' + SB)
             .style('width', '100%')
@@ -3008,7 +2999,7 @@ let mainSchedBlocksController = function (optIn) {
         let totOffset = 0
         let totScrollHeight = div._groups[0][0].scrollHeight
         let even = 0
-        for (let SB in defaultChangeNotification) {
+        for (let SB in com.data.modifications) {
           let setOffsetTo = totOffset
           let scrollHeight = div.select('div#SB_' + SB)._groups[0][0].scrollHeight
 
@@ -3083,8 +3074,8 @@ let mainSchedBlocksController = function (optIn) {
         // let evenProp = 0
         // let allLine = 0
         // let sizeProp = 18
-        // for (var SB in defaultChangeNotification) {
-        //   let allBlocks = defaultChangeNotification[SB]
+        // for (var SB in com.data.modifications) {
+        //   let allBlocks = com.data.modifications[SB]
         //   let totLine = 0
         //   let nbBLC = -1
         //   let svgSB = div.append('label')
@@ -3455,7 +3446,7 @@ let mainSchedBlocksController = function (optIn) {
       }
 
       drawModifications()
-      drawConflicts()
+      //drawConflicts()
       drawResolve()
       // div.append('input')
       //   //.attr('class', 'formMngrInput')
@@ -3533,14 +3524,100 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.initData = initData
 
-    function updateData (dataIn) {
+    function updateData () {
+      com.data.modifications = {
+        SB1: {
+          modifications: [
+            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+          ],
+          blocks: {
+            B2: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+              ]
+            },
+            B3: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'}
+              ]
+            }
+          }
+        },
+        SB3: {
+          modifications: [
+            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+          ],
+          blocks: {
+            B2: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'}
+              ]
+            }
+          }
+        },
+        SB7: {
+          modifications: [
+            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop5', old: 'Old Value', new: 'New Value'},
+            {prop: 'prop6', old: 'Old Value', new: 'New Value'}
+          ],
+          blocks: {
+            B1: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+              ]
+            },
+            B5: {
+              modifications: [
+                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+                {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+              ]
+            }
+          }
+        }
+      }
+      com.data.modifications = data.copy.schedBlocks
+      for (var i = 0; i < data.copy.blocks.modified.length; i++) {
+        let block = data.copy.blocks.modified[i]
+        let b = block.metaData.nObs
+        let sb = block.metaData.nSched
+        com.data.modifications[sb] = 1
+        console.log(sb,b);
+        if (!com.data.modifications.sb) com.data.modifications.sb = {modifications: [], blocks: {}}
+        console.log(com.data.modifications.sb);
+        if (!com.data.modifications.sb.blocks.b) com.data.modifications.sb.blocks.b = {modifications: []}
+        for (var j = 0; j < block.modifications.length; j++) {
+          com.data.modifications.sb.blocks.b.modifications.push(block.modifications[j])
+        }
+      }
+      com.panelManager.updateInformation()
     }
     this.updateData = updateData
   }
 
   let svgBlocksQueue = new SvgBlocksQueue()
   let svgBlocksQueueCreator = new SvgBlocksQueueCreator()
-
   let svgWarningArea = new SvgWarningArea()
   let svgSchedulingBlocksOverview = new SvgSchedulingBlocksOverview()
   let svgMiddleInfo = new SvgMiddleInfo()

@@ -223,77 +223,6 @@ window.PanelManager = function () {
   this.addNewPanel = addNewPanel
 }
 
-// window.PanelGroup = function () {
-//   let com = {}
-//   com.manager = null
-//   com.idGroup = Math.floor(Math.random() * Math.floor(100000))
-//
-//   com.width = 600
-//   com.height = 400
-//   com.panels = []
-//   com.panels.current = null
-//   com.optIn = null
-//
-//   com.g = null
-//   com.gLabel = null
-//   com.gPanel = null
-//   com.gTemplate = null
-//   com.drag = {transX: 0, transY: 0, startDragX: null, startDragY: null}
-//
-//   com.index = null
-//
-//   com.spaceBetweenLabel = 4
-//   com.labelSize = com.width
-//   com.tabHeight = 26
-//   com.margin = 20
-//
-//   this.set = function (optIn) {
-//     if (hasVar(optIn.data)) com[optIn.tag] = optIn.data
-//     else if (hasVar(optIn.def)) com[optIn.tag] = optIn.def
-//     else com[optIn.tag] = null
-//   }
-//   this.get = function (type) {
-//     return com[type]
-//   }
-//
-//   function createTemplate () {
-//     com.gTemplate.append('rect')
-//       .attr('x', 0)
-//       .attr('y', 0 - 2)
-//       .attr('rx', 1)
-//       .attr('ry', 1)
-//       .attr('width', com.width + 4)
-//       .attr('height', com.height + 6)
-//       .attr('fill', 'none')
-//       .attr('stroke', 'none')
-//       .attr('stroke-width', 0.5)
-//     if (com.dragable.general) {
-//       com.g.call(dragGroup)
-//       com.gPanel.call(d3.drag()
-//         .on('start', function () {})
-//         .on('drag', function () {})
-//         .on('end', function () {}))
-//     }
-//   }
-//   let dragGroup = d3.drag()
-//     .on('start', function () {
-//       d3.event.sourceEvent.stopPropagation()
-//       com.manager.setFocusOnGroupByID(com.idGroup)
-//       com.drag.startDragX = d3.event.x
-//       com.drag.startDragY = d3.event.y
-//     })
-//     .on('drag', function () {
-//       let offsetX = com.drag.transX + (d3.event.x - com.drag.startDragX)
-//       let offsetY = com.drag.transY + (d3.event.y - com.drag.startDragY)
-//       com.g.attr('transform', 'translate(' + offsetX + ',' + offsetY + ')')
-//     })
-//     .on('end', function () {
-//       com.drag.transX = com.drag.transX + (d3.event.x - com.drag.startDragX)
-//       com.drag.transY = com.drag.transY + (d3.event.y - com.drag.startDragY)
-//     })
-// }
-// var PanelGroup = window.PanelGroup
-
 window.CustomPanel = function () {
   let com = {
     tab: {
@@ -306,7 +235,8 @@ window.CustomPanel = function () {
     content: {
       g: undefined,
       repaint: () => {}
-    }
+    },
+    data: {}
   }
   // com.tab = {}
   // com.panel = {}
