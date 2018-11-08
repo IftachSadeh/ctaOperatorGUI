@@ -18,7 +18,7 @@ loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
 // ---------------------------------------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------------------------------------
-window.BlockQueue = function () {
+window.BlockQueueOptimizer = function () {
   let template = {
     tag: 'blockQueueDefaultTag',
     g: undefined,
@@ -91,6 +91,17 @@ window.BlockQueue = function () {
     return com[type]
   }
 
+  function init (optIn) {
+    com = optIn
+
+    setStyle()
+    initAxis()
+    initBlocks()
+    initFilters()
+    initTimeBars()
+  }
+  this.init = init
+
   function setStyle (optIn) {
     if (!hasVar(optIn)) optIn = {}
 
@@ -104,26 +115,37 @@ window.BlockQueue = function () {
     com.style.recCol = optIn.recCol
     if (!hasVar(com.style.recCol)) {
       com.style.recCol = function (optIn) {
-        // let colsPurplesBlues = colsMix;
-        // let nObs = hasVar(optIn.nObs) ? optIn.nObs : optIn.d.nBlock
+        if (optIn.d.data.endTime < com.data.currentTime.time) return '#424242'
         let state = hasVar(optIn.state)
           ? optIn.state
           : optIn.d.data.exeState.state
         let canRun = hasVar(optIn.canRun)
           ? optIn.canRun
           : optIn.d.data.exeState.canRun
+        let userModifs = (optIn.d.data.modifications.userModifications.length > 0)
+        let optiModifs = (optIn.d.data.modifications.optimizerModifications.length > 0)
 
-        if (state === 'wait') return "#e6e6e6"
-        else if (state === 'done') return d3.color(colsGreens[0]).brighter()
-        else if (state === 'run') {
-          return d3.color(colsPurplesBlues[0]).brighter() // [nObs % colsPurplesBlues.length]
+        if (state === 'wait') {
+          if (userModifs && optiModifs) return '#E65100'
+          if (userModifs) return '#C6FF00'
+          if (optiModifs) return '#FFCC80'
+          return '#e6e6e6'
+        } else if (state === 'run') {
+          return d3.color(colsPurplesBlues[0]).brighter()
         } else if (state === 'cancel') {
           if (hasVar(canRun)) {
             if (!canRun) return d3.color(colsPurples[3]).brighter()
           }
           return d3.color(colsPurples[4])
-        } else if (state === 'fail') return d3.color(colsReds[3]).brighter()
-        else return d3.color(colPrime).brighter()
+        } else return d3.color(colPrime).brighter()
+      }
+    }
+
+    com.style.txtCol = optIn.txtCol
+    if (!hasVar(com.style.txtCol)) {
+      com.style.txtCol = function (optIn) {
+        if (optIn.d.data.endTime < com.data.currentTime.time) return '#010101'
+        else return '#111111'
       }
     }
 
@@ -150,17 +172,6 @@ window.BlockQueue = function () {
     }
   }
   this.setStyle = setStyle
-
-  function init (optIn) {
-    com = optIn
-
-    setStyle()
-    initAxis()
-    initBlocks()
-    initFilters()
-    initTimeBars()
-  }
-  this.init = init
 
   function initAxis () {
     if (!com.axis.enabled) return
@@ -738,7 +749,11 @@ window.BlockQueue = function () {
       .style('stroke-opacity', com.style.recStrokeOpac)
       // .style("pointer-events", "none")
       .attr('vector-effect', 'non-scaling-stroke')
-      .on('click', com.blocks.events.click)
+      .on('click', function (d) {
+        console.log(d.data.modifications);
+        console.log(d.data.telIds);
+        com.blocks.events.click()
+      })
       .on('mouseover', function (d) {
         d3.select(this).attr('stroke-width', 4)
         d3.select(this).style('stroke-opacity', 1)

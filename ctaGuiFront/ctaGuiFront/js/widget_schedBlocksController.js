@@ -1,12 +1,12 @@
 'use strict'
 // ---------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
-// stric mode for the following script or function (must come at the very begining!)
-// see: http://www.w3schools.com/js/js_strict.asp
+// stric mode for the following script or function (must reservede at the very begining!)
+// see: http://www.w3schools.reserved/js/js_strict.asp
 // ---------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
 // mainScriptTag used locally (will be overriden by other scripts...)
-// must be compatible with the name of this js file, according to:
+// must be reservedpatible with the name of this js file, according to:
 //    '/js/widget_'+mainScriptTag+'.js'
 var mainScriptTag = 'schedBlocksController'
 // ---------------------------------------------------------------------------------------------------
@@ -19,6 +19,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global RunLoop */
 /* global BlockQueueModif */
 /* global BlockQueueCreator */
+/* global BlockQueueOptimizer*/
 /* global ClockEvents */
 /* global GridBagLayout */
 /* global ScrollBox */
@@ -40,6 +41,7 @@ var mainScriptTag = 'schedBlocksController'
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOptimizer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_gridBagLayout.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
@@ -117,10 +119,31 @@ let mainSchedBlocksController = function (optIn) {
   let iconDivV = optIn.iconDivV
   let sideId = optIn.sideId
 
-  let com = {}
-  let data = {
-    original: undefined,
-    copy: undefined
+  let shared = {
+    main: {
+      data: {
+        server: undefined,
+        copy: undefined
+      }
+    },
+    svgBlocksQueue: {
+
+    },
+    svgBlocksQueueCreator: {
+
+    },
+    svgWarningArea: {
+
+    },
+    svgSchedulingBlocksOverview: {
+
+    },
+    svgMiddleInfo: {
+
+    }
+  }
+  let reserved = {
+
   }
   let svg = {}
   let lenD = {}
@@ -197,7 +220,7 @@ let mainSchedBlocksController = function (optIn) {
       .style('left', '0px')
       // .attr('viewBox', '0 0 '+lenD.w[0]+' '+lenD.h[0] * whRatio)
       // .classed('svgInGridStack_inner', true)
-      // .call(com.svgZoom)
+      // .call(reserved.svgZoom)
       .on('dblclick.zoom', null)
 
     if (disableScrollSVG) {
@@ -206,12 +229,12 @@ let mainSchedBlocksController = function (optIn) {
       })
     }
 
-    com.svgZoomNode = svg.svg.nodes()[0]
+    // reserved.svgZoomNode = svg.svg.nodes()[0]
 
     svg.g = svg.svg.append('g')
     createBackground()
 
-    data.original = dataIn.data
+    shared.main.data.server = dataIn.data
 
     svgBlocksQueue.initData()
     svgBlocksQueueCreator.initData()
@@ -283,7 +306,7 @@ let mainSchedBlocksController = function (optIn) {
   }
   this.initData = initData
   function updateData (dataIn) {
-    data.original = dataIn.data
+    shared.main.data.server = dataIn.data
 
     svgBlocksQueue.updateData()
     svgBlocksQueueCreator.update()
@@ -304,9 +327,16 @@ let mainSchedBlocksController = function (optIn) {
   //
   // ---------------------------------------------------------------------------------------------------
   function pullData () {
-    data.copy = deepCopy(data.original)
-    data.copy.blocks.modified = []
-    data.copy.schedBlocks = {
+    shared.main.data.copy = deepCopy(shared.main.data.server)
+    for (var key in shared.main.data.copy.blocks) {
+      for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
+        shared.main.data.copy.blocks[key][i].modifications = {
+          userModifications: [],
+          optimizerModifications: []
+        }
+      }
+    }
+    shared.main.data.copy.schedBlocks = {
       '1': {
         modifications: [
           {prop: 'prop1', old: 'Old Value', new: 'New Value'},
@@ -338,21 +368,91 @@ let mainSchedBlocksController = function (optIn) {
         blocks: {}
       }
     }
+
     svgBlocksQueueCreator.updateData()
     svgSchedulingBlocksOverview.updateData()
   }
-  function addModifications (from, block) {
-    for (var key in data.copy.blocks) {
-      let group = data.copy.blocks[key]
-      for (var i = 0; i < group.length; i++) {
-        if (group[i].obId === block.obId) {
-          group.splice(i, 1)
-          break
+  function optimizer () {
+    shared.main.data.copy.optimizedBlocks = deepCopy(shared.main.data.copy.blocks)
+
+    function isSameTime (s1, e1, s2, e2) {
+      if (s1 > s2 && s1 < e2) return true
+      if (e1 > s2 && e1 < e2) return true
+      if (s1 < s2 && e1 > e2) return true
+      return false
+    }
+    function shareSameTels (b1, b2) {
+      let remTels1 = []
+      let remTels2 = []
+      for (let i = b1.telIds.length - 1; i > -1; i--) {
+        for (let j = b2.telIds.length - 1; j > -1; j--) {
+          if (b1.telIds[i] === b2.telIds[j]) {
+            if (Math.random() > 0.5) remTels1.push(b1.telIds.splice(i, 1)[0])
+            else remTels2.push(b2.telIds.splice(j, 1)[0])
+            break
+          }
+        }
+      }
+      if (remTels1.length > 0) {
+        b1.modifications.optimizerModifications.push({prop: 'telescopes', old: remTels1, new: []})
+      }
+      if (remTels2.length > 0) {
+        b2.modifications.optimizerModifications.push({prop: 'telescopes', old: remTels2, new: []})
+      }
+    }
+
+    // for (let i = shared.main.data.copy.optimizedBlocks.modified.length - 1; i > -1; i--) {
+    //   let mb = shared.main.data.copy.optimizedBlocks.modified[i]
+    //   for (let j = shared.main.data.copy.optimizedBlocks.modified.length - 1; j > -1; j--) {
+    //     let tb = shared.main.data.copy.optimizedBlocks.modified[j]
+    //     if (j !== i) {
+    //       if (isSameTime(mb.startTime, mb.endTime, tb.startTime, tb.endTime)) {
+    //         shareSameTels(mb, tb)
+    //       }
+    //     }
+    //   }
+    // }
+
+    // for (let i = shared.main.data.copy.optimizedBlocks.wait.length - 1; i > -1; i--) {
+    //   let mb = shared.main.data.copy.optimizedBlocks.modified[i]
+    //   for (let j = 0; j < shared.main.data.copy.optimizedBlocks.run.length; j++) {
+    //     let tb = shared.main.data.copy.optimizedBlocks.run[j]
+    //     if (isSameTime(mb.startTime, mb.endTime, tb.startTime, tb.endTime)) {
+    //       shareSameTels(mb, tb)
+    //     }
+    //   }
+    // }
+    for (let i = shared.main.data.copy.optimizedBlocks.wait.length - 1; i > -1; i--) {
+      let tb = shared.main.data.copy.optimizedBlocks.wait[i]
+      for (let j = 0; j < shared.main.data.copy.optimizedBlocks.run.length; j++) {
+        let mb = shared.main.data.copy.optimizedBlocks.run[j]
+        if (isSameTime(mb.startTime, mb.endTime, tb.startTime, tb.endTime)) {
+          shareSameTels(mb, tb)
+        }
+      }
+      for (let j = 0; j < shared.main.data.copy.optimizedBlocks.wait.length; j++) {
+        let mb = shared.main.data.copy.optimizedBlocks.wait[j]
+        if (isSameTime(mb.startTime, mb.endTime, tb.startTime, tb.endTime)) {
+          shareSameTels(mb, tb)
         }
       }
     }
-    data.copy.blocks.modified.push(block)
-    console.log(data.copy.blocks);
+
+    svgBlockQueueOptimized.initData()
+    console.log(shared.main.data.copy.blocks, shared.main.data.copy.optimizedBlocks);
+  }
+  function addModifications (from, block) {
+    for (var key in shared.main.data.copy.blocks) {
+      let group = shared.main.data.copy.blocks[key]
+      for (var i = 0; i < group.length; i++) {
+        if (group[i].obId === block.obId) {
+          group[i] = block
+          console.log(block.userModifications, group[i].userModifications)
+        }
+      }
+    }
+    // shared.main.data.copy.blocks.modified.push(block)
+    // console.log(shared.main.data.copy.blocks);
     svgMiddleInfo.updateData()
   }
   function createBackground () {
@@ -579,7 +679,7 @@ let mainSchedBlocksController = function (optIn) {
           enabled: false,
           group: {
             g: undefined,
-            box: {x:0, y:blockBoxData.h * 0.15, w:lenD.w[0] * 0.12, h:blockBoxData.h * 0.7, marg: 0}
+            box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0}
           },
           filters: []
         },
@@ -608,14 +708,14 @@ let mainSchedBlocksController = function (optIn) {
 
     function updateData () {
       let telIds = []
-      $.each(data.original.telHealth, function (index, dataNow) {
+      $.each(shared.main.data.server.telHealth, function (index, dataNow) {
         telIds.push(dataNow.id)
       })
       blockQueue.update({
-        currentTime: {date: new Date(data.original.timeOfNight.date_now), time: Number(data.original.timeOfNight.now)},
-        startTime: {date: new Date(data.original.timeOfNight.date_start), time: Number(data.original.timeOfNight.start)},
-        endTime: {date: new Date(data.original.timeOfNight.date_end), time: Number(data.original.timeOfNight.end)},
-        data: data.original.blocks,
+        currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+        startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+        endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)},
+        data: shared.main.data.server.blocks,
         telIds: telIds
       })
     }
@@ -697,9 +797,9 @@ let mainSchedBlocksController = function (optIn) {
           }
         },
         data: {
-          currentTime: {date: new Date(data.original.timeOfNight.date_now), time: Number(data.original.timeOfNight.now)},
-          startTime: {date: new Date(data.original.timeOfNight.date_start), time: Number(data.original.timeOfNight.start)},
-          endTime: {date: new Date(data.original.timeOfNight.date_end), time: Number(data.original.timeOfNight.end)},
+          currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+          startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+          endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)},
           lastRawData: undefined,
           formatedData: undefined
         },
@@ -734,14 +834,14 @@ let mainSchedBlocksController = function (optIn) {
 
     function updateData () {
       let telIds = []
-      $.each(data.copy.telHealth, function (index, dataNow) {
+      $.each(shared.main.data.copy.telHealth, function (index, dataNow) {
         telIds.push(dataNow.id)
       })
       blockQueueCreator.updateData({
-        currentTime: {date: new Date(data.original.timeOfNight.date_now), time: Number(data.original.timeOfNight.now)},
-        startTime: {date: new Date(data.original.timeOfNight.date_start), time: Number(data.original.timeOfNight.start)},
-        endTime: {date: new Date(data.original.timeOfNight.date_end), time: Number(data.original.timeOfNight.end)},
-        data: data.copy.blocks,
+        currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+        startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+        endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)},
+        data: shared.main.data.copy.blocks,
         telIds: telIds
       })
     }
@@ -749,60 +849,61 @@ let mainSchedBlocksController = function (optIn) {
 
     function update () {
       blockQueueCreator.update({
-        currentTime: {date: new Date(data.original.timeOfNight.date_now), time: Number(data.original.timeOfNight.now)},
-        startTime: {date: new Date(data.original.timeOfNight.date_start), time: Number(data.original.timeOfNight.start)},
-        endTime: {date: new Date(data.original.timeOfNight.date_end), time: Number(data.original.timeOfNight.end)}
+        currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+        startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+        endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)}
       })
     }
     this.update = update
   }
   let SvgWarningArea = function () {
+    let reserved = {}
     function createWarning (pullOrPush) {
       let lineGenerator = d3.line()
         .x(function (d) { return d.x })
         .y(function (d) { return d.y })
       let dataPointsPull = [
-        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.1},
-        {x: com[pullOrPush].box.w * 0.9, y: com[pullOrPush].box.h * 0.1},
-        {x: com[pullOrPush].box.w * 0.9, y: com[pullOrPush].box.h * 0.2},
-        {x: com[pullOrPush].box.w * 0.7, y: com[pullOrPush].box.h * 0.8},
-        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.8},
-        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.1}
+        {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.1},
+        {x: reserved[pullOrPush].box.w * 0.9, y: reserved[pullOrPush].box.h * 0.1},
+        {x: reserved[pullOrPush].box.w * 0.9, y: reserved[pullOrPush].box.h * 0.2},
+        {x: reserved[pullOrPush].box.w * 0.7, y: reserved[pullOrPush].box.h * 0.8},
+        {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.8},
+        {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.1}
       ]
       let dataPointsPush = [
-        {x: com[pullOrPush].box.w * 0.28, y: com[pullOrPush].box.h * 0.1},
-        {x: com[pullOrPush].box.w * 0.9, y: com[pullOrPush].box.h * 0.1},
-        {x: com[pullOrPush].box.w * 0.9, y: com[pullOrPush].box.h * 0.8},
-        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.8},
-        {x: com[pullOrPush].box.w * 0.1, y: com[pullOrPush].box.h * 0.6},
-        {x: com[pullOrPush].box.w * 0.28, y: com[pullOrPush].box.h * 0.1}
+        {x: reserved[pullOrPush].box.w * 0.28, y: reserved[pullOrPush].box.h * 0.1},
+        {x: reserved[pullOrPush].box.w * 0.9, y: reserved[pullOrPush].box.h * 0.1},
+        {x: reserved[pullOrPush].box.w * 0.9, y: reserved[pullOrPush].box.h * 0.8},
+        {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.8},
+        {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.6},
+        {x: reserved[pullOrPush].box.w * 0.28, y: reserved[pullOrPush].box.h * 0.1}
       ]
 
       function loop (bool, pullOrPush) {
-        com[pullOrPush].child.warningExclamation
+        reserved[pullOrPush].child.warningExclamation
           .transition()
           .delay(4000)
           .duration(100)
           .ease(d3.easeLinear)
           .attr('font-size', function () {
-            return com[pullOrPush].box.h * 0.25
+            return reserved[pullOrPush].box.h * 0.25
           })
           .attr('dy', function () {
-            return com[pullOrPush].box.h * 0.02
+            return reserved[pullOrPush].box.h * 0.02
           })
           .transition()
           .duration(100)
           .ease(d3.easeLinear)
           .attr('font-size', function () {
-            return com[pullOrPush].box.h * 0.45
+            return reserved[pullOrPush].box.h * 0.45
           })
           .attr('dy', function () {
-            return com[pullOrPush].box.h * 0.1
+            return reserved[pullOrPush].box.h * 0.1
           })
           .on('end', function () {
             return loop(!bool, pullOrPush)
           })
-        // com[pullOrPush].child.warningExclamationBack
+        // reserved[pullOrPush].child.warningExclamationBack
         //   .transition()
         //   .delay(4000)
         //   .duration(100)
@@ -817,7 +918,7 @@ let mainSchedBlocksController = function (optIn) {
         //     return '#FFEB3B'
         //   })
       }
-      com[pullOrPush].child.warningTriangle = com[pullOrPush].g.append('path')
+      reserved[pullOrPush].child.warningTriangle = reserved[pullOrPush].g.append('path')
         .data(function () {
           if (pullOrPush === 'pull') return [dataPointsPull]
           else return [dataPointsPush]
@@ -829,144 +930,144 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-opacity', 0.4)
         .attr('fill-opacity', 1)
 
-      com[pullOrPush].child.warningExclamationBack = com[pullOrPush].g.append('rect')
-        .attr('width', com[pullOrPush].box.w * 0.13)
-        .attr('height', com[pullOrPush].box.h * 0.6)
+      reserved[pullOrPush].child.warningExclamationBack = reserved[pullOrPush].g.append('rect')
+        .attr('width', reserved[pullOrPush].box.w * 0.13)
+        .attr('height', reserved[pullOrPush].box.h * 0.6)
         .attr('x', function () {
-          if (pullOrPush === 'pull') return com[pullOrPush].box.w * 0.12
-          else return com[pullOrPush].box.w * (1 - 0.25)
+          if (pullOrPush === 'pull') return reserved[pullOrPush].box.w * 0.12
+          else return reserved[pullOrPush].box.w * (1 - 0.25)
         })
-        .attr('y', com[pullOrPush].box.h * 0.15)
+        .attr('y', reserved[pullOrPush].box.h * 0.15)
         .attr('rx', 3)
         .attr('ry', 3)
         .attr('fill', '#FFEB3B')
         .attr('stroke-width', 0.5)
         .attr('stroke', '#000000')
 
-      com[pullOrPush].child.warningExclamation = com[pullOrPush].g.append('text')
+      reserved[pullOrPush].child.warningExclamation = reserved[pullOrPush].g.append('text')
         .text(function (d) {
           return '! '
         })
         .attr('x', function () {
-          if (pullOrPush === 'pull') return com[pullOrPush].box.w * 0.18
-          else return com[pullOrPush].box.w * (1 - 0.185)
+          if (pullOrPush === 'pull') return reserved[pullOrPush].box.w * 0.18
+          else return reserved[pullOrPush].box.w * (1 - 0.185)
         })
-        .attr('y', com[pullOrPush].box.h * 0.5)
+        .attr('y', reserved[pullOrPush].box.h * 0.5)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
-        .attr('font-size', com[pullOrPush].box.h * 0.45)
-        .attr('dy', com[pullOrPush].box.h * 0.1)
+        .attr('font-size', reserved[pullOrPush].box.h * 0.45)
+        .attr('dy', reserved[pullOrPush].box.h * 0.1)
         .style('pointer-events', 'none')
         .style('fill', '#000000')
       loop(true, pullOrPush)
 
       function pullWarning () {
-        com[pullOrPush].child.warningLine1 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'Something occur that'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.28
+            return reserved[pullOrPush].box.w * 0.28
           })
-          .attr('y', com[pullOrPush].box.h * 0.25)
+          .attr('y', reserved[pullOrPush].box.h * 0.25)
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.12)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.12)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
-        com[pullOrPush].child.warningLine2 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine2 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'could invalidate the'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.28
+            return reserved[pullOrPush].box.w * 0.28
           })
-          .attr('y', com[pullOrPush].box.h * 0.37)
+          .attr('y', reserved[pullOrPush].box.h * 0.37)
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.12)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.12)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
-        com[pullOrPush].child.warningLine3 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'new schedule.'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.28
+            return reserved[pullOrPush].box.w * 0.28
           })
-          .attr('y', com[pullOrPush].box.h * 0.49)
+          .attr('y', reserved[pullOrPush].box.h * 0.49)
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.12)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.12)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
-        com[pullOrPush].child.warningLine4 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'Please Pull'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.28
+            return reserved[pullOrPush].box.w * 0.28
           })
-          .attr('y', com[pullOrPush].box.h * 0.69)
+          .attr('y', reserved[pullOrPush].box.h * 0.69)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.15)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.15)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
       }
       function pushWarning () {
-        com[pullOrPush].child.warningLine1 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'Because of time'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.28
+            return reserved[pullOrPush].box.w * 0.28
           })
-          .attr('y', com[pullOrPush].box.h * 0.25)
+          .attr('y', reserved[pullOrPush].box.h * 0.25)
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.12)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.12)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
-        com[pullOrPush].child.warningLine2 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine2 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'constraints, some'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.24
+            return reserved[pullOrPush].box.w * 0.24
           })
-          .attr('y', com[pullOrPush].box.h * 0.37)
+          .attr('y', reserved[pullOrPush].box.h * 0.37)
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.12)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.12)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
-        com[pullOrPush].child.warningLine3 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'changes will be lost.'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.2
+            return reserved[pullOrPush].box.w * 0.2
           })
-          .attr('y', com[pullOrPush].box.h * 0.49)
+          .attr('y', reserved[pullOrPush].box.h * 0.49)
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.12)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.12)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
-        com[pullOrPush].child.warningLine41 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine41 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return '10:00'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.24
+            return reserved[pullOrPush].box.w * 0.24
           })
-          .attr('y', com[pullOrPush].box.h * 0.69)
+          .attr('y', reserved[pullOrPush].box.h * 0.69)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'middle')
-          .attr('font-size', com[pullOrPush].box.h * 0.15)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.15)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
         function countDown () {
@@ -978,7 +1079,7 @@ let mainSchedBlocksController = function (optIn) {
             var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
             var seconds = Math.floor((distance % (1000 * 60)) / 1000)
 
-            com[pullOrPush].child.warningLine41
+            reserved[pullOrPush].child.warningLine41
               .text(function (d) {
                 return (minutes < 10 ? '0' + minutes : minutes) + ':' + (seconds < 10 ? '0' + seconds : seconds)
               })
@@ -990,32 +1091,32 @@ let mainSchedBlocksController = function (optIn) {
           }, 1000)
         }
         countDown()
-        com[pullOrPush].child.warningLine42 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine42 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'Please Push'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.35
+            return reserved[pullOrPush].box.w * 0.35
           })
-          .attr('y', com[pullOrPush].box.h * 0.69)
+          .attr('y', reserved[pullOrPush].box.h * 0.69)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.15)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.15)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
-        com[pullOrPush].child.warningLine1 = com[pullOrPush].g.append('text')
+        reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'Please Push'
           })
           .attr('x', function () {
-            return com[pullOrPush].box.w * 0.35
+            return reserved[pullOrPush].box.w * 0.35
           })
-          .attr('y', com[pullOrPush].box.h * 0.69)
+          .attr('y', reserved[pullOrPush].box.h * 0.69)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .attr('font-size', com[pullOrPush].box.h * 0.15)
-          .attr('dy', com[pullOrPush].box.h * 0.02)
+          .attr('font-size', reserved[pullOrPush].box.h * 0.15)
+          .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', '#000000')
       }
@@ -1028,16 +1129,16 @@ let mainSchedBlocksController = function (optIn) {
       //   .x(function (d) { return d.x })
       //   .y(function (d) { return d.y })
       // let dataPoints = [
-      //   {x: com.box.w * 0, y: com.box.h * 0.31},
-      //   {x: com.box.w * 0.56, y: com.box.h * 0.31},
-      //   {x: com.box.w * 0.56, y: com.box.h * 0.85},
-      //   {x: com.box.w * 0.33, y: com.box.h * 1},
-      //   {x: com.box.w * 0.1, y: com.box.h * 0.85},
-      //   {x: com.box.w * 0.1, y: com.box.h * 0.6},
-      //   {x: com.box.w * 0.1, y: com.box.h * 0.6},
-      //   {x: com.box.w * 0, y: com.box.h * 0.6}
+      //   {x: reserved.box.w * 0, y: reserved.box.h * 0.31},
+      //   {x: reserved.box.w * 0.56, y: reserved.box.h * 0.31},
+      //   {x: reserved.box.w * 0.56, y: reserved.box.h * 0.85},
+      //   {x: reserved.box.w * 0.33, y: reserved.box.h * 1},
+      //   {x: reserved.box.w * 0.1, y: reserved.box.h * 0.85},
+      //   {x: reserved.box.w * 0.1, y: reserved.box.h * 0.6},
+      //   {x: reserved.box.w * 0.1, y: reserved.box.h * 0.6},
+      //   {x: reserved.box.w * 0, y: reserved.box.h * 0.6}
       // ]
-      // com.pull.child.warningTriangle = com.pull.g.append('path')
+      // reserved.pull.child.warningTriangle = reserved.pull.g.append('path')
       //   .data([dataPoints])
       //   .attr('class', 'line')
       //   .attr('d', lineGenerator)
@@ -1046,36 +1147,36 @@ let mainSchedBlocksController = function (optIn) {
 
       createWarning('pull')
 
-      com.pull.child.buttonBack = com.g.append('rect')
+      reserved.pull.child.buttonBack = reserved.g.append('rect')
         .attr('width', 18)
         .attr('height', 18)
-        .attr('x', com.box.w * 0.4 - 9)
-        .attr('y', com.box.h * 0.52 - 9)
+        .attr('x', reserved.box.w * 0.4 - 9)
+        .attr('y', reserved.box.h * 0.52 - 9)
         .attr('fill', colorPalette.dark.greyBlue[1])
         .attr('stroke', '#000000')
-      com.pull.child.buttonIcon = com.g.append('svg:image')
+      reserved.pull.child.buttonIcon = reserved.g.append('svg:image')
         .attr('class', 'icon')
         .attr('xlink:href', '/static/arrow-up.svg')
         .attr('width', 25)
         .attr('height', 25)
-        .attr('x', com.box.w * 0.4 - 12.5)
-        .attr('y', com.box.h * 0.52 - 12.5)
+        .attr('x', reserved.box.w * 0.4 - 12.5)
+        .attr('y', reserved.box.h * 0.52 - 12.5)
         .on('click', function () {
           pullData()
         })
-      com.pull.child.infoText = com.g.append('text')
+      reserved.pull.child.infoText = reserved.g.append('text')
         .text(function (d) {
           return 'PULL'
         })
-        .attr('x', com.box.w * 0.4 - 15)
-        .attr('y', com.box.h * 0.55)
+        .attr('x', reserved.box.w * 0.4 - 15)
+        .attr('y', reserved.box.h * 0.55)
         .attr('text-anchor', 'end')
         .style('font-weight', 'bold')
-        .style('font-size', com.box.h * 0.07)
+        .style('font-size', reserved.box.h * 0.07)
         .style('pointer-events', 'none')
         .style('fill', colorPalette.dark.greyBlue[0])
 
-      com.pull.g.attr('opacity', 0)
+      reserved.pull.g.attr('opacity', 0)
         .transition()
         .duration(1000)
         .ease(d3.easeLinear)
@@ -1083,34 +1184,34 @@ let mainSchedBlocksController = function (optIn) {
     }
     function createPushButton () {
       createWarning('push')
-      com.push.child.buttonBack = com.g.append('rect')
+      reserved.push.child.buttonBack = reserved.g.append('rect')
         .attr('width', 18)
         .attr('height', 18)
-        .attr('x', com.box.w * 0.6 - 9)
-        .attr('y', com.box.h * 0.52 - 9)
+        .attr('x', reserved.box.w * 0.6 - 9)
+        .attr('y', reserved.box.h * 0.52 - 9)
         .attr('fill', colorPalette.dark.greyBlue[1])
         .attr('stroke', '#000000')
-      com.push.child.buttonIcon = com.g.append('svg:image')
+      reserved.push.child.buttonIcon = reserved.g.append('svg:image')
         .attr('class', 'icon')
         .attr('xlink:href', '/static/arrow-up.svg')
         .attr('width', 25)
         .attr('height', 25)
-        .attr('x', com.box.w * 0.6 - 12.5)
-        .attr('y', com.box.h * 0.52 - 12.5)
+        .attr('x', reserved.box.w * 0.6 - 12.5)
+        .attr('y', reserved.box.h * 0.52 - 12.5)
 
-      com.push.child.infoText = com.g.append('text')
+      reserved.push.child.infoText = reserved.g.append('text')
         .text(function (d) {
           return 'PUSH'
         })
-        .attr('x', com.box.w * 0.6 + 15)
-        .attr('y', com.box.h * 0.55)
+        .attr('x', reserved.box.w * 0.6 + 15)
+        .attr('y', reserved.box.h * 0.55)
         .attr('text-anchor', 'start')
         .style('font-weight', 'bold')
-        .style('font-size', com.box.h * 0.07)
+        .style('font-size', reserved.box.h * 0.07)
         .style('pointer-events', 'none')
         .style('fill', colorPalette.dark.greyBlue[0])
 
-      com.push.g.attr('opacity', 0)
+      reserved.push.g.attr('opacity', 0)
         .transition()
         .duration(1000)
         .ease(d3.easeLinear)
@@ -1118,37 +1219,37 @@ let mainSchedBlocksController = function (optIn) {
     }
 
     function initPull () {
-      com.pull.box = {
-        x: com.pull.box.x * com.box.w,
-        y: com.pull.box.y * com.box.h,
-        w: com.pull.box.w * com.box.w,
-        h: com.pull.box.h * com.box.h
+      reserved.pull.box = {
+        x: reserved.pull.box.x * reserved.box.w,
+        y: reserved.pull.box.y * reserved.box.h,
+        w: reserved.pull.box.w * reserved.box.w,
+        h: reserved.pull.box.h * reserved.box.h
       }
-      com.pull.g = com.g.append('g')
-        .attr('transform', 'translate(' + com.pull.box.x + ',' + com.pull.box.y + ')')
+      reserved.pull.g = reserved.g.append('g')
+        .attr('transform', 'translate(' + reserved.pull.box.x + ',' + reserved.pull.box.y + ')')
     }
     function initPush () {
-      com.push.box = {
-        x: com.push.box.x * com.box.w,
-        y: com.push.box.y * com.box.h,
-        w: com.push.box.w * com.box.w,
-        h: com.push.box.h * com.box.h
+      reserved.push.box = {
+        x: reserved.push.box.x * reserved.box.w,
+        y: reserved.push.box.y * reserved.box.h,
+        w: reserved.push.box.w * reserved.box.w,
+        h: reserved.push.box.h * reserved.box.h
       }
-      com.push.g = com.g.append('g')
-        .attr('transform', 'translate(' + com.push.box.x + ',' + com.push.box.y + ')')
+      reserved.push.g = reserved.g.append('g')
+        .attr('transform', 'translate(' + reserved.push.box.x + ',' + reserved.push.box.y + ')')
     }
 
     function initData (optIn) {
-      com = optIn
-      com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
+      reserved = optIn
+      reserved.g.attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
 
       initPull()
       initPush()
-      // com.g.append('rect')
+      // reserved.g.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
-      //   .attr('width', com.box.w)
-      //   .attr('height', com.box.h)
+      //   .attr('width', reserved.box.w)
+      //   .attr('height', reserved.box.h)
       //   .attr('fill', '#999999')
       createPushButton()
       createPullButton()
@@ -1161,7 +1262,7 @@ let mainSchedBlocksController = function (optIn) {
     this.updateData = updateData
   }
   let SvgSchedulingBlocksOverview = function () {
-    let com = {}
+    let reserved = {}
     let template = {
       tag: 'schedulingBlocksOverview',
       g: undefined,
@@ -1181,60 +1282,64 @@ let mainSchedBlocksController = function (optIn) {
     this.template = template
 
     function initShrink () {
-      com.shrinked.box.x = com.box.w * com.shrinked.box.x
-      com.shrinked.box.y = com.box.h * com.shrinked.box.y
-      com.shrinked.box.w = com.box.w * com.shrinked.box.w
-      com.shrinked.box.h = com.box.h * com.shrinked.box.h
+      reserved.shrinked.box.x = reserved.box.w * reserved.shrinked.box.x
+      reserved.shrinked.box.y = reserved.box.h * reserved.shrinked.box.y
+      reserved.shrinked.box.w = reserved.box.w * reserved.shrinked.box.w
+      reserved.shrinked.box.h = reserved.box.h * reserved.shrinked.box.h
 
-      com.shrinked.g = com.g.append('g')
-        .attr('transform', 'translate(' + com.shrinked.box.x + ',' + com.shrinked.box.y + ')')
-      // com.shrinked.g.append('rect')
+      reserved.shrinked.g = reserved.g.append('g')
+        .attr('transform', 'translate(' + reserved.shrinked.box.x + ',' + reserved.shrinked.box.y + ')')
+      // reserved.shrinked.g.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
-      //   .attr('width', com.shrinked.box.w)
-      //   .attr('height', com.shrinked.box.h)
+      //   .attr('width', reserved.shrinked.box.w)
+      //   .attr('height', reserved.shrinked.box.h)
       //   .attr('fill', '#aaaaaa')
-      com.shrinked.child.centralBlockG = com.shrinked.g.append('g')
+      reserved.shrinked.child.centralBlockG = reserved.shrinked.g.append('g')
     }
     function initContent () {
-      com.content.box.x = com.box.w * com.content.box.x
-      com.content.box.y = com.box.h * com.content.box.y
-      com.content.box.w = com.box.w * com.content.box.w
-      com.content.box.h = com.box.h * com.content.box.h
+      reserved.content.box.x = reserved.box.w * reserved.content.box.x
+      reserved.content.box.y = reserved.box.h * reserved.content.box.y
+      reserved.content.box.w = reserved.box.w * reserved.content.box.w
+      reserved.content.box.h = reserved.box.h * reserved.content.box.h
 
-      com.content.g = com.g.append('g')
-        .attr('transform', 'translate(' + com.content.box.x + ',' + com.content.box.y + ')')
-      // com.content.g.append('rect')
+      reserved.content.g = reserved.g.append('g')
+        .attr('transform', 'translate(' + reserved.content.box.x + ',' + reserved.content.box.y + ')')
+      // reserved.content.g.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
-      //   .attr('width', com.content.box.w)
-      //   .attr('height', com.content.box.h)
+      //   .attr('width', reserved.content.box.w)
+      //   .attr('height', reserved.content.box.h)
       //   .attr('fill', '#cccccc')
-      com.content.child.centralBlockG = com.content.g.append('g')
+      reserved.content.child.centralBlockG = reserved.content.g.append('g')
     }
     function formatData () {
       let res = {}
-      for (var key in data.blocks) {
-        for (var i = 0; i < data.blocks[key].length; i++) {
-          let ns = data.blocks[key][i].metaData.nSched
-          if (ns in res) res[ns].push(data.blocks[key][i])
-          else res[ns] = [data.blocks[key][i]]
+      console.log(shared.main.data.copy.blocks);
+      for (var key in shared.main.data.copy.blocks) {
+        console.log(key, shared.main.data.copy.blocks[key]);
+        for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
+          let ns = shared.main.data.copy.blocks[key][i].metaData.nSched
+          if (ns in res) res[ns].push(shared.main.data.copy.blocks[key][i])
+          else res[ns] = [shared.main.data.copy.blocks[key][i]]
         }
       }
-      com.data.formatedData = []
+      console.log(res);
+      reserved.data.formatedData = []
       Object.keys(res).map(function (key, index) {
-        com.data.formatedData.push({scheduleId: key, blocks: res[key]})
+        reserved.data.formatedData.push({scheduleId: key, blocks: res[key]})
       })
+      console.log(reserved.data.formatedData)
     }
     function schedBlocksOverEmiter (data) {
       blockQueueCreator.focusOnSchedBlocks(data)
     }
     function schedBlocksOverRecepter (data) {
-      com.shrinked.child.schedulingBlocks.selectAll('rect.background')
+      reserved.shrinked.child.schedulingBlocks.selectAll('rect.background')
         .each(function (d) {
           if (Number(d.scheduleId) === data.data.metaData.nSched) {
-            let length = com.data.formatedData.length
-            let dim = {h: (length < 19 ? ((com.shrinked.box.h) * 0.8) : ((com.shrinked.box.h) * 0.5)), w: (com.shrinked.box.h) * 0.8}
+            let length = reserved.data.formatedData.length
+            let dim = {h: (length < 19 ? ((reserved.shrinked.box.h) * 0.8) : ((reserved.shrinked.box.h) * 0.5)), w: (reserved.shrinked.box.h) * 0.8}
             d3.select(this)
               .attr('fill', colorPalette.dark.greyBlue[6])
               .attr('stroke', colorPalette.dark.greyBlue[3])
@@ -1250,11 +1355,11 @@ let mainSchedBlocksController = function (optIn) {
       blockQueueCreator.unfocusOnSchedBlocks(data)
     }
     function schedBlocksOutRecepter (data) {
-      com.shrinked.child.schedulingBlocks.selectAll('rect.background')
+      reserved.shrinked.child.schedulingBlocks.selectAll('rect.background')
         .each(function (d) {
           if (Number(d.scheduleId) === data.data.metaData.nSched) {
-            let length = com.data.formatedData.length
-            let dim = {h: (length < 19 ? ((com.shrinked.box.h) * 0.8) : ((com.shrinked.box.h) * 0.5)), w: (com.shrinked.box.h) * 0.8}
+            let length = reserved.data.formatedData.length
+            let dim = {h: (length < 19 ? ((reserved.shrinked.box.h) * 0.8) : ((reserved.shrinked.box.h) * 0.5)), w: (reserved.shrinked.box.h) * 0.8}
             d3.select(this)
               .attr('fill', colorPalette.dark.greyBlue[7])
               .attr('stroke', colorPalette.dark.greyBlue[4])
@@ -1267,23 +1372,23 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.schedBlocksOutRecepter = schedBlocksOutRecepter
     function populateShrink () {
-      let length = com.data.formatedData.length
-      let dim = {h: (length < 19 ? ((com.shrinked.box.h) * 0.8) : ((com.shrinked.box.h) * 0.5)), w: (com.shrinked.box.h) * 0.8}
-      com.shrinked.dim = dim
+      let length = reserved.data.formatedData.length
+      let dim = {h: (length < 19 ? ((reserved.shrinked.box.h) * 0.8) : ((reserved.shrinked.box.h) * 0.5)), w: (reserved.shrinked.box.h) * 0.8}
+      reserved.shrinked.dim = dim
       length += 1
-      let offset = (com.box.w - (length < 19
+      let offset = (reserved.box.w - (length < 19
         ? (dim.w * 1.1) * length
         : (length % 2 === 0
           ? ((dim.w * 1.1) * (length - (length % 2)) - ((dim.w * 1.1) * (length - (length % 2))) / 2)
           : ((dim.w * 1.1) / 2 * length)))) * 0.5
       length -= 1
 
-      com.shrinked.child.schedulingBlocks = com.shrinked.g
+      reserved.shrinked.child.schedulingBlocks = reserved.shrinked.g
         .selectAll('g.schedulingBlocks')
-        .data(com.data.formatedData, function (d) {
+        .data(reserved.data.formatedData, function (d) {
           return d.scheduleId
         })
-      let enterSchedulingBlocks = com.shrinked.child.schedulingBlocks
+      let enterSchedulingBlocks = reserved.shrinked.child.schedulingBlocks
         .enter()
         .append('g')
         .attr('class', 'schedulingBlocks')
@@ -1294,7 +1399,7 @@ let mainSchedBlocksController = function (optIn) {
               : (length % 2 === 0
                 ? ((dim.w * 1.1) * (i - (i % 2)) - ((dim.w * 1.1) * (i - (i % 2))) / 2)
                 : ((dim.w * 1.1) / 2 * i)))),
-            y: (length < 19 ? 0 : ((com.shrinked.box.h / 2) * (i % 2)))
+            y: (length < 19 ? 0 : ((reserved.shrinked.box.h / 2) * (i % 2)))
           }
           d.translate = translate
           return 'translate(' + translate.x + ',' + translate.y + ')'
@@ -1320,7 +1425,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-width', 1.8)
         .attr('stroke-dasharray', [0, dim.w * 0.5, dim.w * 0.5 + dim.h * 0.5, dim.h * 0.5 + dim.w * 0.5, dim.h * 0.5 + dim.w * 0.5, dim.h * 0.5])
         .on('mouseover', function (d) {
-          if (com.data.focusOn === d.scheduleId) return
+          if (shared.main.data.copy.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', colorPalette.dark.greyBlue[6])
             .attr('stroke', colorPalette.dark.greyBlue[3])
@@ -1331,7 +1436,7 @@ let mainSchedBlocksController = function (optIn) {
           schedBlocksOverEmiter(d)
         })
         .on('mouseout', function (d) {
-          if (com.data.focusOn === d.scheduleId) return
+          if (shared.main.data.copy.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', colorPalette.dark.greyBlue[7])
             .attr('stroke', colorPalette.dark.greyBlue[4])
@@ -1351,9 +1456,9 @@ let mainSchedBlocksController = function (optIn) {
               })
               .on('end', loop)
           }
-          if (com.data.focusOn === d.scheduleId) {
+          if (shared.main.data.copy.focusOn === d.scheduleId) {
             unfocusOnSchedulingBlocks()
-            com.data.focusOn = undefined
+            shared.main.data.copy.focusOn = undefined
             d3.select(this)
               .attr('fill', colorPalette.dark.greyBlue[7])
               .attr('stroke', colorPalette.dark.greyBlue[4])
@@ -1362,11 +1467,11 @@ let mainSchedBlocksController = function (optIn) {
               .attr('stroke-width', 1.8)
               .attr('stroke-dasharray', [4, 4])
           } else {
-            if (com.data.focusOn !== undefined) {
-              schedBlocksOutRecepter({data: {metaData: {nSched: Number(com.data.focusOn)}}})
-              schedBlocksOutEmiter({scheduleId: com.data.focusOn})
+            if (shared.main.data.copy.focusOn !== undefined) {
+              schedBlocksOutRecepter({data: {metaData: {nSched: Number(shared.main.data.copy.focusOn)}}})
+              schedBlocksOutEmiter({scheduleId: shared.main.data.copy.focusOn})
             }
-            com.data.focusOn = d.scheduleId
+            shared.main.data.copy.focusOn = d.scheduleId
             focusOnSchedulingBlocks(d)
             d3.select(this)
               .attr('stroke-dashoffset', 0)
@@ -1419,7 +1524,7 @@ let mainSchedBlocksController = function (optIn) {
             return dimBlocks
           })
           .attr('fill', function (d, i) {
-            return com.style.recCol(d)
+            return reserved.style.recCol(d)
           })
           .style('opacity', 0.7)
           .attr('stroke', 'black')
@@ -1427,8 +1532,8 @@ let mainSchedBlocksController = function (optIn) {
           .style('pointer-events', 'none')
       })
 
-      com.shrinked.child.schedulingBlocks = enterSchedulingBlocks.merge(com.shrinked.child.schedulingBlocks)
-      com.shrinked.child.schedulingBlocks.each(function (d) {
+      reserved.shrinked.child.schedulingBlocks = enterSchedulingBlocks.merge(reserved.shrinked.child.schedulingBlocks)
+      reserved.shrinked.child.schedulingBlocks.each(function (d) {
         d3.select(this).selectAll('rect.subBlocks')
           .data(d.blocks, function (d) {
             return d.obId
@@ -1436,16 +1541,16 @@ let mainSchedBlocksController = function (optIn) {
           .transition()
           .duration(800)
           .attr('fill', function (d, i) {
-            return com.style.recCol(d)
+            return reserved.style.recCol(d)
           })
       })
 
-      if (com.shrinked.child.newButton) return
-      com.shrinked.child.newButton = com.shrinked.g
+      if (reserved.shrinked.child.newButton) return
+      reserved.shrinked.child.newButton = reserved.shrinked.g
         .append('g')
         .attr('class', 'newButton')
-        .attr('transform', 'translate(' + offset + ',' + (length < 19 ? 0 : (com.shrinked.box.h * 0.25)) + ')')
-      com.shrinked.child.newButton.append('rect')
+        .attr('transform', 'translate(' + offset + ',' + (length < 19 ? 0 : (reserved.shrinked.box.h * 0.25)) + ')')
+      reserved.shrinked.child.newButton.append('rect')
         .attr('x', function (d, i) {
           return dim.w * 0.05
         })
@@ -1466,7 +1571,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke', 'none')
         .attr('stroke-width', 1.8)
         .on('mouseover', function (d) {
-          // if (com.data.focusOn === d.scheduleId) return
+          // if (shared.main.data.copy.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', colorPalette.dark.greyBlue[3])
             .attr('stroke', colorPalette.dark.greyBlue[3])
@@ -1474,7 +1579,7 @@ let mainSchedBlocksController = function (optIn) {
             .duration(400)
         })
         .on('mouseout', function (d) {
-          // if (com.data.focusOn === d.scheduleId) return
+          // if (shared.main.data.copy.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', colorPalette.dark.greyBlue[5])
             .attr('stroke', 'none')
@@ -1484,7 +1589,7 @@ let mainSchedBlocksController = function (optIn) {
         .on('click', function (d) {
           console.log('new')
         })
-      com.shrinked.child.newButton.append('line')
+      reserved.shrinked.child.newButton.append('line')
         .attr('x1', dim.h * 0.5)
         .attr('x2', dim.h * 0.5)
         .attr('y1', dim.h * 0.3)
@@ -1492,7 +1597,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke', colorPalette.dark.greyBlue[9])
         .attr('stroke-width', 4)
         .style('pointer-events', 'none')
-      com.shrinked.child.newButton.append('line')
+      reserved.shrinked.child.newButton.append('line')
         .attr('x1', dim.h * 0.3)
         .attr('x2', dim.h * 0.7)
         .attr('y1', dim.h * 0.5)
@@ -1503,14 +1608,14 @@ let mainSchedBlocksController = function (optIn) {
     }
 
     function initData (optIn) {
-      com = optIn
-      com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
+      reserved = optIn
+      reserved.g.attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
 
-      com.style = {}
-      com.style.recCol = optIn.recCol
-      if (!hasVar(com.style.recCol)) {
-        com.style.recCol = function (optIn) {
-          if (optIn.endTime < com.data.currentTime.time) return '#626262'
+      reserved.style = {}
+      reserved.style.recCol = optIn.recCol
+      if (!hasVar(reserved.style.recCol)) {
+        reserved.style.recCol = function (optIn) {
+          if (optIn.endTime < Number(shared.main.data.server.timeOfNight.now)) return '#626262'
           let state = hasVar(optIn.state)
             ? optIn.state
             : optIn.exeState.state
@@ -1538,13 +1643,13 @@ let mainSchedBlocksController = function (optIn) {
 
     function createSchedulingBlocksInfoPanel (data) {
       let dim = {
-        w: com.content.box.w * 0.42,
-        h: com.content.box.h * 0.9,
-        margH: com.content.box.h * 0.05
+        w: reserved.content.box.w * 0.42,
+        h: reserved.content.box.h * 0.9,
+        margH: reserved.content.box.h * 0.05
       }
 
-      com.content.child.schedulingBlocksInfoPanelG = com.content.g.append('g')
-      let fo = com.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
+      reserved.content.child.schedulingBlocksInfoPanelG = reserved.content.g.append('g')
+      let fo = reserved.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
         .style('width', dim.w + 'px')
         .style('height', dim.h + 'px')
         .style('x', 0 + 'px')
@@ -1657,12 +1762,13 @@ let mainSchedBlocksController = function (optIn) {
         }
       }
 
-      // data.blocks[0].targetName
-      // data.blocks[0].targetId
-      // data.blocks[0].targetPos
+      // data.copy.blocks[0].targetName
+      // data.copy.blocks[0].targetId
+      // data.copy.blocks[0].targetPos
 
       let schedulingBlock = {}
       schedulingBlock.target = {}
+      console.log(data,shared.main.data.copy);
       schedulingBlock.target.id = data.blocks[0].targetId
       schedulingBlock.target.name = data.blocks[0].targetName
       schedulingBlock.target.pos = data.blocks[0].targetPos
@@ -1672,8 +1778,8 @@ let mainSchedBlocksController = function (optIn) {
       schedulingBlock.information.info2 = 'info'
       schedulingBlock.information.info3 = 'info'
 
-      schedulingBlock.comment = {}
-      schedulingBlock.comment.comment = 'This is a very very very very very very very very very very very very very very very very very very very very very very very very long comment'
+      schedulingBlock.reservedment = {}
+      schedulingBlock.reservedment.reservedment = 'This is a very very very very very very very very very very very very very very very very very very very very very very very very long reservedment'
 
       for (let field in schedulingBlock) {
         let info = schedulingBlock[field]
@@ -1759,15 +1865,15 @@ let mainSchedBlocksController = function (optIn) {
       }
 
       // let dim = {
-      //   w: com.content.box.w * 0.35,
-      //   h: com.content.box.h * 0.9,
-      //   margH: com.content.box.h * 0.05
+      //   w: reserved.content.box.w * 0.35,
+      //   h: reserved.content.box.h * 0.9,
+      //   margH: reserved.content.box.h * 0.05
       // }
       // let borderSize = 2
       //
-      // com.content.child.schedulingBlocksInfoPanelG = com.content.g.append('g')
+      // reserved.content.child.schedulingBlocksInfoPanelG = reserved.content.g.append('g')
       // let heightLine = 16
-      // let fo = com.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
+      // let fo = reserved.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
       //   .style('width', dim.w + 'px')
       //   .style('height', dim.h + 'px')
       //   .style('x', 0 + 'px')
@@ -1816,7 +1922,7 @@ let mainSchedBlocksController = function (optIn) {
       //   .style('color', '#000000')
       //   .style('font-size', 10 + 'px')
       // div.append('label')
-      //   .html(': ' + data.blocks[0].targetName)
+      //   .html(': ' + data.copy.blocks[0].targetName)
       //   .style('float', 'left')
       //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
       //   .style('height', heightLine + 'px')
@@ -1838,7 +1944,7 @@ let mainSchedBlocksController = function (optIn) {
       //   .style('color', '#000000')
       //   .style('font-size', 10 + 'px')
       // div.append('label')
-      //   .html(': ' + data.blocks[0].targetId)
+      //   .html(': ' + data.copy.blocks[0].targetId)
       //   .style('float', 'left')
       //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
       //   .style('height', heightLine + 'px')
@@ -1860,7 +1966,7 @@ let mainSchedBlocksController = function (optIn) {
       //   .style('color', '#000000')
       //   .style('font-size', 10 + 'px')
       // div.append('label')
-      //   .html(': ' + data.blocks[0].targetPos)
+      //   .html(': ' + data.copy.blocks[0].targetPos)
       //   .style('float', 'left')
       //   .style('width', (dim.w) * 0.5 - borderSize * 1 + 'px')
       //   .style('height', heightLine + 'px')
@@ -1953,17 +2059,17 @@ let mainSchedBlocksController = function (optIn) {
     }
     function createBlocksInScheduleIcons (data) {
       let dim = {
-        w: com.content.box.w * 0.10,
-        h: com.content.box.h * 0.9,
-        margH: com.content.box.h * 0.05
+        w: reserved.content.box.w * 0.10,
+        h: reserved.content.box.h * 0.9,
+        margH: reserved.content.box.h * 0.05
       }
       let position = {
-        x: com.content.box.w * 0.45,
+        x: reserved.content.box.w * 0.45,
         y: 0
       }
-      let dimBlocks = {h: (com.shrinked.box.h) * 0.6, w: (com.shrinked.box.h) * 0.6}
+      let dimBlocks = {h: (reserved.shrinked.box.h) * 0.6, w: (reserved.shrinked.box.h) * 0.6}
       let length = data.blocks.length
-      let subBlocks = com.content.g
+      let subBlocks = reserved.content.g
         .selectAll('g.subBlocks')
         .data(data.blocks, function (d) {
           return d.metaData.blockName
@@ -2005,7 +2111,7 @@ let mainSchedBlocksController = function (optIn) {
           (dimBlocks.h) * 0.5 + (dim.w) * 0.5,
           (dimBlocks.h) * 0.5])
         .on('mouseover', function (d) {
-          if (com.data.focusOn === d.scheduleId) return
+          if (shared.main.data.copy.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', colorPalette.dark.greyBlue[6])
             .attr('stroke', colorPalette.dark.greyBlue[3])
@@ -2016,7 +2122,7 @@ let mainSchedBlocksController = function (optIn) {
           schedBlocksOverEmiter(d)
         })
         .on('mouseout', function (d) {
-          if (com.data.focusOn === d.scheduleId) return
+          if (shared.main.data.copy.focusOn === d.scheduleId) return
           d3.select(this)
             .attr('fill', colorPalette.dark.greyBlue[7])
             .attr('stroke', colorPalette.dark.greyBlue[4])
@@ -2051,9 +2157,9 @@ let mainSchedBlocksController = function (optIn) {
               .on('end', loop)
           }
           createBlocksInfoPanel(d)
-          // if (com.data.focusOn === d.scheduleId) {
+          // if (shared.main.data.copy.focusOn === d.scheduleId) {
           //   unfocusOnSchedulingBlocks()
-          //   com.data.focusOn = undefined
+          //   shared.main.data.copy.focusOn = undefined
           //   d3.select(this)
           //     .attr('fill', colorPalette.dark.greyBlue[7])
           //     .attr('stroke', colorPalette.dark.greyBlue[4])
@@ -2062,11 +2168,11 @@ let mainSchedBlocksController = function (optIn) {
           //     .attr('stroke-width', 1.8)
           //     .attr('stroke-dasharray', [4, 4])
           // } else {
-          //   if (com.data.focusOn !== undefined) {
-          //     schedBlocksOutRecepter({data: {metaData: {nSched: Number(com.data.focusOn)}}})
-          //     schedBlocksOutEmiter({scheduleId: com.data.focusOn})
+          //   if (shared.main.data.copy.focusOn !== undefined) {
+          //     schedBlocksOutRecepter({data: {metaData: {nSched: Number(shared.main.data.copy.focusOn)}}})
+          //     schedBlocksOutEmiter({scheduleId: shared.main.data.copy.focusOn})
           //   }
-          //   com.data.focusOn = d.scheduleId
+          //   shared.main.data.copy.focusOn = d.scheduleId
           //   focusOnSchedulingBlocks(d)
           //   d3.select(this)
           //     .attr('stroke-dashoffset', 0)
@@ -2091,7 +2197,7 @@ let mainSchedBlocksController = function (optIn) {
           return dimBlocks.h - 6
         })
         .attr('fill', function (d, i) {
-          return com.style.recCol(d)
+          return reserved.style.recCol(d)
         })
         .style('opacity', 0.7)
         .attr('stroke', 'black')
@@ -2129,12 +2235,11 @@ let mainSchedBlocksController = function (optIn) {
           .transition()
           .duration(800)
           .attr('fill', function () {
-            return com.style.recCol(d)
+            return reserved.style.recCol(d)
           })
       })
     }
     function createBlocksInfoPanel (data) {
-      console.log(data);
       let formatedData = {}
       formatedData.title = data.metaData.blockName
       formatedData.data = {}
@@ -2157,16 +2262,16 @@ let mainSchedBlocksController = function (optIn) {
       formatedData.data.telescopes.telescopes = data.telIds
 
       let dim = {
-        w: com.content.box.w * 0.42,
-        h: com.content.box.h * 0.9,
-        margH: com.content.box.h * 0.05
+        w: reserved.content.box.w * 0.42,
+        h: reserved.content.box.h * 0.9,
+        margH: reserved.content.box.h * 0.05
       }
 
-      com.content.child.schedulingBlocksInfoPanelG = com.content.g.append('g')
-      let fo = com.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
+      reserved.content.child.schedulingBlocksInfoPanelG = reserved.content.g.append('g')
+      let fo = reserved.content.child.schedulingBlocksInfoPanelG.append('foreignObject')
         .style('width', dim.w + 'px')
         .style('height', dim.h + 'px')
-        .style('x', com.content.box.w * 0.57 + 'px')
+        .style('x', reserved.content.box.w * 0.57 + 'px')
         .style('y', dim.margH + 'px')
 
       let titleBorder = 2
@@ -2361,17 +2466,14 @@ let mainSchedBlocksController = function (optIn) {
     }
 
     function removeSchedulingBlocksInfoPanel (data) {
-      if (com.content.child.schedulingBlocksInfoPanelG) com.content.child.schedulingBlocksInfoPanelG.remove()
+      if (reserved.content.child.schedulingBlocksInfoPanelG) reserved.content.child.schedulingBlocksInfoPanelG.remove()
     }
     function removeCentralBlock (data) {
-      console.log('removecentrla');
-      com.shrinked.child.centralBlockG.selectAll('*').remove()
-      com.content.child.centralBlockG.selectAll('*').remove()
-
+      reserved.shrinked.child.centralBlockG.selectAll('*').remove()
+      reserved.content.child.centralBlockG.selectAll('*').remove()
     }
     function removeBlocksInScheduleIcons () {
-      console.log('removerigth');
-      com.content.g
+      reserved.content.g
         .selectAll('g.subBlocks')
         .remove()
     }
@@ -2391,23 +2493,23 @@ let mainSchedBlocksController = function (optIn) {
     this.unfocusOnSchedulingBlocks = unfocusOnSchedulingBlocks
 
     function shrink () {
-      com.extended.child.back.transition()
+      reserved.extended.child.back.transition()
         .duration(1500)
         .ease(d3.easeLinear)
         .style('opacity', 0)
-      com.extended.child.shrinkButton.transition()
+      reserved.extended.child.shrinkButton.transition()
         .duration(1500)
         .ease(d3.easeLinear)
         .style('opacity', 0)
-      com.extended.child.shrinkButtonHitBox
+      reserved.extended.child.shrinkButtonHitBox
         .on('click', extend)
         .style('pointer-events', 'none')
 
-      com.shrinked.child.shrinkButton.transition()
+      reserved.shrinked.child.shrinkButton.transition()
         .duration(1500)
         .ease(d3.easeLinear)
         .style('opacity', 1)
-      com.shrinked.child.shrinkButtonHitBox
+      reserved.shrinked.child.shrinkButtonHitBox
         .style('pointer-events', 'auto')
     }
     this.shrink = shrink
@@ -2420,21 +2522,21 @@ let mainSchedBlocksController = function (optIn) {
     function updateData () {
       formatData()
       populateShrink()
-      // for (let i = 0; i < com.data.formatedData.length; i++) {
-      //   if (com.data.formatedData[i].scheduleId === com.data.focusOn) {
-      //     for (let j = 0; j < com.data.formatedData[i].blocks.length; j++) {
-      //       console.log(com.data.formatedData[i].blocks[j].exeState.state);
+      // for (let i = 0; i < reserved.data.formatedData.length; i++) {
+      //   if (reserved.data.formatedData[i].scheduleId === shared.main.data.copy.focusOn) {
+      //     for (let j = 0; j < reserved.data.formatedData[i].blocks.length; j++) {
+      //       console.log(reserved.data.formatedData[i].blocks[j].exeState.state);
       //     }
       //   }
       // }
-      if (data.focusOn) {
-        for (let i = 0; i < com.data.formatedData.length; i++) {
-          if (com.data.formatedData[i].scheduleId === data.focusOn) createBlocksInScheduleIcons(com.data.formatedData[i])
+      if (shared.main.data.copy.focusOn) {
+        for (let i = 0; i < reserved.data.formatedData.length; i++) {
+          if (reserved.data.formatedData[i].scheduleId === shared.main.data.copy.focusOn) createBlocksInScheduleIcons(reserved.data.formatedData[i])
         }
       }
-      // com.shrinked.child.schedulingBlocks.selectAll('rect.subBlocks')
+      // reserved.shrinked.child.schedulingBlocks.selectAll('rect.subBlocks')
       //   .attr('fill', function (d, i) {
-      //     return com.style.recCol(d)
+      //     return reserved.style.recCol(d)
       //   })
     }
     this.updateData = updateData
@@ -2539,27 +2641,27 @@ let mainSchedBlocksController = function (optIn) {
         enabled: false
       }
     }
-    let com = template
+    let reserved = template
     let defaultPanel
 
     function createDefaultPanel () {
-      com.panelManager = new PanelManager()
-      com.panelManager.init({
+      reserved.panelManager = new PanelManager()
+      reserved.panelManager.init({
         tag: 'tagDefaultPanelManager',
-        g: com.g,
-        box: com.box,
+        g: reserved.g,
+        box: reserved.box,
         tab: {
           enabled: true,
-          g: com.g.append('g'),
-          box: com.tab.box,
+          g: reserved.g.append('g'),
+          box: reserved.tab.box,
           dimension: {w: 0, h: 0},
           dragable: false,
           closable: false
         },
         content: {
           enabled: true,
-          g: com.g.append('g'),
-          box: com.content.box
+          g: reserved.g.append('g'),
+          box: reserved.content.box
         },
         panels: {
           current: undefined,
@@ -2589,7 +2691,7 @@ let mainSchedBlocksController = function (optIn) {
       })
       // defaultPanel.setRepaintPanel(drawDefaultContent)
       // defaultPanel.setRepaintTab(drawDefaultTab)
-      com.panelManager.addNewPanel(defaultPanel)
+      reserved.panelManager.addNewPanel(defaultPanel)
 
       // let defaultPanel2 = new CustomPanel()
       // defaultPanel2.init({
@@ -2606,7 +2708,7 @@ let mainSchedBlocksController = function (optIn) {
       //     repaint: drawDefaultContent
       //   }
       // })
-      // com.panelManager.addNewPanel(defaultPanel2)
+      // reserved.panelManager.addNewPanel(defaultPanel2)
     }
     this.createDefaultPanel = createDefaultPanel
 
@@ -2727,7 +2829,7 @@ let mainSchedBlocksController = function (optIn) {
         //   .attr('class', 'line')
         //   .attr('d', curveGenerator)
         //   .attr('fill', colorPalette.dark.greyBlue[1])
-        // let totBlocks = [].concat(data.blocks.run).concat(data.blocks.wait)
+        // let totBlocks = [].concat(data.copy.blocks.run).concat(data.copy.blocks.wait)
         // let blocksConflicts = g.selectAll('rect.conflict')
         //   .data(totBlocks)
         //   .enter()
@@ -2851,11 +2953,11 @@ let mainSchedBlocksController = function (optIn) {
         // let dimSB = {y: 0, h: dimModifs.h * 0.28}
         // let dimBLC = {y: dimModifs.h * 0.3, h: dimModifs.h * 0.23}
         // let dimProp = {y: dimModifs.h * 0.55, h: dimModifs.h * 0.45}
-        // for (var SB in com.data.modifications) {
+        // for (var SB in reserved.data.modifications) {
         //   let totalProp = 0
         //   let totalBLC = 0
         //   let currentX = 0
-        //   let allBlocks = com.data.modifications[SB]
+        //   let allBlocks = reserved.data.modifications[SB]
         //   let currentSVG = div.append('svg')
         //     .style('display', 'inline-block')
         //     .style('background', colorPalette.dark.greyBlue[0])
@@ -2914,20 +3016,56 @@ let mainSchedBlocksController = function (optIn) {
         //     .attr('stroke', 'none')
         // }
 
+        let titleExtension = 'SB: '
         function fillModifDiv (div, modifs, title) {
           let innerDiv = div.append('div')
             .style('margin-bottom', '6px')
             .style('background', '#cccccc')
           innerDiv.append('label')
-            .html(title)
+            .html(titleExtension + title)
             .attr('class', 'title')
             .style('display', 'block')
             .style('color', '#ffffff')
             .style('background', '#666666')
-          for (var i = 0; i < modifs.length; i++) {
-            let modif = modifs[i]
+          for (let i = 0; i < modifs.userModifications.length; i++) {
+            let modif = modifs.userModifications[i]
             let lineDiv = innerDiv.append('div')
               .style('background', (i % 2 === 1 ? '#FAFAFA' : '#EEEEEE'))
+            lineDiv.append('label')
+              .html(modif.prop)
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+            lineDiv.append('label')
+              .html(':')
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+            lineDiv.append('label')
+              .html(modif.old)
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+            lineDiv.append('label')
+              .html('-> ')
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+            lineDiv.append('label')
+              .html(modif.new)
+              .style('display', 'inline-block')
+              .style('color', '#000000')
+              .style('font-size', 10 + 'px')
+              .style('background', 'transparent')
+          }
+          for (let i = 0; i < modifs.optimizerModifications.length; i++) {
+            let modif = modifs.optimizerModifications[i]
+            let lineDiv = innerDiv.append('div')
+              .style('background', (i % 2 === 1 ? '#FFF3E0' : '#FFE0B2'))
             lineDiv.append('label')
               .html(modif.prop)
               .style('display', 'inline-block')
@@ -2971,9 +3109,9 @@ let mainSchedBlocksController = function (optIn) {
           .style('width', 'calc(50% - 4px)')
           .style('height', '15px')
           .style('background', '#acacac')
-        console.log(com.data.modifications);
-        for (let SB in com.data.modifications) {
-          let modifAndBlocks = com.data.modifications[SB]
+        console.log(reserved.data.modifications);
+        for (let SB in reserved.data.modifications) {
+          let modifAndBlocks = reserved.data.modifications[SB]
           let parentDiv = div.append('div')
             .attr('id', 'SB_' + SB)
             .style('width', '100%')
@@ -2992,6 +3130,7 @@ let mainSchedBlocksController = function (optIn) {
 
           for (var BLC in modifAndBlocks.blocks) {
             let allProp = modifAndBlocks.blocks[BLC]
+            titleExtension = 'B: '
             fillModifDiv(BLCModifDiv, allProp.modifications, BLC)
           }
         }
@@ -2999,7 +3138,7 @@ let mainSchedBlocksController = function (optIn) {
         let totOffset = 0
         let totScrollHeight = div._groups[0][0].scrollHeight
         let even = 0
-        for (let SB in com.data.modifications) {
+        for (let SB in reserved.data.modifications) {
           let setOffsetTo = totOffset
           let scrollHeight = div.select('div#SB_' + SB)._groups[0][0].scrollHeight
 
@@ -3074,8 +3213,8 @@ let mainSchedBlocksController = function (optIn) {
         // let evenProp = 0
         // let allLine = 0
         // let sizeProp = 18
-        // for (var SB in com.data.modifications) {
-        //   let allBlocks = com.data.modifications[SB]
+        // for (var SB in reserved.data.modifications) {
+        //   let allBlocks = reserved.data.modifications[SB]
         //   let totLine = 0
         //   let nbBLC = -1
         //   let svgSB = div.append('label')
@@ -3397,7 +3536,14 @@ let mainSchedBlocksController = function (optIn) {
           .attr('stroke', '#000000')// colorPalette.dark.greyBlue[0])
           .attr('stroke-width', 0.2)
 
+        let simulationDurationInMs = 3000
+        let startTime = Date.now()
+        let endTime = startTime + simulationDurationInMs
         simulation.on('tick', function () {
+          if (Date.now() > endTime) {
+            simulation.stop()
+            return
+          }
           link
             .attr('x1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.w - radius, d.source.x)) })
             .attr('y1', function (d) { let radius = (d.type === 'conflict' ? bigRadius : smallRadius); return Math.max(radius, Math.min(conflictBox.h - radius, d.source.y)) })
@@ -3442,11 +3588,21 @@ let mainSchedBlocksController = function (optIn) {
           .style('pointer-events', 'none')
           .attr('fill', '#000000')
           .attr('stroke', 'none')
-        console.log(rect);
+
+        let optimizeButton = g.append('rect')
+          .attr('x', dimBottom.x + 16)
+          .attr('y', dimBottom.y + 16)
+          .attr('width', 30)
+          .attr('height', 30)
+          .attr('stroke', '#000000')
+          .attr('fill', '#999999')
+          .attr('stroke-width', 0.5)
+          .attr('stroke-opacity', 1)
+          .on('click', optimizer)
       }
 
       drawModifications()
-      //drawConflicts()
+      drawConflicts()
       drawResolve()
       // div.append('input')
       //   //.attr('class', 'formMngrInput')
@@ -3455,8 +3611,8 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('required', 'true')
       //   .style('height', '100%')
       // div.append('textarea')
-      //   .attr('class', 'comment')
-      //   // .text('This is a test comment')
+      //   .attr('class', 'reservedment')
+      //   // .text('This is a test reservedment')
       //   .style('background-color', colorPalette.dark.greyBlue[8])
       //   .style('border', 'none')
       //   .style('width', '98.5%')
@@ -3513,20 +3669,43 @@ let mainSchedBlocksController = function (optIn) {
       }
     }
     function initData (dataIn) {
-      com = dataIn
+      reserved = dataIn
 
-      com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
+      reserved.g.attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
       // gBackPattern = gBlockBox.append('g').attr('transform', 'translate(' + 0 + ',' + 40 + ')')
       // gMiddleBox = gBlockBox.append('g').attr('transform', 'translate(' + blockBoxData.w * 0.1 + ',' + 0 + ')')
 
       createDefaultPanel()
-      //createCommentPanel()
+      //createreservedmentPanel()
     }
     this.initData = initData
 
+    function createModificationsList () {
+      reserved.data.modifications = {}
+      for (let key in shared.main.data.copy.blocks) {
+        let group = shared.main.data.copy.blocks[key]
+        for (let i = 0; i < group.length; i++) {
+          let block = group[i]
+          if (block.modifications.userModifications.length > 0 || block.modifications.optimizerModifications.length) {
+            let b = '' + block.metaData.nObs
+            let sb = '' + block.metaData.nSched
+            if (!reserved.data.modifications[sb]) reserved.data.modifications[sb] = {modifications: {userModifications: [], optimizerModifications: []}, blocks: {}}
+            if (!reserved.data.modifications[sb].blocks[b]) reserved.data.modifications[sb].blocks[b] = {modifications: {userModifications: [], optimizerModifications: []}}
+
+            for (let j = 0; j < block.modifications.userModifications.length; j++) {
+              reserved.data.modifications[sb].blocks[b].modifications.userModifications.push(block.modifications.userModifications[j])
+            }
+            for (let j = 0; j < block.modifications.optimizerModifications.length; j++) {
+              reserved.data.modifications[sb].blocks[b].modifications.optimizerModifications.push(block.modifications.optimizerModifications[j])
+            }
+          }
+        }
+      }
+    }
+
     function updateData () {
-      com.data.modifications = {
-        SB1: {
+      reserved.data.modifications = {
+        1: {
           modifications: [
             {prop: 'prop1', old: 'Old Value', new: 'New Value'},
             {prop: 'prop2', old: 'Old Value', new: 'New Value'},
@@ -3534,7 +3713,7 @@ let mainSchedBlocksController = function (optIn) {
             {prop: 'prop4', old: 'Old Value', new: 'New Value'}
           ],
           blocks: {
-            B2: {
+            2: {
               modifications: [
                 {prop: 'prop1', old: 'Old Value', new: 'New Value'},
                 {prop: 'prop2', old: 'Old Value', new: 'New Value'},
@@ -3542,7 +3721,7 @@ let mainSchedBlocksController = function (optIn) {
                 {prop: 'prop4', old: 'Old Value', new: 'New Value'}
               ]
             },
-            B3: {
+            3: {
               modifications: [
                 {prop: 'prop1', old: 'Old Value', new: 'New Value'},
                 {prop: 'prop2', old: 'Old Value', new: 'New Value'}
@@ -3550,7 +3729,7 @@ let mainSchedBlocksController = function (optIn) {
             }
           }
         },
-        SB3: {
+        3: {
           modifications: [
             {prop: 'prop1', old: 'Old Value', new: 'New Value'},
             {prop: 'prop2', old: 'Old Value', new: 'New Value'},
@@ -3559,7 +3738,7 @@ let mainSchedBlocksController = function (optIn) {
             {prop: 'prop5', old: 'Old Value', new: 'New Value'}
           ],
           blocks: {
-            B2: {
+            2: {
               modifications: [
                 {prop: 'prop1', old: 'Old Value', new: 'New Value'},
                 {prop: 'prop2', old: 'Old Value', new: 'New Value'}
@@ -3567,7 +3746,7 @@ let mainSchedBlocksController = function (optIn) {
             }
           }
         },
-        SB7: {
+        7: {
           modifications: [
             {prop: 'prop1', old: 'Old Value', new: 'New Value'},
             {prop: 'prop2', old: 'Old Value', new: 'New Value'},
@@ -3577,7 +3756,7 @@ let mainSchedBlocksController = function (optIn) {
             {prop: 'prop6', old: 'Old Value', new: 'New Value'}
           ],
           blocks: {
-            B1: {
+            1: {
               modifications: [
                 {prop: 'prop1', old: 'Old Value', new: 'New Value'},
                 {prop: 'prop2', old: 'Old Value', new: 'New Value'},
@@ -3585,7 +3764,7 @@ let mainSchedBlocksController = function (optIn) {
                 {prop: 'prop4', old: 'Old Value', new: 'New Value'}
               ]
             },
-            B5: {
+            5: {
               modifications: [
                 {prop: 'prop1', old: 'Old Value', new: 'New Value'},
                 {prop: 'prop2', old: 'Old Value', new: 'New Value'},
@@ -3597,21 +3776,115 @@ let mainSchedBlocksController = function (optIn) {
           }
         }
       }
-      com.data.modifications = data.copy.schedBlocks
-      for (var i = 0; i < data.copy.blocks.modified.length; i++) {
-        let block = data.copy.blocks.modified[i]
-        let b = block.metaData.nObs
-        let sb = block.metaData.nSched
-        com.data.modifications[sb] = 1
-        console.log(sb,b);
-        if (!com.data.modifications.sb) com.data.modifications.sb = {modifications: [], blocks: {}}
-        console.log(com.data.modifications.sb);
-        if (!com.data.modifications.sb.blocks.b) com.data.modifications.sb.blocks.b = {modifications: []}
-        for (var j = 0; j < block.modifications.length; j++) {
-          com.data.modifications.sb.blocks.b.modifications.push(block.modifications[j])
-        }
+      createModificationsList()
+
+      reserved.panelManager.updateInformation()
+    }
+    this.updateData = updateData
+  }
+  let SvgBlockQueueOptimized = function () {
+    let blockQueueOpt = new BlockQueueOptimizer()
+
+    function initData () {
+      let blockBoxData = {
+        x: (lenD.w[0] * 0.02),
+        y: lenD.h[0] * 0.68,
+        w: lenD.w[0] * 0.6,
+        h: lenD.h[0] * 0.25,
+        marg: (lenD.w[0] * 0.6) * 0.01
       }
-      com.panelManager.updateInformation()
+      let gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + blockBoxData.x + ',' + blockBoxData.y + ')')
+      gBlockBox.append('rect')
+        .attr('x', 0)
+        .attr('y', -10)
+        // .attr('rx', 2)
+        // .attr('ry', 2)
+        .attr('width', blockBoxData.w + 0)
+        .attr('height', blockBoxData.h + 12) // + 35)
+        // .attr('stroke', colorPalette.dark.greyBlue[6])
+        // .attr('stroke-width', 12)
+        // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
+        .style('fill', colorPalette.dark.greyBlue[6])
+
+      blockQueueOpt.init({
+        tag: 'blockQueueDefaultTag',
+        g: gBlockBox,
+        box: blockBoxData,
+        axis: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x: 0, y: blockBoxData.h, w: blockBoxData.w, h: 0, marg: blockBoxData.marg}
+          },
+          axis: undefined,
+          scale: undefined,
+          domain: [0, 1000],
+          range: [0, 0],
+          showText: true,
+          orientation: 'axisTop'
+        },
+        blocks: {
+          enabled: true,
+          group: {
+            run: {
+              g: undefined,
+              box: {x: 0, y: blockBoxData.h * 0.45, w: blockBoxData.w, h: blockBoxData.h * 0.55, marg: blockBoxData.marg}
+            },
+            cancel: {
+              g: undefined,
+              box: {x: 0, y:0, w: blockBoxData.w, h: blockBoxData.h * 0.3, marg: blockBoxData.marg}
+            }
+          },
+          events: {
+            click: () => {},//svgMiddleInfo.createBlockPanels,
+            mouseover: () => {},
+            mouseout: () => {}
+          }
+        },
+        filters: {
+          enabled: false,
+          group: {
+            g: undefined,
+            box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0}
+          },
+          filters: []
+        },
+        timeBars: {
+          enabled: true,
+          group: {
+            g: undefined,
+            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
+          }
+        },
+        data: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined},
+          lastRawData: undefined,
+          formatedData: undefined
+        },
+        debug: {
+          enabled: false
+        }
+      })
+
+      updateData()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let telIds = []
+      $.each(shared.main.data.server.telHealth, function (index, dataNow) {
+        telIds.push(dataNow.id)
+      })
+      blockQueueOpt.update({
+        currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+        startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+        endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)},
+        data: shared.main.data.copy.optimizedBlocks,
+        telIds: telIds
+      })
     }
     this.updateData = updateData
   }
@@ -3621,4 +3894,5 @@ let mainSchedBlocksController = function (optIn) {
   let svgWarningArea = new SvgWarningArea()
   let svgSchedulingBlocksOverview = new SvgSchedulingBlocksOverview()
   let svgMiddleInfo = new SvgMiddleInfo()
+  let svgBlockQueueOptimized = new SvgBlockQueueOptimized()
 }

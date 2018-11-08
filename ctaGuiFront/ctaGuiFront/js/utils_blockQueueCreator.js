@@ -507,7 +507,6 @@ window.BlockQueueCreator = function () {
       .concat(com.data.filtered.fail)
       .concat(com.data.filtered.run)
       .concat(com.data.filtered.wait)
-      .concat(com.data.modified.wait)
 
     let bottomRow = calcBlockRow({
       typeNow: 'bottom',
@@ -540,8 +539,6 @@ window.BlockQueueCreator = function () {
     com.data.raw = dataIn.data
     com.data.telIds = dataIn.telIds
 
-    com.data.modified = {wait: [], cancel: []}
-
     if (com.axis.enabled) updateAxis()
     if (com.blocks.enabled) updateBlocks()
     if (com.timeBars.enabled) setTimeRect()
@@ -560,7 +557,6 @@ window.BlockQueueCreator = function () {
   this.update = update
 
   function sendModification (newBlock) {
-    // com.data.modified.wait.push(newBlock)
     com.event.modifications('blockQueueCreator', newBlock)
   }
 
@@ -592,7 +588,6 @@ window.BlockQueueCreator = function () {
       for (var i = 0; i < tel1.length; i++) {
         for (var j = 0; j < tel2.length; j++) {
           if (tel1[i] === tel2[j]) {
-            console.log(tel1[i], tel2[j])
             return true
           }
         }
@@ -1391,11 +1386,9 @@ window.BlockQueueCreator = function () {
     let timeScale = d3.scaleLinear()
       .range(com.axis.range)
       .domain([com.data.startTime.time, com.data.endTime.time])
-
     let newBlock = deepCopy(d.data)
-    if (!newBlock.modifications) newBlock.modifications = []
     let newStart = Math.floor(timeScale.invert(com.interaction.oldG.select('rect.modified').attr('x')))
-    newBlock.modifications.push({prop: 'startTime', old: newBlock.startTime, new: newStart})
+    newBlock.modifications.userModifications.push({prop: 'startTime', old: newBlock.startTime, new: newStart})
     newBlock.startTime = newStart
     newBlock.endTime = newBlock.startTime + newBlock.duration
 
@@ -1461,7 +1454,11 @@ window.BlockQueueCreator = function () {
         .style('stroke-opacity', 0)
         // .style("pointer-events", "none")
         .attr('vector-effect', 'non-scaling-stroke')
-        .on('click', com.blocks.events.click)
+        .on('click', function (d) {
+          console.log(d.data.modifications);
+          console.log(d.data.telIds);
+          //com.blocks.events.click()
+        })
         .on('mouseover', function (d) {
           blocksMouseOver(d)
           d3.select(this).attr('stroke-width', 4)
