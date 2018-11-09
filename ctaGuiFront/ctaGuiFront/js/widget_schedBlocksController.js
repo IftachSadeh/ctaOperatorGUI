@@ -28,6 +28,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global telHealthCol */
 /* global colsPurplesBlues */
 /* global colsYellows */
+/* global getColorTheme */
 /* global ScrollTable */
 /* global colsReds */
 /* global colsPurples */
@@ -105,10 +106,12 @@ let sockSchedBlocksController = function (optIn) {
 // ---------------------------------------------------------------------------------------------------
 let mainSchedBlocksController = function (optIn) {
   // let myUniqueId = unique()
+  let colorTheme = getColorTheme('dark-BlueGrey')
+
   let colorPalette = {dark: {}, bright: {}}
   colorPalette.dark.greyBlue = ['#ECEFF1', '#CFD8DC', '#B0BEC5', '#90A4AE', '#78909C', '#607D8B', '#546E7A', '#455A64', '#37474F', '#263238']
-  colorPalette.dark.grey = ['#FAFAFA', '#F5F5F5', '#EEEEEE', '#E0E0E0', '#BDBDBD', '#9E9E9E', '#757575', '#616161', '#424242', '#212121']
-  colorPalette.bright.grey = ['#212121', '#424242', '#616161', '#757575', '#9E9E9E', '#BDBDBD', '#E0E0E0', '#EEEEEE', '#F5F5F5', '#FAFAFA']
+  // colorPalette.dark.grey = ['#FAFAFA', '#F5F5F5', '#EEEEEE', '#E0E0E0', '#BDBDBD', '#9E9E9E', '#757575', '#616161', '#424242', '#212121']
+  // colorPalette.bright.grey = ['#212121', '#424242', '#616161', '#757575', '#9E9E9E', '#BDBDBD', '#E0E0E0', '#EEEEEE', '#F5F5F5', '#FAFAFA']
 
   let widgetType = optIn.widgetType
   let tagBlockQueue = 'blockQueue'
@@ -331,8 +334,8 @@ let mainSchedBlocksController = function (optIn) {
     for (var key in shared.main.data.copy.blocks) {
       for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
         shared.main.data.copy.blocks[key][i].modifications = {
-          userModifications: [],
-          optimizerModifications: []
+          userModifications: {},
+          optimizerModifications: {}
         }
       }
     }
@@ -461,7 +464,7 @@ let mainSchedBlocksController = function (optIn) {
       .y(function (d) { return d.y })
 
     svg.svg
-      .style('background', '#37474F')
+      .style('background', colorTheme.medium.background)
     svg.background = svg.g
 
     let dataPoints1 = [
@@ -478,7 +481,7 @@ let mainSchedBlocksController = function (optIn) {
       .attr('class', 'line')
       .attr('d', lineGenerator)
       .attr('fill', 'none')
-      .attr('stroke', '#ffffff')
+      .attr('stroke', colorTheme.bright.stroke)
       .attr('stroke-width', 0.5)
       .attr('stroke-dasharray', [6, 2])
     // let dataPoints1 = [
@@ -635,11 +638,11 @@ let mainSchedBlocksController = function (optIn) {
         // .attr('ry', 2)
         .attr('width', blockBoxData.w + 0)
         .attr('height', blockBoxData.h + 12) // + 35)
-        // .attr('stroke', colorPalette.dark.greyBlue[6])
+        .attr('stroke', colorTheme.brighter.stroke)
+        .attr('stroke-width', 0.4)
         // .attr('stroke-width', 12)
         // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
-        .style('fill', colorPalette.dark.greyBlue[6])
-
+        .style('fill', colorTheme.brighter.background)
       blockQueue.init({
         tag: 'blockQueueDefaultTag',
         g: gBlockBox,
@@ -801,7 +804,8 @@ let mainSchedBlocksController = function (optIn) {
           startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
           endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)},
           lastRawData: undefined,
-          formatedData: undefined
+          formatedData: undefined,
+          modifiedData: []
         },
         debug: {
           enabled: false
@@ -810,7 +814,7 @@ let mainSchedBlocksController = function (optIn) {
         background: {
           g: gBlockBox.append('g'),
           attr: {
-            fill: colorPalette.dark.greyBlue[6]
+            fill: colorTheme.brighter.background
           },
           child: {
             runOverflow: {
@@ -825,6 +829,9 @@ let mainSchedBlocksController = function (optIn) {
         },
         event: {
           modifications: addModifications
+        },
+        input: {
+          selection: []
         }
       })
 
@@ -924,8 +931,8 @@ let mainSchedBlocksController = function (optIn) {
           else return [dataPointsPush]
         })
         .attr('d', lineGenerator)
-        .attr('fill', '#ECEFF1')
-        .attr('stroke', '#ffffff')
+        .attr('fill', colorTheme.brighter.background)
+        .attr('stroke', colorTheme.brighter.stroke)
         .attr('stroke-width', 6)
         .attr('stroke-opacity', 0.4)
         .attr('fill-opacity', 1)
@@ -940,9 +947,9 @@ let mainSchedBlocksController = function (optIn) {
         .attr('y', reserved[pullOrPush].box.h * 0.15)
         .attr('rx', 3)
         .attr('ry', 3)
-        .attr('fill', '#FFEB3B')
+        .attr('fill', colorTheme.warning.background)
         .attr('stroke-width', 0.5)
-        .attr('stroke', '#000000')
+        .attr('stroke', colorTheme.warning.stroke)
 
       reserved[pullOrPush].child.warningExclamation = reserved[pullOrPush].g.append('text')
         .text(function (d) {
@@ -958,7 +965,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('font-size', reserved[pullOrPush].box.h * 0.45)
         .attr('dy', reserved[pullOrPush].box.h * 0.1)
         .style('pointer-events', 'none')
-        .style('fill', '#000000')
+        .style('fill', colorTheme.warning.text)
       loop(true, pullOrPush)
 
       function pullWarning () {
@@ -974,7 +981,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.12)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine2 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'could invalidate the'
@@ -987,7 +994,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.12)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'new schedule.'
@@ -1000,7 +1007,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.12)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'Please Pull'
@@ -1014,7 +1021,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.15)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
       }
       function pushWarning () {
         reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
@@ -1029,7 +1036,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.12)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine2 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'constraints, some'
@@ -1042,7 +1049,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.12)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'changes will be lost.'
@@ -1055,7 +1062,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.12)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine41 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return '10:00'
@@ -1069,7 +1076,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.15)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
         function countDown () {
           var countDownDate = new Date()
           countDownDate = countDownDate.setMinutes(countDownDate.getMinutes() + 10)
@@ -1104,7 +1111,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.15)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
             return 'Please Push'
@@ -1118,7 +1125,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('font-size', reserved[pullOrPush].box.h * 0.15)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
-          .style('fill', '#000000')
+          .style('fill', colorTheme.brighter.text)
       }
 
       if (pullOrPush === 'pull') pullWarning()
@@ -1152,7 +1159,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('height', 18)
         .attr('x', reserved.box.w * 0.4 - 9)
         .attr('y', reserved.box.h * 0.52 - 9)
-        .attr('fill', colorPalette.dark.greyBlue[1])
+        .attr('fill', colorTheme.bright.background)
         .attr('stroke', '#000000')
       reserved.pull.child.buttonIcon = reserved.g.append('svg:image')
         .attr('class', 'icon')
@@ -1174,7 +1181,7 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-weight', 'bold')
         .style('font-size', reserved.box.h * 0.07)
         .style('pointer-events', 'none')
-        .style('fill', colorPalette.dark.greyBlue[0])
+        .style('fill', colorTheme.bright.text)
 
       reserved.pull.g.attr('opacity', 0)
         .transition()
@@ -1189,7 +1196,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('height', 18)
         .attr('x', reserved.box.w * 0.6 - 9)
         .attr('y', reserved.box.h * 0.52 - 9)
-        .attr('fill', colorPalette.dark.greyBlue[1])
+        .attr('fill', colorTheme.bright.background)
         .attr('stroke', '#000000')
       reserved.push.child.buttonIcon = reserved.g.append('svg:image')
         .attr('class', 'icon')
@@ -1209,7 +1216,7 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-weight', 'bold')
         .style('font-size', reserved.box.h * 0.07)
         .style('pointer-events', 'none')
-        .style('fill', colorPalette.dark.greyBlue[0])
+        .style('fill', colorTheme.bright.text)
 
       reserved.push.g.attr('opacity', 0)
         .transition()
@@ -1689,7 +1696,6 @@ let mainSchedBlocksController = function (optIn) {
         .style('margin-left', '2%')
         .style('height', 'calc(98% - ' + (titleHeight + titleBorder) + 'px)')
         .style('margin-top', titleBorder + 'px')
-        .style('background-color', colorPalette.dark.greyBlue[0])
         .style('border-left', '1px solid #000000')
         .style('border-top', '1px solid #000000')
         .style('border-bottom', '1px solid #000000')
@@ -2099,9 +2105,9 @@ let mainSchedBlocksController = function (optIn) {
           return dimBlocks.h
         })
         .attr('fill', function (d, i) {
-          return '#455A64'
+          return colorTheme.darker.background
         })
-        .attr('stroke', colorPalette.dark.greyBlue[4])
+        .attr('stroke', colorTheme.darker.stroke)
         .attr('stroke-width', 1.8)
         .attr('stroke-dasharray', [
           0,
@@ -2113,8 +2119,8 @@ let mainSchedBlocksController = function (optIn) {
         .on('mouseover', function (d) {
           if (shared.main.data.copy.focusOn === d.scheduleId) return
           d3.select(this)
-            .attr('fill', colorPalette.dark.greyBlue[6])
-            .attr('stroke', colorPalette.dark.greyBlue[3])
+            .attr('fill', colorTheme.bright.background)
+            .attr('stroke', colorTheme.bright.stroke)
             .transition()
             .duration(400)
             .attr('stroke-width', 2.2)
@@ -2124,8 +2130,8 @@ let mainSchedBlocksController = function (optIn) {
         .on('mouseout', function (d) {
           if (shared.main.data.copy.focusOn === d.scheduleId) return
           d3.select(this)
-            .attr('fill', colorPalette.dark.greyBlue[7])
-            .attr('stroke', colorPalette.dark.greyBlue[4])
+            .attr('fill', colorTheme.darker.background)
+            .attr('stroke', colorTheme.darker.stroke)
             .transition()
             .duration(400)
             .attr('stroke-width', 1.8)
@@ -2140,8 +2146,8 @@ let mainSchedBlocksController = function (optIn) {
         })
         .on('click', function (d) {
           let that = d3.select(this)
-          that.attr('fill', colorPalette.dark.greyBlue[7])
-            .attr('stroke', colorPalette.dark.greyBlue[4])
+          that.attr('fill', colorTheme.brighter.background)
+            .attr('stroke', colorTheme.brighter.stroke)
             .transition()
             .duration(400)
             .attr('stroke-width', 1.8)
@@ -2200,7 +2206,9 @@ let mainSchedBlocksController = function (optIn) {
           return reserved.style.recCol(d)
         })
         .style('opacity', 0.7)
-        .attr('stroke', 'black')
+        .attr('stroke', function (d, i) {
+          return reserved.style.strokeCol(d)
+        })
         .attr('stroke-width', 0.2)
         .style('pointer-events', 'none')
       enterSubBlocks.append('text')
@@ -2214,7 +2222,7 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', 9.5)
         .attr('dy', 0)
         .style('pointer-events', 'none')
-        .attr('fill', colorPalette.dark.greyBlue[1])
+        .attr('fill', colorTheme.darker.text)
         .attr('stroke', 'none')
       // enterSubBlocks.append('text')
       //   .text(function (d) {
@@ -2308,7 +2316,6 @@ let mainSchedBlocksController = function (optIn) {
         .style('margin-left', '2%')
         .style('height', 'calc(98% - ' + (titleHeight + titleBorder) + 'px)')
         .style('margin-top', titleBorder + 'px')
-        .style('background-color', colorPalette.dark.greyBlue[0])
         .style('border-left', '1px solid #000000')
         .style('border-top', '1px solid #000000')
         .style('border-bottom', '1px solid #000000')
@@ -2358,11 +2365,11 @@ let mainSchedBlocksController = function (optIn) {
         let count = 0
         for (let key in modifs) {
           let lineDiv = innerDiv.append('div')
-            .style('background', (count % 2 === 1 ? '#FAFAFA' : '#EEEEEE'))
+            .style('background', (count % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
           lineDiv.append('label')
             .html(key)
             .style('display', 'inline-block')
-            .style('color', '#000000')
+            .style('color', colorTheme.bright.text)
             .style('font-size', 10 + 'px')
             .style('width', '35%')
             .style('padding-left', '5%')
@@ -2371,7 +2378,7 @@ let mainSchedBlocksController = function (optIn) {
           lineDiv.append('label')
             .html(':')
             .style('display', 'inline-block')
-            .style('color', '#000000')
+            .style('color', colorTheme.bright.text)
             .style('font-size', 10 + 'px')
             .style('width', '5%')
             .style('vertical-align', 'top')
@@ -2387,7 +2394,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('id', 'field' + field)
           .style('width', '100%')
         let style = {}
-        style.background = '#EEEEEE'
+        style.background = colorTheme.brighter.background
         fillModifDiv(parentDiv, info, field, style)
       }
 
@@ -2401,7 +2408,7 @@ let mainSchedBlocksController = function (optIn) {
         quickDiv.append('div')
           .style('width', '100%')
           .style('height', ((scrollHeight / totScrollHeight) * 100) + '%')
-          .style('background', (even % 2 === 1 ? '#dddddd' : '#bbbbbb'))
+          .style('background', (even % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
           .on('mouseover', function () {
             div
               .transition()
@@ -2752,7 +2759,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('width', dimBack.w)
         .attr('height', dimBack.h)
         .attr('stroke', 'none')
-        .attr('fill', colorPalette.dark.greyBlue[0])
+        .attr('fill', colorTheme.dark.background)
         .attr('stroke-width', 6)
         .attr('stroke-opacity', 1)
 
@@ -2763,9 +2770,9 @@ let mainSchedBlocksController = function (optIn) {
           .attr('y', dimTop.y - 4)
           .attr('width', dimTop.w)
           .attr('height', dimMiddle.h)
-          .attr('stroke', colorPalette.dark.greyBlue[8])
+          .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-dasharray', [dimTop.w * 0.4, dimTop.w * 0.2, dimTop.w * 0.4, dimTop.h + dimTop.w + dimTop.h])
-          .attr('fill', colorPalette.dark.greyBlue[0])
+          .attr('fill', colorTheme.darker.background)
           .attr('stroke-width', 0.5)
           .attr('stroke-opacity', 1)
         g.append('text')
@@ -2779,7 +2786,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-size', 10)
           .attr('dy', 0)
           .style('pointer-events', 'none')
-          .attr('fill', '#000000')
+          .attr('fill', colorTheme.darker.text)
           .attr('stroke', 'none')
 
         // let lineGenerator = d3.line()
@@ -2931,7 +2938,7 @@ let mainSchedBlocksController = function (optIn) {
         let rootDiv = fo.append('xhtml:div')
           .style('display', 'inline-block')
           .style('border', 0 + 'px solid #78909C')
-          .style('background-color', colorPalette.dark.greyBlue[0])
+          .style('background-color', colorTheme.brighter.background)
           .style('width', '92%')
           .style('height', 'calc(100% - 15px)')
         let quickDiv = fo.append('xhtml:div')
@@ -2942,11 +2949,11 @@ let mainSchedBlocksController = function (optIn) {
         let titleDiv = rootDiv.append('div')
           .style('height', '15px')
           .style('border', 0 + 'px solid #78909C')
-          .style('background-color', colorPalette.dark.greyBlue[0])
+          .style('background-color', colorTheme.brighter.background)
         let div = rootDiv.append('div')
           .attr('class', 'overflowVerticalDiv')
           .style('border', 0 + 'px solid #78909C')
-          .style('background-color', colorPalette.dark.greyBlue[0])
+          .style('background-color', colorTheme.brighter.background)
           // .style('transform', 'scale(1,-1)')
 
         // let space = 2.5
@@ -3020,17 +3027,17 @@ let mainSchedBlocksController = function (optIn) {
         function fillModifDiv (div, modifs, title) {
           let innerDiv = div.append('div')
             .style('margin-bottom', '6px')
-            .style('background', '#cccccc')
+            .style('background', colorTheme.brighter.background)
           innerDiv.append('label')
             .html(titleExtension + title)
             .attr('class', 'title')
             .style('display', 'block')
-            .style('color', '#ffffff')
-            .style('background', '#666666')
+            .style('color', colorTheme.darker.text)
+            .style('background', colorTheme.darker.background)
           for (let i = 0; i < modifs.userModifications.length; i++) {
             let modif = modifs.userModifications[i]
             let lineDiv = innerDiv.append('div')
-              .style('background', (i % 2 === 1 ? '#FAFAFA' : '#EEEEEE'))
+              .style('background', (i % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
             lineDiv.append('label')
               .html(modif.prop)
               .style('display', 'inline-block')
@@ -3065,7 +3072,7 @@ let mainSchedBlocksController = function (optIn) {
           for (let i = 0; i < modifs.optimizerModifications.length; i++) {
             let modif = modifs.optimizerModifications[i]
             let lineDiv = innerDiv.append('div')
-              .style('background', (i % 2 === 1 ? '#FFF3E0' : '#FFE0B2'))
+              .style('background', (i % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
             lineDiv.append('label')
               .html(modif.prop)
               .style('display', 'inline-block')
@@ -3109,7 +3116,6 @@ let mainSchedBlocksController = function (optIn) {
           .style('width', 'calc(50% - 4px)')
           .style('height', '15px')
           .style('background', '#acacac')
-        console.log(reserved.data.modifications);
         for (let SB in reserved.data.modifications) {
           let modifAndBlocks = reserved.data.modifications[SB]
           let parentDiv = div.append('div')
@@ -3145,7 +3151,7 @@ let mainSchedBlocksController = function (optIn) {
           quickDiv.append('div')
             .style('width', '100%')
             .style('height', ((scrollHeight / totScrollHeight) * 100) + '%')
-            .style('background', (even % 2 === 1 ? '#dddddd' : '#bbbbbb'))
+            .style('background', (even % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
             .on('mouseover', function () {
               div
                 .transition()
@@ -3328,9 +3334,9 @@ let mainSchedBlocksController = function (optIn) {
           .attr('y', dimMiddle.y - 16)
           .attr('width', dimMiddle.w)
           .attr('height', dimMiddle.h)
-          .attr('stroke', colorPalette.dark.greyBlue[8])
+          .attr('stroke', colorTheme.brighter.stroke)
           .attr('stroke-dasharray', [dimMiddle.w * 0.4, dimMiddle.w * 0.2, dimMiddle.w * 0.4, dimMiddle.h + dimMiddle.w + dimMiddle.h])
-          .attr('fill', colorPalette.dark.greyBlue[0])
+          .attr('fill', colorTheme.brighter.background)
           .attr('stroke-width', 0.5)
           .attr('stroke-opacity', 1)
         g.append('text')
@@ -3344,7 +3350,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-size', 10)
           .attr('dy', 0)
           .style('pointer-events', 'none')
-          .attr('fill', '#000000')
+          .attr('fill', colorTheme.brighter.text)
           .attr('stroke', 'none')
         // g.append('circle')
         //   .attr('cx', dimMiddle.x + dimMiddle.w * 0.5)
@@ -3533,7 +3539,7 @@ let mainSchedBlocksController = function (optIn) {
             return microRadius
           })
           .attr('fill', colorPalette.dark.greyBlue[1])
-          .attr('stroke', '#000000')// colorPalette.dark.greyBlue[0])
+          .attr('stroke', '#000000')
           .attr('stroke-width', 0.2)
 
         let simulationDurationInMs = 3000
@@ -3570,9 +3576,8 @@ let mainSchedBlocksController = function (optIn) {
           .attr('y', dimBottom.y - 16)
           .attr('width', dimBottom.w)
           .attr('height', dimBottom.h)
-          .attr('stroke', colorPalette.dark.greyBlue[8])
           .attr('stroke-dasharray', [dimBottom.w * 0.4, dimBottom.w * 0.2, dimBottom.w * 0.4, dimBottom.h + dimBottom.w + dimBottom.h])
-          .attr('fill', colorPalette.dark.greyBlue[0])
+          .attr('fill', colorTheme.brighter.background)
           .attr('stroke-width', 0.5)
           .attr('stroke-opacity', 1)
         let text = g.append('text')
@@ -3586,7 +3591,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-size', 10)
           .attr('dy', 0)
           .style('pointer-events', 'none')
-          .attr('fill', '#000000')
+          .attr('fill', colorTheme.darker.text)
           .attr('stroke', 'none')
 
         let optimizeButton = g.append('rect')
@@ -3624,14 +3629,14 @@ let mainSchedBlocksController = function (optIn) {
     }
     function unselectTab (g) {
       g.select('rect.back')
-        .attr('fill', colorPalette.dark.greyBlue[6])
-        .attr('stroke', colorPalette.dark.greyBlue[6])
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.background)
         .attr('height', Number(g.attr('height')) - 1)
     }
     function selectTab (g) {
       g.select('rect.back')
-        .attr('fill', colorPalette.dark.greyBlue[0])
-        .attr('stroke', colorPalette.dark.greyBlue[0])
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.background)
         .attr('height', Number(g.attr('height')) + 16)
     }
     function drawDefaultTab (panel) {
@@ -3641,14 +3646,12 @@ let mainSchedBlocksController = function (optIn) {
           .attr('class', 'back')
           .attr('x', 3)
           .attr('y', 0)
-          // .attr('rx', 4)
-          // .attr('ry', 4)
           .attr('width', Number(g.attr('width')) - 6)
           .attr('height', Number(g.attr('height')) - 1)
-          .attr('fill', colorPalette.dark.greyBlue[6])
+          .attr('fill', colorTheme.darker.background)
           .attr('stroke-width', 3.5)
           .attr('stroke-opacity', 1)
-          .attr('stroke', colorPalette.dark.greyBlue[6])
+          .attr('stroke', colorTheme.darker.background)
           .on('click', function () {
             console.log(panel.get('id'))
           })
@@ -3664,7 +3667,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-size', Number(g.attr('height')) * 0.6)
           .attr('dy', Number(g.attr('height')) * 0.3)
           .style('pointer-events', 'none')
-          .attr('fill', colorPalette.dark.greyBlue[8])
+          .attr('fill', colorTheme.darker.text)
           .attr('stroke', 'none')
       }
     }
@@ -3798,14 +3801,9 @@ let mainSchedBlocksController = function (optIn) {
       gBlockBox.append('rect')
         .attr('x', 0)
         .attr('y', -10)
-        // .attr('rx', 2)
-        // .attr('ry', 2)
         .attr('width', blockBoxData.w + 0)
-        .attr('height', blockBoxData.h + 12) // + 35)
-        // .attr('stroke', colorPalette.dark.greyBlue[6])
-        // .attr('stroke-width', 12)
-        // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
-        .style('fill', colorPalette.dark.greyBlue[6])
+        .attr('height', blockBoxData.h + 12)
+        .style('fill', colorTheme.darker.background)
 
       blockQueueOpt.init({
         tag: 'blockQueueDefaultTag',
@@ -3868,7 +3866,6 @@ let mainSchedBlocksController = function (optIn) {
           enabled: false
         }
       })
-
       updateData()
     }
     this.initData = initData

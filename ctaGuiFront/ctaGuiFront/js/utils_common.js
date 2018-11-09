@@ -110,6 +110,290 @@ window.colsPurplesBlues = [
   colsPurples[4]
 ]
 
+window.colorTheme = {
+  'dark-BlueGrey': {
+    blocks: {
+      run: {
+        background: '#377eb8',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      done: {
+        background: '#4daf4a',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      fail: {
+        background: '#e41a1c',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      wait: {
+        background: '#e6e6e6',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      cancelOp: {
+        background: '#984ea3',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      cancelSys: {
+        background: '#e78ac3',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      shutdown: {
+        background: '#424242',
+        stroke: '#000000',
+        text: '#000000'
+      }
+    },
+    darker: {
+      background: '#37474F',
+      stroke: '#263238',
+      text: '#ECEFF1'
+    },
+    dark: {
+      background: '#455A64',
+      stroke: '#263238',
+      text: '#ECEFF1'
+    },
+    medium: {
+      background: '#546E7A',
+      stroke: '#263238',
+      text: '#ECEFF1'
+    },
+    bright: {
+      background: '#607D8B',
+      stroke: '#263238',
+      text: '#ECEFF1'
+    },
+    brighter: {
+      background: '#78909C',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    warning: {
+      background: '#FFEB3B',
+      stroke: '#000000',
+      text: '#000000'
+    }
+  },
+  'dark-Grey': {
+    blocks: {
+      run: {
+        background: '#377eb8',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      done: {
+        background: '#4daf4a',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      fail: {
+        background: '#e41a1c',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      wait: {
+        background: '#e6e6e6',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      cancelOp: {
+        background: '#984ea3',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      cancelSys: {
+        background: '#e78ac3',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      shutdown: {
+        background: '#424242',
+        stroke: '#000000',
+        text: '#000000'
+      }
+    },
+    darker: {
+      background: '#616161',
+      stroke: '#263238',
+      text: '#ffffff'
+    },
+    dark: {
+      background: '#757575',
+      stroke: '#263238',
+      text: '#ffffff'
+    },
+    medium: {
+      background: '#9E9E9E',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    bright: {
+      background: '#BDBDBD',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    brighter: {
+      background: '#E0E0E0',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    warning: {
+      background: '#FFEB3B',
+      stroke: '#000000',
+      text: '#000000'
+    }
+  },
+  'bright-Grey': {
+    blocks: {
+      run: {
+        background: '#377eb8',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      done: {
+        background: '#4daf4a',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      fail: {
+        background: '#e41a1c',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      wait: {
+        background: '#e6e6e6',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      cancelOp: {
+        background: '#984ea3',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      cancelSys: {
+        background: '#e78ac3',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      shutdown: {
+        background: '#424242',
+        stroke: '#000000',
+        text: '#000000'
+      }
+    },
+    darker: {
+      background: '#BDBDBD',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    dark: {
+      background: '#E0E0E0',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    medium: {
+      background: '#EEEEEE',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    bright: {
+      background: '#F5F5F5',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    brighter: {
+      background: '#FAFAFA',
+      stroke: '#263238',
+      text: '#000000'
+    },
+    warning: {
+      background: '#FFEB3B',
+      stroke: '#000000',
+      text: '#000000'
+    }
+  },
+  'bright-BlueGrey': {
+    blocks: {
+      run: {
+        background: '#377eb8',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      done: {
+        background: '#4daf4a',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      fail: {
+        background: '#e41a1c',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      wait: {
+        background: '#e6e6e6',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      cancelOp: {
+        background: '#984ea3',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      cancelSys: {
+        background: '#e78ac3',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      shutdown: {
+        background: '#424242',
+        stroke: '#000000',
+        text: '#000000'
+      }
+    },
+    brighter: {
+      background: '#ECEFF1',
+      stroke: '#263238',
+      text: '#263238'
+    },
+    bright: {
+      background: '#CFD8DC',
+      stroke: '#263238',
+      text: '#263238'
+    },
+    medium: {
+      background: '#B0BEC5',
+      stroke: '#263238',
+      text: '#263238'
+    },
+    dark: {
+      background: '#90A4AE',
+      stroke: '#263238',
+      text: '#263238'
+    },
+    darker: {
+      background: '#78909C',
+      stroke: '#263238',
+      text: '#263238'
+    },
+    warning: {
+      background: '#FFEB3B',
+      stroke: '#000000',
+      text: '#000000'
+    }
+  }
+}
+var colorTheme = window.colorTheme
+
+window.getColorTheme = function (name) {
+  return colorTheme[name]
+}
+
 // ---------------------------------------------------------------------------------------------------
 // utility functions for cyclic access
 // ---------------------------------------------------------------------------------------------------
