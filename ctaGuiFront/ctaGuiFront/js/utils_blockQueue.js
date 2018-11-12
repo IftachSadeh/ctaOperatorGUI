@@ -2,25 +2,152 @@
 /* global d3 */
 /* global timeD */
 /* global hasVar */
-/* global colPrime */
-/* global colsReds */
+/* global getColorTheme */
 /* global deepCopy */
 /* global minMaxObj */
-/* global colsBlues */
 /* global loadScript */
-/* global ScrollBox */
-/* global colsGreens */
+/* global colsBlues */
 /* global colsYellows */
-/* global colsPurplesBlues */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
 
 // ---------------------------------------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------------------------------------
-window.BlockQueueOld = function () {
+window.BlockQueue = function (optIn) {
+  let colorTheme = getColorTheme('bright-Grey')
+  let template = {
+    main: {
+      tag: 'blockQueueRootTag',
+      g: undefined,
+      box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+      background: {
+        fill: colorTheme.brighter.background,
+        stroke: colorTheme.brighter.stroke,
+        strokeWidth: 0.5
+      }
+    },
+    axis: {
+      enabled: true,
+      g: undefined,
+      box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+      axis: undefined,
+      scale: undefined,
+      domain: [0, 1000],
+      range: [0, 0],
+      showText: true,
+      orientation: 'axisTop',
+      attr: {
+        text: {
+          stroke: colorTheme.medium.stroke,
+          fill: colorTheme.medium.background
+        },
+        path: {
+          stroke: colorTheme.medium.stroke,
+          fill: colorTheme.medium.background
+        }
+      }
+    },
+    blocks: {
+      enabled: true,
+      run: {
+        enabled: true,
+        g: undefined,
+        box: {x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0},
+        events: {
+          click: () => {},
+          mouseover: () => {},
+          mouseout: () => {},
+          drag: {
+            start: () => {},
+            tick: () => {},
+            end: () => {}
+          }
+        },
+        background: {
+          fill: colorTheme.brighter.background,
+          stroke: 'none',
+          strokeWidth: 0
+        }
+      },
+      cancel: {
+        enabled: true,
+        g: undefined,
+        box: {x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0},
+        events: {
+          click: () => {},
+          mouseover: () => {},
+          mouseout: () => {},
+          drag: {
+            start: () => {},
+            tick: () => {},
+            end: () => {}
+          }
+        },
+        background: {
+          fill: colorTheme.brighter.background,
+          stroke: colorTheme.brighter.stroke,
+          strokeWidth: 0
+        }
+      },
+      modification: {
+        enabled: true,
+        g: undefined,
+        box: {x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0},
+        events: {
+          click: () => {},
+          mouseover: () => {},
+          mouseout: () => {},
+          drag: {
+            start: () => {},
+            tick: () => {},
+            end: () => {}
+          }
+        },
+        background: {
+          fill: colorTheme.brighter.background,
+          stroke: 'none',
+          strokeWidth: 0
+        }
+      },
+      colorPalette: colorTheme.blocks
+    },
+    filters: {
+      enabled: false,
+      g: undefined,
+      box: {x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0},
+      filters: []
+    },
+    timeBars: {
+      enabled: true,
+      g: undefined,
+      box: {x: 0, y: 0, w: 1000, h: 300, marg: 0}
+    },
+    time: {
+      currentTime: {date: new Date(), time: 0},
+      startTime: {date: new Date(), time: 0},
+      endTime: {date: new Date(), time: 1000}
+    },
+    data: {
+      raw: {
+        blocks: [],
+        telIds: []
+      },
+      filtered: {},
+      modified: []
+    },
+    debug: {
+      enabled: false
+    },
+    pattern: {},
+    event: {
+    },
+    input: {
+      selection: []
+    }
+  }
   let com = {}
-
+  com = optIn
   this.set = function (optIn) {
     if (hasVar(optIn.data)) com[optIn.tag] = optIn.data
     else if (hasVar(optIn.def)) com[optIn.tag] = optIn.def
@@ -30,484 +157,501 @@ window.BlockQueueOld = function () {
     return com[type]
   }
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function init (optIn) {
-    if (hasVar(com.mainTag)) {
-      console.error('trying to init more than once ...', optIn)
-      return
+  function setDefaultStyle () {
+    if (com.style) return
+    com.style = {}
+    com.style.runRecCol = colsBlues[2]
+    com.style.blockCol = function (optIn) {
+      let state = hasVar(optIn.state)
+        ? optIn.state
+        : optIn.d.data.exeState.state
+      let canRun = hasVar(optIn.canRun)
+        ? optIn.canRun
+        : optIn.d.data.exeState.canRun
+      let modified = optIn.d.data.modifications ? optIn.d.data.modifications.userModifications.length > 0 : false
+
+      if (state === 'wait') {
+        if (modified) return com.blocks.colorPalette.wait
+        return com.blocks.colorPalette.wait
+      } else if (state === 'done') {
+        return com.blocks.colorPalette.done
+      } else if (state === 'fail') {
+        return com.blocks.colorPalette.fail
+      } else if (state === 'run') {
+        return com.blocks.colorPalette.run
+      } else if (state === 'cancel') {
+        if (hasVar(canRun)) {
+          if (!canRun) return com.blocks.colorPalette.cancelOp
+        }
+        return com.blocks.colorPalette.cancelSys
+      } else return com.blocks.colorPalette.shutdown
     }
+    com.style.blockOpac = function (optIn) {
+      let state = hasVar(optIn.state)
+        ? optIn.state
+        : optIn.d.data.exeState.state
+      let canRun = hasVar(optIn.canRun)
+        ? optIn.canRun
+        : optIn.d.data.exeState.canRun
+      let modified = optIn.d.data.modifications ? optIn.d.data.modifications.userModifications.length > 0 : false
 
-    com.mainTag = optIn.tag
-    com.locker = optIn.locker
-    com.runLoop = optIn.runLoop
-
-    let lockerZoom = optIn.lockerZoom
-    if (!hasVar(lockerZoom)) {
-      lockerZoom = {
-        all: com.mainTag + 'zoom',
-        during: com.mainTag + 'zoomDuring',
-        end: com.mainTag + 'zoomEnd'
-      }
+      if (state === 'wait') {
+        if (modified) return 0.2
+        return 1
+      } else if (state === 'run') {
+        return 1
+      } else if (state === 'cancel') {
+        if (hasVar(canRun)) {
+          if (!canRun) return 1
+        }
+        return 1
+      } else return 1
     }
-    com.lockerZoom = lockerZoom
+  }
 
-    let lockerV = {}
-    lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
-    lockerV.zoomDuring = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.during])
-    lockerV.zoomEnd = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.end])
-    // console.log(lockerV.zoomDuring);
-    com.lockerV = lockerV
-
-    com.scrollTrans = {
-      now: 0,
-      min: 0,
-      max: 0,
-      frac: 0,
-      active: false,
-      drag: { y: 0, frac: 0 }
-    }
-    com.time = { start: 0, now: 1, end: 1000 }
-    com.telIds = ['placeholder']
-
-    com.click = hasVar(optIn.click) ? optIn.click : null
-    com.doText = hasVar(optIn.doText) ? optIn.doText : true
-    com.doPhase = hasVar(optIn.doPhase) ? optIn.doPhase : true
-    com.doRunRect = hasVar(optIn.doRunRect) ? optIn.doRunRect : true
-    com.doTimeRect = hasVar(optIn.doTimeRect) ? optIn.doTimeRect : true
-
-    com.tagClipPath = optIn.tagClipPath
-    if (!hasVar(com.tagClipPath)) {
-      com.tagClipPath = {
-        inner: com.mainTag + 'clipPathInner',
-        outer: com.mainTag + 'clipPathOuter'
-      }
-    }
-
-    if (hasVar(optIn.futureCanceled)) com.futureCanceled = optIn.futureCanceled
-    else {
-      com.futureCanceled = { hide: false, shiftY: false }
-    }
-
-    com.prevUpdate = null
-
-    // ---------------------------------------------------------------------------------------------------
-    // box definition
-    // ---------------------------------------------------------------------------------------------------
-    let gBox = optIn.gBox
-    com.outerBox = deepCopy(optIn.boxData)
-    com.outerG = gBox.append('g')
-    com.scrollBoxG = com.outerG.append('g')
-
-    com.scrollBox = new ScrollBox()
-    com.scrollBox.init({
-      tag: com.mainTag,
-      gBox: com.scrollBoxG,
-      boxData: com.outerBox,
-      useRelativeCoords: false,
-      title: optIn.title,
-      locker: optIn.locker,
-      lockerV: optIn.lockerV,
-      lockerZoom: optIn.lockerZoom,
-      runLoop: optIn.runLoop
-    })
-
-    com.innerG = com.scrollBox.get('innerG')
-    com.innerBox = com.scrollBox.get('innerBox')
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    setStyle(optIn.style)
-
-    update()
+  function init () {
+    setDefaultStyle()
+    initBackground()
+    initAxis()
+    initBlocks()
+    initFilters()
+    initTimeBars()
   }
   this.init = init
+  function initBackground () {
+    com.main.g.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', com.main.box.w)
+      .attr('height', com.main.box.h)
+      .style('fill', com.main.background.fill)
+      .style('stroke', com.main.background.stroke)
+      .style('stroke-width', com.main.background.strokeWidth)
+  }
+  function initAxis () {
+    if (!com.axis.enabled) return
 
-  // ---------------------------------------------------------------------------------------------------
-  // styling
-  // ---------------------------------------------------------------------------------------------------
-  function setStyle (optIn) {
-    if (!hasVar(optIn)) optIn = {}
+    com.axis.g = com.main.g.append('g')
+      .attr('transform', 'translate(' + com.axis.box.x + ',' + com.axis.box.y + ')')
 
-    com.style = {}
+    com.axis.scale = d3.scaleTime()
+      .range(com.axis.range)
+      .domain(com.axis.domain)
+    com.axis.main = d3.axisBottom(com.axis.scale)
+      .tickFormat(d3.timeFormat('%H:%M'))
+    com.axis.g
+      .attr('class', 'axis')
+      .call(com.axis.main)
 
-    com.style.runRecCol = optIn.runRecCol
-    if (!hasVar(com.style.runRecCol)) {
-      com.style.runRecCol = colsBlues[2]
+    com.axis.g.style('opacity', 0)
+  }
+  function initBlocks () {
+    if (!com.blocks.enabled) return
+    if (com.blocks.run.enabled) {
+      com.blocks.run.g = com.main.g.append('g')
+      com.blocks.run.g.attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.run.box.y + ')')
     }
-
-    com.style.recCol = optIn.recCol
-    if (!hasVar(com.style.recCol)) {
-      com.style.recCol = function (optIn) {
-        // let colsPurplesBlues = colsMix;
-        let nObs = hasVar(optIn.nObs) ? optIn.nObs : optIn.d.nBlock
-        let state = hasVar(optIn.state)
-          ? optIn.state
-          : optIn.d.data.exeState.state
-        let canRun = hasVar(optIn.canRun)
-          ? optIn.canRun
-          : optIn.d.data.exeState.canRun
-
-        if (state === 'wait') return colsYellows[2]
-        else if (state === 'done') return colsGreens[4]
-        else if (state === 'run') {
-          return colsPurplesBlues[nObs % colsPurplesBlues.length]
-        } else if (state === 'cancel') {
-          if (hasVar(canRun)) {
-            if (!canRun) return colsYellows[1]
-          }
-          return colsYellows[4]
-        } else if (state === 'fail') return colsReds[0]
-        else return colPrime
-      }
+    if (com.blocks.cancel.enabled) {
+      com.blocks.cancel.g = com.main.g.append('g')
+      com.blocks.cancel.g.attr('transform', 'translate(' + com.blocks.cancel.box.x + ',' + com.blocks.cancel.box.y + ')')
     }
-
-    com.style.recFillOpac = optIn.recFillOpac
-    if (!hasVar(com.style.recFillOpac)) {
-      com.style.recFillOpac = function (d, state) {
-        // return (d.data.exeState.state == 'wait') ? 0.1 : ((d.data.exeState.state == 'run') ? 0.4 : 0.2);
-        return state === 'run' ? 0.4 : 0.15
-      }
-    }
-
-    com.style.recStrokeOpac = optIn.recStrokeOpac
-    if (!hasVar(com.style.recStrokeOpac)) {
-      com.style.recStrokeOpac = function (d) {
-        return 0.7
-      }
-    }
-
-    com.style.textOpac = optIn.textOpac
-    if (!hasVar(com.style.textOpac)) {
-      com.style.textOpac = function (d) {
-        return 1
-      }
+    if (com.blocks.modification.enabled) {
+      com.blocks.modification.g = com.main.g.append('g')
+      com.blocks.modification.g.attr('transform', 'translate(' + com.blocks.modification.box.x + ',' + com.blocks.modification.box.y + ')')
     }
   }
-  this.setStyle = setStyle
+  function initFilters () {
+    if (!com.filters.enabled) return
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function filterBlocks (dataIn) {
-    if (!hasVar(dataIn)) dataIn = {}
-    $.each(['done', 'run', 'wait'], function (index, typeNow) {
-      if (!hasVar(dataIn[typeNow])) dataIn[typeNow] = []
-    })
-
-    if (com.futureCanceled.hide) {
-      $.each(dataIn, function (typeNow, blocksNow) {
-        dataIn[typeNow] = blocksNow.filter(function (d) {
-          return d.exeState.canRun
-        })
-      })
+    function recCol (state) {
+      if (state === 'Wait') return '#e6e6e6'
+      else if (state === 'Done') return d3.color(colsGreens[0]).brighter()
+      else if (state === 'Run') {
+        return d3.color(colsPurplesBlues[0]).brighter()
+      } else if (state === 'Cancel.canrun') {
+        return d3.color(colsPurples[3]).brighter()
+      } else if (state === 'Cancel') {
+        return d3.color(colsPurples[4])
+      } else if (state === 'Fail') return d3.color(colsReds[3]).brighter()
+      else return d3.color(colPrime).brighter()
     }
+    function createButton (position, type, filter) {
+      let newButton = buttonPanel.addButton(position)
+      newButton.attr('status', 'disabled')
 
-    // take care of future cancelled blocks - make sure they are in the correct phase
-    // ---------------------------------------------------------------------------------------------------
-    if (com.doPhase) {
-      $.each(dataIn.done, function (index, dataNow) {
-        if (dataNow.startTime > com.time.now) {
-          dataIn.wait.push(dataNow)
-          dataIn.done[index] = null
-        }
-      })
-
-      dataIn.done = dataIn.done.filter(function (d) {
-        return hasVar(d)
-      })
-    }
-
-    return dataIn
-  }
-
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function update (dataIn) {
-    dataIn = filterBlocks(dataIn)
-
-    com.blocksIn = dataIn
-
-    let thisUpdate = { ids: [], props: {} }
-
-    $.each(dataIn, function (typeNow, blocksNow) {
-      $.each(blocksNow, function (i, d) {
-        // the list of properties which will be monitored for change
-        thisUpdate.props[d.obId] = {
-          startTime: Math.floor(d.startTime),
-          endTime: Math.floor(d.endTime),
-          type: typeNow,
-          canRun: d.exeState.canRun,
-          state: d.exeState.state
-        }
-
-        thisUpdate.ids.push(d.obId)
-      })
-    })
-
-    let hasBlockUpdate = true
-    if (hasVar(com.prevUpdate)) {
-      let hasSameIds = true
-      let intersect = thisUpdate.ids.filter(n => com.prevUpdate.ids.includes(n))
-      if (intersect.length !== com.prevUpdate.ids.length) hasSameIds = false
-
-      if (hasSameIds) {
-        hasBlockUpdate = false
-        $.each(thisUpdate.props, function (obIdNow, dataNow) {
-          if (!hasVar(com.prevUpdate.props[obIdNow])) {
-            hasBlockUpdate = true
-          }
-          if (hasBlockUpdate) return
-
-          $.each(dataNow, function (propName, propVal) {
-            if (com.prevUpdate.props[obIdNow][propName] !== propVal) {
-              hasBlockUpdate = true
-            }
+      let clickFunction = function (rect, filter) {
+        if (newButton.attr('status') === 'enabled') {
+          newButton.attr('status', 'disabled')
+          rect.attr('stroke', function (d, i) {
+            return '#000000'
           })
+            .attr('stroke-width', 4.5)
+            .style('stroke-opacity', 0.6)
+          newButton.append('line')
+            .attr('class', 'checkboxBar')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', (Number(newButton.attr('width'))))
+            .attr('y2', (Number(newButton.attr('height'))))
+            .attr('stroke', '#000000')
+            .style('stroke-opacity', 0.9)
+            .attr('stroke-width', 3)
+            .style('pointer-events', 'none')
+          newButton.append('line')
+            .attr('class', 'checkboxBar')
+            .attr('x1', 0)
+            .attr('y1', (Number(newButton.attr('height'))))
+            .attr('x2', (Number(newButton.attr('width'))))
+            .attr('y2', 0)
+            .attr('stroke', '#000000')
+            .style('stroke-opacity', 0.9)
+            .attr('stroke-width', 3)
+            .style('pointer-events', 'none')
+          // if (filter !== undefined) {
+          //   com.filters.filters.push(filter)
+          //   updateBlocks()
+          // }
+        } else {
+          newButton.attr('status', 'enabled')
+          newButton.selectAll('line.checkboxBar').remove()
+          rect.attr('stroke', function (d, i) {
+            return '#000000'
+          })
+            .attr('stroke-width', 0.5)
+            .style('stroke-opacity', 1)
+          // if (filter !== undefined) {
+          //   let index = com.filters.filters.indexOf(filter)
+          //   com.filters.filters.splice(index, 1)
+          //   updateBlocks()
+          // }
+        }
+      }
+
+      let newRect = newButton.append('rect')
+        .attr('x', (Number(newButton.attr('width')) - ((Number(newButton.attr('width'))) * (3) / 3)) / 2)
+        .attr('y', (Number(newButton.attr('height')) - ((Number(newButton.attr('height'))) * (3) / 3)) / 2)
+        .attr('width', function (d, i) {
+          return ((Number(newButton.attr('width'))) * (3) / 3)
         })
+        .attr('height', function (d, i) {
+          return ((Number(newButton.attr('height'))) * (3) / 3)
+        })
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('stroke', function (d, i) {
+          return 'black'
+        })
+        .attr('stroke-width', 0.5)
+        .style('fill', function (d, i) {
+          return recCol(type)
+        })
+        .style('fill-opacity', function (d, i) {
+          return 1
+        })
+        .on('click', function () {
+          clickFunction(d3.select(this), filter)
+        })
+        .on('mouseover', function () {
+          let ginfo = com.filters.g.append('g')
+            .attr('class', 'info')
+            .attr('transform', newButton.attr('transform'))
+          ginfo.append('rect')
+            .attr('x', -Number(newButton.attr('width')) * 0.5)
+            .attr('y', -20)
+            .attr('width', Number(newButton.attr('width')) * 2)
+            .attr('height', 18)
+            .attr('rx', 3)
+            .attr('ry', 3)
+            .attr('fill', '#eeeeee')
+            .style('fill-opacity', 0.82)
+          ginfo.append('text')
+            .text(type)
+            .attr('x', Number(newButton.attr('width')) * 0.5)
+            .attr('y', -5)
+            .style('fill-opacity', 0.82)
+            .style('font-weight', 'normal')
+            .attr('text-anchor', 'middle')
+            .style('font-size', 16)
+            .style('pointer-events', 'none')
+            .style('user-select', 'none')
+
+          newButton.attr('status-over', newButton.attr('status'))
+          if (newButton.attr('status') === 'enabled') {
+            if (filter !== undefined) {
+              com.filters.filters.push(filter)
+              updateBlocks()
+            }
+          } else if (newButton.attr('status') === 'disabled') {
+            if (filter !== undefined) {
+              let index = com.filters.filters.indexOf(filter)
+              com.filters.filters.splice(index, 1)
+              updateBlocks()
+            }
+          }
+        })
+        .on('mouseout', function () {
+          com.filters.g.select('g.info').remove()
+          if (newButton.attr('status') !== newButton.attr('status-over')) {
+            return
+          } else if (newButton.attr('status') === 'disabled') {
+            if (filter !== undefined) {
+              com.filters.filters.push(filter)
+              updateBlocks()
+            }
+          } else if (newButton.attr('status') === 'enabled') {
+            if (filter !== undefined) {
+              let index = com.filters.filters.indexOf(filter)
+              com.filters.filters.splice(index, 1)
+              updateBlocks()
+            }
+          }
+        })
+
+      clickFunction(newRect, type)
+    }
+
+    com.filters.g = com.main.g.append('g')
+      .attr('transform', 'translate(' + com.filters.box.x + ',' + com.filters.box.y + ')')
+
+    let margin = {
+      inner: 5,
+      extern: 5
+    }
+    let buttonPanel = new ButtonPanel()
+
+    buttonPanel.init({
+      g: com.filters.g,
+      box: com.filters.box,
+      margin: margin,
+      rows: 3,
+      cols: 3,
+      background: 'none',
+      stroke: '#CFD8DC'
+    })
+
+    let newButton = buttonPanel.addButton({row: 0, col: 1})
+    newButton.append('text')
+      .text('SBs Filters')
+      .attr('x', Number(newButton.attr('width')) * 0.5)
+      .attr('y', Number(newButton.attr('height')) * 0.35)
+      .attr('dy', 6)
+      .attr('stroke', '#CFD8DC')
+      .attr('fill', '#CFD8DC')
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', 18)
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+
+    createButton({row: 1, col: 0}, 'Fail', [{keys: ['exeState', 'state'], value: 'fail'}])
+    createButton({row: 1, col: 1}, 'Done', [{keys: ['exeState', 'state'], value: 'done'}])
+    createButton({row: 1, col: 2}, 'Run', [{keys: ['exeState', 'state'], value: 'run'}])
+    createButton({row: 2, col: 0}, 'Cancel.canrun', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}])
+    createButton({row: 2, col: 1}, 'Cancel', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}])
+    createButton({row: 2, col: 2}, 'Wait', [{keys: ['exeState', 'state'], value: 'wait'}])
+  }
+  function initTimeBars () {
+    if (!com.timeBars.enabled) return
+    com.timeBars.g = com.main.g.append('g')
+      .attr('transform', 'translate(' + com.timeBars.box.x + ',' + com.timeBars.box.y + ')')
+  }
+
+  function filterData () {
+    function checkPropertiesValue (d, keys, value) {
+      let target = d
+      for (var i = 0; i < keys.length; i++) {
+        target = target[keys[i]]
+      }
+      if (target === value) return true
+      return false
+    }
+    let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
+    for (var z = 0; z < com.data.raw.blocks.done.length; z++) {
+      let dataNow = com.data.raw.blocks.done[z]
+      if (com.filters.filters.length === 0) {
+        if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
+        if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
+        if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
+      } else {
+        let insert = true
+        for (var i = 0; i < com.filters.filters.length; i++) {
+          let filterNow = com.filters.filters[i]
+          let allPropValidate = true
+          for (var j = 0; j < filterNow.length; j++) {
+            if (!checkPropertiesValue(dataNow, filterNow[j].keys, filterNow[j].value)) allPropValidate = false
+          }
+          if (allPropValidate) insert = false
+        }
+        if (insert) {
+          if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
+          if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
+          if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
+        }
       }
     }
+    filtered.wait = com.data.raw.blocks.wait.filter(function (d) {
+      if (com.filters.filters.length === 0) return true
+      for (var i = 0; i < com.filters.filters.length; i++) {
+        let filterNow = com.filters.filters[i]
+        let ok = true
+        for (var j = 0; j < filterNow.length; j++) {
+          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) ok = false
+        }
+        if (ok) return false
+      }
+      return true
+    })
+    filtered.run = com.data.raw.blocks.run.filter(function (d) {
+      if (com.filters.filters.length === 0) return true
+      let ok = true
+      for (var i = 0; i < com.filters.filters.length; i++) {
+        let filterNow = com.filters.filters[i]
+        let ok = true
+        for (var j = 0; j < filterNow.length; j++) {
+          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) ok = false
+        }
+        if (ok) return false
+      }
+      return true
+    })
 
-    com.prevUpdate = thisUpdate
+    return filtered
+  }
 
-    // // ====================================================
-    // // for debugging scroll
-    // // ====================================================
-    if (hasVar(window.debugScroll)) {
-      hasBlockUpdate = 1
+  function updateAxis () {
+    com.axis.g.style('opacity', 1)
+    let minTxtSize = com.main.box.w * 0.02
+
+    com.axis.domain = [com.time.startTime.date, com.time.endTime.date]
+    com.axis.range = [0, com.axis.box.w]
+
+    com.axis.scale
+      .domain(com.axis.domain)
+      .range(com.axis.range)
+
+    // console.log(com.axis.domain, com.axis.range);
+    com.axis.main.scale(com.axis.scale)
+    com.axis.main.tickSize(4)
+    com.axis.g.call(com.axis.main)
+    com.axis.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.axis.attr.path.stroke)
+    com.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.axis.attr.path.stroke)
+    com.axis.g.selectAll('g.tick').selectAll('text')
+      .attr('stroke', com.axis.attr.text.stroke)
+      .attr('fill', com.axis.attr.text.fill)
+      .style('font-size', minTxtSize + 'px')
+  }
+  function updateBlocks () {
+    if (com.data.filtered === undefined) return
+
+    if (com.blocks.run.enabled) {
+      let dataBottom = []
+        .concat(com.data.filtered.done)
+        .concat(com.data.filtered.fail)
+        .concat(com.data.filtered.run)
+        .concat(com.data.filtered.wait)
+      let bottomRow = calcBlockRow({
+        typeNow: 'bottom',
+        start: com.time.startTime.time,
+        end: com.time.endTime.time,
+        data: dataBottom,
+        box: {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg},
+        yScale: true
+      })
+      bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg})
+      bottomRow = setDefaultStyleForBlocks(bottomRow)
+      setBlockRect(bottomRow, com.blocks.run)
     }
-    // // ====================================================
-
-    if (hasBlockUpdate) {
-      getBlocks()
-      setBlockRect()
-      setRunRect()
+    if (com.blocks.cancel.enabled) {
+      let dataTop = []
+        .concat(com.data.filtered.cancel)
+      let topRow = calcBlockRow({
+        typeNow: 'top',
+        start: com.time.startTime.time,
+        end: com.time.endTime.time,
+        data: dataTop,
+        box: {x: 0, y: 0, w: com.blocks.cancel.box.w, h: com.blocks.cancel.box.h, marg: com.blocks.cancel.box.marg},
+        yScale: false
+      })
+      topRow = adjustBlockRow(topRow, {x: 0, y: 0, w: com.blocks.cancel.box.w, h: com.blocks.cancel.box.h, marg: com.blocks.cancel.box.marg})
+      topRow = setDefaultStyleForBlocks(topRow)
+      setBlockRect(topRow, com.blocks.cancel)
     }
-    setTimeRect()
+    if (com.blocks.modification.enabled && com.data.modified.length > 0) {
+      com.data.modified = setDefaultStyleForBlocks(com.data.modified)
+      setBlockRect(com.data.modified, com.blocks.modification)
+    }
+  }
+  this.updateBlocks = updateBlocks
+  function updateData (dataIn) {
+    com.time.currentTime = dataIn.time.currentTime
+    com.time.startTime = dataIn.time.startTime
+    com.time.endTime = dataIn.time.endTime
+    com.data.raw = dataIn.data.raw
+    com.data.modified = dataIn.data.modified
+
+    com.data.filtered = filterData()
+
+    if (com.axis.enabled) updateAxis()
+    if (com.blocks.enabled) updateBlocks()
+    if (com.timeBars.enabled) setTimeRect()
+  }
+  this.updateData = updateData
+  function update (dataIn) {
+    com.time.currentTime = dataIn.time.currentTime
+    com.time.startTime = dataIn.time.startTime
+    com.time.endTime = dataIn.time.endTime
+
+    if (com.axis.enabled) updateAxis()
+    if (com.blocks.enabled) updateBlocks()
+    if (com.timeBars.enabled) setTimeRect()
   }
   this.update = update
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function getBlocks () {
-    // // ---------------------------------------------------------------------------------------------------
-    // // test edge cases:
-    // // ---------------------------------------------------------------------------------------------------
-    // com.blocksIn.doneNow = com.blocksIn.done
-    // com.blocksIn.runNow  = com.blocksIn.run
-    // com.blocksIn.waitNow = com.blocksIn.wait
-    // // com.blocksIn.done  = com.blocksIn.doneNow.slice(0, 2);
-    // // com.blocksIn.run   = []//com.blocksIn.doneNow.slice(2, 3);
-    // com.blocksIn.wait  = com.blocksIn.waitNow.slice(0, 13);
-    // // ---------------------------------------------------------------------------------------------------
-    // com.blocksIn.done  = com.blocksIn.done.slice(0, 10);
-    // com.blocksIn.run   = []//com.blocksIn.doneNow.slice(2, 3);
-    // com.blocksIn.wait  = []//com.blocksIn.wait.slice(0, 7);
-    // // ---------------------------------------------------------------------------------------------------
-    let box = com.innerBox
-    let runFrac = com.blocksIn.run.length === 0 ? 0 : 0.2
-    let runMarg =
-      com.blocksIn.run.length === 0 ? 0 : 2 * (box.x - com.outerBox.x)
-
-    let maxDone = minMaxObj({
-      minMax: 'max',
-      data: com.blocksIn.done,
-      func: 'endTime',
-      defVal: 0
-    })
-    // let minRun = minMaxObj({
-    //   minMax: 'min',
-    //   data: com.blocksIn.run,
-    //   func: 'startTime',
-    //   defVal: 0
-    // })
-    // let maxRun = minMaxObj({
-    //   minMax: 'max',
-    //   data: com.blocksIn.run,
-    //   func: 'endTime',
-    //   defVal: 0
-    // })
-    let minWait = minMaxObj({
-      minMax: 'min',
-      data: com.blocksIn.wait,
-      func: 'startTime',
-      defVal: 0
-    })
-
-    let doneWaitW = com.time.end - minWait + maxDone - com.time.start
-
-    let frac = {}
-    frac.done = (1 - runFrac) * (maxDone - com.time.start) / doneWaitW
-    frac.run = runFrac - 2 * runMarg / box.w
-    frac.wait = (1 - runFrac) * (com.time.end - minWait) / doneWaitW
-
-    if (com.blocksIn.done.length === 0) {
-      frac.done = 0
-      frac.wait = 1 - runFrac
+  function groupByTime (blocks) {
+    let groups = []
+    for (var i = 0; i < blocks.length; i++) {
+      let newGroup = [blocks[i]]
+      for (var j = 0; j < blocks.length; j++) {
+        if (i !== j && isSameTimeBeginAfter(blocks[i].x, blocks[i].x + blocks[i].w, blocks[j].x, blocks[j].x + blocks[j].w)) newGroup.push(blocks[j])
+      }
+      groups.push(newGroup)
     }
-    if (com.blocksIn.wait.length === 0) {
-      frac.done = 1 - runFrac
-      frac.wait = 0
-    }
-
-    com.blockRow = {}
-    $.each(['done', 'run', 'wait'], function (index, typeNow) {
-      let dataIn = com.blocksIn[typeNow]
-
-      if (!com.doPhase) {
-        if (index > 0) return
-
-        com.blockRow.run = []
-        com.blockRow.wait = []
-
-        dataIn = []
-          .concat(com.blocksIn.done)
-          .concat(com.blocksIn.run)
-          .concat(com.blocksIn.wait)
-      }
-
-      com.blockRow[typeNow] = calcBlockRow({
-        typeNow: typeNow,
-        start: com.time.start,
-        end: com.time.end,
-        data: dataIn
-      })
-
-      if (!com.doPhase) return
-      if (com.blockRow[typeNow].length === 0) return
-
-      let xMin = minMaxObj({
-        minMax: 'min',
-        data: com.blockRow[typeNow],
-        func: 'x'
-      })
-      let xMax = minMaxObj({
-        minMax: 'max',
-        data: com.blockRow[typeNow],
-        func: function (d, i) {
-          return d.x + d.w
-        }
-      })
-      let scale = frac[typeNow] / ((xMax - xMin) / box.w)
-
-      let xShift = null
-      let xShiftType = 0
-      if (typeNow === 'run') xShiftType = frac.done * box.w + runMarg
-      if (typeNow === 'wait') {
-        xShiftType = (frac.done + frac.run) * box.w + 2 * runMarg
-      }
-      // if(typeNow=='run')console.log('----',xMin,xMax,scale,xShiftType);
-
-      $.each(com.blockRow[typeNow], function (index, dataNow) {
-        dataNow.x = (dataNow.x - box.x) * scale + box.x
-      })
-
-      $.each(com.blockRow[typeNow], function (index, dataNow) {
-        if (!hasVar(xShift)) {
-          let xMinNow = minMaxObj({
-            minMax: 'min',
-            data: com.blockRow[typeNow],
-            func: 'x'
-          })
-          xShift = box.x - xMinNow + xShiftType
-          // xShift = box.x - com.blockRow[typeNow][0].x + xShiftType;
-        }
-
-        dataNow.x += xShift
-        dataNow.w = dataNow.w * scale
-      })
-    })
-
-    com.blocksAll = []
-      .concat(com.blockRow.done)
-      .concat(com.blockRow.run)
-      .concat(com.blockRow.wait)
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    let yMin = minMaxObj({
-      minMax: 'min',
-      data: com.blocksAll,
-      func: 'y'
-    })
-    let yMax = minMaxObj({
-      minMax: 'max',
-      data: com.blocksAll,
-      func: function (d, i) {
-        return d.y + d.h
-      }
-    })
-    let yDif = yMax - yMin
-
-    let hasScroll = yDif > com.innerBox.h + 0.01
-
-    com.scrollBox.resetScroller({ canScroll: hasScroll, scrollHeight: yDif })
+    return groups
   }
-  this.getBlocks = getBlocks
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function calcBlockRow (optIn) {
-    let dataIn = optIn.data
-    let box = com.innerBox
-    let xScale = box.w / (optIn.end - optIn.start)
-    let yScale = box.h / com.telIds.length
+  function isSameTimeBeginAfter (s1, e1, s2, e2) {
+    if (s1 > s2 && s1 < e2) return true
+    return false
+  }
+  function isSameTime (s1, e1, s2, e2) {
+    if (s1 > s2 && s1 < e2) return true
+    if (e1 > s2 && e1 < e2) return true
+    if (s1 < s2 && e1 > e2) return true
+    return false
+  }
 
-    let blocks = []
-    let nBlocksType = {}
-    $.each(dataIn, function (index, dataNow) {
-      let id = dataNow.obId
-      let state = dataNow.exeState.state
-      let nTels = dataNow.telIds.length
-      let start = dataNow.startTime * xScale
-      let end = dataNow.endTime * xScale
-      let overlap = dataNow.duration * xScale * 0.2 // allow small overlap in x between blocks
-      let x0 = box.x + start
-      let w0 = end - start
-      let h0 = nTels * yScale
-      let y0 = box.y
-
-      if (
-        !com.futureCanceled.hide &&
-        com.futureCanceled.shiftY &&
-        !dataNow.exeState.canRun
-      ) {
-        y0 += box.h + 2 * box.marg
+  function isGeneratingTelsConflict (group) {
+    function useSameTels (tel1, tel2) {
+      for (var i = 0; i < tel1.length; i++) {
+        for (var j = 0; j < tel2.length; j++) {
+          if (tel1[i] === tel2[j]) {
+            return true
+          }
+        }
       }
+      return false
+    }
+    for (let i = 0; i < length; i++) {
+      for (let j = 0; j < length; j++) {
+        if (i !== j && useSameTels(group[i].data.telIds, group[j].data.telIds)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
 
-      // // ====================================================
-      // // for debugging scroll
-      // // ====================================================
-      // if(!hasVar(window.debugScroll)){window.debugScroll=0}if(index==0&&optIn.data[0].exeState.state=='wait'){debugScroll+=1;}if(debugScroll%3==0){w0=w0*3;}
-      // w0 = w0*2
-      // // ====================================================
-
-      if (!hasVar(nBlocksType[state])) nBlocksType[state] = 0
-      else nBlocksType[state] += 1
-
-      blocks.push({
-        id: id,
-        x: x0,
-        y: y0,
-        w: w0,
-        h: h0,
-        o: overlap,
-        nBlock: nBlocksType[state],
-        // nTel: nTels,
-        data: dataNow
-      })
-    })
-
+  function adjustBlockRow (blocks, box) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
@@ -526,14 +670,9 @@ window.BlockQueueOld = function () {
       dataNow0.w = Math.max(dataNow0.w, box.marg / 10)
       dataNow0.h = Math.max(dataNow0.h, box.marg)
     })
-
-    // ---------------------------------------------------------------------------------------------------
-    //
     // ---------------------------------------------------------------------------------------------------
     let sortedIds = []
     $.each(blocks, function (index0, dataNow0) {
-      // if(typeNow=='run') return
-      // if(sortedIds.indexOf(dataNow0.id) >= 0) console.log('will skip sorted',index0,dataNow0.data.metaData.blockName);
       if (sortedIds.indexOf(dataNow0.id) >= 0) return
       sortedIds.push(dataNow0.id)
 
@@ -548,7 +687,7 @@ window.BlockQueueOld = function () {
 
       let ovelaps = [{ index: index0, data: dataNow0 }]
 
-      for (let nTries = 0; nTries < 10; nTries++) {
+      for (let nTries = 0; nTries < 1; nTries++) {
         let nOver = ovelaps.length
 
         $.each(blocks, function (index1, dataNow1) {
@@ -570,10 +709,10 @@ window.BlockQueueOld = function () {
           let o01 = Math.max(dataNow0.o, dataNow1.o)
 
           let hasOverlap =
-            x1 < minMax.maxX - o01 &&
-            x1 + w1 > minMax.minX + o01 &&
-            y1 < minMax.maxY &&
-            y1 + h1 > minMax.minY
+                            x1 < minMax.maxX - o01 &&
+                            x1 + w1 > minMax.minX + o01 &&
+                            y1 < minMax.maxY &&
+                            y1 + h1 > minMax.minY
           // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName]);
 
           // XXXXXXXXXXXXXXXXXX
@@ -645,8 +784,7 @@ window.BlockQueueOld = function () {
         // XXXXXXXXXXXXXXXXXX
         // let hasOverlap = ((x1 < x0+w0+margX/2) && (x1+w1 > x0) && (y1 < y0+h0) && (y1+h1 > y0));
         // XXXXXXXXXXXXXXXXXX
-        let hasOverlap =
-          x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
+        let hasOverlap = x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
         if (hasOverlap) {
           dataNow1.y = y0 + h0 + margY / 2
           // dataNow1.y += h0 + margY/2;
@@ -654,334 +792,446 @@ window.BlockQueueOld = function () {
         // if(hasOverlap) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName],(h0 + margY/2));
       })
     })
+    $.each(blocks, function (index0, dataNow0) {
+      dataNow0.y = (2 * box.y + box.h) - dataNow0.y - dataNow0.h
+    })
+    return blocks
+  }
+  this.adjustBlockRow = adjustBlockRow
+  function calcBlockRow (optIn) {
+    let dataIn = optIn.data
+    let box = optIn.box
+    let xScale = box.w / (optIn.end - optIn.start)
+    let yScale = box.h / (com.data.raw.telIds.length + 2)
 
+    let blocks = []
+    let nBlocksType = {}
+    // console.log(dataIn);
+    // compute width/height/x/y of blocks, only y need to be modified (so far)
+
+    $.each(dataIn, function (index, dataNow) {
+      // console.log(dataNow);
+
+      let id = dataNow.obId
+      let state = dataNow.exeState.state
+      let nTels = dataNow.telIds.length
+      let start = (dataNow.startTime - optIn.start) * xScale
+      let end = (dataNow.endTime - optIn.start) * xScale
+      let overlap = (dataNow.endTime - dataNow.startTime) * xScale * 0.2 // allow small overlap in x between blocks
+      let x0 = box.x + start
+      let w0 = end - start
+      let h0 = optIn.yScale ? (nTels * yScale) : (box.h * 0.3)
+      let y0 = box.y
+
+      if (!hasVar(nBlocksType[state])) nBlocksType[state] = 0
+      else nBlocksType[state] += 1
+
+      blocks.push({
+        id: id,
+        x: x0,
+        y: y0,
+        w: w0,
+        h: h0,
+        newH: h0,
+        o: overlap,
+        nBlock: nBlocksType[state],
+        // nTel: nTels,
+        data: dataNow
+      })
+    })
+
+    let groups = groupByTime(blocks)
+    $.each(groups, function (index, group) {
+      let tot = 0
+      $.each(group, function (index, dataNow) {
+        tot += dataNow.h
+      })
+      //console.log(isGeneratingTelsConflict(group), tot > box.h);
+      if (isGeneratingTelsConflict(group)) {
+        let coef = (box.h * 1) / tot
+        let x = group[0].x
+        let x2 = x + group[0].w
+        $.each(group, function (index, dataNow) {
+          dataNow.newH = ((dataNow.h * coef) < dataNow.newH ? (dataNow.h * coef) : dataNow.newH)
+          if (dataNow.x < x) x = dataNow.x
+          if (dataNow.x + dataNow.w > x2) x2 = dataNow.x + dataNow.w
+        })
+        com.background.child.runOverflow.back.append('rect')
+          .attr('class', 'conflictRect')
+          .attr('x', x)
+          .attr('y', com.blocks.run.box.y - com.blocks.run.box.h * 0.25 - com.blocks.run.box.marg)
+          .attr('width', x2 - x)
+          .attr('height', com.blocks.run.box.h * 0.12)
+          .attr('fill', com.background.child.runOverflow.fill)
+          .attr('fill-opacity', com.background.child.runOverflow.fillOpacity)
+      } else if (tot > box.h) {
+        let coef = box.h / tot
+        $.each(group, function (index, dataNow) {
+          dataNow.newH = ((dataNow.h * coef) > dataNow.newH ? (dataNow.h * coef) : dataNow.newH)
+        })
+      }
+    })
+    $.each(groups, function (index, group) {
+      $.each(group, function (index, dataNow) {
+        dataNow.h = dataNow.newH ? dataNow.newH : dataNow.h
+      })
+    })
     return blocks
   }
   this.calcBlockRow = calcBlockRow
+  function setDefaultStyleForBlocks (blocks) {
+    for (let index in blocks) {
+      let b = blocks[index]
+      let cols = com.style.blockCol({ d: b })
+
+      b.stroke = cols.stroke
+      b.strokeWidth = 1
+      b.fill = cols.background
+      b.fillOpacity = com.style.blockOpac({ d: b })
+      b.strokeOpacity = com.style.blockOpac({ d: b })
+      b.strokeDasharray = []
+
+      b.text = cols.text
+    }
+    return blocks
+  }
 
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  function setBlockRect () {
-    let box = com.innerBox
-    let minTxtSize = box.w * 0.03
-    let rect = com.innerG
-      .selectAll('rect.' + com.mainTag + 'blocks')
-      .data(com.blocksAll, function (d) {
-        return d.id
-      })
+  function blocksMouseOver (data) {
+    let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
+      .merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
 
-    // ---------------------------------------------------------------------------------------------------
-    // ---------------------------------------------------------------------------------------------------
-    let hasErr = 0
-    $.each(com.blocksAll, function (i, d) {
-      if (d.w <= 0 || d.h <= 0) {
-        console.error(i, d)
-        hasErr = 1
+    totBlocks.each(function (d) {
+      if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
+        d3.select(this).select('rect.back').attr('stroke-width', 6)
+          .style('stroke-opacity', 1)
+          .attr('stroke-dasharray', [4, 2])
       }
     })
-    if (hasErr) {
-      console.error(com.blocksAll)
-    }
-    // ---------------------------------------------------------------------------------------------------
-    // ---------------------------------------------------------------------------------------------------
-    // console.log('-----------------------------------------------------');
+  }
+  function blocksMouseOut (data) {
+    let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
+      .merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
 
-    rect
+    totBlocks.each(function (d) {
+      if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
+        d3.select(this).select('rect.back').attr('stroke-width', 1)
+          .style('stroke-opacity', 0.4)
+          .attr('stroke-dasharray', [])
+      }
+    })
+  }
+
+  function focusOnSchedBlocks (data) {
+    blocksMouseOver({data: {metaData: {nSched: Number(data.scheduleId)}}})
+  }
+  this.focusOnSchedBlocks = focusOnSchedBlocks
+  function unfocusOnSchedBlocks (data) {
+    blocksMouseOut({data: {metaData: {nSched: Number(data.scheduleId)}}})
+  }
+  this.unfocusOnSchedBlocks = unfocusOnSchedBlocks
+
+  // function dragBlockStart (d) {}
+  // function dragBlockTick (d) {}
+  // function dragBlockEnd (d) {}
+
+  function setBlockRect (data, group) {
+    let box = group.box
+    let g = group.g
+    let minTxtSize = box.w * 0.016
+    let timeScale = d3.scaleLinear()
+      .range(com.axis.range)
+      .domain([com.time.startTime.time, com.time.endTime.time])
+
+    let rect = g
+      .selectAll('g.' + com.mainTag + 'blocks')
+      .data(data, function (d) {
+        return d.id
+      })
+    let rectEnter = rect
       .enter()
-      .append('rect')
+      .append('g')
       .attr('class', com.mainTag + 'blocks')
-      .style('opacity', 0)
-      .attr('x', function (d, i) {
-        return d.x
-      })
-      .attr('y', function (d, i) {
-        return d.y
-      })
-      .attr('width', function (d, i) {
-        return d.w
-      })
-      .attr('height', function (d, i) {
-        return d.h
-      })
-      .attr('stroke', function (d, i) {
-        return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
-      })
-      .style('fill', function (d, i) {
-        return com.style.recCol({ d: d })
-      })
-      .style('fill-opacity', function (d) {
-        return com.style.recFillOpac(d, d.data.exeState.state)
-      })
-      .attr('stroke-width', 1)
-      .style('stroke-opacity', com.style.recStrokeOpac)
-      // .style("pointer-events", "none")
-      .attr('vector-effect', 'non-scaling-stroke')
-      .on('click', com.click)
-      // .attr("clip-path", "url(#"+com.tagClipPath.inner+")")
-      .merge(rect)
-      .transition('inOut')
-      .duration(timeD.animArc)
-      .style('opacity', 1)
-      .attr('stroke', function (d, i) {
-        return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
-      })
-      .style('fill', function (d, i) {
-        return com.style.recCol({ d: d })
-      })
-      .style('fill-opacity', function (d) {
-        return com.style.recFillOpac(d, d.data.exeState.state)
-      })
-      .style('stroke-opacity', com.style.recStrokeOpac)
-      .attr('x', function (d, i) {
-        return d.x
-      })
-      .attr('y', function (d, i) {
-        return d.y
-      })
-      .attr('width', function (d, i) {
-        return d.w
-      })
-      .attr('height', function (d, i) {
-        return d.h
-      })
+    rectEnter.each(function (d, i) {
+      let parent = d3.select(this)
+      d3.select(this).append('rect')
+        .attr('class', 'back')
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime)
+        })
+        .attr('y', function (d, i) {
+          return d.y - 2
+        })
+        .attr('width', function (d, i) {
+          return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        })
+        .attr('height', function (d, i) {
+          return d.h
+        })
+        .attr('stroke', function (d, i) {
+          return d.stroke
+        })
+        .style('fill', function (d, i) {
+          return d.fill
+        })
+        .style('fill-opacity', function (d, i) {
+          return d.fillOpacity
+        })
+        .attr('stroke-width', function (d, i) {
+          return d.strokeWidth
+        })
+        .style('stroke-opacity', function (d, i) {
+          return d.strokeOpacity
+        })
+        .style('stroke-dasharray', function (d, i) {
+          return d.strokeDasharray
+        })
+        // .style("pointer-events", "none")
+        .attr('vector-effect', 'non-scaling-stroke')
+        .on('click', function (d) {
+          if (d3.event.ctrlKey) {
+            com.input.selection.push(this)
+          } else {
+            com.input.selection = [this]
+          }
+          group.events.click()
+        })
+        .on('mouseover', function (d) {
+          blocksMouseOver(d)
+          d3.select(this).attr('stroke-width', 4)
+          d3.select(this).style('stroke-opacity', 1)
+          group.events.mouseover(d)
+        })
+        .on('mouseout', function (d) {
+          blocksMouseOut(d)
+          d3.select(this).attr('stroke-width', 1)
+          d3.select(this).style('stroke-opacity', function (d) {
+            return 0.55
+          })
+          group.events.mouseout(d)
+        })
+        .call(d3.drag()
+          .on('start', function () {
+            com.interaction = {}
+            com.interaction.oldG = parent
+            group.events.drag.start()
+          })
+          .on('drag', group.events.drag.tick)
+          .on('end', group.events.drag.end))
 
+      d3.select(this).append('rect')
+        .attr('class', 'pattern')
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime)
+        })
+        .attr('y', function (d, i) {
+          return d.y - 2
+        })
+        .attr('width', function (d, i) {
+          return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        })
+        .attr('height', function (d, i) {
+          return d.h
+        })
+
+        .attr('stroke', 'none')
+        .style('fill', 'none')
+        .style('fill-opacity', 1)
+        .style('stroke-opacity', 0)
+        .style('pointer-events', 'none')
+        .attr('vector-effect', 'non-scaling-stroke')
+
+      d3.select(this).append('text')
+        .attr('class', 'name')
+        .text(function (d, i) {
+          return d.data.metaData.blockName
+        })
+        .style('font-weight', 'normal')
+        .style('fill-opacity', 1)
+        .style('fill', function (d) {
+          return d.text
+        })
+        .style('stroke-width', 0.3)
+        .style('stroke-opacity', 1)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', function (d) {
+          return d.stroke
+        })
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime + d.data.duration * 0.5)
+        })
+        .attr('y', function (d, i) {
+          return d.y + d.h / 2
+        })
+        .attr('text-anchor', 'middle')
+    })
+
+    rect.merge(rectEnter).each(function (d, i) {
+      d3.select(this).select('rect.back')
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .attr('stroke', function (d, i) {
+          return d.stroke
+        })
+        .style('fill', function (d, i) {
+          return d.fill
+        })
+        .style('fill-opacity', function (d, i) {
+          return d.fillOpacity
+        })
+        .attr('stroke-width', function (d, i) {
+          return d.strokeWidth
+        })
+        .style('stroke-opacity', function (d, i) {
+          return d.strokeOpacity
+        })
+        .style('stroke-dasharray', function (d, i) {
+          return d.strokeDasharray
+        })
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime)
+        })
+        .attr('y', function (d, i) {
+          return d.y - 2
+        })
+        .attr('width', function (d, i) {
+          return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        })
+        .attr('height', function (d, i) {
+          return d.h
+        })
+      d3.select(this).select('text')
+        .style('font-size', function (d) {
+          d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
+          if (!hasVar(d.size)) {
+            console.error('_blockQueue_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
+          } // should not happen....
+          if (!hasVar(d.size)) d.size = 0
+          // d.size = d.w/3;
+          return d.size + 'px'
+        })
+        .attr('dy', function (d) {
+          return d.size / 3 + 'px'
+        })
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('stroke-opacity', function (d) {
+          return d.strokeOpacity
+        })
+        .style('fill-opacity', function (d) {
+          return d.fillOpacity
+        })
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime + d.data.duration * 0.5)
+        })
+        .attr('y', function (d, i) {
+          return d.y + d.h / 2
+        })
+    })
     rect
       .exit()
       .transition('inOut')
-      .duration(timeD.animArc / 2)
-      .attr('width', 0)
+      .duration(timeD.animArc)
       .style('opacity', 0)
       .remove()
-
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    let txtData = com.doText ? com.blocksAll : []
-    let text = com.innerG
-      .selectAll('text.' + com.mainTag + 'blocks')
-      .data(txtData, function (d) {
-        return d.id
-      })
+    // let text = g
+    //   .selectAll('text.' + com.mainTag + 'blocks')
+    //   .data(data, function (d) {
+    //     return d.id
+    //   })
+    // text
+    //   .enter()
 
-    text
-      .enter()
-      .append('text')
-      .attr('class', com.mainTag + 'blocks')
-      .text(function (d, i) {
-        return d.data.metaData.blockName
-      })
-      .style('font-weight', 'normal')
-      .style('opacity', 0)
-      .style('fill-opacity', 0.7)
-      .style('fill', '#383b42')
-      .style('stroke-width', 0.3)
-      .style('stroke-opacity', 1)
-      .attr('vector-effect', 'non-scaling-stroke')
-      .style('pointer-events', 'none')
-      .style('stroke', function (d) {
-        return '#383b42'
-      })
-      .attr('x', function (d, i) {
-        return d.x + d.w / 2
-      })
-      .attr('y', function (d, i) {
-        return d.y + d.h / 2
-      })
-      .attr('text-anchor', 'middle')
-      // .attr("clip-path", "url(#"+com.tagClipPath.inner+")")
-      .merge(text)
-      .style('font-size', function (d) {
-        d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
-        if (!hasVar(d.size)) {
-          console.error('_BlockQueueOld_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
-        } // should not happen....
-        if (!hasVar(d.size)) d.size = 0
-        // d.size = d.w/3;
-        return d.size + 'px'
-      })
-      .attr('dy', function (d) {
-        return d.size / 3 + 'px'
-      })
-      .transition('inOut')
-      .duration(timeD.animArc)
-      .style('opacity', com.style.textOpac)
-      .attr('x', function (d, i) {
-        return d.x + d.w / 2
-      })
-      .attr('y', function (d, i) {
-        return d.y + d.h / 2
-      })
-
-    text
-      .exit()
-      .transition('inOut')
-      .duration(timeD.animArc)
-      .style('opacity', 0)
-      .remove()
+    // text
+    //   .exit()
+    //   .transition('inOut')
+    //   .duration(timeD.animArc)
+    //   .style('opacity', 0)
+    //   .remove()
   }
   this.setBlockRect = setBlockRect
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function setRunRect () {
-    // let box = com.innerBox
+  function addExtraBar (date) {
+    let data = []
+    if (date === null) {
+      let rectNow = com.main.g
+        .selectAll('rect.' + com.mainTag + 'extra')
+        .data(data)
+      rectNow.exit().remove()
+    } else {
+      data = [date]
+      let rectNow = com.main.g
+        .selectAll('rect.' + com.mainTag + 'extra')
+        .data(data)
+        .attr('transform', 'translate(' + com.axis.box.x + ',' + 0 + ')')
 
-    let recRunData = []
-    if (com.blockRow.run.length > 0 && com.doPhase && com.doRunRect) {
-      let xMin = minMaxObj({
-        minMax: 'min',
-        data: com.blockRow.run,
-        func: 'x'
-      })
-      let xMax = minMaxObj({
-        minMax: 'max',
-        data: com.blockRow.run,
-        func: function (d, i) {
-          return d.x + d.w
-        }
-      })
-
-      recRunData = [
-        {
-          id: com.mainTag + 'run',
-          x: xMin - com.outerBox.marg / 2,
-          y: com.outerBox.y - com.outerBox.marg / 2,
-          w: xMax - xMin + com.outerBox.marg,
-          h: com.outerBox.h + com.outerBox.marg
-        }
-      ]
+      rectNow
+        .enter()
+        .append('rect')
+        .attr('class', com.mainTag + 'extra')
+        .style('opacity', 1)
+        .attr('x', function (d, i) {
+          if (d > com.axis.scale.domain()[1]) return com.axis.scale(com.axis.scale.domain()[1])
+          else if (d < com.axis.scale.domain()[0]) return com.axis.scale(com.axis.scale.domain()[0])
+          return com.axis.scale(d)
+        })
+        .attr('y', function (d, i) {
+          return com.main.box.y - 1 * com.main.box.marg
+        })
+        .attr('width', 0)
+        .attr('height', function (d, i) {
+          return com.main.box.h + 1 * com.main.box.marg
+        })
+        .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
+        .attr('fill', colsYellows[0])
+        .attr('fill-opacity', 0.3)
+        .style('stroke-opacity', 0.15)
+        .attr('stroke-width', 3)
+        .style('pointer-events', 'none')
+        .attr('vector-effect', 'non-scaling-stroke')
+        .merge(rectNow)
+        .transition('inOut')
+        .duration(50)
+        .attr('x', function (d, i) {
+          if (d > com.axis.scale.domain()[1]) return com.axis.scale(com.axis.scale.domain()[1])
+          else if (d < com.axis.scale.domain()[0]) return com.axis.scale(com.axis.scale.domain()[0])
+          return com.axis.scale(d)
+        })
+        // .attr("y", function(d,i) { return d.y; })
+        .attr('width', function (d, i) {
+          return com.main.box.marg
+        })
     }
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    let rectRun = com.outerG
-      .selectAll('rect.' + com.mainTag + 'runRange')
-      .data(recRunData, function (d) {
-        return d.id
-      })
-
-    rectRun
-      .enter()
-      .append('rect')
-      .attr('class', com.mainTag + 'runRange')
-      .style('opacity', 1)
-      .attr('x', function (d, i) {
-        return d.x + d.w / 2
-      })
-      .attr('y', function (d, i) {
-        return d.y
-      })
-      .attr('width', 0)
-      .attr('height', function (d, i) {
-        return d.h
-      })
-      // .attr("stroke", "#383B42")
-      .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
-      .attr('fill', 'transparent')
-      .attr('fill-opacity', 0.2)
-      .attr('stroke-width', 1)
-      .style('stroke-opacity', 0.8)
-      .style('pointer-events', 'none')
-      .attr('vector-effect', 'non-scaling-stroke')
-      // .attr("clip-path", "url(#"+com.tagClipPath.outer+")")
-      .merge(rectRun)
-      .transition('inOut')
-      .duration(timeD.animArc)
-      .attr('x', function (d, i) {
-        return d.x
-      })
-      // .attr("y", function(d,i) { return d.y; })
-      .attr('width', function (d, i) {
-        return d.w
-      })
-    // .attr("height", function(d,i) { return d.h; })
-
-    rectRun
-      .exit()
-      .transition('inOut')
-      .duration(timeD.animArc / 2)
-      .attr('x', function (d, i) {
-        return d.x + d.w / 2
-      })
-      .attr('width', 0)
-      .style('opacity', 0)
-      .remove()
   }
-  this.setRunRect = setRunRect
-
+  this.addExtraBar = addExtraBar
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
   function setTimeRect () {
-    let box = com.innerBox
-    let timeFrac = -1
     let rectNowData = []
-    let refData = null
 
-    if (com.doTimeRect) {
-      if (com.blockRow.run.length > 0 && com.doPhase) {
-        refData = com.blockRow.run
-
-        let timeMin = minMaxObj({
-          minMax: 'min',
-          data: com.blockRow.run,
-          func: function (d, i) {
-            return d.data.startTime
-          }
-        })
-        let timeMax = minMaxObj({
-          minMax: 'max',
-          data: com.blockRow.run,
-          func: function (d, i) {
-            return d.data.endTime
-          }
-        })
-
-        timeFrac = (com.time.now - timeMin) / (timeMax - timeMin)
-        // console.log('-----',timeMin,timeMax,timeFrac);
-      } else if (timeFrac < 0 || timeFrac > 1) {
-        // refData = [].concat(com.blockRow.done).concat(com.blockRow.run).concat(com.blockRow.wait);
-
-        timeFrac = com.time.now - com.time.start
-        timeFrac /= com.time.end - com.time.start
+    rectNowData = [
+      {
+        id: com.mainTag + 'now',
+        x: com.axis.scale(com.time.currentTime.date),
+        y: com.timeBars.box.y,
+        w: com.timeBars.box.marg,
+        h: com.timeBars.box.h + com.timeBars.box.marg * 2
       }
-    }
-
-    if (timeFrac >= 0 && timeFrac <= 1) {
-      let xMin = box.x
-      let xMax = box.x + box.w
-      if (hasVar(refData)) {
-        xMin = minMaxObj({ minMax: 'min', data: refData, func: 'x' })
-        xMax = minMaxObj({
-          minMax: 'max',
-          data: refData,
-          func: function (d, i) {
-            return d.x + d.w
-          }
-        })
-      }
-
-      rectNowData = [
-        {
-          id: com.mainTag + 'now',
-          x: xMin + timeFrac * (xMax - xMin) - com.outerBox.marg / 2,
-          y: com.outerBox.y - com.outerBox.marg,
-          w: com.outerBox.marg,
-          h: com.outerBox.h + com.outerBox.marg * 2
-        }
-      ]
-    }
-
+    ]
     // console.log('timeFrac',timeFrac,rectNowData);
     // console.log('rectNowData',(com.blockRow.run.length > 0),com.time.now,timeFrac,rectNowData[0]);
 
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    let rectNow = com.outerG
+    let rectNow = com.timeBars.g
       .selectAll('rect.' + com.mainTag + 'now')
       .data(rectNowData, function (d) {
         return d.id
@@ -996,13 +1246,12 @@ window.BlockQueueOld = function () {
         return d.x
       })
       .attr('y', function (d, i) {
-        return d.y
+        return d.y - 1 * com.main.box.marg
       })
       .attr('width', 0)
       .attr('height', function (d, i) {
         return d.h
       })
-      .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
       .attr('fill', com.style.runRecCol)
       .attr('fill-opacity', 0.3)
       .style('stroke-opacity', 0.15)

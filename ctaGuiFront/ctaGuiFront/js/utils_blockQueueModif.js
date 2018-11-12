@@ -113,7 +113,7 @@ window.BlockQueue = function () {
           ? optIn.canRun
           : optIn.d.data.exeState.canRun
 
-        if (state === 'wait') return "#e6e6e6"
+        if (state === 'wait') return '#e6e6e6'
         else if (state === 'done') return d3.color(colsGreens[0]).brighter()
         else if (state === 'run') {
           return d3.color(colsPurplesBlues[0]).brighter() // [nObs % colsPurplesBlues.length]

@@ -17,7 +17,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global hasVar */
 /* global disableScrollSVG */
 /* global RunLoop */
-/* global BlockQueueModif */
+/* global BlockQueue */
 /* global BlockQueueCreator */
 /* global BlockQueueOptimizer*/
 /* global ClockEvents */
@@ -39,8 +39,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global appendToDom */
 /* global runWhenReady */
 /* global deepCopy */
-
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueue.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOptimizer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
@@ -106,7 +105,7 @@ let sockSchedBlocksController = function (optIn) {
 // ---------------------------------------------------------------------------------------------------
 let mainSchedBlocksController = function (optIn) {
   // let myUniqueId = unique()
-  let colorTheme = getColorTheme('dark-BlueGrey')
+  let colorTheme = getColorTheme('bright-Grey')
 
   let colorPalette = {dark: {}, bright: {}}
   colorPalette.dark.greyBlue = ['#ECEFF1', '#CFD8DC', '#B0BEC5', '#90A4AE', '#78909C', '#607D8B', '#546E7A', '#455A64', '#37474F', '#263238']
@@ -151,8 +150,8 @@ let mainSchedBlocksController = function (optIn) {
   let svg = {}
   let lenD = {}
 
-  let blockQueue = new BlockQueue()
-  let blockQueueCreator = new BlockQueueCreator()
+  let blockQueue = null
+  let blockQueueCreator = null
 
   // let thisSchedBlocksController = this
   // let isSouth = window.__nsType__ === 'S'
@@ -458,6 +457,7 @@ let mainSchedBlocksController = function (optIn) {
     // console.log(shared.main.data.copy.blocks);
     svgMiddleInfo.updateData()
   }
+  this.addModifications = addModifications
   function createBackground () {
     let lineGenerator = d3.line()
       .x(function (d) { return d.x })
@@ -631,80 +631,147 @@ let mainSchedBlocksController = function (optIn) {
       }
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
-      gBlockBox.append('rect')
-        .attr('x', 0)
-        .attr('y', -10)
-        // .attr('rx', 2)
-        // .attr('ry', 2)
-        .attr('width', blockBoxData.w + 0)
-        .attr('height', blockBoxData.h + 12) // + 35)
-        .attr('stroke', colorTheme.brighter.stroke)
-        .attr('stroke-width', 0.4)
-        // .attr('stroke-width', 12)
-        // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
-        .style('fill', colorTheme.brighter.background)
-      blockQueue.init({
-        tag: 'blockQueueDefaultTag',
-        g: gBlockBox,
-        box: blockBoxData,
+      // gBlockBox.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', -10)
+      //   // .attr('rx', 2)
+      //   // .attr('ry', 2)
+      //   .attr('width', blockBoxData.w + 0)
+      //   .attr('height', blockBoxData.h + 12) // + 35)
+      //   .attr('stroke', colorTheme.brighter.stroke)
+      //   .attr('stroke-width', 0.4)
+      //   // .attr('stroke-width', 12)
+      //   // .attr('stroke-dasharray', [blockBoxData.w + 10 + blockBoxData.h + 10 + 35 + 6, blockBoxData.w + 10 - 12, blockBoxData.h + 10 + 35 + 16])
+      //   .style('fill', colorTheme.brighter.background)
+      blockQueue = new BlockQueue({
+        main: {
+          tag: 'blockQueueTopTag',
+          g: gBlockBox,
+          box: blockBoxData,
+          background: {
+            fill: colorTheme.brighter.background,
+            stroke: colorTheme.brighter.stroke,
+            strokeWidth: 0.5
+          }
+        },
         axis: {
           enabled: true,
-          group: {
-            g: undefined,
-            box: {x: 0, y: blockBoxData.h, w: blockBoxData.w, h: 0, marg: blockBoxData.marg}
-          },
+          g: undefined,
+          box: {x: 0, y: blockBoxData.h, w: blockBoxData.w, h: 0, marg: blockBoxData.marg},
           axis: undefined,
           scale: undefined,
           domain: [0, 1000],
           range: [0, 0],
           showText: true,
-          orientation: 'axisTop'
+          orientation: 'axisTop',
+          attr: {
+            text: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            },
+            path: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            }
+          }
         },
         blocks: {
           enabled: true,
-          group: {
-            run: {
-              g: undefined,
-              box: {x: 0, y: blockBoxData.h * 0.45, w: blockBoxData.w, h: blockBoxData.h * 0.55, marg: blockBoxData.marg}
+          run: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: blockBoxData.h * 0.45, w: blockBoxData.w, h: blockBoxData.h * 0.55, marg: blockBoxData.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
             },
-            cancel: {
-              g: undefined,
-              box: {x: 0, y:0, w: blockBoxData.w, h: blockBoxData.h * 0.3, marg: blockBoxData.marg}
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: 'none',
+              strokeWidth: 0
             }
           },
-          events: {
-            click: () => {},//svgMiddleInfo.createBlockPanels,
-            mouseover: () => {},
-            mouseout: () => {}
-          }
+          cancel: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.3, marg: blockBoxData.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          modification: {
+            enabled: false,
+            g: undefined,
+            box: undefined,
+            events: {
+              click: undefined,
+              mouseover: undefined,
+              mouseout: undefined,
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: undefined,
+              stroke: undefined,
+              strokeWidth: undefined
+            }
+          },
+          colorPalette: colorTheme.blocks
         },
         filters: {
           enabled: false,
-          group: {
-            g: undefined,
-            box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0}
-          },
+          g: undefined,
+          box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0},
           filters: []
         },
         timeBars: {
           enabled: true,
-          group: {
-            g: undefined,
-            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
-          }
+          g: undefined,
+          box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
         },
-        data: {
+        time: {
           currentTime: {time: 0, date: undefined},
           startTime: {time: 0, date: undefined},
           endTime: {time: 0, date: undefined},
-          lastRawData: undefined,
-          formatedData: undefined
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
         },
         debug: {
           enabled: false
+        },
+        pattern: {},
+        event: {
+        },
+        input: {
+          selection: []
         }
       })
 
+      blockQueue.init()
       updateData()
     }
     this.initData = initData
@@ -714,12 +781,18 @@ let mainSchedBlocksController = function (optIn) {
       $.each(shared.main.data.server.telHealth, function (index, dataNow) {
         telIds.push(dataNow.id)
       })
-      blockQueue.update({
-        currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
-        startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
-        endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)},
-        data: shared.main.data.server.blocks,
-        telIds: telIds
+      blockQueue.updateData({
+        time: {
+          currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+          startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+          endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)}
+        },
+        data: {
+          raw: {
+            blocks: shared.main.data.server.blocks,
+            telIds: telIds
+          }
+        }
       })
     }
     this.updateData = updateData
@@ -745,88 +818,127 @@ let mainSchedBlocksController = function (optIn) {
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
 
-      blockQueueCreator.init({
-        tag: 'blockQueueDefaultTag',
-        g: gBlockBox,
-        box: blockBoxData,
+      blockQueueCreator = new BlockQueueCreator({
+        main: {
+          tag: 'blockQueueMiddleTag',
+          g: gBlockBox,
+          box: blockBoxData,
+          background: {
+            fill: colorTheme.brighter.background,
+            stroke: colorTheme.brighter.stroke,
+            strokeWidth: 0.5
+          }
+        },
         axis: {
           enabled: true,
-          group: {
-            g: undefined,
-            box: {x: 0, y: blockBoxData.h, w: blockBoxData.w, h: 0, marg: blockBoxData.marg}
-          },
+          g: undefined,
+          box: {x: 0, y: blockBoxData.h, w: blockBoxData.w, h: 0, marg: blockBoxData.marg},
           axis: undefined,
           scale: undefined,
           domain: [0, 1000],
           range: [0, 0],
           showText: true,
-          orientation: 'axisTop'
+          orientation: 'axisTop',
+          attr: {
+            text: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            },
+            path: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            }
+          }
         },
         blocks: {
           enabled: true,
-          group: {
-            run: {
-              g: undefined,
-              box: {x: 0, y: blockBoxData.h * 0.66, w: blockBoxData.w, h: blockBoxData.h * 0.34, marg: blockBoxData.marg}
+          run: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: blockBoxData.h * 0.66, w: blockBoxData.w, h: blockBoxData.h * 0.34, marg: blockBoxData.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
             },
-            cancel: {
-              g: undefined,
-              box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.2, marg: blockBoxData.marg}
-            },
-            modification: {
-              g: undefined,
-              box: {x: 0, y: blockBoxData.h * 0.24, w: blockBoxData.w, h: blockBoxData.h * 0.36, marg: blockBoxData.marg}
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: 'none',
+              strokeWidth: 0
             }
           },
-          events: {
-            click: () => {},
-            mouseover: svgSchedulingBlocksOverview.schedBlocksOverRecepter,
-            mouseout: svgSchedulingBlocksOverview.schedBlocksOutRecepter
-          }
+          cancel: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.2, marg: blockBoxData.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          modification: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: blockBoxData.h * 0.24, w: blockBoxData.w, h: blockBoxData.h * 0.36, marg: blockBoxData.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          colorPalette: colorTheme.blocks
         },
         filters: {
           enabled: false,
-          group: {
-            g: undefined,
-            box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0}
-          },
+          g: undefined,
+          box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0},
           filters: []
         },
         timeBars: {
           enabled: true,
-          group: {
-            g: undefined,
-            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
-          }
+          g: undefined,
+          box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
         },
         data: {
-          currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
-          startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
-          endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)},
-          lastRawData: undefined,
-          formatedData: undefined,
-          modifiedData: []
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
         },
         debug: {
           enabled: false
         },
         pattern: {},
-        background: {
-          g: gBlockBox.append('g'),
-          attr: {
-            fill: colorTheme.brighter.background
-          },
-          child: {
-            runOverflow: {
-              group: {
-                back: gBlockBox.append('g'),
-                text: gBlockBox.append('g')
-              },
-              fill: '#FFFDE7',
-              fillOpacity: 1
-            }
-          }
-        },
         event: {
           modifications: addModifications
         },
@@ -835,30 +947,40 @@ let mainSchedBlocksController = function (optIn) {
         }
       })
 
+      blockQueueCreator.init()
       update()
     }
     this.initData = initData
 
     function updateData () {
       let telIds = []
-      $.each(shared.main.data.copy.telHealth, function (index, dataNow) {
+      $.each(shared.main.data.server.telHealth, function (index, dataNow) {
         telIds.push(dataNow.id)
       })
       blockQueueCreator.updateData({
-        currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
-        startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
-        endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)},
-        data: shared.main.data.copy.blocks,
-        telIds: telIds
+        time: {
+          currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+          startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+          endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)}
+        },
+        data: {
+          raw: {
+            blocks: shared.main.data.copy.blocks,
+            telIds: telIds
+          },
+          modified: []
+        }
       })
     }
     this.updateData = updateData
 
     function update () {
       blockQueueCreator.update({
-        currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
-        startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
-        endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)}
+        time: {
+          currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+          startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+          endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)}
+        }
       })
     }
     this.update = update
@@ -3689,19 +3811,28 @@ let mainSchedBlocksController = function (optIn) {
         let group = shared.main.data.copy.blocks[key]
         for (let i = 0; i < group.length; i++) {
           let block = group[i]
-          if (block.modifications.userModifications.length > 0 || block.modifications.optimizerModifications.length) {
-            let b = '' + block.metaData.nObs
-            let sb = '' + block.metaData.nSched
+          let b = '' + block.metaData.nObs
+          let sb = '' + block.metaData.nSched
+          if (!(Object.keys(block.modifications.userModifications).length === 0 && block.modifications.userModifications.constructor === Object)) {
             if (!reserved.data.modifications[sb]) reserved.data.modifications[sb] = {modifications: {userModifications: [], optimizerModifications: []}, blocks: {}}
             if (!reserved.data.modifications[sb].blocks[b]) reserved.data.modifications[sb].blocks[b] = {modifications: {userModifications: [], optimizerModifications: []}}
-
-            for (let j = 0; j < block.modifications.userModifications.length; j++) {
-              reserved.data.modifications[sb].blocks[b].modifications.userModifications.push(block.modifications.userModifications[j])
-            }
-            for (let j = 0; j < block.modifications.optimizerModifications.length; j++) {
-              reserved.data.modifications[sb].blocks[b].modifications.optimizerModifications.push(block.modifications.optimizerModifications[j])
+            for (let key in block.modifications.userModifications) {
+              console.log(key);
             }
           }
+          // if (block.modifications.userModifications.length > 0 || block.modifications.optimizerModifications.length) {
+          //   let b = '' + block.metaData.nObs
+          //   let sb = '' + block.metaData.nSched
+          //   if (!reserved.data.modifications[sb]) reserved.data.modifications[sb] = {modifications: {userModifications: [], optimizerModifications: []}, blocks: {}}
+          //   if (!reserved.data.modifications[sb].blocks[b]) reserved.data.modifications[sb].blocks[b] = {modifications: {userModifications: [], optimizerModifications: []}}
+          //
+          //   for (let j = 0; j < block.modifications.userModifications.length; j++) {
+          //     reserved.data.modifications[sb].blocks[b].modifications.userModifications.push(block.modifications.userModifications[j])
+          //   }
+          //   for (let j = 0; j < block.modifications.optimizerModifications.length; j++) {
+          //     reserved.data.modifications[sb].blocks[b].modifications.optimizerModifications.push(block.modifications.optimizerModifications[j])
+          //   }
+          // }
         }
       }
     }
