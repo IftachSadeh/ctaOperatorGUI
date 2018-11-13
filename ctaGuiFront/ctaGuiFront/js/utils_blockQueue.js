@@ -220,6 +220,7 @@ window.BlockQueue = function (optIn) {
   this.init = init
   function initBackground () {
     com.main.g.append('rect')
+      .attr('class', 'background')
       .attr('x', 0)
       .attr('y', 0)
       .attr('width', com.main.box.w)
@@ -229,21 +230,20 @@ window.BlockQueue = function (optIn) {
       .style('stroke-width', com.main.background.strokeWidth)
   }
   function initAxis () {
-    if (!com.axis.enabled) return
-
-    com.axis.g = com.main.g.append('g')
-      .attr('transform', 'translate(' + com.axis.box.x + ',' + com.axis.box.y + ')')
-
     com.axis.scale = d3.scaleTime()
       .range(com.axis.range)
       .domain(com.axis.domain)
     com.axis.main = d3.axisBottom(com.axis.scale)
       .tickFormat(d3.timeFormat('%H:%M'))
+
+    if (!com.axis.enabled) return
+    com.axis.g = com.main.g.append('g')
+      .attr('transform', 'translate(' + com.axis.box.x + ',' + com.axis.box.y + ')')
     com.axis.g
       .attr('class', 'axis')
       .call(com.axis.main)
 
-    com.axis.g.style('opacity', 0)
+    com.axis.g.style('opacity', 1)
   }
   function initBlocks () {
     if (!com.blocks.enabled) return
@@ -519,9 +519,6 @@ window.BlockQueue = function (optIn) {
   }
 
   function updateAxis () {
-    com.axis.g.style('opacity', 1)
-    let minTxtSize = com.main.box.w * 0.02
-
     com.axis.domain = [com.time.startTime.date, com.time.endTime.date]
     com.axis.range = [0, com.axis.box.w]
 
@@ -529,6 +526,8 @@ window.BlockQueue = function (optIn) {
       .domain(com.axis.domain)
       .range(com.axis.range)
 
+    if (!com.axis.enabled) return
+    let minTxtSize = com.main.box.w * 0.02
     // console.log(com.axis.domain, com.axis.range);
     com.axis.main.scale(com.axis.scale)
     com.axis.main.tickSize(4)
@@ -577,6 +576,7 @@ window.BlockQueue = function (optIn) {
       setBlockRect(topRow, com.blocks.cancel)
     }
     if (com.blocks.modification.enabled && com.data.modified.length > 0) {
+      com.data.modified = adjustBlockRow(com.data.modified, {x: 0, y: 0, w: com.blocks.modification.box.w, h: com.blocks.modification.box.h, marg: com.blocks.modification.box.marg})
       com.data.modified = setDefaultStyleForBlocks(com.data.modified)
       setBlockRect(com.data.modified, com.blocks.modification)
     }
@@ -591,7 +591,7 @@ window.BlockQueue = function (optIn) {
 
     com.data.filtered = filterData()
 
-    if (com.axis.enabled) updateAxis()
+    updateAxis()
     if (com.blocks.enabled) updateBlocks()
     if (com.timeBars.enabled) setTimeRect()
   }
