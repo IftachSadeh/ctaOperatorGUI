@@ -196,7 +196,7 @@ window.BlockQueueCreator = function (optIn) {
         false
 
       if (state === 'wait') {
-        if (modified) return 0.4
+        if (modified) return 0.8
         return 1
       } else if (state === 'run') {
         return 1
@@ -773,7 +773,7 @@ window.BlockQueueCreator = function (optIn) {
 
   let blockQueue = new BlockQueue(com)
   blockQueue.sendModification = function (newBlock) {
-    com.event.modifications('blockQueueCreator', newBlock)
+    com.event.modifications('blockQueueCreator', newBlock.data)
   }
   blockQueue.saveModificationAndUpdateBlock = function (block, modif) {
     let tot = []
@@ -796,6 +796,8 @@ window.BlockQueueCreator = function (optIn) {
         if (!tot[i].modifications.userModifications[modif.prop]) tot[i].modifications.userModifications[modif.prop] = [{new: modif.new, old: modif.old}]
         else tot[i].modifications.userModifications[modif.prop].push({new: modif.new, old: modif.old})
         block = applyAllModification(block, tot[i].modifications.userModifications)
+        block.data.modifications.userModifications = tot[i].modifications.userModifications
+        blockQueue.sendModification(block)
       }
     }
 
@@ -808,17 +810,31 @@ window.BlockQueueCreator = function (optIn) {
       }
     }
     if (!insert) {
-      com.data.modified.push(block)
+      com.data.modified.push(block.data)
     }
     blockQueue.updateBlocks()
-    blockQueue.sendModification(block)
   }
   blockQueue.shrink = function () {
-    com.blocks.run.g.attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.modification.box.y + ')')
-    com.blocks.modification.g.style('opacity', '0')
-    com.main.g.select('rect.background').attr('height', (com.blocks.run.box.h + com.blocks.modification.box.y))
-    com.axis.g.attr('transform', 'translate(' + com.axis.box.x + ',' + (com.blocks.run.box.h + com.blocks.modification.box.y) + ')')
-    com.axis.g.style('opacity', 0)
+    // com.blocks.run.g
+    //   .transition()
+    //   .duration(1000)
+    //   .attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.modification.box.y + ')')
+    com.blocks.modification.g
+      .transition()
+      .duration(500)
+      .style('opacity', '0')
+    // com.main.g.select('rect.background')
+    //   .transition()
+    //   .duration(1000)
+    //   .attr('height', (com.blocks.run.box.h + com.blocks.modification.box.y))
+    // com.axis.g
+    //   .transition()
+    //   .duration(1000)
+    //   .attr('transform', 'translate(' + com.axis.box.x + ',' + (com.blocks.run.box.h + com.blocks.modification.box.y) + ')')
+    com.axis.g
+      // .transition()
+      // .duration(1000)
+      .style('opacity', 0)
   }
   return blockQueue
 }

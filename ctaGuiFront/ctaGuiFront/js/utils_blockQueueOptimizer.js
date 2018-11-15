@@ -14,7 +14,7 @@
 /* global BlockQueue */
 /* global getColorTheme */
 
-window.loadScript({ source: 'BlockQueueCreator', script: '/js/utils_blockQueue.js' })
+window.loadScript({ source: 'BlockQueueOptimizer', script: '/js/utils_blockQueue.js' })
 
 window.BlockQueueOptimizer = function (optIn) {
   let colorTheme = getColorTheme('bright-Grey')
@@ -163,12 +163,18 @@ window.BlockQueueOptimizer = function (optIn) {
       let canRun = hasVar(optIn.canRun)
         ? optIn.canRun
         : optIn.d.data.exeState.canRun
-      let modified = optIn.d.data.modifications ?
+      let modifiedUser = optIn.d.data.modifications ?
         !(Object.keys(optIn.d.data.modifications.userModifications).length === 0 && optIn.d.data.modifications.userModifications.constructor === Object) :
         false
-
-      if (state === 'wait') {
-        if (modified) return com.blocks.colorPalette.warning
+      let modifiedOptimizer = optIn.d.data.modifications ?
+        !(Object.keys(optIn.d.data.modifications.optimizerModifications).length === 0 && optIn.d.data.modifications.optimizerModifications.constructor === Object) :
+        false
+      console.log(modifiedUser, modifiedOptimizer)
+      if (modifiedUser) {
+        return com.blocks.colorPalette.critical
+      } else if (modifiedOptimizer) {
+        return com.blocks.colorPalette.warning
+      } else if (state === 'wait') {
         return com.blocks.colorPalette.wait
       } else if (state === 'done') {
         return com.blocks.colorPalette.done
@@ -191,12 +197,8 @@ window.BlockQueueOptimizer = function (optIn) {
       let canRun = hasVar(optIn.canRun)
         ? optIn.canRun
         : optIn.d.data.exeState.canRun
-      let modified = optIn.d.data.modifications ?
-        !(Object.keys(optIn.d.data.modifications.userModifications).length === 0 && optIn.d.data.modifications.userModifications.constructor === Object) :
-        false
 
       if (state === 'wait') {
-        if (modified) return 0.4
         return 1
       } else if (state === 'run') {
         return 1

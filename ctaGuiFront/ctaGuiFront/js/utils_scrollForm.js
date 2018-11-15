@@ -35,18 +35,18 @@ window.ScrollForm = function (optIn) {
     .style('border', 0 + 'px solid #78909C')
     .style('background-color', colorTheme.dark.background)
     .style('width', rootDivWidth)
-    .style('height', 'calc(100% - 15px)')
+    .style('height', 'calc(100% - ' + com.titles.height + ')')
   if (com.quickScroll.enabled) {
     com.component.quickDiv = com.component.fo.append('xhtml:div')
       .style('display', 'inline-block')
       .style('background-color', '#333333')
       .style('width', com.quickScroll.width)
-      .style('height', 'calc(100% - 15px)')
+      .style('height', 'calc(100% - ' + com.titles.height + ')')
   }
   com.component.titleDiv = com.component.rootDiv.append('div')
-    .style('height', '15px')
+    .style('height', com.titles.height)
     .style('border', 0 + 'px solid #78909C')
-    .style('background-color', colorTheme.dark.background)
+    .style('background-color', colorTheme.darker.background)
   com.component.contentDiv = com.component.rootDiv.append('div')
     .attr('class', 'overflowVerticalDiv')
     .style('border', 0 + 'px solid #78909C')
@@ -54,34 +54,38 @@ window.ScrollForm = function (optIn) {
 
   function setTitles () {
     com.component.titles = []
-    let offsetScroll = 8 / com.titles.length
-    for (var i = 0; i < com.titles.length; i++) {
-      let t = com.titles[i]
+    let offsetScroll = 8 / com.titles.data.length
+    for (var i = 0; i < com.titles.data.length; i++) {
+      let t = com.titles.data[i]
       let comp = com.component.titleDiv.append('div')
         .style('display', 'inline-block')
         .style('width', 'calc(' + t.width + ' - ' + offsetScroll + 'px)')
-        .style('height', '15px')
-        .style('background', '#dddddd')
+        .style('height', com.titles.height)
+        .style('background', colorTheme.darker.background)
+        .style('text-align', t.anchor)
       comp.append('label')
         .html(t.title)
+        .attr('class', 'title')
         .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
+        .style('color', colorTheme.darker.text)
+        .style('font-size', 12 + 'px')
         .style('background', 'transparent')
+        .style('text-align', t.anchor)
     }
   }
   setTitles()
 
-  function updateData (data) {
-    com.data = data
+  function updateData (data, format) {
+    com.data.data = data
+    com.data.format = format
     update()
   }
   this.updateData = updateData
 
-  function formatData (data, div, format) {
-    if (format === 'modification') {
+  function formatData (key, data, div) {
+    if (com.data.format === 'modification') {
       div.append('label')
-        .html('key')
+        .html(key)
         .style('display', 'inline-block')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
@@ -110,6 +114,25 @@ window.ScrollForm = function (optIn) {
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
         .style('background', 'transparent')
+    } else if (com.data.format === 'info') {
+      div.append('label')
+        .html(key)
+        .style('display', 'inline-block')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('background', 'transparent')
+      div.append('label')
+        .html(':')
+        .style('display', 'inline-block')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('background', 'transparent')
+      div.append('label')
+        .html(data)
+        .style('display', 'inline-block')
+        .style('color', '#000000')
+        .style('font-size', 10 + 'px')
+        .style('background', 'transparent')
     }
   }
 
@@ -120,18 +143,18 @@ window.ScrollForm = function (optIn) {
       .style('margin-bottom', '6px')
       .style('background', colorTheme.brighter.background)
     innerDiv.append('label')
-      .html(com.titles[index].extension + title)
+      .html(com.titles.data[index].extension + title)
       .attr('class', 'title')
       .style('display', 'block')
-      .style('color', colorTheme.darker.text)
-      .style('background', colorTheme.darker.background)
+      .style('color', colorTheme.dark.text)
+      .style('background', colorTheme.dark.background)
     for (let key in info) {
       let lines = info[key]
       for (let j = 0; j < lines.length; j++) {
         let modif = lines[j]
         let lineDiv = innerDiv.append('div')
           .style('background', (j % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
-        formatData(modif, lineDiv, 'modification')
+        formatData(key, modif, lineDiv)
       }
     }
     for (var children in childs) {
@@ -140,17 +163,17 @@ window.ScrollForm = function (optIn) {
   }
 
   function update () {
-    for (let key in com.data) {
-      let group = com.data[key]
+    for (let key in com.data.data) {
+      let group = com.data.data[key]
 
       let parentDiv = com.component.contentDiv.append('div')
         .attr('id', 'id_' + key)
         .style('width', '100%')
       let divs = []
-      for (let i = 0; i < com.titles.length; i++) {
+      for (let i = 0; i < com.titles.data.length; i++) {
         divs.push(parentDiv.append('div')
           .style('display', 'inline-block')
-          .style('width', 'calc(' + com.titles[i].width + ' - 2px)')
+          .style('width', 'calc(' + com.titles.data[i].width + ' - 2px)')
           .style('background', 'transparent')
           .style('vertical-align', 'top')
           .style('border-rigth', '2px solid #ffffff'))
@@ -161,7 +184,7 @@ window.ScrollForm = function (optIn) {
     let totOffset = 0
     let totScrollHeight = com.component.contentDiv._groups[0][0].scrollHeight
     let sizes = []
-    for (let key in com.data) {
+    for (let key in com.data.data) {
       let setOffsetTo = totOffset
       let scrollHeight = com.component.contentDiv.select('div#id_' + key)._groups[0][0].scrollHeight
       sizes.push([scrollHeight, setOffsetTo])
@@ -170,7 +193,7 @@ window.ScrollForm = function (optIn) {
 
     let ratio = com.component.contentDiv._groups[0][0].clientHeight / totOffset
     let even = 0
-    for (let key in com.data) {
+    for (let key in com.data.data) {
       let local = even
       com.component.quickDiv.append('div')
         .style('width', '100%')

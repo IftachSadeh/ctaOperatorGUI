@@ -277,7 +277,12 @@ window.colorTheme = {
         text: '#000000'
       },
       warning: {
-        background: '#FFB74D',
+        background: '#FFE082',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      critical: {
+        background: '#FF9800',
         stroke: '#000000',
         text: '#000000'
       },
@@ -326,37 +331,42 @@ window.colorTheme = {
   'bright-BlueGrey': {
     blocks: {
       run: {
-        background: '#377eb8',
+        background: '#4FC3F7',
         stroke: '#000000',
         text: '#000000'
       },
       done: {
-        background: '#4daf4a',
+        background: '#9CCC65',
         stroke: '#000000',
         text: '#000000'
       },
       fail: {
-        background: '#e41a1c',
+        background: '#EF5350',
         stroke: '#000000',
         text: '#000000'
       },
       wait: {
-        background: '#e6e6e6',
+        background: '#EEEEEE',
         stroke: '#000000',
         text: '#000000'
       },
       cancelOp: {
-        background: '#984ea3',
+        background: '#CE93D8',
+        stroke: '#000000',
+        text: '#000000'
+      },
+      warning: {
+        background: '#FFB74D',
         stroke: '#000000',
         text: '#000000'
       },
       cancelSys: {
-        background: '#e78ac3',
+        background: '#9575CD',
         stroke: '#000000',
         text: '#000000'
       },
       shutdown: {
-        background: '#424242',
+        background: '#9E9E9E',
         stroke: '#000000',
         text: '#000000'
       }

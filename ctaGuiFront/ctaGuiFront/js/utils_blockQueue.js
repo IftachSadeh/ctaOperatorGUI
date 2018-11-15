@@ -219,7 +219,7 @@ window.BlockQueue = function (optIn) {
   }
   this.init = init
   function initBackground () {
-    com.main.g.append('rect')
+    let back = com.main.g.append('rect')
       .attr('class', 'background')
       .attr('x', 0)
       .attr('y', 0)
@@ -228,6 +228,11 @@ window.BlockQueue = function (optIn) {
       .style('fill', com.main.background.fill)
       .style('stroke', com.main.background.stroke)
       .style('stroke-width', com.main.background.strokeWidth)
+    back.style('opacity', 0)
+      .transition()
+      .duration(1000)
+      .delay(1000)
+      .style('opacity', 1)
   }
   function initAxis () {
     com.axis.scale = d3.scaleTime()
@@ -250,14 +255,29 @@ window.BlockQueue = function (optIn) {
     if (com.blocks.run.enabled) {
       com.blocks.run.g = com.main.g.append('g')
       com.blocks.run.g.attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.run.box.y + ')')
+        .style('opacity', 0)
+        .transition()
+        .duration(1000)
+        .delay(1000)
+        .style('opacity', 1)
     }
     if (com.blocks.cancel.enabled) {
       com.blocks.cancel.g = com.main.g.append('g')
       com.blocks.cancel.g.attr('transform', 'translate(' + com.blocks.cancel.box.x + ',' + com.blocks.cancel.box.y + ')')
+        .style('opacity', 0)
+        .transition()
+        .duration(1000)
+        .delay(1000)
+        .style('opacity', 1)
     }
     if (com.blocks.modification.enabled) {
       com.blocks.modification.g = com.main.g.append('g')
       com.blocks.modification.g.attr('transform', 'translate(' + com.blocks.modification.box.x + ',' + com.blocks.modification.box.y + ')')
+        .style('opacity', 0)
+        .transition()
+        .duration(1000)
+        .delay(1000)
+        .style('opacity', 1)
     }
   }
   function initFilters () {
@@ -454,6 +474,12 @@ window.BlockQueue = function (optIn) {
     if (!com.timeBars.enabled) return
     com.timeBars.g = com.main.g.append('g')
       .attr('transform', 'translate(' + com.timeBars.box.x + ',' + com.timeBars.box.y + ')')
+    com.timeBars.g
+      .style('opacity', 0)
+      .transition()
+      .duration(1000)
+      .delay(1000)
+      .style('opacity', 1)
   }
 
   function filterData () {
@@ -556,7 +582,7 @@ window.BlockQueue = function (optIn) {
         box: {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg},
         yScale: true
       })
-      bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg})
+      bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg}, 'toTop')
       bottomRow = setDefaultStyleForBlocks(bottomRow)
       setBlockRect(bottomRow, com.blocks.run)
     }
@@ -571,14 +597,22 @@ window.BlockQueue = function (optIn) {
         box: {x: 0, y: 0, w: com.blocks.cancel.box.w, h: com.blocks.cancel.box.h, marg: com.blocks.cancel.box.marg},
         yScale: false
       })
-      topRow = adjustBlockRow(topRow, {x: 0, y: 0, w: com.blocks.cancel.box.w, h: com.blocks.cancel.box.h, marg: com.blocks.cancel.box.marg})
+      topRow = adjustBlockRow(topRow, {x: 0, y: 0, w: com.blocks.cancel.box.w, h: com.blocks.cancel.box.h, marg: com.blocks.cancel.box.marg}, 'toTop')
       topRow = setDefaultStyleForBlocks(topRow)
       setBlockRect(topRow, com.blocks.cancel)
     }
     if (com.blocks.modification.enabled && com.data.modified.length > 0) {
-      com.data.modified = adjustBlockRow(com.data.modified, {x: 0, y: 0, w: com.blocks.modification.box.w, h: com.blocks.modification.box.h, marg: com.blocks.modification.box.marg})
-      com.data.modified = setDefaultStyleForBlocks(com.data.modified)
-      setBlockRect(com.data.modified, com.blocks.modification)
+      let middleRow = calcBlockRow({
+        typeNow: 'top',
+        start: com.time.startTime.time,
+        end: com.time.endTime.time,
+        data: com.data.modified,
+        box: {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg},
+        yScale: true
+      })
+      middleRow = adjustBlockRow(middleRow, {x: 0, y: 0, w: com.blocks.modification.box.w, h: com.blocks.modification.box.h, marg: com.blocks.modification.box.marg}, 'toBottom')
+      middleRow = setDefaultStyleForBlocks(middleRow)
+      setBlockRect(middleRow, com.blocks.modification)
     }
   }
   this.updateBlocks = updateBlocks
@@ -651,7 +685,7 @@ window.BlockQueue = function (optIn) {
     return false
   }
 
-  function adjustBlockRow (blocks, box) {
+  function adjustBlockRow (blocks, box, direction) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
@@ -792,9 +826,11 @@ window.BlockQueue = function (optIn) {
         // if(hasOverlap) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName],(h0 + margY/2));
       })
     })
-    $.each(blocks, function (index0, dataNow0) {
-      dataNow0.y = (2 * box.y + box.h) - dataNow0.y - dataNow0.h
-    })
+    if (direction === 'toTop') {
+      $.each(blocks, function (index0, dataNow0) {
+        dataNow0.y = (2 * box.y + box.h) - dataNow0.y - dataNow0.h
+      })
+    }
     return blocks
   }
   this.adjustBlockRow = adjustBlockRow
