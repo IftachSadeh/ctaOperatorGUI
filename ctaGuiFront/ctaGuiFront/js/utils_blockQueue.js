@@ -211,7 +211,7 @@ window.BlockQueue = function (optIn) {
 
   function init () {
     setDefaultStyle()
-    initBackground()
+    this.initBackground()
     initAxis()
     initBlocks()
     initFilters()
@@ -219,7 +219,7 @@ window.BlockQueue = function (optIn) {
   }
   this.init = init
   function initBackground () {
-    let back = com.main.g.append('rect')
+    com.main.g.append('rect')
       .attr('class', 'background')
       .attr('x', 0)
       .attr('y', 0)
@@ -228,12 +228,13 @@ window.BlockQueue = function (optIn) {
       .style('fill', com.main.background.fill)
       .style('stroke', com.main.background.stroke)
       .style('stroke-width', com.main.background.strokeWidth)
-    back.style('opacity', 0)
-      .transition()
-      .duration(1000)
-      .delay(1000)
-      .style('opacity', 1)
+    // back.style('opacity', 0)
+    //   .transition()
+    //   .duration(1000)
+    //   .delay(1000)
+    //   .style('opacity', 1)
   }
+  this.initBackground = initBackground
   function initAxis () {
     com.axis.scale = d3.scaleTime()
       .range(com.axis.range)
@@ -617,6 +618,10 @@ window.BlockQueue = function (optIn) {
   }
   this.updateBlocks = updateBlocks
   function updateData (dataIn) {
+    com.main.g.select('text.name')
+      .transition()
+      .duration(400)
+      .style('opacity', 0)
     com.time.currentTime = dataIn.time.currentTime
     com.time.startTime = dataIn.time.startTime
     com.time.endTime = dataIn.time.endTime
@@ -928,6 +933,26 @@ window.BlockQueue = function (optIn) {
       b.strokeDasharray = []
 
       b.text = cols.text
+      if (b.data.metaData.nSched === Number(com.input.focus.schedBlocks)) {
+        if (com.input.over.schedBlocks !== undefined && com.input.over.schedBlocks !== com.input.focus.schedBlocks) b.stroke = colorTheme.blocks.critical.background
+        b.strokeWidth = 4
+        b.strokeOpacity = 1
+        b.strokeDasharray = [6, 2]
+      }
+      if (b.data.metaData.nObs === Number(com.input.focus.block)) {
+        if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) b.stroke = colorTheme.blocks.critical.background
+        b.strokeWidth = 4
+        b.strokeOpacity = 1
+      }
+      if (b.data.metaData.nSched === Number(com.input.over.schedBlocks)) {
+        b.strokeWidth = 6
+        b.strokeOpacity = 1
+        b.strokeDasharray = [6, 2]
+      }
+      if (b.data.metaData.nObs === Number(com.input.over.block)) {
+        b.strokeWidth = 6
+        b.strokeOpacity = 1
+      }
     }
     return blocks
   }
@@ -937,7 +962,7 @@ window.BlockQueue = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   function blocksMouseOver (data) {
     let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
-      .merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
+    if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
 
     totBlocks.each(function (d) {
       if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
@@ -949,7 +974,7 @@ window.BlockQueue = function (optIn) {
   }
   function blocksMouseOut (data) {
     let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
-      .merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
+    if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
 
     totBlocks.each(function (d) {
       if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
@@ -960,14 +985,47 @@ window.BlockQueue = function (optIn) {
     })
   }
 
-  function focusOnSchedBlocks (data) {
-    blocksMouseOver({data: {metaData: {nSched: Number(data.scheduleId)}}})
+  function overSchedBlocks (id) {
+    com.input.over.schedBlocks = id
+    updateBlocks()
+  }
+  this.overSchedBlocks = overSchedBlocks
+  function outSchedBlocks (id) {
+    com.input.over.schedBlocks = undefined
+    updateBlocks()
+  }
+  this.outSchedBlocks = outSchedBlocks
+  function overBlock (id) {
+    com.input.over.block = id
+    updateBlocks()
+  }
+  this.overBlock = overBlock
+  function outBlock (id) {
+    com.input.over.block = undefined
+    updateBlocks()
+  }
+  this.outBlock = outBlock
+
+  function focusOnSchedBlocks (id) {
+    com.input.focus.schedBlocks = id
+    updateBlocks()
   }
   this.focusOnSchedBlocks = focusOnSchedBlocks
-  function unfocusOnSchedBlocks (data) {
-    blocksMouseOut({data: {metaData: {nSched: Number(data.scheduleId)}}})
+  function unfocusOnSchedBlocks (id) {
+    com.input.focus.schedBlocks = undefined
+    updateBlocks()
   }
   this.unfocusOnSchedBlocks = unfocusOnSchedBlocks
+  function focusOnBlock (id) {
+    com.input.focus.block = id
+    updateBlocks()
+  }
+  this.focusOnBlock = focusOnBlock
+  function unfocusOnBlock (id) {
+    com.input.focus.block = id
+    updateBlocks()
+  }
+  this.unfocusOnBlock = unfocusOnBlock
 
   // function dragBlockStart (d) {}
   // function dragBlockTick (d) {}
@@ -1118,15 +1176,6 @@ window.BlockQueue = function (optIn) {
         .style('fill-opacity', function (d, i) {
           return d.fillOpacity
         })
-        .attr('stroke-width', function (d, i) {
-          return d.strokeWidth
-        })
-        .style('stroke-opacity', function (d, i) {
-          return d.strokeOpacity
-        })
-        .style('stroke-dasharray', function (d, i) {
-          return d.strokeDasharray
-        })
         .attr('x', function (d, i) {
           return timeScale(d.data.startTime)
         })
@@ -1138,6 +1187,15 @@ window.BlockQueue = function (optIn) {
         })
         .attr('height', function (d, i) {
           return d.h
+        })
+        .attr('stroke-width', function (d, i) {
+          return d.strokeWidth
+        })
+        .style('stroke-opacity', function (d, i) {
+          return d.strokeOpacity
+        })
+        .style('stroke-dasharray', function (d, i) {
+          return d.strokeDasharray
         })
       d3.select(this).select('text')
         .style('font-size', function (d) {

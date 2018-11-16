@@ -169,7 +169,6 @@ window.BlockQueueOptimizer = function (optIn) {
       let modifiedOptimizer = optIn.d.data.modifications ?
         !(Object.keys(optIn.d.data.modifications.optimizerModifications).length === 0 && optIn.d.data.modifications.optimizerModifications.constructor === Object) :
         false
-      console.log(modifiedUser, modifiedOptimizer)
       if (modifiedUser) {
         return com.blocks.colorPalette.critical
       } else if (modifiedOptimizer) {
@@ -213,5 +212,29 @@ window.BlockQueueOptimizer = function (optIn) {
   setDefaultStyle()
 
   let blockQueue = new BlockQueue(com)
+  blockQueue.initBackground = function () {
+    com.main.g.append('rect')
+      .attr('class', 'background')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', com.main.box.w)
+      .attr('height', com.main.box.h)
+      .style('fill', com.main.background.fill)
+      .style('stroke', com.main.background.stroke)
+      .style('stroke-width', com.main.background.strokeWidth)
+    com.main.g.append('text')
+      .attr('class', 'name')
+      .text('OPTIMIZED SCHEDULE')
+      .style('text-anchor', 'middle')
+      .attr('x', com.main.box.w * 0.5)
+      .attr('y', com.main.box.h * 0.46 * 0.5)
+      .attr('dy', com.main.box.h * 0.1)
+      .style('font-weight', 'bold')
+      .style('font-size', com.main.box.h * 0.3)
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+      .style('fill', com.main.colorTheme.medium.background)
+      .style('opacity', 1)
+  }
   return blockQueue
 }

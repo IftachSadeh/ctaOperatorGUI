@@ -330,20 +330,20 @@ window.BlockQueueCreator = function (optIn) {
         .attr('y', com.main.box.h) // - Number(com.interaction.oldRect.attr('height')))
         .attr('width', com.interaction.position.right - com.interaction.position.left)
         .attr('height', 2)
-        .attr('fill', '#CFD8DC')
+        .attr('fill', com.main.colorTheme.brighter.background)
         .attr('stroke', '#333333')
         .attr('fill-opacity', 0.99)
 
       let timelineG = com.interaction.g.append('g')
         .attr('class', 'timeline')
-        .attr('transform', 'translate(' + (com.interaction.position.left) + ',' + com.main.box.h + ')')
+        .attr('transform', 'translate(' + (com.interaction.position.left) + ',' + (com.blocks.run.box.y + com.blocks.run.box.h) + ')')
       timelineG.append('rect')
         .attr('class', 'timelineOpacity')
         .attr('x', 0)
         .attr('y', 0) // - Number(com.interaction.oldRect.attr('height')))
         .attr('width', 40)
         .attr('height', 10)
-        .attr('fill', '#CFD8DC')
+        .attr('fill', com.main.colorTheme.brighter.background)
         .attr('stroke', '#ffffff')
         .attr('fill-opacity', 0.9)
         .on('mouseover', function () {
@@ -442,7 +442,7 @@ window.BlockQueueCreator = function (optIn) {
               .attr('y', 0)
               .attr('width', 0)
               .attr('height', 15)
-              .attr('fill', (i % 2 === 1 ? '#78909C' : '#546E7A'))
+              .attr('fill', (i % 2 === 1 ? com.main.colorTheme.darker.background : com.main.colorTheme.darker.background))
               .attr('stroke', 'none')
               .attr('fill-opacity', 0.4)
               .on('mouseover', function (d) {
@@ -494,7 +494,7 @@ window.BlockQueueCreator = function (optIn) {
               .attr('y', 0)
               .attr('width', 0)
               .attr('height', 15)
-              .attr('fill', (i % 2 === 1 ? '#78909C' : '#546E7A'))
+              .attr('fill', (i % 2 === 1 ? com.main.colorTheme.darker.background : com.main.colorTheme.darker.background))
               .attr('stroke', 'none')
               .attr('fill-opacity', 0.4)
               .on('mouseover', function (d) {
@@ -544,7 +544,7 @@ window.BlockQueueCreator = function (optIn) {
               .attr('y', 14)
               .attr('width', 0)
               .attr('height', 12)
-              .attr('fill', (i % 2 === 1 ? '#78909C' : '#78909C'))
+              .attr('fill', (i % 2 === 1 ? com.main.colorTheme.darker.background : com.main.colorTheme.darker.background))
               .attr('stroke', '#222222')
               .attr('stroke-width', 0.3)
               .attr('stroke-dasharray', [0, 5, 5, 8, 6, 21, 6, 3])
@@ -653,20 +653,22 @@ window.BlockQueueCreator = function (optIn) {
       com.interaction.position.left += delta.x
 
       if (com.interaction.mode === 'general') {
-        com.axis.g.selectAll('g.tick line')
-          .attr('y2', function (d) {
-            if (Math.abs(com.axis.scale(d) - com.interaction.position.left) < 20) {
-              return 13
-            }
-            return 4
-          })
-        com.axis.g.selectAll('g.tick text')
-          .attr('y', function (d) {
-            if (Math.abs(com.axis.scale(d) - com.interaction.position.left) < 20) {
-              return 14
-            }
-            return 6
-          })
+        if (com.axis.enabled) {
+          com.axis.g.selectAll('g.tick line')
+            .attr('y2', function (d) {
+              if (Math.abs(com.axis.scale(d) - com.interaction.position.left) < 20) {
+                return 13
+              }
+              return 4
+            })
+          com.axis.g.selectAll('g.tick text')
+            .attr('y', function (d) {
+              if (Math.abs(com.axis.scale(d) - com.interaction.position.left) < 20) {
+                return 14
+              }
+              return 6
+            })
+        }
         if (Number(com.interaction.g.select('line.left').attr('x1')) + delta.x > 0 &&
           Number(com.interaction.g.select('line.right').attr('x1')) + delta.x < com.interaction.box.w) {
           if (delta.x > 0 &&
@@ -772,6 +774,30 @@ window.BlockQueueCreator = function (optIn) {
   }
 
   let blockQueue = new BlockQueue(com)
+  blockQueue.initBackground = function () {
+    com.main.g.append('rect')
+      .attr('class', 'background')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', com.main.box.w)
+      .attr('height', com.main.box.h * 0.46)
+      .style('fill', com.main.background.fill)
+      .style('stroke', com.main.background.stroke)
+      .style('stroke-width', com.main.background.strokeWidth)
+    com.main.g.append('text')
+      .attr('class', 'name')
+      .text('CURRENT SCHEDULE')
+      .style('text-anchor', 'middle')
+      .attr('x', com.main.box.w * 0.5)
+      .attr('y', com.main.box.h * 0.46 * 0.1)
+      .attr('dy', com.main.box.h * 0.1)
+      .style('font-weight', 'bold')
+      .style('font-size', com.main.box.h * 0.12)
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+      .style('fill', com.main.colorTheme.medium.background)
+      .style('opacity', 1)
+  }
   blockQueue.sendModification = function (newBlock) {
     com.event.modifications('blockQueueCreator', newBlock.data)
   }
@@ -801,40 +827,40 @@ window.BlockQueueCreator = function (optIn) {
       }
     }
 
-    let insert = false
-    for (let i = 0; i < com.data.modified.length; i++) {
-      if (com.data.modified[i].id === block.id) {
-        com.data.modified[i] = block
-        insert = true
-        break
-      }
-    }
-    if (!insert) {
-      com.data.modified.push(block.data)
-    }
+    // let insert = false
+    // for (let i = 0; i < com.data.modified.length; i++) {
+    //   if (com.data.modified[i].id === block.id) {
+    //     com.data.modified[i] = block
+    //     insert = true
+    //     break
+    //   }
+    // }
+    // if (!insert) {
+    //   com.data.modified.push(block.data)
+    // }
     blockQueue.updateBlocks()
   }
-  blockQueue.shrink = function () {
-    // com.blocks.run.g
-    //   .transition()
-    //   .duration(1000)
-    //   .attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.modification.box.y + ')')
-    com.blocks.modification.g
-      .transition()
-      .duration(500)
-      .style('opacity', '0')
-    // com.main.g.select('rect.background')
-    //   .transition()
-    //   .duration(1000)
-    //   .attr('height', (com.blocks.run.box.h + com.blocks.modification.box.y))
-    // com.axis.g
-    //   .transition()
-    //   .duration(1000)
-    //   .attr('transform', 'translate(' + com.axis.box.x + ',' + (com.blocks.run.box.h + com.blocks.modification.box.y) + ')')
-    com.axis.g
-      // .transition()
-      // .duration(1000)
-      .style('opacity', 0)
-  }
+  // blockQueue.shrink = function () {
+  //   // com.blocks.run.g
+  //   //   .transition()
+  //   //   .duration(1000)
+  //   //   .attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.modification.box.y + ')')
+  //   com.blocks.modification.g
+  //     .transition()
+  //     .duration(500)
+  //     .style('opacity', '0')
+  //   // com.main.g.select('rect.background')
+  //   //   .transition()
+  //   //   .duration(1000)
+  //   //   .attr('height', (com.blocks.run.box.h + com.blocks.modification.box.y))
+  //   // com.axis.g
+  //   //   .transition()
+  //   //   .duration(1000)
+  //   //   .attr('transform', 'translate(' + com.axis.box.x + ',' + (com.blocks.run.box.h + com.blocks.modification.box.y) + ')')
+  //   com.axis.g
+  //     // .transition()
+  //     // .duration(1000)
+  //     .style('opacity', 0)
+  // }
   return blockQueue
 }

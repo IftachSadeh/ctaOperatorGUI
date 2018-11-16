@@ -19,6 +19,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global RunLoop */
 /* global BlockQueue */
 /* global BlockQueueCreator */
+/* global BlockQueueModif */
 /* global BlockQueueOptimizer*/
 /* global ClockEvents */
 /* global GridBagLayout */
@@ -41,6 +42,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global deepCopy */
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueue.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOptimizer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_gridBagLayout.js' })
@@ -126,6 +128,13 @@ let mainSchedBlocksController = function (optIn) {
       data: {
         server: undefined,
         copy: undefined
+      },
+      focus: {
+        shedBlocks: undefined,
+        block: undefined
+      },
+      formatedData: {
+        schedGroup: []
       }
     },
     svgBlocksQueue: {
@@ -168,6 +177,7 @@ let mainSchedBlocksController = function (optIn) {
 
   let blockQueue = null
   let blockQueueCreator = null
+  let blockQueueModif = null
   let blockQueueOptimized = null
 
   // let thisSchedBlocksController = this
@@ -256,8 +266,9 @@ let mainSchedBlocksController = function (optIn) {
     shared.main.data.server = dataIn.data
 
     svgBlocksQueue.initData()
+    svgBlocksQueueModif.initData()
     svgBlocksQueueCreator.initData()
-    svgBlockQueueOptimized.initData()
+    svgBlocksQueueOptimized.initData()
     svgWarningArea.initData({
       tag: 'warningArea',
       g: svg.g.append('g'),
@@ -331,7 +342,7 @@ let mainSchedBlocksController = function (optIn) {
     svgBlocksQueue.updateData()
     svgBlocksQueueCreator.update()
     svgSchedulingBlocksOverview.update()
-    svgBlockQueueOptimized.update()
+    svgBlocksQueueOptimized.update()
   }
   this.updateData = updateData
   function syncStateSend (dataIn) {
@@ -349,6 +360,7 @@ let mainSchedBlocksController = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   function pullData () {
     shared.main.data.copy = deepCopy(shared.main.data.server)
+    shared.main.data.copy.optimizedBlocks = shared.main.data.copy.blocks
     for (var key in shared.main.data.copy.blocks) {
       for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
         shared.main.data.copy.blocks[key][i].modifications = {
@@ -392,6 +404,8 @@ let mainSchedBlocksController = function (optIn) {
     }
 
     svgBlocksQueueCreator.updateData()
+    svgBlocksQueueModif.updateData()
+    svgBlocksQueueOptimized.updateData()
     svgSchedulingBlocksOverview.updateData()
   }
   function optimizer () {
@@ -446,7 +460,75 @@ let mainSchedBlocksController = function (optIn) {
         }
       }
     }
-    svgBlockQueueOptimized.updateData()
+    svgBlocksQueueOptimized.updateData()
+  }
+  function groupBlocksBySchedule () {
+    let res = {}
+    for (var key in shared.main.data.copy.blocks) {
+      for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
+        let ns = shared.main.data.copy.blocks[key][i].metaData.nSched
+        if (ns in res) res[ns].push(shared.main.data.copy.blocks[key][i])
+        else res[ns] = [shared.main.data.copy.blocks[key][i]]
+      }
+    }
+    shared.main.formatedData.schedGroup = []
+    Object.keys(res).map(function (key, index) {
+      shared.main.formatedData.schedGroup.push({scheduleId: key, blocks: res[key]})
+    })
+  }
+
+  function mainFocusOnSchedBlocks (schedB) {
+    if (shared.main.focus.schedBlocks !== undefined) {
+      if (shared.main.focus.schedBlocks === schedB) {
+        mainUnfocusOnSchedBlocks(schedB)
+        svgInformation.unfocus()
+        return
+      }
+      mainUnfocusOnSchedBlocks(shared.main.focus.schedBlocks)
+      svgInformation.unfocus()
+    }
+    shared.main.focus.schedBlocks = schedB
+    svgSchedulingBlocksOverview.focusOnSchedBlocks(schedB)
+    svgInformation.focusOnSchedBlocks(schedB)
+    blockQueueCreator.focusOnSchedBlocks(schedB)
+    blockQueueModif.focusOnSchedBlocks(schedB)
+    blockQueueOptimized.focusOnSchedBlocks(schedB)
+  }
+  function mainUnfocusOnSchedBlocks (schedB) {
+    svgSchedulingBlocksOverview.unfocusOnSchedBlocks()
+    blockQueueCreator.unfocusOnSchedBlocks()
+    blockQueueModif.unfocusOnSchedBlocks()
+    blockQueueOptimized.unfocusOnSchedBlocks()
+    shared.main.focus.schedBlocks = undefined
+  }
+
+  function mainFocusOnBlock (block) {
+
+  }
+  function mainUnfocusOnBlock (block) {
+
+  }
+
+  function mainOverSchedBlocks (schedB) {
+    if (shared.main.focus.schedBlocks === schedB) return
+    svgSchedulingBlocksOverview.overSchedBlocks(schedB)
+    blockQueueCreator.overSchedBlocks(schedB)
+    blockQueueModif.overSchedBlocks(schedB)
+    blockQueueOptimized.overSchedBlocks(schedB)
+  }
+  function mainOutSchedBlocks (schedB) {
+    if (shared.main.focus.schedBlocks === schedB) return
+    svgSchedulingBlocksOverview.outSchedBlocks(schedB)
+    blockQueueCreator.outSchedBlocks(schedB)
+    blockQueueModif.outSchedBlocks(schedB)
+    blockQueueOptimized.outSchedBlocks(schedB)
+  }
+
+  function mainOverBlock (block) {
+
+  }
+  function mainOutBlock (block) {
+
   }
 
   function addModifications (from, block) {
@@ -462,6 +544,7 @@ let mainSchedBlocksController = function (optIn) {
     // shared.main.data.copy.blocks.modified.push(block)
     // console.log(shared.main.data.copy.blocks);
     svgMiddleInfo.updateData()
+    svgBlocksQueueModif.updateData()
     optimizer()
   }
   this.addModifications = addModifications
@@ -659,7 +742,8 @@ let mainSchedBlocksController = function (optIn) {
             fill: colorTheme.dark.background,
             stroke: colorTheme.dark.stroke,
             strokeWidth: 0.1
-          }
+          },
+          colorTheme: colorTheme
         },
         axis: {
           enabled: true,
@@ -774,6 +858,8 @@ let mainSchedBlocksController = function (optIn) {
         event: {
         },
         input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
           selection: []
         }
       })
@@ -834,10 +920,11 @@ let mainSchedBlocksController = function (optIn) {
             fill: colorTheme.dark.background,
             stroke: colorTheme.dark.stroke,
             strokeWidth: 0.1
-          }
+          },
+          colorTheme: colorTheme
         },
         axis: {
-          enabled: true,
+          enabled: false,
           g: undefined,
           box: {x: 0, y: blockBoxData.h, w: blockBoxData.w, h: 0, marg: blockBoxData.marg},
           axis: undefined,
@@ -862,7 +949,7 @@ let mainSchedBlocksController = function (optIn) {
           run: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: blockBoxData.h * 0.18, w: blockBoxData.w, h: blockBoxData.h * 0.283, marg: blockBoxData.marg},
+            box: {x: 0, y: blockBoxData.h * 0.2, w: blockBoxData.w, h: blockBoxData.h * 0.2190, marg: blockBoxData.marg},
             events: {
               click: () => {},
               mouseover: () => {},
@@ -882,7 +969,7 @@ let mainSchedBlocksController = function (optIn) {
           cancel: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.16, marg: blockBoxData.marg},
+            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.1289, marg: blockBoxData.marg},
             events: {
               click: () => {},
               mouseover: () => {},
@@ -950,6 +1037,8 @@ let mainSchedBlocksController = function (optIn) {
           modifications: addModifications
         },
         input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
           selection: []
         }
       })
@@ -992,6 +1081,208 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.update = update
   }
+  let SvgBlocksQueueModif = function () {
+    // ---------------------------------------------------------------------------------------------------
+    //
+    // ---------------------------------------------------------------------------------------------------
+    function initData () {
+      let x0, y0, w0, h0, marg
+      w0 = lenD.w[0] * 0.6
+      h0 = lenD.h[0] * 0.255// h0 *= 2.5;
+      x0 = (lenD.w[0] * 0.02)
+      y0 = lenD.h[0] * 0.4925
+      marg = w0 * 0.01
+      let blockBoxData = {
+        x: x0,
+        y: y0,
+        w: w0,
+        h: h0,
+        marg: marg
+      }
+      let gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
+
+      blockQueueModif = new BlockQueueModif({
+        main: {
+          tag: 'blockQueueMiddleTag',
+          g: gBlockBox,
+          box: blockBoxData,
+          background: {
+            fill: colorTheme.medium.background,
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.1
+          },
+          colorTheme: colorTheme
+        },
+        axis: {
+          enabled: false,
+          g: undefined,
+          box: {x: 0, y: blockBoxData.h, w: blockBoxData.w, h: 0, marg: blockBoxData.marg},
+          axis: undefined,
+          scale: undefined,
+          domain: [0, 1000],
+          range: [0, 0],
+          showText: true,
+          orientation: 'axisTop',
+          attr: {
+            text: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            },
+            path: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            }
+          }
+        },
+        blocks: {
+          enabled: true,
+          run: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: blockBoxData.h * 0.6, w: blockBoxData.w, h: blockBoxData.h * 0.283, marg: blockBoxData.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: 'none',
+              strokeWidth: 0
+            }
+          },
+          cancel: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.16, marg: blockBoxData.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          modification: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: blockBoxData.h * 0.5, w: blockBoxData.w, h: blockBoxData.h * 0.47, marg: blockBoxData.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          colorPalette: colorTheme.blocks
+        },
+        filters: {
+          enabled: false,
+          g: undefined,
+          box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0},
+          filters: []
+        },
+        timeBars: {
+          enabled: false,
+          g: undefined,
+          box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {},
+        event: {
+          modifications: addModifications
+        },
+        input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
+          selection: []
+        }
+      })
+
+      blockQueueModif.init()
+      update()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let telIds = []
+      $.each(shared.main.data.server.telHealth, function (index, dataNow) {
+        telIds.push(dataNow.id)
+      })
+      let modifiedData = {}
+      for (let key in shared.main.data.copy.blocks) { modifiedData[key] = [] }
+      for (let key in shared.main.data.copy.blocks) {
+        modifiedData[key] = []
+        let group = shared.main.data.copy.blocks[key]
+        for (let i = 0; i < group.length; i++) {
+          if (!(Object.keys(group[i].modifications.userModifications).length === 0 && group[i].modifications.userModifications.constructor === Object)) {
+            modifiedData.wait.push(group[i])
+          }
+        }
+      }
+      blockQueueModif.updateData({
+        time: {
+          currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+          startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+          endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)}
+        },
+        data: {
+          raw: {
+            blocks: modifiedData,
+            telIds: telIds
+          },
+          modified: []
+        }
+      })
+    }
+    this.updateData = updateData
+
+    function update () {
+      blockQueueModif.update({
+        time: {
+          currentTime: {date: new Date(shared.main.data.server.timeOfNight.date_now), time: Number(shared.main.data.server.timeOfNight.now)},
+          startTime: {date: new Date(shared.main.data.server.timeOfNight.date_start), time: Number(shared.main.data.server.timeOfNight.start)},
+          endTime: {date: new Date(shared.main.data.server.timeOfNight.date_end), time: Number(shared.main.data.server.timeOfNight.end)}
+        }
+      })
+    }
+    this.update = update
+  }
   let SvgBlockQueueOptimized = function () {
     function initData () {
       let blockBoxData = {
@@ -1009,10 +1300,11 @@ let mainSchedBlocksController = function (optIn) {
           g: gBlockBox,
           box: blockBoxData,
           background: {
-            fill: colorTheme.darker.background,
-            stroke: colorTheme.darker.stroke,
+            fill: colorTheme.dark.background,
+            stroke: colorTheme.dark.stroke,
             strokeWidth: 0.1
-          }
+          },
+          colorTheme: colorTheme
         },
         axis: {
           enabled: true,
@@ -1125,9 +1417,11 @@ let mainSchedBlocksController = function (optIn) {
         },
         pattern: {},
         event: {
-          modifications: addModifications
+          modifications: () => {}
         },
         input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
           selection: []
         }
       })
@@ -1697,10 +1991,10 @@ let mainSchedBlocksController = function (optIn) {
     // this.changeFocusElement = changeFocusElement
     function drawDefaultContent (g) {
       let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) - 3, h: Number(g.attr('height') * 1)}
-      let dimLeft = {x: Number(g.attr('width')) * 0.05, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.18, h: Number(g.attr('height')) * 0.9}
-      let dimTop = {x: Number(g.attr('width')) * 0.2, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.75, h: Number(g.attr('height')) * 0.29}
-      let dimMiddle = {x: Number(g.attr('width')) * 0.2, y: Number(g.attr('height')) * 0.425, w: Number(g.attr('width')) * 0.75, h: Number(g.attr('height') * 0.29)}
-      let dimBottom = {x: Number(g.attr('width')) * 0.2, y: 0 + Number(g.attr('height') * 0.75), w: Number(g.attr('width')) * 0.75, h: Number(g.attr('height')) * 0.29}
+      let dimLeft = {x: Number(g.attr('width')) * 0.04, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.1, h: Number(g.attr('height')) * 0.92}
+      let dimTop = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.28}
+      let dimMiddle = {x: Number(g.attr('width')) * 0.17, y: Number(g.attr('height')) * 0.38, w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height') * 0.28)}
+      let dimBottom = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.7), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.28}
 
       g.selectAll('*').remove()
       g.append('rect')
@@ -1715,21 +2009,45 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', colorTheme.dark.background)
         .attr('stroke-width', 6)
         .attr('stroke-opacity', 1)
+      g.append('rect')
+        .attr('class', 'back')
+        .attr('x', dimLeft.x)
+        .attr('y', dimLeft.y)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('width', dimLeft.w)
+        .attr('height', dimLeft.h)
+        .attr('stroke', 'none')
+        .attr('fill', colorTheme.darker.background)
+        .attr('stroke-width', 6)
+        .attr('stroke-opacity', 1)
+      g.append('rect')
+        .attr('class', 'back')
+        .attr('x', dimBottom.x)
+        .attr('y', dimBottom.y)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('width', dimBottom.w)
+        .attr('height', dimBottom.h)
+        .attr('stroke', 'none')
+        .attr('fill', colorTheme.darker.background)
+        .attr('stroke-width', 6)
+        .attr('stroke-opacity', 1)
       shared.schedBlocks = {
         g: g.append('g'),
         box: dimLeft
       }
       shared.modifications = {
         g: g.append('g'),
-        box: dimTop
+        box: dimMiddle
       }
       shared.conflicts = {
         g: g.append('g'),
-        box: dimMiddle
+        box: dimBottom
       }
       shared.information = {
         g: g.append('g'),
-        box: dimBottom
+        box: dimTop
       }
 
       svgSchedulingBlocksOverview.initData()
@@ -1738,8 +2056,8 @@ let mainSchedBlocksController = function (optIn) {
         .text(function (data) {
           return 'Modifications'
         })
-        .attr('x', dimBack.x + dimBack.w * 0.5)
-        .attr('y', dimTop.y - 4)
+        .attr('x', dimMiddle.x + dimMiddle.w * 0.5)
+        .attr('y', dimMiddle.y - 4)
         .style('font-weight', 'normal')
         .attr('text-anchor', 'middle')
         .style('font-size', 10)
@@ -1753,8 +2071,8 @@ let mainSchedBlocksController = function (optIn) {
         .text(function (data) {
           return 'Conflicts'
         })
-        .attr('x', dimMiddle.x + dimMiddle.w * 0.5)
-        .attr('y', dimMiddle.y - 22)
+        .attr('x', dimBottom.x + dimBottom.w * 0.5)
+        .attr('y', dimBottom.y - 6)
         .style('font-weight', 'normal')
         .attr('text-anchor', 'middle')
         .style('font-size', 10)
@@ -1763,7 +2081,21 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', colorTheme.brighter.text)
         .attr('stroke', 'none')
       svgConflicts.initData()
-      // svgInformation.initData()
+
+      g.append('text')
+        .text(function (data) {
+          return 'On Focus'
+        })
+        .attr('x', dimTop.x + dimTop.w * 0.5)
+        .attr('y', dimTop.y - 5)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 10)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', colorTheme.brighter.text)
+        .attr('stroke', 'none')
+      svgInformation.initData()
 
       // let dim = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.11, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.5)}
       // let dimModifs = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.07, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.15)}
@@ -1977,20 +2309,6 @@ let mainSchedBlocksController = function (optIn) {
     //   //   .attr('fill', '#cccccc')
     //   reserved.content.child.centralBlockG = reserved.content.g.append('g')
     // }
-    function formatData () {
-      let res = {}
-      for (var key in shared.main.data.copy.blocks) {
-        for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
-          let ns = shared.main.data.copy.blocks[key][i].metaData.nSched
-          if (ns in res) res[ns].push(shared.main.data.copy.blocks[key][i])
-          else res[ns] = [shared.main.data.copy.blocks[key][i]]
-        }
-      }
-      shared.modifications.formatedData = []
-      Object.keys(res).map(function (key, index) {
-        shared.modifications.formatedData.push({scheduleId: key, blocks: res[key]})
-      })
-    }
 
     // function schedBlocksOverEmiter (data) {
     //   blockQueueCreator.focusOnSchedBlocks(data)
@@ -2034,20 +2352,19 @@ let mainSchedBlocksController = function (optIn) {
     // this.schedBlocksOutRecepter = schedBlocksOutRecepter
 
     function populateShrink () {
-      let length = shared.modifications.formatedData.length
-      let dim = {h: shared.modifications.box.w * 0.9, w: shared.modifications.box.w * 0.9}
-      console.log(dim);
-      length += 1
-      let offset = (shared.modifications.box.w - (length < 19
-        ? (dim.w * 1.1) * length
-        : (length % 2 === 0
-          ? ((dim.w * 1.1) * (length - (length % 2)) - ((dim.w * 1.1) * (length - (length % 2))) / 2)
-          : ((dim.w * 1.1) / 2 * length)))) * 0.5
-      length -= 1
+      let length = shared.main.formatedData.schedGroup.length
+      let dim = {h: shared.schedBlocks.box.w * 0.6, w: shared.schedBlocks.box.w * 0.8}
+      // length += 1
+      // let offset = (shared.schedBlocks.box.h - (length < 19
+      //   ? (dim.h * 1.1) * length
+      //   : (length % 2 === 0
+      //     ? ((dim.h * 1.1) * (length - (length % 2)) - ((dim.h * 1.1) * (length - (length % 2))) / 2)
+      //     : ((dim.h * 1.1) / 2 * length)))) * 0.5
+      // length -= 1
 
-      let schedulingBlocks = shared.modifications.g
+      let schedulingBlocks = shared.schedBlocks.g
         .selectAll('g.schedulingBlocks')
-        .data(shared.modifications.formatedData, function (d) {
+        .data(shared.main.formatedData.schedGroup, function (d) {
           return d.scheduleId
         })
       let enterSchedulingBlocks = schedulingBlocks
@@ -2055,25 +2372,26 @@ let mainSchedBlocksController = function (optIn) {
         .append('g')
         .attr('class', 'schedulingBlocks')
         .attr('transform', function (d, i) {
+          // let translate = {
+          //   y: ((dim.h * 1.1) + offset + (length < 19
+          //     ? (dim.h * 1.1) * i
+          //     : (length % 2 === 0
+          //       ? ((dim.h * 1.1) * (i - (i % 2)) - ((dim.h * 1.1) * (i - (i % 2))) / 2)
+          //       : ((dim.h * 1.1) / 2 * i)))),
+          //   x: (shared.schedBlocks.box.w * 0.5) - (dim.w * 0.5) // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+          // }
+          let offset = (shared.schedBlocks.box.h - (length * dim.h)) / (length + 1)
           let translate = {
-            x: ((dim.w * 1.1) + offset + (length < 19
-              ? (dim.w * 1.1) * i
-              : (length % 2 === 0
-                ? ((dim.w * 1.1) * (i - (i % 2)) - ((dim.w * 1.1) * (i - (i % 2))) / 2)
-                : ((dim.w * 1.1) / 2 * i)))),
-            y: (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+            y: (offset * (i + 1)) + (dim.h * i),
+            x: (shared.schedBlocks.box.w * 0.5) - (dim.w * 0.5) // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
           }
           d.translate = translate
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
       enterSchedulingBlocks.append('rect')
         .attr('class', 'background')
-        .attr('x', function (d, i) {
-          return dim.w * 0.05
-        })
-        .attr('y', function (d, i) {
-          return dim.h * 0.05
-        })
+        .attr('x', 0)
+        .attr('y', 0)
         .attr('width', function (d, i) {
           return dim.w
         })
@@ -2087,62 +2405,34 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('stroke-dasharray', []) // [0, dim.w * 0.5, dim.w * 0.5 + dim.h * 0.5, dim.h * 0.5 + dim.w * 0.5, dim.h * 0.5 + dim.w * 0.5, dim.h * 0.5])
         .on('mouseover', function (d) {
-          if (shared.main.data.copy.focusOn === d.scheduleId) return
-          d3.select(this)
-            .attr('fill', colorTheme.dark.background)
-            .attr('stroke', colorTheme.dark.stroke)
-            .transition()
-            .duration(200)
-            .attr('stroke-width', 2)
-            .attr('stroke-dasharray', [])
-          schedBlocksOverEmiter(d)
+          if (shared.main.focus.schedBlocks === d.scheduleId) return
+          mainOverSchedBlocks(d.scheduleId)
+          // if (shared.main.focus.schedBlocks === d.scheduleId) return
+          // d3.select(this)
+          //   .attr('fill', colorTheme.dark.background)
+          //   .attr('stroke', colorTheme.dark.stroke)
+          //   .transition()
+          //   .duration(200)
+          //   .attr('stroke-width', 2)
+          //   .attr('stroke-dasharray', [])
+          // schedBlocksOverEmiter(d)
         })
         .on('mouseout', function (d) {
-          if (shared.main.data.copy.focusOn === d.scheduleId) return
-          d3.select(this)
-            .attr('fill', colorTheme.dark.background)
-            .attr('stroke', colorTheme.dark.stroke)
-            .transition()
-            .duration(200)
-            .attr('stroke-width', 0.2)
-            .attr('stroke-dasharray', [])
-          schedBlocksOutEmiter(d)
+          if (shared.main.focus.schedBlocks === d.scheduleId) return
+          mainOutSchedBlocks(d.scheduleId)
+          // console.log(shared.main.focus.schedBlocks);
+          // if (shared.main.focus.schedBlocks === d.scheduleId) return
+          // d3.select(this)
+          //   .attr('fill', colorTheme.dark.background)
+          //   .attr('stroke', colorTheme.dark.stroke)
+          //   .transition()
+          //   .duration(200)
+          //   .attr('stroke-width', 0.2)
+          //   .attr('stroke-dasharray', [])
+          // schedBlocksOutEmiter(d)
         })
         .on('click', function (d) {
-          function loop () {
-            d3.select(this).transition()
-              .duration(4000)
-              .ease(d3.easeLinear)
-              .attr('stroke-dashoffset', function () {
-                return Number(d3.select(this).attr('stroke-dashoffset')) + dim.w
-              })
-              .on('end', loop)
-          }
-          if (shared.main.data.copy.focusOn === d.scheduleId) {
-            unfocusOnSchedulingBlocks()
-            shared.main.data.copy.focusOn = undefined
-            d3.select(this)
-              .attr('fill', colorTheme.dark.background)
-              .attr('stroke', colorTheme.dark.stroke)
-              .transition()
-              .duration(200)
-              .attr('stroke-width', 2)
-              .attr('stroke-dasharray', [])
-          } else {
-            if (shared.main.data.copy.focusOn !== undefined) {
-              schedBlocksOutRecepter({data: {metaData: {nSched: Number(shared.main.data.copy.focusOn)}}})
-              schedBlocksOutEmiter({scheduleId: shared.main.data.copy.focusOn})
-            }
-            shared.main.data.copy.focusOn = d.scheduleId
-            focusOnSchedulingBlocks(d)
-            d3.select(this)
-              .transition()
-              .duration(200)
-              .attr('stroke-dasharray', [])
-              .attr('fill', colorTheme.darker.background)
-              .attr('stroke', colorTheme.darker.stroke)
-              // .on('end', loop)
-          }
+          mainFocusOnSchedBlocks(d.scheduleId)
         })
       enterSchedulingBlocks.append('text')
         .attr('class', 'name')
@@ -2315,7 +2605,6 @@ let mainSchedBlocksController = function (optIn) {
       //     } else return d3.color(colPrime).brighter()
       //   }
       // }
-
       // initShrink()
       // initContent()
 
@@ -2324,7 +2613,7 @@ let mainSchedBlocksController = function (optIn) {
     this.initData = initData
 
     // function removeSchedulingBlocksInfoPanel (data) {
-    //   if (reserved.content.child.schedulingBlocksInfoPanelG) reserved.content.child.schedulingBlocksInfoPanelG.remove()
+    //   if (schedulingBlocksInfoPanelG) schedulingBlocksInfoPanelG.remove()
     // }
     // function removeCentralBlock (data) {
     //   reserved.shrinked.child.centralBlockG.selectAll('*').remove()
@@ -2336,26 +2625,55 @@ let mainSchedBlocksController = function (optIn) {
     //     .remove()
     // }
 
-    // function focusOnSchedulingBlocks (data) {
-    //   unfocusOnSchedulingBlocks()
-    //   // createCentralBlock(data)
-    //   createSchedulingBlocksInfoPanel(data)
-    //   createBlocksInScheduleIcons(data)
-    // }
-    // this.focusOnSchedulingBlocks = focusOnSchedulingBlocks
-    // function unfocusOnSchedulingBlocks () {
-    //   removeBlocksInScheduleIcons()
-    //   removeCentralBlock()
-    //   removeSchedulingBlocksInfoPanel()
-    // }
-    // this.unfocusOnSchedulingBlocks = unfocusOnSchedulingBlocks
+    function focusOnSchedBlocks (schedId) {
+      unfocusOnSchedBlocks()
+      shared.schedBlocks.g.selectAll('g.schedulingBlocks rect.background')
+        .attr('fill', function (d) {
+          return (d.scheduleId === schedId ? colorTheme.darker.background : colorTheme.dark.background)
+        })
+        .attr('stroke-width', function (d) {
+          return (d.scheduleId === schedId ? 2 : 0.2)
+        })
+      // createCentralBlock(data)
+      // createSchedBlocksInfoPanel(data)
+      // createBlocksInScheduleIcons(data)
+    }
+    this.focusOnSchedBlocks = focusOnSchedBlocks
+    function unfocusOnSchedBlocks () {
+      shared.schedBlocks.g.selectAll('g.schedulingBlocks rect.background')
+        .attr('fill', function (d) {
+          return colorTheme.dark.background
+        })
+        .attr('stroke-width', function (d) {
+          return 0.2
+        })
+      // removeBlocksInScheduleIcons()
+      // removeCentralBlock()
+      // removeSchedBlocksInfoPanel()
+    }
+    this.unfocusOnSchedBlocks = unfocusOnSchedBlocks
+
+    function overSchedBlocks (schedId) {
+      shared.schedBlocks.g.selectAll('g.schedulingBlocks rect.background')
+        .attr('stroke-width', function (d) {
+          return (d.scheduleId === schedId ? 2 : d3.select(this).attr('stroke-width'))
+        })
+    }
+    this.overSchedBlocks = overSchedBlocks
+    function outSchedBlocks (schedId) {
+      shared.schedBlocks.g.selectAll('g.schedulingBlocks rect.background')
+        .attr('stroke-width', function (d) {
+          return (d.scheduleId === schedId ? 0.2 : d3.select(this).attr('stroke-width'))
+        })
+    }
+    this.outSchedBlocks = outSchedBlocks
 
     function update () {
 
     }
     this.update = update
     function updateData () {
-      formatData()
+      groupBlocksBySchedule()
       populateShrink()
 
       // if (shared.main.data.copy.focusOn) {
@@ -2796,7 +3114,7 @@ let mainSchedBlocksController = function (optIn) {
       shared.conflicts.g.append('rect')
         .attr('class', 'bottom-back')
         .attr('x', shared.conflicts.box.x)
-        .attr('y', shared.conflicts.box.y - 16)
+        .attr('y', shared.conflicts.box.y)
         .attr('width', shared.conflicts.box.w)
         .attr('height', shared.conflicts.box.h)
         .attr('stroke', colorTheme.brighter.stroke)
@@ -2813,7 +3131,7 @@ let mainSchedBlocksController = function (optIn) {
         {id: 'c6', type: 'shareTels', blocks: [{id: 'b0(4)'}, {id: 'b3(3)'}, {id: 'b7(4)'}, {id: 'b11(1)'}]}
       ]
       let conflictBox = {x: shared.conflicts.box.x + shared.conflicts.box.w * 0.3,
-        y: shared.conflicts.box.y - 15,
+        y: shared.conflicts.box.y,
         w: shared.conflicts.box.w * 0.7,
         h: shared.conflicts.box.h
       }
@@ -3012,7 +3330,7 @@ let mainSchedBlocksController = function (optIn) {
   }
   let SvgInformation = function () {
     function initData (dataIn) {
-
+      shared.information.g.attr('transform', 'translate(' + shared.information.box.x + ',' + shared.information.box.y + ')')
     }
     this.initData = initData
     function update () {
@@ -3037,18 +3355,18 @@ let mainSchedBlocksController = function (optIn) {
 
       return prop
     }
-    function createSchedulingBlocksInfoPanel (data) {
+    function createSchedBlocksInfoPanel (data) {
       let dim = {
-        x: 0,
-        y: reserved.content.box.h * 0.05,
-        w: reserved.content.box.w * 0.42,
-        h: reserved.content.box.h * 0.88,
-        margH: reserved.content.box.h * 0.05
+        x: shared.information.box.w * 0.15,
+        y: 0,
+        w: shared.information.box.w * 0.85,
+        h: shared.information.box.h,
+        margH: shared.information.box.h * 0.05
       }
-      reserved.content.child.schedulingBlocksInfoPanelG = reserved.content.g.append('g')
+      let schedulingBlocksInfoPanelG = shared.information.g.append('g')
       let scrollForm = new ScrollForm({
         main: {
-          g: reserved.content.child.schedulingBlocksInfoPanelG,
+          g: schedulingBlocksInfoPanelG,
           box: {x: dim.x, y: dim.y, w: dim.w, h: dim.h},
           colorTheme: colorTheme
         },
@@ -3078,17 +3396,16 @@ let mainSchedBlocksController = function (optIn) {
     }
     function createBlocksInScheduleIcons (data) {
       let dim = {
-        w: reserved.content.box.w * 0.10,
-        h: reserved.content.box.h * 0.9,
-        margH: reserved.content.box.h * 0.05
+        x: 0,
+        y: 0,
+        w: shared.information.box.w * 0.12,
+        h: shared.information.box.h,
+        margH: shared.information.box.h * 0.05
       }
-      let position = {
-        x: reserved.content.box.w * 0.45,
-        y: 0
-      }
-      let dimBlocks = {h: (reserved.shrinked.box.h) * 0.6, w: (reserved.shrinked.box.h) * 0.6}
+      let dimBlocks = {h: shared.information.box.w * 0.15 * 0.6, w: shared.information.box.w * 0.15 * 0.6}
       let length = data.blocks.length
-      let subBlocks = reserved.content.g
+      shared.information.g.selectAll('g.subBlocks').remove()
+      let subBlocks = shared.information.g
         .selectAll('g.subBlocks')
         .data(data.blocks, function (d) {
           return d.metaData.blockName
@@ -3099,8 +3416,8 @@ let mainSchedBlocksController = function (optIn) {
         .append('g')
         .attr('class', 'subBlocks')
         .attr('transform', function (d, i) {
-          let transX = position.x
-          let transY = (dim.h / (length + 1)) * (i + 1)
+          let transX = 0
+          let transY = ((dim.h - (length * dimBlocks.h)) / (length + 1)) * (i + 1) + (dimBlocks.h * i)
           return 'translate(' + transX + ',' + transY + ')'
         })
       enterSubBlocks.append('rect')
@@ -3182,7 +3499,7 @@ let mainSchedBlocksController = function (optIn) {
         .text(function (d) {
           return 'Block-' + d.metaData.nObs
         })
-        .attr('x', dim.w * 0.38)
+        .attr('x', dim.w * 0.04)
         .attr('y', dimBlocks.h * 0.6)
         .style('font-weight', 'normal')
         .attr('text-anchor', 'start')
@@ -3245,10 +3562,10 @@ let mainSchedBlocksController = function (optIn) {
         h: reserved.content.box.h * 0.88,
         margH: reserved.content.box.h * 0.05
       }
-      reserved.content.child.schedulingBlocksInfoPanelG = reserved.content.g.append('g')
+      schedulingBlocksInfoPanelG = reserved.content.g.append('g')
       let scrollForm = new ScrollForm({
         main: {
-          g: reserved.content.child.schedulingBlocksInfoPanelG,
+          g: schedulingBlocksInfoPanelG,
           box: {x: dim.x, y: dim.y, w: dim.w, h: dim.h},
           colorTheme: colorTheme
         },
@@ -3275,11 +3592,40 @@ let mainSchedBlocksController = function (optIn) {
       })
       scrollForm.updateData(bPropList, 'info')
     }
+
+    function focusOnSchedBlocks (schedId) {
+      for (var i = 0; i < shared.main.formatedData.schedGroup.length; i++) {
+        if (shared.main.formatedData.schedGroup[i].scheduleId === schedId) {
+          createSchedBlocksInfoPanel(shared.main.formatedData.schedGroup[i])
+          createBlocksInScheduleIcons(shared.main.formatedData.schedGroup[i])
+        }
+      }
+    }
+    this.focusOnSchedBlocks = focusOnSchedBlocks
+    function focusOnBlock (blockId) {
+      unfocusOnSchedBlocks()
+      shared.schedBlocks.g.selectAll('g.schedulingBlocks rect.background')
+        .attr('fill', function (d) {
+          return (d.scheduleId === schedId ? colorTheme.darker.background : colorTheme.dark.background)
+        })
+        .attr('stroke-width', function (d) {
+          return (d.scheduleId === schedId ? 2 : 0.2)
+        })
+      // createCentralBlock(data)
+      // createSchedBlocksInfoPanel(data)
+      // createBlocksInScheduleIcons(data)
+    }
+    this.focusOnSchedBlocks = focusOnSchedBlocks
+    function unfocus () {
+      shared.information.g.selectAll('*').remove()
+    }
+    this.unfocus = unfocus
   }
 
   let svgBlocksQueue = new SvgBlocksQueue()
   let svgBlocksQueueCreator = new SvgBlocksQueueCreator()
-  let svgBlockQueueOptimized = new SvgBlockQueueOptimized()
+  let svgBlocksQueueModif = new SvgBlocksQueueModif()
+  let svgBlocksQueueOptimized = new SvgBlockQueueOptimized()
 
   let svgWarningArea = new SvgWarningArea()
 
