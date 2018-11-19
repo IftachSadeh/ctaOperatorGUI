@@ -933,25 +933,26 @@ window.BlockQueue = function (optIn) {
       b.strokeDasharray = []
 
       b.text = cols.text
-      if (b.data.metaData.nSched === Number(com.input.focus.schedBlocks)) {
+      if (b.data.sbId === com.input.focus.schedBlocks) {
         if (com.input.over.schedBlocks !== undefined && com.input.over.schedBlocks !== com.input.focus.schedBlocks) b.stroke = colorTheme.blocks.critical.background
         b.strokeWidth = 4
         b.strokeOpacity = 1
         b.strokeDasharray = [6, 2]
       }
-      if (b.data.metaData.nObs === Number(com.input.focus.block)) {
+      if (b.data.obId === com.input.focus.block) {
         if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) b.stroke = colorTheme.blocks.critical.background
         b.strokeWidth = 4
         b.strokeOpacity = 1
       }
-      if (b.data.metaData.nSched === Number(com.input.over.schedBlocks)) {
+      if (b.data.sbId === com.input.over.schedBlocks) {
         b.strokeWidth = 6
         b.strokeOpacity = 1
         b.strokeDasharray = [6, 2]
       }
-      if (b.data.metaData.nObs === Number(com.input.over.block)) {
+      if (b.data.obId === com.input.over.block) {
         b.strokeWidth = 6
         b.strokeOpacity = 1
+        b.strokeDasharray = []
       }
     }
     return blocks
