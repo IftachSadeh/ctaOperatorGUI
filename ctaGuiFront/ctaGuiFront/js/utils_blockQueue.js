@@ -207,6 +207,58 @@ window.BlockQueue = function (optIn) {
         return 1
       } else return 1
     }
+
+    com.pattern.select = {}
+    com.pattern.select.defs = com.main.g.append('defs')
+    // com.pattern.select.patternHover = com.pattern.select.defs.append('pattern')
+    //   .attr('id', 'patternHover')
+    //   .attr('x', 0)
+    //   .attr('y', 0)
+    //   .attr('width', 5)
+    //   .attr('height', 5)
+    //   .attr('fill', '#ffffff')
+    //   .attr('patternUnits', 'userSpaceOnUse')
+    // com.pattern.select.patternHover.append('line')
+    //   .attr('x1', 0)
+    //   .attr('y1', 0)
+    //   .attr('x2', 5)
+    //   .attr('y2', 5)
+    //   .attr('stroke', '#000000')
+    //   .attr('stroke-width', 0.8)
+    //   .attr('stroke-opacity', 0.4)
+    // com.pattern.select.patternHover.append('line')
+    //   .attr('x1', 5)
+    //   .attr('y1', 0)
+    //   .attr('x2', 0)
+    //   .attr('y2', 5)
+    //   .attr('stroke', '#000000')
+    //   .attr('stroke-width', 0.8)
+    //   .attr('stroke-opacity', 0.4)
+
+    com.pattern.select.patternSelect = com.pattern.select.defs.append('pattern')
+      .attr('id', 'patternSelect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', 3)
+      .attr('height', 3)
+      .attr('fill', '#ffffff')
+      .attr('patternUnits', 'userSpaceOnUse')
+    com.pattern.select.patternSelect.append('line')
+      .attr('x1', 0)
+      .attr('y1', 0)
+      .attr('x2', 3)
+      .attr('y2', 3)
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 0.7)
+      .attr('stroke-opacity', 0.4)
+    com.pattern.select.patternSelect.append('line')
+      .attr('x1', 3)
+      .attr('y1', 0)
+      .attr('x2', 0)
+      .attr('y2', 3)
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 0.7)
+      .attr('stroke-opacity', 0.4)
   }
 
   function init () {
@@ -921,10 +973,14 @@ window.BlockQueue = function (optIn) {
   }
   this.calcBlockRow = calcBlockRow
   function setDefaultStyleForBlocks (blocks) {
+    let timeScale = d3.scaleLinear()
+      .range(com.axis.range)
+      .domain([com.time.startTime.time, com.time.endTime.time])
     for (let index in blocks) {
       let b = blocks[index]
       let cols = com.style.blockCol({ d: b })
 
+      b.w = timeScale(b.data.endTime) - timeScale(b.data.startTime)
       b.stroke = cols.stroke
       b.strokeWidth = 1
       b.fill = cols.background
@@ -933,24 +989,33 @@ window.BlockQueue = function (optIn) {
       b.strokeDasharray = []
 
       b.text = cols.text
+      b.patternFill = ''
+      b.patternOpacity = 0
       if (b.data.sbId === com.input.focus.schedBlocks) {
-        if (com.input.over.schedBlocks !== undefined && com.input.over.schedBlocks !== com.input.focus.schedBlocks) b.stroke = colorTheme.blocks.critical.background
-        b.strokeWidth = 4
-        b.strokeOpacity = 1
-        b.strokeDasharray = [6, 2]
+        if (!(com.input.over.schedBlocks !== undefined && com.input.over.schedBlocks !== com.input.focus.schedBlocks)) { // b.stroke = colorTheme.blocks.critical.background
+          // b.patternFill = 'url(#patternHover)'
+          b.patternFill = 'url(#patternSelect)'
+          b.patternOpacity = 1
+        }
+        // b.strokeWidth = 3
+        // b.strokeOpacity = 1
+        // b.strokeDasharray = [2, 2]
+      }
+      if (b.data.sbId === com.input.over.schedBlocks) {
+        // b.strokeWidth = 3
+        // b.strokeOpacity = 1
+        // b.strokeDasharray = [2, 2]
+        b.patternFill = 'url(#patternSelect)'
+        b.patternOpacity = 1
       }
       if (b.data.obId === com.input.focus.block) {
         if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) b.stroke = colorTheme.blocks.critical.background
         b.strokeWidth = 4
         b.strokeOpacity = 1
-      }
-      if (b.data.sbId === com.input.over.schedBlocks) {
-        b.strokeWidth = 6
-        b.strokeOpacity = 1
-        b.strokeDasharray = [6, 2]
+        b.strokeDasharray = []
       }
       if (b.data.obId === com.input.over.block) {
-        b.strokeWidth = 6
+        b.strokeWidth = 4
         b.strokeOpacity = 1
         b.strokeDasharray = []
       }
@@ -961,30 +1026,30 @@ window.BlockQueue = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  function blocksMouseOver (data) {
-    let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
-    if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
-
-    totBlocks.each(function (d) {
-      if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
-        d3.select(this).select('rect.back').attr('stroke-width', 6)
-          .style('stroke-opacity', 1)
-          .attr('stroke-dasharray', [4, 2])
-      }
-    })
-  }
-  function blocksMouseOut (data) {
-    let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
-    if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
-
-    totBlocks.each(function (d) {
-      if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
-        d3.select(this).select('rect.back').attr('stroke-width', 1)
-          .style('stroke-opacity', 0.4)
-          .attr('stroke-dasharray', [])
-      }
-    })
-  }
+  // function blocksMouseOver (data) {
+  //   let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
+  //   if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
+  //
+  //   totBlocks.each(function (d) {
+  //     if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
+  //       d3.select(this).select('rect.back').attr('stroke-width', 6)
+  //         .style('stroke-opacity', 1)
+  //         .attr('stroke-dasharray', [4, 2])
+  //     }
+  //   })
+  // }
+  // function blocksMouseOut (data) {
+  //   let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
+  //   if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
+  //
+  //   totBlocks.each(function (d) {
+  //     if (d.data.metaData.nSched === data.data.metaData.nSched && d.data.metaData.nObs !== data.data.metaData.nObs) {
+  //       d3.select(this).select('rect.back').attr('stroke-width', 1)
+  //         .style('stroke-opacity', 0.4)
+  //         .attr('stroke-dasharray', [])
+  //     }
+  //   })
+  // }
 
   function overSchedBlocks (id) {
     com.input.over.schedBlocks = id
@@ -1023,7 +1088,7 @@ window.BlockQueue = function (optIn) {
   }
   this.focusOnBlock = focusOnBlock
   function unfocusOnBlock (id) {
-    com.input.focus.block = id
+    com.input.focus.block = undefined
     updateBlocks()
   }
   this.unfocusOnBlock = unfocusOnBlock
@@ -1091,21 +1156,21 @@ window.BlockQueue = function (optIn) {
           } else {
             com.input.selection = [this]
           }
-          group.events.click()
+          group.events.click(d.data)
         })
         .on('mouseover', function (d) {
-          blocksMouseOver(d)
-          d3.select(this).attr('stroke-width', 4)
-          d3.select(this).style('stroke-opacity', 1)
-          group.events.mouseover(d)
+          // blocksMouseOver(d)
+          // d3.select(this).attr('stroke-width', 4)
+          // d3.select(this).style('stroke-opacity', 1)
+          group.events.mouseover(d.data)
         })
         .on('mouseout', function (d) {
-          blocksMouseOut(d)
-          d3.select(this).attr('stroke-width', 1)
-          d3.select(this).style('stroke-opacity', function (d) {
-            return 0.55
-          })
-          group.events.mouseout(d)
+          // blocksMouseOut(d)
+          // d3.select(this).attr('stroke-width', 1)
+          // d3.select(this).style('stroke-opacity', function (d) {
+          //   return 0.55
+          // })
+          group.events.mouseout(d.data)
         })
         .call(d3.drag()
           .on('start', function () {
@@ -1115,7 +1180,6 @@ window.BlockQueue = function (optIn) {
           })
           .on('drag', group.events.drag.tick)
           .on('end', group.events.drag.end))
-
       d3.select(this).append('rect')
         .attr('class', 'pattern')
         .attr('x', function (d, i) {
@@ -1137,14 +1201,15 @@ window.BlockQueue = function (optIn) {
         .style('stroke-opacity', 0)
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
-
       d3.select(this).append('text')
         .attr('class', 'name')
         .text(function (d, i) {
           return d.data.metaData.blockName
         })
         .style('font-weight', 'normal')
-        .style('fill-opacity', 1)
+        .style('opacity', function (d, i) {
+          return d.fillOpacity
+        })
         .style('fill', function (d) {
           return d.text
         })
@@ -1198,6 +1263,13 @@ window.BlockQueue = function (optIn) {
         .style('stroke-dasharray', function (d, i) {
           return d.strokeDasharray
         })
+      d3.select(this).select('rect.pattern')
+        .style('fill', function (d, i) {
+          return d.patternFill
+        })
+        .style('fill-opacity', function (d, i) {
+          return d.patternOpacity
+        })
       d3.select(this).select('text')
         .style('font-size', function (d) {
           d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
@@ -1213,10 +1285,10 @@ window.BlockQueue = function (optIn) {
         })
         .transition('inOut')
         .duration(timeD.animArc)
-        .style('stroke-opacity', function (d) {
-          return d.strokeOpacity
+        .style('stroke-opacity', function (d, i) {
+          return d.fillOpacity
         })
-        .style('fill-opacity', function (d) {
+        .style('fill-opacity', function (d, i) {
           return d.fillOpacity
         })
         .attr('x', function (d, i) {

@@ -168,7 +168,7 @@ window.BlockQueueCreator = function (optIn) {
         false
 
       if (state === 'wait') {
-        if (modified) return {background: 'transparent', stroke: '#666666', text: '#666666'}
+        if (modified) return com.blocks.colorPalette.critical
         return com.blocks.colorPalette.wait
       } else if (state === 'done') {
         return com.blocks.colorPalette.done
@@ -196,7 +196,7 @@ window.BlockQueueCreator = function (optIn) {
         false
 
       if (state === 'wait') {
-        if (modified) return 0.8
+        if (modified) return 0.3
         return 1
       } else if (state === 'run') {
         return 1
@@ -625,25 +625,25 @@ window.BlockQueueCreator = function (optIn) {
       com.interaction.oldG.select('rect.back').style('fill-opacity', 1)
       com.interaction.oldG.select('rect.back').style('stroke-opacity', 1)
 
-      com.pattern.moved = {}
-      com.pattern.moved.defs = com.main.g.append('defs')
-      com.pattern.moved.pattern = com.pattern.moved.defs.append('pattern')
-        .attr('id', 'patternMoved')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', 8)
-        .attr('height', 5)
-        .attr('fill', '#ffffff')
-        .attr('patternUnits', 'userSpaceOnUse')
-      com.pattern.moved.pattern.append('line')
-        .attr('x1', 0)
-        .attr('y1', 0)
-        .attr('x2', 8)
-        .attr('y2', 5)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.6)
-        .attr('stroke-opacity', 0.5)
-      com.interaction.oldG.select('rect.pattern').style('fill', 'url(#patternMoved)')
+      // com.pattern.moved = {}
+      // com.pattern.moved.defs = com.main.g.append('defs')
+      // com.pattern.moved.pattern = com.pattern.moved.defs.append('pattern')
+      //   .attr('id', 'patternMoved')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', 8)
+      //   .attr('height', 5)
+      //   .attr('fill', '#ffffff')
+      //   .attr('patternUnits', 'userSpaceOnUse')
+      // com.pattern.moved.pattern.append('line')
+      //   .attr('x1', 0)
+      //   .attr('y1', 0)
+      //   .attr('x2', 8)
+      //   .attr('y2', 5)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.6)
+      //   .attr('stroke-opacity', 0.5)
+      // com.interaction.oldG.select('rect.pattern').style('fill', 'url(#patternMoved)')
     } else {
       let delta = {
         x: d3.event.x - com.interaction.mousecursor.x,

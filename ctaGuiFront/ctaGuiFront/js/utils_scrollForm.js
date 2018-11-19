@@ -83,15 +83,17 @@ window.ScrollForm = function (optIn) {
   this.updateData = updateData
 
   function formatData (key, data, div) {
+    let keyMaj = key.charAt(0).toUpperCase() + key.slice(1)
     if (com.data.format === 'modification') {
       div.append('label')
-        .html(key)
+        .html(keyMaj)
         .style('display', 'inline-block')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
         .style('background', 'transparent')
+        .style('margin-left', '6px')
       div.append('label')
-        .html(':')
+        .html(' : ')
         .style('display', 'inline-block')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
@@ -116,13 +118,14 @@ window.ScrollForm = function (optIn) {
         .style('background', 'transparent')
     } else if (com.data.format === 'info') {
       div.append('label')
-        .html(key)
+        .html(keyMaj)
         .style('display', 'inline-block')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
         .style('background', 'transparent')
+        .style('margin-left', '6px')
       div.append('label')
-        .html(':')
+        .html(' : ')
         .style('display', 'inline-block')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
@@ -139,6 +142,7 @@ window.ScrollForm = function (optIn) {
   function fillDivs (title, group, divs, index) {
     let info = group.data
     let childs = group.childs
+    title = title.charAt(0).toUpperCase() + title.slice(1)
     let innerDiv = divs[index].append('div')
       .style('margin-bottom', '6px')
       .style('background', colorTheme.brighter.background)

@@ -130,7 +130,7 @@ let mainSchedBlocksController = function (optIn) {
         copy: undefined
       },
       focus: {
-        shedBlocks: undefined,
+        schedBlocks: undefined,
         block: undefined
       },
       formatedData: {
@@ -358,6 +358,31 @@ let mainSchedBlocksController = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
+  function setCol (optIn) {
+    if (optIn.endTime < Number(shared.main.data.server.timeOfNight.now)) return colorTheme.blocks.shutdown
+    let state = hasVar(optIn.state)
+      ? optIn.state
+      : optIn.exeState.state
+    let canRun = hasVar(optIn.canRun)
+      ? optIn.canRun
+      : optIn.exeState.canRun
+
+    console.log(optIn, state);
+    if (state === 'wait') {
+      return colorTheme.blocks.wait
+    } else if (state === 'done') {
+      return colorTheme.blocks.done
+    } else if (state === 'fail') {
+      return colorTheme.blocks.fail
+    } else if (state === 'run') {
+      return colorTheme.blocks.run
+    } else if (state === 'cancel') {
+      if (hasVar(canRun)) {
+        if (!canRun) return colorTheme.blocks.cancelOp
+      }
+      return colorTheme.blocks.cancelSys
+    } else return colorTheme.blocks.shutdown
+  }
   function pullData () {
     shared.main.data.copy = deepCopy(shared.main.data.server)
     shared.main.data.copy.optimizedBlocks = shared.main.data.copy.blocks
@@ -481,7 +506,6 @@ let mainSchedBlocksController = function (optIn) {
     if (shared.main.focus.schedBlocks !== undefined) {
       if (shared.main.focus.schedBlocks === schedB) {
         mainUnfocusOnSchedBlocks(schedB)
-        svgInformation.unfocusSchedBlocks()
         return
       }
       mainUnfocusOnSchedBlocks(shared.main.focus.schedBlocks)
@@ -494,8 +518,10 @@ let mainSchedBlocksController = function (optIn) {
     blockQueueModif.focusOnSchedBlocks(schedB)
     blockQueueOptimized.focusOnSchedBlocks(schedB)
   }
-  function mainUnfocusOnSchedBlocks (schedB) {
+  function mainUnfocusOnSchedBlocks () {
+    svgInformation.unfocusSchedBlocks()
     svgSchedulingBlocksOverview.unfocusOnSchedBlocks()
+
     blockQueueCreator.unfocusOnSchedBlocks()
     blockQueueModif.unfocusOnSchedBlocks()
     blockQueueOptimized.unfocusOnSchedBlocks()
@@ -504,35 +530,38 @@ let mainSchedBlocksController = function (optIn) {
 
   function mainFocusOnBlock (block) {
     if (shared.main.focus.block !== undefined) {
-      if (shared.main.focus.block === block) {
+      if (shared.main.focus.block.obId === block.obId) {
         mainUnfocusOnBlock(block)
-        svgInformation.unfocusOnBlock()
         return
       }
       mainUnfocusOnBlock(shared.main.focus.block)
-      svgInformation.unfocusBlock()
     }
+    mainUnfocusOnSchedBlocks()
+    mainFocusOnSchedBlocks(block.sbId)
+
     shared.main.focus.block = block
     // svgSchedulingBlocksOverview.focusOnSchedBlocks(block)
-    svgInformation.focusOnBlock(block)
-    blockQueueCreator.focusOnBlock(block)
-    blockQueueModif.focusOnBlock(block)
-    blockQueueOptimized.focusOnBlock(block)
+    svgInformation.focusOnBlock(block.obId)
+    blockQueueCreator.focusOnBlock(block.obId)
+    blockQueueModif.focusOnBlock(block.obId)
+    blockQueueOptimized.focusOnBlock(block.obId)
   }
   function mainUnfocusOnBlock (block) {
+    svgInformation.unfocusBlock()
     svgInformation.focusOnSchedBlocks(shared.main.focus.schedBlocks)
     shared.main.focus.block = undefined
+    blockQueueCreator.unfocusOnBlock(block.obId)
+    blockQueueModif.unfocusOnBlock(block.obId)
+    blockQueueOptimized.unfocusOnBlock(block.obId)
   }
 
   function mainOverSchedBlocks (schedB) {
-    if (shared.main.focus.schedBlocks === schedB) return
     svgSchedulingBlocksOverview.overSchedBlocks(schedB)
     blockQueueCreator.overSchedBlocks(schedB)
     blockQueueModif.overSchedBlocks(schedB)
     blockQueueOptimized.overSchedBlocks(schedB)
   }
   function mainOutSchedBlocks (schedB) {
-    if (shared.main.focus.schedBlocks === schedB) return
     svgSchedulingBlocksOverview.outSchedBlocks(schedB)
     blockQueueCreator.outSchedBlocks(schedB)
     blockQueueModif.outSchedBlocks(schedB)
@@ -540,16 +569,18 @@ let mainSchedBlocksController = function (optIn) {
   }
 
   function mainOverBlock (block) {
-    svgInformation.overBlock(block)
-    blockQueueCreator.overBlock(block)
-    blockQueueModif.overBlock(block)
-    blockQueueOptimized.overBlock(block)
+    svgInformation.overBlock(block.obId)
+    blockQueueCreator.overBlock(block.obId)
+    blockQueueModif.overBlock(block.obId)
+    blockQueueOptimized.overBlock(block.obId)
+    mainOverSchedBlocks(block.sbId)
   }
   function mainOutBlock (block) {
-    svgInformation.outBlock(block)
-    blockQueueCreator.outBlock(block)
-    blockQueueModif.outBlock(block)
-    blockQueueOptimized.outBlock(block)
+    svgInformation.outBlock(block.obId)
+    blockQueueCreator.outBlock(block.obId)
+    blockQueueModif.outBlock(block.obId)
+    blockQueueOptimized.outBlock(block.obId)
+    mainOutSchedBlocks(block.sbId)
   }
 
   function addModifications (from, block) {
@@ -972,9 +1003,9 @@ let mainSchedBlocksController = function (optIn) {
             g: undefined,
             box: {x: 0, y: blockBoxData.h * 0.2, w: blockBoxData.w, h: blockBoxData.h * 0.2190, marg: blockBoxData.marg},
             events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
+              click: mainFocusOnBlock,
+              mouseover: mainOverBlock,
+              mouseout: mainOutBlock,
               drag: {
                 start: () => {},
                 tick: () => {},
@@ -992,9 +1023,9 @@ let mainSchedBlocksController = function (optIn) {
             g: undefined,
             box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.1289, marg: blockBoxData.marg},
             events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
+              click: mainFocusOnBlock,
+              mouseover: mainOverBlock,
+              mouseout: mainOutBlock,
               drag: {
                 start: () => {},
                 tick: () => {},
@@ -1163,9 +1194,9 @@ let mainSchedBlocksController = function (optIn) {
             g: undefined,
             box: {x: 0, y: blockBoxData.h * 0.6, w: blockBoxData.w, h: blockBoxData.h * 0.283, marg: blockBoxData.marg},
             events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
+              click: mainFocusOnBlock,
+              mouseover: mainOverBlock,
+              mouseout: mainOutBlock,
               drag: {
                 start: () => {},
                 tick: () => {},
@@ -1183,9 +1214,9 @@ let mainSchedBlocksController = function (optIn) {
             g: undefined,
             box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.16, marg: blockBoxData.marg},
             events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
+              click: mainFocusOnBlock,
+              mouseover: mainOverBlock,
+              mouseout: mainOutBlock,
               drag: {
                 start: () => {},
                 tick: () => {},
@@ -1203,9 +1234,9 @@ let mainSchedBlocksController = function (optIn) {
             g: undefined,
             box: {x: 0, y: blockBoxData.h * 0.5, w: blockBoxData.w, h: blockBoxData.h * 0.47, marg: blockBoxData.marg},
             events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
+              click: mainFocusOnBlock,
+              mouseover: mainOverBlock,
+              mouseout: mainOutBlock,
               drag: {
                 start: () => {},
                 tick: () => {},
@@ -1355,9 +1386,9 @@ let mainSchedBlocksController = function (optIn) {
             g: undefined,
             box: {x: 0, y: blockBoxData.h * 0.46875, w: blockBoxData.w, h: blockBoxData.h * 0.53125, marg: blockBoxData.marg},
             events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
+              click: mainFocusOnBlock,
+              mouseover: mainOverBlock,
+              mouseout: mainOutBlock,
               drag: {
                 start: () => {},
                 tick: () => {},
@@ -1375,9 +1406,9 @@ let mainSchedBlocksController = function (optIn) {
             g: undefined,
             box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.3125, marg: blockBoxData.marg},
             events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
+              click: mainFocusOnBlock,
+              mouseover: mainOverBlock,
+              mouseout: mainOutBlock,
               drag: {
                 start: () => {},
                 tick: () => {},
@@ -1395,9 +1426,9 @@ let mainSchedBlocksController = function (optIn) {
             g: undefined,
             box: {x: 0, y: blockBoxData.h * 0.24, w: blockBoxData.w, h: blockBoxData.h * 0.36, marg: blockBoxData.marg},
             events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
+              click: mainFocusOnBlock,
+              mouseover: mainOverBlock,
+              mouseout: mainOutBlock,
               drag: {
                 start: () => {},
                 tick: () => {},
@@ -2032,11 +2063,11 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-opacity', 1)
       g.append('rect')
         .attr('class', 'back')
-        .attr('x', dimLeft.x)
+        .attr('x', dimLeft.x + dimLeft.w * 0.4)
         .attr('y', dimLeft.y)
         .attr('rx', 3)
         .attr('ry', 3)
-        .attr('width', dimLeft.w)
+        .attr('width', dimLeft.w * 0.2)
         .attr('height', dimLeft.h)
         .attr('stroke', colorTheme.medium.stroke)
         .attr('fill', colorTheme.medium.background)
@@ -2426,7 +2457,6 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('stroke-dasharray', []) // [0, dim.w * 0.5, dim.w * 0.5 + dim.h * 0.5, dim.h * 0.5 + dim.w * 0.5, dim.h * 0.5 + dim.w * 0.5, dim.h * 0.5])
         .on('mouseover', function (d) {
-          if (shared.main.focus.schedBlocks === d.scheduleId) return
           mainOverSchedBlocks(d.scheduleId)
           // if (shared.main.focus.schedBlocks === d.scheduleId) return
           // d3.select(this)
@@ -2439,7 +2469,6 @@ let mainSchedBlocksController = function (optIn) {
           // schedBlocksOverEmiter(d)
         })
         .on('mouseout', function (d) {
-          if (shared.main.focus.schedBlocks === d.scheduleId) return
           mainOutSchedBlocks(d.scheduleId)
           // console.log(shared.main.focus.schedBlocks);
           // if (shared.main.focus.schedBlocks === d.scheduleId) return
@@ -2498,9 +2527,9 @@ let mainSchedBlocksController = function (optIn) {
             return dimBlocks
           })
           .attr('fill', function (d, i) {
-            return '#000000'
+            return setCol(d).background
           })
-          .style('opacity', 0.7)
+          .style('opacity', 1)
           .attr('stroke', 'black')
           .attr('stroke-width', 0.2)
           .style('pointer-events', 'none')
@@ -2515,7 +2544,7 @@ let mainSchedBlocksController = function (optIn) {
           .transition()
           .duration(800)
           .attr('fill', function (d, i) {
-            return '#000000'
+            return setCol(d).background
           })
       })
 
@@ -2603,7 +2632,32 @@ let mainSchedBlocksController = function (optIn) {
       //   }
       // }
       shared.schedBlocks.g.attr('transform', 'translate(' + shared.schedBlocks.box.x + ',' + shared.schedBlocks.box.y + ')')
-      //
+      shared.schedBlocks.g.append('rect')
+        .attr('class', 'back')
+        .attr('x', 0)
+        .attr('y', -12)
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('width', shared.schedBlocks.box.w)
+        .attr('height', 15)
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('fill', colorTheme.medium.background)
+        .attr('stroke-width', 0.1)
+        .attr('stroke-opacity', 1)
+      shared.schedBlocks.g.append('text')
+        .text(function (data) {
+          return 'Sched.B'
+        })
+        .attr('x', shared.schedBlocks.box.w * 0.5)
+        .attr('y', 0)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 8)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', colorTheme.dark.text)
+        .attr('stroke', 'none')
+
       // reserved.style = {}
       // reserved.style.recCol = function () { return 'blue'} // optIn.recCol
       // if (!hasVar(reserved.style.recCol)) {
@@ -2684,7 +2738,7 @@ let mainSchedBlocksController = function (optIn) {
     function outSchedBlocks (schedId) {
       shared.schedBlocks.g.selectAll('g.schedulingBlocks rect.background')
         .attr('stroke-width', function (d) {
-          return (d.scheduleId === schedId ? 0.2 : d3.select(this).attr('stroke-width'))
+          return 0.2 // (d.scheduleId === schedId ? 0.2 : d3.select(this).attr('stroke-width'))
         })
     }
     this.outSchedBlocks = outSchedBlocks
@@ -2792,89 +2846,102 @@ let mainSchedBlocksController = function (optIn) {
     }
     let reserved = template
     function initData () {
+      shared.modifications.g.append('rect')
+        .attr('class', 'bottom-back')
+        .attr('x', shared.modifications.box.x)
+        .attr('y', shared.modifications.box.y)
+        .attr('rx', 2)
+        .attr('width', shared.modifications.box.w)
+        .attr('height', shared.modifications.box.h)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('fill', colorTheme.medium.background)
+        .attr('stroke-width', 0.2)
+        .attr('stroke-opacity', 1)
+
       createModificationsList()
       drawModifications()
     }
     this.initData = initData
     function update () {
-      reserved.data.modifications = {
-        1: {
-          modifications: [
-            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop4', old: 'Old Value', new: 'New Value'}
-          ],
-          blocks: {
-            2: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop4', old: 'Old Value', new: 'New Value'}
-              ]
-            },
-            3: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'}
-              ]
-            }
-          }
-        },
-        3: {
-          modifications: [
-            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop4', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop5', old: 'Old Value', new: 'New Value'}
-          ],
-          blocks: {
-            2: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'}
-              ]
-            }
-          }
-        },
-        7: {
-          modifications: [
-            {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop4', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop5', old: 'Old Value', new: 'New Value'},
-            {prop: 'prop6', old: 'Old Value', new: 'New Value'}
-          ],
-          blocks: {
-            1: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop4', old: 'Old Value', new: 'New Value'}
-              ]
-            },
-            5: {
-              modifications: [
-                {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop4', old: 'Old Value', new: 'New Value'},
-                {prop: 'prop5', old: 'Old Value', new: 'New Value'}
-              ]
-            }
-          }
-        }
-      }
+      // reserved.data.modifications = {
+      //   1: {
+      //     modifications: [
+      //       {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+      //     ],
+      //     blocks: {
+      //       2: {
+      //         modifications: [
+      //           {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+      //         ]
+      //       },
+      //       3: {
+      //         modifications: [
+      //           {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop2', old: 'Old Value', new: 'New Value'}
+      //         ]
+      //       }
+      //     }
+      //   },
+      //   3: {
+      //     modifications: [
+      //       {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+      //     ],
+      //     blocks: {
+      //       2: {
+      //         modifications: [
+      //           {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop2', old: 'Old Value', new: 'New Value'}
+      //         ]
+      //       }
+      //     }
+      //   },
+      //   7: {
+      //     modifications: [
+      //       {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop5', old: 'Old Value', new: 'New Value'},
+      //       {prop: 'prop6', old: 'Old Value', new: 'New Value'}
+      //     ],
+      //     blocks: {
+      //       1: {
+      //         modifications: [
+      //           {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+      //         ]
+      //       },
+      //       5: {
+      //         modifications: [
+      //           {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+      //           {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+      //         ]
+      //       }
+      //     }
+      //   }
+      // }
       createModificationsList()
       drawModifications()
     }
     this.update = update
 
     function drawModifications () {
+      if (Object.keys(reserved.data.modifications).length === 0 && reserved.data.modifications.constructor === Object) return
       // g.append('rect')
       //   .attr('class', 'bottom-back')
       //   .attr('x', dimTop.x)
@@ -3103,7 +3170,6 @@ let mainSchedBlocksController = function (optIn) {
           // }
         }
       }
-      console.log(reserved.data.modifications);
     }
   }
   let SvgConflicts = function () {
@@ -3136,11 +3202,12 @@ let mainSchedBlocksController = function (optIn) {
         .attr('class', 'bottom-back')
         .attr('x', shared.conflicts.box.x)
         .attr('y', shared.conflicts.box.y)
+        .attr('rx', 2)
         .attr('width', shared.conflicts.box.w)
         .attr('height', shared.conflicts.box.h)
-        .attr('stroke', colorTheme.brighter.stroke)
-        .attr('fill', colorTheme.brighter.background)
-        .attr('stroke-width', 0.5)
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('fill', colorTheme.medium.background)
+        .attr('stroke-width', 0.2)
         .attr('stroke-opacity', 1)
       return
       let conflicts = [
@@ -3350,19 +3417,39 @@ let mainSchedBlocksController = function (optIn) {
     }
   }
   let SvgInformation = function () {
-    function initData (dataIn) {
-      shared.information.g.attr('transform', 'translate(' + shared.information.box.x + ',' + shared.information.box.y + ')')
-
+    function createBackground () {
+      let dim = {
+        x: 0,
+        y: 0,
+        w: shared.information.box.w * 0.12,
+        h: shared.information.box.h,
+        margH: shared.information.box.h * 0.06
+      }
       shared.information.g.append('rect')
         .attr('class', 'bottom-back')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', shared.information.box.w)
-        .attr('height', shared.information.box.h)
+        .attr('x', -2)
+        .attr('y', 0 - 0.2)
+        .attr('rx', 2)
+        .attr('width', dim.w + dim.margH)
+        .attr('height', shared.information.box.h + 0.4)
         .attr('stroke', colorTheme.medium.stroke)
         .attr('fill', colorTheme.medium.background)
-        .attr('stroke-width', 0.1)
+        .attr('stroke-width', 0.2)
         .attr('stroke-opacity', 1)
+      shared.information.g.append('rect')
+        .attr('class', 'bottom-back')
+        .attr('x', 0 + dim.w + dim.margH - 0.2)
+        .attr('y', 0 - 0.2)
+        .attr('width', shared.information.box.w - dim.w - dim.margH + 0)
+        .attr('height', shared.information.box.h + 0.4)
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('fill', colorTheme.medium.background)
+        .attr('stroke-width', 0.2)
+        .attr('stroke-opacity', 1)
+    }
+    function initData (dataIn) {
+      shared.information.g.attr('transform', 'translate(' + shared.information.box.x + ',' + shared.information.box.y + ')')
+      createBackground()
     }
     this.initData = initData
     function update () {
@@ -3480,7 +3567,7 @@ let mainSchedBlocksController = function (optIn) {
           return 0
         })
         .attr('x', function (d, i) {
-          return 4
+          return 2
         })
         .attr('width', function (d, i) {
           return dim.w
@@ -3489,14 +3576,14 @@ let mainSchedBlocksController = function (optIn) {
           return dimBlocks.h
         })
         .attr('fill', function (d, i) {
-          return colorTheme.dark.background
+          return setCol(d).background
         })
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.2)
         .attr('stroke-dasharray', [])
         .on('mouseover', function (d) {
           if (shared.main.focus.block === d.obId) return
-          mainOverBlock(d.obId)
+          mainOverBlock(d)
           // if (shared.main.focus.schedBlocks === d.scheduleId) return
           // d3.select(this)
           //   .attr('fill', colorTheme.dark.background)
@@ -3509,7 +3596,7 @@ let mainSchedBlocksController = function (optIn) {
         })
         .on('mouseout', function (d) {
           if (shared.main.focus.block === d.obId) return
-          mainOutBlock(d.obId)
+          mainOutBlock(d)
           // console.log(shared.main.focus.schedBlocks);
           // if (shared.main.focus.schedBlocks === d.scheduleId) return
           // d3.select(this)
@@ -3522,7 +3609,7 @@ let mainSchedBlocksController = function (optIn) {
           // schedBlocksOutEmiter(d)
         })
         .on('click', function (d) {
-          mainFocusOnBlock(d.obId)
+          mainFocusOnBlock(d)
         })
         // .on('mouseover', function (d) {
         //   if (shared.main.data.copy.focusOn === d.scheduleId) return
@@ -3556,34 +3643,34 @@ let mainSchedBlocksController = function (optIn) {
         //     .attr('stroke-dasharray', [])
         //   createBlocksInfoPanel(d)
         // })
-      enterSubBlocks.append('rect')
-        .attr('class', 'block')
-        .attr('y', function (d, i) {
-          return 3
-        })
-        .attr('x', function (d, i) {
-          return 7
-        })
-        .attr('width', function (d, i) {
-          return dimBlocks.h - 6
-        })
-        .attr('height', function (d, i) {
-          return dimBlocks.h - 6
-        })
-        .attr('fill', function (d, i) {
-          return colorTheme.medium.background
-        })
-        .style('opacity', 1)
-        .attr('stroke', function (d, i) {
-          return colorTheme.medium.stroke
-        })
-        .attr('stroke-width', 0.2)
-        .style('pointer-events', 'none')
+      // enterSubBlocks.append('rect')
+      //   .attr('class', 'block')
+      //   .attr('y', function (d, i) {
+      //     return 3
+      //   })
+      //   .attr('x', function (d, i) {
+      //     return 7
+      //   })
+      //   .attr('width', function (d, i) {
+      //     return dimBlocks.h - 6
+      //   })
+      //   .attr('height', function (d, i) {
+      //     return dimBlocks.h - 6
+      //   })
+      //   .attr('fill', function (d, i) {
+      //     return colorTheme.medium.background
+      //   })
+      //   .style('opacity', 1)
+      //   .attr('stroke', function (d, i) {
+      //     return colorTheme.medium.stroke
+      //   })
+      //   .attr('stroke-width', 0.2)
+      //   .style('pointer-events', 'none')
       enterSubBlocks.append('text')
         .text(function (d) {
           return 'Block-' + d.metaData.nObs
         })
-        .attr('x', dim.w * 0.04 + 4)
+        .attr('x', dim.w * 0.04 + 2)
         .attr('y', dimBlocks.h * 0.6)
         .style('font-weight', 'normal')
         .attr('text-anchor', 'start')
@@ -3703,16 +3790,7 @@ let mainSchedBlocksController = function (optIn) {
     // this.focusOnSchedBlocks = focusOnSchedBlocks
     function unfocusSchedBlocks () {
       shared.information.g.selectAll('*').remove()
-      shared.information.g.append('rect')
-        .attr('class', 'bottom-back')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', shared.information.box.w)
-        .attr('height', shared.information.box.h)
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('fill', colorTheme.medium.background)
-        .attr('stroke-width', 0.1)
-        .attr('stroke-opacity', 1)
+      createBackground()
     }
     this.unfocusSchedBlocks = unfocusSchedBlocks
     function unfocusBlock () {
