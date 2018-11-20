@@ -196,9 +196,10 @@ window.BlockQueueCreator = function (optIn) {
         false
 
       if (state === 'wait') {
-        if (modified) return 0.3
+        if (modified) return 0.15
         return 1
       } else if (state === 'run') {
+        if (modified) return 0.35
         return 1
       } else if (state === 'cancel') {
         if (hasVar(canRun)) {
@@ -211,9 +212,12 @@ window.BlockQueueCreator = function (optIn) {
   setDefaultStyle()
 
   function dragBlockStart (d) {
+    if (d.data.endTime < com.time.currentTime.time) return
     com.interaction.firstDrag = false
+    blockQueue.focusOnBlock(d.id)
   }
   function dragBlockTick (d) {
+    if (d.data.endTime < com.time.currentTime.time) return
     let timeScale = d3.scaleLinear()
       .range(com.axis.range)
       .domain([com.time.startTime.time, com.time.endTime.time])
@@ -222,15 +226,19 @@ window.BlockQueueCreator = function (optIn) {
       com.interaction.g = com.blocks.cancel.g.append('g')
       com.interaction.box = deepCopy(com.blocks.cancel.box)
       com.interaction.box.h = com.main.box.h
-      com.interaction.mode = 'general'
+      com.interaction.mode = {}
+      com.interaction.mode.current = 'general'
+      com.interaction.mode.previous = 'general'
+      com.interaction.topLimit = (com.blocks.cancel.box.y + com.blocks.cancel.box.h)
+      com.interaction.bottomLimit = (com.blocks.run.box.y + com.blocks.run.box.h)
 
       com.interaction.position = {
         width: timeScale(d.data.endTime) - timeScale(d.data.startTime),
         left: timeScale(d.data.startTime),
         right: timeScale(d.data.endTime)
       }
-      com.interaction.firstMousecursor = d3.event
-      com.interaction.mousecursor = d3.event
+      com.interaction.mousecursor = d3.mouse(com.main.g._groups[0][0]) // [x, y]
+      com.interaction.offset = com.interaction.mousecursor[0] - com.interaction.position.left
 
       // com.interaction.g.append('circle')
       //   .attr('cx', com.interaction.position.center)
@@ -264,14 +272,6 @@ window.BlockQueueCreator = function (optIn) {
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.5)
         .attr('stroke-dasharray', [com.interaction.box.h * 0.02, com.interaction.box.h * 0.02])
-      // com.interaction.g.append('line')
-      //   .attr('class', 'center')
-      //   .attr('x1', com.interaction.position.left)
-      //   .attr('y1', com.interaction.box.h * 0.5)
-      //   .attr('x2', com.interaction.position.right)
-      //   .attr('y2', com.interaction.box.h * 0.5)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 1)
 
       com.interaction.newG = com.interaction.g.selectAll('g.modifG')
         .data([d])
@@ -280,7 +280,7 @@ window.BlockQueueCreator = function (optIn) {
         .append('g')
         .attr('class', 'modifG')
         .attr('transform', 'translate(0,' +
-          (com.blocks.cancel.box.h + com.blocks.modification.box.h - Number(com.interaction.oldG.select('rect.back').attr('height'))) +
+          (com.blocks.cancel.box.h + com.blocks.modification.box.h) +
           ')')
       enter.append('rect')
         .attr('class', 'modified')
@@ -334,10 +334,10 @@ window.BlockQueueCreator = function (optIn) {
         .attr('stroke', '#333333')
         .attr('fill-opacity', 0.99)
 
-      let timelineG = com.interaction.g.append('g')
+      com.interaction.timelineG = com.interaction.g.append('g')
         .attr('class', 'timeline')
         .attr('transform', 'translate(' + (com.interaction.position.left) + ',' + (com.blocks.run.box.y + com.blocks.run.box.h) + ')')
-      timelineG.append('rect')
+      com.interaction.timelineG.append('rect')
         .attr('class', 'timelineOpacity')
         .attr('x', 0)
         .attr('y', 0) // - Number(com.interaction.oldRect.attr('height')))
@@ -346,17 +346,168 @@ window.BlockQueueCreator = function (optIn) {
         .attr('fill', com.main.colorTheme.brighter.background)
         .attr('stroke', '#ffffff')
         .attr('fill-opacity', 0.9)
-        .on('mouseover', function () {
-          if (com.interaction.mode === 'precision') return
-          com.interaction.yLimit = com.interaction.mousecursor.y
+        .on('mouseover', function () {})
+      com.interaction.timelineG.append('text')
+        .attr('class', 'hour')
+        .text(function () {
+          return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
+        })
+        .attr('x', 15)
+        .attr('y', 9) // - Number(com.interaction.oldRect.attr('height')))
+        .style('font-weight', 'normal')
+        .style('opacity', 1)
+        .style('fill-opacity', 0.7)
+        .style('fill', '#000000')
+        .style('stroke-width', 0.3)
+        .style('stroke-opacity', 1)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', 'none')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '10px')
+        .attr('dy', '0px')
+      com.interaction.timelineG.append('text')
+        .attr('class', 'minute')
+        .text(function () {
+          return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
+        })
+        .attr('x', 27)
+        .attr('y', 9) // - Number(com.interaction.oldRect.attr('height')))
+        .style('font-weight', 'normal')
+        .style('opacity', 1)
+        .style('fill-opacity', 0.7)
+        .style('fill', '#000000')
+        .style('stroke-width', 0.3)
+        .style('stroke-opacity', 1)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', 'none')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '10px')
+        .attr('dy', '0px')
+
+      com.interaction.oldG.select('rect.back').style('fill-opacity', 1)
+      com.interaction.oldG.select('rect.back').style('stroke-opacity', 1)
+    }
+    else {
+      // let delta = {
+      //   x: d3.mouse(com.main.g._groups[0][0])[0] - com.interaction.mousecursor[0],
+      //   y: d3.mouse(com.main.g._groups[0][0])[1] - com.interaction.mousecursor[1]
+      // }
+      com.interaction.mousecursor = d3.mouse(com.main.g._groups[0][0])
+      com.interaction.position.left = com.interaction.mousecursor[0] - com.interaction.offset
+      com.interaction.position.right = com.interaction.position.left + com.interaction.position.width
+
+      com.interaction.mode.previous = com.interaction.mode.current
+      com.interaction.mode.current = 'general'
+      if (com.interaction.mousecursor[1] > (com.interaction.bottomLimit - 1)) com.interaction.mode.current = 'precision'
+      else if (com.interaction.mousecursor[1] < (com.interaction.topLimit - 1)) com.interaction.mode.current = 'cancel'
+
+      if (com.interaction.mode.current === 'general' || com.interaction.mode.current === 'cancel') {
+        if (com.interaction.mode.current === 'general' && com.interaction.mode.previous === 'cancel') {
+          com.interaction.newG.select('g rect.modified').attr('fill', com.interaction.oldG.select('rect.back').style('fill'))
+          com.interaction.newG.select('g rect.modified').attr('y', 0)
+          com.interaction.newG.select('g rect.modified').attr('height', com.interaction.oldG.select('rect.back').attr('height'))
+
+          let text = {}
+          text.y = Number(com.interaction.oldG.select('rect.back').attr('height')) * 0.5
+          com.interaction.newG.select('g text.modified').attr('y', text.y)
+          com.interaction.newG.select('g text.modified').style('font-size', '12px')
+        } else if (com.interaction.mode.current === 'cancel' && com.interaction.mode.previous === 'general') {
+          // com.interaction.newG.select('g rect.modified').attr('x', com.interaction.oldG.select('rect.back').attr('x'))
+          com.interaction.newG.select('g rect.modified').attr('y', -com.blocks.run.box.h * 0.4)
+          com.interaction.newG.select('g rect.modified').attr('height', 10)
+          com.interaction.newG.select('g rect.modified').attr('fill', colorTheme.blocks.cancelOp.background)
+
+          let text = {}
+          text.x = Number(com.interaction.oldG.select('rect.back').attr('x')) + Number(com.interaction.oldG.select('rect.back').attr('width')) * 0.5
+          text.y = -com.blocks.run.box.h * 0.4 + 5
+          // com.interaction.newG.select('g text.modified').attr('x', text.x)
+          com.interaction.newG.select('g text.modified').attr('y', text.y)
+          com.interaction.newG.select('g text.modified').style('font-size', '8px')
+        }
+
+        if (d.data.exeState.state === 'run') return
+
+        if (com.interaction.mode.current === 'general' && com.interaction.mode.previous === 'precision') {
+          com.interaction.offset = com.interaction.position.width * 0.5
+          com.interaction.g.select('g.timeline text.hour')
+            .transition()
+            .duration(600)
+            .text(function () {
+              return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
+            })
+            .attr('x', 15)
+            .attr('y', 9)
+            .style('font-weight', 'normal')
+          com.interaction.g.select('g.timeline text.minute')
+            .transition()
+            .duration(600)
+            .text(function () {
+              return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
+            })
+            .attr('x', 27)
+            .attr('y', 9)
+            .style('font-weight', 'normal').style('font-size', '10px')
+          com.interaction.g.select('g.timeline text.second')
+            .transition()
+            .duration(600)
+            .style('font-size', '0px')
+            .style('opacity', 0)
+            .remove()
+          com.interaction.g.select('g.timeline rect.timelineOpacity')
+            .transition()
+            .duration(600)
+            .attr('x', 0)
+            .attr('width', 40)
+            .attr('height', 10)
+            .attr('fill-opacity', 0.9)
+          com.interaction.g.select('g.timeline g.hourMin').remove()
+        }
+        if (com.interaction.position.left > 0 &&
+          com.interaction.position.right < com.interaction.box.w) {
+          com.interaction.g.select('line.left')
+            .attr('x1', com.interaction.position.left)
+            .attr('x2', com.interaction.position.left)
+          com.interaction.g.select('line.right')
+            .attr('x1', com.interaction.position.right)
+            .attr('x2', com.interaction.position.right)
+          com.interaction.newG.select('g rect.modified')
+            .attr('x', com.interaction.position.left)
+          com.interaction.newG.select('g text.modified')
+            .attr('x', com.interaction.position.left + com.interaction.position.width * 0.5)
+          com.interaction.g.select('rect.area')
+            .attr('x', com.interaction.position.left)
+
+          com.interaction.g.select('rect.timelineCursor')
+            .attr('x', com.interaction.position.left)
+          com.interaction.g.select('g.timeline')
+            .attr('transform', function () {
+              let t = com.interaction.g.select('g.timeline').attr('transform')
+              t = t.split(',')
+              t[0] = Number(t[0].split('(')[1])
+              t[1] = Number(t[1].split(')')[0])
+              return 'translate(' + Number(com.interaction.g.select('line.left').attr('x1')) + ',' + t[1] + ')'
+            })
+          com.interaction.g.select('g.timeline text.hour').text(function () {
+            return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
+          })
+          com.interaction.g.select('g.timeline text.minute').text(function () {
+            return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
+          })
+        }
+      }
+      else if (com.interaction.mode.current === 'precision') {
+        if (d.data.exeState.state === 'run') return
+        if (com.interaction.mode.previous === 'general') {
+          // com.interaction.yLimit = com.interaction.mousecursor.y
           com.interaction.finalTime = new Date(com.axis.scale.invert(com.interaction.position.left))
-          com.interaction.mode = 'precision'
 
           function changeMinute (date, hour, min) {
             com.interaction.finalTime.setDate(date)
             com.interaction.finalTime.setHours(hour)
             com.interaction.finalTime.setMinutes(min)
-            timelineG.select('text.minute')
+            com.interaction.timelineG.select('text.minute')
               .text(function () {
                 return d3.timeFormat('%M')(com.interaction.finalTime)
               })
@@ -364,7 +515,7 @@ window.BlockQueueCreator = function (optIn) {
           }
           function changeSecond (sec) {
             com.interaction.finalTime.setSeconds(sec)
-            timelineG.select('text.second')
+            com.interaction.timelineG.select('text.second')
               .text(function () {
                 return d3.timeFormat('%S')(com.interaction.finalTime)
               })
@@ -385,7 +536,7 @@ window.BlockQueueCreator = function (optIn) {
               .attr('x', com.axis.scale(com.interaction.finalTime))
           }
 
-          timelineG.select('text.hour')
+          com.interaction.timelineG.select('text.hour')
             .transition()
             .duration(600)
             .text(function () {
@@ -394,7 +545,7 @@ window.BlockQueueCreator = function (optIn) {
             .attr('x', 15)
             .attr('y', 10.5)
             .style('font-weight', 'bold')
-          timelineG.select('text.minute')
+          com.interaction.timelineG.select('text.minute')
             .transition()
             .duration(600)
             .text(function () {
@@ -403,7 +554,7 @@ window.BlockQueueCreator = function (optIn) {
             .attr('x', 29)
             .attr('y', 6.5)
             .style('font-weight', 'bold').style('font-size', '7px')
-          timelineG.append('text')
+          com.interaction.timelineG.append('text')
             .attr('class', 'second')
             .text(function () {
               return d3.timeFormat('%S')(com.axis.scale.invert(com.interaction.position.left))
@@ -423,14 +574,14 @@ window.BlockQueueCreator = function (optIn) {
             .style('font-size', '7px')
             .attr('dy', '0px')
 
-          d3.select(this)
+          com.interaction.timelineG
             .transition()
             .duration(600)
             .attr('x', -70)
             .attr('width', 180)
             .attr('height', 25)
             .attr('fill-opacity', 1)
-          let hourMinG = timelineG.append('g').attr('class', 'hourMin')
+          let hourMinG = com.interaction.timelineG.append('g').attr('class', 'hourMin')
           for (let i = 1; i < 6; i++) {
             hourMinG.append('rect')
               .attr('class', function (d) {
@@ -582,168 +733,12 @@ window.BlockQueueCreator = function (optIn) {
               .style('font-size', '7px')
               .attr('dy', '0px')
           }
-        })
-      timelineG.append('text')
-        .attr('class', 'hour')
-        .text(function () {
-          return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
-        })
-        .attr('x', 15)
-        .attr('y', 9) // - Number(com.interaction.oldRect.attr('height')))
-        .style('font-weight', 'normal')
-        .style('opacity', 1)
-        .style('fill-opacity', 0.7)
-        .style('fill', '#000000')
-        .style('stroke-width', 0.3)
-        .style('stroke-opacity', 1)
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('pointer-events', 'none')
-        .style('stroke', 'none')
-        .attr('text-anchor', 'middle')
-        .style('font-size', '10px')
-        .attr('dy', '0px')
-      timelineG.append('text')
-        .attr('class', 'minute')
-        .text(function () {
-          return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
-        })
-        .attr('x', 27)
-        .attr('y', 9) // - Number(com.interaction.oldRect.attr('height')))
-        .style('font-weight', 'normal')
-        .style('opacity', 1)
-        .style('fill-opacity', 0.7)
-        .style('fill', '#000000')
-        .style('stroke-width', 0.3)
-        .style('stroke-opacity', 1)
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('pointer-events', 'none')
-        .style('stroke', 'none')
-        .attr('text-anchor', 'middle')
-        .style('font-size', '10px')
-        .attr('dy', '0px')
-
-      com.interaction.oldG.select('rect.back').style('fill-opacity', 1)
-      com.interaction.oldG.select('rect.back').style('stroke-opacity', 1)
-
-      // com.pattern.moved = {}
-      // com.pattern.moved.defs = com.main.g.append('defs')
-      // com.pattern.moved.pattern = com.pattern.moved.defs.append('pattern')
-      //   .attr('id', 'patternMoved')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', 8)
-      //   .attr('height', 5)
-      //   .attr('fill', '#ffffff')
-      //   .attr('patternUnits', 'userSpaceOnUse')
-      // com.pattern.moved.pattern.append('line')
-      //   .attr('x1', 0)
-      //   .attr('y1', 0)
-      //   .attr('x2', 8)
-      //   .attr('y2', 5)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 0.6)
-      //   .attr('stroke-opacity', 0.5)
-      // com.interaction.oldG.select('rect.pattern').style('fill', 'url(#patternMoved)')
-    } else {
-      let delta = {
-        x: d3.event.x - com.interaction.mousecursor.x,
-        y: d3.event.y - com.interaction.mousecursor.y
-      }
-      com.interaction.mousecursor = d3.event
-      com.interaction.position.left += delta.x
-
-      if (com.interaction.mode === 'general') {
-        if (com.axis.enabled) {
-          com.axis.g.selectAll('g.tick line')
-            .attr('y2', function (d) {
-              if (Math.abs(com.axis.scale(d) - com.interaction.position.left) < 20) {
-                return 13
-              }
-              return 4
-            })
-          com.axis.g.selectAll('g.tick text')
-            .attr('y', function (d) {
-              if (Math.abs(com.axis.scale(d) - com.interaction.position.left) < 20) {
-                return 14
-              }
-              return 6
-            })
         }
-        if (Number(com.interaction.g.select('line.left').attr('x1')) + delta.x > 0 &&
-          Number(com.interaction.g.select('line.right').attr('x1')) + delta.x < com.interaction.box.w) {
-          if (delta.x > 0 &&
-            com.interaction.mousecursor.x < (Number(com.interaction.g.select('line.left').attr('x1')) + Number(com.interaction.g.select('line.left').attr('x2'))) * 0.5) return
-          if (delta.x < 0 &&
-            com.interaction.mousecursor.x > (Number(com.interaction.g.select('line.left').attr('x1')) + Number(com.interaction.g.select('line.left').attr('x2'))) * 0.5) return
-          com.interaction.g.select('line.left')
-            .attr('x1', Number(com.interaction.g.select('line.left').attr('x1')) + delta.x)
-            .attr('x2', Number(com.interaction.g.select('line.left').attr('x2')) + delta.x)
-          com.interaction.g.select('line.right')
-            .attr('x1', Number(com.interaction.g.select('line.right').attr('x1')) + delta.x)
-            .attr('x2', Number(com.interaction.g.select('line.right').attr('x2')) + delta.x)
-          com.interaction.newG.select('g rect.modified')
-            .attr('x', Number(com.interaction.newG.select('g rect.modified').attr('x')) + delta.x)
-          com.interaction.newG.select('g text.modified')
-            .attr('x', Number(com.interaction.newG.select('g text.modified').attr('x')) + delta.x)
-          com.interaction.g.select('rect.area')
-            .attr('x', Number(com.interaction.g.select('rect.area').attr('x')) + delta.x)
-
-          com.interaction.g.select('rect.timelineCursor')
-            .attr('x', Number(com.interaction.g.select('rect.timelineCursor').attr('x')) + delta.x)
-          com.interaction.g.select('g.timeline')
-            .attr('transform', function () {
-              let t = com.interaction.g.select('g.timeline').attr('transform')
-              t = t.split(',')
-              t[0] = Number(t[0].split('(')[1])
-              t[1] = Number(t[1].split(')')[0])
-              return 'translate(' + Number(com.interaction.g.select('line.left').attr('x1')) + ',' + t[1] + ')'
-            })
-          com.interaction.g.select('g.timeline text.hour').text(function () {
-            return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
-          })
-          com.interaction.g.select('g.timeline text.minute').text(function () {
-            return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
-          })
-        }
-      } else if (com.interaction.mode === 'precision') {
-        if (com.interaction.mousecursor.y > (com.interaction.yLimit - 1)) return
-        com.interaction.mode = 'general'
-        com.interaction.g.select('g.timeline text.hour')
-          .transition()
-          .duration(600)
-          .text(function () {
-            return d3.timeFormat('%H:')(com.axis.scale.invert(com.interaction.position.left))
-          })
-          .attr('x', 15)
-          .attr('y', 9)
-          .style('font-weight', 'normal')
-        com.interaction.g.select('g.timeline text.minute')
-          .transition()
-          .duration(600)
-          .text(function () {
-            return d3.timeFormat('%M')(com.axis.scale.invert(com.interaction.position.left))
-          })
-          .attr('x', 27)
-          .attr('y', 9)
-          .style('font-weight', 'normal').style('font-size', '10px')
-        com.interaction.g.select('g.timeline text.second')
-          .transition()
-          .duration(600)
-          .style('font-size', '0px')
-          .style('opacity', 0)
-          .remove()
-        com.interaction.g.select('g.timeline rect.timelineOpacity')
-          .transition()
-          .duration(600)
-          .attr('x', 0)
-          .attr('width', 40)
-          .attr('height', 10)
-          .attr('fill-opacity', 0.9)
-        com.interaction.g.select('g.timeline g.hourMin').remove()
       }
     }
   }
   function dragBlockEnd (d) {
+    if (d.data.endTime < com.time.currentTime.time) return
     if (!com.interaction.firstDrag) return
 
     let timeScale = d3.scaleLinear()
@@ -751,7 +746,12 @@ window.BlockQueueCreator = function (optIn) {
       .domain([com.time.startTime.time, com.time.endTime.time])
     let newBlock = deepCopy(d)
     let newStart = Math.floor(timeScale.invert(com.interaction.newG.select('g rect.modified').attr('x')))
-    let modif = {prop: 'startTime', old: newBlock.data.startTime, new: newStart}
+    let modif = [{prop: 'startTime', old: newBlock.data.startTime, new: newStart}]
+
+    if (com.interaction.mode.current === 'cancel') {
+      modif.push({prop: 'canRun', old: true, new: false})
+    }
+
     blockQueue.saveModificationAndUpdateBlock(newBlock, modif)
     // if (isGeneratingTelsConflict(newBlock)) {
     //   com.data.modified.conflict.push(newBlock)
@@ -801,7 +801,8 @@ window.BlockQueueCreator = function (optIn) {
   blockQueue.sendModification = function (newBlock) {
     com.event.modifications('blockQueueCreator', newBlock.data)
   }
-  blockQueue.saveModificationAndUpdateBlock = function (block, modif) {
+  blockQueue.saveModificationAndUpdateBlock = function (block, modifs) {
+    console.log(modifs);
     let tot = []
     for (let key in com.data.filtered) {
       tot = tot.concat(com.data.filtered[key])
@@ -813,54 +814,27 @@ window.BlockQueueCreator = function (optIn) {
           let len = modifs[key].length - 1
           modifiedBlock.data.startTime = modifs[key][len].new
           modifiedBlock.data.endTime = modifs[key][len].new + modifiedBlock.data.duration
+        } else if (key === 'canRun') {
+          let len = modifs[key].length - 1
+          modifiedBlock.data.exeState.canRun = modifs[key][len].new
         }
       }
       return modifiedBlock
     }
+
     for (let i = 0; i < tot.length; i++) {
       if (tot[i].obId === block.data.obId) {
-        if (!tot[i].modifications.userModifications[modif.prop]) tot[i].modifications.userModifications[modif.prop] = [{new: modif.new, old: modif.old}]
-        else tot[i].modifications.userModifications[modif.prop].push({new: modif.new, old: modif.old})
+        for (let j = 0; j < modifs.length; j++) {
+          if (!tot[i].modifications.userModifications[modifs[j].prop]) tot[i].modifications.userModifications[modifs[j].prop] = [{new: modifs[j].new, old: modifs[j].old}]
+          else tot[i].modifications.userModifications[modifs[j].prop].push({new: modifs[j].new, old: modifs[j].old})
+        }
         block = applyAllModification(block, tot[i].modifications.userModifications)
         block.data.modifications.userModifications = tot[i].modifications.userModifications
+        console.log(block);
         blockQueue.sendModification(block)
       }
     }
-
-    // let insert = false
-    // for (let i = 0; i < com.data.modified.length; i++) {
-    //   if (com.data.modified[i].id === block.id) {
-    //     com.data.modified[i] = block
-    //     insert = true
-    //     break
-    //   }
-    // }
-    // if (!insert) {
-    //   com.data.modified.push(block.data)
-    // }
     blockQueue.updateBlocks()
   }
-  // blockQueue.shrink = function () {
-  //   // com.blocks.run.g
-  //   //   .transition()
-  //   //   .duration(1000)
-  //   //   .attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.modification.box.y + ')')
-  //   com.blocks.modification.g
-  //     .transition()
-  //     .duration(500)
-  //     .style('opacity', '0')
-  //   // com.main.g.select('rect.background')
-  //   //   .transition()
-  //   //   .duration(1000)
-  //   //   .attr('height', (com.blocks.run.box.h + com.blocks.modification.box.y))
-  //   // com.axis.g
-  //   //   .transition()
-  //   //   .duration(1000)
-  //   //   .attr('transform', 'translate(' + com.axis.box.x + ',' + (com.blocks.run.box.h + com.blocks.modification.box.y) + ')')
-  //   com.axis.g
-  //     // .transition()
-  //     // .duration(1000)
-  //     .style('opacity', 0)
-  // }
   return blockQueue
 }

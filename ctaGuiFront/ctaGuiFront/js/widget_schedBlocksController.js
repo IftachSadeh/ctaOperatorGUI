@@ -367,7 +367,6 @@ let mainSchedBlocksController = function (optIn) {
       ? optIn.canRun
       : optIn.exeState.canRun
 
-    console.log(optIn, state);
     if (state === 'wait') {
       return colorTheme.blocks.wait
     } else if (state === 'done') {
@@ -1317,13 +1316,12 @@ let mainSchedBlocksController = function (optIn) {
         telIds.push(dataNow.id)
       })
       let modifiedData = {}
-      for (let key in shared.main.data.copy.blocks) { modifiedData[key] = [] }
       for (let key in shared.main.data.copy.blocks) {
         modifiedData[key] = []
         let group = shared.main.data.copy.blocks[key]
         for (let i = 0; i < group.length; i++) {
           if (!(Object.keys(group[i].modifications.userModifications).length === 0 && group[i].modifications.userModifications.constructor === Object)) {
-            modifiedData.wait.push(group[i])
+            modifiedData[key].push(group[i])
           }
         }
       }

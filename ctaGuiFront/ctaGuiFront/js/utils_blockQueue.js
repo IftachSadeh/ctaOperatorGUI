@@ -1172,13 +1172,17 @@ window.BlockQueue = function (optIn) {
           group.events.mouseout(d.data)
         })
         .call(d3.drag()
-          .on('start', function () {
+          .on('start', function (d) {
             com.interaction = {}
             com.interaction.oldG = parent
-            group.events.drag.start()
+            group.events.drag.start(d)
           })
-          .on('drag', group.events.drag.tick)
-          .on('end', group.events.drag.end))
+          .on('drag', function (d) {
+            group.events.drag.tick(d)
+          })
+          .on('end', function (d) {
+            group.events.drag.end(d)
+          }))
       d3.select(this).append('rect')
         .attr('class', 'pattern')
         .attr('x', function (d, i) {
