@@ -249,16 +249,16 @@ window.BlockQueue = function (optIn) {
       .attr('x2', 3)
       .attr('y2', 3)
       .attr('stroke', '#000000')
-      .attr('stroke-width', 0.7)
-      .attr('stroke-opacity', 0.4)
+      .attr('stroke-width', 0.4)
+      .attr('stroke-opacity', 0.6)
     com.pattern.select.patternSelect.append('line')
       .attr('x1', 3)
       .attr('y1', 0)
       .attr('x2', 0)
       .attr('y2', 3)
       .attr('stroke', '#000000')
-      .attr('stroke-width', 0.7)
-      .attr('stroke-opacity', 0.4)
+      .attr('stroke-width', 0.4)
+      .attr('stroke-opacity', 0.6)
   }
 
   function init () {
@@ -982,7 +982,7 @@ window.BlockQueue = function (optIn) {
 
       b.w = timeScale(b.data.endTime) - timeScale(b.data.startTime)
       b.stroke = cols.stroke
-      b.strokeWidth = 1
+      b.strokeWidth = 0.5
       b.fill = cols.background
       b.fillOpacity = com.style.blockOpac({ d: b })
       b.strokeOpacity = com.style.blockOpac({ d: b })
@@ -997,25 +997,24 @@ window.BlockQueue = function (optIn) {
           b.patternFill = 'url(#patternSelect)'
           b.patternOpacity = 1
         }
-        // b.strokeWidth = 3
-        // b.strokeOpacity = 1
+        b.strokeWidth = 2.2
+        b.strokeOpacity = 1
         // b.strokeDasharray = [2, 2]
       }
       if (b.data.sbId === com.input.over.schedBlocks) {
-        // b.strokeWidth = 3
-        // b.strokeOpacity = 1
+        b.strokeWidth = 2.2
+        b.strokeOpacity = 1
         // b.strokeDasharray = [2, 2]
         b.patternFill = 'url(#patternSelect)'
         b.patternOpacity = 1
       }
       if (b.data.obId === com.input.focus.block) {
-        if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) b.stroke = colorTheme.blocks.critical.background
-        b.strokeWidth = 4
+        if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) b.strokeDasharray = [8, 4]
+        b.strokeWidth = 6
         b.strokeOpacity = 1
-        b.strokeDasharray = []
       }
       if (b.data.obId === com.input.over.block) {
-        b.strokeWidth = 4
+        b.strokeWidth = 6
         b.strokeOpacity = 1
         b.strokeDasharray = []
       }
@@ -1264,6 +1263,18 @@ window.BlockQueue = function (optIn) {
           return d.strokeDasharray
         })
       d3.select(this).select('rect.pattern')
+        .attr('x', function (d, i) {
+          return timeScale(d.data.startTime)
+        })
+        .attr('y', function (d, i) {
+          return d.y - 2
+        })
+        .attr('width', function (d, i) {
+          return timeScale(d.data.endTime) - timeScale(d.data.startTime)
+        })
+        .attr('height', function (d, i) {
+          return d.h
+        })
         .style('fill', function (d, i) {
           return d.patternFill
         })

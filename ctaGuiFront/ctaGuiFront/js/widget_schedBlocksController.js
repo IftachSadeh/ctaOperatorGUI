@@ -773,6 +773,13 @@ let mainSchedBlocksController = function (optIn) {
       }
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
+      gBlockBox.append('text')
+        .text('CURRENT SCHEDULE')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'left')
+        .attr('transform', 'translate(-5,' + (y0 + h0 * 0.8) + ') rotate(270)')
       // gBlockBox.append('rect')
       //   .attr('x', 0)
       //   .attr('y', -10)
@@ -962,6 +969,13 @@ let mainSchedBlocksController = function (optIn) {
       }
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
+      gBlockBox.append('text')
+        .text('CURRENT SCHEDULE (copy)')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'left')
+        .attr('transform', 'translate(-5,' + (y0 - h0 * 0.11) + ') rotate(270)')
 
       blockQueueCreator = new BlockQueueCreator({
         main: {
@@ -1153,7 +1167,13 @@ let mainSchedBlocksController = function (optIn) {
       }
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
-
+      gBlockBox.append('text')
+        .text('MODIFICATIONS')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'left')
+        .attr('transform', 'translate(-5,' + (y0 - h0 * 1.2) + ') rotate(270)')
       blockQueueModif = new BlockQueueModif({
         main: {
           tag: 'blockQueueMiddleTag',
@@ -1346,6 +1366,13 @@ let mainSchedBlocksController = function (optIn) {
       }
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + blockBoxData.x + ',' + blockBoxData.y + ')')
+      gBlockBox.append('text')
+        .text('OPTIMIZED SCHEDULE')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'left')
+        .attr('transform', 'translate(-5,' + (blockBoxData.y - blockBoxData.h * 2.8) + ') rotate(270)')
       blockQueueOptimized = new BlockQueueOptimizer({
         main: {
           tag: 'blockQueueMiddleTag',
@@ -1592,6 +1619,10 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-width', 1.5)
         .attr('stroke-opacity', 0.4)
         .attr('fill-opacity', 1)
+        .on('click', function () {
+          if (reserved[pullOrPush].g.attr('opacity') === '0.01') reserved[pullOrPush].g.attr('opacity', 1)
+          else reserved[pullOrPush].g.attr('opacity', 0.01)
+        })
 
       reserved[pullOrPush].child.warningExclamationBack = reserved[pullOrPush].g.append('rect')
         .attr('width', reserved[pullOrPush].box.w * 0.13)
@@ -2044,9 +2075,9 @@ let mainSchedBlocksController = function (optIn) {
     function drawDefaultContent (g) {
       let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) - 3, h: Number(g.attr('height') * 1)}
       let dimLeft = {x: Number(g.attr('width')) * 0.04, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.1, h: Number(g.attr('height')) * 0.92}
-      let dimTop = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.28}
-      let dimMiddle = {x: Number(g.attr('width')) * 0.17, y: Number(g.attr('height')) * 0.38, w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height') * 0.28)}
-      let dimBottom = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.7), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.28}
+      let dimTop = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.035), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.3}
+      let dimMiddle = {x: Number(g.attr('width')) * 0.17, y: Number(g.attr('height')) * 0.35, w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height') * 0.32)}
+      let dimBottom = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.685), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.295}
 
       g.selectAll('*').remove()
       g.append('rect')
@@ -2104,49 +2135,49 @@ let mainSchedBlocksController = function (optIn) {
 
       svgSchedulingBlocksOverview.initData()
 
-      g.append('text')
-        .text(function (data) {
-          return 'Modifications'
-        })
-        .attr('x', dimMiddle.x + dimMiddle.w * 0.5)
-        .attr('y', dimMiddle.y - 4)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', colorTheme.darker.text)
-        .attr('stroke', 'none')
+      // g.append('text')
+      //   .text(function (data) {
+      //     return 'Modifications'
+      //   })
+      //   .attr('x', dimMiddle.x + dimMiddle.w * 0.5)
+      //   .attr('y', dimMiddle.y - 4)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', 10)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', colorTheme.darker.text)
+      //   .attr('stroke', 'none')
       svgModifications.initData()
 
-      g.append('text')
-        .text(function (data) {
-          return 'Conflicts'
-        })
-        .attr('x', dimBottom.x + dimBottom.w * 0.5)
-        .attr('y', dimBottom.y - 6)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', colorTheme.brighter.text)
-        .attr('stroke', 'none')
+      // g.append('text')
+      //   .text(function (data) {
+      //     return 'Conflicts'
+      //   })
+      //   .attr('x', dimBottom.x + dimBottom.w * 0.5)
+      //   .attr('y', dimBottom.y - 6)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', 10)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', colorTheme.brighter.text)
+      //   .attr('stroke', 'none')
       svgConflicts.initData()
 
-      g.append('text')
-        .text(function (data) {
-          return 'On Focus'
-        })
-        .attr('x', dimTop.x + dimTop.w * 0.5)
-        .attr('y', dimTop.y - 5)
-        .style('font-weight', 'normal')
-        .attr('text-anchor', 'middle')
-        .style('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', colorTheme.brighter.text)
-        .attr('stroke', 'none')
+      // g.append('text')
+      //   .text(function (data) {
+      //     return 'On Focus'
+      //   })
+      //   .attr('x', dimTop.x + dimTop.w * 0.5)
+      //   .attr('y', dimTop.y - 5)
+      //   .style('font-weight', 'normal')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', 10)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', colorTheme.brighter.text)
+      //   .attr('stroke', 'none')
       svgInformation.initData()
 
       // let dim = {x: Number(g.attr('width')) * 0.05, y: Number(g.attr('height')) * 0.11, w: Number(g.attr('width')) * 0.9, h: Number(g.attr('height') * 0.5)}
@@ -2941,154 +2972,36 @@ let mainSchedBlocksController = function (optIn) {
     this.update = update
 
     function drawModifications () {
-      if (Object.keys(reserved.data.modifications).length === 0 && reserved.data.modifications.constructor === Object) return
-      // g.append('rect')
-      //   .attr('class', 'bottom-back')
-      //   .attr('x', dimTop.x)
-      //   .attr('y', dimTop.y - 4)
-      //   .attr('width', dimTop.w)
-      //   .attr('height', dimMiddle.h)
-      //   .attr('stroke', colorTheme.darker.stroke)
-      //   .attr('stroke-dasharray', [dimTop.w * 0.4, dimTop.w * 0.2, dimTop.w * 0.4, dimTop.h + dimTop.w + dimTop.h])
-      //   .attr('fill', colorTheme.darker.background)
-      //   .attr('stroke-width', 0.5)
-      //   .attr('stroke-opacity', 1)
+      if (Object.keys(reserved.data.modifications).length === 0 && reserved.data.modifications.constructor === Object) {
+        let scrollForm = new ScrollForm({
+          main: {
+            g: shared.modifications.g,
+            box: shared.modifications.box,
+            colorTheme: colorTheme
+          },
+          titles: {
+            data: [
+              {
+                title: 'Schedule unchanged',
+                extension: '',
+                sortOptions: {
 
-
-      // let lineGenerator = d3.line()
-      //   .x(function (d) { return d.x })
-      //   .y(function (d) { return d.y })
-      // let curveGenerator = d3.line()
-      //   .curve(d3.curveBasis)
-      //   .x(function (d) { return d.x })
-      //   .y(function (d) { return d.y })
-      // let dataPointsTop = [
-      //   {x: dimMiddle.x, y: dimMiddle.y},
-      //
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.8), y: dimMiddle.y},
-      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
-      //
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: dimMiddle.y + dimMiddle.h},
-      //   {x: dimMiddle.x, y: dimMiddle.y + (dimMiddle.h * 0.75)},
-      //
-      //   {x: dimMiddle.x, y: dimMiddle.y}
-      // ]
-      // let dataPointsBottomIntern = [
-      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
-      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.7)},
-      //   {x: dimMiddle.x + dimMiddle.w, y: dimMiddle.y + dimMiddle.h},
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.7), y: dimMiddle.y + dimMiddle.h},
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: dimMiddle.y + dimMiddle.h}
-      // ]
-      // let dataPointsBottomExtern = [
-      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: dimMiddle.y + (dimMiddle.h * 0.2)},
-      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: 20 + dimMiddle.y + (dimMiddle.h * 0.7)},
-      //   {x: 20 + dimMiddle.x + dimMiddle.w, y: 20 + dimMiddle.y + dimMiddle.h},
-      //   {x: 20 + dimMiddle.x + (dimMiddle.w * 0.7), y: 20 + dimMiddle.y + dimMiddle.h},
-      //   {x: dimMiddle.x + (dimMiddle.w * 0.3), y: 20 + dimMiddle.y + dimMiddle.h}
-      // ]
-      // let pathTop = g.append('path')
-      //   .data([dataPointsTop])
-      //   .attr('class', 'line')
-      //   .attr('d', lineGenerator)
-      //   .attr('fill', '#bbbbbb')
-      // let pathBottomExtern = g.append('path')
-      //   .data([dataPointsBottomExtern])
-      //   .attr('class', 'line')
-      //   .attr('d', curveGenerator)console.log(this);
-      //   .attr('fill', 'none')
-      // let pathBottomIntern = g.append('path')
-      // pathBottomIntern.data([dataPointsBottomIntern])
-      //   .attr('class', 'line')
-      //   .attr('d', curveGenerator)
-      //   .attr('fill', colorPalette.dark.greyBlue[1])
-      // let totBlocks = [].concat(data.copy.blocks.run).concat(data.copy.blocks.wait)
-      // let blocksConflicts = g.selectAll('rect.conflict')
-      //   .data(totBlocks)
-      //   .enter()
-      //   .append('rect')
-      //   .attr('class', 'conflict')
-      //   .attr('x', function (d, i) {
-      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
-      //     return pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)).x
-      //   })
-      //   .attr('y', function (d, i) {
-      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
-      //     return pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)).y
-      //   })
-      //   .attr('width', 16)
-      //   .attr('height', 16)
-      //   .attr('fill', '#bbbbbb')
-
-      // let blocksConflicts = g.selectAll('path.conflict')
-      //   .data(totBlocks)
-      //   .enter()
-      //   .append('path')
-      //   .attr('class', 'conflict')
-      //   .attr('d', function (d, i) {
-      //     let sizeIntern = pathBottomIntern.node().getTotalLength() / totBlocks.length
-      //     let sizeExtern = pathBottomExtern.node().getTotalLength() / totBlocks.length
-      //     let points = [
-      //       pathBottomIntern.node().getPointAtLength((sizeIntern * i) + (sizeIntern * 0.1)),
-      //       pathBottomExtern.node().getPointAtLength((sizeExtern * i) + (sizeExtern * 0.1)),
-      //       pathBottomExtern.node().getPointAtLength((sizeExtern * (i + 1)) - (sizeExtern * 0.1)),
-      //       pathBottomIntern.node().getPointAtLength((sizeIntern * (i + 1)) - (sizeIntern * 0.1))
-      //     ]
-      //     return lineGenerator(points)
-      //   })
-      //   .attr('fill', colorPalette.dark.greyBlue[1])
-      // g.append('text')
-      //   .text(function (data) {
-      //     return 'Sched. Blocks'
-      //   })
-      //   .attr('x', dim.x + dim.w * 0.1)
-      //   .attr('y', dimBack.y + dimBack.h * 0.08)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 8)
-      //   .attr('dy', 0)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', '#000000')
-      //   .attr('stroke', 'none')
-      // g.append('text')
-      //   .text(function (data) {
-      //     return 'Blocks'
-      //   })
-      //   .attr('x', dim.x + dim.w * 0.3)
-      //   .attr('y', dimBack.y + dimBack.h * 0.08)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 8)
-      //   .attr('dy', 0)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', '#000000')
-      //   .attr('stroke', 'none')
-      // g.append('text')
-      //   .text(function (data) {
-      //     return 'Properties'
-      //   })
-      //   .attr('x', dimBack.x + dimBack.w * 0.7)
-      //   .attr('y', dimBack.y + dimBack.h * 0.08)
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', 8)
-      //   .attr('dy', 0)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', '#000000')
-      //   .attr('stroke', 'none')
-      // g.append('rect')
-      //   .attr('class', 'back_modif')
-      //   .attr('x', dimModifs.x)
-      //   .attr('y', dimModifs.y - 4)
-      //   .attr('width', dimModifs.w)
-      //   .attr('height', dimModifs.h + 19)
-      //   .attr('stroke', colorPalette.dark.greyBlue[8])
-      //   .attr('fill', 'none')
-      //   .attr('stroke-width', 0.5)
-      //   .attr('stroke-opacity', 1)
-      //   .attr('stroke-dasharray', [dimModifs.w * 0.4, dimModifs.w * 0.2, dimModifs.w * 0.4, dimModifs.h + 19 + dimModifs.w + dimModifs.h + 19])
-
-      let scrollForm = new ScrollForm({
+                },
+                width: '100%',
+                quickScroll: true,
+                anchor: 'center'
+              }
+            ],
+            height: '20px'
+          },
+          quickScroll: {
+            enabled: true,
+            width: '3%'
+          },
+          data: {}
+        })
+      } else {
+        let scrollForm = new ScrollForm({
         main: {
           g: shared.modifications.g,
           box: shared.modifications.box,
@@ -3125,7 +3038,8 @@ let mainSchedBlocksController = function (optIn) {
         },
         data: {}
       })
-      scrollForm.updateData(reserved.data.modifications, 'modification')
+        scrollForm.updateData(reserved.data.modifications, 'modification')
+      }
     }
     function createModificationsList () {
       reserved.data.modifications = {}
@@ -3434,7 +3348,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('height', shared.information.box.h + 0.4)
         .attr('stroke', colorTheme.medium.stroke)
         .attr('fill', colorTheme.medium.background)
-        .attr('stroke-width', 0.2)
+        .attr('stroke-width', 0.1)
         .attr('stroke-opacity', 1)
       shared.information.g.append('rect')
         .attr('class', 'bottom-back')
@@ -3444,12 +3358,13 @@ let mainSchedBlocksController = function (optIn) {
         .attr('height', shared.information.box.h + 0.4)
         .attr('stroke', colorTheme.medium.stroke)
         .attr('fill', colorTheme.medium.background)
-        .attr('stroke-width', 0.2)
+        .attr('stroke-width', 0.1)
         .attr('stroke-opacity', 1)
     }
     function initData (dataIn) {
       shared.information.g.attr('transform', 'translate(' + shared.information.box.x + ',' + shared.information.box.y + ')')
       createBackground()
+      createDefaultInfoPanel()
     }
     this.initData = initData
     function update () {
@@ -3457,6 +3372,45 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.update = update
 
+    function createDefaultInfoPanel () {
+      let dim = {
+        x: shared.information.box.w * 0.15,
+        y: 0,
+        w: shared.information.box.w * 0.85,
+        h: shared.information.box.h,
+        margH: shared.information.box.h * 0.05
+      }
+      let schedulingBlocksInfoPanelG = shared.information.g.append('g')
+        .attr('class', 'form')
+      let scrollForm = new ScrollForm({
+        main: {
+          g: schedulingBlocksInfoPanelG,
+          box: {x: dim.x, y: dim.y, w: dim.w, h: dim.h},
+          colorTheme: colorTheme
+        },
+        titles: {
+          data: [
+            {
+              title: 'No Blocks/Sched.B selected',
+              extension: '',
+              sortOptions: {
+
+              },
+              width: '100%',
+              quickScroll: true,
+              anchor: 'center'
+            }
+          ],
+          height: '20px'
+        },
+        quickScroll: {
+          enabled: true,
+          width: '3%'
+        },
+        data: {}
+      })
+      scrollForm.updateData({}, 'info')
+    }
     function createSBPropertiesList (sb) {
       let prop = {}
       prop.target = {data: {}, childs: {}}
@@ -3493,7 +3447,7 @@ let mainSchedBlocksController = function (optIn) {
         titles: {
           data: [
             {
-              title: 'Sched.Blocks: ' + data.blocks[0].metaData.nSched,
+              title: 'Sched.Blocks ' + data.blocks[0].metaData.nSched,
               extension: '',
               sortOptions: {
 
@@ -3791,6 +3745,7 @@ let mainSchedBlocksController = function (optIn) {
     function unfocusSchedBlocks () {
       shared.information.g.selectAll('*').remove()
       createBackground()
+      createDefaultInfoPanel()
     }
     this.unfocusSchedBlocks = unfocusSchedBlocks
     function unfocusBlock () {

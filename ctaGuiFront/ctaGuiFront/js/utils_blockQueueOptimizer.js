@@ -230,7 +230,7 @@ window.BlockQueueOptimizer = function (optIn) {
       .attr('y', com.main.box.h * 0.46 * 0.5)
       .attr('dy', com.main.box.h * 0.1)
       .style('font-weight', 'bold')
-      .style('font-size', com.main.box.h * 0.3)
+      .style('font-size', com.main.box.h * 0.2)
       .style('pointer-events', 'none')
       .style('user-select', 'none')
       .style('fill', com.main.colorTheme.medium.background)

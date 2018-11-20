@@ -792,7 +792,7 @@ window.BlockQueueCreator = function (optIn) {
       .attr('y', com.main.box.h * 0.46 * 0.1)
       .attr('dy', com.main.box.h * 0.1)
       .style('font-weight', 'bold')
-      .style('font-size', com.main.box.h * 0.12)
+      .style('font-size', com.main.box.h * 0.08)
       .style('pointer-events', 'none')
       .style('user-select', 'none')
       .style('fill', com.main.colorTheme.medium.background)
