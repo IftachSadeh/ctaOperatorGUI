@@ -117,21 +117,57 @@ window.ScrollForm = function (optIn) {
         .style('font-size', 10 + 'px')
         .style('background', 'transparent')
     } else if (com.data.format === 'info') {
+      div.on('click', function (d) { if (data.click) data.click(div) })
+      div.on('mouseover', function (d) {
+        if (data.mouseover) {
+          div.style('background-color', '#F1F1F1')
+          data.mouseover(key, data)
+        }
+      })
+      div.on('mouseout', function (d) {
+        if (data.mouseout) {
+          div.style('background-color', 'transparent')
+          data.mouseout(key, data)
+        }
+      })
       div.append('label')
         .html(keyMaj)
+        .attr('id', 'key')
         .style('display', 'inline-block')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
         .style('background', 'transparent')
         .style('margin-left', '6px')
       div.append('label')
+        .attr('id', 'dot')
         .html(' : ')
         .style('display', 'inline-block')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
         .style('background', 'transparent')
+      if (data.new) {
+        div.append('label')
+          .attr('id', 'new')
+          .html(data.new)
+          .style('display', 'inline-block')
+          .style('color', '#000000')
+          .style('font-size', 10 + 'px')
+          .style('background', 'transparent')
+        div.append('label')
+          .attr('id', 'arrow')
+          .html(' -> ')
+          .style('display', 'inline-block')
+          .style('color', '#000000')
+          .style('font-size', 10 + 'px')
+          .style('background', 'transparent')
+      }
+      if (data.format) {
+        if (data.format.type === 'comboList') comboList(div, data)
+        return
+      }
       div.append('label')
-        .html(data)
+        .attr('id', 'old')
+        .html(data.value)
         .style('display', 'inline-block')
         .style('color', '#000000')
         .style('font-size', 10 + 'px')
@@ -154,113 +190,328 @@ window.ScrollForm = function (optIn) {
       .style('background', colorTheme.dark.background)
     for (let key in info) {
       let lines = info[key]
-      for (let j = 0; j < lines.length; j++) {
-        let modif = lines[j]
-        let lineDiv = innerDiv.append('div')
-          .style('background', (j % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
-        formatData(key, modif, lineDiv)
-      }
+      let lineDiv = innerDiv.append('div')
+      formatData(key, lines, lineDiv)
+      // for (let j = 0; j < lines.length; j++) {
+      //   let modif = lines[j]
+      //   let lineDiv = innerDiv.append('div')
+      //     .style('background', (j % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
+      //   formatData(key, modif, lineDiv)
+      // }
     }
     for (var children in childs) {
       fillDivs(children, childs[children], divs, index + 1)
     }
   }
 
-  function update () {
-    for (let key in com.data.data) {
-      let group = com.data.data[key]
+  function plainTextDiv (div) {
+    // title = title.charAt(0).toUpperCase() + title.slice(1)
+    // let innerDiv = divs[index].append('div')
+    //   .style('margin-bottom', '6px')
+    //   .style('background', colorTheme.brighter.background)
+    div.attr('class', 'divForm titleDiv')
 
-      let parentDiv = com.component.contentDiv.append('div')
-        .attr('id', 'id_' + key)
-        .style('width', '100%')
-      let divs = []
-      for (let i = 0; i < com.titles.data.length; i++) {
-        divs.push(parentDiv.append('div')
-          .style('display', 'inline-block')
-          .style('width', 'calc(' + com.titles.data[i].width + ' - 2px)')
-          .style('background', 'transparent')
-          .style('vertical-align', 'top')
-          .style('border-rigth', '2px solid #ffffff'))
+    div.append('label')
+      .html(function (d) { return d.key })
+      .attr('class', 'title')
+      .style('color', colorTheme.dark.text)
+      .style('background', colorTheme.dark.background)
+  }
+  function modificationDiv (div) {
+    div.on('click', function (d) {
+      if (!d.event) return
+      if (d.event.click) d.event.click(d)
+    })
+    div.on('mouseover', function (d) {
+      if (!d.event) return
+      if (d.event.mouseover) {
+        div.style('background-color', '#F1F1F1')
+        d.event.mouseover(d)
       }
-      fillDivs(key, group, divs, 0)
-    }
+    })
+    div.on('mouseout', function (d) {
+      if (!d.event) return
+      if (d.event.mouseout) {
+        div.style('background-color', 'transparent')
+        d.event.mouseout(d)
+      }
+    })
 
-    let totOffset = 0
-    let totScrollHeight = com.component.contentDiv._groups[0][0].scrollHeight
-    let sizes = []
-    for (let key in com.data.data) {
-      let setOffsetTo = totOffset
-      let scrollHeight = com.component.contentDiv.select('div#id_' + key)._groups[0][0].scrollHeight
-      sizes.push([scrollHeight, setOffsetTo])
-      totOffset += scrollHeight
-    }
+    div.attr('class', 'divForm modificationDiv')
 
-    let ratio = com.component.contentDiv._groups[0][0].clientHeight / totOffset
-    let even = 0
-    for (let key in com.data.data) {
-      let local = even
-      com.component.quickDiv.append('div')
-        .style('width', '100%')
-        .style('height', (sizes[local][0] * ratio) + 'px')
-        .style('background', (local % 2 === 1 ? colorTheme.medium.background : colorTheme.brighter.background))
-        .on('mouseover', function () {
-          com.component.contentDiv
-            .transition()
-            .delay(300)
-            .duration(400)
-            .on('start', function () {
-              com.component.contentDiv.attr('canInterrupt', false)
-            })
-            .tween('scroll', function () {
-              let that = this
-              var i = d3.interpolateNumber(that.scrollTop, sizes[local][1])
-              return function (t) { that.scrollTop = i(t) }
-            })
-            .on('end', function () {
-              com.component.contentDiv.attr('canInterrupt', true)
-            })
-        })
-        .on('mouseout', function () {
-          if (com.component.contentDiv.attr('canInterrupt') === 'true') {
-            com.component.contentDiv.interrupt()
-          }
-        })
-        .on('wheel.zoom', function () {
-          d3.event.preventDefault()
-          let newScrollTop = com.component.contentDiv._groups[0][0].scrollTop + d3.event.deltaY
-          if (newScrollTop < sizes[local][1]) {
-            com.component.contentDiv
-              .transition()
-              .duration(300)
-              .ease(d3.easeLinear)
-              .tween('scroll', function () {
-                let that = this
-                var i = d3.interpolateNumber(that.scrollTop, sizes[local][1])
-                return function (t) { that.scrollTop = i(t) }
-              })
-          } else if ((newScrollTop + com.component.contentDiv._groups[0][0].clientHeight) > (sizes[local][1] + sizes[local][0])) {
-            com.component.contentDiv
-              .transition()
-              .duration(300)
-              .ease(d3.easeLinear)
-              .tween('scroll', function () {
-                let that = this
-                var i = d3.interpolateNumber(that.scrollTop, (sizes[local][1] + sizes[local][0] - com.component.contentDiv._groups[0][0].clientHeight))
-                return function (t) { that.scrollTop = i(t) }
-              })
-          } else {
-            com.component.contentDiv
-              .transition()
-              .duration(300)
-              .ease(d3.easeLinear)
-              .tween('scroll', function () {
-                let that = this
-                var i = d3.interpolateNumber(that.scrollTop, newScrollTop)
-                return function (t) { that.scrollTop = i(t) }
-              })
-          }
-        })
-      even += 1
-    }
+    div.append('label')
+      .attr('class', 'key')
+      .html(function (d) { return d.key })
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      .style('font-size', 8 + 'px')
+      .style('background', 'transparent')
+      .style('margin-left', '6px')
+    div.append('label')
+      .attr('class', 'dot')
+      .html(' : ')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      .style('font-size', 8 + 'px')
+      .style('background', 'transparent')
+    div.append('label')
+      .attr('class', 'old')
+      .html(function (d) { return d.value.old })
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      .style('font-size', 8 + 'px')
+      .style('background', 'transparent')
+    div.append('label')
+      .attr('class', 'arrow')
+      .html('-> ')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      .style('font-size', 8 + 'px')
+      .style('background', 'transparent')
+    div.append('label')
+      .attr('class', 'new')
+      .html(function (d) { return d.value.new })
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      .style('font-size', 8 + 'px')
+      .style('background', 'transparent')
+  }
+  function infoDiv (div) {
+    div.on('click', function (d) {
+      if (!d.event) return
+      if (d.event.click) d.event.click(d)
+    })
+    div.on('mouseover', function (d) {
+      if (!d.event) return
+      if (d.event.mouseover) {
+        div.style('background-color', '#F1F1F1')
+        d.event.mouseover(d)
+      }
+    })
+    div.on('mouseout', function (d) {
+      if (!d.event) return
+      if (d.event.mouseout) {
+        div.style('background-color', 'transparent')
+        d.event.mouseout(d)
+      }
+    })
+
+    div.attr('class', 'divForm infoDiv')
+
+    div.append('label')
+      .html(function (d) { return d.key })
+      .attr('class', 'key')
+      .attr('id', 'key')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      // .style('font-size', 10 + 'px')
+      .style('background', 'transparent')
+    div.append('label')
+      .attr('id', 'dot')
+      .attr('class', 'dot')
+      .html(' : ')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      // .style('font-size', 10 + 'px')
+      .style('background', 'transparent')
+    div.append('label')
+      .attr('class', 'new')
+      .attr('id', 'new')
+      .html(function (d) { return d.value })
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      // .style('font-size', 10 + 'px')
+      .style('background', 'transparent')
+  }
+  function comboListDiv (div) {
+    div.on('click', function (d) { if (d.event.click) d.event.click(d) })
+    div.on('mouseover', function (d) {
+      if (d.event.mouseover) {
+        div.style('background-color', '#F1F1F1')
+        d.event.mouseover(d)
+      }
+    })
+    div.on('mouseout', function (d) {
+      if (d.event.mouseout) {
+        div.style('background-color', 'transparent')
+        d.event.mouseout(d)
+      }
+    })
+
+    div.attr('class', 'divForm comboListDiv')
+
+    div.append('label')
+      .attr('class', 'key')
+      .html(function (d) { return d.key })
+      .attr('id', 'key')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      // .style('font-size', 10 + 'px')
+      .style('background', 'transparent')
+      // .style('margin-left', '6px')
+    div.append('label')
+      .attr('class', 'dot')
+      .attr('id', 'dot')
+      .html(' : ')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      // .style('font-size', 10 + 'px')
+      .style('background', 'transparent')
+    div.append('select')
+      .style('width', 'auto')
+      .style('font-size', '9px')
+      .style('height', div.style('height'))
+      .style('border', '0.2px')
+      .on('change', function (d) {
+        let selectValue = div.select('select').property('value')
+        d.event.click(selectValue)
+      })
+      .selectAll('option')
+      .data(function (d) { return d.value.select })
+      .enter()
+      .append('option')
+      .text(function (d) { return d })
+  }
+  function divideDiv (div, data) {
+    div.selectAll('div.divideChilds')
+      .data(data)
+      .enter()
+      .append('div')
+      .attr('class', 'divideChilds')
+      .attr('id', function (d) { return 'id_' + d.key })
+      .style('width', (100 / data.length) + '%')
+      .style('display', 'inline-block')
+      .style('vertical-align', 'top')
+      .each(function (d) {
+        console.log(d);
+        createSubForm(d3.select(this), d)
+        // if (Array.isArray(d)) {
+        //   divideDiv(d3.select(this), d)
+        // } else {
+        //   createSubForm(d3.select(this), d)
+        // }
+      })
+  }
+  function createSubForm (div, data) {
+    div.selectAll('div.divForm')
+      .data(data)
+      .enter()
+      .append('div')
+      .attr('class', 'divForm')
+      .attr('id', function (d) { return 'id_' + d.key })
+      .style('width', '100%')
+      .each(function (d) {
+        if (Array.isArray(d)) {
+          divideDiv(d3.select(this), d)
+        } else {
+          if (d.format === 'plainText') plainTextDiv(d3.select(this))
+          else if (d.format === 'info') infoDiv(d3.select(this))
+          else if (d.format === 'comboList') comboListDiv(d3.select(this))
+          else if (d.format === 'modification') modificationDiv(d3.select(this))
+          createSubForm(d3.select(this), d.childs)
+        }
+      })
+  }
+  function update () {
+    if (!Object.keys(com.data.data).length) return
+    if (com.data.data.childs.length === 0) return
+
+    createSubForm(com.component.contentDiv, com.data.data.childs)
+
+    // for (let key in com.data.data) {
+    //   let group = com.data.data[key]
+    //
+    //   let parentDiv = com.component.contentDiv.append('div')
+    //     .attr('id', 'id_' + key)
+    //     .style('width', '100%')
+    //   let divs = []
+    //   for (let i = 0; i < com.titles.data.length; i++) {
+    //     divs.push(parentDiv.append('div')
+    //       .style('display', 'inline-block')
+    //       .style('width', 'calc(' + com.titles.data[i].width + ' - 2px)')
+    //       .style('background', 'transparent')
+    //       .style('vertical-align', 'top')
+    //       .style('border-rigth', '2px solid #ffffff'))
+    //   }
+    //   fillDivs(key, group, divs, 0)
+    // }
+
+    // let totOffset = 0
+    // let totScrollHeight = com.component.contentDiv._groups[0][0].scrollHeight
+    // let sizes = []
+    // for (let key in com.data.data) {
+    //   let setOffsetTo = totOffset
+    //   let scrollHeight = com.component.contentDiv.select('div#id_' + key)._groups[0][0].scrollHeight
+    //   sizes.push([scrollHeight, setOffsetTo])
+    //   totOffset += scrollHeight
+    // }
+    //
+    // let ratio = com.component.contentDiv._groups[0][0].clientHeight / totOffset
+    // let even = 0
+    // for (let key in com.data.data) {
+    //   let local = even
+    //   com.component.quickDiv.append('div')
+    //     .style('width', '100%')
+    //     .style('height', (sizes[local][0] * ratio) + 'px')
+    //     .style('background', (local % 2 === 1 ? colorTheme.medium.background : colorTheme.brighter.background))
+    //     .on('mouseover', function () {
+    //       com.component.contentDiv
+    //         .transition()
+    //         .delay(300)
+    //         .duration(400)
+    //         .on('start', function () {
+    //           com.component.contentDiv.attr('canInterrupt', false)
+    //         })
+    //         .tween('scroll', function () {
+    //           let that = this
+    //           var i = d3.interpolateNumber(that.scrollTop, sizes[local][1])
+    //           return function (t) { that.scrollTop = i(t) }
+    //         })
+    //         .on('end', function () {
+    //           com.component.contentDiv.attr('canInterrupt', true)
+    //         })
+    //     })
+    //     .on('mouseout', function () {
+    //       if (com.component.contentDiv.attr('canInterrupt') === 'true') {
+    //         com.component.contentDiv.interrupt()
+    //       }
+    //     })
+    //     .on('wheel.zoom', function () {
+    //       d3.event.preventDefault()
+    //       let newScrollTop = com.component.contentDiv._groups[0][0].scrollTop + d3.event.deltaY
+    //       if (newScrollTop < sizes[local][1]) {
+    //         com.component.contentDiv
+    //           .transition()
+    //           .duration(300)
+    //           .ease(d3.easeLinear)
+    //           .tween('scroll', function () {
+    //             let that = this
+    //             var i = d3.interpolateNumber(that.scrollTop, sizes[local][1])
+    //             return function (t) { that.scrollTop = i(t) }
+    //           })
+    //       } else if ((newScrollTop + com.component.contentDiv._groups[0][0].clientHeight) > (sizes[local][1] + sizes[local][0])) {
+    //         com.component.contentDiv
+    //           .transition()
+    //           .duration(300)
+    //           .ease(d3.easeLinear)
+    //           .tween('scroll', function () {
+    //             let that = this
+    //             var i = d3.interpolateNumber(that.scrollTop, (sizes[local][1] + sizes[local][0] - com.component.contentDiv._groups[0][0].clientHeight))
+    //             return function (t) { that.scrollTop = i(t) }
+    //           })
+    //       } else {
+    //         com.component.contentDiv
+    //           .transition()
+    //           .duration(300)
+    //           .ease(d3.easeLinear)
+    //           .tween('scroll', function () {
+    //             let that = this
+    //             var i = d3.interpolateNumber(that.scrollTop, newScrollTop)
+    //             return function (t) { that.scrollTop = i(t) }
+    //           })
+    //       }
+    //     })
+    //   even += 1
+    // }
   }
 }

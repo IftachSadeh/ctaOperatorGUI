@@ -191,9 +191,7 @@ window.BlockQueueCreator = function (optIn) {
       let canRun = hasVar(optIn.canRun)
         ? optIn.canRun
         : optIn.d.data.exeState.canRun
-      let modified = optIn.d.data.modifications ?
-        !(Object.keys(optIn.d.data.modifications.userModifications).length === 0 && optIn.d.data.modifications.userModifications.constructor === Object) :
-        false
+      let modified = optIn.d.data.modifications.modified
 
       if (state === 'wait') {
         if (modified) return 0.15
@@ -749,10 +747,11 @@ window.BlockQueueCreator = function (optIn) {
     let modif = [{prop: 'startTime', old: newBlock.data.startTime, new: newStart}]
 
     if (com.interaction.mode.current === 'cancel') {
-      modif.push({prop: 'canRun', old: true, new: false})
+      modif.push({prop: 'exeState', old: d.data.exeState, new: {state: 'cancel', canRun: false}})
     }
 
-    blockQueue.saveModificationAndUpdateBlock(newBlock, modif)
+    blockQueue.sendModification(d.data.obId, modif)
+    // blockQueue.saveModificationAndUpdateBlock(newBlock, modif)
     // if (isGeneratingTelsConflict(newBlock)) {
     //   com.data.modified.conflict.push(newBlock)
     // } else {
@@ -798,43 +797,28 @@ window.BlockQueueCreator = function (optIn) {
       .style('fill', com.main.colorTheme.medium.background)
       .style('opacity', 1)
   }
-  blockQueue.sendModification = function (newBlock) {
-    com.event.modifications('blockQueueCreator', newBlock.data)
+  blockQueue.sendModification = function (blockId, modifs) {
+    com.event.modifications('blockQueueCreator', blockId, modifs)
   }
-  blockQueue.saveModificationAndUpdateBlock = function (block, modifs) {
-    console.log(modifs);
-    let tot = []
-    for (let key in com.data.filtered) {
-      tot = tot.concat(com.data.filtered[key])
-    }
-
-    function applyAllModification (modifiedBlock, modifs) {
-      for (var key in modifs) {
-        if (key === 'startTime') {
-          let len = modifs[key].length - 1
-          modifiedBlock.data.startTime = modifs[key][len].new
-          modifiedBlock.data.endTime = modifs[key][len].new + modifiedBlock.data.duration
-        } else if (key === 'canRun') {
-          let len = modifs[key].length - 1
-          modifiedBlock.data.exeState.canRun = modifs[key][len].new
-        }
-      }
-      return modifiedBlock
-    }
-
-    for (let i = 0; i < tot.length; i++) {
-      if (tot[i].obId === block.data.obId) {
-        for (let j = 0; j < modifs.length; j++) {
-          if (!tot[i].modifications.userModifications[modifs[j].prop]) tot[i].modifications.userModifications[modifs[j].prop] = [{new: modifs[j].new, old: modifs[j].old}]
-          else tot[i].modifications.userModifications[modifs[j].prop].push({new: modifs[j].new, old: modifs[j].old})
-        }
-        block = applyAllModification(block, tot[i].modifications.userModifications)
-        block.data.modifications.userModifications = tot[i].modifications.userModifications
-        console.log(block);
-        blockQueue.sendModification(block)
-      }
-    }
-    blockQueue.updateBlocks()
-  }
+  // blockQueue.saveModificationAndUpdateBlock = function (block, modifs) {
+  //   let tot = []
+  //   for (let key in com.data.filtered) {
+  //     tot = tot.concat(com.data.filtered[key])
+  //   }
+  //
+  //   for (let i = 0; i < tot.length; i++) {
+  //     if (tot[i].obId === block.data.obId) {
+  //       for (let j = 0; j < modifs.length; j++) {
+  //         if (!tot[i].modifications.userModifications[modifs[j].prop]) tot[i].modifications.userModifications[modifs[j].prop] = [{new: modifs[j].new, old: modifs[j].old}]
+  //         else tot[i].modifications.userModifications[modifs[j].prop].push({new: modifs[j].new, old: modifs[j].old})
+  //       }
+  //       block = applyAllModification(block, tot[i].modifications.userModifications)
+  //       block.data.modifications.userModifications = tot[i].modifications.userModifications
+  //       console.log(block);
+  //       blockQueue.sendModification(block)
+  //     }
+  //   }
+  //   blockQueue.updateBlocks()
+  // }
   return blockQueue
 }

@@ -4,6 +4,137 @@
 
 <dom-module id="app-theme">
   <template>
+
+    <style>
+      div.infoDiv {
+        height: 10px;
+      }
+      div.modificationDiv {
+        height: 10px;
+      }
+      div.comboListDiv {
+        height: 10px;
+      }
+      div.titleDiv {
+        margin-bottom: 5px;
+      }
+
+      div.divForm label.title {
+        display: inline-block;
+        line-height: 140%;
+        font-weight: bold;
+        font-size: 10px;
+        width: 100%;
+        height: 100%;
+        padding-left: 5%;
+      }
+
+      div.comboListDiv label.key {
+        vertical-align: top;
+        max-width: 18%;
+        width: 18%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 2%;
+        font-size: 8px;
+      }
+      div.comboListDiv label.dot {
+        vertical-align: top;
+        max-width: 3%;
+        width: 3%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 2%;
+        font-size: 8px;
+      }
+      div.comboListDiv select {
+        vertical-align: top;
+        max-width: 70%;
+        width: 70%;
+        min-width: 70%;
+        margin-left: 2%;
+      }
+
+      div.infoDiv label.key {
+        vertical-align: top;
+        max-width: 18%;
+        width: 18%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 2%;
+        font-size: 8px;
+      }
+      div.infoDiv label.dot {
+        vertical-align: top;
+        max-width: 3%;
+        width: 3%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 2%;
+        font-size: 8px;
+      }
+      div.infoDiv label.new {
+        vertical-align: top;
+        max-width: 68%;
+        width: 68%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-left: 2%;
+        font-size: 8px;
+      }
+
+      div.modificationDiv label.key {
+        vertical-align: top;
+        max-width: 26%;
+        width: 26%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 2%;
+      }
+      div.modificationDiv label.dot {
+        vertical-align: top;
+        max-width: 3%;
+        width: 3%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 2%;
+      }
+      div.modificationDiv label.old {
+        vertical-align: top;
+        max-width: 26%;
+        width: 26%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-left: 2%;
+      }
+      div.modificationDiv label.arrow {
+        vertical-align: top;
+        max-width: 3%;
+        width: 3%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-left: 2%;
+      }
+      div.modificationDiv label.new {
+        vertical-align: top;
+        max-width: 26%;
+        width: 26%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-left: 2%;
+      }
+    </style>
+
     <style>
       :root {
         --color-gray-0: #24262A;
@@ -132,21 +263,6 @@
         border-bottom: var(--drawer-toolbar-border-color);
       }
 
-      div.title {
-        width: 100%;
-        height: 20px;
-      }
-
-      label.title {
-        display: inline-block;
-        line-height: 190%;
-        font-weight: bold;
-        font-size: 12px;
-        width: 100%;
-        height: 100%;
-        padding-left: 5%;
-      }
-
       .overflowDiv {
         overflow-x: auto;
         overflow-y: scroll;
@@ -167,6 +283,7 @@
         height: 100%;
         width: 100%;
       }
+
       /* width */
       /*.overflowHorizontalDiv::-webkit-scrollbar {
           height: 5px;

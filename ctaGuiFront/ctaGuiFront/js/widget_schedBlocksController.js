@@ -127,7 +127,11 @@ let mainSchedBlocksController = function (optIn) {
     main: {
       data: {
         server: undefined,
-        copy: undefined
+        copy: {
+          original: {},
+          modified: {},
+          optimized: {}
+        }
       },
       focus: {
         schedBlocks: undefined,
@@ -383,47 +387,77 @@ let mainSchedBlocksController = function (optIn) {
     } else return colorTheme.blocks.shutdown
   }
   function pullData () {
-    shared.main.data.copy = deepCopy(shared.main.data.server)
-    shared.main.data.copy.optimizedBlocks = shared.main.data.copy.blocks
-    for (var key in shared.main.data.copy.blocks) {
-      for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
-        shared.main.data.copy.blocks[key][i].modifications = {
+    shared.main.data.copy.original = {blocks: deepCopy(shared.main.data.server).blocks}
+
+    // shared.main.data.copy.optimized = shared.main.data.copy.blocks
+    for (var key in shared.main.data.copy.original.blocks) {
+      for (var i = 0; i < shared.main.data.copy.original.blocks[key].length; i++) {
+        shared.main.data.copy.original.blocks[key][i].modifications = {
           modified: false,
           userModifications: {},
           optimizerModifications: {}
         }
       }
     }
-    shared.main.data.copy.schedBlocks = {
-      '1': {
-        modifications: [
-          {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop4', old: 'Old Value', new: 'New Value'}
-        ],
-        blocks: {}
-      },
-      '3': {
-        modifications: [
-          {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop4', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop5', old: 'Old Value', new: 'New Value'}
-        ],
-        blocks: {}
-      },
-      '7': {
-        modifications: [
-          {prop: 'prop1', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop2', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop3', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop4', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop5', old: 'Old Value', new: 'New Value'},
-          {prop: 'prop6', old: 'Old Value', new: 'New Value'}
-        ],
-        blocks: {}
+
+    shared.main.data.copy.modified = deepCopy(shared.main.data.copy.original)
+    shared.main.data.copy.optimized = deepCopy(shared.main.data.copy.original)
+    // shared.main.data.copy.schedBlocks = {
+    //   '1': {
+    //     modifications: [
+    //       {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop4', old: 'Old Value', new: 'New Value'}
+    //     ],
+    //     blocks: {}
+    //   },
+    //   '3': {
+    //     modifications: [
+    //       {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop5', old: 'Old Value', new: 'New Value'}
+    //     ],
+    //     blocks: {}
+    //   },
+    //   '7': {
+    //     modifications: [
+    //       {prop: 'prop1', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop2', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop3', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop4', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop5', old: 'Old Value', new: 'New Value'},
+    //       {prop: 'prop6', old: 'Old Value', new: 'New Value'}
+    //     ],
+    //     blocks: {}
+    //   }
+    // }
+
+    shared.main.data.copy.schedBlocks = {}
+    for (let key in shared.main.data.copy.original.blocks) {
+      for (let i = 0; i < shared.main.data.copy.original.blocks[key].length; i++) {
+        let b = shared.main.data.copy.original.blocks[key][i]
+        if (!shared.main.data.copy.schedBlocks[b.sbId]) {
+          shared.main.data.copy.schedBlocks[b.sbId] = {
+            exeState: {
+              state: b.exeState.state,
+              canRun: true
+            },
+            target: {
+              id: b.targetId,
+              name: b.targetName,
+              pos: b.targetPos,
+              observability: {}
+            }
+          }
+        } else {
+          let sb = shared.main.data.copy.schedBlocks[b.sbId]
+          if (b.exeState.state === 'run' || sb.exeState.state === 'run') sb.exeState.state = 'run'
+          if (b.exeState.state === 'wait' && sb.exeState.state === 'done') sb.exeState.state = 'run'
+          if (b.exeState.state === 'done' && sb.exeState.state === 'wait') sb.exeState.state = 'run'
+        }
       }
     }
 
@@ -433,12 +467,8 @@ let mainSchedBlocksController = function (optIn) {
     svgSchedulingBlocksOverview.updateData()
   }
   function optimizer () {
-    shared.main.data.copy.optimizedBlocks = deepCopy(shared.main.data.copy.blocks)
-    for (var key in shared.main.data.copy.blocks) {
-      for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
-        console.log(Object.keys(shared.main.data.copy.blocks[key][i].modifications.userModifications).length)
-      }
-    }
+    shared.main.data.copy.optimized = deepCopy(shared.main.data.copy.modified)
+
     function isSameTime (s1, e1, s2, e2) {
       if (s1 > s2 && s1 < e2) return true
       if (e1 > s2 && e1 < e2) return true
@@ -468,17 +498,16 @@ let mainSchedBlocksController = function (optIn) {
         b2.modifications.modified = true
       }
     }
-
-    for (let i = shared.main.data.copy.optimizedBlocks.wait.length - 1; i > -1; i--) {
-      let tb = shared.main.data.copy.optimizedBlocks.wait[i]
-      for (let j = 0; j < shared.main.data.copy.optimizedBlocks.run.length; j++) {
-        let mb = shared.main.data.copy.optimizedBlocks.run[j]
+    for (let i = shared.main.data.copy.optimized.blocks.wait.length - 1; i > -1; i--) {
+      let tb = shared.main.data.copy.optimized.blocks.wait[i]
+      for (let j = 0; j < shared.main.data.copy.optimized.blocks.run.length; j++) {
+        let mb = shared.main.data.copy.optimized.blocks.run[j]
         if (isSameTime(mb.startTime, mb.endTime, tb.startTime, tb.endTime)) {
           shareSameTels(mb, tb)
         }
       }
-      for (let j = 0; j < shared.main.data.copy.optimizedBlocks.wait.length; j++) {
-        let mb = shared.main.data.copy.optimizedBlocks.wait[j]
+      for (let j = 0; j < shared.main.data.copy.optimized.blocks.wait.length; j++) {
+        let mb = shared.main.data.copy.optimized.blocks.wait[j]
         if (isSameTime(mb.startTime, mb.endTime, tb.startTime, tb.endTime)) {
           shareSameTels(mb, tb)
         }
@@ -488,17 +517,18 @@ let mainSchedBlocksController = function (optIn) {
   }
   function groupBlocksBySchedule () {
     let res = {}
-    for (var key in shared.main.data.copy.blocks) {
-      for (var i = 0; i < shared.main.data.copy.blocks[key].length; i++) {
-        let ns = shared.main.data.copy.blocks[key][i].metaData.nSched
-        if (ns in res) res[ns].push(shared.main.data.copy.blocks[key][i])
-        else res[ns] = [shared.main.data.copy.blocks[key][i]]
+    for (var key in shared.main.data.copy.modified.blocks) {
+      for (var i = 0; i < shared.main.data.copy.modified.blocks[key].length; i++) {
+        let ns = shared.main.data.copy.modified.blocks[key][i].metaData.nSched
+        if (ns in res) res[ns].push(shared.main.data.copy.modified.blocks[key][i])
+        else res[ns] = [shared.main.data.copy.modified.blocks[key][i]]
       }
     }
-    shared.main.formatedData.schedGroup = []
+    let ret = []
     Object.keys(res).map(function (key, index) {
-      shared.main.formatedData.schedGroup.push({schedName: key, scheduleId: res[key][0].sbId, blocks: res[key]})
+      ret.push({schedName: key, scheduleId: res[key][0].sbId, blocks: res[key]})
     })
+    return ret
   }
 
   function mainFocusOnSchedBlocks (schedB) {
@@ -582,18 +612,54 @@ let mainSchedBlocksController = function (optIn) {
     mainOutSchedBlocks(block.sbId)
   }
 
-  function addModifications (from, block) {
-    for (let key in shared.main.data.copy.blocks) {
-      let group = shared.main.data.copy.blocks[key]
+  function addModifications (from, blockId, modifs) {
+    for (let key in shared.main.data.copy.original.blocks) {
+      let group = shared.main.data.copy.original.blocks[key]
       for (let i = 0; i < group.length; i++) {
-        if (group[i].obId === block.obId) {
+        if (group[i].obId === blockId) {
+          group[i].modifications.modified = true
+        }
+      }
+    }
+
+    function applyModification (block, modif) {
+      if (!block.modifications.userModifications[modif.prop]) block.modifications.userModifications[modif.prop] = []
+      switch (modif.prop) {
+        case 'startTime':
+          let oldStart = block.startTime
+          block.startTime = modif.new
+          block.endTime = modif.new + block.duration
+          block.modifications.userModifications[modif.prop].push({new: modif.new, old: oldStart})
+          break
+        case 'exeState':
+          let oldState = block.exeState
+          block.exeState = modif.new
+          block.modifications.userModifications[modif.prop].push({new: modif.new, old: oldState})
+          break
+        default:
+      }
+      return block
+    }
+
+    for (let key in shared.main.data.copy.modified.blocks) {
+      let group = shared.main.data.copy.modified.blocks[key]
+      for (let i = 0; i < group.length; i++) {
+        if (group[i].obId === blockId) {
+          let block = group[i]
           block.modifications.modified = true
-          group[i] = block
+          for (let modif in modifs) {
+            block = applyModification(block, modifs[modif])
+            if (modifs[modif].prop === 'exeState') {
+              group.splice(i, 1)
+              shared.main.data.copy.modified.blocks['done'].push(block)
+            }
+          }
         }
       }
     }
     // shared.main.data.copy.blocks.modified.push(block)
     // console.log(shared.main.data.copy.blocks);
+    svgBlocksQueueCreator.updateData()
     svgMiddleInfo.updateData()
     svgBlocksQueueModif.updateData()
     optimizer()
@@ -1126,7 +1192,7 @@ let mainSchedBlocksController = function (optIn) {
         },
         data: {
           raw: {
-            blocks: shared.main.data.copy.blocks,
+            blocks: shared.main.data.copy.original.blocks,
             telIds: telIds
           },
           modified: []
@@ -1229,9 +1295,9 @@ let mainSchedBlocksController = function (optIn) {
             }
           },
           cancel: {
-            enabled: false,
+            enabled: true,
             g: undefined,
-            box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h * 0.16, marg: blockBoxData.marg},
+            box: {x: 0, y: blockBoxData.h * 0.02, w: blockBoxData.w, h: blockBoxData.h * 0.2, marg: blockBoxData.marg},
             events: {
               click: mainFocusOnBlock,
               mouseover: mainOverBlock,
@@ -1316,9 +1382,9 @@ let mainSchedBlocksController = function (optIn) {
         telIds.push(dataNow.id)
       })
       let modifiedData = {}
-      for (let key in shared.main.data.copy.blocks) {
+      for (let key in shared.main.data.copy.modified.blocks) {
         modifiedData[key] = []
-        let group = shared.main.data.copy.blocks[key]
+        let group = shared.main.data.copy.modified.blocks[key]
         for (let i = 0; i < group.length; i++) {
           if (!(Object.keys(group[i].modifications.userModifications).length === 0 && group[i].modifications.userModifications.constructor === Object)) {
             modifiedData[key].push(group[i])
@@ -1522,7 +1588,7 @@ let mainSchedBlocksController = function (optIn) {
         },
         data: {
           raw: {
-            blocks: shared.main.data.copy.optimizedBlocks,
+            blocks: shared.main.data.copy.optimized.blocks,
             telIds: telIds
           },
           modified: []
@@ -2712,7 +2778,7 @@ let mainSchedBlocksController = function (optIn) {
       // initShrink()
       // initContent()
 
-      if (shared.main.data.copy) updateData()
+      if (shared.main.data.copy.modified) updateData()
     }
     this.initData = initData
 
@@ -2777,7 +2843,7 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.update = update
     function updateData () {
-      groupBlocksBySchedule()
+      shared.main.formatedData.schedGroup = groupBlocksBySchedule()
       populateShrink()
 
       // if (shared.main.data.copy.focusOn) {
@@ -2970,7 +3036,7 @@ let mainSchedBlocksController = function (optIn) {
     this.update = update
 
     function drawModifications () {
-      if (Object.keys(reserved.data.modifications).length === 0 && reserved.data.modifications.constructor === Object) {
+      if (reserved.data.modifications.childs.length === 0) {
         let scrollForm = new ScrollForm({
           main: {
             g: shared.modifications.g,
@@ -3040,48 +3106,74 @@ let mainSchedBlocksController = function (optIn) {
       }
     }
     function createModificationsList () {
-      reserved.data.modifications = {}
-      if (!shared.main.data.copy) return
+      let groupBySched = groupBlocksBySchedule()
+      reserved.data.modifications = {title: {}, style: {}, childs: []}
+      if (!shared.main.data.copy.modified) return
 
-      for (let key in shared.main.data.copy.blocks) {
-        let group = shared.main.data.copy.blocks[key]
-        for (let i = 0; i < group.length; i++) {
-          let block = group[i]
-          let b = '' + block.metaData.nObs
-          let sb = '' + block.metaData.nSched
+      for (let i = 0; i < groupBySched.length; i++) {
+        let group = groupBySched[i]
+        let sbInfo = {
+          key: 'Sched.B: ' + group.schedName,
+          format: 'plainText',
+          style: {'default': 'subTitle'},
+          childs: []
+        }
+        let bList = {title: {}, style: {}, childs: []}
+        for (let j = 0; j < group.blocks.length; j++) {
+          let block = group.blocks[j]
           if (!(Object.keys(block.modifications.userModifications).length === 0 && block.modifications.userModifications.constructor === Object)) {
-            if (!reserved.data.modifications[sb]) reserved.data.modifications[sb] = {data: {}, childs: {}}
-            if (!reserved.data.modifications[sb].childs[b]) reserved.data.modifications[sb].childs[b] = {data: {}, childs: {}}
+            // if (!reserved.data.modifications[sb]) reserved.data.modifications[sb] = {data: {}, childs: {}}
+            // if (!reserved.data.modifications[sb].childs[b]) reserved.data.modifications[sb].childs[b] = {data: {}, childs: {}}
+            let b = '' + block.metaData.nObs
+            let bInfo = {
+              key: 'Block: ' + b,
+              format: 'plainText',
+              style: {'default': 'subTitle'},
+              childs: []
+            }
+
             for (let key in block.modifications.userModifications) {
               let modifList = block.modifications.userModifications[key]
-              reserved.data.modifications[sb].childs[b].data[key] = []
-              for (let j = 0; j < modifList.length; j++) {
-                reserved.data.modifications[sb].childs[b].data[key].push(modifList[j])
-              }
+              // reserved.data.modifications[sb].childs[b].data[key] = []
+              // for (let j = 0; j < modifList.length; j++) {
+              //   reserved.data.modifications[sb].childs[b].data[key].push(modifList[j])
+              // }
+              bInfo.childs.push({
+                style: {'default': 'info'},
+                format: 'modification',
+                key: key,
+                value: {
+                  old: modifList[modifList.length - 1].old,
+                  new: modifList[modifList.length - 1].new
+                },
+                childs: []
+              })
             }
             for (let key in block.modifications.optimizerModifications) {
               let modifList = block.modifications.optimizerModifications[key]
-              reserved.data.modifications[sb].childs[b].data[key] = []
-              for (let j = 0; j < modifList.length; j++) {
-                reserved.data.modifications[sb].childs[b].data[key].push(modifList[j])
-              }
+              // reserved.data.modifications[sb].childs[b].data[key] = []
+              // for (let j = 0; j < modifList.length; j++) {
+              //   reserved.data.modifications[sb].childs[b].data[key].push(modifList[j])
+              // }
+              bInfo.childs.push({
+                style: {'default': 'info'},
+                format: 'modification',
+                key: key,
+                value: {
+                  old: modifList[modifList.length - 1].old,
+                  new: modifList[modifList.length - 1].new
+                },
+                childs: []
+              })
             }
+
+            bList.childs.push(bInfo)
           }
-          // if (block.modifications.userModifications.length > 0 || block.modifications.optimizerModifications.length) {
-          //   let b = '' + block.metaData.nObs
-          //   let sb = '' + block.metaData.nSched
-          //   if (!reserved.data.modifications[sb]) reserved.data.modifications[sb] = {modifications: {userModifications: [], optimizerModifications: []}, blocks: {}}
-          //   if (!reserved.data.modifications[sb].blocks[b]) reserved.data.modifications[sb].blocks[b] = {modifications: {userModifications: [], optimizerModifications: []}}
-          //
-          //   for (let j = 0; j < block.modifications.userModifications.length; j++) {
-          //     reserved.data.modifications[sb].blocks[b].modifications.userModifications.push(block.modifications.userModifications[j])
-          //   }
-          //   for (let j = 0; j < block.modifications.optimizerModifications.length; j++) {
-          //     reserved.data.modifications[sb].blocks[b].modifications.optimizerModifications.push(block.modifications.optimizerModifications[j])
-          //   }
-          // }
         }
+        if (bList.childs.length > 0) reserved.data.modifications.childs.push([[sbInfo], [bList]])
+        else if (sbInfo.childs.length > 0) reserved.data.modifications.childs.push(sbInfo)
       }
+      console.log(reserved.data.modifications.childs);
     }
   }
   let SvgConflicts = function () {
@@ -3409,22 +3501,101 @@ let mainSchedBlocksController = function (optIn) {
       })
       scrollForm.updateData({}, 'info')
     }
-    function createSBPropertiesList (sb) {
-      let prop = {}
-      prop.target = {data: {}, childs: {}}
-      prop.target.data.id = [sb.targetId]
-      prop.target.data.name = [sb.targetName]
-      prop.target.data.pos = [sb.targetPos]
 
-      prop.information = {data: {}, childs: {}}
-      prop.information.data.info1 = ['info']
-      prop.information.data.info2 = ['info']
-      prop.information.data.info3 = ['info']
+    function createTargetList () {
 
-      prop.commment = {data: {}, childs: {}}
-      prop.commment.data.commment = ['This is a very very very very very very very very very very very very very very very very very very very very very very very very long reservedment']
+    }
+    function createStateList (value) {
+      console.log(value);
+    }
+    function createCanRunList () {
 
-      return prop
+    }
+    function createSBPropertiesList (id) {
+      let sb = shared.main.data.copy.schedBlocks[id]
+
+      let exeState = {
+        key: 'Execution State',
+        format: 'plainText',
+        style: {'default': 'subTitle'},
+        childs: []
+      }
+      exeState.childs.push({
+        style: {'default': 'info'},
+        format: 'comboList',
+        key: 'State',
+        value: {
+          current: sb.exeState.state,
+          select: ['done', 'wait', 'run']
+        },
+        event: {
+          click: createStateList,
+          mouseover: () => {},
+          mouseout: () => {}
+        },
+        childs: []
+      })
+      exeState.childs.push({
+        style: {'default': 'info'},
+        format: 'comboList',
+        key: 'canRun',
+        value: {
+          current: sb.exeState.canRun,
+          select: ['true', 'false']
+        },
+        event: {
+          click: createStateList,
+          mouseover: () => {},
+          mouseout: () => {}
+        },
+        childs: []
+      })
+
+      let target = {
+        key: 'Target',
+        format: 'plainText',
+        style: {'default': 'subTitle'},
+        childs: []
+      }
+      target.childs.push({
+        style: {'default': 'info'},
+        format: 'comboList',
+        key: 'id',
+        value: {
+          current: sb.target.id,
+          select: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5']
+        },
+        event: {
+          click: createStateList,
+          mouseover: () => {},
+          mouseout: () => {}
+        },
+        childs: []
+      })
+      target.childs.push({
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'Name',
+        value: sb.target.name,
+        childs: []
+      })
+      target.childs.push({
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'pos',
+        value: sb.target.pos,
+        childs: []
+      })
+      target.childs.push({
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'observability',
+        value: sb.target.observability,
+        childs: []
+      })
+
+      let root = {title: {}, style: {}, childs: [exeState, target]}
+      return root
     }
     function createSchedBlocksInfoPanel (data) {
       let dim = {
@@ -3463,7 +3634,7 @@ let mainSchedBlocksController = function (optIn) {
         },
         data: {}
       })
-      let sbPropList = createSBPropertiesList(data.blocks[0])
+      let sbPropList = createSBPropertiesList(data.scheduleId)
       scrollForm.updateData(sbPropList, 'info')
     }
     function createBlocksInScheduleIcons (data) {
@@ -3654,27 +3825,161 @@ let mainSchedBlocksController = function (optIn) {
           })
       })
     }
+
     function createBPropertiesList (b) {
-      let prop = {}
+      // let prop = {}
 
-      prop.time = {data: {}, childs: {}}
-      prop.time.data.start = [b.startTime]
-      prop.time.data.end = [b.endTime]
-      prop.time.data.duration = [b.duration]
+      // prop.time = {data: {}, childs: {}}
+      // prop.time.data.start = [b.startTime]
+      // prop.time.data.end = [b.endTime]
+      // prop.time.data.duration = [b.duration]
+      //
+      // prop.pointing = {data: {}, childs: {}}
+      // prop.pointing.data.id = [b.pointingId]
+      // prop.pointing.data.name = [b.pointingName]
+      // prop.pointing.data.pos = [b.pointingPos]
 
-      prop.state = {data: {}, childs: {}}
-      prop.state.data.state = [b.exeState.state]
-      prop.state.data.canRun = [b.exeState.canRun]
+      // prop.telescopes = {data: {}, childs: {}}
+      // prop.telescopes.data.telescopes = [b.telIds]
 
-      prop.pointing = {data: {}, childs: {}}
-      prop.pointing.data.id = [b.pointingId]
-      prop.pointing.data.name = [b.pointingName]
-      prop.pointing.data.pos = [b.pointingPos]
+      let startHS = {
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'Start',
+        value: b.startTime,
+        event: {},
+        childs: []
+      }
+      let durHS = {
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'Duration',
+        value: b.duration,
+        event: {},
+        childs: []
+      }
+      let endHS = {
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'End',
+        value: b.endTime,
+        event: {},
+        childs: []
+      }
+      let startS = {
+        style: {'default': 'info'},
+        format: 'info',
+        key: '',
+        value: b.startTime,
+        event: {},
+        childs: []
+      }
+      let durS = {
+        style: {'default': 'info'},
+        format: 'info',
+        key: '',
+        value: b.duration,
+        event: {},
+        childs: []
+      }
+      let endS = {
+        style: {'default': 'info'},
+        format: 'info',
+        key: '',
+        value: b.endTime,
+        event: {},
+        childs: []
+      }
+      let time = {
+        key: 'Time',
+        format: 'plainText',
+        style: {'default': 'subTitle'},
+        childs: [[[startHS, durHS, endHS], [startS, durS, endS]]]
+      }
 
-      prop.telescopes = {data: {}, childs: {}}
-      prop.telescopes.data.telescopes = [b.telIds]
+      let exeState = {
+        key: 'Execution State',
+        format: 'plainText',
+        style: {'default': 'subTitle'},
+        childs: []
+      }
+      exeState.childs.push({
+        style: {'default': 'info'},
+        format: 'comboList',
+        key: 'State',
+        value: {
+          current: b.exeState.state,
+          select: ['done', 'wait', 'run']
+        },
+        event: {
+          click: createStateList,
+          mouseover: () => {},
+          mouseout: () => {}
+        },
+        childs: []
+      })
+      exeState.childs.push({
+        style: {'default': 'info'},
+        format: 'comboList',
+        key: 'canRun',
+        value: {
+          current: b.exeState.canRun,
+          select: ['true', 'false']
+        },
+        event: {
+          click: createStateList,
+          mouseover: () => {},
+          mouseout: () => {}
+        },
+        childs: []
+      })
 
-      return prop
+      let pointing = {
+        key: 'Pointing',
+        format: 'plainText',
+        style: {'default': 'subTitle'},
+        childs: []
+      }
+      pointing.childs.push({
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'Id',
+        value: b.pointingId,
+        event: {},
+        childs: []
+      })
+      pointing.childs.push({
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'Name',
+        value: b.pointingName,
+        childs: []
+      })
+      pointing.childs.push({
+        style: {'default': 'info'},
+        format: 'info',
+        key: 'Position',
+        value: b.pointingPos,
+        childs: []
+      })
+
+      let telescopes = {
+        key: 'Telescopes',
+        format: 'plainText',
+        style: {'default': 'subTitle'},
+        childs: []
+      }
+      telescopes.childs.push({
+        style: {'default': 'info'},
+        format: 'list',
+        key: '',
+        value: b.telIds,
+        event: {},
+        childs: []
+      })
+
+      let root = {title: {}, style: {}, childs: [exeState, time, pointing, telescopes]}
+      return root
     }
     function createBlocksInfoPanel (data) {
       let dim = {

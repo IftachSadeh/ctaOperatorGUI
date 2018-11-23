@@ -782,6 +782,7 @@ window.BlockQueueModif = function (optIn) {
       .attr('dy', com.main.box.h * 0.06)
       .style('font-weight', 'bold')
       .style('font-size', com.main.box.h * 0.16)
+      .style('vector-effect', 'non-scaling-stroke')
       .style('pointer-events', 'none')
       .style('user-select', 'none')
       .style('fill', com.main.colorTheme.dark.background)
