@@ -747,7 +747,7 @@ window.BlockQueueCreator = function (optIn) {
     let modif = [{prop: 'startTime', old: newBlock.data.startTime, new: newStart}]
 
     if (com.interaction.mode.current === 'cancel') {
-      modif.push({prop: 'exeState', old: d.data.exeState, new: {state: 'cancel', canRun: false}})
+      modif.push({prop: 'state', old: d.data.exeState.state, new: 'cancel'})
     }
 
     blockQueue.sendModification(d.data.obId, modif)

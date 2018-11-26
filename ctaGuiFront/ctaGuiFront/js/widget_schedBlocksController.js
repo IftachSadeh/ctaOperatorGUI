@@ -80,8 +80,8 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
 // additional socket events for this particular widget type
 // ---------------------------------------------------------------------------------------------------
 let sockSchedBlocksController = function (optIn) {
-  // let widgetType   = optIn.widgetType;
-  // let widgetSource = optIn.widgetSource;
+  let widgetType = optIn.widgetType
+  let widgetSource = optIn.widgetSource
   // // ---------------------------------------------------------------------------------------------------
   // // get data from the server for a given telescope
   // // ---------------------------------------------------------------------------------------------------
@@ -99,6 +99,42 @@ let sockSchedBlocksController = function (optIn) {
   //   sock.socket.emit('widget', dataEmit);
   //   return;
   // }
+
+  // FUNCTION TO SEND DATA TO THE REDIS DATABASE (need eqivalent function in .py)
+  this.pushNewBlockQueue = function (optIn) {
+    if (sock.conStat.isOffline()) return
+
+    let data = {}
+    data.widgetId = optIn.widgetId
+    data.newBlockQueue = optIn.newBlockQueue
+
+    let dataEmit = {
+      widgetSource: widgetSource,
+      widgetName: widgetType,
+      widgetId: data.widgetId,
+      methodName: 'schedBlockControllerPushNewBlockQueue',
+      methodArgs: data
+    }
+    sock.socket.emit('widget', dataEmit)
+  }
+
+  // EXEMPLE OF FUNCTION TO RECEIVE DATA FROM THE REDIS DATABASE
+  // ---------------------------------------------------------------------------------------------------
+  // get update for state1 data which was explicitly asked for by a given module
+  // ---------------------------------------------------------------------------------------------------
+  // sock.socket.on('arrZoomerGetDataS1', function (data) {
+  //   if (sock.conStat.isOffline()) return
+  //
+  //   if (data.id !== '' && data.type === 's11') {
+  //     // console.log('-server- getDataS1 ',data);
+  //     if (hasVar(sock.widgetV[widgetType].widgets[data.widgetId])) {
+  //       sock.widgetV[widgetType].widgets[data.widgetId].getDataS1(
+  //         data.widgetId,
+  //         data
+  //       )
+  //     }
+  //   }
+  // })
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -386,6 +422,23 @@ let mainSchedBlocksController = function (optIn) {
       return colorTheme.blocks.cancelSys
     } else return colorTheme.blocks.shutdown
   }
+  function cleanOptimizedBlockQueue () {
+    let cleanQueue = deepCopy(shared.main.data.copy.optimized)
+    for (let key in cleanQueue.blocks) {
+      let group = cleanQueue.blocks[key]
+      for (let i = 0; i < group.length; i++) {
+        delete group[i].modifications
+      }
+    }
+    return cleanQueue
+  }
+  function pushNewBlockQueue () {
+    sock.widgetV[widgetType].SockFunc.pushNewBlockQueue({
+      widgetId: widgetId,
+      newBlockQueue: cleanOptimizedBlockQueue()
+    })
+  }
+  this.pushNewBlockQueue = pushNewBlockQueue
   function pullData () {
     shared.main.data.copy.original = {blocks: deepCopy(shared.main.data.server).blocks}
 
@@ -539,6 +592,7 @@ let mainSchedBlocksController = function (optIn) {
       }
       mainUnfocusOnSchedBlocks(shared.main.focus.schedBlocks)
       svgInformation.unfocusSchedBlocks()
+      mainUnfocusOnBlock(shared.main.focus.block)
     }
     shared.main.focus.schedBlocks = schedB
     svgSchedulingBlocksOverview.focusOnSchedBlocks(schedB)
@@ -546,6 +600,7 @@ let mainSchedBlocksController = function (optIn) {
     blockQueueCreator.focusOnSchedBlocks(schedB)
     blockQueueModif.focusOnSchedBlocks(schedB)
     blockQueueOptimized.focusOnSchedBlocks(schedB)
+    console.log(shared.main.focus.schedBlocks);
   }
   function mainUnfocusOnSchedBlocks () {
     svgInformation.unfocusSchedBlocks()
@@ -559,7 +614,7 @@ let mainSchedBlocksController = function (optIn) {
 
   function mainFocusOnBlock (block) {
     if (shared.main.focus.block !== undefined) {
-      if (shared.main.focus.block.obId === block.obId) {
+      if (shared.main.focus.block === block.obId) {
         mainUnfocusOnBlock(block)
         return
       }
@@ -568,20 +623,21 @@ let mainSchedBlocksController = function (optIn) {
     mainUnfocusOnSchedBlocks()
     mainFocusOnSchedBlocks(block.sbId)
 
-    shared.main.focus.block = block
+    shared.main.focus.block = block.obId
     // svgSchedulingBlocksOverview.focusOnSchedBlocks(block)
     svgInformation.focusOnBlock(block.obId)
     blockQueueCreator.focusOnBlock(block.obId)
     blockQueueModif.focusOnBlock(block.obId)
     blockQueueOptimized.focusOnBlock(block.obId)
   }
-  function mainUnfocusOnBlock (block) {
+  function mainUnfocusOnBlock () {
+    if (!shared.main.focus.block) return
     svgInformation.unfocusBlock()
     svgInformation.focusOnSchedBlocks(shared.main.focus.schedBlocks)
+    blockQueueCreator.unfocusOnBlock(shared.main.focus.block)
+    blockQueueModif.unfocusOnBlock(shared.main.focus.block)
+    blockQueueOptimized.unfocusOnBlock(shared.main.focus.block)
     shared.main.focus.block = undefined
-    blockQueueCreator.unfocusOnBlock(block.obId)
-    blockQueueModif.unfocusOnBlock(block.obId)
-    blockQueueOptimized.unfocusOnBlock(block.obId)
   }
 
   function mainOverSchedBlocks (schedB) {
@@ -612,44 +668,117 @@ let mainSchedBlocksController = function (optIn) {
     mainOutSchedBlocks(block.sbId)
   }
 
-  function addModifications (from, blockId, modifs) {
+  function getBlockBySched (schedId) {
+    let blocks = {
+      original: [],
+      modified: [],
+      optimized: []
+    }
+    for (let key in shared.main.data.copy.original.blocks) {
+      let group = shared.main.data.copy.original.blocks[key]
+      for (let i = 0; i < group.length; i++) {
+        if (group[i].sbId === schedId) {
+          blocks.original.push({data: group[i], key: key, index: i})
+        }
+      }
+    }
+    for (let key in shared.main.data.copy.modified.blocks) {
+      let group = shared.main.data.copy.modified.blocks[key]
+      for (let i = 0; i < group.length; i++) {
+        if (group[i].sbId === schedId) {
+          blocks.modified.push({data: group[i], key: key, index: i})
+        }
+      }
+    }
+    for (let key in shared.main.data.copy.optimized.blocks) {
+      let group = shared.main.data.copy.optimized.blocks[key]
+      for (let i = 0; i < group.length; i++) {
+        if (group[i].sbId === schedId) {
+          blocks.optimized.push({data: group[i], key: key, index: i})
+        }
+      }
+    }
+    return blocks
+  }
+  function getBlockById (blockId) {
+    let block = {
+      original: {data: undefined, key: undefined, index: undefined},
+      modified: {data: undefined, key: undefined, index: undefined},
+      optimized: {data: undefined, key: undefined, index: undefined}
+    }
     for (let key in shared.main.data.copy.original.blocks) {
       let group = shared.main.data.copy.original.blocks[key]
       for (let i = 0; i < group.length; i++) {
         if (group[i].obId === blockId) {
+          block.original = {data: group[i], key: key, index: i}
+        }
+      }
+    }
+    for (let key in shared.main.data.copy.modified.blocks) {
+      let group = shared.main.data.copy.modified.blocks[key]
+      for (let i = 0; i < group.length; i++) {
+        if (group[i].obId === blockId) {
+          block.modified = {data: group[i], key: key, index: i}
+        }
+      }
+    }
+    for (let key in shared.main.data.copy.optimized.blocks) {
+      let group = shared.main.data.copy.optimized.blocks[key]
+      for (let i = 0; i < group.length; i++) {
+        if (group[i].obId === blockId) {
+          block.optimized = {data: group[i], key: key, index: i}
+        }
+      }
+    }
+    return block
+  }
+
+  function applyModification (block, modif) {
+    let old
+    console.log(modif.prop);
+    switch (modif.prop) {
+      case 'startTime':
+        old = block.startTime
+        block.startTime = modif.new
+        block.endTime = modif.new + block.duration
+        if (!block.modifications.userModifications[modif.prop]) block.modifications.userModifications[modif.prop] = []
+        block.modifications.userModifications[modif.prop].push({new: modif.new, old: old})
+        break
+      case ('state'):
+        old = block.exeState
+        block.exeState = {state: modif.new, canRun: old.canRun}
+        if (!block.modifications.userModifications['state']) block.modifications.userModifications['state'] = []
+        block.modifications.userModifications['state'].push({new: modif.new, old: old.state})
+        break
+      case ('canRun'):
+        old = block.exeState
+        block.exeState = {state: modif.new, canRun: old.canRun}
+        if (!block.modifications.userModifications[modif.prop]) block.modifications.userModifications[modif.prop] = []
+        block.modifications.userModifications['canRun'].push({new: {state: modif.new, canRun: old.canRun}, old: old})
+        break
+      default:
+    }
+    return block
+  }
+  function addSchedBlocksModifications (from, schedId, modifs) {
+    for (let key in shared.main.data.copy.original.blocks) {
+      let group = shared.main.data.copy.original.blocks[key]
+      for (let i = 0; i < group.length; i++) {
+        if (group[i].sbId === schedId) {
           group[i].modifications.modified = true
         }
       }
     }
 
-    function applyModification (block, modif) {
-      if (!block.modifications.userModifications[modif.prop]) block.modifications.userModifications[modif.prop] = []
-      switch (modif.prop) {
-        case 'startTime':
-          let oldStart = block.startTime
-          block.startTime = modif.new
-          block.endTime = modif.new + block.duration
-          block.modifications.userModifications[modif.prop].push({new: modif.new, old: oldStart})
-          break
-        case 'exeState':
-          let oldState = block.exeState
-          block.exeState = modif.new
-          block.modifications.userModifications[modif.prop].push({new: modif.new, old: oldState})
-          break
-        default:
-      }
-      return block
-    }
-
     for (let key in shared.main.data.copy.modified.blocks) {
       let group = shared.main.data.copy.modified.blocks[key]
-      for (let i = 0; i < group.length; i++) {
-        if (group[i].obId === blockId) {
+      for (let i = group.length - 1; i > -1; i--) {
+        if (group[i].sbId === schedId) {
           let block = group[i]
           block.modifications.modified = true
           for (let modif in modifs) {
             block = applyModification(block, modifs[modif])
-            if (modifs[modif].prop === 'exeState') {
+            if (modifs[modif].prop === 'state') {
               group.splice(i, 1)
               shared.main.data.copy.modified.blocks['done'].push(block)
             }
@@ -664,7 +793,44 @@ let mainSchedBlocksController = function (optIn) {
     svgBlocksQueueModif.updateData()
     optimizer()
   }
-  this.addModifications = addModifications
+  function addBlockModifications (from, blockId, modifs) {
+    let block = getBlockById(blockId)
+    // for (let key in shared.main.data.copy.original.blocks) {
+    //   let group = shared.main.data.copy.original.blocks[key]
+    //   for (let i = 0; i < group.length; i++) {
+    //     if (group[i].obId === blockId) {
+    //       group[i].modifications.modified = true
+    //     }
+    //   }
+    // }
+    // shared.main.data.copy.original.blocks[block.original.key][block.original.index]
+    block.original.data.modifications.modified = true
+
+    block.modified.data.modifications.modified = true
+    for (let modif in modifs) {
+      block.modified.data = applyModification(block.modified.data, modifs[modif])
+      if (modifs[modif].prop === 'state') {
+        if (modifs[modif].new === 'cancel') {
+          shared.main.data.copy.modified.blocks[block.modified.key].splice(block.modified.index, 1)
+          shared.main.data.copy.modified.blocks['done'].push(block.modified.data)
+        } else if (modifs[modif].new === 'wait') {
+          shared.main.data.copy.modified.blocks[block.modified.key].splice(block.modified.index, 1)
+          shared.main.data.copy.modified.blocks['wait'].push(block.modified.data)
+        } else if (modifs[modif].new === 'run') {
+          shared.main.data.copy.modified.blocks[block.modified.key].splice(block.modified.index, 1)
+          shared.main.data.copy.modified.blocks['run'].push(block.modified.data)
+        }
+      }
+    }
+
+    // shared.main.data.copy.blocks.modified.push(block)
+    // console.log(shared.main.data.copy.blocks);
+    svgBlocksQueueCreator.updateData()
+    svgMiddleInfo.updateData()
+    svgBlocksQueueModif.updateData()
+    optimizer()
+  }
+  this.addBlockModifications = addBlockModifications
   function createBackground () {
     let lineGenerator = d3.line()
       .x(function (d) { return d.x })
@@ -1165,7 +1331,7 @@ let mainSchedBlocksController = function (optIn) {
         },
         pattern: {},
         event: {
-          modifications: addModifications
+          modifications: addBlockModifications
         },
         input: {
           focus: {schedBlocks: undefined, block: undefined},
@@ -1362,7 +1528,7 @@ let mainSchedBlocksController = function (optIn) {
         },
         pattern: {},
         event: {
-          modifications: addModifications
+          modifications: addBlockModifications
         },
         input: {
           focus: {schedBlocks: undefined, block: undefined},
@@ -1956,6 +2122,9 @@ let mainSchedBlocksController = function (optIn) {
         .attr('height', 25)
         .attr('x', reserved.box.w * 0.6 - 12.5)
         .attr('y', reserved.box.h * 0.52 - 12.5)
+        .on('click', function () {
+          pushNewBlockQueue()
+        })
 
       reserved.push.child.infoText = reserved.g.append('text')
         .text(function (d) {
@@ -2255,8 +2424,6 @@ let mainSchedBlocksController = function (optIn) {
       //     {s: {r: 1, c: 1}, e: {r: 2, c: 1}}],
       //   grid: []
       // })
-
-
       // function drawResolve () {
       //   let rect = g.append('rect')
       //     .attr('class', 'bottom-back')
@@ -3454,7 +3621,9 @@ let mainSchedBlocksController = function (optIn) {
     function initData (dataIn) {
       shared.information.g.attr('transform', 'translate(' + shared.information.box.x + ',' + shared.information.box.y + ')')
       createBackground()
-      createDefaultInfoPanel()
+      if (shared.main.focus.block) createBlocksInfoPanel(shared.main.focus.block)
+      else if (shared.main.focus.schedBlocks) focusOnSchedBlocks(shared.main.focus.schedBlocks)
+      else createDefaultInfoPanel()
     }
     this.initData = initData
     function update () {
@@ -3502,14 +3671,10 @@ let mainSchedBlocksController = function (optIn) {
       scrollForm.updateData({}, 'info')
     }
 
-    function createTargetList () {
-
-    }
-    function createStateList (value) {
-      console.log(value);
-    }
-    function createCanRunList () {
-
+    function schedBlocksEvent (value, d) {
+      addSchedBlocksModifications('svgInformation',
+        shared.main.focus.schedBlocks,
+        [{prop: (d.key.charAt(0).toLowerCase() + d.key.slice(1)), new: value}])
     }
     function createSBPropertiesList (id) {
       let sb = shared.main.data.copy.schedBlocks[id]
@@ -3526,10 +3691,10 @@ let mainSchedBlocksController = function (optIn) {
         key: 'State',
         value: {
           current: sb.exeState.state,
-          select: ['done', 'wait', 'run']
+          select: ['wait', 'cancel', 'run']
         },
         event: {
-          click: createStateList,
+          click: schedBlocksEvent,
           mouseover: () => {},
           mouseout: () => {}
         },
@@ -3544,7 +3709,7 @@ let mainSchedBlocksController = function (optIn) {
           select: ['true', 'false']
         },
         event: {
-          click: createStateList,
+          click: schedBlocksEvent,
           mouseover: () => {},
           mouseout: () => {}
         },
@@ -3566,7 +3731,7 @@ let mainSchedBlocksController = function (optIn) {
           select: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5']
         },
         event: {
-          click: createStateList,
+          click: blockEvent,
           mouseover: () => {},
           mouseout: () => {}
         },
@@ -3705,7 +3870,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('stroke-dasharray', [])
         .on('mouseover', function (d) {
-          if (shared.main.focus.block === d.obId) return
+          // if (shared.main.focus.block === d.obId) return
           mainOverBlock(d)
           // if (shared.main.focus.schedBlocks === d.scheduleId) return
           // d3.select(this)
@@ -3718,7 +3883,7 @@ let mainSchedBlocksController = function (optIn) {
           // schedBlocksOverEmiter(d)
         })
         .on('mouseout', function (d) {
-          if (shared.main.focus.block === d.obId) return
+          // if (shared.main.focus.block === d.obId) return
           mainOutBlock(d)
           // console.log(shared.main.focus.schedBlocks);
           // if (shared.main.focus.schedBlocks === d.scheduleId) return
@@ -3826,6 +3991,11 @@ let mainSchedBlocksController = function (optIn) {
       })
     }
 
+    function blockEvent (value, d) {
+      addBlockModifications('svgInformation',
+        shared.main.focus.block,
+        [{prop: (d.key.charAt(0).toLowerCase() + d.key.slice(1)), new: value}])
+    }
     function createBPropertiesList (b) {
       // let prop = {}
 
@@ -3909,10 +4079,10 @@ let mainSchedBlocksController = function (optIn) {
         key: 'State',
         value: {
           current: b.exeState.state,
-          select: ['done', 'wait', 'run']
+          select: ['wait', 'cancel', 'run']
         },
         event: {
-          click: createStateList,
+          click: blockEvent,
           mouseover: () => {},
           mouseout: () => {}
         },
@@ -3927,7 +4097,7 @@ let mainSchedBlocksController = function (optIn) {
           select: ['true', 'false']
         },
         event: {
-          click: createStateList,
+          click: blockEvent,
           mouseover: () => {},
           mouseout: () => {}
         },
@@ -3981,7 +4151,8 @@ let mainSchedBlocksController = function (optIn) {
       let root = {title: {}, style: {}, childs: [exeState, time, pointing, telescopes]}
       return root
     }
-    function createBlocksInfoPanel (data) {
+    function createBlocksInfoPanel (idBlock) {
+      let data = getBlockById(idBlock).modified.data
       let dim = {
         x: shared.information.box.w * 0.15,
         y: 0,
@@ -4062,7 +4233,7 @@ let mainSchedBlocksController = function (optIn) {
         .each(function (d) {
           d3.select(this).attr('fill', (d.obId === bId ? colorTheme.darker.background : colorTheme.dark.background))
           d3.select(this).attr('stroke-width', (d.obId === bId ? 2 : 0.2))
-          if (d.obId === bId) createBlocksInfoPanel(d)
+          if (d.obId === bId) createBlocksInfoPanel(bId)
         })
     }
     this.focusOnBlock = focusOnBlock

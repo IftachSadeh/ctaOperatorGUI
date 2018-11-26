@@ -82,127 +82,127 @@ window.ScrollForm = function (optIn) {
   }
   this.updateData = updateData
 
-  function formatData (key, data, div) {
-    let keyMaj = key.charAt(0).toUpperCase() + key.slice(1)
-    if (com.data.format === 'modification') {
-      div.append('label')
-        .html(keyMaj)
-        .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('background', 'transparent')
-        .style('margin-left', '6px')
-      div.append('label')
-        .html(' : ')
-        .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('background', 'transparent')
-      div.append('label')
-        .html(data.old)
-        .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('background', 'transparent')
-      div.append('label')
-        .html('-> ')
-        .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('background', 'transparent')
-      div.append('label')
-        .html(data.new)
-        .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('background', 'transparent')
-    } else if (com.data.format === 'info') {
-      div.on('click', function (d) { if (data.click) data.click(div) })
-      div.on('mouseover', function (d) {
-        if (data.mouseover) {
-          div.style('background-color', '#F1F1F1')
-          data.mouseover(key, data)
-        }
-      })
-      div.on('mouseout', function (d) {
-        if (data.mouseout) {
-          div.style('background-color', 'transparent')
-          data.mouseout(key, data)
-        }
-      })
-      div.append('label')
-        .html(keyMaj)
-        .attr('id', 'key')
-        .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('background', 'transparent')
-        .style('margin-left', '6px')
-      div.append('label')
-        .attr('id', 'dot')
-        .html(' : ')
-        .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('background', 'transparent')
-      if (data.new) {
-        div.append('label')
-          .attr('id', 'new')
-          .html(data.new)
-          .style('display', 'inline-block')
-          .style('color', '#000000')
-          .style('font-size', 10 + 'px')
-          .style('background', 'transparent')
-        div.append('label')
-          .attr('id', 'arrow')
-          .html(' -> ')
-          .style('display', 'inline-block')
-          .style('color', '#000000')
-          .style('font-size', 10 + 'px')
-          .style('background', 'transparent')
-      }
-      if (data.format) {
-        if (data.format.type === 'comboList') comboList(div, data)
-        return
-      }
-      div.append('label')
-        .attr('id', 'old')
-        .html(data.value)
-        .style('display', 'inline-block')
-        .style('color', '#000000')
-        .style('font-size', 10 + 'px')
-        .style('background', 'transparent')
-    }
-  }
+  // function formatData (key, data, div) {
+  //   let keyMaj = key.charAt(0).toUpperCase() + key.slice(1)
+  //   if (com.data.format === 'modification') {
+  //     div.append('label')
+  //       .html(keyMaj)
+  //       .style('display', 'inline-block')
+  //       .style('color', '#000000')
+  //       .style('font-size', 10 + 'px')
+  //       .style('background', 'transparent')
+  //       .style('margin-left', '6px')
+  //     div.append('label')
+  //       .html(' : ')
+  //       .style('display', 'inline-block')
+  //       .style('color', '#000000')
+  //       .style('font-size', 10 + 'px')
+  //       .style('background', 'transparent')
+  //     div.append('label')
+  //       .html(data.old)
+  //       .style('display', 'inline-block')
+  //       .style('color', '#000000')
+  //       .style('font-size', 10 + 'px')
+  //       .style('background', 'transparent')
+  //     div.append('label')
+  //       .html('-> ')
+  //       .style('display', 'inline-block')
+  //       .style('color', '#000000')
+  //       .style('font-size', 10 + 'px')
+  //       .style('background', 'transparent')
+  //     div.append('label')
+  //       .html(data.new)
+  //       .style('display', 'inline-block')
+  //       .style('color', '#000000')
+  //       .style('font-size', 10 + 'px')
+  //       .style('background', 'transparent')
+  //   } else if (com.data.format === 'info') {
+  //     div.on('click', function (d) { if (data.click) data.click(div) })
+  //     div.on('mouseover', function (d) {
+  //       if (data.mouseover) {
+  //         div.style('background-color', '#F1F1F1')
+  //         data.mouseover(key, data)
+  //       }
+  //     })
+  //     div.on('mouseout', function (d) {
+  //       if (data.mouseout) {
+  //         div.style('background-color', 'transparent')
+  //         data.mouseout(key, data)
+  //       }
+  //     })
+  //     div.append('label')
+  //       .html(keyMaj)
+  //       .attr('id', 'key')
+  //       .style('display', 'inline-block')
+  //       .style('color', '#000000')
+  //       .style('font-size', 10 + 'px')
+  //       .style('background', 'transparent')
+  //       .style('margin-left', '6px')
+  //     div.append('label')
+  //       .attr('id', 'dot')
+  //       .html(' : ')
+  //       .style('display', 'inline-block')
+  //       .style('color', '#000000')
+  //       .style('font-size', 10 + 'px')
+  //       .style('background', 'transparent')
+  //     if (data.new) {
+  //       div.append('label')
+  //         .attr('id', 'new')
+  //         .html(data.new)
+  //         .style('display', 'inline-block')
+  //         .style('color', '#000000')
+  //         .style('font-size', 10 + 'px')
+  //         .style('background', 'transparent')
+  //       div.append('label')
+  //         .attr('id', 'arrow')
+  //         .html(' -> ')
+  //         .style('display', 'inline-block')
+  //         .style('color', '#000000')
+  //         .style('font-size', 10 + 'px')
+  //         .style('background', 'transparent')
+  //     }
+  //     if (data.format) {
+  //       if (data.format.type === 'comboList') comboList(div, data)
+  //       return
+  //     }
+  //     div.append('label')
+  //       .attr('id', 'old')
+  //       .html(data.value)
+  //       .style('display', 'inline-block')
+  //       .style('color', '#000000')
+  //       .style('font-size', 10 + 'px')
+  //       .style('background', 'transparent')
+  //   }
+  // }
 
-  function fillDivs (title, group, divs, index) {
-    let info = group.data
-    let childs = group.childs
-    title = title.charAt(0).toUpperCase() + title.slice(1)
-    let innerDiv = divs[index].append('div')
-      .style('margin-bottom', '6px')
-      .style('background', colorTheme.brighter.background)
-    innerDiv.append('label')
-      .html(com.titles.data[index].extension + title)
-      .attr('class', 'title')
-      .style('display', 'block')
-      .style('color', colorTheme.dark.text)
-      .style('background', colorTheme.dark.background)
-    for (let key in info) {
-      let lines = info[key]
-      let lineDiv = innerDiv.append('div')
-      formatData(key, lines, lineDiv)
-      // for (let j = 0; j < lines.length; j++) {
-      //   let modif = lines[j]
-      //   let lineDiv = innerDiv.append('div')
-      //     .style('background', (j % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
-      //   formatData(key, modif, lineDiv)
-      // }
-    }
-    for (var children in childs) {
-      fillDivs(children, childs[children], divs, index + 1)
-    }
-  }
+  // function fillDivs (title, group, divs, index) {
+  //   let info = group.data
+  //   let childs = group.childs
+  //   title = title.charAt(0).toUpperCase() + title.slice(1)
+  //   let innerDiv = divs[index].append('div')
+  //     .style('margin-bottom', '6px')
+  //     .style('background', colorTheme.brighter.background)
+  //   innerDiv.append('label')
+  //     .html(com.titles.data[index].extension + title)
+  //     .attr('class', 'title')
+  //     .style('display', 'block')
+  //     .style('color', colorTheme.dark.text)
+  //     .style('background', colorTheme.dark.background)
+  //   for (let key in info) {
+  //     let lines = info[key]
+  //     let lineDiv = innerDiv.append('div')
+  //     formatData(key, lines, lineDiv)
+  //     // for (let j = 0; j < lines.length; j++) {
+  //     //   let modif = lines[j]
+  //     //   let lineDiv = innerDiv.append('div')
+  //     //     .style('background', (j % 2 === 1 ? colorTheme.bright.background : colorTheme.brighter.background))
+  //     //   formatData(key, modif, lineDiv)
+  //     // }
+  //   }
+  //   for (var children in childs) {
+  //     fillDivs(children, childs[children], divs, index + 1)
+  //   }
+  // }
 
   function plainTextDiv (div) {
     // title = title.charAt(0).toUpperCase() + title.slice(1)
@@ -323,8 +323,8 @@ window.ScrollForm = function (optIn) {
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
   }
-  function comboListDiv (div) {
-    div.on('click', function (d) { if (d.event.click) d.event.click(d) })
+  function dropDownDiv (div) {
+    // div.on('click', function (d) { if (d.event.click) d.event.click(d) })
     div.on('mouseover', function (d) {
       if (d.event.mouseover) {
         div.style('background-color', '#F1F1F1')
@@ -338,7 +338,7 @@ window.ScrollForm = function (optIn) {
       }
     })
 
-    div.attr('class', 'divForm comboListDiv')
+    div.attr('class', 'divForm dropDownDiv')
 
     div.append('label')
       .attr('class', 'key')
@@ -357,20 +357,23 @@ window.ScrollForm = function (optIn) {
       .style('color', '#000000')
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
-    div.append('select')
+    let selector = div.append('select')
       .style('width', 'auto')
       .style('font-size', '9px')
       .style('height', div.style('height'))
       .style('border', '0.2px')
       .on('change', function (d) {
         let selectValue = div.select('select').property('value')
-        d.event.click(selectValue)
+        d.event.click(selectValue, d)
       })
-      .selectAll('option')
+    selector.selectAll('option')
       .data(function (d) { return d.value.select })
       .enter()
       .append('option')
       .text(function (d) { return d })
+    selector.property('value', function (d) {
+      return d.value.current
+    })
   }
   function divideDiv (div, data) {
     div.selectAll('div.divideChilds')
@@ -406,7 +409,7 @@ window.ScrollForm = function (optIn) {
         } else {
           if (d.format === 'plainText') plainTextDiv(d3.select(this))
           else if (d.format === 'info') infoDiv(d3.select(this))
-          else if (d.format === 'comboList') comboListDiv(d3.select(this))
+          else if (d.format === 'comboList') dropDownDiv(d3.select(this))
           else if (d.format === 'modification') modificationDiv(d3.select(this))
           createSubForm(d3.select(this), d.childs)
         }

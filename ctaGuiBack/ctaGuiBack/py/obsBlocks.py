@@ -989,6 +989,10 @@ class obsBlocks_noACS():
 
         self.redis.pipe.set(name="external_clockEvents", data=self.external_clockEvents, packed=True)
 
+    def external_updateAllBlocksFromRedis(self):
+        for block in self.allBlocks:
+            self.redis.pipe.get(block['obId'])
+        self.allBlocks = self.redis.pipe.execute(packed=True)
     # -----------------------------------------------------------------------------------------------------------
     #
     # -----------------------------------------------------------------------------------------------------------
@@ -1000,6 +1004,7 @@ class obsBlocks_noACS():
             if self.timeOfNight.getResetTime() > self.prevResetTime:
                 self.init()
             else:
+                self.external_updateAllBlocksFromRedis()
                 waitV = [x for x in self.allBlocks if x['exeState']
                          ['state'] == 'wait']
                 runV = [x for x in self.allBlocks if x['exeState']
