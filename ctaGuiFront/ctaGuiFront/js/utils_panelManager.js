@@ -157,6 +157,11 @@ window.PanelManager = function () {
       // if (com.tab.dragable) d.setTabEvent('drag', drag)
       // if (com.tab.closable) d.setTabEvent('close', function () { removePanel(d, i) })
     })
+    mergedLabels.on('click', function (d) {
+      mergedLabels.each(function (d1, i) { d1.unselectTab() })
+      d.selectTab()
+      setFocusOnPanel(d)
+    })
 
     labels.exit().remove()
   }
@@ -310,7 +315,7 @@ window.CustomPanel = function () {
   }
   this.setRepaintTab = setRepaintTab
   function repaintTab () {
-    if (com.tab.repaint) com.tab.repaint(com.tab.g)
+    if (com.tab.repaint) com.tab.repaint(com.tab.g, com.data)
   }
   this.repaintTab = repaintTab
   // function drawTab (optIn) {
@@ -318,7 +323,7 @@ window.CustomPanel = function () {
   // }
   // this.drawTab = drawTab
   function selectTab (optIn) {
-    com.tab.select(com.tab.g)
+    com.tab.select(com.tab.g, com.data)
   }
   this.selectTab = selectTab
   function unselectTab (optIn) {
@@ -363,7 +368,7 @@ window.CustomPanel = function () {
   }
   this.setRepaintPanel = setRepaintPanel
   function repaintPanel (g) {
-    if (com.content.repaint) com.content.repaint(com.content.g)
+    if (com.content.repaint) com.content.repaint(com.content.g, com.data)
   }
   this.repaintPanel = repaintPanel
 

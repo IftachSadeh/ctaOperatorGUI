@@ -227,10 +227,10 @@ let mainCommentNightSched = function (optIn) {
 
     com.dataIn = dataIn
 
-    svgBlocks.initData(dataIn.data)
+    // svgBlocks.initData(dataIn.data)
     svgEvents.initData(dataIn.data)
     // svgTels.initData(dataIn.data)
-    //svgFilterBlocks.initData()
+    // svgFilterBlocks.initData()
     // svgFilterTels.initData()
     svgMiddleInfo.initData(dataIn.data)
     svgBottomInfo.initData(dataIn.data)
@@ -246,10 +246,10 @@ let mainCommentNightSched = function (optIn) {
     // clusterData(com.dataIn.data)
     // filterData(com.dataIn.data)
 
-    svgBlocks.updateData(dataIn.data)
+    // svgBlocks.updateData(dataIn.data)
     svgEvents.updateData(dataIn.data)
     // svgTels.updateData(dataIn.data)
-    //svgFilterBlocks.updateData(dataIn.data)
+    // svgFilterBlocks.updateData(dataIn.data)
     svgMiddleInfo.updateData(dataIn.data)
     svgBottomInfo.updateData(dataIn.data)
   }
