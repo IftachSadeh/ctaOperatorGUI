@@ -190,4 +190,11 @@ class schedBlocksController():
         self.redis.pipe.execute()
         print newBlocks
 
+        self.mySock.socketEvtWidgetV(
+            evtName="newSchedulePushed",
+            data={},
+            sessIdV=[self.mySock.sessId],
+            widgetIdV=[self.widgetId]
+        )
+
         return

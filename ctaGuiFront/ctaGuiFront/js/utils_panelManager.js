@@ -51,6 +51,7 @@ window.PanelManager = function () {
   // ---------------------------------------------------------------------------------------------------
 
   function createDefault () {
+    if (com.debug) console.log('createDefault')
     function paintTab (g) {
       g.append('rect')
         .attr('x', com.tab.box.x)
@@ -73,12 +74,18 @@ window.PanelManager = function () {
 
     let defaultPanel = new CustomPanel()
     defaultPanel.set({tag: 'id', def: 'default'})
+    defaultPanel.set({tag: 'opt', def: {
+      focusable: true,
+      focusOnCreation: true,
+      insert: 'after'
+    }})
     defaultPanel.setRepaintPanel(paintContent)
     defaultPanel.setRepaintTab(paintTab)
     addNewPanel(defaultPanel)
   }
   function init (optIn) {
     com = optIn
+    if (com.debug) console.log('init')
 
     com.tab.box.x = com.box.w * com.tab.box.x
     com.tab.box.y = com.box.h * com.tab.box.y
@@ -107,6 +114,7 @@ window.PanelManager = function () {
   this.init = init
 
   function removePanel (panel) {
+    if (com.debug) console.log('removePanel', panel)
     let i = -1
     for (i = 0; i < com.panels.length; i++) {
       if (com.panels.all[i] === panel) break
@@ -128,11 +136,14 @@ window.PanelManager = function () {
   this.removePanel = removePanel
 
   function resizeTab () {
+    if (com.debug) console.log('resizeTab')
     let w = com.tab.box.w
     let h = com.tab.box.h
     com.tab.dimension = {w: w, h: h} // ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
   }
   function updateTab (data) {
+    if (com.debug) console.log('updateTab', data)
+
     let labels = com.tab.g.selectAll('g.label')
       .data(com.panels.all)
     let enterLabels = labels
@@ -158,7 +169,8 @@ window.PanelManager = function () {
       // if (com.tab.closable) d.setTabEvent('close', function () { removePanel(d, i) })
     })
     mergedLabels.on('click', function (d) {
-      mergedLabels.each(function (d1, i) { d1.unselectTab() })
+      console.log('clickGroupofTab');
+      // mergedLabels.each(function (d1, i) { d1.unselectTab() })
       d.selectTab()
       setFocusOnPanel(d)
     })
@@ -194,9 +206,18 @@ window.PanelManager = function () {
     })
 
   function setFocusOnPanel (panel) {
-    if (com.panels.current) {
-      if (com.panels.current === panel) return
-      com.panels.current.unselectTab()
+    if (com.debug) console.log('setFocusOnPanel', panel)
+
+    let opt = panel.getOptions()
+    if (!opt.focusable) {
+      if (com.panels.current) {
+        com.panels.current.selectTab()
+      }
+    } else {
+      if (com.panels.current) {
+        if (com.panels.current === panel) return
+        com.panels.current.unselectTab()
+      }
     }
     com.panels.current = panel
     panel.selectTab()
@@ -204,6 +225,8 @@ window.PanelManager = function () {
   }
 
   function updateInformation () {
+    if (com.debug) console.log('updateInfo')
+
     com.content.g.selectAll().remove()
     com.content.g
       .attr('width', com.content.box.w)
@@ -214,16 +237,37 @@ window.PanelManager = function () {
   this.updateInformation = updateInformation
 
   function addNewPanel (newPanel) {
+    if (com.debug) console.log('addNewPanel', newPanel)
+
+    let insertPanel = function (newPanel) {
+      let opt = newPanel.getOptions()
+      if (opt.insert === 'first') {
+        com.panels.all.splice(0, 0, newPanel)
+      } else if (opt.insert === 'after') {
+        for (let i = 0; i < com.panels.all.length; i++) {
+          if (com.panels.all[i].get('id') === com.panels.current.get('id')) {
+            com.panels.all.splice(i + 1, 0, newPanel)
+            return
+          }
+        }
+        com.panels.all.push(newPanel)
+      } else if (opt.insert === 'last') {
+        com.panels.all.push(newPanel)
+      }
+    }
     if (com.panels.current && com.panels.current.get('id') === 'default') {
       com.panels.current = undefined
       com.panels.all = []
       com.tab.g.selectAll('*').remove()
       com.content.g.selectAll('*').remove()
     }
-    com.panels.all.push(newPanel)
+    let opt = newPanel.getOptions()
+    insertPanel(newPanel)
     resizeTab()
     updateTab()
-    setFocusOnPanel(newPanel)
+    if (!opt.focusOnCreation) com.panels.current.selectTab()
+    else setFocusOnPanel(newPanel)
+    if (com.debug) console.log('End addNewPanel')
   }
   this.addNewPanel = addNewPanel
 }
@@ -264,6 +308,10 @@ window.CustomPanel = function () {
   }
   this.init = init
   /* ********************* TAB ******************************** */
+  function getOptions () {
+    return com['opt']
+  }
+  this.getOptions = getOptions
 
   function setTabProperties (prop, value) {
     com['tab'][prop] = value
@@ -327,7 +375,7 @@ window.CustomPanel = function () {
   }
   this.selectTab = selectTab
   function unselectTab (optIn) {
-    com.tab.unselect(com.tab.g)
+    com.tab.unselect(com.tab.g, com.data)
   }
   this.unselectTab = unselectTab
   // function translateTabTo (x, y) {

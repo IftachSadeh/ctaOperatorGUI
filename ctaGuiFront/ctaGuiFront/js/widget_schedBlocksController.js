@@ -122,19 +122,18 @@ let sockSchedBlocksController = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   // get update for state1 data which was explicitly asked for by a given module
   // ---------------------------------------------------------------------------------------------------
-  // sock.socket.on('arrZoomerGetDataS1', function (data) {
-  //   if (sock.conStat.isOffline()) return
-  //
-  //   if (data.id !== '' && data.type === 's11') {
-  //     // console.log('-server- getDataS1 ',data);
-  //     if (hasVar(sock.widgetV[widgetType].widgets[data.widgetId])) {
-  //       sock.widgetV[widgetType].widgets[data.widgetId].getDataS1(
-  //         data.widgetId,
-  //         data
-  //       )
-  //     }
-  //   }
-  // })
+  sock.socket.on('newSchedulePushed', function (data) {
+    if (sock.conStat.isOffline()) return
+    console.log('newSchedulePushed received');
+
+    $.each(sock.widgetV[widgetType].widgets, function (widgetIdNow, modNow) {
+      console.log(widgetIdNow, modNow);
+      if (data.sessWidgetIds.indexOf(widgetIdNow) >= 0) {
+        console.log(sock.widgetV[widgetType]);
+        sock.widgetV[widgetType].widgets[widgetIdNow].scheduleSuccessfullyUpdate()
+      }
+    })
+  })
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -204,7 +203,7 @@ let mainSchedBlocksController = function (optIn) {
 
   // delay counters
   let locker = new Locker()
-  locker.add('inInit')
+  // locker.add('inInit')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -321,15 +320,52 @@ let mainSchedBlocksController = function (optIn) {
     })
   }
   this.initData = initData
-  function updateData (dataIn) {
+
+  runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
+  function updateDataOnce (dataIn) {
+    if (!locker.isFreeV(['pushNewSchedule'])) {
+      // console.log('pushing...');
+      setTimeout(function () {
+        updateDataOnce(dataIn)
+      }, 10)
+      return
+    }
+    locker.add('updateData')
+    console.log('updateDataOnce');
     shared.data.server = dataIn.data
 
     svgBlocksQueue.updateData()
     svgBlocksQueueCreator.update()
     svgSchedulingBlocksOverview.update()
     svgBlocksQueueOptimized.update()
+    locker.remove('updateData')
+  }
+  function updateData (dataIn) {
+    runLoop.push({ tag: 'updateData', data: dataIn })
   }
   this.updateData = updateData
+
+  function scheduleSuccessfullyUpdate () {
+    svg.g.selectAll('g.pushingNewSchedule')
+      .append('text')
+      .text('... Success')
+      .style('fill', colorTheme.darker.text)
+      .style('font-weight', 'bold')
+      .style('font-size', '30px')
+      .attr('text-anchor', 'middle')
+      .attr('x', lenD.w[0] * 0.7)
+      .attr('y', lenD.h[0] * 0.6)
+    svg.g.selectAll('g.pushingNewSchedule')
+      .transition()
+      .delay(1000)
+      .duration(400)
+      .style('opacity', 0)
+      .on('end', function () {
+        d3.select('g.pushingNewSchedule').remove()
+        locker.remove('pushNewSchedule')
+      })
+  }
+  this.scheduleSuccessfullyUpdate = scheduleSuccessfullyUpdate
   function syncStateSend (dataIn) {
     if (sock.conStat.isOffline()) return
 
@@ -386,34 +422,69 @@ let mainSchedBlocksController = function (optIn) {
     svgSchedulingBlocksOverview.updateData()
   }
   function pushNewBlockQueue () {
-    let cleanQueue = cleanOptimizedBlockQueue()
-    sock.widgetV[widgetType].SockFunc.pushNewBlockQueue({
-      widgetId: widgetId,
-      newBlockQueue: cleanQueue
-    })
-    shared.data.copy.push(deepCopy(shared.data.copy[shared.data.current]))
-    shared.data.current = shared.data.copy.length - 1
-    shared.data.copy[shared.data.current].original = cleanQueue
-    for (var key in shared.data.copy[shared.data.current].original.blocks) {
-      for (var i = 0; i < shared.data.copy[shared.data.current].original.blocks[key].length; i++) {
-        shared.data.copy[shared.data.current].original.blocks[key][i].modifications = {
-          modified: false,
-          userModifications: {},
-          optimizerModifications: {}
+    locker.add('pushNewSchedule')
+    let pushingG = svg.g.append('g')
+      .attr('class', 'pushingNewSchedule')
+    pushingG.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', lenD.w[0])
+      .attr('height', lenD.h[0])
+      .attr('fill', colorTheme.darker.background)
+      .style('opacity', 0)
+      .transition()
+      .duration(400)
+      .style('opacity', 0.8)
+      .on('end', function () {
+        let cleanQueue = cleanOptimizedBlockQueue()
+        sock.widgetV[widgetType].SockFunc.pushNewBlockQueue({
+          widgetId: widgetId,
+          newBlockQueue: cleanQueue
+        })
+
+        function loop (circle) {
+          circle
+            .attr('stroke-dashoffset', (2 * Math.PI * 25) * 0.35)
+            .transition()
+            .duration(1000)
+            .ease(d3.easeCubic)
+            .attr('stroke-dashoffset', -(2 * Math.PI * 25) * 0.65)
+            .on('end', function () {
+              loop(innerCircle)
+            })
         }
-      }
-    }
-    shared.data.copy[shared.data.current].modified = deepCopy(shared.data.copy[shared.data.current].original)
-    shared.data.copy[shared.data.current].optimized = deepCopy(shared.data.copy[shared.data.current].original)
+        pushingG.append('circle')
+          .attr('cx', lenD.w[0] * 0.5)
+          .attr('cy', lenD.h[0] * 0.33)
+          .attr('r', 25)
+          .attr('fill', 'transparent')
+          .attr('stroke', colorTheme.medium.background)
+          .attr('stroke-width', 10)
+        let innerCircle = pushingG.append('circle')
+          .attr('cx', lenD.w[0] * 0.5)
+          .attr('cy', lenD.h[0] * 0.33)
+          .attr('r', 25)
+          .attr('fill', 'transparent')
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 10)
+          .attr('stroke-dasharray', [(2 * Math.PI * 25) * 0.2, (2 * Math.PI * 25) * 0.8])
+          .attr('stroke-dashoffset', (2 * Math.PI * 25) * 0.35)
+        loop(innerCircle)
 
-    updateAllBlocksQueue()
+        pushingG.append('text')
+          .text('Overriding schedule ...')
+          .style('fill', colorTheme.darker.text)
+          .style('font-weight', 'bold')
+          .style('font-size', '30px')
+          .attr('text-anchor', 'middle')
+          .attr('x', lenD.w[0] * 0.3)
+          .attr('y', lenD.h[0] * 0.6)
+      })
 
-    svgMiddleInfo.addNewTab()
-    // pullData()
   }
   this.pushNewBlockQueue = pushNewBlockQueue
+
   function createSchedBlocks () {
-    console.log(shared.data.copy);
     shared.data.copy[shared.data.current].schedBlocks = {}
     for (let key in shared.data.copy[shared.data.current].modified.blocks) {
       for (let i = 0; i < shared.data.copy[shared.data.current].modified.blocks[key].length; i++) {
@@ -830,6 +901,7 @@ let mainSchedBlocksController = function (optIn) {
     // console.log(shared.data.copy[shared.data.current].blocks);
     updateAllBlocksQueue()
     optimizer()
+    svgMiddleInfo.update()
   }
 
   function createBackground () {
@@ -2373,7 +2445,7 @@ let mainSchedBlocksController = function (optIn) {
       svgConflicts.initData(shared.conflicts)
       svgInformation.initData(shared.information)
     }
-    function drawCurrentTab (g) {
+    function drawCurrentTab (g, data) {
       g.selectAll('*').remove()
       g.append('rect')
         .attr('class', 'back')
@@ -2387,8 +2459,8 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke', colorTheme.darker.background)
       g.append('text')
         .attr('class', 'tabName')
-        .text(function (data) {
-          return 'Schedule 1'
+        .text(function () {
+          return 'Schedule:' + data.index
         })
         .attr('x', Number(g.attr('width')) / 2)
         .attr('y', Number(g.attr('height')) / 2)
@@ -2400,67 +2472,31 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', colorTheme.darker.text)
         .attr('stroke', 'none')
     }
-    //
-    // function drawOldContent (g, data) {
-    //   return
-    //   let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) * 0.98, h: Number(g.attr('height') * 0.99)}
-    //   let dimMiddle = {
-    //     x: Number(g.attr('width')) * 0.05,
-    //     y: Number(g.attr('height')) * 0.05,
-    //     w: Number(g.attr('width')) * 0.9,
-    //     h: Number(g.attr('height') * 0.9)
-    //   }
-    //   g.selectAll('*').remove()
-    //   g.append('rect')
-    //     .attr('class', 'back')
-    //     .attr('x', dimBack.x)
-    //     .attr('y', dimBack.y)
-    //     .attr('rx', 3)
-    //     .attr('ry', 3)
-    //     .attr('width', dimBack.w)
-    //     .attr('height', dimBack.h)
-    //     .attr('stroke', 'none')
-    //     .attr('fill', colorTheme.dark.background)
-    //     .attr('stroke-width', 6)
-    //     .attr('stroke-opacity', 1)
-    //   let svgOldModification = new SvgModifications()
-    //   svgOldModification.initData({g: g, box: dimMiddle, oldSource: data.index})
-    //   // shared.schedBlocks = {
-    //   //   g: g.append('g'),
-    //   //   box: dimLeft
-    //   // }
-    //
-    // }
-    // function drawOldTab (g, data) {
-    //     g.selectAll('*').remove()
-    //     g.append('rect')
-    //       .attr('class', 'back')
-    //       .attr('x', 3)
-    //       .attr('y', 0)
-    //       .attr('width', Number(g.attr('width')) - 6)
-    //       .attr('height', Number(g.attr('height')) - 1)
-    //       .attr('fill', colorTheme.darker.background)
-    //       .attr('stroke-width', 3.5)
-    //       .attr('stroke-opacity', 1)
-    //       .attr('stroke', colorTheme.darker.background)
-    //     g.append('text')
-    //       .attr('class', 'tabName')
-    //       .text('Version:' + data.index)
-    //       .attr('x', Number(g.attr('width')) / 2)
-    //       .attr('y', Number(g.attr('height')) / 2)
-    //       .style('font-weight', 'bold')
-    //       .attr('text-anchor', 'middle')
-    //       .style('font-size', Number(g.attr('height')) * 0.6)
-    //       .attr('dy', Number(g.attr('height')) * 0.3)
-    //       .style('pointer-events', 'none')
-    //       .attr('fill', colorTheme.darker.text)
-    //       .attr('stroke', 'none')
-    // }
+    function duplicateTab () {
+      shared.data.copy.push(deepCopy(shared.data.copy[shared.data.current]))
+      shared.data.current = shared.data.copy.length - 1
+      // for (var key in shared.data.copy[shared.data.current].original.blocks) {
+      //   for (var i = 0; i < shared.data.copy[shared.data.current].original.blocks[key].length; i++) {
+      //     shared.data.copy[shared.data.current].original.blocks[key][i].modifications = {
+      //       modified: false,
+      //       userModifications: {},
+      //       optimizerModifications: {}
+      //     }
+      //   }
+      // }
+      // shared.data.copy[shared.data.current].modified = deepCopy(shared.data.copy[shared.data.current].original)
+      // shared.data.copy[shared.data.current].optimized = deepCopy(shared.data.copy[shared.data.current].original)
 
-    function addNewTab () {
+      //updateAllBlocksQueue()
+
       let newPanel = new CustomPanel()
       newPanel.init({
-        id: 'sched-' + shared.data.copy.length - 1,
+        id: 'sched-' + (shared.data.copy.length - 1),
+        opt: {
+          focusable: true,
+          focusOnCreation: true,
+          insert: 'after'
+        },
         tab: {
           g: undefined,
           repaint: drawCurrentTab,
@@ -2478,22 +2514,49 @@ let mainSchedBlocksController = function (optIn) {
       })
       reserved.panelManager.addNewPanel(newPanel)
     }
-    this.addNewTab = addNewTab
 
-    function unselectTab (g) {
+    function unselectTab (g, data) {
       g.select('rect.back')
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.background)
+        .attr('fill', colorTheme.darker.background)
+        .attr('stroke', colorTheme.darker.background)
         .attr('height', Number(g.attr('height')) - 1)
+      g.select('text.tabName')
+        .text(function () {
+          return 'Schedule:' + data.index
+        })
+        .attr('x', Number(g.attr('width')) * 0.5)
+        .attr('fill', colorTheme.darker.text)
+      g.selectAll('rect.copyTab').remove()
     }
     function selectTab (g, data) {
       shared.data.current = data.index
       updateAllBlocksQueue()
 
       g.select('rect.back')
+        .attr('height', Number(g.attr('height')) + 16)
         .attr('fill', colorTheme.dark.background)
         .attr('stroke', colorTheme.dark.background)
-        .attr('height', Number(g.attr('height')) + 16)
+      g.select('text.tabName')
+        .text(function () {
+          return 'Sched:' + data.index
+        })
+        .attr('x', Number(g.attr('width')) / 3)
+        .attr('fill', colorTheme.dark.text)
+
+      g.append('rect')
+        .attr('class', 'copyTab')
+        .attr('x', Number(g.attr('width')) * 0.7)
+        .attr('y', Number(g.attr('height')) * 0.1)
+        .attr('width', Number(g.attr('height')) * 0.92)
+        .attr('height', Number(g.attr('height')) * 0.9)
+        .attr('fill', colorTheme.darker.background)
+        .attr('stroke-width', 3.5)
+        .attr('stroke-opacity', 1)
+        .attr('stroke', colorTheme.darker.background)
+        .on('click', function () {
+          d3.event.stopPropagation()
+          duplicateTab()
+        })
     }
 
     function initData (dataIn) {
@@ -2525,12 +2588,18 @@ let mainSchedBlocksController = function (optIn) {
         options: {
           dragable: false,
           closable: false
-        }
+        },
+        debug: false
       })
 
       defaultPanel = new CustomPanel()
       defaultPanel.init({
-        id: 'sched-1',
+        id: 'sched-0',
+        opt: {
+          focusable: true,
+          focusOnCreation: true,
+          insert: 'after'
+        },
         tab: {
           g: undefined,
           repaint: drawCurrentTab,
@@ -2545,13 +2614,36 @@ let mainSchedBlocksController = function (optIn) {
         data: {index: 0}
       })
       reserved.panelManager.addNewPanel(defaultPanel)
+
+      // let newTab = new CustomPanel()
+      // newTab.init({
+      //   id: 'newTab',
+      //   opt: {
+      //     focusable: false,
+      //     focusOnCreation: false,
+      //     insert: 'last'
+      //   },
+      //   tab: {
+      //     g: undefined,
+      //     repaint: drawNewTab,
+      //     select: createNewTab,
+      //     unselect: () => {},
+      //     close: () => {}
+      //   },
+      //   content: {
+      //     g: undefined,
+      //     repaint: () => {}
+      //   },
+      //   data: {index: 0}
+      // })
+      // reserved.panelManager.addNewPanel(newTab)
     }
     this.initData = initData
 
-    function updateData () {
+    function update () {
       reserved.panelManager.updateInformation()
     }
-    this.updateData = updateData
+    this.update = update
   }
   let SvgSchedulingBlocksOverview = function () {
     let template = {
@@ -2862,6 +2954,7 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.initData = initData
     function update () {
+      console.log('updateModif');
       createModificationsList()
       drawModifications()
     }
@@ -2938,6 +3031,7 @@ let mainSchedBlocksController = function (optIn) {
       }
     }
     function createModificationsList () {
+      console.log('createModificationsList');
       console.log(shared.data.current);
       reserved.data.modifications = {title: {}, style: {}, childs: []}
       if (shared.data.copy.length === 0) return
