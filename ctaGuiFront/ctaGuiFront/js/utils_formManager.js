@@ -133,7 +133,6 @@ window.FormManager = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   function setForm (optIn) {
-    console.log(optIn);
     let id = optIn.id
     let formSubFunc = optIn.formSubFunc
     let preventDefault = hasVar(optIn.preventDefault)

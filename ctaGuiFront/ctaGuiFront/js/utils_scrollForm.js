@@ -33,24 +33,33 @@ window.ScrollForm = function (optIn) {
   com.component.rootDiv = com.component.fo.append('xhtml:div')
     .style('display', 'inline-block')
     .style('border', 0 + 'px solid #78909C')
-    .style('background-color', colorTheme.dark.background)
+    .style('background-color', 'transparent')
     .style('width', rootDivWidth)
-    .style('height', 'calc(100% - ' + com.titles.height + ')')
+    .style('height', function () {
+      if (com.titles.data.length > 0) return 'calc(100% - ' + com.titles.height + ')'
+      return '100%'
+    })
   if (com.quickScroll.enabled) {
     com.component.quickDiv = com.component.fo.append('xhtml:div')
       .style('display', 'inline-block')
       .style('background-color', '#333333')
       .style('width', com.quickScroll.width)
-      .style('height', 'calc(100% - ' + com.titles.height + ')')
+      .style('height', function () {
+        if (com.titles.data.length > 0) return 'calc(100% - ' + com.titles.height + ')'
+        return '100%'
+      })
   }
-  com.component.titleDiv = com.component.rootDiv.append('div')
-    .style('height', com.titles.height)
-    .style('border', 0 + 'px solid #78909C')
-    .style('background-color', colorTheme.darker.background)
+  if (com.titles.data.length > 0) {
+    com.component.titleDiv = com.component.rootDiv.append('div')
+      .style('height', com.titles.height)
+      .style('border', 0 + 'px solid #78909C')
+      .style('background-color', 'transparent')
+      .style('border-radius', '0px 0px 0px 0px')
+  }
   com.component.contentDiv = com.component.rootDiv.append('div')
     .attr('class', 'overflowVerticalDiv')
     .style('border', 0 + 'px solid #78909C')
-    .style('background-color', colorTheme.brighter.background)
+    .style('background-color', 'transparent')
 
   function setTitles () {
     com.component.titles = []
@@ -61,19 +70,21 @@ window.ScrollForm = function (optIn) {
         .style('display', 'inline-block')
         .style('width', 'calc(' + t.width + ' - ' + offsetScroll + 'px)')
         .style('height', com.titles.height)
-        .style('background', colorTheme.darker.background)
+        .style('background', 'transparent')
         .style('text-align', t.anchor)
+        .style('border-radius', '0px 0px 0px 0px')
       comp.append('label')
         .html(t.title)
         .attr('class', 'title')
         .style('display', 'inline-block')
+        .style('font-weight', 'bold')
         .style('color', colorTheme.darker.text)
         .style('font-size', 12 + 'px')
         .style('background', 'transparent')
         .style('text-align', t.anchor)
     }
   }
-  setTitles()
+  if (com.titles.data.length > 0) setTitles()
 
   function updateData (data, format) {
     com.data.data = data
@@ -215,7 +226,7 @@ window.ScrollForm = function (optIn) {
       .html(function (d) { return d.key })
       .attr('class', 'title')
       .style('color', colorTheme.dark.text)
-      .style('background', colorTheme.dark.background)
+      .style('background', 'transparent')
   }
   function modificationDiv (div) {
     div.on('click', function (d) {
@@ -382,11 +393,11 @@ window.ScrollForm = function (optIn) {
       .append('div')
       .attr('class', 'divideChilds')
       .attr('id', function (d) { return 'id_' + d.key })
-      .style('width', (100 / data.length) + '%')
+      .style('width', ((100 / data.length) - (2 * data.length - 1)) + '%')
+      .style('margin-left', '2%')
       .style('display', 'inline-block')
       .style('vertical-align', 'top')
       .each(function (d) {
-        console.log(d);
         createSubForm(d3.select(this), d)
         // if (Array.isArray(d)) {
         //   divideDiv(d3.select(this), d)
@@ -402,9 +413,11 @@ window.ScrollForm = function (optIn) {
       .append('div')
       .attr('class', 'divForm')
       .attr('id', function (d) { return 'id_' + d.key })
-      .style('width', '100%')
+      .style('background', colorTheme.brighter.background)
+      .style('border-radius', '5px 5px 5px 5px')
       .each(function (d) {
         if (Array.isArray(d)) {
+          d3.select(this).style('background', 'transparent')
           divideDiv(d3.select(this), d)
         } else {
           if (d.format === 'plainText') plainTextDiv(d3.select(this))

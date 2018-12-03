@@ -361,7 +361,7 @@ let mainSchedBlocksController = function (optIn) {
       .duration(400)
       .style('opacity', 0)
       .on('end', function () {
-        d3.select('g.pushingNewSchedule').remove()
+        svg.g.selectAll('g.pushingNewSchedule').remove()
         locker.remove('pushNewSchedule')
       })
   }
@@ -905,14 +905,13 @@ let mainSchedBlocksController = function (optIn) {
   }
 
   function createBackground () {
-    let lineGenerator = d3.line()
-      .x(function (d) { return d.x })
-      .y(function (d) { return d.y })
-
     svg.svg
       .style('background', colorTheme.medium.background)
     svg.background = svg.g
 
+    let lineGenerator = d3.line()
+      .x(function (d) { return d.x })
+      .y(function (d) { return d.y })
     let dataPoints1 = [
       {x: lenD.w[0] * 0, y: lenD.h[0] * 0.25},
       {x: lenD.w[0] * 0.48, y: lenD.h[0] * 0.25},
@@ -2381,48 +2380,37 @@ let mainSchedBlocksController = function (optIn) {
     // this.changeFocusElement = changeFocusElement
     function drawCurrentContent (g) {
       let dimBack = {x: 1.5, y: 5, w: Number(g.attr('width')) * 0.98, h: Number(g.attr('height') * 0.99)}
-      let dimLeft = {x: Number(g.attr('width')) * 0.04, y: 0 + Number(g.attr('height') * 0.06), w: Number(g.attr('width')) * 0.1, h: Number(g.attr('height')) * 0.92}
-      let dimTop = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.035), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.3}
-      let dimMiddle = {x: Number(g.attr('width')) * 0.17, y: Number(g.attr('height')) * 0.35, w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height') * 0.32)}
-      let dimBottom = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.685), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.295}
+      let dimLeft = {x: 2, y: 2, w: Number(g.attr('width')) * 0.15, h: Number(g.attr('height')) * 1}
+      let dimTop = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.085), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.28}
+      let dimMiddle = {x: Number(g.attr('width')) * 0.17, y: Number(g.attr('height')) * 0.38, w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height') * 0.27)}
+      let dimBottom = {x: Number(g.attr('width')) * 0.17, y: 0 + Number(g.attr('height') * 0.7), w: Number(g.attr('width')) * 0.78, h: Number(g.attr('height')) * 0.28}
 
       g.selectAll('*').remove()
       g.append('rect')
         .attr('class', 'back')
         .attr('x', dimBack.x)
         .attr('y', dimBack.y)
-        .attr('rx', 3)
-        .attr('ry', 3)
+        .attr('rx', 1)
+        .attr('ry', 1)
         .attr('width', dimBack.w)
         .attr('height', dimBack.h)
-        .attr('stroke', 'none')
+        .attr('stroke', colorTheme.dark.stroke)
         .attr('fill', colorTheme.dark.background)
-        .attr('stroke-width', 6)
+        .attr('stroke-width', 0.2)
         .attr('stroke-opacity', 1)
-      g.append('rect')
-        .attr('class', 'back')
-        .attr('x', dimLeft.x + dimLeft.w * 0.4)
-        .attr('y', dimLeft.y)
-        .attr('rx', 3)
-        .attr('ry', 3)
-        .attr('width', dimLeft.w * 0.2)
-        .attr('height', dimLeft.h)
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('fill', colorTheme.medium.background)
-        .attr('stroke-width', 0.1)
-        .attr('stroke-opacity', 1)
-      g.append('rect')
-        .attr('class', 'back')
-        .attr('x', dimBottom.x)
-        .attr('y', dimBottom.y)
-        .attr('rx', 3)
-        .attr('ry', 3)
-        .attr('width', dimBottom.w)
-        .attr('height', dimBottom.h)
-        .attr('stroke', 'none')
-        .attr('fill', colorTheme.darker.background)
-        .attr('stroke-width', 6)
-        .attr('stroke-opacity', 1)
+
+      // g.append('rect')
+      //   .attr('class', 'back')
+      //   .attr('x', dimBottom.x)
+      //   .attr('y', dimBottom.y)
+      //   .attr('rx', 3)
+      //   .attr('ry', 3)
+      //   .attr('width', dimBottom.w)
+      //   .attr('height', dimBottom.h)
+      //   .attr('stroke', 'none')
+      //   .attr('fill', colorTheme.darker.background)
+      //   .attr('stroke-width', 6)
+      //   .attr('stroke-opacity', 1)
       shared.schedBlocks = {
         g: g.append('g'),
         box: dimLeft
@@ -2447,16 +2435,29 @@ let mainSchedBlocksController = function (optIn) {
     }
     function drawCurrentTab (g, data) {
       g.selectAll('*').remove()
-      g.append('rect')
+      let dataPoints = [
+        {x: Number(g.attr('width')) * 0.1, y: 0},
+        {x: Number(g.attr('width')) * 0.96, y: 0},
+        {x: Number(g.attr('width')) * 0.96, y: Number(g.attr('height')) + 1},
+        {x: Number(g.attr('width')) * 0.02, y: Number(g.attr('height')) + 1},
+        {x: Number(g.attr('width')) * 0.02, y: Number(g.attr('height')) * 0.5},
+        {x: Number(g.attr('width')) * 0.1, y: 0}
+      ]
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      g.append('path')
         .attr('class', 'back')
-        .attr('x', 3)
-        .attr('y', 0)
-        .attr('width', Number(g.attr('width')) - 6)
-        .attr('height', Number(g.attr('height')) - 1)
+        .data([dataPoints])
+        .attr('d', lineGenerator)
+        // .attr('x', 3)
+        // .attr('y', 0)
+        // .attr('width', Number(g.attr('width')) - 6)
+        // .attr('height', Number(g.attr('height')) - 1)
         .attr('fill', colorTheme.darker.background)
-        .attr('stroke-width', 3.5)
+        .attr('stroke-width', 0.2)
         .attr('stroke-opacity', 1)
-        .attr('stroke', colorTheme.darker.background)
+        .attr('stroke', colorTheme.darker.stroke)
       g.append('text')
         .attr('class', 'tabName')
         .text(function () {
@@ -2516,10 +2517,22 @@ let mainSchedBlocksController = function (optIn) {
     }
 
     function unselectTab (g, data) {
-      g.select('rect.back')
+      let dataPoints = [
+        {x: Number(g.attr('width')) * 0.1, y: 0},
+        {x: Number(g.attr('width')) * 0.96, y: 0},
+        {x: Number(g.attr('width')) * 0.96, y: Number(g.attr('height')) + 1},
+        {x: Number(g.attr('width')) * 0.02, y: Number(g.attr('height')) + 1},
+        {x: Number(g.attr('width')) * 0.02, y: Number(g.attr('height')) * 0.5},
+        {x: Number(g.attr('width')) * 0.1, y: 0}
+      ]
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      g.select('path.back')
+        .data([dataPoints])
+        .attr('d', lineGenerator)
         .attr('fill', colorTheme.darker.background)
-        .attr('stroke', colorTheme.darker.background)
-        .attr('height', Number(g.attr('height')) - 1)
+        .attr('stroke', colorTheme.darker.stroke)
       g.select('text.tabName')
         .text(function () {
           return 'Schedule:' + data.index
@@ -2532,10 +2545,22 @@ let mainSchedBlocksController = function (optIn) {
       shared.data.current = data.index
       updateAllBlocksQueue()
 
-      g.select('rect.back')
-        .attr('height', Number(g.attr('height')) + 16)
+      let dataPoints = [
+        {x: Number(g.attr('width')) * 0.02, y: 0},
+        {x: Number(g.attr('width')) * 0.96, y: 0},
+        {x: Number(g.attr('width')) * 0.96, y: Number(g.attr('height')) * 1.1},
+        {x: Number(g.attr('width')) * 0.02, y: Number(g.attr('height')) * 1.1},
+        {x: Number(g.attr('width')) * 0.02, y: 0}
+      ]
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      g.select('path.back')
+        .data([dataPoints])
+        .attr('d', lineGenerator)
+        // .attr('height', Number(g.attr('height')) + 16)
         .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
       g.select('text.tabName')
         .text(function () {
           return 'Sched:' + data.index
@@ -2546,9 +2571,9 @@ let mainSchedBlocksController = function (optIn) {
       g.append('rect')
         .attr('class', 'copyTab')
         .attr('x', Number(g.attr('width')) * 0.7)
-        .attr('y', Number(g.attr('height')) * 0.1)
-        .attr('width', Number(g.attr('height')) * 0.92)
-        .attr('height', Number(g.attr('height')) * 0.9)
+        .attr('y', Number(g.attr('height')) * 0.3)
+        .attr('width', Number(g.attr('height')) * 0.72)
+        .attr('height', Number(g.attr('height')) * 0.6)
         .attr('fill', colorTheme.darker.background)
         .attr('stroke-width', 3.5)
         .attr('stroke-opacity', 1)
@@ -2660,39 +2685,122 @@ let mainSchedBlocksController = function (optIn) {
 
       reserved.g.attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
       reserved.g.append('rect')
-        .attr('class', 'back')
+        .attr('class', 'title')
         .attr('x', 0)
-        .attr('y', -12)
-        .attr('rx', 2)
-        .attr('ry', 2)
+        .attr('y', 5)
         .attr('width', reserved.box.w)
-        .attr('height', 15)
+        .attr('height', 30)
         .attr('stroke', colorTheme.medium.stroke)
-        .attr('fill', colorTheme.medium.background)
-        .attr('stroke-width', 0.1)
+        .attr('fill', 'none')
+        .attr('stroke-width', 0.2)
         .attr('stroke-opacity', 1)
+        .attr('stroke-dasharray', [0, reserved.box.w + 4, 26 + reserved.box.w - 4, 30])
       reserved.g.append('text')
         .text(function (data) {
-          return 'Sched.B'
+          return 'Scheduling'
         })
         .attr('x', reserved.box.w * 0.5)
-        .attr('y', 0)
+        .attr('y', 16)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
-        .style('font-size', 8)
+        .style('font-size', 9)
         .attr('dy', 0)
         .style('pointer-events', 'none')
         .attr('fill', colorTheme.dark.text)
         .attr('stroke', 'none')
+      reserved.g.append('text')
+        .text(function (data) {
+          return 'Blocks'
+        })
+        .attr('x', reserved.box.w * 0.1)
+        .attr('y', 30)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('font-size', 9)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', colorTheme.dark.text)
+        .attr('stroke', 'none')
+      reserved.g.append('rect')
+        .attr('class', 'extend')
+        .attr('x', reserved.box.w * 0.65)
+        .attr('y', 19)
+        .attr('width', reserved.box.w * 0.27)
+        .attr('height', 14)
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('fill', 'transparent')
+        .attr('stroke-width', 0)
+        .attr('stroke-opacity', 0)
+        .on('mouseover', function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill', colorTheme.darker.background)
+        })
+        .on('mouseout', function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill', 'transparent')
+        })
+        .on('click', function () {
+          hide()
+        })
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.w * 0.7, y: 28},
+        {x: reserved.box.w * 0.785, y: 24},
+        {x: reserved.box.w * 0.87, y: 28}
+      ]
+      reserved.g.append('path')
+        .data([dataPoint])
+        .attr('class', 'arrow')
+        .attr('d', lineGenerator)
+        .attr('fill', 'none')
+        .attr('stroke', colorTheme.dark.stroke)
+        .style('pointer-events', 'none')
+
+      reserved.g.append('rect')
+        .attr('class', 'back')
+        .attr('x', 0)
+        .attr('y', 35)
+        .attr('width', reserved.box.w)
+        .attr('height', reserved.box.h - 48)
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('fill', 'none')
+        .attr('stroke-width', 0.4)
+        .attr('stroke-opacity', 1)
+        .attr('stroke-dasharray', [0, 4, reserved.box.w - 4 + (reserved.box.h - 48) + reserved.box.w - 4, (reserved.box.h - 48)])
+      reserved.fo = reserved.g.append('foreignObject')
+        .attr('width', reserved.box.w + 'px')
+        .attr('height', reserved.box.h - 48 + 'px')
+        .attr('x', 0 + 'px')
+        .attr('y', 35 + 'px')
+      reserved.rootDiv = reserved.fo.append('xhtml:div')
+        .attr('class', 'overflowVerticalDiv')
+      // reserved.innerDiv = reserved.rootDiv.append('div')
+      //   .attr('width', '100%')
+      //   .attr('height', reserved.box.h - 48 + 'px')
+      reserved.svg = reserved.rootDiv.append('svg')
+        .attr('width', '100%')
+        .attr('height', '100%')
+
       if (shared.data.copy.length > 0) updateData()
     }
     this.initData = initData
 
     function populateShrink (schedGroup) {
       let length = schedGroup.length
-      let dim = {h: reserved.box.w * 0.6, w: reserved.box.w * 0.8}
+      let dim = {h: reserved.box.w * 0.4, w: reserved.box.w * 0.5}
 
-      let schedulingBlocks = reserved.g
+      let height = reserved.box.h - 48
+      if (length * dim.h > (reserved.box.h - 48)) height = (length * dim.h)
+      reserved.svg.attr('height', height + 'px')
+
+      let schedulingBlocks = reserved.svg
         .selectAll('g.schedulingBlocks')
         .data(schedGroup, function (d) {
           return d.scheduleId
@@ -2702,7 +2810,7 @@ let mainSchedBlocksController = function (optIn) {
         .append('g')
         .attr('class', 'schedulingBlocks')
         .attr('transform', function (d, i) {
-          let offset = (reserved.box.h - (length * dim.h)) / (length + 1)
+          let offset = (height - (length * dim.h)) / (length + 1)
           let translate = {
             y: (offset * (i + 1)) + (dim.h * i),
             x: (reserved.box.w * 0.5) - (dim.w * 0.5) // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
@@ -2798,6 +2906,70 @@ let mainSchedBlocksController = function (optIn) {
             return setCol(d).background
           })
       })
+    }
+
+    function show () {
+      reserved.fo
+        .transition()
+        .duration(1000)
+        .attr('height', reserved.box.h - 48)
+      reserved.g.select('rect.back')
+        .transition()
+        .duration(1000)
+        .attr('height', reserved.box.h - 48)
+        .attr('stroke-dasharray', [0, 4, reserved.box.w - 4 + (reserved.box.h - 48) + reserved.box.w - 4, (reserved.box.h - 48)])
+        .on('end', function () {
+          reserved.rootDiv.style('overflow-y', 'scroll')
+        })
+      reserved.g.select('rect.extend')
+        .on('click', function () {
+          hide()
+        })
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.w * 0.7, y: 28},
+        {x: reserved.box.w * 0.785, y: 24},
+        {x: reserved.box.w * 0.87, y: 28}
+      ]
+      reserved.g.select('path.arrow')
+        .data([dataPoint])
+        .transition()
+        .duration(400)
+        .attr('d', lineGenerator)
+    }
+
+    function hide () {
+      reserved.rootDiv.style('overflow-y', 'hidden')
+      reserved.fo
+        .transition()
+        .duration(1000)
+        .attr('height', 0)
+      reserved.g.select('rect.back')
+        .transition()
+        .duration(1000)
+        .attr('height', 0)
+        .attr('stroke-dasharray', [0, 4, reserved.box.w - 4 + 0 + reserved.box.w - 4, 0])
+      reserved.g.select('rect.extend')
+        .on('click', function () {
+          show()
+        })
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.w * 0.7, y: 24},
+        {x: reserved.box.w * 0.785, y: 28},
+        {x: reserved.box.w * 0.87, y: 24}
+      ]
+      reserved.g.select('path.arrow')
+        .data([dataPoint])
+        .transition()
+        .duration(400)
+        .attr('d', lineGenerator)
     }
 
     function focusOnSchedBlocks (schedId) {
@@ -2937,17 +3109,68 @@ let mainSchedBlocksController = function (optIn) {
       reserved.g = optIn.g
       reserved.box = optIn.box
 
-      optIn.g.append('rect')
-        .attr('class', 'bottom-back')
-        .attr('x', optIn.box.x)
-        .attr('y', optIn.box.y)
-        .attr('rx', 2)
-        .attr('width', optIn.box.w)
-        .attr('height', optIn.box.h)
+      optIn.g.append('line')
+        .attr('x1', optIn.box.x)
+        .attr('y1', optIn.box.y + 14)
+        .attr('x2', optIn.box.x + optIn.box.w)
+        .attr('y2', optIn.box.y + 14)
         .attr('stroke', colorTheme.dark.stroke)
-        .attr('fill', colorTheme.medium.background)
-        .attr('stroke-width', 0.2)
+        .attr('stroke-width', 0.4)
         .attr('stroke-opacity', 1)
+      optIn.g.append('text')
+        .text(function (data) {
+          return 'Modifications'
+        })
+        .attr('x', optIn.box.x)
+        .attr('y', optIn.box.y + 11)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('font-size', 11)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', colorTheme.dark.text)
+        .attr('stroke', 'none')
+
+      optIn.g.append('rect')
+        .attr('class', 'extend')
+        .attr('x', optIn.box.x + optIn.box.w - 24)
+        .attr('y', optIn.box.y)
+        .attr('width', 18)
+        .attr('height', 13)
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('fill', 'transparent')
+        .attr('stroke-width', 0)
+        .attr('stroke-opacity', 0)
+        .on('mouseover', function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill', colorTheme.darker.background)
+        })
+        .on('mouseout', function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill', 'transparent')
+        })
+        .on('click', function () {
+          hide()
+        })
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: optIn.box.x + optIn.box.w - 20, y: optIn.box.y + 4},
+        {x: optIn.box.x + optIn.box.w - 15, y: optIn.box.y + 9},
+        {x: optIn.box.x + optIn.box.w - 10, y: optIn.box.y + 4}
+      ]
+      optIn.g.append('path')
+        .data([dataPoint])
+        .attr('class', 'arrow')
+        .attr('d', lineGenerator)
+        .attr('fill', 'none')
+        .attr('stroke', colorTheme.dark.stroke)
+        .style('pointer-events', 'none')
 
       createModificationsList()
       drawModifications()
@@ -2960,63 +3183,105 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.update = update
 
-    function drawModifications () {
-      if (reserved.data.modifications.childs.length === 0) {
-        let scrollForm = new ScrollForm({
-          main: {
-            g: reserved.g,
-            box: reserved.box,
-            colorTheme: colorTheme
-          },
-          titles: {
-            data: [
-              {
-                title: 'Schedule unchanged',
-                extension: '',
-                sortOptions: {
-
-                },
-                width: '100%',
-                quickScroll: true,
-                anchor: 'center'
-              }
-            ],
-            height: '20px'
-          },
-          quickScroll: {
-            enabled: true,
-            width: '3%'
-          },
-          data: {}
+    function show () {
+      reserved.g.select('rect.extend')
+        .on('click', function () {
+          hide()
         })
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.x + reserved.box.w - 20, y: reserved.box.y + 4},
+        {x: reserved.box.x + reserved.box.w - 15, y: reserved.box.y + 9},
+        {x: reserved.box.x + reserved.box.w - 10, y: reserved.box.y + 4}
+      ]
+      reserved.g.select('path.arrow')
+        .data([dataPoint])
+        .transition()
+        .duration(400)
+        .attr('d', lineGenerator)
+    }
+    function hide () {
+      reserved.g.select('rect.extend')
+        .on('click', function () {
+          show()
+        })
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.x + reserved.box.w - 20, y: reserved.box.y + 9},
+        {x: reserved.box.x + reserved.box.w - 15, y: reserved.box.y + 4},
+        {x: reserved.box.x + reserved.box.w - 10, y: reserved.box.y + 9}
+      ]
+      reserved.g.select('path.arrow')
+        .data([dataPoint])
+        .transition()
+        .duration(400)
+        .attr('d', lineGenerator)
+    }
+
+    function drawModifications () {
+      let formBox = deepCopy(reserved.box)
+      formBox.y += 20
+      formBox.height -= 20
+      if (reserved.data.modifications.childs.length === 0) {
+        // let scrollForm = new ScrollForm({
+        //   main: {
+        //     g: reserved.g,
+        //     box: formBox,
+        //     colorTheme: colorTheme
+        //   },
+        //   titles: {
+        //     data: [
+        //       // {
+        //       //   title: 'Schedule unchanged',
+        //       //   extension: '',
+        //       //   sortOptions: {
+        //       //
+        //       //   },
+        //       //   width: '100%',
+        //       //   quickScroll: true,
+        //       //   anchor: 'center'
+        //       // }
+        //     ],
+        //     height: '20px'
+        //   },
+        //   quickScroll: {
+        //     enabled: true,
+        //     width: '3%'
+        //   },
+        //   data: {}
+        // })
       } else {
         let scrollForm = new ScrollForm({
           main: {
             g: reserved.g,
-            box: reserved.box,
+            box: formBox,
             colorTheme: colorTheme
           },
           titles: {
             data: [
               {
                 title: 'Sched-Blocks',
-                extension: 'SB: ',
                 sortOptions: {
 
                 },
                 width: '50%',
                 quickScroll: true,
-                anchor: 'left'
+                anchor: 'center'
               },
               {
                 title: 'Blocks',
-                extension: 'B: ',
                 sortOptions: {
 
                 },
                 width: '50%',
                 quickScroll: true,
-                anchor: 'left'
+                anchor: 'center'
               }
             ],
             height: '20px'
@@ -3031,8 +3296,6 @@ let mainSchedBlocksController = function (optIn) {
       }
     }
     function createModificationsList () {
-      console.log('createModificationsList');
-      console.log(shared.data.current);
       reserved.data.modifications = {title: {}, style: {}, childs: []}
       if (shared.data.copy.length === 0) return
       let groupBySched = groupBlocksBySchedule(shared.data.copy[shared.data.current].modified.blocks)
@@ -3092,12 +3355,120 @@ let mainSchedBlocksController = function (optIn) {
     }
   }
   let SvgConflicts = function () {
-    function initData (dataIn) {
-      drawConflicts()
+    let reserved = {}
+    function initData (optIn) {
+      reserved.g = optIn.g
+      reserved.box = optIn.box
+
+      optIn.g.append('line')
+        .attr('x1', optIn.box.x)
+        .attr('y1', optIn.box.y + 14)
+        .attr('x2', optIn.box.x + optIn.box.w)
+        .attr('y2', optIn.box.y + 14)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.4)
+        .attr('stroke-opacity', 1)
+      optIn.g.append('text')
+        .text(function (data) {
+          return 'Conflicts'
+        })
+        .attr('x', optIn.box.x)
+        .attr('y', optIn.box.y + 11)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('font-size', 11)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', colorTheme.dark.text)
+        .attr('stroke', 'none')
+
+      optIn.g.append('rect')
+        .attr('class', 'extend')
+        .attr('x', optIn.box.x + optIn.box.w - 24)
+        .attr('y', optIn.box.y)
+        .attr('width', 18)
+        .attr('height', 13)
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('fill', 'transparent')
+        .attr('stroke-width', 0)
+        .attr('stroke-opacity', 0)
+        .on('mouseover', function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill', colorTheme.darker.background)
+        })
+        .on('mouseout', function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill', 'transparent')
+        })
+        .on('click', function () {
+          hide()
+        })
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: optIn.box.x + optIn.box.w - 20, y: optIn.box.y + 4},
+        {x: optIn.box.x + optIn.box.w - 15, y: optIn.box.y + 9},
+        {x: optIn.box.x + optIn.box.w - 10, y: optIn.box.y + 4}
+      ]
+      optIn.g.append('path')
+        .data([dataPoint])
+        .attr('class', 'arrow')
+        .attr('d', lineGenerator)
+        .attr('fill', 'none')
+        .attr('stroke', colorTheme.dark.stroke)
+        .style('pointer-events', 'none')
+      // drawConflicts()
     }
     this.initData = initData
+
+    function show () {
+      reserved.g.select('rect.extend')
+        .on('click', function () {
+          hide()
+        })
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.x + reserved.box.w - 20, y: reserved.box.y + 4},
+        {x: reserved.box.x + reserved.box.w - 15, y: reserved.box.y + 9},
+        {x: reserved.box.x + reserved.box.w - 10, y: reserved.box.y + 4}
+      ]
+      reserved.g.select('path.arrow')
+        .data([dataPoint])
+        .transition()
+        .duration(400)
+        .attr('d', lineGenerator)
+    }
+    function hide () {
+      reserved.g.select('rect.extend')
+        .on('click', function () {
+          show()
+        })
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.x + reserved.box.w - 20, y: reserved.box.y + 9},
+        {x: reserved.box.x + reserved.box.w - 15, y: reserved.box.y + 4},
+        {x: reserved.box.x + reserved.box.w - 10, y: reserved.box.y + 9}
+      ]
+      reserved.g.select('path.arrow')
+        .data([dataPoint])
+        .transition()
+        .duration(400)
+        .attr('d', lineGenerator)
+    }
+
     function update () {
-      drawConflicts()
+      // drawConflicts()
     }
     this.update = update
 
@@ -3128,7 +3499,6 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', colorTheme.medium.background)
         .attr('stroke-width', 0.2)
         .attr('stroke-opacity', 1)
-      return
       let conflicts = [
         {id: 'c1', type: 'shareTels', blocks: [{id: 'b1(1)'}, {id: 'b2(2)'}, {id: 'b7(0)'}]},
         {id: 'c2', type: 'shareTels', blocks: [{id: 'b9(2)'}, {id: 'b5(4)'}, {id: 'b2(1)'}]},
@@ -3340,10 +3710,74 @@ let mainSchedBlocksController = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function initData (dataIn) {
-      reserved = dataIn
+    function initData (optIn) {
+      reserved = optIn
       reserved.g.attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
-      createBackground()
+      // createBackground()
+
+      optIn.g.append('line')
+        .attr('x1', 0)
+        .attr('y1', 14)
+        .attr('x2', optIn.box.w)
+        .attr('y2', 14)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.4)
+        .attr('stroke-opacity', 1)
+      optIn.g.append('text')
+        .text(function (data) {
+          return 'Selection'
+        })
+        .attr('x', 0)
+        .attr('y', 0 + 11)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('font-size', 11)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', colorTheme.dark.text)
+        .attr('stroke', 'none')
+
+      optIn.g.append('rect')
+        .attr('class', 'extend')
+        .attr('x', 0 + optIn.box.w - 24)
+        .attr('y', 0)
+        .attr('width', 18)
+        .attr('height', 13)
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('fill', 'transparent')
+        .attr('stroke-width', 0)
+        .attr('stroke-opacity', 0)
+        .on('mouseover', function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill', colorTheme.darker.background)
+        })
+        .on('mouseout', function () {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill', 'transparent')
+        })
+        .on('click', function () {
+          hide()
+        })
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: optIn.box.w - 20, y: 4},
+        {x: optIn.box.w - 15, y: 9},
+        {x: optIn.box.w - 10, y: 4}
+      ]
+      optIn.g.append('path')
+        .data([dataPoint])
+        .attr('class', 'arrow')
+        .attr('d', lineGenerator)
+        .attr('fill', 'none')
+        .attr('stroke', colorTheme.dark.stroke)
+        .style('pointer-events', 'none')
+
       if (shared.focus.block) createBlocksInfoPanel(shared.focus.block)
       else if (shared.focus.schedBlocks) focusOnSchedBlocks(shared.focus.schedBlocks)
       else createDefaultInfoPanel()
@@ -3375,27 +3809,66 @@ let mainSchedBlocksController = function (optIn) {
         .attr('fill', colorTheme.medium.background)
         .attr('stroke-width', 0.1)
         .attr('stroke-opacity', 1)
-      reserved.g.append('rect')
-        .attr('class', 'bottom-back')
-        .attr('x', 0 + dim.w + dim.margH - 0.2)
-        .attr('y', 0 - 0.2)
-        .attr('width', reserved.box.w - dim.w - dim.margH + 0)
-        .attr('height', reserved.box.h + 0.4)
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('fill', colorTheme.medium.background)
-        .attr('stroke-width', 0.1)
-        .attr('stroke-opacity', 1)
+      // reserved.g.append('rect')
+      //   .attr('class', 'bottom-back')
+      //   .attr('x', 0) // + dim.w + dim.margH - 0.2)
+      //   .attr('y', 0) // - 0.2)
+      //   .attr('width', reserved.box.w) // - dim.w - dim.margH + 0)
+      //   .attr('height', reserved.box.h) // + 0.4)
+      //   .attr('stroke', colorTheme.medium.stroke)
+      //   .attr('fill', colorTheme.medium.background)
+      //   .attr('stroke-width', 0.1)
+      //   .attr('stroke-opacity', 1)
     }
+    function show () {
+      reserved.g.select('rect.extend')
+        .on('click', function () {
+          hide()
+        })
 
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.w - 20, y: 4},
+        {x: reserved.box.w - 15, y: 9},
+        {x: reserved.box.w - 10, y: 4}
+      ]
+      reserved.g.select('path.arrow')
+        .data([dataPoint])
+        .transition()
+        .duration(400)
+        .attr('d', lineGenerator)
+    }
+    function hide () {
+      reserved.g.select('rect.extend')
+        .on('click', function () {
+          show()
+        })
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+      let dataPoint = [
+        {x: reserved.box.w - 20, y: 9},
+        {x: reserved.box.w - 15, y: 4},
+        {x: reserved.box.w - 10, y: 9}
+      ]
+      reserved.g.select('path.arrow')
+        .data([dataPoint])
+        .transition()
+        .duration(400)
+        .attr('d', lineGenerator)
+    }
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
     function createDefaultInfoPanel () {
       let dim = {
         x: reserved.box.w * 0.15,
-        y: 0,
+        y: 15,
         w: reserved.box.w * 0.85,
-        h: reserved.box.h,
+        h: reserved.box.h - 15,
         margH: reserved.box.h * 0.05
       }
       let schedulingBlocksInfoPanelG = reserved.g.append('g')
@@ -3526,9 +3999,9 @@ let mainSchedBlocksController = function (optIn) {
     function createSchedBlocksInfoPanel (data) {
       let dim = {
         x: reserved.box.w * 0.15,
-        y: 0,
+        y: 15,
         w: reserved.box.w * 0.85,
-        h: reserved.box.h,
+        h: reserved.box.h - 15,
         margH: reserved.box.h * 0.05
       }
       let schedulingBlocksInfoPanelG = reserved.g.append('g')
@@ -3566,13 +4039,13 @@ let mainSchedBlocksController = function (optIn) {
     function createBlocksInScheduleIcons (data) {
       let dim = {
         x: 0,
-        y: 0,
+        y: 32.5,
         w: reserved.box.w * 0.12,
-        h: reserved.box.h,
+        h: reserved.box.h - 30,
         margH: reserved.box.h * 0.05
       }
 
-      let dimBlocks = {h: reserved.box.w * 0.15 * 0.5, w: reserved.box.w * 0.15 * 0.6}
+      let dimBlocks = {h: reserved.box.w * 0.15 * 0.4, w: reserved.box.w * 0.15 * 0.6}
       let length = data.blocks.length
       reserved.g.selectAll('g.subBlocks').remove()
       let subBlocks = reserved.g
@@ -3587,7 +4060,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('class', 'subBlocks')
         .attr('transform', function (d, i) {
           let transX = 0
-          let transY = ((dim.h - (length * dimBlocks.h)) / (length + 1)) * (i + 1) + (dimBlocks.h * i)
+          let transY = dim.y + ((dim.h - (length * dimBlocks.h)) / (length + 1)) * (i + 1) + (dimBlocks.h * i)
           return 'translate(' + transX + ',' + transY + ')'
         })
       enterSubBlocks.append('rect')
@@ -3596,10 +4069,10 @@ let mainSchedBlocksController = function (optIn) {
           return 0
         })
         .attr('x', function (d, i) {
-          return 2
+          return (dim.w - dimBlocks.w) * 0.5
         })
         .attr('width', function (d, i) {
-          return dim.w
+          return dimBlocks.w
         })
         .attr('height', function (d, i) {
           return dimBlocks.h
@@ -3621,12 +4094,12 @@ let mainSchedBlocksController = function (optIn) {
         })
       enterSubBlocks.append('text')
         .text(function (d) {
-          return 'Block-' + d.metaData.nObs
+          return 'B-' + d.metaData.nObs
         })
-        .attr('x', dim.w * 0.04 + 2)
-        .attr('y', dimBlocks.h * 0.6)
+        .attr('x', dim.w * 0.5)
+        .attr('y', dimBlocks.h * 0.7)
         .style('font-weight', 'normal')
-        .attr('text-anchor', 'start')
+        .attr('text-anchor', 'middle')
         .style('font-size', 9.5)
         .attr('dy', 0)
         .style('pointer-events', 'none')
@@ -3794,9 +4267,9 @@ let mainSchedBlocksController = function (optIn) {
       let data = getBlockById(idBlock).modified.data
       let dim = {
         x: reserved.box.w * 0.15,
-        y: 0,
+        y: 15,
         w: reserved.box.w * 0.85,
-        h: reserved.box.h,
+        h: reserved.box.h - 15,
         margH: reserved.box.h * 0.05
       }
       let schedulingBlocksInfoPanelG = reserved.g.append('g')
@@ -3836,6 +4309,7 @@ let mainSchedBlocksController = function (optIn) {
     //
     // ---------------------------------------------------------------------------------------------------
     function focusOnSchedBlocks (schedId) {
+      reserved.g.selectAll('g').remove()
       let schedGroup = groupBlocksBySchedule(shared.data.copy[shared.data.current].modified.blocks)
       for (var i = 0; i < schedGroup.length; i++) {
         if (schedGroup[i].scheduleId === schedId) {
@@ -3847,13 +4321,13 @@ let mainSchedBlocksController = function (optIn) {
     this.focusOnSchedBlocks = focusOnSchedBlocks
 
     function unfocusSchedBlocks () {
-      reserved.g.selectAll('*').remove()
-      createBackground()
+      reserved.g.selectAll('g').remove()
+      // createBackground()
       createDefaultInfoPanel()
     }
     this.unfocusSchedBlocks = unfocusSchedBlocks
     function unfocusBlock () {
-      reserved.g.select('g.form').remove()
+      reserved.g.selectAll('g').remove()
     }
     this.unfocusBlock = unfocusBlock
 
@@ -3861,17 +4335,14 @@ let mainSchedBlocksController = function (optIn) {
       unfocusOnBlock()
       reserved.g.selectAll('g.subBlocks rect.back')
         .each(function (d) {
-          d3.select(this).attr('fill', (d.obId === bId ? colorTheme.darker.background : colorTheme.dark.background))
           d3.select(this).attr('stroke-width', (d.obId === bId ? 2 : 0.2))
           if (d.obId === bId) createBlocksInfoPanel(bId)
         })
     }
     this.focusOnBlock = focusOnBlock
     function unfocusOnBlock () {
+      reserved.g.selectAll('g.form').remove()
       reserved.g.selectAll('g.subBlocks rect.back')
-        .attr('fill', function (d) {
-          return colorTheme.dark.background
-        })
         .attr('stroke-width', function (d) {
           return 0.2
         })

@@ -138,7 +138,7 @@ window.PanelManager = function () {
   function resizeTab () {
     if (com.debug) console.log('resizeTab')
     let w = com.tab.box.w
-    let h = com.tab.box.h
+    let h = com.tab.box.h + 2
     com.tab.dimension = {w: w, h: h} // ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
   }
   function updateTab (data) {
