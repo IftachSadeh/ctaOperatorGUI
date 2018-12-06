@@ -16,7 +16,7 @@ var mainScriptTag = 'schedBlocks'
 /* global sock */
 /* global timeD */
 /* global hasVar */
-/* global BlockQueue */
+/* global BlockQueueOld */
 /* global RunLoop */
 /* global Locker */
 /* global deepCopy */
@@ -31,7 +31,7 @@ var mainScriptTag = 'schedBlocks'
 /* global colsBlk */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollGrid.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueue.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOld.js' })
 
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
@@ -166,7 +166,7 @@ function mainSchedBlocks (optIn) {
     let scrollGrid = null
     let svg = {}
 
-    let blockQueue = new BlockQueue()
+    let blockQueue = new BlockQueueOld()
 
     let rScale = {}
     rScale[0] = {}

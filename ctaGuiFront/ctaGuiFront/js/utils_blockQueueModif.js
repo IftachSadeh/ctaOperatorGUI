@@ -764,15 +764,15 @@ window.BlockQueueModif = function (optIn) {
 
   let blockQueue = new BlockQueue(com)
   blockQueue.initBackground = function () {
-    com.main.g.append('rect')
-      .attr('class', 'background')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', com.main.box.w)
-      .attr('height', com.main.box.h)
-      .style('fill', com.main.background.fill)
-      .style('stroke', com.main.background.stroke)
-      .style('stroke-width', com.main.background.strokeWidth)
+    // com.main.g.append('rect')
+    //   .attr('class', 'background')
+    //   .attr('x', 0)
+    //   .attr('y', 0)
+    //   .attr('width', com.main.box.w)
+    //   .attr('height', com.main.box.h)
+    //   .style('fill', com.main.background.fill)
+    //   .style('stroke', com.main.background.stroke)
+    //   .style('stroke-width', com.main.background.strokeWidth)
     com.main.g.append('text')
       .attr('class', 'name')
       .text('MODIFICATIONS')
@@ -790,6 +790,11 @@ window.BlockQueueModif = function (optIn) {
   }
   blockQueue.sendModification = function (newBlock) {
     com.event.modifications('blockQueueCreator', newBlock.data)
+  }
+  blockQueue.showTargets = function (targets, block) {
+    if (!block) {
+      return
+    }
   }
   return blockQueue
 }

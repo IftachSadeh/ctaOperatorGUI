@@ -208,7 +208,7 @@ window.BlockQueueCreator = function (optIn) {
     }
   }
   setDefaultStyle()
-
+  let dragCopy = deepCopy(com.blocks.run.events.drag)
   function dragBlockStart (d) {
     if (d.data.endTime < com.time.currentTime.time) return
     com.interaction.firstDrag = false
@@ -220,6 +220,7 @@ window.BlockQueueCreator = function (optIn) {
       .range(com.axis.range)
       .domain([com.time.startTime.time, com.time.endTime.time])
     if (!com.interaction.firstDrag) {
+      dragCopy.start(d)
       com.interaction.firstDrag = true
       com.interaction.g = com.blocks.cancel.g.append('g')
       com.interaction.box = deepCopy(com.blocks.cancel.box)
@@ -734,6 +735,7 @@ window.BlockQueueCreator = function (optIn) {
         }
       }
     }
+    dragCopy.tick(d)
   }
   function dragBlockEnd (d) {
     if (d.data.endTime < com.time.currentTime.time) return
@@ -765,6 +767,7 @@ window.BlockQueueCreator = function (optIn) {
     // com.interaction.oldG.remove()
     com.interaction.g.remove()
     com.interaction = {}
+    dragCopy.end(d)
   }
   com.blocks.run.events.drag = {
     start: dragBlockStart,

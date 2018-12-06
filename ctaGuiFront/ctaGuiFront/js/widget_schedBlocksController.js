@@ -331,7 +331,6 @@ let mainSchedBlocksController = function (optIn) {
       return
     }
     locker.add('updateData')
-    console.log('updateDataOnce');
     shared.data.server = dataIn.data
 
     svgBlocksQueue.updateData()
@@ -1324,9 +1323,9 @@ let mainSchedBlocksController = function (optIn) {
               mouseover: mainOverBlock,
               mouseout: mainOutBlock,
               drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
+                start: svgBlocksQueueModif.highlightTarget,
+                tick: svgBlocksQueueModif.highlightTarget,
+                end: svgBlocksQueueModif.unhighlightTarget
               }
             },
             background: {
@@ -1452,6 +1451,7 @@ let mainSchedBlocksController = function (optIn) {
     this.update = update
   }
   let SvgBlocksQueueModif = function () {
+    let reserved = {}
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
@@ -1469,6 +1469,7 @@ let mainSchedBlocksController = function (optIn) {
         h: h0,
         marg: marg
       }
+      reserved.box = blockBoxData
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + x0 + ',' + y0 + ')')
       gBlockBox.append('text')
@@ -1478,6 +1479,19 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', '8px')
         .attr('text-anchor', 'left')
         .attr('transform', 'translate(-5,' + (y0 - h0 * 1.2) + ') rotate(270)')
+
+      reserved.gTargets = gBlockBox.append('g')
+      reserved.gTargets.append('defs').append('svg:clipPath')
+        .attr('id', 'clip')
+        .append('svg:rect')
+        .attr('id', 'clip-rect')
+        .attr('x', '0')
+        .attr('y', '0')
+        .attr('width', reserved.box.w)
+        .attr('height', reserved.box.h)
+      reserved.clipBody = reserved.gTargets.append('g')
+        .attr('clip-path', 'url(#clip)')
+
       blockQueueModif = new BlockQueueModif({
         main: {
           tag: 'blockQueueMiddleTag',
@@ -1516,7 +1530,7 @@ let mainSchedBlocksController = function (optIn) {
           run: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: blockBoxData.h * 0.6, w: blockBoxData.w, h: blockBoxData.h * 0.283, marg: blockBoxData.marg},
+            box: {x: 0, y: blockBoxData.h * 0.24, w: blockBoxData.w, h: blockBoxData.h * 0.25, marg: blockBoxData.marg},
             events: {
               click: mainFocusOnBlock,
               mouseover: mainOverBlock,
@@ -1644,6 +1658,8 @@ let mainSchedBlocksController = function (optIn) {
           modified: []
         }
       })
+      drawTargets()
+      drawTelsAvailabilityCurve()
     }
     this.updateData = updateData
 
@@ -1657,6 +1673,237 @@ let mainSchedBlocksController = function (optIn) {
       })
     }
     this.update = update
+
+    function drawTargets () {
+      let scaleX = d3.scaleLinear()
+        .range([0, reserved.box.w])
+        .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
+      // console.log(blockQueue.get('axis').range, blockQueue.get('axis').domain);
+      let scaleY = d3.scaleLinear()
+        .range([reserved.box.h * 0.65, reserved.box.h * 0.35])
+        .domain([0.01, 1.01])
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+        .curve(d3.curveNatural)
+
+      let allg = reserved.clipBody.selectAll('g.target')
+        .data(shared.data.server.targets, function (d) {
+          return d.id
+        })
+      let gEnter = allg.enter()
+        .append('g')
+        .attr('class', 'target')
+      gEnter.append('path')
+        .attr('d', function (d) {
+          let targetPoints = [
+            {x: scaleX(d.observability.minimal), y: scaleY(0)},
+            {x: scaleX(d.observability.optimal), y: scaleY(1)},
+            {x: scaleX(d.observability.maximal), y: scaleY(0)}
+          ]
+          return lineGenerator(targetPoints)
+        })
+        .attr('fill', function (d) {
+          // if (block.data.targetId === d.id) return colorTheme.dark.background
+          return 'none'
+        })
+        .attr('stroke', function (d) {
+          // if (block.data.targetId === d.id) return colorTheme.dark.stroke
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          // if (block.data.targetId === d.id) return 0.2
+          return 0.4
+        })
+        .attr('stroke-opacity', function (d) {
+          // if (block.data.targetId === d.id) return 1
+          return 0.9
+        })
+        .attr('fill-opacity', 0.6)
+        .attr('stroke-dasharray', function (d) {
+          // if (block.data.targetId === d.id) return []
+          return [4, 6]
+        })
+      // gEnter.append('rect')
+      //   .attr('x', function (d) { return scaleX(d.observability.minimal) })
+      //   .attr('y', reserved.box.h * 0.65)
+      //   .attr('width', function (d) { return scaleX(d.observability.maximal) - scaleX(d.observability.minimal) })
+      //   .attr('height', reserved.box.h * 0.1)
+      //   .attr('fill', colorTheme.darker.background)
+      //   .attr('fill-opacity', 0.3)
+      //   .attr('stroke', colorTheme.darker.stroke)
+      //   .attr('stroke-width', 0.1)
+      gEnter.append('text')
+        .text(function (d) {
+          return d.id
+        })
+        .attr('x', function (d) {
+          let xx = scaleX(d.observability.minimal) + 10
+          return (xx < 0) ? 10 : xx
+        })
+        .attr('y', reserved.box.h * 0.64)
+        .attr('text-anchor', 'start')
+        .attr('font-size', 7)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .style('fill', function (d) {
+          // if (block.data.targetId === d.id) return colorTheme.dark.stroke
+          return colorTheme.dark.stroke
+        })
+        .style('fill-opacity', function (d) {
+          // if (block.data.targetId === d.id) return 1
+          return 0.5
+        })
+    }
+    function highlightTarget (block) {
+      let tarG = reserved.clipBody.selectAll('g.target')
+        .filter(function (d) { return (block.data.targetId === d.id) })
+      tarG.select('path')
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.8)
+        .attr('stroke-opacity', 1)
+        .attr('fill-opacity', 0.55)
+        .attr('stroke-dasharray', [])
+      tarG.select('text')
+        .style('fill', colorTheme.dark.stroke)
+        .style('fill-opacity', 1)
+    }
+    this.highlightTarget = highlightTarget
+    function unhighlightTarget (block) {
+      let tarG = reserved.clipBody.selectAll('g.target')
+        .filter(function (d) { return (block.data.targetId === d.id) })
+      tarG.select('path')
+        .attr('fill', 'none')
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.4)
+        .attr('stroke-opacity', 0.9)
+        .attr('fill-opacity', 0.6)
+        .attr('stroke-dasharray', [4, 6])
+      tarG.select('text')
+        .style('fill', colorTheme.dark.stroke)
+        .style('fill-opacity', 0.5)
+    }
+    this.unhighlightTarget = unhighlightTarget
+
+    function drawTelsAvailabilityCurve () {
+      let curve = computeTelsCurve()
+      console.log(curve)
+      reserved.clipBody.append('rect')
+        .attr('x', 0)
+        .attr('y', reserved.box.h * 0.656)
+        .attr('width', reserved.box.w)
+        .attr('height', reserved.box.h * 0.3)
+        .attr('fill', 'none')
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.4)
+
+      let scaleX = d3.scaleLinear()
+        .range([0, reserved.box.w])
+        .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
+      // console.log(blockQueue.get('axis').range, blockQueue.get('axis').domain);
+      let scaleYSmall = d3.scaleLinear()
+        .range([reserved.box.h * 0.806, reserved.box.h * 0.656])
+        .domain([0, 100])
+      let scaleYMedium = d3.scaleLinear()
+        .range([reserved.box.h * 0.806, reserved.box.h * 0.700])
+        .domain([0, 24])
+      let scaleYLarge = d3.scaleLinear()
+        .range([reserved.box.h * 0.806, reserved.box.h * 0.756])
+        .domain([0, 4])
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+        .curve(d3.curveStepAfter)
+
+      let allg = reserved.clipBody.selectAll('g.telsCurve')
+        .data(curve, function (d, i) {
+          return i
+        })
+      let gEnter = allg.enter()
+        .append('g')
+        .attr('class', 'telsCurve')
+      gEnter.append('path')
+        .attr('d', function (d, i) {
+          let curvePoints = []
+          for (let key in d) {
+            let y = 0
+            if (i === 0) y = scaleYSmall(24 + d[key])
+            else if (i === 1) y = scaleYMedium(4 + d[key])
+            else if (i === 2) y = scaleYLarge(d[key])
+            curvePoints.push({x: scaleX(Number(key)), y: y})
+          }
+          return lineGenerator(curvePoints)
+        })
+        .attr('fill', function (d, i) {
+          if (i === 0) return '#66ff66'
+          if (i === 1) return '#aaffaa'
+          if (i === 2) return '#ddffdd'
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0.4
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 1)
+      // gEnter.append('path')
+      //   .attr('d', function (d) {
+      //     let curvePoints = []
+      //     curvePoints.push({x: 0, y: reserved.box.h * 0.806})
+      //     for (let key in d) {
+      //       curvePoints.push({x: scaleX(Number(key)), y: scaleYFree(d[key]) + reserved.box.h * 0.15})
+      //     }
+      //     curvePoints.push({x: reserved.box.w, y: reserved.box.h * 0.806})
+      //     return lineGenerator(curvePoints)
+      //   })
+      //   .attr('fill', function (d, i) {
+      //     if (i === 0) return '#ff6666'
+      //     if (i === 1) return '#ffaaaa'
+      //     if (i === 2) return '#ffdddd'
+      //   })
+      //   .attr('stroke', function (d) {
+      //     return colorTheme.dark.stroke
+      //   })
+      //   .attr('stroke-width', function (d) {
+      //     return 0.4
+      //   })
+      //   .attr('stroke-opacity', function (d) {
+      //     return 1
+      //   })
+      //   .attr('fill-opacity', 1)
+    }
+    function computeTelsCurve () {
+      let largeTels = {}
+      let mediumTels = {}
+      let smallTels = {}
+      smallTels[shared.data.server.timeOfNight.start] = 0
+      mediumTels[shared.data.server.timeOfNight.start] = 0
+      largeTels[shared.data.server.timeOfNight.start] = 0
+
+      for (let key in shared.data.copy[shared.data.current].modified.blocks) {
+        for (let i = 0; i < shared.data.copy[shared.data.current].modified.blocks[key].length; i++) {
+          let b = shared.data.copy[shared.data.current].modified.blocks[key][i]
+          if (b.exeState.state === 'cancel') continue
+          if (!largeTels[b.startTime]) largeTels[b.startTime] = 4
+          if (!mediumTels[b.startTime]) mediumTels[b.startTime] = 24
+          if (!smallTels[b.startTime]) smallTels[b.startTime] = 70
+          for (let j = 0; j < b.telIds.length; j++) {
+            let tid = b.telIds[j]
+            if (tid[0] === 'S') smallTels[b.startTime] -= 1
+            else if (tid[0] === 'M') mediumTels[b.startTime] -= 1
+            else if (tid[1] === 'L') largeTels[b.startTime] -= 1
+          }
+        }
+      }
+      smallTels[shared.data.server.timeOfNight.end] = 0
+      mediumTels[shared.data.server.timeOfNight.end] = 0
+      largeTels[shared.data.server.timeOfNight.end] = 0
+      return [smallTels, mediumTels, largeTels]
+    }
   }
   let SvgBlockQueueOptimized = function () {
     function initData () {

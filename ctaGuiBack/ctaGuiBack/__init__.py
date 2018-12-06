@@ -16,6 +16,7 @@ log = myLog(title=__name__)
 import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.arrayData import arrayData
 
+from ctaGuiBack.py.mockTarget import mockTarget
 from ctaGuiBack.py.telHealth import telHealth
 from ctaGuiBack.py.telPos import telPos
 from ctaGuiBack.py.obsBlocks import obsBlocks, obsBlocks_noACS
@@ -36,11 +37,11 @@ def main(global_config, **settings):
   # run it
   # -----------------------------------------------------------------------------------------------------------
   # utils.nsType = "N"
-  utils.nsType = "S" 
+  utils.nsType = "S"
 
   myTimeOfNight = utils.timeOfNight(nsType=utils.nsType)
   # myTimeOfNight = utils.timeOfNight(nsType=utils.nsType, timeScale = 0.001)
-  
+
   # set the list of telescopes for this particular site
   utils.telIds = utils.initTelIds(utils.nsType)
 
@@ -56,7 +57,7 @@ def main(global_config, **settings):
     redis_.redis.flushall()
   # -----------------------------------------------------------------------------------------------------------
   # -----------------------------------------------------------------------------------------------------------
-  
+
   # -----------------------------------------------------------------------------------------------------------
   # -----------------------------------------------------------------------------------------------------------
   # if utils.hasACS:
@@ -64,12 +65,13 @@ def main(global_config, **settings):
 
   telHealth(nsType=utils.nsType, timeOfNight=myTimeOfNight, arrayData=myArrayData)
   telPos(nsType=utils.nsType)
-  
+  mockTarget(nsType=utils.nsType)
+
   if utils.hasACS:
     obsBlocks(nsType=utils.nsType, timeOfNight=myTimeOfNight)
   else:
     obsBlocks_noACS(nsType=utils.nsType, timeOfNight=myTimeOfNight)
-  
+
 
 
 
@@ -78,5 +80,5 @@ def main(global_config, **settings):
   # # PropertyMonitorQueue(nsType=utils.nsType)
   # # PropertyMonitorGlobal(nsType=utils.nsType)
   # # PropertyMonitorLocal(nsType=utils.nsType)
-  
+
   return

@@ -20,14 +20,14 @@ var mainScriptTag = 'nightSched'
 /* global telInfo */
 /* global disableScrollSVG */
 /* global RunLoop */
-/* global BlockQueue */
+/* global BlockQueueOld */
 /* global bckPattern */
 /* global telHealthCol */
 /* global Locker */
 /* global appendToDom */
 /* global runWhenReady */
 
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueue.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOld.js' })
 
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {

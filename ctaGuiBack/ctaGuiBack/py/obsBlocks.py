@@ -426,6 +426,10 @@ class obsBlocks_noACS():
         maxBlockDuration = self.durationNight - self.obsBlockDuration
         overheadDuration = self.obsBlockDuration * 0.05 # timedelta(seconds = 90 * 0.05 * self.timeOfNight.getTimeScale()) # self.obsBlockDuration * 0.05
 
+        targetsIds = self.redis.get(name='targetsIds', packed=True, defVal=[])
+        # for obId in obsBlockIds:
+        #     self.redis.pipe.get(obId)
+
         while totBlockDuration < maxBlockDuration and \
                 nCycleNow < self.maxNcycles and \
                 not isCycleDone:
@@ -436,11 +440,12 @@ class obsBlocks_noACS():
 
             telIds = copy.deepcopy(utils.telIds)
             nTels = len(telIds)
+            # choose number of Scheduling blocks for this part of night (while loop)-----------------------------------------------------
             nSchedBlks = min(floor(nTels/self.minNtelBlock),
                              self.maxNschedBlock)
             nSchedBlks = max(self.rndGen.randint(
                 1, nSchedBlks), self.minNschedBlock)
-
+            # ------------------------------------------------------------------------------------------------------
             if debugTmp:
                 print '-------------------------------------------------------------------------'
                 print ('- nCycleNow', nCycleNow, 'totBlockDuration / percentage:',
@@ -468,29 +473,38 @@ class obsBlocks_noACS():
                 if nTelNow < self.minNtelBlock:
                     continue
 
+                # choose some tels in available ones
                 schedTelIds = random.sample(telIds, nTelNow)
+                # and remove them from allTels list
                 telIds = [x for x in telIds if x not in schedTelIds]
-
+                # choose the number of obsBlock inside this schedBlocks
                 nObsBlocks = self.rndGen.randint(
                     self.minNobsBlock, self.maxNobsBlock)
 
-                nTrg = nSchedNow
 
-                if not nTrg in trgPos:
-                    trgPos[nTrg] = [
-                        (self.rndGen.random() *
-                         (self.azMinMax[1] - self.azMinMax[0])) + self.azMinMax[0],
-                        (self.rndGen.random(
-                        ) * (self.zenMinMaxTel[1] - self.zenMinMaxTel[0])) + self.zenMinMaxTel[0]
-                    ]
-
-                targetId = "trg_"+str(nTrg)
+                # nTrg = nSchedNow
+                #
+                # if not nTrg in trgPos:
+                #     trgPos[nTrg] = [
+                #         (self.rndGen.random() *
+                #          (self.azMinMax[1] - self.azMinMax[0])) + self.azMinMax[0],
+                #         (self.rndGen.random(
+                #         ) * (self.zenMinMaxTel[1] - self.zenMinMaxTel[0])) + self.zenMinMaxTel[0]
+                #     ]
 
                 if debugTmp:
                     print ' -- nSchedNow / nTelNow:', nSchedNow, nTelNow, '-------', schedBlockId
 
                 totObsBlockDuration = 0
                 obsBlockStartTime = totBlockDuration
+
+                idIndex = (obsBlockStartTime / (self.durationNight / len(targetsIds))) + 0.75
+                idIndex = int(idIndex + ((self.rndGen.random() - 0.5) * 2))
+                idIndex = min(max(0, idIndex), len(targetsIds) -1)
+
+                targetId = targetsIds[idIndex]
+                print targetId
+                target = self.redis.get(name=targetId, packed=True, defVal={})
 
                 for nObsNow in range(nObsBlocks):
                     obsBlockId = "obsBlock_"+baseName + \
@@ -518,7 +532,7 @@ class obsBlocks_noACS():
                     # integrated time for all obs blocks within this sched block
                     totObsBlockDuration += obsBlockDuration
 
-                    pntPos = copy.deepcopy(trgPos[nTrg])
+                    pntPos = copy.deepcopy(target["pos"])
                     pntPos[0] += (self.rndGen.random() - 0.5) * 10
                     pntPos[1] += (self.rndGen.random() - 0.5) * 10
 
@@ -550,13 +564,12 @@ class obsBlocks_noACS():
                     block["runPhase"] = []
                     block["targetId"] = targetId
                     block["targetName"] = targetId
-                    block["targetPos"] = trgPos[nTrg]
+                    block["targetPos"] = target["pos"]
                     block["pointingId"] = schedBlockId+"_"+obsBlockId
                     block["pointingName"] = block["targetName"] + \
                         "/p_"+str(nObsNow)
                     block["pointingPos"] = pntPos
                     # block["fullObsBlock"] = self.getObsBlockTemplate()
-
                     self.redis.pipe.set(
                         name=block["obId"], data=block, expire=self.expire, packed=True)
 

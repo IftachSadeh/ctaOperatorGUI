@@ -24,7 +24,7 @@ var mainScriptTag = 'obsBlockControl'
 /* global colsPurples */
 /* global appendToDom */
 /* global runWhenReady */
-/* global BlockQueue */
+/* global BlockQueueOld */
 /* global disableScrollSVG */
 /* global bckPattern */
 /* global deepCopy */
@@ -42,7 +42,7 @@ var mainScriptTag = 'obsBlockControl'
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollGrid.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueue.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOld.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollTable.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_formManager.js' })
 

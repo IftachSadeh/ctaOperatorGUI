@@ -96,13 +96,15 @@ class schedBlocksController():
         self.getTelHealth()
         self.getEvents()
         self.getClockEvents()
+        self.getTarget()
 
         data = {
             "timeOfNight": schedBlocksController.timeOfNight,
             "telHealth": schedBlocksController.telHealth,
             "blocks": schedBlocksController.blocks,
             "external_events": schedBlocksController.external_events,
-            "external_clockEvents": schedBlocksController.external_clockEvents
+            "external_clockEvents": schedBlocksController.external_clockEvents,
+            "targets": schedBlocksController.targets
         }
 
         return data
@@ -141,6 +143,15 @@ class schedBlocksController():
             idNow = telIds[i]
             schedBlocksController.telHealth[i]["val"] = redData[i]
 
+        return
+
+    def getTarget(self):
+        self.redis.pipe.reset()
+
+        schedBlocksController.targetsIds = self.redis.get(name='targetsIds', packed=True, defVal=[])
+        for id in schedBlocksController.targetsIds:
+            self.redis.pipe.get(id)
+        schedBlocksController.targets = self.redis.pipe.execute(packed=True)
         return
 
     # -----------------------------------------------------------------------------------------------------------
