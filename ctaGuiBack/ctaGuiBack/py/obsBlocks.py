@@ -503,7 +503,6 @@ class obsBlocks_noACS():
                 idIndex = min(max(0, idIndex), len(targetsIds) -1)
 
                 targetId = targetsIds[idIndex]
-                print targetId
                 target = self.redis.get(name=targetId, packed=True, defVal={})
 
                 for nObsNow in range(nObsBlocks):

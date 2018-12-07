@@ -1491,6 +1491,15 @@ let mainSchedBlocksController = function (optIn) {
         .attr('height', reserved.box.h)
       reserved.clipBody = reserved.gTargets.append('g')
         .attr('clip-path', 'url(#clip)')
+      reserved.clipBody.append('rect')
+        .attr('x', 0)
+        .attr('y', reserved.box.h * 0.656)
+        .attr('width', reserved.box.w)
+        .attr('height', reserved.box.h * 0.3)
+        .attr('fill', colorTheme.dark.background)
+        .attr('fill-opacity', 0.55)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.4)
 
       blockQueueModif = new BlockQueueModif({
         main: {
@@ -1788,33 +1797,25 @@ let mainSchedBlocksController = function (optIn) {
 
     function drawTelsAvailabilityCurve () {
       let curve = computeTelsCurve()
-      console.log(curve)
-      reserved.clipBody.append('rect')
-        .attr('x', 0)
-        .attr('y', reserved.box.h * 0.656)
-        .attr('width', reserved.box.w)
-        .attr('height', reserved.box.h * 0.3)
-        .attr('fill', 'none')
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0.4)
 
       let scaleX = d3.scaleLinear()
         .range([0, reserved.box.w])
         .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
       // console.log(blockQueue.get('axis').range, blockQueue.get('axis').domain);
+      let range = reserved.box.h * 0.806 - reserved.box.h * 0.656
       let scaleYSmall = d3.scaleLinear()
-        .range([reserved.box.h * 0.806, reserved.box.h * 0.656])
-        .domain([0, 100])
+        .range([0, range * 0.6])
+        .domain([0, 70])
       let scaleYMedium = d3.scaleLinear()
-        .range([reserved.box.h * 0.806, reserved.box.h * 0.700])
+        .range([0, range * 0.3])
         .domain([0, 24])
       let scaleYLarge = d3.scaleLinear()
-        .range([reserved.box.h * 0.806, reserved.box.h * 0.756])
+        .range([0, range * 0.1])
         .domain([0, 4])
-      let lineGenerator = d3.line()
-        .x(function (d) { return d.x })
-        .y(function (d) { return d.y })
-        .curve(d3.curveStepAfter)
+      // let lineGenerator = d3.line()
+      //   .x(function (d) { return d.x })
+      //   .y(function (d) { return d.y })
+      //   .curve(d3.curveStepAfter)
 
       let allg = reserved.clipBody.selectAll('g.telsCurve')
         .data(curve, function (d, i) {
@@ -1823,86 +1824,129 @@ let mainSchedBlocksController = function (optIn) {
       let gEnter = allg.enter()
         .append('g')
         .attr('class', 'telsCurve')
-      gEnter.append('path')
-        .attr('d', function (d, i) {
-          let curvePoints = []
-          for (let key in d) {
-            let y = 0
-            if (i === 0) y = scaleYSmall(24 + d[key])
-            else if (i === 1) y = scaleYMedium(4 + d[key])
-            else if (i === 2) y = scaleYLarge(d[key])
-            curvePoints.push({x: scaleX(Number(key)), y: y})
-          }
-          return lineGenerator(curvePoints)
-        })
+      gEnter.append('rect')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) { return reserved.box.h * 0.806 - scaleYSmall(d.smallTels) - scaleYMedium(d.mediumTels) - scaleYLarge(d.largeTels) })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', function (d) { return (scaleYLarge(d.largeTels) + scaleYSmall(d.smallTels) + scaleYMedium(d.mediumTels)) * 2 })
         .attr('fill', function (d, i) {
-          if (i === 0) return '#66ff66'
-          if (i === 1) return '#aaffaa'
-          if (i === 2) return '#ddffdd'
+          return '#ababab'
         })
         .attr('stroke', function (d) {
           return colorTheme.dark.stroke
         })
         .attr('stroke-width', function (d) {
-          return 0.4
+          return 0.1
         })
         .attr('stroke-opacity', function (d) {
           return 1
         })
         .attr('fill-opacity', 1)
-      // gEnter.append('path')
-      //   .attr('d', function (d) {
-      //     let curvePoints = []
-      //     curvePoints.push({x: 0, y: reserved.box.h * 0.806})
-      //     for (let key in d) {
-      //       curvePoints.push({x: scaleX(Number(key)), y: scaleYFree(d[key]) + reserved.box.h * 0.15})
-      //     }
-      //     curvePoints.push({x: reserved.box.w, y: reserved.box.h * 0.806})
-      //     return lineGenerator(curvePoints)
-      //   })
-      //   .attr('fill', function (d, i) {
-      //     if (i === 0) return '#ff6666'
-      //     if (i === 1) return '#ffaaaa'
-      //     if (i === 2) return '#ffdddd'
-      //   })
-      //   .attr('stroke', function (d) {
-      //     return colorTheme.dark.stroke
-      //   })
-      //   .attr('stroke-width', function (d) {
-      //     return 0.4
-      //   })
-      //   .attr('stroke-opacity', function (d) {
-      //     return 1
-      //   })
-      //   .attr('fill-opacity', 1)
+      gEnter.append('rect')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) { return reserved.box.h * 0.806 - scaleYMedium(d.mediumTels) - scaleYLarge(d.largeTels) })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', function (d) { return (scaleYMedium(d.mediumTels) + scaleYLarge(d.largeTels)) * 2 })
+        .attr('fill', function (d, i) {
+          return '#787878'
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0.1
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 1)
+      gEnter.append('rect')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) { return reserved.box.h * 0.806 - scaleYLarge(d.largeTels) })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', function (d) { return scaleYLarge(d.largeTels) * 2 })
+        .attr('fill', function (d, i) {
+          return '#444444'
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0.1
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 1)
     }
     function computeTelsCurve () {
       let largeTels = {}
       let mediumTels = {}
       let smallTels = {}
-      smallTels[shared.data.server.timeOfNight.start] = 0
-      mediumTels[shared.data.server.timeOfNight.start] = 0
-      largeTels[shared.data.server.timeOfNight.start] = 0
+      // smallTels[shared.data.server.timeOfNight.start] = 0
+      // mediumTels[shared.data.server.timeOfNight.start] = 0
+      // largeTels[shared.data.server.timeOfNight.start] = 0
 
       for (let key in shared.data.copy[shared.data.current].modified.blocks) {
         for (let i = 0; i < shared.data.copy[shared.data.current].modified.blocks[key].length; i++) {
           let b = shared.data.copy[shared.data.current].modified.blocks[key][i]
           if (b.exeState.state === 'cancel') continue
-          if (!largeTels[b.startTime]) largeTels[b.startTime] = 4
-          if (!mediumTels[b.startTime]) mediumTels[b.startTime] = 24
-          if (!smallTels[b.startTime]) smallTels[b.startTime] = 70
+
+          if (!largeTels[b.startTime]) largeTels[b.startTime] = 0// 4
+          if (!mediumTels[b.startTime]) mediumTels[b.startTime] = 0// 24
+          if (!smallTels[b.startTime]) smallTels[b.startTime] = 0// 70
+          if (!largeTels[b.endTime]) largeTels[b.endTime] = 0// 4
+          if (!mediumTels[b.endTime]) mediumTels[b.endTime] = 0// 24
+          if (!smallTels[b.endTime]) smallTels[b.endTime] = 0// 70
+
           for (let j = 0; j < b.telIds.length; j++) {
             let tid = b.telIds[j]
-            if (tid[0] === 'S') smallTels[b.startTime] -= 1
-            else if (tid[0] === 'M') mediumTels[b.startTime] -= 1
-            else if (tid[1] === 'L') largeTels[b.startTime] -= 1
+            if (tid[0] === 'S') {
+              smallTels[b.startTime] -= 1
+              smallTels[b.endTime] += 1
+            } else if (tid[0] === 'M') {
+              mediumTels[b.startTime] -= 1
+              mediumTels[b.endTime] += 1
+            } else if (tid[0] === 'L') {
+              largeTels[b.startTime] -= 1
+              largeTels[b.endTime] += 1
+            }
           }
         }
       }
-      smallTels[shared.data.server.timeOfNight.end] = 0
-      mediumTels[shared.data.server.timeOfNight.end] = 0
-      largeTels[shared.data.server.timeOfNight.end] = 0
-      return [smallTels, mediumTels, largeTels]
+      // smallTels[shared.data.server.timeOfNight.end] = 0
+      // mediumTels[shared.data.server.timeOfNight.end] = 0
+      // largeTels[shared.data.server.timeOfNight.end] = 0
+
+      let timeMarker = []
+      for (var key in smallTels) {
+        timeMarker.push(Number(key))
+      }
+      timeMarker.sort((a, b) => a - b)
+      let telsFree = []
+      for (let i = 0; i < timeMarker.length; i++) {
+        if (i === 0) {
+          telsFree.push({
+            start: timeMarker[i],
+            end: timeMarker[i + 1],
+            smallTels: 70 + smallTels[timeMarker[i]],
+            mediumTels: 24 + mediumTels[timeMarker[i]],
+            largeTels: 4 + largeTels[timeMarker[i]]
+          })
+        } else if (i === timeMarker.length - 1) {
+          continue
+        } else {
+          telsFree.push({
+            start: timeMarker[i],
+            end: timeMarker[i + 1],
+            smallTels: telsFree[i - 1].smallTels + smallTels[timeMarker[i]],
+            mediumTels: telsFree[i - 1].mediumTels + mediumTels[timeMarker[i]],
+            largeTels: telsFree[i - 1].largeTels + largeTels[timeMarker[i]]
+          })
+        }
+      }
+
+      return telsFree
     }
   }
   let SvgBlockQueueOptimized = function () {
