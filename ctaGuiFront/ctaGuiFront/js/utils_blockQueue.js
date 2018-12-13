@@ -997,12 +997,12 @@ window.BlockQueue = function (optIn) {
           b.patternFill = 'url(#patternSelect)'
           b.patternOpacity = 1
         }
-        b.strokeWidth = 2.2
+        b.strokeWidth = 1
         b.strokeOpacity = 1
         // b.strokeDasharray = [2, 2]
       }
       if (b.data.sbId === com.input.over.schedBlocks) {
-        b.strokeWidth = 2.2
+        b.strokeWidth = 1
         b.strokeOpacity = 1
         // b.strokeDasharray = [2, 2]
         b.patternFill = 'url(#patternSelect)'
