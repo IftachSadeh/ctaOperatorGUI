@@ -1150,12 +1150,26 @@ window.BlockQueue = function (optIn) {
         // .style("pointer-events", "none")
         .attr('vector-effect', 'non-scaling-stroke')
         .on('click', function (d) {
-          if (d3.event.ctrlKey) {
-            com.input.selection.push(this)
-          } else {
-            com.input.selection = [this]
-          }
-          group.events.click(d.data)
+          let event = d3.event
+          let node = d3.select(this)
+          node.attr('clicked', 1)
+          let that = this
+
+          setTimeout(function () {
+            if (node.attr('clicked') === '2') return
+            console.log('click');
+            if (event.ctrlKey) {
+              com.input.selection.push(that)
+            } else {
+              com.input.selection = [that]
+            }
+            group.events.click(d.data)
+          }, 250)
+        })
+        .on('dblclick', function (d) {
+          let node = d3.select(this)
+          node.attr('clicked', 2)
+          console.log('dbclick');
         })
         .on('mouseover', function (d) {
           // blocksMouseOver(d)

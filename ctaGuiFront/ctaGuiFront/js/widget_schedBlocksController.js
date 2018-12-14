@@ -618,7 +618,6 @@ let mainSchedBlocksController = function (optIn) {
     blockQueueCreator.focusOnSchedBlocks(schedB)
     blockQueueModif.focusOnSchedBlocks(schedB)
     blockQueueOptimized.focusOnSchedBlocks(schedB)
-    console.log(shared.focus.schedBlocks);
   }
   function mainUnfocusOnSchedBlocks () {
     svgInformation.unfocusSchedBlocks()
@@ -640,13 +639,13 @@ let mainSchedBlocksController = function (optIn) {
     }
     mainUnfocusOnSchedBlocks()
     mainFocusOnSchedBlocks(block.sbId)
-
     shared.focus.block = block.obId
     // svgSchedulingBlocksOverview.focusOnSchedBlocks(block)
     svgInformation.focusOnBlock(block.obId)
     blockQueueCreator.focusOnBlock(block.obId)
     blockQueueModif.focusOnBlock(block.obId)
     blockQueueOptimized.focusOnBlock(block.obId)
+    svgBlocksQueueModif.focusOnBlock({data: block})
   }
   function mainUnfocusOnBlock () {
     if (!shared.focus.block) return
@@ -655,6 +654,7 @@ let mainSchedBlocksController = function (optIn) {
     blockQueueCreator.unfocusOnBlock(shared.focus.block)
     blockQueueModif.unfocusOnBlock(shared.focus.block)
     blockQueueOptimized.unfocusOnBlock(shared.focus.block)
+    svgBlocksQueueModif.unfocusOnBlock({data: getBlockById(shared.focus.block).optimized.data})
     shared.focus.block = undefined
   }
 
@@ -676,6 +676,9 @@ let mainSchedBlocksController = function (optIn) {
     blockQueueCreator.overBlock(block.obId)
     blockQueueModif.overBlock(block.obId)
     blockQueueOptimized.overBlock(block.obId)
+
+    svgBlocksQueueModif.overBlock({data: block})
+
     mainOverSchedBlocks(block.sbId)
   }
   function mainOutBlock (block) {
@@ -683,6 +686,9 @@ let mainSchedBlocksController = function (optIn) {
     blockQueueCreator.outBlock(block.obId)
     blockQueueModif.outBlock(block.obId)
     blockQueueOptimized.outBlock(block.obId)
+
+    svgBlocksQueueModif.outBlock({data: block})
+
     mainOutSchedBlocks(block.sbId)
   }
 
@@ -866,9 +872,7 @@ let mainSchedBlocksController = function (optIn) {
     // optimizer()
   }
   function addBlockModifications (from, blockId, modifs) {
-    console.log(blockId);
     let block = getBlockById(blockId)
-    console.log(block);
     // for (let key in shared.data.copy[shared.data.current].original.blocks) {
     //   let group = shared.data.copy[shared.data.current].original.blocks[key]
     //   for (let i = 0; i < group.length; i++) {
@@ -1320,9 +1324,9 @@ let mainSchedBlocksController = function (optIn) {
               mouseover: mainOverBlock,
               mouseout: mainOutBlock,
               drag: {
-                start: svgBlocksQueueModif.dragStart,
-                tick: svgBlocksQueueModif.dragTick,
-                end: svgBlocksQueueModif.dragEnd
+                start: () => {},
+                tick: () => {},
+                end: () => {}
               }
             },
             background: {
@@ -1684,20 +1688,20 @@ let mainSchedBlocksController = function (optIn) {
           }
         }
       }
-      blockQueueModif.updateData({
-        time: {
-          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
-          startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
-          endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
-        },
-        data: {
-          raw: {
-            blocks: modifiedData,
-            telIds: telIds
-          },
-          modified: []
-        }
-      })
+      // blockQueueModif.updateData({
+      //   time: {
+      //     currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+      //     startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
+      //     endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+      //   },
+      //   data: {
+      //     raw: {
+      //       blocks: modifiedData,
+      //       telIds: telIds
+      //     },
+      //     modified: []
+      //   }
+      // })
       drawTargets()
       drawTelsAvailabilityCurve()
     }
@@ -1719,12 +1723,13 @@ let mainSchedBlocksController = function (optIn) {
       reserved.drag.column.g.append('rect')
         .attr('class', 'area')
         .attr('x', reserved.drag.position.left)
-        .attr('y', function () { return d.y + reserved.drag.box.h * 0.19 }) // - Number(reserved.drag.oldRect.attr('height')))
+        // .attr('y', function () { return d.y + reserved.drag.box.h * 0.19 }) // - Number(reserved.drag.oldRect.attr('height')))
         .attr('width', reserved.drag.position.right - reserved.drag.position.left)
-        .attr('height', function () { return d.h })
+        // .attr('height', function () { return d.h })
         .attr('fill', '#ffffff')
         .attr('stroke', 'none')
         .attr('fill-opacity', 0.2)
+        .style('pointer-events', 'none')
         .transition()
         .duration(300)
         .attr('y', 0)
@@ -1732,9 +1737,9 @@ let mainSchedBlocksController = function (optIn) {
       reserved.drag.column.g.append('line')
         .attr('class', 'left')
         .attr('x1', reserved.drag.position.left)
-        .attr('y1', function () { return d.y + reserved.drag.box.h * 0.19 })
+        // .attr('y1', function () { return d.y + reserved.drag.box.h * 0.19 })
         .attr('x2', reserved.drag.position.left)
-        .attr('y2', function () { return d.y + reserved.drag.box.h * 0.19 + d.h })
+        // .attr('y2', function () { return d.y + reserved.drag.box.h * 0.19 + d.h })
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.5)
         .transition()
@@ -1745,9 +1750,9 @@ let mainSchedBlocksController = function (optIn) {
       reserved.drag.column.g.append('line')
         .attr('class', 'right')
         .attr('x1', reserved.drag.position.right)
-        .attr('y1', function () { return d.y + reserved.drag.box.h * 0.19 })
+        // .attr('y1', function () { return d.y + reserved.drag.box.h * 0.19 })
         .attr('x2', reserved.drag.position.right)
-        .attr('y2', function () { return d.y + reserved.drag.box.h * 0.19 + d.h })
+        // .attr('y2', function () { return d.y + reserved.drag.box.h * 0.19 + d.h })
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.5)
         .transition()
@@ -1766,7 +1771,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('opacity', 0)
         .transition()
         .duration(50)
-        .delay(150)
+        .delay(0)
         .attr('opacity', 1)
       reserved.drag.column.g.append('rect')
         .attr('class', 'bottom')
@@ -1779,69 +1784,52 @@ let mainSchedBlocksController = function (optIn) {
         .attr('opacity', 0)
         .transition()
         .duration(50)
-        .delay(150)
+        .delay(0)
         .attr('opacity', 1)
     }
     function createDragBlock (d) {
       reserved.drag.block = {}
-      reserved.drag.block.g = reserved.drag.g.selectAll('g.modifG')
-        .data([d])
-      let enter = reserved.drag.block.g
-        .enter()
-        .append('g')
-        .attr('class', 'modifG')
-        // .attr('transform', 'translate(0,' +
-        //   (com.blocks.cancel.box.h + com.blocks.modification.box.h) +
-        //   ')')
-      // enter.append('rect')
-      //   .attr('class', 'modified')
-      //   .attr('x', d.x)
-      //   .attr('y', d.y + reserved.drag.box.h * 0.19) // - Number(reserved.drag.oldRect.attr('height')))
-      //   .attr('width', d.w)
-      //   .attr('height', d.h)
-      //   .attr('fill', d.fill)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 0.5)
-      enter.append('text')
+      reserved.drag.block.g = reserved.drag.g.append('g')
+      reserved.drag.block.g.append('text')
         .attr('class', 'modified')
-        .text(function (d, i) {
+        .text(function () {
           return d.data.metaData.blockName
         })
         .style('font-weight', 'normal')
         .style('opacity', 1)
         .style('fill-opacity', 0.7)
-        .style('fill', function (d) {
+        .style('fill', function () {
           return '#000000'
         })
         .style('stroke-width', 0.3)
         .style('stroke-opacity', 1)
         .attr('vector-effect', 'non-scaling-stroke')
         .style('pointer-events', 'none')
-        .style('stroke', function (d) {
+        .style('stroke', function () {
           return '#000000'
         })
-        .attr('x', function (d, i) {
+        .attr('x', function () {
           return reserved.drag.position.left + reserved.drag.position.width * 0.5
         })
-        .attr('y', function (d, i) {
-          return d.y + (reserved.drag.box.h * 0.19) + (d.h * 0.5)
-        })
-        .attr('text-anchor', 'middle')
-        .style('font-size', function (d) {
-          return d.size + 'px'
-        })
-        .attr('dy', function (d) {
-          return 0 + 'px'
-        })
-        .transition()
-        .duration(150)
-        .attr('y', function (d, i) {
+        .attr('y', function () {
           return 8
         })
-        .attr('dy', function (d) {
-          return d.size / 3 + 'px'
+        .attr('text-anchor', 'middle')
+        .style('font-size', function () {
+          return 4 + 'px'
         })
-        .style('font-size', function (d) {
+        // .attr('dy', function () {
+        //   return 0 + 'px'
+        // })
+        .transition()
+        .duration(150)
+        .attr('y', function () {
+          return 8
+        })
+        .attr('dy', function () {
+          return 3 + 'px'
+        })
+        .style('font-size', function () {
           return 8 + 'px'
         })
     }
@@ -1864,22 +1852,22 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('transform', 'translate(' + (reserved.drag.position.left) + ',' + (com.blocks.run.box.y + com.blocks.run.box.h) + ')')
       reserved.drag.timer.g.append('rect')
         .attr('class', 'timelineOpacity')
-        .attr('x', 0)
-        .attr('y', 0) // - Number(reserved.drag.oldRect.attr('height')))
-        .attr('width', 40)
-        .attr('height', 10)
-        .attr('fill', colorTheme.brighter.background)
-        .attr('stroke', '#ffffff')
+        .attr('x', -4)
+        .attr('y', 4) // - Number(reserved.drag.oldRect.attr('height')))
+        .attr('width', reserved.drag.position.width + 8)
+        .attr('height', 2)
+        .attr('fill', colorTheme.darker.stroke)
+        .attr('stroke', 'none')
         .attr('fill-opacity', 0.9)
         .on('mouseover', function () {})
       reserved.drag.timer.g.append('text')
-        .attr('class', 'hour')
+        .attr('class', 'hourLeft')
         .text(function () {
           let time = new Date(shared.data.server.timeOfNight.date_start)
           time.setSeconds(time.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.left))
           return d3.timeFormat('%H:')(time)
         })
-        .attr('x', 15)
+        .attr('x', -24)
         .attr('y', 9) // - Number(reserved.drag.oldRect.attr('height')))
         .style('font-weight', 'normal')
         .style('opacity', 1)
@@ -1894,13 +1882,13 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', '10px')
         .attr('dy', '0px')
       reserved.drag.timer.g.append('text')
-        .attr('class', 'minute')
+        .attr('class', 'minuteLeft')
         .text(function () {
           let time = new Date(shared.data.server.timeOfNight.date_start)
           time.setSeconds(time.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.left))
           return d3.timeFormat('%M')(time)
         })
-        .attr('x', 27)
+        .attr('x', -12)
         .attr('y', 9) // - Number(reserved.drag.oldRect.attr('height')))
         .style('font-weight', 'normal')
         .style('opacity', 1)
@@ -1915,13 +1903,63 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', '10px')
         .attr('dy', '0px')
 
+      reserved.drag.timer.g.append('text')
+        .attr('class', 'hourRight')
+        .text(function () {
+          let time = new Date(shared.data.server.timeOfNight.date_start)
+          time.setSeconds(time.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.right))
+          return d3.timeFormat('%H:')(time)
+        })
+        .attr('x', reserved.drag.position.width + 12)
+        .attr('y', 9) // - Number(reserved.drag.oldRect.attr('height')))
+        .style('font-weight', 'normal')
+        .style('opacity', 1)
+        .style('fill-opacity', 0.7)
+        .style('fill', '#000000')
+        .style('stroke-width', 0.3)
+        .style('stroke-opacity', 1)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', 'none')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '10px')
+        .attr('dy', '0px')
+      reserved.drag.timer.g.append('text')
+        .attr('class', 'minuteRight')
+        .text(function () {
+          let time = new Date(shared.data.server.timeOfNight.date_start)
+          time.setSeconds(time.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.right))
+          return d3.timeFormat('%M')(time)
+        })
+        .attr('x', reserved.drag.position.width + 24)
+        .attr('y', 9) // - Number(reserved.drag.oldRect.attr('height')))
+        .style('font-weight', 'normal')
+        .style('opacity', 1)
+        .style('fill-opacity', 0.7)
+        .style('fill', '#000000')
+        .style('stroke-width', 0.3)
+        .style('stroke-opacity', 1)
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', 'none')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '10px')
+        .attr('dy', '0px')
       // reserved.drag.oldG.select('rect.back').style('fill-opacity', 1)
       // reserved.drag.oldG.select('rect.back').style('stroke-opacity', 1)
     }
 
-    function dragStart (d) {
-      if (d.data.endTime < Number(shared.data.server.timeOfNight.now)) return
+    function hideBlockInfo (d) {
+      if (!reserved.drag.g) return
 
+      reserved.drag.g.remove()
+      reserved.drag = {}
+      unhighlightTarget(d)
+    }
+    function showBlockInfo (d) {
+      if (reserved.drag.g) return
+
+      highlightTarget(d)
       reserved.drag.box = {
         x: (lenD.w[0] * 0.02),
         y: (lenD.h[0] * 0.4),
@@ -1939,22 +1977,60 @@ let mainSchedBlocksController = function (optIn) {
         left: reserved.drag.timeScale(d.data.startTime),
         right: reserved.drag.timeScale(d.data.endTime)
       }
-      reserved.drag.mousecursor = d3.mouse(reserved.drag.g._groups[0][0])
-      reserved.drag.offset = reserved.drag.mousecursor[0] - reserved.drag.position.left
-
-      reserved.drag.mode = {}
-      reserved.drag.mode.current = 'general'
-      reserved.drag.mode.previous = 'general'
-      // reserved.drag.topLimit = (com.blocks.cancel.box.y + com.blocks.cancel.box.h)
-
       createDragColumn(d)
       createDragBlock(d)
       createDragTimer(d)
-      // reserved.drag.firstDrag = false
-      // blockQueue.focusOnBlock(d.id)
+    }
+
+    function focusOnBlock (d) {
+      showBlockInfo(d)
+    }
+    this.focusOnBlock = focusOnBlock
+    function unfocusOnBlock (d) {
+      hideBlockInfo(d)
+    }
+    this.unfocusOnBlock = unfocusOnBlock
+    function overBlock (d) {
+      if (!shared.focus.block) {
+        showBlockInfo(d)
+      }
+    }
+    this.overBlock = overBlock
+    function outBlock (d) {
+      if (shared.focus.block) {
+        // if (shared.focus.block !== d.data.obId) {
+        //   hideBlockInfo(d)
+        //   showBlockInfo({data: getBlockById(shared.focus.block).optimized.data})
+        // } else {
+        //
+        // }
+      } else {
+        hideBlockInfo(d)
+      }
+    }
+    this.outBlock = outBlock
+
+    function dragStart (d) {
+      if (d.data.endTime < Number(shared.data.server.timeOfNight.now)) return
+      reserved.drag.atLeastOneTick = false
     }
     this.dragStart = dragStart
     function dragTick (d) {
+      if (d.data.endTime < Number(shared.data.server.timeOfNight.now)) return
+      if (!reserved.drag.atLeastOneTick) {
+        console.log('dragStart');
+        if (shared.focus.block !== d.data.obId) mainFocusOnBlock(d.data)
+
+        reserved.drag.mousecursor = d3.mouse(reserved.drag.g._groups[0][0])
+        reserved.drag.offset = reserved.drag.mousecursor[0] - reserved.drag.position.left
+
+        reserved.drag.mode = {}
+        reserved.drag.mode.current = 'general'
+        reserved.drag.mode.previous = 'general'
+        reserved.drag.atLeastOneTick = true
+      }
+
+      console.log('dragTick');
       function changeMinute (date, hour, min) {
         reserved.drag.finalTime.setDate(date)
         reserved.drag.finalTime.setHours(hour)
@@ -1987,7 +2063,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('x2', reserved.drag.timeScale(t) + reserved.drag.position.width)
         // reserved.drag.newG.select('rect.modified')
         //   .attr('x', reserved.drag.timeScale(reserved.drag.finalTime))
-        reserved.drag.timer.g.select('text.modified')
+        reserved.drag.block.g.select('text.modified')
           .attr('x', reserved.drag.timeScale(t) + reserved.drag.position.width * 0.5)
         reserved.drag.g.select('rect.area')
           .attr('x', reserved.drag.timeScale(t))
@@ -2014,7 +2090,6 @@ let mainSchedBlocksController = function (optIn) {
       //   reserved.drag.newG = reserved.drag.newG.merge(enter)
       // }
       else {
-        console.log(reserved.drag.position.left);
         // let delta = {
         //   x: d3.mouse(com.main.g._groups[0][0])[0] - reserved.drag.mousecursor[0],
         //   y: d3.mouse(com.main.g._groups[0][0])[1] - reserved.drag.mousecursor[1]
@@ -2029,14 +2104,13 @@ let mainSchedBlocksController = function (optIn) {
 
         reserved.drag.position.right = reserved.drag.position.left + reserved.drag.position.width
 
-        if (reserved.drag.mousecursor[1] > (reserved.drag.box.h * 0.49)) {
-          reserved.drag.mode.previous = reserved.drag.mode.current
-          reserved.drag.mode.current = 'precision'
-        } else {
-          reserved.drag.mode.previous = reserved.drag.mode.current
-          reserved.drag.mode.current = 'general'
-        }
-        // else if (reserved.drag.mousecursor[1] < (reserved.drag.topLimit - 1)) reserved.drag.mode.current = 'cancel'
+        // if (reserved.drag.mousecursor[1] > (reserved.drag.box.h * 0.49)) {
+        //   reserved.drag.mode.previous = reserved.drag.mode.current
+        //   reserved.drag.mode.current = 'precision'
+        // } else {
+        //   reserved.drag.mode.previous = reserved.drag.mode.current
+        //   reserved.drag.mode.current = 'general'
+        // }
 
         if (reserved.drag.mode.current === 'general') { // || reserved.drag.mode.current === 'cancel') {
           // if (reserved.drag.mode.current === 'general' && reserved.drag.mode.previous === 'cancel') {
@@ -2064,49 +2138,49 @@ let mainSchedBlocksController = function (optIn) {
 
           if (d.data.exeState.state === 'run') return
 
-          if (reserved.drag.mode.previous === 'precision') {
-            delete reserved.drag.finalTime
-            reserved.drag.offset = reserved.drag.position.width * 0.5
-            reserved.drag.timer.g.select('text.hour')
-              .transition()
-              .duration(600)
-              .text(function () {
-                return d3.timeFormat('%H:')(reserved.drag.timeScale.invert(reserved.drag.position.left))
-              })
-              .attr('x', 15)
-              .attr('y', 9)
-              .style('font-weight', 'normal')
-            reserved.drag.timer.g.select('text.minute')
-              .transition()
-              .duration(600)
-              .text(function () {
-                return d3.timeFormat('%M')(reserved.drag.timeScale.invert(reserved.drag.position.left))
-              })
-              .attr('x', 27)
-              .attr('y', 9)
-              .style('font-weight', 'normal').style('font-size', '10px')
-            reserved.drag.timer.g.select('text.second')
-              .transition()
-              .duration(600)
-              .style('font-size', '0px')
-              .style('opacity', 0)
-              .remove()
-            reserved.drag.timer.g.select('rect.timelineOpacity')
-              .transition()
-              .duration(600)
-              .attr('x', 0)
-              .attr('width', 40)
-              .attr('height', 10)
-              .attr('fill-opacity', 0.9)
-            reserved.drag.timer.g.select('g.hourMin')
-              .attr('opacity', 1)
-              .transition()
-              .duration(600)
-              .attr('opacity', 0)
-              .on('end', function () {
-                reserved.drag.timer.g.select('g.hourMin').remove()
-              })
-          }
+          // if (reserved.drag.mode.previous === 'precision') {
+          //   delete reserved.drag.finalTime
+          //   reserved.drag.offset = reserved.drag.position.width * 0.5
+          //   reserved.drag.timer.g.select('text.hour')
+          //     .transition()
+          //     .duration(600)
+          //     .text(function () {
+          //       return d3.timeFormat('%H:')(reserved.drag.timeScale.invert(reserved.drag.position.left))
+          //     })
+          //     .attr('x', 15)
+          //     .attr('y', 9)
+          //     .style('font-weight', 'normal')
+          //   reserved.drag.timer.g.select('text.minute')
+          //     .transition()
+          //     .duration(600)
+          //     .text(function () {
+          //       return d3.timeFormat('%M')(reserved.drag.timeScale.invert(reserved.drag.position.left))
+          //     })
+          //     .attr('x', 27)
+          //     .attr('y', 9)
+          //     .style('font-weight', 'normal').style('font-size', '10px')
+          //   reserved.drag.timer.g.select('text.second')
+          //     .transition()
+          //     .duration(600)
+          //     .style('font-size', '0px')
+          //     .style('opacity', 0)
+          //     .remove()
+          //   reserved.drag.timer.g.select('rect.timelineOpacity')
+          //     .transition()
+          //     .duration(600)
+          //     .attr('x', 0)
+          //     .attr('width', 40)
+          //     .attr('height', 10)
+          //     .attr('fill-opacity', 0.9)
+          //   reserved.drag.timer.g.select('g.hourMin')
+          //     .attr('opacity', 1)
+          //     .transition()
+          //     .duration(600)
+          //     .attr('opacity', 0)
+          //     .on('end', function () {
+          //       reserved.drag.timer.g.select('g.hourMin').remove()
+          //     })
+          // }
           if (true) {
             reserved.drag.g.select('line.left')
               .attr('x1', reserved.drag.position.left)
@@ -2134,226 +2208,251 @@ let mainSchedBlocksController = function (optIn) {
               t[1] = Number(t[1].split(')')[0])
               return 'translate(' + Number(reserved.drag.g.select('line.left').attr('x1')) + ',' + t[1] + ')'
             })
-            reserved.drag.timer.g.select('text.hour').text(function () {
+            reserved.drag.timer.g.select('text.hourLeft').text(function () {
               let time = new Date(shared.data.server.timeOfNight.date_start)
               time.setSeconds(time.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.left))
               return d3.timeFormat('%H:')(time)
             })
-            reserved.drag.timer.g.select('text.minute').text(function () {
+            reserved.drag.timer.g.select('text.minuteLeft').text(function () {
               let time = new Date(shared.data.server.timeOfNight.date_start)
               time.setSeconds(time.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.left))
               return d3.timeFormat('%M')(time)
             })
-          }
-        } else if (reserved.drag.mode.current === 'precision') {
-          if (reserved.drag.mode.previous === 'general') {
-            reserved.drag.finalTime = new Date(shared.data.server.timeOfNight.date_start)
-            reserved.drag.finalTime.setSeconds(reserved.drag.finalTime.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.left))
+            reserved.drag.timer.g.select('text.hourRight').text(function () {
+              let time = new Date(shared.data.server.timeOfNight.date_start)
+              time.setSeconds(time.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.right))
+              return d3.timeFormat('%H:')(time)
+            })
+            reserved.drag.timer.g.select('text.minuteRight').text(function () {
+              let time = new Date(shared.data.server.timeOfNight.date_start)
+              time.setSeconds(time.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.right))
+              return d3.timeFormat('%M')(time)
+            })
 
-            reserved.drag.timer.g.select('text.hour')
-              .transition()
-              .duration(600)
-              .text(function () {
-                return d3.timeFormat('%H:')(reserved.drag.finalTime)
-              })
-              .attr('x', 15)
-              .attr('y', 10.5)
-              .style('font-weight', 'bold')
-            reserved.drag.timer.g.select('text.minute')
-              .transition()
-              .duration(600)
-              .text(function () {
-                return d3.timeFormat('%M')(reserved.drag.finalTime)
-              })
-              .attr('x', 29)
-              .attr('y', 6.5)
-              .style('font-weight', 'bold').style('font-size', '7px')
-            reserved.drag.timer.g.append('text')
-              .attr('class', 'second')
-              .text(function () {
-                return d3.timeFormat('%S')(reserved.drag.finalTime)
-              })
-              .attr('x', 29)
-              .attr('y', 13) // - Number(reserved.drag.oldRect.attr('height')))
-              .style('font-weight', 'bold')
-              .style('opacity', 1)
-              .style('fill-opacity', 0.7)
-              .style('fill', '#000000')
-              .style('stroke-width', 0.3)
-              .style('stroke-opacity', 1)
-              .attr('vector-effect', 'non-scaling-stroke')
-              .style('pointer-events', 'none')
-              .style('stroke', 'none')
-              .attr('text-anchor', 'middle')
-              .style('font-size', '7px')
-              .attr('dy', '0px')
-
-            reserved.drag.timer.g
-              .transition()
-              .duration(600)
-              .attr('x', -70)
-              .attr('width', 180)
-              .attr('height', 25)
-              .attr('fill-opacity', 1)
-            let hourMinG = reserved.drag.timer.g.append('g').attr('class', 'hourMin')
-            for (let i = 1; i < 6; i++) {
-              hourMinG.append('rect')
-                .attr('class', function (d) {
-                  let date = new Date(reserved.drag.finalTime)
-                  date.setMinutes(date.getMinutes() - i)
-                  return 'hourMin:' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes()
-                })
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', 0)
-                .attr('height', 15)
-                .attr('fill', (i % 2 === 1 ? colorTheme.darker.background : colorTheme.darker.background))
-                .attr('stroke', 'none')
-                .attr('fill-opacity', 0.4)
-                .on('mouseover', function (d) {
-                  let newDate = Number(d3.select(this).attr('class').split(':')[1].split('-')[0])
-                  let newHour = Number(d3.select(this).attr('class').split(':')[1].split('-')[1])
-                  let newMin = Number(d3.select(this).attr('class').split(':')[1].split('-')[2])
-                  changeMinute(newDate, newHour, newMin)
-                  d3.select(this).attr('fill-opacity', 0.9)
-                })
-                .on('mouseout', function () {
-                  d3.select(this).attr('fill-opacity', 0.4)
-                })
-                .transition()
-                .duration(600)
-                .attr('x', 5.5 - 15 * i)
-                .attr('width', 15)
-              hourMinG.append('text')
-                .attr('class', 'hourMin-' + i)
-                .text(function () {
-                  let date = new Date(reserved.drag.finalTime)
-                  date.setMinutes(date.getMinutes() - i)
-                  return d3.timeFormat(':%M')(date)
-                })
-                .attr('x', 20)
-                .attr('y', 10)
-                .style('font-weight', 'normal')
-                .style('opacity', 1)
-                .style('fill-opacity', 0)
-                .style('fill', '#000000')
-                .attr('vector-effect', 'non-scaling-stroke')
-                .style('pointer-events', 'none')
-                .style('stroke', 'none')
-                .attr('text-anchor', 'middle')
-                .style('font-size', '7px')
-                .attr('dy', '0px')
-                .transition()
-                .duration(600)
-                .style('fill-opacity', 0.7)
-                .attr('x', 13 - 15 * i)
-            }
-            for (let i = 1; i < 6; i++) {
-              hourMinG.append('rect')
-                .attr('class', function (d) {
-                  let date = new Date(reserved.drag.finalTime)
-                  date.setMinutes(date.getMinutes() + (i - 1))
-                  return 'hourMin:' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes()
-                })
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', 0)
-                .attr('height', 15)
-                .attr('fill', (i % 2 === 1 ? colorTheme.darker.background : colorTheme.darker.background))
-                .attr('stroke', 'none')
-                .attr('fill-opacity', 0.4)
-                .on('mouseover', function (d) {
-                  let newDate = Number(d3.select(this).attr('class').split(':')[1].split('-')[0])
-                  let newHour = Number(d3.select(this).attr('class').split(':')[1].split('-')[1])
-                  let newMin = Number(d3.select(this).attr('class').split(':')[1].split('-')[2])
-                  changeMinute(newDate, newHour, newMin)
-                  d3.select(this).attr('fill-opacity', 0.9)
-                })
-                .on('mouseout', function () {
-                  d3.select(this).attr('fill-opacity', 0.4)
-                })
-                .transition()
-                .duration(600)
-                .attr('x', 19.5 + 15 * i)
-                .attr('width', 15)
-              hourMinG.append('text')
-                .attr('class', 'hourMin+' + (i - 1))
-                .text(function () {
-                  let date = new Date(reserved.drag.finalTime)
-                  date.setMinutes(date.getMinutes() + (i - 1))
-                  return d3.timeFormat(':%M')(date)
-                })
-                .attr('x', 27 + 15 * i)
-                .attr('y', 10) // - Number(reserved.drag.oldRect.attr('height')))
-                .style('font-weight', 'normal')
-                .style('opacity', 1)
-                .style('fill-opacity', 0.7)
-                .style('fill', '#000000')
-                .style('stroke-width', 0.3)
-                .style('stroke-opacity', 1)
-                .attr('vector-effect', 'non-scaling-stroke')
-                .style('pointer-events', 'none')
-                .style('stroke', 'none')
-                .attr('text-anchor', 'middle')
-                .style('font-size', '7px')
-                .attr('dy', '0px')
-            }
-            for (let i = 0; i < 12; i++) {
-              hourMinG.append('rect')
-                .attr('class', function (d) {
-                  let date = new Date()
-                  date.setSeconds(5 * i)
-                  return 'hourSec:' + date.getSeconds()
-                })
-                .attr('x', 20)
-                .attr('y', 14)
-                .attr('width', 0)
-                .attr('height', 12)
-                .attr('fill', (i % 2 === 1 ? colorTheme.darker.background : colorTheme.darker.background))
-                .attr('stroke', '#222222')
-                .attr('stroke-width', 0.3)
-                .attr('stroke-dasharray', [0, 5, 5, 8, 6, 21, 6, 3])
-                .attr('fill-opacity', 0.4)
-                .on('mouseover', function (d) {
-                  changeSecond(Number(d3.select(this).attr('class').split(':')[1]))
-                  d3.select(this).attr('fill-opacity', 1)
-                })
-                .on('mouseout', function () {
-                  d3.select(this).attr('fill-opacity', 0.4)
-                })
-                .transition()
-                .duration(600)
-                .attr('x', -62 - 8 + 15 * i)
-                .attr('width', 15)
-              hourMinG.append('text')
-                .attr('class', 'Min_sec' + i)
-                .text(function () {
-                  let date = new Date()
-                  date.setSeconds(5 * i)
-                  return d3.timeFormat(':%S')(date)
-                })
-                .attr('x', -62 + 15 * i)
-                .attr('y', 22) // - Number(reserved.drag.oldRect.attr('height')))
-                .style('font-weight', 'normal')
-                .style('opacity', 1)
-                .style('fill-opacity', 0.7)
-                .style('fill', '#000000')
-                .style('stroke-width', 0.3)
-                .style('stroke-opacity', 1)
-                .attr('vector-effect', 'non-scaling-stroke')
-                .style('pointer-events', 'none')
-                .style('stroke', 'none')
-                .attr('text-anchor', 'middle')
-                .style('font-size', '7px')
-                .attr('dy', '0px')
-            }
+            showPercentTarget({data: {targetId: d.data.targetId,
+              startTime: reserved.drag.timeScale.invert(reserved.drag.position.left),
+              endTime: reserved.drag.timeScale.invert(reserved.drag.position.right)}})
+            drawTelsAvailabilityCurve({
+              obId: d.data.obId,
+              startTime: reserved.drag.timeScale.invert(reserved.drag.position.left),
+              endTime: reserved.drag.timeScale.invert(reserved.drag.position.right),
+              telIds: d.data.telIds
+            })
           }
         }
+        // else if (reserved.drag.mode.current === 'precision') {
+        //   if (reserved.drag.mode.previous === 'general') {
+        //     reserved.drag.finalTime = new Date(shared.data.server.timeOfNight.date_start)
+        //     reserved.drag.finalTime.setSeconds(reserved.drag.finalTime.getSeconds() + reserved.drag.timeScale.invert(reserved.drag.position.left))
+        //
+        //     reserved.drag.timer.g.select('text.hour')
+        //       .transition()
+        //       .duration(600)
+        //       .text(function () {
+        //         return d3.timeFormat('%H:'target)(reserved.drag.finalTime)
+        //       })
+        //       .attr('x', 15)
+        //       .attr('y', 10.5)
+        //       .style('font-weight', 'bold')
+        //     reserved.drag.timer.g.select('text.minute')
+        //       .transition()
+        //       .duration(600)
+        //       .text(function () {
+        //         return d3.timeFormat('%M')(reserved.drag.finalTime)
+        //       })
+        //       .attr('x', 29)
+        //       .attr('y', 6.5)
+        //       .style('font-weight', 'bold').style('font-size', '7px')
+        //     reserved.drag.timer.g.append('text')
+        //       .attr('class', 'second')
+        //       .text(function () {
+        //         return d3.timeFormat('%S')(reserved.drag.finalTime)
+        //       })
+        //       .attr('x', 29)
+        //       .attr('y', 13) // - Number(reserved.drag.oldRect.attr('height')))
+        //       .style('font-weight', 'bold')
+        //       .style('opacity', 1)
+        //       .style('fill-opacity', 0.7)
+        //       .style('fill', '#000000')
+        //       .style('stroke-width', 0.3)
+        //       .style('stroke-opacity', 1)
+        //       .attr('vector-effect', 'non-scaling-stroke')
+        //       .style('pointer-events', 'none')
+        //       .style('stroke', 'none')
+        //       .attr('text-anchor', 'middle')
+        //       .style('font-size', '7px')
+        //       .attr('dy', '0px')
+        //
+        //     reserved.drag.timer.g
+        //       .transition()
+        //       .duration(600)
+        //       .attr('x', -70)
+        //       .attr('width', 180)
+        //       .attr('height', 25)
+        //       .attr('fill-opacity', 1)
+        //     let hourMinG = reserved.drag.timer.g.append('g').attr('class', 'hourMin')
+        //     for (let i = 1; i < 6; i++) {
+        //       hourMinG.append('rect')
+        //         .attr('class', function (d) {
+        //           let date = new Date(reserved.drag.finalTime)
+        //           date.setMinutes(date.getMinutes() - i)
+        //           return 'hourMin:' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes()
+        //         })
+        //         .attr('x', 0)
+        //         .attr('y', 0)
+        //         .attr('width', 0)
+        //         .attr('height', 15)
+        //         .attr('fill', (i % 2 === 1 ? colorTheme.darker.background : colorTheme.darker.background))
+        //         .attr('stroke', 'none')
+        //         .attr('fill-opacity', 0.4)
+        //         .on('mouseover', function (d) {
+        //           let newDate = Number(d3.select(this).attr('class').split(':')[1].split('-')[0])
+        //           let newHour = Number(d3.select(this).attr('class').split(':')[1].split('-')[1])
+        //           let newMin = Number(d3.select(this).attr('class').split(':')[1].split('-')[2])
+        //           changeMinute(newDate, newHour, newMin)
+        //           d3.select(this).attr('fill-opacity', 0.9)
+        //         })
+        //         .on('mouseout', function () {
+        //           d3.select(this).attr('fill-opacity', 0.4)
+        //         })
+        //         .transition()
+        //         .duration(600)
+        //         .attr('x', 5.5 - 15 * i)
+        //         .attr('width', 15)
+        //       hourMinG.append('text')
+        //         .attr('class', 'hourMin-' + i)
+        //         .text(function () {
+        //           let date = new Date(reserved.drag.finalTime)
+        //           date.setMinutes(date.getMinutes() - i)
+        //           return d3.timeFormat(':%M')(date)
+        //         })
+        //         .attr('x', 20)
+        //         .attr('y', 10)
+        //         .style('font-weight', 'normal')
+        //         .style('opacity', 1)
+        //         .style('fill-opacity', 0)
+        //         .style('fill', '#000000')
+        //         .attr('vector-effect', 'non-scaling-stroke')
+        //         .style('pointer-events', 'none')
+        //         .style('stroke', 'none')
+        //         .attr('text-anchor', 'middle')
+        //         .style('font-size', '7px')
+        //         .attr('dy', '0px')
+        //         .transition()
+        //         .duration(600)
+        //         .style('fill-opacity', 0.7)
+        //         .attr('x', 13 - 15 * i)
+        //     }
+        //     for (let i = 1; i < 6; i++) {
+        //       hourMinG.append('rect')
+        //         .attr('class', function (d) {
+        //           let date = new Date(reserved.drag.finalTime)
+        //           date.setMinutes(date.getMinutes() + (i - 1))
+        //           return 'hourMin:' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes()
+        //         })
+        //         .attr('x', 0)
+        //         .attr('y', 0)
+        //         .attr('width', 0)
+        //         .attr('height', 15)
+        //         .attr('fill', (i % 2 === 1 ? colorTheme.darker.background : colorTheme.darker.background))
+        //         .attr('stroke', 'none')
+        //         .attr('fill-opacity', 0.4)
+        //         .on('mouseover', function (d) {
+        //           let newDate = Number(d3.select(this).attr('class').split(':')[1].split('-')[0])
+        //           let newHour = Number(d3.select(this).attr('class').split(':')[1].split('-')[1])
+        //           let newMin = Number(d3.select(this).attr('class').split(':')[1].split('-')[2])
+        //           changeMinute(newDate, newHour, newMin)
+        //           d3.select(this).attr('fill-opacity', 0.9)
+        //         })
+        //         .on('mouseout', function () {
+        //           d3.select(this).attr('fill-opacity', 0.4)
+        //         })
+        //         .transition()
+        //         .duration(600)
+        //         .attr('x', 19.5 + 15 * i)
+        //         .attr('width', 15)
+        //       hourMinG.append('text')
+        //         .attr('class', 'hourMin+' + (i - 1))
+        //         .text(function () {
+        //           let date = new Date(reserved.drag.finalTime)
+        //           date.setMinutes(date.getMinutes() + (i - 1))
+        //           return d3.timeFormat(':%M')(date)
+        //         })
+        //         .attr('x', 27 + 15 * i)
+        //         .attr('y', 10) // - Number(reserved.drag.oldRect.attr('height')))
+        //         .style('font-weight', 'normal')
+        //         .style('opacity', 1)
+        //         .style('fill-opacity', 0.7)
+        //         .style('fill', '#000000')
+        //         .style('stroke-width', 0.3)
+        //         .style('stroke-opacity', 1)
+        //         .attr('vector-effect', 'non-scaling-stroke')
+        //         .style('pointer-events', 'none')
+        //         .style('stroke', 'none')
+        //         .attr('text-anchor', 'middle')
+        //         .style('font-size', '7px')
+        //         .attr('dy', '0px')
+        //     }
+        //     for (let i = 0; i < 12; i++) {
+        //       hourMinG.append('rect')
+        //         .attr('class', function (d) {
+        //           let date = new Date()
+        //           date.setSeconds(5 * i)
+        //           return 'hourSec:' + date.getSeconds()
+        //         })
+        //         .attr('x', 20)
+        //         .attr('y', 14)
+        //         .attr('width', 0)
+        //         .attr('height', 12)
+        //         .attr('fill', (i % 2 === 1 ? colorTheme.darker.background : colorTheme.darker.background))
+        //         .attr('stroke', '#222222')
+        //         .attr('stroke-width', 0.3)
+        //         .attr('stroke-dasharray', [0, 5, 5, 8, 6, 21, 6, 3])
+        //         .attr('fill-opacity', 0.4)
+        //         .on('mouseover', function (d) {
+        //           changeSecond(Number(d3.select(this).attr('class').split(':')[1]))
+        //           d3.select(this).attr('fill-opacity', 1)
+        //         })
+        //         .on('mouseout', function () {
+        //           d3.select(this).attr('fill-opacity', 0.4)
+        //         })
+        //         .transition()
+        //         .duration(600)
+        //         .attr('x', -62 - 8 + 15 * i)
+        //         .attr('width', 15)
+        //       hourMinG.append('text')
+        //         .attr('class', 'Min_sec' + i)
+        //         .text(function () {
+        //           let date = new Date()
+        //           date.setSeconds(5 * i)
+        //           return d3.timeFormat(':%S')(date)
+        //         })
+        //         .attr('x', -62 + 15 * i)
+        //         .attr('y', 22) // - Number(reserved.drag.oldRect.attr('height')))
+        //         .style('font-weight', 'normal')
+        //         .style('opacity', 1)
+        //         .style('fill-opacity', 0.7)
+        //         .style('fill', '#000000')
+        //         .style('stroke-width', 0.3)
+        //         .style('stroke-opacity', 1)
+        //         .attr('vector-effect', 'non-scaling-stroke')
+        //         .style('pointer-events', 'none')
+        //         .style('stroke', 'none')
+        //         .attr('text-anchor', 'middle')
+        //         .style('font-size', '7px')
+        //         .attr('dy', '0px')
+        //     }
+        //   }
+        // }
       }
     }
     this.dragTick = dragTick
     function dragEnd (d) {
+      if (!reserved.drag.atLeastOneTick) return
+      console.log('dragEnd')
+      d3.event.sourceEvent.stopPropagation()
       if (d.data.endTime < Number(shared.data.server.timeOfNight.now)) return
+
       let newBlock = deepCopy(d)
       if (reserved.drag.finalTime) {
         let t = (reserved.drag.finalTime.getTime() - (new Date(shared.data.server.timeOfNight.date_start)).getTime()) / 1000
@@ -2373,14 +2472,55 @@ let mainSchedBlocksController = function (optIn) {
       // } else {
       //   com.data.modified.integrated.push(newBlock)
       // }
+      if (reserved.drag.mode.previous === 'precision') {
+        reserved.drag.timer.g.attr('transform', 'translate(' + reserved.drag.timeScale(newStart) + ',' + (reserved.drag.box.h * 0.49) + ')')
+        reserved.drag.timer.g.select('text.hour')
+          .transition()
+          .duration(600)
+          .text(function () {
+            return d3.timeFormat('%H:')(reserved.drag.finalTime)
+          })
+          .attr('x', 15)
+          .attr('y', 9)
+          .style('font-weight', 'normal')
+        reserved.drag.timer.g.select('text.minute')
+          .transition()
+          .duration(600)
+          .text(function () {
+            return d3.timeFormat('%M')(reserved.drag.finalTime)
+          })
+          .attr('x', 27)
+          .attr('y', 9)
+          .style('font-weight', 'normal').style('font-size', '10px')
+        reserved.drag.timer.g.select('text.second')
+          .transition()
+          .duration(600)
+          .style('font-size', '0px')
+          .style('opacity', 0)
+          .remove()
+        reserved.drag.timer.g.select('rect.timelineOpacity')
+          .transition()
+          .duration(600)
+          .attr('x', 0)
+          .attr('width', 40)
+          .attr('height', 10)
+          .attr('fill-opacity', 0.9)
+        reserved.drag.timer.g.select('g.hourMin')
+          .attr('opacity', 1)
+          .transition()
+          .duration(600)
+          .attr('opacity', 0)
+          .on('end', function () {
+            reserved.drag.timer.g.select('g.hourMin').remove()
+          })
+        delete reserved.drag.finalTime
+      }
 
       // reserved.drag.oldG.select('rect.back')
       //   .style('fill-opacity', 0.1)
       //   .style('stroke-opacity', 0.1)
       //   .style('pointer-events', 'none')
       // reserved.drag.oldG.remove()
-      reserved.drag.g.remove()
-      reserved.drag = {}
     }
     this.dragEnd = dragEnd
 
@@ -2388,10 +2528,9 @@ let mainSchedBlocksController = function (optIn) {
       let scaleX = d3.scaleLinear()
         .range([0, reserved.targetBox.w])
         .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
-      // console.log(blockQueue.get('axis').range, blockQueue.get('axis').domain);
       let scaleY = d3.scaleLinear()
         .range([reserved.targetBox.y + reserved.targetBox.h, reserved.targetBox.y])
-        .domain([0.01, 1.01])
+        .domain([0, 1])
       let lineGenerator = d3.line()
         .x(function (d) { return d.x })
         .y(function (d) { return d.y })
@@ -2427,9 +2566,9 @@ let mainSchedBlocksController = function (optIn) {
         })
         .attr('stroke-opacity', function (d) {
           // if (block.data.targetId === d.id) return 1
-          return 0.9
+          return 0.4
         })
-        .attr('fill-opacity', 0.6)
+        .attr('fill-opacity', 0.15)
         .attr('stroke-dasharray', function (d) {
           // if (block.data.targetId === d.id) return []
           return [4, 6]
@@ -2462,8 +2601,99 @@ let mainSchedBlocksController = function (optIn) {
         })
         .style('fill-opacity', function (d) {
           // if (block.data.targetId === d.id) return 1
-          return 0.5
+          return 0.3
         })
+    }
+    function showPercentTarget (block) {
+      reserved.clipBody.select('text.percentStart').remove()
+      reserved.clipBody.select('text.percentEnd').remove()
+      let scaleX = d3.scaleLinear()
+        .range([0, reserved.targetBox.w])
+        .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
+      function dichotomiePath (targetedX, start, end, path, precision, step, maxStack) {
+        if (step > maxStack) return {x: -1, y: -1}
+        let middle = (end + start) * 0.5
+        let point = path.getPointAtLength(middle)
+        if (Math.abs(point.x - targetedX) < precision) return point
+        if (point.x > targetedX) return dichotomiePath(targetedX, start, middle, path, precision, step + 1, maxStack)
+        if (point.x < targetedX) return dichotomiePath(targetedX, middle, end, path, precision, step + 1, maxStack)
+      }
+      let scaleY = d3.scaleLinear()
+        .range([reserved.targetBox.y + reserved.targetBox.h, reserved.targetBox.y])
+        .domain([0, 1])
+      let target = reserved.clipBody.selectAll('g.target')
+        .filter(function (d) { return (block.data.targetId === d.id) }).select('path')._groups[0][0]
+      let projBlockStart = {x: scaleX(block.data.startTime), y: -1}
+      if (projBlockStart.x < target.getPointAtLength(0).x || projBlockStart.x > target.getPointAtLength(target.getTotalLength()).x) {
+        projBlockStart.y = scaleY(0)
+        reserved.clipBody.append('text')
+          .attr('class', 'percentStart')
+          .text(function (d) {
+            return '0.00%'
+          })
+          .attr('x', projBlockStart.x - 5)
+          .attr('y', projBlockStart.y - 5)
+          .attr('text-anchor', 'end')
+          .attr('font-size', 8)
+          .attr('dy', 0)
+          .style('font-weight', 'bold')
+          .style('pointer-events', 'none')
+          .style('fill', colorTheme.dark.stroke)
+          .style('fill-opacity', 1)
+      } else {
+        projBlockStart = dichotomiePath(projBlockStart.x, 0, target.getTotalLength(), target, 0.1, 0, 30)
+        reserved.clipBody.append('text')
+          .attr('class', 'percentStart')
+          .text(function (d) {
+            return (scaleY.invert(projBlockStart.y) * 100).toFixed(2) + '%'
+          })
+          .attr('x', projBlockStart.x - 5)
+          .attr('y', projBlockStart.y - 5)
+          .attr('text-anchor', 'end')
+          .attr('font-size', 8)
+          .attr('dy', 0)
+          .style('font-weight', 'bold')
+          .style('pointer-events', 'none')
+          .style('fill', colorTheme.dark.stroke)
+          .style('fill-opacity', 1)
+      }
+
+      let projBlockEnd = {x: scaleX(block.data.endTime), y: -1}
+      if (projBlockEnd.x < target.getPointAtLength(0).x || projBlockEnd.x > target.getPointAtLength(target.getTotalLength()).x) {
+        projBlockEnd.y = scaleY(0)
+        reserved.clipBody.append('text')
+          .attr('class', 'percentEnd')
+          .text(function (d) {
+            return '0.00%'
+          })
+          .attr('x', projBlockEnd.x + 5)
+          .attr('y', projBlockEnd.y - 5)
+          .attr('text-anchor', 'start')
+          .attr('font-size', 8)
+          .attr('dy', 0)
+          .style('font-weight', 'bold')
+          .style('pointer-events', 'none')
+          .style('fill', colorTheme.dark.stroke)
+          .style('fill-opacity', 1)
+      } else {
+        projBlockEnd = dichotomiePath(projBlockEnd.x, 0, target.getTotalLength(), target, 0.1, 0, 30)
+        reserved.clipBody.append('text')
+          .attr('class', 'percentEnd')
+          .text(function (d) {
+            return (scaleY.invert(projBlockEnd.y) * 100).toFixed(2) + '%'
+          })
+          .attr('x', projBlockEnd.x + 5)
+          .attr('y', projBlockEnd.y - 5)
+          .attr('text-anchor', 'start')
+          .attr('font-size', 8)
+          .attr('dy', 0)
+          .style('font-weight', 'bold')
+          .style('pointer-events', 'none')
+          .style('fill', colorTheme.dark.stroke)
+          .style('fill-opacity', 1)
+      }
+
+      console.log((scaleY.invert(projBlockStart.y) * 100).toFixed(2),(scaleY.invert(projBlockEnd.y) * 100).toFixed(2));
     }
     function highlightTarget (block) {
       let tarG = reserved.clipBody.selectAll('g.target')
@@ -2478,26 +2708,29 @@ let mainSchedBlocksController = function (optIn) {
       tarG.select('text')
         .style('fill', colorTheme.dark.stroke)
         .style('fill-opacity', 1)
+      showPercentTarget(block)
     }
     this.highlightTarget = highlightTarget
     function unhighlightTarget (block) {
+      reserved.clipBody.select('text.percentStart').remove()
+      reserved.clipBody.select('text.percentEnd').remove()
       let tarG = reserved.clipBody.selectAll('g.target')
         .filter(function (d) { return (block.data.targetId === d.id) })
       tarG.select('path')
         .attr('fill', 'none')
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.4)
-        .attr('stroke-opacity', 0.9)
-        .attr('fill-opacity', 0.6)
+        .attr('stroke-opacity', 0.4)
+        .attr('fill-opacity', 0.15)
         .attr('stroke-dasharray', [4, 6])
       tarG.select('text')
         .style('fill', colorTheme.dark.stroke)
-        .style('fill-opacity', 0.5)
+        .style('fill-opacity', 0.3)
     }
     this.unhighlightTarget = unhighlightTarget
 
-    function drawTelsAvailabilityCurve () {
-      let curve = computeTelsCurve()
+    function drawTelsAvailabilityCurve (block) {
+      let curve = computeTelsCurve(block)
 
       let scaleX = d3.scaleLinear()
         .range([0, reserved.box.w])
@@ -2595,7 +2828,7 @@ let mainSchedBlocksController = function (optIn) {
         })
         .attr('fill-opacity', 0.6)
     }
-    function computeTelsCurve () {
+    function computeTelsCurve (block) {
       let largeTels = {}
       let mediumTels = {}
       let smallTels = {}
@@ -2607,6 +2840,7 @@ let mainSchedBlocksController = function (optIn) {
         for (let i = 0; i < shared.data.copy[shared.data.current].modified.blocks[key].length; i++) {
           let b = shared.data.copy[shared.data.current].modified.blocks[key][i]
           if (b.exeState.state === 'cancel') continue
+          if (block && b.obId === block.obId) continue
 
           if (!largeTels[b.startTime]) largeTels[b.startTime] = 0// 4
           if (!mediumTels[b.startTime]) mediumTels[b.startTime] = 0// 24
@@ -2630,10 +2864,31 @@ let mainSchedBlocksController = function (optIn) {
           }
         }
       }
+      if (block) {
+        if (!largeTels[block.startTime]) largeTels[block.startTime] = 0
+        if (!mediumTels[block.startTime]) mediumTels[block.startTime] = 0
+        if (!smallTels[block.startTime]) smallTels[block.startTime] = 0
+        if (!largeTels[block.endTime]) largeTels[block.endTime] = 0
+        if (!mediumTels[block.endTime]) mediumTels[block.endTime] = 0
+        if (!smallTels[block.endTime]) smallTels[block.endTime] = 0
+
+        for (let j = 0; j < block.telIds.length; j++) {
+          let tid = block.telIds[j]
+          if (tid[0] === 'S') {
+            smallTels[block.startTime] -= 1
+            smallTels[block.endTime] += 1
+          } else if (tid[0] === 'M') {
+            mediumTels[block.startTime] -= 1
+            mediumTels[block.endTime] += 1
+          } else if (tid[0] === 'L') {
+            largeTels[block.startTime] -= 1
+            largeTels[block.endTime] += 1
+          }
+        }
       // smallTels[shared.data.server.timeOfNight.end] = 0
       // mediumTels[shared.data.server.timeOfNight.end] = 0
       // largeTels[shared.data.server.timeOfNight.end] = 0
-
+      }
       let timeMarker = []
       for (var key in smallTels) {
         timeMarker.push(Number(key))
