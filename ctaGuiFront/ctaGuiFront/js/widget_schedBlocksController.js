@@ -49,7 +49,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_gridBagLayout.js' 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollForm.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_formManager.js' })
-window.loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
@@ -4077,41 +4077,109 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke', colorTheme.dark.stroke)
         .style('pointer-events', 'none')
 
-      reserved.g.append('rect')
-        .attr('class', 'back')
-        .attr('x', 0)
-        .attr('y', 35)
-        .attr('width', reserved.box.w)
-        .attr('height', reserved.box.h - 48)
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('fill', 'none')
-        .attr('stroke-width', 0.4)
-        .attr('stroke-opacity', 1)
-        .attr('stroke-dasharray', [0, 4, reserved.box.w - 4 + (reserved.box.h - 48) + reserved.box.w - 4, (reserved.box.h - 48)])
-      reserved.fo = reserved.g.append('foreignObject')
-        .attr('width', reserved.box.w + 'px')
-        .attr('height', reserved.box.h - 48 + 'px')
-        .attr('x', 0 + 'px')
-        .attr('y', 35 + 'px')
-      reserved.rootDiv = reserved.fo.append('xhtml:div')
-        .attr('class', 'overflowVerticalDiv')
-      // reserved.innerDiv = reserved.rootDiv.append('div')
-      //   .attr('width', '100%')
-      //   .attr('height', reserved.box.h - 48 + 'px')
-      reserved.svg = reserved.rootDiv.append('svg')
-        .attr('width', '100%')
-        .attr('height', '100%')
+      // reserved.g.append('rect')
+      //   .attr('class', 'back')
+      //   .attr('x', 0)
+      //   .attr('y', 35)
+      //   .attr('width', reserved.box.w)
+      //   .attr('height', reserved.box.h - 48)
+      //   .attr('stroke', colorTheme.medium.stroke)
+      //   .attr('fill', 'none')
+      //   .attr('stroke-width', 0.4)
+      //   .attr('stroke-opacity', 1)
+      //   .attr('stroke-dasharray', [0, 4, reserved.box.w - 4 + (reserved.box.h - 48) + reserved.box.w - 4, (reserved.box.h - 48)])
 
+      // reserved.fo = reserved.g.append('foreignObject')
+      //   .attr('width', reserved.box.w + 'px')
+      //   .attr('height', reserved.box.h - 48 + 'px')
+      //   .attr('x', 0 + 'px')
+      //   .attr('y', 35 + 'px')
+      // reserved.rootDiv = reserved.fo.append('xhtml:div')
+      //   .attr('class', 'overflowVerticalDiv')
+      // // reserved.innerDiv = reserved.rootDiv.append('div')
+      // //   .attr('width', '100%')
+      // //   .attr('height', reserved.box.h - 48 + 'px')
+      // reserved.svg = reserved.rootDiv.append('svg')
+      //   .attr('width', '100%')
+      //   .attr('height', '100%')
+
+      reserved.scrollBoxG = reserved.g.append('g')
+      reserved.scrollBox = new ScrollBox()
+      reserved.scrollBox.init({
+        tag: 'schedBlockContScrollBox',
+        gBox: reserved.scrollBoxG,
+        boxData: {x: 0, y: 35 + 20, w: reserved.box.w, h: reserved.box.h - 37 - 20, marg: 0},
+        useRelativeCoords: true,
+        locker: locker,
+        lockerV: [widgetType + 'updateData'],
+        lockerZoom: {
+          all: 'scrollBox' + 'zoom',
+          during: 'scrollBox' + 'zoomDuring',
+          end: 'scrollBox' + 'zoomEnd'
+        },
+        runLoop: runLoop,
+        canScroll: true,
+        scrollHeight: reserved.box.h - 37 - 20,
+        background: colorTheme.dark.background,
+        scrollRec: {w: 6}
+      })
+      reserved.svg = reserved.scrollBox.get('innerG')
+      // reserved.scrollBox.resetScroller({canScroll: true, scrollHeight: 10})
+      createAddSchedBlockButton()
       if (shared.data.copy.length > 0) updateData()
     }
     this.initData = initData
-
+    function createAddSchedBlockButton () {
+      reserved.g.append('rect')
+        .attr('class', 'title')
+        .attr('x', 0)
+        .attr('y', 35)
+        .attr('width', reserved.box.w)
+        .attr('height', 20)
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('fill', colorTheme.darker.background)
+        .attr('stroke-width', 0.2)
+        .attr('stroke-opacity', 1)
+        .on('mouseover', function () {
+          d3.select(this).attr('fill', colorTheme.bright.background)
+        })
+        .on('mouseout', function () {
+          d3.select(this).attr('fill', colorTheme.darker.background)
+        })
+        .on('click', createSchedBlock)
+      reserved.g.buttonIcon = reserved.g.append('svg:image')
+        .attr('class', 'icon')
+        .attr('xlink:href', '/static/plus.svg')
+        .attr('width', reserved.box.w * 0.45)
+        .attr('height', 20 * 0.45)
+        .attr('x', reserved.box.w * 0.4)
+        .attr('y', 35 + 20 * 0.3)
+        .style('pointer-events', 'none')
+        .style('opacity', 0.5)
+      reserved.g.append('text')
+        .text(function (data) {
+          return 'SB:'
+        })
+        .attr('x', reserved.box.w * 0.38)
+        .attr('y', 35 + 20 * 0.7)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 9)
+        .attr('dy', 0)
+        .style('pointer-events', 'none')
+        .attr('fill', colorTheme.dark.text)
+        .attr('stroke', 'none')
+    }
+    function createSchedBlock () {
+      console.log(shared.data.copy[shared.data.current].modified.blocks)
+      console.log('create');
+    }
     function populateShrink (schedGroup) {
       let length = schedGroup.length
       let dim = {h: reserved.box.w * 0.4, w: reserved.box.w * 0.5}
 
-      let height = reserved.box.h - 48
-      if (length * dim.h > (reserved.box.h - 48)) height = (length * dim.h)
+      let height = reserved.box.h - 37 - 20
+      if (length * dim.h > height) height = (length * dim.h)
       reserved.svg.attr('height', height + 'px')
 
       let schedulingBlocks = reserved.svg
@@ -4254,7 +4322,6 @@ let mainSchedBlocksController = function (optIn) {
         .duration(400)
         .attr('d', lineGenerator)
     }
-
     function hide () {
       reserved.rootDiv.style('overflow-y', 'hidden')
       reserved.fo
@@ -4541,7 +4608,9 @@ let mainSchedBlocksController = function (optIn) {
     function drawModifications () {
       let formBox = deepCopy(reserved.box)
       formBox.y += 20
-      formBox.height -= 20
+      formBox.h -= 25
+      formBox.x -= 5
+      formBox.w += 5
       if (reserved.data.modifications.childs.length === 0) {
         // let scrollForm = new ScrollForm({
         //   main: {
@@ -4573,6 +4642,7 @@ let mainSchedBlocksController = function (optIn) {
       } else {
         let scrollForm = new ScrollForm({
           main: {
+            tag: 'modificationScrollForm',
             g: reserved.g,
             box: formBox,
             colorTheme: colorTheme
@@ -4601,7 +4671,7 @@ let mainSchedBlocksController = function (optIn) {
             height: '20px'
           },
           quickScroll: {
-            enabled: true,
+            enabled: false,
             width: '3%'
           },
           data: {}
@@ -5182,13 +5252,14 @@ let mainSchedBlocksController = function (optIn) {
         x: reserved.box.w * 0.15,
         y: 15,
         w: reserved.box.w * 0.85,
-        h: reserved.box.h - 15,
+        h: reserved.box.h - 32,
         margH: reserved.box.h * 0.05
       }
       let schedulingBlocksInfoPanelG = reserved.g.append('g')
         .attr('class', 'form')
       let scrollForm = new ScrollForm({
         main: {
+          tag: 'defaultScrollForm',
           g: schedulingBlocksInfoPanelG,
           box: {x: dim.x, y: dim.y, w: dim.w, h: dim.h},
           colorTheme: colorTheme
@@ -5209,7 +5280,7 @@ let mainSchedBlocksController = function (optIn) {
           height: '20px'
         },
         quickScroll: {
-          enabled: true,
+          enabled: false,
           width: '3%'
         },
         data: {}
@@ -5315,13 +5386,14 @@ let mainSchedBlocksController = function (optIn) {
         x: reserved.box.w * 0.15,
         y: 15,
         w: reserved.box.w * 0.85,
-        h: reserved.box.h - 15,
+        h: reserved.box.h - 32,
         margH: reserved.box.h * 0.05
       }
       let schedulingBlocksInfoPanelG = reserved.g.append('g')
         .attr('class', 'form')
       let scrollForm = new ScrollForm({
         main: {
+          tag: 'schedBlockScrollForm',
           g: schedulingBlocksInfoPanelG,
           box: {x: dim.x, y: dim.y, w: dim.w, h: dim.h},
           colorTheme: colorTheme
@@ -5342,7 +5414,7 @@ let mainSchedBlocksController = function (optIn) {
           height: '20px'
         },
         quickScroll: {
-          enabled: true,
+          enabled: false,
           width: '3%'
         },
         data: {}
@@ -5583,13 +5655,14 @@ let mainSchedBlocksController = function (optIn) {
         x: reserved.box.w * 0.15,
         y: 15,
         w: reserved.box.w * 0.85,
-        h: reserved.box.h - 15,
+        h: reserved.box.h - 32,
         margH: reserved.box.h * 0.05
       }
       let schedulingBlocksInfoPanelG = reserved.g.append('g')
         .attr('class', 'form')
       let scrollForm = new ScrollForm({
         main: {
+          tag: 'blockScrollForm',
           g: schedulingBlocksInfoPanelG,
           box: {x: dim.x, y: dim.y, w: dim.w, h: dim.h},
           colorTheme: colorTheme
@@ -5610,7 +5683,7 @@ let mainSchedBlocksController = function (optIn) {
           height: '20px'
         },
         quickScroll: {
-          enabled: true,
+          enabled: false,
           width: '3%'
         },
         data: {}

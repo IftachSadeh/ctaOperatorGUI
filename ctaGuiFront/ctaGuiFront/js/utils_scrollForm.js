@@ -2,7 +2,9 @@
 /* global d3 */
 /* global hasVar */
 /* global getColorTheme */
-
+/* global ScrollBox */
+/* global Locker */
+/* global RunLoop */
 // ---------------------------------------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------------------------------------
@@ -21,6 +23,7 @@ window.ScrollForm = function (optIn) {
     return com[type]
   }
 
+  console.log(com);
   com.component = {}
   com.component.fo = com.main.g.append('foreignObject')
     .attr('width', com.main.box.w + 'px')
@@ -56,8 +59,41 @@ window.ScrollForm = function (optIn) {
       .style('background-color', 'transparent')
       .style('border-radius', '0px 0px 0px 0px')
   }
-  com.component.contentDiv = com.component.rootDiv.append('div')
-    .attr('class', 'overflowVerticalDiv')
+  com.scrollBoxG = com.component.rootDiv.append('svg')
+    .attr('width', com.main.box.w + 'px')
+    .attr('height', com.main.box.h + 'px')
+    .attr('x', 0 + 'px')
+    .attr('y', 0 + 'px')
+  com.scrollBox = new ScrollBox()
+  com.scrollBox.init({
+    tag: com.main.tag,
+    gBox: com.scrollBoxG,
+    boxData: {x: 0, y: 0, w: com.main.box.w, h: com.main.box.h, marg: 0},
+    useRelativeCoords: true,
+    locker: new Locker(),
+    lockerV: [com.main.tag + 'updateData'],
+    lockerZoom: {
+      all: com.main.tag + 'zoom',
+      during: com.main.tag + 'zoomDuring',
+      end: com.main.tag + 'zoomEnd'
+    },
+    runLoop: new RunLoop({tag: 'scrollForm'}),
+    canScroll: true,
+    scrollHeight: com.main.box.h,
+    background: colorTheme.dark.background,
+    scrollRec: {w: 6}
+  })
+  com.scrollBoxInner = com.scrollBox.get('innerG')
+  com.scrollBoxG.select('g.clipping').attr('clip-path', '')
+
+  let foScroll = com.scrollBoxInner.append('foreignObject')
+    .attr('width', com.main.box.w + 'px')
+    .attr('height', com.main.box.h + 'px')
+    .attr('x', 0 + 'px')
+    .attr('y', 0 + 'px')
+  com.component.contentDiv = foScroll.append('xhtml:div')
+    .attr('width', com.main.box.w + 'px')
+    .attr('height', com.main.box.h + 'px')
     .style('border', 0 + 'px solid #78909C')
     .style('background-color', 'transparent')
 
@@ -79,7 +115,7 @@ window.ScrollForm = function (optIn) {
         .style('display', 'inline-block')
         .style('font-weight', 'bold')
         .style('color', colorTheme.darker.text)
-        .style('font-size', 12 + 'px')
+        .style('font-size', 10 + 'px')
         .style('background', 'transparent')
         .style('text-align', t.anchor)
     }
@@ -433,6 +469,9 @@ window.ScrollForm = function (optIn) {
     if (com.data.data.childs.length === 0) return
 
     createSubForm(com.component.contentDiv, com.data.data.childs)
+
+    console.log(com.component.contentDiv._groups[0][0].scrollHeight);
+    com.scrollBox.resetScroller({canScroll: true, scrollHeight: com.component.contentDiv._groups[0][0].scrollHeight})
 
     // for (let key in com.data.data) {
     //   let group = com.data.data[key]

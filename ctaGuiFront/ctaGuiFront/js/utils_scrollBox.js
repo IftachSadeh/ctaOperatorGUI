@@ -207,6 +207,7 @@ window.ScrollBox = function () {
 
     com.innerG = com.scrollOuterG
       .append('g')
+      .attr('class', 'clipping')
       .attr('clip-path', 'url(#' + com.tagClipPath.outer + ')')
 
     com.scrollBarG = com.gBox.append('g')
