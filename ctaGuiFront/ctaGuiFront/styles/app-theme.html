@@ -6,9 +6,22 @@
   <template>
 
     <style>
+      input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+
       div.infoDiv {
         height: 10px;
         margin-bottom: 2px;
+      }
+      div.inputNumber {
+        height: 12px;
+        margin-bottom: 6px;
       }
       div.modificationDiv {
         height: 10px;
@@ -20,7 +33,7 @@
       }
 
       div.titleDiv {
-        margin-bottom: 15px;
+        margin-bottom: 4px;
         padding-bottom: 5px;
       }
 
@@ -90,6 +103,37 @@
         font-size: 8px;
       }
       div.infoDiv label.new {
+        vertical-align: top;
+        max-width: 68%;
+        width: 68%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-left: 2%;
+        font-size: 8px;
+      }
+
+      div.inputNumber label.key {
+        vertical-align: top;
+        max-width: 18%;
+        width: 18%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 2%;
+        font-size: 8px;
+      }
+      div.inputNumber label.dot {
+        vertical-align: top;
+        max-width: 3%;
+        width: 3%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 2%;
+        font-size: 8px;
+      }
+      div.inputNumber input.new {
         vertical-align: top;
         max-width: 68%;
         width: 68%;

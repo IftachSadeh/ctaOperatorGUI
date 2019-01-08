@@ -10,7 +10,6 @@
 // ---------------------------------------------------------------------------------------------------
 window.ScrollForm = function (optIn) {
   let colorTheme = getColorTheme('bright-Grey')
-  let template = {}
   let com = {}
   com = optIn
 
@@ -23,7 +22,6 @@ window.ScrollForm = function (optIn) {
     return com[type]
   }
 
-  console.log(com);
   com.component = {}
   com.component.fo = com.main.g.append('foreignObject')
     .attr('width', com.main.box.w + 'px')
@@ -370,23 +368,81 @@ window.ScrollForm = function (optIn) {
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
   }
-  function dropDownDiv (div) {
-    // div.on('click', function (d) { if (d.event.click) d.event.click(d) })
+  function inputNumber (div) {
+    div.on('click', function (d) {
+      if (!d.event) return
+      if (d.event.click) d.event.click(d)
+    })
     div.on('mouseover', function (d) {
+      if (!d.event) return
       if (d.event.mouseover) {
         div.style('background-color', '#F1F1F1')
         d.event.mouseover(d)
       }
     })
     div.on('mouseout', function (d) {
+      if (!d.event) return
       if (d.event.mouseout) {
         div.style('background-color', 'transparent')
         d.event.mouseout(d)
       }
     })
 
-    div.attr('class', 'divForm dropDownDiv')
+    div.attr('class', 'divForm inputNumber')
+    console.log(div);
+    div.append('label')
+      .html(function (d) { return d.key })
+      .attr('class', 'key')
+      .attr('id', 'key')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      // .style('font-size', 10 + 'px')
+      .style('background', 'transparent')
+    div.append('label')
+      .attr('id', 'dot')
+      .attr('class', 'dot')
+      .html(' : ')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      // .style('font-size', 10 + 'px')
+      .style('background', 'transparent')
+    let input = div.append('input')
+      .attr('class', 'new')
+      .attr('id', 'new')
+      .style('display', 'inline-block')
+      .style('color', '#000000')
+      .style('background', 'transparent')
+      .attr('type', 'number')
+      .attr('min', function (d) { return d.range[0] })
+      .attr('max', function (d) { return d.range[1] })
+    input.property('value', function (d) {
+      return d.value
+    })
+    input.on('change', function (d) {
+      let selectValue = div.select('input').property('value')
+      d.event.change(selectValue, d)
+    })
+  }
+  function dropDownDiv (div) {
+    div.on('mouseover', function (d) {
+      if (d.event.mouseover) {
+        div.style('background', function (d) {
+          return (d.style && d.style.color) ? d3.color(d.style.color).darker(0.4) : d3.color(colorTheme.brighter.background).darker(0.4)
+        })
+        d.event.mouseover(d)
+      }
+    })
+    div.on('mouseout', function (d) {
+      if (d.event.mouseout) {
+        div.style('background', function (d) {
+          return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
+        })
+        d.event.mouseout(d)
+      }
+    })
 
+    div.attr('class', 'divForm dropDownDiv')
+    let d = div.data()[0]
     div.append('label')
       .attr('class', 'key')
       .html(function (d) { return d.key })
@@ -409,6 +465,7 @@ window.ScrollForm = function (optIn) {
       .style('font-size', '9px')
       .style('height', div.style('height'))
       .style('border', '0.2px')
+      .style('background', 'rgba(0, 0, 0, 0.15)')
       .on('change', function (d) {
         let selectValue = div.select('select').property('value')
         d.event.click(selectValue, d)
@@ -418,10 +475,12 @@ window.ScrollForm = function (optIn) {
       .enter()
       .append('option')
       .text(function (d) { return d })
-    selector.property('value', function (d) {
+    selector.property('value', function () {
       return d.value.current
     })
+    if (!d.editable) selector.attr('disabled', true)
   }
+
   function divideDiv (div, data) {
     div.selectAll('div.divideChilds')
       .data(data)
@@ -435,11 +494,6 @@ window.ScrollForm = function (optIn) {
       .style('vertical-align', 'top')
       .each(function (d) {
         createSubForm(d3.select(this), d)
-        // if (Array.isArray(d)) {
-        //   divideDiv(d3.select(this), d)
-        // } else {
-        //   createSubForm(d3.select(this), d)
-        // }
       })
   }
   function createSubForm (div, data) {
@@ -449,8 +503,10 @@ window.ScrollForm = function (optIn) {
       .append('div')
       .attr('class', 'divForm')
       .attr('id', function (d) { return 'id_' + d.key })
-      .style('background', colorTheme.brighter.background)
-      .style('border-radius', '5px 5px 5px 5px')
+      .style('background', function (d) {
+        return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
+      })
+      .style('border-radius', '0.5px 0.5px 0.5px 0.5px')
       .each(function (d) {
         if (Array.isArray(d)) {
           d3.select(this).style('background', 'transparent')
@@ -458,6 +514,7 @@ window.ScrollForm = function (optIn) {
         } else {
           if (d.format === 'plainText') plainTextDiv(d3.select(this))
           else if (d.format === 'info') infoDiv(d3.select(this))
+          else if (d.format === 'input_number') inputNumber(d3.select(this))
           else if (d.format === 'comboList') dropDownDiv(d3.select(this))
           else if (d.format === 'modification') modificationDiv(d3.select(this))
           createSubForm(d3.select(this), d.childs)
@@ -470,7 +527,6 @@ window.ScrollForm = function (optIn) {
 
     createSubForm(com.component.contentDiv, com.data.data.childs)
 
-    console.log(com.component.contentDiv._groups[0][0].scrollHeight);
     com.scrollBox.resetScroller({canScroll: true, scrollHeight: com.component.contentDiv._groups[0][0].scrollHeight})
 
     // for (let key in com.data.data) {

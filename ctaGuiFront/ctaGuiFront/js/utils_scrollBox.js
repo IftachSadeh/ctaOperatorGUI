@@ -174,7 +174,7 @@ window.ScrollBox = function () {
       })
       .attr('stroke', '#383B42')
       .attr('stroke-width', '1')
-      .attr('stroke-opacity', 0.2)
+      .attr('stroke-opacity', 0)
       .attr('fill', optIn.background ? optIn.background : '#F2F2F2')
       .attr('fill-opacity', 1)
       .style('pointer-events', 'none')

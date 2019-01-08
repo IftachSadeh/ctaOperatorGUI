@@ -63,9 +63,9 @@ window.PanelManager = function () {
     }
     function paintContent (g) {
       g.append('rect')
-        .attr('x', com.content.box.x + 2)
+        .attr('x', com.content.box.x)
         .attr('y', com.content.box.y)
-        .attr('width', com.content.box.w - 4)
+        .attr('width', com.content.box.w)
         .attr('height', com.content.box.h)
         .attr('fill', 'none')
         .attr('stroke', '#607D8B')
@@ -87,15 +87,15 @@ window.PanelManager = function () {
     com = optIn
     if (com.debug) console.log('init')
 
-    com.tab.box.x = com.box.w * com.tab.box.x
-    com.tab.box.y = com.box.h * com.tab.box.y
-    com.tab.box.w = 70
-    com.tab.box.h = 15
-
-    com.content.box.x = com.box.w * com.content.box.x
-    com.content.box.y = com.tab.box.h
-    com.content.box.w = com.box.w * com.content.box.w
-    com.content.box.h = com.box.h - com.content.box.y
+    // com.tab.box.x = com.box.w * com.tab.box.x
+    // com.tab.box.y = com.box.h * com.tab.box.y
+    // com.tab.box.w = com.box.w * com.tab.box.w
+    // com.tab.box.h = com.box.h * com.tab.box.h
+    //
+    // com.content.box.x = com.box.w * com.content.box.x
+    // com.content.box.y = com.tab.box.h
+    // com.content.box.w = com.box.w * com.content.box.w
+    // com.content.box.h = com.box.h - com.content.box.y
     // com.tab.box.x = com.box.w * com.tab.box.x
     // com.tab.box.y = com.box.h * com.tab.box.y
     // com.tab.box.w = com.box.w * com.tab.box.w
@@ -136,6 +136,7 @@ window.PanelManager = function () {
   this.removePanel = removePanel
 
   function resizeTab () {
+    return
     if (com.debug) console.log('resizeTab')
     let w = com.tab.box.w
     let h = com.tab.box.h + 2

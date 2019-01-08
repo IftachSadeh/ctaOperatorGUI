@@ -470,6 +470,32 @@ faD.space = '\u00A0'
 window.faD = faD
 // ---------------------------------------------------------------------------------------------------
 
+var blockTemplate = {
+  startTime: null,
+  endTime: null,
+  duration: null,
+  exeState: {
+    state: null,
+    canRun: null
+  },
+  metaData: {
+    blockName: null,
+    nObs: null,
+    nSched: null
+  },
+  obId: null,
+  pointingId: null,
+  pointingName: null,
+  pointingPos: null,
+  runphase: null,
+  sbId: null,
+  targetId: null,
+  targetName: null,
+  targetPos: null,
+  telIds: [],
+  timeStamp: null
+}
+window.blockTemplate = blockTemplate
 // ---------------------------------------------------------------------------------------------------
 // common telescope properties
 // ---------------------------------------------------------------------------------------------------

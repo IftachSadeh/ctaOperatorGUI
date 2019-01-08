@@ -169,7 +169,10 @@ window.BlockQueueOptimizer = function (optIn) {
       let modifiedOptimizer = optIn.d.data.modifications ?
         !(Object.keys(optIn.d.data.modifications.optimizerModifications).length === 0 && optIn.d.data.modifications.optimizerModifications.constructor === Object) :
         false
-      if (modifiedUser) {
+      let created = optIn.d.data.modifications ?
+        optIn.d.data.modifications.created :
+        false
+      if (modifiedUser || created) {
         return com.blocks.colorPalette.critical
       } else if (modifiedOptimizer) {
         return com.blocks.colorPalette.warning
