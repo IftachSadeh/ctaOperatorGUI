@@ -3981,7 +3981,7 @@ let mainSchedBlocksController = function (optIn) {
           })
       })
 
-      reserved.scrollBox.resetScroller({canScroll: true, scrollHeight: parseInt(reserved.svg.attr('height'), 10)})
+      reserved.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: parseInt(reserved.svg.attr('height'), 10)})
     }
 
     function show () {

@@ -77,9 +77,11 @@ window.ScrollForm = function (optIn) {
     },
     runLoop: new RunLoop({tag: 'scrollForm'}),
     canScroll: true,
+    scrollVertical: true,
+    scrollHorizontal: false,
     scrollHeight: com.main.box.h,
     background: colorTheme.dark.background,
-    scrollRec: {w: 6}
+    scrollRecV: {w: 6}
   })
   com.scrollBoxInner = com.scrollBox.get('innerG')
   com.scrollBoxG.select('g.clipping').attr('clip-path', '')
@@ -527,7 +529,7 @@ window.ScrollForm = function (optIn) {
 
     createSubForm(com.component.contentDiv, com.data.data.childs)
 
-    com.scrollBox.resetScroller({canScroll: true, scrollHeight: com.component.contentDiv._groups[0][0].scrollHeight})
+    com.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: com.component.contentDiv._groups[0][0].scrollHeight})
 
     // for (let key in com.data.data) {
     //   let group = com.data.data[key]

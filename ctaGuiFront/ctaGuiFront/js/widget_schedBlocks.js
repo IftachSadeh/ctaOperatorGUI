@@ -17,6 +17,7 @@ var mainScriptTag = 'schedBlocks'
 /* global timeD */
 /* global hasVar */
 /* global BlockQueueOld */
+/* global BlockQueueCreator */
 /* global RunLoop */
 /* global Locker */
 /* global deepCopy */
@@ -25,6 +26,7 @@ var mainScriptTag = 'schedBlocks'
 /* global runWhenReady */
 /* global colsPurples */
 /* global colsYellows */
+/* global colsBlues */
 /* global disableScrollSVG */
 /* global bckPattern */
 /* global ScrollGrid */
@@ -32,12 +34,13 @@ var mainScriptTag = 'schedBlocks'
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollGrid.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOld.js' })
-
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 12
+  let h0 = 6
   let w0 = 12
   let divKey = 'main'
 
@@ -64,6 +67,8 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
 function sockSchedBlocks (optIn) {}
 
 function mainSchedBlocks (optIn) {
+  let colorTheme = getColorTheme('bright-Grey')
+
   let myUniqueId = unique()
   // let widgetType = optIn.widgetType
   let tagSchedBlocksSvg = optIn.baseName
@@ -71,6 +76,23 @@ function mainSchedBlocks (optIn) {
   let widgetEle = optIn.widgetEle
   let iconDivV = optIn.iconDivV
   let sideId = optIn.sideId
+
+  let shared = {
+    data: {
+      server: undefined,
+      blocks : {}
+    },
+    focus: {
+      schedBlocks: undefined,
+      block: undefined
+    }
+  }
+
+  let svg = {}
+  let box = {}
+  let lenD = {}
+
+  let blockQueueServer = null
 
   // let thisSchedBlocks = this
   let isSouth = window.__nsType__ === 'S'
@@ -131,19 +153,193 @@ function mainSchedBlocks (optIn) {
   }
   this.syncStateGet = syncStateGet
 
+  function sortBlocksByState () {
+    if (!shared.data.server.blocks) return
+    shared.data.blocks.success = []
+    shared.data.blocks.fail = []
+    shared.data.blocks.cancel = []
+
+    for (var i = 0; i < shared.data.server.blocks.done.length; i++) {
+      let b = shared.data.server.blocks.done[i]
+      if (b.exeState.state === 'done') shared.data.blocks.success.push(b)
+      else if (b.exeState.state === 'fail') shared.data.blocks.fail.push(b)
+      else if (b.exeState.state === 'cancel') shared.data.blocks.cancel.push(b)
+    }
+  }
+  function setCol (optIn) {
+    if (optIn.endTime < Number(shared.data.server.timeOfNight.now)) return colorTheme.blocks.shutdown
+    let state = hasVar(optIn.state)
+      ? optIn.state
+      : optIn.exeState.state
+    let canRun = hasVar(optIn.canRun)
+      ? optIn.canRun
+      : optIn.exeState.canRun
+
+    if (state === 'wait') {
+      return colorTheme.blocks.wait
+    } else if (state === 'done') {
+      return colorTheme.blocks.done
+    } else if (state === 'fail') {
+      return colorTheme.blocks.fail
+    } else if (state === 'run') {
+      return colorTheme.blocks.run
+    } else if (state === 'cancel') {
+      if (hasVar(canRun)) {
+        if (!canRun) return colorTheme.blocks.cancelOp
+      }
+      return colorTheme.blocks.cancelSys
+    } else return colorTheme.blocks.shutdown
+  }
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
   function initData (dataIn) {
-    if (sock.multipleInit({ id: widgetId, data: dataIn })) return
+    function initSvg () {
+      lenD.w = {}
+      lenD.h = {}
+      lenD.w[0] = 1000
+      lenD.h[0] = lenD.w[0] / sgvTag.main.whRatio
 
+      svg.svg = d3
+        .select(svgDiv)
+        .append('svg')
+        .attr('preserveAspectRatio', 'xMidYMid meet')
+        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .style('position', 'relative')
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('top', '0px')
+        .style('left', '0px')
+        .on('dblclick.zoom', null)
+
+      if (disableScrollSVG) {
+        svg.svg.on('wheel', function () {
+          d3.event.preventDefault()
+        })
+      }
+      svg.g = svg.svg.append('g')
+    }
+    function initBackground () {
+      svg.svg
+        .style('background', colorTheme.medium.background)
+    }
+    function initBox () {
+      box.blockQueueServer = {
+        x: lenD.w[0] * 0,
+        y: lenD.h[0] * 0,
+        w: lenD.w[0] * 1,
+        h: lenD.h[0] * 0.4,
+        marg: lenD.w[0] * 0.01
+      }
+      box.successQueue = {
+        x: lenD.w[0] * 0.02,
+        y: lenD.h[0] * 0.44,
+        w: lenD.w[0] * 0.4,
+        h: lenD.h[0] * 0.15,
+        marg: lenD.w[0] * 0.01
+      }
+      box.failQueue = {
+        x: lenD.w[0] * 0.02,
+        y: lenD.h[0] * 0.62,
+        w: lenD.w[0] * 0.4,
+        h: lenD.h[0] * 0.15,
+        marg: lenD.w[0] * 0.01
+      }
+      box.cancelQueue = {
+        x: lenD.w[0] * 0.02,
+        y: lenD.h[0] * 0.8,
+        w: lenD.w[0] * 0.4,
+        h: lenD.h[0] * 0.15,
+        marg: lenD.w[0] * 0.01
+      }
+      box.execution = {
+        x: lenD.w[0] * 0.65,
+        y: lenD.h[0] * 0.15,
+        w: lenD.w[0] * 0.35,
+        h: lenD.h[0] * 0.85,
+        marg: lenD.w[0] * 0.01
+      }
+      box.details = {
+        x: lenD.w[0] * 0,
+        y: lenD.h[0] * 0.01,
+        w: lenD.w[0] * 0,
+        h: lenD.h[0] * 0.05
+      }
+    }
+    function initDefaultStyle () {
+      shared.style = {}
+      shared.style.runRecCol = colsBlues[2]
+      shared.style.blockCol = function (optIn) {
+        let endTime = hasVar(optIn.endTime)
+          ? optIn.endTime
+          : undefined
+        if (endTime < Number(shared.data.server.timeOfNight.now)) return colorTheme.blocks.shutdown
+
+        let state = hasVar(optIn.exeState.state)
+          ? optIn.exeState.state
+          : undefined
+        console.log(state);
+        let canRun = hasVar(optIn.exeState.canRun)
+          ? optIn.exeState.canRun
+          : undefined
+        if (state === 'wait') {
+          return colorTheme.blocks.wait
+        } else if (state === 'done') {
+          return colorTheme.blocks.done
+        } else if (state === 'fail') {
+          return colorTheme.blocks.fail
+        } else if (state === 'run') {
+          return colorTheme.blocks.run
+        } else if (state === 'cancel') {
+          if (hasVar(canRun)) {
+            if (!canRun) return colorTheme.blocks.cancelOp
+          }
+          return colorTheme.blocks.cancelSys
+        } else return colorTheme.blocks.shutdown
+      }
+    }
+
+    if (sock.multipleInit({ id: widgetId, data: dataIn })) return
     window.sideDiv = sock.setSideDiv({
       id: sideId,
       nIcon: dataIn.nIcon,
       iconDivV: iconDivV
     })
+    let svgDivId = sgvTag.main.id + 'svg'
+    let svgDiv = sgvTag.main.widget.getEle(svgDivId)
+    if (!hasVar(svgDiv)) {
+      let parent = sgvTag.main.widget.getEle(sgvTag.main.id)
+      let svgDiv = document.createElement('div')
+      svgDiv.id = svgDivId
 
-    svgMain.initData(dataIn.data)
+      appendToDom(parent, svgDiv)
+
+      runWhenReady({
+        pass: function () {
+          return hasVar(sgvTag.main.widget.getEle(svgDivId))
+        },
+        execute: function () {
+          initData(dataIn)
+        }
+      })
+      return
+    }
+    sock.emitMouseMove({ eleIn: svgDiv, data: { widgetId: widgetId } })
+
+    initSvg()
+    initDefaultStyle()
+    initBackground()
+    initBox()
+
+    shared.data.server = dataIn.data
+    sortBlocksByState()
+
+    svgBlocksQueueServer.initData()
+    svgSuccessQueue.initData()
+    svgFailQueue.initData()
+    svgCancelQueue.initData()
+
+    // svgMain.initData(dataIn.data)
   }
   this.initData = initData
 
@@ -151,7 +347,11 @@ function mainSchedBlocks (optIn) {
   //
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
-    svgMain.updateData(dataIn.data)
+    shared.data.server = dataIn.data
+    sortBlocksByState()
+    // svgMain.updateData(dataIn.data)
+    svgBlocksQueueServer.updateData()
+    svgSuccessQueue.updateData()
   }
   this.updateData = updateData
 
@@ -220,6 +420,7 @@ function mainSchedBlocks (optIn) {
       // ---------------------------------------------------------------------------------------------------
       let svgDivId = sgvTag.main.id + 'svg'
       let svgDiv = sgvTag.main.widget.getEle(svgDivId)
+      console.log(svgDivId, svgDiv);
 
       if (!hasVar(svgDiv)) {
         let parent = sgvTag.main.widget.getEle(sgvTag.main.id)
@@ -1425,7 +1626,425 @@ function mainSchedBlocks (optIn) {
     //        .attr("r", 1);
     // }
   }
+  let SvgBlocksQueueServer = function () {
+    function initData () {
+      let adjustedBox = {
+        x: box.blockQueueServer.x + box.blockQueueServer.w * 0.03,
+        y: box.blockQueueServer.y + box.blockQueueServer.h * 0.05,
+        w: box.blockQueueServer.w * 0.94,
+        h: box.blockQueueServer.h * 0.8,
+        marg: lenD.w[0] * 0.01
+      }
 
+      let gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+      gBlockBox.append('text')
+        .text('SERVER SCHEDULE')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '12px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(-5,' + (box.blockQueueServer.h * 0.4) + ') rotate(270)')
+
+      blockQueueServer = new BlockQueueCreator({
+        main: {
+          tag: 'blockQueueMiddleTag',
+          g: gBlockBox,
+          box: adjustedBox,
+          background: {
+            fill: colorTheme.dark.background,
+            stroke: colorTheme.dark.stroke,
+            strokeWidth: 0.1
+          },
+          colorTheme: colorTheme
+        },
+        axis: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+          axis: undefined,
+          scale: undefined,
+          domain: [0, 1000],
+          range: [0, 0],
+          showText: true,
+          orientation: 'axisTop',
+          attr: {
+            text: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            },
+            path: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            }
+          }
+        },
+        blocks: {
+          enabled: true,
+          run: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: 'none',
+              strokeWidth: 0
+            }
+          },
+          cancel: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          modification: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          colorPalette: colorTheme.blocks
+        },
+        filters: {
+          enabled: false,
+          g: undefined,
+          box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
+          filters: []
+        },
+        timeBars: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {},
+        event: {
+          modifications: () => {}
+        },
+        input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
+          selection: []
+        }
+      })
+
+      blockQueueServer.init()
+      updateData()
+    }
+    this.initData = initData
+
+    function updateData () {
+      blockQueueServer.updateData({
+        time: {
+          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+          startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
+          endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+        },
+        data: {
+          raw: {
+            blocks: shared.data.server.blocks,
+            telIds: shared.data.server.telIds
+          },
+          modified: []
+        }
+      })
+    }
+    this.updateData = updateData
+
+    function update () {
+      blockQueueServer.update({
+        time: {
+          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+          startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
+          endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+        }
+      })
+    }
+    this.update = update
+  }
+  let SvgSuccessQueue = function () {
+    let reserved = {}
+    function initData () {
+      reserved.gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + box.successQueue.x + ',' + box.successQueue.y + ')')
+      reserved.gBlockBox.append('rect')
+        .attr('x', 0 + box.successQueue.marg)
+        .attr('y', 0 + box.successQueue.marg)
+        .attr('width', box.successQueue.w * 1 - box.successQueue.marg)
+        .attr('height', box.successQueue.h * 1 - box.successQueue.marg)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.2)
+      reserved.gBlockBox.append('text')
+        .text('SUCCESS')
+        .style('fill', colorTheme.dark.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '10px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(4,' + (box.successQueue.h * 0.55) + ') rotate(270)')
+
+      reserved.scrollBoxG = reserved.gBlockBox.append('g')
+      reserved.scrollBox = new ScrollBox()
+      reserved.scrollBox.init({
+        tag: 'successScrollBox',
+        gBox: reserved.scrollBoxG,
+        boxData: {
+          x: 0 + box.successQueue.marg,
+          y: 0 + box.successQueue.marg,
+          w: box.successQueue.w - box.successQueue.marg,
+          h: box.successQueue.h - box.successQueue.marg,
+          marg: 0
+        },
+        useRelativeCoords: true,
+        locker: locker,
+        lockerV: [widgetId + 'updateData'],
+        lockerZoom: {
+          all: 'successScrollBox' + 'zoom',
+          during: 'successScrollBox' + 'zoomDuring',
+          end: 'successScrollBox' + 'zoomEnd'
+        },
+        runLoop: runLoop,
+        canScroll: true,
+        scrollVertical: false,
+        scrollHorizontal: true,
+        scrollHeight: box.successQueue.h - box.successQueue.marg,
+        scrollWidth: box.successQueue.w - box.successQueue.marg,
+        background: colorTheme.dark.background,
+        scrollRecH: {h: 6},
+        scrollRecV: {w: 6}
+      })
+      reserved.scrollG = reserved.scrollBox.get('innerG')
+
+      updateData()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let successBlocks = reserved.scrollG
+        .selectAll('g.successBlock')
+        .data(shared.data.blocks.success, function (d) {
+          return d.obId
+        })
+      let enterSuccessBlocks = successBlocks
+        .enter()
+        .append('g')
+        .attr('class', 'successBlock')
+        .attr('transform', function (d, i) {
+          let translate = {
+            y: 0,
+            x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+          }
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+      enterSuccessBlocks.append('rect')
+        .attr('class', 'background')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', function (d, i) {
+          return 50
+        })
+        .attr('height', function (d, i) {
+          return 100
+        })
+        .attr('fill', function (d, i) {
+          return setCol(d).background
+        })
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+        .on('mouseover', function (d) {
+          // mainOverSchedBlocks(d.scheduleId)
+        })
+        .on('mouseout', function (d) {
+          // mainOutSchedBlocks(d.scheduleId)
+        })
+        .on('click', function (d) {
+          // mainFocusOnSchedBlocks(d.scheduleId)
+        })
+      // enterSchedulingBlocks.append('text')
+      //   .attr('class', 'name')
+      //   .text(function (d) {
+      //     return 'SB ' + d.schedName
+      //   })
+      //   .attr('x', function (d, i) {
+      //     return dim.w * 0.5
+      //   })
+      //   .attr('y', function (d, i) {
+      //     return dim.h * 0.2
+      //   })
+      //   .style('font-weight', 'bold')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', dim.h * 0.25)
+      //   .attr('dy', dim.h * 0.15)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', colorTheme.darker.text)
+      //   .attr('stroke', 'none')
+      // enterSchedulingBlocks.each(function (d) {
+      //   let dimBlocks = dim.h * 0.16
+      //   let length = d.blocks.length
+      //   let offset = ((dim.w /* - dimBlocks * 2 */) - (length < 4 ? (dimBlocks * 1.2 * length) : (length % 2 === 0 ? (dimBlocks * 0.6 * length) : (dimBlocks * 0.7 * length)))) * 0.5
+      //
+      //   d3.select(this).selectAll('rect.subBlocks')
+      //     .data(d.blocks, function (d) {
+      //       return d.obId
+      //     })
+      //     .enter()
+      //     .append('rect')
+      //     .attr('class', 'subBlocks')
+      //     .attr('x', function (d, i) {
+      //       return offset + (length < 4 ? (dimBlocks * i * 1.2) : (length % 2 === 0 ? (0.6 * dimBlocks * (i - (i % 2))) : (dimBlocks * i * 0.6)))
+      //     })
+      //     .attr('y', function (d, i) {
+      //       return dim.h - dimBlocks * 1.8 - (length < 4 ? dimBlocks * 0.5 : dimBlocks * 1.2 * (i % 2))
+      //     })
+      //     .attr('width', function (d, i) {
+      //       return dimBlocks
+      //     })
+      //     .attr('height', function (d, i) {
+      //       return dimBlocks
+      //     })
+      //     .attr('fill', function (d, i) {
+      //       return setCol(d).background
+      //     })
+      //     .style('opacity', 1)
+      //     .attr('stroke', 'black')
+      //     .attr('stroke-width', 0.2)
+      //     .style('pointer-events', 'none')
+      // })
+
+      let mergeSuccessBlocks = enterSuccessBlocks.merge(successBlocks)
+      mergeSuccessBlocks.attr('transform', function (d, i) {
+        let translate = {
+          y: 0,
+          x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+        }
+        return 'translate(' + translate.x + ',' + translate.y + ')'
+      })
+      // schedulingBlocks.each(function (d) {
+      //   d3.select(this).selectAll('rect.subBlocks')
+      //     .data(d.blocks, function (d) {
+      //       return d.obId
+      //     })
+      //     .transition()
+      //     .duration(800)
+      //     .attr('fill', function (d, i) {
+      //       return setCol(d).background
+      //     })
+      // })
+
+      reserved.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: shared.data.blocks.success.length * 60})
+      //reserved.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: parseInt(reserved.scrollG.attr('height') + 200, 10)})
+    }
+    this.updateData = updateData
+  }
+  let SvgFailQueue = function () {
+    function initData () {
+      let gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + box.failQueue.x + ',' + box.failQueue.y + ')')
+      gBlockBox.append('rect')
+        .attr('x', 0 + box.failQueue.marg)
+        .attr('y', 0 + box.failQueue.marg)
+        .attr('width', box.failQueue.w * 1 - box.failQueue.marg)
+        .attr('height', box.failQueue.h * 1 - box.failQueue.marg)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.2)
+      gBlockBox.append('text')
+        .text('FAIL')
+        .style('fill', colorTheme.dark.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '10px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(4,' + (box.failQueue.h * 0.55) + ') rotate(270)')
+    }
+    this.initData = initData
+
+    function updateData () {
+
+    }
+    this.updateData = updateData
+  }
+  let SvgCancelQueue = function () {
+    function initData () {
+      let gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + box.cancelQueue.x + ',' + box.cancelQueue.y + ')')
+      gBlockBox.append('rect')
+        .attr('x', 0 + box.cancelQueue.marg)
+        .attr('y', 0 + box.cancelQueue.marg)
+        .attr('width', box.cancelQueue.w * 1 - box.cancelQueue.marg)
+        .attr('height', box.cancelQueue.h * 1 - box.cancelQueue.marg)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.2)
+      gBlockBox.append('text')
+        .text('CANCEL')
+        .style('fill', colorTheme.dark.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '10px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(4,' + (box.cancelQueue.h * 0.55) + ') rotate(270)')
+    }
+    this.initData = initData
+
+    function updateData () {
+
+    }
+    this.updateData = updateData
+  }
+
+  let svgBlocksQueueServer = new SvgBlocksQueueServer()
+  let svgSuccessQueue = new SvgSuccessQueue()
+  let svgFailQueue = new SvgFailQueue()
+  let svgCancelQueue = new SvgCancelQueue()
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
