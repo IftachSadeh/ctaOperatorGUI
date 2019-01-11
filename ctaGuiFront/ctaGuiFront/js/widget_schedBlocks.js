@@ -339,7 +339,7 @@ function mainSchedBlocks (optIn) {
     svgFailQueue.initData()
     svgCancelQueue.initData()
 
-    // svgMain.initData(dataIn.data)
+    svgMain.initData(dataIn.data)
   }
   this.initData = initData
 
@@ -349,9 +349,13 @@ function mainSchedBlocks (optIn) {
   function updateData (dataIn) {
     shared.data.server = dataIn.data
     sortBlocksByState()
-    // svgMain.updateData(dataIn.data)
+
     svgBlocksQueueServer.updateData()
+    svgCancelQueue.updateData()
     svgSuccessQueue.updateData()
+    svgFailQueue.updateData()
+
+    svgMain.updateData(dataIn.data)
   }
   this.updateData = updateData
 
@@ -1846,14 +1850,14 @@ function mainSchedBlocks (optIn) {
           marg: 0
         },
         useRelativeCoords: true,
-        locker: locker,
+        locker: new Locker(),
         lockerV: [widgetId + 'updateData'],
         lockerZoom: {
           all: 'successScrollBox' + 'zoom',
           during: 'successScrollBox' + 'zoomDuring',
           end: 'successScrollBox' + 'zoomEnd'
         },
-        runLoop: runLoop,
+        runLoop: new RunLoop({tag: 'successScrollBox'}),
         canScroll: true,
         scrollVertical: false,
         scrollHorizontal: true,
@@ -1987,10 +1991,11 @@ function mainSchedBlocks (optIn) {
     this.updateData = updateData
   }
   let SvgFailQueue = function () {
+    let reserved = {}
     function initData () {
-      let gBlockBox = svg.g.append('g')
+      reserved.gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + box.failQueue.x + ',' + box.failQueue.y + ')')
-      gBlockBox.append('rect')
+      reserved.gBlockBox.append('rect')
         .attr('x', 0 + box.failQueue.marg)
         .attr('y', 0 + box.failQueue.marg)
         .attr('width', box.failQueue.w * 1 - box.failQueue.marg)
@@ -1998,26 +2003,110 @@ function mainSchedBlocks (optIn) {
         .attr('fill', colorTheme.dark.background)
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.2)
-      gBlockBox.append('text')
+      reserved.gBlockBox.append('text')
         .text('FAIL')
         .style('fill', colorTheme.dark.text)
         .style('font-weight', 'bold')
         .style('font-size', '10px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.failQueue.h * 0.55) + ') rotate(270)')
+
+      reserved.scrollBoxG = reserved.gBlockBox.append('g')
+      reserved.scrollBox = new ScrollBox()
+      reserved.scrollBox.init({
+        tag: 'failScrollBox',
+        gBox: reserved.scrollBoxG,
+        boxData: {
+          x: 0 + box.failQueue.marg,
+          y: 0 + box.failQueue.marg,
+          w: box.failQueue.w - box.failQueue.marg,
+          h: box.failQueue.h - box.failQueue.marg,
+          marg: 0
+        },
+        useRelativeCoords: true,
+        locker: new Locker(),
+        lockerV: [widgetId + 'updateData'],
+        lockerZoom: {
+          all: 'failScrollBox' + 'zoom',
+          during: 'failScrollBox' + 'zoomDuring',
+          end: 'failScrollBox' + 'zoomEnd'
+        },
+        runLoop: new RunLoop({tag: 'failScrollBox'}),
+        canScroll: true,
+        scrollVertical: false,
+        scrollHorizontal: true,
+        scrollHeight: box.failQueue.h - box.failQueue.marg,
+        scrollWidth: box.failQueue.w - box.failQueue.marg,
+        background: colorTheme.dark.background,
+        scrollRecH: {h: 6},
+        scrollRecV: {w: 6}
+      })
+      reserved.scrollG = reserved.scrollBox.get('innerG')
     }
     this.initData = initData
 
     function updateData () {
+      let successBlocks = reserved.scrollG
+        .selectAll('g.successBlock')
+        .data(shared.data.blocks.fail, function (d) {
+          return d.obId
+        })
+      let enterSuccessBlocks = successBlocks
+        .enter()
+        .append('g')
+        .attr('class', 'successBlock')
+        .attr('transform', function (d, i) {
+          let translate = {
+            y: 0,
+            x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+          }
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+      enterSuccessBlocks.append('rect')
+        .attr('class', 'background')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', function (d, i) {
+          return 50
+        })
+        .attr('height', function (d, i) {
+          return 100
+        })
+        .attr('fill', function (d, i) {
+          return setCol(d).background
+        })
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+        .on('mouseover', function (d) {
+          // mainOverSchedBlocks(d.scheduleId)
+        })
+        .on('mouseout', function (d) {
+          // mainOutSchedBlocks(d.scheduleId)
+        })
+        .on('click', function (d) {
+          // mainFocusOnSchedBlocks(d.scheduleId)
+        })
 
+      let mergeSuccessBlocks = enterSuccessBlocks.merge(successBlocks)
+      mergeSuccessBlocks.attr('transform', function (d, i) {
+        let translate = {
+          y: 0,
+          x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+        }
+        return 'translate(' + translate.x + ',' + translate.y + ')'
+      })
+
+      reserved.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: shared.data.blocks.fail.length * 60})
     }
     this.updateData = updateData
   }
   let SvgCancelQueue = function () {
+    let reserved = {}
+
     function initData () {
-      let gBlockBox = svg.g.append('g')
+      reserved.gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + box.cancelQueue.x + ',' + box.cancelQueue.y + ')')
-      gBlockBox.append('rect')
+      reserved.gBlockBox.append('rect')
         .attr('x', 0 + box.cancelQueue.marg)
         .attr('y', 0 + box.cancelQueue.marg)
         .attr('width', box.cancelQueue.w * 1 - box.cancelQueue.marg)
@@ -2025,18 +2114,162 @@ function mainSchedBlocks (optIn) {
         .attr('fill', colorTheme.dark.background)
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.2)
-      gBlockBox.append('text')
+      reserved.gBlockBox.append('text')
         .text('CANCEL')
         .style('fill', colorTheme.dark.text)
         .style('font-weight', 'bold')
         .style('font-size', '10px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.cancelQueue.h * 0.55) + ') rotate(270)')
+      reserved.scrollBoxG = reserved.gBlockBox.append('g')
+      reserved.scrollBox = new ScrollBox()
+      reserved.scrollBox.init({
+        tag: 'cancelScrollBox',
+        gBox: reserved.scrollBoxG,
+        boxData: {
+          x: 0 + box.cancelQueue.marg,
+          y: 0 + box.cancelQueue.marg,
+          w: box.cancelQueue.w - box.cancelQueue.marg,
+          h: box.cancelQueue.h - box.cancelQueue.marg,
+          marg: 0
+        },
+        useRelativeCoords: true,
+        locker: new Locker(),
+        lockerV: [widgetId + 'updateData'],
+        lockerZoom: {
+          all: 'cancelScrollBox' + 'zoom',
+          during: 'cancelScrollBox' + 'zoomDuring',
+          end: 'cancelScrollBox' + 'zoomEnd'
+        },
+        runLoop: new RunLoop({tag: 'canelScrollBox'}),
+        canScroll: true,
+        scrollVertical: false,
+        scrollHorizontal: true,
+        scrollHeight: box.cancelQueue.h - box.cancelQueue.marg,
+        scrollWidth: box.cancelQueue.w - box.cancelQueue.marg,
+        background: colorTheme.dark.background,
+        scrollRecH: {h: 6},
+        scrollRecV: {w: 6}
+      })
+      reserved.scrollG = reserved.scrollBox.get('innerG')
+
+      updateData()
     }
     this.initData = initData
 
     function updateData () {
+      let cancelBlocks = reserved.scrollG
+        .selectAll('g.cancelBlock')
+        .data(shared.data.blocks.cancel, function (d) {
+          return d.obId
+        })
+      let enterSuccessBlocks = cancelBlocks
+        .enter()
+        .append('g')
+        .attr('class', 'successBlock')
+        .attr('transform', function (d, i) {
+          let translate = {
+            y: 0,
+            x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+          }
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+      enterSuccessBlocks.append('rect')
+        .attr('class', 'background')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', function (d, i) {
+          return 50
+        })
+        .attr('height', function (d, i) {
+          return 100
+        })
+        .attr('fill', function (d, i) {
+          return setCol(d).background
+        })
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+        .on('mouseover', function (d) {
+          // mainOverSchedBlocks(d.scheduleId)
+        })
+        .on('mouseout', function (d) {
+          // mainOutSchedBlocks(d.scheduleId)
+        })
+        .on('click', function (d) {
+          // mainFocusOnSchedBlocks(d.scheduleId)
+        })
+      // enterSchedulingBlocks.append('text')
+      //   .attr('class', 'name')
+      //   .text(function (d) {
+      //     return 'SB ' + d.schedName
+      //   })
+      //   .attr('x', function (d, i) {
+      //     return dim.w * 0.5
+      //   })
+      //   .attr('y', function (d, i) {
+      //     return dim.h * 0.2
+      //   })
+      //   .style('font-weight', 'bold')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', dim.h * 0.25)
+      //   .attr('dy', dim.h * 0.15)
+      //   .style('pointer-events', 'none')
+      //   .attr('fill', colorTheme.darker.text)
+      //   .attr('stroke', 'none')
+      // enterSchedulingBlocks.each(function (d) {
+      //   let dimBlocks = dim.h * 0.16
+      //   let length = d.blocks.length
+      //   let offset = ((dim.w /* - dimBlocks * 2 */) - (length < 4 ? (dimBlocks * 1.2 * length) : (length % 2 === 0 ? (dimBlocks * 0.6 * length) : (dimBlocks * 0.7 * length)))) * 0.5
+      //
+      //   d3.select(this).selectAll('rect.subBlocks')
+      //     .data(d.blocks, function (d) {
+      //       return d.obId
+      //     })
+      //     .enter()
+      //     .append('rect')
+      //     .attr('class', 'subBlocks')
+      //     .attr('x', function (d, i) {
+      //       return offset + (length < 4 ? (dimBlocks * i * 1.2) : (length % 2 === 0 ? (0.6 * dimBlocks * (i - (i % 2))) : (dimBlocks * i * 0.6)))
+      //     })
+      //     .attr('y', function (d, i) {
+      //       return dim.h - dimBlocks * 1.8 - (length < 4 ? dimBlocks * 0.5 : dimBlocks * 1.2 * (i % 2))
+      //     })
+      //     .attr('width', function (d, i) {
+      //       return dimBlocks
+      //     })
+      //     .attr('height', function (d, i) {
+      //       return dimBlocks
+      //     })
+      //     .attr('fill', function (d, i) {
+      //       return setCol(d).background
+      //     })
+      //     .style('opacity', 1)
+      //     .attr('stroke', 'black')
+      //     .attr('stroke-width', 0.2)
+      //     .style('pointer-events', 'none')
+      // })
 
+      let mergeSuccessBlocks = enterSuccessBlocks.merge(cancelBlocks)
+      mergeSuccessBlocks.attr('transform', function (d, i) {
+        let translate = {
+          y: 0,
+          x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+        }
+        return 'translate(' + translate.x + ',' + translate.y + ')'
+      })
+      // schedulingBlocks.each(function (d) {
+      //   d3.select(this).selectAll('rect.subBlocks')
+      //     .data(d.blocks, function (d) {
+      //       return d.obId
+      //     })
+      //     .transition()
+      //     .duration(800)
+      //     .attr('fill', function (d, i) {
+      //       return setCol(d).background
+      //     })
+      // })
+
+      reserved.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: shared.data.blocks.cancel.length * 60})
     }
     this.updateData = updateData
   }

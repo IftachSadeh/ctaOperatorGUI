@@ -3,11 +3,8 @@
 // ---------------------------------------------------------------------------------------------------
 // window.loadScript({ source:'utils_scrollTable', script:"/js/utils_scrollBox.js"});
 
-/* global $ */
 /* global d3 */
-/* global timeD */
 /* global hasVar */
-/* global deepCopy */
 
 window.ClockEvents = function () {
   let com = {}
@@ -74,6 +71,7 @@ window.ClockEvents = function () {
   function init (optIn) {
     com.g = optIn.g
     com.box = optIn.box
+    com.colorTheme = optIn.colorTheme
 
     com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
     com.g.append('rect')
@@ -81,7 +79,7 @@ window.ClockEvents = function () {
       .attr('y', 0)
       .attr('width', com.box.width)
       .attr('height', com.box.height)
-      .attr('fill', optIn.background)
+      .attr('fill', com.colorTheme.background)
 
     com.popup = com.g.append('g')
       .attr('transform', 'translate(0,' + com.box.height * 0.2 + ')')
@@ -97,7 +95,7 @@ window.ClockEvents = function () {
       .attr('class', 'axisX')
       .attr('transform', com.axis.translate)
       .call(com.axis.bottom)
-    com.axis.axisG.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
+    com.axis.axisG.select('path').attr('stroke-width', 2).attr('stroke', com.colorTheme.stroke)
 
     com.eventG = com.g.append('g').attr('transform', com.axis.translate)
     com.g.append('rect')
@@ -134,14 +132,14 @@ window.ClockEvents = function () {
     //   .attr('y', -(com.box.height * 0.62))
     //   .attr('width', com.box.width * 0.1)
     //   .attr('height', com.box.height)
-    //   .attr('fill', '#37474F')
+    //   .attr('fill', com.colorTheme.background)
     // com.shrinkButton.append('circle')
     //   .attr('cx', 0)
     //   .attr('cy', 0)
     //   .attr('r', 12)
     //   .attr('stroke', '#000000')
     //   .attr('stroke-width', 0.2)
-    //   .attr('fill', '#37474F')
+    //   .attr('fill', com.colorTheme.background)
     // com.shrinkButton.append('rect')
     //   .attr('x', 0)
     //   .attr('y', -12)
@@ -149,7 +147,7 @@ window.ClockEvents = function () {
     //   .attr('width', 60)
     //   .attr('stroke', '#000000')
     //   .attr('stroke-width', 0.2)
-    //   .attr('fill', '#37474F')
+    //   .attr('fill', com.colorTheme.background)
     //   .attr('stroke-dasharray', [(60) * 2 + 24, 24])
     //   .on('mouseover', drawFuturEvents)
     //   .on('mouseout', function () {
@@ -160,14 +158,14 @@ window.ClockEvents = function () {
     //   .attr('y1', -6)
     //   .attr('x2', 1 - 4 - 2)
     //   .attr('y2', 1)
-    //   .attr('stroke', '#CFD8DC')
+    //   .attr('stroke', com.colorTheme.stroke)
     //   .attr('stroke-width', 3)
     // com.shrinkButton.append('line')
     //   .attr('x1', 6 - 3 - 2)
     //   .attr('y1', 6)
     //   .attr('x2', 1 - 4 - 2)
     //   .attr('y2', -1)
-    //   .attr('stroke', '#CFD8DC')
+    //   .attr('stroke', com.colorTheme.stroke)
     //   .attr('stroke-width', 3)
     // com.shrinkButton.append('text')
     //   .attr('class', 'futurEvent')
@@ -198,15 +196,15 @@ window.ClockEvents = function () {
       .attr('y', com.box.height * 0.19)
       .attr('width', com.box.width * 0.12)
       .attr('height', com.box.height * 0.8)
-      .attr('fill', '#37474F')
-      .attr('stroke', '#CFD8DC')
+      .attr('fill', com.colorTheme.background)
+      .attr('stroke', com.colorTheme.stroke)
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', [(com.box.width * 0.12) + (com.box.height * 0.8), (com.box.width * 0.12) + (com.box.height * 0.8)])
 
     com.g.append('text')
       .attr('class', 'currentHour')
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
       .attr('x', com.box.width * 0.06)
       .attr('y', com.box.height * 0.7)
       .style('font-weight', 'bold')
@@ -215,7 +213,6 @@ window.ClockEvents = function () {
       .attr('dy', com.box.height * 0.12)
       .style('pointer-events', 'none')
       .style('user-select', 'none')
-
   }
   this.init = init
 
@@ -229,11 +226,11 @@ window.ClockEvents = function () {
       .ease(d3.easeLinear)
       .duration(1000)
       .call(com.axis.bottom)
-    com.axis.axisG.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
+    com.axis.axisG.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', com.colorTheme.stroke)
     com.axis.axisG.selectAll('g.tick').selectAll('text')
       .style('font-size', com.box.height * 0.26)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
 
     drawEvents()
   }
@@ -244,8 +241,8 @@ window.ClockEvents = function () {
       .attr('y', com.box.height * 0.2)
       .attr('width', com.box.width * 0.1)
       .attr('height', com.box.height * 0.8)
-      .attr('fill', '#37474F')
-      .attr('stroke', '#CFD8DC')
+      .attr('fill', com.colorTheme.background)
+      .attr('stroke', com.colorTheme.stroke)
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', [(com.box.width * 0.1), (com.box.height * 0.8) + (com.box.width * 0.1), (com.box.height * 0.8)])
 
@@ -256,8 +253,8 @@ window.ClockEvents = function () {
       .text((newtime < 10 ? '0' + newtime : newtime) + ' :')
       .attr('x', com.box.width * 0.01)
       .attr('y', com.box.height * 0.5)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
       .attr('text-anchor', 'start')
       .style('font-size', com.box.height * 0.3)
       .attr('dy', com.box.height * 0.07)
@@ -269,8 +266,8 @@ window.ClockEvents = function () {
       .text((newtime < 10 ? '0' + newtime : newtime) + ' :')
       .attr('x', com.box.width * 0.04)
       .attr('y', com.box.height * 0.5)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
       .attr('text-anchor', 'start')
       .style('font-size', com.box.height * 0.3)
       .attr('dy', com.box.height * 0.07)
@@ -282,8 +279,8 @@ window.ClockEvents = function () {
       .text((newtime < 10 ? '0' + newtime : newtime))
       .attr('x', com.box.width * 0.07)
       .attr('y', com.box.height * 0.5)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
       .attr('text-anchor', 'start')
       .style('font-size', com.box.height * 0.3)
       .attr('dy', com.box.height * 0.07)
@@ -303,8 +300,8 @@ window.ClockEvents = function () {
       })
       .on('mouseout', function () {
         com.shrinkButton.select('text.day')
-          .attr('stroke', '#CFD8DC')
-          .attr('fill', '#CFD8DC')
+          .attr('stroke', com.colorTheme.stroke)
+          .attr('fill', com.colorTheme.stroke)
       })
       .on('wheel', function (d) {
         let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
@@ -334,8 +331,8 @@ window.ClockEvents = function () {
       })
       .on('mouseout', function () {
         com.shrinkButton.select('text.hour')
-          .attr('stroke', '#CFD8DC')
-          .attr('fill', '#CFD8DC')
+          .attr('stroke', com.colorTheme.stroke)
+          .attr('fill', com.colorTheme.stroke)
       })
       .on('wheel', function (d) {
         let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
@@ -365,8 +362,8 @@ window.ClockEvents = function () {
       })
       .on('mouseout', function () {
         com.shrinkButton.select('text.minute')
-          .attr('stroke', '#CFD8DC')
-          .attr('fill', '#CFD8DC')
+          .attr('stroke', com.colorTheme.stroke)
+          .attr('fill', com.colorTheme.stroke)
       })
       .on('wheel', function (d) {
         let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
@@ -387,8 +384,8 @@ window.ClockEvents = function () {
       .text('DD')
       .attr('x', com.box.width * 0.012)
       .attr('y', com.box.height * 0.8)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
       .attr('text-anchor', 'start')
       .style('font-size', com.box.height * 0.2)
       .attr('dy', com.box.height * 0.07)
@@ -398,8 +395,8 @@ window.ClockEvents = function () {
       .text('HH')
       .attr('x', com.box.width * 0.04)
       .attr('y', com.box.height * 0.8)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
       .attr('text-anchor', 'start')
       .style('font-size', com.box.height * 0.2)
       .attr('dy', com.box.height * 0.07)
@@ -409,8 +406,8 @@ window.ClockEvents = function () {
       .text('MM')
       .attr('x', com.box.width * 0.07)
       .attr('y', com.box.height * 0.8)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
       .attr('text-anchor', 'start')
       .style('font-size', com.box.height * 0.2)
       .attr('dy', com.box.height * 0.07)
@@ -516,7 +513,7 @@ window.ClockEvents = function () {
         .attr('stroke-width', 0.2)
         .attr('stroke', '#000000')
         .style('fill', function (d, i) {
-          return '#546E7A'
+          return com.colorTheme.background
         })
         .attr('vector-effect', 'non-scaling-stroke')
       let text = enterG.select('g.popupG').append('text')
@@ -526,8 +523,8 @@ window.ClockEvents = function () {
         .attr('class', 'name')
         .attr('x', com.box.width * 0.12 - 20)
         .attr('y', 16)
-        .attr('stroke', '#CFD8DC')
-        .attr('fill', '#CFD8DC')
+        .attr('stroke', com.colorTheme.stroke)
+        .attr('fill', com.colorTheme.stroke)
         .attr('text-anchor', 'end')
         .style('font-size', com.box.height * 0.22)
         .attr('dy', com.box.height * 0.07)
@@ -749,8 +746,8 @@ window.ClockEvents = function () {
       .attr('y', function (d, i) {
         return -2
       })
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.colorTheme.stroke)
+      .attr('fill', com.colorTheme.stroke)
       .attr('text-anchor', 'middle')
       .style('font-size', com.box.height * 0.22)
       .style('pointer-events', 'none')
@@ -785,7 +782,7 @@ window.ClockEvents = function () {
     //   .attr('height', function (d, i) {
     //     return 30
     //   })
-    //   .attr('stroke', '#CFD8DC')
+    //   .attr('stroke', com.colorTheme.stroke)
     //   .attr('stroke-width', 1)
     //   .style('fill', function (d, i) {
     //     return 'none'

@@ -335,18 +335,17 @@ window.BlockQueue = function (optIn) {
   }
   function initFilters () {
     if (!com.filters.enabled) return
-
     function recCol (state) {
-      if (state === 'Wait') return '#e6e6e6'
-      else if (state === 'Done') return d3.color(colsGreens[0]).brighter()
+      if (state === 'Wait') return com.blocks.colorPalette.wait
+      else if (state === 'Done') return com.blocks.colorPalette.done
       else if (state === 'Run') {
-        return d3.color(colsPurplesBlues[0]).brighter()
+        return com.blocks.colorPalette.run
       } else if (state === 'Cancel.canrun') {
-        return d3.color(colsPurples[3]).brighter()
+        return com.blocks.colorPalette.cancelSys
       } else if (state === 'Cancel') {
-        return d3.color(colsPurples[4])
-      } else if (state === 'Fail') return d3.color(colsReds[3]).brighter()
-      else return d3.color(colPrime).brighter()
+        return com.blocks.colorPalette.cancelOp
+      } else if (state === 'Fail') return com.blocks.colorPalette.fail
+      else return com.blocks.colorPalette.shutdown
     }
     function createButton (position, type, filter) {
       let newButton = buttonPanel.addButton(position)
@@ -409,14 +408,14 @@ window.BlockQueue = function (optIn) {
         .attr('height', function (d, i) {
           return ((Number(newButton.attr('height'))) * (3) / 3)
         })
-        .attr('rx', 2)
-        .attr('ry', 2)
+        .attr('rx', 1)
+        .attr('ry', 1)
         .attr('stroke', function (d, i) {
           return 'black'
         })
-        .attr('stroke-width', 0.5)
+        .attr('stroke-width', 0.1)
         .style('fill', function (d, i) {
-          return recCol(type)
+          return recCol(type).background
         })
         .style('fill-opacity', function (d, i) {
           return 1
@@ -498,18 +497,18 @@ window.BlockQueue = function (optIn) {
       margin: margin,
       rows: 3,
       cols: 3,
-      background: 'none',
-      stroke: '#CFD8DC'
+      background: com.main.colorTheme.dark.background,
+      stroke: com.main.colorTheme.dark.stroke
     })
 
     let newButton = buttonPanel.addButton({row: 0, col: 1})
     newButton.append('text')
-      .text('SBs Filters')
+      .text('Blocks Filters')
       .attr('x', Number(newButton.attr('width')) * 0.5)
       .attr('y', Number(newButton.attr('height')) * 0.35)
       .attr('dy', 6)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('fill', com.main.colorTheme.darker.stroke)
       .style('font-weight', 'normal')
       .attr('text-anchor', 'middle')
       .style('font-size', 18)
