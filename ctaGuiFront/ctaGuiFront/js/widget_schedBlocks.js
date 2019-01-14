@@ -1809,8 +1809,8 @@ function mainSchedBlocks (optIn) {
     function updateData () {
       let date = new Date(shared.data.server.timeOfNight.date_now)
       let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
-      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() - (3600 * 6)), time: Number(shared.data.server.timeOfNight.now) - (3600 * 6)}
-      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (60 * 8)), time: Number(shared.data.server.timeOfNight.now) + (60 * 8)}
+      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() - (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) - (3600 * 8)}
+      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
       blockQueueServerPast.updateData({
         time: {
           currentTime: currentTime,
@@ -2518,11 +2518,11 @@ function mainSchedBlocks (optIn) {
         .attr('y', box.currentBlocks.h * 0.06)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
-        .style('font-size', 14)
+        .style('font-size', 13.2)
         .attr('dy', 5)
         .style('pointer-events', 'none')
         .style('user-select', 'none')
-      updateData()
+      // updateData()
     }
     this.initData = initData
 
@@ -2530,32 +2530,80 @@ function mainSchedBlocks (optIn) {
       let date = new Date(shared.data.server.timeOfNight.date_now)
       reserved.currentTime
         .text(date.getHours() + ' : ' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()))
+
+      // let queueRun = deepCopy(shared.data.server.blocks.run)
+      let queueRun = blockQueueServerFutur.getBlocksRows()
+      queueRun = queueRun.filter(b => b.data.exeState.state === 'run')
+      queueRun.sort(function (a, b) { return a.y > b.y })
+      for (let i = 0; i < queueRun.length; i++) {
+        queueRun[i].data.y = queueRun[i].y
+        queueRun[i].data.h = queueRun[i].h
+        queueRun[i] = queueRun[i].data
+      }
+
       let currentBlocks = reserved.gBlockBox
         .selectAll('g.currentBlock')
-        .data(shared.data.server.blocks.run, function (d) {
+        .data(queueRun, function (d) {
           return d.obId
         })
-      let offsetY = box.currentBlocks.y + (box.currentBlocks.h * 0.2)
       let enterCurrentBlocks = currentBlocks
         .enter()
         .append('g')
         .attr('class', 'currentBlock')
-        .attr('transform', function (d, i) {
-          let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) / 100
-          height = height < 16 ? 16 : height
-          let odd = i % 2 === 0 ? -1 : 1
-
-          let translate = {
-            y: offsetY + height * 0.5,
-            x: box.currentBlocks.w * 0.5 + (box.currentBlocks.w * 0.1 * odd)
-          }
-          offsetY += height + 40
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
+      let offsetY = box.currentBlocks.y + (box.currentBlocks.h * 0.16)
       enterCurrentBlocks.each(function (d) {
         let width = (d.duration * (box.currentBlocks.w * 0.5)) / 3600
         let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) / 100
-        height = height < 20 ? 20 : height
+        height = height < 14 ? 14 : height
+        let translate = {x: 0, y: 0}
+
+        d3.select(this).attr('transform', function (d, i) {
+          let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) * 0.008
+          height = height < 14 ? 14 : height
+          translate = {
+            y: offsetY + height * 0.5,
+            x: box.currentBlocks.w * 0.5 // + (box.currentBlocks.w * 0.1 * odd)
+          }
+          offsetY += height + 30
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+
+        let lineGenerator = d3.line()
+          .x(function (d) { return d.x })
+          .y(function (d) { return d.y })
+          .curve(d3.curveBasis)
+        let dataPointFuturTop = [
+          // {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x + box.currentBlocks.w * 0.03, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y},
+          // {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y},
+          {x: translate.x * 0.99, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: translate.x * 0.79, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: width * 0.5 + 35, y: 0},
+          {x: 0, y: 0},
+          {x: -width * 0.5 - 35, y: 0},
+          {x: -translate.x * 0.7, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: -translate.x * 0.9, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5}
+        ]
+        // let dataPointFuturBottom = [
+        //   {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x + box.currentBlocks.w * 0.03, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h},
+        //   {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h},
+        //   {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+        //   {x: width * 0.5 + 35, y: 0},
+        //   {x: width * 0.5 + 22, y: 0}
+        // ]
+        d3.select(this).append('path')
+          .data([dataPointFuturTop])
+          .attr('d', lineGenerator)
+          .attr('fill', 'none')
+          .attr('stroke', colorTheme.dark.background)
+          .attr('stroke-width', d.h)
+          .style('pointer-events', 'none')
+        // d3.select(this).append('path')
+        //   .data([dataPointFuturBottom])
+        //   .attr('d', lineGenerator)
+        //   .attr('fill', 'none')
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .style('pointer-events', 'none')
+
         d3.select(this).append('rect')
           .attr('x', -width * 0.5)
           .attr('y', -height * 0.5)
@@ -2591,8 +2639,8 @@ function mainSchedBlocks (optIn) {
 
         d3.select(this).append('circle')
           .attr('cx', width * 0.5 + 16)
-          .attr('cy', -18)
-          .attr('r', 8)
+          .attr('cy', -13.2)
+          .attr('r', 6.5)
           .attr('fill', '#aaaaaa')
           // .attr('stroke', '#000000')
           // .attr('stroke-width', 3)
@@ -2602,7 +2650,7 @@ function mainSchedBlocks (optIn) {
         d3.select(this).append('text')
           .text('M')
           .attr('x', width * 0.5 + 16)
-          .attr('y', -18)
+          .attr('y', -13.2)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
@@ -2614,7 +2662,7 @@ function mainSchedBlocks (optIn) {
         d3.select(this).append('circle')
           .attr('cx', width * 0.5 + 16)
           .attr('cy', 0)
-          .attr('r', 8)
+          .attr('r', 6.5)
           .attr('fill', '#aaaaaa')
         d3.select(this).append('text')
           .text('C')
@@ -2630,13 +2678,13 @@ function mainSchedBlocks (optIn) {
 
         d3.select(this).append('circle')
           .attr('cx', width * 0.5 + 16)
-          .attr('cy', 18)
-          .attr('r', 8)
+          .attr('cy', 13.2)
+          .attr('r', 6.5)
           .attr('fill', '#aaaaaa')
         d3.select(this).append('text')
           .text('D')
           .attr('x', width * 0.5 + 16)
-          .attr('y', 18)
+          .attr('y', 13.2)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
@@ -2648,13 +2696,13 @@ function mainSchedBlocks (optIn) {
         // FINISH
         d3.select(this).append('circle')
           .attr('cx', -(width * 0.5 + 16))
-          .attr('cy', -18)
-          .attr('r', 8)
+          .attr('cy', -13.2)
+          .attr('r', 6.5)
           .attr('fill', '#aaaaaa')
         d3.select(this).append('text')
           .text('M')
           .attr('x', -(width * 0.5 + 16))
-          .attr('y', -18)
+          .attr('y', -13.2)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
@@ -2666,7 +2714,7 @@ function mainSchedBlocks (optIn) {
         d3.select(this).append('circle')
           .attr('cx', -(width * 0.5 + 16))
           .attr('cy', 0)
-          .attr('r', 8)
+          .attr('r', 6.5)
           .attr('fill', '#aaaaaa')
         d3.select(this).append('text')
           .text('C')
@@ -2682,13 +2730,13 @@ function mainSchedBlocks (optIn) {
 
         d3.select(this).append('circle')
           .attr('cx', -(width * 0.5 + 16))
-          .attr('cy', 18)
-          .attr('r', 8)
+          .attr('cy', 13.2)
+          .attr('r', 6.5)
           .attr('fill', '#aaaaaa')
         d3.select(this).append('text')
           .text('D')
           .attr('x', -(width * 0.5 + 16))
-          .attr('y', 18)
+          .attr('y', 13.2)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
@@ -2698,7 +2746,24 @@ function mainSchedBlocks (optIn) {
           .style('user-select', 'none')
       })
 
-      // let mergeSuccessBlocks = enterSuccessBlocks.merge(cancelBlocks)
+      let mergeCurrentBlocks = currentBlocks.merge(enterCurrentBlocks)
+      offsetY = box.currentBlocks.y + (box.currentBlocks.h * 0.16)
+      mergeCurrentBlocks.attr('transform', function (d, i) {
+        let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) * 0.008
+        height = height < 14 ? 14 : height
+        let translate = {
+          y: offsetY + height * 0.5,
+          x: box.currentBlocks.w * 0.5 // + (box.currentBlocks.w * 0.1 * odd)
+        }
+        offsetY += height + 30
+        return 'translate(' + translate.x + ',' + translate.y + ')'
+      })
+      currentBlocks
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
       // mergeSuccessBlocks.attr('transform', function (d, i) {
       //   let translate = {
       //     y: 0,

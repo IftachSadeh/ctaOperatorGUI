@@ -1033,6 +1033,27 @@ window.BlockQueue = function (optIn) {
     }
     return blocks
   }
+  function getBlocksRows () {
+    if (com.blocks.run.enabled) {
+      let dataBottom = []
+        .concat(com.data.filtered.done)
+        .concat(com.data.filtered.fail)
+        .concat(com.data.filtered.run)
+        .concat(com.data.filtered.wait)
+      let bottomRow = calcBlockRow({
+        typeNow: 'bottom',
+        start: com.time.startTime.time,
+        end: com.time.endTime.time,
+        data: dataBottom,
+        box: {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg},
+        yScale: true
+      })
+      bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg}, 'toTop')
+      bottomRow = setDefaultStyleForBlocks(bottomRow)
+      return bottomRow
+    }
+  }
+  this.getBlocksRows = getBlocksRows
 
   // ---------------------------------------------------------------------------------------------------
   //
