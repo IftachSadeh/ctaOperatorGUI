@@ -305,8 +305,21 @@ window.BlockQueue = function (optIn) {
   }
   function initBlocks () {
     if (!com.blocks.enabled) return
+
+    com.blocks.clipping = {}
+    com.blocks.clipping.g = com.main.g.append('g')
+    com.blocks.clipping.g.append('defs').append('svg:clipPath')
+      .attr('id', 'clip')
+      .append('svg:rect')
+      .attr('id', 'clip-rect')
+      .attr('x', '0')
+      .attr('y', '0')
+      .attr('width', com.main.box.w)
+      .attr('height', com.main.box.h)
+    com.blocks.clipping.clipBody = com.blocks.clipping.g.append('g')
+      .attr('clip-path', 'url(#clip)')
     if (com.blocks.run.enabled) {
-      com.blocks.run.g = com.main.g.append('g')
+      com.blocks.run.g = com.blocks.clipping.clipBody.append('g')
       com.blocks.run.g.attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.run.box.y + ')')
         .style('opacity', 0)
         .transition()
@@ -315,7 +328,7 @@ window.BlockQueue = function (optIn) {
         .style('opacity', 1)
     }
     if (com.blocks.cancel.enabled) {
-      com.blocks.cancel.g = com.main.g.append('g')
+      com.blocks.cancel.g = com.blocks.clipping.clipBody.append('g')
       com.blocks.cancel.g.attr('transform', 'translate(' + com.blocks.cancel.box.x + ',' + com.blocks.cancel.box.y + ')')
         .style('opacity', 0)
         .transition()
@@ -324,7 +337,7 @@ window.BlockQueue = function (optIn) {
         .style('opacity', 1)
     }
     if (com.blocks.modification.enabled) {
-      com.blocks.modification.g = com.main.g.append('g')
+      com.blocks.modification.g = com.blocks.clipping.clipBody.append('g')
       com.blocks.modification.g.attr('transform', 'translate(' + com.blocks.modification.box.x + ',' + com.blocks.modification.box.y + ')')
         .style('opacity', 0)
         .transition()

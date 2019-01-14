@@ -1273,7 +1273,6 @@ window.ScrollBox = function () {
         .attr('x', box.x + marg)
         .attr('width', com.scrollRecH.w)
         .attr('height', com.scrollRecH.h - marg * 2)
-      console.log('setHorizontalRecScroll', com.scrollRecH.w);
       recScroll
         .exit()
         .transition('inOut')

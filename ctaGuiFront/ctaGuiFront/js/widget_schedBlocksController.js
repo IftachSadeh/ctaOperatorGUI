@@ -2185,7 +2185,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('width', reserved.box.w)
         .attr('height', reserved.box.h)
       reserved.clipBody = reserved.gTargets.append('g')
-        .attr('clip-path', 'url(#clip)')
+        .attr('clip-path', '')// 'url(#clip)')
     }
     this.initData = initData
     function updateData () {
@@ -2447,7 +2447,7 @@ let mainSchedBlocksController = function (optIn) {
         .attr('width', reserved.box.w)
         .attr('height', reserved.box.h)
       reserved.clipBody = reserved.gTargets.append('g')
-        .attr('clip-path', 'url(#clip)')
+        .attr('clip-path', '')//'url(#clip)')
 
       let range = reserved.conflictBox.h * 0.33333
       reserved.clipBody.append('rect')

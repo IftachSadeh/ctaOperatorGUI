@@ -40,7 +40,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 6
+  let h0 = 4
   let w0 = 12
   let divKey = 'main'
 
@@ -79,7 +79,7 @@ function mainSchedBlocks (optIn) {
 
   let shared = {
     data: {
-      server: undefined,
+      serverPast: undefined,
       blocks : {}
     },
     focus: {
@@ -92,7 +92,8 @@ function mainSchedBlocks (optIn) {
   let box = {}
   let lenD = {}
 
-  let blockQueueServer = null
+  let blockQueueServerPast = null
+  let blockQueueServerFutur = null
 
   // let thisSchedBlocks = this
   let isSouth = window.__nsType__ === 'S'
@@ -224,32 +225,46 @@ function mainSchedBlocks (optIn) {
         .style('background', colorTheme.medium.background)
     }
     function initBox () {
-      box.blockQueueServer = {
-        x: lenD.w[0] * 0,
+      box.blockQueueServerPast = {
+        x: lenD.w[0] * 0.01,
         y: lenD.h[0] * 0,
-        w: lenD.w[0] * 1,
-        h: lenD.h[0] * 0.4,
+        w: lenD.w[0] * 0.38,
+        h: lenD.h[0] * 0.45,
+        marg: lenD.w[0] * 0.01
+      }
+      box.blockQueueServerFutur = {
+        x: lenD.w[0] * 0.62,
+        y: lenD.h[0] * 0,
+        w: lenD.w[0] * 0.38,
+        h: lenD.h[0] * 0.45,
+        marg: lenD.w[0] * 0.01
+      }
+      box.currentBlocks = {
+        x: lenD.w[0] * 0.36,
+        y: lenD.h[0] * 0.0,
+        w: lenD.w[0] * 0.28,
+        h: lenD.h[0] * 1.0,
         marg: lenD.w[0] * 0.01
       }
       box.successQueue = {
         x: lenD.w[0] * 0.02,
         y: lenD.h[0] * 0.44,
-        w: lenD.w[0] * 0.4,
-        h: lenD.h[0] * 0.15,
+        w: lenD.w[0] * 0.28,
+        h: lenD.h[0] * 0.12,
         marg: lenD.w[0] * 0.01
       }
       box.failQueue = {
         x: lenD.w[0] * 0.02,
         y: lenD.h[0] * 0.62,
-        w: lenD.w[0] * 0.4,
-        h: lenD.h[0] * 0.15,
+        w: lenD.w[0] * 0.28,
+        h: lenD.h[0] * 0.12,
         marg: lenD.w[0] * 0.01
       }
       box.cancelQueue = {
         x: lenD.w[0] * 0.02,
         y: lenD.h[0] * 0.8,
-        w: lenD.w[0] * 0.4,
-        h: lenD.h[0] * 0.15,
+        w: lenD.w[0] * 0.28,
+        h: lenD.h[0] * 0.12,
         marg: lenD.w[0] * 0.01
       }
       box.execution = {
@@ -334,7 +349,9 @@ function mainSchedBlocks (optIn) {
     shared.data.server = dataIn.data
     sortBlocksByState()
 
-    svgBlocksQueueServer.initData()
+    svgCurrentBlocks.initData()
+    svgBlocksQueueServerPast.initData()
+    svgBlocksQueueServerFutur.initData()
     svgSuccessQueue.initData()
     svgFailQueue.initData()
     svgCancelQueue.initData()
@@ -347,10 +364,13 @@ function mainSchedBlocks (optIn) {
   //
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
+    console.log(dataIn);
     shared.data.server = dataIn.data
     sortBlocksByState()
 
-    svgBlocksQueueServer.updateData()
+    svgBlocksQueueServerPast.updateData()
+    svgBlocksQueueServerFutur.updateData()
+    svgCurrentBlocks.updateData()
     svgCancelQueue.updateData()
     svgSuccessQueue.updateData()
     svgFailQueue.updateData()
@@ -1274,7 +1294,6 @@ function mainSchedBlocks (optIn) {
       $.each(confD.opt, function (index, optIn) {
         let id = optIn.id
         let dataNow = recD[id]
-
         dataRec = dataRec.concat(dataNow)
       })
 
@@ -1630,13 +1649,13 @@ function mainSchedBlocks (optIn) {
     //        .attr("r", 1);
     // }
   }
-  let SvgBlocksQueueServer = function () {
+  let SvgBlocksQueueServerPast = function () {
     function initData () {
       let adjustedBox = {
-        x: box.blockQueueServer.x + box.blockQueueServer.w * 0.03,
-        y: box.blockQueueServer.y + box.blockQueueServer.h * 0.05,
-        w: box.blockQueueServer.w * 0.94,
-        h: box.blockQueueServer.h * 0.8,
+        x: box.blockQueueServerPast.x + box.blockQueueServerPast.w * 0.03,
+        y: box.blockQueueServerPast.y + box.blockQueueServerPast.h * 0.05,
+        w: box.blockQueueServerPast.w * 0.94,
+        h: box.blockQueueServerPast.h * 0.8,
         marg: lenD.w[0] * 0.01
       }
 
@@ -1648,9 +1667,9 @@ function mainSchedBlocks (optIn) {
         .style('font-weight', 'bold')
         .style('font-size', '12px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(-5,' + (box.blockQueueServer.h * 0.4) + ') rotate(270)')
+        .attr('transform', 'translate(-5,' + (box.blockQueueServerPast.h * 0.4) + ') rotate(270)')
 
-      blockQueueServer = new BlockQueueCreator({
+      blockQueueServerPast = new BlockQueueCreator({
         main: {
           tag: 'blockQueueMiddleTag',
           g: gBlockBox,
@@ -1782,17 +1801,21 @@ function mainSchedBlocks (optIn) {
         }
       })
 
-      blockQueueServer.init()
+      blockQueueServerPast.init()
       updateData()
     }
     this.initData = initData
 
     function updateData () {
-      blockQueueServer.updateData({
+      let date = new Date(shared.data.server.timeOfNight.date_now)
+      let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
+      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() - (3600 * 6)), time: Number(shared.data.server.timeOfNight.now) - (3600 * 6)}
+      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (60 * 8)), time: Number(shared.data.server.timeOfNight.now) + (60 * 8)}
+      blockQueueServerPast.updateData({
         time: {
-          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
-          startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
-          endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+          currentTime: currentTime,
+          startTime: startTime,
+          endTime: endTime
         },
         data: {
           raw: {
@@ -1806,11 +1829,205 @@ function mainSchedBlocks (optIn) {
     this.updateData = updateData
 
     function update () {
-      blockQueueServer.update({
+      blockQueueServerPast.update({
         time: {
           currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
           startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
           endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+        }
+      })
+    }
+    this.update = update
+  }
+  let SvgBlocksQueueServerFutur = function () {
+    function initData () {
+      let adjustedBox = {
+        x: box.blockQueueServerFutur.x + box.blockQueueServerFutur.w * 0.03,
+        y: box.blockQueueServerFutur.y + box.blockQueueServerFutur.h * 0.05,
+        w: box.blockQueueServerFutur.w * 0.94,
+        h: box.blockQueueServerFutur.h * 0.8,
+        marg: lenD.w[0] * 0.01
+      }
+
+      let gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+      // gBlockBox.append('text')
+      //   .text('SERVER SCHEDULE')
+      //   .style('fill', colorTheme.medium.text)
+      //   .style('font-weight', 'bold')
+      //   .style('font-size', '12px')
+      //   .attr('text-anchor', 'middle')
+      //   .attr('transform', 'translate(-5,' + (box.blockQueueServerFutur.h * 0.4) + ') rotate(270)')
+
+      blockQueueServerFutur = new BlockQueueCreator({
+        main: {
+          tag: 'blockQueueServerFuturTag',
+          g: gBlockBox,
+          box: adjustedBox,
+          background: {
+            fill: colorTheme.dark.background,
+            stroke: colorTheme.dark.stroke,
+            strokeWidth: 0.1
+          },
+          colorTheme: colorTheme
+        },
+        axis: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+          axis: undefined,
+          scale: undefined,
+          domain: [0, 1000],
+          range: [0, 0],
+          showText: true,
+          orientation: 'axisTop',
+          attr: {
+            text: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            },
+            path: {
+              stroke: colorTheme.medium.stroke,
+              fill: colorTheme.medium.stroke
+            }
+          }
+        },
+        blocks: {
+          enabled: true,
+          run: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: 'none',
+              strokeWidth: 0
+            }
+          },
+          cancel: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          modification: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+            events: {
+              click: () => {},
+              mouseover: () => {},
+              mouseout: () => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            background: {
+              fill: colorTheme.brighter.background,
+              stroke: colorTheme.brighter.stroke,
+              strokeWidth: 0
+            }
+          },
+          colorPalette: colorTheme.blocks
+        },
+        filters: {
+          enabled: false,
+          g: undefined,
+          box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
+          filters: []
+        },
+        timeBars: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {},
+        event: {
+          modifications: () => {}
+        },
+        input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
+          selection: []
+        }
+      })
+
+      blockQueueServerFutur.init()
+      updateData()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let date = new Date(shared.data.server.timeOfNight.date_now)
+      let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
+      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
+      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) + (3600 * 8)}
+      blockQueueServerFutur.updateData({
+        time: {
+          currentTime: currentTime,
+          startTime: startTime,
+          endTime: endTime
+        },
+        data: {
+          raw: {
+            blocks: shared.data.server.blocks,
+            telIds: shared.data.server.telIds
+          },
+          modified: []
+        }
+      })
+    }
+    this.updateData = updateData
+
+    function update () {
+      let date = new Date(shared.data.server.timeOfNight.date_now)
+      let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
+      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
+      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) + (3600 * 8)}
+      blockQueueServerFutur.updateData({
+        time: {
+          currentTime: currentTime,
+          startTime: startTime,
+          endTime: endTime
         }
       })
     }
@@ -2274,10 +2491,231 @@ function mainSchedBlocks (optIn) {
     this.updateData = updateData
   }
 
-  let svgBlocksQueueServer = new SvgBlocksQueueServer()
+  let SvgCurrentBlockToken = function () {
+
+  }
+  let SvgCurrentBlocks = function () {
+    let reserved = {}
+
+    function initData () {
+      reserved.gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + box.currentBlocks.x + ',' + box.currentBlocks.y + ')')
+
+      // reserved.gBlockBox.append('rect')
+      //   .attr('x', 0 + box.currentBlocks.marg)
+      //   .attr('y', 0 + box.currentBlocks.marg)
+      //   .attr('width', box.currentBlocks.w * 1 - box.currentBlocks.marg)
+      //   .attr('height', box.currentBlocks.h * 1 - 2 * box.currentBlocks.marg)
+      //   .attr('fill', colorTheme.dark.background)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.2)
+
+      reserved.currentTime = reserved.gBlockBox.append('text')
+        .attr('class', 'currentHour')
+        .attr('stroke', colorTheme.stroke)
+        .attr('fill', colorTheme.stroke)
+        .attr('x', box.currentBlocks.w * 0.5)
+        .attr('y', box.currentBlocks.h * 0.06)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', 14)
+        .attr('dy', 5)
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+      updateData()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let date = new Date(shared.data.server.timeOfNight.date_now)
+      reserved.currentTime
+        .text(date.getHours() + ' : ' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()))
+      let currentBlocks = reserved.gBlockBox
+        .selectAll('g.currentBlock')
+        .data(shared.data.server.blocks.run, function (d) {
+          return d.obId
+        })
+      let offsetY = box.currentBlocks.y + (box.currentBlocks.h * 0.2)
+      let enterCurrentBlocks = currentBlocks
+        .enter()
+        .append('g')
+        .attr('class', 'currentBlock')
+        .attr('transform', function (d, i) {
+          let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) / 100
+          height = height < 16 ? 16 : height
+          let odd = i % 2 === 0 ? -1 : 1
+
+          let translate = {
+            y: offsetY + height * 0.5,
+            x: box.currentBlocks.w * 0.5 + (box.currentBlocks.w * 0.1 * odd)
+          }
+          offsetY += height + 40
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+      enterCurrentBlocks.each(function (d) {
+        let width = (d.duration * (box.currentBlocks.w * 0.5)) / 3600
+        let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) / 100
+        height = height < 20 ? 20 : height
+        d3.select(this).append('rect')
+          .attr('x', -width * 0.5)
+          .attr('y', -height * 0.5)
+          .attr('width', function (d) {
+            return width
+          })
+          .attr('height', function (d) {
+            return height
+          })
+          .attr('fill', function (d, i) {
+            return setCol(d).background
+          })
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+          .on('mouseover', function (d) {
+            // mainOverSchedBlocks(d.scheduleId)
+          })
+          .on('mouseout', function (d) {
+            // mainOutSchedBlocks(d.scheduleId)
+          })
+          .on('click', function (d) {
+            // mainFocusOnSchedBlocks(d.scheduleId)
+          })
+        d3.select(this).append('text')
+          .text(function () {
+            return d.metaData.blockName
+          })
+          .attr('dy', 4)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'bold')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'middle')
+
+        d3.select(this).append('circle')
+          .attr('cx', width * 0.5 + 16)
+          .attr('cy', -18)
+          .attr('r', 8)
+          .attr('fill', '#aaaaaa')
+          // .attr('stroke', '#000000')
+          // .attr('stroke-width', 3)
+          // .attr('stroke-dasharray', [])
+          // .transition()
+          // .duration(5000)
+        d3.select(this).append('text')
+          .text('M')
+          .attr('x', width * 0.5 + 16)
+          .attr('y', -18)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('circle')
+          .attr('cx', width * 0.5 + 16)
+          .attr('cy', 0)
+          .attr('r', 8)
+          .attr('fill', '#aaaaaa')
+        d3.select(this).append('text')
+          .text('C')
+          .attr('x', width * 0.5 + 16)
+          .attr('y', 0)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('circle')
+          .attr('cx', width * 0.5 + 16)
+          .attr('cy', 18)
+          .attr('r', 8)
+          .attr('fill', '#aaaaaa')
+        d3.select(this).append('text')
+          .text('D')
+          .attr('x', width * 0.5 + 16)
+          .attr('y', 18)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        // FINISH
+        d3.select(this).append('circle')
+          .attr('cx', -(width * 0.5 + 16))
+          .attr('cy', -18)
+          .attr('r', 8)
+          .attr('fill', '#aaaaaa')
+        d3.select(this).append('text')
+          .text('M')
+          .attr('x', -(width * 0.5 + 16))
+          .attr('y', -18)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('circle')
+          .attr('cx', -(width * 0.5 + 16))
+          .attr('cy', 0)
+          .attr('r', 8)
+          .attr('fill', '#aaaaaa')
+        d3.select(this).append('text')
+          .text('C')
+          .attr('x', -(width * 0.5 + 16))
+          .attr('y', 0)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('circle')
+          .attr('cx', -(width * 0.5 + 16))
+          .attr('cy', 18)
+          .attr('r', 8)
+          .attr('fill', '#aaaaaa')
+        d3.select(this).append('text')
+          .text('D')
+          .attr('x', -(width * 0.5 + 16))
+          .attr('y', 18)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+      })
+
+      // let mergeSuccessBlocks = enterSuccessBlocks.merge(cancelBlocks)
+      // mergeSuccessBlocks.attr('transform', function (d, i) {
+      //   let translate = {
+      //     y: 0,
+      //     x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
+      //   }
+      //   return 'translate(' + translate.x + ',' + translate.y + ')'
+      // })
+    }
+    this.updateData = updateData
+  }
+
+  let svgBlocksQueueServerPast = new SvgBlocksQueueServerPast()
+  let svgBlocksQueueServerFutur = new SvgBlocksQueueServerFutur()
   let svgSuccessQueue = new SvgSuccessQueue()
   let svgFailQueue = new SvgFailQueue()
   let svgCancelQueue = new SvgCancelQueue()
+  let svgCurrentBlocks = new SvgCurrentBlocks()
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
