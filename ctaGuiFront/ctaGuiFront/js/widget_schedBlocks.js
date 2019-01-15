@@ -40,7 +40,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 4
+  let h0 = 5
   let w0 = 12
   let divKey = 'main'
 
@@ -227,42 +227,42 @@ function mainSchedBlocks (optIn) {
     function initBox () {
       box.blockQueueServerPast = {
         x: lenD.w[0] * 0.01,
-        y: lenD.h[0] * 0,
+        y: lenD.h[0] * 0.0,
         w: lenD.w[0] * 0.38,
-        h: lenD.h[0] * 0.45,
+        h: lenD.h[0] * 0.5,
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueServerFutur = {
         x: lenD.w[0] * 0.62,
         y: lenD.h[0] * 0,
         w: lenD.w[0] * 0.38,
-        h: lenD.h[0] * 0.45,
+        h: lenD.h[0] * 0.5,
         marg: lenD.w[0] * 0.01
       }
       box.currentBlocks = {
-        x: lenD.w[0] * 0.36,
+        x: lenD.w[0] * 0.38,
         y: lenD.h[0] * 0.0,
-        w: lenD.w[0] * 0.28,
+        w: lenD.w[0] * 0.25,
         h: lenD.h[0] * 1.0,
         marg: lenD.w[0] * 0.01
       }
       box.successQueue = {
         x: lenD.w[0] * 0.02,
-        y: lenD.h[0] * 0.44,
+        y: lenD.h[0] * 0.52,
         w: lenD.w[0] * 0.28,
         h: lenD.h[0] * 0.12,
         marg: lenD.w[0] * 0.01
       }
       box.failQueue = {
         x: lenD.w[0] * 0.02,
-        y: lenD.h[0] * 0.62,
+        y: lenD.h[0] * 0.7,
         w: lenD.w[0] * 0.28,
         h: lenD.h[0] * 0.12,
         marg: lenD.w[0] * 0.01
       }
       box.cancelQueue = {
         x: lenD.w[0] * 0.02,
-        y: lenD.h[0] * 0.8,
+        y: lenD.h[0] * 0.86,
         w: lenD.w[0] * 0.28,
         h: lenD.h[0] * 0.12,
         marg: lenD.w[0] * 0.01
@@ -364,7 +364,6 @@ function mainSchedBlocks (optIn) {
   //
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
-    console.log(dataIn);
     shared.data.server = dataIn.data
     sortBlocksByState()
 
@@ -1773,7 +1772,7 @@ function mainSchedBlocks (optIn) {
           filters: []
         },
         timeBars: {
-          enabled: true,
+          enabled: false,
           g: undefined,
           box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
         },
@@ -2528,8 +2527,8 @@ function mainSchedBlocks (optIn) {
 
     function updateData () {
       let date = new Date(shared.data.server.timeOfNight.date_now)
-      reserved.currentTime
-        .text(date.getHours() + ' : ' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()))
+      // reserved.currentTime
+      //   .text(date.getHours() + ' : ' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()))
 
       // let queueRun = deepCopy(shared.data.server.blocks.run)
       let queueRun = blockQueueServerFutur.getBlocksRows()
@@ -2541,6 +2540,31 @@ function mainSchedBlocks (optIn) {
         queueRun[i] = queueRun[i].data
       }
 
+      let telPerRow = 16
+      let defaultHeightView = box.currentBlocks.h * 0.95
+      let totHeight = 0
+      for (let i = 0; i < queueRun.length; i++) {
+        let nTel = queueRun[i].telIds.length
+        let addTel = telPerRow - (queueRun[i].telIds.length % telPerRow)
+
+        let nTelHeight = defaultHeightView * (nTel / 100)
+        let addTelHeight = defaultHeightView * (addTel / 100)
+
+        // defaultHeightView -= addTelHeight
+        queueRun[i].height = nTelHeight + addTelHeight
+        totHeight += nTelHeight + addTelHeight
+      }
+
+      defaultHeightView = box.currentBlocks.h * 1
+      let ratio = defaultHeightView < totHeight ? (defaultHeightView / totHeight) : 1
+      for (let i = 0; i < queueRun.length; i++) {
+        queueRun[i].height *= ratio
+      }
+      totHeight = defaultHeightView < totHeight ? defaultHeightView : totHeight
+      let offsetY = box.currentBlocks.h * 0.0 + (defaultHeightView - totHeight) * 0.5
+      let verticalRatio = 0.85
+      let horizontalRatio = 0.85
+
       let currentBlocks = reserved.gBlockBox
         .selectAll('g.currentBlock')
         .data(queueRun, function (d) {
@@ -2550,107 +2574,46 @@ function mainSchedBlocks (optIn) {
         .enter()
         .append('g')
         .attr('class', 'currentBlock')
-      let offsetY = box.currentBlocks.y + (box.currentBlocks.h * 0.16)
-      enterCurrentBlocks.each(function (d) {
-        let width = (d.duration * (box.currentBlocks.w * 0.5)) / 3600
-        let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) / 100
-        height = height < 14 ? 14 : height
-        let translate = {x: 0, y: 0}
-
-        d3.select(this).attr('transform', function (d, i) {
-          let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) * 0.008
-          height = height < 14 ? 14 : height
-          translate = {
-            y: offsetY + height * 0.5,
-            x: box.currentBlocks.w * 0.5 // + (box.currentBlocks.w * 0.1 * odd)
-          }
-          offsetY += height + 30
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
-
-        let lineGenerator = d3.line()
-          .x(function (d) { return d.x })
-          .y(function (d) { return d.y })
-          .curve(d3.curveBasis)
-        let dataPointFuturTop = [
-          // {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x + box.currentBlocks.w * 0.03, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y},
-          // {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y},
-          {x: translate.x * 0.99, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: translate.x * 0.79, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: width * 0.5 + 35, y: 0},
-          {x: 0, y: 0},
-          {x: -width * 0.5 - 35, y: 0},
-          {x: -translate.x * 0.7, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: -translate.x * 0.9, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5}
-        ]
-        // let dataPointFuturBottom = [
-        //   {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x + box.currentBlocks.w * 0.03, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h},
-        //   {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h},
-        //   {x: box.blockQueueServerFutur.x - translate.x - box.currentBlocks.x, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-        //   {x: width * 0.5 + 35, y: 0},
-        //   {x: width * 0.5 + 22, y: 0}
-        // ]
+      enterCurrentBlocks.each(function (d, i) {
+        let width = (box.currentBlocks.w * horizontalRatio)
         d3.select(this).append('path')
-          .data([dataPointFuturTop])
-          .attr('d', lineGenerator)
           .attr('fill', 'none')
-          .attr('stroke', colorTheme.dark.background)
-          .attr('stroke-width', d.h)
+          .attr('stroke', setCol(d).background)
+          .attr('stroke-width', 4)
           .style('pointer-events', 'none')
-        // d3.select(this).append('path')
-        //   .data([dataPointFuturBottom])
-        //   .attr('d', lineGenerator)
-        //   .attr('fill', 'none')
-        //   .attr('stroke', colorTheme.dark.stroke)
-        //   .style('pointer-events', 'none')
-
         d3.select(this).append('rect')
-          .attr('x', -width * 0.5)
-          .attr('y', -height * 0.5)
-          .attr('width', function (d) {
-            return width
-          })
-          .attr('height', function (d) {
-            return height
-          })
+          .attr('class', 'back')
           .attr('fill', function (d, i) {
-            return setCol(d).background
+            return colorTheme.dark.background
           })
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.2)
-          .on('mouseover', function (d) {
-            // mainOverSchedBlocks(d.scheduleId)
-          })
-          .on('mouseout', function (d) {
-            // mainOutSchedBlocks(d.scheduleId)
-          })
-          .on('click', function (d) {
-            // mainFocusOnSchedBlocks(d.scheduleId)
-          })
+          .attr('rx', 1)
+          .attr('ry', 1)
+          .style('fill-opacity', 1)
+          .attr('stroke', setCol(d).background)
+          .attr('stroke-width', 0.8)
+
         d3.select(this).append('text')
+          .attr('x', 0)
+          .attr('y', 12 + d.height * (1 - verticalRatio) * 0.5)
           .text(function () {
-            return d.metaData.blockName
+            return 'Block: ' + d.metaData.blockName
           })
-          .attr('dy', 4)
           .style('fill', colorTheme.blocks.run.text)
-          .style('font-weight', 'bold')
+          .style('font-weight', '')
           .style('font-size', '9px')
           .attr('text-anchor', 'middle')
 
         d3.select(this).append('circle')
-          .attr('cx', width * 0.5 + 16)
-          .attr('cy', -13.2)
+          .attr('cx', 60)
+          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
           .attr('r', 6.5)
-          .attr('fill', '#aaaaaa')
-          // .attr('stroke', '#000000')
-          // .attr('stroke-width', 3)
-          // .attr('stroke-dasharray', [])
-          // .transition()
-          // .duration(5000)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.45)
         d3.select(this).append('text')
           .text('M')
-          .attr('x', width * 0.5 + 16)
-          .attr('y', -13.2)
+          .attr('x', 60)
+          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
@@ -2660,14 +2623,16 @@ function mainSchedBlocks (optIn) {
           .style('user-select', 'none')
 
         d3.select(this).append('circle')
-          .attr('cx', width * 0.5 + 16)
-          .attr('cy', 0)
+          .attr('cx', 75)
+          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
           .attr('r', 6.5)
-          .attr('fill', '#aaaaaa')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.45)
         d3.select(this).append('text')
           .text('C')
-          .attr('x', width * 0.5 + 16)
-          .attr('y', 0)
+          .attr('x', 75)
+          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
@@ -2677,14 +2642,16 @@ function mainSchedBlocks (optIn) {
           .style('user-select', 'none')
 
         d3.select(this).append('circle')
-          .attr('cx', width * 0.5 + 16)
-          .attr('cy', 13.2)
+          .attr('cx', 90)
+          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
           .attr('r', 6.5)
-          .attr('fill', '#aaaaaa')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.45)
         d3.select(this).append('text')
           .text('D')
-          .attr('x', width * 0.5 + 16)
-          .attr('y', 13.2)
+          .attr('x', 90)
+          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
@@ -2695,48 +2662,16 @@ function mainSchedBlocks (optIn) {
 
         // FINISH
         d3.select(this).append('circle')
-          .attr('cx', -(width * 0.5 + 16))
-          .attr('cy', -13.2)
+          .attr('cx', -60)
+          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
           .attr('r', 6.5)
-          .attr('fill', '#aaaaaa')
-        d3.select(this).append('text')
-          .text('M')
-          .attr('x', -(width * 0.5 + 16))
-          .attr('y', -13.2)
-          .attr('dy', 3)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('circle')
-          .attr('cx', -(width * 0.5 + 16))
-          .attr('cy', 0)
-          .attr('r', 6.5)
-          .attr('fill', '#aaaaaa')
-        d3.select(this).append('text')
-          .text('C')
-          .attr('x', -(width * 0.5 + 16))
-          .attr('y', 0)
-          .attr('dy', 3)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('circle')
-          .attr('cx', -(width * 0.5 + 16))
-          .attr('cy', 13.2)
-          .attr('r', 6.5)
-          .attr('fill', '#aaaaaa')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.45)
         d3.select(this).append('text')
           .text('D')
-          .attr('x', -(width * 0.5 + 16))
-          .attr('y', 13.2)
+          .attr('x', -60)
+          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
@@ -2744,20 +2679,115 @@ function mainSchedBlocks (optIn) {
           .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
+
+        d3.select(this).append('circle')
+          .attr('cx', -75)
+          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
+          .attr('r', 6.5)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.45)
+        d3.select(this).append('text')
+          .text('C')
+          .attr('x', -75)
+          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('circle')
+          .attr('cx', -90)
+          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
+          .attr('r', 6.5)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.45)
+        d3.select(this).append('text')
+          .text('M')
+          .attr('x', -90)
+          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('rect')
+          .attr('x', -(width * 0.95 * 0.5))
+          .attr('y', 22 + d.height * (1 - verticalRatio) * 0.5)
+          .attr('width', function () {
+            return width * 0.95
+          })
+          .attr('height', function () {
+            return (d.height * verticalRatio) - 26
+          })
+          .attr('fill', function () {
+            return colorTheme.dark.background
+          })
+          .style('fill-opacity', 1)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
       })
 
       let mergeCurrentBlocks = currentBlocks.merge(enterCurrentBlocks)
-      offsetY = box.currentBlocks.y + (box.currentBlocks.h * 0.16)
-      mergeCurrentBlocks.attr('transform', function (d, i) {
-        let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) * 0.008
-        height = height < 14 ? 14 : height
+
+      mergeCurrentBlocks.each(function (d, i) {
+        let height = d.height
         let translate = {
-          y: offsetY + height * 0.5,
-          x: box.currentBlocks.w * 0.5 // + (box.currentBlocks.w * 0.1 * odd)
+          y: offsetY, // + height * 0.5,
+          x: box.currentBlocks.w * 0.5
         }
-        offsetY += height + 30
-        return 'translate(' + translate.x + ',' + translate.y + ')'
+        offsetY += height
+
+        d3.select(this).attr('transform', function (d, i) {
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+
+        d3.select(this).select('rect.back')
+          .attr('x', -translate.x * (horizontalRatio))
+          .attr('y', height * (1 - verticalRatio) * 0.5)
+          .attr('width', function (d) {
+            return translate.x * ((horizontalRatio) * 2)
+          })
+          .attr('height', function (d) {
+            return height * verticalRatio
+          })
+
+        let lineGenerator = d3.line()
+          .x(function (d) { return d.x })
+          .y(function (d) { return d.y })
+          .curve(d3.curveBasis)
+        let dataPointFuturTop = [
+          {x: translate.x * 1, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: (translate.x * horizontalRatio) * 1.05 + (translate.x * ((1 - horizontalRatio) * 0.45)) * ((1 / queueRun.length) * i), y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: (translate.x * horizontalRatio) * 1.05 + (translate.x * ((1 - horizontalRatio) * 0.45)) * ((1 / queueRun.length) * i), y: height * 0.5},
+          {x: translate.x * horizontalRatio, y: height * 0.5},
+          {x: 0, y: height * 0.5},
+          {x: -(translate.x * horizontalRatio), y: height * 0.5},
+          {x: -(translate.x * horizontalRatio) * 1.05 - (translate.x * ((1 - horizontalRatio) * 0.45)) * ((1 / queueRun.length) * i), y: height * 0.5},
+          {x: -(translate.x * horizontalRatio) * 1.05 - (translate.x * ((1 - horizontalRatio) * 0.45)) * ((1 / queueRun.length) * i), y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: -translate.x * 1, y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5}
+        ]
+        d3.select(this).select('path')
+          .data([dataPointFuturTop])
+          .attr('d', lineGenerator)
       })
+      // mergeCurrentBlocks.attr('transform', function (d, i) {
+      //   let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) * 0.008
+      //   height = height < 14 ? 14 : height
+      //   let translate = {
+      //     y: offsetY + height * 0.5,
+      //     x: box.currentBlocks.w * 0.5 // + (box.currentBlocks.w * 0.1 * odd)
+      //   }
+      //   offsetY += height + 30
+      //   return 'translate(' + translate.x + ',' + translate.y + ')'
+      // })
       currentBlocks
         .exit()
         .transition('inOut')
