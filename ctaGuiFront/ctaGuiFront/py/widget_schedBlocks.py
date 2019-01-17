@@ -28,6 +28,9 @@ class schedBlocks():
         blocks[keyV[0]] = []
 
     timeOfNight = {}
+    telHealth = []
+    for idNow in telIds:
+        telHealth.append({"id": idNow, "val": 0})
 
     # -----------------------------------------------------------------------------------------------------------
     #
@@ -93,14 +96,28 @@ class schedBlocks():
     def getData(self):
         schedBlocks.timeOfNight = getTimeOfNight(self)
         self.getBlocks()
+        self.getTelHealth()
 
         data = {
             "timeOfNight": schedBlocks.timeOfNight,
+            "telHealth": schedBlocks.telHealth,
             "telIds": telIds,
             "blocks": schedBlocks.blocks
         }
 
         return data
+
+    def getTelHealth(self):
+        self.redis.pipe.reset()
+        for idNow in telIds:
+            self.redis.pipe.hGet(name="telHealth;"+str(idNow), key="health")
+        redData = self.redis.pipe.execute()
+
+        for i in range(len(redData)):
+            idNow = telIds[i]
+            schedBlocks.telHealth[i]["val"] = redData[i]
+
+        return
 
     # -----------------------------------------------------------------------------------------------------------
     #

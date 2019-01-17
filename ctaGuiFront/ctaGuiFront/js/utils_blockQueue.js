@@ -627,6 +627,7 @@ window.BlockQueue = function (optIn) {
     com.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.axis.attr.path.stroke)
     com.axis.g.selectAll('g.tick').selectAll('text')
       .attr('stroke', com.axis.attr.text.stroke)
+      .attr('stroke-width', 0.5)
       .attr('fill', com.axis.attr.text.fill)
       .style('font-size', minTxtSize + 'px')
   }

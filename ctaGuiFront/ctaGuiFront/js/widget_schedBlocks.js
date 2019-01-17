@@ -31,6 +31,7 @@ var mainScriptTag = 'schedBlocks'
 /* global bckPattern */
 /* global ScrollGrid */
 /* global colsBlk */
+/* global telHealthCol */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollGrid.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOld.js' })
@@ -166,6 +167,10 @@ function mainSchedBlocks (optIn) {
       else if (b.exeState.state === 'fail') shared.data.blocks.fail.push(b)
       else if (b.exeState.state === 'cancel') shared.data.blocks.cancel.push(b)
     }
+  }
+  function getTelHealthById (id) {
+    let index = Number(id.split('_')[1])
+    return shared.data.server.telHealth[index]
   }
   function setCol (optIn) {
     if (optIn.endTime < Number(shared.data.server.timeOfNight.now)) return colorTheme.blocks.shutdown
@@ -2490,9 +2495,6 @@ function mainSchedBlocks (optIn) {
     this.updateData = updateData
   }
 
-  let SvgCurrentBlockToken = function () {
-
-  }
   let SvgCurrentBlocks = function () {
     let reserved = {}
 
@@ -2526,11 +2528,14 @@ function mainSchedBlocks (optIn) {
     this.initData = initData
 
     function updateData () {
-      let date = new Date(shared.data.server.timeOfNight.date_now)
-      // reserved.currentTime
-      //   .text(date.getHours() + ' : ' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()))
-
-      // let queueRun = deepCopy(shared.data.server.blocks.run)
+      let defaultHeightView = box.currentBlocks.h * 0.93
+      let telsPerRow = 8
+      let sizeTelsRow = 0.055
+      let sizeHeader = 0.105
+      let offsetRunningBlocks = 0.06
+      let widthBlocks = box.currentBlocks.w * 0.8
+      let offsetX = (box.currentBlocks.w - widthBlocks) * 0.5
+      let ratio = 1
       let queueRun = blockQueueServerFutur.getBlocksRows()
       queueRun = queueRun.filter(b => b.data.exeState.state === 'run')
       queueRun.sort(function (a, b) { return a.y > b.y })
@@ -2539,31 +2544,124 @@ function mainSchedBlocks (optIn) {
         queueRun[i].data.h = queueRun[i].h
         queueRun[i] = queueRun[i].data
       }
-
-      let telPerRow = 16
-      let defaultHeightView = box.currentBlocks.h * 0.95
-      let totHeight = 0
+      let totHeight = offsetRunningBlocks * (queueRun.length - 1)
       for (let i = 0; i < queueRun.length; i++) {
         let nTel = queueRun[i].telIds.length
-        let addTel = telPerRow - (queueRun[i].telIds.length % telPerRow)
+        // let addTel = telPerRow - (queueRun[i].telIds.length % telPerRow)
+        let nLine = (nTel % telsPerRow === 0) ?
+          (nTel / telsPerRow) :
+          (1 + parseInt(nTel / telsPerRow))
 
-        let nTelHeight = defaultHeightView * (nTel / 100)
-        let addTelHeight = defaultHeightView * (addTel / 100)
-
-        // defaultHeightView -= addTelHeight
-        queueRun[i].height = nTelHeight + addTelHeight
-        totHeight += nTelHeight + addTelHeight
+        queueRun[i].height = sizeTelsRow * nLine + sizeHeader
+        totHeight += queueRun[i].height
+        // let nTelHeight = defaultHeightView * (nTel / 100)
+        // let addTelHeight = defaultHeightView * (addTel / 100)
+        //
+        // // defaultHeightView -= addTelHeight
+        // queueRun[i].height = nTelHeight + addTelHeight
+        // totHeight += nTelHeight + addTelHeight
       }
-
-      defaultHeightView = box.currentBlocks.h * 1
-      let ratio = defaultHeightView < totHeight ? (defaultHeightView / totHeight) : 1
+      if (totHeight > 1) {
+        ratio = 1 / totHeight
+        totHeight = 1
+      }
       for (let i = 0; i < queueRun.length; i++) {
         queueRun[i].height *= ratio
       }
-      totHeight = defaultHeightView < totHeight ? defaultHeightView : totHeight
-      let offsetY = box.currentBlocks.h * 0.0 + (defaultHeightView - totHeight) * 0.5
-      let verticalRatio = 0.85
-      let horizontalRatio = 0.85
+      let offsetY = (defaultHeightView * 0.015) + (defaultHeightView * (1 - totHeight)) * 0.5
+
+      function drawTels (g) {
+        let nTel = g.data()[0].telIds.length
+        let nLine = (nTel % telsPerRow === 0) ? (nTel / telsPerRow) : (1 + parseInt(nTel / telsPerRow))
+        nLine = nLine < 1 ? 1 : nLine
+        let telsBox = {
+          x: 0,
+          y: (ratio * defaultHeightView * sizeHeader),
+          w: widthBlocks,
+          h: (ratio * defaultHeightView * nLine * sizeTelsRow)
+        }
+        let offset = {
+          x: telsBox.w / telsPerRow,
+          y: telsBox.h / nLine
+        }
+
+        let tels = []
+        for (let i = 0; i < g.data()[0].telIds.length; i++) { tels.push(getTelHealthById(g.data()[0].telIds[i])) }
+        let currentTels = g
+          .selectAll('g.currentTel')
+          .data(tels, function (d) {
+            return d.id
+          })
+        let enterCurrentTels = currentTels
+          .enter()
+          .append('g')
+          .attr('class', 'currentTel')
+          .attr('transform', function (d, i) {
+            return 'translate(' + (offset.x * (0.5 + (i % telsPerRow))) + ',' + (offset.y * (0.5 + parseInt(i / telsPerRow))) + ')'
+          })
+        enterCurrentTels.each(function (d, i) {
+          d3.select(this).append('rect')
+            .attr('x', function (d) {
+              return (-offset.x * 0.5) + (4 - (3 * (d.val / 100))) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+            })
+            .attr('y', function (d) {
+              return (-offset.y * 0.5) + (4 - (3 * (d.val / 100))) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+            })
+            .attr('width', function (d) {
+              return offset.x - (4 - (3 * (d.val / 100))) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+            })
+            .attr('height', function (d) {
+              return offset.y - (4 - (3 * (d.val / 100))) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+            })
+            .attr('fill', function (d) {
+              return telHealthCol(d.val)
+            })
+            .attr('fill-opacity', 0.6)
+            .attr('stroke-width', function (d) {
+              return 4 - (3 * (d.val / 100))
+            })
+            .attr('stroke', function (d) {
+              return telHealthCol(d.val)
+            })
+          d3.select(this).append('text')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('dy', 3)
+            .text(function (d) {
+              return d.id
+            })
+            .style('fill', colorTheme.blocks.run.text)
+            .style('font-weight', '')
+            .style('font-size', function (d) {
+              return 7.6 - (2 * (d.val / 100))
+            })
+            .attr('text-anchor', 'middle')
+        })
+
+        // let mergeCurrentTels = currentTels.merge(enterCurrentTels)
+
+        currentTels
+          .exit()
+          .transition('inOut')
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+          .remove()
+      }
+      function initConfig (g) {
+
+      }
+      function initTake (g) {
+
+      }
+      function initFinish (g) {
+        
+      }
+
+      // let date = new Date(shared.data.server.timeOfNight.date_now)
+      // reserved.currentTime
+      //   .text(date.getHours() + ' : ' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()))
+
+
 
       let currentBlocks = reserved.gBlockBox
         .selectAll('g.currentBlock')
@@ -2575,208 +2673,345 @@ function mainSchedBlocks (optIn) {
         .append('g')
         .attr('class', 'currentBlock')
       enterCurrentBlocks.each(function (d, i) {
-        let width = (box.currentBlocks.w * horizontalRatio)
+        let nTel = queueRun[i].telIds.length
+        let nLine = (nTel % telsPerRow === 0) ?
+          (nTel / telsPerRow) :
+          (1 + parseInt(nTel / telsPerRow))
+        let headerBox = {
+          x: 0,
+          y: 0,
+          w: widthBlocks,
+          h: ratio * defaultHeightView * sizeHeader
+        }
+        let telsBox = {
+          x: 0,
+          y: (ratio * defaultHeightView * sizeHeader),
+          w: widthBlocks,
+          h: (ratio * nLine * sizeTelsRow * defaultHeightView)
+        }
+
         d3.select(this).append('path')
           .attr('fill', 'none')
           .attr('stroke', setCol(d).background)
           .attr('stroke-width', 4)
           .style('pointer-events', 'none')
         d3.select(this).append('rect')
-          .attr('class', 'back')
+          .attr('class', 'headerLeft')
+          .attr('x', headerBox.x)
+          .attr('y', headerBox.y)
+          .attr('width', function (d) {
+            return headerBox.w * 0.4
+          })
+          .attr('height', function (d) {
+            return headerBox.h - 0.4 * 2
+          })
+          .attr('fill', function (d, i) {
+            return setCol(d).background
+          })
+          .style('fill-opacity', 1)
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 0.4)
+        d3.select(this).append('rect')
+          .attr('class', 'headerRight')
+          .attr('x', headerBox.x + headerBox.w * 0.4)
+          .attr('y', headerBox.y)
+          .attr('width', function (d) {
+            return headerBox.w * 0.6
+          })
+          .attr('height', function (d) {
+            return headerBox.h - 0.4 * 2
+          })
           .attr('fill', function (d, i) {
             return colorTheme.dark.background
           })
-          .attr('rx', 1)
-          .attr('ry', 1)
           .style('fill-opacity', 1)
-          .attr('stroke', setCol(d).background)
-          .attr('stroke-width', 0.8)
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 0.4)
 
         d3.select(this).append('text')
-          .attr('x', 0)
-          .attr('y', 12 + d.height * (1 - verticalRatio) * 0.5)
+          .attr('x', headerBox.w * 0.05)
+          .attr('y', headerBox.h * 0.5)
+          .attr('dy', 2)
           .text(function () {
             return 'Block: ' + d.metaData.blockName
           })
           .style('fill', colorTheme.blocks.run.text)
-          .style('font-weight', '')
-          .style('font-size', '9px')
-          .attr('text-anchor', 'middle')
+          .style('font-weight', 'bold')
+          .style('font-size', '12px')
+          .attr('text-anchor', 'start')
 
-        d3.select(this).append('circle')
-          .attr('cx', 60)
-          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('r', 6.5)
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.45)
+        // CONFIG
         d3.select(this).append('text')
-          .text('M')
-          .attr('x', 60)
-          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('dy', 3)
+          .text('CONFIG:')
+          .attr('x', (headerBox.w * 0.42) + 2)
+          .attr('y', headerBox.h * 0.5)
+          .attr('dy', 2)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
           .style('font-size', '8px')
-          .attr('text-anchor', 'middle')
+          .attr('text-anchor', 'start')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
 
-        d3.select(this).append('circle')
-          .attr('cx', 75)
-          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('r', 6.5)
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.45)
+        d3.select(this).append('rect')
+          .attr('x', (headerBox.w * 0.72))
+          .attr('y', headerBox.h * 0.06)
+          .attr('width', headerBox.w * 0.05)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 2)
+          .attr('stroke-dasharray', [2, 2])
+          .attr('stroke-dashoffset', 0)
+          .transition()
+          .duration(5000)
+          .ease(d3.easeLinear)
+          .attr('stroke-dashoffset', 10)
         d3.select(this).append('text')
-          .text('C')
-          .attr('x', 75)
-          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('dy', 3)
+          .text('Mirror')
+          .attr('x', (headerBox.w * 0.6) + 0)
+          .attr('y', headerBox.h * 0.16)
+          .attr('dy', 4)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'middle')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
 
-        d3.select(this).append('circle')
-          .attr('cx', 90)
-          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('r', 6.5)
+        d3.select(this).append('rect')
+          .attr('x', (headerBox.w * 0.72))
+          .attr('y', headerBox.h * 0.4)
+          .attr('width', headerBox.w * 0.05)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 6)
+          .attr('ry', 6)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 2)
+          .attr('stroke-dasharray', [2, 2])
+          .attr('stroke-dashoffset', 0)
+          .transition()
+          .duration(5000)
+          .ease(d3.easeLinear)
+          .attr('stroke-dashoffset', 10)
+        d3.select(this).append('text')
+          .text('Camera')
+          .attr('x', (headerBox.w * 0.6) + 0)
+          .attr('y', headerBox.h * 0.5)
+          .attr('dy', 2.5)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('rect')
+          .attr('x', (headerBox.w * 0.72))
+          .attr('y', headerBox.h * 0.74)
+          .attr('width', headerBox.w * 0.05)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 6)
+          .attr('ry', 6)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 2)
+          .attr('stroke-dasharray', [2, 2])
+          .attr('stroke-dashoffset', 0)
+          .transition()
+          .duration(5000)
+          .ease(d3.easeLinear)
+          .attr('stroke-dashoffset', 10)
+        d3.select(this).append('text')
+          .text('DAQ')
+          .attr('x', (headerBox.w * 0.6) + 0)
+          .attr('y', headerBox.h * 0.84)
+          .attr('dy', 2.5)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        // Take Data
+        d3.select(this).append('rect')
+          .attr('x', (headerBox.w * 0.86))
+          .attr('y', headerBox.h * 0.0)
+          .attr('width', headerBox.w * 0.1)
+          .attr('height', headerBox.h * 0.97)
           .attr('fill', colorTheme.darker.background)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.45)
         d3.select(this).append('text')
-          .text('D')
-          .attr('x', 90)
-          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
+          .text('Data')
+          .attr('x', (headerBox.w * 0.91))
+          .attr('y', headerBox.h * 0.45)
           .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '8px')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        d3.select(this).append('text')
+          .text('')
+          .attr('x', (headerBox.w * 0.91))
+          .attr('y', headerBox.h * 0.65)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '6px')
           .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
 
         // FINISH
-        d3.select(this).append('circle')
-          .attr('cx', -60)
-          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('r', 6.5)
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.45)
-        d3.select(this).append('text')
-          .text('D')
-          .attr('x', -60)
-          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('dy', 3)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('circle')
-          .attr('cx', -75)
-          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('r', 6.5)
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.45)
-        d3.select(this).append('text')
-          .text('C')
-          .attr('x', -75)
-          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('dy', 3)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('circle')
-          .attr('cx', -90)
-          .attr('cy', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('r', 6.5)
+        d3.select(this).append('rect')
+          .attr('x', (headerBox.w * 0.96))
+          .attr('y', headerBox.h * 0.0)
+          .attr('width', headerBox.w * 0.04)
+          .attr('height', headerBox.h * 0.3)
           .attr('fill', colorTheme.darker.background)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.45)
         d3.select(this).append('text')
           .text('M')
-          .attr('x', -90)
-          .attr('y', 10 + d.height * (1 - verticalRatio) * 0.5)
-          .attr('dy', 3)
+          .attr('x', (headerBox.w * 0.96) + 2)
+          .attr('y', headerBox.h * 0.0)
+          .attr('dy', 6)
           .style('fill', colorTheme.blocks.run.text)
           // .style('font-weight', 'bold')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'middle')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
 
         d3.select(this).append('rect')
-          .attr('x', -(width * 0.95 * 0.5))
-          .attr('y', 22 + d.height * (1 - verticalRatio) * 0.5)
+          .attr('x', (headerBox.w * 0.96))
+          .attr('y', headerBox.h * 0.333)
+          .attr('width', headerBox.w * 0.04)
+          .attr('height', headerBox.h * 0.3)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.45)
+        d3.select(this).append('text')
+          .text('C')
+          .attr('x', (headerBox.w * 0.96) + 2)
+          .attr('y', headerBox.h * 0.333)
+          .attr('dy', 6)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('rect')
+          .attr('x', (headerBox.w * 0.96))
+          .attr('y', headerBox.h * 0.666)
+          .attr('width', headerBox.w * 0.04)
+          .attr('height', headerBox.h * 0.3)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.45)
+        d3.select(this).append('text')
+          .text('D')
+          .attr('x', (headerBox.w * 0.96) + 2)
+          .attr('y', headerBox.h * 0.666)
+          .attr('dy', 6)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        d3.select(this).append('g')
+          .attr('class', 'telsBox')
+          .attr('transform', function () {
+            return 'translate(' + (telsBox.x) + ',' + (telsBox.y) + ')'
+          })
+          .attr('width', telsBox.w)
+          .attr('height', telsBox.h)
+          .append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
           .attr('width', function () {
-            return width * 0.95
+            return telsBox.w
           })
           .attr('height', function () {
-            return (d.height * verticalRatio) - 26
+            return telsBox.h
           })
-          .attr('fill', function () {
-            return colorTheme.dark.background
-          })
+          .attr('fill', colorTheme.medium.background)
           .style('fill-opacity', 1)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.2)
+          .attr('stroke', function (d, i) {
+            return 'none' // setCol(d).background
+          })
+          .attr('stroke-width', 0.8)
       })
 
       let mergeCurrentBlocks = currentBlocks.merge(enterCurrentBlocks)
 
       mergeCurrentBlocks.each(function (d, i) {
-        let height = d.height
+        let headerBox = {
+          x: 0,
+          y: 0,
+          w: widthBlocks,
+          h: ratio * defaultHeightView * sizeHeader
+        }
+        let height = d.height * defaultHeightView
+        offsetY += (i === 0 ? 0 : offsetRunningBlocks * defaultHeightView)
         let translate = {
-          y: offsetY, // + height * 0.5,
-          x: box.currentBlocks.w * 0.5
+          y: offsetY,
+          x: offsetX
         }
         offsetY += height
 
         d3.select(this).attr('transform', function (d, i) {
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
-
-        d3.select(this).select('rect.back')
-          .attr('x', -translate.x * (horizontalRatio))
-          .attr('y', height * (1 - verticalRatio) * 0.5)
+        d3.select(this).select('rect.headerLeft')
+          .attr('x', headerBox.x)
+          .attr('y', headerBox.y)
           .attr('width', function (d) {
-            return translate.x * ((horizontalRatio) * 2)
+            return headerBox.w * 0.4
           })
           .attr('height', function (d) {
-            return height * verticalRatio
+            return headerBox.h
           })
-
+        d3.select(this).select('rect.headerRight')
+          .attr('x', headerBox.x + headerBox.w * 0.4)
+          .attr('y', headerBox.y)
+          .attr('width', function (d) {
+            return headerBox.w * 0.6
+          })
+          .attr('height', function (d) {
+            return headerBox.h
+          })
         let lineGenerator = d3.line()
           .x(function (d) { return d.x })
           .y(function (d) { return d.y })
           .curve(d3.curveBasis)
         let dataPointFuturTop = [
-          {x: translate.x * 1, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: (translate.x * horizontalRatio) * 1.05 + (translate.x * ((1 - horizontalRatio) * 0.45)) * ((1 / queueRun.length) * i), y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: (translate.x * horizontalRatio) * 1.05 + (translate.x * ((1 - horizontalRatio) * 0.45)) * ((1 / queueRun.length) * i), y: height * 0.5},
-          {x: translate.x * horizontalRatio, y: height * 0.5},
+          {x: widthBlocks + offsetX, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: (widthBlocks) + (offsetX) * ((1 / queueRun.length) * i), y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: (widthBlocks) + (offsetX) * ((1 / queueRun.length) * i), y: height * 0.5},
+          {x: (widthBlocks), y: height * 0.5},
+
+          {x: widthBlocks * 0.5, y: height * 0.5},
+
           {x: 0, y: height * 0.5},
-          {x: -(translate.x * horizontalRatio), y: height * 0.5},
-          {x: -(translate.x * horizontalRatio) * 1.05 - (translate.x * ((1 - horizontalRatio) * 0.45)) * ((1 / queueRun.length) * i), y: height * 0.5},
-          {x: -(translate.x * horizontalRatio) * 1.05 - (translate.x * ((1 - horizontalRatio) * 0.45)) * ((1 / queueRun.length) * i), y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: -translate.x * 1, y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5}
+          {x: 0 - (offsetX * ((1 / queueRun.length) * i)), y: height * 0.5},
+          {x: 0 - (offsetX * ((1 / queueRun.length) * i)), y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: -offsetX, y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5}
         ]
         d3.select(this).select('path')
           .data([dataPointFuturTop])
           .attr('d', lineGenerator)
+
+        drawTels(d3.select(this).select('g.telsBox'))
       })
       // mergeCurrentBlocks.attr('transform', function (d, i) {
       //   let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) * 0.008
