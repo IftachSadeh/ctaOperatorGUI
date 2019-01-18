@@ -155,25 +155,41 @@ function mainSchedBlocks (optIn) {
   }
   this.syncStateGet = syncStateGet
 
-  function sortBlocksByState () {
-    if (!shared.data.server.blocks) return
-    shared.data.blocks.success = []
-    shared.data.blocks.fail = []
-    shared.data.blocks.cancel = []
+  function sortBlocksByState (array) {
+    if (!array) return
+    let blocks = {}
+    blocks.success = []
+    blocks.fail = []
+    blocks.cancel = []
 
-    for (var i = 0; i < shared.data.server.blocks.done.length; i++) {
-      let b = shared.data.server.blocks.done[i]
-      if (b.exeState.state === 'done') shared.data.blocks.success.push(b)
-      else if (b.exeState.state === 'fail') shared.data.blocks.fail.push(b)
-      else if (b.exeState.state === 'cancel') shared.data.blocks.cancel.push(b)
+    for (var i = 0; i < array.length; i++) {
+      let b = array[i]
+      if (b.exeState.state === 'done') blocks.success.push(b)
+      else if (b.exeState.state === 'fail') blocks.fail.push(b)
+      else if (b.exeState.state === 'cancel') blocks.cancel.push(b)
     }
+    return blocks
   }
   function getTelHealthById (id) {
     let index = Number(id.split('_')[1])
     return shared.data.server.telHealth[index]
   }
+  function groupBlocksBySchedule (blocks) {
+    let res = {}
+    for (var key in blocks) {
+      for (var i = 0; i < blocks[key].length; i++) {
+        let ns = blocks[key][i].metaData.nSched
+        if (ns in res) res[ns].push(blocks[key][i])
+        else res[ns] = [blocks[key][i]]
+      }
+    }
+    let ret = []
+    Object.keys(res).map(function (key, index) {
+      ret.push({schedName: key, scheduleId: res[key][0].sbId, blocks: res[key]})
+    })
+    return ret
+  }
   function setCol (optIn) {
-    if (optIn.endTime < Number(shared.data.server.timeOfNight.now)) return colorTheme.blocks.shutdown
     let state = hasVar(optIn.state)
       ? optIn.state
       : optIn.exeState.state
@@ -242,6 +258,13 @@ function mainSchedBlocks (optIn) {
         y: lenD.h[0] * 0,
         w: lenD.w[0] * 0.38,
         h: lenD.h[0] * 0.5,
+        marg: lenD.w[0] * 0.01
+      }
+      box.stateScheduleMatrix = {
+        x: lenD.w[0] * 0.015,
+        y: lenD.h[0] * 0.52,
+        w: lenD.w[0] * 0.35,
+        h: lenD.h[0] * 0.45,
         marg: lenD.w[0] * 0.01
       }
       box.currentBlocks = {
@@ -352,14 +375,15 @@ function mainSchedBlocks (optIn) {
     initBox()
 
     shared.data.server = dataIn.data
-    sortBlocksByState()
+    // sortBlocksByState()
 
     svgCurrentBlocks.initData()
     svgBlocksQueueServerPast.initData()
     svgBlocksQueueServerFutur.initData()
-    svgSuccessQueue.initData()
-    svgFailQueue.initData()
-    svgCancelQueue.initData()
+    svgStateScheduleMatrix.initData()
+    // svgSuccessQueue.initData()
+    // svgFailQueue.initData()
+    // svgCancelQueue.initData()
 
     svgMain.initData(dataIn.data)
   }
@@ -370,14 +394,15 @@ function mainSchedBlocks (optIn) {
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
     shared.data.server = dataIn.data
-    sortBlocksByState()
+    // sortBlocksByState()
 
     svgBlocksQueueServerPast.updateData()
     svgBlocksQueueServerFutur.updateData()
     svgCurrentBlocks.updateData()
-    svgCancelQueue.updateData()
-    svgSuccessQueue.updateData()
-    svgFailQueue.updateData()
+    svgStateScheduleMatrix.updateData()
+    // svgCancelQueue.updateData()
+    // svgSuccessQueue.updateData()
+    // svgFailQueue.updateData()
 
     svgMain.updateData(dataIn.data)
   }
@@ -1666,7 +1691,7 @@ function mainSchedBlocks (optIn) {
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
       gBlockBox.append('text')
-        .text('SERVER SCHEDULE')
+        .text('Server schedule')
         .style('fill', colorTheme.medium.text)
         .style('font-weight', 'bold')
         .style('font-size', '12px')
@@ -2494,7 +2519,346 @@ function mainSchedBlocks (optIn) {
     }
     this.updateData = updateData
   }
+  let SvgStateScheduleMatrix = function () {
+    let reserved = {}
+    function initData () {
+      reserved.gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + box.stateScheduleMatrix.x + ',' + box.stateScheduleMatrix.y + ')')
+      reserved.gBlockBox.append('rect')
+        .attr('x', 0 + box.stateScheduleMatrix.marg)
+        .attr('y', 0 + box.stateScheduleMatrix.h * 0.1)
+        .attr('width', box.stateScheduleMatrix.w * 1 - box.stateScheduleMatrix.marg)
+        .attr('height', box.stateScheduleMatrix.h * 0.9 * 0.33)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      reserved.gBlockBox.append('text')
+        .text('Success')
+        .style('fill', colorTheme.dark.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '10px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.166) + ') rotate(270)')
+      reserved.gBlockBox.append('rect')
+        .attr('x', 0 + box.stateScheduleMatrix.marg)
+        .attr('y', 0 + box.stateScheduleMatrix.h * 0.1 + (box.stateScheduleMatrix.h * 0.9 * 0.33))
+        .attr('width', box.stateScheduleMatrix.w * 1 - box.stateScheduleMatrix.marg)
+        .attr('height', box.stateScheduleMatrix.h * 0.9 * 0.33)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      reserved.gBlockBox.append('text')
+        .text('Fail')
+        .style('fill', colorTheme.dark.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '10px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.5) + ') rotate(270)')
+      reserved.gBlockBox.append('rect')
+        .attr('x', 0 + box.stateScheduleMatrix.marg)
+        .attr('y', 0 + box.stateScheduleMatrix.h * 0.1 + (box.stateScheduleMatrix.h * 0.9 * 0.33) * 2)
+        .attr('width', box.stateScheduleMatrix.w * 1 - box.stateScheduleMatrix.marg)
+        .attr('height', box.stateScheduleMatrix.h * 0.9 * 0.33)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      reserved.gBlockBox.append('text')
+        .text('Cancel')
+        .style('fill', colorTheme.dark.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '10px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.84) + ') rotate(270)')
 
+      reserved.scrollBoxG = reserved.gBlockBox.append('g')
+      reserved.scrollBox = new ScrollBox()
+      reserved.scrollBox.init({
+        tag: 'successScrollBox',
+        gBox: reserved.scrollBoxG,
+        boxData: {
+          x: 0 + box.stateScheduleMatrix.marg,
+          y: 0,
+          w: box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg,
+          h: box.stateScheduleMatrix.h,
+          marg: 0
+        },
+        useRelativeCoords: true,
+        locker: new Locker(),
+        lockerV: [widgetId + 'updateData'],
+        lockerZoom: {
+          all: 'successScrollBox' + 'zoom',
+          during: 'successScrollBox' + 'zoomDuring',
+          end: 'successScrollBox' + 'zoomEnd'
+        },
+        runLoop: new RunLoop({tag: 'successScrollBox'}),
+        canScroll: true,
+        scrollVertical: false,
+        scrollHorizontal: true,
+        scrollHeight: box.stateScheduleMatrix.h - box.stateScheduleMatrix.marg,
+        scrollWidth: box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg,
+        background: 'transparent',
+        scrollRecH: {h: 6},
+        scrollRecV: {w: 6}
+      })
+      reserved.scrollG = reserved.scrollBox.get('innerG')
+
+      updateData()
+
+      let scheds = groupBlocksBySchedule(shared.data.server.blocks)
+      let dimCell = {
+        w: box.stateScheduleMatrix.h * 0.9 * 0.3333, // (box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg) / scheds.length,
+        h: box.stateScheduleMatrix.h * 0.9 * 0.3333
+      }
+      reserved.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: scheds.length * dimCell.w})
+    }
+    this.initData = initData
+
+    function updateData () {
+      let scheds = groupBlocksBySchedule(shared.data.server.blocks)
+      let blocksTemplate = {
+        '1': [{x: 0.5, y: 0.5}],
+        '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
+        '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
+        '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+        '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
+        '6': [],
+        '7': [],
+        '8': [],
+        '9': []
+      }
+      let dimCell = {
+        w: box.stateScheduleMatrix.h * 0.9 * 0.3333, // (box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg) / scheds.length,
+        h: box.stateScheduleMatrix.h * 0.9 * 0.3333
+      }
+      let dimBlock = {
+        w: dimCell.w * 0.3333,
+        h: dimCell.h * 0.3333
+      }
+      let allScheds = reserved.scrollG
+        .selectAll('g.allScheds')
+        .data(scheds, function (d) {
+          return d.scheduleId
+        })
+      let enterAllScheds = allScheds
+        .enter()
+        .append('g')
+        .attr('class', 'allScheds')
+        .attr('transform', function (d, i) {
+          let translate = {
+            y: 0,
+            x: dimCell.w * i
+          }
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+      enterAllScheds.each(function (d, i) {
+        d3.select(this).append('rect')
+          .attr('x', 0)
+          .attr('y', box.stateScheduleMatrix.h * 0.1)
+          .attr('width', dimCell.w)
+          .attr('height', box.stateScheduleMatrix.h * 0.9)
+          .attr('fill', 'transparent')
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+          .attr('stroke-dasharray', [4, 4])
+        d3.select(this).append('text')
+          .attr('class', 'schedId')
+          .text(function (d) {
+            return 'Sched:' + d.schedName
+          })
+          .attr('x', dimCell.w * 0.5)
+          .attr('y', box.stateScheduleMatrix.h * 0.0)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('font-size', '8px')
+          .attr('dy', 7 + 9)// + ((i + 1) % 2) * 9)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.darker.text)
+          .attr('stroke', 'none')
+        d3.select(this).append('g')
+          .attr('class', 'successBlocks')
+          .attr('transform', function (d, i) {
+            let translate = {
+              y: box.stateScheduleMatrix.h * 0.1,
+              x: 0
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+        d3.select(this).append('g')
+          .attr('class', 'failBlocks')
+          .attr('transform', function (d, i) {
+            let translate = {
+              y: box.stateScheduleMatrix.h * 0.1 + dimCell.h,
+              x: 0
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+        d3.select(this).append('g')
+          .attr('class', 'cancelBlocks')
+          .attr('transform', function (d, i) {
+            let translate = {
+              y: box.stateScheduleMatrix.h * 0.1 + dimCell.h * 2,
+              x: 0
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+      })
+
+      let mergeAllScheds = enterAllScheds.merge(allScheds)
+      mergeAllScheds.each(function (d) {
+        let blocks = sortBlocksByState(d.blocks)
+        let successBlocks = d3.select(this).select('g.successBlocks')
+          .selectAll('g.successBlock')
+          .data(blocks.success, function (d) {
+            return d.obId
+          })
+        let enterSuccessBlocks = successBlocks
+          .enter()
+          .append('g')
+          .attr('class', 'successBlock')
+          .attr('transform', function (d, i) {
+            let translate = {
+              y: dimCell.h * 0.5,
+              x: dimCell.w * 0.5
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+        enterSuccessBlocks.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', dimBlock.w)
+          .attr('height', dimBlock.h)
+          .attr('fill', function (d) { return setCol(d).background })
+          .attr('stroke', function (d) { return setCol(d).stroke })
+          .attr('stroke-width', 0.2)
+        enterSuccessBlocks.append('text')
+          .text(function (d) {
+            return d.metaData.blockName
+          })
+          .attr('x', dimBlock.w * 0.5)
+          .attr('y', dimBlock.h * 0.5)
+          .attr('text-anchor', 'middle')
+          .style('font-weight', 'bold')
+          .style('font-size', '6.5px')
+          .style('pointer-events', 'none')
+          .attr('fill', function (d) { return setCol(d).text })
+          .attr('stroke', 'none')
+          .attr('dy', 3)
+        let mergeSuccessBlocks = enterSuccessBlocks.merge(successBlocks)
+        mergeSuccessBlocks
+          .transition()
+          .duration(800)
+          .attr('transform', function (d, i) {
+            let temp = blocksTemplate['' + blocks.success.length][i]
+            let translate = {
+              y: (dimCell.h * temp.y) - (dimBlock.h * 0.5),
+              x: (dimCell.w * temp.x) - (dimBlock.w * 0.5)
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+
+        let failBlocks = d3.select(this).select('g.failBlocks')
+          .selectAll('g.failBlock')
+          .data(blocks.fail, function (d) {
+            return d.obId
+          })
+        let enterFailBlocks = failBlocks
+          .enter()
+          .append('g')
+          .attr('class', 'failBlock')
+          .attr('transform', function (d, i) {
+            let translate = {
+              y: dimCell.h * 0.5,
+              x: dimCell.w * 0.5
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+        enterFailBlocks.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', dimBlock.w)
+          .attr('height', dimBlock.h)
+          .attr('fill', function (d) { return setCol(d).background })
+          .attr('stroke', function (d) { return setCol(d).stroke })
+          .attr('stroke-width', 0.2)
+        enterFailBlocks.append('text')
+          .text(function (d) {
+            return d.metaData.blockName
+          })
+          .attr('x', dimBlock.w * 0.5)
+          .attr('y', dimBlock.h * 0.5)
+          .attr('text-anchor', 'middle')
+          .style('font-weight', 'bold')
+          .style('font-size', '6.5px')
+          .style('pointer-events', 'none')
+          .attr('fill', function (d) { return setCol(d).text })
+          .attr('stroke', 'none')
+          .attr('dy', 3)
+        let mergeFailBlocks = enterFailBlocks.merge(failBlocks)
+        mergeFailBlocks
+          .transition()
+          .duration(800)
+          .attr('transform', function (d, i) {
+            let temp = blocksTemplate['' + blocks.fail.length][i]
+            let translate = {
+              y: (dimCell.h * temp.y) - (dimBlock.h * 0.5),
+              x: (dimCell.w * temp.x) - (dimBlock.w * 0.5)
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+
+        let cancelBlocks = d3.select(this).select('g.cancelBlocks')
+          .selectAll('g.cancelBlock')
+          .data(blocks.cancel, function (d) {
+            return d.obId
+          })
+        let enterCancelBlocks = cancelBlocks
+          .enter()
+          .append('g')
+          .attr('class', 'cancelBlock')
+          .attr('transform', function (d, i) {
+            let translate = {
+              y: dimCell.h * 0.5,
+              x: dimCell.w * 0.5
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+        enterCancelBlocks.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', dimBlock.w)
+          .attr('height', dimBlock.h)
+          .attr('fill', function (d) { return setCol(d).background })
+          .attr('stroke', function (d) { return setCol(d).stroke })
+          .attr('stroke-width', 0.2)
+        enterCancelBlocks.append('text')
+          .text(function (d) {
+            return d.metaData.blockName
+          })
+          .attr('x', dimBlock.w * 0.5)
+          .attr('y', dimBlock.h * 0.5)
+          .attr('text-anchor', 'middle')
+          .style('font-weight', 'bold')
+          .style('font-size', '6.5px')
+          .style('pointer-events', 'none')
+          .attr('fill', function (d) { return setCol(d).text })
+          .attr('stroke', 'none')
+          .attr('dy', 3)
+        let mergeCancelBlocks = enterCancelBlocks.merge(cancelBlocks)
+        mergeCancelBlocks
+          .transition()
+          .duration(800)
+          .attr('transform', function (d, i) {
+            let temp = blocksTemplate['' + blocks.cancel.length][i]
+            let translate = {
+              y: (dimCell.h * temp.y) - (dimBlock.h * 0.5),
+              x: (dimCell.w * temp.x) - (dimBlock.w * 0.5)
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+      })
+    }
+    this.updateData = updateData
+  }
   let SvgCurrentBlocks = function () {
     let reserved = {}
 
@@ -2532,7 +2896,7 @@ function mainSchedBlocks (optIn) {
       let telsPerRow = 8
       let sizeTelsRow = 0.055
       let sizeHeader = 0.105
-      let offsetRunningBlocks = 0.06
+      let offsetRunningBlocks = 0.035
       let widthBlocks = box.currentBlocks.w * 0.8
       let offsetX = (box.currentBlocks.w - widthBlocks) * 0.5
       let ratio = 1
@@ -2647,14 +3011,382 @@ function mainSchedBlocks (optIn) {
           .style('opacity', 0)
           .remove()
       }
-      function initConfig (g) {
 
+      function initRunPhase (g, runPhase) {
+        if (runPhase.length < 1) return
+        if (runPhase[0].includes('config')) initConfig(g)
+        if (runPhase[0].includes('takeData')) initTake(g)
+        if (runPhase[0].includes('finish')) initFinish(g)
+      }
+      function dispatchRunPhase (g, runPhase) {
+        if (g.attr('runPhase') === 'config') {
+          for (let i = 0; i < runPhase.length; i++) {
+            if (runPhase[i] === 'run_takeData') {
+              initTake(g)
+              return
+            }
+          }
+        }
+        if (g.attr('runPhase') === 'takeData') {
+          for (let i = 0; i < runPhase.length; i++) {
+            if (runPhase[i].includes('finish')) {
+              initFinish(g)
+              return
+            }
+          }
+        }
+        if (g.attr('runPhase') === 'finish') {
+          return
+        }
+      }
+      function loadLoop (rect) {
+        return
+        rect.attr('stroke-dasharray', [1, 1])
+          .attr('stroke-dashoffset', 0)
+          .transition()
+          .duration(5000)
+          .ease(d3.easeLinear)
+          .attr('stroke-dashoffset', 10)
+          .on('end', function () {
+            loadLoop(rect)
+          })
+      }
+      function initConfigDataFinish (g, headerBox) {
+        // Back
+        g.append('rect')
+          .attr('class', 'configBack')
+          .attr('x', (headerBox.w * 0.4))
+          .attr('y', headerBox.h * 0.0)
+          .attr('width', headerBox.w * 0.23)
+          .attr('height', headerBox.h * 0.98)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.45)
+        g.append('rect')
+          .attr('class', 'dataBack')
+          .attr('x', (headerBox.w * 0.63))
+          .attr('y', headerBox.h * 0.0)
+          .attr('width', headerBox.w * 0.15)
+          .attr('height', headerBox.h * 0.98)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.45)
+        g.append('rect')
+          .attr('class', 'finishBack')
+          .attr('x', (headerBox.w * 0.78))
+          .attr('y', headerBox.h * 0.0)
+          .attr('width', headerBox.w * 0.22)
+          .attr('height', headerBox.h * 0.98)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.45)
+
+        // CONFIG
+        g.append('text')
+          .text('CONFIG -------------->')
+          .attr('x', (headerBox.w * 0.42) + 2)
+          .attr('y', headerBox.h * 0.1)
+          .attr('dy', 2)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '5.5px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'configMountLoading')
+          .attr('x', (headerBox.w * 0.56))
+          .attr('y', headerBox.h * 0.22)
+          .attr('width', headerBox.h * 0.20)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 1)
+        g.append('text')
+          .text('Mount:')
+          .attr('x', (headerBox.w * 0.43) + 0)
+          .attr('y', headerBox.h * 0.26)
+          .attr('dy', 4)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'configCameraLoading')
+          .attr('x', (headerBox.w * 0.56))
+          .attr('y', headerBox.h * 0.48)
+          .attr('width', headerBox.h * 0.20)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 6)
+          .attr('ry', 6)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 1)
+        g.append('text')
+          .text('Camera:')
+          .attr('x', (headerBox.w * 0.43) + 0)
+          .attr('y', headerBox.h * 0.54)
+          .attr('dy', 2.5)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'configDAQLoading')
+          .attr('x', (headerBox.w * 0.56))
+          .attr('y', headerBox.h * 0.74)
+          .attr('width', headerBox.h * 0.20)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 6)
+          .attr('ry', 6)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 1)
+        g.append('text')
+          .text('DAQ:')
+          .attr('x', (headerBox.w * 0.43) + 0)
+          .attr('y', headerBox.h * 0.8)
+          .attr('dy', 2.5)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        // Take Data
+        g.append('text')
+          .text('DATA ------------->')
+          .attr('x', (headerBox.w * 0.67))
+          .attr('y', headerBox.h * 0.1)
+          .attr('dy', 2)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '5.5px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'dataLoading')
+          .attr('x', (headerBox.w * 0.70) - (headerBox.h * 0.4 * 0.5))
+          .attr('y', headerBox.h * 0.4)
+          .attr('width', headerBox.h * 0.4)
+          .attr('height', headerBox.h * 0.4)
+          .attr('rx', 12)
+          .attr('ry', 12)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 1.5)
+
+        // FINISH
+        g.append('text')
+          .text('FINISH')
+          .attr('x', (headerBox.w * 0.87) + 2)
+          .attr('y', headerBox.h * 0.1)
+          .attr('dy', 2)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '5.5px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'finishMountLoading')
+          .attr('x', (headerBox.w * 0.81))
+          .attr('y', headerBox.h * 0.22)
+          .attr('width', headerBox.h * 0.20)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 1)
+        g.append('text')
+          .text(':Mount')
+          .attr('x', (headerBox.w * 0.87) + 0)
+          .attr('y', headerBox.h * 0.27)
+          .attr('dy', 4)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'finishCameraLoading')
+          .attr('x', (headerBox.w * 0.81))
+          .attr('y', headerBox.h * 0.48)
+          .attr('width', headerBox.h * 0.20)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 6)
+          .attr('ry', 6)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 1)
+        g.append('text')
+          .text(':Camera')
+          .attr('x', (headerBox.w * 0.87) + 0)
+          .attr('y', headerBox.h * 0.55)
+          .attr('dy', 2.5)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'finishDAQLoading')
+          .attr('x', (headerBox.w * 0.81))
+          .attr('y', headerBox.h * 0.74)
+          .attr('width', headerBox.h * 0.20)
+          .attr('height', headerBox.h * 0.20)
+          .attr('rx', 6)
+          .attr('ry', 6)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 1)
+        g.append('text')
+          .text(':DAQ')
+          .attr('x', (headerBox.w * 0.87) + 0)
+          .attr('y', headerBox.h * 0.81)
+          .attr('dy', 2.5)
+          .style('fill', colorTheme.blocks.run.text)
+          // .style('font-weight', 'bold')
+          .style('font-size', '6px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+      }
+      function initConfig (g) {
+        g.attr('runPhase', 'config')
+        // Back
+        g.select('rect.configBack')
+          .attr('fill', setCol(g.data()[0]).background)
+          .attr('stroke', colorTheme.medium.stroke)
+        g.select('rect.dataBack')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.finishBack')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+
+        // CONFIG
+        g.select('rect.configMountLoading')
+          .attr('fill', 'transparent')
+          .attr('stroke', colorTheme.medium.stroke)
+        loadLoop(g.select('rect.configMountLoading'))
+        g.select('rect.configCameraLoading')
+          .attr('fill', 'transparent')
+          .attr('stroke', colorTheme.medium.stroke)
+        loadLoop(g.select('rect.configCameraLoading'))
+        g.select('rect.configDAQLoading')
+          .attr('fill', 'transparent')
+          .attr('stroke', colorTheme.medium.stroke)
+        loadLoop(g.select('rect.configDAQLoading'))
+
+        // Take Data
+        g.select('rect.dataLoading')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+
+        // FINISH
+        g.select('rect.finishMountLoading')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.finishCameraLoading')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.finishDAQLoading')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
       }
       function initTake (g) {
+        g.attr('runPhase', 'takeData')
+        // Back
+        g.select('rect.configBack')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.dataBack')
+          .attr('fill', setCol(g.data()[0]).background)
+          .attr('stroke', colorTheme.medium.stroke)
+        g.select('rect.finishBack')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
 
+        // CONFIG
+        g.select('rect.configMountLoading')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.configCameraLoading')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.configDAQLoading')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.dark.stroke)
+
+        // Take Data
+        g.select('rect.dataLoading')
+          .attr('fill', 'transparent')
+          .attr('stroke', colorTheme.medium.stroke)
+        loadLoop(g.select('rect.dataLoading'))
+        // FINISH
+        g.select('rect.finishMountLoading')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.finishCameraLoading')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.finishDAQLoading')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
       }
       function initFinish (g) {
-        
+        g.attr('runPhase', 'finish')
+        // Back
+        g.select('rect.configBack')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.dataBack')
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.finishBack')
+          .attr('fill', setCol(g.data()[0]).background)
+          .attr('stroke', colorTheme.medium.stroke)
+
+        // CONFIG
+        g.select('rect.configMountLoading')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.configCameraLoading')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.configDAQLoading')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.dark.stroke)
+
+        // Take Data
+        g.select('rect.dataLoading')
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.dark.stroke)
+
+        // FINISH
+        g.select('rect.finishMountLoading')
+          .attr('fill', colorTheme.medium.background)
+          .attr('stroke', colorTheme.medium.stroke)
+        loadLoop(g.select('rect.finishMountLoading'))
+        g.select('rect.finishCameraLoading')
+          .attr('fill', colorTheme.medium.background)
+          .attr('stroke', colorTheme.medium.stroke)
+        loadLoop(g.select('rect.finishCameraLoading'))
+        g.select('rect.finishDAQLoading')
+          .attr('fill', colorTheme.medium.background)
+          .attr('stroke', colorTheme.medium.stroke)
+        loadLoop(g.select('rect.finishDAQLoading'))
       }
 
       // let date = new Date(shared.data.server.timeOfNight.date_now)
@@ -2693,7 +3425,7 @@ function mainSchedBlocks (optIn) {
         d3.select(this).append('path')
           .attr('fill', 'none')
           .attr('stroke', setCol(d).background)
-          .attr('stroke-width', 4)
+          .attr('stroke-width', 2)
           .style('pointer-events', 'none')
         d3.select(this).append('rect')
           .attr('class', 'headerLeft')
@@ -2706,10 +3438,10 @@ function mainSchedBlocks (optIn) {
             return headerBox.h - 0.4 * 2
           })
           .attr('fill', function (d, i) {
-            return setCol(d).background
+            return colorTheme.dark.background// setCol(d).background
           })
           .style('fill-opacity', 1)
-          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.4)
         d3.select(this).append('rect')
           .attr('class', 'headerRight')
@@ -2729,9 +3461,9 @@ function mainSchedBlocks (optIn) {
           .attr('stroke-width', 0.4)
 
         d3.select(this).append('text')
-          .attr('x', headerBox.w * 0.05)
+          .attr('x', headerBox.w * 0.03)
           .attr('y', headerBox.h * 0.5)
-          .attr('dy', 2)
+          .attr('dy', 3)
           .text(function () {
             return 'Block: ' + d.metaData.blockName
           })
@@ -2740,193 +3472,8 @@ function mainSchedBlocks (optIn) {
           .style('font-size', '12px')
           .attr('text-anchor', 'start')
 
-        // CONFIG
-        d3.select(this).append('text')
-          .text('CONFIG:')
-          .attr('x', (headerBox.w * 0.42) + 2)
-          .attr('y', headerBox.h * 0.5)
-          .attr('dy', 2)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('rect')
-          .attr('x', (headerBox.w * 0.72))
-          .attr('y', headerBox.h * 0.06)
-          .attr('width', headerBox.w * 0.05)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 4)
-          .attr('ry', 4)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 2)
-          .attr('stroke-dasharray', [2, 2])
-          .attr('stroke-dashoffset', 0)
-          .transition()
-          .duration(5000)
-          .ease(d3.easeLinear)
-          .attr('stroke-dashoffset', 10)
-        d3.select(this).append('text')
-          .text('Mirror')
-          .attr('x', (headerBox.w * 0.6) + 0)
-          .attr('y', headerBox.h * 0.16)
-          .attr('dy', 4)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('rect')
-          .attr('x', (headerBox.w * 0.72))
-          .attr('y', headerBox.h * 0.4)
-          .attr('width', headerBox.w * 0.05)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 6)
-          .attr('ry', 6)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 2)
-          .attr('stroke-dasharray', [2, 2])
-          .attr('stroke-dashoffset', 0)
-          .transition()
-          .duration(5000)
-          .ease(d3.easeLinear)
-          .attr('stroke-dashoffset', 10)
-        d3.select(this).append('text')
-          .text('Camera')
-          .attr('x', (headerBox.w * 0.6) + 0)
-          .attr('y', headerBox.h * 0.5)
-          .attr('dy', 2.5)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('rect')
-          .attr('x', (headerBox.w * 0.72))
-          .attr('y', headerBox.h * 0.74)
-          .attr('width', headerBox.w * 0.05)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 6)
-          .attr('ry', 6)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 2)
-          .attr('stroke-dasharray', [2, 2])
-          .attr('stroke-dashoffset', 0)
-          .transition()
-          .duration(5000)
-          .ease(d3.easeLinear)
-          .attr('stroke-dashoffset', 10)
-        d3.select(this).append('text')
-          .text('DAQ')
-          .attr('x', (headerBox.w * 0.6) + 0)
-          .attr('y', headerBox.h * 0.84)
-          .attr('dy', 2.5)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        // Take Data
-        d3.select(this).append('rect')
-          .attr('x', (headerBox.w * 0.86))
-          .attr('y', headerBox.h * 0.0)
-          .attr('width', headerBox.w * 0.1)
-          .attr('height', headerBox.h * 0.97)
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.45)
-        d3.select(this).append('text')
-          .text('Data')
-          .attr('x', (headerBox.w * 0.91))
-          .attr('y', headerBox.h * 0.45)
-          .attr('dy', 3)
-          .style('fill', colorTheme.blocks.run.text)
-          .style('font-size', '6px')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-        d3.select(this).append('text')
-          .text('')
-          .attr('x', (headerBox.w * 0.91))
-          .attr('y', headerBox.h * 0.65)
-          .attr('dy', 3)
-          .style('fill', colorTheme.blocks.run.text)
-          .style('font-size', '6px')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        // FINISH
-        d3.select(this).append('rect')
-          .attr('x', (headerBox.w * 0.96))
-          .attr('y', headerBox.h * 0.0)
-          .attr('width', headerBox.w * 0.04)
-          .attr('height', headerBox.h * 0.3)
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.45)
-        d3.select(this).append('text')
-          .text('M')
-          .attr('x', (headerBox.w * 0.96) + 2)
-          .attr('y', headerBox.h * 0.0)
-          .attr('dy', 6)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('rect')
-          .attr('x', (headerBox.w * 0.96))
-          .attr('y', headerBox.h * 0.333)
-          .attr('width', headerBox.w * 0.04)
-          .attr('height', headerBox.h * 0.3)
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.45)
-        d3.select(this).append('text')
-          .text('C')
-          .attr('x', (headerBox.w * 0.96) + 2)
-          .attr('y', headerBox.h * 0.333)
-          .attr('dy', 6)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-
-        d3.select(this).append('rect')
-          .attr('x', (headerBox.w * 0.96))
-          .attr('y', headerBox.h * 0.666)
-          .attr('width', headerBox.w * 0.04)
-          .attr('height', headerBox.h * 0.3)
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.darker.stroke)
-          .attr('stroke-width', 0.45)
-        d3.select(this).append('text')
-          .text('D')
-          .attr('x', (headerBox.w * 0.96) + 2)
-          .attr('y', headerBox.h * 0.666)
-          .attr('dy', 6)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
+        initConfigDataFinish(d3.select(this), headerBox)
+        initRunPhase(d3.select(this), d.runPhase)
 
         d3.select(this).append('g')
           .attr('class', 'telsBox')
@@ -3011,6 +3558,8 @@ function mainSchedBlocks (optIn) {
           .data([dataPointFuturTop])
           .attr('d', lineGenerator)
 
+        dispatchRunPhase(d3.select(this), d.runPhase)
+
         drawTels(d3.select(this).select('g.telsBox'))
       })
       // mergeCurrentBlocks.attr('transform', function (d, i) {
@@ -3046,6 +3595,7 @@ function mainSchedBlocks (optIn) {
   let svgFailQueue = new SvgFailQueue()
   let svgCancelQueue = new SvgCancelQueue()
   let svgCurrentBlocks = new SvgCurrentBlocks()
+  let svgStateScheduleMatrix = new SvgStateScheduleMatrix()
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
