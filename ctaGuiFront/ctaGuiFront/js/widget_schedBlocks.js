@@ -41,7 +41,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 5
+  let h0 = 6
   let w0 = 12
   let divKey = 'main'
 
@@ -161,12 +161,14 @@ function mainSchedBlocks (optIn) {
     blocks.success = []
     blocks.fail = []
     blocks.cancel = []
+    blocks.wait = []
 
     for (var i = 0; i < array.length; i++) {
       let b = array[i]
       if (b.exeState.state === 'done') blocks.success.push(b)
       else if (b.exeState.state === 'fail') blocks.fail.push(b)
       else if (b.exeState.state === 'cancel') blocks.cancel.push(b)
+      else if (b.exeState.state === 'wait') blocks.wait.push(b)
     }
     return blocks
   }
@@ -250,21 +252,28 @@ function mainSchedBlocks (optIn) {
         x: lenD.w[0] * 0.01,
         y: lenD.h[0] * 0.0,
         w: lenD.w[0] * 0.38,
-        h: lenD.h[0] * 0.5,
+        h: lenD.h[0] * 0.56,
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueServerFutur = {
         x: lenD.w[0] * 0.62,
-        y: lenD.h[0] * 0,
+        y: lenD.h[0] * 0.0,
         w: lenD.w[0] * 0.38,
-        h: lenD.h[0] * 0.5,
+        h: lenD.h[0] * 0.56,
         marg: lenD.w[0] * 0.01
       }
       box.stateScheduleMatrix = {
         x: lenD.w[0] * 0.015,
-        y: lenD.h[0] * 0.52,
-        w: lenD.w[0] * 0.35,
-        h: lenD.h[0] * 0.45,
+        y: lenD.h[0] * 0.57,
+        w: lenD.w[0] * 0.36,
+        h: lenD.h[0] * 0.34,
+        marg: lenD.w[0] * 0.01
+      }
+      box.waitScheduleMatrix = {
+        x: lenD.w[0] * 0.628,
+        y: lenD.h[0] * 0.6611,
+        w: lenD.w[0] * 0.36,
+        h: lenD.h[0] * 0.113,
         marg: lenD.w[0] * 0.01
       }
       box.currentBlocks = {
@@ -381,11 +390,12 @@ function mainSchedBlocks (optIn) {
     svgBlocksQueueServerPast.initData()
     svgBlocksQueueServerFutur.initData()
     svgStateScheduleMatrix.initData()
+    svgWaitScheduleMatrix.initData()
     // svgSuccessQueue.initData()
     // svgFailQueue.initData()
     // svgCancelQueue.initData()
 
-    svgMain.initData(dataIn.data)
+    // svgMain.initData(dataIn.data)
   }
   this.initData = initData
 
@@ -404,7 +414,7 @@ function mainSchedBlocks (optIn) {
     // svgSuccessQueue.updateData()
     // svgFailQueue.updateData()
 
-    svgMain.updateData(dataIn.data)
+    // svgMain.updateData(dataIn.data)
   }
   this.updateData = updateData
 
@@ -2536,7 +2546,7 @@ function mainSchedBlocks (optIn) {
         .text('Success')
         .style('fill', colorTheme.dark.text)
         .style('font-weight', 'bold')
-        .style('font-size', '10px')
+        .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.166) + ') rotate(270)')
       reserved.gBlockBox.append('rect')
@@ -2551,7 +2561,7 @@ function mainSchedBlocks (optIn) {
         .text('Fail')
         .style('fill', colorTheme.dark.text)
         .style('font-weight', 'bold')
-        .style('font-size', '10px')
+        .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.5) + ') rotate(270)')
       reserved.gBlockBox.append('rect')
@@ -2566,7 +2576,7 @@ function mainSchedBlocks (optIn) {
         .text('Cancel')
         .style('fill', colorTheme.dark.text)
         .style('font-weight', 'bold')
-        .style('font-size', '10px')
+        .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.84) + ') rotate(270)')
 
@@ -2669,8 +2679,8 @@ function mainSchedBlocks (optIn) {
           .attr('y', box.stateScheduleMatrix.h * 0.0)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'middle')
-          .style('font-size', '8px')
-          .attr('dy', 7 + 9)// + ((i + 1) % 2) * 9)
+          .style('font-size', '6.5px')
+          .attr('dy', 5 + ((i + 1) % 2) * 4)
           .style('pointer-events', 'none')
           .attr('fill', colorTheme.darker.text)
           .attr('stroke', 'none')
@@ -2738,11 +2748,11 @@ function mainSchedBlocks (optIn) {
           .attr('y', dimBlock.h * 0.5)
           .attr('text-anchor', 'middle')
           .style('font-weight', 'bold')
-          .style('font-size', '6.5px')
+          .style('font-size', '4.5px')
           .style('pointer-events', 'none')
           .attr('fill', function (d) { return setCol(d).text })
           .attr('stroke', 'none')
-          .attr('dy', 3)
+          .attr('dy', 2)
         let mergeSuccessBlocks = enterSuccessBlocks.merge(successBlocks)
         mergeSuccessBlocks
           .transition()
@@ -2788,11 +2798,11 @@ function mainSchedBlocks (optIn) {
           .attr('y', dimBlock.h * 0.5)
           .attr('text-anchor', 'middle')
           .style('font-weight', 'bold')
-          .style('font-size', '6.5px')
+          .style('font-size', '4.5px')
           .style('pointer-events', 'none')
           .attr('fill', function (d) { return setCol(d).text })
           .attr('stroke', 'none')
-          .attr('dy', 3)
+          .attr('dy', 2)
         let mergeFailBlocks = enterFailBlocks.merge(failBlocks)
         mergeFailBlocks
           .transition()
@@ -2838,17 +2848,209 @@ function mainSchedBlocks (optIn) {
           .attr('y', dimBlock.h * 0.5)
           .attr('text-anchor', 'middle')
           .style('font-weight', 'bold')
-          .style('font-size', '6.5px')
+          .style('font-size', '4.5px')
           .style('pointer-events', 'none')
           .attr('fill', function (d) { return setCol(d).text })
           .attr('stroke', 'none')
-          .attr('dy', 3)
+          .attr('dy', 2)
         let mergeCancelBlocks = enterCancelBlocks.merge(cancelBlocks)
         mergeCancelBlocks
           .transition()
           .duration(800)
           .attr('transform', function (d, i) {
             let temp = blocksTemplate['' + blocks.cancel.length][i]
+            let translate = {
+              y: (dimCell.h * temp.y) - (dimBlock.h * 0.5),
+              x: (dimCell.w * temp.x) - (dimBlock.w * 0.5)
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+      })
+    }
+    this.updateData = updateData
+  }
+  let SvgWaitScheduleMatrix = function () {
+    let reserved = {}
+    function initData () {
+      reserved.gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + box.waitScheduleMatrix.x + ',' + box.waitScheduleMatrix.y + ')')
+      reserved.gBlockBox.append('rect')
+        .attr('x', 0 + box.waitScheduleMatrix.marg)
+        .attr('y', 0 + box.waitScheduleMatrix.h * 0.3)
+        .attr('width', box.waitScheduleMatrix.w * 1 - box.waitScheduleMatrix.marg)
+        .attr('height', box.waitScheduleMatrix.h * 0.9)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      reserved.gBlockBox.append('text')
+        .text('Waiting')
+        .style('fill', colorTheme.dark.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(4,' + (box.waitScheduleMatrix.h * 0.1 + box.waitScheduleMatrix.h * 0.9 * 0.5 + box.waitScheduleMatrix.h * 0.2) + ') rotate(270)')
+
+      reserved.scrollBoxG = reserved.gBlockBox.append('g')
+      reserved.scrollBox = new ScrollBox()
+      reserved.scrollBox.init({
+        tag: 'waitScrollBox',
+        gBox: reserved.scrollBoxG,
+        boxData: {
+          x: 0 + box.waitScheduleMatrix.marg,
+          y: 0,
+          w: box.waitScheduleMatrix.w - box.waitScheduleMatrix.marg,
+          h: box.waitScheduleMatrix.h + box.waitScheduleMatrix.h * 0.2,
+          marg: 0
+        },
+        useRelativeCoords: true,
+        locker: new Locker(),
+        lockerV: [widgetId + 'updateData'],
+        lockerZoom: {
+          all: 'ScrollBox' + 'zoom',
+          during: 'ScrollBox' + 'zoomDuring',
+          end: 'ScrollBox' + 'zoomEnd'
+        },
+        runLoop: new RunLoop({tag: 'successScrollBox'}),
+        canScroll: true,
+        scrollVertical: false,
+        scrollHorizontal: true,
+        scrollHeight: box.waitScheduleMatrix.h - box.waitScheduleMatrix.marg,
+        scrollWidth: box.waitScheduleMatrix.w - box.waitScheduleMatrix.marg,
+        background: 'transparent',
+        scrollRecH: {h: 6},
+        scrollRecV: {w: 6}
+      })
+      reserved.scrollG = reserved.scrollBox.get('innerG')
+
+      updateData()
+
+      let scheds = groupBlocksBySchedule(shared.data.server.blocks)
+      let dimCell = {
+        w: box.waitScheduleMatrix.h * 0.9, // (box.waitScheduleMatrix.w - box.waitScheduleMatrix.marg) / scheds.length,
+        h: box.waitScheduleMatrix.h * 0.9
+      }
+      reserved.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: scheds.length * dimCell.w})
+    }
+    this.initData = initData
+
+    function updateData () {
+      let scheds = groupBlocksBySchedule(shared.data.server.blocks)
+      let blocksTemplate = {
+        '1': [{x: 0.5, y: 0.5}],
+        '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
+        '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
+        '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+        '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
+        '6': [],
+        '7': [],
+        '8': [],
+        '9': []
+      }
+      let dimCell = {
+        w: box.waitScheduleMatrix.h * 0.9, // (box.waitScheduleMatrix.w - box.waitScheduleMatrix.marg) / scheds.length,
+        h: box.waitScheduleMatrix.h * 0.9
+      }
+      let dimBlock = {
+        w: dimCell.w * 0.3333,
+        h: dimCell.h * 0.3333
+      }
+      let allScheds = reserved.scrollG
+        .selectAll('g.allScheds')
+        .data(scheds, function (d) {
+          return d.scheduleId
+        })
+      let enterAllScheds = allScheds
+        .enter()
+        .append('g')
+        .attr('class', 'allScheds')
+        .attr('transform', function (d, i) {
+          let translate = {
+            y: box.waitScheduleMatrix.h * 0.2,
+            x: dimCell.w * i
+          }
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+      enterAllScheds.each(function (d, i) {
+        d3.select(this).append('rect')
+          .attr('x', 0)
+          .attr('y', box.waitScheduleMatrix.h * 0.1)
+          .attr('width', dimCell.w)
+          .attr('height', box.waitScheduleMatrix.h * 0.9)
+          .attr('fill', 'transparent')
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+          .attr('stroke-dasharray', [4, 4])
+        d3.select(this).append('text')
+          .attr('class', 'schedId')
+          .text(function (d) {
+            return 'Sched:' + d.schedName
+          })
+          .attr('x', dimCell.w * 0.5)
+          .attr('y', box.waitScheduleMatrix.h * 0.0)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('font-size', '6.5px')
+          .attr('dy', -2 + ((i + 1) % 2) * 4)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.darker.text)
+          .attr('stroke', 'none')
+        d3.select(this).append('g')
+          .attr('class', 'successBlocks')
+          .attr('transform', function (d, i) {
+            let translate = {
+              y: box.waitScheduleMatrix.h * 0.1,
+              x: 0
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+      })
+
+      let mergeAllScheds = enterAllScheds.merge(allScheds)
+      mergeAllScheds.each(function (d) {
+        let blocks = sortBlocksByState(d.blocks)
+        let successBlocks = d3.select(this).select('g.successBlocks')
+          .selectAll('g.successBlock')
+          .data(blocks.wait, function (d) {
+            return d.obId
+          })
+        let enterSuccessBlocks = successBlocks
+          .enter()
+          .append('g')
+          .attr('class', 'successBlock')
+          .attr('transform', function (d, i) {
+            let translate = {
+              y: dimCell.h * 0.5,
+              x: dimCell.w * 0.5
+            }
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+        enterSuccessBlocks.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', dimBlock.w)
+          .attr('height', dimBlock.h)
+          .attr('fill', function (d) { return setCol(d).background })
+          .attr('stroke', function (d) { return setCol(d).stroke })
+          .attr('stroke-width', 0.2)
+        enterSuccessBlocks.append('text')
+          .text(function (d) {
+            return d.metaData.blockName
+          })
+          .attr('x', dimBlock.w * 0.5)
+          .attr('y', dimBlock.h * 0.5)
+          .attr('text-anchor', 'middle')
+          .style('font-weight', 'bold')
+          .style('font-size', '4.5px')
+          .style('pointer-events', 'none')
+          .attr('fill', function (d) { return setCol(d).text })
+          .attr('stroke', 'none')
+          .attr('dy', 2)
+        let mergeSuccessBlocks = enterSuccessBlocks.merge(successBlocks)
+        mergeSuccessBlocks
+          .transition()
+          .duration(800)
+          .attr('transform', function (d, i) {
+            let temp = blocksTemplate['' + blocks.wait.length][i]
             let translate = {
               y: (dimCell.h * temp.y) - (dimBlock.h * 0.5),
               x: (dimCell.w * temp.x) - (dimBlock.w * 0.5)
@@ -2935,6 +3137,12 @@ function mainSchedBlocks (optIn) {
       let offsetY = (defaultHeightView * 0.015) + (defaultHeightView * (1 - totHeight)) * 0.5
 
       function drawTels (g) {
+        function strokeSize (val) {
+          return (2 - (2 * (val / 100)))
+        }
+        function fillOpacity (val) {
+          return (0.9 - (0.5 * (val / 100)))
+        }
         let nTel = g.data()[0].telIds.length
         let nLine = (nTel % telsPerRow === 0) ? (nTel / telsPerRow) : (1 + parseInt(nTel / telsPerRow))
         nLine = nLine < 1 ? 1 : nLine
@@ -2946,11 +3154,16 @@ function mainSchedBlocks (optIn) {
         }
         let offset = {
           x: telsBox.w / telsPerRow,
-          y: telsBox.h / nLine
+          y: telsBox.h / nLine * 0.8
         }
 
         let tels = []
         for (let i = 0; i < g.data()[0].telIds.length; i++) { tels.push(getTelHealthById(g.data()[0].telIds[i])) }
+        tels.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
+        let off = 0
+        if (tels[0].id.split('_')[0] === 'M') off -= 1
+        if (tels[0].id.split('_')[0] === 'S') off -= 2
+
         let currentTels = g
           .selectAll('g.currentTel')
           .data(tels, function (d) {
@@ -2960,44 +3173,129 @@ function mainSchedBlocks (optIn) {
           .enter()
           .append('g')
           .attr('class', 'currentTel')
-          .attr('transform', function (d, i) {
-            return 'translate(' + (offset.x * (0.5 + (i % telsPerRow))) + ',' + (offset.y * (0.5 + parseInt(i / telsPerRow))) + ')'
-          })
         enterCurrentTels.each(function (d, i) {
+          let toff = off
+          if (d.id.split('_')[0] === 'M') toff += 1
+          if (d.id.split('_')[0] === 'S') toff += 2
+
+          d3.select(this).attr('transform', function (d) {
+            let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
+              (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
+              (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+            let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.y * 0.3)
+            return 'translate(' + tx + ',' + ty + ')'
+          })
           d3.select(this).append('rect')
             .attr('x', function (d) {
-              return (-offset.x * 0.5) + (4 - (3 * (d.val / 100))) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+              return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
             })
             .attr('y', function (d) {
-              return (-offset.y * 0.5) + (4 - (3 * (d.val / 100))) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+              return (-offset.y * 0.5) + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
             })
             .attr('width', function (d) {
-              return offset.x - (4 - (3 * (d.val / 100))) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+              return offset.x - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
             })
             .attr('height', function (d) {
-              return offset.y - (4 - (3 * (d.val / 100))) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+              return offset.y - strokeSize(d.val) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
             })
             .attr('fill', function (d) {
               return telHealthCol(d.val)
             })
-            .attr('fill-opacity', 0.6)
+            .attr('fill-opacity', function (d) {
+              return fillOpacity(d.val)
+            })
             .attr('stroke-width', function (d) {
-              return 4 - (3 * (d.val / 100))
+              return strokeSize(d.val)
             })
             .attr('stroke', function (d) {
               return telHealthCol(d.val)
             })
+            .attr('stroke-opacity', function (d) {
+              return 1
+            })
+            .attr('rx', 0)
+            .attr('ry', 0)
+          // d3.select(this).append('rect')
+          //   .attr('x', function (d) {
+          //     return (-offset.x * 0.5) //  + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+          //   })
+          //   .attr('y', function (d) {
+          //     return (-offset.y * 0.5) //  + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+          //   })
+          //   .attr('width', function (d) {
+          //     return offset.x //  - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+          //   })
+          //   .attr('height', function (d) {
+          //     return offset.y * 0.3 //  - strokeSize(d.val) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+          //   })
+          //   .attr('fill', function (d) {
+          //     return colorTheme.dark.background// telHealthCol(d.val) // colorTheme.darker.background
+          //   })
+          //   .attr('fill-opacity', function (d) {
+          //     return 1
+          //   })
+          //   .attr('stroke-width', function (d) {
+          //     return 0.2 // strokeSize(d.val)
+          //   })
+          //   .attr('stroke', function (d) {
+          //     return colorTheme.dark.stroke // telHealthCol(d.val)
+          //   })
+          //   .attr('stroke-opacity', function (d) {
+          //     return 1.0
+          //   })
+          //   .attr('stroke-dasharray', function () {
+          //     if ((i + toff) % telsPerRow === 0 ||
+          //       (i + toff) % telsPerRow === telsPerRow - 1 ||
+          //       i === nTel - 1 ||
+          //       tels[i - 1].id.split('_')[0] !== d.id.split('_')[0] ||
+          //       tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]
+          //     ) return
+          //     return [offset.x, offset.y * 0.3, offset.x, offset.y * 0.3]
+          //   })
+          // d3.select(this).append('text')
+          //   .attr('x', 0)
+          //   .attr('y', -offset.y * 0.24)
+          //   .attr('dy', 0)
+          //   .text(function (d) {
+          //     if ((i + toff) % telsPerRow === 0 ||
+          //       (i + toff) % telsPerRow === telsPerRow - 1 ||
+          //       i === nTel - 1 ||
+          //       tels[i - 1].id.split('_')[0] !== d.id.split('_')[0] ||
+          //       tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]
+          //     ) return d.id.split('_')[0]
+          //     return '' // '-------------'
+          //   })
+          //   .style('fill', colorTheme.blocks.run.text)
+          //   .style('font-weight', function (d) {
+          //     if ((i + toff) % telsPerRow === 0 ||
+          //       (i + toff) % telsPerRow === telsPerRow - 1 ||
+          //       i === nTel - 1 ||
+          //       tels[i - 1].id.split('_')[0] !== d.id.split('_')[0] ||
+          //       tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]
+          //     ) return 'bold'
+          //     return ''
+          //   })
+          //   .style('font-size', function (d) {
+          //     if ((i + toff) % telsPerRow === 0 ||
+          //       (i + toff) % telsPerRow === telsPerRow - 1 ||
+          //       i === nTel - 1 ||
+          //       tels[i - 1].id.split('_')[0] !== d.id.split('_')[0] ||
+          //       tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]
+          //     ) return 6
+          //     return 5
+          //   })
+          //   .attr('text-anchor', 'middle')
           d3.select(this).append('text')
             .attr('x', 0)
-            .attr('y', 0)
-            .attr('dy', 3)
+            .attr('y', offset.y * 0.2)
+            .attr('dy', 0)
             .text(function (d) {
-              return d.id
+              return d.id // d.id.split('_')[1]
             })
             .style('fill', colorTheme.blocks.run.text)
-            .style('font-weight', '')
+            .style('font-weight', 'bold')
             .style('font-size', function (d) {
-              return 7.6 - (2 * (d.val / 100))
+              return 6.2 // - (2 * (d.val / 100))
             })
             .attr('text-anchor', 'middle')
         })
@@ -3596,6 +3894,7 @@ function mainSchedBlocks (optIn) {
   let svgCancelQueue = new SvgCancelQueue()
   let svgCurrentBlocks = new SvgCurrentBlocks()
   let svgStateScheduleMatrix = new SvgStateScheduleMatrix()
+  let svgWaitScheduleMatrix = new SvgWaitScheduleMatrix()
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
