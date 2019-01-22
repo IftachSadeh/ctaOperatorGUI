@@ -2002,7 +2002,7 @@ function mainSchedBlocks (optIn) {
           filters: []
         },
         timeBars: {
-          enabled: true,
+          enabled: false,
           g: undefined,
           box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
         },
@@ -2641,8 +2641,8 @@ function mainSchedBlocks (optIn) {
         h: box.stateScheduleMatrix.h * 0.9 * 0.3333
       }
       let dimBlock = {
-        w: dimCell.w * 0.3333,
-        h: dimCell.h * 0.3333
+        w: dimCell.w * 0.31,
+        h: dimCell.h * 0.31
       }
       let allScheds = reserved.scrollG
         .selectAll('g.allScheds')
@@ -2951,8 +2951,8 @@ function mainSchedBlocks (optIn) {
         h: box.waitScheduleMatrix.h * 0.9
       }
       let dimBlock = {
-        w: dimCell.w * 0.3333,
-        h: dimCell.h * 0.3333
+        w: dimCell.w * 0.31,
+        h: dimCell.h * 0.31
       }
       let allScheds = reserved.scrollG
         .selectAll('g.allScheds')
@@ -3097,7 +3097,7 @@ function mainSchedBlocks (optIn) {
       let defaultHeightView = box.currentBlocks.h * 0.93
       let telsPerRow = 8
       let sizeTelsRow = 0.055
-      let sizeHeader = 0.105
+      let sizeHeader = 0.085
       let offsetRunningBlocks = 0.035
       let widthBlocks = box.currentBlocks.w * 0.8
       let offsetX = (box.currentBlocks.w - widthBlocks) * 0.5
@@ -3135,6 +3135,30 @@ function mainSchedBlocks (optIn) {
         queueRun[i].height *= ratio
       }
       let offsetY = (defaultHeightView * 0.015) + (defaultHeightView * (1 - totHeight)) * 0.5
+      let headerBox = {
+        x: 0,
+        y: 0,
+        w: widthBlocks,
+        h: ratio * defaultHeightView * sizeHeader
+      }
+      let headerBoxId = {
+        x: headerBox.w * 0.0,
+        y: headerBox.y,
+        w: headerBox.w * 0.3,
+        h: headerBox.h * 0.99
+      }
+      let headerBoxTels = {
+        x: headerBox.w * 0.35,
+        y: headerBox.y,
+        w: headerBox.w * 0.3,
+        h: headerBox.h * 0.99
+      }
+      let headerBoxRunningPhase = {
+        x: headerBox.w * 0.7,
+        y: headerBox.y,
+        w: headerBox.w * 0.3,
+        h: headerBox.h * 0.99
+      }
 
       function drawTels (g) {
         function strokeSize (val) {
@@ -3351,216 +3375,237 @@ function mainSchedBlocks (optIn) {
       }
       function initConfigDataFinish (g, headerBox) {
         // Back
-        g.append('rect')
-          .attr('class', 'configBack')
-          .attr('x', (headerBox.w * 0.4))
-          .attr('y', headerBox.h * 0.0)
-          .attr('width', headerBox.w * 0.23)
-          .attr('height', headerBox.h * 0.98)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.45)
-        g.append('rect')
-          .attr('class', 'dataBack')
-          .attr('x', (headerBox.w * 0.63))
-          .attr('y', headerBox.h * 0.0)
-          .attr('width', headerBox.w * 0.15)
-          .attr('height', headerBox.h * 0.98)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.45)
-        g.append('rect')
-          .attr('class', 'finishBack')
-          .attr('x', (headerBox.w * 0.78))
-          .attr('y', headerBox.h * 0.0)
-          .attr('width', headerBox.w * 0.22)
-          .attr('height', headerBox.h * 0.98)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.45)
+        // g.append('rect')
+        //   .attr('class', 'configBack')
+        //   .attr('x', (headerBox.w * 0.4))
+        //   .attr('y', headerBox.h * 0.0)
+        //   .attr('width', headerBox.w * 0.23)
+        //   .attr('height', headerBox.h * 0.98)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.45)
+        // g.append('rect')
+        //   .attr('class', 'dataBack')
+        //   .attr('x', (headerBox.w * 0.63))
+        //   .attr('y', headerBox.h * 0.0)
+        //   .attr('width', headerBox.w * 0.15)
+        //   .attr('height', headerBox.h * 0.98)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.45)
+        // g.append('rect')
+        //   .attr('class', 'finishBack')
+        //   .attr('x', (headerBox.w * 0.78))
+        //   .attr('y', headerBox.h * 0.0)
+        //   .attr('width', headerBox.w * 0.22)
+        //   .attr('height', headerBox.h * 0.98)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.45)
 
         // CONFIG
-        g.append('text')
-          .text('CONFIG -------------->')
-          .attr('x', (headerBox.w * 0.42) + 2)
-          .attr('y', headerBox.h * 0.1)
-          .attr('dy', 2)
-          .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '5.5px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
+        // g.append('text')
+        //   .text('CONFIG -------------->')
+        //   .attr('x', (headerBox.w * 0.42) + 2)
+        //   .attr('y', headerBox.h * 0.1)
+        //   .attr('dy', 2)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   // .style('font-weight', 'bold')
+        //   .style('font-size', '5.5px')
+        //   .attr('text-anchor', 'start')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'configMountLoading')
-          .attr('x', (headerBox.w * 0.56))
-          .attr('y', headerBox.h * 0.22)
-          .attr('width', headerBox.h * 0.20)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 4)
-          .attr('ry', 4)
+          .attr('x', headerBoxRunningPhase.x)
+          .attr('y', headerBoxRunningPhase.y)
+          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('height', headerBoxRunningPhase.h / 3)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 1)
+          .attr('stroke-width', 0.2)
         g.append('text')
-          .text('Mount:')
-          .attr('x', (headerBox.w * 0.43) + 0)
-          .attr('y', headerBox.h * 0.26)
-          .attr('dy', 4)
+          .text('M')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 0.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
+          .attr('dy', 3)
+          .style('font-weight', 'bold')
           .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'configCameraLoading')
-          .attr('x', (headerBox.w * 0.56))
-          .attr('y', headerBox.h * 0.48)
-          .attr('width', headerBox.h * 0.20)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 6)
-          .attr('ry', 6)
+          .attr('x', headerBoxRunningPhase.x)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h / 3)
+          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('height', headerBoxRunningPhase.h / 3)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 1)
+          .attr('stroke-width', 0.2)
         g.append('text')
-          .text('Camera:')
-          .attr('x', (headerBox.w * 0.43) + 0)
-          .attr('y', headerBox.h * 0.54)
-          .attr('dy', 2.5)
+          .text('C')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 0.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 1.5)
+          .attr('dy', 3)
+          .style('font-weight', 'bold')
           .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'configDAQLoading')
-          .attr('x', (headerBox.w * 0.56))
-          .attr('y', headerBox.h * 0.74)
-          .attr('width', headerBox.h * 0.20)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 6)
-          .attr('ry', 6)
+          .attr('x', headerBoxRunningPhase.x)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('height', headerBoxRunningPhase.h / 3)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 1)
+          .attr('stroke-width', 0.2)
         g.append('text')
-          .text('DAQ:')
-          .attr('x', (headerBox.w * 0.43) + 0)
-          .attr('y', headerBox.h * 0.8)
-          .attr('dy', 2.5)
+          .text('D')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 0.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
+          .attr('dy', 3)
+          .style('font-weight', 'bold')
           .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
 
         // Take Data
-        g.append('text')
-          .text('DATA ------------->')
-          .attr('x', (headerBox.w * 0.67))
-          .attr('y', headerBox.h * 0.1)
-          .attr('dy', 2)
-          .style('fill', colorTheme.blocks.run.text)
-          .style('font-size', '5.5px')
-          .attr('text-anchor', 'start')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'dataLoading')
-          .attr('x', (headerBox.w * 0.70) - (headerBox.h * 0.4 * 0.5))
-          .attr('y', headerBox.h * 0.4)
-          .attr('width', headerBox.h * 0.4)
-          .attr('height', headerBox.h * 0.4)
-          .attr('rx', 12)
-          .attr('ry', 12)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3))
+          .attr('y', headerBoxRunningPhase.y)
+          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('height', headerBoxRunningPhase.h)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 1.5)
-
-        // FINISH
+          .attr('stroke-width', 0.2)
         g.append('text')
-          .text('FINISH')
-          .attr('x', (headerBox.w * 0.87) + 2)
-          .attr('y', headerBox.h * 0.1)
-          .attr('dy', 2)
+          .text('D')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.35)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 1.5)
+          .attr('dy', 1.2)
           .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '5.5px')
-          .attr('text-anchor', 'start')
+          .style('font-size', '7.5px')
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
+        g.append('text')
+          .text('a')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.45)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 2.5)
+          .attr('dy', 1.8)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '7.5px')
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('text')
+          .text('t')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.55)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 3.5)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '7.5px')
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('text')
+          .text('a')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.65)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 4.5)
+          .attr('dy', 4.2)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '7.5px')
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        // FINISH
+        // g.append('text')
+        //   .text('FINISH')
+        //   .attr('x', (headerBox.w * 0.87) + 2)
+        //   .attr('y', headerBox.h * 0.1)
+        //   .attr('dy', 2)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   // .style('font-weight', 'bold')
+        //   .style('font-size', '5.5px')
+        //   .attr('text-anchor', 'start')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'finishMountLoading')
-          .attr('x', (headerBox.w * 0.81))
-          .attr('y', headerBox.h * 0.22)
-          .attr('width', headerBox.h * 0.20)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 4)
-          .attr('ry', 4)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2)
+          .attr('y', headerBoxRunningPhase.y)
+          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('height', headerBoxRunningPhase.h / 3)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 1)
+          .attr('stroke-width', 0.2)
         g.append('text')
-          .text(':Mount')
-          .attr('x', (headerBox.w * 0.87) + 0)
-          .attr('y', headerBox.h * 0.27)
-          .attr('dy', 4)
+          .text('M')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
+          .attr('dy', 3)
+          .style('font-weight', 'bold')
           .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'finishCameraLoading')
-          .attr('x', (headerBox.w * 0.81))
-          .attr('y', headerBox.h * 0.48)
-          .attr('width', headerBox.h * 0.20)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 6)
-          .attr('ry', 6)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h / 3)
+          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('height', headerBoxRunningPhase.h / 3)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 1)
+          .attr('stroke-width', 0.2)
         g.append('text')
-          .text(':Camera')
-          .attr('x', (headerBox.w * 0.87) + 0)
-          .attr('y', headerBox.h * 0.55)
-          .attr('dy', 2.5)
+          .text('C')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 1.5)
+          .attr('dy', 3)
+          .style('font-weight', 'bold')
           .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'finishDAQLoading')
-          .attr('x', (headerBox.w * 0.81))
-          .attr('y', headerBox.h * 0.74)
-          .attr('width', headerBox.h * 0.20)
-          .attr('height', headerBox.h * 0.20)
-          .attr('rx', 6)
-          .attr('ry', 6)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('height', headerBoxRunningPhase.h / 3)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 1)
+          .attr('stroke-width', 0.2)
         g.append('text')
-          .text(':DAQ')
-          .attr('x', (headerBox.w * 0.87) + 0)
-          .attr('y', headerBox.h * 0.81)
-          .attr('dy', 2.5)
+          .text('D')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
+          .attr('dy', 3)
+          .style('font-weight', 'bold')
           .style('fill', colorTheme.blocks.run.text)
-          // .style('font-weight', 'bold')
-          .style('font-size', '6px')
-          .attr('text-anchor', 'start')
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
       }
       function initConfig (g) {
+        return
         g.attr('runPhase', 'config')
         // Back
         g.select('rect.configBack')
@@ -3604,6 +3649,7 @@ function mainSchedBlocks (optIn) {
           .attr('stroke', colorTheme.dark.stroke)
       }
       function initTake (g) {
+        return
         g.attr('runPhase', 'takeData')
         // Back
         g.select('rect.configBack')
@@ -3644,6 +3690,7 @@ function mainSchedBlocks (optIn) {
           .attr('stroke', colorTheme.dark.stroke)
       }
       function initFinish (g) {
+        return
         g.attr('runPhase', 'finish')
         // Back
         g.select('rect.configBack')
@@ -3720,55 +3767,57 @@ function mainSchedBlocks (optIn) {
           h: (ratio * nLine * sizeTelsRow * defaultHeightView)
         }
 
+        // d3.select(this).append('rect')
+        //   .attr('class', 'background')
+        //   .attr('fill', function (d, i) {
+        //     return colorTheme.dark.background
+        //   })
+        //   .style('fill-opacity', 1)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.4)
+
         d3.select(this).append('path')
           .attr('fill', 'none')
           .attr('stroke', setCol(d).background)
-          .attr('stroke-width', 2)
+          .attr('stroke-width', 4)
           .style('pointer-events', 'none')
+
         d3.select(this).append('rect')
           .attr('class', 'headerLeft')
-          .attr('x', headerBox.x)
-          .attr('y', headerBox.y)
-          .attr('width', function (d) {
-            return headerBox.w * 0.4
-          })
-          .attr('height', function (d) {
-            return headerBox.h - 0.4 * 2
-          })
+          .attr('x', headerBoxId.x)
+          .attr('y', headerBoxId.y)
+          .attr('width', headerBoxId.w)
+          .attr('height', headerBoxId.h)
           .attr('fill', function (d, i) {
             return colorTheme.dark.background// setCol(d).background
           })
           .style('fill-opacity', 1)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.4)
-        d3.select(this).append('rect')
-          .attr('class', 'headerRight')
-          .attr('x', headerBox.x + headerBox.w * 0.4)
-          .attr('y', headerBox.y)
-          .attr('width', function (d) {
-            return headerBox.w * 0.6
-          })
-          .attr('height', function (d) {
-            return headerBox.h - 0.4 * 2
-          })
-          .attr('fill', function (d, i) {
-            return colorTheme.dark.background
-          })
-          .style('fill-opacity', 1)
-          .attr('stroke', colorTheme.medium.stroke)
-          .attr('stroke-width', 0.4)
-
         d3.select(this).append('text')
-          .attr('x', headerBox.w * 0.03)
-          .attr('y', headerBox.h * 0.5)
+          .attr('x', headerBoxId.w * 0.5)
+          .attr('y', headerBoxId.h * 0.5)
           .attr('dy', 3)
           .text(function () {
-            return 'Block: ' + d.metaData.blockName
+            return d.metaData.blockName
           })
           .style('fill', colorTheme.blocks.run.text)
           .style('font-weight', 'bold')
           .style('font-size', '12px')
-          .attr('text-anchor', 'start')
+          .attr('text-anchor', 'middle')
+
+        d3.select(this).append('rect')
+          .attr('class', 'headerRight')
+          .attr('x', headerBoxTels.x)
+          .attr('y', headerBoxTels.y)
+          .attr('width', headerBoxTels.w)
+          .attr('height', headerBoxTels.h)
+          .attr('fill', function (d, i) {
+            return colorTheme.dark.background
+          })
+          .style('fill-opacity', 1)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
 
         initConfigDataFinish(d3.select(this), headerBox)
         initRunPhase(d3.select(this), d.runPhase)
@@ -3800,12 +3849,6 @@ function mainSchedBlocks (optIn) {
       let mergeCurrentBlocks = currentBlocks.merge(enterCurrentBlocks)
 
       mergeCurrentBlocks.each(function (d, i) {
-        let headerBox = {
-          x: 0,
-          y: 0,
-          w: widthBlocks,
-          h: ratio * defaultHeightView * sizeHeader
-        }
         let height = d.height * defaultHeightView
         offsetY += (i === 0 ? 0 : offsetRunningBlocks * defaultHeightView)
         let translate = {
@@ -3814,27 +3857,33 @@ function mainSchedBlocks (optIn) {
         }
         offsetY += height
 
+        // d3.select(this).select('rect.background')
+        //   .attr('x', 0)
+        //   .attr('y', 0)
+        //   .attr('width', widthBlocks)
+        //   .attr('height', height)
+
         d3.select(this).attr('transform', function (d, i) {
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
-        d3.select(this).select('rect.headerLeft')
-          .attr('x', headerBox.x)
-          .attr('y', headerBox.y)
-          .attr('width', function (d) {
-            return headerBox.w * 0.4
-          })
-          .attr('height', function (d) {
-            return headerBox.h
-          })
-        d3.select(this).select('rect.headerRight')
-          .attr('x', headerBox.x + headerBox.w * 0.4)
-          .attr('y', headerBox.y)
-          .attr('width', function (d) {
-            return headerBox.w * 0.6
-          })
-          .attr('height', function (d) {
-            return headerBox.h
-          })
+        // d3.select(this).select('rect.headerLeft')
+        //   .attr('x', headerBox.x)
+        //   .attr('y', headerBox.y)
+        //   .attr('width', function (d) {
+        //     return headerBox.w * 0.4
+        //   })
+        //   .attr('height', function (d) {
+        //     return headerBox.h
+        //   })
+        // d3.select(this).select('rect.headerRight')
+        //   .attr('x', headerBox.x + headerBox.w * 0.4)
+        //   .attr('y', headerBox.y)
+        //   .attr('width', function (d) {
+        //     return headerBox.w * 0.6
+        //   })
+        //   .attr('height', function (d) {
+        //     return headerBox.h
+        //   })
         let lineGenerator = d3.line()
           .x(function (d) { return d.x })
           .y(function (d) { return d.y })
@@ -3842,13 +3891,13 @@ function mainSchedBlocks (optIn) {
         let dataPointFuturTop = [
           {x: widthBlocks + offsetX, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
           {x: (widthBlocks) + (offsetX) * ((1 / queueRun.length) * i), y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: (widthBlocks) + (offsetX) * ((1 / queueRun.length) * i), y: height * 0.5},
-          {x: (widthBlocks), y: height * 0.5},
+          {x: (widthBlocks) + (offsetX) * ((1 / queueRun.length) * i), y: headerBox.h * 0.5},
+          {x: (widthBlocks), y: headerBox.h * 0.5},
 
-          {x: widthBlocks * 0.5, y: height * 0.5},
+          {x: widthBlocks * 0.5, y: headerBox.h * 0.5},
 
-          {x: 0, y: height * 0.5},
-          {x: 0 - (offsetX * ((1 / queueRun.length) * i)), y: height * 0.5},
+          {x: 0, y: headerBox.h * 0.5},
+          {x: 0 - (offsetX * ((1 / queueRun.length) * i)), y: headerBox.h * 0.5},
           {x: 0 - (offsetX * ((1 / queueRun.length) * i)), y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
           {x: -offsetX, y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5}
         ]
