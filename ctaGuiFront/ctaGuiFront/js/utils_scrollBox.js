@@ -1103,7 +1103,7 @@ window.ScrollBox = function () {
 
       return delay
     }
-    com.doTrans = doTrans
+    com.doHorizontalTrans = doTrans
 
     // ---------------------------------------------------------------------------------------------------
     //
@@ -1386,12 +1386,10 @@ window.ScrollBox = function () {
         let shift = posShift()
         return 'translate(' + shift[0] + ',' + shift[1] + ')'
       })
-
     com.clipRecInner
       .transition('move')
       .duration(duration)
       .attr('transform', 'translate(0,0)')
-
     com.clipRecOuter
       .transition('move')
       .duration(duration)
@@ -1420,6 +1418,21 @@ window.ScrollBox = function () {
     com.scrollTransH.max = 0
     com.scrollTransH.frac = 0
     com.scrollTransH.now = com.scrollTransH.max
+    com.scrollRecH.w = boxW * boxW / Math.abs(com.scrollWidth)
+  }
+  function updateHorizontalScrollState (keepFrac) {
+    let boxW = com.innerBox.w // com.outerBox.h - com.outerBox.marg * 2;
+    if (com.canScroll && com.scrollHorizontal) {
+      com.scrollTransH.active = Math.abs(com.scrollWidth) > boxW
+    }
+
+    com.scrollTransH.min = hasVar(com.scrollWidth)
+      ? -1 * Math.abs(com.scrollWidth - boxW)
+      : 0
+    com.scrollTransH.max = 0
+    if (!keepFrac) com.scrollTransH.frac = 0
+    if (com.scrollTransH.now < com.scrollTransH.min) com.scrollTransH.now = com.scrollTransH.min
+    else if (com.scrollTransH.now > com.scrollTransH.max) com.scrollTransH.now = com.scrollTransH.max
     com.scrollRecH.w = boxW * boxW / Math.abs(com.scrollWidth)
   }
 
@@ -1467,4 +1480,98 @@ window.ScrollBox = function () {
     }
   }
   this.resetScroller = resetScroller
+
+  function moveHorizontalScrollerTo (target) {
+    com.scrollTransH.frac = target
+    com.setHorizontalRecScroll()
+  }
+  this.moveHorizontalScrollerTo = moveHorizontalScrollerTo
+
+  function updateHorizontalScroller (optIn) {
+    if (!com.scrollTransH.active) return
+
+    if (!hasVar(optIn)) optIn = {}
+
+    if (hasVar(optIn.scrollWidth)) com.scrollWidth = optIn.scrollWidth
+    // if (hasVar(optIn.boxWidth)) com.scrollWidth = optIn.boxWidth
+    // if (hasVar(optIn.frac)) com.scrollWidth = optIn.frac
+
+    updateHorizontalScrollState(true)
+    com.setHorizontalRecScroll()
+    com.doHorizontalTrans({ frac: com.scrollTransH.frac, duration: 0 })
+    // setHorizontalZoomStatus()
+    // if (prevActive !== com.scrollTransH.active) {
+    //   setHorizontalZoomStatus()
+    //   com.zoomHorizontalScrollBarInit()
+    // }
+
+    // if (prevActive !== com.scrollTransH.active) {
+    //   setBox()
+    // }
+    //
+    // com.innerG
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', function (d, i) {
+    //     let shift = posShift()
+    //     return 'translate(' + shift[0] + ',' + shift[1] + ')'
+    //   })
+    // com.clipRecInner
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', 'translate(0,0)')
+    // com.clipRecOuter
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', function (d, i) {
+    //     let shift = posShift()
+    //     return 'translate(' + -shift[0] + ',' + -shift[1] + ')'
+    //   })
+    //
+  }
+  this.updateHorizontalScroller = updateHorizontalScroller
+  // function updateScrollerSize (optIn) {
+  //   if (!hasVar(optIn)) optIn = {}
+  //   let duration = hasVar(optIn.duration) ? optIn.duration : timeD.animArc / 2
+  //
+  //   if (hasVar(optIn.canScroll)) com.canScroll = optIn.canScroll
+  //   if (hasVar(optIn.scrollVertical)) com.scrollVertical = optIn.scrollVertical
+  //   if (hasVar(optIn.scrollHeight)) com.scrollHeight = optIn.scrollHeight
+  //
+  //   let prevActive = com.scrollTransV.active
+  //   setVerticalScrollState()
+  //
+  //   if (prevActive !== com.scrollTransV.active) {
+  //     setBox()
+  //   }
+  //
+  //   com.innerG
+  //     .transition('move')
+  //     .duration(duration)
+  //     .attr('transform', function (d, i) {
+  //       let shift = posShift()
+  //       return 'translate(' + shift[0] + ',' + shift[1] + ')'
+  //     })
+  //
+  //   com.clipRecInner
+  //     .transition('move')
+  //     .duration(duration)
+  //     .attr('transform', 'translate(0,0)')
+  //
+  //   com.clipRecOuter
+  //     .transition('move')
+  //     .duration(duration)
+  //     .attr('transform', function (d, i) {
+  //       let shift = posShift()
+  //       return 'translate(' + -shift[0] + ',' + -shift[1] + ')'
+  //     })
+  //
+  //   if (prevActive !== com.scrollTransV.active) {
+  //     setVerticalZoomStatus()
+  //     com.zoomVerticalScrollBarInit()
+  //   } else if (com.scrollTransV.active) {
+  //     com.setVerticalRecScroll()
+  //   }
+  // }
+  // this.updateScrollerSize = updateScrollerSize
 }

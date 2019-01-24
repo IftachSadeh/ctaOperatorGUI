@@ -256,7 +256,7 @@ function mainSchedBlocks (optIn) {
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueServerFutur = {
-        x: lenD.w[0] * 0.62,
+        x: lenD.w[0] * 0.61,
         y: lenD.h[0] * 0.0,
         w: lenD.w[0] * 0.38,
         h: lenD.h[0] * 0.56,
@@ -279,7 +279,7 @@ function mainSchedBlocks (optIn) {
       box.currentBlocks = {
         x: lenD.w[0] * 0.38,
         y: lenD.h[0] * 0.0,
-        w: lenD.w[0] * 0.25,
+        w: lenD.w[0] * 0.24,
         h: lenD.h[0] * 1.0,
         marg: lenD.w[0] * 0.01
       }
@@ -410,6 +410,7 @@ function mainSchedBlocks (optIn) {
     svgBlocksQueueServerFutur.updateData()
     svgCurrentBlocks.updateData()
     svgStateScheduleMatrix.updateData()
+    svgWaitScheduleMatrix.updateData()
     // svgCancelQueue.updateData()
     // svgSuccessQueue.updateData()
     // svgFailQueue.updateData()
@@ -1005,7 +1006,7 @@ function mainSchedBlocks (optIn) {
           return myUniqueId + sbTag + d.id + tagTtl
         })
         .style('font-weight', function (d) {
-          return d.type === 0 ? 'bold' : 'normal'
+          return d.type === 0 ? 'normal' : 'normal'
         })
         .style('opacity', '0')
         .style('fill-opacity', function (d) {
@@ -1689,6 +1690,7 @@ function mainSchedBlocks (optIn) {
     // }
   }
   let SvgBlocksQueueServerPast = function () {
+    let reserved = {}
     function initData () {
       let adjustedBox = {
         x: box.blockQueueServerPast.x + box.blockQueueServerPast.w * 0.03,
@@ -1698,12 +1700,12 @@ function mainSchedBlocks (optIn) {
         marg: lenD.w[0] * 0.01
       }
 
-      let gBlockBox = svg.g.append('g')
+      reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
-      gBlockBox.append('text')
+      reserved.g.append('text')
         .text('Server schedule')
         .style('fill', colorTheme.medium.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .style('font-size', '12px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(-5,' + (box.blockQueueServerPast.h * 0.4) + ') rotate(270)')
@@ -1711,7 +1713,7 @@ function mainSchedBlocks (optIn) {
       blockQueueServerPast = new BlockQueueCreator({
         main: {
           tag: 'blockQueueMiddleTag',
-          g: gBlockBox,
+          g: reserved.g,
           box: adjustedBox,
           background: {
             fill: colorTheme.dark.background,
@@ -1841,6 +1843,46 @@ function mainSchedBlocks (optIn) {
       })
 
       blockQueueServerPast.init()
+
+      let minTxtSize = adjustedBox.w * 0.02
+      reserved.g.append('rect')
+        .attr('x', -minTxtSize * 2)
+        .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
+        .attr('width', minTxtSize * 4)
+        .attr('height', minTxtSize * 2)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 1)
+      reserved.g.append('text')
+        .attr('x', 0)
+        .attr('y', adjustedBox.h + 4 + minTxtSize)
+        .attr('dy', minTxtSize * 0.43)
+        .attr('class', 'dateTextLeft')
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('stroke-width', 0.5)
+        .attr('fill', colorTheme.medium.stroke)
+        .style('font-size', (minTxtSize * 1.3) + 'px')
+        .attr('text-anchor', 'middle')
+
+      reserved.g.append('rect')
+        .attr('x', adjustedBox.w - minTxtSize * 2)
+        .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
+        .attr('width', minTxtSize * 4)
+        .attr('height', minTxtSize * 2)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 1)
+      reserved.g.append('text')
+        .attr('x', adjustedBox.w)
+        .attr('y', adjustedBox.h + 4 + minTxtSize)
+        .attr('dy', minTxtSize * 0.43)
+        .attr('class', 'dateTextRight')
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('stroke-width', 0.5)
+        .attr('fill', colorTheme.medium.stroke)
+        .style('font-size', (minTxtSize * 1.3) + 'px')
+        .attr('text-anchor', 'middle')
+
       updateData()
     }
     this.initData = initData
@@ -1850,6 +1892,10 @@ function mainSchedBlocks (optIn) {
       let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
       let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() - (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) - (3600 * 8)}
       let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
+
+      reserved.g.select('text.dateTextLeft').text(d3.timeFormat('%H:%M')(startTime.date))
+      reserved.g.select('text.dateTextRight').text(d3.timeFormat('%H:%M')(endTime.date))
+
       blockQueueServerPast.updateData({
         time: {
           currentTime: currentTime,
@@ -1879,6 +1925,7 @@ function mainSchedBlocks (optIn) {
     this.update = update
   }
   let SvgBlocksQueueServerFutur = function () {
+    let reserved = {}
     function initData () {
       let adjustedBox = {
         x: box.blockQueueServerFutur.x + box.blockQueueServerFutur.w * 0.03,
@@ -1888,20 +1935,13 @@ function mainSchedBlocks (optIn) {
         marg: lenD.w[0] * 0.01
       }
 
-      let gBlockBox = svg.g.append('g')
+      reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
-      // gBlockBox.append('text')
-      //   .text('SERVER SCHEDULE')
-      //   .style('fill', colorTheme.medium.text)
-      //   .style('font-weight', 'bold')
-      //   .style('font-size', '12px')
-      //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(-5,' + (box.blockQueueServerFutur.h * 0.4) + ') rotate(270)')
 
       blockQueueServerFutur = new BlockQueueCreator({
         main: {
           tag: 'blockQueueServerFuturTag',
-          g: gBlockBox,
+          g: reserved.g,
           box: adjustedBox,
           background: {
             fill: colorTheme.dark.background,
@@ -2029,8 +2069,46 @@ function mainSchedBlocks (optIn) {
           selection: []
         }
       })
-
       blockQueueServerFutur.init()
+
+      let minTxtSize = adjustedBox.w * 0.02
+      reserved.g.append('rect')
+        .attr('x', -minTxtSize * 2)
+        .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
+        .attr('width', minTxtSize * 4)
+        .attr('height', minTxtSize * 2)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 1)
+      reserved.g.append('text')
+        .attr('x', 0)
+        .attr('y', adjustedBox.h + 4 + minTxtSize)
+        .attr('dy', minTxtSize * 0.43)
+        .attr('class', 'dateTextLeft')
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('stroke-width', 0.5)
+        .attr('fill', colorTheme.medium.stroke)
+        .style('font-size', (minTxtSize * 1.3) + 'px')
+        .attr('text-anchor', 'middle')
+
+      reserved.g.append('rect')
+        .attr('x', adjustedBox.w - minTxtSize * 2)
+        .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
+        .attr('width', minTxtSize * 4)
+        .attr('height', minTxtSize * 2)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 1)
+      reserved.g.append('text')
+        .attr('x', adjustedBox.w)
+        .attr('y', adjustedBox.h + 4 + minTxtSize)
+        .attr('dy', minTxtSize * 0.43)
+        .attr('class', 'dateTextRight')
+        .attr('stroke', colorTheme.medium.stroke)
+        .attr('stroke-width', 0.5)
+        .attr('fill', colorTheme.medium.stroke)
+        .style('font-size', (minTxtSize * 1.3) + 'px')
+        .attr('text-anchor', 'middle')
       updateData()
     }
     this.initData = initData
@@ -2040,6 +2118,10 @@ function mainSchedBlocks (optIn) {
       let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
       let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
       let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) + (3600 * 8)}
+
+      reserved.g.select('text.dateTextLeft').text(d3.timeFormat('%H:%M')(startTime.date))
+      reserved.g.select('text.dateTextRight').text(d3.timeFormat('%H:%M')(endTime.date))
+
       blockQueueServerFutur.updateData({
         time: {
           currentTime: currentTime,
@@ -2088,7 +2170,7 @@ function mainSchedBlocks (optIn) {
       reserved.gBlockBox.append('text')
         .text('SUCCESS')
         .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .style('font-size', '10px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.successQueue.h * 0.55) + ') rotate(270)')
@@ -2181,7 +2263,7 @@ function mainSchedBlocks (optIn) {
       //   .attr('y', function (d, i) {
       //     return dim.h * 0.2
       //   })
-      //   .style('font-weight', 'bold')
+      //   .style('font-weight', 'normal')
       //   .attr('text-anchor', 'middle')
       //   .style('font-size', dim.h * 0.25)
       //   .attr('dy', dim.h * 0.15)
@@ -2262,7 +2344,7 @@ function mainSchedBlocks (optIn) {
       reserved.gBlockBox.append('text')
         .text('FAIL')
         .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .style('font-size', '10px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.failQueue.h * 0.55) + ') rotate(270)')
@@ -2373,7 +2455,7 @@ function mainSchedBlocks (optIn) {
       reserved.gBlockBox.append('text')
         .text('CANCEL')
         .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .style('font-size', '10px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.cancelQueue.h * 0.55) + ') rotate(270)')
@@ -2465,7 +2547,7 @@ function mainSchedBlocks (optIn) {
       //   .attr('y', function (d, i) {
       //     return dim.h * 0.2
       //   })
-      //   .style('font-weight', 'bold')
+      //   .style('font-weight', 'normal')
       //   .attr('text-anchor', 'middle')
       //   .style('font-size', dim.h * 0.25)
       //   .attr('dy', dim.h * 0.15)
@@ -2545,7 +2627,7 @@ function mainSchedBlocks (optIn) {
       reserved.gBlockBox.append('text')
         .text('Success')
         .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.166) + ') rotate(270)')
@@ -2560,7 +2642,7 @@ function mainSchedBlocks (optIn) {
       reserved.gBlockBox.append('text')
         .text('Fail')
         .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.5) + ') rotate(270)')
@@ -2575,18 +2657,19 @@ function mainSchedBlocks (optIn) {
       reserved.gBlockBox.append('text')
         .text('Cancel')
         .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.84) + ') rotate(270)')
 
       reserved.scrollBoxG = reserved.gBlockBox.append('g')
+      reserved.scrollBoxG.attr('transform', 'scale(-1,1)')
       reserved.scrollBox = new ScrollBox()
       reserved.scrollBox.init({
         tag: 'successScrollBox',
         gBox: reserved.scrollBoxG,
         boxData: {
-          x: 0 + box.stateScheduleMatrix.marg,
+          x: 0 + box.stateScheduleMatrix.marg - box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg,
           y: 0,
           w: box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg,
           h: box.stateScheduleMatrix.h,
@@ -2624,7 +2707,12 @@ function mainSchedBlocks (optIn) {
     this.initData = initData
 
     function updateData () {
-      let scheds = groupBlocksBySchedule(shared.data.server.blocks)
+      let scheds = groupBlocksBySchedule(shared.data.server.blocks).reverse()
+      for (let i = scheds.length - 1; i > -1; i--) {
+        let b = sortBlocksByState(scheds[i].blocks)
+        if (b.success.length === 0 && b.fail.length === 0 && b.cancel.length === 0) scheds.splice(i, 1)
+      }
+
       let blocksTemplate = {
         '1': [{x: 0.5, y: 0.5}],
         '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
@@ -2656,17 +2744,19 @@ function mainSchedBlocks (optIn) {
         .attr('transform', function (d, i) {
           let translate = {
             y: 0,
-            x: dimCell.w * i
+            x: dimCell.w * (i + 1)
           }
-          return 'translate(' + translate.x + ',' + translate.y + ')'
+          return 'translate(' + translate.x + ',' + translate.y + '), scale(-1,1)'
         })
       enterAllScheds.each(function (d, i) {
         d3.select(this).append('rect')
+          .attr('class', 'background')
           .attr('x', 0)
           .attr('y', box.stateScheduleMatrix.h * 0.1)
           .attr('width', dimCell.w)
           .attr('height', box.stateScheduleMatrix.h * 0.9)
           .attr('fill', 'transparent')
+          .attr('fill-opacity', 0.5)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
           .attr('stroke-dasharray', [4, 4])
@@ -2677,7 +2767,7 @@ function mainSchedBlocks (optIn) {
           })
           .attr('x', dimCell.w * 0.5)
           .attr('y', box.stateScheduleMatrix.h * 0.0)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .attr('text-anchor', 'middle')
           .style('font-size', '6.5px')
           .attr('dy', 5 + ((i + 1) % 2) * 4)
@@ -2716,6 +2806,11 @@ function mainSchedBlocks (optIn) {
       let mergeAllScheds = enterAllScheds.merge(allScheds)
       mergeAllScheds.each(function (d) {
         let blocks = sortBlocksByState(d.blocks)
+
+        if (blocks.wait.length === 0) {
+          d3.select(this).select('rect.background').attr('fill', colorTheme.darker.background)
+        }
+
         let successBlocks = d3.select(this).select('g.successBlocks')
           .selectAll('g.successBlock')
           .data(blocks.success, function (d) {
@@ -2747,7 +2842,7 @@ function mainSchedBlocks (optIn) {
           .attr('x', dimBlock.w * 0.5)
           .attr('y', dimBlock.h * 0.5)
           .attr('text-anchor', 'middle')
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('font-size', '4.5px')
           .style('pointer-events', 'none')
           .attr('fill', function (d) { return setCol(d).text })
@@ -2797,7 +2892,7 @@ function mainSchedBlocks (optIn) {
           .attr('x', dimBlock.w * 0.5)
           .attr('y', dimBlock.h * 0.5)
           .attr('text-anchor', 'middle')
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('font-size', '4.5px')
           .style('pointer-events', 'none')
           .attr('fill', function (d) { return setCol(d).text })
@@ -2847,7 +2942,7 @@ function mainSchedBlocks (optIn) {
           .attr('x', dimBlock.w * 0.5)
           .attr('y', dimBlock.h * 0.5)
           .attr('text-anchor', 'middle')
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('font-size', '4.5px')
           .style('pointer-events', 'none')
           .attr('fill', function (d) { return setCol(d).text })
@@ -2885,7 +2980,7 @@ function mainSchedBlocks (optIn) {
       reserved.gBlockBox.append('text')
         .text('Waiting')
         .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(4,' + (box.waitScheduleMatrix.h * 0.1 + box.waitScheduleMatrix.h * 0.9 * 0.5 + box.waitScheduleMatrix.h * 0.2) + ') rotate(270)')
@@ -2935,6 +3030,11 @@ function mainSchedBlocks (optIn) {
 
     function updateData () {
       let scheds = groupBlocksBySchedule(shared.data.server.blocks)
+      for (let i = scheds.length - 1; i > -1; i--) {
+        let b = sortBlocksByState(scheds[i].blocks)
+        if (b.wait.length === 0) scheds.splice(i, 1)
+      }
+
       let blocksTemplate = {
         '1': [{x: 0.5, y: 0.5}],
         '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
@@ -2954,6 +3054,7 @@ function mainSchedBlocks (optIn) {
         w: dimCell.w * 0.31,
         h: dimCell.h * 0.31
       }
+
       let allScheds = reserved.scrollG
         .selectAll('g.allScheds')
         .data(scheds, function (d) {
@@ -2972,6 +3073,7 @@ function mainSchedBlocks (optIn) {
         })
       enterAllScheds.each(function (d, i) {
         d3.select(this).append('rect')
+          .attr('class', 'background')
           .attr('x', 0)
           .attr('y', box.waitScheduleMatrix.h * 0.1)
           .attr('width', dimCell.w)
@@ -2987,7 +3089,7 @@ function mainSchedBlocks (optIn) {
           })
           .attr('x', dimCell.w * 0.5)
           .attr('y', box.waitScheduleMatrix.h * 0.0)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .attr('text-anchor', 'middle')
           .style('font-size', '6.5px')
           .attr('dy', -2 + ((i + 1) % 2) * 4)
@@ -3006,8 +3108,19 @@ function mainSchedBlocks (optIn) {
       })
 
       let mergeAllScheds = enterAllScheds.merge(allScheds)
+      mergeAllScheds.attr('transform', function (d, i) {
+        let translate = {
+          y: box.waitScheduleMatrix.h * 0.2,
+          x: dimCell.w * i
+        }
+        return 'translate(' + translate.x + ',' + translate.y + ')'
+      })
       mergeAllScheds.each(function (d) {
         let blocks = sortBlocksByState(d.blocks)
+        // if (blocks.wait.length === 0) {
+        //   d3.select(this).select('rect.background').attr('fill', colorTheme.darker.background)
+        //   return
+        // }
         let successBlocks = d3.select(this).select('g.successBlocks')
           .selectAll('g.successBlock')
           .data(blocks.wait, function (d) {
@@ -3039,7 +3152,7 @@ function mainSchedBlocks (optIn) {
           .attr('x', dimBlock.w * 0.5)
           .attr('y', dimBlock.h * 0.5)
           .attr('text-anchor', 'middle')
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('font-size', '4.5px')
           .style('pointer-events', 'none')
           .attr('fill', function (d) { return setCol(d).text })
@@ -3058,6 +3171,15 @@ function mainSchedBlocks (optIn) {
             return 'translate(' + translate.x + ',' + translate.y + ')'
           })
       })
+
+      allScheds
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+
+      reserved.scrollBox.updateHorizontalScroller({canScroll: true, scrollWidth: scheds.length * dimCell.w})
     }
     this.updateData = updateData
   }
@@ -3083,7 +3205,7 @@ function mainSchedBlocks (optIn) {
         .attr('fill', colorTheme.stroke)
         .attr('x', box.currentBlocks.w * 0.5)
         .attr('y', box.currentBlocks.h * 0.06)
-        .style('font-weight', 'bold')
+        .style('font-weight', 'normal')
         .attr('text-anchor', 'middle')
         .style('font-size', 13.2)
         .attr('dy', 5)
@@ -3095,13 +3217,19 @@ function mainSchedBlocks (optIn) {
 
     function updateData () {
       let defaultHeightView = box.currentBlocks.h * 0.93
-      let telsPerRow = 8
-      let sizeTelsRow = 0.055
-      let sizeHeader = 0.085
-      let offsetRunningBlocks = 0.035
       let widthBlocks = box.currentBlocks.w * 0.8
       let offsetX = (box.currentBlocks.w - widthBlocks) * 0.5
+
+      let sizeHeader = 0.085
+
+      let telsPerRow = 8
+      let sizeTelsRow = 0.055
+      let offsetTelsType = 0.5
+
+      let offsetRunningBlocks = 0.035
+
       let ratio = 1
+
       let queueRun = blockQueueServerFutur.getBlocksRows()
       queueRun = queueRun.filter(b => b.data.exeState.state === 'run')
       queueRun.sort(function (a, b) { return a.y > b.y })
@@ -3113,28 +3241,36 @@ function mainSchedBlocks (optIn) {
       let totHeight = offsetRunningBlocks * (queueRun.length - 1)
       for (let i = 0; i < queueRun.length; i++) {
         let nTel = queueRun[i].telIds.length
-        // let addTel = telPerRow - (queueRun[i].telIds.length % telPerRow)
+
+        let copTelIds = deepCopy(queueRun[i].telIds)
+        copTelIds.sort(function (a, b) { return ('' + a).localeCompare(b) })
+        let off = 0
+        for (let i = 0; i < copTelIds.length - 1; i++) {
+          if (copTelIds[i].split('_')[0] !== copTelIds[i + 1].split('_')[0]) off += 1
+        }
+        nTel += off
+
         let nLine = (nTel % telsPerRow === 0) ?
           (nTel / telsPerRow) :
           (1 + parseInt(nTel / telsPerRow))
+        nLine = nLine < 1 ? 1 : nLine
 
-        queueRun[i].height = sizeTelsRow * nLine + sizeHeader
+        queueRun[i].height = sizeTelsRow * nLine + off * offsetTelsType * sizeTelsRow + sizeHeader
         totHeight += queueRun[i].height
-        // let nTelHeight = defaultHeightView * (nTel / 100)
-        // let addTelHeight = defaultHeightView * (addTel / 100)
-        //
-        // // defaultHeightView -= addTelHeight
-        // queueRun[i].height = nTelHeight + addTelHeight
-        // totHeight += nTelHeight + addTelHeight
       }
+
       if (totHeight > 1) {
         ratio = 1 / totHeight
         totHeight = 1
-      }
+      } else if (totHeight < 0.25) offsetRunningBlocks = 0.3
+      else if (totHeight < 0.50) offsetRunningBlocks = 0.2
+      else if (totHeight < 0.75) offsetRunningBlocks = 0.1
+
       for (let i = 0; i < queueRun.length; i++) {
         queueRun[i].height *= ratio
       }
       let offsetY = (defaultHeightView * 0.015) + (defaultHeightView * (1 - totHeight)) * 0.5
+
       let headerBox = {
         x: 0,
         y: 0,
@@ -3167,26 +3303,34 @@ function mainSchedBlocks (optIn) {
         function fillOpacity (val) {
           return (0.9 - (0.5 * (val / 100)))
         }
-        let nTel = g.data()[0].telIds.length
+        let tels = []
+        for (let i = 0; i < g.data()[0].telIds.length; i++) { tels.push(getTelHealthById(g.data()[0].telIds[i])) }
+        tels.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
+
+        let toff = 0
+        for (let i = 0; i < tels.length - 1; i++) {
+          if (tels[i].id.split('_')[0] !== tels[i + 1].id.split('_')[0]) toff += 1
+        }
+
+        let nTel = g.data()[0].telIds.length + toff
         let nLine = (nTel % telsPerRow === 0) ? (nTel / telsPerRow) : (1 + parseInt(nTel / telsPerRow))
         nLine = nLine < 1 ? 1 : nLine
+
+        let off = 0
+        if (tels[0].id.split('_')[0] === 'M') off -= 1
+        if (tels[0].id.split('_')[0] === 'S') off -= 2
+
         let telsBox = {
           x: 0,
           y: (ratio * defaultHeightView * sizeHeader),
           w: widthBlocks,
-          h: (ratio * defaultHeightView * nLine * sizeTelsRow)
+          h: (ratio * nLine * sizeTelsRow * defaultHeightView) + (ratio * toff * offsetTelsType * sizeTelsRow * defaultHeightView)
         }
         let offset = {
           x: telsBox.w / telsPerRow,
-          y: telsBox.h / nLine * 0.8
+          ty: (ratio * offsetTelsType * sizeTelsRow * defaultHeightView),
+          y: (ratio * sizeTelsRow * defaultHeightView)
         }
-
-        let tels = []
-        for (let i = 0; i < g.data()[0].telIds.length; i++) { tels.push(getTelHealthById(g.data()[0].telIds[i])) }
-        tels.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
-        let off = 0
-        if (tels[0].id.split('_')[0] === 'M') off -= 1
-        if (tels[0].id.split('_')[0] === 'S') off -= 2
 
         let currentTels = g
           .selectAll('g.currentTel')
@@ -3206,7 +3350,7 @@ function mainSchedBlocks (optIn) {
             let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
               (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
               (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
-            let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.y * 0.3)
+            let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
             return 'translate(' + tx + ',' + ty + ')'
           })
           d3.select(this).append('rect')
@@ -3239,76 +3383,6 @@ function mainSchedBlocks (optIn) {
             })
             .attr('rx', 0)
             .attr('ry', 0)
-          // d3.select(this).append('rect')
-          //   .attr('x', function (d) {
-          //     return (-offset.x * 0.5) //  + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
-          //   })
-          //   .attr('y', function (d) {
-          //     return (-offset.y * 0.5) //  + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
-          //   })
-          //   .attr('width', function (d) {
-          //     return offset.x //  - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
-          //   })
-          //   .attr('height', function (d) {
-          //     return offset.y * 0.3 //  - strokeSize(d.val) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
-          //   })
-          //   .attr('fill', function (d) {
-          //     return colorTheme.dark.background// telHealthCol(d.val) // colorTheme.darker.background
-          //   })
-          //   .attr('fill-opacity', function (d) {
-          //     return 1
-          //   })
-          //   .attr('stroke-width', function (d) {
-          //     return 0.2 // strokeSize(d.val)
-          //   })
-          //   .attr('stroke', function (d) {
-          //     return colorTheme.dark.stroke // telHealthCol(d.val)
-          //   })
-          //   .attr('stroke-opacity', function (d) {
-          //     return 1.0
-          //   })
-          //   .attr('stroke-dasharray', function () {
-          //     if ((i + toff) % telsPerRow === 0 ||
-          //       (i + toff) % telsPerRow === telsPerRow - 1 ||
-          //       i === nTel - 1 ||
-          //       tels[i - 1].id.split('_')[0] !== d.id.split('_')[0] ||
-          //       tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]
-          //     ) return
-          //     return [offset.x, offset.y * 0.3, offset.x, offset.y * 0.3]
-          //   })
-          // d3.select(this).append('text')
-          //   .attr('x', 0)
-          //   .attr('y', -offset.y * 0.24)
-          //   .attr('dy', 0)
-          //   .text(function (d) {
-          //     if ((i + toff) % telsPerRow === 0 ||
-          //       (i + toff) % telsPerRow === telsPerRow - 1 ||
-          //       i === nTel - 1 ||
-          //       tels[i - 1].id.split('_')[0] !== d.id.split('_')[0] ||
-          //       tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]
-          //     ) return d.id.split('_')[0]
-          //     return '' // '-------------'
-          //   })
-          //   .style('fill', colorTheme.blocks.run.text)
-          //   .style('font-weight', function (d) {
-          //     if ((i + toff) % telsPerRow === 0 ||
-          //       (i + toff) % telsPerRow === telsPerRow - 1 ||
-          //       i === nTel - 1 ||
-          //       tels[i - 1].id.split('_')[0] !== d.id.split('_')[0] ||
-          //       tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]
-          //     ) return 'bold'
-          //     return ''
-          //   })
-          //   .style('font-size', function (d) {
-          //     if ((i + toff) % telsPerRow === 0 ||
-          //       (i + toff) % telsPerRow === telsPerRow - 1 ||
-          //       i === nTel - 1 ||
-          //       tels[i - 1].id.split('_')[0] !== d.id.split('_')[0] ||
-          //       tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]
-          //     ) return 6
-          //     return 5
-          //   })
-          //   .attr('text-anchor', 'middle')
           d3.select(this).append('text')
             .attr('x', 0)
             .attr('y', offset.y * 0.2)
@@ -3317,14 +3391,70 @@ function mainSchedBlocks (optIn) {
               return d.id // d.id.split('_')[1]
             })
             .style('fill', colorTheme.blocks.run.text)
-            .style('font-weight', 'bold')
+            .style('font-weight', 'normal')
             .style('font-size', function (d) {
               return 6.2 // - (2 * (d.val / 100))
             })
             .attr('text-anchor', 'middle')
         })
 
-        // let mergeCurrentTels = currentTels.merge(enterCurrentTels)
+        let mergeCurrentTels = currentTels.merge(enterCurrentTels)
+        mergeCurrentTels.each(function (d, i) {
+          let toff = off
+          if (d.id.split('_')[0] === 'M') toff += 1
+          if (d.id.split('_')[0] === 'S') toff += 2
+
+          d3.select(this).attr('transform', function (d) {
+            let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
+              (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
+              (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+            let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
+            return 'translate(' + tx + ',' + ty + ')'
+          })
+          d3.select(this).select('rect')
+            .transition()
+            .duration(timeD.animArc)
+            .attr('x', function (d) {
+              return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+            })
+            .attr('y', function (d) {
+              return (-offset.y * 0.5) + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+            })
+            .attr('width', function (d) {
+              return offset.x - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+            })
+            .attr('height', function (d) {
+              return offset.y - strokeSize(d.val) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+            })
+            .attr('fill', function (d) {
+              return telHealthCol(d.val)
+            })
+            .attr('fill-opacity', function (d) {
+              return fillOpacity(d.val)
+            })
+            .attr('stroke-width', function (d) {
+              return strokeSize(d.val)
+            })
+            .attr('stroke', function (d) {
+              return telHealthCol(d.val)
+            })
+            .attr('stroke-opacity', function (d) {
+              return 1
+            })
+          d3.select(this).select('text')
+            .attr('x', 0)
+            .attr('y', offset.y * 0.2)
+            .attr('dy', 0)
+            .text(function (d) {
+              return d.id // d.id.split('_')[1]
+            })
+            .style('fill', colorTheme.blocks.run.text)
+            .style('font-weight', 'normal')
+            .style('font-size', function (d) {
+              return 6.2 // - (2 * (d.val / 100))
+            })
+            .attr('text-anchor', 'middle')
+        })
 
         currentTels
           .exit()
@@ -3334,33 +3464,6 @@ function mainSchedBlocks (optIn) {
           .remove()
       }
 
-      function initRunPhase (g, runPhase) {
-        if (runPhase.length < 1) return
-        if (runPhase[0].includes('config')) initConfig(g)
-        if (runPhase[0].includes('takeData')) initTake(g)
-        if (runPhase[0].includes('finish')) initFinish(g)
-      }
-      function dispatchRunPhase (g, runPhase) {
-        if (g.attr('runPhase') === 'config') {
-          for (let i = 0; i < runPhase.length; i++) {
-            if (runPhase[i] === 'run_takeData') {
-              initTake(g)
-              return
-            }
-          }
-        }
-        if (g.attr('runPhase') === 'takeData') {
-          for (let i = 0; i < runPhase.length; i++) {
-            if (runPhase[i].includes('finish')) {
-              initFinish(g)
-              return
-            }
-          }
-        }
-        if (g.attr('runPhase') === 'finish') {
-          return
-        }
-      }
       function loadLoop (rect) {
         return
         rect.attr('stroke-dasharray', [1, 1])
@@ -3410,26 +3513,26 @@ function mainSchedBlocks (optIn) {
         //   .attr('y', headerBox.h * 0.1)
         //   .attr('dy', 2)
         //   .style('fill', colorTheme.blocks.run.text)
-        //   // .style('font-weight', 'bold')
+        //   // .style('font-weight', 'normal')
         //   .style('font-size', '5.5px')
         //   .attr('text-anchor', 'start')
         //   .style('pointer-events', 'none')
         //   .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'configMountLoading')
-          .attr('x', headerBoxRunningPhase.x)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0)
           .attr('y', headerBoxRunningPhase.y)
-          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('width', headerBoxRunningPhase.w / 4)
           .attr('height', headerBoxRunningPhase.h / 3)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
         g.append('text')
-          .text('M')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 0.5)
+          .text('Mo')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0.5)
           .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
           .attr('dy', 3)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('fill', colorTheme.blocks.run.text)
           .style('font-size', '7px')
           .attr('text-anchor', 'middle')
@@ -3437,19 +3540,39 @@ function mainSchedBlocks (optIn) {
           .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'configCameraLoading')
-          .attr('x', headerBoxRunningPhase.x)
-          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h / 3)
-          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1)
+          .attr('y', headerBoxRunningPhase.y)
+          .attr('width', headerBoxRunningPhase.w / 4)
           .attr('height', headerBoxRunningPhase.h / 3)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
         g.append('text')
           .text('C')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 0.5)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 1.5)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
           .attr('dy', 3)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'configMirrorLoading')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2)
+          .attr('y', headerBoxRunningPhase.y)
+          .attr('width', headerBoxRunningPhase.w / 4)
+          .attr('height', headerBoxRunningPhase.h / 3)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        g.append('text')
+          .text('Mi')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
+          .attr('dy', 3)
+          .style('font-weight', 'normal')
           .style('fill', colorTheme.blocks.run.text)
           .style('font-size', '7px')
           .attr('text-anchor', 'middle')
@@ -3457,19 +3580,19 @@ function mainSchedBlocks (optIn) {
           .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'configDAQLoading')
-          .attr('x', headerBoxRunningPhase.x)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
-          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3)
+          .attr('y', headerBoxRunningPhase.y)
+          .attr('width', headerBoxRunningPhase.w / 4)
           .attr('height', headerBoxRunningPhase.h / 3)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
         g.append('text')
           .text('D')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 0.5)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
           .attr('dy', 3)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('fill', colorTheme.blocks.run.text)
           .style('font-size', '7px')
           .attr('text-anchor', 'middle')
@@ -3479,57 +3602,57 @@ function mainSchedBlocks (optIn) {
         // Take Data
         g.append('rect')
           .attr('class', 'dataLoading')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3))
-          .attr('y', headerBoxRunningPhase.y)
-          .attr('width', headerBoxRunningPhase.w / 3)
-          .attr('height', headerBoxRunningPhase.h)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.25)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h / 3)
+          .attr('width', headerBoxRunningPhase.w * 0.5)
+          .attr('height', headerBoxRunningPhase.h / 3)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
         g.append('text')
-          .text('D')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.35)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 1.5)
-          .attr('dy', 1.2)
+          .text('Data')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 2))
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 2))
+          .attr('dy', 2.2)
           .style('fill', colorTheme.blocks.run.text)
           .style('font-size', '7.5px')
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
-        g.append('text')
-          .text('a')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.45)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 2.5)
-          .attr('dy', 1.8)
-          .style('fill', colorTheme.blocks.run.text)
-          .style('font-size', '7.5px')
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-        g.append('text')
-          .text('t')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.55)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 3.5)
-          .attr('dy', 3)
-          .style('fill', colorTheme.blocks.run.text)
-          .style('font-size', '7.5px')
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
-        g.append('text')
-          .text('a')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.65)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 4.5)
-          .attr('dy', 4.2)
-          .style('fill', colorTheme.blocks.run.text)
-          .style('font-size', '7.5px')
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'middle')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
+        // g.append('text')
+        //   .text('a')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.45)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 2.5)
+        //   .attr('dy', 1.8)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7.5px')
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('text')
+        //   .text('t')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.55)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 3.5)
+        //   .attr('dy', 3)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7.5px')
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('text')
+        //   .text('a')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.65)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 4.5)
+        //   .attr('dy', 4.2)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7.5px')
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
 
         // FINISH
         // g.append('text')
@@ -3538,26 +3661,26 @@ function mainSchedBlocks (optIn) {
         //   .attr('y', headerBox.h * 0.1)
         //   .attr('dy', 2)
         //   .style('fill', colorTheme.blocks.run.text)
-        //   // .style('font-weight', 'bold')
+        //   // .style('font-weight', 'normal')
         //   .style('font-size', '5.5px')
         //   .attr('text-anchor', 'start')
         //   .style('pointer-events', 'none')
         //   .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'finishMountLoading')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2)
-          .attr('y', headerBoxRunningPhase.y)
-          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+          .attr('width', headerBoxRunningPhase.w / 4)
           .attr('height', headerBoxRunningPhase.h / 3)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
         g.append('text')
-          .text('M')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2.5)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
+          .text('Mo')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
           .attr('dy', 3)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('fill', colorTheme.blocks.run.text)
           .style('font-size', '7px')
           .attr('text-anchor', 'middle')
@@ -3565,19 +3688,39 @@ function mainSchedBlocks (optIn) {
           .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'finishCameraLoading')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2)
-          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h / 3)
-          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+          .attr('width', headerBoxRunningPhase.w / 4)
           .attr('height', headerBoxRunningPhase.h / 3)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
         g.append('text')
           .text('C')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2.5)
-          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 1.5)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
           .attr('dy', 3)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+        g.append('rect')
+          .attr('class', 'finishMirrorLoading')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+          .attr('width', headerBoxRunningPhase.w / 4)
+          .attr('height', headerBoxRunningPhase.h / 3)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        g.append('text')
+          .text('Mi')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
+          .attr('dy', 3)
+          .style('font-weight', 'normal')
           .style('fill', colorTheme.blocks.run.text)
           .style('font-size', '7px')
           .attr('text-anchor', 'middle')
@@ -3585,160 +3728,118 @@ function mainSchedBlocks (optIn) {
           .style('user-select', 'none')
         g.append('rect')
           .attr('class', 'finishDAQLoading')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3)
           .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
-          .attr('width', headerBoxRunningPhase.w / 3)
+          .attr('width', headerBoxRunningPhase.w / 4)
           .attr('height', headerBoxRunningPhase.h / 3)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
         g.append('text')
           .text('D')
-          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 2.5)
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3.5)
           .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
           .attr('dy', 3)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('fill', colorTheme.blocks.run.text)
           .style('font-size', '7px')
           .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
       }
-      function initConfig (g) {
-        return
-        g.attr('runPhase', 'config')
-        // Back
-        g.select('rect.configBack')
-          .attr('fill', setCol(g.data()[0]).background)
-          .attr('stroke', colorTheme.medium.stroke)
-        g.select('rect.dataBack')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.finishBack')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
 
-        // CONFIG
-        g.select('rect.configMountLoading')
-          .attr('fill', 'transparent')
-          .attr('stroke', colorTheme.medium.stroke)
-        loadLoop(g.select('rect.configMountLoading'))
-        g.select('rect.configCameraLoading')
-          .attr('fill', 'transparent')
-          .attr('stroke', colorTheme.medium.stroke)
-        loadLoop(g.select('rect.configCameraLoading'))
-        g.select('rect.configDAQLoading')
-          .attr('fill', 'transparent')
-          .attr('stroke', colorTheme.medium.stroke)
-        loadLoop(g.select('rect.configDAQLoading'))
-
-        // Take Data
-        g.select('rect.dataLoading')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-
-        // FINISH
-        g.select('rect.finishMountLoading')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.finishCameraLoading')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.finishDAQLoading')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+      function initRunPhase (g, runPhase) {
+        if (runPhase.length < 1) return
+        if (runPhase[0].includes('config')) initConfig(g, runPhase)
+        if (runPhase[0].includes('takeData')) initTake(g, runPhase)
+        if (runPhase[0].includes('finish')) initFinish(g, runPhase)
       }
-      function initTake (g) {
-        return
-        g.attr('runPhase', 'takeData')
-        // Back
-        g.select('rect.configBack')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.dataBack')
-          .attr('fill', setCol(g.data()[0]).background)
-          .attr('stroke', colorTheme.medium.stroke)
-        g.select('rect.finishBack')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-
-        // CONFIG
-        g.select('rect.configMountLoading')
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.configCameraLoading')
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.configDAQLoading')
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.dark.stroke)
-
-        // Take Data
-        g.select('rect.dataLoading')
-          .attr('fill', 'transparent')
-          .attr('stroke', colorTheme.medium.stroke)
-        loadLoop(g.select('rect.dataLoading'))
-        // FINISH
-        g.select('rect.finishMountLoading')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.finishCameraLoading')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.finishDAQLoading')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
+      function initConfig (g, runPhase) {
+        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('mount')) g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+        }
       }
-      function initFinish (g) {
-        return
-        g.attr('runPhase', 'finish')
-        // Back
-        g.select('rect.configBack')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.dataBack')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.finishBack')
-          .attr('fill', setCol(g.data()[0]).background)
-          .attr('stroke', colorTheme.medium.stroke)
+      function initTake (g, runPhase) {
+        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
-        // CONFIG
-        g.select('rect.configMountLoading')
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.configCameraLoading')
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.dark.stroke)
-        g.select('rect.configDAQLoading')
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.dataLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('take')) g.select('rect.dataLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+        }
+      }
+      function initFinish (g, runPhase) {
+        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
-        // Take Data
-        g.select('rect.dataLoading')
-          .attr('fill', colorTheme.darker.background)
-          .attr('stroke', colorTheme.dark.stroke)
+        g.select('rect.dataLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
-        // FINISH
-        g.select('rect.finishMountLoading')
-          .attr('fill', colorTheme.medium.background)
-          .attr('stroke', colorTheme.medium.stroke)
-        loadLoop(g.select('rect.finishMountLoading'))
-        g.select('rect.finishCameraLoading')
-          .attr('fill', colorTheme.medium.background)
-          .attr('stroke', colorTheme.medium.stroke)
-        loadLoop(g.select('rect.finishCameraLoading'))
-        g.select('rect.finishDAQLoading')
-          .attr('fill', colorTheme.medium.background)
-          .attr('stroke', colorTheme.medium.stroke)
-        loadLoop(g.select('rect.finishDAQLoading'))
+        g.select('rect.finishMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.finishCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.finishDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.finishMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('mount')) g.select('rect.finishMountLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('rect.finishCameraLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('rect.finishMirrorLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('rect.finishDAQLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+        }
       }
 
-      // let date = new Date(shared.data.server.timeOfNight.date_now)
-      // reserved.currentTime
-      //   .text(date.getHours() + ' : ' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()))
+      function dispatchRunPhase (g, runPhase) {
+        if (runPhase.length < 1) return
+        if (runPhase[0].includes('config')) dispatchConfig(g, runPhase)
+        if (runPhase[0].includes('takeData')) dispatchTake(g, runPhase)
+        if (runPhase[0].includes('finish')) dispatchFinish(g, runPhase)
+      }
+      function dispatchConfig (g, runPhase) {
+        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('mount')) g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+        }
+      }
+      function dispatchTake (g, runPhase) {
+        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
+        g.select('rect.dataLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('take')) g.select('rect.dataLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+        }
+      }
+      function dispatchFinish (g, runPhase) {
+        g.select('rect.dataLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
+        g.select('rect.finishMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.finishCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.finishDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('rect.finishMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('mount')) g.select('rect.finishMountLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('rect.finishCameraLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('rect.finishMirrorLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('rect.finishDAQLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+        }
+      }
 
       let currentBlocks = reserved.gBlockBox
         .selectAll('g.currentBlock')
@@ -3750,10 +3851,28 @@ function mainSchedBlocks (optIn) {
         .append('g')
         .attr('class', 'currentBlock')
       enterCurrentBlocks.each(function (d, i) {
-        let nTel = queueRun[i].telIds.length
+        let copTelIds = deepCopy(queueRun[i].telIds)
+        copTelIds.sort(function (a, b) { return ('' + a).localeCompare(b) })
+        let off = 0
+        let LST = 0
+        let MST = 0
+        let SST = 0
+        for (let i = 0; i < copTelIds.length - 1; i++) {
+          if (copTelIds[i].split('_')[0] !== copTelIds[i + 1].split('_')[0]) {
+            if (copTelIds[i].split('_')[0] === 'L') LST = i + 1
+            if (copTelIds[i].split('_')[0] === 'M') MST = (i + 1) - LST
+            off += 1
+          }
+        }
+        SST = copTelIds.length - LST - MST
+
+        let nTel = queueRun[i].telIds.length + off
+
         let nLine = (nTel % telsPerRow === 0) ?
           (nTel / telsPerRow) :
           (1 + parseInt(nTel / telsPerRow))
+        nLine = nLine < 1 ? 1 : nLine
+
         let headerBox = {
           x: 0,
           y: 0,
@@ -3764,18 +3883,8 @@ function mainSchedBlocks (optIn) {
           x: 0,
           y: (ratio * defaultHeightView * sizeHeader),
           w: widthBlocks,
-          h: (ratio * nLine * sizeTelsRow * defaultHeightView)
+          h: (ratio * nLine * sizeTelsRow * defaultHeightView) + (ratio * off * offsetTelsType * sizeTelsRow * defaultHeightView)
         }
-
-        // d3.select(this).append('rect')
-        //   .attr('class', 'background')
-        //   .attr('fill', function (d, i) {
-        //     return colorTheme.dark.background
-        //   })
-        //   .style('fill-opacity', 1)
-        //   .attr('stroke', colorTheme.dark.stroke)
-        //   .attr('stroke-width', 0.4)
-
         d3.select(this).append('path')
           .attr('fill', 'none')
           .attr('stroke', setCol(d).background)
@@ -3783,7 +3892,18 @@ function mainSchedBlocks (optIn) {
           .style('pointer-events', 'none')
 
         d3.select(this).append('rect')
-          .attr('class', 'headerLeft')
+          .attr('rx', 1)
+          .attr('ry', 1)
+          .attr('class', 'background')
+          .attr('fill', function (d, i) {
+            return colorTheme.darker.stroke
+          })
+          .style('fill-opacity', 1)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 4)
+
+        d3.select(this).append('rect')
+          .attr('class', 'headerId')
           .attr('x', headerBoxId.x)
           .attr('y', headerBoxId.y)
           .attr('width', headerBoxId.w)
@@ -3795,19 +3915,19 @@ function mainSchedBlocks (optIn) {
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.4)
         d3.select(this).append('text')
-          .attr('x', headerBoxId.w * 0.5)
-          .attr('y', headerBoxId.h * 0.5)
-          .attr('dy', 3)
           .text(function () {
             return d.metaData.blockName
           })
+          .attr('x', headerBoxId.w * 0.5)
+          .attr('y', headerBoxId.h * 0.5)
+          .attr('dy', 3)
           .style('fill', colorTheme.blocks.run.text)
-          .style('font-weight', 'bold')
+          .style('font-weight', 'normal')
           .style('font-size', '12px')
           .attr('text-anchor', 'middle')
 
         d3.select(this).append('rect')
-          .attr('class', 'headerRight')
+          .attr('class', 'headerTels')
           .attr('x', headerBoxTels.x)
           .attr('y', headerBoxTels.y)
           .attr('width', headerBoxTels.w)
@@ -3818,6 +3938,87 @@ function mainSchedBlocks (optIn) {
           .style('fill-opacity', 1)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.4)
+        d3.select(this).append('text')
+          .text(d.pointingName.split('/')[0])
+          .attr('x', headerBoxTels.x + headerBoxTels.w * 0.3)
+          .attr('y', headerBoxTels.y + (headerBoxTels.h / 3))
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'middle')
+        d3.select(this).append('text')
+          .text(d.pointingName.split('/')[1])
+          .attr('x', headerBoxTels.x + headerBoxTels.w * 0.3)
+          .attr('y', headerBoxTels.y + (headerBoxTels.h / 3) * 2)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'middle')
+        d3.select(this).append('rect')
+          .attr('class', 'headerTels')
+          .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6)
+          .attr('y', headerBoxTels.y)
+          .attr('width', headerBoxTels.w * 0.4)
+          .attr('height', headerBoxTels.h / 3)
+          .attr('fill', function (d, i) {
+            return colorTheme.dark.background
+          })
+          .style('fill-opacity', 1)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
+        d3.select(this).append('text')
+          .text('L: ' + LST)
+          .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6 + headerBoxTels.w * 0.2)
+          .attr('y', headerBoxTels.y + (headerBoxTels.h / 3) * 0.5)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+        d3.select(this).append('rect')
+          .attr('class', 'headerTels')
+          .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6)
+          .attr('y', headerBoxTels.y + (headerBoxTels.h / 3))
+          .attr('width', headerBoxTels.w * 0.4)
+          .attr('height', headerBoxTels.h / 3)
+          .attr('fill', function (d, i) {
+            return colorTheme.dark.background
+          })
+          .style('fill-opacity', 1)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
+        d3.select(this).append('text')
+          .text('M: ' + MST)
+          .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6 + headerBoxTels.w * 0.2)
+          .attr('y', headerBoxTels.y + (headerBoxTels.h / 3) * 1.5)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+        d3.select(this).append('rect')
+          .attr('class', 'headerTels')
+          .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6)
+          .attr('y', headerBoxTels.y + (headerBoxTels.h / 3) * 2)
+          .attr('width', headerBoxTels.w * 0.4)
+          .attr('height', headerBoxTels.h / 3)
+          .attr('fill', function (d, i) {
+            return colorTheme.dark.background
+          })
+          .style('fill-opacity', 1)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
+        d3.select(this).append('text')
+          .text('S: ' + SST)
+          .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6 + headerBoxTels.w * 0.2)
+          .attr('y', headerBoxTels.y + (headerBoxTels.h / 3) * 2.5)
+          .attr('dy', 3)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
 
         initConfigDataFinish(d3.select(this), headerBox)
         initRunPhase(d3.select(this), d.runPhase)
@@ -3830,6 +4031,7 @@ function mainSchedBlocks (optIn) {
           .attr('width', telsBox.w)
           .attr('height', telsBox.h)
           .append('rect')
+          .attr('class', 'background')
           .attr('x', 0)
           .attr('y', 0)
           .attr('width', function () {
@@ -3849,6 +4051,33 @@ function mainSchedBlocks (optIn) {
       let mergeCurrentBlocks = currentBlocks.merge(enterCurrentBlocks)
 
       mergeCurrentBlocks.each(function (d, i) {
+        let copTelIds = deepCopy(queueRun[i].telIds)
+        copTelIds.sort(function (a, b) { return ('' + a).localeCompare(b) })
+        let off = 0
+        for (let i = 0; i < copTelIds.length - 1; i++) {
+          if (copTelIds[i].split('_')[0] !== copTelIds[i + 1].split('_')[0]) off += 1
+        }
+
+        let nTel = queueRun[i].telIds.length + off
+
+        let nLine = (nTel % telsPerRow === 0) ?
+          (nTel / telsPerRow) :
+          (1 + parseInt(nTel / telsPerRow))
+        nLine = nLine < 1 ? 1 : nLine
+
+        let headerBox = {
+          x: 0,
+          y: 0,
+          w: widthBlocks,
+          h: ratio * defaultHeightView * sizeHeader
+        }
+        let telsBox = {
+          x: 0,
+          y: (ratio * defaultHeightView * sizeHeader),
+          w: widthBlocks,
+          h: (ratio * nLine * sizeTelsRow * defaultHeightView) + (ratio * off * offsetTelsType * sizeTelsRow * defaultHeightView)
+        }
+
         let height = d.height * defaultHeightView
         offsetY += (i === 0 ? 0 : offsetRunningBlocks * defaultHeightView)
         let translate = {
@@ -3857,52 +4086,54 @@ function mainSchedBlocks (optIn) {
         }
         offsetY += height
 
-        // d3.select(this).select('rect.background')
-        //   .attr('x', 0)
-        //   .attr('y', 0)
-        //   .attr('width', widthBlocks)
-        //   .attr('height', height)
+        d3.select(this).select('rect.background')
+          .transition()
+          .duration(timeD.animArc)
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', widthBlocks)
+          .attr('height', height)
+        d3.select(this).select('g.telsBox rect.background')
+          .transition()
+          .duration(timeD.animArc)
+          .attr('class', 'background')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', function () {
+            return telsBox.w
+          })
+          .attr('height', function () {
+            return telsBox.h
+          })
 
-        d3.select(this).attr('transform', function (d, i) {
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
-        // d3.select(this).select('rect.headerLeft')
-        //   .attr('x', headerBox.x)
-        //   .attr('y', headerBox.y)
-        //   .attr('width', function (d) {
-        //     return headerBox.w * 0.4
-        //   })
-        //   .attr('height', function (d) {
-        //     return headerBox.h
-        //   })
-        // d3.select(this).select('rect.headerRight')
-        //   .attr('x', headerBox.x + headerBox.w * 0.4)
-        //   .attr('y', headerBox.y)
-        //   .attr('width', function (d) {
-        //     return headerBox.w * 0.6
-        //   })
-        //   .attr('height', function (d) {
-        //     return headerBox.h
-        //   })
+
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .attr('transform', function (d, i) {
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
         let lineGenerator = d3.line()
           .x(function (d) { return d.x })
           .y(function (d) { return d.y })
           .curve(d3.curveBasis)
         let dataPointFuturTop = [
           {x: widthBlocks + offsetX, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: (widthBlocks) + (offsetX) * ((1 / queueRun.length) * i), y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
-          {x: (widthBlocks) + (offsetX) * ((1 / queueRun.length) * i), y: headerBox.h * 0.5},
+          {x: (widthBlocks) + (offsetX) * 0.5 /* ((1 / queueRun.length) * i) */, y: -translate.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: (widthBlocks) + (offsetX) * 0.5 /* ((1 / queueRun.length) * i) */, y: headerBox.h * 0.5},
           {x: (widthBlocks), y: headerBox.h * 0.5},
 
           {x: widthBlocks * 0.5, y: headerBox.h * 0.5},
 
           {x: 0, y: headerBox.h * 0.5},
-          {x: 0 - (offsetX * ((1 / queueRun.length) * i)), y: headerBox.h * 0.5},
-          {x: 0 - (offsetX * ((1 / queueRun.length) * i)), y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
+          {x: 0 - (offsetX * 0.5 /* ((1 / queueRun.length) * i) */), y: headerBox.h * 0.5},
+          {x: 0 - (offsetX * 0.5 /* ((1 / queueRun.length) * i) */), y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5},
           {x: -offsetX, y: -translate.y + box.blockQueueServerPast.y + (box.blockQueueServerPast.h * 0.41375) + d.y + d.h * 0.5}
         ]
         d3.select(this).select('path')
           .data([dataPointFuturTop])
+          .transition()
+          .duration(timeD.animArc)
           .attr('d', lineGenerator)
 
         dispatchRunPhase(d3.select(this), d.runPhase)
