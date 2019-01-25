@@ -85,6 +85,7 @@ window.EventQueue = function () {
 
   function init (optIn) {
     com = optIn
+    initBackground()
     initAxis()
     initBlocks()
     initFilters()
@@ -93,6 +94,22 @@ window.EventQueue = function () {
   }
   this.init = init
 
+  function initBackground () {
+    com.main.g.append('rect')
+      .attr('class', 'background')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', com.main.box.w)
+      .attr('height', com.main.box.h)
+      .style('fill', com.main.background.fill)
+      .style('stroke', com.main.background.stroke)
+      .style('stroke-width', com.main.background.strokeWidth)
+    // back.style('opacity', 0)
+    //   .transition()
+    //   .duration(1000)
+    //   .delay(1000)
+    //   .style('opacity', 1)
+  }
   function initAxis () {
     if (!com.axis.enabled) return
     com.axis.group.g = com.g.append('g')
@@ -421,7 +438,7 @@ window.EventQueue = function () {
 
     // compute width/height/x/y of blocks, only y need to be modified (so far)
     $.each(dataIn, function (index, dataNow) {
-      let sizeBlocks = (12 * (4.5 + 1) / 2.2)
+      let sizeBlocks = (8 * (4.5 + 1) / 2.2)
       let start = new Date(dataNow.time) * xScale
       let x0 = box.x + start - (sizeBlocks / 2)
       let w0 = sizeBlocks
@@ -599,8 +616,8 @@ window.EventQueue = function () {
       .attr('y', function (d, i) {
         return d.y + 2 + d.h / 2
       })
-      .attr('rx', 2)
-      .attr('ry', 2)
+      // .attr('rx', 2)
+      // .attr('ry', 2)
       .attr('width', function (d, i) {
         return 0
       })
@@ -812,7 +829,7 @@ window.EventQueue = function () {
       .attr('width', w * 0.8)
       .attr('height', h * 0.8)
       .attr('x', x + w * 0.1)
-      .attr('y', y + h * 0.1)
+      .attr('y', y + h * 0.25)
   }
   function drawGrb (g, x, y, w, h, priority) {
     g.append('svg:image')
@@ -828,7 +845,7 @@ window.EventQueue = function () {
       .attr('width', w * 0.8)
       .attr('height', h * 0.8)
       .attr('x', x + w * 0.1)
-      .attr('y', y + h * 0.1)
+      .attr('y', y + h * 0.25)
   }
   function drawHardware (g, x, y, w, h, priority) {
     g.append('svg:image')
@@ -844,6 +861,6 @@ window.EventQueue = function () {
       .attr('width', w * 0.8)
       .attr('height', h * 0.8)
       .attr('x', x + w * 0.1)
-      .attr('y', y + h * 0.1)
+      .attr('y', y + h * 0.25)
   }
 }
