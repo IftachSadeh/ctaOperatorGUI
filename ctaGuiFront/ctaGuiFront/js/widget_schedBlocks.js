@@ -270,10 +270,17 @@ function mainSchedBlocks (optIn) {
         marg: lenD.w[0] * 0.01
       }
       box.waitScheduleMatrix = {
-        x: lenD.w[0] * 0.628,
-        y: lenD.h[0] * 0.6611,
+        x: lenD.w[0] * 0.616,
+        y: lenD.h[0] * 0.55,
         w: lenD.w[0] * 0.36,
         h: lenD.h[0] * 0.113,
+        marg: lenD.w[0] * 0.01
+      }
+      box.freeTels = {
+        x: lenD.w[0] * 0.616,
+        y: lenD.h[0] * 0.7,
+        w: lenD.w[0] * 0.36,
+        h: lenD.h[0] * 0.28,
         marg: lenD.w[0] * 0.01
       }
       box.currentBlocks = {
@@ -283,40 +290,20 @@ function mainSchedBlocks (optIn) {
         h: lenD.h[0] * 1.0,
         marg: lenD.w[0] * 0.01
       }
-      box.successQueue = {
-        x: lenD.w[0] * 0.02,
-        y: lenD.h[0] * 0.52,
-        w: lenD.w[0] * 0.28,
-        h: lenD.h[0] * 0.12,
-        marg: lenD.w[0] * 0.01
-      }
-      box.failQueue = {
-        x: lenD.w[0] * 0.02,
-        y: lenD.h[0] * 0.7,
-        w: lenD.w[0] * 0.28,
-        h: lenD.h[0] * 0.12,
-        marg: lenD.w[0] * 0.01
-      }
-      box.cancelQueue = {
-        x: lenD.w[0] * 0.02,
-        y: lenD.h[0] * 0.86,
-        w: lenD.w[0] * 0.28,
-        h: lenD.h[0] * 0.12,
-        marg: lenD.w[0] * 0.01
-      }
-      box.execution = {
-        x: lenD.w[0] * 0.65,
-        y: lenD.h[0] * 0.15,
-        w: lenD.w[0] * 0.35,
-        h: lenD.h[0] * 0.85,
-        marg: lenD.w[0] * 0.01
-      }
-      box.details = {
-        x: lenD.w[0] * 0,
-        y: lenD.h[0] * 0.01,
-        w: lenD.w[0] * 0,
-        h: lenD.h[0] * 0.05
-      }
+
+      // box.execution = {
+      //   x: lenD.w[0] * 0.65,
+      //   y: lenD.h[0] * 0.15,
+      //   w: lenD.w[0] * 0.35,
+      //   h: lenD.h[0] * 0.85,
+      //   marg: lenD.w[0] * 0.01
+      // }
+      // box.details = {
+      //   x: lenD.w[0] * 0,
+      //   y: lenD.h[0] * 0.01,
+      //   w: lenD.w[0] * 0,
+      //   h: lenD.h[0] * 0.05
+      // }
     }
     function initDefaultStyle () {
       shared.style = {}
@@ -391,6 +378,7 @@ function mainSchedBlocks (optIn) {
     svgBlocksQueueServerFutur.initData()
     svgStateScheduleMatrix.initData()
     svgWaitScheduleMatrix.initData()
+    svgFreeTels.initData()
     // svgSuccessQueue.initData()
     // svgFailQueue.initData()
     // svgCancelQueue.initData()
@@ -411,6 +399,7 @@ function mainSchedBlocks (optIn) {
     svgCurrentBlocks.updateData()
     svgStateScheduleMatrix.updateData()
     svgWaitScheduleMatrix.updateData()
+    svgFreeTels.updateData()
     // svgCancelQueue.updateData()
     // svgSuccessQueue.updateData()
     // svgFailQueue.updateData()
@@ -2154,463 +2143,6 @@ function mainSchedBlocks (optIn) {
     }
     this.update = update
   }
-  let SvgSuccessQueue = function () {
-    let reserved = {}
-    function initData () {
-      reserved.gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + box.successQueue.x + ',' + box.successQueue.y + ')')
-      reserved.gBlockBox.append('rect')
-        .attr('x', 0 + box.successQueue.marg)
-        .attr('y', 0 + box.successQueue.marg)
-        .attr('width', box.successQueue.w * 1 - box.successQueue.marg)
-        .attr('height', box.successQueue.h * 1 - box.successQueue.marg)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.2)
-      reserved.gBlockBox.append('text')
-        .text('SUCCESS')
-        .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'normal')
-        .style('font-size', '10px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(4,' + (box.successQueue.h * 0.55) + ') rotate(270)')
-
-      reserved.scrollBoxG = reserved.gBlockBox.append('g')
-      reserved.scrollBox = new ScrollBox()
-      reserved.scrollBox.init({
-        tag: 'successScrollBox',
-        gBox: reserved.scrollBoxG,
-        boxData: {
-          x: 0 + box.successQueue.marg,
-          y: 0 + box.successQueue.marg,
-          w: box.successQueue.w - box.successQueue.marg,
-          h: box.successQueue.h - box.successQueue.marg,
-          marg: 0
-        },
-        useRelativeCoords: true,
-        locker: new Locker(),
-        lockerV: [widgetId + 'updateData'],
-        lockerZoom: {
-          all: 'successScrollBox' + 'zoom',
-          during: 'successScrollBox' + 'zoomDuring',
-          end: 'successScrollBox' + 'zoomEnd'
-        },
-        runLoop: new RunLoop({tag: 'successScrollBox'}),
-        canScroll: true,
-        scrollVertical: false,
-        scrollHorizontal: true,
-        scrollHeight: box.successQueue.h - box.successQueue.marg,
-        scrollWidth: box.successQueue.w - box.successQueue.marg,
-        background: colorTheme.dark.background,
-        scrollRecH: {h: 6},
-        scrollRecV: {w: 6}
-      })
-      reserved.scrollG = reserved.scrollBox.get('innerG')
-
-      updateData()
-    }
-    this.initData = initData
-
-    function updateData () {
-      let successBlocks = reserved.scrollG
-        .selectAll('g.successBlock')
-        .data(shared.data.blocks.success, function (d) {
-          return d.obId
-        })
-      let enterSuccessBlocks = successBlocks
-        .enter()
-        .append('g')
-        .attr('class', 'successBlock')
-        .attr('transform', function (d, i) {
-          let translate = {
-            y: 0,
-            x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
-          }
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
-      enterSuccessBlocks.append('rect')
-        .attr('class', 'background')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', function (d, i) {
-          return 50
-        })
-        .attr('height', function (d, i) {
-          return 100
-        })
-        .attr('fill', function (d, i) {
-          return setCol(d).background
-        })
-        .attr('stroke', colorTheme.darker.stroke)
-        .attr('stroke-width', 0.2)
-        .on('mouseover', function (d) {
-          // mainOverSchedBlocks(d.scheduleId)
-        })
-        .on('mouseout', function (d) {
-          // mainOutSchedBlocks(d.scheduleId)
-        })
-        .on('click', function (d) {
-          // mainFocusOnSchedBlocks(d.scheduleId)
-        })
-      // enterSchedulingBlocks.append('text')
-      //   .attr('class', 'name')
-      //   .text(function (d) {
-      //     return 'SB ' + d.schedName
-      //   })
-      //   .attr('x', function (d, i) {
-      //     return dim.w * 0.5
-      //   })
-      //   .attr('y', function (d, i) {
-      //     return dim.h * 0.2
-      //   })
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', dim.h * 0.25)
-      //   .attr('dy', dim.h * 0.15)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', colorTheme.darker.text)
-      //   .attr('stroke', 'none')
-      // enterSchedulingBlocks.each(function (d) {
-      //   let dimBlocks = dim.h * 0.16
-      //   let length = d.blocks.length
-      //   let offset = ((dim.w /* - dimBlocks * 2 */) - (length < 4 ? (dimBlocks * 1.2 * length) : (length % 2 === 0 ? (dimBlocks * 0.6 * length) : (dimBlocks * 0.7 * length)))) * 0.5
-      //
-      //   d3.select(this).selectAll('rect.subBlocks')
-      //     .data(d.blocks, function (d) {
-      //       return d.obId
-      //     })
-      //     .enter()
-      //     .append('rect')
-      //     .attr('class', 'subBlocks')
-      //     .attr('x', function (d, i) {
-      //       return offset + (length < 4 ? (dimBlocks * i * 1.2) : (length % 2 === 0 ? (0.6 * dimBlocks * (i - (i % 2))) : (dimBlocks * i * 0.6)))
-      //     })
-      //     .attr('y', function (d, i) {
-      //       return dim.h - dimBlocks * 1.8 - (length < 4 ? dimBlocks * 0.5 : dimBlocks * 1.2 * (i % 2))
-      //     })
-      //     .attr('width', function (d, i) {
-      //       return dimBlocks
-      //     })
-      //     .attr('height', function (d, i) {
-      //       return dimBlocks
-      //     })
-      //     .attr('fill', function (d, i) {
-      //       return setCol(d).background
-      //     })
-      //     .style('opacity', 1)
-      //     .attr('stroke', 'black')
-      //     .attr('stroke-width', 0.2)
-      //     .style('pointer-events', 'none')
-      // })
-
-      let mergeSuccessBlocks = enterSuccessBlocks.merge(successBlocks)
-      mergeSuccessBlocks.attr('transform', function (d, i) {
-        let translate = {
-          y: 0,
-          x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
-        }
-        return 'translate(' + translate.x + ',' + translate.y + ')'
-      })
-      // schedulingBlocks.each(function (d) {
-      //   d3.select(this).selectAll('rect.subBlocks')
-      //     .data(d.blocks, function (d) {
-      //       return d.obId
-      //     })
-      //     .transition()
-      //     .duration(800)
-      //     .attr('fill', function (d, i) {
-      //       return setCol(d).background
-      //     })
-      // })
-
-      reserved.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: shared.data.blocks.success.length * 60})
-      //reserved.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: parseInt(reserved.scrollG.attr('height') + 200, 10)})
-    }
-    this.updateData = updateData
-  }
-  let SvgFailQueue = function () {
-    let reserved = {}
-    function initData () {
-      reserved.gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + box.failQueue.x + ',' + box.failQueue.y + ')')
-      reserved.gBlockBox.append('rect')
-        .attr('x', 0 + box.failQueue.marg)
-        .attr('y', 0 + box.failQueue.marg)
-        .attr('width', box.failQueue.w * 1 - box.failQueue.marg)
-        .attr('height', box.failQueue.h * 1 - box.failQueue.marg)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.2)
-      reserved.gBlockBox.append('text')
-        .text('FAIL')
-        .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'normal')
-        .style('font-size', '10px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(4,' + (box.failQueue.h * 0.55) + ') rotate(270)')
-
-      reserved.scrollBoxG = reserved.gBlockBox.append('g')
-      reserved.scrollBox = new ScrollBox()
-      reserved.scrollBox.init({
-        tag: 'failScrollBox',
-        gBox: reserved.scrollBoxG,
-        boxData: {
-          x: 0 + box.failQueue.marg,
-          y: 0 + box.failQueue.marg,
-          w: box.failQueue.w - box.failQueue.marg,
-          h: box.failQueue.h - box.failQueue.marg,
-          marg: 0
-        },
-        useRelativeCoords: true,
-        locker: new Locker(),
-        lockerV: [widgetId + 'updateData'],
-        lockerZoom: {
-          all: 'failScrollBox' + 'zoom',
-          during: 'failScrollBox' + 'zoomDuring',
-          end: 'failScrollBox' + 'zoomEnd'
-        },
-        runLoop: new RunLoop({tag: 'failScrollBox'}),
-        canScroll: true,
-        scrollVertical: false,
-        scrollHorizontal: true,
-        scrollHeight: box.failQueue.h - box.failQueue.marg,
-        scrollWidth: box.failQueue.w - box.failQueue.marg,
-        background: colorTheme.dark.background,
-        scrollRecH: {h: 6},
-        scrollRecV: {w: 6}
-      })
-      reserved.scrollG = reserved.scrollBox.get('innerG')
-    }
-    this.initData = initData
-
-    function updateData () {
-      let successBlocks = reserved.scrollG
-        .selectAll('g.successBlock')
-        .data(shared.data.blocks.fail, function (d) {
-          return d.obId
-        })
-      let enterSuccessBlocks = successBlocks
-        .enter()
-        .append('g')
-        .attr('class', 'successBlock')
-        .attr('transform', function (d, i) {
-          let translate = {
-            y: 0,
-            x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
-          }
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
-      enterSuccessBlocks.append('rect')
-        .attr('class', 'background')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', function (d, i) {
-          return 50
-        })
-        .attr('height', function (d, i) {
-          return 100
-        })
-        .attr('fill', function (d, i) {
-          return setCol(d).background
-        })
-        .attr('stroke', colorTheme.darker.stroke)
-        .attr('stroke-width', 0.2)
-        .on('mouseover', function (d) {
-          // mainOverSchedBlocks(d.scheduleId)
-        })
-        .on('mouseout', function (d) {
-          // mainOutSchedBlocks(d.scheduleId)
-        })
-        .on('click', function (d) {
-          // mainFocusOnSchedBlocks(d.scheduleId)
-        })
-
-      let mergeSuccessBlocks = enterSuccessBlocks.merge(successBlocks)
-      mergeSuccessBlocks.attr('transform', function (d, i) {
-        let translate = {
-          y: 0,
-          x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
-        }
-        return 'translate(' + translate.x + ',' + translate.y + ')'
-      })
-
-      reserved.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: shared.data.blocks.fail.length * 60})
-    }
-    this.updateData = updateData
-  }
-  let SvgCancelQueue = function () {
-    let reserved = {}
-
-    function initData () {
-      reserved.gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + box.cancelQueue.x + ',' + box.cancelQueue.y + ')')
-      reserved.gBlockBox.append('rect')
-        .attr('x', 0 + box.cancelQueue.marg)
-        .attr('y', 0 + box.cancelQueue.marg)
-        .attr('width', box.cancelQueue.w * 1 - box.cancelQueue.marg)
-        .attr('height', box.cancelQueue.h * 1 - box.cancelQueue.marg)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.2)
-      reserved.gBlockBox.append('text')
-        .text('CANCEL')
-        .style('fill', colorTheme.dark.text)
-        .style('font-weight', 'normal')
-        .style('font-size', '10px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(4,' + (box.cancelQueue.h * 0.55) + ') rotate(270)')
-      reserved.scrollBoxG = reserved.gBlockBox.append('g')
-      reserved.scrollBox = new ScrollBox()
-      reserved.scrollBox.init({
-        tag: 'cancelScrollBox',
-        gBox: reserved.scrollBoxG,
-        boxData: {
-          x: 0 + box.cancelQueue.marg,
-          y: 0 + box.cancelQueue.marg,
-          w: box.cancelQueue.w - box.cancelQueue.marg,
-          h: box.cancelQueue.h - box.cancelQueue.marg,
-          marg: 0
-        },
-        useRelativeCoords: true,
-        locker: new Locker(),
-        lockerV: [widgetId + 'updateData'],
-        lockerZoom: {
-          all: 'cancelScrollBox' + 'zoom',
-          during: 'cancelScrollBox' + 'zoomDuring',
-          end: 'cancelScrollBox' + 'zoomEnd'
-        },
-        runLoop: new RunLoop({tag: 'canelScrollBox'}),
-        canScroll: true,
-        scrollVertical: false,
-        scrollHorizontal: true,
-        scrollHeight: box.cancelQueue.h - box.cancelQueue.marg,
-        scrollWidth: box.cancelQueue.w - box.cancelQueue.marg,
-        background: colorTheme.dark.background,
-        scrollRecH: {h: 6},
-        scrollRecV: {w: 6}
-      })
-      reserved.scrollG = reserved.scrollBox.get('innerG')
-
-      updateData()
-    }
-    this.initData = initData
-
-    function updateData () {
-      let cancelBlocks = reserved.scrollG
-        .selectAll('g.cancelBlock')
-        .data(shared.data.blocks.cancel, function (d) {
-          return d.obId
-        })
-      let enterSuccessBlocks = cancelBlocks
-        .enter()
-        .append('g')
-        .attr('class', 'successBlock')
-        .attr('transform', function (d, i) {
-          let translate = {
-            y: 0,
-            x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
-          }
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
-      enterSuccessBlocks.append('rect')
-        .attr('class', 'background')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', function (d, i) {
-          return 50
-        })
-        .attr('height', function (d, i) {
-          return 100
-        })
-        .attr('fill', function (d, i) {
-          return setCol(d).background
-        })
-        .attr('stroke', colorTheme.darker.stroke)
-        .attr('stroke-width', 0.2)
-        .on('mouseover', function (d) {
-          // mainOverSchedBlocks(d.scheduleId)
-        })
-        .on('mouseout', function (d) {
-          // mainOutSchedBlocks(d.scheduleId)
-        })
-        .on('click', function (d) {
-          // mainFocusOnSchedBlocks(d.scheduleId)
-        })
-      // enterSchedulingBlocks.append('text')
-      //   .attr('class', 'name')
-      //   .text(function (d) {
-      //     return 'SB ' + d.schedName
-      //   })
-      //   .attr('x', function (d, i) {
-      //     return dim.w * 0.5
-      //   })
-      //   .attr('y', function (d, i) {
-      //     return dim.h * 0.2
-      //   })
-      //   .style('font-weight', 'normal')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', dim.h * 0.25)
-      //   .attr('dy', dim.h * 0.15)
-      //   .style('pointer-events', 'none')
-      //   .attr('fill', colorTheme.darker.text)
-      //   .attr('stroke', 'none')
-      // enterSchedulingBlocks.each(function (d) {
-      //   let dimBlocks = dim.h * 0.16
-      //   let length = d.blocks.length
-      //   let offset = ((dim.w /* - dimBlocks * 2 */) - (length < 4 ? (dimBlocks * 1.2 * length) : (length % 2 === 0 ? (dimBlocks * 0.6 * length) : (dimBlocks * 0.7 * length)))) * 0.5
-      //
-      //   d3.select(this).selectAll('rect.subBlocks')
-      //     .data(d.blocks, function (d) {
-      //       return d.obId
-      //     })
-      //     .enter()
-      //     .append('rect')
-      //     .attr('class', 'subBlocks')
-      //     .attr('x', function (d, i) {
-      //       return offset + (length < 4 ? (dimBlocks * i * 1.2) : (length % 2 === 0 ? (0.6 * dimBlocks * (i - (i % 2))) : (dimBlocks * i * 0.6)))
-      //     })
-      //     .attr('y', function (d, i) {
-      //       return dim.h - dimBlocks * 1.8 - (length < 4 ? dimBlocks * 0.5 : dimBlocks * 1.2 * (i % 2))
-      //     })
-      //     .attr('width', function (d, i) {
-      //       return dimBlocks
-      //     })
-      //     .attr('height', function (d, i) {
-      //       return dimBlocks
-      //     })
-      //     .attr('fill', function (d, i) {
-      //       return setCol(d).background
-      //     })
-      //     .style('opacity', 1)
-      //     .attr('stroke', 'black')
-      //     .attr('stroke-width', 0.2)
-      //     .style('pointer-events', 'none')
-      // })
-
-      let mergeSuccessBlocks = enterSuccessBlocks.merge(cancelBlocks)
-      mergeSuccessBlocks.attr('transform', function (d, i) {
-        let translate = {
-          y: 0,
-          x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
-        }
-        return 'translate(' + translate.x + ',' + translate.y + ')'
-      })
-      // schedulingBlocks.each(function (d) {
-      //   d3.select(this).selectAll('rect.subBlocks')
-      //     .data(d.blocks, function (d) {
-      //       return d.obId
-      //     })
-      //     .transition()
-      //     .duration(800)
-      //     .attr('fill', function (d, i) {
-      //       return setCol(d).background
-      //     })
-      // })
-
-      reserved.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: shared.data.blocks.cancel.length * 60})
-    }
-    this.updateData = updateData
-  }
   let SvgStateScheduleMatrix = function () {
     let reserved = {}
     function initData () {
@@ -2663,13 +2195,13 @@ function mainSchedBlocks (optIn) {
         .attr('transform', 'translate(4,' + (box.stateScheduleMatrix.h * 0.1 + box.stateScheduleMatrix.h * 0.9 * 0.84) + ') rotate(270)')
 
       reserved.scrollBoxG = reserved.gBlockBox.append('g')
-      reserved.scrollBoxG.attr('transform', 'scale(-1,1)')
+      // reserved.scrollBoxG.attr('transform', 'scale(-1,1)')
       reserved.scrollBox = new ScrollBox()
       reserved.scrollBox.init({
         tag: 'successScrollBox',
         gBox: reserved.scrollBoxG,
         boxData: {
-          x: 0 + box.stateScheduleMatrix.marg - box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg,
+          x: 0 + box.stateScheduleMatrix.marg, // - box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg,
           y: 0,
           w: box.stateScheduleMatrix.w - box.stateScheduleMatrix.marg,
           h: box.stateScheduleMatrix.h,
@@ -2707,7 +2239,7 @@ function mainSchedBlocks (optIn) {
     this.initData = initData
 
     function updateData () {
-      let scheds = groupBlocksBySchedule(shared.data.server.blocks).reverse()
+      let scheds = groupBlocksBySchedule(shared.data.server.blocks)// .reverse()
       for (let i = scheds.length - 1; i > -1; i--) {
         let b = sortBlocksByState(scheds[i].blocks)
         if (b.success.length === 0 && b.fail.length === 0 && b.cancel.length === 0) scheds.splice(i, 1)
@@ -2744,9 +2276,9 @@ function mainSchedBlocks (optIn) {
         .attr('transform', function (d, i) {
           let translate = {
             y: 0,
-            x: dimCell.w * (i + 1)
+            x: dimCell.w * (i) // + 1)
           }
-          return 'translate(' + translate.x + ',' + translate.y + '), scale(-1,1)'
+          return 'translate(' + translate.x + ',' + translate.y + ')' // , scale(-1,1)'
         })
       enterAllScheds.each(function (d, i) {
         d3.select(this).append('rect')
@@ -3170,6 +2702,11 @@ function mainSchedBlocks (optIn) {
             }
             return 'translate(' + translate.x + ',' + translate.y + ')'
           })
+        successBlocks.exit()
+          .transition('inOut')
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+          .remove()
       })
 
       allScheds
@@ -3223,7 +2760,7 @@ function mainSchedBlocks (optIn) {
       let sizeHeader = 0.085
 
       let telsPerRow = 8
-      let sizeTelsRow = 0.055
+      let sizeTelsRow = 0.04
       let offsetTelsType = 0.5
 
       let offsetRunningBlocks = 0.035
@@ -3298,10 +2835,10 @@ function mainSchedBlocks (optIn) {
 
       function drawTels (g) {
         function strokeSize (val) {
-          return (2 - (2 * (val / 100)))
+          return 0.3 // (2 - (2 * (val / 100)))
         }
         function fillOpacity (val) {
-          return (0.9 - (0.5 * (val / 100)))
+          return 0.9 // (0.9 - (0.5 * (val / 100)))
         }
         let tels = []
         for (let i = 0; i < g.data()[0].telIds.length; i++) { tels.push(getTelHealthById(g.data()[0].telIds[i])) }
@@ -3376,7 +2913,7 @@ function mainSchedBlocks (optIn) {
               return strokeSize(d.val)
             })
             .attr('stroke', function (d) {
-              return telHealthCol(d.val)
+              return colorTheme.dark.stroke//telHealthCol(d.val)
             })
             .attr('stroke-opacity', function (d) {
               return 1
@@ -3436,7 +2973,7 @@ function mainSchedBlocks (optIn) {
               return strokeSize(d.val)
             })
             .attr('stroke', function (d) {
-              return telHealthCol(d.val)
+              return colorTheme.dark.stroke//telHealthCol(d.val)
             })
             .attr('stroke-opacity', function (d) {
               return 1
@@ -3892,8 +3429,6 @@ function mainSchedBlocks (optIn) {
           .style('pointer-events', 'none')
 
         d3.select(this).append('rect')
-          .attr('rx', 1)
-          .attr('ry', 1)
           .attr('class', 'background')
           .attr('fill', function (d, i) {
             return colorTheme.darker.stroke
@@ -4166,15 +3701,238 @@ function mainSchedBlocks (optIn) {
     }
     this.updateData = updateData
   }
+  let SvgFreeTels = function () {
+    let reserved = {}
+
+    function initData () {
+      reserved.gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + box.freeTels.x + ',' + box.freeTels.y + ')')
+      reserved.gBlockBox.append('rect')
+        .attr('x', 0 + box.freeTels.marg)
+        .attr('y', 0)
+        .attr('width', box.freeTels.w - box.freeTels.marg)
+        .attr('height', box.freeTels.h)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      reserved.gBlockBox.append('text')
+        .text('Unused Telescopes')
+        .style('fill', colorTheme.dark.text)
+        .style('font-weight', 'normal')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(4,' + (box.freeTels.h * 0.5) + ') rotate(270)')
+      reserved.telsBox = reserved.gBlockBox.append('g')
+        .attr('transform', 'translate(' + box.freeTels.marg + ',0)')
+    }
+    this.initData = initData
+
+    function updateData () {
+      function strokeSize (val) {
+        return 0.4 // (2 - (2 * (val / 100)))
+      }
+      function fillOpacity (val) {
+        return 1 // (0.9 - (0.5 * (val / 100)))
+      }
+
+      let runTels = []
+      for (let i = 0; i < shared.data.server.blocks.run.length; i++) {
+        runTels = runTels.concat(shared.data.server.blocks.run[i].telIds)
+      }
+      let freeTels = deepCopy(shared.data.server.telIds)
+      freeTels = freeTels.filter(value => !runTels.includes(value))
+      let tels = []
+      for (let i = 0; i < runTels.length; i++) {
+        let t = getTelHealthById(runTels[i])
+        t.running = true
+        tels.push(t)
+      }
+      for (let i = 0; i < freeTels.length; i++) {
+        let t = getTelHealthById(freeTels[i])
+        t.running = false
+        tels.push(t)
+      }
+
+      tels.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
+
+      let defaultHeightView = box.freeTels.h
+      let widthBlocks = box.freeTels.w - box.freeTels.marg
+      // let offsetX = (box.currentBlocks.w - widthBlocks) * 0.5
+
+      let telsPerRow = 12
+      let sizeTelsRow = 0.1
+      let offsetTelsType = 0.5
+
+      let ratio = 1
+
+      // let toff = 0
+      // for (let i = 0; i < tels.length - 1; i++) {
+      //   if (tels[i].id.split('_')[0] !== tels[i + 1].id.split('_')[0]) toff += 1
+      // }
+
+      // let nTel = tels.length + toff
+      // let nLine = (nTel % telsPerRow === 0) ? (nTel / telsPerRow) : (1 + parseInt(nTel / telsPerRow))
+      // nLine = nLine < 1 ? 1 : nLine
+
+      let off = 0
+      if (tels.length > 0 && tels[0].id.split('_')[0] === 'M') off -= 1
+      if (tels.length > 0 && tels[0].id.split('_')[0] === 'S') off -= 2
+
+      let telsBox = {
+        x: box.freeTels.marg,
+        y: 0,
+        w: widthBlocks,
+        h: defaultHeightView
+      }
+      let offset = {
+        x: telsBox.w / telsPerRow,
+        ty: (ratio * offsetTelsType * sizeTelsRow * defaultHeightView),
+        y: (ratio * sizeTelsRow * defaultHeightView)
+      }
+
+      let currentTels = reserved.telsBox
+        .selectAll('g.currentTel')
+        .data(tels, function (d) {
+          return d.id
+        })
+      let enterCurrentTels = currentTels
+        .enter()
+        .append('g')
+        .attr('class', 'currentTel')
+      enterCurrentTels.each(function (d, i) {
+        let toff = off
+        if (d.id.split('_')[0] === 'M') toff += 1
+        if (d.id.split('_')[0] === 'S') toff += 2
+
+        d3.select(this).attr('transform', function (d) {
+          let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
+            (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
+            (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+          let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
+          return 'translate(' + tx + ',' + ty + ')'
+        })
+        d3.select(this).append('rect')
+          .attr('x', function (d) {
+            return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+          })
+          .attr('y', function (d) {
+            return (-offset.y * 0.5) + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+          })
+          .attr('width', function (d) {
+            return offset.x - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+          })
+          .attr('height', function (d) {
+            return offset.y - strokeSize(d.val) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+          })
+          .attr('fill', function (d) {
+            return telHealthCol(d.val)
+          })
+          .attr('fill-opacity', function (d) {
+            return fillOpacity(d.val)
+          })
+          .attr('stroke-width', function (d) {
+            return strokeSize(d.val)
+          })
+          .attr('stroke', function (d) {
+            return telHealthCol(d.val)
+          })
+          .attr('stroke-opacity', function (d) {
+            return 1
+          })
+          .attr('rx', 0)
+          .attr('ry', 0)
+        d3.select(this).append('text')
+          .attr('x', 0)
+          .attr('y', offset.y * 0.2)
+          .attr('dy', 0)
+          .text(function (d) {
+            return d.id // d.id.split('_')[1]
+          })
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', function (d) {
+            return 6.2 // - (2 * (d.val / 100))
+          })
+          .attr('text-anchor', 'middle')
+      })
+
+      let mergeCurrentTels = currentTels.merge(enterCurrentTels)
+      mergeCurrentTels.each(function (d, i) {
+        let toff = off
+        if (d.id.split('_')[0] === 'M') toff += 1
+        if (d.id.split('_')[0] === 'S') toff += 2
+
+        d3.select(this).attr('transform', function (d) {
+          let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
+            (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
+            (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+          let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
+          return 'translate(' + tx + ',' + ty + ')'
+        })
+        d3.select(this).select('rect')
+          .transition()
+          .duration(timeD.animArc)
+          .attr('x', function (d) {
+            return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+          })
+          .attr('y', function (d) {
+            return (-offset.y * 0.5) + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+          })
+          .attr('width', function (d) {
+            return offset.x - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+          })
+          .attr('height', function (d) {
+            return offset.y - strokeSize(d.val) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+          })
+          .attr('fill', function (d) {
+            if (!d.running) return telHealthCol(d.val)
+            return colorTheme.dark.background
+          })
+          .attr('fill-opacity', function (d) {
+            return fillOpacity(d.val)
+          })
+          .attr('stroke-width', function (d) {
+            return strokeSize(d.val)
+          })
+          .attr('stroke', function (d) {
+            // if (!d.running) return telHealthCol(d.val)
+            return colorTheme.dark.stroke
+          })
+          .attr('stroke-opacity', function (d) {
+            if (!d.running) return 1
+            return 1
+          })
+        d3.select(this).select('text')
+          .attr('x', 0)
+          .attr('y', offset.y * 0.2)
+          .attr('dy', 0)
+          .text(function (d) {
+            return d.id // d.id.split('_')[1]
+          })
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', function (d) {
+            return 6.2 // - (2 * (d.val / 100))
+          })
+          .attr('text-anchor', 'middle')
+      })
+
+      currentTels
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    this.updateData = updateData
+  }
 
   let svgBlocksQueueServerPast = new SvgBlocksQueueServerPast()
   let svgBlocksQueueServerFutur = new SvgBlocksQueueServerFutur()
-  let svgSuccessQueue = new SvgSuccessQueue()
-  let svgFailQueue = new SvgFailQueue()
-  let svgCancelQueue = new SvgCancelQueue()
   let svgCurrentBlocks = new SvgCurrentBlocks()
   let svgStateScheduleMatrix = new SvgStateScheduleMatrix()
   let svgWaitScheduleMatrix = new SvgWaitScheduleMatrix()
+  let svgFreeTels = new SvgFreeTels()
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
