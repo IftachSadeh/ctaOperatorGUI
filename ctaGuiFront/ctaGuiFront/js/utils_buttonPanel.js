@@ -32,13 +32,13 @@ window.ButtonPanel = function () {
     com.g.append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('rx', 2)
-      .attr('ry', 2)
+      .attr('rx', 0)
+      .attr('ry', 0)
       .attr('width', com.box.w)
       .attr('height', com.box.h)
       .attr('fill', optIn.background)
       .attr('stroke', optIn.stroke)
-      .attr('stroke-width', 1)
+      .attr('stroke-width', 0.2)
 
     computeButtonsPositions()
   }

@@ -370,8 +370,7 @@ window.BlockQueue = function (optIn) {
           rect.attr('stroke', function (d, i) {
             return '#000000'
           })
-            .attr('stroke-width', 4.5)
-            .style('stroke-opacity', 0.6)
+            .attr('stroke-width', 1.5)
           newButton.append('line')
             .attr('class', 'checkboxBar')
             .attr('x1', 0)
@@ -380,7 +379,7 @@ window.BlockQueue = function (optIn) {
             .attr('y2', (Number(newButton.attr('height'))))
             .attr('stroke', '#000000')
             .style('stroke-opacity', 0.9)
-            .attr('stroke-width', 3)
+            .attr('stroke-width', 2)
             .style('pointer-events', 'none')
           newButton.append('line')
             .attr('class', 'checkboxBar')
@@ -390,7 +389,7 @@ window.BlockQueue = function (optIn) {
             .attr('y2', 0)
             .attr('stroke', '#000000')
             .style('stroke-opacity', 0.9)
-            .attr('stroke-width', 3)
+            .attr('stroke-width', 2)
             .style('pointer-events', 'none')
           // if (filter !== undefined) {
           //   com.filters.filters.push(filter)
@@ -421,8 +420,8 @@ window.BlockQueue = function (optIn) {
         .attr('height', function (d, i) {
           return ((Number(newButton.attr('height'))) * (3) / 3)
         })
-        .attr('rx', 1)
-        .attr('ry', 1)
+        .attr('rx', 0)
+        .attr('ry', 0)
         .attr('stroke', function (d, i) {
           return 'black'
         })
@@ -521,10 +520,11 @@ window.BlockQueue = function (optIn) {
       .attr('y', Number(newButton.attr('height')) * 0.35)
       .attr('dy', 6)
       .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.4)
       .attr('fill', com.main.colorTheme.darker.stroke)
       .style('font-weight', 'normal')
       .attr('text-anchor', 'middle')
-      .style('font-size', 18)
+      .style('font-size', 12)
       .style('pointer-events', 'none')
       .style('user-select', 'none')
 
