@@ -123,9 +123,9 @@ window.EventQueue = function () {
     com.axis.group.g
       .attr('class', 'axis')
       .call(com.axis.main)
-    com.axis.group.g.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.group.g.selectAll('g.tick').selectAll('text').attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
+    com.axis.group.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.main.colorTheme.dark.stroke)
+    com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.main.colorTheme.dark.stroke)
+    com.axis.group.g.selectAll('g.tick').selectAll('text').attr('stroke', com.main.colorTheme.dark.text).attr('fill', com.main.colorTheme.dark.text)
   }
   function initBlocks () {
     if (!com.blocks.enabled) return
@@ -195,8 +195,8 @@ window.EventQueue = function () {
         .attr('height', function (d, i) {
           return ((Number(newButton.attr('height'))) * (priority) / 3)
         })
-        .attr('rx', 2)
-        .attr('ry', 2)
+        .attr('rx', 0)
+        .attr('ry', 0)
         .attr('stroke', function (d, i) {
           return 'black'
         })
@@ -248,9 +248,9 @@ window.EventQueue = function () {
         })
 
 
-      if (type === 'Alarm') drawAlarm(newButton, 0, 0, 27, 27)
-      if (type === 'GRB') drawGrb(newButton, 0, 0, 27, 27)
-      if (type === 'Hardw.') drawHardware(newButton, 0, 0, 27, 27)
+      if (type === 'Alarm') drawAlarm(newButton, 0, 0, 16, 16)
+      if (type === 'GRB') drawGrb(newButton, 0, 0, 16, 16)
+      if (type === 'Hardw.') drawHardware(newButton, 0, 0, 16, 16)
 
       clickFunction(newRect, type)
     }
@@ -270,8 +270,8 @@ window.EventQueue = function () {
       margin: margin,
       rows: 3,
       cols: 3,
-      background: 'none',
-      stroke: '#CFD8DC'
+      background: com.main.colorTheme.dark.background,
+      stroke: com.main.colorTheme.dark.stroke
     })
 
     createButton({row: 0, col: 0}, 'Low', 1, [{keys: ['priority'], value: 1}])
@@ -287,11 +287,12 @@ window.EventQueue = function () {
       .attr('x', Number(newButton.attr('width')) * 0.5)
       .attr('y', Number(newButton.attr('height')) * 0.35)
       .attr('dy', 8)
-      .attr('stroke', '#CFD8DC')
-      .attr('fill', '#CFD8DC')
+      .attr('stroke', com.main.colorTheme.dark.text)
+      .attr('stroke-width', 0.4)
+      .attr('fill', com.main.colorTheme.dark.text)
       .style('font-weight', 'normal')
       .attr('text-anchor', 'middle')
-      .style('font-size', 18)
+      .style('font-size', 12)
       .style('pointer-events', 'none')
       .style('user-select', 'none')
   }
@@ -397,9 +398,9 @@ window.EventQueue = function () {
     // console.log(com.axis.domain, com.axis.range);
     com.axis.main.scale(com.axis.scale)
     com.axis.group.g.call(com.axis.main)
-    com.axis.group.g.select('path').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 2).attr('stroke', '#CFD8DC')
-    com.axis.group.g.selectAll('g.tick').selectAll('text').style('font-size', 14).attr('stroke', '#CFD8DC').attr('fill', '#CFD8DC')
+    com.axis.group.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.main.colorTheme.dark.stroke)
+    com.axis.group.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.main.colorTheme.dark.stroke)
+    com.axis.group.g.selectAll('g.tick').selectAll('text').style('font-size', 14).attr('stroke', com.main.colorTheme.dark.text).attr('fill', com.main.colorTheme.dark.text)
 
   }
   function updateBlocks () {
