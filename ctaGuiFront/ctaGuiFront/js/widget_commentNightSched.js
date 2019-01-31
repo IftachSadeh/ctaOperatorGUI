@@ -575,7 +575,7 @@ let mainCommentNightSched = function (optIn) {
         filters: {
           enabled: true,
           g: undefined,
-          box: {x: adjustedBox.w * 1.03, y: adjustedBox.h * 0, w: adjustedBox.w * 0.22, h: adjustedBox.h * 1, marg: 0},
+          box: {x: adjustedBox.w * 1.01, y: adjustedBox.h * 0, w: adjustedBox.w * 0.22, h: adjustedBox.h * 1, marg: 0},
           filters: []
         },
         timeBars: {
@@ -1755,16 +1755,10 @@ let mainCommentNightSched = function (optIn) {
     let reserved = {}
 
     function initinputHistory () {
-      reserved.inputHistory.scroll = {}
-      function initFocusHistory () {
-        reserved.inputHistory.history.scroll.scrollBoxG = reserved.inputHistory.history.g.append('g')
-        let historyBox = {
-          x: reserved.focusedItemHeader.history.box.x,
-          y: reserved.focusedItemHeader.history.box.y,
-          width: reserved.focusedItemHeader.history.box.w,
-          height: reserved.focusedItemHeader.history.box.h
-        }
-        reserved.focusedItemHeader.history.scroll.scrollBoxG.append('rect')
+      function initLocalHistory () {
+        reserved.inputHistory.local.scroll.scrollBoxG = reserved.inputHistory.local.g.append('g')
+        let historyBox = reserved.inputHistory.local.box
+        reserved.inputHistory.local.scroll.scrollBoxG.append('rect')
           .attr('x', historyBox.x)
           .attr('y', historyBox.y)
           .attr('width', historyBox.w)
@@ -1773,10 +1767,10 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
 
-        reserved.focusedItemHeader.history.scroll.scrollBox = new ScrollBox()
-        reserved.focusedItemHeader.history.scroll.scrollBox.init({
-          tag: 'lastModifScrollBox',
-          gBox: reserved.focusedItemHeader.history.scroll.scrollBoxG,
+        reserved.inputHistory.local.scroll.scrollBox = new ScrollBox()
+        reserved.inputHistory.local.scroll.scrollBox.init({
+          tag: 'inputHistoryScrollBox',
+          gBox: reserved.inputHistory.local.scroll.scrollBoxG,
           boxData: {
             x: historyBox.x,
             y: historyBox.y,
@@ -1792,157 +1786,39 @@ let mainCommentNightSched = function (optIn) {
             during: 'ScrollBox' + 'zoomDuring',
             end: 'ScrollBox' + 'zoomEnd'
           },
-          runLoop: new RunLoop({tag: 'successScrollBox'}),
+          runLoop: new RunLoop({tag: 'inputHistoryScrollBox'}),
           canScroll: true,
           scrollVertical: true,
           scrollHorizontal: false,
-          scrollHeight: 0.1 + reserved.focusedItemHeader.history.box.h,
+          scrollHeight: 0.1 + historyBox.h,
           scrollWidth: 0,
           background: 'transparent',
-          scrollRecH: {h: 6},
-          scrollRecV: {w: 6}
+          scrollRecH: {h: 2},
+          scrollRecV: {w: 2}
         })
-        reserved.focusedItemHeader.history.scroll.scrollG = reserved.focusedItemHeader.history.scroll.scrollBox.get('innerG')
+        reserved.inputHistory.local.scroll.scrollG = reserved.inputHistory.local.scroll.scrollBox.get('innerG')
       }
-
-      reserved.inputHistory.main.g.attr('transform', 'translate(' + reserved.inputHistory.main.box.x + ',' + reserved.inputHistory.main.box.y + ')')
-      reserved.inputHistory.main.g.append('text')
-        .text('History')
-        .attr('x', reserved.inputHistory.main.box.w * 0.5)
-        .attr('y', reserved.inputHistory.main.box.y - reserved.inputHistory.main.box.marg * 0.5)
-        .style('fill', colorTheme.medium.text)
-        .style('font-weight', '')
-        .style('font-size', '8px')
-        .attr('text-anchor', 'middle')
-      reserved.inputHistory.main.g.append('rect')
-        .attr('x', reserved.inputHistory.main.box.x + reserved.inputHistory.main.box.marg)
-        .attr('y', reserved.inputHistory.main.box.marg)
-        .attr('width', reserved.inputHistory.main.box.w - reserved.inputHistory.main.box.marg)
-        .attr('height', reserved.inputHistory.main.box.h - reserved.inputHistory.main.box.marg)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0.2)
-      // reserved.onlineOperator.main.g.append('text')
-      //   .text('Operators Online :')
-      //   .attr('x', 5)
-      //   .attr('y', 10)
-      //   .style('fill', colorTheme.medium.text)
-      //   .style('font-weight', '')
-      //   .style('font-size', '8px')
-      //   .attr('text-anchor', 'start')
-      // reserved.onlineOperator.main.g.append('line')
-      //   .attr('x1', 5)
-      //   .attr('y1', 12)
-      //   .attr('x2', reserved.onlineOperator.main.box.w * 0.9)
-      //   .attr('y2', 12)
-      //   .attr('stroke-width', 0.4)
-      //   .attr('stroke', colorTheme.medium.stroke)
-      //
-      // let op = reserved.onlineOperator.main.g.selectAll('g.operators')
-      //   .data([{name: 'A'}, {name: 'B'}, {name: 'C'}])
-      // let opEnter = op.enter()
-      //   .append('g')
-      //   .attr('class', 'operators')
-      //   .attr('transform', function (d, i) {
-      //     let tx = reserved.onlineOperator.main.box.w * 0.25
-      //     let ty = 5 + reserved.onlineOperator.main.box.w * 0.25 * (i + 1)
-      //     return 'translate(' + tx + ',' + ty + ')'
-      //   })
-      // opEnter.each(function (d) {
-      //   d3.select(this).append('circle')
-      //     .attr('cx', 0)
-      //     .attr('cy', 0)
-      //     .attr('r', reserved.onlineOperator.main.box.w * 0.1)
-      //     .attr('stroke', '#000000')
-      //     .attr('stroke-width', 0.2)
-      //     .attr('fill', colorTheme.dark.background)
-      //   d3.select(this).append('text')
-      //     .text(d.name)
-      //     .attr('x', 0)
-      //     .attr('y', 2)
-      //     .style('fill', colorTheme.medium.text)
-      //     .style('font-weight', '')
-      //     .style('font-size', '7px')
-      //     .attr('text-anchor', 'middle')
-      // })
-      initFocusHistory()
-    }
-    function initOnlineOperator () {
-      reserved.onlineOperator.main.g.attr('transform', 'translate(' + reserved.onlineOperator.main.box.x + ',' + reserved.onlineOperator.main.box.y + ')')
-      // reserved.onlineOperator.main.g.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', reserved.onlineOperator.main.box.w)
-      //   .attr('height', reserved.onlineOperator.main.box.h)
-      //   .attr('fill', colorTheme.dark.background)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.2)
-      reserved.onlineOperator.main.g.append('text')
-        .text('Operators Online :')
-        .attr('x', 5)
-        .attr('y', 10)
-        .style('fill', colorTheme.medium.text)
-        .style('font-weight', '')
-        .style('font-size', '8px')
-        .attr('text-anchor', 'start')
-      reserved.onlineOperator.main.g.append('line')
-        .attr('x1', 5)
-        .attr('y1', 12)
-        .attr('x2', reserved.onlineOperator.main.box.w * 0.9)
-        .attr('y2', 12)
-        .attr('stroke-width', 0.4)
-        .attr('stroke', colorTheme.medium.stroke)
-
-      let op = reserved.onlineOperator.main.g.selectAll('g.operators')
-        .data([{name: 'A'}, {name: 'B'}, {name: 'C'}])
-      let opEnter = op.enter()
-        .append('g')
-        .attr('class', 'operators')
-        .attr('transform', function (d, i) {
-          let tx = reserved.onlineOperator.main.box.w * 0.25
-          let ty = 5 + reserved.onlineOperator.main.box.w * 0.25 * (i + 1)
-          return 'translate(' + tx + ',' + ty + ')'
-        })
-      opEnter.each(function (d) {
-        d3.select(this).append('circle')
-          .attr('cx', 0)
-          .attr('cy', 0)
-          .attr('r', reserved.onlineOperator.main.box.w * 0.1)
-          .attr('stroke', '#000000')
-          .attr('stroke-width', 0.2)
-          .attr('fill', colorTheme.dark.background)
-        d3.select(this).append('text')
-          .text(d.name)
-          .attr('x', 0)
-          .attr('y', 2)
-          .style('fill', colorTheme.medium.text)
-          .style('font-weight', '')
-          .style('font-size', '7px')
-          .attr('text-anchor', 'middle')
-      })
-    }
-    function initFocusedItemHeader () {
-      function initFocusHistory () {
-        reserved.focusedItemHeader.history.scroll.scrollBoxG = reserved.focusedItemHeader.history.g.append('g')
-
-        reserved.focusedItemHeader.history.scroll.scrollBoxG.append('rect')
-          .attr('x', reserved.focusedItemHeader.history.box.x)
-          .attr('y', reserved.focusedItemHeader.history.box.y)
-          .attr('width', reserved.focusedItemHeader.history.box.w)
-          .attr('height', reserved.focusedItemHeader.history.box.h)
+      function initGeneralHistory () {
+        reserved.inputHistory.general.scroll.scrollBoxG = reserved.inputHistory.general.g.append('g')
+        let historyBox = reserved.inputHistory.general.box
+        reserved.inputHistory.general.scroll.scrollBoxG.append('rect')
+          .attr('x', historyBox.x)
+          .attr('y', historyBox.y)
+          .attr('width', historyBox.w)
+          .attr('height', historyBox.h)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
 
-        reserved.focusedItemHeader.history.scroll.scrollBox = new ScrollBox()
-        reserved.focusedItemHeader.history.scroll.scrollBox.init({
-          tag: 'lastModifScrollBox',
-          gBox: reserved.focusedItemHeader.history.scroll.scrollBoxG,
+        reserved.inputHistory.general.scroll.scrollBox = new ScrollBox()
+        reserved.inputHistory.general.scroll.scrollBox.init({
+          tag: 'inputHistoryScrollBox',
+          gBox: reserved.inputHistory.general.scroll.scrollBoxG,
           boxData: {
-            x: reserved.focusedItemHeader.history.box.x,
-            y: reserved.focusedItemHeader.history.box.y,
-            w: reserved.focusedItemHeader.history.box.w,
-            h: reserved.focusedItemHeader.history.box.h,
+            x: historyBox.x,
+            y: historyBox.y,
+            w: historyBox.w,
+            h: historyBox.h,
             marg: 0
           },
           useRelativeCoords: true,
@@ -1953,95 +1829,267 @@ let mainCommentNightSched = function (optIn) {
             during: 'ScrollBox' + 'zoomDuring',
             end: 'ScrollBox' + 'zoomEnd'
           },
-          runLoop: new RunLoop({tag: 'successScrollBox'}),
+          runLoop: new RunLoop({tag: 'inputHistoryScrollBox'}),
           canScroll: true,
           scrollVertical: true,
           scrollHorizontal: false,
-          scrollHeight: 0.1 + reserved.focusedItemHeader.history.box.h,
+          scrollHeight: 0.1 + historyBox.h,
           scrollWidth: 0,
           background: 'transparent',
-          scrollRecH: {h: 6},
-          scrollRecV: {w: 6}
+          scrollRecH: {h: 2},
+          scrollRecV: {w: 2}
         })
-        reserved.focusedItemHeader.history.scroll.scrollG = reserved.focusedItemHeader.history.scroll.scrollBox.get('innerG')
-        // reserved.focusedItemHeader.lastModif.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: reserved.focusedItemHeader.main.box.h * 0.8})
+        reserved.inputHistory.general.scroll.scrollG = reserved.inputHistory.general.scroll.scrollBox.get('innerG')
       }
-      function initFocusItem () {
-        reserved.focusedItemHeader.focusItem.g.append('rect')
-          .attr('x', reserved.focusedItemHeader.focusItem.box.x)
-          .attr('y', reserved.focusedItemHeader.focusItem.box.y + reserved.focusedItemHeader.focusItem.box.h * 0.0)
-          .attr('width', reserved.focusedItemHeader.focusItem.box.h * 1)
-          .attr('height', reserved.focusedItemHeader.focusItem.box.h * 1)
+
+      reserved.inputHistory.main.g.attr('transform', 'translate(' + reserved.inputHistory.main.box.x + ',' + reserved.inputHistory.main.box.y + ')')
+      reserved.inputHistory.main.g.append('text')
+        .text('Operators operations :')
+        .attr('x', 2)
+        .attr('y', 0 - reserved.inputHistory.main.box.h * 0.03)
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', '')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'start')
+      reserved.inputHistory.main.g.append('line')
+        .attr('x1', 2)
+        .attr('y1', 0 - reserved.inputHistory.main.box.h * 0.02)
+        .attr('x2', reserved.inputHistory.main.box.w * 0.9)
+        .attr('y2', 0 - reserved.inputHistory.main.box.h * 0.02)
+        .attr('stroke-width', 0.4)
+        .attr('stroke', colorTheme.medium.stroke)
+
+      reserved.inputHistory.general = {
+        g: reserved.inputHistory.main.g.append('g'),
+        box: {
+          x: 0,
+          y: reserved.inputHistory.main.box.h * 0.0,
+          w: reserved.inputHistory.main.box.w * 1,
+          h: reserved.inputHistory.main.box.h * 0.49
+        },
+        scroll: {}
+      }
+      reserved.inputHistory.local = {
+        g: reserved.inputHistory.main.g.append('g'),
+        box: {
+          x: reserved.inputHistory.main.box.w * 0.3,
+          y: reserved.inputHistory.main.box.h * 0.51,
+          w: reserved.inputHistory.main.box.w * 0.7,
+          h: reserved.inputHistory.main.box.h * 0.49
+        },
+        scroll: {}
+      }
+      initGeneralHistory()
+      initLocalHistory()
+    }
+    function initOnlineOperator () {
+      reserved.onlineOperator.main.g.attr('transform', 'translate(' + reserved.onlineOperator.main.box.x + ',' + reserved.onlineOperator.main.box.y + ')')
+      reserved.onlineOperator.main.g.append('text')
+        .text('Operators online :')
+        .attr('x', 2)
+        .attr('y', 0 - reserved.onlineOperator.main.box.h * 0.03)
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', '')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'start')
+      reserved.onlineOperator.main.g.append('line')
+        .attr('x1', 2)
+        .attr('y1', 0 - reserved.onlineOperator.main.box.h * 0.02)
+        .attr('x2', reserved.onlineOperator.main.box.w * 0.9)
+        .attr('y2', 0 - reserved.onlineOperator.main.box.h * 0.02)
+        .attr('stroke-width', 0.4)
+        .attr('stroke', colorTheme.medium.stroke)
+
+      let op = reserved.onlineOperator.main.g.selectAll('g.operators')
+        .data([{icon: 'A', name: 'Anna'}, {icon: 'B', name: 'Bob'}, {icon: 'C', name: 'Connor'}])
+      let opEnter = op.enter()
+        .append('g')
+        .attr('class', 'operators')
+        .attr('transform', function (d, i) {
+          let tx = reserved.onlineOperator.main.box.w * 0.1
+          let ty = 0 + reserved.onlineOperator.main.box.w * 0.25 * (i)
+          return 'translate(' + tx + ',' + ty + ')'
+        })
+      opEnter.each(function (d) {
+        d3.select(this).append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', reserved.onlineOperator.main.box.w * 0.2)
+          .attr('height', reserved.onlineOperator.main.box.w * 0.2)
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 0.2)
+          .attr('fill', colorTheme.dark.background)
+        d3.select(this).append('text')
+          .text(d.icon)
+          .attr('x', reserved.onlineOperator.main.box.w * 0.1)
+          .attr('y', reserved.onlineOperator.main.box.w * 0.1)
+          .attr('dy', 3)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'middle')
+        d3.select(this).append('text')
+          .text(d.name)
+          .attr('x', reserved.onlineOperator.main.box.w * 0.3)
+          .attr('y', reserved.onlineOperator.main.box.w * 0.1)
+          .attr('dy', 3)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'start')
+      })
+    }
+    function initFocusedItemHeader () {
+      reserved.focusedItemHeader.main.g.append('text')
+        .text('No element on focus')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', '')
+        .style('font-size', '14px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' +
+          (reserved.focusedItemHeader.main.box.x + reserved.focusedItemHeader.main.box.w * 0.5) +
+          ',' +
+          (reserved.focusedItemHeader.main.box.y + reserved.focusedItemHeader.main.box.h * 0.6) + ')')
+      reserved.focusedItemHeader.main.g.append('text')
+        .text('X')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '14px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' +
+          (reserved.focusedItemHeader.main.box.x + reserved.focusedItemHeader.main.box.w * 0.15) +
+          ',' +
+          (reserved.focusedItemHeader.main.box.y + reserved.focusedItemHeader.main.box.h * 0.9) + ')')
+      reserved.focusedItemHeader.main.g.append('text')
+        .text('X')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', 'bold')
+        .style('font-size', '14px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' +
+          (reserved.focusedItemHeader.main.box.x + reserved.focusedItemHeader.main.box.w * 0.85) +
+          ',' +
+          (reserved.focusedItemHeader.main.box.y + reserved.focusedItemHeader.main.box.h * 0.9) + ')')
+    }
+    function initFocusedItemInfo () {
+      function initFocusPreview () {
+        reserved.focusedItemInfo.preview.g.append('rect')
+          .attr('x', reserved.focusedItemInfo.preview.box.x)
+          .attr('y', reserved.focusedItemInfo.preview.box.y + reserved.focusedItemInfo.preview.box.h * 0.0)
+          .attr('width', reserved.focusedItemInfo.preview.box.h * 1)
+          .attr('height', reserved.focusedItemInfo.preview.box.h * 1)
           .attr('fill', colorTheme.medium.background)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 1.5)
-        reserved.focusedItemHeader.focusItem.infoText.g = reserved.focusedItemHeader.focusItem.g.append('g')
-        reserved.focusedItemHeader.focusItem.infoText.g.append('text')
+        reserved.focusedItemInfo.preview.g = reserved.focusedItemInfo.preview.g.append('g')
+        reserved.focusedItemInfo.preview.g.append('text')
           .text('Preview')
           .style('fill', colorTheme.medium.text)
           .style('font-weight', '')
           .style('font-size', '9px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' +
-            (reserved.focusedItemHeader.focusItem.box.x + reserved.focusedItemHeader.focusItem.box.w * 0.42) +
+            (reserved.focusedItemInfo.preview.box.x + reserved.focusedItemInfo.preview.box.w * 0.5) +
             ',' +
-            (reserved.focusedItemHeader.focusItem.box.y + reserved.focusedItemHeader.focusItem.box.h * 0.25) + ')')
-        reserved.focusedItemHeader.focusItem.infoText.g.append('text')
+            (reserved.focusedItemInfo.preview.box.y + reserved.focusedItemInfo.preview.box.h * 0.25) + ')')
+        reserved.focusedItemInfo.preview.g.append('text')
           .text('of')
           .style('fill', colorTheme.medium.text)
           .style('font-weight', '')
           .style('font-size', '9px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' +
-            (reserved.focusedItemHeader.focusItem.box.x + reserved.focusedItemHeader.focusItem.box.w * 0.42) +
+            (reserved.focusedItemInfo.preview.box.x + reserved.focusedItemInfo.preview.box.w * 0.5) +
             ',' +
-            (reserved.focusedItemHeader.focusItem.box.y + reserved.focusedItemHeader.focusItem.box.h * 0.4) + ')')
-        reserved.focusedItemHeader.focusItem.infoText.g.append('text')
+            (reserved.focusedItemInfo.preview.box.y + reserved.focusedItemInfo.preview.box.h * 0.4) + ')')
+        reserved.focusedItemInfo.preview.g.append('text')
           .text('Block /')
           .style('fill', colorTheme.medium.text)
           .style('font-weight', '')
           .style('font-size', '9px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' +
-            (reserved.focusedItemHeader.focusItem.box.x + reserved.focusedItemHeader.focusItem.box.w * 0.42) +
+            (reserved.focusedItemInfo.preview.box.x + reserved.focusedItemInfo.preview.box.w * 0.5) +
             ',' +
-            (reserved.focusedItemHeader.focusItem.box.y + reserved.focusedItemHeader.focusItem.box.h * 0.55) + ')')
-        reserved.focusedItemHeader.focusItem.infoText.g.append('text')
+            (reserved.focusedItemInfo.preview.box.y + reserved.focusedItemInfo.preview.box.h * 0.55) + ')')
+        reserved.focusedItemInfo.preview.g.append('text')
           .text('Telescope /')
           .style('fill', colorTheme.medium.text)
           .style('font-weight', '')
           .style('font-size', '9px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' +
-            (reserved.focusedItemHeader.focusItem.box.x + reserved.focusedItemHeader.focusItem.box.w * 0.42) +
+            (reserved.focusedItemInfo.preview.box.x + reserved.focusedItemInfo.preview.box.w * 0.5) +
             ',' +
-            (reserved.focusedItemHeader.focusItem.box.y + reserved.focusedItemHeader.focusItem.box.h * 0.7) + ')')
-        reserved.focusedItemHeader.focusItem.infoText.g.append('text')
+            (reserved.focusedItemInfo.preview.box.y + reserved.focusedItemInfo.preview.box.h * 0.7) + ')')
+        reserved.focusedItemInfo.preview.g.append('text')
           .text('...')
           .style('fill', colorTheme.medium.text)
           .style('font-weight', '')
           .style('font-size', '9px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' +
-            (reserved.focusedItemHeader.focusItem.box.x + reserved.focusedItemHeader.focusItem.box.w * 0.42) +
+            (reserved.focusedItemInfo.preview.box.x + reserved.focusedItemInfo.preview.box.w * 0.5) +
             ',' +
-            (reserved.focusedItemHeader.focusItem.box.y + reserved.focusedItemHeader.focusItem.box.h * 0.85) + ')')
+            (reserved.focusedItemInfo.preview.box.y + reserved.focusedItemInfo.preview.box.h * 0.85) + ')')
       }
       function initFocusFields () {
+        reserved.focusedItemInfo.fields.scroll.scrollBoxG = reserved.focusedItemInfo.fields.g.append('g')
+        let historyBox = reserved.focusedItemInfo.fields.box
+        reserved.focusedItemInfo.fields.scroll.scrollBoxG.append('rect')
+          .attr('x', historyBox.x)
+          .attr('y', historyBox.y)
+          .attr('width', historyBox.w)
+          .attr('height', historyBox.h)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+
+        reserved.focusedItemInfo.fields.scroll.scrollBox = new ScrollBox()
+        reserved.focusedItemInfo.fields.scroll.scrollBox.init({
+          tag: 'inputHistoryScrollBox',
+          gBox: reserved.focusedItemInfo.fields.scroll.scrollBoxG,
+          boxData: {
+            x: historyBox.x,
+            y: historyBox.y,
+            w: historyBox.w,
+            h: historyBox.h,
+            marg: 0
+          },
+          useRelativeCoords: true,
+          locker: new Locker(),
+          lockerV: [widgetId + 'updateData'],
+          lockerZoom: {
+            all: 'ScrollBox' + 'zoom',
+            during: 'ScrollBox' + 'zoomDuring',
+            end: 'ScrollBox' + 'zoomEnd'
+          },
+          runLoop: new RunLoop({tag: 'inputHistoryScrollBox'}),
+          canScroll: true,
+          scrollVertical: true,
+          scrollHorizontal: false,
+          scrollHeight: 0.1 + historyBox.h,
+          scrollWidth: 0,
+          background: 'transparent',
+          scrollRecH: {h: 6},
+          scrollRecV: {w: 6}
+        })
+        reserved.focusedItemInfo.info.scroll.scrollG = reserved.focusedItemInfo.fields.scroll.scrollBox.get('innerG')
+
         let dimField = {
-          w: reserved.focusedItemHeader.focusFields.box.w * 0.28,
-          h: reserved.focusedItemHeader.focusFields.box.h * 0.28,
-          margW: reserved.focusedItemHeader.focusFields.box.w * 0.04,
-          margH: reserved.focusedItemHeader.focusFields.box.h * 0.04
+          w: reserved.focusedItemInfo.fields.box.w,
+          h: reserved.focusedItemInfo.fields.box.h * 0.1,
+          margW: 0, // reserved.focusedItemInfo.focusFields.box.w * 0.04,
+          margH: 0 // reserved.focusedItemInfo.focusFields.box.h * 0.04
         }
-        let fields = reserved.focusedItemHeader.focusFields.g.selectAll('g.fields')
+        let fields = reserved.focusedItemInfo.info.g.selectAll('g.fields')
           .data([{name: 'A'}, {name: 'B'}, {name: 'C'}, {name: 'D'}, {name: 'E'}, {name: 'F'}, {name: 'G'}, {name: 'H'}])
         let fieldsEnter = fields.enter()
           .append('g')
           .attr('class', 'fields')
           .attr('transform', function (d, i) {
-            let tx = reserved.focusedItemHeader.focusFields.box.x + dimField.margW * ((i % 4) + 1) + (dimField.w * (i % 4))
-            let ty = reserved.focusedItemHeader.focusFields.box.y + dimField.margH * (parseInt(i / 4) + 1) + (dimField.h * parseInt(i / 4))
+            let tx = reserved.focusedItemInfo.info.box.x + dimField.margW * ((i % 4) + 1) + (dimField.w * (i % 4))
+            let ty = reserved.focusedItemInfo.info.box.y + dimField.margH * (parseInt(i / 4) + 1) + (dimField.h * parseInt(i / 4))
             return 'translate(' + tx + ',' + ty + ')'
           })
         fieldsEnter.each(function (d) {
@@ -2063,117 +2111,91 @@ let mainCommentNightSched = function (optIn) {
           //   .attr('text-anchor', 'middle')
         })
       }
-      function initFocusTextInfo () {
-        reserved.focusedItemHeader.focusTextInfo.g.append('text')
-          .text('No element on focus')
-          .style('fill', colorTheme.medium.text)
-          .style('font-weight', '')
-          .style('font-size', '14px')
-          .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' +
-            (reserved.focusedItemHeader.focusTextInfo.box.x + reserved.focusedItemHeader.focusTextInfo.box.w * 0.5) +
-            ',' +
-            (reserved.focusedItemHeader.focusTextInfo.box.y + reserved.focusedItemHeader.focusTextInfo.box.h * 0.4) + ')')
-        reserved.focusedItemHeader.focusTextInfo.g.append('text')
-          .text('Last modified : ' + 'Last date when operator below input some text')
-          .style('fill', colorTheme.medium.text)
-          .style('font-weight', '')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' +
-            (reserved.focusedItemHeader.focusTextInfo.box.x + reserved.focusedItemHeader.focusTextInfo.box.w * 0.1) +
-            ',' +
-            (reserved.focusedItemHeader.focusTextInfo.box.y + reserved.focusedItemHeader.focusTextInfo.box.h * 0.8) + ')')
-        reserved.focusedItemHeader.focusTextInfo.g.append('text')
-          .text('By operator : ' + 'Id of the operator that have last input some text')
-          .style('fill', colorTheme.medium.text)
-          .style('font-weight', '')
-          .style('font-size', '8px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' +
-            (reserved.focusedItemHeader.focusTextInfo.box.x + reserved.focusedItemHeader.focusTextInfo.box.w * 0.1) +
-            ',' +
-            (reserved.focusedItemHeader.focusTextInfo.box.y + reserved.focusedItemHeader.focusTextInfo.box.h * 1.2) + ')')
-      }
+      function initFocusInfo () {
+        reserved.focusedItemInfo.info.scroll.scrollBoxG = reserved.focusedItemInfo.info.g.append('g')
+        reserved.focusedItemInfo.info.scroll.scrollBoxG.append('rect')
+          .attr('x', reserved.focusedItemInfo.info.box.x)
+          .attr('y', reserved.focusedItemInfo.info.box.y)
+          .attr('width', reserved.focusedItemInfo.info.box.w)
+          .attr('height', reserved.focusedItemInfo.info.box.h)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
 
-      let g = reserved.gBlockBox.append('g')
-      let b = {
-        x: reserved.adjustedBox.x + box.textEditor.w * 0.15,
-        y: reserved.adjustedBox.y,
-        w: box.textEditor.w * 0.81,
-        h: box.textEditor.h * 0.15,
-        marg: box.telescopes.marg * 0.5
+        let historyBox = reserved.focusedItemInfo.info.box
+        reserved.focusedItemInfo.info.scroll.scrollBoxG.append('rect')
+          .attr('x', historyBox.x)
+          .attr('y', historyBox.y)
+          .attr('width', historyBox.w)
+          .attr('height', historyBox.h)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+
+        reserved.focusedItemInfo.info.scroll.scrollBox = new ScrollBox()
+        reserved.focusedItemInfo.info.scroll.scrollBox.init({
+          tag: 'inputHistoryScrollBox',
+          gBox: reserved.focusedItemInfo.info.scroll.scrollBoxG,
+          boxData: {
+            x: historyBox.x,
+            y: historyBox.y,
+            w: historyBox.w,
+            h: historyBox.h,
+            marg: 0
+          },
+          useRelativeCoords: true,
+          locker: new Locker(),
+          lockerV: [widgetId + 'updateData'],
+          lockerZoom: {
+            all: 'ScrollBox' + 'zoom',
+            during: 'ScrollBox' + 'zoomDuring',
+            end: 'ScrollBox' + 'zoomEnd'
+          },
+          runLoop: new RunLoop({tag: 'inputHistoryScrollBox'}),
+          canScroll: true,
+          scrollVertical: true,
+          scrollHorizontal: false,
+          scrollHeight: 0.1 + historyBox.h,
+          scrollWidth: 0,
+          background: 'transparent',
+          scrollRecH: {h: 6},
+          scrollRecV: {w: 6}
+        })
+        reserved.focusedItemInfo.info.scroll.scrollG = reserved.focusedItemInfo.info.scroll.scrollBox.get('innerG')
       }
-      g.attr('transform', 'translate(' + b.x + ',' + b.y + ')')
-      reserved.focusedItemHeader = {
-        main: {
-          g: g,
-          box: b
-        },
-        history: {
-          g: g.append('g'),
-          box: {
-            x: 0,
-            y: 0,
-            w: b.w * 0.08,
-            h: b.h,
-            marg: b.marg
-          },
-          scroll: {
-            scrollBox: undefined,
-            scrollBoxG: undefined,
-            scrollG: undefined
-          }
-        },
-        focusItem: {
-          g: g.append('g'),
-          box: {
-            x: b.w * 0.085,
-            y: 0,
-            w: b.w * 0.2,
-            h: b.h,
-            marg: b.marg
-          },
-          infoText: {
-            g: undefined
-          }
-        },
-        focusFields: {
-          g: g.append('g'),
-          box: {
-            x: b.w * 0.26,
-            y: b.h * 0.5,
-            w: b.w * 0.74,
-            h: b.h * 0.5,
-            marg: b.marg
-          }
-        },
-        focusTextInfo: {
-          g: g.append('g'),
-          box: {
-            x: b.w * 0.26,
-            y: b.h * 0.1,
-            w: b.w * 0.74,
-            h: b.h * 0.6,
-            marg: b.marg
-          }
+      reserved.focusedItemInfo.main.g.attr('transform', 'translate(' + reserved.focusedItemInfo.main.box.x + ',' + reserved.focusedItemInfo.main.box.y + ')')
+      reserved.focusedItemInfo.preview = {
+        g: reserved.focusedItemInfo.main.g.append('g'),
+        box: {
+          x: 0,
+          y: 0,
+          w: reserved.focusedItemInfo.main.box.h * 0.325,
+          h: reserved.focusedItemInfo.main.box.h * 0.325
         }
       }
-
-      initFocusHistory()
-      initFocusItem()
-      // initFocusFields()
-      initFocusTextInfo()
-    }
-    function initFocusedItemInfo () {
-      reserved.focusedItemInfo.main.g.append('rect')
-        .attr('x', reserved.focusedItemInfo.main.box.x)
-        .attr('y', reserved.focusedItemInfo.main.box.y)
-        .attr('width', reserved.focusedItemInfo.main.box.w)
-        .attr('height', reserved.focusedItemInfo.main.box.h)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0.2)
+      reserved.focusedItemInfo.fields = {
+        g: reserved.focusedItemInfo.main.g.append('g'),
+        box: {
+          x: 0,
+          y: 0 + reserved.focusedItemInfo.main.box.h * 0.35,
+          w: reserved.focusedItemInfo.main.box.h * 0.325,
+          h: reserved.focusedItemInfo.main.box.h * 0.65
+        },
+        scroll: {}
+      }
+      reserved.focusedItemInfo.info = {
+        g: reserved.focusedItemInfo.main.g.append('g'),
+        box: {
+          x: 0 + reserved.focusedItemInfo.main.box.h * 0.35,
+          y: 0,
+          w: reserved.focusedItemInfo.main.box.w - (reserved.focusedItemInfo.main.box.h * 0.35),
+          h: reserved.focusedItemInfo.main.box.h
+        },
+        scroll: {}
+      }
+      initFocusPreview()
+      initFocusFields()
+      initFocusInfo()
     }
     function initTextInput () {
       reserved.textInput.main.g.append('rect')
@@ -2200,10 +2222,10 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: reserved.adjustedBox.x - reserved.adjustedBox.marg,
-            y: reserved.adjustedBox.y,
-            w: box.textEditor.w * 0.15,
-            h: box.textEditor.h * 0.25,
+            x: reserved.adjustedBox.x,
+            y: reserved.adjustedBox.y + box.textEditor.h * 0.06,
+            w: box.textEditor.w * 0.165,
+            h: box.textEditor.h * 0.45,
             marg: box.telescopes.marg
           }
         }
@@ -2212,11 +2234,11 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: reserved.adjustedBox.x - reserved.adjustedBox.marg,
-            y: reserved.adjustedBox.y + reserved.adjustedBox.h * 0.27,
-            w: box.textEditor.w * 0.15,
-            h: box.textEditor.h * 0.25,
-            marg: box.telescopes.marg * 0.5
+            x: reserved.adjustedBox.x + box.textEditor.w * 0.825,
+            y: reserved.adjustedBox.y + box.textEditor.h * 0.06,
+            w: box.textEditor.w * 0.165,
+            h: box.textEditor.h * 0.45,
+            marg: box.telescopes.marg
           }
         }
       }
@@ -2224,10 +2246,10 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: reserved.adjustedBox.x + box.textEditor.w * 0.2,
-            y: reserved.adjustedBox.y,
-            w: box.textEditor.w * 0.76,
-            h: box.textEditor.h * 0.15,
+            x: reserved.adjustedBox.x + box.textEditor.w * 0.175,
+            y: reserved.adjustedBox.y + box.textEditor.h * 0.0,
+            w: box.textEditor.w * 0.65,
+            h: box.textEditor.h * 0.06,
             marg: box.telescopes.marg * 0.5
           }
         }
@@ -2237,9 +2259,9 @@ let mainCommentNightSched = function (optIn) {
           g: reserved.gBlockBox.append('g'),
           box: {
             x: reserved.adjustedBox.x + box.textEditor.w * 0.15,
-            y: reserved.adjustedBox.y + box.textEditor.h * 0.15 + box.textEditor.h * 0.01,
-            w: box.textEditor.w * 0.81,
-            h: box.textEditor.h * 0.4 - box.textEditor.h * 0.02,
+            y: reserved.adjustedBox.y + box.textEditor.h * 0.53,
+            w: box.textEditor.w * 0.7,
+            h: box.textEditor.h * 0.4,
             marg: box.telescopes.marg * 0.5
           }
         }
@@ -2248,10 +2270,10 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: reserved.adjustedBox.x + box.textEditor.w * 0.15,
-            y: reserved.adjustedBox.y + box.textEditor.h * 0.55,
-            w: box.textEditor.w * 0.7,
-            h: box.textEditor.h * 0.39,
+            x: reserved.adjustedBox.x + box.textEditor.w * 0.175,
+            y: reserved.adjustedBox.y + box.textEditor.h * 0.06,
+            w: box.textEditor.w * 0.65,
+            h: box.textEditor.h * 0.45,
             marg: box.telescopes.marg * 0.5
           }
         }
