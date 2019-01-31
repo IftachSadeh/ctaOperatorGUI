@@ -348,6 +348,19 @@ window.BlockQueue = function (optIn) {
   }
   function initFilters () {
     if (!com.filters.enabled) return
+    function changeMode (newMode) {
+      if (newMode === 'states') {
+        com.filters.mode = 'states'
+        createStatesFilters()
+      } else if (newMode === 'tels') {
+        com.filters.mode = 'tels'
+        createTelsFilters()
+      } else if (newMode === 'targets') {
+        com.filters.mode = 'targets'
+        createTargetsFilsters()
+      }
+    }
+
     function recCol (state) {
       if (state === 'Wait') return com.blocks.colorPalette.wait
       else if (state === 'Done') return com.blocks.colorPalette.done
@@ -360,180 +373,393 @@ window.BlockQueue = function (optIn) {
       } else if (state === 'Fail') return com.blocks.colorPalette.fail
       else return com.blocks.colorPalette.shutdown
     }
-    function createButton (position, type, filter) {
-      let newButton = buttonPanel.addButton(position)
-      newButton.attr('status', 'disabled')
 
-      let clickFunction = function (rect, filter) {
-        if (newButton.attr('status') === 'enabled') {
-          newButton.attr('status', 'disabled')
-          rect.attr('stroke', function (d, i) {
-            return '#000000'
-          })
-            .attr('stroke-width', 1.5)
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', 0)
-            .attr('y1', 0)
-            .attr('x2', (Number(newButton.attr('width'))))
-            .attr('y2', (Number(newButton.attr('height'))))
-            .attr('stroke', '#000000')
-            .style('stroke-opacity', 0.9)
-            .attr('stroke-width', 2)
-            .style('pointer-events', 'none')
-          newButton.append('line')
-            .attr('class', 'checkboxBar')
-            .attr('x1', 0)
-            .attr('y1', (Number(newButton.attr('height'))))
-            .attr('x2', (Number(newButton.attr('width'))))
-            .attr('y2', 0)
-            .attr('stroke', '#000000')
-            .style('stroke-opacity', 0.9)
-            .attr('stroke-width', 2)
-            .style('pointer-events', 'none')
-          // if (filter !== undefined) {
-          //   com.filters.filters.push(filter)
-          //   updateBlocks()
-          // }
-        } else {
-          newButton.attr('status', 'enabled')
-          newButton.selectAll('line.checkboxBar').remove()
-          rect.attr('stroke', function (d, i) {
-            return '#000000'
-          })
-            .attr('stroke-width', 0.5)
-            .style('stroke-opacity', 1)
-          // if (filter !== undefined) {
-          //   let index = com.filters.filters.indexOf(filter)
-          //   com.filters.filters.splice(index, 1)
-          //   updateBlocks()
-          // }
+    function createTop () {
+      com.filters.top = {
+        g: com.filters.g.append('g'),
+        box: deepCopy(com.filters.box),
+        childs: {}
+      }
+      com.filters.top.box.y = com.filters.top.box.y
+      com.filters.top.box.h *= 0.15
+
+      // com.filters.top.g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', com.filters.top.box.y)
+      //   .attr('width', com.filters.top.box.w)
+      //   .attr('height', com.filters.top.box.h)
+      //   .attr('fill', com.main.colorTheme.dark.background)
+      //   .attr('stroke', com.main.colorTheme.dark.stroke)
+      //   .attr('stroke-width', 0.2)
+
+      com.filters.top.g.append('rect')
+        .attr('x', 0)
+        .attr('y', com.filters.top.box.y)
+        .attr('width', com.filters.top.box.w * 0.32)
+        .attr('height', com.filters.top.box.h * 0.9)
+        .attr('fill', com.main.colorTheme.darker.background)
+        .attr('stroke', com.main.colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+      com.filters.top.g.append('rect')
+        .attr('x', com.filters.top.box.w * 0.34)
+        .attr('y', com.filters.top.box.y)
+        .attr('width', com.filters.top.box.w * 0.32)
+        .attr('height', com.filters.top.box.h * 0.9)
+        .attr('fill', com.main.colorTheme.darker.background)
+        .attr('stroke', com.main.colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+      com.filters.top.g.append('rect')
+        .attr('x', com.filters.top.box.w * 0.68)
+        .attr('y', com.filters.top.box.y)
+        .attr('width', com.filters.top.box.w * 0.32)
+        .attr('height', com.filters.top.box.h * 0.9)
+        .attr('fill', com.main.colorTheme.darker.background)
+        .attr('stroke', com.main.colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+    }
+    function createMiddle () {
+      com.filters.middle = {
+        g: com.filters.g.append('g'),
+        box: deepCopy(com.filters.box),
+        states: {},
+        tels: {},
+        targets: {}
+      }
+      com.filters.middle.box.x = 0
+      com.filters.middle.box.y = com.filters.middle.box.y + com.filters.middle.box.h * 0.15
+      com.filters.middle.box.h *= 0.67
+
+      // com.filters.middle.g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', com.filters.middle.box.w)
+      //   .attr('height', com.filters.middle.box.h)
+      //   .attr('fill', com.main.colorTheme.dark.background)
+      //   .attr('stroke', com.main.colorTheme.dark.stroke)
+      //   .attr('stroke-width', 0.2)
+    }
+    function createBottom () {
+      com.filters.bottom = {
+        g: com.filters.g.append('g'),
+        box: deepCopy(com.filters.box),
+        childs: {}
+      }
+      com.filters.bottom.box.y = com.filters.bottom.box.y + com.filters.bottom.box.h * 0.85
+      com.filters.bottom.box.h *= 0.15
+
+      com.filters.bottom.g.append('rect')
+        .attr('x', 0)
+        .attr('y', com.filters.bottom.box.y)
+        .attr('width', com.filters.bottom.box.w * 0.2)
+        .attr('height', com.filters.bottom.box.h)
+        .attr('fill', com.main.colorTheme.dark.background)
+        .attr('stroke', com.main.colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+    }
+    function createGeneral () {
+      com.filters.general = {
+        g: com.filters.g.append('g'),
+        box: deepCopy(com.filters.box),
+        states: {},
+        tels: {},
+        targets: {}
+      }
+      com.filters.general.box.x = 0
+      com.filters.general.box.y = com.filters.general.box.y + com.filters.general.box.h * 0.15
+      com.filters.general.box.h *= 0.67
+
+      // com.filters.general.g.append('rect')
+      //   .attr('x', com.filters.general.box.w * 0.56)
+      //   .attr('y', com.filters.general.box.w * 0.36)
+      //   .attr('width', com.filters.general.box.w * 0.45)
+      //   .attr('height', com.filters.general.box.w * 0.47)
+      //   .attr('fill', com.main.colorTheme.medium.background)
+      //   .attr('stroke', com.main.colorTheme.medium.stroke)
+      //   .attr('stroke-width', 0.2)
+      //   .attr('stroke-dasharray', [com.filters.general.box.w * 0.45, com.filters.general.box.w * 0.47, com.filters.general.box.w * 0.92])
+      com.filters.general.g.append('rect')
+        .attr('x', com.filters.general.box.w * 0.65)
+        .attr('y', com.filters.general.box.w * 0.45)
+        .attr('width', com.filters.general.box.w * 0.3)
+        .attr('height', com.filters.general.box.w * 0.3)
+        .attr('fill', com.main.colorTheme.medium.background)
+        .attr('stroke', com.main.colorTheme.medium.stroke)
+        .attr('stroke-width', 0.2)
+      com.filters.general.g.append('rect')
+        .attr('x', com.filters.general.box.w * 0.65)
+        .attr('y', com.filters.general.box.w * 0.45)
+        .attr('width', com.filters.general.box.w * 0.3)
+        .attr('height', com.filters.general.box.w * 0.3)
+        .attr('fill', 'transparent')
+        .attr('stroke', com.main.colorTheme.medium.stroke)
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', []) // [0, com.filters.middle.box.w * 0.15, com.filters.middle.box.w * 0.4, com.filters.middle.box.w * 0.65])
+      com.filters.general.g.append('text')
+        .text('20/20')
+        .attr('x', com.filters.general.box.w * 0.8)
+        .attr('y', com.filters.general.box.w * 0.6)
+        .attr('dy', 7)
+        .attr('stroke', com.main.colorTheme.darker.stroke)
+        .attr('stroke-width', 0.0)
+        .attr('fill', com.main.colorTheme.darker.stroke)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '7px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+      com.filters.general.g.append('text')
+        .text('100%')
+        .attr('x', com.filters.middle.box.w * 0.8)
+        .attr('y', com.filters.middle.box.w * 0.6)
+        .attr('dy', -3)
+        .attr('stroke', com.main.colorTheme.darker.stroke)
+        .attr('stroke-width', 0.0)
+        .attr('fill', com.main.colorTheme.darker.stroke)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '8px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+    }
+
+    function createStatesFilters () {
+      function createButton (position, type, filter) {
+        let newButton = buttonPanel.addButton(position)
+        newButton.attr('status', 'disabled')
+
+        let clickFunction = function (rect, filter) {
+          if (newButton.attr('status') === 'enabled') {
+            newButton.attr('status', 'disabled')
+            rect.attr('stroke', function (d, i) {
+              return '#000000'
+            })
+              .attr('stroke-width', 1.5)
+            newButton.append('line')
+              .attr('class', 'checkboxBar')
+              .attr('x1', 0)
+              .attr('y1', 0)
+              .attr('x2', (Number(newButton.attr('width'))))
+              .attr('y2', (Number(newButton.attr('height'))))
+              .attr('stroke', '#000000')
+              .style('stroke-opacity', 0.9)
+              .attr('stroke-width', 2)
+              .style('pointer-events', 'none')
+            newButton.append('line')
+              .attr('class', 'checkboxBar')
+              .attr('x1', 0)
+              .attr('y1', (Number(newButton.attr('height'))))
+              .attr('x2', (Number(newButton.attr('width'))))
+              .attr('y2', 0)
+              .attr('stroke', '#000000')
+              .style('stroke-opacity', 0.9)
+              .attr('stroke-width', 2)
+              .style('pointer-events', 'none')
+            // if (filter !== undefined) {
+            //   com.filters.filters.push(filter)
+            //   updateBlocks()
+            // }
+          } else {
+            newButton.attr('status', 'enabled')
+            newButton.selectAll('line.checkboxBar').remove()
+            rect.attr('stroke', function (d, i) {
+              return '#000000'
+            })
+              .attr('stroke-width', 0.2)
+              .style('stroke-opacity', 1)
+            // if (filter !== undefined) {
+            //   let index = com.filters.filters.indexOf(filter)
+            //   com.filters.filters.splice(index, 1)
+            //   updateBlocks()
+            // }
+          }
         }
+
+        let newRect = newButton.append('rect')
+          .attr('x', (Number(newButton.attr('width')) - ((Number(newButton.attr('width'))) * (3) / 3)) / 2)
+          .attr('y', (Number(newButton.attr('height')) - ((Number(newButton.attr('height'))) * (3) / 3)) / 2)
+          .attr('width', function (d, i) {
+            return ((Number(newButton.attr('width'))) * (3) / 3)
+          })
+          .attr('height', function (d, i) {
+            return ((Number(newButton.attr('height'))) * (3) / 3)
+          })
+          .attr('rx', 0)
+          .attr('ry', 0)
+          .attr('stroke', function (d, i) {
+            return 'black'
+          })
+          .attr('stroke-width', 0.2)
+          .style('fill', function (d, i) {
+            return recCol(type).background
+          })
+          .style('fill-opacity', function (d, i) {
+            return 1
+          })
+          .on('click', function () {
+            clickFunction(d3.select(this), filter)
+          })
+          .on('mouseover', function () {
+            let ginfo = com.filters.g.append('g')
+              .attr('class', 'info')
+              .attr('transform', newButton.attr('transform'))
+            ginfo.append('rect')
+              .attr('x', -Number(newButton.attr('width')) * 0.5)
+              .attr('y', -20)
+              .attr('width', Number(newButton.attr('width')) * 2)
+              .attr('height', 18)
+              .attr('rx', 3)
+              .attr('ry', 3)
+              .attr('fill', '#eeeeee')
+              .style('fill-opacity', 0.82)
+            ginfo.append('text')
+              .text(type)
+              .attr('x', Number(newButton.attr('width')) * 0.5)
+              .attr('y', -5)
+              .style('fill-opacity', 0.82)
+              .style('font-weight', 'normal')
+              .attr('text-anchor', 'middle')
+              .style('font-size', 16)
+              .style('pointer-events', 'none')
+              .style('user-select', 'none')
+
+            newButton.attr('status-over', newButton.attr('status'))
+            if (newButton.attr('status') === 'enabled') {
+              if (filter !== undefined) {
+                com.filters.filters.push(filter)
+                updateBlocks()
+              }
+            } else if (newButton.attr('status') === 'disabled') {
+              if (filter !== undefined) {
+                let index = com.filters.filters.indexOf(filter)
+                com.filters.filters.splice(index, 1)
+                updateBlocks()
+              }
+            }
+          })
+          .on('mouseout', function () {
+            com.filters.g.select('g.info').remove()
+            if (newButton.attr('status') !== newButton.attr('status-over')) {
+              return
+            } else if (newButton.attr('status') === 'disabled') {
+              if (filter !== undefined) {
+                com.filters.filters.push(filter)
+                updateBlocks()
+              }
+            } else if (newButton.attr('status') === 'enabled') {
+              if (filter !== undefined) {
+                let index = com.filters.filters.indexOf(filter)
+                com.filters.filters.splice(index, 1)
+                updateBlocks()
+              }
+            }
+          })
+
+        clickFunction(newRect, type)
+
+        return newButton
+      }
+      let margin = {
+        inner: 0.1,
+        extern: 0.1
+      }
+      let buttonPanel = new ButtonPanel()
+      buttonPanel.init({
+        g: com.filters.middle.g,
+        box: com.filters.middle.box,
+        margin: margin,
+        rows: 7,
+        cols: 7,
+        background: 'transparent',
+        stroke: 'transparent'
+      })
+
+      com.filters.middle.g.append('text')
+        .text('States filters')
+        .attr('x', com.filters.middle.box.w * 0.5)
+        .attr('y', com.filters.middle.box.h * 0.05)
+        .attr('dy', 4)
+        .attr('stroke', com.main.colorTheme.darker.stroke)
+        .attr('stroke-width', 0.0)
+        .attr('fill', com.main.colorTheme.darker.stroke)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '8px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+      // for (let i = 0; i < 6; i++) {
+      //   let newButton = buttonPanel.addButton({row: 4, col: i})
+      //   newButton.append('text')
+      //     .text('0')
+      //     .attr('x', Number(newButton.attr('width')) * 0.5)
+      //     .attr('y', Number(newButton.attr('height')) * 0.5)
+      //     .attr('dy', 2)
+      //     .style('font-weight', 'normal')
+      //     .attr('text-anchor', 'middle')
+      //     .style('font-size', '8px')
+      // }
+      // for (let i = 0; i < 5; i++) {
+      //   com.filters.middle.g.append('text')
+      //     .text('+')
+      //     .attr('x', com.filters.middle.box.w * (0.14 * (i + 1) + 0.01))
+      //     .attr('y', com.filters.middle.box.h * 0.92)
+      //     .attr('dy', 0)
+      //     .attr('stroke', com.main.colorTheme.darker.stroke)
+      //     .attr('stroke-width', 0.0)
+      //     .attr('fill', com.main.colorTheme.darker.stroke)
+      //     .style('font-weight', 'normal')
+      //     .attr('text-anchor', 'middle')
+      //     .style('font-size', '8px')
+      //     .style('pointer-events', 'none')
+      //     .style('user-select', 'none')
+      // }
+
+      com.filters.middle.button = {
+        Fail: createButton({row: 1, col: 3}, 'Fail', [{keys: ['exeState', 'state'], value: 'fail'}]),
+        Done: createButton({row: 2, col: 3}, 'Done', [{keys: ['exeState', 'state'], value: 'done'}]),
+        Run: createButton({row: 3, col: 3}, 'Run', [{keys: ['exeState', 'state'], value: 'run'}]),
+        'Cancel.canrun': createButton({row: 4, col: 3}, 'Cancel.canrun', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}]),
+        Cancel: createButton({row: 5, col: 3}, 'Cancel', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}]),
+        Wait: createButton({row: 6, col: 3}, 'Wait', [{keys: ['exeState', 'state'], value: 'wait'}])
       }
 
-      let newRect = newButton.append('rect')
-        .attr('x', (Number(newButton.attr('width')) - ((Number(newButton.attr('width'))) * (3) / 3)) / 2)
-        .attr('y', (Number(newButton.attr('height')) - ((Number(newButton.attr('height'))) * (3) / 3)) / 2)
-        .attr('width', function (d, i) {
-          return ((Number(newButton.attr('width'))) * (3) / 3)
-        })
-        .attr('height', function (d, i) {
-          return ((Number(newButton.attr('height'))) * (3) / 3)
-        })
-        .attr('rx', 0)
-        .attr('ry', 0)
-        .attr('stroke', function (d, i) {
-          return 'black'
-        })
-        .attr('stroke-width', 0.1)
-        .style('fill', function (d, i) {
-          return recCol(type).background
-        })
-        .style('fill-opacity', function (d, i) {
-          return 1
-        })
-        .on('click', function () {
-          clickFunction(d3.select(this), filter)
-        })
-        .on('mouseover', function () {
-          let ginfo = com.filters.g.append('g')
-            .attr('class', 'info')
-            .attr('transform', newButton.attr('transform'))
-          ginfo.append('rect')
-            .attr('x', -Number(newButton.attr('width')) * 0.5)
-            .attr('y', -20)
-            .attr('width', Number(newButton.attr('width')) * 2)
-            .attr('height', 18)
-            .attr('rx', 3)
-            .attr('ry', 3)
-            .attr('fill', '#eeeeee')
-            .style('fill-opacity', 0.82)
-          ginfo.append('text')
-            .text(type)
-            .attr('x', Number(newButton.attr('width')) * 0.5)
-            .attr('y', -5)
-            .style('fill-opacity', 0.82)
-            .style('font-weight', 'normal')
-            .attr('text-anchor', 'middle')
-            .style('font-size', 16)
-            .style('pointer-events', 'none')
-            .style('user-select', 'none')
-
-          newButton.attr('status-over', newButton.attr('status'))
-          if (newButton.attr('status') === 'enabled') {
-            if (filter !== undefined) {
-              com.filters.filters.push(filter)
-              updateBlocks()
-            }
-          } else if (newButton.attr('status') === 'disabled') {
-            if (filter !== undefined) {
-              let index = com.filters.filters.indexOf(filter)
-              com.filters.filters.splice(index, 1)
-              updateBlocks()
-            }
-          }
-        })
-        .on('mouseout', function () {
-          com.filters.g.select('g.info').remove()
-          if (newButton.attr('status') !== newButton.attr('status-over')) {
-            return
-          } else if (newButton.attr('status') === 'disabled') {
-            if (filter !== undefined) {
-              com.filters.filters.push(filter)
-              updateBlocks()
-            }
-          } else if (newButton.attr('status') === 'enabled') {
-            if (filter !== undefined) {
-              let index = com.filters.filters.indexOf(filter)
-              com.filters.filters.splice(index, 1)
-              updateBlocks()
-            }
-          }
-        })
-
-      clickFunction(newRect, type)
+      updateStatesFilters()
     }
+    function updateStatesFilters () {
+      for (let key in com.filters.middle.button) {
+        let button = com.filters.middle.button[key]
+        let box = {
+          x: 0,
+          y: 0,
+          w: (Math.random() * 3) * Number(button.attr('width')),
+          h: Number(button.attr('height'))
+        }
+        button.append('rect')
+          .attr('x', -box.w)
+          .attr('y', box.y + box.h * 0.1)
+          .attr('width', box.w)
+          .attr('height', box.h * 0.8)
+          .attr('fill', recCol(key).background)
+          .attr('stroke', com.main.colorTheme.medium.stroke)
+          .attr('stroke-width', 0.2)
+      }
+    }
+    function createTelsFilters () {
+
+    }
+    function createTargetsFilsters () {
+
+    }
+
 
     com.filters.g = com.main.g.append('g')
       .attr('transform', 'translate(' + com.filters.box.x + ',' + com.filters.box.y + ')')
 
-    let margin = {
-      inner: 5,
-      extern: 5
-    }
-    let buttonPanel = new ButtonPanel()
+    createTop()
+    createMiddle()
+    createBottom()
+    createGeneral()
 
-    buttonPanel.init({
-      g: com.filters.g,
-      box: com.filters.box,
-      margin: margin,
-      rows: 3,
-      cols: 3,
-      background: com.main.colorTheme.dark.background,
-      stroke: com.main.colorTheme.dark.stroke
-    })
-
-    let newButton = buttonPanel.addButton({row: 0, col: 1})
-    newButton.append('text')
-      .text('Blocks Filters')
-      .attr('x', Number(newButton.attr('width')) * 0.5)
-      .attr('y', Number(newButton.attr('height')) * 0.35)
-      .attr('dy', 6)
-      .attr('stroke', com.main.colorTheme.darker.stroke)
-      .attr('stroke-width', 0.4)
-      .attr('fill', com.main.colorTheme.darker.stroke)
-      .style('font-weight', 'normal')
-      .attr('text-anchor', 'middle')
-      .style('font-size', 12)
-      .style('pointer-events', 'none')
-      .style('user-select', 'none')
-
-    createButton({row: 1, col: 0}, 'Fail', [{keys: ['exeState', 'state'], value: 'fail'}])
-    createButton({row: 1, col: 1}, 'Done', [{keys: ['exeState', 'state'], value: 'done'}])
-    createButton({row: 1, col: 2}, 'Run', [{keys: ['exeState', 'state'], value: 'run'}])
-    createButton({row: 2, col: 0}, 'Cancel.canrun', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}])
-    createButton({row: 2, col: 1}, 'Cancel', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}])
-    createButton({row: 2, col: 2}, 'Wait', [{keys: ['exeState', 'state'], value: 'wait'}])
+    changeMode('states')
   }
   function initTimeBars () {
     if (!com.timeBars.enabled) return
