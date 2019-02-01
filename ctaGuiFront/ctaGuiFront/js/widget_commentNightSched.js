@@ -199,13 +199,22 @@ let mainCommentNightSched = function (optIn) {
 
       svg.back.append('rect')
         .attr('x', -lenD.w[0] * 0.1)
-        .attr('y', -lenD.h[0] * 0.1)
-        .attr('width', lenD.w[0] * 0.49 + lenD.w[0] * 0.1)
-        .attr('height', lenD.h[0] * 0.497 + lenD.h[0] * 0.1)
+        .attr('y', lenD.h[0] * 0.005)
+        .attr('width', lenD.w[0] * 0.59)
+        .attr('height', lenD.h[0] * 0.475 + lenD.h[0] * 0.0)
         .attr('fill', colorTheme.medium.background)
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.2)
         .attr('rx', 0)
+      svg.back.append('text')
+        .text('Scheduling blocks & Events')
+        .style('fill', colorTheme.medium.text)
+        // .style('stroke', colorTheme.medium.text)
+        // .style('stroke-size', 0.1)
+        .style('font-weight', '')
+        .style('font-size', '10px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + ((-lenD.w[0] * 0.15 + lenD.w[0] * 0.59) * 0.5) + ',' + (lenD.h[0] * 0.03) + ')')
       // svg.back.append('rect')
       //   .attr('x', lenD.w[0] * 0.54 * 0.5 - lenD.w[0] * 0.05)
       //   .attr('y', lenD.h[0] * 0.025 - lenD.h[0] * 0.015)
@@ -217,13 +226,20 @@ let mainCommentNightSched = function (optIn) {
       //   .attr('rx', 2)
       svg.back.append('rect')
         .attr('x', -lenD.w[0] * 0.1)
-        .attr('y', lenD.h[0] * 0.503)
-        .attr('width', lenD.w[0] * 0.49 + lenD.w[0] * 0.1)
-        .attr('height', lenD.h[0] * 0.495 + lenD.h[0] * 0.1)
+        .attr('y', lenD.h[0] * 0.487)
+        .attr('width', lenD.w[0] * 0.59)
+        .attr('height', lenD.h[0] * 0.5075)
         .attr('fill', colorTheme.medium.background)
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.2)
         .attr('rx', 0)
+      svg.back.append('text')
+        .text('Telescopes')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', '')
+        .style('font-size', '10px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + ((-lenD.w[0] * 0.15 + lenD.w[0] * 0.59) * 0.5) + ',' + (lenD.h[0] * 0.51) + ')')
       // svg.back.append('rect')
       //   .attr('x', lenD.w[0] * 0.54 * 0.5 - lenD.w[0] * 0.05)
       //   .attr('y', lenD.h[0] * 0.5 - lenD.h[0] * 0.0125)
@@ -468,12 +484,12 @@ let mainCommentNightSched = function (optIn) {
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
       gBlockBox.append('text')
-        .text('CURRENT SCHEDULE')
+        .text('Current schedule')
         .style('fill', colorTheme.medium.text)
-        .style('font-weight', 'bold')
+        .style('font-weight', '')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(-5,' + (box.blockQueueServer.h * 0.5) + ') rotate(270)')
+        .attr('transform', 'translate(-5,' + (box.blockQueueServer.h * 0.4) + ') rotate(270)')
 
       blockQueueServer = new BlockQueueCreator({
         main: {
@@ -581,7 +597,7 @@ let mainCommentNightSched = function (optIn) {
         timeBars: {
           enabled: true,
           g: undefined,
-          box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+          box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
         },
         time: {
           currentTime: {time: 0, date: undefined},
@@ -665,6 +681,14 @@ let mainCommentNightSched = function (optIn) {
 
       gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+      gBlockBox.append('text')
+        .text('Occured events')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', '')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(-5,' + (adjustedBox.h * 0.5) + ') rotate(270)')
+
       eventQueue.init({
         main: {
           tag: 'eventQueueDefaultTag',
@@ -1405,6 +1429,162 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke-width', 0.2)
     }
 
+    function initFilters () {
+      function createSystemsHealthFilter (key, box) {
+        reserved.filters.g.append('text')
+          .text(key)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '7px')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (box.x + box.w * 0.5) + ',' + (box.y + box.h - box.w * 0.6) + ')')
+        reserved.filters.g.append('rect')
+          .attr('x', box.x + box.w * 0.325)
+          .attr('y', box.y + box.h - box.w * 0.5)
+          .attr('width', box.w * 0.35)
+          .attr('height', box.w * 0.35)
+          .attr('fill', colorTheme.medium.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+
+
+        reserved.filters.g.append('rect')
+          .attr('x', box.x + box.w * 0.35)
+          .attr('y', box.y - box.w * 0.1)
+          .attr('width', box.w * 0.3)
+          .attr('height', box.w * 0.1)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        reserved.filters.g.append('line')
+          .attr('x1', box.x + box.w * 0.5)
+          .attr('y1', box.y)
+          .attr('x2', box.x + box.w * 0.5)
+          .attr('y2', box.y + box.h - box.w * 1.25)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        reserved.filters.g.append('rect')
+          .attr('x', box.x + box.w * 0.35)
+          .attr('y', box.y + box.h - box.w * 1.25)
+          .attr('width', box.w * 0.3)
+          .attr('height', box.w * 0.1)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+
+        let height = (box.h - box.w * 1.25)
+        reserved.filters.g.append('rect')
+          .attr('x', box.x + box.w * 0.5 + box.w * 0.1)
+          .attr('y', box.y + height - (height * 0.75) - box.w * 0.125)
+          .attr('width', box.w * 0.25)
+          .attr('height', box.w * 0.25)
+          .attr('fill', colorTheme.medium.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        reserved.filters.g.append('rect')
+          .attr('x', box.x + box.w * 0.5 + box.w * 0.1)
+          .attr('y', box.y + height - (height * 0.5) - box.w * 0.125)
+          .attr('width', box.w * 0.25)
+          .attr('height', box.w * 0.25)
+          .attr('fill', colorTheme.medium.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+      }
+      reserved.filters = {
+        g: reserved.gBlockBox.append('g'),
+        box: {
+          x: box.telescopes.w * 0.4 - box.telescopes.marg * 2.5,
+          y: box.telescopes.marg * 3,
+          w: box.telescopes.w * 0.19 + box.telescopes.marg * 2,
+          h: box.telescopes.h * 0.8 - 6 * box.telescopes.marg,
+          marg: box.telescopes.marg
+        }
+      }
+      reserved.filters.g.attr('transform', 'translate(' + reserved.filters.box.x + ',' + reserved.filters.box.y + ')')
+      // reserved.filters.g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', reserved.filters.box.w)
+      //   .attr('height', reserved.filters.box.h)
+      //   .attr('fill', colorTheme.darker.background)
+      //   .attr('stroke', colorTheme.darker.stroke)
+      //   .attr('stroke-width', 0.2)
+
+      reserved.filters.g.append('text')
+        .text('Tels types:')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', '')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.5) + ',' + (reserved.filters.box.h * 0.06) + ')')
+
+      reserved.filters.g.append('text')
+        .text('LTs:')
+        .style('fill', colorTheme.medium.text)
+        // .style('stroke', colorTheme.medium.text)
+        // .style('stroke-size', 0.1)
+        .style('font-weight', '')
+        .style('font-size', '7px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.09) + ',' + (reserved.filters.box.h * 0.16) + ')')
+      reserved.filters.g.append('rect')
+        .attr('x', reserved.filters.box.w * (0.03 + 0.18))
+        .attr('y', reserved.filters.box.h * 0.1)
+        .attr('width', reserved.filters.box.h * 0.07)
+        .attr('height', reserved.filters.box.h * 0.07)
+        .attr('fill', colorTheme.medium.background)
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+
+      reserved.filters.g.append('text')
+        .text('MTs:')
+        .style('fill', colorTheme.medium.text)
+        // .style('stroke', colorTheme.medium.text)
+        // .style('stroke-size', 0.1)
+        .style('font-weight', '')
+        .style('font-size', '7px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.36) + ',' + (reserved.filters.box.h * 0.16) + ')')
+      reserved.filters.g.append('rect')
+        .attr('x', reserved.filters.box.w * (0.36 + 0.15))
+        .attr('y', reserved.filters.box.h * 0.1)
+        .attr('width', reserved.filters.box.h * 0.07)
+        .attr('height', reserved.filters.box.h * 0.07)
+        .attr('fill', colorTheme.medium.background)
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+
+      reserved.filters.g.append('text')
+        .text('STs:')
+        .style('fill', colorTheme.medium.text)
+        // .style('stroke', colorTheme.medium.text)
+        // .style('stroke-size', 0.1)
+        .style('font-weight', '')
+        .style('font-size', '7px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.66) + ',' + (reserved.filters.box.h * 0.16) + ')')
+      reserved.filters.g.append('rect')
+        .attr('x', reserved.filters.box.w * (0.66 + 0.13))
+        .attr('y', reserved.filters.box.h * 0.1)
+        .attr('width', reserved.filters.box.h * 0.07)
+        .attr('height', reserved.filters.box.h * 0.07)
+        .attr('fill', colorTheme.medium.background)
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+
+      reserved.filters.g.append('text')
+        .text('Systems & health:')
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', '')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.5) + ',' + (reserved.filters.box.h * 0.3) + ')')
+
+      createSystemsHealthFilter('Cam', {x: 0, y: reserved.filters.box.h * 0.4, w: reserved.filters.box.w * 0.25, h: reserved.filters.box.h * 0.6})
+      createSystemsHealthFilter('Mir', {x: reserved.filters.box.w * 0.25, y: reserved.filters.box.h * 0.4, w: reserved.filters.box.w * 0.25, h: reserved.filters.box.h * 0.6})
+      createSystemsHealthFilter('Mou', {x: reserved.filters.box.w * 0.5, y: reserved.filters.box.h * 0.4, w: reserved.filters.box.w * 0.25, h: reserved.filters.box.h * 0.6})
+      createSystemsHealthFilter('Aux', {x: reserved.filters.box.w * 0.75, y: reserved.filters.box.h * 0.4, w: reserved.filters.box.w * 0.25, h: reserved.filters.box.h * 0.6})
+    }
     function initView () {
       function createArrZoomerButton () {
         reserved.view.main.g.append('rect')
@@ -1440,10 +1620,10 @@ let mainCommentNightSched = function (optIn) {
         telsList: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: box.telescopes.marg * 2,
-            y: box.telescopes.marg * 2,
-            w: box.telescopes.w * 0.5 - box.telescopes.marg * 4,
-            h: box.telescopes.h * 1 - box.telescopes.marg * 4,
+            x: box.telescopes.marg * 1 + box.telescopes.w * 0.0,
+            y: box.telescopes.marg * 2 + box.telescopes.h * 0.0,
+            w: box.telescopes.w * 0.4 - box.telescopes.marg * 4,
+            h: box.telescopes.h * 0.8 - box.telescopes.marg * 4,
             marg: box.telescopes.marg
           }
           // box: {
@@ -1549,10 +1729,10 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: box.telescopes.w * 0.5 + box.telescopes.marg * 2,
+            x: box.telescopes.w * 0.5 + box.telescopes.marg * 4,
             y: box.telescopes.marg * 2,
             w: box.telescopes.w * 0.5 - 4 * box.telescopes.marg,
-            h: box.telescopes.h * 0.9 - 4 * box.telescopes.marg,
+            h: box.telescopes.h * 0.8 - 4 * box.telescopes.marg,
             marg: box.telescopes.marg
           }
         }
@@ -1568,6 +1748,7 @@ let mainCommentNightSched = function (optIn) {
       // reserved.view.main.g = reserved.gBlockBox.append('g')
       //   .attr('transform', 'translate(' + reserved.view.main.box.marg + ',0)')
       initView()
+      initFilters()
       dummy()
     }
     this.initData = initData
@@ -1625,6 +1806,7 @@ let mainCommentNightSched = function (optIn) {
           let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
             (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
             (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+          if (toff % 2 === 1) tx += offset.x
           let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
           return 'translate(' + tx + ',' + ty + ')'
         })
@@ -1656,8 +1838,6 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke-opacity', function (d) {
             return 1
           })
-          .attr('rx', 2)
-          .attr('ry', 2)
         d3.select(this).append('text')
           .attr('x', 0)
           .attr('y', offset.y * 0.2)
@@ -1684,6 +1864,7 @@ let mainCommentNightSched = function (optIn) {
             let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
               (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
               (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+            // if (toff % 2 === 1) tx += 2 * offset.x
             let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
             return 'translate(' + tx + ',' + ty + ')'
           })
