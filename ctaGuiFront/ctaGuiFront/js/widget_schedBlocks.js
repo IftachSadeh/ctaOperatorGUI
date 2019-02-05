@@ -29,7 +29,7 @@ var mainScriptTag = 'schedBlocks'
 /* global colsBlues */
 /* global disableScrollSVG */
 /* global bckPattern */
-/* global ScrollGrid */
+/* global ScrollBox */
 /* global colsBlk */
 /* global telHealthCol */
 
@@ -2788,7 +2788,7 @@ function mainSchedBlocks (optIn) {
 
       let telsPerRow = 8
       let sizeTelsRow = 0.04
-      let offsetTelsType = 0.5
+      let offsetTelsType = 0.25
 
       let offsetRunningBlocks = 0.035
 
@@ -2896,6 +2896,36 @@ function mainSchedBlocks (optIn) {
           y: (ratio * sizeTelsRow * defaultHeightView)
         }
 
+        let LtelsBegin = []
+        let LtelsEnd = []
+        let MtelsBegin = []
+        let MtelsEnd = []
+        let StelsBegin = []
+        let StelsEnd = []
+        function addToTelsList (id, beginEnd, tx, ty) {
+          if (id.split('_')[0] === 'L') {
+            if (beginEnd === 'begin') {
+              LtelsBegin.unshift({x: tx, y: ty})
+            } else {
+              LtelsEnd.push({x: tx, y: ty})
+            }
+          }
+          if (id.split('_')[0] === 'M') {
+            if (beginEnd === 'begin') {
+              MtelsBegin.unshift({x: tx, y: ty})
+            } else {
+              MtelsEnd.push({x: tx, y: ty})
+            }
+          }
+          if (id.split('_')[0] === 'S') {
+            if (beginEnd === 'begin') {
+              StelsBegin.unshift({x: tx, y: ty})
+            } else {
+              StelsEnd.push({x: tx, y: ty})
+            }
+          }
+        }
+
         let currentTels = g
           .selectAll('g.currentTel')
           .data(tels, function (d) {
@@ -2910,13 +2940,102 @@ function mainSchedBlocks (optIn) {
           if (d.id.split('_')[0] === 'M') toff += 1
           if (d.id.split('_')[0] === 'S') toff += 2
 
-          d3.select(this).attr('transform', function (d) {
-            let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
-              (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
-              (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
-            let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
-            return 'translate(' + tx + ',' + ty + ')'
-          })
+          let tx = (parseInt((i + toff) / telsPerRow) % 2) === 0 ?
+            (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
+            (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+          let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
+
+          let start = false
+          if (d.id.split('_')[0] === 'L') {
+            if (LtelsBegin.length === 0 && LtelsEnd.length === 0) {
+              // LtelsBegin.push({x: tx, y: ty})
+              // LtelsEnd.push({x: tx, ty: ty + (offset.y - strokeSize(d.val))})
+              start = true
+            }
+          }
+          if (d.id.split('_')[0] === 'M') {
+            if (MtelsBegin.length === 0 && MtelsEnd.length === 0) {
+              // MtelsBegin.push({x: tx, y: ty})
+              // MtelsEnd.push({x: tx, ty: ty + (offset.y - strokeSize(d.val))})
+              start = true
+            }
+          }
+          if (d.id.split('_')[0] === 'S') {
+            if (StelsBegin.length === 0 && StelsEnd.length === 0) {
+              // StelsBegin.push({x: tx, y: ty})
+              // StelsEnd.push({x: tx, ty: ty + (offset.y - strokeSize(d.val))})
+              start = true
+            }
+          }
+
+          let end = false
+          if (i + 1 === tels.length || tels[i + 1].id.split('_')[0] !== d.id.split('_')[0]) {
+            end = true
+            // if (d.id.split('_')[0] === 'L') {
+            //   if (LtelsBegin.length === 0) {
+            //     LtelsBegin.push({x: tx, y: ty})
+            //     LtelsEnd.push({x: tx, ty: ty + (offset.y - strokeSize(d.val))})
+            //     start = true
+            //   }
+            // }
+            // if (d.id.split('_')[0] === 'M') {
+            //   if (MtelsBegin.length === 0) {
+            //     MtelsBegin.push({x: tx, y: ty})
+            //     MtelsEnd.push({x: tx, ty: ty + (offset.y - strokeSize(d.val))})
+            //     start = true
+            //   }
+            // }
+            // if (d.id.split('_')[0] === 'S') {
+            //   if (StelsBegin.length === 0) {
+            //     StelsBegin.push({x: tx, y: ty})
+            //     StelsEnd.push({x: tx, ty: ty + (offset.y - strokeSize(d.val))})
+            //     start = true
+            //   }
+            // }
+          }
+
+          if (start) {
+            if ((parseInt((i + toff) / telsPerRow) % 2)) { // C1
+              addToTelsList(d.id, 'begin', tx + offset.x - strokeSize(d.val), ty)
+              addToTelsList(d.id, 'begin', tx + offset.x - strokeSize(d.val), ty + offset.y - strokeSize(d.val))
+            } else {
+              addToTelsList(d.id, 'end', tx, ty)
+              addToTelsList(d.id, 'end', tx, ty + offset.y - strokeSize(d.val))
+            }
+          }
+          if (end) {
+            if ((parseInt((i + toff) / telsPerRow) % 2)) { // C1
+              addToTelsList(d.id, 'end', tx, ty)
+              addToTelsList(d.id, 'end', tx, ty + offset.y - strokeSize(d.val))
+            } else {
+              addToTelsList(d.id, 'begin', tx + offset.x - strokeSize(d.val), ty)
+              addToTelsList(d.id, 'begin', tx + offset.x - strokeSize(d.val), ty + offset.y - strokeSize(d.val))
+            }
+          }
+
+          if (true) { // !start && !end) {
+            if ((parseInt((i + toff) / telsPerRow) % 2)) { // A
+              if (((i + toff) % telsPerRow) === 0) { // C1
+                addToTelsList(d.id, 'begin', tx + offset.x - strokeSize(d.val), ty)
+                addToTelsList(d.id, 'begin', tx + offset.x - strokeSize(d.val), ty + offset.y - strokeSize(d.val))
+              }
+              if (((i + toff) % telsPerRow) === (telsPerRow - 1)) { // C2
+                addToTelsList(d.id, 'end', tx, ty)
+                addToTelsList(d.id, 'end', tx, ty + offset.y - strokeSize(d.val))
+              }
+            } else { // B
+              if (((i + toff) % telsPerRow) === 0) { // C1
+                addToTelsList(d.id, 'end', tx, ty)
+                addToTelsList(d.id, 'end', tx, ty + offset.y - strokeSize(d.val))
+              }
+              if (((i + toff) % telsPerRow) === (telsPerRow - 1)) { // C2
+                addToTelsList(d.id, 'begin', tx + offset.x - strokeSize(d.val), ty)
+                addToTelsList(d.id, 'begin', tx + offset.x - strokeSize(d.val), ty + offset.y - strokeSize(d.val))
+              }
+            }
+          }
+
+          d3.select(this).attr('transform', 'translate(' + tx + ',' + ty + ')')
           d3.select(this).append('rect')
             .attr('x', function (d) {
               return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
@@ -2962,6 +3081,51 @@ function mainSchedBlocks (optIn) {
             .attr('text-anchor', 'middle')
         })
 
+        // if (g.select('path.Lpath').empty()) {
+        //   let lpath = g.append('path')
+        //     .attr('class', 'Lpath')
+        //   let dataPoints = [].concat(LtelsBegin).concat(LtelsEnd).concat([LtelsBegin[0]])
+        //   if (dataPoints.length > 0) {
+        //     let lineGenerator = d3.line()
+        //       .x(function (d) { return d.x - offset.x * 0.5 })
+        //       .y(function (d) { return d.y - offset.y * 0.5 })
+        //     lpath
+        //       .attr('fill', 'none')
+        //       .attr('stroke', '#000000')
+        //       .attr('stroke-width', 2)
+        //       .attr('d', lineGenerator(dataPoints))
+        //   }
+        // }
+        // if (g.select('path.Mpath').empty()) {
+        //   let path = g.append('path')
+        //     .attr('class', 'Mpath')
+        //   let dataPoints = [].concat(MtelsBegin).concat(MtelsEnd).concat([MtelsBegin[0]])
+        //   if (dataPoints.length > 0) {
+        //     let lineGenerator = d3.line()
+        //       .x(function (d) { return d.x - offset.x * 0.5 })
+        //       .y(function (d) { return d.y - offset.y * 0.5 })
+        //     path
+        //       .attr('fill', 'none')
+        //       .attr('stroke', '#000000')
+        //       .attr('stroke-width', 2)
+        //       .attr('d', lineGenerator(dataPoints))
+        //   }
+        // }
+        // if (g.select('path.Spath').empty()) {
+        //   let path = g.append('path')
+        //     .attr('class', 'Spath')
+        //   let dataPoints = [].concat(StelsBegin).concat(StelsEnd).concat([StelsBegin[0]])
+        //   if (dataPoints.length > 0) {
+        //     let lineGenerator = d3.line()
+        //       .x(function (d) { return d.x - offset.x * 0.5 })
+        //       .y(function (d) { return d.y - offset.y * 0.5 })
+        //     path
+        //       .attr('fill', 'none')
+        //       .attr('stroke', '#000000')
+        //       .attr('stroke-width', 2)
+        //       .attr('d', lineGenerator(dataPoints))
+        //   }
+        // }
         let mergeCurrentTels = currentTels.merge(enterCurrentTels)
         mergeCurrentTels.each(function (d, i) {
           let toff = off
