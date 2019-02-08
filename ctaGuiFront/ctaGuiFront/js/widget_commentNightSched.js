@@ -45,7 +45,7 @@ var mainScriptTag = 'commentNightSched'
 /* global ScrollBox */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockList.js' })
+// window.loadScript({ source: mainScriptTag, script: '/js/utils_blockList.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockFilters.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_EventQueue.js' })
@@ -335,9 +335,9 @@ let mainCommentNightSched = function (optIn) {
       }
       box.blockQueueServerFilter = {
         x: box.blockQueueServer.w * 0.0,
-        y: box.blockQueueServer.h * 0.05,
-        w: box.blockQueueServer.w * 0.2,
-        h: box.blockQueueServer.h * 0.95,
+        y: box.blockQueueServer.h * 0.04,
+        w: box.blockQueueServer.w * 0.24,
+        h: box.blockQueueServer.h * 0.94,
         marg: box.blockQueueServer.marg
       }
       box.blockQueueServerContent = {
@@ -348,19 +348,25 @@ let mainCommentNightSched = function (optIn) {
         marg: box.blockQueueServer.marg
       }
 
-
-      box.eventQueueServer = {
+      box.eventQueue = {
         x: lenD.w[0] * 0.5,
-        y: lenD.h[0] * 0.33,
+        y: lenD.h[0] * 0.34,
         w: lenD.w[0] * 0.5,
         h: lenD.h[0] * 0.33,
         marg: lenD.w[0] * 0.01
       }
+      box.eventQueueServer = {
+        x: box.eventQueue.x + box.eventQueue.w * 0.23,
+        y: box.eventQueue.y + box.eventQueue.h * 0.0,
+        w: box.eventQueue.w * 0.74,
+        h: box.eventQueue.h * 0.8,
+        marg: box.eventQueue.marg
+      }
       box.telescopes = {
         x: lenD.w[0] * 0.5,
-        y: lenD.h[0] * 0.66,
-        w: lenD.w[0] * 0.5,
-        h: lenD.h[0] * 0.33,
+        y: lenD.h[0] * 0.56,
+        w: lenD.w[0] * 0.48,
+        h: lenD.h[0] * 0.5,
         marg: lenD.w[0] * 0.01
       }
       box.clock = {
@@ -441,9 +447,9 @@ let mainCommentNightSched = function (optIn) {
     shared.data.server = dataIn.data
 
     svgBlocksQueueServer.initData(dataIn.data)
-    // svgEvents.initData(dataIn.data)
-    // svgTelescopes.initData(dataIn.data)
-    // svgTextEditor.initData(dataIn.data)
+    svgEvents.initData(dataIn.data)
+    svgTelescopes.initData(dataIn.data)
+    svgTextEditor.initData(dataIn.data)
     // svgBottomInfo.initData(dataIn.data)
   }
   this.initData = initData
@@ -453,13 +459,14 @@ let mainCommentNightSched = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
     com.dataIn = dataIn
+    shared.data.server = dataIn.data
 
     // clusterData(com.dataIn.data)
     // filterData(com.dataIn.data)
 
-    svgBlocksQueueServer.updateData(dataIn.data)
-    // svgEvents.updateData(dataIn.data)
-    // svgTels.updateData(dataIn.data)
+    svgBlocksQueueServer.updateData()
+    svgEvents.updateData(dataIn.data)
+    svgTelescopes.updateData(dataIn.data)
     // svgFilterBlocks.updateData(dataIn.data)
     // svgMiddleInfo.updateData(dataIn.data)
     // svgBottomInfo.updateData(dataIn.data)
@@ -620,6 +627,7 @@ let mainCommentNightSched = function (optIn) {
           blockQueueServer.changeDisplayer('blockForm')
         })
 
+      let fbox = box.blockQueueServerFilter
       blockFilters = new BlockFilters({
         main: {
           tag: 'blockQueueFilterTag',
@@ -635,15 +643,40 @@ let mainCommentNightSched = function (optIn) {
         blocks: {
           colorPalette: colorTheme.blocks
         },
-        filters: {
-          g: reserved.filter.g,
-          box: box.blockQueueServerFilter,
-          mode: 'states',
-          top: {},
-          middle: {},
-          bottom: {}
+        // title: {
+        //   g: reserved.filter.g.append('g'),
+        //   box: {x: 0, y: 0 + fbox.h * 0.0, w: fbox.w * 0.8, h: fbox.h * 0.1}
+        // },
+        enabled: {
+          g: reserved.filter.g.append('g'),
+          box: {x: 0, y: 0, w: fbox.w * 1, h: fbox.h * 0.15},
+          scroll: {
+            direction: 'vertical'
+          }
         },
-        filtering: [],
+        disabled: {
+          g: reserved.filter.g.append('g'),
+          box: {x: 0, y: 0 + fbox.h * 0.85, w: fbox.w * 1, h: fbox.h * 0.15},
+          scroll: {
+            direction: 'vertical'
+          }
+        },
+        content: {
+          g: reserved.filter.g.append('g'),
+          box: {x: 0, y: 0 + fbox.h * 0.15, w: fbox.w * 1, h: fbox.h * 0.7},
+          button: {
+            g: undefined
+          },
+          panel: {
+            g: undefined
+          }
+        },
+        // result: {
+        //   g: reserved.filter.g.append('g'),
+        //   box: {x: 0, y: 0 + fbox.h * 0.84, w: fbox.w * 0.8, h: fbox.h * 0.16}
+        // },
+        filters: [],
+        tokenFocus: {},
         blockQueue: []
       })
       blockFilters.init()
@@ -954,7 +987,7 @@ let mainCommentNightSched = function (optIn) {
           }
         },
         filters: {
-          enabled: true,
+          enabled: false,
           group: {
             g: undefined,
             box: {x: adjustedBox.w * 1.03, y: adjustedBox.h * 0, w: adjustedBox.w * 0.22, h: adjustedBox.h * 1, marg: 0},
@@ -2615,22 +2648,22 @@ let mainCommentNightSched = function (optIn) {
     function initData (dataIn) {
       reserved.adjustedBox = {
         x: 0,
-        y: box.textEditor.marg,
-        w: box.textEditor.w - 1 * box.textEditor.marg,
-        h: box.textEditor.h - 2 * box.textEditor.marg,
-        marg: box.textEditor.marg * 0.5
+        y: box.log.marg,
+        w: box.log.w - 1 * box.log.marg,
+        h: box.log.h - 2 * box.log.marg,
+        marg: box.log.marg * 0.5
       }
       reserved.gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + box.textEditor.x + ',' + box.textEditor.y + ')')
+        .attr('transform', 'translate(' + box.log.x + ',' + box.log.y + ')')
 
       reserved.inputHistory = {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
             x: reserved.adjustedBox.x,
-            y: reserved.adjustedBox.y + box.textEditor.h * 0.06,
-            w: box.textEditor.w * 0.165,
-            h: box.textEditor.h * 0.45,
+            y: reserved.adjustedBox.y + box.log.h * 0.06,
+            w: box.log.w * 0.165,
+            h: box.log.h * 0.45,
             marg: box.telescopes.marg
           }
         }
@@ -2639,10 +2672,10 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: reserved.adjustedBox.x + box.textEditor.w * 0.825,
-            y: reserved.adjustedBox.y + box.textEditor.h * 0.06,
-            w: box.textEditor.w * 0.165,
-            h: box.textEditor.h * 0.45,
+            x: reserved.adjustedBox.x + box.log.w * 0.825,
+            y: reserved.adjustedBox.y + box.log.h * 0.06,
+            w: box.log.w * 0.165,
+            h: box.log.h * 0.45,
             marg: box.telescopes.marg
           }
         }
@@ -2651,10 +2684,10 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: reserved.adjustedBox.x + box.textEditor.w * 0.175,
-            y: reserved.adjustedBox.y + box.textEditor.h * 0.0,
-            w: box.textEditor.w * 0.65,
-            h: box.textEditor.h * 0.06,
+            x: reserved.adjustedBox.x + box.log.w * 0.175,
+            y: reserved.adjustedBox.y + box.log.h * 0.0,
+            w: box.log.w * 0.65,
+            h: box.log.h * 0.06,
             marg: box.telescopes.marg * 0.5
           }
         }
@@ -2663,10 +2696,10 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: reserved.adjustedBox.x + box.textEditor.w * 0.15,
-            y: reserved.adjustedBox.y + box.textEditor.h * 0.53,
-            w: box.textEditor.w * 0.7,
-            h: box.textEditor.h * 0.4,
+            x: reserved.adjustedBox.x + box.log.w * 0.15,
+            y: reserved.adjustedBox.y + box.log.h * 0.53,
+            w: box.log.w * 0.7,
+            h: box.log.h * 0.4,
             marg: box.telescopes.marg * 0.5
           }
         }
@@ -2675,10 +2708,10 @@ let mainCommentNightSched = function (optIn) {
         main: {
           g: reserved.gBlockBox.append('g'),
           box: {
-            x: reserved.adjustedBox.x + box.textEditor.w * 0.175,
-            y: reserved.adjustedBox.y + box.textEditor.h * 0.06,
-            w: box.textEditor.w * 0.65,
-            h: box.textEditor.h * 0.45,
+            x: reserved.adjustedBox.x + box.log.w * 0.175,
+            y: reserved.adjustedBox.y + box.log.h * 0.06,
+            w: box.log.w * 0.65,
+            h: box.log.h * 0.45,
             marg: box.telescopes.marg * 0.5
           }
         }
