@@ -649,6 +649,7 @@ window.BlockDisplayer = function (optIn) {
         bDisplay.fillOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
+        bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
         bDisplay.text = cols.text
         bDisplay.patternFill = ''
@@ -813,15 +814,17 @@ window.BlockDisplayer = function (optIn) {
         .data(data, function (d) {
           return d.obId
         })
-
-      rect
-        .transition('inOut')
+      rect.transition()
         .duration(timeD.animArc)
+        .ease(d3.easeLinear)
         .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+        .attr('opacity', d => d.display.opacity)
       rect.each(function (d, i) {
+        d3.select(this).attr('opacity', d.display.opacity)
         d3.select(this).select('rect.back')
           .transition('inOut')
           .duration(timeD.animArc)
+          .ease(d3.easeLinear)
           .attr('stroke', d.display.stroke)
           .style('fill', d.display.fill)
           .style('fill-opacity', d.display.fillOpacity)
@@ -996,22 +999,19 @@ window.BlockDisplayer = function (optIn) {
     this.init = init
 
     function setDefaultStyleForBlocks (blocks) {
-      let timeScale = d3.scaleLinear()
-        .range(com.blockQueue.axis.range)
-        .domain([com.time.startTime.time, com.time.endTime.time])
       for (let index in blocks) {
         let b = blocks[index]
-        let bDisplay = b.display
+        let bDisplay = {}
 
         let cols = com.style.blockCol({ d: b })
 
-        bDisplay.w = timeScale(b.endTime) - timeScale(b.startTime)
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
         bDisplay.fillOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
+        bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
         bDisplay.text = cols.text
         bDisplay.patternFill = ''
@@ -1043,6 +1043,8 @@ window.BlockDisplayer = function (optIn) {
           bDisplay.strokeOpacity = 1
           bDisplay.strokeDasharray = []
         }
+
+        b.display = bDisplay
       }
       return blocks
     }
@@ -1078,6 +1080,7 @@ window.BlockDisplayer = function (optIn) {
           w: width,
           h: height * 0.75
         }
+        scheds[i].blocks = setDefaultStyleForBlocks(scheds[i].blocks)
         setBlockRect(scheds[i].blocks, box)
       }
     }
@@ -1190,6 +1193,7 @@ window.BlockDisplayer = function (optIn) {
           .transition('inOut')
           .duration(timeD.animArc)
           .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
+          .attr('opacity', d.display.opacity)
         d3.select(this).select('rect.back')
           .transition('inOut')
           .duration(timeD.animArc)
@@ -1300,22 +1304,19 @@ window.BlockDisplayer = function (optIn) {
     this.init = init
 
     function setDefaultStyleForBlocks (blocks) {
-      let timeScale = d3.scaleLinear()
-        .range(com.blockQueue.axis.range)
-        .domain([com.time.startTime.time, com.time.endTime.time])
       for (let index in blocks) {
         let b = blocks[index]
-        let bDisplay = b.display
+        let bDisplay = {}
 
         let cols = com.style.blockCol({ d: b })
 
-        bDisplay.w = timeScale(b.endTime) - timeScale(b.startTime)
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
         bDisplay.fillOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
+        bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
         bDisplay.text = cols.text
         bDisplay.patternFill = ''
@@ -1347,6 +1348,8 @@ window.BlockDisplayer = function (optIn) {
           bDisplay.strokeOpacity = 1
           bDisplay.strokeDasharray = []
         }
+
+        b.display = bDisplay
       }
       return blocks
     }
@@ -1377,6 +1380,7 @@ window.BlockDisplayer = function (optIn) {
       let mobox = deepCopy(com.blockForm.mosaic.box)
       mobox.y = mobox.y + mobox.h * 0.15
       mobox.h = mobox.h * 0.85
+      blocks = setDefaultStyleForBlocks(blocks)
       setBlockRect(blocks, mobox)
     }
     this.update = update
@@ -1437,6 +1441,7 @@ window.BlockDisplayer = function (optIn) {
           .transition('inOut')
           .duration(timeD.animArc)
           .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
+          .attr('opacity', d => d.display.opacity)
         d3.select(this).select('rect.back')
           .on('click', function () {
             let t = (1.0 / parseFloat(blocks.length - 1)) * parseFloat(i)
@@ -1538,22 +1543,19 @@ window.BlockDisplayer = function (optIn) {
       return ret
     }
     function setDefaultStyleForBlocks (blocks) {
-      let timeScale = d3.scaleLinear()
-        .range(com.blockQueue2.axis.range)
-        .domain([com.time.startTime.time, com.time.endTime.time])
       for (let index in blocks) {
         let b = blocks[index]
-        let bDisplay = b.display
+        let bDisplay = {}
 
         let cols = com.style.blockCol({ d: b })
 
-        bDisplay.w = timeScale(b.endTime) - timeScale(b.startTime)
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
         bDisplay.fillOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
+        bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
         bDisplay.text = cols.text
         bDisplay.patternFill = ''
@@ -1585,6 +1587,8 @@ window.BlockDisplayer = function (optIn) {
           bDisplay.strokeOpacity = 1
           bDisplay.strokeDasharray = []
         }
+
+        b.display = bDisplay
       }
       return blocks
     }
@@ -1675,6 +1679,7 @@ window.BlockDisplayer = function (optIn) {
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
         .each(function (d, i) {
+          d.blocks = setDefaultStyleForBlocks(d.blocks)
           setBlockRect(d.blocks, {x: 0, y: (height * i), w: com.main.box.w, h: height})
         })
     }
@@ -1694,6 +1699,7 @@ window.BlockDisplayer = function (optIn) {
           .transition('inOut')
           .duration(timeD.animArc)
           .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
+          .attr('opacity', d => d.display.opacity)
         d3.select(this).select('rect.back')
           .transition('inOut')
           .duration(timeD.animArc)
@@ -1919,63 +1925,71 @@ window.BlockDisplayer = function (optIn) {
   this.initBackground = initBackground
 
   function filterData () {
-    function checkPropertiesValue (d, keys, value) {
+    function checkPropertiesValue (d, keys, value, op) {
       let target = d
-      for (var i = 0; i < keys.length; i++) {
+      for (let i = 0; i < keys.length; i++) {
         target = target[keys[i]]
       }
-      if (target === value) return true
-      return false
+      if (Array.isArray(target)) {
+        for (let i = 0; i < target.length; i++) {
+          if (target[i] === value) return op === 'exclude' ? true : false
+        }
+      } else if (target === value) return op === 'exclude' ? true : false
+      return op === 'exclude' ? false : true
     }
+
+    com.filters.filtering = updateFiltering()
     let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
+    // separate block according to states
     for (var z = 0; z < com.data.raw.blocks.done.length; z++) {
       let dataNow = com.data.raw.blocks.done[z]
+      dataNow.filtered = false
       if (com.filters.filtering.length === 0) {
         if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
         if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
         if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
       } else {
-        let insert = true
         for (var i = 0; i < com.filters.filtering.length; i++) {
           let filterNow = com.filters.filtering[i]
-          let allPropValidate = true
-          for (var j = 0; j < filterNow.length; j++) {
-            if (!checkPropertiesValue(dataNow, filterNow[j].keys, filterNow[j].value)) allPropValidate = false
+          let allPropChecked = true
+          for (var j = 0; j < filterNow.filters.length; j++) {
+            if (!checkPropertiesValue(dataNow, filterNow.filters[j].keys, filterNow.filters[j].value, filterNow.operation)) allPropChecked = false
           }
-          if (allPropValidate) insert = false
+          if (allPropChecked) dataNow.filtered = true
         }
-        if (insert) {
-          if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
-          if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
-          if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
-        }
+        if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
+        if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
+        if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
       }
     }
-    filtered.wait = com.data.raw.blocks.wait.filter(function (d) {
-      if (com.filters.filtering.length === 0) return true
-      for (var i = 0; i < com.filters.filtering.length; i++) {
-        let filterNow = com.filters.filtering[i]
-        let ok = true
-        for (var j = 0; j < filterNow.length; j++) {
-          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) ok = false
-        }
-        if (ok) return false
-      }
-      return true
-    })
-    filtered.run = com.data.raw.blocks.run.filter(function (d) {
-      if (com.filters.filtering.length === 0) return true
-      for (var i = 0; i < com.filters.filtering.length; i++) {
-        let filterNow = com.filters.filtering[i]
-        let ok = true
-        for (var j = 0; j < filterNow.length; j++) {
-          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) ok = false
-        }
-        if (ok) return false
-      }
-      return true
-    })
 
+    filtered.wait = com.data.raw.blocks.wait.map(function (dataNow) {
+      dataNow.filtered = false
+      if (com.filters.filtering.length === 0) return dataNow
+      for (var i = 0; i < com.filters.filtering.length; i++) {
+        let filterNow = com.filters.filtering[i]
+        let allPropChecked = true
+        for (var j = 0; j < filterNow.filters.length; j++) {
+          if (!checkPropertiesValue(dataNow, filterNow.filters[j].keys, filterNow.filters[j].value, filterNow.operation)) allPropChecked = false
+        }
+        if (allPropChecked) dataNow.filtered = true
+      }
+      return dataNow
+    })
+    filtered.run = com.data.raw.blocks.run.map(function (dataNow) {
+      dataNow.filtered = false
+      if (com.filters.filtering.length === 0) return dataNow
+      for (var i = 0; i < com.filters.filtering.length; i++) {
+        let filterNow = com.filters.filtering[i]
+        let allPropChecked = true
+        for (var j = 0; j < filterNow.filters.length; j++) {
+          if (!checkPropertiesValue(dataNow, filterNow.filters[j].keys, filterNow.filters[j].value, filterNow.operation)) allPropChecked = false
+        }
+        if (allPropChecked) dataNow.filtered = true
+      }
+      return dataNow
+    })
+    console.log(filtered);
     return filtered
   }
   function createBlocksGroup () {
@@ -2102,11 +2116,9 @@ window.BlockDisplayer = function (optIn) {
     }
   }
   this.updateData = updateData
-  function update (dataIn) {
-    com.time.currentTime = dataIn.time.currentTime
-    com.time.startTime = dataIn.time.startTime
-    com.time.endTime = dataIn.time.endTime
-
+  function update () {
+    com.data.filtered = filterData()
+    createBlocksGroup()
     if (com.displayer === 'blockQueue') {
       blockQueueBib.update()
     } else if (com.displayer === 'blockList') {
@@ -2223,15 +2235,26 @@ window.BlockDisplayer = function (optIn) {
   // function dragBlockTick (d) {}
   // function dragBlockEnd (d) {}
 
-  function addFiltering (filter) {
-    com.filters.filtering.push(filter)
+  function updateFiltering () {
+    let allFilters = []
+    for (let i = com.filters.blockFilters.length - 1; i > -1; i--) {
+      let filters = com.filters.blockFilters[i].getFilters()
+      allFilters = allFilters.concat(filters)
+    }
+    return allFilters
   }
-  this.addFiltering = addFiltering
-  function removeFiltering (filter) {
-    let index = com.filters.filtering.indexOf(filter)
-    com.filters.filtering.splice(index, 1)
-  }
-  this.removeFiltering = removeFiltering
+
+  // function addFiltering (filter) {
+  //   com.filters.filtering.push(filter)
+  //   update()
+  // }
+  // this.addFiltering = addFiltering
+  // function removeFiltering (filter) {
+  //   let index = com.filters.filtering.indexOf(filter)
+  //   com.filters.filtering.splice(index, 1)
+  //   update()
+  // }
+  // this.removeFiltering = removeFiltering
   function plugBlockFilters (blockFilters, propagate) {
     com.filters.blockFilters.push(blockFilters)
     if (propagate) blockFilters.plugBlockQueue(this, !propagate)
