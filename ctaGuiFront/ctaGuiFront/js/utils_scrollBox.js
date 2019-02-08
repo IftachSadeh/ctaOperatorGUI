@@ -404,8 +404,8 @@ window.ScrollBox = function () {
 
         let trans = null
         if (com.inUserZoom) {
-          let wdX = d3.event.sourceEvent.deltaX
-          let wdY = d3.event.sourceEvent.deltaY
+          let wdX = d3.event.sourceEvent.deltaX * 0.4
+          let wdY = d3.event.sourceEvent.deltaY * 0.4
           let wdXY = Math.abs(wdX) > Math.abs(wdY) ? -1 * wdX : wdY
 
           // trans = hasVar(wdXY) ? (((wdXY < 0)?1:-1) * deltaWH) : 0;
@@ -478,6 +478,7 @@ window.ScrollBox = function () {
       let trans = optIn.trans
       let frac = optIn.frac
       let duration = hasVar(optIn.duration) ? optIn.duration : timeD.animArc
+      duration = duration === 0 ? timeD.animArc : duration
       let isMoved = false
       let delay = 0
 
@@ -511,6 +512,7 @@ window.ScrollBox = function () {
           com.innerG
             .transition('move')
             .duration(duration)
+            .ease(d3.easeLinear)
             .attr('transform', function (d, i) {
               let shift = posShift()
               return (
@@ -524,12 +526,14 @@ window.ScrollBox = function () {
           com.clipRecInner
             .transition('move')
             .duration(duration)
+            .ease(d3.easeLinear)
             .attr('transform', function (d, i) {
               return 'translate(0,' + -com.scrollTransV.now + ')'
             })
           com.clipRecOuter
             .transition('move')
             .duration(duration)
+            .ease(d3.easeLinear)
             .attr('transform', function (d, i) {
               let shift = posShift()
               return (
