@@ -143,27 +143,268 @@ window.BlockFilters = function (optIn) {
     //   initDisabled()
     // } else
     if (com.main.mode === 'beginner') {
-      initMiddle()
       initState()
       initTels()
       initTargets()
       initTime()
+      initMiddle()
+
+      addStatesMiddleInfo()
+      addTargetsMiddleInfo()
+      addTelsMiddleInfo()
     }
   }
   this.init = init
 
   function initMiddle () {
     let b = com.beginner.middle.box
+    let dim = b.w * 0.3
+    com.beginner.middle.g.attr('transform', 'translate(' + b.x + ',' + b.y + ')')
     com.beginner.middle.g.append('rect')
-      .attr('x', b.x + (b.w * 0.5) - (b.w * 0.0725))
-      .attr('y', b.y + (b.h * 0.5) - (b.w * 0.0725))
-      .attr('width', (b.w * 0.15))
-      .attr('height', (b.w * 0.15))
+      .attr('x', (b.w * 0.5) - dim * 0.5)
+      .attr('y', (b.h * 0.4) - dim * 0.5)
+      .attr('width', dim)
+      .attr('height', dim)
       .attr('fill', com.main.colorTheme.dark.background)
       .attr('stroke', com.main.colorTheme.dark.stroke)
-      .attr('stroke-width', 0.4)
+      .attr('stroke-width', 4)
+
+    com.beginner.middle.g.append('text')
+      .attr('class', 'tot-percent')
+      .attr('x', (b.w * 0.5))
+      .attr('y', (b.h * 0.4) - dim * 0.15)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '9px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    com.beginner.middle.g.append('text')
+      .attr('class', 'tot-number')
+      .attr('x', (b.w * 0.5))
+      .attr('y', (b.h * 0.4) + dim * 0.25)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '9px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+
+    com.beginner.middle.g.append('text')
+      .attr('class', 'states-show')
+      .attr('x', (b.w * 0.15))
+      .attr('y', com.beginner.middle.box.h * 0.2 - 2)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    com.beginner.middle.g.append('text')
+      .attr('class', 'states-hide')
+      .attr('x', (b.w * 0.15))
+      .attr('y', com.beginner.middle.box.h * 0.2 + 9)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+
+    com.beginner.middle.g.append('text')
+      .attr('class', 'targets-show')
+      .attr('x', (b.w * 0.2))
+      .attr('y', com.beginner.middle.box.h * 0.6 - 2)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    com.beginner.middle.g.append('text')
+      .attr('class', 'targets-hide')
+      .attr('x', (b.w * 0.2))
+      .attr('y', com.beginner.middle.box.h * 0.6 + 9)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+
+    com.beginner.middle.g.append('text')
+      .attr('class', 'tels-show')
+      .attr('x', (b.w * 0.8))
+      .attr('y', com.beginner.middle.box.h * 0.6 - 2)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    com.beginner.middle.g.append('text')
+      .attr('class', 'tels-hide')
+      .attr('x', (b.w * 0.8))
+      .attr('y', com.beginner.middle.box.h * 0.6 + 9)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
   }
+  function addTotMiddleInfo () {
+    let allFilters = []
+    allFilters = getFilters()
+
+    for (let i = com.blockQueue.length - 1; i > -1; i--) {
+      let stats = com.blockQueue[i].filterData({filters: allFilters}).stats
+      com.beginner.middle.g.select('text.tot-percent').text(100 - parseInt((stats.filtered / stats.tot) * 100) + '%')
+      com.beginner.middle.g.select('text.tot-number').text((stats.tot - stats.filtered) + '/' + stats.tot)
+    }
+  }
+  function addStatesMiddleInfo () {
+    let allFilters = []
+    for (let j = 0; j < com.beginner.states.token.filtering.length; j++) {
+      allFilters.push(com.beginner.states.token.filtering[j])
+    }
+
+    for (let i = com.blockQueue.length - 1; i > -1; i--) {
+      let stats = com.blockQueue[i].filterData({filters: allFilters}).stats
+      com.beginner.middle.g.select('text.states-show').text(100 - parseInt((stats.filtered / stats.tot) * 100) + '%')
+      com.beginner.middle.g.select('text.states-hide').text((stats.tot - stats.filtered) + '/' + stats.tot)
+    }
+    addTotMiddleInfo()
+  }
+  function addTargetsMiddleInfo () {
+    let allFilters = []
+    for (let j = 0; j < com.beginner.targets.token.filtering.length; j++) {
+      allFilters.push(com.beginner.targets.token.filtering[j])
+    }
+    for (let i = com.blockQueue.length - 1; i > -1; i--) {
+      let stats = com.blockQueue[i].filterData({filters: allFilters}).stats
+      if (allFilters[0].filters.length === 0) {
+        com.beginner.middle.g.select('text.targets-show').text(parseInt((stats.filtered / stats.tot) * 100) + '%')
+        com.beginner.middle.g.select('text.targets-hide').text((stats.filtered) + '/' + stats.tot)
+      } else {
+        com.beginner.middle.g.select('text.targets-show').text(100 - parseInt((stats.filtered / stats.tot) * 100) + '%')
+        com.beginner.middle.g.select('text.targets-hide').text((stats.tot - stats.filtered) + '/' + stats.tot)
+      }
+    }
+    addTotMiddleInfo()
+  }
+  function addTelsMiddleInfo () {
+    let allFilters = []
+    for (let j = 0; j < com.beginner.tels.token.filtering.length; j++) {
+      allFilters.push(com.beginner.tels.token.filtering[j])
+    }
+
+    for (let i = com.blockQueue.length - 1; i > -1; i--) {
+      let stats = com.blockQueue[i].filterData({filters: allFilters}).stats
+      com.beginner.middle.g.select('text.tels-show').text(100 - parseInt((stats.filtered / stats.tot) * 100) + '%')
+      com.beginner.middle.g.select('text.tels-hide').text((stats.tot - stats.filtered) + '/' + stats.tot)
+    }
+    addTotMiddleInfo()
+  }
+
   function initState () {
+    let b = com.beginner.states.box
+    com.beginner.states.g.attr('transform', 'translate(' + b.x + ',' + b.y + ')')
+    let lineGenerator = d3.line()
+      .x(function (d) { return d.x })
+      .y(function (d) { return d.y })
+      .curve(d3.curveLinear)
+
+    // let dataPointTop = [
+    //   {x: 0, y: 0},
+    //   {x: b.w, y: 0},
+    //   {x: b.w, y: b.h * 0.7},
+    //   {x: b.w - (b.h * 0.3), y: b.h},
+    //   {x: 0, y: b.h},
+    //   {x: 0, y: 0}
+    // ]
+    let dataPointTop = [
+      {x: b.w * 0.7, y: b.h * 0.21},
+      {x: b.w * 0.9, y: b.h * 0.21},
+      {x: b.w * 1, y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
+      {x: com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.4) - (b.w * 0.1), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
+      {x: com.beginner.middle.box.x + com.beginner.middle.box.w * 0.4, y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.325}
+    ]
+    com.beginner.states.g.append('path')
+      .data([dataPointTop])
+      .attr('d', lineGenerator)
+      .attr('fill', 'none')
+      .attr('stroke', colorTheme.medium.stroke)
+      .attr('stroke-width', 0.2)
+    com.beginner.states.g.append('circle')
+      .attr('cx', b.w * 0.7)
+      .attr('cy', b.h * 0.21)
+      .attr('r', 6)
+      .attr('fill', 'none')
+      .attr('stroke', com.main.colorTheme.medium.stroke)
+      .attr('stroke-width', 1)
+    com.beginner.states.g.append('circle')
+      .attr('cx', b.w * 0.7)
+      .attr('cy', b.h * 0.21)
+      .attr('r', 5)
+      .attr('fill', com.main.colorTheme.medium.stroke)
+      .attr('stroke', 'none')
+      .attr('stroke-width', 0)
+
+    // let dataPointShadow = [
+    //   {x: 0, y: 0},
+    //   {x: 0, y: b.h},
+    //   {x: b.w - (b.h * 0.3), y: b.h},
+    //   {x: b.w, y: b.h * 0.7},
+    //   {x: b.w, y: (b.h * 0.7) + 2.5},
+    //   {x: b.w - (b.h * 0.3), y: b.h + 2.5},
+    //   {x: b.w - (b.h * 0.3), y: b.h},
+    //   {x: b.w - (b.h * 0.3), y: b.h + 2.5},
+    //   {x: 0 - 2, y: b.h + 2},
+    //   {x: 0, y: b.h},
+    //   {x: 0 - 2, y: b.h + 2},
+    //   {x: 0 - 2, y: 0 + 2},
+    //   {x: 0, y: 0}
+    // ]
+    // com.beginner.states.g.append('path')
+    //   .data([dataPointShadow])
+    //   .attr('d', lineGenerator)
+    //   .attr('fill', colorTheme.darker.background)
+    //   .attr('stroke', colorTheme.darker.stroke)
+    //   .attr('stroke-width', 0.2)
+    // com.beginner.states.g.append('rect')
+    //   .attr('x', 0)
+    //   .attr('y', 0)
+    //   .attr('width', b.w)
+    //   .attr('height', b.h)
+    //   .attr('fill', com.main.colorTheme.medium.background)
+    //   .attr('stroke', com.main.colorTheme.medium.stroke)
+    //   .attr('stroke-width', 0.4)
+
     function createButton (newButton, type, filter) {
       newButton.attr('status', 'disabled')
       if (com.beginner.states.token) {
@@ -220,10 +461,12 @@ window.BlockFilters = function (optIn) {
       }
       function addFiltering (filter) {
         com.beginner.states.token.filtering.push(filter)
+        addStatesMiddleInfo()
       }
       function removeFiltering (filter) {
         let index = com.beginner.states.token.filtering.indexOf(filter)
         com.beginner.states.token.filtering.splice(index, 1)
+        addStatesMiddleInfo()
       }
 
       let newRect = newButton.append('rect')
@@ -289,7 +532,7 @@ window.BlockFilters = function (optIn) {
       .style('pointer-events', 'none')
       .style('user-select', 'none')
 
-    let bBox = {x: com.beginner.states.box.w * 0.18, y: com.beginner.states.box.h * 0.5, w: (com.beginner.states.box.w * 0.98) / 6, h: (com.beginner.states.box.w * 0.98) / 6}
+    let bBox = {x: com.beginner.states.box.w * 0.18, y: com.beginner.states.box.h * 0.6, w: (com.beginner.states.box.w * 0.98) / 6, h: (com.beginner.states.box.w * 0.98) / 6}
     let failG = com.beginner.states.g.append('g')
       .attr('width', bBox.w * 0.8)
       .attr('height', bBox.h * 0.8)
@@ -315,19 +558,839 @@ window.BlockFilters = function (optIn) {
       .attr('height', bBox.h * 0.8)
       .attr('transform', 'translate(' + (bBox.x + bBox.w * 3) + ',' + (bBox.y + com.beginner.states.box.h * 0.2 - bBox.h * 0.5) + ')')
     com.beginner.states.button = {
-      Fail: createButton(failG, 'fail', {name: 'fail', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'fail'}]}),
-      Done: createButton(doneG, 'done', {name: 'done', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'done'}]}),
-      Run: createButton(runG, 'run', {name: 'run', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'run'}]}),
-      'Cancel.canrun': createButton(cancelOG, 'cancelO', {name: 'cancelO', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}]}),
-      Cancel: createButton(cancelSG, 'cancelS', {name: 'cancelS', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}]}),
-      Wait: createButton(waitG, 'wait', {name: 'wait', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'wait'}]})
+      Fail: createButton(failG, 'fail', {name: 'fail', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'fail'}]}),
+      Done: createButton(doneG, 'done', {name: 'done', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'done'}]}),
+      Run: createButton(runG, 'run', {name: 'run', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'run'}]}),
+      'Cancel.canrun': createButton(cancelOG, 'cancelO', {name: 'cancelO', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}]}),
+      Cancel: createButton(cancelSG, 'cancelS', {name: 'cancelS', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}]}),
+      Wait: createButton(waitG, 'wait', {name: 'wait', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'wait'}]})
     }
   }
   function initTels () {
+    com.beginner.tels.token.filtering.push({name: 'tels', operation: 'include', contains: 'all', filters: []})
+    let b = com.beginner.tels.box
+    com.beginner.tels.g.attr('transform', 'translate(' + b.x + ',' + b.y + ')')
 
+    let lineGenerator = d3.line()
+      .x(function (d) { return d.x })
+      .y(function (d) { return d.y })
+      .curve(d3.curveLinear)
+    let dataPointTop = [
+      {x: -b.w * 0.02, y: b.h * 0.5},
+      {x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.9), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
+      {x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.6) + (b.w * 0.1), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
+      {x: -b.x + com.beginner.middle.box.x + com.beginner.middle.box.w * 0.6, y: -b.y + com.beginner.middle.box.y + com.beginner.middle.box.h * 0.475}
+    ]
+    com.beginner.tels.g.append('path')
+      .data([dataPointTop])
+      .attr('d', lineGenerator)
+      .attr('fill', 'none')
+      .attr('stroke', colorTheme.medium.stroke)
+      .attr('stroke-width', 0.2)
+    com.beginner.tels.g.append('circle')
+      .attr('cx', -b.w * 0.02)
+      .attr('cy', b.h * 0.5)
+      .attr('r', 6)
+      .attr('fill', 'none')
+      .attr('stroke', com.main.colorTheme.medium.stroke)
+      .attr('stroke-width', 1)
+    com.beginner.tels.g.append('circle')
+      .attr('cx', -b.w * 0.02)
+      .attr('cy', b.h * 0.5)
+      .attr('r', 5)
+      .attr('fill', com.main.colorTheme.medium.stroke)
+      .attr('stroke', 'none')
+      .attr('stroke-width', 0)
+    // com.beginner.tels.g.append('rect')
+    //   .attr('x', 0)
+    //   .attr('y', 0)
+    //   .attr('width', b.w)
+    //   .attr('height', b.h)
+    //   .attr('fill', com.main.colorTheme.dark.background)
+    //   .attr('stroke', com.main.colorTheme.dark.stroke)
+    //   .attr('stroke-width', 0.4)
+
+    com.beginner.tels.g.append('text')
+      .text('Telescopes')
+      .attr('x', com.beginner.tels.box.w * 0.275)
+      .attr('y', com.beginner.tels.box.h * 0.15)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '9')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    com.beginner.tels.g.append('text')
+      .text('')
+      .attr('x', com.beginner.tels.box.w * 0.25)
+      .attr('y', com.beginner.tels.box.h * 0.15)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '6px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    com.beginner.tels.g.append('text')
+      .text('focus')
+      .attr('x', com.beginner.tels.box.w * 0.75)
+      .attr('y', com.beginner.tels.box.h * 0.15)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '6px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+
+    let tels = telInfo.getIds()
+    tels = tels.map(function (d) {
+      let filtered = false
+      let f = com.beginner.tels.token.filtering[0]
+      for (let i = 0; i < f.filters.length; i++) {
+        if (f.filters[i].value === d) filtered = true
+      }
+      return {id: d, filtered: filtered}
+    })
+
+    let localScroll = {}
+    let left = {
+      x: com.beginner.tels.box.w * 0.05,
+      y: com.beginner.tels.box.h * 0.175,
+      w: com.beginner.tels.box.w * 0.44,
+      h: com.beginner.tels.box.h * 0.68
+    }
+    let right = {
+      x: com.beginner.tels.box.w * 0.51,
+      y: com.beginner.tels.box.h * 0.175,
+      w: com.beginner.tels.box.w * 0.44,
+      h: com.beginner.tels.box.h * 0.68
+    }
+    function initScrollBox () {
+      localScroll.scrollBoxG = com.beginner.tels.g.append('g')
+      // localScroll.scrollBoxG.append('rect')
+      //   .attr('class', 'background')
+      //   .attr('x', left.x)
+      //   .attr('y', left.y)
+      //   .attr('width', left.w)
+      //   .attr('height', left.h)
+      //   .style('fill', 'transparent')
+      //   .style('stroke', com.main.background.stroke)
+      //   .style('stroke-width', 0.4)
+      // localScroll.scrollBoxG.append('rect')
+      //   .attr('class', 'background')
+      //   .attr('x', right.x)
+      //   .attr('y', right.y)
+      //   .attr('width', right.w)
+      //   .attr('height', right.h)
+      //   .style('fill', 'transparent')
+      //   .style('stroke', com.main.background.stroke)
+      //   .style('stroke-width', 0.4)
+
+      localScroll.scrollBox = new ScrollBox()
+      localScroll.scrollBox.init({
+        tag: 'telsFiltersScroll',
+        gBox: localScroll.scrollBoxG,
+        boxData: {
+          x: com.beginner.tels.box.w * 0.05,
+          y: com.beginner.tels.box.h * 0.175,
+          w: com.beginner.tels.box.w * 0.9,
+          h: com.beginner.tels.box.h * 0.68,
+          marg: 0
+        },
+        useRelativeCoords: true,
+        locker: new Locker(),
+        lockerV: ['telsFiltersScroll' + 'updateData'],
+        lockerZoom: {
+          all: 'ScrollBox' + 'zoom',
+          during: 'ScrollBox' + 'zoomDuring',
+          end: 'ScrollBox' + 'zoomEnd'
+        },
+        runLoop: new RunLoop({tag: 'telsFiltersScroll'}),
+        canScroll: true,
+        scrollVertical: true,
+        scrollHorizontal: false,
+        scrollHeight: 0,
+        scrollWidth: 0,
+        background: 'transparent',
+        scrollRecH: {h: 1},
+        scrollRecV: {w: 1}
+      })
+      localScroll.scrollG = localScroll.scrollBox.get('innerG')
+    }
+    initScrollBox()
+
+    function addFiltering (filter) {
+      let f = com.beginner.tels.token.filtering[0]
+      f.filters.push(filter)
+      addTelsMiddleInfo()
+    }
+    function removeFiltering (filter) {
+      let f = com.beginner.tels.token.filtering[0]
+      let index = f.filters.indexOf(filter)
+      f.filters.splice(index, 1)
+      addTelsMiddleInfo()
+    }
+
+    let labelBox = {
+      x: com.beginner.tels.box.w * 0.46,
+      y: 0,
+      w: com.beginner.tels.box.w * 0.44,
+      h: 12
+    }
+
+    let allTels = localScroll.scrollG
+      .selectAll('g.tel')
+      .data(tels, function (d) {
+        return d.id
+      })
+    let enterTels = allTels
+      .enter()
+      .append('g')
+      .attr('class', 'tel')
+      .attr('transform', function (d, i) {
+        let translate = {
+          y: labelBox.h * i,
+          x: labelBox.x * d.filtered
+        }
+        return 'translate(' + translate.x + ',' + translate.y + ')'
+      })
+    enterTels.each(function (d, i) {
+      let gg = d3.select(this)
+      d3.select(this).append('rect')
+        .attr('x', 2)
+        .attr('y', 0.5)
+        .attr('width', labelBox.w - 2)
+        .attr('height', labelBox.h)
+        .style('fill', colorTheme.medium.background)
+        .style('stroke', com.main.background.stroke)
+        .style('stroke-width', com.main.background.strokeWidth)
+        .on('click', function () {
+          if (d.filtered) {
+            d.filtered = false
+            gg
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            removeFiltering({keys: ['telIds'], value: d.id})
+            updateBlockQueue()
+          } else {
+            d.filtered = true
+            gg
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            addFiltering({keys: ['telIds'], value: d.id})
+            updateBlockQueue()
+          }
+        })
+      let dataPointTop = [
+        {x: 2, y: 0.5},
+        {x: 2, y: labelBox.h + 0.5},
+        {x: labelBox.w, y: labelBox.h + 0.5},
+        {x: labelBox.w - 2, y: labelBox.h + 2.5},
+        {x: 2 - 2, y: labelBox.h + 2},
+        {x: 2, y: labelBox.h + 0.5},
+        {x: 2 - 2, y: labelBox.h + 2},
+        {x: 2 - 2, y: 0.5 + 2},
+        {x: 2, y: 0.5}
+      ]
+      d3.select(this).append('path')
+        .data([dataPointTop])
+        .attr('d', lineGenerator)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      d3.select(this).append('text')
+        .text(d.id)
+        .attr('x', labelBox.w * 0.5)
+        .attr('y', labelBox.h * 0.7)
+        .attr('fill', com.main.colorTheme.darker.stroke)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '8px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+    })
+    let mergeTels = enterTels.merge(allTels)
+
+    com.beginner.tels.g.append('rect')
+      .attr('class', 'toRight')
+      .attr('x', com.beginner.tels.box.w * 0.25 - 5)
+      .attr('y', com.beginner.tels.box.h * 0.92 - 5)
+      .attr('width', 10)
+      .attr('height', 10)
+      .style('fill', colorTheme.darker.background)
+      .style('stroke', 'transparent')
+      .style('opacity', 0)
+      .style('stroke-width', 0.4)
+      .on('mouseover', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 1)
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+      })
+      .on('click', function () {
+        mergeTels.each(function (d, i) {
+          if (!d.filtered) {
+            d.filtered = true
+            d3.select(this)
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            addFiltering({keys: ['telIds'], value: d.id})
+          }
+        })
+        updateBlockQueue()
+      })
+    com.beginner.tels.g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-right.svg')
+      .attr('width', 10)
+      .attr('height', 10)
+      .attr('x', com.beginner.tels.box.w * 0.25 - 5)
+      .attr('y', com.beginner.tels.box.h * 0.92 - 5)
+      .style('pointer-events', 'none')
+
+    com.beginner.tels.g.append('rect')
+      .attr('class', 'switch')
+      .attr('x', com.beginner.tels.box.w * 0.5 - 7.5)
+      .attr('y', com.beginner.tels.box.h * 0.92 - 5)
+      .attr('width', 15)
+      .attr('height', 10)
+      .style('fill', colorTheme.darker.background)
+      .style('stroke', 'transparent')
+      .style('opacity', 0)
+      .style('stroke-width', 0.4)
+      .on('mouseover', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 1)
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+      })
+      .on('click', function () {
+        mergeTels.each(function (d, i) {
+          if (d.filtered) {
+            d.filtered = false
+            d3.select(this)
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            removeFiltering({keys: ['telIds'], value: d.id})
+          } else {
+            d.filtered = true
+            d3.select(this)
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            addFiltering({keys: ['telIds'], value: d.id})
+          }
+        })
+        updateBlockQueue()
+      })
+    com.beginner.tels.g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-bothside.svg')
+      .attr('width', 15)
+      .attr('height', 10)
+      .attr('x', com.beginner.tels.box.w * 0.5 - 7.5)
+      .attr('y', com.beginner.tels.box.h * 0.92 - 5)
+      .style('pointer-events', 'none')
+
+    com.beginner.tels.g.append('rect')
+      .attr('class', 'toLeft')
+      .attr('x', com.beginner.tels.box.w * 0.75 - 5)
+      .attr('y', com.beginner.tels.box.h * 0.92 - 5)
+      .attr('width', 10)
+      .attr('height', 10)
+      .style('fill', colorTheme.darker.background)
+      .style('stroke', 'transparent')
+      .style('opacity', 0)
+      .style('stroke-width', 0.4)
+      .on('mouseover', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 1)
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+      })
+      .on('click', function () {
+        mergeTels.each(function (d, i) {
+          if (d.filtered) {
+            d.filtered = false
+            d3.select(this)
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            removeFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: ['telIds'], value: d.id}]})
+          }
+        })
+        updateBlockQueue()
+      })
+    com.beginner.tels.g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-left.svg')
+      .attr('width', 10)
+      .attr('height', 10)
+      .attr('x', com.beginner.tels.box.w * 0.75 - 5)
+      .attr('y', com.beginner.tels.box.h * 0.92 - 5)
+      .style('pointer-events', 'none')
+
+    localScroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: labelBox.h * tels.length})
   }
   function initTargets () {
+    com.beginner.targets.token.filtering.push({name: 'targets', operation: 'include', contains: 'one', filters: []})
+    let b = com.beginner.targets.box
+    com.beginner.targets.g.attr('transform', 'translate(' + b.x + ',' + b.y + ')')
 
+    let lineGenerator = d3.line()
+      .x(function (d) { return d.x })
+      .y(function (d) { return d.y })
+      .curve(d3.curveLinear)
+
+    let dataPointTop = [
+      {x: b.w * 1.02, y: b.h * 0.5},
+      {x: com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.1), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
+      {x: com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.4) - (b.w * 0.1), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
+      {x: com.beginner.middle.box.x + com.beginner.middle.box.w * 0.4, y: -b.y + com.beginner.middle.box.y + com.beginner.middle.box.h * 0.475}
+    ]
+    com.beginner.targets.g.append('path')
+      .data([dataPointTop])
+      .attr('d', lineGenerator)
+      .attr('fill', 'none')
+      .attr('stroke', colorTheme.medium.stroke)
+      .attr('stroke-width', 0.2)
+    com.beginner.targets.g.append('circle')
+      .attr('cx', b.w * 1.02)
+      .attr('cy', b.h * 0.5)
+      .attr('r', 6)
+      .attr('fill', 'none')
+      .attr('stroke', com.main.colorTheme.medium.stroke)
+      .attr('stroke-width', 1)
+    com.beginner.targets.g.append('circle')
+      .attr('cx', b.w * 1.02)
+      .attr('cy', b.h * 0.5)
+      .attr('r', 5)
+      .attr('fill', com.main.colorTheme.medium.stroke)
+      .attr('stroke', 'none')
+      .attr('stroke-width', 0)
+
+    com.beginner.targets.g.append('text')
+      .text('Targets')
+      .attr('x', com.beginner.targets.box.w * 0.275)
+      .attr('y', com.beginner.targets.box.h * 0.15)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '9')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    com.beginner.targets.g.append('text')
+      .text('')
+      .attr('x', com.beginner.targets.box.w * 0.25)
+      .attr('y', com.beginner.targets.box.h * 0.15)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '6px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    com.beginner.targets.g.append('text')
+      .text('focus')
+      .attr('x', com.beginner.targets.box.w * 0.75)
+      .attr('y', com.beginner.targets.box.h * 0.15)
+      .attr('dy', 0)
+      .attr('stroke', com.main.colorTheme.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('fill', com.main.colorTheme.darker.stroke)
+      .style('font-weight', 'normal')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '6px')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+
+    let targets = com.beginner.targets.targetIds
+    targets = targets.map(function (d) {
+      let filtered = false
+      let f = com.beginner.targets.token.filtering[0]
+      for (let i = 0; i < f.filters.length; i++) {
+        if (f.filters[i].value === d) filtered = true
+      }
+      return {id: d, filtered: filtered}
+    })
+
+    let localScroll = {}
+    let left = {
+      x: com.beginner.targets.box.w * 0.05,
+      y: com.beginner.targets.box.h * 0.175,
+      w: com.beginner.targets.box.w * 0.44,
+      h: com.beginner.targets.box.h * 0.68
+    }
+    let right = {
+      x: com.beginner.targets.box.w * 0.51,
+      y: com.beginner.targets.box.h * 0.175,
+      w: com.beginner.targets.box.w * 0.44,
+      h: com.beginner.targets.box.h * 0.68
+    }
+    function initScrollBox () {
+      localScroll.scrollBoxG = com.beginner.targets.g.append('g')
+      // localScroll.scrollBoxG.append('rect')
+      //   .attr('class', 'background')
+      //   .attr('x', left.x)
+      //   .attr('y', left.y)
+      //   .attr('width', left.w)
+      //   .attr('height', left.h)
+      //   .style('fill', 'transparent')
+      //   .style('stroke', com.main.background.stroke)
+      //   .style('stroke-width', 0.4)
+      // localScroll.scrollBoxG.append('rect')
+      //   .attr('class', 'background')
+      //   .attr('x', right.x)
+      //   .attr('y', right.y)
+      //   .attr('width', right.w)
+      //   .attr('height', right.h)
+      //   .style('fill', com.main.colorTheme.darker.background)
+      //   .style('stroke', 'none')
+      //   .style('stroke-width', 0)
+
+      localScroll.scrollBox = new ScrollBox()
+      localScroll.scrollBox.init({
+        tag: 'targetsFiltersScroll',
+        gBox: localScroll.scrollBoxG,
+        boxData: {
+          x: com.beginner.targets.box.w * 0.05,
+          y: com.beginner.targets.box.h * 0.175,
+          w: com.beginner.targets.box.w * 0.9,
+          h: com.beginner.targets.box.h * 0.68,
+          marg: 0
+        },
+        useRelativeCoords: true,
+        locker: new Locker(),
+        lockerV: ['targetsFiltersScroll' + 'updateData'],
+        lockerZoom: {
+          all: 'ScrollBox' + 'zoom',
+          during: 'ScrollBox' + 'zoomDuring',
+          end: 'ScrollBox' + 'zoomEnd'
+        },
+        runLoop: new RunLoop({tag: 'targetsFiltersScroll'}),
+        canScroll: true,
+        scrollVertical: true,
+        scrollHorizontal: false,
+        scrollHeight: 0,
+        scrollWidth: 0,
+        background: 'transparent',
+        scrollRecH: {h: 1},
+        scrollRecV: {w: 1}
+      })
+      localScroll.scrollG = localScroll.scrollBox.get('innerG')
+    }
+    initScrollBox()
+
+    function addFiltering (filter) {
+      let f = com.beginner.targets.token.filtering[0]
+      f.filters.push(filter)
+      addTargetsMiddleInfo()
+    }
+    function removeFiltering (filter) {
+      let f = com.beginner.targets.token.filtering[0]
+      let index = f.filters.indexOf(filter)
+      f.filters.splice(index, 1)
+      addTargetsMiddleInfo()
+    }
+
+    let labelBox = {
+      x: com.beginner.targets.box.w * 0.46,
+      y: 0,
+      w: com.beginner.targets.box.w * 0.44,
+      h: 12
+    }
+
+    let alltargets = localScroll.scrollG
+      .selectAll('g.tel')
+      .data(targets, function (d) {
+        return d.id
+      })
+    let entertargets = alltargets
+      .enter()
+      .append('g')
+      .attr('class', 'tel')
+      .attr('transform', function (d, i) {
+        let translate = {
+          y: labelBox.h * i,
+          x: labelBox.x * d.filtered
+        }
+        return 'translate(' + translate.x + ',' + translate.y + ')'
+      })
+    entertargets.each(function (d, i) {
+      let gg = d3.select(this)
+      d3.select(this).append('rect')
+        .attr('x', 2)
+        .attr('y', 0.5)
+        .attr('width', labelBox.w - 2)
+        .attr('height', labelBox.h)
+        .style('fill', colorTheme.medium.background)
+        .style('stroke', com.main.background.stroke)
+        .style('stroke-width', com.main.background.strokeWidth)
+        .on('click', function () {
+          if (d.filtered) {
+            d.filtered = false
+            gg
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            removeFiltering({keys: ['targetId'], value: d.id})
+            updateBlockQueue()
+          } else {
+            d.filtered = true
+            gg
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            addFiltering({keys: ['targetId'], value: d.id})
+            updateBlockQueue()
+          }
+        })
+      let dataPointTop = [
+        {x: 2, y: 0.5},
+        {x: 2, y: labelBox.h + 0.5},
+        {x: labelBox.w, y: labelBox.h + 0.5},
+        {x: labelBox.w - 2, y: labelBox.h + 2.5},
+        {x: 2 - 2, y: labelBox.h + 2},
+        {x: 2, y: labelBox.h + 0.5},
+        {x: 2 - 2, y: labelBox.h + 2},
+        {x: 2 - 2, y: 0.5 + 2},
+        {x: 2, y: 0.5}
+      ]
+      d3.select(this).append('path')
+        .data([dataPointTop])
+        .attr('d', lineGenerator)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      d3.select(this).append('text')
+        .text(d.id)
+        .attr('x', labelBox.w * 0.5)
+        .attr('y', labelBox.h * 0.7)
+        .attr('fill', com.main.colorTheme.darker.stroke)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '8px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+    })
+    let mergetargets = entertargets.merge(alltargets)
+
+    com.beginner.targets.g.append('rect')
+      .attr('class', 'toRight')
+      .attr('x', com.beginner.targets.box.w * 0.25 - 5)
+      .attr('y', com.beginner.targets.box.h * 0.92 - 5)
+      .attr('width', 10)
+      .attr('height', 10)
+      .style('fill', colorTheme.darker.background)
+      .style('stroke', 'transparent')
+      .style('opacity', 0)
+      .style('stroke-width', 0.4)
+      .on('mouseover', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 1)
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+      })
+      .on('click', function () {
+        mergetargets.each(function (d, i) {
+          if (!d.filtered) {
+            d.filtered = true
+            d3.select(this)
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            addFiltering({keys: ['targetId'], value: d.id})
+          }
+        })
+        updateBlockQueue()
+      })
+    com.beginner.targets.g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-right.svg')
+      .attr('width', 10)
+      .attr('height', 10)
+      .attr('x', com.beginner.targets.box.w * 0.25 - 5)
+      .attr('y', com.beginner.targets.box.h * 0.92 - 5)
+      .style('pointer-events', 'none')
+
+    com.beginner.targets.g.append('rect')
+      .attr('class', 'switch')
+      .attr('x', com.beginner.targets.box.w * 0.5 - 7.5)
+      .attr('y', com.beginner.targets.box.h * 0.92 - 5)
+      .attr('width', 15)
+      .attr('height', 10)
+      .style('fill', colorTheme.darker.background)
+      .style('stroke', 'transparent')
+      .style('opacity', 0)
+      .style('stroke-width', 0.4)
+      .on('mouseover', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 1)
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+      })
+      .on('click', function () {
+        mergetargets.each(function (d, i) {
+          if (d.filtered) {
+            d.filtered = false
+            d3.select(this)
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            removeFiltering({keys: ['targetId'], value: d.id})
+          } else {
+            d.filtered = true
+            d3.select(this)
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            addFiltering({keys: ['targetId'], value: d.id})
+          }
+        })
+        updateBlockQueue()
+      })
+    com.beginner.targets.g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-bothside.svg')
+      .attr('width', 15)
+      .attr('height', 10)
+      .attr('x', com.beginner.targets.box.w * 0.5 - 7.5)
+      .attr('y', com.beginner.targets.box.h * 0.92 - 5)
+      .style('pointer-events', 'none')
+
+    com.beginner.targets.g.append('rect')
+      .attr('class', 'toLeft')
+      .attr('x', com.beginner.targets.box.w * 0.75 - 5)
+      .attr('y', com.beginner.targets.box.h * 0.92 - 5)
+      .attr('width', 10)
+      .attr('height', 10)
+      .style('fill', colorTheme.darker.background)
+      .style('stroke', 'transparent')
+      .style('opacity', 0)
+      .style('stroke-width', 0.4)
+      .on('mouseover', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 1)
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+      })
+      .on('click', function () {
+        mergetargets.each(function (d, i) {
+          if (d.filtered) {
+            d.filtered = false
+            d3.select(this)
+              .attr('transform', function (d) {
+                let translate = {
+                  y: labelBox.h * i,
+                  x: labelBox.x * d.filtered
+                }
+                return 'translate(' + translate.x + ',' + translate.y + ')'
+              })
+            removeFiltering({keys: ['targetId'], value: d.id})
+          }
+        })
+        updateBlockQueue()
+      })
+    com.beginner.targets.g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-left.svg')
+      .attr('width', 10)
+      .attr('height', 10)
+      .attr('x', com.beginner.targets.box.w * 0.75 - 5)
+      .attr('y', com.beginner.targets.box.h * 0.92 - 5)
+      .style('pointer-events', 'none')
+    localScroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: labelBox.h * targets.length})
   }
   function initTime () {
 
@@ -1047,12 +2110,12 @@ window.BlockFilters = function (optIn) {
       .attr('height', bBox.h * 0.8)
       .attr('transform', 'translate(' + (bBox.x + bBox.w * 3) + ',' + (bBox.y + com.content.box.h * 0.2 - bBox.h * 0.5) + ')')
     com.content.panel.button = {
-      Fail: createButton(failG, 'fail', {name: 'fail', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'fail'}]}),
-      Done: createButton(doneG, 'done', {name: 'done', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'done'}]}),
-      Run: createButton(runG, 'run', {name: 'run', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'run'}]}),
-      'Cancel.canrun': createButton(cancelOG, 'cancelO', {name: 'cancelO', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}]}),
-      Cancel: createButton(cancelSG, 'cancelS', {name: 'cancelS', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}]}),
-      Wait: createButton(waitG, 'wait', {name: 'wait', operation: 'exclude', filters: [{keys: ['exeState', 'state'], value: 'wait'}]})
+      Fail: createButton(failG, 'fail', {name: 'fail', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'fail'}]}),
+      Done: createButton(doneG, 'done', {name: 'done', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'done'}]}),
+      Run: createButton(runG, 'run', {name: 'run', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'run'}]}),
+      'Cancel.canrun': createButton(cancelOG, 'cancelO', {name: 'cancelO', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}]}),
+      Cancel: createButton(cancelSG, 'cancelS', {name: 'cancelS', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}]}),
+      Wait: createButton(waitG, 'wait', {name: 'wait', operation: 'exclude', contains: 'all', filters: [{keys: ['exeState', 'state'], value: 'wait'}]})
     }
   }
   function createTelsFilters (optIn) {
@@ -1223,7 +2286,7 @@ window.BlockFilters = function (optIn) {
                 }
                 return 'translate(' + translate.x + ',' + translate.y + ')'
               })
-            removeFiltering({name: 'tels', operation: 'include', filters: [{keys: ['telIds'], value: d.id}]})
+            removeFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: ['telIds'], value: d.id}]})
             updateBlockQueue()
           } else {
             d.filtered = true
@@ -1235,7 +2298,7 @@ window.BlockFilters = function (optIn) {
                 }
                 return 'translate(' + translate.x + ',' + translate.y + ')'
               })
-            addFiltering({name: 'tels', operation: 'include', filters: [{keys: ['telIds'], value: d.id}]})
+            addFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: ['telIds'], value: d.id}]})
             updateBlockQueue()
           }
         })
@@ -1273,7 +2336,7 @@ window.BlockFilters = function (optIn) {
                 }
                 return 'translate(' + translate.x + ',' + translate.y + ')'
               })
-            addFiltering({name: 'tels', operation: 'include', filters: [{keys: ['telIds'], value: d.id}]})
+            addFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: ['telIds'], value: d.id}]})
           }
         })
         updateBlockQueue()
@@ -1299,7 +2362,7 @@ window.BlockFilters = function (optIn) {
                 }
                 return 'translate(' + translate.x + ',' + translate.y + ')'
               })
-            removeFiltering({name: 'tels', operation: 'include', filters: [{keys: ['telIds'], value: d.id}]})
+            removeFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: ['telIds'], value: d.id}]})
           } else {
             d.filtered = true
             d3.select(this)
@@ -1310,7 +2373,7 @@ window.BlockFilters = function (optIn) {
                 }
                 return 'translate(' + translate.x + ',' + translate.y + ')'
               })
-            addFiltering({name: 'tels', operation: 'include', filters: [{keys: ['telIds'], value: d.id}]})
+            addFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: ['telIds'], value: d.id}]})
           }
         })
         updateBlockQueue()
@@ -1336,7 +2399,7 @@ window.BlockFilters = function (optIn) {
                 }
                 return 'translate(' + translate.x + ',' + translate.y + ')'
               })
-            removeFiltering({name: 'tels', operation: 'include', filters: [{keys: ['telIds'], value: d.id}]})
+            removeFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: ['telIds'], value: d.id}]})
           }
         })
         updateBlockQueue()
@@ -1383,6 +2446,12 @@ window.BlockFilters = function (optIn) {
       for (let j = 0; j < com.beginner.states.token.filtering.length; j++) {
         allFilters.push(com.beginner.states.token.filtering[j])
       }
+      if (com.beginner.tels.token.filtering[0].filters.length > 0) {
+        allFilters.push(com.beginner.tels.token.filtering[0])
+      }
+      if (com.beginner.targets.token.filtering[0].filters.length > 0) {
+        allFilters.push(com.beginner.targets.token.filtering[0])
+      }
     }
     return allFilters
   }
@@ -1393,6 +2462,13 @@ window.BlockFilters = function (optIn) {
       com.blockQueue[i].update()
     }
   }
+  function updateStats () {
+    addStatesMiddleInfo()
+    addTargetsMiddleInfo()
+    addTelsMiddleInfo()
+  }
+  this.updateStats = updateStats
+
   function plugBlockQueue (blockQueue, propagate) {
     com.blockQueue.push(blockQueue)
     if (propagate) blockQueue.plugBlockFilters(this, !propagate)
@@ -1413,4 +2489,11 @@ window.BlockFilters = function (optIn) {
     }
   }
   this.unplugBlockQueue = unplugBlockQueue
+  // function updateTargetFromBlockQueue () {
+  //   for (let i = com.blockQueue.length - 1; i > -1; i--) {
+  //     if (com.blockQueue[i] === blockQueue) {
+  //       com.blockQueue[i].remove()
+  //     }
+  //   }
+  // }
 }

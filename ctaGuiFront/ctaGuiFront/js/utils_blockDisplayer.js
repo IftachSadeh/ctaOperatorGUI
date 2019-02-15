@@ -1924,74 +1924,112 @@ window.BlockDisplayer = function (optIn) {
   }
   this.initBackground = initBackground
 
-  function filterData () {
-    function checkPropertiesValue (d, keys, value, op) {
-      let target = d
-      for (let i = 0; i < keys.length; i++) {
-        target = target[keys[i]]
-      }
-      if (Array.isArray(target)) {
-        for (let i = 0; i < target.length; i++) {
-          if (target[i] === value) return op === 'exclude' ? true : false
+  function filterData (optIn) {
+    function checkFilter (d, f) {
+      let op = f.operation
+      let co = f.contains
+      let filters = f.filters
+
+      if (co === 'all') {
+        for (let i = 0; i < filters.length; i++) {
+          let target = d
+          for (let j = 0; j < filters[i].keys.length; j++) {
+            target = target[filters[i].keys[j]]
+          }
+          if (Array.isArray(target)) {
+            if (target.indexOf(filters[i].value) === -1) {
+              if (op === 'exclude') return false
+              if (op === 'include') return true
+            }
+          } else if (target !== filters[i].value) {
+            if (op === 'exclude') return false
+            if (op === 'include') return true
+          }
         }
-      } else if (target === value) return op === 'exclude' ? true : false
-      return op === 'exclude' ? false : true
+        if (op === 'exclude') return true
+        if (op === 'include') return false
+      } else if (co === 'one') {
+        for (let i = 0; i < filters.length; i++) {
+          let target = d
+          for (let j = 0; j < filters[i].keys.length; j++) {
+            target = target[filters[i].keys[j]]
+          }
+          if (Array.isArray(target)) {
+            if (target.indexOf(filters[i].value) !== -1) {
+              if (op === 'exclude') return true
+              if (op === 'include') return false
+            }
+          } else if (target === filters[i].value) {
+            if (op === 'exclude') return true
+            if (op === 'include') return false
+          }
+        }
+        if (op === 'exclude') return false
+        if (op === 'include') return true
+      }
+      return false
     }
 
-    com.filters.filtering = updateFiltering()
+    let filters = optIn.filters ? optIn.filters : com.filters.filtering
+
     let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
+    let stats = {tot: 0, filtered: 0}
+    stats.tot = com.data.raw.blocks.done.length + com.data.raw.blocks.wait.length + com.data.raw.blocks.run.length
     // separate block according to states
     for (var z = 0; z < com.data.raw.blocks.done.length; z++) {
       let dataNow = com.data.raw.blocks.done[z]
       dataNow.filtered = false
-      if (com.filters.filtering.length === 0) {
+      if (filters.length === 0) {
         if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
         if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
         if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
       } else {
-        for (var i = 0; i < com.filters.filtering.length; i++) {
-          let filterNow = com.filters.filtering[i]
+        for (var i = 0; i < filters.length; i++) {
+          let filterNow = filters[i]
           let allPropChecked = true
-          for (var j = 0; j < filterNow.filters.length; j++) {
-            if (!checkPropertiesValue(dataNow, filterNow.filters[j].keys, filterNow.filters[j].value, filterNow.operation)) allPropChecked = false
+          if (!checkFilter(dataNow, filterNow)) allPropChecked = false
+          if (allPropChecked) {
+            dataNow.filtered = true
           }
-          if (allPropChecked) dataNow.filtered = true
         }
         if (dataNow.exeState.state === 'done') filtered.done.push(dataNow)
         if (dataNow.exeState.state === 'fail') filtered.fail.push(dataNow)
         if (dataNow.exeState.state === 'cancel') filtered.cancel.push(dataNow)
       }
+      if (dataNow.filtered) stats.filtered += 1
     }
 
     filtered.wait = com.data.raw.blocks.wait.map(function (dataNow) {
       dataNow.filtered = false
-      if (com.filters.filtering.length === 0) return dataNow
-      for (var i = 0; i < com.filters.filtering.length; i++) {
-        let filterNow = com.filters.filtering[i]
+      if (filters.length === 0) return dataNow
+      for (var i = 0; i < filters.length; i++) {
+        let filterNow = filters[i]
         let allPropChecked = true
-        for (var j = 0; j < filterNow.filters.length; j++) {
-          if (!checkPropertiesValue(dataNow, filterNow.filters[j].keys, filterNow.filters[j].value, filterNow.operation)) allPropChecked = false
+        if (!checkFilter(dataNow, filterNow)) allPropChecked = false
+        if (allPropChecked) {
+          dataNow.filtered = true
         }
-        if (allPropChecked) dataNow.filtered = true
       }
+      if (dataNow.filtered) stats.filtered += 1
       return dataNow
     })
     filtered.run = com.data.raw.blocks.run.map(function (dataNow) {
       dataNow.filtered = false
-      if (com.filters.filtering.length === 0) return dataNow
-      for (var i = 0; i < com.filters.filtering.length; i++) {
-        let filterNow = com.filters.filtering[i]
+      if (filters.length === 0) return dataNow
+      for (var i = 0; i < filters.length; i++) {
+        let filterNow = filters[i]
         let allPropChecked = true
-        for (var j = 0; j < filterNow.filters.length; j++) {
-          if (!checkPropertiesValue(dataNow, filterNow.filters[j].keys, filterNow.filters[j].value, filterNow.operation)) allPropChecked = false
+        if (!checkFilter(dataNow, filterNow)) allPropChecked = false
+        if (allPropChecked) {
+          dataNow.filtered = true
         }
-        if (allPropChecked) dataNow.filtered = true
       }
+      if (dataNow.filtered) stats.filtered += 1
       return dataNow
     })
-    console.log(filtered);
-    return filtered
+    return {data: filtered, stats: stats}
   }
+  this.filterData = filterData
   function createBlocksGroup () {
     let allBlocks = [].concat(com.data.filtered.done)
       .concat(com.data.filtered.run)
@@ -2101,8 +2139,8 @@ window.BlockDisplayer = function (optIn) {
     com.time.endTime = dataIn.time.endTime
     com.data.raw = dataIn.data.raw
     com.data.modified = dataIn.data.modified
-
-    com.data.filtered = filterData()
+    com.filters.filtering = updateFiltering()
+    com.data.filtered = filterData({}).data
     createBlocksGroup()
 
     if (com.displayer === 'blockQueue') {
@@ -2117,7 +2155,8 @@ window.BlockDisplayer = function (optIn) {
   }
   this.updateData = updateData
   function update () {
-    com.data.filtered = filterData()
+    com.filters.filtering = updateFiltering()
+    com.data.filtered = filterData({}).data
     createBlocksGroup()
     if (com.displayer === 'blockQueue') {
       blockQueueBib.update()

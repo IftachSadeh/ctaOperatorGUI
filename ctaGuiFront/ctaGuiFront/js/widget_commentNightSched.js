@@ -328,16 +328,9 @@ let mainCommentNightSched = function (optIn) {
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueServer = box.rightPanel
-      // box.blockQueueServer = {
-      //   x: lenD.w[0] * 0.5,
-      //   y: lenD.h[0] * 0.0,
-      //   w: lenD.w[0] * 0.5,
-      //   h: lenD.h[0] * 0.5,
-      //   marg: lenD.w[0] * 0.01
-      // }
       box.blockQueueServerIcon = {
-        x: box.blockQueueServer.w * 0.4625,
-        y: box.blockQueueServer.h * 0.4625,
+        x: box.blockQueueServer.w * 0.8625,
+        y: marg,
         w: box.blockQueueServer.w * 0.075,
         h: box.blockQueueServer.h * 0.075,
         marg: box.blockQueueServer.marg
@@ -357,9 +350,9 @@ let mainCommentNightSched = function (optIn) {
         marg: box.blockQueueServer.marg
       }
       box.blockQueueServerFilter = {
-        x: box.blockQueueServer.w * 0.1,
+        x: box.blockQueueServer.w * 0.05,
         y: box.blockQueueServer.h * 0.1,
-        w: box.blockQueueServer.w * 0.6,
+        w: box.blockQueueServer.w * 0.71,
         h: box.blockQueueServer.h * 0.4,
         marg: box.blockQueueServer.marg
       }
@@ -371,20 +364,117 @@ let mainCommentNightSched = function (optIn) {
         marg: box.blockQueueServer.marg
       }
 
-      box.eventQueue = {
-        x: lenD.w[0] * 0.5,
-        y: lenD.h[0] * 0.34,
-        w: lenD.w[0] * 0.5,
-        h: lenD.h[0] * 0.33,
-        marg: lenD.w[0] * 0.01
+      box.eventQueueServer = box.rightPanel
+      box.eventQueueServerIcon = {
+        x: box.blockQueueServer.w * 0.8625,
+        y: box.blockQueueServer.h * 0.075 + marg * 2,
+        w: box.eventQueueServer.w * 0.075,
+        h: box.eventQueueServer.h * 0.075,
+        marg: box.eventQueueServer.marg
       }
-      box.eventQueueServer = {
-        x: box.eventQueue.x + box.eventQueue.w * 0.23,
-        y: box.eventQueue.y + box.eventQueue.h * 0.0,
-        w: box.eventQueue.w * 0.74,
-        h: box.eventQueue.h * 0.8,
-        marg: box.eventQueue.marg
+      box.eventQueueServerTab = {
+        x: box.eventQueueServer.w * 0.225,
+        y: box.eventQueueServer.h * 0.175,
+        w: box.eventQueueServer.w * 0.05,
+        h: box.eventQueueServer.h * 0.05,
+        marg: box.eventQueueServer.marg
       }
+      box.eventQueueServerTitle = {
+        x: box.eventQueueServer.w * 0.0,
+        y: box.eventQueueServer.h * 0.0,
+        w: box.eventQueueServer.w * 0.8,
+        h: box.eventQueueServer.h * 0.1,
+        marg: box.eventQueueServer.marg
+      }
+      box.eventQueueServerFilter = {
+        x: box.eventQueueServer.w * 0.05,
+        y: box.eventQueueServer.h * 0.1,
+        w: box.eventQueueServer.w * 0.71,
+        h: box.eventQueueServer.h * 0.4,
+        marg: box.eventQueueServer.marg
+      }
+      box.eventQueueServerContent = {
+        x: box.eventQueueServer.marg * 3,
+        y: box.eventQueueServer.h * 0.575,
+        w: box.eventQueueServer.w * 0.85,
+        h: box.eventQueueServer.h * 0.35,
+        marg: box.eventQueueServer.marg
+      }
+
+      box.telsQueueServer = box.rightPanel
+      box.telsQueueServerIcon = {
+        x: box.blockQueueServer.w * 0.8625,
+        y: box.blockQueueServer.h * 0.075 * 2 + marg * 3,
+        w: box.telsQueueServer.w * 0.075,
+        h: box.telsQueueServer.h * 0.075,
+        marg: box.telsQueueServer.marg
+      }
+      box.telsQueueServerTab = {
+        x: box.telsQueueServer.w * 0.225,
+        y: box.telsQueueServer.h * 0.175,
+        w: box.telsQueueServer.w * 0.05,
+        h: box.telsQueueServer.h * 0.05,
+        marg: box.telsQueueServer.marg
+      }
+      box.telsQueueServerTitle = {
+        x: box.telsQueueServer.w * 0.0,
+        y: box.telsQueueServer.h * 0.0,
+        w: box.telsQueueServer.w * 0.8,
+        h: box.telsQueueServer.h * 0.1,
+        marg: box.telsQueueServer.marg
+      }
+      box.telsQueueServerFilter = {
+        x: box.telsQueueServer.w * 0.05,
+        y: box.telsQueueServer.h * 0.1,
+        w: box.telsQueueServer.w * 0.71,
+        h: box.telsQueueServer.h * 0.4,
+        marg: box.telsQueueServer.marg
+      }
+      box.telsQueueServerContent = {
+        x: box.telsQueueServer.marg * 3,
+        y: box.telsQueueServer.h * 0.575,
+        w: box.telsQueueServer.w * 0.85,
+        h: box.telsQueueServer.h * 0.35,
+        marg: box.telsQueueServer.marg
+      }
+
+      box.daqQueueServer = box.rightPanel
+      box.daqQueueServerIcon = {
+        x: box.blockQueueServer.w * 0.8625,
+        y: box.blockQueueServer.h * 0.075 + marg * 2,
+        w: box.daqQueueServer.w * 0.075,
+        h: box.daqQueueServer.h * 0.075,
+        marg: box.daqQueueServer.marg
+      }
+      box.daqQueueServerTab = {
+        x: box.daqQueueServer.w * 0.225,
+        y: box.daqQueueServer.h * 0.175,
+        w: box.daqQueueServer.w * 0.05,
+        h: box.daqQueueServer.h * 0.05,
+        marg: box.daqQueueServer.marg
+      }
+      box.daqQueueServerTitle = {
+        x: box.daqQueueServer.w * 0.0,
+        y: box.daqQueueServer.h * 0.0,
+        w: box.daqQueueServer.w * 0.8,
+        h: box.daqQueueServer.h * 0.1,
+        marg: box.daqQueueServer.marg
+      }
+      box.daqQueueServerFilter = {
+        x: box.daqQueueServer.w * 0.05,
+        y: box.daqQueueServer.h * 0.1,
+        w: box.daqQueueServer.w * 0.71,
+        h: box.daqQueueServer.h * 0.4,
+        marg: box.daqQueueServer.marg
+      }
+      box.daqQueueServerContent = {
+        x: box.daqQueueServer.marg * 3,
+        y: box.daqQueueServer.h * 0.575,
+        w: box.daqQueueServer.w * 0.85,
+        h: box.daqQueueServer.h * 0.35,
+        marg: box.daqQueueServer.marg
+      }
+
       box.telescopes = {
         x: lenD.w[0] * 0.5,
         y: lenD.h[0] * 0.56,
@@ -472,7 +562,7 @@ let mainCommentNightSched = function (optIn) {
     svgTextEditor.initData(dataIn.data)
     svgBlocksQueueServer.initData(dataIn.data)
     svgEvents.initData(dataIn.data)
-    // svgTelescopes.initData(dataIn.data)
+    svgTelescopes.initData(dataIn.data)
     // svgDAQ.initData()
     // svgBottomInfo.initData(dataIn.data)
   }
@@ -560,6 +650,16 @@ let mainCommentNightSched = function (optIn) {
         }
       }
     }
+  }
+  function extractTargets () {
+    let t = []
+    for (let key in shared.data.server.blocks) {
+      let arr = shared.data.server.blocks[key]
+      for (let i = 0; i < arr.length; i++) {
+        if (t.indexOf(arr[i].targetId) === -1) t.push(arr[i].targetId)
+      }
+    }
+    return t
   }
 
   // ---------------------------------------------------------------------------------------------------
@@ -1337,17 +1437,43 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke', colorTheme.bright.stroke)
         .attr('stroke-width', 0.2)
         .on('mouseover', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.dark.background)
+          if (reserved.main.mode === 'expand') d3.select(this).attr('fill', colorTheme.bright.background)
+          else d3.select(this).attr('fill', colorTheme.darker.background)
         })
         .on('mouseout', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.bright.background)
+          if (reserved.main.mode === 'expand') d3.select(this).attr('fill', colorTheme.darker.background)
+          else d3.select(this).attr('fill', colorTheme.bright.background)
         })
         .on('click', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('x', -5).attr('y', 5)
-          reserved.icon.g.transition().duration(timeD.animArc).attr('opacity', 0).on('end', function () {
-            reserved.main.mode = 'expand'
-            drawBlockQueueServer()
-          })
+          let dataPointFuturTop = [
+            {x: -4, y: 4},
+            {x: -5, y: 5},
+            {x: -5, y: box.blockQueueServerIcon.h + 5},
+            {x: box.blockQueueServerIcon.w - 5, y: box.blockQueueServerIcon.h + 5},
+            {x: box.blockQueueServerIcon.w - 4, y: box.blockQueueServerIcon.h + 4},
+            {x: -4, y: box.blockQueueServerIcon.h + 4},
+            {x: -5, y: box.blockQueueServerIcon.h + 5},
+            {x: -4, y: box.blockQueueServerIcon.h + 4},
+            {x: -4, y: 4}
+          ]
+          reserved.icon.g.select('path')
+            .data([dataPointFuturTop])
+            .transition()
+            .duration(timeD.animArc)
+            .attr('d', lineGenerator)
+          reserved.icon.g.select('image')
+            .transition()
+            .duration(timeD.animArc)
+            .attr('x', box.blockQueueServerIcon.w * 0.2 - 4)
+            .attr('y', box.blockQueueServerIcon.h * 0.2 + 4)
+          d3.select(this).transition().duration(timeD.animArc)
+            .attr('x', -4)
+            .attr('y', 4)
+            .attr('fill', colorTheme.darker.background)
+            .on('end', function () {
+              reserved.main.mode = 'expand'
+              drawBlockQueueServer()
+            })
         })
       reserved.icon.g.append('svg:image')
         .attr('xlink:href', '/static/icons/blocks.svg')
@@ -1439,41 +1565,72 @@ let mainCommentNightSched = function (optIn) {
       drawTitle()
 
       reserved.content.g.append('rect')
-        .attr('x', 0)
-        .attr('y', -20)
+        .attr('x', 0 + 1)
+        .attr('y', -16)
         .attr('width', 15)
         .attr('height', 15)
-        .attr('fill', '')
+        .attr('fill', colorTheme.dark.background)
         .on('click', function () {
           blockQueueServer.changeDisplayer('blockQueue')
         })
+      reserved.content.g.append('svg:image')
+        .attr('xlink:href', '/static/icons/blocks-vert-hori.svg')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('x', 0 + 2.25)
+        .attr('y', -16 + 1.5)
+        .style('pointer-events', 'none')
+
       reserved.content.g.append('rect')
-        .attr('x', 20)
-        .attr('y', -20)
+        .attr('x', 20 + 1)
+        .attr('y', -16)
         .attr('width', 15)
         .attr('height', 15)
-        .attr('fill', '')
+        .attr('fill', colorTheme.dark.background)
         .on('click', function () {
           blockQueueServer.changeDisplayer('blockQueue2')
         })
+      reserved.content.g.append('svg:image')
+        .attr('xlink:href', '/static/icons/blocks-diag.svg')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('x', 20 + 2.25)
+        .attr('y', -16 + 1.5)
+        .style('pointer-events', 'none')
+
       reserved.content.g.append('rect')
-        .attr('x', 40)
-        .attr('y', -20)
+        .attr('x', 40 + 1)
+        .attr('y', -16)
         .attr('width', 15)
         .attr('height', 15)
-        .attr('fill', '')
+        .attr('fill', colorTheme.dark.background)
         .on('click', function () {
           blockQueueServer.changeDisplayer('blockList')
         })
+      reserved.content.g.append('svg:image')
+        .attr('xlink:href', '/static/icons/blocks-4.svg')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('x', 40 + 2.25)
+        .attr('y', -16 + 1.5)
+        .style('pointer-events', 'none')
+
       reserved.content.g.append('rect')
-        .attr('x', 60)
-        .attr('y', -20)
+        .attr('x', 60 + 1)
+        .attr('y', -16)
         .attr('width', 15)
         .attr('height', 15)
-        .attr('fill', '')
+        .attr('fill', colorTheme.dark.background)
         .on('click', function () {
           blockQueueServer.changeDisplayer('blockForm')
         })
+      reserved.content.g.append('svg:image')
+        .attr('xlink:href', '/static/icons/list.svg')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('x', 60 + 2.25)
+        .attr('y', -16 + 1.5)
+        .style('pointer-events', 'none')
 
       let fbox = box.blockQueueServerFilter
       blockFilters = new BlockFilters({
@@ -1496,9 +1653,9 @@ let mainCommentNightSched = function (optIn) {
           middle: {
             g: reserved.filter.g.append('g'),
             box: {
-              x: 0,
+              x: box.blockQueueServerFilter.w * 0.33,
               y: 0,
-              w: box.blockQueueServerFilter.w,
+              w: box.blockQueueServerFilter.w * 0.33,
               h: box.blockQueueServerFilter.h
             }
           },
@@ -1507,8 +1664,8 @@ let mainCommentNightSched = function (optIn) {
             box: {
               x: 0,
               y: 0,
-              w: box.blockQueueServerFilter.w * 0.5,
-              h: box.blockQueueServerFilter.h * 0.5
+              w: box.blockQueueServerFilter.w * 0.33,
+              h: box.blockQueueServerFilter.h * 0.33
             },
             token: {
               id: 'statesToken',
@@ -1519,10 +1676,10 @@ let mainCommentNightSched = function (optIn) {
           tels: {
             g: reserved.filter.g.append('g'),
             box: {
-              x: box.blockQueueServerFilter.x + (box.blockQueueServerFilter.w * 0.5),
-              y: box.blockQueueServerFilter.y,
-              w: box.blockQueueServerFilter.w * 0.5,
-              h: box.blockQueueServerFilter.h * 0.5
+              x: box.blockQueueServerFilter.w * 0.66,
+              y: box.blockQueueServerFilter.h * 0.4,
+              w: box.blockQueueServerFilter.w * 0.33,
+              h: box.blockQueueServerFilter.h * 0.6
             },
             token: {
               id: 'telsToken',
@@ -1533,11 +1690,12 @@ let mainCommentNightSched = function (optIn) {
           targets: {
             g: reserved.filter.g.append('g'),
             box: {
-              x: box.blockQueueServerFilter.x,
-              y: box.blockQueueServerFilter.y + box.blockQueueServerFilter.h * 0.5,
-              w: box.blockQueueServerFilter.w * 0.5,
-              h: box.blockQueueServerFilter.h * 0.5
+              x: 0,
+              y: box.blockQueueServerFilter.h * 0.4,
+              w: box.blockQueueServerFilter.w * 0.33,
+              h: box.blockQueueServerFilter.h * 0.6
             },
+            targetIds: extractTargets(),
             token: {
               id: 'targetsToken',
               type: 'targets',
@@ -1547,10 +1705,10 @@ let mainCommentNightSched = function (optIn) {
           time: {
             g: reserved.filter.g.append('g'),
             box: {
-              x: box.blockQueueServerFilter.x + box.blockQueueServerFilter.w * 0.5,
-              y: box.blockQueueServerFilter.y + box.blockQueueServerFilter.h * 0.5,
-              w: box.blockQueueServerFilter.w * 0.5,
-              h: box.blockQueueServerFilter.h * 0.5
+              x: box.blockQueueServerFilter.w * 0.66,
+              y: 0,
+              w: box.blockQueueServerFilter.w * 0.33,
+              h: box.blockQueueServerFilter.h * 0.33
             },
             token: {
               id: 'timeToken',
@@ -1823,6 +1981,7 @@ let mainCommentNightSched = function (optIn) {
           modified: []
         }
       })
+      blockFilters.updateStats()
     }
     this.updateData = updateData
 
@@ -1839,110 +1998,260 @@ let mainCommentNightSched = function (optIn) {
     this.update = update
   }
   let SvgEvents = function () {
-    // let axis = {}
     let reserved = {
       main: {
         g: undefined,
         mode: 'icon'
+      },
+      back: {
+        g: undefined
+      },
+      icon: {
+        g: undefined
+      },
+      title: {
+        g: undefined
+      },
+      filter: {
+        g: undefined
+      },
+      content: {
+        g: undefined
       }
     }
-    let gBlockBox // , gEvents
-    let blockBoxData
-    let tagEventQueue = 'tagEventQueue'
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
-    function initData (dataIn) {
+    function initData () {
+      reserved.main.g = svg.g.append('g')
+        .attr('transform', 'translate(' + box.eventQueueServer.x + ',' + box.eventQueueServer.y + ')')
+
+      reserved.icon.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.eventQueueServerIcon.x + ',' + box.eventQueueServerIcon.y + ')')
+        .attr('opacity', 1)
+      reserved.title.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.eventQueueServerTitle.x + ',' + box.eventQueueServerTitle.y + ')')
+      reserved.filter.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.eventQueueServerFilter.x + ',' + box.eventQueueServerFilter.y + ')')
+      reserved.content.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.eventQueueServerContent.x + ',' + box.eventQueueServerContent.y + ')')
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+        .curve(d3.curveLinear)
+      let dataPointFuturTop = [
+        {x: 0, y: 0},
+        {x: -5, y: 5},
+        {x: -5, y: box.eventQueueServerIcon.h + 5},
+        {x: box.eventQueueServerIcon.w - 5, y: box.eventQueueServerIcon.h + 5},
+        {x: box.eventQueueServerIcon.w + 0, y: box.eventQueueServerIcon.h},
+        {x: 0, y: box.eventQueueServerIcon.h},
+        {x: -5, y: box.eventQueueServerIcon.h + 5},
+        {x: 0, y: box.eventQueueServerIcon.h},
+        {x: 0, y: 0}
+      ]
+      reserved.icon.g.append('path')
+        .data([dataPointFuturTop])
+        .attr('d', lineGenerator)
+        .attr('fill', colorTheme.darker.background)
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+      reserved.icon.g.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', box.eventQueueServerIcon.w)
+        .attr('height', box.eventQueueServerIcon.h)
+        .attr('fill', colorTheme.bright.background)
+        .attr('stroke', colorTheme.bright.stroke)
+        .attr('stroke-width', 0.2)
+        .on('mouseover', function () {
+          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.dark.background)
+        })
+        .on('mouseout', function () {
+          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.bright.background)
+        })
+        .on('click', function () {
+          d3.select(this).transition().duration(timeD.animArc).attr('x', -5).attr('y', 5)
+          reserved.icon.g.transition().duration(timeD.animArc).attr('opacity', 0).on('end', function () {
+            reserved.main.mode = 'expand'
+            drawEvents()
+          })
+        })
+      reserved.icon.g.append('svg:image')
+        .attr('xlink:href', '/static/icons/warning.svg')
+        .attr('width', box.eventQueueServerIcon.w * 0.6)
+        .attr('height', box.eventQueueServerIcon.h * 0.6)
+        .attr('x', box.eventQueueServerIcon.w * 0.2)
+        .attr('y', box.eventQueueServerIcon.h * 0.2)
+        .style('pointer-events', 'none')
     }
     this.initData = initData
 
     function drawEvents () {
-      let adjustedBox = {
-        x: box.eventQueueServer.x + box.eventQueueServer.w * 0.03,
-        y: box.eventQueueServer.y + box.eventQueueServer.h * 0.05,
-        w: box.eventQueueServer.w * 0.94,
-        h: box.eventQueueServer.h * 0.8,
-        marg: lenD.w[0] * 0.01
+      function drawBack () {
+        let lineGenerator = d3.line()
+          .x(function (d) { return d.x })
+          .y(function (d) { return d.y })
+          .curve(d3.curveLinear)
+        let b = {
+          x: box.eventQueueServer.marg,
+          y: box.eventQueueServer.marg,
+          w: box.eventQueueServer.w - (2 * box.eventQueueServer.marg),
+          h: box.eventQueueServer.h - (2 * box.eventQueueServer.marg)
+        }
+        let dataPointBottom = [
+          {x: b.x, y: b.y},
+          {x: b.x + b.w * 0.8, y: b.y},
+          {x: b.x + b.w * 0.8, y: b.y + b.h * 0.5},
+          {x: b.x + b.w, y: b.y + b.h * 0.5},
+          {x: b.x + b.w, y: b.y + b.h},
+          {x: b.x, y: b.y + b.h},
+          {x: b.x, y: b.y}
+        ]
+        reserved.back.g.append('path')
+          .data([dataPointBottom])
+          .attr('d', lineGenerator)
+          .attr('fill', colorTheme.medium.background)
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 0.2)
+
+        let dataPointFuturTop = [
+          {x: b.x, y: b.y},
+          {x: b.x - 5, y: b.y + 5},
+          {x: b.x - 5, y: b.y + b.h + 5},
+          {x: b.x + b.w - 5, y: b.y + b.h + 5},
+          {x: b.x + b.w, y: b.y + b.h},
+          {x: b.x, y: b.y + b.h},
+          {x: b.x - 5, y: b.y + b.h + 5},
+          {x: b.x, y: b.y + b.h},
+          {x: b.x, y: b.y}
+        ]
+        reserved.back.g.append('path')
+          .data([dataPointFuturTop])
+          .attr('d', lineGenerator)
+          .attr('fill', colorTheme.darker.background)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+      }
+      function drawTitle () {
+        reserved.title.g.append('svg:image')
+          .attr('xlink:href', '/static/icons/warning.svg')
+          .attr('width', box.eventQueueServerTitle.h * 0.6)
+          .attr('height', box.eventQueueServerTitle.h * 0.6)
+          .attr('x', box.eventQueueServerTitle.w * 0.075 - (box.eventQueueServerTitle.h * 0.3))
+          .attr('y', box.eventQueueServerTitle.h * 0.6 - (box.eventQueueServerTitle.h * 0.3))
+          .style('pointer-events', 'none')
+        reserved.title.g.append('text')
+          .text('Events')
+          .attr('x', box.eventQueueServerTitle.w * 0.125)
+          .attr('y', box.eventQueueServerTitle.h * 0.7)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '14px')
+          .attr('text-anchor', 'start')
+          // .attr('transform', 'translate(' +
+          //   (box.eventQueueServerTitle.x + box.eventQueueServerTitle.w * 0.5) +
+          //   ',' + (box.eventQueueServerTitle.y + box.eventQueueServerTitle.h * 1.0) + ')')
       }
 
-      gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
-      gBlockBox.append('text')
-        .text('Occured events')
-        .style('fill', colorTheme.medium.text)
-        .style('font-weight', '')
-        .style('font-size', '8px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(-5,' + (adjustedBox.h * 0.5) + ') rotate(270)')
+      reserved.back.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+      reserved.title.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.eventQueueServerTitle.x + ',' + box.eventQueueServerTitle.y + ')')
+      reserved.filter.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.eventQueueServerFilter.x + ',' + box.eventQueueServerFilter.y + ')')
+      reserved.content.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.eventQueueServerContent.x + ',' + box.eventQueueServerContent.y + ')')
 
-      eventQueue.init({
-        main: {
-          tag: 'eventQueueDefaultTag',
-          g: gBlockBox,
-          box: adjustedBox,
-          background: {
-            fill: colorTheme.dark.background,
-            stroke: colorTheme.dark.stroke,
-            strokeWidth: 0.1
-          },
-          colorTheme: colorTheme
-        },
-        tag: 'eventQueueDefaultTag',
-        g: gBlockBox,
-        box: adjustedBox,
-        axis: {
-          enabled: true,
-          group: {
-            g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: 0}
-          },
-          axis: undefined,
-          scale: undefined,
-          domain: [0, 1000],
-          range: [0, 0],
-          showText: true,
-          orientation: 'axisTop'
-        },
-        blocks: {
-          enabled: true,
-          group: {
-            g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
-          },
-          events: {
-            click: () => {},
-            mouseover: () => {},
-            mouseout: () => {}
-          }
-        },
-        filters: {
-          enabled: false,
-          group: {
-            g: undefined,
-            box: {x: adjustedBox.w * 1.03, y: adjustedBox.h * 0, w: adjustedBox.w * 0.22, h: adjustedBox.h * 1, marg: 0},
-          },
-          filters: []
-        },
-        timeBars: {
-          enabled: true,
-          group: {
-            g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
-          }
-        },
-        data: {
-          currentTime: {time: 0, date: undefined},
-          startTime: {time: 0, date: undefined},
-          endTime: {time: 0, date: undefined},
-          lastRawData: undefined,
-          formatedData: undefined
-        },
-        debug: {
-          enabled: false
-        }
-      })
-
-      updateData(dataIn)
+      drawBack()
+      drawTitle()
+      // let adjustedBox = {
+      //   x: box.eventQueueServer.x + box.eventQueueServer.w * 0.03,
+      //   y: box.eventQueueServer.y + box.eventQueueServer.h * 0.05,
+      //   w: box.eventQueueServer.w * 0.94,
+      //   h: box.eventQueueServer.h * 0.8,
+      //   marg: lenD.w[0] * 0.01
+      // }
+      //
+      // gBlockBox = svg.g.append('g')
+      //   .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+      // gBlockBox.append('text')
+      //   .text('Occured events')
+      //   .style('fill', colorTheme.medium.text)
+      //   .style('font-weight', '')
+      //   .style('font-size', '8px')
+      //   .attr('text-anchor', 'middle')
+      //   .attr('transform', 'translate(-5,' + (adjustedBox.h * 0.5) + ') rotate(270)')
+      //
+      // eventQueue.init({
+      //   main: {
+      //     tag: 'eventQueueDefaultTag',
+      //     g: gBlockBox,
+      //     box: adjustedBox,
+      //     background: {
+      //       fill: colorTheme.dark.background,
+      //       stroke: colorTheme.dark.stroke,
+      //       strokeWidth: 0.1
+      //     },
+      //     colorTheme: colorTheme
+      //   },
+      //   tag: 'eventQueueDefaultTag',
+      //   g: gBlockBox,
+      //   box: adjustedBox,
+      //   axis: {
+      //     enabled: true,
+      //     group: {
+      //       g: undefined,
+      //       box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: 0}
+      //     },
+      //     axis: undefined,
+      //     scale: undefined,
+      //     domain: [0, 1000],
+      //     range: [0, 0],
+      //     showText: true,
+      //     orientation: 'axisTop'
+      //   },
+      //   blocks: {
+      //     enabled: true,
+      //     group: {
+      //       g: undefined,
+      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+      //     },
+      //     events: {
+      //       click: () => {},
+      //       mouseover: () => {},
+      //       mouseout: () => {}
+      //     }
+      //   },
+      //   filters: {
+      //     enabled: false,
+      //     group: {
+      //       g: undefined,
+      //       box: {x: adjustedBox.w * 1.03, y: adjustedBox.h * 0, w: adjustedBox.w * 0.22, h: adjustedBox.h * 1, marg: 0},
+      //     },
+      //     filters: []
+      //   },
+      //   timeBars: {
+      //     enabled: true,
+      //     group: {
+      //       g: undefined,
+      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+      //     }
+      //   },
+      //   data: {
+      //     currentTime: {time: 0, date: undefined},
+      //     startTime: {time: 0, date: undefined},
+      //     endTime: {time: 0, date: undefined},
+      //     lastRawData: undefined,
+      //     formatedData: undefined
+      //   },
+      //   debug: {
+      //     enabled: false
+      //   }
+      // })
+      //
+      // updateData(dataIn)
     }
 
     function updateData (dataIn) {
@@ -1957,7 +2266,27 @@ let mainCommentNightSched = function (optIn) {
     this.updateData = updateData
   }
   let SvgTelescopes = function () {
-    let reserved = {}
+    let reserved = {
+      main: {
+        g: undefined,
+        mode: 'icon'
+      },
+      back: {
+        g: undefined
+      },
+      icon: {
+        g: undefined
+      },
+      title: {
+        g: undefined
+      },
+      filter: {
+        g: undefined
+      },
+      content: {
+        g: undefined
+      }
+    }
 
     function dummy () {
       reserved.plot.main.g.append('rect')
@@ -2247,7 +2576,76 @@ let mainCommentNightSched = function (optIn) {
       // telsArray.init()
       updateTelsList()
     }
-    function initData (dataIn) {
+    // ---------------------------------------------------------------------------------------------------
+    //
+    // ---------------------------------------------------------------------------------------------------
+    function initData () {
+      reserved.main.g = svg.g.append('g')
+        .attr('transform', 'translate(' + box.telsQueueServer.x + ',' + box.telsQueueServer.y + ')')
+
+      reserved.icon.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.telsQueueServerIcon.x + ',' + box.telsQueueServerIcon.y + ')')
+        .attr('opacity', 1)
+      reserved.title.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.telsQueueServerTitle.x + ',' + box.telsQueueServerTitle.y + ')')
+      reserved.filter.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.telsQueueServerFilter.x + ',' + box.telsQueueServerFilter.y + ')')
+      reserved.content.g = reserved.main.g.append('g')
+        .attr('transform', 'translate(' + box.telsQueueServerContent.x + ',' + box.telsQueueServerContent.y + ')')
+
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+        .curve(d3.curveLinear)
+      let dataPointFuturTop = [
+        {x: 0, y: 0},
+        {x: -5, y: 5},
+        {x: -5, y: box.telsQueueServerIcon.h + 5},
+        {x: box.telsQueueServerIcon.w - 5, y: box.telsQueueServerIcon.h + 5},
+        {x: box.telsQueueServerIcon.w + 0, y: box.telsQueueServerIcon.h},
+        {x: 0, y: box.telsQueueServerIcon.h},
+        {x: -5, y: box.telsQueueServerIcon.h + 5},
+        {x: 0, y: box.telsQueueServerIcon.h},
+        {x: 0, y: 0}
+      ]
+      reserved.icon.g.append('path')
+        .data([dataPointFuturTop])
+        .attr('d', lineGenerator)
+        .attr('fill', colorTheme.darker.background)
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.2)
+      reserved.icon.g.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', box.telsQueueServerIcon.w)
+        .attr('height', box.telsQueueServerIcon.h)
+        .attr('fill', colorTheme.bright.background)
+        .attr('stroke', colorTheme.bright.stroke)
+        .attr('stroke-width', 0.2)
+        .on('mouseover', function () {
+          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.dark.background)
+        })
+        .on('mouseout', function () {
+          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.bright.background)
+        })
+        .on('click', function () {
+          d3.select(this).transition().duration(timeD.animArc).attr('x', -5).attr('y', 5)
+          reserved.icon.g.transition().duration(timeD.animArc).attr('opacity', 0).on('end', function () {
+            reserved.main.mode = 'expand'
+            drawTels()
+          })
+        })
+      reserved.icon.g.append('svg:image')
+        .attr('xlink:href', '/static/icons/telescope.svg')
+        .attr('width', box.telsQueueServerIcon.w * 0.6)
+        .attr('height', box.telsQueueServerIcon.h * 0.6)
+        .attr('x', box.telsQueueServerIcon.w * 0.2)
+        .attr('y', box.telsQueueServerIcon.h * 0.2)
+        .style('pointer-telss', 'none')
+    }
+    this.initData = initData
+
+    function drawTels () {
       reserved.adjustedBox = {
         x: box.telescopes.marg,
         y: box.telescopes.marg,
@@ -2292,7 +2690,6 @@ let mainCommentNightSched = function (optIn) {
       initFilters()
       dummy()
     }
-    this.initData = initData
 
     function updateTelsList () {
       function strokeSize (val) {
