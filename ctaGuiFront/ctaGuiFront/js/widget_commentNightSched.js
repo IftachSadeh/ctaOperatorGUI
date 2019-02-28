@@ -172,6 +172,46 @@ let mainCommentNightSched = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
+  function createDummyLog () {
+    function shuffle (a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]]
+      }
+      return a
+    }
+    com.logs = []
+    let categories = ['cat1', 'cat2', 'cat3', 'cat4', 'cat5', 'cat6', 'cat7', 'cat8', 'cat9']
+    let linkto = ['block', 'tel', 'event']
+    for (var i = 0; i < 100; i++) {
+      shuffle(categories)
+      shuffle(linkto)
+      let categ = []
+      let linkt = []
+      for (let j = 0; j < Math.floor(Math.random() * 4) + 1; j++) {
+        categ.push(categories[j])
+      }
+      for (let j = 0; j < Math.floor(Math.random() * 3); j++) {
+        linkt.push(linkto[j])
+      }
+      com.logs.push({
+        id: 'log_' + i + Math.floor(Math.random() * 1000),
+        name: 'log_' + i + Math.floor(Math.random() * 1000),
+        description: 'description description description description description description description description description description description description',
+        categories: categ,
+        info: [
+          {author: 'system',
+            date: '27/02/2019'
+          }
+        ],
+        linkedTo: linkt,
+        modifications: []
+      })
+    }
+  }
+  function addDummyLog () {
+    shared.data.server.logs = com.logs
+  }
   function initData (dataIn) {
     function initSvg () {
       lenD.w = {}
@@ -200,6 +240,37 @@ let mainCommentNightSched = function (optIn) {
       com.svgZoomNode = svg.svg.nodes()[0]
       svg.back = svg.svg.append('g')
       svg.g = svg.svg.append('g')
+
+      let defs = svg.svg.append('defs')
+      // create filter with id #drop-shadow
+      // height=130% so that the shadow is not clipped
+      let filter = defs.append('filter')
+        .attr('id', 'drop-shadow')
+        .attr('height', '120%')
+
+      // SourceAlpha refers to opacity of graphic that this filter will be applied to
+      // convolve that with a Gaussian with standard deviation 3 and store result
+      // in blur
+      filter.append('feGaussianBlur')
+        .attr('in', 'SourceAlpha')
+        .attr('stdDeviation', 2.5)
+        .attr('result', 'blur')
+
+      // translate output of Gaussian blur to the right and downwards with 2px
+      // store result in offsetBlur
+      filter.append('feOffset')
+        .attr('in', 'blur')
+        .attr('dx', -1)
+        .attr('dy', 1)
+        .attr('result', 'offsetBlur')
+
+      // overlay original SourceGraphic over translated blurred opacity by using
+      // feMerge filter. Order of specifying inputs is important!
+      let feMerge = filter.append('feMerge')
+      feMerge.append('feMergeNode')
+        .attr('in', 'offsetBlur')
+      feMerge.append('feMergeNode')
+        .attr('in', 'SourceGraphic')
     }
     function initBackground () {
       svg.svg
@@ -284,39 +355,46 @@ let mainCommentNightSched = function (optIn) {
         h: lenD.h[0] * 1 - 2 * marg,
         marg: marg
       }
-      box.logInfo = {
-        x: box.log.x * 0.0 + box.log.w * 0.0,
-        y: box.log.y * 0.0 + box.log.w * 0.0,
+      box.logFields = {
+        x: box.log.x * 0.0 + box.log.w * 0.25,
+        y: box.log.y * 0.0 + box.log.h * 0.0,
         w: box.log.w * 0.75,
-        h: box.log.h * 0.1,
+        h: box.log.h * 0.7,
         marg: box.log.marg
       }
       box.logHistory = {
-        x: box.log.x * 0.0 + box.log.w * 0.75,
-        y: box.log.y * 0.0 + box.log.w * 0.0,
-        w: box.log.w * 0.25,
-        h: box.log.h * 0.4,
+        x: box.log.x * 0.0 + box.log.w * 0.01,
+        y: box.log.y * 0.0 + marg,
+        w: box.log.w * 0.24,
+        h: box.log.h * 0.89,
         marg: box.log.marg
       }
-      box.logCategories = {
-        x: box.log.x * 0.0 + box.log.w * 0.5,
-        y: box.log.y * 0.0 + box.log.w * 0.1,
-        w: box.log.w * 0.25,
-        h: box.log.h * 0.3,
-        marg: box.log.marg
-      }
-      box.logText = {
-        x: box.log.x * 0.0 + box.log.w * 0.0,
-        y: box.log.y * 0.0 + box.log.w * 0.1,
-        w: box.log.w * 0.5,
-        h: box.log.h * 0.9,
-        marg: box.log.marg
-      }
+      // box.logCategories = {
+      //   x: box.log.x * 0.0 + box.log.w * 0.5,
+      //   y: box.log.y * 0.0 + box.log.w * 0.1,
+      //   w: box.log.w * 0.25,
+      //   h: box.log.h * 0.3,
+      //   marg: box.log.marg
+      // }
+      // box.logText = {
+      //   x: box.log.x * 0.0 + box.log.w * 0.0,
+      //   y: box.log.y * 0.0 + box.log.w * 0.1,
+      //   w: box.log.w * 0.5,
+      //   h: box.log.h * 0.9,
+      //   marg: box.log.marg
+      // }
       box.logAssociatedElement = {
-        x: box.log.w * 0.6,
+        x: box.log.w * 0.575,
         y: box.log.h * 0.7,
-        w: box.log.w * 0.4 - marg,
-        h: box.log.h * 0.3 - marg,
+        w: box.log.w * 0.4,
+        h: box.log.h * 0.275,
+        marg: box.log.marg
+      }
+      box.logInfo = {
+        x: box.log.w * 0.275,
+        y: box.log.h * 0.7,
+        w: box.log.w * 0.275,
+        h: box.log.h * 0.275,
         marg: box.log.marg
       }
 
@@ -329,10 +407,10 @@ let mainCommentNightSched = function (optIn) {
       }
       box.blockQueueServer = box.rightPanel
       box.blockQueueServerIcon = {
-        x: box.blockQueueServer.w * 0.8625,
+        x: box.blockQueueServer.w * 0.02,
         y: marg,
-        w: box.blockQueueServer.w * 0.075,
-        h: box.blockQueueServer.h * 0.075,
+        w: box.blockQueueServer.w * 0.05,
+        h: box.blockQueueServer.h * 0.05,
         marg: box.blockQueueServer.marg
       }
       box.blockQueueServerTab = {
@@ -343,16 +421,16 @@ let mainCommentNightSched = function (optIn) {
         marg: box.blockQueueServer.marg
       }
       box.blockQueueServerTitle = {
-        x: box.blockQueueServer.w * 0.0,
+        x: box.blockQueueServer.w * 0.1,
         y: box.blockQueueServer.h * 0.0,
         w: box.blockQueueServer.w * 0.8,
         h: box.blockQueueServer.h * 0.1,
         marg: box.blockQueueServer.marg
       }
       box.blockQueueServerFilter = {
-        x: box.blockQueueServer.w * 0.05,
+        x: box.blockQueueServer.w * 0.15,
         y: box.blockQueueServer.h * 0.1,
-        w: box.blockQueueServer.w * 0.71,
+        w: box.blockQueueServer.w * 0.8,
         h: box.blockQueueServer.h * 0.4,
         marg: box.blockQueueServer.marg
       }
@@ -366,10 +444,10 @@ let mainCommentNightSched = function (optIn) {
 
       box.eventQueueServer = box.rightPanel
       box.eventQueueServerIcon = {
-        x: box.blockQueueServer.w * 0.8625,
-        y: box.blockQueueServer.h * 0.075 + marg * 2,
-        w: box.eventQueueServer.w * 0.075,
-        h: box.eventQueueServer.h * 0.075,
+        x: box.blockQueueServer.w * 0.02,
+        y: box.blockQueueServer.h * 0.05 + marg * 2,
+        w: box.blockQueueServer.w * 0.05,
+        h: box.blockQueueServer.h * 0.05,
         marg: box.eventQueueServer.marg
       }
       box.eventQueueServerTab = {
@@ -403,10 +481,10 @@ let mainCommentNightSched = function (optIn) {
 
       box.telsQueueServer = box.rightPanel
       box.telsQueueServerIcon = {
-        x: box.blockQueueServer.w * 0.8625,
-        y: box.blockQueueServer.h * 0.075 * 2 + marg * 3,
-        w: box.telsQueueServer.w * 0.075,
-        h: box.telsQueueServer.h * 0.075,
+        x: box.blockQueueServer.w * 0.02,
+        y: box.blockQueueServer.h * 0.05 * 2 + marg * 3,
+        w: box.blockQueueServer.w * 0.05,
+        h: box.blockQueueServer.h * 0.05,
         marg: box.telsQueueServer.marg
       }
       box.telsQueueServerTab = {
@@ -440,10 +518,10 @@ let mainCommentNightSched = function (optIn) {
 
       box.daqQueueServer = box.rightPanel
       box.daqQueueServerIcon = {
-        x: box.blockQueueServer.w * 0.8625,
-        y: box.blockQueueServer.h * 0.075 + marg * 2,
-        w: box.daqQueueServer.w * 0.075,
-        h: box.daqQueueServer.h * 0.075,
+        x: box.blockQueueServer.w * 0.02,
+        y: box.blockQueueServer.h * 0.05 + marg * 2,
+        w: box.blockQueueServer.w * 0.05,
+        h: box.blockQueueServer.h * 0.05,
         marg: box.daqQueueServer.marg
       }
       box.daqQueueServerTab = {
@@ -558,6 +636,8 @@ let mainCommentNightSched = function (optIn) {
 
     com.dataIn = dataIn
     shared.data.server = dataIn.data
+    createDummyLog()
+    addDummyLog()
 
     svgTextEditor.initData(dataIn.data)
     svgBlocksQueueServer.initData(dataIn.data)
@@ -574,6 +654,7 @@ let mainCommentNightSched = function (optIn) {
   function updateData (dataIn) {
     com.dataIn = dataIn
     shared.data.server = dataIn.data
+    addDummyLog()
 
     // clusterData(com.dataIn.data)
     // filterData(com.dataIn.data)
@@ -1140,10 +1221,26 @@ let mainCommentNightSched = function (optIn) {
     function initAssociatedElement () {
       reserved.associatedElement.g.attr('transform', 'translate(' + reserved.associatedElement.box.x + ',' + reserved.associatedElement.box.y + ')')
 
+      reserved.associatedElement.g.append('rect')
+        .attr('x', reserved.associatedElement.box.w * 0.0)
+        .attr('y', reserved.associatedElement.box.h * 0.0)
+        .attr('width', reserved.associatedElement.box.w * 1.0)
+        .attr('height', reserved.associatedElement.box.h * 1.0)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0)
+        .attr('opacity', 1)
+        .on('mouseover', function () {
+          // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+        })
+        .on('mouseout', function () {
+          // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+        })
+
       reserved.associatedElement.g.append('text')
         .text('Associated elements')
         .attr('x', reserved.associatedElement.box.w * 0.5)
-        .attr('y', 3)
+        .attr('y', 10)
         .style('fill', colorTheme.medium.text)
         .style('font-weight', '')
         .style('font-size', '9px')
@@ -1173,13 +1270,13 @@ let mainCommentNightSched = function (optIn) {
         .attr('x', reserved.associatedElement.box.w * 0.01)
         .attr('y', reserved.associatedElement.box.h * 0.01)
         .style('pointer-events', 'none')
-      reserved.associatedElement.blocks.icon.append('text')
-        .text('+')
-        .style('font-size', '11px')
-        .attr('x', reserved.associatedElement.box.w * 0.075)
-        .attr('y', reserved.associatedElement.box.h * 0.145)
-        .style('pointer-events', 'none')
-        .style('pointer-events', 'none')
+      // reserved.associatedElement.blocks.icon.append('text')
+      //   .text('+')
+      //   .style('font-size', '11px')
+      //   .attr('x', reserved.associatedElement.box.w * 0.075)
+      //   .attr('y', reserved.associatedElement.box.h * 0.145)
+      //   .style('pointer-events', 'none')
+      //   .style('pointer-events', 'none')
 
       reserved.associatedElement.events.icon = reserved.associatedElement.g.append('g')
         .attr('transform', 'translate(' + (reserved.associatedElement.box.w * 0.8) + ',' + (reserved.associatedElement.box.h * 0.45) + ')')
@@ -1205,12 +1302,12 @@ let mainCommentNightSched = function (optIn) {
         .attr('x', reserved.associatedElement.box.w * 0.01)
         .attr('y', reserved.associatedElement.box.h * 0.01)
         .style('pointer-events', 'none')
-      reserved.associatedElement.events.icon.append('text')
-        .text('+')
-        .style('font-size', '11px')
-        .attr('x', reserved.associatedElement.box.w * 0.075)
-        .attr('y', reserved.associatedElement.box.h * 0.145)
-        .style('pointer-events', 'none')
+      // reserved.associatedElement.events.icon.append('text')
+      //   .text('+')
+      //   .style('font-size', '11px')
+      //   .attr('x', reserved.associatedElement.box.w * 0.075)
+      //   .attr('y', reserved.associatedElement.box.h * 0.145)
+      //   .style('pointer-events', 'none')
 
       reserved.associatedElement.tels.icon = reserved.associatedElement.g.append('g')
         .attr('transform', 'translate(' + (reserved.associatedElement.box.w * 0.8) + ',' + (reserved.associatedElement.box.h * 0.7) + ')')
@@ -1236,14 +1333,912 @@ let mainCommentNightSched = function (optIn) {
         .attr('x', reserved.associatedElement.box.w * 0.00)
         .attr('y', reserved.associatedElement.box.h * 0.005)
         .style('pointer-events', 'none')
-      reserved.associatedElement.tels.icon.append('text')
-        .text('+')
-        .style('font-size', '11px')
-        .attr('x', reserved.associatedElement.box.w * 0.075)
-        .attr('y', reserved.associatedElement.box.h * 0.145)
-        .style('pointer-events', 'none')
-        .style('pointer-events', 'none')
+      // reserved.associatedElement.tels.icon.append('text')
+      //   .text('+')
+      //   .style('font-size', '11px')
+      //   .attr('x', reserved.associatedElement.box.w * 0.075)
+      //   .attr('y', reserved.associatedElement.box.h * 0.145)
+      //   .style('pointer-events', 'none')
+      //   .style('pointer-events', 'none')
     }
+    function initLogInfo () {
+      reserved.logInfo.g.attr('transform', 'translate(' + reserved.logInfo.box.x + ',' + reserved.logInfo.box.y + ')')
+
+      reserved.logInfo.g.append('rect')
+        .attr('x', reserved.logInfo.box.w * 0.0)
+        .attr('y', reserved.logInfo.box.h * 0.0)
+        .attr('width', reserved.logInfo.box.w * 1.0)
+        .attr('height', reserved.logInfo.box.h * 1.0)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0)
+        .attr('opacity', 1)
+        .on('mouseover', function () {
+          // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+        })
+        .on('mouseout', function () {
+          // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+        })
+      reserved.logInfo.g.append('text')
+        .text('Logs info')
+        .attr('x', (reserved.logInfo.box.w * 0.5))
+        .attr('y', 10)
+        .style('fill', colorTheme.medium.text)
+        .style('font-weight', '')
+        .style('font-size', '9px')
+        .attr('text-anchor', 'middle')
+    }
+    function initLogFields () {
+      reserved.logFields.g.attr('transform', 'translate(' + reserved.logFields.box.x + ',' + reserved.logFields.box.y + ')')
+
+      function initTitle () {
+        reserved.logFields.title.g = reserved.logFields.g.append('g')
+        reserved.logFields.title.g.attr('transform', 'translate(' + reserved.logFields.title.box.x + ',' + reserved.logFields.title.box.y + ')')
+
+        reserved.logFields.title.g.append('rect')
+          .attr('x', reserved.logFields.title.box.w * 0.025)
+          .attr('y', reserved.logFields.title.box.h * 0.25)
+          .attr('width', reserved.logFields.title.box.w * 0.95)
+          .attr('height', reserved.logFields.title.box.h * 0.8)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0)
+          .attr('opacity', 1)
+          .on('mouseover', function () {
+            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+          })
+          .on('mouseout', function () {
+            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+          })
+        reserved.logFields.title.g.append('text')
+          .text('Log ID')
+          .attr('x', (reserved.logFields.title.box.w * 0.5))
+          .attr('y', reserved.logFields.title.box.h * 0.65)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'middle')
+
+        // reserved.logFields.title.g.append('rect')
+        //   .attr('x', reserved.logFields.title.box.w * 0.515)
+        //   .attr('y', reserved.logFields.title.box.h * 0.25)
+        //   .attr('width', reserved.logFields.title.box.w * 0.47)
+        //   .attr('height', reserved.logFields.title.box.h * 0.8)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0)
+        //   .attr('opacity', 1)
+        //   .on('mouseover', function () {
+        //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+        //   })
+        //   .on('mouseout', function () {
+        //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+        //   })
+        // reserved.logFields.title.g.append('text')
+        //   .text('Log ID')
+        //   .attr('x', (reserved.logFields.title.box.w * 0.7))
+        //   .attr('y', reserved.logFields.title.box.h * 0.65)
+        //   .style('fill', colorTheme.medium.text)
+        //   .style('font-weight', '')
+        //   .style('font-size', '9px')
+        //   .attr('text-anchor', 'middle')
+      }
+      initTitle()
+
+      function initHeader () {
+        reserved.logFields.header.g = reserved.logFields.g.append('g')
+        reserved.logFields.header.g.attr('transform', 'translate(' + reserved.logFields.header.box.x + ',' + reserved.logFields.header.box.y + ')')
+
+        reserved.logFields.header.g.append('rect')
+          .attr('x', reserved.logFields.header.box.w * 0.1)
+          .attr('y', 10)
+          .attr('width', reserved.logFields.header.box.w * 0.8)
+          .attr('height', 15)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0)
+          .attr('opacity', 1)
+          .on('mouseover', function () {
+            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+          })
+          .on('mouseout', function () {
+            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+          })
+        reserved.logFields.header.g.append('text')
+          .text('Title')
+          .attr('x', reserved.logFields.header.box.w * 0.15)
+          .attr('y', 20)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'start')
+
+        reserved.logFields.header.g.append('rect')
+          .attr('x', reserved.logFields.header.box.w * 0.1)
+          .attr('y', 10 + 20)
+          .attr('width', reserved.logFields.header.box.w * 0.8)
+          .attr('height', 15)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0)
+          .attr('opacity', 1)
+          .on('mouseover', function () {
+            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+          })
+          .on('mouseout', function () {
+            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+          })
+        reserved.logFields.header.g.append('text')
+          .text('Categories')
+          .attr('x', reserved.logFields.header.box.w * 0.15)
+          .attr('y', 40)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'start')
+      }
+      initHeader()
+
+      function initText () {
+        reserved.logFields.text.g = reserved.logFields.g.append('g')
+        reserved.logFields.text.g.attr('transform', 'translate(' + reserved.logFields.text.box.x + ',' + reserved.logFields.text.box.y + ')')
+
+        reserved.logFields.text.g.append('rect')
+          .attr('x', reserved.logFields.text.box.w * 0.05)
+          .attr('y', 10)
+          .attr('width', reserved.logFields.text.box.w * 0.9)
+          .attr('height', reserved.logFields.text.box.h - 15)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0)
+          .attr('opacity', 1)
+          .on('mouseover', function () {
+            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+          })
+          .on('mouseout', function () {
+            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+          })
+        reserved.logFields.text.g.append('text')
+          .text('Information')
+          .attr('x', reserved.logFields.text.box.w * 0.1)
+          .attr('y', 20)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '9px')
+          .attr('text-anchor', 'start')
+      }
+      initText()
+    }
+    function initLogHistory () {
+      let filterTemplate = {
+        id: 'include',
+        name: 'include',
+        description: 'include',
+        categories: 'equal',
+        info: {
+          author: 'equal',
+          date: 'equal+'
+        },
+        linkedTo: 'equal',
+        modifications: {
+          author: 'equal',
+          date: 'equal+',
+          field: 'equal'
+        }
+      }
+      let filters = []
+      let b = reserved.logHistory.box
+
+      reserved.logHistory.outerBox = {
+        x: 0,
+        y: 0,
+        w: b.w,
+        h: 15
+      }
+      let ob = reserved.logHistory.outerBox
+      reserved.logHistory.innerBoxFilter = {
+        x: 2,
+        y: 2,
+        w: ob.w - 4,
+        h: ob.h - 4
+      }
+      reserved.logHistory.innerBoxLog = {
+        x: 0,
+        y: 2,
+        w: ob.w,
+        h: ob.h - 4
+      }
+
+      let fb = {
+        x: b.x,
+        y: b.y,
+        w: b.w,
+        h: ob.h * (filters.length + 2)
+      }
+      let lb = {
+        x: b.x,
+        y: ob.h * 6,
+        w: b.w,
+        h: b.h - ob.h * 4
+      }
+
+      function filterLogs () {
+        function checkFilter (filt, data) {
+          let str = filt.split(':')
+          let keys = str[0].split('.')
+          let value = str[1]
+
+          let target = data
+          for (let i = 0; i < keys.length; i++) {
+            target = target[keys[i]]
+          }
+
+          if (Array.isArray(target)) {
+            if (target.indexOf(value) !== -1) {
+              return true
+            }
+          } else if (target === value) {
+            return true
+          }
+          return false
+        }
+        let filtered = []
+        for (let i = 0; i < shared.data.server.logs.length; i++) {
+          let insert = true
+          for (let j = 0; j < reserved.logHistory.filtering.filters.length; j++) {
+            if (!checkFilter(reserved.logHistory.filtering.filters[j], shared.data.server.logs[i])) insert = false
+          }
+          if (insert) filtered.push(shared.data.server.logs[i])
+        }
+        return filtered
+      }
+      function updateFilters () {
+        let ib = reserved.logHistory.innerBoxFilter
+        let current = reserved.logHistory.filtering.scroll.scrollG
+          .selectAll('g.filter')
+          .data(reserved.logHistory.filtering.filters)
+        let enter = current
+          .enter()
+          .append('g')
+          .attr('class', 'filter')
+        enter.each(function (d, i) {
+          let g = d3.select(this)
+          g.attr('transform', function () {
+            let tx = 0
+            let ty = i * ob.h
+            return 'translate(' + tx + ',' + ty + ')'
+          })
+
+          g.append('rect')
+            .attr('x', function (d) {
+              return ib.x + ib.w * 0.05
+            })
+            .attr('y', function (d) {
+              return ib.y
+            })
+            .attr('width', function (d) {
+              return ib.w * 0.1
+            })
+            .attr('height', function (d) {
+              return ib.h
+            })
+            .attr('fill', function (d) {
+              return colorTheme.darker.background
+            })
+            .attr('stroke', 'none')
+          let back = g.append('rect')
+            .attr('width', (ib.w * 0.65) + 'px')
+            .attr('height', ib.h + 'px')
+            .attr('x', (ib.x + ib.w * 0.15) + 'px')
+            .attr('y', ib.y + 'px')
+            .attr('fill', 'none')
+            .attr('stroke', colorTheme.dark.stroke)
+            .attr('stroke-width', 0.2)
+          let buttonDel = g.append('rect')
+            .attr('x', ib.x + ib.w * 0.8)
+            .attr('y', ib.y)
+            .attr('width', ib.w * 0.1)
+            .attr('height', ib.h)
+            .attr('fill', 'transparent')
+            .attr('stroke', 'none')
+            .on('mouseover', function () { buttonDel.attr('fill', colorTheme.darker.background) })
+            .on('mouseout', function () { buttonDel.attr('fill', 'transparent') })
+            .on('click', function () {
+              removeFilter(d)
+              updateFilters()
+              updateLogList()
+            })
+          g.append('text')
+            .text('x')
+            .attr('x', ib.x + ib.w * 0.85)
+            .attr('y', ib.y + ib.h * 0.7)
+            .style('font-size', (ib.h * 0.8) + 'px')
+            .style('font-weight', 'bold')
+            .attr('text-anchor', 'middle')
+            .style('pointer-events', 'none')
+            .style('user-select', 'none')
+
+          let str = d.split(':')
+          let textLeft = g.append('text').append('tspan')
+            .text(str[0])
+            .attr('x', ((ib.x + ib.w * 0.15) + ib.w * 0.3) + 'px')
+            .attr('y', ib.y + ib.h * 0.75)
+            .style('font-size', (ib.h * 0.8) + 'px')
+            .style('pointer-events', 'none')
+            .attr('text-anchor', 'end')
+            .each(function () {
+              wrap(d3.select(this), ib.w * 0.3)
+            })
+          let textMiddle = g.append('text').append('tspan')
+            .text(':')
+            .attr('x', ((ib.x + ib.w * 0.15) + ib.w * 0.325) + 'px')
+            .attr('y', ib.y + ib.h * 0.75)
+            .style('font-size', (ib.h * 0.8) + 'px')
+            .style('pointer-events', 'none')
+            .attr('text-anchor', 'middle')
+            .each(function () {
+              wrap(d3.select(this), ib.w * 0.05)
+            })
+          let textRight = g.append('text').append('tspan')
+            .text(str[1])
+            .attr('x', ((ib.x + ib.w * 0.15) + ib.w * 0.35) + 'px')
+            .attr('y', ib.y + ib.h * 0.75)
+            .style('font-size', (ib.h * 0.8) + 'px')
+            .style('pointer-events', 'none')
+            .attr('text-anchor', 'start')
+            .each(function () {
+              wrap(d3.select(this), ib.w * 0.3)
+            })
+
+          function wrap (self, width) {
+            let textLength = self.node().getComputedTextLength()
+            let text = self.text()
+            while (textLength > (width) && text.length > 0) {
+              text = text.slice(0, -1)
+              self.text(text)
+              textLength = self.node().getComputedTextLength()
+            }
+          }
+        })
+
+        let merge = current.merge(enter)
+        merge.each(function (d, i) {
+          let g = d3.select(this)
+          g.attr('transform', function () {
+            let tx = 0
+            let ty = i * ob.h
+            return 'translate(' + tx + ',' + ty + ')'
+          })
+        })
+
+        current
+          .exit()
+          .transition('inOut')
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+          .remove()
+      }
+      function addFilter (f) {
+        reserved.logHistory.filtering.filters.push(f)
+      }
+      function removeFilter (f) {
+        reserved.logHistory.filtering.filters.splice(reserved.logHistory.filtering.filters.indexOf(f), 1)
+      }
+      function createLogFilter () {
+        function createDataList (object) {
+          let dl = []
+          function rec (object, string) {
+            for (var key in object) {
+              let cpString = string + '.' + key
+              if (typeof object[key] === 'string' || object[key] instanceof String) dl.push({key: cpString, action: object[key]})
+              else {
+                dl.push({key: cpString, action: 'none'})
+                rec(object[key], cpString)
+              }
+            }
+          }
+          for (var key in object) {
+            let cpString = '' + key
+            if (typeof object[key] === 'string' || object[key] instanceof String) dl.push({key: cpString, action: object[key]})
+            else {
+              dl.push({key: cpString, action: 'none'})
+              rec(object[key], cpString)
+            }
+          }
+          return dl
+        }
+        let ib = reserved.logHistory.innerBoxFilter
+        reserved.logHistory.filtering = {}
+        reserved.logHistory.filtering.g = reserved.logHistory.g.append('g')
+        reserved.logHistory.filtering.filters = filters
+
+        let g = reserved.logHistory.filtering.g
+        g.attr('transform', function () {
+          let tx = 0
+          let ty = 0
+          return 'translate(' + tx + ',' + ty + ')'
+        })
+        let back = g.append('rect')
+          .attr('width', (ib.w * 0.95) + 'px')
+          .attr('height', ib.h + 'px')
+          .attr('x', (ib.x + ib.w * 0.05) + 'px')
+          .attr('y', ib.y + 'px')
+          .attr('fill', 'none')
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+
+        let fo = g.append('foreignObject')
+          .attr('width', (ib.w * 0.95) + 'px')
+          .attr('height', ib.h + 'px')
+          .attr('x', (ib.x + ib.w * 0.05) + 'px')
+          .attr('y', ib.y + 'px')
+        let rootDiv = fo.append('xhtml:div')
+          .style('display', 'block')
+          .style('border', 'none')
+          .style('background-color', 'transparent')
+          .style('width', '100%')
+          .style('height', '100%')
+
+        let dl = createDataList(filterTemplate)
+        let datalist = rootDiv.append('datalist')
+          .attr('id', 'datalist')
+        datalist.selectAll('option')
+          .data(dl)
+          .enter()
+          .append('option')
+          .property('value', function (d) { return d.key })
+        let input = rootDiv.append('input')
+          .attr('list', 'datalist')
+          .property('value', function (d) {
+            return d
+          })
+          .attr('placeholder', 'Add filter')
+          .style('width', '100%')
+          .style('height', '100%')
+          .style('padding', '0')
+          .style('vertical-align', 'top')
+          .style('border', 'none')
+          .style('background', 'transparent')
+          .style('color', colorTheme.dark.text)
+          .style('font-size', (ib.h * 0.8) + 'px')
+          .style('text-align', 'left')
+          .attr('type', 'list')
+
+        input.on('focus', function () {
+          back
+            .attr('fill', colorTheme.bright.background)
+            // .attr('stroke', 'none')
+          input.style('outline', 'none')
+        })
+        input.on('blur', function () {
+          back
+            .attr('fill', 'none')
+            // .attr('stroke', colorTheme.dark.stroke)
+          input.style('outline', 'none')
+        })
+        input.on('input', function () {
+          // let str = input.property('value').split(':')
+          // if (str.length === 1) {
+          //   textLeft.text(str[0])
+          //   textMiddle.text('')
+          // } else if (str.length === 2) {
+          //   textRight.text(str[1])
+          //   textMiddle.text(':')
+          // }
+        })
+        input.on('change', function () {
+          let str = input.property('value').split(':')
+          if (str.length === 1) {
+            // textLeft.text(str[0])
+            // textMiddle.text(':')
+            input.property('value', input.property('value') + ':')
+          } else if (str.length === 2) {
+            // textRight.text(str[1])
+            addFilter(input.property('value'))
+            updateFilters()
+            updateLogList()
+            input.property('value', '')
+          }
+        })
+
+        let button = g.append('rect')
+          .attr('x', ib.x + ib.w * 0.9)
+          .attr('y', ib.y)
+          .attr('width', ib.h)
+          .attr('height', ib.h)
+          .attr('fill', 'transparent')
+          .on('mouseover', function () { button.attr('fill', colorTheme.darker.background) })
+          .on('mouseout', function () { button.attr('fill', 'transparent') })
+        g.append('text')
+          .text('?')
+          .attr('x', ib.x + ib.w - ib.h * 0.5)
+          .attr('y', ib.y + ib.h * 0.8)
+          .style('font-size', (ib.h * 0.8) + 'px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
+
+        function initScrollBox () {
+          reserved.logHistory.filtering.scroll = {}
+          reserved.logHistory.filtering.scroll.scrollBoxG = reserved.logHistory.filtering.g.append('g')
+          let historyBox = {
+            x: b.x,
+            y: ob.h * 1.2,
+            w: b.w,
+            h: ob.h * 4.5
+          }
+          // reserved.logHistory.filtering.scroll.scrollBoxG.append('rect')
+          //   .attr('x', historyBox.x)
+          //   .attr('y', historyBox.y)
+          //   .attr('width', historyBox.w)
+          //   .attr('height', historyBox.h)
+          //   .attr('fill', 'none')
+          //   .attr('stroke', colorTheme.dark.stroke)
+          //   .attr('stroke-dasharray', [historyBox.w, historyBox.h, historyBox.w, historyBox.h])
+          //   .attr('stroke-width', 0.2)
+
+          reserved.logHistory.filtering.scroll.scrollBox = new ScrollBox()
+          reserved.logHistory.filtering.scroll.scrollBox.init({
+            tag: 'inputHistoryFilteringScrollBox',
+            gBox: reserved.logHistory.filtering.scroll.scrollBoxG,
+            boxData: {
+              x: historyBox.x,
+              y: historyBox.y,
+              w: historyBox.w,
+              h: historyBox.h,
+              marg: 0
+            },
+            useRelativeCoords: true,
+            locker: new Locker(),
+            lockerV: [widgetId + 'updateData'],
+            lockerZoom: {
+              all: 'ScrollFilteringBox' + 'zoom',
+              during: 'ScrollFilteringBox' + 'zoomDuring',
+              end: 'ScrollFilteringBox' + 'zoomEnd'
+            },
+            runLoop: new RunLoop({tag: 'inputHistoryFilteringScrollBox'}),
+            canScroll: true,
+            scrollVertical: true,
+            scrollHorizontal: false,
+            scrollHeight: ob.h * reserved.logHistory.filtering.filters.length,
+            scrollWidth: 0,
+            background: 'transparent',
+            scrollRecH: {h: 1},
+            scrollRecV: {w: 1}
+          })
+          reserved.logHistory.filtering.scroll.scrollG = reserved.logHistory.filtering.scroll.scrollBox.get('innerG')
+        }
+        initScrollBox()
+        updateFilters()
+      }
+
+      function createLogList () {
+        let ib = reserved.logHistory.innerBoxLog
+        reserved.logHistory.list = {}
+        function initScrollBox () {
+          reserved.logHistory.list.scroll = {}
+          reserved.logHistory.list.g = reserved.logHistory.g.append('g')
+          reserved.logHistory.list.scroll.scrollBoxG = reserved.logHistory.list.g.append('g')
+          let historyBox = lb
+          // reserved.logHistory.list.scroll.scrollBoxG.append('rect')
+          //   .attr('x', historyBox.x)
+          //   .attr('y', historyBox.y)
+          //   .attr('width', historyBox.w)
+          //   .attr('height', historyBox.h)
+          //   .attr('fill', 'none')
+          //   .attr('stroke', colorTheme.dark.stroke)
+          //   .attr('stroke-dasharray', [historyBox.w, historyBox.h, historyBox.w, historyBox.h])
+          //   .attr('stroke-width', 0.1)
+
+          reserved.logHistory.list.scroll.scrollBox = new ScrollBox()
+          reserved.logHistory.list.scroll.scrollBox.init({
+            tag: 'inputHistoryScrollBox',
+            gBox: reserved.logHistory.list.scroll.scrollBoxG,
+            boxData: {
+              x: historyBox.x,
+              y: historyBox.y,
+              w: historyBox.w,
+              h: historyBox.h,
+              marg: 0
+            },
+            useRelativeCoords: true,
+            locker: new Locker(),
+            lockerV: [widgetId + 'updateData'],
+            lockerZoom: {
+              all: 'ScrollBox' + 'zoom',
+              during: 'ScrollBox' + 'zoomDuring',
+              end: 'ScrollBox' + 'zoomEnd'
+            },
+            runLoop: new RunLoop({tag: 'inputHistoryScrollBox'}),
+            canScroll: true,
+            scrollVertical: true,
+            scrollHorizontal: false,
+            scrollHeight: 0.1 + historyBox.h,
+            scrollWidth: 0,
+            background: 'transparent',
+            scrollRecH: {h: 2},
+            scrollRecV: {w: 2}
+          })
+          reserved.logHistory.list.scroll.scrollG = reserved.logHistory.list.scroll.scrollBox.get('innerG')
+        }
+        initScrollBox()
+        function wrap (self, width) {
+          let textLength = self.node().getComputedTextLength()
+          let text = self.text()
+          while (textLength > (width) && text.length > 0) {
+            text = text.slice(0, -1)
+            self.text(text)
+            textLength = self.node().getComputedTextLength()
+          }
+        }
+        console.log(shared.data.server.logs[0])
+
+        let fl = filterLogs()
+        let current = reserved.logHistory.list.scroll.scrollG
+          .selectAll('g.log')
+          .data(fl, function (d) {
+            return d.id
+          })
+        let enter = current
+          .enter()
+          .append('g')
+          .attr('class', 'log')
+        enter.each(function (d, i) {
+          let g = d3.select(this)
+          g.attr('transform', function () {
+            let tx = 0
+            let ty = i * ob.h
+            return 'translate(' + tx + ',' + ty + ')'
+          })
+          g.append('rect')
+            .attr('width', ob.w + 'px')
+            .attr('height', ob.h + 'px')
+            .attr('x', 0 + 'px')
+            .attr('y', 0 + 'px')
+            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+            .attr('stroke', colorTheme.dark.stroke)
+            .attr('stroke-width', 0.0)
+            .on('mouseover', function () {
+              d3.select(this).attr('fill', colorTheme.darker.background)
+              g.selectAll('tspan').style('fill', '#000000').style('font-size', '9px')
+            })
+            .on('mouseout', function () {
+              d3.select(this).attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+              g.selectAll('tspan').style('fill', colorTheme.medium.text).style('font-size', '8px')
+            })
+          g.append('text').append('tspan')
+            .text(function (d) { return d.id })
+            .attr('x', ib.w * 0.025)
+            .attr('y', ib.h * 0.9)
+            .style('fill', colorTheme.medium.text)
+            .style('font-weight', '')
+            .style('font-size', '8px')
+            .style('pointer-events', 'none')
+            .attr('text-anchor', 'start')
+            .each(function () {
+              wrap(d3.select(this), ib.w * 0.45)
+            })
+          g.append('text').append('tspan')
+            .text(function (d) { return d.info[0].date })
+            .attr('x', ib.w * 0.9)
+            .attr('y', ib.h * 0.9)
+            .style('fill', colorTheme.medium.text)
+            .style('font-weight', '')
+            .style('font-size', '8px')
+            .style('pointer-events', 'none')
+            .attr('text-anchor', 'end')
+            .each(function () {
+              wrap(d3.select(this), ib.w * 0.45)
+            })
+        })
+
+        // let mergeCurrentTels = currentTels.merge(enterCurrentTels)
+        // mergeCurrentTels.each(function (d, i) {
+        //   let toff = off
+        //   if (d.id.split('_')[0] === 'M') toff += 1
+        //   if (d.id.split('_')[0] === 'S') toff += 2
+        //
+        //   d3.select(this)
+        //     .attr('transform', function (d) {
+        //       let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
+        //         (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
+        //         (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+        //       // if (toff % 2 === 1) tx += 2 * offset.x
+        //       let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
+        //       return 'translate(' + tx + ',' + ty + ')'
+        //     })
+        //     .style('opacity', function () {
+        //       if (!d.running) return 1
+        //       return 0.4
+        //     })
+        //   d3.select(this).select('rect')
+        //     .transition()
+        //     .duration(timeD.animArc)
+        //     .attr('x', function (d) {
+        //       return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+        //     })
+        //     .attr('y', function (d) {
+        //       return (-offset.y * 0.5) + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+        //     })
+        //     .attr('width', function (d) {
+        //       return offset.x - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+        //     })
+        //     .attr('height', function (d) {
+        //       return offset.y - strokeSize(d.val) // (offset.y * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
+        //     })
+        //     .attr('fill', function (d) {
+        //       if (!d.running) return telHealthCol(d.val)
+        //       return colorTheme.dark.background
+        //     })
+        //     // .attr('fill-opacity', function (d) {
+        //     //   return fillOpacity(d.val)
+        //     // })
+        //     .attr('stroke-width', function (d) {
+        //       return strokeSize(d.val)
+        //     })
+        //     .attr('stroke', function (d) {
+        //       // if (!d.running) return telHealthCol(d.val)
+        //       return colorTheme.dark.stroke
+        //     })
+        //     // .attr('stroke-opacity', function (d) {
+        //     //   if (!d.running) return 1
+        //     //   return 1
+        //     // })
+        //   d3.select(this).select('text')
+        //     .attr('x', 0)
+        //     .attr('y', offset.y * 0.2)
+        //     .attr('dy', 0)
+        //     .text(function (d) {
+        //       return d.id // d.id.split('_')[1]
+        //     })
+        //     .style('fill', colorTheme.blocks.run.text)
+        //     .style('font-weight', 'normal')
+        //     .style('font-size', function (d) {
+        //       return 6.2 // - (2 * (d.val / 100))
+        //     })
+        //     .attr('text-anchor', 'middle')
+        // })
+        //
+        // currentTels
+        //   .exit()
+        //   .transition('inOut')
+        //   .duration(timeD.animArc)
+        //   .style('opacity', 0)
+        //   .remove()
+
+        reserved.logHistory.list.scroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: fl.length * ob.h})
+      }
+      function updateLogList () {
+        function wrap (self, width) {
+          let textLength = self.node().getComputedTextLength()
+          let text = self.text()
+          while (textLength > (width) && text.length > 0) {
+            text = text.slice(0, -1)
+            self.text(text)
+            textLength = self.node().getComputedTextLength()
+          }
+        }
+        let fl = filterLogs()
+        let current = reserved.logHistory.list.scroll.scrollG
+          .selectAll('g.log')
+          .data(fl, function (d) {
+            return d.id
+          })
+        let enter = current
+          .enter()
+          .append('g')
+          .attr('class', 'log')
+        enter.each(function (d, i) {
+          let ib = reserved.logHistory.innerBoxLog
+          let g = d3.select(this)
+          g.attr('transform', function () {
+            let tx = 0
+            let ty = i * ob.h
+            return 'translate(' + tx + ',' + ty + ')'
+          })
+          g.append('rect')
+            .attr('width', ob.w + 'px')
+            .attr('height', ob.h + 'px')
+            .attr('x', 0 + 'px')
+            .attr('y', 0 + 'px')
+            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+            .attr('stroke', colorTheme.dark.stroke)
+            .attr('stroke-width', 0.0)
+            .on('mouseover', function () {
+              d3.select(this).attr('fill', colorTheme.darker.background)
+              g.selectAll('tspan').style('fill', '#000000').style('font-size', '9px')
+            })
+            .on('mouseout', function () {
+              d3.select(this).attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+              g.selectAll('tspan').style('fill', colorTheme.medium.text).style('font-size', '8px')
+            })
+          g.append('text').append('tspan')
+            .text(function (d) { return d.id })
+            .attr('x', ib.w * 0.025)
+            .attr('y', ib.h * 0.9)
+            .style('fill', colorTheme.medium.text)
+            .style('font-weight', '')
+            .style('font-size', '8px')
+            .style('pointer-events', 'none')
+            .attr('text-anchor', 'start')
+            .each(function () {
+              wrap(d3.select(this), ib.w * 0.45)
+            })
+          g.append('text').append('tspan')
+            .text(function (d) { return d.info[0].date })
+            .attr('x', ib.w * 0.9)
+            .attr('y', ib.h * 0.9)
+            .style('fill', colorTheme.medium.text)
+            .style('font-weight', '')
+            .style('font-size', '8px')
+            .style('pointer-events', 'none')
+            .attr('text-anchor', 'end')
+            .each(function () {
+              wrap(d3.select(this), ib.w * 0.45)
+            })
+        })
+
+        let mergeCurrentTels = current.merge(enter)
+        mergeCurrentTels.each(function (d, i) {
+          let g = d3.select(this)
+          g.attr('transform', function () {
+            let tx = 0
+            let ty = i * ob.h
+            return 'translate(' + tx + ',' + ty + ')'
+          })
+          g.select('rect')
+            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+            .attr('stroke', colorTheme.dark.stroke)
+            .on('mouseover', function () {
+              d3.select(this).attr('fill', colorTheme.darker.background)
+              g.selectAll('tspan').style('fill', '#000000').style('font-size', '9px')
+            })
+            .on('mouseout', function () {
+              d3.select(this).attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+              g.selectAll('tspan').style('fill', colorTheme.medium.text).style('font-size', '8px')
+            })
+        })
+
+        current
+          .exit()
+          .transition('inOut')
+          .duration(timeD.animArc)
+          .style('opacity', 0)
+          .remove()
+
+        reserved.logHistory.list.scroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: fl.length * ob.h})
+      }
+
+      reserved.logHistory.g.attr('transform', 'translate(' + reserved.logHistory.box.x + ',' + reserved.logHistory.box.y + ')')
+
+      createLogFilter()
+      createLogList()
+
+      // reserved.logHistory.g.append('rect')
+      //   .attr('x', reserved.logHistory.box.w * 0.0)
+      //   .attr('y', reserved.logHistory.box.h * 0.0)
+      //   .attr('width', reserved.logHistory.box.w * 1.0)
+      //   .attr('height', reserved.logHistory.box.h * 1.0)
+      //   .attr('fill', colorTheme.dark.background)
+      //   .attr('stroke', colorTheme.dark.stroke)
+      //   .attr('stroke-width', 0)
+      //   .attr('opacity', 1)
+      //   .on('mouseover', function () {
+      //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+      //   })
+      //   .on('mouseout', function () {
+      //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+      //   })
+      // reserved.logHistory.g.append('text')
+      //   .text('Logs List')
+      //   .attr('x', (reserved.logHistory.box.w * 0.5))
+      //   .attr('y', reserved.logHistory.box.h * 0.05)
+      //   .style('fill', colorTheme.medium.text)
+      //   .style('font-weight', '')
+      //   .style('font-size', '9px')
+      //   .attr('text-anchor', 'middle')
+    }
+
     function initData (dataIn) {
       reserved.main.box = {
         x: box.log.x,
@@ -1258,14 +2253,15 @@ let mainCommentNightSched = function (optIn) {
         .x(function (d) { return d.x })
         .y(function (d) { return d.y })
         .curve(d3.curveLinear)
+      let depth = 3
       let dataPointFuturTop = [
         {x: 0, y: 0},
-        {x: -5, y: 5},
-        {x: -5, y: reserved.main.box.h + 5},
-        {x: reserved.main.box.w - 5, y: reserved.main.box.h + 5},
+        {x: -depth, y: depth},
+        {x: -depth, y: reserved.main.box.h + depth},
+        {x: reserved.main.box.w - depth, y: reserved.main.box.h + depth},
         {x: reserved.main.box.w + 0, y: reserved.main.box.h},
         {x: 0, y: reserved.main.box.h},
-        {x: -5, y: reserved.main.box.h + 5},
+        {x: -depth, y: reserved.main.box.h + depth},
         {x: 0, y: reserved.main.box.h},
         {x: 0, y: 0}
       ]
@@ -1283,6 +2279,57 @@ let mainCommentNightSched = function (optIn) {
         .attr('fill', colorTheme.medium.background)
         .attr('stroke', colorTheme.medium.stroke)
         .attr('stroke-width', 0.2)
+        // .style('filter', 'url(#drop-shadow)')
+
+      // let gapUp = [
+      //   {x: reserved.main.box.w * 0.256, y: reserved.main.box.h * 0.00},
+      //   {x: reserved.main.box.w * 0.256, y: reserved.main.box.h * 0.1},
+      //   {x: reserved.main.box.w * 0.256 + depth * 1.5, y: reserved.main.box.h * 0.1},
+      //   {x: reserved.main.box.w * 0.256 + depth * 1.5, y: reserved.main.box.h * 0.00}
+      // ]
+      // reserved.main.g.append('path')
+      //   .data([gapUp])
+      //   .attr('d', lineGenerator)
+      //   .attr('fill', colorTheme.darker.background)
+      //   .attr('stroke', colorTheme.darker.stroke)
+      //   .attr('stroke-width', 0.2)
+      // let gapUp2 = [
+      //   {x: reserved.main.box.w * 0.256, y: reserved.main.box.h * 0.00},
+      //   {x: reserved.main.box.w * 0.256, y: reserved.main.box.h * 0.1},
+      //   {x: reserved.main.box.w * 0.256 + (depth * 0.5), y: reserved.main.box.h * 0.1},
+      //   {x: reserved.main.box.w * 0.256 + (depth * 0.5), y: reserved.main.box.h * 0.00 + depth},
+      //   {x: reserved.main.box.w * 0.256 + depth * 1.5, y: reserved.main.box.h * 0.00}
+      // ]
+      // reserved.main.g.append('path')
+      //   .data([gapUp2])
+      //   .attr('d', lineGenerator)
+      //   .attr('fill', '#444444')
+      //   .attr('stroke', '')
+      //   .attr('stroke-width', 0)
+      //
+      // let gapBottom = [
+      //   {x: reserved.main.box.w * 0.257, y: reserved.main.box.h * 1},
+      //   {x: reserved.main.box.w * 0.257, y: reserved.main.box.h * 0.525},
+      //   {x: reserved.main.box.w * 0.257 + depth, y: reserved.main.box.h * 0.525},
+      //   {x: reserved.main.box.w * 0.257 + depth, y: reserved.main.box.h * 1}
+      // ]
+      // reserved.main.g.append('path')
+      //   .data([gapBottom])
+      //   .attr('d', lineGenerator)
+      //   .attr('fill', colorTheme.darker.background)
+      //   .attr('stroke', colorTheme.darker.stroke)
+      //   .attr('stroke-width', 0.2)
+      // let gapBottom2 = [
+      //   {x: reserved.main.box.w * 0.257, y: reserved.main.box.h * 1},
+      //   {x: reserved.main.box.w * 0.257 - depth, y: reserved.main.box.h * 1 + depth},
+      //   {x: reserved.main.box.w * 0.257, y: reserved.main.box.h * 1 + depth}
+      // ]
+      // reserved.main.g.append('path')
+      //   .data([gapBottom2])
+      //   .attr('d', lineGenerator)
+      //   .attr('fill', '#444444')
+      //   .attr('stroke', '')
+      //   .attr('stroke-width', 0)
 
       reserved.associatedElement = {
         g: reserved.main.g.append('g'),
@@ -1296,6 +2343,45 @@ let mainCommentNightSched = function (optIn) {
         tels: {
           icon: undefined
         }
+      }
+      reserved.logInfo = {
+        g: reserved.main.g.append('g'),
+        box: box.logInfo
+      }
+      reserved.logFields = {
+        g: reserved.main.g.append('g'),
+        box: box.logFields,
+        title: {
+          g: undefined,
+          box: {
+            x: 0,
+            y: box.logFields.h * 0.0,
+            w: box.logFields.w,
+            h: box.logFields.h * 0.08
+          }
+        },
+        header: {
+          g: undefined,
+          box: {
+            x: 0,
+            y: box.logFields.h * 0.08,
+            w: box.logFields.w * 0.35,
+            h: box.logFields.h * 0.9
+          }
+        },
+        text: {
+          g: undefined,
+          box: {
+            x: box.logFields.w * 0.3,
+            y: box.logFields.h * 0.08,
+            w: box.logFields.w * 0.7,
+            h: box.logFields.h * 0.9
+          }
+        }
+      }
+      reserved.logHistory = {
+        g: reserved.main.g.append('g'),
+        box: box.logHistory
       }
       // reserved.inputHistory = {
       //   main: {
@@ -1359,6 +2445,9 @@ let mainCommentNightSched = function (optIn) {
       // }
 
       initAssociatedElement()
+      initLogFields()
+      initLogHistory()
+      initLogInfo()
       // initinputHistory()
       // initOnlineOperator()
       // initFocusedItemHeader()
@@ -1411,14 +2500,15 @@ let mainCommentNightSched = function (optIn) {
         .x(function (d) { return d.x })
         .y(function (d) { return d.y })
         .curve(d3.curveLinear)
+      let depth = 2
       let dataPointFuturTop = [
         {x: 0, y: 0},
-        {x: -5, y: 5},
-        {x: -5, y: box.blockQueueServerIcon.h + 5},
-        {x: box.blockQueueServerIcon.w - 5, y: box.blockQueueServerIcon.h + 5},
+        {x: -depth, y: depth},
+        {x: -depth, y: box.blockQueueServerIcon.h + depth},
+        {x: box.blockQueueServerIcon.w - depth, y: box.blockQueueServerIcon.h + depth},
         {x: box.blockQueueServerIcon.w + 0, y: box.blockQueueServerIcon.h},
         {x: 0, y: box.blockQueueServerIcon.h},
-        {x: -5, y: box.blockQueueServerIcon.h + 5},
+        {x: -depth, y: box.blockQueueServerIcon.h + depth},
         {x: 0, y: box.blockQueueServerIcon.h},
         {x: 0, y: 0}
       ]
@@ -1498,13 +2588,13 @@ let mainCommentNightSched = function (optIn) {
           h: box.blockQueueServer.h - (2 * box.blockQueueServer.marg)
         }
         let dataPointBottom = [
-          {x: b.x, y: b.y},
-          {x: b.x + b.w * 0.8, y: b.y},
-          {x: b.x + b.w * 0.8, y: b.y + b.h * 0.5},
-          {x: b.x + b.w, y: b.y + b.h * 0.5},
+          {x: b.x + b.w * 0.1, y: b.y},
+          {x: b.x + b.w, y: b.y},
           {x: b.x + b.w, y: b.y + b.h},
           {x: b.x, y: b.y + b.h},
-          {x: b.x, y: b.y}
+          {x: b.x, y: b.y + b.h * 0.3},
+          {x: b.x + b.w * 0.1, y: b.y + b.h * 0.3},
+          {x: b.x + b.w * 0.1, y: b.y}
         ]
         reserved.back.g.append('path')
           .data([dataPointBottom])
@@ -1513,16 +2603,21 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke', colorTheme.medium.stroke)
           .attr('stroke-width', 0.2)
 
+        let depth = 3
         let dataPointFuturTop = [
-          {x: b.x, y: b.y},
-          {x: b.x - 5, y: b.y + 5},
-          {x: b.x - 5, y: b.y + b.h + 5},
-          {x: b.x + b.w - 5, y: b.y + b.h + 5},
+          {x: b.x + b.w * 0.1, y: b.y},
+          {x: b.x + b.w * 0.1 - depth, y: b.y + depth},
+          {x: b.x + b.w * 0.1 - depth, y: b.y + b.h * 0.3},
+          {x: b.x, y: b.y + b.h * 0.3},
+          {x: b.x - depth, y: b.y + b.h * 0.3 + depth},
+          {x: b.x - depth, y: b.y + b.h + depth},
+          {x: b.x + b.w - depth, y: b.y + b.h + depth},
           {x: b.x + b.w, y: b.y + b.h},
           {x: b.x, y: b.y + b.h},
-          {x: b.x - 5, y: b.y + b.h + 5},
+          {x: b.x - depth, y: b.y + b.h + depth},
           {x: b.x, y: b.y + b.h},
-          {x: b.x, y: b.y}
+          {x: b.x, y: b.y + b.h * 0.3},
+          {x: b.x + b.w * 0.1, y: b.y + b.h * 0.3}
         ]
         reserved.back.g.append('path')
           .data([dataPointFuturTop])
@@ -1664,7 +2759,7 @@ let mainCommentNightSched = function (optIn) {
             box: {
               x: 0,
               y: 0,
-              w: box.blockQueueServerFilter.w * 0.33,
+              w: box.blockQueueServerFilter.w * 0.2,
               h: box.blockQueueServerFilter.h * 0.33
             },
             token: {
@@ -1676,9 +2771,9 @@ let mainCommentNightSched = function (optIn) {
           tels: {
             g: reserved.filter.g.append('g'),
             box: {
-              x: box.blockQueueServerFilter.w * 0.66,
+              x: box.blockQueueServerFilter.w * 0.7,
               y: box.blockQueueServerFilter.h * 0.4,
-              w: box.blockQueueServerFilter.w * 0.33,
+              w: box.blockQueueServerFilter.w * 0.2,
               h: box.blockQueueServerFilter.h * 0.6
             },
             token: {
@@ -1690,9 +2785,9 @@ let mainCommentNightSched = function (optIn) {
           targets: {
             g: reserved.filter.g.append('g'),
             box: {
-              x: 0,
+              x: box.blockQueueServerFilter.w * 0.1,
               y: box.blockQueueServerFilter.h * 0.4,
-              w: box.blockQueueServerFilter.w * 0.33,
+              w: box.blockQueueServerFilter.w * 0.2,
               h: box.blockQueueServerFilter.h * 0.6
             },
             targetIds: extractTargets(),
@@ -2040,14 +3135,15 @@ let mainCommentNightSched = function (optIn) {
         .x(function (d) { return d.x })
         .y(function (d) { return d.y })
         .curve(d3.curveLinear)
+      let depth = 2
       let dataPointFuturTop = [
         {x: 0, y: 0},
-        {x: -5, y: 5},
-        {x: -5, y: box.eventQueueServerIcon.h + 5},
-        {x: box.eventQueueServerIcon.w - 5, y: box.eventQueueServerIcon.h + 5},
+        {x: -depth, y: depth},
+        {x: -depth, y: box.eventQueueServerIcon.h + depth},
+        {x: box.eventQueueServerIcon.w - depth, y: box.eventQueueServerIcon.h + depth},
         {x: box.eventQueueServerIcon.w + 0, y: box.eventQueueServerIcon.h},
         {x: 0, y: box.eventQueueServerIcon.h},
-        {x: -5, y: box.eventQueueServerIcon.h + 5},
+        {x: -depth, y: box.eventQueueServerIcon.h + depth},
         {x: 0, y: box.eventQueueServerIcon.h},
         {x: 0, y: 0}
       ]
@@ -2102,9 +3198,9 @@ let mainCommentNightSched = function (optIn) {
         }
         let dataPointBottom = [
           {x: b.x, y: b.y},
-          {x: b.x + b.w * 0.8, y: b.y},
-          {x: b.x + b.w * 0.8, y: b.y + b.h * 0.5},
-          {x: b.x + b.w, y: b.y + b.h * 0.5},
+          {x: b.x + b.w * 0.9, y: b.y},
+          {x: b.x + b.w * 0.9, y: b.y + b.h * 0.3},
+          {x: b.x + b.w, y: b.y + b.h * 0.3},
           {x: b.x + b.w, y: b.y + b.h},
           {x: b.x, y: b.y + b.h},
           {x: b.x, y: b.y}
@@ -2597,14 +3693,15 @@ let mainCommentNightSched = function (optIn) {
         .x(function (d) { return d.x })
         .y(function (d) { return d.y })
         .curve(d3.curveLinear)
+      let depth = 2
       let dataPointFuturTop = [
         {x: 0, y: 0},
-        {x: -5, y: 5},
-        {x: -5, y: box.telsQueueServerIcon.h + 5},
-        {x: box.telsQueueServerIcon.w - 5, y: box.telsQueueServerIcon.h + 5},
+        {x: -depth, y: depth},
+        {x: -depth, y: box.telsQueueServerIcon.h + depth},
+        {x: box.telsQueueServerIcon.w - depth, y: box.telsQueueServerIcon.h + depth},
         {x: box.telsQueueServerIcon.w + 0, y: box.telsQueueServerIcon.h},
         {x: 0, y: box.telsQueueServerIcon.h},
-        {x: -5, y: box.telsQueueServerIcon.h + 5},
+        {x: -depth, y: box.telsQueueServerIcon.h + depth},
         {x: 0, y: box.telsQueueServerIcon.h},
         {x: 0, y: 0}
       ]
