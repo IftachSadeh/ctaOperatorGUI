@@ -200,12 +200,28 @@ let mainCommentNightSched = function (optIn) {
         description: 'description description description description description description description description description description description description',
         categories: categ,
         info: [
-          {author: 'system',
+          {
+            action: 'creation',
+            author: 'system',
+            date: '27/02/2019'
+          },
+          {
+            action: 'modification',
+            author: 'system',
+            date: '27/02/2019'
+          },
+          {
+            action: 'modification',
+            author: 'system',
+            date: '27/02/2019'
+          },
+          {
+            action: 'modification',
+            author: 'system',
             date: '27/02/2019'
           }
         ],
-        linkedTo: linkt,
-        modifications: []
+        linkedTo: linkt
       })
     }
   }
@@ -1341,33 +1357,176 @@ let mainCommentNightSched = function (optIn) {
       //   .style('pointer-events', 'none')
       //   .style('pointer-events', 'none')
     }
+
     function initLogInfo () {
       reserved.logInfo.g.attr('transform', 'translate(' + reserved.logInfo.box.x + ',' + reserved.logInfo.box.y + ')')
 
-      reserved.logInfo.g.append('rect')
-        .attr('x', reserved.logInfo.box.w * 0.0)
-        .attr('y', reserved.logInfo.box.h * 0.0)
-        .attr('width', reserved.logInfo.box.w * 1.0)
-        .attr('height', reserved.logInfo.box.h * 1.0)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0)
-        .attr('opacity', 1)
-        .on('mouseover', function () {
-          // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+      function initScrollBox () {
+        reserved.logInfo.scroll = {}
+        reserved.logInfo.scroll.scrollBoxG = reserved.logInfo.g.append('g')
+        let box = {
+          x: reserved.logInfo.box.w * 0.05,
+          y: reserved.logInfo.box.h * 0.12,
+          w: reserved.logInfo.box.w * 0.9,
+          h: reserved.logInfo.box.h * 0.88
+        }
+
+        reserved.logInfo.scroll.scrollBoxG.append('rect')
+          .attr('x', box.x - 1)
+          .attr('y', box.y - 1)
+          .attr('width', box.w + 2)
+          .attr('height', box.h + 2)
+          .attr('fill', 'none')
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-dasharray', [box.w + 2 + 2, box.h - 2, box.w + 2 + 2 + 2, box.h - 2])
+          .attr('stroke-width', 0.6)
+
+        reserved.logInfo.scroll.scrollBox = new ScrollBox()
+        reserved.logInfo.scroll.scrollBox.init({
+          tag: 'logInfoScrollBox',
+          gBox: reserved.logInfo.scroll.scrollBoxG,
+          boxData: {
+            x: box.x,
+            y: box.y,
+            w: box.w,
+            h: box.h,
+            marg: 0
+          },
+          useRelativeCoords: true,
+          locker: new Locker(),
+          lockerV: [widgetId + 'updateData'],
+          lockerZoom: {
+            all: 'logInfoBox' + 'zoom',
+            during: 'logInfoBox' + 'zoomDuring',
+            end: 'logInfoBox' + 'zoomEnd'
+          },
+          runLoop: new RunLoop({tag: 'logInfoScrollBox'}),
+          canScroll: true,
+          scrollVertical: true,
+          scrollHorizontal: false,
+          scrollHeight: 0,
+          scrollWidth: 0,
+          background: 'transparent',
+          scrollRecH: {h: 0},
+          scrollRecV: {w: 0}
         })
-        .on('mouseout', function () {
-          // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
-        })
+        reserved.logInfo.scroll.scrollG = reserved.logInfo.scroll.scrollBox.get('innerG')
+      }
+
+      // reserved.logInfo.g.append('rect')
+      //   .attr('x', reserved.logInfo.box.w * 0.0)
+      //   .attr('y', reserved.logInfo.box.h * 0.0)
+      //   .attr('width', reserved.logInfo.box.w * 1.0)
+      //   .attr('height', reserved.logInfo.box.h * 1.0)
+      //   .attr('fill', colorTheme.dark.background)
+      //   .attr('stroke', colorTheme.dark.stroke)
+      //   .attr('stroke-width', 0)
+      //   .attr('opacity', 1)
+      //   .on('mouseover', function () {
+      //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+      //   })
+      //   .on('mouseout', function () {
+      //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+      //   })
       reserved.logInfo.g.append('text')
-        .text('Logs info')
+        .text('Log information')
         .attr('x', (reserved.logInfo.box.w * 0.5))
         .attr('y', 10)
         .style('fill', colorTheme.medium.text)
         .style('font-weight', '')
         .style('font-size', '9px')
         .attr('text-anchor', 'middle')
+      initScrollBox()
     }
+    function updateLogInfo (log) {
+      function wrap (self, width) {
+        let textLength = self.node().getComputedTextLength()
+        let text = self.text()
+        while (textLength > (width) && text.length > 0) {
+          text = text.slice(0, -1)
+          self.text(text)
+          textLength = self.node().getComputedTextLength()
+        }
+      }
+
+      reserved.logInfo.g.select('text')
+        .text('Log information: ' + log.info.length)
+
+      let ib = {
+        x: reserved.logInfo.box.w * 0.05,
+        y: 0,
+        w: reserved.logInfo.box.w * 0.9,
+        h: reserved.logInfo.box.h * 0.35
+      }
+      let current = reserved.logInfo.scroll.scrollG
+        .selectAll('g.logInfo')
+        .data(log.info)
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'logInfo')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        g.attr('transform', function () {
+          let tx = 0
+          let ty = i * reserved.logInfo.box.h * 0.31
+          return 'translate(' + tx + ',' + ty + ')'
+        })
+
+        g.append('rect')
+          .attr('x', 1)
+          .attr('y', 1)
+          .attr('width', ib.w - 2)
+          .attr('height', reserved.logInfo.box.h * 0.3 - 2)
+          .attr('fill', colorTheme.medium.background)
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 0.4)
+        g.append('text')
+          .text('Action: ' + d.action)
+          .attr('x', reserved.logInfo.box.w * 0.05)
+          .attr('y', ib.h * 0.25)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'start')
+        g.append('text')
+          .text('By: ' + d.author)
+          .attr('x', reserved.logInfo.box.w * 0.12)
+          .attr('y', ib.h * 0.5)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'start')
+        g.append('text')
+          .text('On: ' + d.date)
+          .attr('x', reserved.logInfo.box.w * 0.12)
+          .attr('y', ib.h * 0.75)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', '')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'start')
+      })
+
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        g.attr('transform', function () {
+          let tx = 0
+          let ty = i * reserved.logInfo.box.h * 0.31
+          return 'translate(' + tx + ',' + ty + ')'
+        })
+      })
+
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+
+      reserved.logInfo.scroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: log.info.length * reserved.logInfo.box.h * 0.31})
+    }
+
     function initLogFields () {
       reserved.logFields.g.attr('transform', 'translate(' + reserved.logFields.box.x + ',' + reserved.logFields.box.y + ')')
 
@@ -1445,6 +1604,7 @@ let mainCommentNightSched = function (optIn) {
             // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
           })
         reserved.logFields.header.g.append('text')
+          .attr('id', 'title')
           .text('Title')
           .attr('x', reserved.logFields.header.box.w * 0.15)
           .attr('y', 20)
@@ -1469,6 +1629,7 @@ let mainCommentNightSched = function (optIn) {
             // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
           })
         reserved.logFields.header.g.append('text')
+          .attr('id', 'category')
           .text('Categories')
           .attr('x', reserved.logFields.header.box.w * 0.15)
           .attr('y', 40)
@@ -1483,32 +1644,63 @@ let mainCommentNightSched = function (optIn) {
         reserved.logFields.text.g = reserved.logFields.g.append('g')
         reserved.logFields.text.g.attr('transform', 'translate(' + reserved.logFields.text.box.x + ',' + reserved.logFields.text.box.y + ')')
 
-        reserved.logFields.text.g.append('rect')
+        let fo = reserved.logFields.text.g.append('foreignObject')
           .attr('x', reserved.logFields.text.box.w * 0.05)
           .attr('y', 10)
           .attr('width', reserved.logFields.text.box.w * 0.9)
           .attr('height', reserved.logFields.text.box.h - 15)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0)
-          .attr('opacity', 1)
-          .on('mouseover', function () {
-            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
-          })
-          .on('mouseout', function () {
-            // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
-          })
-        reserved.logFields.text.g.append('text')
-          .text('Information')
-          .attr('x', reserved.logFields.text.box.w * 0.1)
-          .attr('y', 20)
-          .style('fill', colorTheme.medium.text)
-          .style('font-weight', '')
+        let rootDiv = fo.append('xhtml:div')
+          .style('display', 'block')
+          .style('border', 'none')
+          .style('width', '100%')
+          .style('height', '100%')
+        rootDiv.append('textArea')
+          .style('width', '100%')
+          .style('height', '100%')
           .style('font-size', '9px')
-          .attr('text-anchor', 'start')
+          .style('resize', 'none')
+          .style('border-style', 'solid')
+          .style('border-width', '1px 1px 1px 1x')
+          .style('background-color', colorTheme.medium.background)
+          .attr('placeholder', 'Log information')
+
+        // reserved.logFields.text.g.append('rect')
+        //   .attr('x', reserved.logFields.text.box.w * 0.05)
+        //   .attr('y', 10)
+        //   .attr('width', reserved.logFields.text.box.w * 0.9)
+        //   .attr('height', reserved.logFields.text.box.h - 15)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0)
+        //   .attr('opacity', 1)
+        //   .on('mouseover', function () {
+        //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+        //   })
+        //   .on('mouseout', function () {
+        //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+        //   })
+        // reserved.logFields.text.g.append('text')
+        //   .text('Information')
+        //   .attr('x', reserved.logFields.text.box.w * 0.1)
+        //   .attr('y', 20)
+        //   .style('fill', colorTheme.medium.text)
+        //   .style('font-weight', '')
+        //   .style('font-size', '9px')
+        //   .attr('text-anchor', 'start')
       }
       initText()
     }
+    function updateLogFields (log) {
+      reserved.logFields.title.g.select('text')
+        .text(log.id)
+      reserved.logFields.header.g.select('#title')
+        .text(log.name)
+      reserved.logFields.header.g.select('#category')
+        .text(log.categories[0])
+      reserved.logFields.text.g.select('textArea')
+        .text(log.description)
+    }
+
     function initLogHistory () {
       let filterTemplate = {
         id: 'include',
@@ -2006,6 +2198,9 @@ let mainCommentNightSched = function (optIn) {
               d3.select(this).attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
               g.selectAll('tspan').style('fill', colorTheme.medium.text).style('font-size', '8px')
             })
+            .on('click', function () {
+              updateLog(d)
+            })
           g.append('text').append('tspan')
             .text(function (d) { return d.id })
             .attr('x', ib.w * 0.025)
@@ -2237,6 +2432,11 @@ let mainCommentNightSched = function (optIn) {
       //   .style('font-weight', '')
       //   .style('font-size', '9px')
       //   .attr('text-anchor', 'middle')
+    }
+
+    function updateLog (log) {
+      updateLogInfo(log)
+      updateLogFields(log)
     }
 
     function initData (dataIn) {
