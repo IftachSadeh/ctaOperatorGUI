@@ -16,6 +16,7 @@ var mainScriptTag = 'schedBlocks'
 /* global sock */
 /* global timeD */
 /* global hasVar */
+/* global BlockDisplayer */
 /* global BlockQueueOld */
 /* global BlockQueueCreator */
 /* global RunLoop */
@@ -34,6 +35,7 @@ var mainScriptTag = 'schedBlocks'
 /* global telHealthCol */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollGrid.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOld.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
@@ -41,7 +43,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 6
+  let h0 = 10.66
   let w0 = 12
   let divKey = 'main'
 
@@ -249,15 +251,15 @@ function mainSchedBlocks (optIn) {
     }
     function initBox () {
       box.blockQueueServerPast = {
-        x: lenD.w[0] * 0.01,
-        y: lenD.h[0] * 0.0,
+        x: lenD.w[0] * 0.035,
+        y: lenD.h[0] * 0.03,
         w: lenD.w[0] * 0.38,
         h: lenD.h[0] * 0.56,
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueServerFutur = {
-        x: lenD.w[0] * 0.61,
-        y: lenD.h[0] * 0.0,
+        x: lenD.w[0] * 0.575,
+        y: lenD.h[0] * 0.03,
         w: lenD.w[0] * 0.38,
         h: lenD.h[0] * 0.56,
         marg: lenD.w[0] * 0.01
@@ -284,10 +286,10 @@ function mainSchedBlocks (optIn) {
         marg: lenD.w[0] * 0.01
       }
       box.currentBlocks = {
-        x: lenD.w[0] * 0.38,
-        y: lenD.h[0] * 0.05,
-        w: lenD.w[0] * 0.24,
-        h: lenD.h[0] * 0.95,
+        x: lenD.w[0] * 0.405,
+        y: lenD.h[0] * 0.035,
+        w: lenD.w[0] * 0.18,
+        h: lenD.h[0] * 0.45,
         marg: lenD.w[0] * 0.01
       }
 
@@ -373,12 +375,12 @@ function mainSchedBlocks (optIn) {
     shared.data.server = dataIn.data
     // sortBlocksByState()
 
-    svgCurrentBlocks.initData()
+    svgRunningPhase.initData()
     svgBlocksQueueServerPast.initData()
     svgBlocksQueueServerFutur.initData()
-    svgStateScheduleMatrix.initData()
-    svgWaitScheduleMatrix.initData()
-    svgFreeTels.initData()
+    // svgStateScheduleMatrix.initData()
+    // svgWaitScheduleMatrix.initData()
+    // svgFreeTels.initData()
     // svgSuccessQueue.initData()
     // svgFailQueue.initData()
     // svgCancelQueue.initData()
@@ -396,10 +398,10 @@ function mainSchedBlocks (optIn) {
 
     svgBlocksQueueServerPast.updateData()
     svgBlocksQueueServerFutur.updateData()
-    svgCurrentBlocks.updateData()
-    svgStateScheduleMatrix.updateData()
-    svgWaitScheduleMatrix.updateData()
-    svgFreeTels.updateData()
+    svgRunningPhase.updateData()
+    // svgStateScheduleMatrix.updateData()
+    // svgWaitScheduleMatrix.updateData()
+    // svgFreeTels.updateData()
     // svgCancelQueue.updateData()
     // svgSuccessQueue.updateData()
     // svgFailQueue.updateData()
@@ -565,9 +567,9 @@ function mainSchedBlocks (optIn) {
 
       confD.s1 = {
         run_config: {
-          // id:   ["run_config_mount","run_config_camera","run_config_daq","run_config_mirror"],
+          // id:   ["run_config_mount","run_config_camera","run_config_camera","run_config_mirror"],
           // title:["Mount","Camera","DAQ","Mirror"]
-          id: ['run_config_mount', 'run_config_camera', 'run_config_daq'],
+          id: ['run_config_mount', 'run_config_camera', 'run_config_camera'],
           title: ['Mount', 'Camera', 'DAQ']
         },
         run_takeData: {
@@ -575,7 +577,7 @@ function mainSchedBlocks (optIn) {
           title: ['']
         },
         run_finish: {
-          id: ['run_finish_mount', 'run_finish_camera', 'run_finish_daq'],
+          id: ['run_finish_mount', 'run_finish_camera', 'run_finish_camera'],
           title: ['Mount', 'Camera', 'DAQ']
         }
       }
@@ -1699,113 +1701,168 @@ function mainSchedBlocks (optIn) {
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(-5,' + (box.blockQueueServerPast.h * 0.4) + ') rotate(270)')
 
-      blockQueueServerPast = new BlockQueueCreator({
+      blockQueueServerPast = new BlockDisplayer({
         main: {
           tag: 'blockQueueMiddleTag',
           g: reserved.g,
+          scroll: {},
           box: adjustedBox,
           background: {
-            fill: colorTheme.dark.background,
-            stroke: colorTheme.dark.stroke,
-            strokeWidth: 0.1
+            fill: colorTheme.medium.background,
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.4
           },
           colorTheme: colorTheme
         },
-        axis: {
-          enabled: true,
-          g: undefined,
-          box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-          axis: undefined,
-          scale: undefined,
-          domain: [0, 1000],
-          range: [0, 0],
-          showText: true,
-          orientation: 'axisTop',
-          attr: {
-            text: {
-              stroke: colorTheme.medium.stroke,
-              fill: colorTheme.medium.stroke
-            },
-            path: {
-              stroke: colorTheme.medium.stroke,
-              fill: colorTheme.medium.stroke
+
+        displayer: 'blockQueue2',
+        blockQueue: {
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
             }
+          },
+          blocks: {
+            enabled: true,
+            run: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: 'none',
+                strokeWidth: 0
+              }
+            },
+            cancel: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            modification: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            colorPalette: colorTheme.blocks
+          },
+          timeBars: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
           }
         },
-        blocks: {
-          enabled: true,
-          run: {
+        blockQueue2: {
+          g: undefined,
+          schedBlocks: {
+            label: false
+          },
+          axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
               }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: 'none',
-              strokeWidth: 0
             }
           },
-          cancel: {
-            enabled: true,
+          timeBars: {
+            enabled: false,
             g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: colorTheme.brighter.stroke,
-              strokeWidth: 0
-            }
-          },
-          modification: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: colorTheme.brighter.stroke,
-              strokeWidth: 0
-            }
-          },
-          colorPalette: colorTheme.blocks
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
         },
+        blockList: {
+
+        },
+        blockForm: {
+          mosaic: {
+            box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+            order: 'nSched'
+          },
+          forms: {
+            g: undefined,
+            box: {x: adjustedBox.w * 0.22,
+              y: adjustedBox.h * 0.02,
+              w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
+              h: adjustedBox.h * 0.96,
+              marg: adjustedBox.marg},
+            display: 'list',
+            scroll: {}
+          }
+        },
+
         filters: {
-          enabled: false,
-          g: undefined,
-          box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
-          filters: []
-        },
-        timeBars: {
-          enabled: false,
-          g: undefined,
-          box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+          blockFilters: [],
+          filtering: []
         },
         time: {
           currentTime: {time: 0, date: undefined},
@@ -1821,8 +1878,22 @@ function mainSchedBlocks (optIn) {
           enabled: false
         },
         pattern: {},
-        event: {
-          modifications: () => {}
+        events: {
+          block: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) },
+            drag: {
+              start: () => {},
+              tick: () => {},
+              end: () => {}
+            }
+          },
+          sched: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) }
+          }
         },
         input: {
           focus: {schedBlocks: undefined, block: undefined},
@@ -1830,8 +1901,141 @@ function mainSchedBlocks (optIn) {
           selection: []
         }
       })
-
       blockQueueServerPast.init()
+
+      // blockQueueServerPast = new BlockQueueCreator({
+      //   main: {
+      //     tag: 'blockQueueMiddleTag',
+      //     g: reserved.g,
+      //     box: adjustedBox,
+      //     background: {
+      //       fill: colorTheme.dark.background,
+      //       stroke: colorTheme.dark.stroke,
+      //       strokeWidth: 0.1
+      //     },
+      //     colorTheme: colorTheme
+      //   },
+      //   axis: {
+      //     enabled: true,
+      //     g: undefined,
+      //     box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+      //     axis: undefined,
+      //     scale: undefined,
+      //     domain: [0, 1000],
+      //     range: [0, 0],
+      //     showText: true,
+      //     orientation: 'axisTop',
+      //     attr: {
+      //       text: {
+      //         stroke: colorTheme.medium.stroke,
+      //         fill: colorTheme.medium.stroke
+      //       },
+      //       path: {
+      //         stroke: colorTheme.medium.stroke,
+      //         fill: colorTheme.medium.stroke
+      //       }
+      //     }
+      //   },
+      //   blocks: {
+      //     enabled: true,
+      //     run: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: () => {},
+      //         mouseout: () => {},
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: 'none',
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     cancel: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: () => {},
+      //         mouseout: () => {},
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: colorTheme.brighter.stroke,
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     modification: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: () => {},
+      //         mouseout: () => {},
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: colorTheme.brighter.stroke,
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     colorPalette: colorTheme.blocks
+      //   },
+      //   filters: {
+      //     enabled: false,
+      //     g: undefined,
+      //     box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
+      //     filters: []
+      //   },
+      //   timeBars: {
+      //     enabled: false,
+      //     g: undefined,
+      //     box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+      //   },
+      //   time: {
+      //     currentTime: {time: 0, date: undefined},
+      //     startTime: {time: 0, date: undefined},
+      //     endTime: {time: 0, date: undefined}
+      //   },
+      //   data: {
+      //     raw: undefined,
+      //     formated: undefined,
+      //     modified: undefined
+      //   },
+      //   debug: {
+      //     enabled: false
+      //   },
+      //   pattern: {},
+      //   event: {
+      //     modifications: () => {}
+      //   },
+      //   input: {
+      //     focus: {schedBlocks: undefined, block: undefined},
+      //     over: {schedBlocks: undefined, block: undefined},
+      //     selection: []
+      //   }
+      // })
+      //
+      // blockQueueServerPast.init()
 
       let minTxtSize = adjustedBox.w * 0.02
       reserved.g.append('rect')
@@ -1927,113 +2131,168 @@ function mainSchedBlocks (optIn) {
       reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
 
-      blockQueueServerFutur = new BlockQueueCreator({
+      blockQueueServerFutur = new BlockDisplayer({
         main: {
-          tag: 'blockQueueServerFuturTag',
+          tag: 'blockQueueMiddleTag',
           g: reserved.g,
+          scroll: {},
           box: adjustedBox,
           background: {
-            fill: colorTheme.dark.background,
-            stroke: colorTheme.dark.stroke,
-            strokeWidth: 0.1
+            fill: colorTheme.medium.background,
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.4
           },
           colorTheme: colorTheme
         },
-        axis: {
-          enabled: true,
-          g: undefined,
-          box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-          axis: undefined,
-          scale: undefined,
-          domain: [0, 1000],
-          range: [0, 0],
-          showText: true,
-          orientation: 'axisTop',
-          attr: {
-            text: {
-              stroke: colorTheme.medium.stroke,
-              fill: colorTheme.medium.stroke
-            },
-            path: {
-              stroke: colorTheme.medium.stroke,
-              fill: colorTheme.medium.stroke
+
+        displayer: 'blockQueue2',
+        blockQueue: {
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
             }
+          },
+          blocks: {
+            enabled: true,
+            run: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.66875, w: adjustedBox.w, h: adjustedBox.h * 0.33125, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: 'none',
+                strokeWidth: 0
+              }
+            },
+            cancel: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox.w, h: adjustedBox.h * 0.1525, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            modification: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            colorPalette: colorTheme.blocks
+          },
+          timeBars: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
           }
         },
-        blocks: {
-          enabled: true,
-          run: {
+        blockQueue2: {
+          g: undefined,
+          schedBlocks: {
+            label: false
+          },
+          axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
               }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: 'none',
-              strokeWidth: 0
             }
           },
-          cancel: {
-            enabled: true,
+          timeBars: {
+            enabled: false,
             g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: colorTheme.brighter.stroke,
-              strokeWidth: 0
-            }
-          },
-          modification: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: colorTheme.brighter.stroke,
-              strokeWidth: 0
-            }
-          },
-          colorPalette: colorTheme.blocks
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
         },
+        blockList: {
+
+        },
+        blockForm: {
+          mosaic: {
+            box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+            order: 'nSched'
+          },
+          forms: {
+            g: undefined,
+            box: {x: adjustedBox.w * 0.22,
+              y: adjustedBox.h * 0.02,
+              w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
+              h: adjustedBox.h * 0.96,
+              marg: adjustedBox.marg},
+            display: 'list',
+            scroll: {}
+          }
+        },
+
         filters: {
-          enabled: false,
-          g: undefined,
-          box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
-          filters: []
-        },
-        timeBars: {
-          enabled: false,
-          g: undefined,
-          box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+          blockFilters: [],
+          filtering: []
         },
         time: {
           currentTime: {time: 0, date: undefined},
@@ -2049,8 +2308,22 @@ function mainSchedBlocks (optIn) {
           enabled: false
         },
         pattern: {},
-        event: {
-          modifications: () => {}
+        events: {
+          block: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) },
+            drag: {
+              start: () => {},
+              tick: () => {},
+              end: () => {}
+            }
+          },
+          sched: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) }
+          }
         },
         input: {
           focus: {schedBlocks: undefined, block: undefined},
@@ -2059,6 +2332,138 @@ function mainSchedBlocks (optIn) {
         }
       })
       blockQueueServerFutur.init()
+      // blockQueueServerFutur = new BlockQueueCreator({
+      //   main: {
+      //     tag: 'blockQueueServerFuturTag',
+      //     g: reserved.g,
+      //     box: adjustedBox,
+      //     background: {
+      //       fill: colorTheme.dark.background,
+      //       stroke: colorTheme.dark.stroke,
+      //       strokeWidth: 0.1
+      //     },
+      //     colorTheme: colorTheme
+      //   },
+      //   axis: {
+      //     enabled: true,
+      //     g: undefined,
+      //     box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+      //     axis: undefined,
+      //     scale: undefined,
+      //     domain: [0, 1000],
+      //     range: [0, 0],
+      //     showText: true,
+      //     orientation: 'axisTop',
+      //     attr: {
+      //       text: {
+      //         stroke: colorTheme.medium.stroke,
+      //         fill: colorTheme.medium.stroke
+      //       },
+      //       path: {
+      //         stroke: colorTheme.medium.stroke,
+      //         fill: colorTheme.medium.stroke
+      //       }
+      //     }
+      //   },
+      //   blocks: {
+      //     enabled: true,
+      //     run: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: () => {},
+      //         mouseout: () => {},
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: 'none',
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     cancel: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: () => {},
+      //         mouseout: () => {},
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: colorTheme.brighter.stroke,
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     modification: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: () => {},
+      //         mouseout: () => {},
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: colorTheme.brighter.stroke,
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     colorPalette: colorTheme.blocks
+      //   },
+      //   filters: {
+      //     enabled: false,
+      //     g: undefined,
+      //     box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
+      //     filters: []
+      //   },
+      //   timeBars: {
+      //     enabled: false,
+      //     g: undefined,
+      //     box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+      //   },
+      //   time: {
+      //     currentTime: {time: 0, date: undefined},
+      //     startTime: {time: 0, date: undefined},
+      //     endTime: {time: 0, date: undefined}
+      //   },
+      //   data: {
+      //     raw: undefined,
+      //     formated: undefined,
+      //     modified: undefined
+      //   },
+      //   debug: {
+      //     enabled: false
+      //   },
+      //   pattern: {},
+      //   event: {
+      //     modifications: () => {}
+      //   },
+      //   input: {
+      //     focus: {schedBlocks: undefined, block: undefined},
+      //     over: {schedBlocks: undefined, block: undefined},
+      //     selection: []
+      //   }
+      // })
+      // blockQueueServerFutur.init()
 
       let minTxtSize = adjustedBox.w * 0.02
       reserved.g.append('rect')
@@ -2734,7 +3139,632 @@ function mainSchedBlocks (optIn) {
     }
     this.updateData = updateData
   }
-  let SvgCurrentBlocks = function () {
+  let SvgRunningPhase = function () {
+    let reserved = {}
+
+    function initData () {
+      reserved.gBlockBox = svg.g.append('g')
+        .attr('transform', 'translate(' + box.currentBlocks.x + ',' + box.currentBlocks.y + ')')
+
+      // reserved.gBlockBox.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', box.currentBlocks.w * 1)
+      //   .attr('height', box.currentBlocks.h * 1)
+      //   .attr('fill', colorTheme.dark.background)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.2)
+
+      let minTxtSize = box.currentBlocks.w * 0.05
+      reserved.gBlockBox.append('rect')
+        .attr('x', box.currentBlocks.w * 0.4)
+        .attr('y', box.currentBlocks.y - box.currentBlocks.h * 0.07 - minTxtSize * 0.75)
+        .attr('width', box.currentBlocks.w * 0.2)
+        .attr('height', minTxtSize * 1.5)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.4)
+        .attr('rx', 10)
+      reserved.currentTime = reserved.gBlockBox.append('text')
+        .attr('class', 'currentHour')
+        .attr('stroke', colorTheme.stroke)
+        .attr('fill', colorTheme.stroke)
+        .attr('x', box.currentBlocks.w * 0.5)
+        .attr('y', box.currentBlocks.y + box.currentBlocks.h * 0.025)
+        .style('font-weight', 'normal')
+        .attr('text-anchor', 'middle')
+        .style('font-size', minTxtSize)
+        .attr('dy', 4)
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+      // updateData()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let currentTime = {date: new Date(shared.data.server.timeOfNight.date_now)}
+      reserved.currentTime.text(d3.timeFormat('%H:%M')(currentTime.date))
+
+      let b = box.currentBlocks
+
+      let ratioHeight = 0.2
+      let ratioWidth = 0.75
+      let offsetRunningBlocks = 0.035
+
+      let ratio = 1
+
+      let queueRun = blockQueueServerFutur.getBlocksRows()
+
+      queueRun = queueRun.filter(b => b.block.exeState.state === 'run')
+      queueRun.sort(function (a, b) { return a.y > b.y })
+      let totHeight = offsetRunningBlocks * (queueRun.length - 1) + queueRun.length * ratioHeight
+
+      if (totHeight > 1) {
+        ratio = 1 / totHeight
+        totHeight = 1
+      } else if (totHeight < 0.25) offsetRunningBlocks = 0.3
+      else if (totHeight < 0.50) offsetRunningBlocks = 0.2
+      else if (totHeight < 0.75) offsetRunningBlocks = 0.1
+
+      ratioHeight = ratioHeight * ratio
+      offsetRunningBlocks = offsetRunningBlocks * ratio
+
+      let offsetY = (b.h * (1 - totHeight)) * 0.5
+
+      let blockBox = {
+        x: b.w * (1 - ratioWidth) * 0.5,
+        y: b.h * offsetRunningBlocks,
+        w: b.w * ratioWidth,
+        h: b.h * ratioHeight
+      }
+      let headerBoxId = {
+        x: blockBox.w * 0.0,
+        y: blockBox.h * 0.0,
+        w: blockBox.w * 1.0,
+        h: blockBox.h * 1.0
+      }
+      let headerBoxRunningPhase = {
+        x: blockBox.w * 0.0,
+        y: blockBox.h * 0.0,
+        w: blockBox.w * 1.0,
+        h: blockBox.h * 1.0
+      }
+
+      let colorLock = colorTheme.blocks.run.background
+      let colorFree = colorTheme.dark.background
+      let transConfig = headerBoxRunningPhase.w * 0.25
+      let transTake = headerBoxRunningPhase.w * 0.0
+      let transFinish = -headerBoxRunningPhase.w * 0.25
+
+      function initConfigDataFinish (g, headerBox) {
+        // Back
+        // g.append('rect')
+        //   .attr('class', 'configBack')
+        //   .attr('x', (headerBox.w * 0.4))
+        //   .attr('y', headerBox.h * 0.0)
+        //   .attr('width', headerBox.w * 0.23)
+        //   .attr('height', headerBox.h * 0.98)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.45)
+        // g.append('rect')
+        //   .attr('class', 'dataBack')
+        //   .attr('x', (headerBox.w * 0.63))
+        //   .attr('y', headerBox.h * 0.0)
+        //   .attr('width', headerBox.w * 0.15)
+        //   .attr('height', headerBox.h * 0.98)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.45)
+        // g.append('rect')
+        //   .attr('class', 'finishBack')
+        //   .attr('x', (headerBox.w * 0.78))
+        //   .attr('y', headerBox.h * 0.0)
+        //   .attr('width', headerBox.w * 0.22)
+        //   .attr('height', headerBox.h * 0.98)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.45)
+        let tdh = headerBoxRunningPhase.h * 0.45
+        let tdw = headerBoxRunningPhase.h * 0.55
+        let cfh = headerBoxRunningPhase.h * 0.45
+        let cfw = headerBoxRunningPhase.h * 0.55
+
+        // g.append('rect')
+        //   .attr('class', 'dataLoading')
+        //   .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 - tdw)
+        //   .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.5 - tdh)
+        //   .attr('width', tdw * 2)
+        //   .attr('height', tdh * 2)
+        //   .attr('fill', colorTheme.medium.background)
+        //   .attr('stroke', colorTheme.medium.stroke)
+        //   .attr('stroke-width', 8)
+        // CONFIG
+        // g.append('text')
+        //   .text('CONFIG -------------->')
+        //   .attr('x', (headerBox.w * 0.42) + 2)
+        //   .attr('y', headerBox.h * 0.1)
+        //   .attr('dy', 2)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   // .style('font-weight', 'normal')
+        //   .style('font-size', '5.5px')
+        //   .attr('text-anchor', 'start')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+
+        g.append('rect')
+          .attr('id', 'mount')
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 - tdw)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.5 - tdh)
+          .attr('width', cfw)
+          .attr('height', cfh)
+          .attr('fill', colorFree)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        // g.append('text')
+        //   .text('Mo')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0.5)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
+        //   .attr('dy', 3)
+        //   .style('font-weight', 'normal')
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        g.append('rect')
+          .attr('id', 'camera')
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 + tdw - cfw)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.5 - tdh)
+          .attr('width', cfw)
+          .attr('height', cfh)
+          .attr('fill', colorFree)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        // g.append('text')
+        //   .text('C')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1.5)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
+        //   .attr('dy', 3)
+        //   .style('font-weight', 'normal')
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        g.append('rect')
+          .attr('id', 'daq')
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 + tdw - cfw)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.5 + tdh - cfh)
+          .attr('width', cfw)
+          .attr('height', cfh)
+          .attr('fill', colorFree)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        // g.append('text')
+        //   .text('Mi')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2.5)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
+        //   .attr('dy', 3)
+        //   .style('font-weight', 'normal')
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        g.append('rect')
+          .attr('id', 'mirror')
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 - tdw)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.5 + tdh - cfh)
+          .attr('width', cfw)
+          .attr('height', cfh)
+          .attr('fill', colorFree)
+          .attr('stroke', colorTheme.darker.stroke)
+          .attr('stroke-width', 0.2)
+        // g.append('text')
+        //   .text('D')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3.5)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
+        //   .attr('dy', 3)
+        //   .style('font-weight', 'normal')
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+
+        // Take Data
+
+        // g.append('text')
+        //   .text('Data')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 2))
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 2))
+        //   .attr('dy', 2.2)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7.5px')
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('text')
+        //   .text('a')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.45)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 2.5)
+        //   .attr('dy', 1.8)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7.5px')
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('text')
+        //   .text('t')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.55)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 3.5)
+        //   .attr('dy', 3)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7.5px')
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('text')
+        //   .text('a')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 3) * 1.65)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 6) * 4.5)
+        //   .attr('dy', 4.2)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7.5px')
+        //   .style('font-weight', 'normal')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+
+        // FINISH
+        // g.append('text')
+        //   .text('FINISH')
+        //   .attr('x', (headerBox.w * 0.87) + 2)
+        //   .attr('y', headerBox.h * 0.1)
+        //   .attr('dy', 2)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   // .style('font-weight', 'normal')
+        //   .style('font-size', '5.5px')
+        //   .attr('text-anchor', 'start')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('rect')
+        //   .attr('class', 'finishMountLoading')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+        //   .attr('width', headerBoxRunningPhase.w / 4)
+        //   .attr('height', headerBoxRunningPhase.h / 3)
+        //   .attr('fill', colorTheme.darker.background)
+        //   .attr('stroke', colorTheme.darker.stroke)
+        //   .attr('stroke-width', 0.2)
+        // g.append('text')
+        //   .text('Mo')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0.5)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
+        //   .attr('dy', 3)
+        //   .style('font-weight', 'normal')
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('rect')
+        //   .attr('class', 'finishCameraLoading')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+        //   .attr('width', headerBoxRunningPhase.w / 4)
+        //   .attr('height', headerBoxRunningPhase.h / 3)
+        //   .attr('fill', colorTheme.darker.background)
+        //   .attr('stroke', colorTheme.darker.stroke)
+        //   .attr('stroke-width', 0.2)
+        // g.append('text')
+        //   .text('C')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1.5)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
+        //   .attr('dy', 3)
+        //   .style('font-weight', 'normal')
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('rect')
+        //   .attr('class', 'finishMirrorLoading')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+        //   .attr('width', headerBoxRunningPhase.w / 4)
+        //   .attr('height', headerBoxRunningPhase.h / 3)
+        //   .attr('fill', colorTheme.darker.background)
+        //   .attr('stroke', colorTheme.darker.stroke)
+        //   .attr('stroke-width', 0.2)
+        // g.append('text')
+        //   .text('Mi')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2.5)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
+        //   .attr('dy', 3)
+        //   .style('font-weight', 'normal')
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+        // g.append('rect')
+        //   .attr('class', 'finishDAQLoading')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2)
+        //   .attr('width', headerBoxRunningPhase.w / 4)
+        //   .attr('height', headerBoxRunningPhase.h / 3)
+        //   .attr('fill', colorTheme.darker.background)
+        //   .attr('stroke', colorTheme.darker.stroke)
+        //   .attr('stroke-width', 0.2)
+        // g.append('text')
+        //   .text('D')
+        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3.5)
+        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 2.5)
+        //   .attr('dy', 3)
+        //   .style('font-weight', 'normal')
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-size', '7px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
+      }
+
+      function initRunPhase (g, runPhase, gt) {
+        if (runPhase.length < 1) return
+        if (runPhase[0].includes('config')) initConfig(g, runPhase, gt)
+        if (runPhase[0].includes('takeData')) initTake(g, runPhase, gt)
+        if (runPhase[0].includes('finish')) initFinish(g, runPhase, gt)
+      }
+      function initConfig (g, runPhase, gt) {
+        g.attr('transform', 'translate(' + transConfig + ',0)')
+        gt.attr('transform', 'translate(' + transConfig + ',0)')
+
+        g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('mount')) g.select('#mount').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('#camera').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('#mirror').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('#daq').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+        }
+      }
+      function initTake (g, runPhase, gt) {
+        g.attr('transform', 'translate(' + transTake + ',0)')
+        gt.attr('transform', 'translate(' + transTake + ',0)')
+
+        g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+      }
+      function initFinish (g, runPhase, gt) {
+        g.attr('transform', 'translate(' + transFinish + ',0)')
+        gt.attr('transform', 'translate(' + transFinish + ',0)')
+
+        g.select('#mount').attr('fill', colorFree) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorFree) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorFree) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('mount')) g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('#mirror').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('#daq').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+        }
+      }
+
+      function dispatchRunPhase (g, runPhase, gt) {
+        if (runPhase.length < 1) return
+        if (runPhase[0].includes('config')) dispatchConfig(g, runPhase, gt)
+        if (runPhase[0].includes('takeData')) dispatchTake(g, runPhase, gt)
+        if (runPhase[0].includes('finish')) dispatchFinish(g, runPhase, gt)
+      }
+      function dispatchConfig (g, runPhase, gt) {
+        g.transition().duration(timeD.animArc).attr('transform', 'translate(' + transConfig + ',0)')
+        gt.transition().duration(timeD.animArc).attr('transform', 'translate(' + transConfig + ',0)')
+
+        g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('mount')) g.select('#mount').attr('fill', colorTheme.dark.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('#camera').attr('fill', colorTheme.dark.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('#mirror').attr('fill', colorTheme.dark.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('#daq').attr('fill', colorTheme.dark.background) // .attr('stroke-width', 0.2)
+        }
+      }
+      function dispatchTake (g, runPhase, gt) {
+        g.transition().duration(timeD.animArc).attr('transform', 'translate(' + transTake + ',0)')
+        gt.transition().duration(timeD.animArc).attr('transform', 'translate(' + transTake + ',0)')
+
+        g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorLock) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+      }
+      function dispatchFinish (g, runPhase, gt) {
+        g.transition().duration(timeD.animArc).attr('transform', 'translate(' + transFinish + ',0)')
+        gt.transition().duration(timeD.animArc).attr('transform', 'translate(' + transFinish + ',0)')
+
+        g.select('#mount').attr('fill', colorFree) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorFree) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorFree) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+        for (let i = 0; i < runPhase.length; i++) {
+          if (runPhase[0].includes('mount')) g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('#mirror').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('#daq').attr('fill', colorLock) // .attr('stroke-width', 0.2)
+        }
+      }
+
+      let currentBlocks = reserved.gBlockBox
+        .selectAll('g.currentBlock')
+        .data(queueRun, function (d) {
+          return d.block.obId
+        })
+      let enterCurrentBlocks = currentBlocks
+        .enter()
+        .append('g')
+        .attr('class', 'currentBlock')
+      enterCurrentBlocks.each(function (d, i) {
+        d = d.block
+
+        d3.select(this).append('path')
+          .attr('fill', 'none')
+          .attr('stroke', setCol(d).background)
+          .attr('stroke-width', 4)
+          .style('pointer-events', 'none')
+        d3.select(this).append('rect')
+          .attr('class', 'background')
+          .attr('fill', function (d, i) {
+            return colorTheme.medium.background
+          })
+          .style('fill-opacity', 1)
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 0.0)
+
+        let size = blockBox.w * 0.1
+        d3.select(this).append('rect')
+          .attr('class', 'finish')
+          .attr('x', blockBox.w * 0.1 - size * 0.5)
+          .attr('y', blockBox.h * 0.5 - size * 0.5)
+          .attr('width', size)
+          .attr('height', size)
+          .attr('fill', colorTheme.dark.background)
+          .style('fill-opacity', 1)
+          .attr('stroke-width', 0.0)
+        d3.select(this).append('rect')
+          .attr('class', 'data')
+          .attr('x', blockBox.w * 0.5 - size * 0.5)
+          .attr('y', blockBox.h * 0.5 - size * 0.5)
+          .attr('width', size)
+          .attr('height', size)
+          .attr('fill', colorTheme.dark.background)
+          .style('fill-opacity', 1)
+          .attr('stroke-width', 0.0)
+        d3.select(this).append('rect')
+          .attr('class', 'config')
+          .attr('x', blockBox.w * 0.9 - size * 0.5)
+          .attr('y', blockBox.h * 0.5 - size * 0.5)
+          .attr('width', size)
+          .attr('height', size)
+          .attr('fill', colorTheme.dark.background)
+          .style('fill-opacity', 1)
+          .attr('stroke-width', 0.2)
+
+        let grunphase = d3.select(this).append('g').attr('id', 'grunphase')
+        let gtext = d3.select(this).append('g').attr('id', 'text')
+
+        initConfigDataFinish(grunphase, blockBox)
+        initRunPhase(grunphase, d.runPhase, gtext)
+
+        // d3.select(this).append('rect')
+        //   .attr('class', 'headerId')
+        //   .attr('x', headerBoxId.x)
+        //   .attr('y', headerBoxId.y)
+        //   .attr('width', headerBoxId.w)
+        //   .attr('height', headerBoxId.h)
+        //   .attr('fill', function (d, i) {
+        //     return colorTheme.medium.background// setCol(d).background
+        //   })
+        //   .style('fill-opacity', 1)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.0)
+        gtext.append('text')
+          .attr('id', 'name')
+          .text(function () {
+            return d.metaData.blockName
+          })
+          .attr('x', headerBoxId.w * 0.5)
+          .attr('y', headerBoxId.h * 0.4)
+          .attr('dy', 0)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'bold')
+          .style('font-size', '24px')
+          .attr('text-anchor', 'middle')
+        gtext.append('text')
+          .attr('id', 'percent')
+          .attr('x', headerBoxId.w * 0.5)
+          .attr('y', headerBoxId.h * 0.85)
+          .attr('dy', 0)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'bold')
+          .style('font-size', '24px')
+          .attr('text-anchor', 'middle')
+      })
+
+      let mergeCurrentBlocks = currentBlocks.merge(enterCurrentBlocks)
+
+      mergeCurrentBlocks.each(function (d, i) {
+        let block = d.block
+        let translate = {
+          x: blockBox.x,
+          y: offsetY + (blockBox.y + blockBox.h) * i
+        }
+
+        d3.select(this).select('rect.background')
+          .transition()
+          .duration(timeD.animArc)
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', blockBox.w)
+          .attr('height', blockBox.h)
+        d3.select(this).select('#percent')
+          .text(function () {
+            return Math.floor(100 - (((block.endTime - shared.data.server.timeOfNight.now) / (block.endTime - block.startTime)) * 100)) + '%'
+          })
+
+        d3.select(this)
+          .transition()
+          .duration(timeD.animArc)
+          .attr('transform', function () {
+            return 'translate(' + translate.x + ',' + translate.y + ')'
+          })
+
+        // let lineGenerator = d3.line()
+        //   .x(function (d) { return d.x })
+        //   .y(function (d) { return d.y })
+        //   .curve(d3.curveBasis)
+        // let dataPointFuturTop = [
+        //   {x: blockBox.w + blockBox.x, y: -translate.y + box.blockQueueServerPast.y + d.y + d.h * 0.5},
+        //   {x: blockBox.w + (blockBox.x) * 0.5, y: -translate.y + box.blockQueueServerPast.y + d.y + d.h * 0.5 - blockBox.h * 0.5},
+        //   {x: blockBox.w + (blockBox.x) * 0.5, y: blockBox.h * 0.5},
+        //   {x: blockBox.w, y: blockBox.h * 0.5},
+        //
+        //   {x: blockBox.w * 0.5, y: blockBox.h * 0.5},
+        //
+        //   {x: 0, y: blockBox.h * 0.5},
+        //   {x: 0 - (blockBox.x * 0.5), y: blockBox.h * 0.5},
+        //   {x: 0 - (blockBox.x * 0.5), y: -translate.y + box.blockQueueServerPast.y + d.y + d.h * 0.5 - blockBox.h * 0.5},
+        //   {x: -blockBox.x, y: -translate.y + box.blockQueueServerPast.y + d.y + d.h * 0.5}
+        // ]
+        // d3.select(this).select('path')
+        //   .data([dataPointFuturTop])
+        //   .transition()
+        //   .duration(timeD.animArc)
+        //   .attr('d', lineGenerator)
+
+        dispatchRunPhase(d3.select(this).select('#grunphase'), block.runPhase, d3.select(this).select('#text'))
+      })
+      currentBlocks
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    this.updateData = updateData
+  }
+  let SvgRunningTels = function () {
     let reserved = {}
 
     function initData () {
@@ -2787,7 +3817,7 @@ function mainSchedBlocks (optIn) {
       let sizeHeader = 0.085
 
       let telsPerRow = 8
-      let sizeTelsRow = 0.04
+      let sizeTelsRow = 0.02
       let offsetTelsType = 0.25
 
       let offsetRunningBlocks = 0.035
@@ -2795,18 +3825,19 @@ function mainSchedBlocks (optIn) {
       let ratio = 1
 
       let queueRun = blockQueueServerFutur.getBlocksRows()
-      queueRun = queueRun.filter(b => b.data.exeState.state === 'run')
+
+      queueRun = queueRun.filter(b => b.block.exeState.state === 'run')
       queueRun.sort(function (a, b) { return a.y > b.y })
       for (let i = 0; i < queueRun.length; i++) {
-        queueRun[i].data.y = queueRun[i].y
-        queueRun[i].data.h = queueRun[i].h
-        queueRun[i] = queueRun[i].data
+        queueRun[i].y = queueRun[i].y
+        queueRun[i].h = queueRun[i].h
+        queueRun[i] = queueRun[i]
       }
       let totHeight = offsetRunningBlocks * (queueRun.length - 1)
       for (let i = 0; i < queueRun.length; i++) {
-        let nTel = queueRun[i].telIds.length
+        let nTel = queueRun[i].block.telIds.length
 
-        let copTelIds = deepCopy(queueRun[i].telIds)
+        let copTelIds = deepCopy(queueRun[i].block.telIds)
         copTelIds.sort(function (a, b) { return ('' + a).localeCompare(b) })
         let off = 0
         for (let i = 0; i < copTelIds.length - 1; i++) {
@@ -2868,7 +3899,8 @@ function mainSchedBlocks (optIn) {
           return 0.9 // (0.9 - (0.5 * (val / 100)))
         }
         let tels = []
-        for (let i = 0; i < g.data()[0].telIds.length; i++) { tels.push(getTelHealthById(g.data()[0].telIds[i])) }
+        let block = g.data()[0].block
+        for (let i = 0; i < block.telIds.length; i++) { tels.push(getTelHealthById(block.telIds[i])) }
         tels.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
 
         let toff = 0
@@ -2876,7 +3908,7 @@ function mainSchedBlocks (optIn) {
           if (tels[i].id.split('_')[0] !== tels[i + 1].id.split('_')[0]) toff += 1
         }
 
-        let nTel = g.data()[0].telIds.length + toff
+        let nTel = block.telIds.length + toff
         let nLine = (nTel % telsPerRow === 0) ? (nTel / telsPerRow) : (1 + parseInt(nTel / telsPerRow))
         nLine = nLine < 1 ? 1 : nLine
 
@@ -3235,7 +4267,7 @@ function mainSchedBlocks (optIn) {
         //   .style('pointer-events', 'none')
         //   .style('user-select', 'none')
         g.append('rect')
-          .attr('class', 'configMountLoading')
+          .attr('class', 'mount')
           .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0)
           .attr('y', headerBoxRunningPhase.y)
           .attr('width', headerBoxRunningPhase.w / 4)
@@ -3255,7 +4287,7 @@ function mainSchedBlocks (optIn) {
           .style('pointer-events', 'none')
           .style('user-select', 'none')
         g.append('rect')
-          .attr('class', 'configCameraLoading')
+          .attr('class', 'camera')
           .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1)
           .attr('y', headerBoxRunningPhase.y)
           .attr('width', headerBoxRunningPhase.w / 4)
@@ -3275,7 +4307,7 @@ function mainSchedBlocks (optIn) {
           .style('pointer-events', 'none')
           .style('user-select', 'none')
         g.append('rect')
-          .attr('class', 'configMirrorLoading')
+          .attr('class', 'mirror')
           .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2)
           .attr('y', headerBoxRunningPhase.y)
           .attr('width', headerBoxRunningPhase.w / 4)
@@ -3295,7 +4327,7 @@ function mainSchedBlocks (optIn) {
           .style('pointer-events', 'none')
           .style('user-select', 'none')
         g.append('rect')
-          .attr('class', 'configDAQLoading')
+          .attr('class', 'daq')
           .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3)
           .attr('y', headerBoxRunningPhase.y)
           .attr('width', headerBoxRunningPhase.w / 4)
@@ -3471,22 +4503,22 @@ function mainSchedBlocks (optIn) {
         if (runPhase[0].includes('finish')) initFinish(g, runPhase)
       }
       function initConfig (g, runPhase) {
-        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        g.select('#mount').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
         for (let i = 0; i < runPhase.length; i++) {
-          if (runPhase[0].includes('mount')) g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('camera')) g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('mirror')) g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('DAQ')) g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mount')) g.select('#mount').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('#camera').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('#mirror').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('#daq').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
         }
       }
       function initTake (g, runPhase) {
-        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        g.select('#mount').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
         g.select('rect.dataLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
         for (let i = 0; i < runPhase.length; i++) {
@@ -3494,10 +4526,10 @@ function mainSchedBlocks (optIn) {
         }
       }
       function initFinish (g, runPhase) {
-        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        g.select('#mount').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
         g.select('rect.dataLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
@@ -3520,22 +4552,22 @@ function mainSchedBlocks (optIn) {
         if (runPhase[0].includes('finish')) dispatchFinish(g, runPhase)
       }
       function dispatchConfig (g, runPhase) {
-        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        g.select('#mount').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
         for (let i = 0; i < runPhase.length; i++) {
-          if (runPhase[0].includes('mount')) g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('camera')) g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('mirror')) g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('DAQ')) g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mount')) g.select('#mount').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('#camera').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('#mirror').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('#daq').attr('fill', colorTheme.blocks.run.background) // .attr('stroke-width', 0.2)
         }
       }
       function dispatchTake (g, runPhase) {
-        g.select('rect.configMountLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configCameraLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configDAQLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
-        g.select('rect.configMirrorLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
+        g.select('#mount').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#camera').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#daq').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 2)
+        g.select('#mirror').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
 
         g.select('rect.dataLoading').attr('fill', colorTheme.blocks.done.background) // .attr('stroke-width', 0.2)
         for (let i = 0; i < runPhase.length; i++) {
@@ -3560,14 +4592,15 @@ function mainSchedBlocks (optIn) {
       let currentBlocks = reserved.gBlockBox
         .selectAll('g.currentBlock')
         .data(queueRun, function (d) {
-          return d.obId
+          return d.block.obId
         })
       let enterCurrentBlocks = currentBlocks
         .enter()
         .append('g')
         .attr('class', 'currentBlock')
       enterCurrentBlocks.each(function (d, i) {
-        let copTelIds = deepCopy(queueRun[i].telIds)
+        d = d.block
+        let copTelIds = deepCopy(d.telIds)
         copTelIds.sort(function (a, b) { return ('' + a).localeCompare(b) })
         let off = 0
         let LST = 0
@@ -3582,7 +4615,7 @@ function mainSchedBlocks (optIn) {
         }
         SST = copTelIds.length - LST - MST
 
-        let nTel = queueRun[i].telIds.length + off
+        let nTel = d.telIds.length + off
 
         let nLine = (nTel % telsPerRow === 0) ?
           (nTel / telsPerRow) :
@@ -3734,8 +4767,8 @@ function mainSchedBlocks (optIn) {
           .style('font-size', '8px')
           .attr('text-anchor', 'middle')
 
-        initConfigDataFinish(d3.select(this), headerBox)
-        initRunPhase(d3.select(this), d.runPhase)
+        // initConfigDataFinish(d3.select(this), headerBox)
+        // initRunPhase(d3.select(this), d.runPhase)
 
         d3.select(this).append('g')
           .attr('class', 'telsBox')
@@ -3765,20 +4798,21 @@ function mainSchedBlocks (optIn) {
       let mergeCurrentBlocks = currentBlocks.merge(enterCurrentBlocks)
 
       mergeCurrentBlocks.each(function (d, i) {
-        let copTelIds = deepCopy(queueRun[i].telIds)
+        let block = d.block
+        let copTelIds = deepCopy(block.telIds)
         copTelIds.sort(function (a, b) { return ('' + a).localeCompare(b) })
         let off = 0
         for (let i = 0; i < copTelIds.length - 1; i++) {
           if (copTelIds[i].split('_')[0] !== copTelIds[i + 1].split('_')[0]) off += 1
         }
 
-        let nTel = queueRun[i].telIds.length + off
+        let nTel = block.telIds.length + off
 
         let nLine = (nTel % telsPerRow === 0) ?
           (nTel / telsPerRow) :
           (1 + parseInt(nTel / telsPerRow))
         nLine = nLine < 1 ? 1 : nLine
-
+        let height = d.height * defaultHeightView
         let headerBox = {
           x: 0,
           y: 0,
@@ -3792,14 +4826,12 @@ function mainSchedBlocks (optIn) {
           h: (ratio * nLine * sizeTelsRow * defaultHeightView) + (ratio * off * offsetTelsType * sizeTelsRow * defaultHeightView)
         }
 
-        let height = d.height * defaultHeightView
         offsetY += (i === 0 ? 0 : offsetRunningBlocks * defaultHeightView)
         let translate = {
           y: offsetY,
           x: offsetX
         }
         offsetY += height
-
         d3.select(this).select('rect.background')
           .transition()
           .duration(timeD.animArc)
@@ -3819,7 +4851,6 @@ function mainSchedBlocks (optIn) {
           .attr('height', function () {
             return telsBox.h
           })
-
 
         d3.select(this)
           .transition()
@@ -3850,33 +4881,16 @@ function mainSchedBlocks (optIn) {
           .duration(timeD.animArc)
           .attr('d', lineGenerator)
 
-        dispatchRunPhase(d3.select(this), d.runPhase)
+        dispatchRunPhase(d3.select(this), block.runPhase)
 
         drawTels(d3.select(this).select('g.telsBox'))
       })
-      // mergeCurrentBlocks.attr('transform', function (d, i) {
-      //   let height = (d.telIds.length * (box.blockQueueServerPast.h * 0.8 * 0.53125)) * 0.008
-      //   height = height < 14 ? 14 : height
-      //   let translate = {
-      //     y: offsetY + height * 0.5,
-      //     x: box.currentBlocks.w * 0.5 // + (box.currentBlocks.w * 0.1 * odd)
-      //   }
-      //   offsetY += height + 30
-      //   return 'translate(' + translate.x + ',' + translate.y + ')'
-      // })
       currentBlocks
         .exit()
         .transition('inOut')
         .duration(timeD.animArc)
         .style('opacity', 0)
         .remove()
-      // mergeSuccessBlocks.attr('transform', function (d, i) {
-      //   let translate = {
-      //     y: 0,
-      //     x: 60 * i // (length < 19 ? 0 : ((shared.modifications.box.h / 2) * (i % 2)))
-      //   }
-      //   return 'translate(' + translate.x + ',' + translate.y + ')'
-      // })
     }
     this.updateData = updateData
   }
@@ -4114,7 +5128,7 @@ function mainSchedBlocks (optIn) {
 
   let svgBlocksQueueServerPast = new SvgBlocksQueueServerPast()
   let svgBlocksQueueServerFutur = new SvgBlocksQueueServerFutur()
-  let svgCurrentBlocks = new SvgCurrentBlocks()
+  let svgRunningPhase = new SvgRunningPhase()
   let svgStateScheduleMatrix = new SvgStateScheduleMatrix()
   let svgWaitScheduleMatrix = new SvgWaitScheduleMatrix()
   let svgFreeTels = new SvgFreeTels()

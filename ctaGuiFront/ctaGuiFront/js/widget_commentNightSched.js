@@ -3066,7 +3066,7 @@ let mainCommentNightSched = function (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'blockQueue',
+        displayer: 'blockQueue2',
         blockQueue: {
           axis: {
             enabled: true,

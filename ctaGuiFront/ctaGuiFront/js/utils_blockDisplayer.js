@@ -396,6 +396,28 @@ window.BlockDisplayer = function (optIn) {
         .style('opacity', 1)
     }
 
+    function getBlocksRows () {
+      if (com.blockQueue.blocks.run.enabled) {
+        let dataBottom = []
+          .concat(com.data.filtered.done)
+          .concat(com.data.filtered.fail)
+          .concat(com.data.filtered.run)
+          .concat(com.data.filtered.wait)
+        let bottomRow = calcBlockRow({
+          typeNow: 'bottom',
+          start: com.time.startTime.time,
+          end: com.time.endTime.time,
+          data: dataBottom,
+          box: {x: 0, y: 0, w: com.blockQueue.blocks.run.box.w, h: com.blockQueue.blocks.run.box.h, marg: com.blockQueue.blocks.run.box.marg},
+          yScale: true
+        })
+        bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blockQueue.blocks.run.box.w, h: com.blockQueue.blocks.run.box.h, marg: com.blockQueue.blocks.run.box.marg}, 'toTop')
+        bottomRow = setDefaultStyleForBlocks(bottomRow)
+        return bottomRow
+      }
+    }
+    this.getBlocksRows = getBlocksRows
+
     function adjustBlockRow (blocks, box, direction) {
       $.each(blocks, function (index0, dataNow0) {
         dataNow0.x = dataNow0.display.x
@@ -1655,18 +1677,20 @@ window.BlockDisplayer = function (optIn) {
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
           .attr('stroke-dasharray', [])
-        d3.select(this).append('text')
-          .attr('class', 'schedId')
-          .text(d.schedName)
-          .attr('x', com.main.box.w + 2)
-          .attr('y', height * 0.75)
-          .style('font-weight', 'normal')
-          .attr('text-anchor', 'start')
-          .style('font-size', (height * 0.85) + 'px')
-          .attr('dy', 0)
-          .style('pointer-events', 'none')
-          .attr('fill', colorTheme.darker.text)
-          .attr('stroke', 'none')
+        if (com.blockQueue2.schedBlocks.label) {
+          d3.select(this).append('text')
+            .attr('class', 'schedId')
+            .text(d.schedName)
+            .attr('x', com.main.box.w + 2)
+            .attr('y', height * 0.75)
+            .style('font-weight', 'normal')
+            .attr('text-anchor', 'start')
+            .style('font-size', (height * 0.85) + 'px')
+            .attr('dy', 0)
+            .style('pointer-events', 'none')
+            .attr('fill', colorTheme.darker.text)
+            .attr('stroke', 'none')
+        }
       })
       enterAllScheds.merge(allScheds)
         .transition()
@@ -1685,7 +1709,7 @@ window.BlockDisplayer = function (optIn) {
     }
     function setBlockRect (blocks, box) {
       let timeScale = d3.scaleLinear()
-        .range(com.blockQueue.axis.range)
+        .range(com.blockQueue2.axis.range)
         .domain([com.time.startTime.time, com.time.endTime.time])
 
       let rect = com.main.scroll.scrollG
@@ -1703,10 +1727,16 @@ window.BlockDisplayer = function (optIn) {
         d3.select(this).select('rect.back')
           .transition('inOut')
           .duration(timeD.animArc)
+          .ease(d3.easeLinear)
           .attr('x', timeScale(d.startTime))
           .attr('y', 0)
           .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
           .attr('height', box.h)
+          .style('fill', d.display.fill)
+          .style('fill-opacity', d.display.fillOpacity)
+          .attr('stroke-width', d.display.strokeWidth)
+          .style('stroke-opacity', d.display.strokeOpacity)
+          .style('stroke-dasharray', d.display.strokeDasharray)
         d3.select(this).select('rect.pattern')
           .transition('inOut')
           .duration(timeD.animArc)
@@ -1714,8 +1744,8 @@ window.BlockDisplayer = function (optIn) {
           .attr('y', 0)
           .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
           .attr('height', box.h)
-          // .style('fill', d.display.patternFill)
-          // .style('fill-opacity', d.display.patternOpacity)
+          .style('fill', d.display.patternFill)
+          .style('fill-opacity', d.display.patternOpacity)
         d3.select(this).select('text')
           .transition('inOut')
           .duration(timeD.animArc)
@@ -1724,8 +1754,39 @@ window.BlockDisplayer = function (optIn) {
           .attr('dy', 1)
           .attr('x', timeScale(d.startTime) + (timeScale(d.endTime) - timeScale(d.startTime)) * 0.5)
           .attr('y', (box.h * 0.5))
+          .style('opacity', d.display.fillOpacity)
+          .style('stroke-opacity', d.display.fillOpacity)
+          .style('fill-opacity', d.display.fillOpacity)
       })
     }
+
+    function getBlocksRows () {
+      let timeScale = d3.scaleLinear()
+        .range(com.blockQueue2.axis.range)
+        .domain([com.time.startTime.time, com.time.endTime.time])
+      let scheds = groupBlocksBySchedule(com.data.filtered)
+      let nLine = scheds.length
+      let height = com.main.box.h / nLine
+
+      let ret = []
+      for (let i = 0; i < scheds.length; i++) {
+        for (let j = 0; j < scheds[i].blocks.length; j++) {
+          let translate = {
+            y: height * i,
+            x: 0
+          }
+          ret.push({
+            y: translate.y,
+            x: timeScale(scheds[i].blocks[j].startTime),
+            h: height,
+            w: timeScale(scheds[i].blocks[j].endTime) - timeScale(scheds[i].blocks[j].startTime),
+            block: scheds[i].blocks[j]
+          })
+        }
+      }
+      return ret
+    }
+    this.getBlocksRows = getBlocksRows
 
     function addExtraBar (date) {
       let data = []
@@ -2199,6 +2260,17 @@ window.BlockDisplayer = function (optIn) {
     }
   }
   this.changeDisplayer = changeDisplayer
+
+  function getBlocksRows () {
+    if (com.displayer === 'blockQueue') {
+      return blockQueueBib.getBlocksRows()
+    } else if (com.displayer === 'blockQueue2') {
+      return blockQueue2Bib.getBlocksRows()
+    } else {
+      return undefined
+    }
+  }
+  this.getBlocksRows = getBlocksRows
 
   // ---------------------------------------------------------------------------------------------------
   //
