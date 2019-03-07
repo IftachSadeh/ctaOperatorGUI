@@ -1631,9 +1631,10 @@ window.BlockDisplayer = function (optIn) {
         .range(com.blockQueue2.axis.range)
 
       if (!com.blockQueue2.axis.enabled) return
-      let minTxtSize = com.main.box.w * 0.02
+      let minTxtSize = com.main.box.w * 0.04
       // console.log(com.blockQueue2.axis.domain, com.blockQueue2.axis.range);
       com.blockQueue2.axis.main.scale(com.blockQueue2.axis.scale)
+      com.blockQueue2.axis.main.ticks(5)
       com.blockQueue2.axis.main.tickSize(4)
       com.blockQueue2.axis.g.call(com.blockQueue2.axis.main)
       com.blockQueue2.axis.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.blockQueue2.axis.attr.path.stroke)
@@ -1677,16 +1678,15 @@ window.BlockDisplayer = function (optIn) {
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
           .attr('stroke-dasharray', [])
-        if (com.blockQueue2.schedBlocks.label) {
+        if (com.blockQueue2.schedBlocks.label.enabled) {
           d3.select(this).append('text')
             .attr('class', 'schedId')
-            .text(d.schedName)
-            .attr('x', com.main.box.w + 2)
+            .text('S' + d.schedName)
+            .attr('x', com.blockQueue2.schedBlocks.label.position === 'left' ? -2 : com.main.box.w + 2)
             .attr('y', height * 0.75)
             .style('font-weight', 'normal')
-            .attr('text-anchor', 'start')
-            .style('font-size', (height * 0.85) + 'px')
-            .attr('dy', 0)
+            .attr('text-anchor', com.blockQueue2.schedBlocks.label.position === 'left' ? 'end' : 'start')
+            .style('font-size', (height * 0.7) + 'px')
             .style('pointer-events', 'none')
             .attr('fill', colorTheme.darker.text)
             .attr('stroke', 'none')
