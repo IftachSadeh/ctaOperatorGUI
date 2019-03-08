@@ -1913,6 +1913,521 @@ window.BlockDisplayer = function (optIn) {
     this.remove = remove
   }
   let blockQueue2Bib = new BlockQueue2Bib()
+  let BlockTrackShrinkBib = function () {
+    function init () {
+      com.blockQueue2.g = com.main.g.append('g')
+      initAxis()
+      initTimeBars()
+    }
+    this.init = init
+    function initAxis () {
+      com.blockQueue2.axis.scale = d3.scaleTime()
+        .range(com.blockQueue2.axis.range)
+        .domain(com.blockQueue2.axis.domain)
+      com.blockQueue2.axis.main = d3.axisBottom(com.blockQueue2.axis.scale)
+        .tickFormat(d3.timeFormat('%H:%M'))
+
+      if (!com.blockQueue2.axis.enabled) return
+      com.blockQueue2.axis.g = com.main.g.append('g')
+        .attr('transform', 'translate(' + com.blockQueue2.axis.box.x + ',' + com.blockQueue2.axis.box.y + ')')
+      com.blockQueue2.axis.g
+        .attr('class', 'axis')
+        .call(com.blockQueue2.axis.main)
+
+      com.blockQueue2.axis.g.style('opacity', 1)
+    }
+    function initTimeBars () {
+      if (!com.blockQueue2.timeBars.enabled) return
+      com.blockQueue2.timeBars.g = com.main.g.append('g')
+        .attr('transform', 'translate(' + com.blockQueue2.timeBars.box.x + ',' + com.blockQueue2.timeBars.box.y + ')')
+      com.blockQueue2.timeBars.g
+        .style('opacity', 0)
+        .transition()
+        .duration(1000)
+        .delay(1000)
+        .style('opacity', 1)
+    }
+
+    function groupBlocksBySchedule (blocks) {
+      let res = {}
+      for (var key in blocks) {
+        for (var i = 0; i < blocks[key].length; i++) {
+          let ns = blocks[key][i].metaData.nSched
+          if (ns in res) res[ns].push(blocks[key][i])
+          else res[ns] = [blocks[key][i]]
+        }
+      }
+      let ret = []
+      Object.keys(res).map(function (key, index) {
+        ret.push({schedName: key, scheduleId: res[key][0].sbId, blocks: res[key]})
+      })
+      return ret
+    }
+    function setDefaultStyleForBlocks (blocks) {
+      for (let index in blocks) {
+        let b = blocks[index]
+        let bDisplay = {}
+
+        let cols = com.style.blockCol({ d: b })
+
+        bDisplay.stroke = cols.stroke
+        bDisplay.strokeWidth = 0.5
+        bDisplay.fill = cols.background
+        bDisplay.fillOpacity = com.style.blockOpac({ d: b })
+        bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
+        bDisplay.strokeDasharray = []
+        bDisplay.opacity = b.filtered === true ? 0.05 : 1
+
+        bDisplay.text = cols.text
+        bDisplay.patternFill = ''
+        bDisplay.patternOpacity = 0
+        if (b.sbId === com.input.focus.schedBlocks) {
+          if (!(com.input.over.schedBlocks !== undefined && com.input.over.schedBlocks !== com.input.focus.schedBlocks)) { // b.stroke = colorTheme.blocks.critical.background
+            // b.patternFill = 'url(#patternHover)'
+            bDisplay.patternFill = 'url(#patternSelect)'
+            bDisplay.patternOpacity = 1
+          }
+          bDisplay.strokeWidth = 1
+          bDisplay.strokeOpacity = 1
+          // b.strokeDasharray = [2, 2]
+        }
+        if (b.sbId === com.input.over.schedBlocks) {
+          bDisplay.strokeWidth = 1
+          bDisplay.strokeOpacity = 1
+          // b.strokeDasharray = [2, 2]
+          bDisplay.patternFill = 'url(#patternSelect)'
+          bDisplay.patternOpacity = 1
+        }
+        if (b.obId === com.input.focus.block) {
+          if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) bDisplay.strokeDasharray = [8, 4]
+          bDisplay.strokeWidth = 6
+          bDisplay.strokeOpacity = 1
+        }
+        if (b.obId === com.input.over.block) {
+          bDisplay.strokeWidth = 6
+          bDisplay.strokeOpacity = 1
+          bDisplay.strokeDasharray = []
+        }
+
+        b.display = bDisplay
+      }
+      return blocks
+    }
+
+    function update () {
+      if (com.blockQueue2.axis.enabled) updateAxis()
+      if (com.blockQueue2.timeBars.enabled) setTimeRect()
+
+      updateSchedulingBlocks()
+    }
+    this.update = update
+    function updateAxis () {
+      com.blockQueue2.axis.domain = [com.time.startTime.date, com.time.endTime.date]
+      com.blockQueue2.axis.range = [0, com.blockQueue2.axis.box.w]
+
+      com.blockQueue2.axis.scale
+        .domain(com.blockQueue2.axis.domain)
+        .range(com.blockQueue2.axis.range)
+
+      if (!com.blockQueue2.axis.enabled) return
+      let minTxtSize = com.main.box.w * 0.04
+      // console.log(com.blockQueue2.axis.domain, com.blockQueue2.axis.range);
+      com.blockQueue2.axis.main.scale(com.blockQueue2.axis.scale)
+      com.blockQueue2.axis.main.ticks(5)
+      com.blockQueue2.axis.main.tickSize(4)
+      com.blockQueue2.axis.g.call(com.blockQueue2.axis.main)
+      com.blockQueue2.axis.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.blockQueue2.axis.attr.path.stroke)
+      com.blockQueue2.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.blockQueue2.axis.attr.path.stroke)
+      com.blockQueue2.axis.g.selectAll('g.tick').selectAll('text')
+        .attr('stroke', com.blockQueue2.axis.attr.text.stroke)
+        .attr('stroke-width', 0.5)
+        .attr('fill', com.blockQueue2.axis.attr.text.fill)
+        .style('font-size', minTxtSize + 'px')
+    }
+    function computeTrack (scheds) {
+      let track = []
+      for (let i = 0; i < scheds.length; i++) {
+        let startT
+        let endT
+        for (let j = 0; j < scheds[i].blocks.length; j++) {
+          if (startT === undefined || scheds[i].blocks[j].startTime < startT) startT = scheds[i].blocks[j].startTime
+          if (endT === undefined || scheds[i].blocks[j].endTime > endT) endT = scheds[i].blocks[j].endTime
+        }
+        let insert = false
+        for (let j = 0; j < track.length; j++) {
+          if (track[j] + 3600 < startT) {
+            scheds[i].track = j
+            scheds[i].startT = startT
+            scheds[i].endT = endT
+            track[j] = endT
+            insert = true
+            break
+          }
+        }
+        if (!insert) {
+          track.push(endT)
+          scheds[i].startT = startT
+          scheds[i].endT = endT
+          scheds[i].track = track.length - 1
+        }
+      }
+
+      return track
+    }
+    function updateSchedulingBlocks () {
+      let timeScale = d3.scaleLinear()
+        .range(com.blockQueue2.axis.range)
+        .domain([com.time.startTime.time, com.time.endTime.time])
+
+      let scheds = groupBlocksBySchedule(com.data.filtered)
+      let tracks = computeTrack(scheds)
+
+      let nLine = tracks.length
+      let height = com.main.box.h / nLine
+
+      let currentTrack = com.main.scroll.scrollG
+        .selectAll('g.track')
+        .data(tracks, function (d, i) {
+          return i
+        })
+      let enterTrack = currentTrack
+        .enter()
+        .append('g')
+        .attr('class', 'allScheds')
+        .attr('transform', function (d, i) {
+          let translate = {
+            y: height * i,
+            x: 0
+          }
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+      enterTrack.each(function (d, i) {
+        d3.select(this).append('line')
+          .attr('class', 'background')
+          .attr('x1', 0)
+          .attr('y1', 0)
+          .attr('x2', com.main.box.w)
+          .attr('y2', 0)
+          .attr('fill', 'transparent')
+          .attr('fill-opacity', 1)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+          .attr('stroke-dasharray', [])
+      })
+      enterTrack.merge(currentTrack)
+        .transition()
+        .duration(timeD.animArc)
+        .attr('transform', function (d, i) {
+          let translate = {
+            y: height * i,
+            x: 0
+          }
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+
+
+      let allScheds = com.main.scroll.scrollG
+        .selectAll('g.allScheds')
+        .data(scheds, function (d) {
+          return d.scheduleId
+        })
+      let enterAllScheds = allScheds
+        .enter()
+        .append('g')
+        .attr('class', 'allScheds')
+        .attr('transform', function (d, i) {
+          let translate = {
+            y: height * d.track,
+            x: 0
+          }
+          return 'translate(' + translate.x + ',' + translate.y + ')'
+        })
+      enterAllScheds.each(function (d, i) {
+        if (com.blockQueue2.schedBlocks.label.enabled) {
+          d3.select(this).append('line')
+            .attr('class', 'background')
+            .attr('x1', timeScale(d.startT))
+            .attr('y1', height * 0.45)
+            .attr('x2', timeScale(d.endT))
+            .attr('y2', height * 0.45)
+            .attr('fill', 'transparent')
+            .attr('fill-opacity', 1)
+            .attr('stroke', colorTheme.dark.stroke)
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', [])
+          d3.select(this).append('text')
+            .attr('id', 'schedId')
+            .text('S' + d.schedName)
+            .attr('x', function () {
+              if (d.startT < com.time.startTime.time) {
+                if (d.endT > com.time.startTime.time) return (timeScale(com.time.startTime.time)) + 2
+                else return (timeScale(d.startT))
+              } else if (d.endT > com.time.endTime.time) {
+                if (d.startT < com.time.endTime.time) return (timeScale(com.time.endTime.time)) - 2
+                else return (timeScale(d.startT))
+              }
+              return (timeScale(d.startT))
+            })
+            .attr('y', height * 0.35)
+            .style('font-weight', 'bold')
+            .attr('text-anchor', function () {
+              if (d.startT < com.time.startTime.time) {
+                return 'start'
+              } else if (d.endT > com.time.endTime.time) {
+                return 'end'
+              }
+              return 'start'
+            })
+            .style('font-size', (height * 0.25) + 'px')
+            .style('pointer-events', 'none')
+            .attr('fill', '#000000')
+            .attr('stroke', 'none')
+        }
+      })
+      enterAllScheds.merge(allScheds)
+        .each(function (d, i) {
+          d.blocks = setDefaultStyleForBlocks(d.blocks)
+          setBlockRect(d.blocks, {x: 0, y: (height * 0.5) + (height * d.track), w: com.main.box.w, h: height * 0.5})
+
+          d3.select(this).select('text#schedId')
+            .transition()
+            .duration(timeD.animArc)
+            .attr('x', function () {
+              if (d.startT < com.time.startTime.time) {
+                if (d.endT > com.time.startTime.time) return (timeScale(com.time.startTime.time)) + 2
+                else return (timeScale(d.startT))
+              } else if (d.endT > com.time.endTime.time) {
+                if (d.startT < com.time.endTime.time) return (timeScale(com.time.endTime.time)) - 2
+                else return (timeScale(d.startT))
+              }
+              return (timeScale(d.startT))
+            })
+            .attr('text-anchor', function () {
+              if (d.startT < com.time.startTime.time) {
+                return 'start'
+              } else if (d.endT > com.time.endTime.time) {
+                return 'end'
+              }
+              return 'start'
+            })
+          d3.select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('transform', function (d, i) {
+              let translate = {
+                y: height * d.track,
+                x: 0
+              }
+              return 'translate(' + translate.x + ',' + translate.y + ')'
+            })
+        })
+    }
+    function setBlockRect (blocks, box) {
+      let timeScale = d3.scaleLinear()
+        .range(com.blockQueue2.axis.range)
+        .domain([com.time.startTime.time, com.time.endTime.time])
+
+      let rect = com.main.scroll.scrollG
+        .selectAll('g.' + com.main.tag + 'blocks')
+        .data(blocks, function (d) {
+          return d.obId
+        })
+
+      rect.each(function (d, i) {
+        d3.select(this)
+          .transition('inOut')
+          .duration(timeD.animArc)
+          .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
+          .attr('opacity', d => d.display.opacity)
+        d3.select(this).select('rect.back')
+          .transition('inOut')
+          .duration(timeD.animArc)
+          .ease(d3.easeLinear)
+          .attr('x', timeScale(d.startTime))
+          .attr('y', 0)
+          .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+          .attr('height', box.h)
+          .style('fill', d.display.fill)
+          .style('fill-opacity', d.display.fillOpacity)
+          .attr('stroke-width', d.display.strokeWidth)
+          .style('stroke-opacity', d.display.strokeOpacity)
+          .style('stroke-dasharray', d.display.strokeDasharray)
+        d3.select(this).select('rect.pattern')
+          .transition('inOut')
+          .duration(timeD.animArc)
+          .attr('x', timeScale(d.startTime))
+          .attr('y', 0)
+          .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+          .attr('height', box.h)
+          .style('fill', d.display.patternFill)
+          .style('fill-opacity', d.display.patternOpacity)
+        d3.select(this).select('text')
+          .transition('inOut')
+          .duration(timeD.animArc)
+          .text(d.metaData.nObs)
+          .style('font-size', (box.h * 0.5) + 'px')
+          .attr('dy', 1)
+          .attr('x', timeScale(d.startTime) + (timeScale(d.endTime) - timeScale(d.startTime)) * 0.5)
+          .attr('y', (box.h * 0.5))
+          .style('opacity', d.display.fillOpacity)
+          .style('stroke-opacity', d.display.fillOpacity)
+          .style('fill-opacity', d.display.fillOpacity)
+      })
+    }
+
+    function getBlocksRows () {
+      let timeScale = d3.scaleLinear()
+        .range(com.blockQueue2.axis.range)
+        .domain([com.time.startTime.time, com.time.endTime.time])
+      let scheds = groupBlocksBySchedule(com.data.filtered)
+      let nLine = scheds.length
+      let height = com.main.box.h / nLine
+
+      let ret = []
+      for (let i = 0; i < scheds.length; i++) {
+        for (let j = 0; j < scheds[i].blocks.length; j++) {
+          let translate = {
+            y: height * i,
+            x: 0
+          }
+          ret.push({
+            y: translate.y,
+            x: timeScale(scheds[i].blocks[j].startTime),
+            h: height,
+            w: timeScale(scheds[i].blocks[j].endTime) - timeScale(scheds[i].blocks[j].startTime),
+            block: scheds[i].blocks[j]
+          })
+        }
+      }
+      return ret
+    }
+    this.getBlocksRows = getBlocksRows
+
+    function addExtraBar (date) {
+      let data = []
+      if (date === null) {
+        let rectNow = com.main.g
+          .selectAll('rect.' + com.main.tag + 'extra')
+          .data(data)
+        rectNow.exit().remove()
+      } else {
+        data = [date]
+        let rectNow = com.main.g
+          .selectAll('rect.' + com.main.tag + 'extra')
+          .data(data)
+          .attr('transform', 'translate(' + com.blockQueue2.axis.box.x + ',' + 0 + ')')
+
+        rectNow
+          .enter()
+          .append('rect')
+          .attr('class', com.main.tag + 'extra')
+          .style('opacity', 1)
+          .attr('x', function (d, i) {
+            if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
+            else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
+            return com.blockQueue2.axis.scale(d)
+          })
+          .attr('y', function (d, i) {
+            return com.main.box.y - 1 * com.main.box.marg
+          })
+          .attr('width', 0)
+          .attr('height', function (d, i) {
+            return com.main.box.h + 1 * com.main.box.marg
+          })
+          .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
+          .attr('fill', colsYellows[0])
+          .attr('fill-opacity', 0.3)
+          .style('stroke-opacity', 0.15)
+          .attr('stroke-width', 3)
+          .style('pointer-events', 'none')
+          .attr('vector-effect', 'non-scaling-stroke')
+          .merge(rectNow)
+          .transition('inOut')
+          .duration(50)
+          .attr('x', function (d, i) {
+            if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
+            else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
+            return com.blockQueue2.axis.scale(d)
+          })
+          // .attr("y", function(d,i) { return d.y; })
+          .attr('width', function (d, i) {
+            return com.main.box.marg
+          })
+      }
+    }
+    function setTimeRect () {
+      let rectNowData = []
+
+      rectNowData = [
+        {
+          id: com.main.tag + 'now',
+          x: com.blockQueue2.axis.scale(com.time.currentTime.date),
+          y: com.blockQueue2.timeBars.box.y,
+          w: com.blockQueue2.timeBars.box.marg,
+          h: com.blockQueue2.timeBars.box.h + com.blockQueue2.timeBars.box.marg * 2
+        }
+      ]
+      // console.log('timeFrac',timeFrac,rectNowData);
+      // console.log('rectNowData',(com.blockRow.run.length > 0),com.time.now,timeFrac,rectNowData[0]);
+
+      // ---------------------------------------------------------------------------------------------------
+      //
+      // ---------------------------------------------------------------------------------------------------
+      let rectNow = com.blockQueue2.timeBars.g
+        .selectAll('rect.' + com.main.tag + 'now')
+        .data(rectNowData, function (d) {
+          return d.id
+        })
+
+      rectNow
+        .enter()
+        .append('rect')
+        .attr('class', com.main.tag + 'now')
+        .style('opacity', 1)
+        .attr('x', function (d, i) {
+          return d.x
+        })
+        .attr('y', function (d, i) {
+          return d.y - 1 * com.main.box.marg
+        })
+        .attr('width', 0)
+        .attr('height', function (d, i) {
+          return d.h
+        })
+        .attr('fill', com.style.runRecCol)
+        .attr('fill-opacity', 0.3)
+        .style('stroke-opacity', 0.15)
+        .attr('stroke-width', 3)
+        .style('pointer-events', 'none')
+        .attr('vector-effect', 'non-scaling-stroke')
+        .merge(rectNow)
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .attr('x', function (d, i) {
+          return d.x
+        })
+        // .attr("y", function(d,i) { return d.y; })
+        .attr('width', function (d, i) {
+          return d.w
+        })
+      // .attr("height", function(d,i) { return d.h; })
+
+      // rectNow.exit()
+      //   .transition("inOut").duration(timeD.animArc/2)
+      //   .attr("width", 0)
+      //   .style("opacity", 0)
+      //   .remove()
+    }
+
+    function remove () {
+      com.blockQueue2.g.remove()
+      com.main.g.selectAll('g.allScheds').remove()
+      if (com.blockQueue2.axis.enabled) com.blockQueue2.axis.g.remove()
+      if (com.blockQueue2.timeBars.enabled) com.blockQueue2.timeBars.g.remove()
+    }
+    this.remove = remove
+  }
+  let blockTrackShrinkBib = new BlockTrackShrinkBib()
 
   function init () {
     setDefaultStyle()
@@ -1927,6 +2442,8 @@ window.BlockDisplayer = function (optIn) {
       blockFormBib.init()
     } else if (com.displayer === 'blockQueue2') {
       blockQueue2Bib.init()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.init()
     }
   }
   this.init = init
@@ -2212,6 +2729,8 @@ window.BlockDisplayer = function (optIn) {
       blockFormBib.update()
     } else if (com.displayer === 'blockQueue2') {
       blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
     }
   }
   this.updateData = updateData
@@ -2227,6 +2746,8 @@ window.BlockDisplayer = function (optIn) {
       blockFormBib.update()
     } else if (com.displayer === 'blockQueue2') {
       blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
     }
   }
   this.update = update
@@ -2242,6 +2763,8 @@ window.BlockDisplayer = function (optIn) {
       blockFormBib.remove()
     } else if (com.displayer === 'blockQueue2') {
       blockQueue2Bib.remove()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.remove()
     }
 
     com.displayer = newDisplayer
@@ -2257,6 +2780,9 @@ window.BlockDisplayer = function (optIn) {
     } else if (com.displayer === 'blockQueue2') {
       blockQueue2Bib.init()
       blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.init()
+      blockTrackShrinkBib.update()
     }
   }
   this.changeDisplayer = changeDisplayer
@@ -2266,6 +2792,8 @@ window.BlockDisplayer = function (optIn) {
       return blockQueueBib.getBlocksRows()
     } else if (com.displayer === 'blockQueue2') {
       return blockQueue2Bib.getBlocksRows()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      return blockTrackShrinkBib.getBlocksRows()
     } else {
       return undefined
     }

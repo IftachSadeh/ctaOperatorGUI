@@ -249,33 +249,34 @@ function mainSchedBlocks (optIn) {
     function initBackground () {
       svg.svg
         .style('background', colorTheme.medium.background)
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.405)
-      //   .attr('y', 0)
-      //   .attr('width', lenD.w[0] * 0.18)
-      //   .attr('height', lenD.h[0] * 1)
-      //   .attr('fill', colorTheme.dark.background) // colorTheme.dark.background)
-      //   .attr('stroke', 'none')
-      // svg.back.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', lenD.h[0] * 0.55)
-      //   .attr('width', lenD.w[0] * 1)
-      //   .attr('height', lenD.h[0] * 0.45)
-      //   .attr('fill', colorTheme.dark.background) // colorTheme.dark.background)
-      //   .attr('stroke', 'none')
+      svg.back.append('rect')
+        .attr('x', 0)
+        .attr('y', -60)
+        .attr('width', lenD.w[0] * 1)
+        .attr('height', lenD.h[0] * 0.05 + 60)
+        .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+        .attr('stroke', 'none')
+        .attr('rx', 0)
+      svg.back.append('rect')
+        .attr('x', 0)
+        .attr('y', lenD.h[0] * 0.495)
+        .attr('width', lenD.w[0] * 1)
+        .attr('height', lenD.h[0] * 0.01)
+        .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+        .attr('stroke', 'none')
     }
     function initBox () {
       box.blockQueueServerPast = {
-        x: lenD.w[0] * 0.035,
+        x: lenD.w[0] * 0.0,
         y: lenD.h[0] * 0.03,
-        w: lenD.w[0] * 0.38,
+        w: lenD.w[0] * 0.4,
         h: lenD.h[0] * 0.5,
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueServerFutur = {
         x: lenD.w[0] * 0.575,
         y: lenD.h[0] * 0.03,
-        w: lenD.w[0] * 0.38,
+        w: lenD.w[0] * 0.4,
         h: lenD.h[0] * 0.5,
         marg: lenD.w[0] * 0.01
       }
@@ -309,7 +310,7 @@ function mainSchedBlocks (optIn) {
       }
       box.currentBlocks = {
         x: lenD.w[0] * 0.405,
-        y: lenD.h[0] * 0.035,
+        y: lenD.h[0] * 0.03,
         w: lenD.w[0] * 0.18,
         h: lenD.h[0] * 0.45,
         marg: lenD.w[0] * 0.01
@@ -397,8 +398,8 @@ function mainSchedBlocks (optIn) {
     shared.data.server = dataIn.data
     // sortBlocksByState()
 
-    svgRunningPhase.initData()
     svgBlocksQueueServerPast.initData()
+    svgRunningPhase.initData()
     svgBlocksQueueServerFutur.initData()
 
     // svgRunningTels.initData()
@@ -1713,7 +1714,7 @@ function mainSchedBlocks (optIn) {
       let adjustedBox = {
         x: box.blockQueueServerPast.x + box.blockQueueServerPast.w * 0.03,
         y: box.blockQueueServerPast.y + box.blockQueueServerPast.h * 0.05,
-        w: box.blockQueueServerPast.w * 0.94,
+        w: box.blockQueueServerPast.w * 1.0,
         h: box.blockQueueServerPast.h * 0.8,
         marg: lenD.w[0] * 0.01
       }
@@ -1722,11 +1723,11 @@ function mainSchedBlocks (optIn) {
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
       reserved.g.append('text')
         .text('Executed')
-        .style('fill', colorTheme.medium.text)
+        .style('fill', colorTheme.bright.background)
         .style('font-weight', 'bold')
         .style('font-size', '20px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (adjustedBox.w * 0.5) + ',' + -18 + ')')
+        .attr('transform', 'translate(' + (adjustedBox.w * 0.5) + ',' + -(adjustedBox.h * 0.05) + ')')
 
       blockQueueServerPast = new BlockDisplayer({
         main: {
@@ -1742,7 +1743,7 @@ function mainSchedBlocks (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'blockQueue2',
+        displayer: 'blockTrackShrinkBib', //'blockQueue2',
         blockQueue: {
           axis: {
             enabled: true,
@@ -2069,42 +2070,45 @@ function mainSchedBlocks (optIn) {
 
       let minTxtSize = adjustedBox.w * 0.04
       reserved.g.append('rect')
-        .attr('x', -minTxtSize * 2)
-        .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
-        .attr('width', minTxtSize * 4)
+        .attr('x', -box.blockQueueServerPast.x - box.blockQueueServerPast.w * 0.03)
+        .attr('y', adjustedBox.h + minTxtSize * 1.5)
+        .attr('width', minTxtSize * 6)
         .attr('height', minTxtSize * 2)
-        .attr('fill', colorTheme.dark.background)
+        .attr('fill', colorTheme.dark.stroke)
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.4)
       reserved.g.append('text')
-        .attr('x', 0)
-        .attr('y', adjustedBox.h + 4 + minTxtSize)
+        .attr('x', (-box.blockQueueServerPast.x - box.blockQueueServerPast.w * 0.03) + minTxtSize * 3)
+        .attr('y', adjustedBox.h + minTxtSize * 2.6)
         .attr('dy', minTxtSize * 0.43)
         .attr('class', 'dateTextLeft')
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('stroke-width', 0.3)
-        .attr('fill', colorTheme.medium.stroke)
-        .style('font-size', (minTxtSize * 1.3) + 'px')
+        .attr('fill', colorTheme.bright.background)
+        .attr('stroke', colorTheme.bright.background)
+        .attr('stroke-width', 0.5)
+        .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
+        .style('font-size', '22px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
 
-      reserved.g.append('rect')
-        .attr('x', adjustedBox.w - minTxtSize * 2)
-        .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
-        .attr('width', minTxtSize * 4)
-        .attr('height', minTxtSize * 2)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0.4)
-      reserved.g.append('text')
-        .attr('x', adjustedBox.w)
-        .attr('y', adjustedBox.h + 4 + minTxtSize)
-        .attr('dy', minTxtSize * 0.43)
-        .attr('class', 'dateTextRight')
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('stroke-width', 0.3)
-        .attr('fill', colorTheme.medium.stroke)
-        .style('font-size', (minTxtSize * 1.3) + 'px')
-        .attr('text-anchor', 'middle')
+      // reserved.g.append('rect')
+      //   .attr('x', adjustedBox.w - minTxtSize * 2)
+      //   .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
+      //   .attr('width', minTxtSize * 4)
+      //   .attr('height', minTxtSize * 2)
+      //   .attr('fill', colorTheme.dark.background)
+      //   .attr('stroke', colorTheme.dark.stroke)
+      //   .attr('stroke-width', 0.4)
+      // reserved.g.append('text')
+      //   .attr('x', adjustedBox.w)
+      //   .attr('y', adjustedBox.h + 4 + minTxtSize)
+      //   .attr('dy', minTxtSize * 0.43)
+      //   .attr('class', 'dateTextRight')
+      //   .attr('stroke', colorTheme.medium.stroke)
+      //   .attr('stroke-width', 0.3)
+      //   .attr('fill', colorTheme.medium.stroke)
+      //   .style('font-size', (minTxtSize * 1.3) + 'px')
+      //   .attr('text-anchor', 'middle')
 
       updateData()
     }
@@ -2153,7 +2157,7 @@ function mainSchedBlocks (optIn) {
       let adjustedBox = {
         x: box.blockQueueServerFutur.x + box.blockQueueServerFutur.w * 0.03,
         y: box.blockQueueServerFutur.y + box.blockQueueServerFutur.h * 0.05,
-        w: box.blockQueueServerFutur.w * 0.94,
+        w: box.blockQueueServerFutur.w * 1.0,
         h: box.blockQueueServerFutur.h * 0.8,
         marg: lenD.w[0] * 0.01
       }
@@ -2162,11 +2166,11 @@ function mainSchedBlocks (optIn) {
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
       reserved.g.append('text')
         .text('Waiting')
-        .style('fill', colorTheme.medium.text)
+        .style('fill', colorTheme.bright.background)
         .style('font-weight', 'bold')
         .style('font-size', '20px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (adjustedBox.w * 0.5) + ',' + -18 + ')')
+        .attr('transform', 'translate(' + (adjustedBox.w * 0.5) + ',' + -(adjustedBox.h * 0.05) + ')')
 
       blockQueueServerFutur = new BlockDisplayer({
         main: {
@@ -2182,7 +2186,7 @@ function mainSchedBlocks (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'blockQueue2',
+        displayer: 'blockTrackShrinkBib',
         blockQueue: {
           axis: {
             enabled: true,
@@ -2506,43 +2510,46 @@ function mainSchedBlocks (optIn) {
       // blockQueueServerFutur.init()
 
       let minTxtSize = adjustedBox.w * 0.04
-      reserved.g.append('rect')
-        .attr('x', -minTxtSize * 2)
-        .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
-        .attr('width', minTxtSize * 4)
-        .attr('height', minTxtSize * 2)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0.4)
-      reserved.g.append('text')
-        .attr('x', 0)
-        .attr('y', adjustedBox.h + 4 + minTxtSize)
-        .attr('dy', minTxtSize * 0.43)
-        .attr('class', 'dateTextLeft')
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('stroke-width', 0.3)
-        .attr('fill', colorTheme.medium.stroke)
-        .style('font-size', (minTxtSize * 1.3) + 'px')
-        .attr('text-anchor', 'middle')
+      // reserved.g.append('rect')
+      //   .attr('x', -minTxtSize * 2)
+      //   .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
+      //   .attr('width', minTxtSize * 4)
+      //   .attr('height', minTxtSize * 2)
+      //   .attr('fill', colorTheme.dark.background)
+      //   .attr('stroke', colorTheme.dark.stroke)
+      //   .attr('stroke-width', 0.4)
+      // reserved.g.append('text')
+      //   .attr('x', 0)
+      //   .attr('y', adjustedBox.h + 4 + minTxtSize)
+      //   .attr('dy', minTxtSize * 0.43)
+      //   .attr('class', 'dateTextLeft')
+      //   .attr('stroke', colorTheme.medium.stroke)
+      //   .attr('stroke-width', 0.3)
+      //   .attr('fill', colorTheme.medium.stroke)
+      //   .style('font-size', (minTxtSize * 1.3) + 'px')
+      //   .attr('text-anchor', 'middle')
 
       reserved.g.append('rect')
-        .attr('x', adjustedBox.w - minTxtSize * 2)
-        .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
-        .attr('width', minTxtSize * 4)
+        .attr('x', (adjustedBox.w) - minTxtSize * 5.0)
+        .attr('y', adjustedBox.h + minTxtSize * 1.5)
+        .attr('width', minTxtSize * 6)
         .attr('height', minTxtSize * 2)
-        .attr('fill', colorTheme.dark.background)
+        .attr('fill', colorTheme.dark.stroke)
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.4)
       reserved.g.append('text')
-        .attr('x', adjustedBox.w)
-        .attr('y', adjustedBox.h + 4 + minTxtSize)
+        .attr('x', (adjustedBox.w) - minTxtSize * 2.0)
+        .attr('y', adjustedBox.h + minTxtSize * 2.6)
         .attr('dy', minTxtSize * 0.43)
         .attr('class', 'dateTextRight')
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('stroke-width', 0.3)
-        .attr('fill', colorTheme.medium.stroke)
-        .style('font-size', (minTxtSize * 1.3) + 'px')
+        .attr('fill', colorTheme.bright.background)
+        .attr('stroke', colorTheme.bright.background)
+        .attr('stroke-width', 0.5)
+        .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
+        .style('font-size', '22px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
       updateData()
     }
     this.initData = initData
@@ -3187,51 +3194,50 @@ function mainSchedBlocks (optIn) {
         .attr('transform', 'translate(' + box.currentBlocks.x + ',' + box.currentBlocks.y + ')')
       reserved.gBlockBox.append('text')
         .text('Running')
-        .style('fill', colorTheme.medium.text)
+        .style('fill', colorTheme.bright.background)
         .style('font-weight', 'bold')
         .style('font-size', '20px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (box.currentBlocks.w * 0.5) + ',' + -10 + ')')
+        .attr('transform', 'translate(' + (box.currentBlocks.w * 0.5) + ',' + (box.currentBlocks.y - (box.currentBlocks.h * 0.08)) + ')')
+      reserved.gBlockBox.append('rect')
+        .attr('x', box.currentBlocks.w * 0.045)
+        .attr('y', box.currentBlocks.h * 0.05)
+        .attr('width', box.currentBlocks.w * 0.965)
+        .attr('height', box.currentBlocks.h * 0.95)
+        .attr('fill', colorTheme.medium.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.0)
 
-      // reserved.gBlockBox.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', box.currentBlocks.w * 1)
-      //   .attr('height', box.currentBlocks.h * 1)
-      //   .attr('fill', colorTheme.dark.background)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 0.2)
-      // reserved.gBlockBox.append('rect')
-      //   .attr('x', box.currentBlocks.w * 0.4)
-      //   .attr('y', box.currentBlocks.y - box.currentBlocks.h * 0.07 - minTxtSize * 0.75)
-      //   .attr('width', box.currentBlocks.w * 0.2)
-      //   .attr('height', minTxtSize * 1.5)
-      //   .attr('fill', colorTheme.dark.background)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      //   .attr('rx', 10)
+      reserved.gBlockBox.append('rect')
+        .attr('x', box.currentBlocks.w * 0.2)
+        .attr('y', box.currentBlocks.y + box.currentBlocks.h * 1.0 - 28)
+        .attr('width', box.currentBlocks.w * 0.6)
+        .attr('height', 26 * 1.5)
+        .attr('fill', colorTheme.dark.stroke)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.0)
       reserved.currentTime = reserved.gBlockBox.append('text')
         .attr('class', 'currentHour')
-        .attr('stroke', colorTheme.medium.stroke)
+        .attr('stroke', colorTheme.bright.background)
         .attr('stroke-width', 0.5)
-        .attr('fill', colorTheme.medium.stroke)
+        .attr('fill', colorTheme.bright.background)
         .attr('x', box.currentBlocks.w * 0.5)
-        .attr('y', box.currentBlocks.y - box.currentBlocks.h * 0.045)
+        .attr('y', box.currentBlocks.y + box.currentBlocks.h * 1.0)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
-        .style('font-size', '22px')
+        .style('font-size', '26px')
         .style('pointer-events', 'none')
         .style('user-select', 'none')
 
       reserved.gBlockBox.append('text')
         .text('Finish')
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('fill', colorTheme.medium.stroke)
+        .attr('stroke', colorTheme.bright.background)
+        .attr('fill', colorTheme.bright.background)
         .attr('x', box.currentBlocks.w * 0.2)
-        .attr('y', box.currentBlocks.y)
+        .attr('y', box.currentBlocks.h * 0.025)
         .style('font-weight', '')
         .attr('text-anchor', 'middle')
-        .style('font-size', '16px')
+        .style('font-size', '14px')
         .style('pointer-events', 'none')
         .style('user-select', 'none')
       // reserved.gBlockBox.append('rect')
@@ -3241,30 +3247,30 @@ function mainSchedBlocks (optIn) {
       //   .attr('height', box.currentBlocks.h)
       //   .attr('fill', colorTheme.dark.background)
 
-
       reserved.gBlockBox.append('text')
         .text('Data')
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('fill', colorTheme.medium.stroke)
+        .attr('stroke', colorTheme.bright.background)
+        .attr('fill', colorTheme.bright.background)
         .attr('x', box.currentBlocks.w * 0.5)
-        .attr('y', box.currentBlocks.y)
+        .attr('y', box.currentBlocks.h * 0.025)
         .style('font-weight', '')
         .attr('text-anchor', 'middle')
-        .style('font-size', '16px')
+        .style('font-size', '14px')
         .style('pointer-events', 'none')
         .style('user-select', 'none')
       reserved.gBlockBox.append('text')
         .text('Config')
-        .attr('stroke', colorTheme.medium.stroke)
-        .attr('fill', colorTheme.medium.stroke)
+        .attr('stroke', colorTheme.bright.background)
+        .attr('fill', colorTheme.bright.background)
         .attr('x', box.currentBlocks.w * 0.8)
-        .attr('y', box.currentBlocks.y)
+        .attr('y', box.currentBlocks.h * 0.025)
         .style('font-weight', '')
         .attr('text-anchor', 'middle')
-        .style('font-size', '16px')
+        .style('font-size', '14px')
         .style('pointer-events', 'none')
         .style('user-select', 'none')
       // updateData()
+      box.currentBlocks.h = box.currentBlocks.h * 0.9
     }
     this.initData = initData
 
@@ -3296,7 +3302,7 @@ function mainSchedBlocks (optIn) {
       ratioHeight = ratioHeight * ratio
       offsetRunningBlocks = offsetRunningBlocks * ratio
 
-      let offsetY = 20 + (b.h * (1 - totHeight)) * 0.5
+      let offsetY = b.y + (b.h * (1 - totHeight)) * 0.5
 
       let blockBox = {
         x: b.w * (1 - ratioWidth) * 0.5,
@@ -3319,9 +3325,9 @@ function mainSchedBlocks (optIn) {
 
       let colorLock = colorTheme.blocks.run.background
       let colorFree = colorTheme.dark.background
-      let transConfig = headerBoxRunningPhase.w * 0.25
+      let transConfig = headerBoxRunningPhase.w * 0.4
       let transTake = headerBoxRunningPhase.w * 0.0
-      let transFinish = -headerBoxRunningPhase.w * 0.25
+      let transFinish = -headerBoxRunningPhase.w * 0.4
 
       function initConfigDataFinish (g, headerBox) {
         // Back
@@ -3353,9 +3359,9 @@ function mainSchedBlocks (optIn) {
         //   .attr('stroke', colorTheme.dark.stroke)
         //   .attr('stroke-width', 0.45)
         let tdh = headerBoxRunningPhase.h * 0.45
-        let tdw = headerBoxRunningPhase.h * 0.55
+        let tdw = headerBoxRunningPhase.h * 0.45
         let cfh = headerBoxRunningPhase.h * 0.45
-        let cfw = headerBoxRunningPhase.h * 0.55
+        let cfw = headerBoxRunningPhase.h * 0.45
 
         // g.append('rect')
         //   .attr('class', 'dataLoading')
@@ -3705,6 +3711,29 @@ function mainSchedBlocks (optIn) {
       enterCurrentBlocks.each(function (d, i) {
         d = d.block
 
+        let sizeRect = {w: headerBoxRunningPhase.w * 0.03, h: headerBoxRunningPhase.w * 0.03}
+        d3.select(this).append('rect')
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.15)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h - sizeRect.h) * 0.5)
+          .attr('width', sizeRect.w)
+          .attr('height', sizeRect.h)
+          .attr('fill', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.0)
+        d3.select(this).append('rect')
+          .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w - sizeRect.w) * 0.5)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h - sizeRect.h) * 0.5)
+          .attr('width', sizeRect.w)
+          .attr('height', sizeRect.h)
+          .attr('fill', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.0)
+        d3.select(this).append('rect')
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.85 - sizeRect.w)
+          .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h - sizeRect.h) * 0.5)
+          .attr('width', sizeRect.w)
+          .attr('height', sizeRect.h)
+          .attr('fill', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.0)
+
         d3.select(this).append('path')
           .attr('fill', 'none')
           .attr('stroke', setCol(d).background)
@@ -3754,18 +3783,6 @@ function mainSchedBlocks (optIn) {
         initConfigDataFinish(grunphase, blockBox)
         initRunPhase(grunphase, d.runPhase, gtext)
 
-        // d3.select(this).append('rect')
-        //   .attr('class', 'headerId')
-        //   .attr('x', headerBoxId.x)
-        //   .attr('y', headerBoxId.y)
-        //   .attr('width', headerBoxId.w)
-        //   .attr('height', headerBoxId.h)
-        //   .attr('fill', function (d, i) {
-        //     return colorTheme.medium.background// setCol(d).background
-        //   })
-        //   .style('fill-opacity', 1)
-        //   .attr('stroke', colorTheme.dark.stroke)
-        //   .attr('stroke-width', 0.0)
         gtext.append('text')
           .attr('id', 'name')
           .text(function () {
@@ -4629,16 +4646,20 @@ function mainSchedBlocks (optIn) {
       //   .attr('transform', 'translate(4,' + (box.freeTels.h * 0.5) + ') rotate(270)')
       reserved.gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + box.freeTels.x + ',' + box.freeTels.y + ')')
+
+      let telsBox = deepCopy(box.freeTels)
+      telsBox.x = telsBox.w * 0.1
+      telsBox.w = telsBox.w * 0.8
       reserved.large = {
         g: reserved.gBlockBox.append('g'),
         opt: {
           telsPerRow: 2
         },
         box: {
-          x: box.freeTels.w * 0.1,
+          x: telsBox.x,
           y: 0,
-          w: box.freeTels.w * 0.1,
-          h: box.freeTels.h
+          w: telsBox.w * 0.1,
+          h: telsBox.h
         }
       }
       reserved.large.g.attr('transform', 'translate(' + reserved.large.box.x + ',' + reserved.large.box.y + ')')
@@ -4665,10 +4686,10 @@ function mainSchedBlocks (optIn) {
           telsPerRow: 7
         },
         box: {
-          x: box.freeTels.w * 0.23,
+          x: telsBox.x + telsBox.w * 0.13,
           y: 0,
-          w: box.freeTels.w * 0.27,
-          h: box.freeTels.h
+          w: telsBox.w * 0.27,
+          h: telsBox.h
         }
       }
       reserved.medium.g.attr('transform', 'translate(' + reserved.medium.box.x + ',' + reserved.medium.box.y + ')')
@@ -4695,10 +4716,10 @@ function mainSchedBlocks (optIn) {
           telsPerRow: 14
         },
         box: {
-          x: box.freeTels.w * 0.53,
+          x: telsBox.x + telsBox.w * 0.43,
           y: 0,
-          w: box.freeTels.w * 0.47,
-          h: box.freeTels.h
+          w: telsBox.w * 0.57,
+          h: telsBox.h
         }
       }
       reserved.small.g.attr('transform', 'translate(' + reserved.small.box.x + ',' + reserved.small.box.y + ')')
@@ -4722,6 +4743,54 @@ function mainSchedBlocks (optIn) {
     this.initData = initData
 
     function updateData () {
+      function computeSizeRows () {
+        // reserved.large.opt
+        //  reserved.medium.opt
+        //  reserved.small.opt
+        let large = {
+          nbl: 0,
+          size: 3,
+          ratio: 1
+        }
+        let medium = {
+          nbl: 0,
+          size: 2,
+          ratio: 1
+        }
+        let small = {
+          nbl: 0,
+          size: 1,
+          ratio: 1
+        }
+        let maxHeight = reserved.large.box.h
+        let ratio = 1
+
+        // let blocks = {}
+        for (let i = 0; i < shared.data.server.blocks.run.length; i++) {
+          let largeT = []
+          let mediumT = []
+          let smallT = []
+          for (let j = 0; j < shared.data.server.blocks.run[i].telIds.length; j++) {
+            let t = shared.data.server.blocks.run[i].telIds[j]
+            if (t[0] === 'L') largeT.push(t)
+            if (t[0] === 'M') mediumT.push(t)
+            if (t[0] === 'S') smallT.push(t)
+          }
+          // blocks[shared.data.server.blocks.run[i].obId] = {
+          //   large: parseInt(largeT.length / reserved.large.opt.telsPerRow) + (largeT.length % reserved.large.opt.telsPerRow !== 0 ? 1 : 0),
+          //   medium: parseInt(mediumT.length / reserved.medium.opt.telsPerRow) + (mediumT.length % reserved.medium.opt.telsPerRow !== 0 ? 1 : 0),
+          //   small: parseInt(smallT.length / reserved.small.opt.telsPerRow) + (smallT.length % reserved.small.opt.telsPerRow !== 0 ? 1 : 0)
+          // }
+          large.nbl += parseInt(largeT.length / reserved.large.opt.telsPerRow) + (largeT.length % reserved.large.opt.telsPerRow !== 0 ? 1 : 0)
+          medium.nbl += parseInt(mediumT.length / reserved.medium.opt.telsPerRow) + (mediumT.length % reserved.medium.opt.telsPerRow !== 0 ? 1 : 0)
+          small.nbl += parseInt(smallT.length / reserved.small.opt.telsPerRow) + (smallT.length % reserved.small.opt.telsPerRow !== 0 ? 1 : 0)
+        }
+        // console.log(blocks);
+        large.ratio = maxHeight / (large.nbl * large.size)
+        medium.ratio = maxHeight / (medium.nbl * medium.size)
+        small.ratio = maxHeight / (small.nbl * small.size)
+        console.log(large,medium,small);
+      }
       function drawTels (tels, g, box, opt) {
         let nbline = parseInt(tels.length / opt.telsPerRow) + (tels.length % opt.telsPerRow !== 0 ? 1 : 0)
         let size = {
@@ -4806,6 +4875,7 @@ function mainSchedBlocks (optIn) {
         //   .style('opacity', 0)
         //   .remove()
       }
+      computeSizeRows()
       let runTels = []
 
       let sizeRow = reserved.large.box.h / (shared.data.server.blocks.run.length + 1)
@@ -4826,8 +4896,18 @@ function mainSchedBlocks (optIn) {
           return 'translate(' + tx + ',' + ty + ')'
         })
         d3.select(this).append('rect')
-          .attr('id', 'block')
+          .attr('id', 'blockleft')
           .attr('x', 0)
+          .attr('y', sizeRow * 0.05)
+          .attr('width', box.freeTels.w * 0.08)
+          .attr('height', sizeRow * 0.9)
+          .attr('fill', colorTheme.blocks.run.background)
+          .attr('fill-opacity', 1)
+          .attr('stroke-width', 0.4)
+          .attr('stroke', colorTheme.dark.stroke)
+        d3.select(this).append('rect')
+          .attr('id', 'blockright')
+          .attr('x', box.freeTels.w - box.freeTels.w * 0.08)
           .attr('y', sizeRow * 0.05)
           .attr('width', box.freeTels.w * 0.08)
           .attr('height', sizeRow * 0.9)
@@ -4863,7 +4943,7 @@ function mainSchedBlocks (optIn) {
           let ty = sizeRow * i
           return 'translate(' + tx + ',' + ty + ')'
         })
-        d3.select(this).select('rect#block')
+        d3.select(this).select('rect#blockleft')
           .transition()
           .duration(timeD.animArc)
           .attr('x', 0)
@@ -4875,7 +4955,7 @@ function mainSchedBlocks (optIn) {
           .duration(timeD.animArc)
           .attr('x', 0)
           .attr('y', sizeRow * 0.08)
-          .attr('width', box.freeTels.w * 1.0)
+          .attr('width', box.freeTels.w * 1)
           .attr('height', sizeRow * 0.84)
         d3.select(this).select('text')
           .attr('x', box.freeTels.w * 0.04)
@@ -4900,6 +4980,9 @@ function mainSchedBlocks (optIn) {
           if (t.id[0] === 'M') mediumT.push(t)
           if (t.id[0] === 'S') smallT.push(t)
         }
+        largeT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
+        mediumT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
+        smallT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
         let lb = {x: reserved.large.box.x, y: sizeRow * i, w: reserved.large.box.w, h: sizeRow}
         let mb = {x: reserved.medium.box.x, y: sizeRow * i, w: reserved.medium.box.w, h: sizeRow}
         let sb = {x: reserved.small.box.x, y: sizeRow * i, w: reserved.small.box.w, h: sizeRow}
@@ -4911,7 +4994,6 @@ function mainSchedBlocks (optIn) {
       let largeT = []
       let mediumT = []
       let smallT = []
-
       let freeTels = deepCopy(shared.data.server.telIds)
       freeTels = freeTels.filter(value => !runTels.includes(value))
       for (let i = 0; i < freeTels.length; i++) {
@@ -4921,29 +5003,20 @@ function mainSchedBlocks (optIn) {
         if (t.id[0] === 'M') mediumT.push(t)
         if (t.id[0] === 'S') smallT.push(t)
       }
-      // for (let i = 0; i < runTels.length; i++) {
-      //   let t = getTelHealthById(runTels[i])
-      //   t.running = false
-      //   if (t.id[0] === 'L') largeT.push(t)
-      //   if (t.id[0] === 'M') mediumT.push(t)
-      //   if (t.id[0] === 'S') smallT.push(t)
-      // }
-
       largeT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
       mediumT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
       smallT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
-
       let lb = {x: reserved.large.box.x, y: sizeRow * shared.data.server.blocks.run.length, w: reserved.large.box.w, h: sizeRow}
       let mb = {x: reserved.medium.box.x, y: sizeRow * shared.data.server.blocks.run.length, w: reserved.medium.box.w, h: sizeRow}
       let sb = {x: reserved.small.box.x, y: sizeRow * shared.data.server.blocks.run.length, w: reserved.small.box.w, h: sizeRow}
+      drawTels(largeT, reserved.large.g, lb, reserved.large.opt)
+      drawTels(mediumT, reserved.medium.g, mb, reserved.medium.opt)
+      drawTels(smallT, reserved.small.g, sb, reserved.small.opt)
+
 
       reserved.back.select('text#idle')
         .attr('x', box.freeTels.w * 0.05)
         .attr('y', sizeRow * (shared.data.server.blocks.run.length + 0.5))
-
-      drawTels(largeT, reserved.large.g, lb, reserved.large.opt)
-      drawTels(mediumT, reserved.medium.g, mb, reserved.medium.opt)
-      drawTels(smallT, reserved.small.g, sb, reserved.small.opt)
     }
     this.updateData = updateData
     // function updateData () {
