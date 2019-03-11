@@ -2186,7 +2186,7 @@ function mainSchedBlocks (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'blockTrackShrinkBib',
+        displayer: 'blockTrackShrinkBib', // blockTrackShrinkBib
         blockQueue: {
           axis: {
             enabled: true,
@@ -3305,9 +3305,9 @@ function mainSchedBlocks (optIn) {
       let offsetY = b.y + (b.h * (1 - totHeight)) * 0.5
 
       let blockBox = {
-        x: b.w * (1 - ratioWidth) * 0.5,
+        x: (b.w * 0.5) - (b.w * ratioWidth * 0.5) + (b.w * 0.045),
         y: b.h * offsetRunningBlocks,
-        w: b.w * ratioWidth,
+        w: b.w * 0.965 * ratioWidth,
         h: b.h * ratioHeight
       }
       let headerBoxId = {
@@ -3324,10 +3324,10 @@ function mainSchedBlocks (optIn) {
       }
 
       let colorLock = colorTheme.blocks.run.background
-      let colorFree = colorTheme.dark.background
-      let transConfig = headerBoxRunningPhase.w * 0.4
+      let colorFree = colorTheme.darker.background
+      let transConfig = headerBoxRunningPhase.w * 0.38
       let transTake = headerBoxRunningPhase.w * 0.0
-      let transFinish = -headerBoxRunningPhase.w * 0.4
+      let transFinish = -headerBoxRunningPhase.w * 0.38
 
       function initConfigDataFinish (g, headerBox) {
         // Back
@@ -3358,9 +3358,9 @@ function mainSchedBlocks (optIn) {
         //   .attr('fill', colorTheme.dark.background)
         //   .attr('stroke', colorTheme.dark.stroke)
         //   .attr('stroke-width', 0.45)
-        let tdh = headerBoxRunningPhase.h * 0.45
+        let tdh = headerBoxRunningPhase.h * 0.35
         let tdw = headerBoxRunningPhase.h * 0.45
-        let cfh = headerBoxRunningPhase.h * 0.45
+        let cfh = headerBoxRunningPhase.h * 0.35
         let cfw = headerBoxRunningPhase.h * 0.45
 
         // g.append('rect')
@@ -3394,17 +3394,18 @@ function mainSchedBlocks (optIn) {
           .attr('fill', colorFree)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
-        // g.append('text')
-        //   .text('Mo')
-        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 0.5)
-        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
-        //   .attr('dy', 3)
-        //   .style('font-weight', 'normal')
-        //   .style('fill', colorTheme.blocks.run.text)
-        //   .style('font-size', '7px')
-        //   .attr('text-anchor', 'middle')
-        //   .style('pointer-events', 'none')
-        //   .style('user-select', 'none')
+          // .attr('stroke-dasharray', [cfw, cfh + cfw, cfw + cfh])
+        g.append('text')
+          .attr('id', 'Mount')
+          .text('Mount')
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 - tdw)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.1)
+          .style('font-weight', 'normal')
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '9px')
+          .attr('text-anchor', 'Start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
         g.append('rect')
           .attr('id', 'camera')
           .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 + tdw - cfw)
@@ -3414,17 +3415,17 @@ function mainSchedBlocks (optIn) {
           .attr('fill', colorFree)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
-        // g.append('text')
-        //   .text('C')
-        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 1.5)
-        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
-        //   .attr('dy', 3)
-        //   .style('font-weight', 'normal')
-        //   .style('fill', colorTheme.blocks.run.text)
-        //   .style('font-size', '7px')
-        //   .attr('text-anchor', 'middle')
-        //   .style('pointer-events', 'none')
-        //   .style('user-select', 'none')
+        g.append('text')
+          .attr('id', 'Camera')
+          .text('Camera')
+          .attr('x', headerBoxRunningPhase.x + tdw + 2 * cfw)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.1)
+          .style('font-weight', 'normal')
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '9px')
+          .attr('text-anchor', 'end')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
         g.append('rect')
           .attr('id', 'daq')
           .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 + tdw - cfw)
@@ -3434,17 +3435,18 @@ function mainSchedBlocks (optIn) {
           .attr('fill', colorFree)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
-        // g.append('text')
-        //   .text('Mi')
-        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 2.5)
-        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
-        //   .attr('dy', 3)
-        //   .style('font-weight', 'normal')
-        //   .style('fill', colorTheme.blocks.run.text)
-        //   .style('font-size', '7px')
-        //   .attr('text-anchor', 'middle')
-        //   .style('pointer-events', 'none')
-        //   .style('user-select', 'none')
+        g.append('text')
+          .attr('id', 'Mirror')
+          .text('Mirror')
+          .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 - tdw)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.95)
+          .attr('dy', 3)
+          .style('font-weight', 'normal')
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '9px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
         g.append('rect')
           .attr('id', 'mirror')
           .attr('x', headerBoxRunningPhase.x + headerBoxRunningPhase.w * 0.5 - tdw)
@@ -3454,17 +3456,18 @@ function mainSchedBlocks (optIn) {
           .attr('fill', colorFree)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
-        // g.append('text')
-        //   .text('D')
-        //   .attr('x', headerBoxRunningPhase.x + (headerBoxRunningPhase.w / 4) * 3.5)
-        //   .attr('y', headerBoxRunningPhase.y + (headerBoxRunningPhase.h / 3) * 0.5)
-        //   .attr('dy', 3)
-        //   .style('font-weight', 'normal')
-        //   .style('fill', colorTheme.blocks.run.text)
-        //   .style('font-size', '7px')
-        //   .attr('text-anchor', 'middle')
-        //   .style('pointer-events', 'none')
-        //   .style('user-select', 'none')
+        g.append('text')
+          .attr('id', 'DAQ')
+          .text('DAQ')
+          .attr('x', headerBoxRunningPhase.x + tdw + 2 * cfw)
+          .attr('y', headerBoxRunningPhase.y + headerBoxRunningPhase.h * 0.95)
+          .attr('dy', 3)
+          .style('font-weight', 'normal')
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-size', '9px')
+          .attr('text-anchor', 'end')
+          .style('pointer-events', 'none')
+          .style('user-select', 'none')
 
         // Take Data
 
@@ -3632,6 +3635,12 @@ function mainSchedBlocks (optIn) {
         g.attr('transform', 'translate(' + transTake + ',0)')
         gt.attr('transform', 'translate(' + transTake + ',0)')
 
+        g.select('text#Mount').attr('opacity', 0)
+        g.select('text#Camera').attr('opacity', 0)
+        g.select('text#Mirror').attr('opacity', 0)
+        g.select('text#DAQ').attr('opacity', 0)
+
+
         g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 2)
         g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 2)
         g.select('#daq').attr('fill', colorLock) // .attr('stroke-width', 2)
@@ -3640,6 +3649,11 @@ function mainSchedBlocks (optIn) {
       function initFinish (g, runPhase, gt) {
         g.attr('transform', 'translate(' + transFinish + ',0)')
         gt.attr('transform', 'translate(' + transFinish + ',0)')
+
+        g.select('text#Mount').attr('opacity', 1)
+        g.select('text#Camera').attr('opacity', 1)
+        g.select('text#Mirror').attr('opacity', 1)
+        g.select('text#DAQ').attr('opacity', 1)
 
         g.select('#mount').attr('fill', colorFree) // .attr('stroke-width', 2)
         g.select('#camera').attr('fill', colorFree) // .attr('stroke-width', 2)
@@ -3668,15 +3682,20 @@ function mainSchedBlocks (optIn) {
         g.select('#daq').attr('fill', colorLock) // .attr('stroke-width', 2)
         g.select('#mirror').attr('fill', colorLock) // .attr('stroke-width', 0.2)
         for (let i = 0; i < runPhase.length; i++) {
-          if (runPhase[0].includes('mount')) g.select('#mount').attr('fill', colorTheme.dark.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('camera')) g.select('#camera').attr('fill', colorTheme.dark.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('mirror')) g.select('#mirror').attr('fill', colorTheme.dark.background) // .attr('stroke-width', 0.2)
-          if (runPhase[0].includes('DAQ')) g.select('#daq').attr('fill', colorTheme.dark.background) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mount')) g.select('#mount').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('camera')) g.select('#camera').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('mirror')) g.select('#mirror').attr('fill', colorFree) // .attr('stroke-width', 0.2)
+          if (runPhase[0].includes('DAQ')) g.select('#daq').attr('fill', colorFree) // .attr('stroke-width', 0.2)
         }
       }
       function dispatchTake (g, runPhase, gt) {
         g.transition().duration(timeD.animArc).attr('transform', 'translate(' + transTake + ',0)')
         gt.transition().duration(timeD.animArc).attr('transform', 'translate(' + transTake + ',0)')
+
+        g.select('text#Mount').attr('opacity', 0)
+        g.select('text#Camera').attr('opacity', 0)
+        g.select('text#Mirror').attr('opacity', 0)
+        g.select('text#DAQ').attr('opacity', 0)
 
         g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 2)
         g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 2)
@@ -3686,6 +3705,11 @@ function mainSchedBlocks (optIn) {
       function dispatchFinish (g, runPhase, gt) {
         g.transition().duration(timeD.animArc).attr('transform', 'translate(' + transFinish + ',0)')
         gt.transition().duration(timeD.animArc).attr('transform', 'translate(' + transFinish + ',0)')
+
+        g.select('text#Mount').attr('opacity', 1)
+        g.select('text#Camera').attr('opacity', 1)
+        g.select('text#Mirror').attr('opacity', 1)
+        g.select('text#DAQ').attr('opacity', 1)
 
         g.select('#mount').attr('fill', colorFree) // .attr('stroke-width', 2)
         g.select('#camera').attr('fill', colorFree) // .attr('stroke-width', 2)
@@ -3793,16 +3817,16 @@ function mainSchedBlocks (optIn) {
           .attr('dy', 0)
           .style('fill', colorTheme.blocks.run.text)
           .style('font-weight', 'bold')
-          .style('font-size', '24px')
+          .style('font-size', '20px')
           .attr('text-anchor', 'middle')
         gtext.append('text')
           .attr('id', 'percent')
           .attr('x', headerBoxId.w * 0.5)
-          .attr('y', headerBoxId.h * 0.85)
+          .attr('y', headerBoxId.h * 0.8)
           .attr('dy', 0)
           .style('fill', colorTheme.blocks.run.text)
           .style('font-weight', 'bold')
-          .style('font-size', '24px')
+          .style('font-size', '20px')
           .attr('text-anchor', 'middle')
       })
 
@@ -3946,9 +3970,7 @@ function mainSchedBlocks (optIn) {
         }
         nTel += off
 
-        let nLine = (nTel % telsPerRow === 0) ?
-          (nTel / telsPerRow) :
-          (1 + parseInt(nTel / telsPerRow))
+        let nLine = (nTel % telsPerRow === 0) ? (nTel / telsPerRow) : (1 + parseInt(nTel / telsPerRow))
         nLine = nLine < 1 ? 1 : nLine
 
         queueRun[i].height = sizeTelsRow * nLine + off * offsetTelsType * sizeTelsRow + sizeHeader
@@ -4613,7 +4635,6 @@ function mainSchedBlocks (optIn) {
     }
     this.updateData = updateData
   }
-
   let SvgFreeTels = function () {
     let reserved = {}
 
@@ -4624,7 +4645,7 @@ function mainSchedBlocks (optIn) {
         .attr('fill', colorTheme.dark.background)
       reserved.back.append('text')
         .attr('id', 'idle')
-        .text('IDLE')
+        .text('Idle')
         .style('font-weight', 'bold')
         .style('font-size', '20px')
         .attr('text-anchor', 'middle')
@@ -4905,6 +4926,25 @@ function mainSchedBlocks (optIn) {
           .attr('fill-opacity', 1)
           .attr('stroke-width', 0.4)
           .attr('stroke', colorTheme.dark.stroke)
+        d3.select(this).append('text')
+          .attr('id', 'target')
+          .text(d.pointingName.split('/')[0])
+          .attr('x', box.freeTels.w * 0.08 * 0.5)
+          .attr('y', sizeRow * 0.6)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', '16px')
+          .attr('text-anchor', 'middle')
+        d3.select(this).append('text')
+          .attr('id', 'pointing')
+          .text(d.pointingName.split('/')[1])
+          .attr('x', box.freeTels.w * 0.08 * 0.5)
+          .attr('y', sizeRow * 0.85)
+          .style('fill', colorTheme.blocks.run.text)
+          .style('font-weight', 'normal')
+          .style('font-size', '16px')
+          .attr('text-anchor', 'middle')
+
         d3.select(this).append('rect')
           .attr('id', 'blockright')
           .attr('x', box.freeTels.w - box.freeTels.w * 0.08)
@@ -4915,6 +4955,34 @@ function mainSchedBlocks (optIn) {
           .attr('fill-opacity', 1)
           .attr('stroke-width', 0.4)
           .attr('stroke', colorTheme.dark.stroke)
+        // d3.select(this).append('text')
+        //   .text('L: ' + LST)
+        //   .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6 + headerBoxTels.w * 0.2)
+        //   .attr('y', headerBoxTels.y + (headerBoxTels.h / 3) * 0.5)
+        //   .attr('dy', 3)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-weight', 'normal')
+        //   .style('font-size', '8px')
+        //   .attr('text-anchor', 'middle')
+        // d3.select(this).append('text')
+        //   .text('M: ' + MST)
+        //   .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6 + headerBoxTels.w * 0.2)
+        //   .attr('y', headerBoxTels.y + (headerBoxTels.h / 3) * 1.5)
+        //   .attr('dy', 3)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-weight', 'normal')
+        //   .style('font-size', '8px')
+        //   .attr('text-anchor', 'middle')
+        // d3.select(this).append('text')
+        //   .text('S: ' + SST)
+        //   .attr('x', headerBoxTels.x + headerBoxTels.w * 0.6 + headerBoxTels.w * 0.2)
+        //   .attr('y', headerBoxTels.y + (headerBoxTels.h / 3) * 2.5)
+        //   .attr('dy', 3)
+        //   .style('fill', colorTheme.blocks.run.text)
+        //   .style('font-weight', 'normal')
+        //   .style('font-size', '8px')
+        //   .attr('text-anchor', 'middle')
+
         d3.select(this).append('rect')
           .attr('id', 'strip')
           .attr('x', 0)
@@ -4926,8 +4994,9 @@ function mainSchedBlocks (optIn) {
           .attr('stroke-width', 0.0)
           .attr('stroke', colorTheme.dark.stroke)
         d3.select(this).append('text')
+          .attr('id', 'name')
           .attr('x', box.freeTels.w * 0.04)
-          .attr('y', sizeRow * 0.22)
+          .attr('y', sizeRow * 0.3)
           .text(function (d) {
             return d.metaData.blockName
           })
@@ -4950,6 +5019,13 @@ function mainSchedBlocks (optIn) {
           .attr('y', sizeRow * 0.05)
           .attr('width', box.freeTels.w * 0.08)
           .attr('height', sizeRow * 0.9)
+        d3.select(this).select('rect#blockright')
+          .transition()
+          .duration(timeD.animArc)
+          .attr('x', box.freeTels.w - box.freeTels.w * 0.08)
+          .attr('y', sizeRow * 0.05)
+          .attr('width', box.freeTels.w * 0.08)
+          .attr('height', sizeRow * 0.9)
         d3.select(this).select('rect#strip')
           .transition()
           .duration(timeD.animArc)
@@ -4957,9 +5033,16 @@ function mainSchedBlocks (optIn) {
           .attr('y', sizeRow * 0.08)
           .attr('width', box.freeTels.w * 1)
           .attr('height', sizeRow * 0.84)
-        d3.select(this).select('text')
+
+        d3.select(this).select('text#name')
           .attr('x', box.freeTels.w * 0.04)
-          .attr('y', sizeRow * 0.22)
+          .attr('y', sizeRow * 0.3)
+        d3.select(this).select('text#target')
+          .attr('x', box.freeTels.w * 0.04)
+          .attr('y', sizeRow * 0.6)
+        d3.select(this).select('text#pointing')
+          .attr('x', box.freeTels.w * 0.04)
+          .attr('y', sizeRow * 0.85)
       })
       current
         .exit()

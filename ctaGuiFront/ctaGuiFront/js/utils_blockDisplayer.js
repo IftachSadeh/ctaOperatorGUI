@@ -2145,7 +2145,7 @@ window.BlockDisplayer = function (optIn) {
       enterAllScheds.each(function (d, i) {
         if (com.blockQueue2.schedBlocks.label.enabled) {
           d3.select(this).append('line')
-            .attr('class', 'background')
+            .attr('id', 'aesthetic')
             .attr('x1', timeScale(d.startT))
             .attr('y1', height * 0.45)
             .attr('x2', timeScale(d.endT))
@@ -2189,6 +2189,13 @@ window.BlockDisplayer = function (optIn) {
           d.blocks = setDefaultStyleForBlocks(d.blocks)
           setBlockRect(d.blocks, {x: 0, y: (height * 0.5) + (height * d.track), w: com.main.box.w, h: height * 0.5})
 
+          d3.select(this).select('line#aesthetic')
+            .transition()
+            .duration(timeD.animArc)
+            .attr('x1', timeScale(d.startT))
+            .attr('y1', height * 0.45)
+            .attr('x2', timeScale(d.endT))
+            .attr('y2', height * 0.45)
           d3.select(this).select('text#schedId')
             .transition()
             .duration(timeD.animArc)
