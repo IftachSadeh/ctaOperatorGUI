@@ -154,7 +154,36 @@ window.BlockDisplayer = function (optIn) {
         enabled: true,
         g: undefined,
         box: {x: 0, y: 0, w: 1000, h: 300, marg: 0}
+      }
+    },
+    blockTrackShrink: {
+      g: undefined,
+      axis: {
+        enabled: true,
+        g: undefined,
+        box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+        axis: undefined,
+        scale: undefined,
+        domain: [0, 1000],
+        range: [0, 0],
+        showText: true,
+        orientation: 'axisTop',
+        attr: {
+          text: {
+            stroke: colorTheme.medium.stroke,
+            fill: colorTheme.medium.background
+          },
+          path: {
+            stroke: colorTheme.medium.stroke,
+            fill: colorTheme.medium.background
+          }
+        }
       },
+      timeBars: {
+        enabled: true,
+        g: undefined,
+        box: {x: 0, y: 0, w: 1000, h: 300, marg: 0}
+      }
     },
     blockList: {
       g: undefined
@@ -1915,32 +1944,32 @@ window.BlockDisplayer = function (optIn) {
   let blockQueue2Bib = new BlockQueue2Bib()
   let BlockTrackShrinkBib = function () {
     function init () {
-      com.blockQueue2.g = com.main.g.append('g')
+      com.blockTrackShrink.g = com.main.g.append('g')
       initAxis()
       initTimeBars()
     }
     this.init = init
     function initAxis () {
-      com.blockQueue2.axis.scale = d3.scaleTime()
-        .range(com.blockQueue2.axis.range)
-        .domain(com.blockQueue2.axis.domain)
-      com.blockQueue2.axis.main = d3.axisBottom(com.blockQueue2.axis.scale)
+      com.blockTrackShrink.axis.scale = d3.scaleTime()
+        .range(com.blockTrackShrink.axis.range)
+        .domain(com.blockTrackShrink.axis.domain)
+      com.blockTrackShrink.axis.main = d3.axisBottom(com.blockTrackShrink.axis.scale)
         .tickFormat(d3.timeFormat('%H:%M'))
 
-      if (!com.blockQueue2.axis.enabled) return
-      com.blockQueue2.axis.g = com.main.g.append('g')
-        .attr('transform', 'translate(' + com.blockQueue2.axis.box.x + ',' + com.blockQueue2.axis.box.y + ')')
-      com.blockQueue2.axis.g
+      if (!com.blockTrackShrink.axis.enabled) return
+      com.blockTrackShrink.axis.g = com.main.g.append('g')
+        .attr('transform', 'translate(' + com.blockTrackShrink.axis.box.x + ',' + com.blockTrackShrink.axis.box.y + ')')
+      com.blockTrackShrink.axis.g
         .attr('class', 'axis')
-        .call(com.blockQueue2.axis.main)
+        .call(com.blockTrackShrink.axis.main)
 
-      com.blockQueue2.axis.g.style('opacity', 1)
+      com.blockTrackShrink.axis.g.style('opacity', 1)
     }
     function initTimeBars () {
-      if (!com.blockQueue2.timeBars.enabled) return
-      com.blockQueue2.timeBars.g = com.main.g.append('g')
-        .attr('transform', 'translate(' + com.blockQueue2.timeBars.box.x + ',' + com.blockQueue2.timeBars.box.y + ')')
-      com.blockQueue2.timeBars.g
+      if (!com.blockTrackShrink.timeBars.enabled) return
+      com.blockTrackShrink.timeBars.g = com.main.g.append('g')
+        .attr('transform', 'translate(' + com.blockTrackShrink.timeBars.box.x + ',' + com.blockTrackShrink.timeBars.box.y + ')')
+      com.blockTrackShrink.timeBars.g
         .style('opacity', 0)
         .transition()
         .duration(1000)
@@ -2015,33 +2044,34 @@ window.BlockDisplayer = function (optIn) {
     }
 
     function update () {
-      if (com.blockQueue2.axis.enabled) updateAxis()
-      if (com.blockQueue2.timeBars.enabled) setTimeRect()
+      if (com.blockTrackShrink.axis.enabled) updateAxis()
+      if (com.blockTrackShrink.timeBars.enabled) setTimeRect()
 
       updateSchedulingBlocks()
     }
     this.update = update
     function updateAxis () {
-      com.blockQueue2.axis.domain = [com.time.startTime.date, com.time.endTime.date]
-      com.blockQueue2.axis.range = [0, com.blockQueue2.axis.box.w]
+      com.blockTrackShrink.axis.domain = [com.time.startTime.date, com.time.endTime.date]
+      com.blockTrackShrink.axis.range = [0, com.blockTrackShrink.axis.box.w]
 
-      com.blockQueue2.axis.scale
-        .domain(com.blockQueue2.axis.domain)
-        .range(com.blockQueue2.axis.range)
+      com.blockTrackShrink.axis.scale
+        .domain(com.blockTrackShrink.axis.domain)
+        .range(com.blockTrackShrink.axis.range)
+        .nice()
 
-      if (!com.blockQueue2.axis.enabled) return
-      let minTxtSize = com.main.box.w * 0.04
-      // console.log(com.blockQueue2.axis.domain, com.blockQueue2.axis.range);
-      com.blockQueue2.axis.main.scale(com.blockQueue2.axis.scale)
-      com.blockQueue2.axis.main.ticks(5)
-      com.blockQueue2.axis.main.tickSize(4)
-      com.blockQueue2.axis.g.call(com.blockQueue2.axis.main)
-      com.blockQueue2.axis.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.blockQueue2.axis.attr.path.stroke)
-      com.blockQueue2.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.blockQueue2.axis.attr.path.stroke)
-      com.blockQueue2.axis.g.selectAll('g.tick').selectAll('text')
-        .attr('stroke', com.blockQueue2.axis.attr.text.stroke)
+      if (!com.blockTrackShrink.axis.enabled) return
+      let minTxtSize = com.blockTrackShrink.axis.attr.text.size ? com.blockTrackShrink.axis.attr.text.size : com.main.box.w * 0.04
+      // console.log(com.blockTrackShrink.axis.domain, com.blockTrackShrink.axis.range);
+      com.blockTrackShrink.axis.main.scale(com.blockTrackShrink.axis.scale)
+      com.blockTrackShrink.axis.main.ticks(5)
+      com.blockTrackShrink.axis.main.tickSize(4)
+      com.blockTrackShrink.axis.g.call(com.blockTrackShrink.axis.main)
+      com.blockTrackShrink.axis.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
+      com.blockTrackShrink.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
+      com.blockTrackShrink.axis.g.selectAll('g.tick').selectAll('text')
+        .attr('stroke', com.blockTrackShrink.axis.attr.text.stroke)
         .attr('stroke-width', 0.5)
-        .attr('fill', com.blockQueue2.axis.attr.text.fill)
+        .attr('fill', com.blockTrackShrink.axis.attr.text.fill)
         .style('font-size', minTxtSize + 'px')
     }
     function computeTrack (scheds) {
@@ -2076,7 +2106,7 @@ window.BlockDisplayer = function (optIn) {
     }
     function updateSchedulingBlocks () {
       let timeScale = d3.scaleLinear()
-        .range(com.blockQueue2.axis.range)
+        .range(com.blockTrackShrink.axis.range)
         .domain([com.time.startTime.time, com.time.endTime.time])
 
       let scheds = groupBlocksBySchedule(com.data.filtered)
@@ -2111,8 +2141,8 @@ window.BlockDisplayer = function (optIn) {
           .attr('fill', 'transparent')
           .attr('fill-opacity', 1)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.2)
-          .attr('stroke-dasharray', [])
+          .attr('stroke-width', 0.4)
+          .attr('stroke-dasharray', [2, 2])
       })
       enterTrack.merge(currentTrack)
         .transition()
@@ -2143,7 +2173,7 @@ window.BlockDisplayer = function (optIn) {
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
       enterAllScheds.each(function (d, i) {
-        if (com.blockQueue2.schedBlocks.label.enabled) {
+        if (com.blockTrackShrink.schedBlocks.label.enabled) {
           d3.select(this).append('line')
             .attr('id', 'aesthetic')
             .attr('x1', timeScale(d.startT))
@@ -2153,7 +2183,7 @@ window.BlockDisplayer = function (optIn) {
             .attr('fill', 'transparent')
             .attr('fill-opacity', 1)
             .attr('stroke', colorTheme.dark.stroke)
-            .attr('stroke-width', 2)
+            .attr('stroke-width', height * 0.05)
             .attr('stroke-dasharray', [])
           d3.select(this).append('text')
             .attr('id', 'schedId')
@@ -2231,7 +2261,7 @@ window.BlockDisplayer = function (optIn) {
     }
     function setBlockRect (blocks, box) {
       let timeScale = d3.scaleLinear()
-        .range(com.blockQueue2.axis.range)
+        .range(com.blockTrackShrink.axis.range)
         .domain([com.time.startTime.time, com.time.endTime.time])
 
       let rect = com.main.scroll.scrollG
@@ -2284,7 +2314,7 @@ window.BlockDisplayer = function (optIn) {
 
     function getBlocksRows () {
       let timeScale = d3.scaleLinear()
-        .range(com.blockQueue2.axis.range)
+        .range(com.blockTrackShrink.axis.range)
         .domain([com.time.startTime.time, com.time.endTime.time])
       let scheds = groupBlocksBySchedule(com.data.filtered)
       let nLine = scheds.length
@@ -2322,7 +2352,7 @@ window.BlockDisplayer = function (optIn) {
         let rectNow = com.main.g
           .selectAll('rect.' + com.main.tag + 'extra')
           .data(data)
-          .attr('transform', 'translate(' + com.blockQueue2.axis.box.x + ',' + 0 + ')')
+          .attr('transform', 'translate(' + com.blockTrackShrink.axis.box.x + ',' + 0 + ')')
 
         rectNow
           .enter()
@@ -2330,9 +2360,9 @@ window.BlockDisplayer = function (optIn) {
           .attr('class', com.main.tag + 'extra')
           .style('opacity', 1)
           .attr('x', function (d, i) {
-            if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
-            else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
-            return com.blockQueue2.axis.scale(d)
+            if (d > com.blockTrackShrink.axis.scale.domain()[1]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[1])
+            else if (d < com.blockTrackShrink.axis.scale.domain()[0]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[0])
+            return com.blockTrackShrink.axis.scale(d)
           })
           .attr('y', function (d, i) {
             return com.main.box.y - 1 * com.main.box.marg
@@ -2352,9 +2382,9 @@ window.BlockDisplayer = function (optIn) {
           .transition('inOut')
           .duration(50)
           .attr('x', function (d, i) {
-            if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
-            else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
-            return com.blockQueue2.axis.scale(d)
+            if (d > com.blockTrackShrink.axis.scale.domain()[1]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[1])
+            else if (d < com.blockTrackShrink.axis.scale.domain()[0]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[0])
+            return com.blockTrackShrink.axis.scale(d)
           })
           // .attr("y", function(d,i) { return d.y; })
           .attr('width', function (d, i) {
@@ -2368,10 +2398,10 @@ window.BlockDisplayer = function (optIn) {
       rectNowData = [
         {
           id: com.main.tag + 'now',
-          x: com.blockQueue2.axis.scale(com.time.currentTime.date),
-          y: com.blockQueue2.timeBars.box.y,
-          w: com.blockQueue2.timeBars.box.marg,
-          h: com.blockQueue2.timeBars.box.h + com.blockQueue2.timeBars.box.marg * 2
+          x: com.blockTrackShrink.axis.scale(com.time.currentTime.date),
+          y: com.blockTrackShrink.timeBars.box.y,
+          w: com.blockTrackShrink.timeBars.box.marg,
+          h: com.blockTrackShrink.timeBars.box.h + com.blockTrackShrink.timeBars.box.marg * 2
         }
       ]
       // console.log('timeFrac',timeFrac,rectNowData);
@@ -2380,7 +2410,7 @@ window.BlockDisplayer = function (optIn) {
       // ---------------------------------------------------------------------------------------------------
       //
       // ---------------------------------------------------------------------------------------------------
-      let rectNow = com.blockQueue2.timeBars.g
+      let rectNow = com.blockTrackShrink.timeBars.g
         .selectAll('rect.' + com.main.tag + 'now')
         .data(rectNowData, function (d) {
           return d.id
@@ -2427,10 +2457,10 @@ window.BlockDisplayer = function (optIn) {
     }
 
     function remove () {
-      com.blockQueue2.g.remove()
+      com.blockTrackShrink.g.remove()
       com.main.g.selectAll('g.allScheds').remove()
-      if (com.blockQueue2.axis.enabled) com.blockQueue2.axis.g.remove()
-      if (com.blockQueue2.timeBars.enabled) com.blockQueue2.timeBars.g.remove()
+      if (com.blockTrackShrink.axis.enabled) com.blockTrackShrink.axis.g.remove()
+      if (com.blockTrackShrink.timeBars.enabled) com.blockTrackShrink.timeBars.g.remove()
     }
     this.remove = remove
   }
