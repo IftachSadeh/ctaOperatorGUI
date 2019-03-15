@@ -2057,7 +2057,7 @@ window.BlockDisplayer = function (optIn) {
       com.blockTrackShrink.axis.scale
         .domain(com.blockTrackShrink.axis.domain)
         .range(com.blockTrackShrink.axis.range)
-        .nice()
+        // .nice()
 
       if (!com.blockTrackShrink.axis.enabled) return
       let minTxtSize = com.blockTrackShrink.axis.attr.text.size ? com.blockTrackShrink.axis.attr.text.size : com.main.box.w * 0.04
@@ -2066,11 +2066,11 @@ window.BlockDisplayer = function (optIn) {
       com.blockTrackShrink.axis.main.ticks(5)
       com.blockTrackShrink.axis.main.tickSize(4)
       com.blockTrackShrink.axis.g.call(com.blockTrackShrink.axis.main)
-      com.blockTrackShrink.axis.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
-      com.blockTrackShrink.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
+      com.blockTrackShrink.axis.g.select('path').attr('stroke-width', 0.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
+      com.blockTrackShrink.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 0.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
       com.blockTrackShrink.axis.g.selectAll('g.tick').selectAll('text')
         .attr('stroke', com.blockTrackShrink.axis.attr.text.stroke)
-        .attr('stroke-width', 0.5)
+        .attr('stroke-width', 0.2)
         .attr('fill', com.blockTrackShrink.axis.attr.text.fill)
         .style('font-size', minTxtSize + 'px')
     }
@@ -2147,6 +2147,7 @@ window.BlockDisplayer = function (optIn) {
       enterTrack.merge(currentTrack)
         .transition()
         .duration(timeD.animArc)
+        .ease(d3.easeLinear)
         .attr('transform', function (d, i) {
           let translate = {
             y: height * i,
@@ -2222,6 +2223,7 @@ window.BlockDisplayer = function (optIn) {
           d3.select(this).select('line#aesthetic')
             .transition()
             .duration(timeD.animArc)
+            .ease(d3.easeLinear)
             .attr('x1', timeScale(d.startT))
             .attr('y1', height * 0.45)
             .attr('x2', timeScale(d.endT))
@@ -2229,6 +2231,7 @@ window.BlockDisplayer = function (optIn) {
           d3.select(this).select('text#schedId')
             .transition()
             .duration(timeD.animArc)
+            .ease(d3.easeLinear)
             .attr('x', function () {
               if (d.startT < com.time.startTime.time) {
                 if (d.endT > com.time.startTime.time) return (timeScale(com.time.startTime.time)) + 2
@@ -2250,6 +2253,7 @@ window.BlockDisplayer = function (optIn) {
           d3.select(this)
             .transition()
             .duration(timeD.animArc)
+            .ease(d3.easeLinear)
             .attr('transform', function (d, i) {
               let translate = {
                 y: height * d.track,
@@ -2301,6 +2305,7 @@ window.BlockDisplayer = function (optIn) {
         d3.select(this).select('text')
           .transition('inOut')
           .duration(timeD.animArc)
+          .ease(d3.easeLinear)
           .text(d.metaData.nObs)
           .style('font-size', (box.h * 0.5) + 'px')
           .attr('dy', 1)
@@ -2698,9 +2703,11 @@ window.BlockDisplayer = function (optIn) {
           node.attr('clicked', 2)
         })
         .on('mouseover', function (d) {
+          d3.select(this).style('cursor', 'pointer')
           com.events.block.mouseover(d)
         })
         .on('mouseout', function (d) {
+          d3.select(this).style('cursor', 'default')
           com.events.block.mouseout(d)
         })
         .call(d3.drag()
@@ -2907,10 +2914,6 @@ window.BlockDisplayer = function (optIn) {
   }
   this.unfocusOnBlock = unfocusOnBlock
 
-  // function dragBlockStart (d) {}
-  // function dragBlockTick (d) {}
-  // function dragBlockEnd (d) {}
-
   function updateFiltering () {
     let allFilters = []
     for (let i = com.filters.blockFilters.length - 1; i > -1; i--) {
@@ -2919,18 +2922,6 @@ window.BlockDisplayer = function (optIn) {
     }
     return allFilters
   }
-
-  // function addFiltering (filter) {
-  //   com.filters.filtering.push(filter)
-  //   update()
-  // }
-  // this.addFiltering = addFiltering
-  // function removeFiltering (filter) {
-  //   let index = com.filters.filtering.indexOf(filter)
-  //   com.filters.filtering.splice(index, 1)
-  //   update()
-  // }
-  // this.removeFiltering = removeFiltering
   function plugBlockFilters (blockFilters, propagate) {
     com.filters.blockFilters.push(blockFilters)
     if (propagate) blockFilters.plugBlockQueue(this, !propagate)
