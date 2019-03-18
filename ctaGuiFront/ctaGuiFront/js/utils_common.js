@@ -299,33 +299,33 @@ window.colorTheme = {
     },
     darker: {
       background: '#BDBDBD',
-      stroke: '#666666',
-      text: '#666666'
+      stroke: '#444444',
+      text: '#444444'
     },
     dark: {
       background: '#E0E0E0',
-      stroke: '#666666',
-      text: '#666666'
+      stroke: '#444444',
+      text: '#444444'
     },
     medium: {
       background: '#EEEEEE',
-      stroke: '#666666',
-      text: '#666666'
+      stroke: '#444444',
+      text: '#444444'
     },
     bright: {
       background: '#F5F5F5',
-      stroke: '#666666',
-      text: '#666666'
+      stroke: '#444444',
+      text: '#444444'
     },
     brighter: {
       background: '#FAFAFA',
-      stroke: '#666666',
-      text: '#666666'
+      stroke: '#444444',
+      text: '#444444'
     },
     warning: {
       background: '#FFEB3B',
-      stroke: '#666666',
-      text: '#666666'
+      stroke: '#444444',
+      text: '#444444'
     }
   },
   'bright-BlueGrey': {

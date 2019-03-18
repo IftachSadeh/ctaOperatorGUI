@@ -942,7 +942,7 @@ class obsBlocks_noACS():
 
     def external_generateEvents(self):
         if self.rndGen.random() < 0.03:
-            newEvent = {'id': getTime() + random.randint(1, 99999), 'time': self.timeOfNight.getCurrentTime(), 'date': self.timeOfNight.getCurrentDate().strftime("%Y-%m-%d %H:%M:%S")}
+            newEvent = {'id': getTime() + random.randint(1, 99999), 'time': self.timeOfNight.getCurrentTime()}
             newEvent['priority'] = random.randint(1, 3)
             if self.rndGen.random() < 0.33:
                 newEvent['name'] = 'alarm'
