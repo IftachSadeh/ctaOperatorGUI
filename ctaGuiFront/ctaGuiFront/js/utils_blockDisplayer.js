@@ -1660,7 +1660,7 @@ window.BlockDisplayer = function (optIn) {
         .range(com.blockQueue2.axis.range)
 
       if (!com.blockQueue2.axis.enabled) return
-      let minTxtSize = com.main.box.w * 0.04
+      let minTxtSize = com.blockQueue2.axis.attr.text.size ? com.blockQueue2.axis.attr.text.size : com.main.box.w * 0.04
       // console.log(com.blockQueue2.axis.domain, com.blockQueue2.axis.range);
       com.blockQueue2.axis.main.scale(com.blockQueue2.axis.scale)
       com.blockQueue2.axis.main.ticks(5)
@@ -1953,8 +1953,9 @@ window.BlockDisplayer = function (optIn) {
       com.blockTrackShrink.axis.scale = d3.scaleTime()
         .range(com.blockTrackShrink.axis.range)
         .domain(com.blockTrackShrink.axis.domain)
-      com.blockTrackShrink.axis.main = d3.axisBottom(com.blockTrackShrink.axis.scale)
-        .tickFormat(d3.timeFormat('%H:%M'))
+      com.blockTrackShrink.axis.main = com.blockTrackShrink.axis.orientation === 'bottom' ? d3.axisBottom(com.blockTrackShrink.axis.scale) : d3.axisTop(com.blockTrackShrink.axis.scale)
+
+      com.blockTrackShrink.axis.main.tickFormat(d3.timeFormat('%H:%M'))
 
       if (!com.blockTrackShrink.axis.enabled) return
       com.blockTrackShrink.axis.g = com.main.g.append('g')
@@ -2874,43 +2875,123 @@ window.BlockDisplayer = function (optIn) {
 
   function overSchedBlocks (id) {
     com.input.over.schedBlocks = id
-    blockQueueBib.update()
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.update()
+    } else if (com.displayer === 'blockList') {
+      blockListBib.update()
+    } else if (com.displayer === 'blockForm') {
+      blockFormBib.update()
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
+    }
   }
   this.overSchedBlocks = overSchedBlocks
   function outSchedBlocks (id) {
     com.input.over.schedBlocks = undefined
-    blockQueueBib.update()
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.update()
+    } else if (com.displayer === 'blockList') {
+      blockListBib.update()
+    } else if (com.displayer === 'blockForm') {
+      blockFormBib.update()
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
+    }
   }
   this.outSchedBlocks = outSchedBlocks
   function overBlock (id) {
     com.input.over.block = id
-    blockQueueBib.update()
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.update()
+    } else if (com.displayer === 'blockList') {
+      blockListBib.update()
+    } else if (com.displayer === 'blockForm') {
+      blockFormBib.update()
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
+    }
   }
   this.overBlock = overBlock
   function outBlock (id) {
     com.input.over.block = undefined
-    blockQueueBib.update()
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.update()
+    } else if (com.displayer === 'blockList') {
+      blockListBib.update()
+    } else if (com.displayer === 'blockForm') {
+      blockFormBib.update()
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
+    }
   }
   this.outBlock = outBlock
 
   function focusOnSchedBlocks (id) {
     com.input.focus.schedBlocks = id
-    blockQueueBib.update()
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.update()
+    } else if (com.displayer === 'blockList') {
+      blockListBib.update()
+    } else if (com.displayer === 'blockForm') {
+      blockFormBib.update()
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
+    }
   }
   this.focusOnSchedBlocks = focusOnSchedBlocks
   function unfocusOnSchedBlocks (id) {
     com.input.focus.schedBlocks = undefined
-    blockQueueBib.update()
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.update()
+    } else if (com.displayer === 'blockList') {
+      blockListBib.update()
+    } else if (com.displayer === 'blockForm') {
+      blockFormBib.update()
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
+    }
   }
   this.unfocusOnSchedBlocks = unfocusOnSchedBlocks
   function focusOnBlock (id) {
     com.input.focus.block = id
-    blockQueueBib.update()
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.update()
+    } else if (com.displayer === 'blockList') {
+      blockListBib.update()
+    } else if (com.displayer === 'blockForm') {
+      blockFormBib.update()
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
+    }
   }
   this.focusOnBlock = focusOnBlock
   function unfocusOnBlock (id) {
     com.input.focus.block = undefined
-    blockQueueBib.update()
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.update()
+    } else if (com.displayer === 'blockList') {
+      blockListBib.update()
+    } else if (com.displayer === 'blockForm') {
+      blockFormBib.update()
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.update()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.update()
+    }
   }
   this.unfocusOnBlock = unfocusOnBlock
 

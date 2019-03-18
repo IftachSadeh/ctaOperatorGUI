@@ -21,6 +21,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global BlockQueueCreator */
 /* global BlockQueueModif */
 /* global BlockQueueOptimizer*/
+/* global BlockDisplayer */
 /* global ClockEvents */
 /* global GridBagLayout */
 /* global ScrollBox */
@@ -47,6 +48,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueue.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOptimizer.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_blockDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_gridBagLayout.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
@@ -1120,113 +1122,208 @@ let mainSchedBlocksController = function (optIn) {
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(-5,' + (box.blockQueueServer.h * 0.5) + ') rotate(270)')
 
-      blockQueueCreator = new BlockQueueCreator({
+      blockQueueCreator = new BlockDisplayer({
         main: {
           tag: 'blockQueueMiddleTag',
           g: gBlockBox,
+          scroll: {},
           box: adjustedBox,
           background: {
-            fill: colorTheme.dark.background,
-            stroke: colorTheme.dark.stroke,
-            strokeWidth: 0.1
+            fill: colorTheme.medium.background,
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.4
           },
           colorTheme: colorTheme
         },
-        axis: {
-          enabled: true,
-          g: undefined,
-          box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-          axis: undefined,
-          scale: undefined,
-          domain: [0, 1000],
-          range: [0, 0],
-          showText: true,
-          orientation: 'axisTop',
-          attr: {
-            text: {
-              stroke: colorTheme.medium.stroke,
-              fill: colorTheme.medium.stroke
-            },
-            path: {
-              stroke: colorTheme.medium.stroke,
-              fill: colorTheme.medium.stroke
+
+        displayer: 'blockQueue2', // 'blockQueue2',
+        blockQueue: {
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
             }
+          },
+          blocks: {
+            enabled: true,
+            run: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: 'none',
+                strokeWidth: 0
+              }
+            },
+            cancel: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            modification: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            colorPalette: colorTheme.blocks
+          },
+          timeBars: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
           }
         },
-        blocks: {
-          enabled: true,
-          run: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: mainOverBlock,
-              mouseout: mainOutBlock,
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: 'none',
-              strokeWidth: 0
+        blockQueue2: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'right'
             }
           },
-          cancel: {
+          axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: mainOverBlock,
-              mouseout: mainOutBlock,
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                size: 10,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
               }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: colorTheme.brighter.stroke,
-              strokeWidth: 0
             }
           },
-          modification: {
-            enabled: true,
+          timeBars: {
+            enabled: false,
             g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-            events: {
-              click: () => {},
-              mouseover: () => {},
-              mouseout: () => {},
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: colorTheme.brighter.stroke,
-              strokeWidth: 0
-            }
-          },
-          colorPalette: colorTheme.blocks
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
         },
+        blockTrackShrink: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'left'
+            }
+          },
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'bottom',
+            attr: {
+              text: {
+                size: 14,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
+        },
+        blockList: {
+
+        },
+        blockForm: {
+          mosaic: {
+            box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+            order: 'nSched'
+          },
+          forms: {
+            g: undefined,
+            box: {x: adjustedBox.w * 0.22,
+              y: adjustedBox.h * 0.02,
+              w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
+              h: adjustedBox.h * 0.96,
+              marg: adjustedBox.marg},
+            display: 'list',
+            scroll: {}
+          }
+        },
+
         filters: {
-          enabled: false,
-          g: undefined,
-          box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
-          filters: []
-        },
-        timeBars: {
-          enabled: true,
-          g: undefined,
-          box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+          blockFilters: [],
+          filtering: []
         },
         time: {
           currentTime: {time: 0, date: undefined},
@@ -1242,8 +1339,22 @@ let mainSchedBlocksController = function (optIn) {
           enabled: false
         },
         pattern: {},
-        event: {
-          modifications: () => {}
+        events: {
+          block: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) },
+            drag: {
+              start: () => {},
+              tick: () => {},
+              end: () => {}
+            }
+          },
+          sched: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) }
+          }
         },
         input: {
           focus: {schedBlocks: undefined, block: undefined},
@@ -1252,7 +1363,140 @@ let mainSchedBlocksController = function (optIn) {
         }
       })
 
+      // blockQueueCreator = new BlockQueueCreator({
+      //   main: {
+      //     tag: 'blockQueueMiddleTag',
+      //     g: gBlockBox,
+      //     box: adjustedBox,
+      //     background: {
+      //       fill: colorTheme.dark.background,
+      //       stroke: colorTheme.dark.stroke,
+      //       strokeWidth: 0.1
+      //     },
+      //     colorTheme: colorTheme
+      //   },
+      //   axis: {
+      //     enabled: true,
+      //     g: undefined,
+      //     box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+      //     axis: undefined,
+      //     scale: undefined,
+      //     domain: [0, 1000],
+      //     range: [0, 0],
+      //     showText: true,
+      //     orientation: 'axisTop',
+      //     attr: {
+      //       text: {
+      //         stroke: colorTheme.medium.stroke,
+      //         fill: colorTheme.medium.stroke
+      //       },
+      //       path: {
+      //         stroke: colorTheme.medium.stroke,
+      //         fill: colorTheme.medium.stroke
+      //       }
+      //     }
+      //   },
+      //   blocks: {
+      //     enabled: true,
+      //     run: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: mainOverBlock,
+      //         mouseout: mainOutBlock,
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: 'none',
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     cancel: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: mainOverBlock,
+      //         mouseout: mainOutBlock,
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: colorTheme.brighter.stroke,
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     modification: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+      //       events: {
+      //         click: () => {},
+      //         mouseover: () => {},
+      //         mouseout: () => {},
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: colorTheme.brighter.stroke,
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     colorPalette: colorTheme.blocks
+      //   },
+      //   filters: {
+      //     enabled: false,
+      //     g: undefined,
+      //     box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
+      //     filters: []
+      //   },
+      //   timeBars: {
+      //     enabled: true,
+      //     g: undefined,
+      //     box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+      //   },
+      //   time: {
+      //     currentTime: {time: 0, date: undefined},
+      //     startTime: {time: 0, date: undefined},
+      //     endTime: {time: 0, date: undefined}
+      //   },
+      //   data: {
+      //     raw: undefined,
+      //     formated: undefined,
+      //     modified: undefined
+      //   },
+      //   debug: {
+      //     enabled: false
+      //   },
+      //   pattern: {},
+      //   event: {
+      //     modifications: () => {}
+      //   },
+      //   input: {
+      //     focus: {schedBlocks: undefined, block: undefined},
+      //     over: {schedBlocks: undefined, block: undefined},
+      //     selection: []
+      //   }
+      // })
+      // blockQueueCreator.init()
       blockQueueCreator.init()
+
       updateData()
     }
     this.initData = initData
@@ -1759,7 +2003,7 @@ let mainSchedBlocksController = function (optIn) {
         h: box.blockQueueOptimized.h * 0.8,
         marg: lenD.w[0] * 0.01
       }
-      console.log(box.blockQueueOptimized);
+
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
       gBlockBox.append('text')
@@ -1769,116 +2013,209 @@ let mainSchedBlocksController = function (optIn) {
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(-5,' + (adjustedBox.h * 0.5) + ') rotate(270)')
-      blockQueueOptimized = new BlockQueueOptimizer({
+
+      blockQueueOptimized = new BlockDisplayer({
         main: {
           tag: 'blockQueueMiddleTag',
           g: gBlockBox,
+          scroll: {},
           box: adjustedBox,
           background: {
-            fill: colorTheme.dark.background,
-            stroke: colorTheme.dark.stroke,
-            strokeWidth: 0.1
+            fill: colorTheme.medium.background,
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.4
           },
           colorTheme: colorTheme
         },
-        axis: {
-          enabled: true,
-          g: undefined,
-          box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-          axis: undefined,
-          scale: undefined,
-          domain: [0, 1000],
-          range: [0, 0],
-          showText: true,
-          orientation: 'axisTop',
-          attr: {
-            text: {
-              stroke: colorTheme.medium.stroke,
-              fill: colorTheme.medium.stroke
-            },
-            path: {
-              stroke: colorTheme.medium.stroke,
-              fill: colorTheme.medium.stroke
+
+        displayer: 'blockQueue2', // 'blockQueue2',
+        blockQueue: {
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
             }
+          },
+          blocks: {
+            enabled: true,
+            run: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: 'none',
+                strokeWidth: 0
+              }
+            },
+            cancel: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            modification: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            colorPalette: colorTheme.blocks
+          },
+          timeBars: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
           }
         },
-        blocks: {
-          enabled: true,
-          run: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
-            events: {
-              click: mainFocusOnBlock,
-              mouseover: mainOverBlock,
-              mouseout: mainOutBlock,
-              drag: {
-                start: svgFocusOverlay.dragStart,
-                tick: svgFocusOverlay.dragTick,
-                end: function (d) {
-                  let res = svgFocusOverlay.dragEnd(d)
-                  if (res) changeBlockProperties('', res.id, res.modif)
-                }
-              }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: 'none',
-              strokeWidth: 0
+        blockQueue2: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'right'
             }
           },
-          cancel: {
+          axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
-            events: {
-              click: mainFocusOnBlock,
-              mouseover: mainOverBlock,
-              mouseout: mainOutBlock,
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                size: 10,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
               }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: colorTheme.brighter.stroke,
-              strokeWidth: 0
             }
           },
-          modification: {
+          timeBars: {
             enabled: false,
             g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.24, w: adjustedBox.w, h: adjustedBox.h * 0.36, marg: adjustedBox.marg},
-            events: {
-              click: mainFocusOnBlock,
-              mouseover: mainOverBlock,
-              mouseout: mainOutBlock,
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            },
-            background: {
-              fill: colorTheme.brighter.background,
-              stroke: colorTheme.brighter.stroke,
-              strokeWidth: 0
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
+        },
+        blockTrackShrink: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'left'
             }
           },
-          colorPalette: colorTheme.blocks
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                size: 14,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
         },
+        blockList: {
+
+        },
+        blockForm: {
+          mosaic: {
+            box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+            order: 'nSched'
+          },
+          forms: {
+            g: undefined,
+            box: {x: adjustedBox.w * 0.22,
+              y: adjustedBox.h * 0.02,
+              w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
+              h: adjustedBox.h * 0.96,
+              marg: adjustedBox.marg},
+            display: 'list',
+            scroll: {}
+          }
+        },
+
         filters: {
-          enabled: false,
-          g: undefined,
-          box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
-          filters: []
-        },
-        timeBars: {
-          enabled: true,
-          g: undefined,
-          box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+          blockFilters: [],
+          filtering: []
         },
         time: {
           currentTime: {time: 0, date: undefined},
@@ -1894,8 +2231,25 @@ let mainSchedBlocksController = function (optIn) {
           enabled: false
         },
         pattern: {},
-        event: {
-          modifications: () => {}
+        events: {
+          block: {
+            click: mainFocusOnBlock,
+            mouseover: mainOverBlock,
+            mouseout: mainOutBlock,
+            drag: {
+              start: svgFocusOverlay.dragStart,
+              tick: svgFocusOverlay.dragTick,
+              end: function (d) {
+                let res = svgFocusOverlay.dragEnd(d)
+                if (res) changeBlockProperties('', res.id, res.modif)
+              }
+            }
+          },
+          sched: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) }
+          }
         },
         input: {
           focus: {schedBlocks: undefined, block: undefined},
@@ -1903,9 +2257,143 @@ let mainSchedBlocksController = function (optIn) {
           selection: []
         }
       })
+      // blockQueueOptimized = new BlockQueueOptimizer({
+      //   main: {
+      //     tag: 'blockQueueMiddleTag',
+      //     g: gBlockBox,
+      //     box: adjustedBox,
+      //     background: {
+      //       fill: colorTheme.dark.background,
+      //       stroke: colorTheme.dark.stroke,
+      //       strokeWidth: 0.1
+      //     },
+      //     colorTheme: colorTheme
+      //   },
+      //   axis: {
+      //     enabled: true,
+      //     g: undefined,
+      //     box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+      //     axis: undefined,
+      //     scale: undefined,
+      //     domain: [0, 1000],
+      //     range: [0, 0],
+      //     showText: true,
+      //     orientation: 'axisTop',
+      //     attr: {
+      //       text: {
+      //         stroke: colorTheme.medium.stroke,
+      //         fill: colorTheme.medium.stroke
+      //       },
+      //       path: {
+      //         stroke: colorTheme.medium.stroke,
+      //         fill: colorTheme.medium.stroke
+      //       }
+      //     }
+      //   },
+      //   blocks: {
+      //     enabled: true,
+      //     run: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
+      //       events: {
+      //         click: mainFocusOnBlock,
+      //         mouseover: mainOverBlock,
+      //         mouseout: mainOutBlock,
+      //         drag: {
+      //           start: svgFocusOverlay.dragStart,
+      //           tick: svgFocusOverlay.dragTick,
+      //           end: function (d) {
+      //             let res = svgFocusOverlay.dragEnd(d)
+      //             if (res) changeBlockProperties('', res.id, res.modif)
+      //           }
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: 'none',
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     cancel: {
+      //       enabled: true,
+      //       g: undefined,
+      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
+      //       events: {
+      //         click: mainFocusOnBlock,
+      //         mouseover: mainOverBlock,
+      //         mouseout: mainOutBlock,
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: colorTheme.brighter.stroke,
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     modification: {
+      //       enabled: false,
+      //       g: undefined,
+      //       box: {x: 0, y: adjustedBox.h * 0.24, w: adjustedBox.w, h: adjustedBox.h * 0.36, marg: adjustedBox.marg},
+      //       events: {
+      //         click: mainFocusOnBlock,
+      //         mouseover: mainOverBlock,
+      //         mouseout: mainOutBlock,
+      //         drag: {
+      //           start: () => {},
+      //           tick: () => {},
+      //           end: () => {}
+      //         }
+      //       },
+      //       background: {
+      //         fill: colorTheme.brighter.background,
+      //         stroke: colorTheme.brighter.stroke,
+      //         strokeWidth: 0
+      //       }
+      //     },
+      //     colorPalette: colorTheme.blocks
+      //   },
+      //   filters: {
+      //     enabled: false,
+      //     g: undefined,
+      //     box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
+      //     filters: []
+      //   },
+      //   timeBars: {
+      //     enabled: true,
+      //     g: undefined,
+      //     box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+      //   },
+      //   time: {
+      //     currentTime: {time: 0, date: undefined},
+      //     startTime: {time: 0, date: undefined},
+      //     endTime: {time: 0, date: undefined}
+      //   },
+      //   data: {
+      //     raw: undefined,
+      //     formated: undefined,
+      //     modified: undefined
+      //   },
+      //   debug: {
+      //     enabled: false
+      //   },
+      //   pattern: {},
+      //   event: {
+      //     modifications: () => {}
+      //   },
+      //   input: {
+      //     focus: {schedBlocks: undefined, block: undefined},
+      //     over: {schedBlocks: undefined, block: undefined},
+      //     selection: []
+      //   }
+      // })
 
       blockQueueOptimized.init()
-      update()
+      // update()
     }
     this.initData = initData
 
@@ -1935,6 +2423,13 @@ let mainSchedBlocksController = function (optIn) {
     function update () {
       if (!blockQueueOptimized) return
       blockQueueOptimized.update({
+        data: {
+          raw: {
+            blocks: [],
+            telIds: []
+          },
+          modified: []
+        },
         time: {
           currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
           startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
