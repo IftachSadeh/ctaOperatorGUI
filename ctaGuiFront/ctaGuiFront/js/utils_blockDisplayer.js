@@ -7,7 +7,6 @@
 /* global minMaxObj */
 /* global loadScript */
 /* global colsBlues */
-/* global colsYellows */
 /* global ScrollBox */
 /* global Locker */
 /* global RunLoop */
@@ -21,7 +20,7 @@ loadScript({ source: 'utils_scrollTable', script: '/js/utils_blockForm.js' })
 // ---------------------------------------------------------------------------------------------------
 window.BlockDisplayer = function (optIn) {
   let colorTheme = getColorTheme('bright-Grey')
-  let template = {
+  let com = {
     main: {
       tag: 'blockQueueRootTag',
       g: undefined,
@@ -125,7 +124,7 @@ window.BlockDisplayer = function (optIn) {
         enabled: true,
         g: undefined,
         box: {x: 0, y: 0, w: 1000, h: 300, marg: 0}
-      },
+      }
     },
     blockQueue2: {
       g: undefined,
@@ -232,7 +231,6 @@ window.BlockDisplayer = function (optIn) {
       }
     }
   }
-  let com = {}
   com = optIn
   this.set = function (optIn) {
     if (hasVar(optIn.data)) com[optIn.tag] = optIn.data
@@ -551,7 +549,6 @@ window.BlockDisplayer = function (optIn) {
           })
 
           ovelaps.sort(function (a, b) {
-            console.log(a);
             let diffTime = a.data.data.startTime - b.data.data.startTime
             let diffTel = b.data.data.telIds.length - a.data.data.telIds.length
             return diffTel !== 0 ? diffTel : diffTime
@@ -916,58 +913,58 @@ window.BlockDisplayer = function (optIn) {
       })
     }
 
-    function addExtraBar (date) {
-      let data = []
-      if (date === null) {
-        let rectNow = com.main.g
-          .selectAll('rect.' + com.main.tag + 'extra')
-          .data(data)
-        rectNow.exit().remove()
-      } else {
-        data = [date]
-        let rectNow = com.main.g
-          .selectAll('rect.' + com.main.tag + 'extra')
-          .data(data)
-          .attr('transform', 'translate(' + com.blockQueue.axis.box.x + ',' + 0 + ')')
-
-        rectNow
-          .enter()
-          .append('rect')
-          .attr('class', com.main.tag + 'extra')
-          .style('opacity', 1)
-          .attr('x', function (d, i) {
-            if (d > com.blockQueue.axis.scale.domain()[1]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[1])
-            else if (d < com.blockQueue.axis.scale.domain()[0]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[0])
-            return com.blockQueue.axis.scale(d)
-          })
-          .attr('y', function (d, i) {
-            return com.main.box.y - 1 * com.main.box.marg
-          })
-          .attr('width', 0)
-          .attr('height', function (d, i) {
-            return com.main.box.h + 1 * com.main.box.marg
-          })
-          .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
-          .attr('fill', colsYellows[0])
-          .attr('fill-opacity', 0.3)
-          .style('stroke-opacity', 0.15)
-          .attr('stroke-width', 3)
-          .style('pointer-events', 'none')
-          .attr('vector-effect', 'non-scaling-stroke')
-          .merge(rectNow)
-          .transition('inOut')
-          .duration(50)
-          .attr('x', function (d, i) {
-            if (d > com.blockQueue.axis.scale.domain()[1]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[1])
-            else if (d < com.blockQueue.axis.scale.domain()[0]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[0])
-            return com.blockQueue.axis.scale(d)
-          })
-          // .attr("y", function(d,i) { return d.y; })
-          .attr('width', function (d, i) {
-            return com.main.box.marg
-          })
-      }
-    }
+    // function addExtraBar (date) {
+    //   let data = []
+    //   if (date === null) {
+    //     let rectNow = com.main.g
+    //       .selectAll('rect.' + com.main.tag + 'extra')
+    //       .data(data)
+    //     rectNow.exit().remove()
+    //   } else {
+    //     data = [date]
+    //     let rectNow = com.main.g
+    //       .selectAll('rect.' + com.main.tag + 'extra')
+    //       .data(data)
+    //       .attr('transform', 'translate(' + com.blockQueue.axis.box.x + ',' + 0 + ')')
+    //
+    //     rectNow
+    //       .enter()
+    //       .append('rect')
+    //       .attr('class', com.main.tag + 'extra')
+    //       .style('opacity', 1)
+    //       .attr('x', function (d, i) {
+    //         if (d > com.blockQueue.axis.scale.domain()[1]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[1])
+    //         else if (d < com.blockQueue.axis.scale.domain()[0]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[0])
+    //         return com.blockQueue.axis.scale(d)
+    //       })
+    //       .attr('y', function (d, i) {
+    //         return com.main.box.y - 1 * com.main.box.marg
+    //       })
+    //       .attr('width', 0)
+    //       .attr('height', function (d, i) {
+    //         return com.main.box.h + 1 * com.main.box.marg
+    //       })
+    //       .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
+    //       .attr('fill', colsYellows[0])
+    //       .attr('fill-opacity', 0.3)
+    //       .style('stroke-opacity', 0.15)
+    //       .attr('stroke-width', 3)
+    //       .style('pointer-events', 'none')
+    //       .attr('vector-effect', 'non-scaling-stroke')
+    //       .merge(rectNow)
+    //       .transition('inOut')
+    //       .duration(50)
+    //       .attr('x', function (d, i) {
+    //         if (d > com.blockQueue.axis.scale.domain()[1]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[1])
+    //         else if (d < com.blockQueue.axis.scale.domain()[0]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[0])
+    //         return com.blockQueue.axis.scale(d)
+    //       })
+    //       // .attr("y", function(d,i) { return d.y; })
+    //       .attr('width', function (d, i) {
+    //         return com.main.box.marg
+    //       })
+    //   }
+    // }
     function setTimeRect () {
       let rectNowData = []
 
@@ -1817,58 +1814,58 @@ window.BlockDisplayer = function (optIn) {
     }
     this.getBlocksRows = getBlocksRows
 
-    function addExtraBar (date) {
-      let data = []
-      if (date === null) {
-        let rectNow = com.main.g
-          .selectAll('rect.' + com.main.tag + 'extra')
-          .data(data)
-        rectNow.exit().remove()
-      } else {
-        data = [date]
-        let rectNow = com.main.g
-          .selectAll('rect.' + com.main.tag + 'extra')
-          .data(data)
-          .attr('transform', 'translate(' + com.blockQueue2.axis.box.x + ',' + 0 + ')')
-
-        rectNow
-          .enter()
-          .append('rect')
-          .attr('class', com.main.tag + 'extra')
-          .style('opacity', 1)
-          .attr('x', function (d, i) {
-            if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
-            else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
-            return com.blockQueue2.axis.scale(d)
-          })
-          .attr('y', function (d, i) {
-            return com.main.box.y - 1 * com.main.box.marg
-          })
-          .attr('width', 0)
-          .attr('height', function (d, i) {
-            return com.main.box.h + 1 * com.main.box.marg
-          })
-          .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
-          .attr('fill', colsYellows[0])
-          .attr('fill-opacity', 0.3)
-          .style('stroke-opacity', 0.15)
-          .attr('stroke-width', 3)
-          .style('pointer-events', 'none')
-          .attr('vector-effect', 'non-scaling-stroke')
-          .merge(rectNow)
-          .transition('inOut')
-          .duration(50)
-          .attr('x', function (d, i) {
-            if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
-            else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
-            return com.blockQueue2.axis.scale(d)
-          })
-          // .attr("y", function(d,i) { return d.y; })
-          .attr('width', function (d, i) {
-            return com.main.box.marg
-          })
-      }
-    }
+    // function addExtraBar (date) {
+    //   let data = []
+    //   if (date === null) {
+    //     let rectNow = com.main.g
+    //       .selectAll('rect.' + com.main.tag + 'extra')
+    //       .data(data)
+    //     rectNow.exit().remove()
+    //   } else {
+    //     data = [date]
+    //     let rectNow = com.main.g
+    //       .selectAll('rect.' + com.main.tag + 'extra')
+    //       .data(data)
+    //       .attr('transform', 'translate(' + com.blockQueue2.axis.box.x + ',' + 0 + ')')
+    //
+    //     rectNow
+    //       .enter()
+    //       .append('rect')
+    //       .attr('class', com.main.tag + 'extra')
+    //       .style('opacity', 1)
+    //       .attr('x', function (d, i) {
+    //         if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
+    //         else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
+    //         return com.blockQueue2.axis.scale(d)
+    //       })
+    //       .attr('y', function (d, i) {
+    //         return com.main.box.y - 1 * com.main.box.marg
+    //       })
+    //       .attr('width', 0)
+    //       .attr('height', function (d, i) {
+    //         return com.main.box.h + 1 * com.main.box.marg
+    //       })
+    //       .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
+    //       .attr('fill', colsYellows[0])
+    //       .attr('fill-opacity', 0.3)
+    //       .style('stroke-opacity', 0.15)
+    //       .attr('stroke-width', 3)
+    //       .style('pointer-events', 'none')
+    //       .attr('vector-effect', 'non-scaling-stroke')
+    //       .merge(rectNow)
+    //       .transition('inOut')
+    //       .duration(50)
+    //       .attr('x', function (d, i) {
+    //         if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
+    //         else if (d < com.blockQueue2.axis.scale.domain()[0]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[0])
+    //         return com.blockQueue2.axis.scale(d)
+    //       })
+    //       // .attr("y", function(d,i) { return d.y; })
+    //       .attr('width', function (d, i) {
+    //         return com.main.box.marg
+    //       })
+    //   }
+    // }
     function setTimeRect () {
       let rectNowData = []
 
@@ -2157,7 +2154,6 @@ window.BlockDisplayer = function (optIn) {
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
 
-
       let allScheds = com.main.scroll.scrollG
         .selectAll('g.allScheds')
         .data(scheds, function (d) {
@@ -2346,58 +2342,58 @@ window.BlockDisplayer = function (optIn) {
     }
     this.getBlocksRows = getBlocksRows
 
-    function addExtraBar (date) {
-      let data = []
-      if (date === null) {
-        let rectNow = com.main.g
-          .selectAll('rect.' + com.main.tag + 'extra')
-          .data(data)
-        rectNow.exit().remove()
-      } else {
-        data = [date]
-        let rectNow = com.main.g
-          .selectAll('rect.' + com.main.tag + 'extra')
-          .data(data)
-          .attr('transform', 'translate(' + com.blockTrackShrink.axis.box.x + ',' + 0 + ')')
-
-        rectNow
-          .enter()
-          .append('rect')
-          .attr('class', com.main.tag + 'extra')
-          .style('opacity', 1)
-          .attr('x', function (d, i) {
-            if (d > com.blockTrackShrink.axis.scale.domain()[1]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[1])
-            else if (d < com.blockTrackShrink.axis.scale.domain()[0]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[0])
-            return com.blockTrackShrink.axis.scale(d)
-          })
-          .attr('y', function (d, i) {
-            return com.main.box.y - 1 * com.main.box.marg
-          })
-          .attr('width', 0)
-          .attr('height', function (d, i) {
-            return com.main.box.h + 1 * com.main.box.marg
-          })
-          .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
-          .attr('fill', colsYellows[0])
-          .attr('fill-opacity', 0.3)
-          .style('stroke-opacity', 0.15)
-          .attr('stroke-width', 3)
-          .style('pointer-events', 'none')
-          .attr('vector-effect', 'non-scaling-stroke')
-          .merge(rectNow)
-          .transition('inOut')
-          .duration(50)
-          .attr('x', function (d, i) {
-            if (d > com.blockTrackShrink.axis.scale.domain()[1]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[1])
-            else if (d < com.blockTrackShrink.axis.scale.domain()[0]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[0])
-            return com.blockTrackShrink.axis.scale(d)
-          })
-          // .attr("y", function(d,i) { return d.y; })
-          .attr('width', function (d, i) {
-            return com.main.box.marg
-          })
-      }
-    }
+    // function addExtraBar (date) {
+    //   let data = []
+    //   if (date === null) {
+    //     let rectNow = com.main.g
+    //       .selectAll('rect.' + com.main.tag + 'extra')
+    //       .data(data)
+    //     rectNow.exit().remove()
+    //   } else {
+    //     data = [date]
+    //     let rectNow = com.main.g
+    //       .selectAll('rect.' + com.main.tag + 'extra')
+    //       .data(data)
+    //       .attr('transform', 'translate(' + com.blockTrackShrink.axis.box.x + ',' + 0 + ')')
+    //
+    //     rectNow
+    //       .enter()
+    //       .append('rect')
+    //       .attr('class', com.main.tag + 'extra')
+    //       .style('opacity', 1)
+    //       .attr('x', function (d, i) {
+    //         if (d > com.blockTrackShrink.axis.scale.domain()[1]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[1])
+    //         else if (d < com.blockTrackShrink.axis.scale.domain()[0]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[0])
+    //         return com.blockTrackShrink.axis.scale(d)
+    //       })
+    //       .attr('y', function (d, i) {
+    //         return com.main.box.y - 1 * com.main.box.marg
+    //       })
+    //       .attr('width', 0)
+    //       .attr('height', function (d, i) {
+    //         return com.main.box.h + 1 * com.main.box.marg
+    //       })
+    //       .attr('stroke', d3.rgb(com.style.runRecCol).darker(1.0))
+    //       .attr('fill', colsYellows[0])
+    //       .attr('fill-opacity', 0.3)
+    //       .style('stroke-opacity', 0.15)
+    //       .attr('stroke-width', 3)
+    //       .style('pointer-events', 'none')
+    //       .attr('vector-effect', 'non-scaling-stroke')
+    //       .merge(rectNow)
+    //       .transition('inOut')
+    //       .duration(50)
+    //       .attr('x', function (d, i) {
+    //         if (d > com.blockTrackShrink.axis.scale.domain()[1]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[1])
+    //         else if (d < com.blockTrackShrink.axis.scale.domain()[0]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[0])
+    //         return com.blockTrackShrink.axis.scale(d)
+    //       })
+    //       // .attr("y", function(d,i) { return d.y; })
+    //       .attr('width', function (d, i) {
+    //         return com.main.box.marg
+    //       })
+    //   }
+    // }
     function setTimeRect () {
       let rectNowData = []
 
@@ -2687,7 +2683,6 @@ window.BlockDisplayer = function (optIn) {
           let event = d3.event
           let node = d3.select(this)
           node.attr('clicked', 1)
-          let that = this
 
           setTimeout(function () {
             if (node.attr('clicked') === '2') return

@@ -5,6 +5,8 @@ from gevent import sleep
 from gevent.coros import BoundedSemaphore
 from math import sqrt, ceil, floor
 from datetime import datetime
+from datetime import timedelta
+import time
 import random
 from random import Random
 import ctaGuiUtils.py.utils as utils
@@ -95,14 +97,27 @@ class schedBlocks():
     # -----------------------------------------------------------------------------------------------------------
     def getData(self):
         schedBlocks.timeOfNight = getTimeOfNight(self)
+        print schedBlocks.timeOfNight
         self.getBlocks()
+        self.getEvents()
+        self.getClockEvents()
         self.getTelHealth()
-
+        #  int(time.mktime(datetime(2018, 9, 16, 21, 30).timetuple()))
+        timeOfNightDate = {
+            "date_start": datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_end": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(schedBlocks.timeOfNight['end']))).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_now": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(schedBlocks.timeOfNight['now']))).strftime('%Y-%m-%d %H:%M:%S'),
+            "now": int(schedBlocks.timeOfNight['now']),
+            "start": int(schedBlocks.timeOfNight['start']),
+            "end": int(schedBlocks.timeOfNight['end'])
+        }
         data = {
-            "timeOfNight": schedBlocks.timeOfNight,
+            "timeOfNight": timeOfNightDate,
             "telHealth": schedBlocks.telHealth,
             "telIds": telIds,
-            "blocks": schedBlocks.blocks
+            "blocks": schedBlocks.blocks,
+            "external_events": schedBlocks.external_events,
+            "external_clockEvents": schedBlocks.external_clockEvents
         }
 
         return data
@@ -116,6 +131,24 @@ class schedBlocks():
         for i in range(len(redData)):
             idNow = telIds[i]
             schedBlocks.telHealth[i]["val"] = redData[i]
+
+        return
+
+    def getEvents(self):
+        self.redis.pipe.reset()
+        self.redis.pipe.get(name="external_events")
+        readData = self.redis.pipe.execute(packed=True)
+
+        schedBlocks.external_events = readData
+
+        return
+
+    def getClockEvents(self):
+        self.redis.pipe.reset()
+        self.redis.pipe.get(name="external_clockEvents")
+        readData = self.redis.pipe.execute(packed=True)
+
+        schedBlocks.external_clockEvents = readData
 
         return
 

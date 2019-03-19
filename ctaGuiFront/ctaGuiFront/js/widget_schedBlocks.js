@@ -31,6 +31,7 @@ var mainScriptTag = 'schedBlocks'
 /* global disableScrollSVG */
 /* global bckPattern */
 /* global ScrollBox */
+/* global EventDisplayer */
 /* global colsBlk */
 /* global telHealthCol */
 
@@ -38,13 +39,14 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollGrid.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOld.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_eventDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotBrushZoom.js' })
 // ---------------------------------------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 14
+  let h0 = 10
   let w0 = 12
   let divKey = 'main'
 
@@ -96,6 +98,10 @@ function mainSchedBlocks (optIn) {
   let box = {}
   let lenD = {}
 
+  let eventQueueServerPast = null
+  let eventQueueServerFutur = null
+  let brushZoomPast = null
+  let brushZoomFutur = null
   let blockQueueServerPast = null
   let blockQueueServerFutur = null
 
@@ -290,30 +296,44 @@ function mainSchedBlocks (optIn) {
     function initBox () {
       box.eventQueueServerPast = {
         x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.03,
+        y: lenD.h[0] * 0.06,
         w: lenD.w[0] * 0.4,
-        h: lenD.h[0] * 0.2,
+        h: lenD.h[0] * 0.15,
         marg: lenD.w[0] * 0.01
       }
       box.eventQueueServerFutur = {
         x: lenD.w[0] * 0.575,
-        y: lenD.h[0] * 0.03,
+        y: lenD.h[0] * 0.06,
         w: lenD.w[0] * 0.4,
-        h: lenD.h[0] * 0.2,
+        h: lenD.h[0] * 0.15,
+        marg: lenD.w[0] * 0.01
+      }
+      box.brushPast = {
+        x: lenD.w[0] * 0.0,
+        y: lenD.h[0] * 0.2,
+        w: lenD.w[0] * 0.4,
+        h: lenD.h[0] * 0.04,
+        marg: lenD.w[0] * 0.01
+      }
+      box.brushFutur = {
+        x: lenD.w[0] * 0.575,
+        y: lenD.h[0] * 0.2,
+        w: lenD.w[0] * 0.4,
+        h: lenD.h[0] * 0.04,
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueServerPast = {
         x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.23,
+        y: lenD.h[0] * 0.215,
         w: lenD.w[0] * 0.4,
-        h: lenD.h[0] * 0.4,
+        h: lenD.h[0] * 0.39,
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueServerFutur = {
         x: lenD.w[0] * 0.575,
-        y: lenD.h[0] * 0.23,
+        y: lenD.h[0] * 0.215,
         w: lenD.w[0] * 0.4,
-        h: lenD.h[0] * 0.4,
+        h: lenD.h[0] * 0.39,
         marg: lenD.w[0] * 0.01
       }
       box.freeTels = {
@@ -325,7 +345,7 @@ function mainSchedBlocks (optIn) {
       }
       box.currentBlocks = {
         x: lenD.w[0] * 0.405,
-        y: lenD.h[0] * 0.23,
+        y: lenD.h[0] * 0.21,
         w: lenD.w[0] * 0.18,
         h: lenD.h[0] * 0.36,
         marg: lenD.w[0] * 0.01
@@ -411,11 +431,13 @@ function mainSchedBlocks (optIn) {
     initBox()
 
     shared.data.server = dataIn.data
+    console.log(shared.data.server.timeOfNight);
     // sortBlocksByState()
 
     svgEventsQueueServerPast.initData()
     svgEventsQueueServerFutur.initData()
-
+    svgBrushPast.initData()
+    svgBrushFutur.initData()
     svgBlocksQueueServerPast.initData()
     svgRunningPhase.initData()
     svgBlocksQueueServerFutur.initData()
@@ -429,26 +451,31 @@ function mainSchedBlocks (optIn) {
     // svgSuccessQueue.initData()
     // svgFailQueue.initData()
     // svgCancelQueue.initData()
-
+    update()
     // svgMain.initData(dataIn.data)
   }
   this.initData = initData
 
+  function update () {
+    svgEventsQueueServerPast.updateData()
+    svgEventsQueueServerFutur.updateData()
+    svgBrushPast.updateData()
+    svgBrushFutur.updateData()
+    svgBlocksQueueServerPast.updateData()
+    svgBlocksQueueServerFutur.updateData()
+    svgRunningPhase.updateData()
+    svgFreeTels.updateData()
+  }
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
   function updateData (dataIn) {
     shared.data.server = dataIn.data
     // sortBlocksByState()
+    update()
 
-    svgEventsQueueServerPast.updateData()
-    svgEventsQueueServerFutur.updateData()
-
-    svgBlocksQueueServerPast.updateData()
-    svgBlocksQueueServerFutur.updateData()
-    svgRunningPhase.updateData()
     // svgRunningTels.updateData()
-    svgFreeTels.updateData()
+
     // svgStateScheduleMatrix.updateData()
     // svgWaitScheduleMatrix.updateData()
     // svgFreeTels.updateData()
@@ -1730,6 +1757,637 @@ function mainSchedBlocks (optIn) {
     //        .attr("r", 1);
     // }
   }
+
+  let SvgEventsQueueServerPast = function () {
+    let reserved = {}
+    function initData () {
+      let adjustedBox = {
+        x: box.eventQueueServerPast.x + box.eventQueueServerPast.w * 0.03,
+        y: box.eventQueueServerPast.y + box.eventQueueServerPast.h * 0.07,
+        w: box.eventQueueServerPast.w * 1.0,
+        h: box.eventQueueServerPast.h * 0.85,
+        marg: lenD.w[0] * 0.01
+      }
+
+      reserved.g = svg.g.append('g')
+        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+
+      eventQueueServerPast = new EventDisplayer({
+        main: {
+          tag: 'eventDisplayerMiddleTag',
+          g: reserved.g,
+          scroll: {},
+          box: adjustedBox,
+          background: {
+            fill: colorTheme.medium.background,
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.4
+          },
+          colorTheme: colorTheme
+        },
+
+        displayer: 'eventTrack',
+        eventTrack: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'left'
+            }
+          },
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            show: true,
+            orientation: 'top',
+            attr: {
+              text: {
+                size: 12,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
+        },
+
+        filters: {
+          eventFilters: [],
+          filtering: []
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {},
+        events: {
+          event: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) },
+            drag: {
+              start: () => {},
+              tick: () => {},
+              end: () => {}
+            }
+          }
+        },
+        input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
+          selection: []
+        }
+      })
+      eventQueueServerPast.init()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let date = new Date(shared.data.server.timeOfNight.date_now)
+      let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
+      let axisTop = brushZoomPast.getAxis('top').axis.scale().domain()
+      let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
+      let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
+
+      eventQueueServerPast.updateData({
+        time: {
+          currentTime: currentTime,
+          startTime: startTime,
+          endTime: endTime
+        },
+        data: {
+          raw: {
+            events_ponctual: shared.data.server.external_events[0],
+            events_scheduled: shared.data.server.external_clockEvents[0]
+          },
+          modified: []
+        }
+      })
+    }
+    this.updateData = updateData
+
+    function update () {
+      // blockQueueServerPast.update({
+      //   time: {
+      //     currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+      //     startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
+      //     endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+      //   }
+      // })
+    }
+    this.update = update
+  }
+  let SvgEventsQueueServerFutur = function () {
+    let reserved = {}
+    function initData () {
+      let adjustedBox = {
+        x: box.eventQueueServerFutur.x + box.eventQueueServerFutur.w * 0.03,
+        y: box.eventQueueServerFutur.y + box.eventQueueServerFutur.h * 0.07,
+        w: box.eventQueueServerFutur.w * 1.0,
+        h: box.eventQueueServerFutur.h * 0.85,
+        marg: lenD.w[0] * 0.01
+      }
+
+      reserved.g = svg.g.append('g')
+        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+
+      eventQueueServerFutur = new EventDisplayer({
+        main: {
+          tag: 'eventDisplayerMiddleTag',
+          g: reserved.g,
+          scroll: {},
+          box: adjustedBox,
+          background: {
+            fill: colorTheme.medium.background,
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.4
+          },
+          colorTheme: colorTheme
+        },
+
+        displayer: 'eventTrack',
+        eventTrack: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'left'
+            }
+          },
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            show: true,
+            orientation: 'top',
+            attr: {
+              text: {
+                size: 12,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
+        },
+
+        filters: {
+          eventFilters: [],
+          filtering: []
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {},
+        events: {
+          event: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) },
+            drag: {
+              start: () => {},
+              tick: () => {},
+              end: () => {}
+            }
+          }
+        },
+        input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
+          selection: []
+        }
+      })
+      eventQueueServerFutur.init()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let date = new Date(shared.data.server.timeOfNight.date_now)
+      let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
+      let axisTop = brushZoomFutur.getAxis('top').axis.scale().domain()
+      let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
+      let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
+
+      eventQueueServerFutur.updateData({
+        time: {
+          currentTime: currentTime,
+          startTime: startTime,
+          endTime: endTime
+        },
+        data: {
+          raw: {
+            events_ponctual: shared.data.server.external_events[0],
+            events_scheduled: shared.data.server.external_clockEvents[0]
+          },
+          modified: []
+        }
+      })
+    }
+    this.updateData = updateData
+
+    function update () {
+      // let date = new Date(shared.data.server.timeOfNight.date_now)
+      // let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
+      // let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
+      // let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) + (3600 * 8)}
+      // blockQueueServerFutur.updateData({
+      //   time: {
+      //     currentTime: currentTime,
+      //     startTime: startTime,
+      //     endTime: endTime
+      //   }
+      // })
+    }
+    this.update = update
+  }
+  let SvgBrushPast = function () {
+    let reserved = {}
+    function initData () {
+      let brushBox = {
+        x: box.brushPast.x + box.brushPast.w * 0.03,
+        y: box.brushPast.y + box.brushFutur.h * 0.07,
+        w: box.brushPast.w * 1.0,
+        h: box.brushPast.h * 0.85,
+        marg: lenD.w[0] * 0.01
+      }
+
+      reserved.g = svg.g.append('g')
+        .attr('transform', 'translate(' + brushBox.x + ',' + brushBox.y + ')')
+
+      brushZoomPast = new PlotBrushZoom({
+        main: {
+          g: svg.g.append('g').append('g'),
+          box: brushBox
+        },
+        axis: [
+          {
+            id: 'top',
+            enabled: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+              type: 'top',
+              attr: {
+                text: {
+                  enabled: false,
+                  size: 14,
+                  stroke: colorTheme.medium.stroke,
+                  fill: colorTheme.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorTheme.medium.stroke,
+                  fill: colorTheme.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushBox.w],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'middle',
+            enabled: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushBox.h * 0.9, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
+              type: 'top',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 14,
+                  stroke: colorTheme.medium.background,
+                  fill: colorTheme.medium.background
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorTheme.medium.background,
+                  fill: colorTheme.medium.background
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushBox.w],
+            brush: {
+              zoom: false,
+              brush: false
+            }
+          },
+          {
+            id: 'bottom',
+            enabled: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+              type: 'bottom',
+              attr: {
+                text: {
+                  enabled: false,
+                  size: 14,
+                  stroke: colorTheme.medium.stroke,
+                  fill: colorTheme.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorTheme.medium.stroke,
+                  fill: colorTheme.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushBox.w],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          }
+        ],
+        content: {
+          enabled: true,
+          main: {
+            g: undefined,
+            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+            attr: {
+              fill: colorTheme.medium.background
+            }
+          }
+        },
+        focus: {
+          enabled: true,
+          main: {
+            g: undefined,
+            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+            attr: {
+              fill: '#000000',
+              opacity: 0.8,
+              stroke: '#000000'
+            }
+          }
+        },
+        brush: {
+          coef: {x: 0, y: 0},
+          callback: () => {}
+        },
+        zoom: {
+          coef: {kx: 1, ky: 1, x: 0, y: 0},
+          callback: function () {
+            svgBlocksQueueServerPast.updateData()
+            svgEventsQueueServerPast.updateData()
+          }
+        }
+      })
+      brushZoomPast.init()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let date = new Date(shared.data.server.timeOfNight.date_now)
+      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() - (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) - (3600 * 8)}
+      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
+
+      brushZoomPast.updateAxis({
+        id: 'top',
+        domain: [startTime.date, endTime.date]
+      })
+      brushZoomPast.updateAxis({
+        id: 'middle',
+        domain: [startTime.date, endTime.date]
+      })
+      brushZoomPast.updateAxis({
+        id: 'bottom',
+        domain: [startTime.date, endTime.date]
+      })
+    }
+    this.updateData = updateData
+
+    function update () {}
+    this.update = update
+  }
+  let SvgBrushFutur = function () {
+    let reserved = {}
+    function initData () {
+      let brushBox = {
+        x: box.brushFutur.x + box.brushFutur.w * 0.03,
+        y: box.brushFutur.y + box.brushFutur.h * 0.07,
+        w: box.brushFutur.w * 1.0,
+        h: box.brushFutur.h * 0.85,
+        marg: lenD.w[0] * 0.01
+      }
+
+      reserved.g = svg.g.append('g')
+        .attr('transform', 'translate(' + brushBox.x + ',' + brushBox.y + ')')
+
+      brushZoomFutur = new PlotBrushZoom({
+        main: {
+          g: reserved.g,
+          box: brushBox
+        },
+        axis: [
+          {
+            id: 'top',
+            enabled: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+              type: 'top',
+              attr: {
+                text: {
+                  enabled: false,
+                  size: 14,
+                  stroke: colorTheme.medium.stroke,
+                  fill: colorTheme.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorTheme.medium.stroke,
+                  fill: colorTheme.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushBox.w],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'middle',
+            enabled: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushBox.h * 0.9, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
+              type: 'top',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 14,
+                  stroke: colorTheme.medium.background,
+                  fill: colorTheme.medium.background
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorTheme.medium.background,
+                  fill: colorTheme.medium.background
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushBox.w],
+            brush: {
+              zoom: false,
+              brush: false
+            }
+          },
+          {
+            id: 'bottom',
+            enabled: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+              type: 'bottom',
+              attr: {
+                text: {
+                  enabled: false,
+                  size: 14,
+                  stroke: colorTheme.medium.stroke,
+                  fill: colorTheme.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorTheme.medium.stroke,
+                  fill: colorTheme.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushBox.w],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          }
+        ],
+        content: {
+          enabled: true,
+          main: {
+            g: undefined,
+            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+            attr: {
+              fill: colorTheme.medium.background
+            }
+          }
+        },
+        focus: {
+          enabled: true,
+          main: {
+            g: undefined,
+            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+            attr: {
+              fill: '#000000',
+              opacity: 0.8,
+              stroke: '#000000'
+            }
+          }
+        },
+        brush: {
+          coef: {x: 0, y: 0},
+          callback: () => {}
+        },
+        zoom: {
+          coef: {kx: 1, ky: 1, x: 0, y: 0},
+          callback: function () {
+            svgBlocksQueueServerFutur.updateData()
+            svgEventsQueueServerFutur.updateData()
+          }
+        }
+      })
+      brushZoomFutur.init()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let date = new Date(shared.data.server.timeOfNight.date_now)
+      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
+      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) + (3600 * 8)}
+
+      brushZoomFutur.updateAxis({
+        id: 'top',
+        domain: [startTime.date, endTime.date]
+      })
+      brushZoomFutur.updateAxis({
+        id: 'middle',
+        domain: [startTime.date, endTime.date]
+      })
+      brushZoomFutur.updateAxis({
+        id: 'bottom',
+        domain: [startTime.date, endTime.date]
+      })
+    }
+    this.updateData = updateData
+
+    function update () {}
+    this.update = update
+  }
   let SvgBlocksQueueServerPast = function () {
     let reserved = {}
     function initData () {
@@ -1897,16 +2555,16 @@ function mainSchedBlocks (optIn) {
           axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
             axis: undefined,
             scale: undefined,
             domain: [0, 1000],
             range: [0, 0],
             showText: true,
-            orientation: 'top',
+            orientation: 'bottom',
             attr: {
               text: {
-                size: 14,
+                size: 12,
                 stroke: colorTheme.medium.stroke,
                 fill: colorTheme.medium.stroke
               },
@@ -1984,292 +2642,13 @@ function mainSchedBlocks (optIn) {
         }
       })
       blockQueueServerPast.init()
-
-      let brushBox = {x: adjustedBox.x + adjustedBox.w * 0.0, y: adjustedBox.y - adjustedBox.h * 0.08, w: adjustedBox.w * 1, h: box.blockQueueServerPast.h * 0.02}
-      reserved.brushZoomPast = new PlotBrushZoom({
-        main: {
-          g: svg.g.append('g').append('g'),
-          box: brushBox
-        },
-        axis: [
-          {
-            id: 'top',
-            enabled: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
-              type: 'top',
-              attr: {
-                text: {
-                  enabled: true,
-                  size: 14,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushBox.w],
-            brush: {
-              zoom: false,
-              brush: true
-            }
-          },
-          {
-            id: 'bottom',
-            enabled: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
-              type: 'bottom',
-              attr: {
-                text: {
-                  enabled: false,
-                  size: 14,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushBox.w],
-            brush: {
-              zoom: true,
-              brush: true
-            }
-          }
-        ],
-        content: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
-            attr: {
-              fill: colorTheme.medium.background
-            }
-          }
-        },
-        focus: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
-            attr: {
-              fill: '#000000',
-              opacity: 0.5,
-              stroke: '#000000'
-            }
-          }
-        },
-        brush: {
-          coef: {x: 0, y: 0},
-          callback: () => {}
-        },
-        zoom: {
-          coef: {kx: 1, ky: 1, x: 0, y: 0},
-          callback: updateBlockDisplayer
-        }
-      })
-      reserved.brushZoomPast.init()
-
-      // blockQueueServerPast = new BlockQueueCreator({
-      //   main: {
-      //     tag: 'blockQueueMiddleTag',
-      //     g: reserved.g,
-      //     box: adjustedBox,
-      //     background: {
-      //       fill: colorTheme.dark.background,
-      //       stroke: colorTheme.dark.stroke,
-      //       strokeWidth: 0.1
-      //     },
-      //     colorTheme: colorTheme
-      //   },
-      //   axis: {
-      //     enabled: true,
-      //     g: undefined,
-      //     box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //     axis: undefined,
-      //     scale: undefined,
-      //     domain: [0, 1000],
-      //     range: [0, 0],
-      //     showText: true,
-      //     orientation: 'axisTop',
-      //     attr: {
-      //       text: {
-      //         stroke: colorTheme.medium.stroke,
-      //         fill: colorTheme.medium.stroke
-      //       },
-      //       path: {
-      //         stroke: colorTheme.medium.stroke,
-      //         fill: colorTheme.medium.stroke
-      //       }
-      //     }
-      //   },
-      //   blocks: {
-      //     enabled: true,
-      //     run: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: 'none',
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     cancel: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: colorTheme.brighter.stroke,
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     modification: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: colorTheme.brighter.stroke,
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     colorPalette: colorTheme.blocks
-      //   },
-      //   filters: {
-      //     enabled: false,
-      //     g: undefined,
-      //     box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
-      //     filters: []
-      //   },
-      //   timeBars: {
-      //     enabled: false,
-      //     g: undefined,
-      //     box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
-      //   },
-      //   time: {
-      //     currentTime: {time: 0, date: undefined},
-      //     startTime: {time: 0, date: undefined},
-      //     endTime: {time: 0, date: undefined}
-      //   },
-      //   data: {
-      //     raw: undefined,
-      //     formated: undefined,
-      //     modified: undefined
-      //   },
-      //   debug: {
-      //     enabled: false
-      //   },
-      //   pattern: {},
-      //   event: {
-      //     modifications: () => {}
-      //   },
-      //   input: {
-      //     focus: {schedBlocks: undefined, block: undefined},
-      //     over: {schedBlocks: undefined, block: undefined},
-      //     selection: []
-      //   }
-      // })
-      //
-      // blockQueueServerPast.init()
-
-      let minTxtSize = adjustedBox.w * 0.04
-      // reserved.g.append('rect')
-      //   .attr('x', -box.blockQueueServerPast.x - box.blockQueueServerPast.w * 0.03)
-      //   .attr('y', adjustedBox.h + minTxtSize * 1.5)
-      //   .attr('width', minTxtSize * 6)
-      //   .attr('height', minTxtSize * 2)
-      //   .attr('fill', colorTheme.dark.stroke)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      // reserved.g.append('text')
-      //   .attr('x', (-box.blockQueueServerPast.x - box.blockQueueServerPast.w * 0.03) + minTxtSize * 3)
-      //   .attr('y', adjustedBox.h + minTxtSize * 2.6)
-      //   .attr('dy', minTxtSize * 0.43)
-      //   .attr('class', 'dateTextLeft')
-      //   .attr('fill', colorTheme.bright.background)
-      //   .attr('stroke', colorTheme.bright.background)
-      //   .attr('stroke-width', 0.5)
-      //   .style('font-weight', 'bold')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', '22px')
-      //   .style('pointer-events', 'none')
-      //   .style('user-select', 'none')
-
-      // reserved.g.append('rect')
-      //   .attr('x', adjustedBox.w - minTxtSize * 2)
-      //   .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
-      //   .attr('width', minTxtSize * 4)
-      //   .attr('height', minTxtSize * 2)
-      //   .attr('fill', colorTheme.dark.background)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      // reserved.g.append('text')
-      //   .attr('x', adjustedBox.w)
-      //   .attr('y', adjustedBox.h + 4 + minTxtSize)
-      //   .attr('dy', minTxtSize * 0.43)
-      //   .attr('class', 'dateTextRight')
-      //   .attr('stroke', colorTheme.medium.stroke)
-      //   .attr('stroke-width', 0.3)
-      //   .attr('fill', colorTheme.medium.stroke)
-      //   .style('font-size', (minTxtSize * 1.3) + 'px')
-      //   .attr('text-anchor', 'middle')
-
-      updateData()
     }
     this.initData = initData
 
-    function updateBlockDisplayer () {
+    function updateData () {
       let date = new Date(shared.data.server.timeOfNight.date_now)
       let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
-      let axisTop = reserved.brushZoomPast.getAxis('bottom').axis.scale().domain()
+      let axisTop = brushZoomPast.getAxis('bottom').axis.scale().domain()
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
       let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
 
@@ -2287,26 +2666,6 @@ function mainSchedBlocks (optIn) {
           modified: []
         }
       })
-    }
-
-    function updateData () {
-      let date = new Date(shared.data.server.timeOfNight.date_now)
-      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() - (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) - (3600 * 8)}
-      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
-
-      // reserved.g.select('text.dateTextLeft').text(d3.timeFormat('%H:%M')(startTime.date))
-      // reserved.g.select('text.dateTextRight').text(d3.timeFormat('%H:%M')(endTime.date))
-
-      reserved.brushZoomPast.updateAxis({
-        id: 'top',
-        domain: [startTime.date, endTime.date]
-      })
-      reserved.brushZoomPast.updateAxis({
-        id: 'bottom',
-        domain: [startTime.date, endTime.date]
-      })
-      updateBlockDisplayer()
-      // reserved.brushZoomPast.updateAxis({})
     }
     this.updateData = updateData
 
@@ -2334,13 +2693,6 @@ function mainSchedBlocks (optIn) {
 
       reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
-      // reserved.g.append('text')
-      //   .text('Waiting')
-      //   .style('fill', colorTheme.bright.background)
-      //   .style('font-weight', 'bold')
-      //   .style('font-size', '20px')
-      //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + (adjustedBox.w * 0.5) + ',' + -(adjustedBox.h * 0.075) + ')')
 
       blockQueueServerFutur = new BlockDisplayer({
         main: {
@@ -2495,16 +2847,16 @@ function mainSchedBlocks (optIn) {
           axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
             axis: undefined,
             scale: undefined,
             domain: [0, 1000],
             range: [0, 0],
             showText: true,
-            orientation: 'top',
+            orientation: 'bottom',
             attr: {
               text: {
-                size: 14,
+                size: 12,
                 stroke: colorTheme.medium.stroke,
                 fill: colorTheme.medium.stroke
               },
@@ -2582,288 +2934,13 @@ function mainSchedBlocks (optIn) {
         }
       })
       blockQueueServerFutur.init()
-      // blockQueueServerFutur = new BlockQueueCreator({
-      //   main: {
-      //     tag: 'blockQueueServerFuturTag',
-      //     g: reserved.g,
-      //     box: adjustedBox,
-      //     background: {
-      //       fill: colorTheme.dark.background,
-      //       stroke: colorTheme.dark.stroke,
-      //       strokeWidth: 0.1
-      //     },
-      //     colorTheme: colorTheme
-      //   },
-      //   axis: {
-      //     enabled: true,
-      //     g: undefined,
-      //     box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //     axis: undefined,
-      //     scale: undefined,
-      //     domain: [0, 1000],
-      //     range: [0, 0],
-      //     showText: true,
-      //     orientation: 'axisTop',
-      //     attr: {
-      //       text: {
-      //         stroke: colorTheme.medium.stroke,
-      //         fill: colorTheme.medium.stroke
-      //       },
-      //       path: {
-      //         stroke: colorTheme.medium.stroke,
-      //         fill: colorTheme.medium.stroke
-      //       }
-      //     }
-      //   },
-      //   blocks: {
-      //     enabled: true,
-      //     run: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: 'none',
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     cancel: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: colorTheme.brighter.stroke,
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     modification: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: colorTheme.brighter.stroke,
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     colorPalette: colorTheme.blocks
-      //   },
-      //   filters: {
-      //     enabled: false,
-      //     g: undefined,
-      //     box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
-      //     filters: []
-      //   },
-      //   timeBars: {
-      //     enabled: false,
-      //     g: undefined,
-      //     box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
-      //   },
-      //   time: {
-      //     currentTime: {time: 0, date: undefined},
-      //     startTime: {time: 0, date: undefined},
-      //     endTime: {time: 0, date: undefined}
-      //   },
-      //   data: {
-      //     raw: undefined,
-      //     formated: undefined,
-      //     modified: undefined
-      //   },
-      //   debug: {
-      //     enabled: false
-      //   },
-      //   pattern: {},
-      //   event: {
-      //     modifications: () => {}
-      //   },
-      //   input: {
-      //     focus: {schedBlocks: undefined, block: undefined},
-      //     over: {schedBlocks: undefined, block: undefined},
-      //     selection: []
-      //   }
-      // })
-      // blockQueueServerFutur.init()
-
-      let brushBox = {x: adjustedBox.x + adjustedBox.w * 0.0, y: adjustedBox.y - adjustedBox.h * 0.08, w: adjustedBox.w * 1, h: box.blockQueueServerPast.h * 0.02}
-      reserved.brushZoomPast = new PlotBrushZoom({
-        main: {
-          g: svg.g.append('g').append('g'),
-          box: brushBox
-        },
-        axis: [
-          {
-            id: 'top',
-            enabled: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
-              type: 'top',
-              attr: {
-                text: {
-                  enabled: true,
-                  size: 14,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushBox.w],
-            brush: {
-              zoom: false,
-              brush: true
-            }
-          },
-          {
-            id: 'bottom',
-            enabled: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
-              type: 'bottom',
-              attr: {
-                text: {
-                  enabled: false,
-                  size: 14,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushBox.w],
-            brush: {
-              zoom: true,
-              brush: true
-            }
-          }
-        ],
-        content: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
-            attr: {
-              fill: colorTheme.medium.background
-            }
-          }
-        },
-        focus: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
-            attr: {
-              fill: '#000000',
-              opacity: 0.5,
-              stroke: '#000000'
-            }
-          }
-        },
-        brush: {
-          coef: {x: 0, y: 0},
-          callback: () => {}
-        },
-        zoom: {
-          coef: {kx: 1, ky: 1, x: 0, y: 0},
-          callback: updateBlockDisplayer
-        }
-      })
-      reserved.brushZoomPast.init()
-      // let minTxtSize = adjustedBox.w * 0.04
-      // reserved.g.append('rect')
-      //   .attr('x', -minTxtSize * 2)
-      //   .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
-      //   .attr('width', minTxtSize * 4)
-      //   .attr('height', minTxtSize * 2)
-      //   .attr('fill', colorTheme.dark.background)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      // reserved.g.append('text')
-      //   .attr('x', 0)
-      //   .attr('y', adjustedBox.h + 4 + minTxtSize)
-      //   .attr('dy', minTxtSize * 0.43)
-      //   .attr('class', 'dateTextLeft')
-      //   .attr('stroke', colorTheme.medium.stroke)
-      //   .attr('stroke-width', 0.3)
-      //   .attr('fill', colorTheme.medium.stroke)
-      //   .style('font-size', (minTxtSize * 1.3) + 'px')
-      //   .attr('text-anchor', 'middle')
-
-      // reserved.g.append('rect')
-      //   .attr('x', (adjustedBox.w) - minTxtSize * 5.0)
-      //   .attr('y', adjustedBox.h + minTxtSize * 1.5)
-      //   .attr('width', minTxtSize * 6)
-      //   .attr('height', minTxtSize * 2)
-      //   .attr('fill', colorTheme.dark.stroke)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      // reserved.g.append('text')
-      //   .attr('x', (adjustedBox.w) - minTxtSize * 2.0)
-      //   .attr('y', adjustedBox.h + minTxtSize * 2.6)
-      //   .attr('dy', minTxtSize * 0.43)
-      //   .attr('class', 'dateTextRight')
-      //   .attr('fill', colorTheme.bright.background)
-      //   .attr('stroke', colorTheme.bright.background)
-      //   .attr('stroke-width', 0.5)
-      //   .style('font-weight', 'bold')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', '22px')
-      //   .style('pointer-events', 'none')
-      //   .style('user-select', 'none')
-      updateData()
     }
     this.initData = initData
 
-    function updateBlockDisplayer () {
+    function updateData () {
       let date = new Date(shared.data.server.timeOfNight.date_now)
       let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
-      let axisTop = reserved.brushZoomPast.getAxis('bottom').axis.scale().domain()
+      let axisTop = brushZoomFutur.getAxis('bottom').axis.scale().domain()
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
       let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
 
@@ -2882,35 +2959,6 @@ function mainSchedBlocks (optIn) {
         }
       })
     }
-
-    function updateData () {
-      let date = new Date(shared.data.server.timeOfNight.date_now)
-      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
-      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) + (3600 * 8)}
-
-      // reserved.g.select('text.dateTextLeft').text(d3.timeFormat('%H:%M')(startTime.date))
-      // reserved.g.select('text.dateTextRight').text(d3.timeFormat('%H:%M')(endTime.date))
-
-      reserved.brushZoomPast.updateAxis({
-        id: 'top',
-        domain: [startTime.date, endTime.date]
-      })
-      reserved.brushZoomPast.updateAxis({
-        id: 'bottom',
-        domain: [startTime.date, endTime.date]
-      })
-      updateBlockDisplayer()
-      // reserved.brushZoomPast.updateData({
-      //   axis: {
-      //     bottom: {
-      //       domain: [startTime.date, endTime.date]
-      //     },
-      //     top: {
-      //       domain: [startTime.date, endTime.date]
-      //     }
-      //   }
-      // })
-    }
     this.updateData = updateData
 
     function update () {
@@ -2925,1205 +2973,6 @@ function mainSchedBlocks (optIn) {
           endTime: endTime
         }
       })
-    }
-    this.update = update
-  }
-
-  let SvgEventsQueueServerPast = function () {
-    let reserved = {}
-    function initData () {
-      let adjustedBox = {
-        x: box.eventQueueServerPast.x + box.eventQueueServerPast.w * 0.03,
-        y: box.eventQueueServerPast.y + box.eventQueueServerPast.h * 0.07,
-        w: box.eventQueueServerPast.w * 1.0,
-        h: box.eventQueueServerPast.h * 0.85,
-        marg: lenD.w[0] * 0.01
-      }
-
-      reserved.g = svg.g.append('g')
-        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
-
-      // blockQueueServerPast = new BlockDisplayer({
-      //   main: {
-      //     tag: 'blockQueueMiddleTag',
-      //     g: reserved.g,
-      //     scroll: {},
-      //     box: adjustedBox,
-      //     background: {
-      //       fill: colorTheme.medium.background,
-      //       stroke: colorTheme.medium.stroke,
-      //       strokeWidth: 0.4
-      //     },
-      //     colorTheme: colorTheme
-      //   },
-      //
-      //   displayer: 'blockTrackShrinkBib', // 'blockQueue2',
-      //   blockQueue: {
-      //     axis: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //       axis: undefined,
-      //       scale: undefined,
-      //       domain: [0, 1000],
-      //       range: [0, 0],
-      //       showText: true,
-      //       orientation: 'bottom',
-      //       attr: {
-      //         text: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         },
-      //         path: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         }
-      //       }
-      //     },
-      //     blocks: {
-      //       enabled: true,
-      //       run: {
-      //         enabled: true,
-      //         g: undefined,
-      //         box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
-      //         events: {
-      //           click: () => {},
-      //           mouseover: () => {},
-      //           mouseout: () => {},
-      //           drag: {
-      //             start: () => {},
-      //             tick: () => {},
-      //             end: () => {}
-      //           }
-      //         },
-      //         background: {
-      //           fill: colorTheme.brighter.background,
-      //           stroke: 'none',
-      //           strokeWidth: 0
-      //         }
-      //       },
-      //       cancel: {
-      //         enabled: true,
-      //         g: undefined,
-      //         box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
-      //         events: {
-      //           click: () => {},
-      //           mouseover: () => {},
-      //           mouseout: () => {},
-      //           drag: {
-      //             start: () => {},
-      //             tick: () => {},
-      //             end: () => {}
-      //           }
-      //         },
-      //         background: {
-      //           fill: colorTheme.brighter.background,
-      //           stroke: colorTheme.brighter.stroke,
-      //           strokeWidth: 0
-      //         }
-      //       },
-      //       modification: {
-      //         enabled: true,
-      //         g: undefined,
-      //         box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-      //         events: {
-      //           click: () => {},
-      //           mouseover: () => {},
-      //           mouseout: () => {},
-      //           drag: {
-      //             start: () => {},
-      //             tick: () => {},
-      //             end: () => {}
-      //           }
-      //         },
-      //         background: {
-      //           fill: colorTheme.brighter.background,
-      //           stroke: colorTheme.brighter.stroke,
-      //           strokeWidth: 0
-      //         }
-      //       },
-      //       colorPalette: colorTheme.blocks
-      //     },
-      //     timeBars: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
-      //     }
-      //   },
-      //   blockQueue2: {
-      //     g: undefined,
-      //     schedBlocks: {
-      //       label: {
-      //         enabled: true,
-      //         position: 'left'
-      //       }
-      //     },
-      //     axis: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //       axis: undefined,
-      //       scale: undefined,
-      //       domain: [0, 1000],
-      //       range: [0, 0],
-      //       showText: true,
-      //       orientation: 'axisTop',
-      //       attr: {
-      //         text: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         },
-      //         path: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         }
-      //       }
-      //     },
-      //     timeBars: {
-      //       enabled: false,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
-      //     }
-      //   },
-      //   blockTrackShrink: {
-      //     g: undefined,
-      //     schedBlocks: {
-      //       label: {
-      //         enabled: true,
-      //         position: 'left'
-      //       }
-      //     },
-      //     axis: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //       axis: undefined,
-      //       scale: undefined,
-      //       domain: [0, 1000],
-      //       range: [0, 0],
-      //       showText: true,
-      //       orientation: 'top',
-      //       attr: {
-      //         text: {
-      //           size: 14,
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         },
-      //         path: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         }
-      //       }
-      //     },
-      //     timeBars: {
-      //       enabled: false,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
-      //     }
-      //   },
-      //   blockList: {
-      //
-      //   },
-      //   blockForm: {
-      //     mosaic: {
-      //       box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
-      //       order: 'nSched'
-      //     },
-      //     forms: {
-      //       g: undefined,
-      //       box: {x: adjustedBox.w * 0.22,
-      //         y: adjustedBox.h * 0.02,
-      //         w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
-      //         h: adjustedBox.h * 0.96,
-      //         marg: adjustedBox.marg},
-      //       display: 'list',
-      //       scroll: {}
-      //     }
-      //   },
-      //
-      //   filters: {
-      //     blockFilters: [],
-      //     filtering: []
-      //   },
-      //   time: {
-      //     currentTime: {time: 0, date: undefined},
-      //     startTime: {time: 0, date: undefined},
-      //     endTime: {time: 0, date: undefined}
-      //   },
-      //   data: {
-      //     raw: undefined,
-      //     formated: undefined,
-      //     modified: undefined
-      //   },
-      //   debug: {
-      //     enabled: false
-      //   },
-      //   pattern: {},
-      //   events: {
-      //     block: {
-      //       click: (d) => { console.log(d) },
-      //       mouseover: (d) => { console.log(d) },
-      //       mouseout: (d) => { console.log(d) },
-      //       drag: {
-      //         start: () => {},
-      //         tick: () => {},
-      //         end: () => {}
-      //       }
-      //     },
-      //     sched: {
-      //       click: (d) => { console.log(d) },
-      //       mouseover: (d) => { console.log(d) },
-      //       mouseout: (d) => { console.log(d) }
-      //     }
-      //   },
-      //   input: {
-      //     focus: {schedBlocks: undefined, block: undefined},
-      //     over: {schedBlocks: undefined, block: undefined},
-      //     selection: []
-      //   }
-      // })
-      // blockQueueServerPast.init()
-
-      let brushBox = {x: adjustedBox.x + adjustedBox.w * 0.0, y: adjustedBox.y + adjustedBox.h * 0.93, w: adjustedBox.w * 1, h: box.blockQueueServerPast.h * 0.02}
-      reserved.brushZoomPast = new PlotBrushZoom({
-        main: {
-          g: svg.g.append('g').append('g'),
-          box: brushBox
-        },
-        axis: [
-          {
-            id: 'top',
-            enabled: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
-              type: 'top',
-              attr: {
-                text: {
-                  enabled: true,
-                  size: 14,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushBox.w],
-            brush: {
-              zoom: false,
-              brush: true
-            }
-          },
-          {
-            id: 'bottom',
-            enabled: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
-              type: 'bottom',
-              attr: {
-                text: {
-                  enabled: false,
-                  size: 14,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushBox.w],
-            brush: {
-              zoom: true,
-              brush: true
-            }
-          }
-        ],
-        content: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
-            attr: {
-              fill: colorTheme.medium.background
-            }
-          }
-        },
-        focus: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
-            attr: {
-              fill: '#000000',
-              opacity: 0.5,
-              stroke: '#000000'
-            }
-          }
-        },
-        brush: {
-          coef: {x: 0, y: 0},
-          callback: () => {}
-        },
-        zoom: {
-          coef: {kx: 1, ky: 1, x: 0, y: 0},
-          callback: () => {}
-        }
-      })
-      reserved.brushZoomPast.init()
-
-      // blockQueueServerPast = new BlockQueueCreator({
-      //   main: {
-      //     tag: 'blockQueueMiddleTag',
-      //     g: reserved.g,
-      //     box: adjustedBox,
-      //     background: {
-      //       fill: colorTheme.dark.background,
-      //       stroke: colorTheme.dark.stroke,
-      //       strokeWidth: 0.1
-      //     },
-      //     colorTheme: colorTheme
-      //   },
-      //   axis: {
-      //     enabled: true,
-      //     g: undefined,
-      //     box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //     axis: undefined,
-      //     scale: undefined,
-      //     domain: [0, 1000],
-      //     range: [0, 0],
-      //     showText: true,
-      //     orientation: 'axisTop',
-      //     attr: {
-      //       text: {
-      //         stroke: colorTheme.medium.stroke,
-      //         fill: colorTheme.medium.stroke
-      //       },
-      //       path: {
-      //         stroke: colorTheme.medium.stroke,
-      //         fill: colorTheme.medium.stroke
-      //       }
-      //     }
-      //   },
-      //   blocks: {
-      //     enabled: true,
-      //     run: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: 'none',
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     cancel: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: colorTheme.brighter.stroke,
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     modification: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: colorTheme.brighter.stroke,
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     colorPalette: colorTheme.blocks
-      //   },
-      //   filters: {
-      //     enabled: false,
-      //     g: undefined,
-      //     box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
-      //     filters: []
-      //   },
-      //   timeBars: {
-      //     enabled: false,
-      //     g: undefined,
-      //     box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
-      //   },
-      //   time: {
-      //     currentTime: {time: 0, date: undefined},
-      //     startTime: {time: 0, date: undefined},
-      //     endTime: {time: 0, date: undefined}
-      //   },
-      //   data: {
-      //     raw: undefined,
-      //     formated: undefined,
-      //     modified: undefined
-      //   },
-      //   debug: {
-      //     enabled: false
-      //   },
-      //   pattern: {},
-      //   event: {
-      //     modifications: () => {}
-      //   },
-      //   input: {
-      //     focus: {schedBlocks: undefined, block: undefined},
-      //     over: {schedBlocks: undefined, block: undefined},
-      //     selection: []
-      //   }
-      // })
-      //
-      // blockQueueServerPast.init()
-
-      let minTxtSize = adjustedBox.w * 0.04
-      // reserved.g.append('rect')
-      //   .attr('x', -box.blockQueueServerPast.x - box.blockQueueServerPast.w * 0.03)
-      //   .attr('y', adjustedBox.h + minTxtSize * 1.5)
-      //   .attr('width', minTxtSize * 6)
-      //   .attr('height', minTxtSize * 2)
-      //   .attr('fill', colorTheme.dark.stroke)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      // reserved.g.append('text')
-      //   .attr('x', (-box.blockQueueServerPast.x - box.blockQueueServerPast.w * 0.03) + minTxtSize * 3)
-      //   .attr('y', adjustedBox.h + minTxtSize * 2.6)
-      //   .attr('dy', minTxtSize * 0.43)
-      //   .attr('class', 'dateTextLeft')
-      //   .attr('fill', colorTheme.bright.background)
-      //   .attr('stroke', colorTheme.bright.background)
-      //   .attr('stroke-width', 0.5)
-      //   .style('font-weight', 'bold')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', '22px')
-      //   .style('pointer-events', 'none')
-      //   .style('user-select', 'none')
-
-      // reserved.g.append('rect')
-      //   .attr('x', adjustedBox.w - minTxtSize * 2)
-      //   .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
-      //   .attr('width', minTxtSize * 4)
-      //   .attr('height', minTxtSize * 2)
-      //   .attr('fill', colorTheme.dark.background)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      // reserved.g.append('text')
-      //   .attr('x', adjustedBox.w)
-      //   .attr('y', adjustedBox.h + 4 + minTxtSize)
-      //   .attr('dy', minTxtSize * 0.43)
-      //   .attr('class', 'dateTextRight')
-      //   .attr('stroke', colorTheme.medium.stroke)
-      //   .attr('stroke-width', 0.3)
-      //   .attr('fill', colorTheme.medium.stroke)
-      //   .style('font-size', (minTxtSize * 1.3) + 'px')
-      //   .attr('text-anchor', 'middle')
-
-      updateData()
-    }
-    this.initData = initData
-
-    // function updateBlockDisplayer () {
-    //   let date = new Date(shared.data.server.timeOfNight.date_now)
-    //   let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
-    //   let axisTop = reserved.brushZoomPast.getAxis('bottom').axis.scale().domain()
-    //   let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
-    //   let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
-    //
-    //   blockQueueServerPast.updateData({
-    //     time: {
-    //       currentTime: currentTime,
-    //       startTime: startTime,
-    //       endTime: endTime
-    //     },
-    //     data: {
-    //       raw: {
-    //         blocks: shared.data.server.blocks,
-    //         telIds: shared.data.server.telIds
-    //       },
-    //       modified: []
-    //     }
-    //   })
-    // }
-    //
-    function updateData () {
-      let date = new Date(shared.data.server.timeOfNight.date_now)
-      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() - (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) - (3600 * 8)}
-      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
-
-      // reserved.g.select('text.dateTextLeft').text(d3.timeFormat('%H:%M')(startTime.date))
-      // reserved.g.select('text.dateTextRight').text(d3.timeFormat('%H:%M')(endTime.date))
-
-      reserved.brushZoomPast.updateAxis({
-        id: 'top',
-        domain: [startTime.date, endTime.date]
-      })
-      reserved.brushZoomPast.updateAxis({
-        id: 'bottom',
-        domain: [startTime.date, endTime.date]
-      })
-      // updateBlockDisplayer()
-      // reserved.brushZoomPast.updateAxis({})
-    }
-    this.updateData = updateData
-
-    function update () {
-      // blockQueueServerPast.update({
-      //   time: {
-      //     currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
-      //     startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
-      //     endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
-      //   }
-      // })
-    }
-    this.update = update
-  }
-  let SvgEventsQueueServerFutur = function () {
-    let reserved = {}
-    function initData () {
-      let adjustedBox = {
-        x: box.eventQueueServerFutur.x + box.eventQueueServerFutur.w * 0.03,
-        y: box.eventQueueServerFutur.y + box.eventQueueServerFutur.h * 0.07,
-        w: box.eventQueueServerFutur.w * 1.0,
-        h: box.eventQueueServerFutur.h * 0.85,
-        marg: lenD.w[0] * 0.01
-      }
-
-      reserved.g = svg.g.append('g')
-        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
-      // reserved.g.append('text')
-      //   .text('Waiting')
-      //   .style('fill', colorTheme.bright.background)
-      //   .style('font-weight', 'bold')
-      //   .style('font-size', '20px')
-      //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + (adjustedBox.w * 0.5) + ',' + -(adjustedBox.h * 0.075) + ')')
-
-      // blockQueueServerFutur = new BlockDisplayer({
-      //   main: {
-      //     tag: 'blockQueueMiddleTag',
-      //     g: reserved.g,
-      //     scroll: {},
-      //     box: adjustedBox,
-      //     background: {
-      //       fill: colorTheme.medium.background,
-      //       stroke: colorTheme.medium.stroke,
-      //       strokeWidth: 0.4
-      //     },
-      //     colorTheme: colorTheme
-      //   },
-      //
-      //   displayer: 'blockTrackShrinkBib', // blockTrackShrinkBib
-      //   blockQueue: {
-      //     axis: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //       axis: undefined,
-      //       scale: undefined,
-      //       domain: [0, 1000],
-      //       range: [0, 0],
-      //       showText: true,
-      //       orientation: 'bottom',
-      //       attr: {
-      //         text: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         },
-      //         path: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         }
-      //       }
-      //     },
-      //     blocks: {
-      //       enabled: true,
-      //       run: {
-      //         enabled: true,
-      //         g: undefined,
-      //         box: {x: 0, y: adjustedBox.h * 0.66875, w: adjustedBox.w, h: adjustedBox.h * 0.33125, marg: adjustedBox.marg},
-      //         events: {
-      //           click: () => {},
-      //           mouseover: () => {},
-      //           mouseout: () => {},
-      //           drag: {
-      //             start: () => {},
-      //             tick: () => {},
-      //             end: () => {}
-      //           }
-      //         },
-      //         background: {
-      //           fill: colorTheme.brighter.background,
-      //           stroke: 'none',
-      //           strokeWidth: 0
-      //         }
-      //       },
-      //       cancel: {
-      //         enabled: true,
-      //         g: undefined,
-      //         box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox.w, h: adjustedBox.h * 0.1525, marg: adjustedBox.marg},
-      //         events: {
-      //           click: () => {},
-      //           mouseover: () => {},
-      //           mouseout: () => {},
-      //           drag: {
-      //             start: () => {},
-      //             tick: () => {},
-      //             end: () => {}
-      //           }
-      //         },
-      //         background: {
-      //           fill: colorTheme.brighter.background,
-      //           stroke: colorTheme.brighter.stroke,
-      //           strokeWidth: 0
-      //         }
-      //       },
-      //       modification: {
-      //         enabled: true,
-      //         g: undefined,
-      //         box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-      //         events: {
-      //           click: () => {},
-      //           mouseover: () => {},
-      //           mouseout: () => {},
-      //           drag: {
-      //             start: () => {},
-      //             tick: () => {},
-      //             end: () => {}
-      //           }
-      //         },
-      //         background: {
-      //           fill: colorTheme.brighter.background,
-      //           stroke: colorTheme.brighter.stroke,
-      //           strokeWidth: 0
-      //         }
-      //       },
-      //       colorPalette: colorTheme.blocks
-      //     },
-      //     timeBars: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
-      //     }
-      //   },
-      //   blockQueue2: {
-      //     g: undefined,
-      //     schedBlocks: {
-      //       label: {
-      //         enabled: true,
-      //         position: 'right'
-      //       }
-      //     },
-      //     axis: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //       axis: undefined,
-      //       scale: undefined,
-      //       domain: [0, 1000],
-      //       range: [0, 0],
-      //       showText: true,
-      //       orientation: 'bottom',
-      //       attr: {
-      //         text: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         },
-      //         path: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         }
-      //       }
-      //     },
-      //     timeBars: {
-      //       enabled: false,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
-      //     }
-      //   },
-      //   blockTrackShrink: {
-      //     g: undefined,
-      //     schedBlocks: {
-      //       label: {
-      //         enabled: true,
-      //         position: 'left'
-      //       }
-      //     },
-      //     axis: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //       axis: undefined,
-      //       scale: undefined,
-      //       domain: [0, 1000],
-      //       range: [0, 0],
-      //       showText: true,
-      //       orientation: 'top',
-      //       attr: {
-      //         text: {
-      //           size: 14,
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         },
-      //         path: {
-      //           stroke: colorTheme.medium.stroke,
-      //           fill: colorTheme.medium.stroke
-      //         }
-      //       }
-      //     },
-      //     timeBars: {
-      //       enabled: false,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
-      //     }
-      //   },
-      //   blockList: {
-      //
-      //   },
-      //   blockForm: {
-      //     mosaic: {
-      //       box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
-      //       order: 'nSched'
-      //     },
-      //     forms: {
-      //       g: undefined,
-      //       box: {x: adjustedBox.w * 0.22,
-      //         y: adjustedBox.h * 0.02,
-      //         w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
-      //         h: adjustedBox.h * 0.96,
-      //         marg: adjustedBox.marg},
-      //       display: 'list',
-      //       scroll: {}
-      //     }
-      //   },
-      //
-      //   filters: {
-      //     blockFilters: [],
-      //     filtering: []
-      //   },
-      //   time: {
-      //     currentTime: {time: 0, date: undefined},
-      //     startTime: {time: 0, date: undefined},
-      //     endTime: {time: 0, date: undefined}
-      //   },
-      //   data: {
-      //     raw: undefined,
-      //     formated: undefined,
-      //     modified: undefined
-      //   },
-      //   debug: {
-      //     enabled: false
-      //   },
-      //   pattern: {},
-      //   events: {
-      //     block: {
-      //       click: (d) => { console.log(d) },
-      //       mouseover: (d) => { console.log(d) },
-      //       mouseout: (d) => { console.log(d) },
-      //       drag: {
-      //         start: () => {},
-      //         tick: () => {},
-      //         end: () => {}
-      //       }
-      //     },
-      //     sched: {
-      //       click: (d) => { console.log(d) },
-      //       mouseover: (d) => { console.log(d) },
-      //       mouseout: (d) => { console.log(d) }
-      //     }
-      //   },
-      //   input: {
-      //     focus: {schedBlocks: undefined, block: undefined},
-      //     over: {schedBlocks: undefined, block: undefined},
-      //     selection: []
-      //   }
-      // })
-      // blockQueueServerFutur.init()
-      // blockQueueServerFutur = new BlockQueueCreator({
-      //   main: {
-      //     tag: 'blockQueueServerFuturTag',
-      //     g: reserved.g,
-      //     box: adjustedBox,
-      //     background: {
-      //       fill: colorTheme.dark.background,
-      //       stroke: colorTheme.dark.stroke,
-      //       strokeWidth: 0.1
-      //     },
-      //     colorTheme: colorTheme
-      //   },
-      //   axis: {
-      //     enabled: true,
-      //     g: undefined,
-      //     box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-      //     axis: undefined,
-      //     scale: undefined,
-      //     domain: [0, 1000],
-      //     range: [0, 0],
-      //     showText: true,
-      //     orientation: 'axisTop',
-      //     attr: {
-      //       text: {
-      //         stroke: colorTheme.medium.stroke,
-      //         fill: colorTheme.medium.stroke
-      //       },
-      //       path: {
-      //         stroke: colorTheme.medium.stroke,
-      //         fill: colorTheme.medium.stroke
-      //       }
-      //     }
-      //   },
-      //   blocks: {
-      //     enabled: true,
-      //     run: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.46875, w: adjustedBox.w, h: adjustedBox.h * 0.53125, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: 'none',
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     cancel: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 0.3125, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: colorTheme.brighter.stroke,
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     modification: {
-      //       enabled: true,
-      //       g: undefined,
-      //       box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-      //       events: {
-      //         click: () => {},
-      //         mouseover: () => {},
-      //         mouseout: () => {},
-      //         drag: {
-      //           start: () => {},
-      //           tick: () => {},
-      //           end: () => {}
-      //         }
-      //       },
-      //       background: {
-      //         fill: colorTheme.brighter.background,
-      //         stroke: colorTheme.brighter.stroke,
-      //         strokeWidth: 0
-      //       }
-      //     },
-      //     colorPalette: colorTheme.blocks
-      //   },
-      //   filters: {
-      //     enabled: false,
-      //     g: undefined,
-      //     box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox * 0.12, h: adjustedBox.h * 0.7, marg: 0},
-      //     filters: []
-      //   },
-      //   timeBars: {
-      //     enabled: false,
-      //     g: undefined,
-      //     box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
-      //   },
-      //   time: {
-      //     currentTime: {time: 0, date: undefined},
-      //     startTime: {time: 0, date: undefined},
-      //     endTime: {time: 0, date: undefined}
-      //   },
-      //   data: {
-      //     raw: undefined,
-      //     formated: undefined,
-      //     modified: undefined
-      //   },
-      //   debug: {
-      //     enabled: false
-      //   },
-      //   pattern: {},
-      //   event: {
-      //     modifications: () => {}
-      //   },
-      //   input: {
-      //     focus: {schedBlocks: undefined, block: undefined},
-      //     over: {schedBlocks: undefined, block: undefined},
-      //     selection: []
-      //   }
-      // })
-      // blockQueueServerFutur.init()
-
-      let brushBox = {x: adjustedBox.x + adjustedBox.w * 0.0, y: adjustedBox.y + adjustedBox.h * 0.93, w: adjustedBox.w * 1, h: box.blockQueueServerPast.h * 0.02}
-      reserved.brushZoomPast = new PlotBrushZoom({
-        main: {
-          g: svg.g.append('g').append('g'),
-          box: brushBox
-        },
-        axis: [
-          {
-            id: 'top',
-            enabled: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
-              type: 'top',
-              attr: {
-                text: {
-                  enabled: true,
-                  size: 14,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushBox.w],
-            brush: {
-              zoom: false,
-              brush: true
-            }
-          },
-          {
-            id: 'bottom',
-            enabled: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
-              type: 'bottom',
-              attr: {
-                text: {
-                  enabled: false,
-                  size: 14,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorTheme.medium.stroke,
-                  fill: colorTheme.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushBox.w],
-            brush: {
-              zoom: true,
-              brush: true
-            }
-          }
-        ],
-        content: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
-            attr: {
-              fill: colorTheme.medium.background
-            }
-          }
-        },
-        focus: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
-            attr: {
-              fill: '#000000',
-              opacity: 0.5,
-              stroke: '#000000'
-            }
-          }
-        },
-        brush: {
-          coef: {x: 0, y: 0},
-          callback: () => {}
-        },
-        zoom: {
-          coef: {kx: 1, ky: 1, x: 0, y: 0},
-          callback: () => {}
-        }
-      })
-      reserved.brushZoomPast.init()
-      // let minTxtSize = adjustedBox.w * 0.04
-      // reserved.g.append('rect')
-      //   .attr('x', -minTxtSize * 2)
-      //   .attr('y', adjustedBox.h + 4) // + minTxtSize * 1.5)
-      //   .attr('width', minTxtSize * 4)
-      //   .attr('height', minTxtSize * 2)
-      //   .attr('fill', colorTheme.dark.background)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      // reserved.g.append('text')
-      //   .attr('x', 0)
-      //   .attr('y', adjustedBox.h + 4 + minTxtSize)
-      //   .attr('dy', minTxtSize * 0.43)
-      //   .attr('class', 'dateTextLeft')
-      //   .attr('stroke', colorTheme.medium.stroke)
-      //   .attr('stroke-width', 0.3)
-      //   .attr('fill', colorTheme.medium.stroke)
-      //   .style('font-size', (minTxtSize * 1.3) + 'px')
-      //   .attr('text-anchor', 'middle')
-
-      // reserved.g.append('rect')
-      //   .attr('x', (adjustedBox.w) - minTxtSize * 5.0)
-      //   .attr('y', adjustedBox.h + minTxtSize * 1.5)
-      //   .attr('width', minTxtSize * 6)
-      //   .attr('height', minTxtSize * 2)
-      //   .attr('fill', colorTheme.dark.stroke)
-      //   .attr('stroke', colorTheme.dark.stroke)
-      //   .attr('stroke-width', 0.4)
-      // reserved.g.append('text')
-      //   .attr('x', (adjustedBox.w) - minTxtSize * 2.0)
-      //   .attr('y', adjustedBox.h + minTxtSize * 2.6)
-      //   .attr('dy', minTxtSize * 0.43)
-      //   .attr('class', 'dateTextRight')
-      //   .attr('fill', colorTheme.bright.background)
-      //   .attr('stroke', colorTheme.bright.background)
-      //   .attr('stroke-width', 0.5)
-      //   .style('font-weight', 'bold')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', '22px')
-      //   .style('pointer-events', 'none')
-      //   .style('user-select', 'none')
-      updateData()
-    }
-    this.initData = initData
-
-    // function updateBlockDisplayer () {
-    //   let date = new Date(shared.data.server.timeOfNight.date_now)
-    //   let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
-    //   let axisTop = reserved.brushZoomPast.getAxis('bottom').axis.scale().domain()
-    //   let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
-    //   let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
-    //
-    //   blockQueueServerFutur.updateData({
-    //     time: {
-    //       currentTime: currentTime,
-    //       startTime: startTime,
-    //       endTime: endTime
-    //     },
-    //     data: {
-    //       raw: {
-    //         blocks: shared.data.server.blocks,
-    //         telIds: shared.data.server.telIds
-    //       },
-    //       modified: []
-    //     }
-    //   })
-    // }
-    //
-    function updateData () {
-      let date = new Date(shared.data.server.timeOfNight.date_now)
-      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
-      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) + (3600 * 8)}
-
-      // reserved.g.select('text.dateTextLeft').text(d3.timeFormat('%H:%M')(startTime.date))
-      // reserved.g.select('text.dateTextRight').text(d3.timeFormat('%H:%M')(endTime.date))
-
-      reserved.brushZoomPast.updateAxis({
-        id: 'top',
-        domain: [startTime.date, endTime.date]
-      })
-      reserved.brushZoomPast.updateAxis({
-        id: 'bottom',
-        domain: [startTime.date, endTime.date]
-      })
-      // updateBlockDisplayer()
-      // reserved.brushZoomPast.updateData({
-      //   axis: {
-      //     bottom: {
-      //       domain: [startTime.date, endTime.date]
-      //     },
-      //     top: {
-      //       domain: [startTime.date, endTime.date]
-      //     }
-      //   }
-      // })
-    }
-    this.updateData = updateData
-
-    function update () {
-      let date = new Date(shared.data.server.timeOfNight.date_now)
-      let currentTime = {date: date, time: Number(shared.data.server.timeOfNight.now)}
-      let startTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.timeOfNight.now)}
-      let endTime = {date: new Date(shared.data.server.timeOfNight.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.timeOfNight.now) + (3600 * 8)}
-      // blockQueueServerFutur.updateData({
-      //   time: {
-      //     currentTime: currentTime,
-      //     startTime: startTime,
-      //     endTime: endTime
-      //   }
-      // })
     }
     this.update = update
   }
@@ -4152,7 +3001,7 @@ function mainSchedBlocks (optIn) {
 
       reserved.gBlockBox.append('rect')
         .attr('x', box.currentBlocks.w * 0.2)
-        .attr('y', -box.currentBlocks.h * 0.09)
+        .attr('y', -box.currentBlocks.h * 0.03)
         .attr('width', box.currentBlocks.w * 0.6)
         .attr('height', box.currentBlocks.h * 0.1)
         .attr('fill', colorTheme.dark.stroke)
@@ -4164,7 +3013,7 @@ function mainSchedBlocks (optIn) {
         .attr('stroke-width', 0.5)
         .attr('fill', colorTheme.bright.background)
         .attr('x', box.currentBlocks.w * 0.5)
-        .attr('y', -box.currentBlocks.h * 0.02)
+        .attr('y', box.currentBlocks.h * 0.05)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
         .style('font-size', '28px')
@@ -6352,10 +5201,12 @@ function mainSchedBlocks (optIn) {
     // this.updateData = updateData
   }
 
-  let svgBlocksQueueServerPast = new SvgBlocksQueueServerPast()
-  let svgBlocksQueueServerFutur = new SvgBlocksQueueServerFutur()
   let svgEventsQueueServerPast = new SvgEventsQueueServerPast()
   let svgEventsQueueServerFutur = new SvgEventsQueueServerFutur()
+  let svgBrushPast = new SvgBrushPast()
+  let svgBrushFutur = new SvgBrushFutur()
+  let svgBlocksQueueServerPast = new SvgBlocksQueueServerPast()
+  let svgBlocksQueueServerFutur = new SvgBlocksQueueServerFutur()
   let svgRunningPhase = new SvgRunningPhase()
   let svgFreeTels = new SvgFreeTels()
   // ---------------------------------------------------------------------------------------------------
