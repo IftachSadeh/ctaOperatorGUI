@@ -2111,7 +2111,8 @@ window.BlockDisplayer = function (optIn) {
       let tracks = computeTrack(scheds)
 
       let nLine = tracks.length
-      let height = com.main.box.h / nLine
+      let height = nLine >= 9 ? (com.main.box.h / nLine) : (com.main.box.h / 9)
+      let offsetY = nLine >= 9 ? 0 : (com.main.box.h - ((com.main.box.h / 9) * nLine)) / (nLine - 1)
 
       let currentTrack = com.main.scroll.scrollG
         .selectAll('g.track')
@@ -2121,10 +2122,10 @@ window.BlockDisplayer = function (optIn) {
       let enterTrack = currentTrack
         .enter()
         .append('g')
-        .attr('class', 'allScheds')
+        .attr('class', 'track')
         .attr('transform', function (d, i) {
           let translate = {
-            y: height * i,
+            y: height + (offsetY + height) * i,
             x: 0
           }
           return 'translate(' + translate.x + ',' + translate.y + ')'
@@ -2137,10 +2138,10 @@ window.BlockDisplayer = function (optIn) {
           .attr('x2', com.main.box.w)
           .attr('y2', 0)
           .attr('fill', 'transparent')
-          .attr('fill-opacity', 1)
+          .attr('stroke-opacity', 0.8)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.4)
-          .attr('stroke-dasharray', [2, 2])
+          .attr('stroke-dasharray', [4, 4])
       })
       enterTrack.merge(currentTrack)
         .transition()
@@ -2148,7 +2149,7 @@ window.BlockDisplayer = function (optIn) {
         .ease(d3.easeLinear)
         .attr('transform', function (d, i) {
           let translate = {
-            y: height * i,
+            y: height + (offsetY + height) * i,
             x: 0
           }
           return 'translate(' + translate.x + ',' + translate.y + ')'
@@ -2165,38 +2166,40 @@ window.BlockDisplayer = function (optIn) {
         .attr('class', 'allScheds')
         .attr('transform', function (d, i) {
           let translate = {
-            y: height * d.track,
+            y: (offsetY + height) * d.track,
             x: 0
           }
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
       enterAllScheds.each(function (d, i) {
         if (com.blockTrackShrink.schedBlocks.label.enabled) {
-          d3.select(this).append('line')
-            .attr('id', 'aesthetic')
-            .attr('x1', timeScale(d.startT))
-            .attr('y1', height * 0.45)
-            .attr('x2', timeScale(d.endT))
-            .attr('y2', height * 0.45)
-            .attr('fill', 'transparent')
-            .attr('fill-opacity', 1)
-            .attr('stroke', colorTheme.dark.stroke)
-            .attr('stroke-width', height * 0.05)
-            .attr('stroke-dasharray', [])
+          // d3.select(this).append('line')
+          //   .attr('id', 'aesthetic')
+          //   .attr('x1', timeScale(d.startT))
+          //   .attr('y1', height * 0.45)
+          //   .attr('x2', timeScale(d.endT))
+          //   .attr('y2', height * 0.45)
+          //   .attr('fill', 'transparent')
+          //   .attr('fill-opacity', 1)
+          //   .attr('stroke', colorTheme.dark.stroke)
+          //   .attr('stroke-width', height * 0.05)
+          //   .attr('stroke-dasharray', [])
           d3.select(this).append('text')
             .attr('id', 'schedId')
             .text('S' + d.schedName)
             .attr('x', function () {
-              if (d.startT < com.time.startTime.time) {
-                if (d.endT > com.time.startTime.time) return (timeScale(com.time.startTime.time)) + 2
-                else return (timeScale(d.startT))
-              } else if (d.endT > com.time.endTime.time) {
-                if (d.startT < com.time.endTime.time) return (timeScale(com.time.endTime.time)) - 2
-                else return (timeScale(d.startT))
-              }
-              return (timeScale(d.startT))
+              if (com.blockTrackShrink.schedBlocks.label.position === 'left') return (timeScale(d.startT)) - 5
+              else if (com.blockTrackShrink.schedBlocks.label.position === 'right') return (timeScale(d.endT)) + 5
+              // if (d.startT < com.time.startTime.time) {
+              //   if (d.endT > com.time.endTime.time) return (timeScale(com.time.startTime.time)) + 5
+              //   else return (timeScale(d.endT)) + 5
+              // } else if (d.endT > com.time.endTime.time) {
+              //   if (d.startT < com.time.startTime.time) return (timeScale(com.time.startTime.time)) + 5
+              //   else return (timeScale(d.startT)) - 5
+              // }
+              // return (timeScale(d.startT)) - 5
             })
-            .attr('y', height * 0.35)
+            .attr('y', height * 0.75)
             .style('font-weight', 'bold')
             .attr('text-anchor', function () {
               if (d.startT < com.time.startTime.time) {
@@ -2204,9 +2207,9 @@ window.BlockDisplayer = function (optIn) {
               } else if (d.endT > com.time.endTime.time) {
                 return 'end'
               }
-              return 'start'
+              return 'end'
             })
-            .style('font-size', (height * 0.25) + 'px')
+            .style('font-size', (height * 0.6) + 'px')
             .style('pointer-events', 'none')
             .attr('fill', '#000000')
             .attr('stroke', 'none')
@@ -2215,7 +2218,7 @@ window.BlockDisplayer = function (optIn) {
       enterAllScheds.merge(allScheds)
         .each(function (d, i) {
           d.blocks = setDefaultStyleForBlocks(d.blocks)
-          setBlockRect(d.blocks, {x: 0, y: (height * 0.5) + (height * d.track), w: com.main.box.w, h: height * 0.5})
+          setBlockRect(d.blocks, {x: 0, y: (offsetY + height) * d.track, w: com.main.box.w, h: height * 1.0})
 
           d3.select(this).select('line#aesthetic')
             .transition()
@@ -2230,30 +2233,35 @@ window.BlockDisplayer = function (optIn) {
             .duration(timeD.animArc)
             .ease(d3.easeLinear)
             .attr('x', function () {
-              if (d.startT < com.time.startTime.time) {
-                if (d.endT > com.time.startTime.time) return (timeScale(com.time.startTime.time)) + 2
-                else return (timeScale(d.startT))
-              } else if (d.endT > com.time.endTime.time) {
-                if (d.startT < com.time.endTime.time) return (timeScale(com.time.endTime.time)) - 2
-                else return (timeScale(d.startT))
-              }
-              return (timeScale(d.startT))
+              if (com.blockTrackShrink.schedBlocks.label.position === 'left') return (timeScale(d.startT)) - 5
+              else if (com.blockTrackShrink.schedBlocks.label.position === 'right') return (timeScale(d.endT)) + 5
+              // if (d.startT < com.time.startTime.time) {
+              //   if (d.endT > com.time.endTime.time) return (timeScale(com.time.startTime.time)) + 5
+              //   else return (timeScale(d.endT)) + 5
+              // } else if (d.endT > com.time.endTime.time) {
+              //   if (d.startT < com.time.startTime.time) return (timeScale(com.time.startTime.time)) + 5
+              //   else return (timeScale(d.startT)) - 5
+              // }
+              // return (timeScale(d.startT)) - 5
             })
             .attr('text-anchor', function () {
-              if (d.startT < com.time.startTime.time) {
-                return 'start'
-              } else if (d.endT > com.time.endTime.time) {
-                return 'end'
-              }
-              return 'start'
+              if (com.blockTrackShrink.schedBlocks.label.position === 'left') return 'end'
+              else if (com.blockTrackShrink.schedBlocks.label.position === 'right') return 'start'
+              // if (d.startT < com.time.startTime.time) {
+              //   return 'start'
+              // } else if (d.endT > com.time.endTime.time) {
+              //   return 'end'
+              // }
+              return 'end'
             })
+            // .attr('opacity', ((d.startT > com.time.endTime.time) || (d.endT < com.time.startTime.time)) ? 0 : 1)
           d3.select(this)
             .transition()
             .duration(timeD.animArc)
             .ease(d3.easeLinear)
             .attr('transform', function (d, i) {
               let translate = {
-                y: height * d.track,
+                y: (offsetY + height) * d.track,
                 x: 0
               }
               return 'translate(' + translate.x + ',' + translate.y + ')'

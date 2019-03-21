@@ -897,7 +897,6 @@ window.ScrollBox = function () {
   }
 
   function initHorizontalScroll (optIn) {
-    console.log('initHorizontalScroll');
     com.scrollHorizontal = hasVar(optIn.scrollHorizontal) ? optIn.scrollHorizontal : true
     com.scrollWidth = hasVar(optIn.scrollWidth) ? optIn.scrollWidth : 0
     com.scrollTransH = {
@@ -920,7 +919,6 @@ window.ScrollBox = function () {
     com.scrollRecH.y = com.outerBox.y + com.outerBox.h - com.scrollRecH.h
   }
   function setupHorizontalZoom () {
-    console.log('setupHorizontalZoom');
     let zoomLen = [-1, 1e20, 1e4]
     // let deltaWH       = com.innerBox.h * 0.1;
 
@@ -1139,19 +1137,16 @@ window.ScrollBox = function () {
     setHorizontalZoomStatus()
   }
   function setHorizontalZoomStatus () {
-    console.log('setHorizontalZoomStatus');
     if (com.scrollTransV.active) return
     if (com.scrollTransH.active) {
       com.innerBox.g.call(com[com.tagZoom + 'Horizontal']).on('dblclick.zoom', null)
     } else com.innerBox.g.on('.zoom', null)
   } // NO
   function setupHorizontalScrollBar () {
-    console.log('setupHorizontalScrollBar');
     // ---------------------------------------------------------------------------------------------------
     //
     // ---------------------------------------------------------------------------------------------------
     function zoomHorizontalScrollBarInit () {
-      console.log('zoomHorizontalScrollBarInit');
       if (!com.locker.isFree(com.mainTag + 'zoomHorizontalScrollBarInit')) return
 
       com.locker.add({
@@ -1247,7 +1242,6 @@ window.ScrollBox = function () {
     //
     // ---------------------------------------------------------------------------------------------------
     function setHorizontalRecScroll () {
-      console.log('setHorizontalRecScroll');
       let box = com.outerBox
       let marg = com.scrollRecH.h * com.scrollRecH.marg / 2
 
@@ -1298,7 +1292,6 @@ window.ScrollBox = function () {
     // instant transition in case of dragging
     // ---------------------------------------------------------------------------------------------------
     function zoomHorizontalScrollBarUpdate () {
-      console.log('zoomHorizontalScrollBarUpdate');
       if (!hasVar(com.scrollBarRecH)) return
       if (com.isInDrag || com.inUserZoom) {
         com.scrollBarRecH.attr('transform', zoomHorizontalScrollBarTrans)
@@ -1315,7 +1308,6 @@ window.ScrollBox = function () {
     //
     // ---------------------------------------------------------------------------------------------------
     function zoomHorizontalScrollBarTrans () {
-      console.log('zoomHorizontalScrollBarTrans');
       // let pos = com.scrollTrans.frac * (com.outerBox.h - com.scrollRec.w*2);
       // return "translate("+(com.outerBox.x)+","+(com.outerBox.y + pos)+")";
       let pos = com.scrollTransH.frac * (com.outerBox.w - com.scrollRecH.w)
@@ -1332,14 +1324,12 @@ window.ScrollBox = function () {
     })
 
     function recHorizontalBckClick (dataIn) {
-      console.log('recHorizontalBckClick');
       com.runLoop.push({ tag: com.mainTag + 'recHorizontalBckClick', data: dataIn })
     }
     com.recHorizontalBckClick = recHorizontalBckClick
 
     let nClickTries = 0
     function recHorizontalBckClickOnce (dataIn) {
-      console.log('recHorizontalBckClickOnce');
       if (
         com.isInZoom ||
         com.isInDrag ||
@@ -1421,7 +1411,6 @@ window.ScrollBox = function () {
   }
   this.resetHorizontalScroller = resetHorizontalScroller
   function setHorizontalScrollState () {
-    console.log('setHorizontalScrollState');
     let boxW = com.innerBox.w // com.outerBox.h - com.outerBox.marg * 2;
     if (com.canScroll && com.scrollHorizontal) {
       com.scrollTransH.active = Math.abs(com.scrollWidth) > boxW
@@ -1436,7 +1425,6 @@ window.ScrollBox = function () {
     com.scrollRecH.w = boxW * boxW / Math.abs(com.scrollWidth)
   } // NO
   function updateHorizontalScrollState (keepFrac) {
-    console.log('updateHorizontalScrollState');
     let boxW = com.innerBox.w // com.outerBox.h - com.outerBox.marg * 2;
     if (com.canScroll && com.scrollHorizontal) {
       com.scrollTransH.active = Math.abs(com.scrollWidth) > boxW
