@@ -97,7 +97,6 @@ class schedBlocks():
     # -----------------------------------------------------------------------------------------------------------
     def getData(self):
         schedBlocks.timeOfNight = getTimeOfNight(self)
-        print schedBlocks.timeOfNight
         self.getBlocks()
         self.getEvents()
         self.getClockEvents()

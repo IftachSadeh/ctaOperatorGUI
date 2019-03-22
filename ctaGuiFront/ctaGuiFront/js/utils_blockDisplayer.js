@@ -1557,10 +1557,10 @@ window.BlockDisplayer = function (optIn) {
       if (!com.blockQueue2.axis.enabled) return
       com.blockQueue2.axis.g = com.main.g.append('g')
         .attr('transform', 'translate(' + com.blockQueue2.axis.box.x + ',' + com.blockQueue2.axis.box.y + ')')
+      if (!com.blockQueue2.axis.showAxis) return
       com.blockQueue2.axis.g
         .attr('class', 'axis')
         .call(com.blockQueue2.axis.main)
-
       com.blockQueue2.axis.g.style('opacity', 1)
     }
     function initTimeBars () {
@@ -1646,6 +1646,7 @@ window.BlockDisplayer = function (optIn) {
       if (com.blockQueue2.timeBars.enabled) setTimeRect()
 
       updateSchedulingBlocks()
+      setTimeRect()
     }
     this.update = update
     function updateAxis () {
@@ -1657,9 +1658,10 @@ window.BlockDisplayer = function (optIn) {
         .range(com.blockQueue2.axis.range)
 
       if (!com.blockQueue2.axis.enabled) return
-      let minTxtSize = com.blockQueue2.axis.attr.text.size ? com.blockQueue2.axis.attr.text.size : com.main.box.w * 0.04
+      let minTxtSize = com.blockTrackShrink.axis.attr.text.size ? com.blockTrackShrink.axis.attr.text.size : com.main.box.w * 0.04
       // console.log(com.blockQueue2.axis.domain, com.blockQueue2.axis.range);
       com.blockQueue2.axis.main.scale(com.blockQueue2.axis.scale)
+      if (!com.blockQueue2.axis.showAxis) return
       com.blockQueue2.axis.main.ticks(5)
       com.blockQueue2.axis.main.tickSize(4)
       com.blockQueue2.axis.g.call(com.blockQueue2.axis.main)
@@ -1867,6 +1869,7 @@ window.BlockDisplayer = function (optIn) {
     //   }
     // }
     function setTimeRect () {
+      if (!com.blockQueue2.timeBars.enabled) return
       let rectNowData = []
 
       rectNowData = [

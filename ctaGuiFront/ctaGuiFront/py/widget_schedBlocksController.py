@@ -97,9 +97,17 @@ class schedBlocksController():
         self.getEvents()
         self.getClockEvents()
         self.getTarget()
+        timeOfNightDate = {
+            "date_start": datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_end": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(schedBlocksController.timeOfNight['end']))).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_now": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(schedBlocksController.timeOfNight['now']))).strftime('%Y-%m-%d %H:%M:%S'),
+            "now": int(schedBlocksController.timeOfNight['now']),
+            "start": int(schedBlocksController.timeOfNight['start']),
+            "end": int(schedBlocksController.timeOfNight['end'])
+            }
 
         data = {
-            "timeOfNight": schedBlocksController.timeOfNight,
+            "timeOfNight": timeOfNightDate,
             "telHealth": schedBlocksController.telHealth,
             "blocks": schedBlocksController.blocks,
             "external_events": schedBlocksController.external_events,
