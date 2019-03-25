@@ -941,15 +941,18 @@ class obsBlocks_noACS():
         return
 
     def external_generateEvents(self):
-        if self.rndGen.random() < 0.03:
-            newEvent = {'id': getTime() + random.randint(1, 99999), 'time': self.timeOfNight.getCurrentTime()}
+        if self.rndGen.random() < 0.13:
+            newEvent = {'id': getTime() + random.randint(1, 99999), 'start_time': self.timeOfNight.getCurrentTime()}
             newEvent['priority'] = random.randint(1, 3)
             if self.rndGen.random() < 0.33:
                 newEvent['name'] = 'alarm'
+                newEvent['icon'] = 'alarm.svg'
             elif self.rndGen.random() < 0.66:
                 newEvent['name'] = 'grb'
+                newEvent['icon'] = 'grb.svg'
             elif self.rndGen.random() < 1:
                 newEvent['name'] = 'hardware'
+                newEvent['icon'] = 'hardwareBreak.svg'
             self.external_events.append(newEvent)
         self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
 
