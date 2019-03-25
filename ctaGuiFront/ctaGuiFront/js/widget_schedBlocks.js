@@ -2122,6 +2122,7 @@ function mainSchedBlocks (optIn) {
           {
             id: 'middle',
             enabled: true,
+            showAxis: true,
             main: {
               g: undefined,
               box: {x: 0, y: brushBox.h * 0.75, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
@@ -2297,6 +2298,7 @@ function mainSchedBlocks (optIn) {
           {
             id: 'middle',
             enabled: true,
+            showAxis: true,
             main: {
               g: undefined,
               box: {x: 0, y: brushBox.h * 0.75, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},

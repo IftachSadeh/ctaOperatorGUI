@@ -168,7 +168,8 @@ let mainSchedBlocksController = function (optIn) {
     focus: {
       schedBlocks: undefined,
       block: undefined
-    }
+    },
+    mode: 'inspector'
   }
   let svg = {}
   let box = {}
@@ -322,10 +323,10 @@ let mainSchedBlocksController = function (optIn) {
       }
 
       box.pushPull = {
-        x: lenD.w[0] * 0.01,
-        y: lenD.h[0] * 0.05,
-        w: lenD.w[0] * 0.1,
-        h: lenD.h[0] * 0.1,
+        x: lenD.w[0] * 0.0,
+        y: lenD.h[0] * 0.03,
+        w: lenD.w[0] * 0.12,
+        h: lenD.h[0] * 0.6,
         marg: lenD.w[0] * 0.01
       }
       box.blockQueueOptimized = {
@@ -432,24 +433,32 @@ let mainSchedBlocksController = function (optIn) {
 
     svgBlocksQueueServer.initData()
     svgBrush.initData()
-    // svgWarningArea.initData({
-    //   tag: 'pushPull',
-    //   g: svg.g.append('g'),
-    //   box: box.pushPull,
-    //   pull: {
-    //     g: undefined,
-    //     box: {x: 0, y: 0, w: 0.5, h: 1},
-    //     child: {}
-    //   },
-    //   push: {
-    //     g: undefined,
-    //     box: {x: 0.5, y: 0, w: 0.5, h: 1},
-    //     child: {}
-    //   },
-    //   debug: {
-    //     enabled: false
-    //   }
-    // })
+    svgWarningArea.initData({
+      tag: 'pushPull',
+      g: svg.g.append('g'),
+      box: box.pushPull,
+      attr: {
+        text: {
+          size: 9
+        },
+        icon: {
+          size: 20
+        }
+      },
+      pull: {
+        g: undefined,
+        box: {x: 0, y: 0, w: 0.5, h: 1},
+        child: {}
+      },
+      push: {
+        g: undefined,
+        box: {x: 0.5, y: 0, w: 0.5, h: 1},
+        child: {}
+      },
+      debug: {
+        enabled: false
+      }
+    })
     // svgBlocksQueueOptimized.initData()
     // svgBlocksQueueInsert.initData()
     svgTargets.initData()
@@ -1844,11 +1853,11 @@ let mainSchedBlocksController = function (optIn) {
       //   {x: reserved[pullOrPush].box.w * 0.28, y: reserved[pullOrPush].box.h * 0.1}
       // ]
       let dataPoints = [
-        {x: reserved[pullOrPush].box.w * 0.2, y: reserved[pullOrPush].box.h * 0.0},
-        {x: reserved[pullOrPush].box.w * 0.8, y: reserved[pullOrPush].box.h * 0.0},
-        {x: reserved[pullOrPush].box.w * 0.8, y: reserved[pullOrPush].box.h * 1.0},
-        {x: reserved[pullOrPush].box.w * 0.2, y: reserved[pullOrPush].box.h * 1.0},
-        {x: reserved[pullOrPush].box.w * 0.2, y: reserved[pullOrPush].box.h * 0.0}
+        {x: reserved[pullOrPush].box.w * 0.05, y: reserved[pullOrPush].box.h * 0.25},
+        {x: reserved[pullOrPush].box.w * 0.95, y: reserved[pullOrPush].box.h * 0.25},
+        {x: reserved[pullOrPush].box.w * 0.95, y: reserved[pullOrPush].box.h * 0.9},
+        {x: reserved[pullOrPush].box.w * 0.05, y: reserved[pullOrPush].box.h * 0.9},
+        {x: reserved[pullOrPush].box.w * 0.05, y: reserved[pullOrPush].box.h * 0.25}
       ]
 
       function loop (bool, pullOrPush) {
@@ -1858,20 +1867,20 @@ let mainSchedBlocksController = function (optIn) {
           .duration(100)
           .ease(d3.easeLinear)
           .attr('font-size', function () {
-            return reserved[pullOrPush].box.h * 0.25
+            return reserved.attr.text.size * 6
           })
-          .attr('dy', function () {
-            return reserved[pullOrPush].box.h * 0.02
-          })
+          // .attr('dy', function () {
+          //   return reserved[pullOrPush].box.h * 0.02
+          // })
           .transition()
           .duration(100)
           .ease(d3.easeLinear)
           .attr('font-size', function () {
-            return reserved[pullOrPush].box.h * 0.8
+            return reserved.attr.text.size * 4
           })
-          .attr('dy', function () {
-            return reserved[pullOrPush].box.h * 0.3
-          })
+          // .attr('dy', function () {
+          //   return reserved[pullOrPush].box.h * 0.3
+          // })
           .on('end', function () {
             return loop(!bool, pullOrPush)
           })
@@ -1906,32 +1915,33 @@ let mainSchedBlocksController = function (optIn) {
           else reserved[pullOrPush].g.attr('opacity', 0.01)
         })
 
-      reserved[pullOrPush].child.warningExclamationBack = reserved[pullOrPush].g.append('rect')
-        .attr('width', reserved[pullOrPush].box.w * 0.06)
-        .attr('height', reserved[pullOrPush].box.h * 1)
-        .attr('x', function () {
-          if (pullOrPush === 'pull') return reserved[pullOrPush].box.w * 0.77
-          else return reserved[pullOrPush].box.w * 0.17
-        })
-        .attr('y', reserved[pullOrPush].box.h * 0)
-        .attr('rx', 3)
-        .attr('ry', 3)
-        .attr('fill', colorTheme.warning.background)
-        .attr('stroke-width', 0.5)
-        .attr('stroke', colorTheme.warning.stroke)
+      // reserved[pullOrPush].child.warningExclamationBack = reserved[pullOrPush].g.append('rect')
+      //   .attr('width', reserved[pullOrPush].box.w * 0.2)
+      //   .attr('height', reserved[pullOrPush].box.h * 0.6)
+      //   .attr('x', function () {
+      //     if (pullOrPush === 'pull') return reserved[pullOrPush].box.w * 0.74
+      //     else return reserved[pullOrPush].box.w * 0.17
+      //   })
+      //   .attr('y', reserved[pullOrPush].box.h * 0.28)
+      //   .attr('rx', 3)
+      //   .attr('ry', 3)
+      //   .attr('fill', colorTheme.warning.background)
+      //   .attr('fill-opacity', 0.6)
+      //   .attr('stroke-width', 0.0)
+      //   .attr('stroke', colorTheme.warning.stroke)
       reserved[pullOrPush].child.warningExclamation = reserved[pullOrPush].g.append('text')
         .text(function (d) {
           return '! '
         })
         .attr('x', function () {
-          if (pullOrPush === 'pull') return reserved[pullOrPush].box.w * 0.8
-          else return reserved[pullOrPush].box.w * 0.2
+          if (pullOrPush === 'pull') return reserved[pullOrPush].box.w * 0.85
+          else return reserved[pullOrPush].box.w * 0.85
         })
-        .attr('y', reserved[pullOrPush].box.h * 0.5)
+        .attr('y', reserved[pullOrPush].box.h * 0.75)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'middle')
-        .attr('font-size', reserved[pullOrPush].box.h * 0.8)
-        .attr('dy', reserved[pullOrPush].box.h * 0.3)
+        .attr('font-size', reserved.attr.text.size * 4)
+        // .attr('dy', reserved[pullOrPush].box.h * 0.3)
         .style('pointer-events', 'none')
         .style('fill', colorTheme.warning.text)
       loop(true, pullOrPush)
@@ -1939,68 +1949,60 @@ let mainSchedBlocksController = function (optIn) {
       function pullWarning () {
         reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
-            return 'Something occur that'
+            return 'Online Schedule'
           })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.22
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.27)
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.3)
+          .attr('x', reserved[pullOrPush].box.w * 0.4)
+          .attr('y', reserved[pullOrPush].box.h * 0.35)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', reserved.attr.text.size)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine2 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
-            return 'could invalidate the'
+            return 'has changed'
           })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.22
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.58)
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.3)
+          .attr('x', reserved[pullOrPush].box.w * 0.4)
+          .attr('y', reserved[pullOrPush].box.h * 0.45)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', reserved.attr.text.size)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
+        // reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
+        //   .text(function (d) {
+        //     return 'new schedule.'
+        //   })
+        //   .attr('x', function () {
+        //     return reserved[pullOrPush].box.w * 0.22
+        //   })
+        //   .attr('y', reserved[pullOrPush].box.h * 0.88)
+        //   .attr('text-anchor', 'start')
+        //   .attr('font-size', reserved.attr.text.size)
+        //   .attr('dy', reserved[pullOrPush].box.h * 0.02)
+        //   .style('pointer-events', 'none')
+        //   .style('fill', colorTheme.brighter.text)
+        reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
-            return 'new schedule.'
+            return 'Please Update'
           })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.22
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.88)
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.3)
+          .attr('x', reserved[pullOrPush].box.w * 0.4)
+          .attr('y', reserved[pullOrPush].box.h * 0.65)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .attr('font-size', reserved.attr.text.size)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
-            return 'Please Pull'
+            return 'or Reset'
           })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.5
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.4)
+          .attr('x', reserved[pullOrPush].box.w * 0.4)
+          .attr('y', reserved[pullOrPush].box.h * 0.75)
           .style('font-weight', 'bold')
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.4)
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'or Merge'
-          })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.5
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.8)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.4)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', reserved.attr.text.size)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', colorTheme.brighter.text)
@@ -2008,58 +2010,58 @@ let mainSchedBlocksController = function (optIn) {
       function pushWarning () {
         reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
-            return 'Because of time'
+            return 'Some modifications'
           })
           .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.26
+            return reserved[pullOrPush].box.w * 0.45
           })
-          .attr('y', reserved[pullOrPush].box.h * 0.27)
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.3)
+          .attr('y', reserved[pullOrPush].box.h * 0.4)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', reserved.attr.text.size)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', colorTheme.brighter.text)
         reserved[pullOrPush].child.warningLine2 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
-            return 'constraints, some'
+            return 'will be invalidate'
           })
           .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.26
+            return reserved[pullOrPush].box.w * 0.4
           })
-          .attr('y', reserved[pullOrPush].box.h * 0.58)
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.3)
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'changes will be lost.'
-          })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.26
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.88)
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.3)
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
-        reserved[pullOrPush].child.warningLine41 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return '10:00'
-          })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.65
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.35)
-          .style('font-weight', 'bold')
+          .attr('y', reserved[pullOrPush].box.h * 0.55)
           .attr('text-anchor', 'middle')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.3)
+          .attr('font-size', reserved.attr.text.size)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', colorTheme.brighter.text)
+        // reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
+        //   .text(function (d) {
+        //     return 'changes will be lost.'
+        //   })
+        //   .attr('x', function () {
+        //     return reserved[pullOrPush].box.w * 0.26
+        //   })
+        //   .attr('y', reserved[pullOrPush].box.h * 0.88)
+        //   .attr('text-anchor', 'start')
+        //   .attr('font-size', reserved.attr.text.size)
+        //   .attr('dy', reserved[pullOrPush].box.h * 0.02)
+        //   .style('pointer-events', 'none')
+        //   .style('fill', colorTheme.brighter.text)
+        reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
+        // reserved[pullOrPush].child.warningLine41 = reserved[pullOrPush].g.append('text')
+        //   .text(function (d) {
+        //     return '10:00'
+        //   })
+        //   .attr('x', function () {
+        //     return reserved[pullOrPush].box.w * 0.65
+        //   })
+        //   .attr('y', reserved[pullOrPush].box.h * 0.35)
+        //   .style('font-weight', 'bold')
+        //   .attr('text-anchor', 'middle')
+        //   .attr('font-size', reserved.attr.text.size)
+        //   .attr('dy', reserved[pullOrPush].box.h * 0.02)
+        //   .style('pointer-events', 'none')
+        //   .style('fill', colorTheme.brighter.text)
         function countDown () {
           var countDownDate = new Date()
           countDownDate = countDownDate.setMinutes(countDownDate.getMinutes() + 10)
@@ -2080,18 +2082,18 @@ let mainSchedBlocksController = function (optIn) {
             }
           }, 1000)
         }
-        countDown()
+        // countDown()
         reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
           .text(function (d) {
-            return 'Please Push'
+            return 'Please Validate'
           })
           .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.55
+            return reserved[pullOrPush].box.w * 0.4
           })
           .attr('y', reserved[pullOrPush].box.h * 0.8)
           .style('font-weight', 'bold')
-          .attr('text-anchor', 'start')
-          .attr('font-size', reserved[pullOrPush].box.h * 0.4)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', reserved.attr.text.size)
           .attr('dy', reserved[pullOrPush].box.h * 0.02)
           .style('pointer-events', 'none')
           .style('fill', colorTheme.brighter.text)
@@ -2101,55 +2103,36 @@ let mainSchedBlocksController = function (optIn) {
       else pushWarning()
     }
     function createPullButton () {
-      // let lineGenerator = d3.line()
-      //   .x(function (d) { return d.x })
-      //   .y(function (d) { return d.y })
-      // let dataPoints = [
-      //   {x: reserved.box.w * 0, y: reserved.box.h * 0.31},
-      //   {x: reserved.box.w * 0.56, y: reserved.box.h * 0.31},
-      //   {x: reserved.box.w * 0.56, y: reserved.box.h * 0.85},
-      //   {x: reserved.box.w * 0.33, y: reserved.box.h * 1},
-      //   {x: reserved.box.w * 0.1, y: reserved.box.h * 0.85},
-      //   {x: reserved.box.w * 0.1, y: reserved.box.h * 0.6},
-      //   {x: reserved.box.w * 0.1, y: reserved.box.h * 0.6},
-      //   {x: reserved.box.w * 0, y: reserved.box.h * 0.6}
-      // ]
-      // reserved.pull.child.warningTriangle = reserved.pull.g.append('path')
-      //   .data([dataPoints])
-      //   .attr('class', 'line')
-      //   .attr('d', lineGenerator)
-      //   .attr('fill', colorPalette.dark.greyBlue[7])
-      //   .attr('stroke-width', 3)
-
       createWarning('pull')
-
-      reserved.pull.child.buttonBack = reserved.g.append('rect')
-        .attr('width', reserved.pull.box.h * 0.48)
-        .attr('height', reserved.pull.box.h * 0.48)
-        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.88 - reserved.pull.box.h * 0.24)
-        .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.78 - reserved.pull.box.h * 0.24)
-        .attr('fill', colorTheme.bright.background)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.6)
-      reserved.pull.child.buttonIcon = reserved.g.append('svg:image')
-        .attr('class', 'icon')
-        .attr('xlink:href', '/static/arrow-up.svg')
-        .attr('width', reserved.pull.box.h * 0.48)
-        .attr('height', reserved.pull.box.h * 0.48)
-        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.88 - reserved.pull.box.h * 0.24)
-        .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.78 - reserved.pull.box.h * 0.24)
-        .on('click', function () {
-          pullData()
-        })
-      reserved.pull.child.infoText = reserved.g.append('text')
+      reserved.pull.child.buttonBack = reserved.pull.g.append('rect')
+        .attr('id', 'pull')
+        .attr('width', reserved.pull.box.w * 0.4)
+        .attr('height', reserved.attr.icon.size)
+        .attr('x', reserved.pull.box.w * 0.1 - reserved.attr.icon.size * 0.5)
+        .attr('y', -reserved.attr.icon.size * 0.5)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      // reserved.pull.child.buttonIcon = reserved.g.append('svg:image')
+      //   .attr('class', 'icon')
+      //   .attr('xlink:href', '/static/arrow-up.svg')
+      //   .attr('width', reserved.attr.icon.size)
+      //   .attr('height', reserved.attr.icon.size)
+      //   .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.88 - reserved.pull.box.h * 0.24)
+      //   .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.78 - reserved.pull.box.h * 0.24)
+      //   .on('click', function () {
+      //     pullData()
+      //   })
+      reserved.pull.child.infoText = reserved.pull.g.append('text')
+        .attr('id', 'reset')
         .text(function (d) {
-          return 'PULL'
+          return 'Reset'
         })
-        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.89 + reserved.pull.box.h * 0.24)
-        .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.78 + reserved.pull.box.h * 0.14)
-        .attr('text-anchor', 'start')
+        .attr('x', reserved.pull.box.w * 0.2)
+        .attr('y', reserved.attr.icon.size * 0.1)
+        .attr('text-anchor', 'middle')
         .style('font-weight', 'bold')
-        .style('font-size', reserved.box.h * 0.3)
+        .style('font-size', reserved.attr.text.size)
         .style('pointer-events', 'none')
         .style('fill', colorTheme.bright.text)
 
@@ -2160,33 +2143,36 @@ let mainSchedBlocksController = function (optIn) {
         .attr('opacity', 1)
     }
     function createMergeButton () {
-      reserved.pull.child.buttonBack = reserved.g.append('rect')
-        .attr('width', reserved.pull.box.h * 0.48)
-        .attr('height', reserved.pull.box.h * 0.48)
-        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.88 - reserved.pull.box.h * 0.24)
-        .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.22 - reserved.pull.box.h * 0.24)
-        .attr('fill', colorTheme.bright.background)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.6)
-      reserved.pull.child.buttonIcon = reserved.g.append('svg:image')
-        .attr('class', 'icon')
-        .attr('xlink:href', '/static/arrow-up.svg')
-        .attr('width', reserved.pull.box.h * 0.48)
-        .attr('height', reserved.pull.box.h * 0.48)
-        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.88 - reserved.pull.box.h * 0.24)
-        .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.22 - reserved.pull.box.h * 0.24)
-        .on('click', function () {
-          pullData()
-        })
-      reserved.pull.child.infoText = reserved.g.append('text')
+      reserved.pull.child.merge = {}
+      reserved.pull.child.merge.buttonBack = reserved.pull.g.append('rect')
+        .attr('id', 'merge')
+        .attr('width', reserved.pull.box.w * 0.4)
+        .attr('height', reserved.attr.icon.size)
+        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.55)
+        .attr('y', -reserved.attr.icon.size * 0.5)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      // reserved.pull.child.buttonIcon = reserved.g.append('svg:image')
+      //   .attr('class', 'icon')
+      //   .attr('xlink:href', '/static/arrow-up.svg')
+      //   .attr('width', reserved.attr.icon.size)
+      //   .attr('height', reserved.attr.icon.size)
+      //   .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.88 - reserved.pull.box.h * 0.24)
+      //   .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.22 - reserved.pull.box.h * 0.24)
+      //   .on('click', function () {
+      //     pullData()
+      //   })
+      reserved.pull.child.merge.infoText = reserved.pull.g.append('text')
+        .attr('id', 'merge')
         .text(function (d) {
-          return 'MERGE'
+          return 'Update'
         })
-        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.89 + reserved.pull.box.h * 0.24)
-        .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.22 + reserved.pull.box.h * 0.1)
-        .attr('text-anchor', 'start')
+        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.75)
+        .attr('y', reserved.attr.icon.size * 0.1)
+        .attr('text-anchor', 'middle')
         .style('font-weight', 'bold')
-        .style('font-size', reserved.box.h * 0.3)
+        .style('font-size', reserved.attr.text.size)
         .style('pointer-events', 'none')
         .style('fill', colorTheme.bright.text)
 
@@ -2198,34 +2184,37 @@ let mainSchedBlocksController = function (optIn) {
     }
     function createPushButton () {
       createWarning('push')
-      reserved.push.child.buttonBack = reserved.g.append('rect')
-        .attr('width', reserved.pull.box.h * 0.48)
-        .attr('height', reserved.pull.box.h * 0.48)
-        .attr('x', reserved.push.box.x + reserved.pull.box.w * 0.12 - reserved.pull.box.h * 0.24)
-        .attr('y', reserved.push.box.y + reserved.pull.box.h * 0.5 - reserved.pull.box.h * 0.24)
-        .attr('fill', colorTheme.bright.background)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.6)
-      reserved.push.child.buttonIcon = reserved.g.append('svg:image')
-        .attr('class', 'icon')
-        .attr('xlink:href', '/static/arrow-up.svg')
-        .attr('width', reserved.pull.box.h * 0.48)
-        .attr('height', reserved.pull.box.h * 0.48)
-        .attr('x', reserved.push.box.x + reserved.pull.box.w * 0.12 - reserved.pull.box.h * 0.24)
-        .attr('y', reserved.push.box.y + reserved.pull.box.h * 0.5 - reserved.pull.box.h * 0.24)
-        .on('click', function () {
-          pushNewBlockQueue()
-        })
+      reserved.push.child.merge = {}
+      reserved.push.child.merge.buttonBack = reserved.push.g.append('rect')
+        .attr('id', 'merge')
+        .attr('width', reserved.push.box.w * 0.4)
+        .attr('height', reserved.attr.icon.size)
+        .attr('x', reserved.push.box.w * 0.3)
+        .attr('y', -reserved.attr.icon.size * 0.5)
+        .attr('fill', colorTheme.dark.background)
+        .attr('stroke', colorTheme.dark.stroke)
+        .attr('stroke-width', 0.2)
+      // reserved.push.child.buttonIcon = reserved.g.append('svg:image')
+      //   .attr('class', 'icon')
+      //   .attr('xlink:href', '/static/arrow-up.svg')
+      //   .attr('width', reserved.attr.icon.size)
+      //   .attr('height', reserved.attr.icon.size)
+      //   .attr('x', reserved.push.box.x + reserved.pull.box.w * 0.12 - reserved.pull.box.h * 0.24)
+      //   .attr('y', reserved.push.box.y + reserved.pull.box.h * 0.5 - reserved.pull.box.h * 0.24)
+      //   .on('click', function () {
+      //     pushNewBlockQueue()
+      //   })
 
-      reserved.push.child.infoText = reserved.g.append('text')
+      reserved.push.child.merge.infoText = reserved.push.g.append('text')
+        .attr('id', 'merge')
         .text(function (d) {
-          return 'PUSH'
+          return 'Validate'
         })
-        .attr('x', reserved.push.box.x + reserved.push.box.w * 0.11 - reserved.pull.box.h * 0.24)
-        .attr('y', reserved.push.box.y + reserved.push.box.h * 0.5 + reserved.push.box.h * 0.1)
-        .attr('text-anchor', 'end')
+        .attr('x', reserved.push.box.w * 0.5)
+        .attr('y', reserved.attr.icon.size * 0.1)
+        .attr('text-anchor', 'middle')
         .style('font-weight', 'bold')
-        .style('font-size', reserved.box.h * 0.3)
+        .style('font-size', reserved.attr.text.size)
         .style('pointer-events', 'none')
         .style('fill', colorTheme.bright.text)
 
@@ -2238,40 +2227,109 @@ let mainSchedBlocksController = function (optIn) {
 
     function initPull () {
       reserved.pull.box = {
-        x: reserved.pull.box.x * reserved.box.w,
-        y: reserved.pull.box.y * reserved.box.h,
-        w: reserved.pull.box.w * reserved.box.w,
-        h: reserved.pull.box.h * reserved.box.h
+        x: reserved.box.w * 0.05,
+        y: reserved.box.h * 0.25,
+        w: reserved.box.w * 0.9,
+        h: reserved.box.h * 0.28
       }
       reserved.pull.g = reserved.g.append('g')
         .attr('transform', 'translate(' + reserved.pull.box.x + ',' + reserved.pull.box.y + ')')
     }
     function initPush () {
       reserved.push.box = {
-        x: reserved.push.box.x * reserved.box.w,
-        y: reserved.push.box.y * reserved.box.h,
-        w: reserved.push.box.w * reserved.box.w,
-        h: reserved.push.box.h * reserved.box.h
+        x: reserved.box.w * 0.05,
+        y: reserved.box.h * 0.6,
+        w: reserved.box.w * 0.9,
+        h: reserved.box.h * 0.2
       }
       reserved.push.g = reserved.g.append('g')
         .attr('transform', 'translate(' + reserved.push.box.x + ',' + reserved.push.box.y + ')')
     }
-
+    function showPushPull () {
+      let lineGenerator = d3.line()
+        .x(function (d) { return d.x })
+        .y(function (d) { return d.y })
+        .curve(d3.curveLinear)
+      reserved.initGroup.g.append('path')
+        .attr('id', 'arrow')
+        .attr('d', function (d) {
+          let targetPoints = [
+            {x: reserved.box.w * 0.5 - 2, y: reserved.box.h * 0.2},
+            {x: reserved.box.w * 0.5 - 2, y: reserved.box.h * 0.54},
+            {x: reserved.box.w * 0.5 - 6, y: reserved.box.h * 0.54},
+            {x: reserved.box.w * 0.5, y: reserved.box.h * 0.56},
+            {x: reserved.box.w * 0.5 + 6, y: reserved.box.h * 0.54},
+            {x: reserved.box.w * 0.5 + 2, y: reserved.box.h * 0.54},
+            {x: reserved.box.w * 0.5 + 2, y: reserved.box.h * 0.2}
+          ]
+          return lineGenerator(targetPoints)
+        })
+        .attr('fill', colorTheme.darker.stroke)
+        .attr('stroke', colorTheme.darker.stroke)
+        .attr('stroke-width', 0.1)
+      initPull()
+      createMergeButton()
+      createPullButton()
+      initPush()
+      createPushButton()
+    }
+    function hidePushPull () {
+      reserved.initGroup.g.select('path#arrow').remove()
+      reserved.pull.g.selectAll('*').remove()
+      reserved.push.g.selectAll('*').remove()
+    }
+    // function hideInspector () {
+    //   reserved.initGroup.g.selectAll('*').remove()
+    //   reserved.initGroup = {}
+    // }
+    function showInspector () {
+      reserved.initGroup = {}
+      reserved.initGroup.g = reserved.g.append('g')
+      reserved.initGroup.infoText = reserved.initGroup.g.append('text')
+        .text(function (d) {
+          return 'Modification status:'
+        })
+        .attr('x', reserved.box.w * 0.5)
+        .attr('y', reserved.box.h * 0.06)
+        .attr('text-anchor', 'middle')
+        .style('font-weight', '')
+        .style('font-size', reserved.attr.text.size)
+        .style('pointer-events', 'none')
+        .style('fill', colorTheme.bright.text)
+      reserved.initGroup.g.append('rect')
+        .attr('x', reserved.box.w * 0.5 - reserved.attr.icon.size * 0.5)
+        .attr('y', reserved.box.h * 0.125 - reserved.attr.icon.size * 0.5)
+        .attr('width', reserved.attr.icon.size)
+        .attr('height', reserved.attr.icon.size)
+        .attr('fill', '#aaaaaa')
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.1)
+        .on('click', function () {
+          if (shared.mode === 'inspector') {
+            showPushPull()
+            shared.mode = 'modifier'
+          } else if (shared.mode === 'modifier') {
+            hidePushPull()
+            shared.mode = 'inspector'
+          }
+        })
+    }
     function initData (optIn) {
       reserved = optIn
       reserved.g.attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
 
-      initPull()
-      initPush()
       // reserved.g.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
       //   .attr('width', reserved.box.w)
       //   .attr('height', reserved.box.h)
       //   .attr('fill', '#999999')
-      createMergeButton()
-      createPushButton()
-      createPullButton()
+      showInspector()
+      // initPull()
+      // initPush()
+      // createMergeButton()
+      // createPushButton()
+      // createPullButton()
     }
     this.initData = initData
 
