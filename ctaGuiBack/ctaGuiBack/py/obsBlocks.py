@@ -342,8 +342,8 @@ class obsBlocks_noACS():
         self.loopSleep = 4
 
         self.maxNcycles = 100
-        self.minNschedBlock = 2
-        self.maxNschedBlock = 5
+        self.minNschedBlock = 2 # 2
+        self.maxNschedBlock = 50 # 5
         self.minNobsBlock = 1
         self.maxNobsBlock = 5
         self.minNtelBlock = 4

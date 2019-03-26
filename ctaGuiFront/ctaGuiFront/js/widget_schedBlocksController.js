@@ -1612,6 +1612,7 @@ let mainSchedBlocksController = function (optIn) {
       // })
       // blockQueueCreator.init()
       blockQueueCreator.init()
+      // blockQueueCreator.changeDisplayer('blockTrackShrinkBib')
     }
     this.initData = initData
 
@@ -4353,17 +4354,107 @@ let mainSchedBlocksController = function (optIn) {
     function initData (dataIn) {
       reserved.box = deepCopy(box.rightInfo)
       reserved.g = svg.g.append('g').attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
-      reserved.g.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', reserved.box.w)
-        .attr('height', reserved.box.h)
-        .attr('fill', colorTheme.dark.background)
+      // reserved.g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', reserved.box.w)
+      //   .attr('height', reserved.box.h)
+      //   .attr('fill', colorTheme.dark.background)
+
+      mainOverview()
     }
     this.initData = initData
 
     function update () {}
     this.update = update
+
+    function mainOverview () {
+      function createBlocksInformation () {
+        let tot = shared.data.server.blocks.done.length +
+          shared.data.server.blocks.wait.length +
+          shared.data.server.blocks.run.length
+        let infoState = [
+          {state: 'wait', percent: shared.data.server.blocks.wait.length / tot},
+          {state: 'run', percent: shared.data.server.blocks.run.length / tot},
+          {state: 'done', percent: 0},
+          {state: 'fail', percent: 0},
+          {state: 'cancel', percent: 0}
+        ]
+        for (let i = 0; i < shared.data.server.blocks.done.length; i++) {
+          let b = shared.data.server.blocks.done[i]
+          if (b.exeState.state === 'done') {
+            infoState[2].percent += 1
+          } else if (b.exeState.state === 'fail') {
+            infoState[3].percent += 1
+          } else if (b.exeState.state === 'cancel') {
+            // if (hasVar(b.exeState.canRun)) {
+            //   if (!b.exeState.canRun) return colorTheme.blocks.cancelOp
+            // }
+            infoState[4].percent += 1
+          }
+        }
+        infoState[2].percent /= tot
+        infoState[3].percent /= tot
+        infoState[4].percent /= tot
+
+        let r = reserved.box.w * 0.2
+        let perimeter = 2 * Math.PI * r
+        let offset = 0
+
+        let circles = reserved.g
+          .selectAll('g.state')
+          .data(infoState, function (d) {
+            return d.state
+          })
+        let enter = circles
+          .enter()
+          .append('g')
+          .attr('class', 'state')
+        enter.each(function (d) {
+          d3.select(this).append('circle')
+            .attr('cx', reserved.box.w * 0.5)
+            .attr('cy', reserved.box.w * 0.35)
+            .attr('r', r)
+            .attr('fill', 'none')
+            .attr('stroke', setCol({state: d.state, canRun: true}).background)
+            .attr('stroke-width', reserved.box.w * 0.08)
+            .attr('stroke-dasharray', [0, offset + 1, perimeter * d.percent - 2, 1 + (perimeter * (1 - d.percent)) - offset])
+            .attr('stroke-dashoffset', perimeter * 0.25)
+          offset += perimeter * d.percent
+        })
+        // schedulingBlocks = enter.merge(schedulingBlocks)
+        // schedulingBlocks.each(function (d) {
+        //   d3.select(this).selectAll('rect.subBlocks')
+        //     .data(d.blocks, function (d) {
+        //       return d.obId
+        //     })
+        //     .transition()
+        //     .duration(800)
+        //     .attr('fill', function (d, i) {
+        //       return setCol(d).background
+        //     })
+        // })
+
+        reserved.g.append('text')
+          .text(function (data) {
+            return tot + ' Obs'
+          })
+          .attr('x', reserved.box.w * 0.5)
+          .attr('y', reserved.box.w * 0.42)
+          .style('font-weight', '')
+          .attr('text-anchor', 'middle')
+          .style('font-size', 18)
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+      }
+      function createPointingInformation () {
+
+      }
+      createBlocksInformation()
+      createPointingInformation()
+    }
 
     function blockEvent (value, d) {
       changeBlockProperties('svgInformation',
@@ -4511,14 +4602,37 @@ let mainSchedBlocksController = function (optIn) {
       return root
     }
     function createBlocksInfoPanel (idBlock) {
+      function createSchedulingObservingBlocksTree () {
+
+      }
+      function createStatusInformation () {
+
+      }
+      function createTimeInformation () {
+
+      }
+      function createPointingInformation () {
+
+      }
+      function createTelescopeInformation () {
+
+      }
       let data = getBlockById(focusBlockList, idBlock).data
       let dim = {
-        x: reserved.box.w * 0.15,
-        y: 15,
-        w: reserved.box.w * 0.85,
-        h: reserved.box.h - 32,
-        margH: reserved.box.h * 0.05
+        x: box.rightInfo.w * 0.0,
+        y: box.rightInfo.h * 0.0,
+        w: box.rightInfo.w * 1.0,
+        h: box.rightInfo.h * 1.0,
+        margH: box.rightInfo.h * 0.05
       }
+      // reserved.g.append('rect')
+      //   .attr('x', dim.x)
+      //   .attr('y', dim.y)
+      //   .attr('width', dim.w)
+      //   .attr('height', dim.h)
+      //   .attr('stroke', colorTheme.dark.stroke)
+      //   .attr('fill', colorTheme.dark.background)
+
       let schedulingBlocksInfoPanelG = reserved.g.append('g')
         .attr('class', 'form')
       let scrollForm = new ScrollForm({

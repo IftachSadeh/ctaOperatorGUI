@@ -2114,8 +2114,8 @@ window.BlockDisplayer = function (optIn) {
       let tracks = computeTrack(scheds)
 
       let nLine = tracks.length
-      let height = nLine >= 9 ? (com.main.box.h / nLine) : (com.main.box.h / 9)
-      let offsetY = nLine >= 9 ? 0 : (com.main.box.h - ((com.main.box.h / 9) * nLine)) / (nLine - 1)
+      let height = nLine >= 13 ? (com.main.box.h / nLine) : (com.main.box.h / 13)
+      let offsetY = nLine >= 13 ? 0 : (com.main.box.h - ((com.main.box.h / 13) * nLine)) / (nLine - 1)
 
       let currentTrack = com.main.scroll.scrollG
         .selectAll('g.track')
@@ -2141,10 +2141,10 @@ window.BlockDisplayer = function (optIn) {
           .attr('x2', com.main.box.w)
           .attr('y2', 0)
           .attr('fill', 'transparent')
-          .attr('stroke-opacity', 0.8)
+          .attr('stroke-opacity', 1)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.4)
-          .attr('stroke-dasharray', [4, 4])
+          .attr('stroke-width', 0.2)
+          .attr('stroke-dasharray', [2, 2])
       })
       enterTrack.merge(currentTrack)
         .transition()
@@ -2212,7 +2212,7 @@ window.BlockDisplayer = function (optIn) {
               }
               return 'end'
             })
-            .style('font-size', (height * 0.6) + 'px')
+            .style('font-size', Math.max(6, Math.min(18, height * 0.5)) + 'px')
             .style('pointer-events', 'none')
             .attr('fill', '#000000')
             .attr('stroke', 'none')

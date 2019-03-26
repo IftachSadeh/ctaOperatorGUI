@@ -267,7 +267,7 @@ window.colorTheme = {
         text: '#000000'
       },
       wait: {
-        background: '#EEEEEE',
+        background: '#DEDEDE',
         stroke: '#000000',
         text: '#000000'
       },
