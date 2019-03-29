@@ -343,7 +343,7 @@ class obsBlocks_noACS():
 
         self.maxNcycles = 100
         self.minNschedBlock = 2 # 2
-        self.maxNschedBlock = 50 # 5
+        self.maxNschedBlock = 5 # 5
         self.minNobsBlock = 1
         self.maxNobsBlock = 5
         self.minNtelBlock = 4
@@ -941,18 +941,33 @@ class obsBlocks_noACS():
         return
 
     def external_generateEvents(self):
-        if self.rndGen.random() < 0.13:
+        if self.rndGen.random() < 0.05:
             newEvent = {'id': getTime() + random.randint(1, 99999), 'start_time': self.timeOfNight.getCurrentTime()}
             newEvent['priority'] = random.randint(1, 3)
-            if self.rndGen.random() < 0.33:
+            if self.rndGen.random() < 0.1:
                 newEvent['name'] = 'alarm'
                 newEvent['icon'] = 'alarm.svg'
-            elif self.rndGen.random() < 0.66:
+            elif self.rndGen.random() < 0.2:
                 newEvent['name'] = 'grb'
                 newEvent['icon'] = 'grb.svg'
-            elif self.rndGen.random() < 1:
+            elif self.rndGen.random() < 0.3:
                 newEvent['name'] = 'hardware'
                 newEvent['icon'] = 'hardwareBreak.svg'
+            elif self.rndGen.random() < 0.4:
+                newEvent['name'] = 'moon'
+                newEvent['icon'] = 'moon.svg'
+            elif self.rndGen.random() < 0.5:
+                newEvent['name'] = 'sun'
+                newEvent['icon'] = 'sun.svg'
+            elif self.rndGen.random() < 0.6:
+                newEvent['name'] = 'dolphin'
+                newEvent['icon'] = 'dolphin.svg'
+            elif self.rndGen.random() < 0.8:
+                newEvent['name'] = 'eagle'
+                newEvent['icon'] = 'eagle.svg'
+            elif self.rndGen.random() < 1:
+                newEvent['name'] = 'chicken'
+                newEvent['icon'] = 'chicken.svg'
             self.external_events.append(newEvent)
         self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
 

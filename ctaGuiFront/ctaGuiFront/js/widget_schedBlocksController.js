@@ -150,6 +150,7 @@ let sockSchedBlocksController = function (optIn) {
 let mainSchedBlocksController = function (optIn) {
   // let myUniqueId = unique()
   let colorTheme = getColorTheme('bright-Grey')
+  let isSouth = window.__nsType__ === 'S'
 
   let widgetType = optIn.widgetType
   let tagArrZoomerPlotsSvg = optIn.baseName
@@ -431,7 +432,6 @@ let mainSchedBlocksController = function (optIn) {
     shared.data.server = dataIn.data
     focusBlockList = shared.data.server.blocks
 
-    svgBlocksQueueServer.initData()
     svgBrush.initData()
     svgWarningArea.initData({
       tag: 'pushPull',
@@ -491,7 +491,7 @@ let mainSchedBlocksController = function (optIn) {
     //     enabled: false
     //   }
     // })
-
+    svgBlocksQueueServer.initData()
     // updateDataOnce(dataIn)
     svgBlocksQueueServer.updateData()
     svgBrush.updateData()
@@ -509,6 +509,7 @@ let mainSchedBlocksController = function (optIn) {
     }
     locker.add('updateData')
     shared.data.server = dataIn.data
+    shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
 
     // svgBlocksQueue.updateData()
     svgBlocksQueueServer.updateData()
@@ -593,7 +594,7 @@ let mainSchedBlocksController = function (optIn) {
   }
   function updateAllBlocksQueue () {
     if (shared.data.copy.length === 0) return
-    createSchedBlocks()
+    // createSchedBlocks()
     svgBlocksQueueServer.updateData()
     svgBlocksQueueInsert.updateData()
     svgBlocksQueueOptimized.updateData()
@@ -693,13 +694,13 @@ let mainSchedBlocksController = function (optIn) {
     svgTelsConflict.updateData()
     svgFocusOverlay.updateData()
   }
-  function createSchedBlocks () {
-    shared.data.copy[shared.data.current].schedBlocks = {}
-    for (let key in shared.data.copy[shared.data.current].optimized.blocks) {
-      for (let i = 0; i < shared.data.copy[shared.data.current].optimized.blocks[key].length; i++) {
-        let b = shared.data.copy[shared.data.current].optimized.blocks[key][i]
-        if (!shared.data.copy[shared.data.current].schedBlocks[b.sbId]) {
-          shared.data.copy[shared.data.current].schedBlocks[b.sbId] = {
+  function createSchedBlocks (blocks) {
+    let temp = {}
+    for (let key in blocks) {
+      for (let i = 0; i < blocks[key].length; i++) {
+        let b = blocks[key][i]
+        if (!temp[b.sbId]) {
+          temp[b.sbId] = {
             exeState: {
               state: b.exeState.state,
               canRun: true
@@ -713,7 +714,7 @@ let mainSchedBlocksController = function (optIn) {
             blocks: [b]
           }
         } else {
-          let sb = shared.data.copy[shared.data.current].schedBlocks[b.sbId]
+          let sb = temp[b.sbId]
           sb.blocks.push(b)
           if (b.exeState.state === 'run' || sb.exeState.state === 'run') sb.exeState.state = 'run'
           else if (b.exeState.state === 'wait' && sb.exeState.state === 'done') sb.exeState.state = 'run'
@@ -721,6 +722,7 @@ let mainSchedBlocksController = function (optIn) {
         }
       }
     }
+    return temp
   }
   function optimizer () {
     shared.data.copy[shared.data.current].optimized = deepCopy(shared.data.copy[shared.data.current].modified)
@@ -1375,7 +1377,7 @@ let mainSchedBlocksController = function (optIn) {
           timeBars: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h, marg: adjustedBox.marg}
+            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 2, marg: adjustedBox.marg}
           }
         },
         blockTrackShrink: {
@@ -3350,7 +3352,7 @@ let mainSchedBlocksController = function (optIn) {
 
       gMerge.select('rect.small')
         .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', function (d) { return (range * 0.5) - Math.abs(scaleYSmall(d.smallTels)) })
+        .attr('y', function (d) { return (range * 1) - 2 * Math.abs(scaleYSmall(d.smallTels)) })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('fill', function (d, i) {
           return '#43A047'
@@ -3373,7 +3375,7 @@ let mainSchedBlocksController = function (optIn) {
 
       gMerge.select('rect.medium')
         .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', function (d) { return (range * 1.5) - Math.abs(scaleYMedium(d.mediumTels)) })
+        .attr('y', function (d) { return (range * 2) - 2 * Math.abs(scaleYMedium(d.mediumTels)) })
         .attr('fill', function (d, i) {
           return '#43A047'
         })
@@ -3396,7 +3398,7 @@ let mainSchedBlocksController = function (optIn) {
 
       gMerge.select('rect.high')
         .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', function (d) { return (range * 2.5) - Math.abs(scaleYLarge(d.largeTels)) })
+        .attr('y', function (d) { return (range * 3) - 2 * Math.abs(scaleYLarge(d.largeTels)) })
         .attr('fill', function (d, i) {
           return '#43A047'
         })
@@ -4361,43 +4363,57 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('height', reserved.box.h)
       //   .attr('fill', colorTheme.dark.background)
 
-      mainOverview()
+      runningOverview()
     }
     this.initData = initData
 
     function update () {}
     this.update = update
 
-    function mainOverview () {
+    function runningOverview () {
       function createBlocksInformation () {
+        reserved.g.append('text')
+          .text(function (data) {
+            return 'Execution'
+          })
+          .attr('x', reserved.box.w * 0.5)
+          .attr('y', reserved.box.h * 0.02)
+          .style('font-weight', '')
+          .attr('text-anchor', 'middle')
+          .style('font-size', 10)
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+
         let tot = shared.data.server.blocks.done.length +
           shared.data.server.blocks.wait.length +
           shared.data.server.blocks.run.length
         let infoState = [
-          {state: 'wait', percent: shared.data.server.blocks.wait.length / tot},
           {state: 'run', percent: shared.data.server.blocks.run.length / tot},
           {state: 'done', percent: 0},
           {state: 'fail', percent: 0},
-          {state: 'cancel', percent: 0}
+          {state: 'cancel', percent: 0},
+          {state: 'wait', percent: shared.data.server.blocks.wait.length / tot}
         ]
         for (let i = 0; i < shared.data.server.blocks.done.length; i++) {
           let b = shared.data.server.blocks.done[i]
           if (b.exeState.state === 'done') {
-            infoState[2].percent += 1
+            infoState[1].percent += 1
           } else if (b.exeState.state === 'fail') {
-            infoState[3].percent += 1
+            infoState[2].percent += 1
           } else if (b.exeState.state === 'cancel') {
             // if (hasVar(b.exeState.canRun)) {
             //   if (!b.exeState.canRun) return colorTheme.blocks.cancelOp
             // }
-            infoState[4].percent += 1
+            infoState[3].percent += 1
           }
         }
+        infoState[1].percent /= tot
         infoState[2].percent /= tot
         infoState[3].percent /= tot
-        infoState[4].percent /= tot
 
-        let r = reserved.box.w * 0.2
+        let r = reserved.box.w * 0.14
         let perimeter = 2 * Math.PI * r
         let offset = 0
 
@@ -4412,14 +4428,14 @@ let mainSchedBlocksController = function (optIn) {
           .attr('class', 'state')
         enter.each(function (d) {
           d3.select(this).append('circle')
-            .attr('cx', reserved.box.w * 0.5)
-            .attr('cy', reserved.box.w * 0.35)
+            .attr('cx', reserved.box.w - r * 1.5)
+            .attr('cy', r * 1.8)
             .attr('r', r)
             .attr('fill', 'none')
             .attr('stroke', setCol({state: d.state, canRun: true}).background)
             .attr('stroke-width', reserved.box.w * 0.08)
             .attr('stroke-dasharray', [0, offset + 1, perimeter * d.percent - 2, 1 + (perimeter * (1 - d.percent)) - offset])
-            .attr('stroke-dashoffset', perimeter * 0.25)
+            .attr('stroke-dashoffset', -perimeter * 0.25 + infoState[0].percent * perimeter * 0.5)
           offset += perimeter * d.percent
         })
         // schedulingBlocks = enter.merge(schedulingBlocks)
@@ -4434,23 +4450,107 @@ let mainSchedBlocksController = function (optIn) {
         //       return setCol(d).background
         //     })
         // })
-
+        let size = 16
         reserved.g.append('text')
           .text(function (data) {
             return tot + ' Obs'
           })
-          .attr('x', reserved.box.w * 0.5)
-          .attr('y', reserved.box.w * 0.42)
+          .attr('x', reserved.box.w - r * 1.5)
+          .attr('y', r * 1.7 + size * 0.5)
           .style('font-weight', '')
           .attr('text-anchor', 'middle')
-          .style('font-size', 18)
+          .style('font-size', size)
           .attr('dy', 0)
           .style('pointer-events', 'none')
           .attr('fill', colorTheme.dark.text)
           .attr('stroke', 'none')
       }
       function createPointingInformation () {
+        let box = {
+          x: 0,
+          y: reserved.box.h * 0.33,
+          h: reserved.box.h * 0.3,
+          w: reserved.box.w
+        }
 
+        reserved.g.append('text')
+          .text(function (data) {
+            return 'Targets'
+          })
+          .attr('x', box.w * 0.5)
+          .attr('y', box.y - 10)
+          .style('font-weight', '')
+          .attr('text-anchor', 'middle')
+          .style('font-size', 10)
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+        // let perLine = Math.floor(Math.sqrt(shared.data.server.targets.length)) + 1
+        let rectBox = {
+          w: box.w,
+          h: box.h / shared.data.server.targets.length
+        }
+        // let lastLine = {
+        //   index: shared.data.server.targets.length - (shared.data.server.targets.length % perLine),
+        //   offset: box.w - rectBox.w * (shared.data.server.targets.length % perLine) * 0.5
+        // }
+        let targets = reserved.g
+          .selectAll('g.target')
+          .data(shared.data.server.targets, function (d) {
+            return d.id
+          })
+        let enter = targets
+          .enter()
+          .append('g')
+          .attr('class', 'target')
+        enter.each(function (d, i) {
+          let g = d3.select(this)
+          g.attr('transform', 'translate(' + (0) + ',' + (12 + box.y + rectBox.h * i) + ')')
+          // g.append('rect')
+          //   .attr('x', rectBox.w * 0.0)
+          //   .attr('y', rectBox.h * 0.05)
+          //   .attr('width', rectBox.w)
+          //   .attr('height', rectBox.h * 0.7)
+          //   .attr('fill', colorTheme.medium.background)
+          //   .attr('stroke', colorTheme.medium.stroke)
+          //   .attr('stroke-width', 0.1)
+          //   .attr('stroke-dasharray', [rectBox.w * 0.15, rectBox.w * 0.85 + rectBox.h * 0.9, rectBox.w + rectBox.h * 0.9])
+          g.append('rect')
+            .attr('x', rectBox.w * 0.5 - 20)
+            .attr('y', -12)
+            .attr('width', 40)
+            .attr('height', 12 + rectBox.h * 0.05)
+            .attr('fill', colorTheme.dark.background)
+            .attr('stroke', colorTheme.medium.stroke)
+            .attr('stroke-width', 0.1)
+          g.append('text')
+            .text(function () {
+              return d.name
+            })
+            .attr('x', rectBox.w * 0.5)
+            .attr('y', rectBox.h * 0.0)
+            .style('font-weight', '')
+            .attr('text-anchor', 'middle')
+            .style('font-size', 10)
+            .attr('dy', 0)
+            .style('pointer-events', 'none')
+            .attr('fill', colorTheme.dark.text)
+            .attr('stroke', 'none')
+          // g.append('text')
+          //   .text(function () {
+          //     return 'fullName of ' + d.id
+          //   })
+          //   .attr('x', rectBox.w * 0.16)
+          //   .attr('y', rectBox.h * 0.0)
+          //   .style('font-weight', '')
+          //   .attr('text-anchor', 'start')
+          //   .style('font-size', 10)
+          //   .attr('dy', 0)
+          //   .style('pointer-events', 'none')
+          //   .attr('fill', colorTheme.dark.text)
+          //   .attr('stroke', 'none')
+        })
       }
       createBlocksInformation()
       createPointingInformation()
@@ -4687,6 +4787,7 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.outBlock = outBlock
   }
+
   let SvgMiddleInfo = function () {
     let template = {
       tag: 'scheduleModification',

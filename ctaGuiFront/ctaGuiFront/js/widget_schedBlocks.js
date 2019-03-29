@@ -362,7 +362,7 @@ function mainSchedBlocks (optIn) {
       }
       box.freeTels = {
         x: lenD.w[0] * 0.01,
-        y: lenD.h[0] * 0.586,
+        y: lenD.h[0] * 0.585,
         w: lenD.w[0] * 0.98,
         h: lenD.h[0] * 0.414,
         marg: lenD.w[0] * 0.01
@@ -1835,7 +1835,7 @@ function mainSchedBlocks (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'eventTrack',
+        displayer: 'eventQueue',
         eventTrack: {
           g: undefined,
           schedBlocks: {
@@ -1975,7 +1975,7 @@ function mainSchedBlocks (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'eventTrack',
+        displayer: 'eventQueue',
         eventTrack: {
           g: undefined,
           schedBlocks: {
@@ -2118,6 +2118,7 @@ function mainSchedBlocks (optIn) {
           {
             id: 'top',
             enabled: true,
+            showAxis: true,
             main: {
               g: undefined,
               box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
@@ -2151,7 +2152,7 @@ function mainSchedBlocks (optIn) {
             showAxis: true,
             main: {
               g: undefined,
-              box: {x: 0, y: brushBox.h * 0.75, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
+              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
               type: 'top',
               attr: {
                 text: {
@@ -2161,9 +2162,9 @@ function mainSchedBlocks (optIn) {
                   fill: colorTheme.medium.stroke
                 },
                 path: {
-                  enabled: false,
-                  stroke: colorTheme.medium.background,
-                  fill: colorTheme.medium.background
+                  enabled: true,
+                  stroke: colorTheme.dark.stroke,
+                  fill: colorTheme.dark.stroke
                 }
               }
             },
@@ -2179,14 +2180,15 @@ function mainSchedBlocks (optIn) {
           {
             id: 'bottom',
             enabled: true,
+            showAxis: true,
             main: {
               g: undefined,
-              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+              box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
               type: 'bottom',
               attr: {
                 text: {
                   enabled: false,
-                  size: 14,
+                  size: 16,
                   stroke: colorTheme.medium.stroke,
                   fill: colorTheme.medium.stroke
                 },
@@ -2327,7 +2329,7 @@ function mainSchedBlocks (optIn) {
             showAxis: true,
             main: {
               g: undefined,
-              box: {x: 0, y: brushBox.h * 0.75, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
+              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
               type: 'top',
               attr: {
                 text: {
@@ -2337,9 +2339,9 @@ function mainSchedBlocks (optIn) {
                   fill: colorTheme.medium.stroke
                 },
                 path: {
-                  enabled: false,
-                  stroke: colorTheme.medium.background,
-                  fill: colorTheme.medium.background
+                  enabled: true,
+                  stroke: colorTheme.dark.stroke,
+                  fill: colorTheme.dark.stroke
                 }
               }
             },
@@ -2355,14 +2357,15 @@ function mainSchedBlocks (optIn) {
           {
             id: 'bottom',
             enabled: true,
+            showAxis: true,
             main: {
               g: undefined,
-              box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+              box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
               type: 'bottom',
               attr: {
                 text: {
                   enabled: false,
-                  size: 14,
+                  size: 16,
                   stroke: colorTheme.medium.stroke,
                   fill: colorTheme.medium.stroke
                 },
@@ -3389,7 +3392,7 @@ function mainSchedBlocks (optIn) {
           .attr('x', middleRect - (headerBoxRunningPhase.w * 0.33 * 0.5))
           .attr('width', headerBoxRunningPhase.w * 0.33)
           .attr('height', headerBoxRunningPhase.h * 0.9)
-          .attr('stroke-width', queueRun.length > 6 ? 3 : 0)
+          .attr('stroke-width', queueRun.length > 6 ? 6 : 6)
           .attr('stroke-dasharray', [0, (1 - percent) * headerBoxRunningPhase.w * 0.33, percent * headerBoxRunningPhase.w * 0.33, headerBoxRunningPhase.w * 0.33 + headerBoxRunningPhase.h * 0.9 * 2])
 
         d3.select(this).select('#name')
@@ -3403,7 +3406,7 @@ function mainSchedBlocks (optIn) {
           })
           .attr('x', queueRun.length > 6 ? (headerBoxId.w * (step === 'take' ? 0.55 : (step === 'finish' ? 0.64 : 0.45))) : headerBoxId.w * 0.5)
           .attr('y', queueRun.length > 6 ? headerBoxId.h * 0.65 : headerBoxId.h * 0.80)
-          .style('font-size', Math.max(6, Math.min(16, headerBoxId.h * 0.5)))
+          .style('font-size', Math.max(6, Math.min(14, headerBoxId.h * 0.5)))
           .attr('text-anchor', queueRun.length > 6 ? 'start' : 'middle')
           .style('opacity', queueRun.length > 6 ? 0 : 1)
 
