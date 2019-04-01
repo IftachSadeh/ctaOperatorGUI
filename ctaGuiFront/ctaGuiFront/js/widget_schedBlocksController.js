@@ -788,6 +788,13 @@ let mainSchedBlocksController = function (optIn) {
     })
     return ret
   }
+  function getTargetById (id) {
+    for (let i = 0; i < shared.data.server.targets.length; i++) {
+      if (shared.data.server.targets[i].id === id) {
+        return shared.data.server.targets[i]
+      }
+    }
+  }
 
   function mainFocusOnSchedBlocks (schedB) {
     if (shared.focus.schedBlocks !== undefined) {
@@ -816,35 +823,37 @@ let mainSchedBlocksController = function (optIn) {
     shared.focus.schedBlocks = undefined
   }
   function mainFocusOnBlock (block) {
-    console.log(shared.focus.block, block);
-    if (shared.focus.block !== undefined) {
-      if (shared.focus.block === block.obId) {
-        mainUnfocusOnBlock()
-        return
-      }
-      mainUnfocusOnBlock()
-    }
-    mainUnfocusOnSchedBlocks()
-    mainFocusOnSchedBlocks(block.sbId)
-    shared.focus.block = block.obId
-    // svgSchedBlocksIcons.focusOnSchedBlocks(block)
-    svgInformation.focusOnBlock(block.obId)
-    blockQueueCreator.focusOnBlock(block.obId)
-    blockQueueModif.focusOnBlock(block.obId)
-    blockQueueOptimized.focusOnBlock(block.obId)
-    svgFocusOverlay.focusOnBlock({data: block})
+    svgRightInfo.focusOnBlock(block.obId)
+    // console.log(shared.focus.block, block);
+    // if (shared.focus.block !== undefined) {
+    //   if (shared.focus.block === block.obId) {
+    //     mainUnfocusOnBlock()
+    //     return
+    //   }
+    //   mainUnfocusOnBlock()
+    // }
+    // mainUnfocusOnSchedBlocks()
+    // mainFocusOnSchedBlocks(block.sbId)
+    // shared.focus.block = block.obId
+    // // svgSchedBlocksIcons.focusOnSchedBlocks(block)
+    // svgInformation.focusOnBlock(block.obId)
+    // blockQueueCreator.focusOnBlock(block.obId)
+    // blockQueueModif.focusOnBlock(block.obId)
+    // blockQueueOptimized.focusOnBlock(block.obId)
+    // svgFocusOverlay.focusOnBlock({data: block})
   }
   function mainUnfocusOnBlock () {
-    if (!shared.focus.block) return
-    svgInformation.unfocusBlock()
-    svgInformation.focusOnSchedBlocks(shared.focus.schedBlocks)
-    blockQueueCreator.unfocusOnBlock(shared.focus.block)
-    blockQueueModif.unfocusOnBlock(shared.focus.block)
-    blockQueueOptimized.unfocusOnBlock(shared.focus.block)
-    let dataB = getBlockById(shared.focus.block)
-    dataB = dataB.optimized.data ? dataB.optimized.data : dataB.insert.data
-    svgFocusOverlay.unfocusOnBlock({data: dataB})
-    shared.focus.block = undefined
+    svgRightInfo.unfocusOnBlock()
+    // if (!shared.focus.block) return
+    // svgInformation.unfocusBlock()
+    // svgInformation.focusOnSchedBlocks(shared.focus.schedBlocks)
+    // blockQueueCreator.unfocusOnBlock(shared.focus.block)
+    // blockQueueModif.unfocusOnBlock(shared.focus.block)
+    // blockQueueOptimized.unfocusOnBlock(shared.focus.block)
+    // let dataB = getBlockById(shared.focus.block)
+    // dataB = dataB.optimized.data ? dataB.optimized.data : dataB.insert.data
+    // svgFocusOverlay.unfocusOnBlock({data: dataB})
+    // shared.focus.block = undefined
   }
   function mainOverSchedBlocks (schedB) {
     // svgSchedBlocksIcons.overSchedBlocks(schedB)
@@ -4702,29 +4711,626 @@ let mainSchedBlocksController = function (optIn) {
       return root
     }
     function createBlocksInfoPanel (idBlock) {
-      function createSchedulingObservingBlocksTree () {
-
-      }
-      function createStatusInformation () {
-
-      }
-      function createTimeInformation () {
-
-      }
-      function createPointingInformation () {
-
-      }
-      function createTelescopeInformation () {
-
-      }
       let data = getBlockById(focusBlockList, idBlock).data
-      let dim = {
+      let schedB = shared.data.server.schedBlocks[data.sbId]
+      let innerbox = {
         x: box.rightInfo.w * 0.0,
         y: box.rightInfo.h * 0.0,
         w: box.rightInfo.w * 1.0,
         h: box.rightInfo.h * 1.0,
         margH: box.rightInfo.h * 0.05
       }
+
+      function createSchedulingObservingBlocksTree () {
+        console.log(data, schedB);
+        let txtSize = 10
+        let dim = {
+          w: innerbox.w * 1.0,
+          h: innerbox.h * 0.12
+        }
+        let color = shared.style.blockCol(data)
+        let offset = (dim.w * 0.75) / schedB.blocks.length
+        let width = Math.min(offset, dim.w * 0.1)
+
+        let g = reserved.g.append('g')
+          .attr('transform', 'translate(' + (innerbox.w * 0) + ',' + (innerbox.h * 0) + ')')
+        g.append('rect')
+          .attr('x', dim.w * 0.05)
+          .attr('y', dim.h * 0.1)
+          .attr('width', dim.w * 0.15)
+          .attr('height', dim.h * 0.8)
+          .attr('fill', color.background)
+          .attr('stroke', color.stroke)
+          .attr('stroke-width', 2)
+        g.append('text')
+          .text(data.metaData.blockName)
+          .style('fill', color.text)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.125) + ',' + (dim.h * 0.5 + txtSize * 0.3) + ')')
+
+        // g.append('text')
+        //   .text('sched. block:')
+        //   .style('fill', color.text)
+        //   .style('font-weight', '')
+        //   .style('font-size', txtSize * 1.2)
+        //   .attr('text-anchor', 'start')
+        //   .attr('transform', 'translate(' + (dim.w * 0.25) + ',' + (dim.h * 0.25 + txtSize * 0.3) + ')')
+        g.append('rect')
+          .attr('x', dim.w * 0.25)
+          .attr('y', dim.h * 0.1)
+          .attr('width', ((schedB.blocks.length - 1) * width) + width * 0.9)
+          .attr('height', dim.h * 0.3)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', color.stroke)
+          .attr('stroke-width', 0.2)
+        g.append('text')
+          .text('S' + data.metaData.nSched)
+          .style('fill', color.text)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.25 + (((schedB.blocks.length - 1) * width) + width * 0.9) * 0.5) + ',' + (dim.h * 0.25 + txtSize * 0.3) + ')')
+
+        // g.append('text')
+        //   .text('obs. blocks:')
+        //   .style('fill', color.text)
+        //   .style('font-weight', '')
+        //   .style('font-size', txtSize * 1.2)
+        //   .attr('text-anchor', 'start')
+        //   .attr('transform', 'translate(' + (dim.w * 0.25) + ',' + (dim.h * 0.75 + txtSize * 0.3) + ')')
+        for (let i = 0; i < schedB.blocks.length; i++) {
+          color = shared.style.blockCol(schedB.blocks[i])
+          g.append('rect')
+            .attr('x', (dim.w * 0.25) + (width * i))
+            .attr('y', dim.h * 0.6)
+            .attr('width', width * 0.9)
+            .attr('height', dim.h * 0.3)
+            .attr('fill', data.obId === schedB.blocks[i].obId ? colorTheme.darker.background : color.background)
+            .attr('stroke', color.stroke)
+            .attr('stroke-width', data.obId === schedB.blocks[i].obId ? 2 : 0.2)
+          g.append('text')
+            .text(schedB.blocks[i].metaData.nObs)
+            .style('fill', color.text)
+            .style('font-weight', '')
+            .style('font-size', txtSize)
+            .attr('text-anchor', 'middle')
+            .attr('transform', 'translate(' + ((dim.w * 0.25) + (width * i) + (width * 0.45)) + ',' + (dim.h * 0.75 + txtSize * 0.3) + ')')
+        }
+      }
+      function createStatusInformation () {
+        let txtSize = 10
+        let dim = {
+          x: 0,
+          y: innerbox.h * 0.15,
+          w: innerbox.w * 1.0,
+          h: innerbox.h * 0.05
+        }
+        let g = reserved.g.append('g')
+          .attr('transform', 'translate(' + (dim.x) + ',' + (dim.y) + ')')
+        g.append('text')
+          .text('Details:')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.0) + ',' + (dim.h * 0.1 + txtSize * 0.3) + ')')
+        g.append('line')
+          .attr('x1', dim.w * 0.0)
+          .attr('y1', (dim.h * 0.1 + txtSize * 0.5))
+          .attr('x2', dim.w * 1.0)
+          .attr('y2', (dim.h * 0.1 + txtSize * 0.5))
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+        g.append('text')
+          .text('Scheduling block ID: ' + data.sbId)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.05) + ',' + (dim.h * 0.8 + txtSize * 0.3) + ')')
+        g.append('text')
+          .text('Observing block ID: ' + data.obId)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.05) + ',' + (dim.h * 0.8 + txtSize * 1.6) + ')')
+      }
+      function createTimeInformation () {
+        let txtSize = 10
+        let dim = {
+          x: 0,
+          y: innerbox.h * 0.25,
+          w: innerbox.w * 1.0,
+          h: innerbox.h * 0.15
+        }
+        let color = shared.style.blockCol(data)
+
+        let g = reserved.g.append('g')
+          .attr('transform', 'translate(' + (dim.x) + ',' + (dim.y) + ')')
+        g.append('text')
+          .text('Schedule:')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.0) + ',' + (dim.h * 0.05 + txtSize * 0.3) + ')')
+        g.append('line')
+          .attr('x1', dim.w * 0.0)
+          .attr('y1', (dim.h * 0.05 + txtSize * 0.5))
+          .attr('x2', dim.w * 1.0)
+          .attr('y2', (dim.h * 0.05 + txtSize * 0.5))
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+
+        let startTime = new Date(shared.data.server.timeOfNight.date_start)
+        startTime.setSeconds(startTime.getSeconds() + data.startTime)
+        let duration = Math.floor(data.duration / 3600) + ':' + Math.floor((data.duration % 3600) / 60) + ':' + (data.duration % 60) + ''
+        let endTime = new Date(shared.data.server.timeOfNight.date_start)
+        endTime.setSeconds(endTime.getSeconds() + data.startTime + data.duration)
+
+        g.append('text')
+          .text(d3.timeFormat('%A %d')(startTime))
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.05) + ',' + (dim.h * 0.4) + ')')
+        g.append('text')
+          .text(d3.timeFormat('%B %Y')(startTime))
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.05) + ',' + (dim.h * 0.4 + txtSize * 1.5) + ')')
+        g.append('text')
+          .text('GMT' + d3.timeFormat('%Z')(startTime))
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.05) + ',' + (dim.h * 0.4 + txtSize * 3) + ')')
+
+        g.append('rect')
+          .attr('x', dim.w * 0.45)
+          .attr('y', dim.h * 0.59)
+          .attr('width', dim.w * 0.4)
+          .attr('height', dim.h * 0.01)
+          .attr('fill', color.background)
+          .attr('stroke', color.stroke)
+          .attr('stroke-width', 0.2)
+        g.append('text')
+          .text(data.startTime + ' s')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.43) + ',' + (dim.h * 0.48) + ')')
+        g.append('text')
+          .text(d3.timeFormat('%H:%M:%S')(startTime))
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.43) + ',' + (dim.h * 0.7 + txtSize) + ')')
+
+        g.append('text')
+          .text(data.duration + ' s')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.65) + ',' + (dim.h * 0.48) + ')')
+        g.append('text')
+          .text(duration)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.65) + ',' + (dim.h * 0.7 + txtSize) + ')')
+
+        g.append('text')
+          .text(data.endTime + ' s')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.87) + ',' + (dim.h * 0.48) + ')')
+        g.append('text')
+          .text(d3.timeFormat('%H:%M:%S')(endTime))
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.87) + ',' + (dim.h * 0.7 + txtSize) + ')')
+      }
+      function createPointingInformation () {
+        let txtSize = 10
+        let dim = {
+          x: 0,
+          y: innerbox.h * 0.4,
+          w: innerbox.w * 1.0,
+          h: innerbox.h * 0.25
+        }
+        let target = getTargetById(data.targetId)
+
+        let g = reserved.g.append('g')
+          .attr('transform', 'translate(' + (dim.x) + ',' + (dim.y) + ')')
+        g.append('text')
+          .text('Pointing:')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.0) + ',' + (dim.h * 0.1 + txtSize * 0.3) + ')')
+        g.append('line')
+          .attr('x1', dim.w * 0.0)
+          .attr('y1', (dim.h * 0.1 + txtSize * 0.5))
+          .attr('x2', dim.w * 1.0)
+          .attr('y2', (dim.h * 0.1 + txtSize * 0.5))
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+
+        g.append('rect')
+          .attr('x', dim.w * 0.0)
+          .attr('y', dim.h * 0.2)
+          .attr('width', dim.h * 0.8)
+          .attr('height', dim.h * 0.8)
+          .attr('fill', colorTheme.bright.background)
+          .attr('stroke', colorTheme.bright.stroke)
+          .attr('stroke-width', 0.2)
+        g.append('text')
+          .text('+')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', txtSize * 1.4)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.h * 0.4) + ',' + (dim.h * 0.6 + txtSize * 0.3) + ')')
+        g.append('text')
+          .text('trg')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 0.8)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.h * 0.4) + ',' + ((data.pointingPos[1] < target.pos[1] ? txtSize * 1.3 : -txtSize * 1.3) + dim.h * 0.6) + ')')
+
+        let offX = (data.pointingPos[0] - target.pos[0]) * 4
+        let offY = (data.pointingPos[1] - target.pos[1]) * 4
+        g.append('text')
+          .text('+')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', txtSize * 1.4)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.h * 0.4 + offX) + ',' + (dim.h * 0.6 + offY + txtSize * 0.3) + ')')
+        g.append('text')
+          .text('ptg')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 0.8)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.h * 0.4 + offX) + ',' + ((data.pointingPos[1] < target.pos[1] ? -txtSize * 1.3 : txtSize * 1.3) + dim.h * 0.6 + offY) + ')')
+
+        g.append('text')
+          .text('Target name: ' + data.targetName)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 1.0)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.35) + ',' + dim.h * 0.3 + ')')
+        g.append('text')
+          .text('id: ' + data.targetId)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 1.0)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.35) + ',' + (dim.h * 0.3 + txtSize * 1.3) + ')')
+        g.append('text')
+          .text('Pointing name: ' + data.pointingName)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 1.0)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.35) + ',' + dim.h * 0.55 + ')')
+        g.append('text')
+          .text('id: ' + data.pointingId)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 1.0)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.35) + ',' + (dim.h * 0.55 + txtSize * 1.3) + ')')
+
+        g.append('text')
+          .text('target:')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 1.0)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + dim.h * 0.8 + ')')
+        g.append('text')
+          .text(target.pos[0])
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 0.9)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + dim.h * 0.9 + ')')
+        g.append('text')
+          .text(target.pos[1])
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 0.9)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + (dim.h * 0.9 + txtSize * 1.3) + ')')
+
+
+        g.append('text')
+          .text('pointing:')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 1.0)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.82) + ',' + dim.h * 0.8 + ')')
+        g.append('text')
+          .text(data.pointingPos[0])
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 0.9)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.82) + ',' + dim.h * 0.9 + ')')
+        g.append('text')
+          .text(data.pointingPos[1])
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize * 0.9)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.82) + ',' + (dim.h * 0.9 + txtSize * 1.3) + ')')
+      }
+      function createTelescopeInformation () {
+        let txtSize = 10
+        let dim = {
+          x: 0,
+          y: innerbox.h * 0.65,
+          w: innerbox.w * 1.0,
+          h: innerbox.h * 0.35
+        }
+
+        let largeT = []
+        let mediumT = []
+        let smallT = []
+
+        let g = reserved.g.append('g')
+          .attr('transform', 'translate(' + (dim.x) + ',' + (dim.y) + ')')
+
+        function drawTels (tels, g, box, opt) {
+          if (tels.length === 0) return
+          let nbline = parseInt(tels.length / opt.telsPerRow) + (tels.length % opt.telsPerRow !== 0 ? 1 : 0)
+          let size = {
+            w: (box.w / opt.telsPerRow) / 2,
+            h: Math.min(box.h / nbline / 2, (box.h * 0.15 * opt.size))
+          }
+          let fontsize = Math.max(Math.min(size.w * 0.4, 26), 10)
+          let offset = {
+            x: (box.w - (opt.telsPerRow * size.w * 2)) * 0.5, // (opt.telsPerRow + 1),
+            y: (box.h - (nbline * size.h * 2)) * 0.5// (nbline + 1)
+          }
+          let lastLineOffset = {
+            index: parseInt(((nbline - 1) * opt.telsPerRow)) - 1,
+            x: (tels.length % opt.telsPerRow !== 0) ? (box.w - ((tels.length % opt.telsPerRow) * size.w * 2)) * 0.5 : offset.x
+          }
+          g.attr('transform', 'translate(' + (box.x) + ',' + 0 + ')')
+          let current = g
+            .selectAll('g.tel')
+            .data(tels, function (d) {
+              return d.id
+            })
+          let enter = current
+            .enter()
+            .append('g')
+            .attr('class', 'tel')
+          enter.each(function (d, i) {
+            d3.select(this).attr('transform', function (d) {
+              let tx = offset.x + (size.w) * (i % opt.telsPerRow) + (i > lastLineOffset.index ? lastLineOffset.x : 0)
+              let ty = box.y + offset.y + (size.h) * parseInt((i / opt.telsPerRow))
+              return 'translate(' + tx + ',' + ty + ')'
+            })
+            d3.select(this).append('ellipse')
+              .attr('cx', size.w * 0.5)
+              .attr('cy', size.h * 0.5)
+              .attr('rx', size.w)
+              .attr('ry', size.h)
+              .attr('fill', telHealthCol(d.val))
+              .attr('fill-opacity', 1)
+              .attr('stroke-width', 0.2)
+              .attr('stroke', colorTheme.dark.stroke)
+            d3.select(this).append('text')
+              .attr('x', size.w * 0.5)
+              .attr('y', size.h * 0.5 + fontsize * 0.33)
+              .text(function (d) {
+                return d.split('_')[1]
+              })
+              .style('fill', colorTheme.blocks.run.text)
+              .style('stroke', colorTheme.blocks.run.text)
+              .style('font-weight', '')
+              .style('font-size', size.w * 0.1)
+              .style('stroke-width', 0.2)
+              .attr('text-anchor', 'middle')
+          })
+
+          let merge = current.merge(enter)
+          merge.each(function (d, i) {
+            d3.select(this)
+              .transition()
+              .duration(timeD.animArc)
+              .attr('transform', function (d) {
+                let tx = size.w * 0.5 + (size.w * 2) * (i % opt.telsPerRow) + (i > lastLineOffset.index ? lastLineOffset.x : offset.x)
+                let ty = box.y + offset.y + (size.h * 2) * parseInt(i / opt.telsPerRow) + size.h * 0.5
+                return 'translate(' + tx + ',' + ty + ')'
+              })
+            d3.select(this).select('ellipse')
+              .transition()
+              .duration(timeD.animArc)
+              .attr('fill', telHealthCol(d.val))
+              .attr('cx', size.w * 0.5)
+              .attr('cy', size.h * 0.5)
+              .attr('rx', size.w)
+              .attr('ry', size.h)
+            d3.select(this).select('text')
+              .text(function (d) {
+                return d.split('_')[1]
+              })
+              .attr('x', size.w * 0.5)
+              .attr('y', size.h * 0.5 + fontsize * 0.33)
+              .style('font-size', fontsize)
+          })
+
+          // current
+          //   .exit()
+          //   .transition('inOut')
+          //   .duration(timeD.animArc)
+          //   .style('opacity', 0)
+          //   .remove()
+        }
+        function computeSizeRows () {
+          reserved.large = {
+            g: g.append('g'),
+            opt: {
+              telsPerRow: 1,
+              nbl: 0,
+              size: 1,
+              ratio: 1
+            },
+            box: {
+              x: 0,
+              y: dim.h * 0.38,
+              w: dim.w * 0.1,
+              h: dim.h * 0.61
+            }
+          }
+          reserved.medium = {
+            g: g.append('g'),
+            opt: {
+              telsPerRow: 4,
+              nbl: 0,
+              size: 0.9,
+              ratio: 1
+            },
+            box: {
+              x: dim.w * 0.13,
+              y: dim.h * 0.38,
+              w: dim.w * 0.3,
+              h: dim.h * 0.61
+            }
+          }
+          reserved.small = {
+            g: g.append('g'),
+            opt: {
+              telsPerRow: 8,
+              nbl: 0,
+              size: 0.75,
+              ratio: 1
+            },
+            box: {
+              x: dim.w * 0.46,
+              y: dim.h * 0.38,
+              w: dim.w * 0.54,
+              h: dim.h * 0.61
+            }
+          }
+
+          for (let j = 0; j < data.telIds.length; j++) {
+            let t = data.telIds[j]
+            if (t[0] === 'L') largeT.push(t)
+            if (t[0] === 'M') mediumT.push(t)
+            if (t[0] === 'S') smallT.push(t)
+          }
+          largeT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
+          mediumT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
+          smallT.sort(function (a, b) { return ('' + a.id).localeCompare(b.id) })
+
+          let l = reserved.large.opt.size * (parseInt(largeT.length / reserved.large.opt.telsPerRow) + (largeT.length % reserved.large.opt.telsPerRow !== 0 ? 1 : 0))
+          let m = reserved.medium.opt.size * (parseInt(mediumT.length / reserved.medium.opt.telsPerRow) + (mediumT.length % reserved.medium.opt.telsPerRow !== 0 ? 1 : 0))
+          let s = reserved.small.opt.size * (parseInt(smallT.length / reserved.small.opt.telsPerRow) + (smallT.length % reserved.small.opt.telsPerRow !== 0 ? 1 : 0))
+
+          let max = Math.max(Math.max(l, m), s)
+          let ratio = max
+          reserved.large.opt.ratio = reserved.large.opt.size / ratio
+          reserved.medium.opt.ratio = reserved.medium.opt.size / ratio
+          reserved.small.opt.ratio = reserved.small.opt.size / ratio
+          drawTels(largeT, reserved.large.g, reserved.large.box, reserved.large.opt)
+          drawTels(mediumT, reserved.medium.g, reserved.medium.box, reserved.medium.opt)
+          drawTels(smallT, reserved.small.g, reserved.small.box, reserved.small.opt)
+        }
+        computeSizeRows()
+
+        g.append('text')
+          .text('Telescopes:')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (dim.w * 0.0) + ',' + (dim.h * 0.1 + txtSize * 0.3) + ')')
+        g.append('line')
+          .attr('x1', dim.w * 0.0)
+          .attr('y1', (dim.h * 0.1 + txtSize * 0.5))
+          .attr('x2', dim.w * 1.0)
+          .attr('y2', (dim.h * 0.1 + txtSize * 0.5))
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+
+        g.append('text')
+          .text('Large')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.05) + ',' + (dim.h * 0.25) + ')')
+        g.append('text')
+          .text(largeT.length)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.05) + ',' + (dim.h * 0.25 + txtSize * 1.4) + ')')
+
+        g.append('text')
+          .text('Medium')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.28) + ',' + (dim.h * 0.25) + ')')
+        g.append('text')
+          .text(mediumT.length)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.28) + ',' + (dim.h * 0.25 + txtSize * 1.4) + ')')
+
+        g.append('text')
+          .text('Small')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.73) + ',' + (dim.h * 0.25) + ')')
+        g.append('text')
+          .text(smallT.length)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize)
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.w * 0.73) + ',' + (dim.h * 0.25 + txtSize * 1.4) + ')')
+
+      }
+
+      createSchedulingObservingBlocksTree()
+      createStatusInformation()
+      createTimeInformation()
+      createPointingInformation()
+      createTelescopeInformation()
       // reserved.g.append('rect')
       //   .attr('x', dim.x)
       //   .attr('y', dim.y)
@@ -4733,38 +5339,38 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('stroke', colorTheme.dark.stroke)
       //   .attr('fill', colorTheme.dark.background)
 
-      let schedulingBlocksInfoPanelG = reserved.g.append('g')
-        .attr('class', 'form')
-      let scrollForm = new ScrollForm({
-        main: {
-          tag: 'blockScrollForm',
-          g: schedulingBlocksInfoPanelG,
-          box: {x: dim.x, y: dim.y, w: dim.w, h: dim.h},
-          colorTheme: colorTheme
-        },
-        titles: {
-          data: [
-            {
-              title: 'Block: ' + data.metaData.blockName,
-              extension: '',
-              sortOptions: {
-
-              },
-              width: '100%',
-              quickScroll: true,
-              anchor: 'center'
-            }
-          ],
-          height: '20px'
-        },
-        quickScroll: {
-          enabled: false,
-          width: '3%'
-        },
-        data: {}
-      })
-      let bPropList = createBPropertiesList(data)
-      scrollForm.updateData(bPropList, 'info')
+      // let schedulingBlocksInfoPanelG = reserved.g.append('g')
+      //   .attr('class', 'form')
+      // let scrollForm = new ScrollForm({
+      //   main: {
+      //     tag: 'blockScrollForm',
+      //     g: schedulingBlocksInfoPanelG,
+      //     box: {x: dim.x, y: dim.y, w: dim.w, h: dim.h},
+      //     colorTheme: colorTheme
+      //   },
+      //   titles: {
+      //     data: [
+      //       {
+      //         title: 'Block: ' + data.metaData.blockName,
+      //         extension: '',
+      //         sortOptions: {
+      //
+      //         },
+      //         width: '100%',
+      //         quickScroll: true,
+      //         anchor: 'center'
+      //       }
+      //     ],
+      //     height: '20px'
+      //   },
+      //   quickScroll: {
+      //     enabled: false,
+      //     width: '3%'
+      //   },
+      //   data: {}
+      // })
+      // let bPropList = createBPropertiesList(data)
+      // scrollForm.updateData(bPropList, 'info')
     }
 
     function focusOnBlock (bId) {
@@ -7153,13 +7759,6 @@ let mainSchedBlocksController = function (optIn) {
       drawAddNewBlock()
     }
 
-    function getTargetById (id) {
-      for (let i = 0; i < shared.data.server.targets.length; i++) {
-        if (shared.data.server.targets[i].id === id) {
-          return shared.data.server.targets[i]
-        }
-      }
-    }
     function updateSchedBlockTarget (value) {
       let target = getTargetById(value)
       reserved.newSchedB.target = {
