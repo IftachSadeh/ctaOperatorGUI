@@ -1107,7 +1107,7 @@ window.BlockDisplayer = function (optIn) {
       }
       let ret = []
       Object.keys(res).map(function (key, index) {
-        ret.push({schedName: key, scheduleId: res[key][0].sbId, blocks: res[key]})
+        ret.push({name: key, id: res[key][0].sbId, blocks: res[key]})
       })
       return ret
     }
@@ -1141,7 +1141,7 @@ window.BlockDisplayer = function (optIn) {
       let allScheds = com.blockList.g
         .selectAll('g.allScheds')
         .data(scheds, function (d) {
-          return d.scheduleId
+          return d.id
         })
       let enterAllScheds = allScheds
         .enter()
@@ -1191,7 +1191,7 @@ window.BlockDisplayer = function (optIn) {
           })
         d3.select(this).append('text')
           .attr('class', 'schedId')
-          .text(d.schedName)
+          .text(d.name)
           .attr('x', width * 0.5)
           .attr('y', height * 0.15)
           .style('font-weight', 'normal')
@@ -1412,7 +1412,7 @@ window.BlockDisplayer = function (optIn) {
       }
       let ret = []
       Object.keys(res).map(function (key, index) {
-        ret.push({schedName: key, scheduleId: res[key][0].sbId, blocks: res[key]})
+        ret.push({name: key, id: res[key][0].sbId, blocks: res[key]})
       })
       return ret
     }
@@ -1586,7 +1586,7 @@ window.BlockDisplayer = function (optIn) {
       }
       let ret = []
       Object.keys(res).map(function (key, index) {
-        ret.push({schedName: key, scheduleId: res[key][0].sbId, blocks: res[key]})
+        ret.push({name: key, id: res[key][0].sbId, blocks: res[key]})
       })
       return ret
     }
@@ -1681,7 +1681,7 @@ window.BlockDisplayer = function (optIn) {
       let allScheds = com.main.g
         .selectAll('g.allScheds')
         .data(scheds, function (d) {
-          return d.scheduleId
+          return d.id
         })
       let enterAllScheds = allScheds
         .enter()
@@ -1694,6 +1694,8 @@ window.BlockDisplayer = function (optIn) {
           }
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
+      let minX = com.main.box.w + 2
+      let maxWidth = 0
       enterAllScheds.each(function (d, i) {
         d3.select(this).append('line')
           .attr('class', 'background')
@@ -1707,18 +1709,45 @@ window.BlockDisplayer = function (optIn) {
           .attr('stroke-width', 0.2)
           .attr('stroke-dasharray', [])
         if (com.blockQueue2.schedBlocks.label.enabled) {
-          d3.select(this).append('text')
+          if (com.blockQueue2.schedBlocks.label.clickable) {
+            d3.select(this).append('rect')
+              .attr('fill', colorTheme.dark.background)
+              .attr('stroke', colorTheme.dark.stroke)
+              .attr('stroke-width', 0.1)
+              .on('click', function () {
+                com.events.sched.click('schedBlock', d.id)
+              })
+              .on('mouseover', function () {
+                d3.select(this).attr('fill', com.main.colorTheme.darker.background)
+                com.events.sched.mouseover('schedBlock', d.id)
+              })
+              .on('mouseout', function () {
+                d3.select(this).attr('fill', colorTheme.dark.background)
+                com.events.sched.mouseout('schedBlock', d.id)
+              })
+          }
+          let text = d3.select(this).append('text')
             .attr('class', 'schedId')
-            .text('S' + d.schedName)
+            .text('S' + d.name)
             .attr('x', com.blockQueue2.schedBlocks.label.position === 'left' ? -2 : com.main.box.w + 2)
             .attr('y', height * 0.75)
             .style('font-weight', 'normal')
             .attr('text-anchor', com.blockQueue2.schedBlocks.label.position === 'left' ? 'end' : 'start')
-            .style('font-size', (height * 0.7) + 'px')
+            .style('font-size', (height * 0.6) + 'px')
             .style('pointer-events', 'none')
             .attr('fill', colorTheme.darker.text)
             .attr('stroke', 'none')
+          let bbox = text.node().getBBox()
+          if (bbox.x < minX) minX = bbox.x
+          if (bbox.width > maxWidth) maxWidth = bbox.width
         }
+      })
+      enterAllScheds.each(function (d, i) {
+        d3.select(this).select('rect')
+          .attr('x', minX)
+          .attr('y', 0)
+          .attr('width', maxWidth)
+          .attr('height', height)
       })
       enterAllScheds.merge(allScheds)
         .transition()
@@ -1989,7 +2018,7 @@ window.BlockDisplayer = function (optIn) {
       }
       let ret = []
       Object.keys(res).map(function (key, index) {
-        ret.push({schedName: key, scheduleId: res[key][0].sbId, blocks: res[key]})
+        ret.push({name: key, id: res[key][0].sbId, blocks: res[key]})
       })
       return ret
     }
@@ -2161,7 +2190,7 @@ window.BlockDisplayer = function (optIn) {
       let allScheds = com.main.scroll.scrollG
         .selectAll('g.allScheds')
         .data(scheds, function (d) {
-          return d.scheduleId
+          return d.id
         })
       let enterAllScheds = allScheds
         .enter()
@@ -2189,7 +2218,7 @@ window.BlockDisplayer = function (optIn) {
           //   .attr('stroke-dasharray', [])
           d3.select(this).append('text')
             .attr('id', 'schedId')
-            .text('S' + d.schedName)
+            .text('S' + d.name)
             .attr('x', function () {
               if (com.blockTrackShrink.schedBlocks.label.position === 'left') return (timeScale(d.startT)) - 5
               else if (com.blockTrackShrink.schedBlocks.label.position === 'right') return (timeScale(d.endT)) + 5
@@ -2702,7 +2731,7 @@ window.BlockDisplayer = function (optIn) {
             } else {
               // com.input.selection = [that]
             }
-            com.events.block.click(d)
+            com.events.block.click('block', d.obId)
           }, 250)
         })
         .on('dblclick', function (d) {
@@ -2711,11 +2740,11 @@ window.BlockDisplayer = function (optIn) {
         })
         .on('mouseover', function (d) {
           d3.select(this).style('cursor', 'pointer')
-          com.events.block.mouseover(d)
+          com.events.block.mouseover('block', d.obId)
         })
         .on('mouseout', function (d) {
           d3.select(this).style('cursor', 'default')
-          com.events.block.mouseout(d)
+          com.events.block.mouseout('block', d.obId)
         })
         .call(d3.drag()
           .on('start', function (d) {
