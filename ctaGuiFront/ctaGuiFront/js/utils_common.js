@@ -856,7 +856,16 @@ window.appendToDom = function (parentId, eleToApp) {
     Polymer.dom(parentId).appendChild(eleToApp)
   }
 }
-
+window.createD3Node = function (g, type, attr, style) {
+  let ret = g.append(type)
+  for (let key in attr) {
+    ret.attr(key, attr[key])
+  }
+  for (let key in style) {
+    ret.style(key, style[key])
+  }
+  return ret
+}
 // ---------------------------------------------------------------------------------------------------
 // move a node up inside an svg's hierarchy
 // see: http://bl.ocks.org/eesur/4e0a69d57d3bfc8a82c2
