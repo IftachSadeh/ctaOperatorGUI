@@ -16,6 +16,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global sock */
 /* global hasVar */
 /* global disableScrollSVG */
+/* global TelescopeDisplayer */
 /* global RunLoop */
 /* global BlockQueue */
 /* global BlockQueue */
@@ -47,7 +48,7 @@ var mainScriptTag = 'schedBlocksController'
 /* global deepCopy */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueue.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueue.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_telescopeDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueModif.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueOptimizer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_blockDisplayer.js' })
@@ -482,6 +483,7 @@ let mainSchedBlocksController = function (optIn) {
 
     svgBlocksQueueServer.updateData()
     svgBrush.updateData()
+    svgRightInfo.update()
 
     locker.remove('updateData')
   }
@@ -578,7 +580,7 @@ let mainSchedBlocksController = function (optIn) {
 
       }
       function telescope () {
-
+        svgRightInfo.focusOnTelescope(id)
       }
 
       if (type === 'schedBlock') schedBlock()
@@ -910,7 +912,13 @@ let mainSchedBlocksController = function (optIn) {
       }
     }
   }
-
+  function getTelescopeById (id) {
+    for (let i = 0; i < shared.data.server.telHealth.length; i++) {
+      if (shared.data.server.telHealth[i].id === id) {
+        return shared.data.server.telHealth[i]
+      }
+    }
+  }
   function getBlockById (blockList, blockId) {
     let block = {data: undefined, key: undefined, index: undefined}
     for (let key in blockList) {
@@ -4255,17 +4263,20 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('height', reserved.box.h)
       //   .attr('fill', colorTheme.dark.background)
 
-      runningOverview()
+      initOverview()
+      updateOverview()
     }
     this.initData = initData
 
-    function update () {}
+    function update () {
+      updateOverview()
+    }
     this.update = update
 
-    function runningOverview () {
+    function initOverview () {
       let txtSize = 10
       function createBlocksInformation () {
-        let g = reserved.g.append('g')
+        let g = reserved.g.append('g').attr('id', 'blocksInformation')
         g.append('text')
           .text('Execution states')
           .attr('x', reserved.box.w * 0.01)
@@ -4326,19 +4337,18 @@ let mainSchedBlocksController = function (optIn) {
           .append('g')
           .attr('class', 'state')
         enter.each(function (d) {
-          if (d.percent === 0) return
           d3.select(this).append('rect')
-            .attr('x', reserved.box.w * 0.05 + offset + 1)
-            .attr('y', reserved.box.h * 0.08)
-            .attr('width', width * d.percent - 2)
-            .attr('height', height)
+            // .attr('x', reserved.box.w * 0.05 + offset + 1)
+            // .attr('y', reserved.box.h * 0.08)
+            // .attr('width', width * d.percent - 2)
+            // .attr('height', height)
             .attr('stroke', setCol({state: d.state, canRun: true}).stroke)
             .attr('fill', setCol({state: d.state, canRun: true}).background)
             .attr('stroke-width', 0.2)
           d3.select(this).append('text')
             .text(d.nb)
-            .attr('x', reserved.box.w * 0.05 + offset + 1 + (width * d.percent - 2) * 0.5)
-            .attr('y', reserved.box.h * 0.08 + height * 0.5 + txtSize * 0.3)
+            // .attr('x', reserved.box.w * 0.05 + offset + 1 + (width * d.percent - 2) * 0.5)
+            // .attr('y', reserved.box.h * 0.08 + height * 0.5 + txtSize * 0.3)
             .style('font-weight', 'bold')
             .attr('text-anchor', 'middle')
             .style('font-size', txtSize * 1.2)
@@ -4361,7 +4371,7 @@ let mainSchedBlocksController = function (optIn) {
         // })
         createD3Node(g,
           'text',
-          {'x': reserved.box.w * 0.44, 'y': reserved.box.h * 0.07, 'text-anchor': 'end', 'fill': colorTheme.dark.text},
+          {'id': 'sbs', 'x': reserved.box.w * 0.44, 'y': reserved.box.h * 0.07, 'text-anchor': 'end', 'fill': colorTheme.dark.text},
           {'font-size': txtSize * 1.2, 'font-weight': 'bold', 'pointer-events': 'none'}
         ).text(Object.keys(getSchedBlocksData()).length)
         createD3Node(g,
@@ -4372,7 +4382,7 @@ let mainSchedBlocksController = function (optIn) {
 
         createD3Node(g,
           'text',
-          {'x': reserved.box.w * 0.6, 'y': reserved.box.h * 0.07, 'text-anchor': 'end', 'fill': colorTheme.dark.text},
+          {id: 'obs', 'x': reserved.box.w * 0.6, 'y': reserved.box.h * 0.07, 'text-anchor': 'end', 'fill': colorTheme.dark.text},
           {'font-size': txtSize * 1.2, 'font-weight': 'bold', 'pointer-events': 'none'}
         ).text(tot)
         createD3Node(g,
@@ -4382,13 +4392,14 @@ let mainSchedBlocksController = function (optIn) {
         ).text('Obs')
       }
       function createPointingInformation () {
+        let txtSize = 8
         let box = {
           x: 0,
           y: reserved.box.h * 0.33,
           h: reserved.box.h * 0.3,
           w: reserved.box.w
         }
-        let g = reserved.g.append('g')
+        let g = reserved.g.append('g').attr('id', 'pointingInformation')
 
         g.append('text')
           .text('Targets list')
@@ -4449,6 +4460,15 @@ let mainSchedBlocksController = function (optIn) {
             .attr('stroke', colorTheme.medium.stroke)
             .attr('stroke-width', 0.1)
             .style('boxShadow', '10px 20px 30px black')
+            .on('click', function () {
+              console.log(d);
+            })
+            .on('mouseover', function (d) {
+              d3.select(this).style('cursor', 'pointer')
+            })
+            .on('mouseout', function (d) {
+              d3.select(this).style('cursor', 'default')
+            })
           g.append('text')
             .text(d.name)
             .attr('x', rectBox.w * 0.05 + rectBox.w * 0.075)
@@ -4531,22 +4551,32 @@ let mainSchedBlocksController = function (optIn) {
           enter.each(function (d, i) {
             let color = shared.style.blockCol(d)
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (rectBox.w * 0.5 + rectBox.w * 0.1 * i) + ',' + (0) + ')')
+            g.attr('transform', 'translate(' + (rectBox.w * 0.5 + rectBox.w * 0.08 * i) + ',' + (0) + ')')
             g.append('rect')
               .attr('x', 0)
               .attr('y', 0)
-              .attr('width', rectBox.w * 0.09)
+              .attr('width', rectBox.w * 0.07)
               .attr('height', rectBox.h * 0.8)
               .attr('fill', color.background)
               .attr('stroke', color.stroke)
               .attr('stroke-width', 0.2)
+              .on('click', function () {
+                console.log(d);
+              })
+              .on('mouseover', function (d) {
+                d3.select(this).style('cursor', 'pointer')
+              })
+              .on('mouseout', function (d) {
+                d3.select(this).style('cursor', 'default')
+              })
             g.append('text')
               .text(d.metaData.blockName)
               .style('fill', color.text)
               .style('font-weight', '')
               .style('font-size', txtSize)
               .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (rectBox.w * 0.045) + ',' + (rectBox.h * 0.4 + txtSize * 0.3) + ')')
+              .attr('transform', 'translate(' + (rectBox.w * 0.035) + ',' + (rectBox.h * 0.4 + txtSize * 0.3) + ')')
+              .style('pointer-events', 'none')
           })
 
           let merge = current.merge(enter)
@@ -4561,8 +4591,386 @@ let mainSchedBlocksController = function (optIn) {
             .remove()
         })
       }
+      function createTelescopeInformation () {
+        let box = {
+          x: 0,
+          y: reserved.box.h * 0.55,
+          h: reserved.box.h * 0.45,
+          w: reserved.box.w
+        }
+        let g = reserved.g.append('g')
+          .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+
+        g.append('text')
+          .text('Telescopes list')
+          .attr('x', box.w * 0.01)
+          .attr('y', -4)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .style('font-size', txtSize)
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+        g.append('line')
+          .attr('x1', 0)
+          .attr('y1', -2)
+          .attr('x2', reserved.box.w)
+          .attr('y2', -2)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+
+        let xx = box.w * 0.1
+        let ww = box.w * 0.88
+        let largeBox = {
+          x: xx,
+          y: 0,
+          w: ww * 0.1,
+          h: box.h
+        }
+        let mediumBox = {
+          x: xx + ww * 0.13,
+          y: 0,
+          w: ww * 0.3,
+          h: box.h
+        }
+        let smallBox = {
+          x: xx + ww * 0.46,
+          y: 0,
+          w: ww * 0.54,
+          h: box.h
+        }
+
+        reserved.telescopeRunning = new TelescopeDisplayer({
+          main: {
+            tag: 'telescopeRootTag',
+            g: g,
+            scroll: {},
+            box: box,
+            background: {
+              fill: colorTheme.medium.background,
+              stroke: colorTheme.medium.stroke,
+              strokeWidth: 0.0
+            },
+            isSouth: isSouth,
+            colorTheme: colorTheme
+          },
+
+          displayer: 'gridBib',
+          gridBib: {
+            header: {
+              txtSize: 8,
+              stripHeight: 10
+            },
+            telescope: {
+              enabled: true,
+              large: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 2,
+                  nbl: 0,
+                  size: 1,
+                  ratio: 1
+                },
+                box: largeBox
+              },
+              medium: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 4,
+                  nbl: 0,
+                  size: 1,
+                  ratio: 1
+                },
+                box: mediumBox
+              },
+              small: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 8,
+                  nbl: 0,
+                  size: 1,
+                  ratio: 1
+                },
+                box: smallBox
+              }
+            },
+            idle: {
+              enabled: true
+            },
+            blocks: {
+              txtSize: 8,
+              right: {
+                enabled: false
+              },
+              left: {
+                enabled: true
+              }
+            }
+          },
+
+          filters: {
+            telescopeFilters: [],
+            filtering: []
+          },
+          data: {
+            raw: {
+              telescopes: []
+            },
+            filtered: {},
+            modified: []
+          },
+          debug: {
+            enabled: false
+          },
+          pattern: {
+            select: {}
+          },
+          events: {
+            block: {
+              click: (d) => { console.log(d) },
+              mouseover: (d) => { console.log(d) },
+              mouseout: (d) => { console.log(d) },
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            telescope: {
+              click: (d) => { focusManager.focusOn('telescope', d.id) },
+              mouseover: (d) => { console.log(d) },
+              mouseout: (d) => { console.log(d) },
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            }
+          },
+          input: {
+            over: {
+              telescope: undefined
+            },
+            focus: {
+              telescope: undefined
+            }
+          }
+        })
+        reserved.telescopeRunning.init()
+
+        reserved.telescopeRunning.updateData({
+          data: {
+            raw: {
+              telescopes: shared.data.server.telHealth,
+              blocks: shared.data.server.blocks.run
+            },
+            modified: []
+          }
+        })
+      }
       createBlocksInformation()
       createPointingInformation()
+      createTelescopeInformation()
+    }
+    function updateOverview () {
+      let txtSize = 10
+      function updateBlocksInformation () {
+        let g = reserved.g.select('#blocksInformation')
+
+        let tot = shared.data.server.blocks.done.length +
+          shared.data.server.blocks.wait.length +
+          shared.data.server.blocks.run.length
+        let infoState = [
+          {state: 'run', nb: shared.data.server.blocks.run.length, percent: shared.data.server.blocks.run.length / tot},
+          {state: 'done', nb: 0, percent: 0},
+          {state: 'fail', nb: 0, percent: 0},
+          {state: 'cancel', nb: 0, percent: 0},
+          {state: 'wait', nb: shared.data.server.blocks.wait.length, percent: shared.data.server.blocks.wait.length / tot}
+        ]
+        for (let i = 0; i < shared.data.server.blocks.done.length; i++) {
+          let b = shared.data.server.blocks.done[i]
+          if (b.exeState.state === 'done') {
+            infoState[1].nb += 1
+          } else if (b.exeState.state === 'fail') {
+            infoState[2].nb += 1
+          } else if (b.exeState.state === 'cancel') {
+            // if (hasVar(b.exeState.canRun)) {
+            //   if (!b.exeState.canRun) return colorTheme.blocks.cancelOp
+            // }
+            infoState[3].nb += 1
+          }
+        }
+        infoState[1].percent = infoState[1].nb / tot
+        infoState[2].percent = infoState[2].nb / tot
+        infoState[3].percent = infoState[3].nb / tot
+
+        let width = reserved.box.w * 0.9
+        let height = reserved.box.w * 0.1
+        let offset = 0
+
+        let rects = g
+          .selectAll('g.state')
+          .data(infoState, function (d) {
+            return d.state
+          })
+        // let enter = rects
+        //   .enter()
+        //   .append('g')
+        //   .attr('class', 'state')
+        // enter.each(function (d) {
+        //   if (d.percent === 0) return
+        //   d3.select(this).append('rect')
+        //     .attr('x', reserved.box.w * 0.05 + offset + 1)
+        //     .attr('y', reserved.box.h * 0.08)
+        //     .attr('width', width * d.percent - 2)
+        //     .attr('height', height)
+        //     .attr('stroke', setCol({state: d.state, canRun: true}).stroke)
+        //     .attr('fill', setCol({state: d.state, canRun: true}).background)
+        //     .attr('stroke-width', 0.2)
+        //   d3.select(this).append('text')
+        //     .text(d.nb)
+        //     .attr('x', reserved.box.w * 0.05 + offset + 1 + (width * d.percent - 2) * 0.5)
+        //     .attr('y', reserved.box.h * 0.08 + height * 0.5 + txtSize * 0.3)
+        //     .style('font-weight', 'bold')
+        //     .attr('text-anchor', 'middle')
+        //     .style('font-size', txtSize * 1.2)
+        //     .style('pointer-events', 'none')
+        //     .attr('fill', setCol({state: d.state, canRun: true}).text)
+        //     .attr('stroke', 'none')
+        //   offset += width * d.percent
+        // })
+        // let merge = enter.merge(rects)
+        rects.each(function (d) {
+          if (d.percent === 0) return
+          d3.select(this).select('rect')
+            .attr('x', reserved.box.w * 0.05 + offset + 1)
+            .attr('y', reserved.box.h * 0.08)
+            .attr('width', width * d.percent - 2)
+            .attr('height', height)
+            .attr('stroke', setCol({state: d.state, canRun: true}).stroke)
+            .attr('fill', setCol({state: d.state, canRun: true}).background)
+            .attr('stroke-width', 0.2)
+          d3.select(this).select('text')
+            .text(d.nb)
+            .attr('x', reserved.box.w * 0.05 + offset + 1 + (width * d.percent - 2) * 0.5)
+            .attr('y', reserved.box.h * 0.08 + height * 0.5 + txtSize * 0.3)
+            .style('font-weight', 'bold')
+            .attr('text-anchor', 'middle')
+            .style('font-size', txtSize * 1.2)
+            .style('pointer-events', 'none')
+            .attr('fill', setCol({state: d.state, canRun: true}).text)
+            .attr('stroke', 'none')
+          offset += width * d.percent
+        })
+      }
+      function updatePointingInformation () {
+        let txtSize = 8
+        let box = {
+          x: 0,
+          y: reserved.box.h * 0.33,
+          h: reserved.box.h * 0.3,
+          w: reserved.box.w
+        }
+        let g = reserved.g.select('g#pointingInformation')
+
+        let rectBox = {
+          y: reserved.box.h * 0.22,
+          w: box.w,
+          h: box.h / shared.data.server.targets.length
+        }
+        let schedB = getSchedBlocksData()
+        let targets = reserved.g
+          .selectAll('g.target')
+          .data(shared.data.server.targets, function (d) {
+            return d.id
+          })
+        targets.each(function (d, i) {
+          let g = d3.select(this)
+          g.attr('transform', 'translate(' + (0) + ',' + (rectBox.y + rectBox.h * i) + ')')
+          let runningObs = []
+          for (let key in schedB) {
+            if (schedB[key].target.id === d.id) {
+              for (let i = 0; i < schedB[key].blocks.length; i++) {
+                if (schedB[key].blocks[i].exeState.state === 'run') {
+                  runningObs.push(schedB[key].blocks[i])
+                }
+              }
+            }
+          }
+
+          let current = g
+            .selectAll('g.block')
+            .data(runningObs, function (d) {
+              return d.obId
+            })
+          let enter = current
+            .enter()
+            .append('g')
+            .attr('class', 'block')
+          enter.each(function (d, i) {
+            let color = shared.style.blockCol(d)
+            let g = d3.select(this)
+            g.attr('transform', 'translate(' + (rectBox.w * 0.5 + rectBox.w * 0.08 * i) + ',' + (0) + ')')
+            g.append('rect')
+              .attr('x', 0)
+              .attr('y', 0)
+              .attr('width', rectBox.w * 0.07)
+              .attr('height', rectBox.h * 0.8)
+              .attr('fill', color.background)
+              .attr('stroke', color.stroke)
+              .attr('stroke-width', 0.2)
+            g.append('text')
+              .text(d.metaData.blockName)
+              .style('fill', color.text)
+              .style('font-weight', '')
+              .style('font-size', txtSize)
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + (rectBox.w * 0.035) + ',' + (rectBox.h * 0.4 + txtSize * 0.3) + ')')
+          })
+          let merge = current.merge(enter)
+          merge.each(function (d, i) {
+            let color = shared.style.blockCol(d)
+            let g = d3.select(this)
+            g.attr('transform', 'translate(' + (rectBox.w * 0.5 + rectBox.w * 0.08 * i) + ',' + (0) + ')')
+            g.select('rect')
+              .attr('x', 0)
+              .attr('y', 0)
+              .attr('width', rectBox.w * 0.07)
+              .attr('height', rectBox.h * 0.8)
+              .attr('fill', color.background)
+              .attr('stroke', color.stroke)
+              .attr('stroke-width', 0.2)
+            g.select('text')
+              .text(d.metaData.blockName)
+              .style('fill', color.text)
+              .style('font-weight', '')
+              .style('font-size', txtSize)
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + (rectBox.w * 0.035) + ',' + (rectBox.h * 0.4 + txtSize * 0.3) + ')')
+          })
+          current
+            .exit()
+            .transition('inOut')
+            .duration(timeD.animArc)
+            .style('opacity', 0)
+            .remove()
+        })
+      }
+      function updateTelescopeInformation () {
+        reserved.telescopeRunning.updateData({
+          data: {
+            raw: {
+              telescopes: shared.data.server.telHealth,
+              blocks: shared.data.server.blocks.run
+            },
+            modified: []
+          }
+        })
+      }
+      updateBlocksInformation()
+      updatePointingInformation()
+      updateTelescopeInformation()
     }
 
     function createSchedBlocksInfoPanel (id) {
@@ -6037,6 +6445,23 @@ let mainSchedBlocksController = function (optIn) {
       createBlocksInfoPanel(bId)
     }
     this.focusOnBlock = focusOnBlock
+
+    function createTelescopeInfoPanel (telId) {
+      let tel = getTelescopeById(telId)
+      console.log(tel);
+      let innerbox = {
+        x: box.rightInfo.w * 0.0,
+        y: box.rightInfo.h * 0.0,
+        w: box.rightInfo.w * 1.0,
+        h: box.rightInfo.h * 1.0,
+        margH: box.rightInfo.h * 0.05
+      }
+    }
+    function focusOnTelescope (telId) {
+      clean()
+      createTelescopeInfoPanel(telId)
+    }
+    this.focusOnTelescope = focusOnTelescope
 
     function clean () {
       reserved.g.selectAll('*').remove()
