@@ -2227,8 +2227,14 @@ function mainSchedBlocks (optIn) {
         displayer: 'gridBib',
         gridBib: {
           header: {
-            txtSize: 16,
-            stripHeight: 23
+            text: {
+              size: 16,
+              color: colorTheme.medium.background
+            },
+            background: {
+              height: 23,
+              color: colorTheme.dark.stroke
+            }
           },
           telescope: {
             enabled: true,

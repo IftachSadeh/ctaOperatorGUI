@@ -1706,8 +1706,8 @@ window.BlockDisplayer = function (optIn) {
           .attr('fill', 'transparent')
           .attr('fill-opacity', 1)
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.2)
-          .attr('stroke-dasharray', [])
+          .attr('stroke-width', 0.1)
+          .attr('stroke-dasharray', [2, 1])
         if (com.blockQueue2.schedBlocks.label.enabled) {
           if (com.blockQueue2.schedBlocks.label.clickable) {
             d3.select(this).append('rect')
@@ -1741,8 +1741,6 @@ window.BlockDisplayer = function (optIn) {
           if (bbox.x < minX) minX = bbox.x
           if (bbox.width > maxWidth) maxWidth = bbox.width
         }
-      })
-      enterAllScheds.each(function (d, i) {
         d3.select(this).select('rect')
           .attr('x', minX)
           .attr('y', 0)

@@ -257,12 +257,12 @@ window.colorTheme = {
         text: '#000000'
       },
       done: {
-        background: '#9CCC65',
+        background: '#b5c69c', // 9CCC65
         stroke: '#000000',
         text: '#000000'
       },
       fail: {
-        background: '#EF5350',
+        background: '#ed6d6c', // DD2C00
         stroke: '#000000',
         text: '#000000'
       },
