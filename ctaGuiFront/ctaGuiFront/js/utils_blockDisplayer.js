@@ -1710,10 +1710,10 @@ window.BlockDisplayer = function (optIn) {
           .attr('stroke-dasharray', [2, 1])
         if (com.blockQueue2.schedBlocks.label.enabled) {
           if (com.blockQueue2.schedBlocks.label.clickable) {
-            d3.select(this).append('rect')
+            d3.select(this).append('polygon')
               .attr('fill', colorTheme.dark.background)
               .attr('stroke', colorTheme.dark.stroke)
-              .attr('stroke-width', 0.1)
+              .attr('stroke-width', 0.2)
               .on('click', function () {
                 com.events.sched.click('schedBlock', d.id)
               })
@@ -1741,11 +1741,24 @@ window.BlockDisplayer = function (optIn) {
           if (bbox.x < minX) minX = bbox.x
           if (bbox.width > maxWidth) maxWidth = bbox.width
         }
-        d3.select(this).select('rect')
-          .attr('x', minX)
-          .attr('y', 0)
-          .attr('width', maxWidth)
-          .attr('height', height)
+        let ww = com.blockQueue2.schedBlocks.label.size
+        ww = ww ? ww : maxWidth
+        let poly = [
+          {x: minX, y: 0},
+          {x: minX + ww * 0.85, y: 0},
+
+          {x: minX + ww, y: height * 0.3},
+          {x: minX + ww, y: height * 0.7},
+
+          {x: minX + ww * 0.85, y: height},
+          {x: minX, y: height}
+        ]
+        d3.select(this).select('polygon')
+          .attr('points', function () {
+            return poly.map(function (d) {
+              return [d.x, d.y].join(',')
+            }).join(' ')
+          })
       })
       enterAllScheds.merge(allScheds)
         .transition()
@@ -1760,7 +1773,26 @@ window.BlockDisplayer = function (optIn) {
         .each(function (d, i) {
           d.blocks = setDefaultStyleForBlocks(d.blocks)
           setBlockRect(d.blocks, {x: 0, y: (height * i), w: com.main.box.w, h: height})
+          let ww = com.blockQueue2.schedBlocks.label.size
+          ww = ww ? ww : maxWidth
+          let poly = [
+            {x: minX, y: 0},
+            {x: minX + ww * 0.85, y: 0},
+
+            {x: minX + ww, y: height * 0.3},
+            {x: minX + ww, y: height * 0.7},
+
+            {x: minX + ww * 0.85, y: height},
+            {x: minX, y: height}
+          ]
+          d3.select(this).select('polygon')
+            .attr('points', function () {
+              return poly.map(function (d) {
+                return [d.x, d.y].join(',')
+              }).join(' ')
+            })
         })
+      allScheds.exit().remove()
     }
     function setBlockRect (blocks, box) {
       let timeScale = d3.scaleLinear()
@@ -1772,7 +1804,6 @@ window.BlockDisplayer = function (optIn) {
         .data(blocks, function (d) {
           return d.obId
         })
-
       rect.each(function (d, i) {
         d3.select(this)
           .transition('inOut')
@@ -2783,7 +2814,7 @@ window.BlockDisplayer = function (optIn) {
         .attr('y', 0)
         .attr('text-anchor', 'middle')
     })
-    rect = rectEnter.merge(rect)
+    rect.exit().remove()
   }
   function updateData (dataIn) {
     com.main.g.select('text.name')
