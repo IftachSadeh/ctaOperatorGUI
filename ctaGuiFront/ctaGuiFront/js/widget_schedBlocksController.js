@@ -3746,7 +3746,7 @@ let mainSchedBlocksController = function (optIn) {
           x: reserved.box.w * 0.0,
           y: 0,
           w: reserved.box.w * 0.9,
-          h: reserved.box.h * 0.75
+          h: reserved.box.h * 0.6
         }
       }
       let display
@@ -3764,36 +3764,19 @@ let mainSchedBlocksController = function (optIn) {
           inter[key].id = key
           scheds.push(inter[key])
         }
-        let line = titleSize * 2.5
-        // createD3Node(gback,
-        //   'rect',
-        //   {'x': box.mapping.x + box.mapping.w - line * 6.5,
-        //     'y': box.mapping.y + headerSize,
-        //     'width': line * 6,
-        //     height: box.mapping.h,
-        //     fill: colorTheme.bright.background,
-        //     stroke: colorTheme.bright.stroke,
-        //     'stroke-width': 0,
-        //     'rx': 0
-        //   },
-        //   {opacity: 1}
-        // )
-        // createD3Node(gback,
-        //   'rect',
-        //   {'x': box.mapping.x + box.mapping.w - line * 1.25,
-        //     'y': box.mapping.y + headerSize,
-        //     'width': line * 1.4,
-        //     height: box.mapping.h,
-        //     fill: colorTheme.bright.background,
-        //     stroke: colorTheme.bright.stroke,
-        //     'stroke-width': 0,
-        //     'rx': 0
-        //   },
-        //   {opacity: 1}
-        // )
-        reserved.g.attr('opacity', 0.1)
 
-        function blockCore (blocks, g, offset) {
+        reserved.g.attr('opacity', 0.05)
+
+        let height = headerSize * 2.5
+        let square = parseInt(Math.sqrt(scheds.length))
+        square = 11 // square + (scheds.length % square === 0 ? 0 : 1)
+        let marg = 0
+        let origin = {
+          x: box.mapping.x + box.mapping.w,
+          y: box.mapping.y
+        }
+
+        function blockCore (blocks, g, offset, index) {
           let current = g
             .selectAll('g.block')
             .data(blocks, function (d) {
@@ -3807,14 +3790,16 @@ let mainSchedBlocksController = function (optIn) {
             let g = d3.select(this)
             let color = shared.style.blockCol(d)
             g.append('rect')
-              .attr('x', box.mapping.w * 0.15)
-              .attr('y', line * 0.1)
-              .attr('width', line * 0.95)
-              .attr('height', line * 0.8)
+              .attr('x', 0)
+              .attr('y', height * 0.1)
+              .attr('width', height * 0.95)
+              .attr('height', height * 0.8)
               .attr('fill', color.background)
               .attr('stroke', color.stroke)
               .attr('stroke-width', 0.1)
               .on('click', function () {
+                cleanBack()
+                display = undefined
                 focusManager.focusOn('block', d.obId)
               })
               .on('mouseover', function (d) {
@@ -3831,13 +3816,15 @@ let mainSchedBlocksController = function (optIn) {
               .style('font-weight', 'bold')
               .style('font-size', headerSize + 'px')
               .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (box.mapping.w * 0.19) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+              .attr('transform', 'translate(' + (height * 0.5) + ',' + (height * 0.5 + txtSize * 0.3) + ')')
               .style('pointer-events', 'none')
           })
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (-line * (i + 3)) + ',' + (offset) + ')')
+            let overflow = (index % square) + blocks.length > square ? square - ((index % square) + blocks.length) : 0
+            console.log(overflow);
+            g.attr('transform', 'translate(' + (height * (i + overflow)) + ',' + (offset) + ')')
           })
           current
             .exit()
@@ -3848,7 +3835,6 @@ let mainSchedBlocksController = function (optIn) {
           // offsetY += line * 1
         }
         function schedCore (scheds, g, offset) {
-          let innerOffset = 0
           let current = g
             .selectAll('g.sched')
             .data(scheds, function (d) {
@@ -3860,7 +3846,7 @@ let mainSchedBlocksController = function (optIn) {
             .attr('class', 'sched')
           enter.each(function (d, i) {
             let g = d3.select(this)
-            let dimPoly = line * 0.9
+            let dimPoly = height * 0.9
             let poly = [
               {x: dimPoly * 0.3, y: dimPoly * 0.0},
               {x: dimPoly * 0.7, y: dimPoly * 0.0},
@@ -3885,15 +3871,19 @@ let mainSchedBlocksController = function (optIn) {
               })
               .attr('fill', colorTheme.dark.background)
               .attr('stroke', colorTheme.dark.stroke)
-              .attr('stroke-width', 0.2)
+              .attr('stroke-width', 0.6)
               .on('click', function () {
+                cleanBack()
+                display = undefined
                 focusManager.focusOn('schedBlock', d.id)
               })
-              .on('mouseover', function (d) {
+              .on('mouseover', function () {
+                blockCore(d.blocks, g.append('g').attr('id', 'blocks'), height, i)
                 d3.select(this).style('cursor', 'pointer')
                 d3.select(this).attr('fill', colorTheme.darker.background)
               })
-              .on('mouseout', function (d) {
+              .on('mouseout', function () {
+                g.select('g#blocks').remove()
                 d3.select(this).style('cursor', 'default')
                 d3.select(this).attr('fill', colorTheme.dark.background)
               })
@@ -3903,15 +3893,17 @@ let mainSchedBlocksController = function (optIn) {
               .style('font-weight', 'bold')
               .style('font-size', titleSize + 'px')
               .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (dimPoly * 0.5) + ',' + (dimPoly * 0.5 + txtSize * 0.3) + ')')
+              .attr('transform', 'translate(' + (dimPoly * 0.5) + ',' + (dimPoly * 0.5 + txtSize * 0.33) + ')')
               .style('pointer-events', 'none')
           })
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (box.mapping.w * 0.9) + ',' + (offset + innerOffset + line * i) + ')')
+            let line = parseInt(i / square) * 2
+            let column = square - (i % square)
+            g.attr('transform', 'translate(' + (origin.x - ((height + marg) * column) + (marg * 0.5)) + ',' + (offset + origin.y + (marg * 1) + ((height + marg) * line)) + ')')
             // innerOffset += line
-            blockCore(d.blocks, g, 0)
+            // blockCore(d.blocks, g, 0)
           })
           current
             .exit()
@@ -3920,12 +3912,20 @@ let mainSchedBlocksController = function (optIn) {
             .style('opacity', 0)
             .remove()
         }
-        schedCore(scheds, gback, 0)
+        schedCore(scheds, gback, txtSize)
       }
       function createTargetsMapping () {
-        reserved.g.attr('opacity', 0.1)
+        reserved.g.attr('opacity', 0.05)
 
         let height = headerSize * 3
+        let square = parseInt(Math.sqrt(shared.data.server.targets.length))
+        square = 8 // square + (shared.data.server.targets.length % square === 0 ? 0 : 1)
+        let marg = txtSize
+        let origin = {
+          x: box.mapping.x + box.mapping.w,
+          y: box.mapping.y
+        }
+
         let targets = gback
           .selectAll('g.target')
           .data(shared.data.server.targets, function (d) {
@@ -3937,18 +3937,20 @@ let mainSchedBlocksController = function (optIn) {
           .attr('class', 'target')
         enter.each(function (d, i) {
           let g = d3.select(this)
-          g.attr('transform', 'translate(' + (0) + ',' + (box.mapping.y + box.mapping.h * i) + ')')
+          g.attr('opacity', 0).transition().delay(0).duration(200).attr('opacity', 1)
           g.append('rect')
-            .attr('x', box.mapping.w * 0.0)
+            .attr('x', 0)
             .attr('y', 0)
             .attr('width', height)
             .attr('height', height)
             .attr('fill', colorTheme.dark.background)
             .attr('stroke', colorTheme.medium.stroke)
-            .attr('stroke-width', 0.2)
+            .attr('stroke-width', 0.6)
             // .style('boxShadow', '10px 20px 30px black')
             .attr('rx', height)
             .on('click', function () {
+              cleanBack()
+              display = undefined
               focusManager.focusOn('target', d.id)
             })
             .on('mouseover', function (d) {
@@ -3965,10 +3967,10 @@ let mainSchedBlocksController = function (optIn) {
             .attr('height', height * 1)
             .attr('x', height * 0.0)
             .attr('y', height * 0.5 - height * 0.5)
-            .style('opacity', 0.6)
+            .style('opacity', 0.5)
             .style('pointer-events', 'none')
           g.append('text')
-            .text('T' + d.name[4])
+            .text('T' + d.name.split('_')[1])
             .attr('x', height * 0.5)
             .attr('y', height * 0.5 + txtSize * 0.3)
             .style('font-weight', '')
@@ -3982,7 +3984,9 @@ let mainSchedBlocksController = function (optIn) {
         let merge = enter.merge(targets)
         merge.each(function (d, i) {
           let g = d3.select(this)
-          g.attr('transform', 'translate(' + (box.mapping.x + box.mapping.w - height) + ',' + (box.mapping.y + (height * 1.1) * i) + ')')
+          let line = parseInt(i / square)
+          let column = square - (i % square)
+          g.attr('transform', 'translate(' + (origin.x - ((height + marg * 0.5) * column) + (marg * 0)) + ',' + (origin.y + (marg * 1) + ((height + marg * 0.5) * line)) + ')')
         })
         targets
           .exit()
@@ -3990,6 +3994,178 @@ let mainSchedBlocksController = function (optIn) {
           .duration(timeD.animArc)
           .style('opacity', 0)
           .remove()
+      }
+      function createTelescopesMapping () {
+        reserved.g.attr('opacity', 0.1)
+
+        let xx = box.mapping.w * 0.05
+        let ww = box.mapping.w * 0.95
+        let largeBox = {
+          x: xx,
+          y: 0,
+          w: ww * 0.1,
+          h: box.mapping.h
+        }
+        let mediumBox = {
+          x: xx + ww * 0.13,
+          y: 0,
+          w: ww * 0.3,
+          h: box.mapping.h
+        }
+        let smallBox = {
+          x: xx + ww * 0.45,
+          y: 0,
+          w: ww * 0.54,
+          h: box.mapping.h
+        }
+        let gt = gback.append('g')
+          .attr('id', 'telsMapping')
+          .attr('transform', 'translate(' + box.mapping.x + ',' + box.mapping.y + ')')
+        let telescopeRunning = new TelescopeDisplayer({
+          main: {
+            tag: 'telescopeMapping',
+            g: gt,
+            scroll: {},
+            box: box.mapping,
+            background: {
+              fill: 'none',
+              stroke: '#000000',
+              strokeWidth: 0
+            },
+            isSouth: isSouth,
+            colorTheme: colorTheme
+          },
+
+          displayer: 'gridBib',
+          gridBib: {
+            header: {
+              text: {
+                size: 9,
+                color: colorTheme.medium.background
+              },
+              background: {
+                height: 10,
+                color: colorTheme.dark.stroke
+              }
+            },
+            telescope: {
+              enabled: true,
+              centering: false,
+              large: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 1,
+                  nbl: 0,
+                  size: 1.4,
+                  ratio: 1
+                },
+                box: largeBox
+              },
+              medium: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 3,
+                  nbl: 0,
+                  size: 0.9,
+                  ratio: 1
+                },
+                box: mediumBox
+              },
+              small: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 6,
+                  nbl: 0,
+                  size: 0.84,
+                  ratio: 1
+                },
+                box: smallBox
+              }
+            },
+            idle: {
+              txtSize: 0,
+              enabled: true,
+              background: {
+                middle: {
+                  color: 'none',
+                  opacity: 0
+                },
+                side: {
+                  color: 'none',
+                  opacity: 0
+                }
+              }
+            },
+            blocks: {
+              txtSize: 0,
+              right: {
+                enabled: false
+              },
+              left: {
+                enabled: false
+              }
+            }
+          },
+
+          filters: {
+            telescopeFilters: [],
+            filtering: []
+          },
+          data: {
+            raw: {
+              telescopes: shared.data.server.telHealth,
+              blocks: [] // shared.data.server.blocks.run
+            },
+            filtered: {},
+            modified: []
+          },
+          debug: {
+            enabled: false
+          },
+          pattern: {
+            select: {}
+          },
+          events: {
+            block: {
+              click: (d) => {},
+              mouseover: (d) => {},
+              mouseout: (d) => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            telescope: {
+              click: (d) => { cleanBack(); display = undefined; focusManager.focusOn('telescope', d.id) },
+              mouseover: (d) => {},
+              mouseout: (d) => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            }
+          },
+          input: {
+            over: {
+              telescope: undefined
+            },
+            focus: {
+              telescope: undefined
+            }
+          }
+        })
+        telescopeRunning.init()
+        telescopeRunning.updateData({
+          data: {
+            raw: {
+              telescopes: shared.data.server.telHealth,
+              blocks: [] // shared.data.server.blocks.run
+            },
+            modified: []
+          }
+        })
       }
 
       createD3Node(gfore,
@@ -4076,9 +4252,22 @@ let mainSchedBlocksController = function (optIn) {
           stroke: colorTheme.dark.stroke,
           'stroke-width': 0.2,
           'rx': 2
-        },
-        {'pointer-events': 'none'}
-      )
+        }
+      ).on('click', function () {
+        if (display) {
+          cleanBack()
+          if (display === 'telescopes') {
+            display = undefined
+            return
+          }
+        }
+        display = 'telescopes'
+        createTelescopesMapping()
+      }).on('mouseover', function () {
+        d3.select(this).attr('fill', colorTheme.darker.background)
+      }).on('mouseout', function () {
+        d3.select(this).attr('fill', colorTheme.dark.background)
+      })
       createD3Node(gfore,
         'svg:image',
         {'x': box.icons.x + box.icons.w * 0.65,
@@ -4109,7 +4298,7 @@ let mainSchedBlocksController = function (optIn) {
           x: 0,
           y: reserved.box.h * 0.52,
           w: reserved.box.w,
-          h: reserved.box.h * 0.48
+          h: reserved.box.h * 0.47
         }
       }
 
@@ -4324,6 +4513,7 @@ let mainSchedBlocksController = function (optIn) {
             },
             telescope: {
               enabled: true,
+              centering: true,
               large: {
                 g: undefined,
                 opt: {
@@ -4357,7 +4547,17 @@ let mainSchedBlocksController = function (optIn) {
             },
             idle: {
               txtSize: 9,
-              enabled: true
+              enabled: true,
+              background: {
+                middle: {
+                  color: colorTheme.darker.background,
+                  opacity: 1
+                },
+                side: {
+                  color: colorTheme.dark.background,
+                  opacity: 1
+                }
+              }
             },
             blocks: {
               txtSize: 9,
@@ -4440,9 +4640,9 @@ let mainSchedBlocksController = function (optIn) {
         },
         tels: {
           x: 0,
-          y: reserved.box.h * 0.45,
+          y: reserved.box.h * 0.52,
           w: reserved.box.w,
-          h: reserved.box.h * 0.5
+          h: reserved.box.h * 0.47
         }
       }
 
@@ -5853,6 +6053,7 @@ let mainSchedBlocksController = function (optIn) {
             },
             telescope: {
               enabled: true,
+              centering: true,
               large: {
                 g: undefined,
                 opt: {
@@ -5886,7 +6087,17 @@ let mainSchedBlocksController = function (optIn) {
             },
             idle: {
               txtSize: 0,
-              enabled: true
+              enabled: true,
+              background: {
+                middle: {
+                  color: colorTheme.darker.background,
+                  opacity: 1
+                },
+                side: {
+                  color: colorTheme.dark.background,
+                  opacity: 1
+                }
+              }
             },
             blocks: {
               txtSize: 0,

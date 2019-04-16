@@ -190,16 +190,20 @@ window.TelescopeDisplayer = function (optIn) {
       com.gridBib.telescope.small.g = com.gridBib.gBlockBox.append('g')
         .attr('transform', 'translate(' + com.gridBib.telescope.small.box.x + ',' + com.gridBib.telescope.small.box.y + ')')
 
+      let side = com.gridBib.idle.background.side
+      let middle = com.gridBib.idle.background.middle
       com.gridBib.back.append('rect')
         .attr('id', 'idle')
-        .attr('fill', colorTheme.dark.background)
+        .attr('fill', side.color ? side.color : colorTheme.dark.background)
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.0)
+        .style('opacity', side.opacity ? side.opacity : 1)
       com.gridBib.back.append('rect')
         .attr('id', 'idleMiddle')
-        .attr('fill', colorTheme.darker.background)
+        .attr('fill', middle.color ? middle.color : colorTheme.dark.background)
         .attr('stroke-width', 0.0)
         .attr('stroke', colorTheme.dark.stroke)
+        .style('opacity', middle.opacity ? middle.opacity : 1)
       com.gridBib.back.append('text')
         .attr('id', 'idle')
         .text('Idle')
@@ -371,7 +375,7 @@ window.TelescopeDisplayer = function (optIn) {
       let fontsize = Math.max(Math.min(size.w * 0.8, 26), 8)
       let offset = {
         x: (box.w - (opt.telsPerRow * size.w * 2)) * 0.5,
-        y: (box.h - (nbline * size.h * 2)) * 0.5
+        y: com.gridBib.telescope.centering ? (box.h - (nbline * size.h * 2)) * 0.5 : 0
       }
       let lastLineOffset = {
         index: parseInt(((nbline - 1) * opt.telsPerRow)) - 1,
@@ -731,16 +735,16 @@ window.TelescopeDisplayer = function (optIn) {
           .transition()
           .duration(timeD.animArc)
           .attr('x', 0)
-          .attr('y', offset.y + 4)
+          .attr('y', offset.y)
           .attr('width', com.main.box.w * 1.0)
-          .attr('height', sizeRow - 8)
+          .attr('height', sizeRow)
         com.gridBib.back.select('rect#idleMiddle')
           .transition()
           .duration(timeD.animArc)
           .attr('x', com.gridBib.telescope.medium.box.x)
-          .attr('y', offset.y + 4)
+          .attr('y', offset.y)
           .attr('width', com.gridBib.telescope.medium.box.w)
-          .attr('height', sizeRow - 8)
+          .attr('height', sizeRow)
       }
     }
     this.update = update
@@ -777,8 +781,9 @@ window.TelescopeDisplayer = function (optIn) {
       .style('stroke-width', com.main.background.strokeWidth)
 
     com.main.scroll.scrollBox = new ScrollBox()
+    let ntag = com.main.tag + 'Scroll'
     com.main.scroll.scrollBox.init({
-      tag: 'telescopeDisplayerScroll',
+      tag: ntag,
       gBox: com.main.scroll.scrollBoxG,
       boxData: {
         x: 0,
@@ -788,13 +793,13 @@ window.TelescopeDisplayer = function (optIn) {
       },
       useRelativeCoords: true,
       locker: new Locker(),
-      lockerV: ['telescopeDisplayerScroll' + 'updateData'],
+      lockerV: [ntag + 'updateData'],
       lockerZoom: {
-        all: 'telescopeDisplayerScroll' + 'zoom',
-        during: 'telescopeDisplayerScroll' + 'zoomDuring',
-        end: 'telescopeDisplayerScroll' + 'zoomEnd'
+        all: ntag + 'zoom',
+        during: ntag + 'zoomDuring',
+        end: ntag + 'zoomEnd'
       },
-      runLoop: new RunLoop({tag: 'telescopeDisplayerScroll'}),
+      runLoop: new RunLoop({tag: ntag}),
       canScroll: true,
       scrollVertical: false,
       scrollHorizontal: true,
@@ -805,6 +810,7 @@ window.TelescopeDisplayer = function (optIn) {
       scrollRecV: {w: 2}
     })
     com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
+    console.log(com.main.scroll.scrollG);
     com.main.background = com.main.scroll.scrollG.append('g')
     com.main.foreground = com.main.scroll.scrollG.append('g')
   }

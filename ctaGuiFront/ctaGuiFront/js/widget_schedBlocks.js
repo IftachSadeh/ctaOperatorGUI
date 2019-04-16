@@ -2238,6 +2238,7 @@ function mainSchedBlocks (optIn) {
           },
           telescope: {
             enabled: true,
+            centering: true,
             large: {
               g: undefined,
               opt: {
@@ -2270,9 +2271,21 @@ function mainSchedBlocks (optIn) {
             }
           },
           idle: {
-            enabled: true
+            txtSize: 18,
+            enabled: true,
+            background: {
+              middle: {
+                color: colorTheme.darker.background,
+                opacity: 1
+              },
+              side: {
+                color: colorTheme.dark.background,
+                opacity: 1
+              }
+            }
           },
           blocks: {
+            txtSize: 18,
             right: {
               enabled: true
             },
