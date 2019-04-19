@@ -242,7 +242,6 @@ window.BlockDisplayer = function (optIn) {
   }
 
   function setDefaultStyle () {
-    if (com.style) return
     com.style = {}
     com.style.runRecCol = colsBlues[2]
     com.style.blockCol = function (optIn) {
@@ -291,6 +290,9 @@ window.BlockDisplayer = function (optIn) {
         return 1
       } else return 1
     }
+    com.style.blockPattern = function (optIn) {
+      return 'none'
+    }
 
     com.pattern.select = {}
     com.pattern.select.defs = com.main.g.append('defs')
@@ -318,6 +320,30 @@ window.BlockDisplayer = function (optIn) {
     //   .attr('stroke', '#000000')
     //   .attr('stroke-width', 0.8)
     //   .attr('stroke-opacity', 0.4)
+    com.pattern.select.patternLock = com.pattern.select.defs.append('pattern')
+      .attr('id', 'patternLock')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', 2)
+      .attr('height', 2)
+      .attr('fill', '#ffffff')
+      .attr('patternUnits', 'userSpaceOnUse')
+    com.pattern.select.patternLock.append('line')
+      .attr('x1', 0)
+      .attr('y1', 0)
+      .attr('x2', 2)
+      .attr('y2', 2)
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 0.5)
+      .attr('stroke-opacity', 0.6)
+    com.pattern.select.patternLock.append('line')
+      .attr('x1', 2)
+      .attr('y1', 0)
+      .attr('x2', 0)
+      .attr('y2', 2)
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 0.5)
+      .attr('stroke-opacity', 0.6)
 
     com.pattern.select.patternSelect = com.pattern.select.defs.append('pattern')
       .attr('id', 'patternSelect')
@@ -344,6 +370,42 @@ window.BlockDisplayer = function (optIn) {
       .attr('stroke-width', 0.4)
       .attr('stroke-opacity', 0.6)
   }
+  function switchStyle (style) {
+    if (!style) {
+      setDefaultStyle()
+      return
+    }
+    com.style = style
+
+    // com.pattern.select = {}
+    // com.pattern.select.defs = com.main.g.append('defs')
+    //
+    // com.pattern.select.patternSelect = com.pattern.select.defs.append('pattern')
+    //   .attr('id', 'patternSelect')
+    //   .attr('x', 0)
+    //   .attr('y', 0)
+    //   .attr('width', 3)
+    //   .attr('height', 3)
+    //   .attr('fill', '#ffffff')
+    //   .attr('patternUnits', 'userSpaceOnUse')
+    // com.pattern.select.patternSelect.append('line')
+    //   .attr('x1', 0)
+    //   .attr('y1', 0)
+    //   .attr('x2', 3)
+    //   .attr('y2', 3)
+    //   .attr('stroke', '#000000')
+    //   .attr('stroke-width', 0.4)
+    //   .attr('stroke-opacity', 0.6)
+    // com.pattern.select.patternSelect.append('line')
+    //   .attr('x1', 3)
+    //   .attr('y1', 0)
+    //   .attr('x2', 0)
+    //   .attr('y2', 3)
+    //   .attr('stroke', '#000000')
+    //   .attr('stroke-width', 0.4)
+    //   .attr('stroke-opacity', 0.6)
+  }
+  this.switchStyle = switchStyle
 
   let BlockQueueBib = function () {
     function init () {
@@ -1606,8 +1668,8 @@ window.BlockDisplayer = function (optIn) {
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
         bDisplay.text = cols.text
-        bDisplay.patternFill = ''
-        bDisplay.patternOpacity = 0
+        bDisplay.patternFill = com.style.blockPattern({ d: b })
+        bDisplay.patternOpacity = 1
         if (b.sbId === com.input.focus.schedBlocks) {
           if (!(com.input.over.schedBlocks !== undefined && com.input.over.schedBlocks !== com.input.focus.schedBlocks)) { // b.stroke = colorTheme.blocks.critical.background
             // b.patternFill = 'url(#patternHover)'
