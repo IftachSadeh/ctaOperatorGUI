@@ -215,7 +215,7 @@ window.TelescopeDisplayer = function (optIn) {
       com.gridBib.back.append('rect')
         .attr('id', 'name')
         .attr('x', 0)
-        .attr('y', 0)
+        .attr('y', (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0))
         .attr('width', com.main.box.w)
         .attr('height', com.gridBib.header.background.height)
         .attr('fill', com.gridBib.header.background.color)
@@ -228,7 +228,7 @@ window.TelescopeDisplayer = function (optIn) {
         .style('font-size', com.gridBib.header.text.size + 'px')
         .attr('text-anchor', 'middle')
         .attr('y', com.gridBib.header.background.height * 0.5 + com.gridBib.header.text.size * 0.33)
-        .attr('transform', 'translate(' + (com.gridBib.telescope.large.box.w * 0.5) + ',' + (-com.gridBib.telescope.large.box.h * 0.0) + ')')
+        .attr('transform', 'translate(' + (com.gridBib.telescope.large.box.w * 0.5) + ',' + (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0) + ')')
       com.gridBib.telescope.medium.g.append('text')
         .attr('id', 'title')
         .text('Medium')
@@ -237,7 +237,7 @@ window.TelescopeDisplayer = function (optIn) {
         .style('font-size', com.gridBib.header.text.size + 'px')
         .attr('text-anchor', 'middle')
         .attr('y', com.gridBib.header.background.height * 0.5 + com.gridBib.header.text.size * 0.33)
-        .attr('transform', 'translate(' + (com.gridBib.telescope.medium.box.w * 0.5) + ',' + (-com.gridBib.telescope.medium.box.h * 0.0) + ')')
+        .attr('transform', 'translate(' + (com.gridBib.telescope.medium.box.w * 0.5) + ',' + (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0) + ')')
       if (com.main.isSouth) {
         com.gridBib.telescope.small.g.append('text')
           .attr('id', 'title')
@@ -247,7 +247,7 @@ window.TelescopeDisplayer = function (optIn) {
           .style('font-size', com.gridBib.header.text.size + 'px')
           .attr('text-anchor', 'middle')
           .attr('y', com.gridBib.header.background.height * 0.5 + com.gridBib.header.text.size * 0.33)
-          .attr('transform', 'translate(' + (com.gridBib.telescope.small.box.w * 0.5) + ',' + (-com.gridBib.telescope.small.box.h * 0.0) + ')')
+          .attr('transform', 'translate(' + (com.gridBib.telescope.small.box.w * 0.5) + ',' + (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0) + ')')
       }
     }
     this.init = init
@@ -306,6 +306,13 @@ window.TelescopeDisplayer = function (optIn) {
     }
 
     function computeSizeRows () {
+      com.gridBib.telescope.large.opt.size = com.gridBib.telescope.large.box.w / com.gridBib.telescope.large.opt.telsPerRow
+      com.gridBib.telescope.medium.opt.size = com.gridBib.telescope.medium.box.w / com.gridBib.telescope.medium.opt.telsPerRow
+      com.gridBib.telescope.small.opt.size = com.gridBib.telescope.small.box.w / com.gridBib.telescope.small.opt.telsPerRow
+      com.gridBib.telescope.large.opt.ratio = 0
+      com.gridBib.telescope.medium.opt.ratio = 0
+      com.gridBib.telescope.small.opt.ratio = 0
+
       if (com.gridBib.telescope.enabled) {
         for (let i = 0; i < com.data.raw.blocks.length; i++) {
           let b = com.data.raw.blocks[i]
@@ -348,7 +355,7 @@ window.TelescopeDisplayer = function (optIn) {
         let m = com.gridBib.telescope.medium.opt.size * (parseInt(mediumT.length / com.gridBib.telescope.medium.opt.telsPerRow) + (mediumT.length % com.gridBib.telescope.medium.opt.telsPerRow !== 0 ? 1 : 0))
         let s = com.gridBib.telescope.small.opt.size * (parseInt(smallT.length / com.gridBib.telescope.small.opt.telsPerRow) + (smallT.length % com.gridBib.telescope.small.opt.telsPerRow !== 0 ? 1 : 0))
         let max = Math.max(Math.max(l, m), s)
-        max = com.data.raw.blocks.length === 0 ? 9 : max
+        // max = com.data.raw.blocks.length === 0 ? 9 : max
         com.gridBib.ratio += max
         com.gridBib.idleRow = max / com.gridBib.ratio
       }
@@ -357,22 +364,19 @@ window.TelescopeDisplayer = function (optIn) {
           com.data.raw.blocks[i].rowHeight = com.data.raw.blocks[i].rowHeight / com.gridBib.ratio
         }
       }
-      com.gridBib.telescope.large.opt.ratio = com.gridBib.telescope.large.opt.size / com.gridBib.ratio
-      com.gridBib.telescope.medium.opt.ratio = com.gridBib.telescope.medium.opt.size / com.gridBib.ratio
-      com.gridBib.telescope.small.opt.ratio = com.gridBib.telescope.small.opt.size / com.gridBib.ratio
+      com.gridBib.telescope.large.opt.ratio = com.gridBib.telescope.large.box.h / com.gridBib.ratio
+      com.gridBib.telescope.medium.opt.ratio = com.gridBib.telescope.medium.box.h / com.gridBib.ratio
+      com.gridBib.telescope.small.opt.ratio = com.gridBib.telescope.small.box.h / com.gridBib.ratio
     }
     function drawTels (tels, g, box, opt) {
       if (tels.length === 0) return
       let nbline = parseInt(tels.length / opt.telsPerRow) + (tels.length % opt.telsPerRow !== 0 ? 1 : 0)
-      let dim = {
-        w: com.gridBib.maxHeight * opt.ratio * 0.9,
-        h: com.gridBib.maxHeight * opt.ratio * 0.9
-      }
       let size = {
-        w: Math.min(16, Math.max(4, dim.w * 0.48)),
-        h: Math.min(16, Math.max(2, dim.h * 0.48))
+        w: (opt.size * 0.5) * 0.9,
+        h: (opt.ratio > 1 ? opt.size * 0.5 : opt.size * 0.5 * opt.ratio) * 0.9
       }
-      let fontsize = Math.max(Math.min(size.w * 0.8, 26), 8)
+
+      let fontsize = opt.size * 0.4
       let offset = {
         x: (box.w - (opt.telsPerRow * size.w * 2)) * 0.5,
         y: com.gridBib.telescope.centering ? (box.h - (nbline * size.h * 2)) * 0.5 : 0
@@ -500,7 +504,7 @@ window.TelescopeDisplayer = function (optIn) {
 
       let offset = {
         x: 0,
-        y: com.gridBib.header.background.height
+        y: 0// com.gridBib.header.background.height
       }
 
       if (com.gridBib.telescope.enabled) {
@@ -620,7 +624,7 @@ window.TelescopeDisplayer = function (optIn) {
         })
         offset = {
           x: 0,
-          y: com.gridBib.header.background.height
+          y: 0// com.gridBib.header.background.height
         }
         let merge = current.merge(enter)
         merge.each(function (d, i) {
@@ -677,7 +681,7 @@ window.TelescopeDisplayer = function (optIn) {
 
         offset = {
           x: 0,
-          y: com.gridBib.header.background.height
+          y: 0// com.gridBib.header.background.height
         }
         for (let i = 0; i < com.data.raw.blocks.length; i++) {
           let sizeRow = com.gridBib.maxHeight * com.data.raw.blocks[i].rowHeight
