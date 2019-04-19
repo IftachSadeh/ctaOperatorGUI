@@ -241,7 +241,7 @@ window.ScrollBox = function () {
   //
   // ---------------------------------------------------------------------------------------------------
   function setBox () {
-    let boxMarg = com.outerBox.marg
+    let boxMarg = com.outerBox.marg ? com.outerBox.marg : 0
 
     let scrollMargV = com.scrollRecV.w
     if (!com.sameInnerBoxMarg && !com.scrollTransV.active) scrollMargV = 0
@@ -574,7 +574,7 @@ window.ScrollBox = function () {
 
       return delay
     }
-    com.doTrans = doTrans
+    com.doVerticalTrans = doTrans
 
     // ---------------------------------------------------------------------------------------------------
     //
@@ -895,6 +895,21 @@ window.ScrollBox = function () {
     com.scrollTransV.now = com.scrollTransV.max
     com.scrollRecV.h = boxH * boxH / Math.abs(com.scrollHeight)
   }
+  function updateVerticalScrollState (keepFrac) {
+    let boxH = com.innerBox.h // com.outerBox.h - com.outerBox.marg * 2;
+    if (com.canScroll && com.scrollVertical) {
+      com.scrollTransV.active = Math.abs(com.scrollHeight) > boxH
+    }
+
+    com.scrollTransV.min = hasVar(com.scrollHeight)
+      ? -1 * Math.abs(com.scrollHeight - boxH)
+      : 0
+    com.scrollTransV.max = 0
+    if (!keepFrac) com.scrollTransV.frac = 0
+    if (com.scrollTransV.now < com.scrollTransV.min) com.scrollTransV.now = com.scrollTransV.min
+    else if (com.scrollTransV.now > com.scrollTransV.max) com.scrollTransV.now = com.scrollTransV.max
+    com.scrollRecV.h = boxH * boxH / Math.abs(com.scrollHeight)
+  } // NO
 
   function initHorizontalScroll (optIn) {
     com.scrollHorizontal = hasVar(optIn.scrollHorizontal) ? optIn.scrollHorizontal : true
@@ -1492,6 +1507,13 @@ window.ScrollBox = function () {
   }
   this.moveHorizontalScrollerTo = moveHorizontalScrollerTo
 
+  function moveVerticalScrollerTo (target) {
+    com.scrollTransV.frac = target
+    com.zoomVerticalScrollBarUpdate()
+    com.doVerticalTrans({ frac: target, duration: 400 })
+  }
+  this.moveVerticalScrollerTo = moveVerticalScrollerTo
+
   function updateHorizontalScroller (optIn) {
     if (!com.scrollTransH.active) return
 
@@ -1535,6 +1557,50 @@ window.ScrollBox = function () {
     //
   }
   this.updateHorizontalScroller = updateHorizontalScroller
+
+  function updateVerticalScroller (optIn) {
+    if (!com.scrollTransV.active) return
+
+    if (!hasVar(optIn)) optIn = {}
+
+    if (hasVar(optIn.scrollHeight)) com.scrollHeight = optIn.scrollHeight
+    // if (hasVar(optIn.boxWidth)) com.scrollWidth = optIn.boxWidth
+    // if (hasVar(optIn.frac)) com.scrollWidth = optIn.frac
+    console.log(com.scrollHeight);
+    updateVerticalScrollState(true)
+    com.setVerticalRecScroll()
+    com.doVerticalTrans({ frac: com.scrollTransV.frac, duration: 0 })
+    // setHorizontalZoomStatus()
+    // if (prevActive !== com.scrollTransH.active) {
+    //   setHorizontalZoomStatus()
+    //   com.zoomHorizontalScrollBarInit()
+    // }
+
+    // if (prevActive !== com.scrollTransH.active) {
+    //   setBox()
+    // }
+    //
+    // com.innerG
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', function (d, i) {
+    //     let shift = posShift()
+    //     return 'translate(' + shift[0] + ',' + shift[1] + ')'
+    //   })
+    // com.clipRecInner
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', 'translate(0,0)')
+    // com.clipRecOuter
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', function (d, i) {
+    //     let shift = posShift()
+    //     return 'translate(' + -shift[0] + ',' + -shift[1] + ')'
+    //   })
+    //
+  }
+  this.updateVerticalScroller = updateVerticalScroller
   // function updateScrollerSize (optIn) {
   //   if (!hasVar(optIn)) optIn = {}
   //   let duration = hasVar(optIn.duration) ? optIn.duration : timeD.animArc / 2
