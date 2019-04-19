@@ -298,12 +298,12 @@ window.colorTheme = {
       }
     },
     darker: {
-      background: '#BDBDBD',
+      background: '#E0E0E0',
       stroke: '#444444',
       text: '#444444'
     },
     dark: {
-      background: '#E0E0E0',
+      background: '#E8E8E8',
       stroke: '#444444',
       text: '#444444'
     },
