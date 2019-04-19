@@ -178,8 +178,6 @@ let mainSchedBlocksController = function (optIn) {
   let lenD = {}
 
   let blockQueue = null
-  let blockQueueModif = null
-  let blockQueueOptimized = null
   let brushZoom = null
 
   // let thisSchedBlocksController = this
@@ -825,6 +823,23 @@ let mainSchedBlocksController = function (optIn) {
   }
   this.pushNewBlockQueue = pushNewBlockQueue
 
+  function createDummyBlock () {
+    let newBlock = deepCopy(blockTemplate)
+    newBlock.startTime = 0
+    newBlock.duration = 2000
+    newBlock.endTime = 2000
+    newBlock.exeState = {state: 'wait', canRun: true}
+    newBlock.metaData = {blockName: '80 (0)', nObs: 0, nSched: 80}
+    newBlock.obId = 'newBlockObID'
+    newBlock.sbId = 'newBlockSbID'
+    newBlock.timeStamp = 101010209020
+    newBlock.runPhase = []
+    newBlock.modified = true
+    shared.data.copy.blocks.wait.push(newBlock)
+    shared.data.copy.schedBlocks = createSchedBlocks(shared.data.copy.blocks)
+
+    // console.log(getSchedBlocksData()['newBlockSbID'])
+  }
   function switchMainMode () {
     if (shared.mode === 'inspector') {
       shared.data.copy = undefined
@@ -847,11 +862,9 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('rx', 2)
         .on('click', function () {
-          shared.data.copy.blocks.wait = []
-          shared.data.copy.schedBlocks = createSchedBlocks(shared.data.copy.blocks)
+          createDummyBlock()
         })
     }
-    svgBlocksQueueServer.updateData()
     svgBlocksQueueServer.switchMainMode()
   }
   function pullData () {
@@ -1642,10 +1655,87 @@ let mainSchedBlocksController = function (optIn) {
 
     function switchMainMode () {
       if (shared.mode === 'inspector') {
-
+        blockQueue.switchStyle()
       } else if (shared.mode === 'modifier') {
+        blockQueue.switchStyle({
+          runRecCol: colorTheme.blocks.shutdown,
+          blockCol: function (optIn) {
+            let state = hasVar(optIn.state)
+              ? optIn.state
+              : optIn.d.exeState.state
+            let canRun = hasVar(optIn.canRun)
+              ? optIn.canRun
+              : optIn.d.exeState.canRun
+            let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
 
+            if (state === 'wait') {
+              if (modified) return colorTheme.blocks.wait
+              return colorTheme.blocks.wait
+            } else if (state === 'done') {
+              return colorTheme.blocks.done
+            } else if (state === 'fail') {
+              return colorTheme.blocks.fail
+            } else if (state === 'run') {
+              return colorTheme.blocks.run
+            } else if (state === 'cancel') {
+              if (hasVar(canRun)) {
+                if (!canRun) return colorTheme.blocks.cancelOp
+              }
+              return colorTheme.blocks.cancelSys
+            } else return colorTheme.blocks.shutdown
+            // let startT = hasVar(optIn.startTime)
+            //   ? optIn.startTime
+            //   : optIn.d.startTime
+            // if (startT < shared.data.server.timeOfNight.now) return colorTheme.blocks.shutdown
+            // let state = hasVar(optIn.state)
+            //   ? optIn.state
+            //   : optIn.d.exeState.state
+            // let canRun = hasVar(optIn.canRun)
+            //   ? optIn.canRun
+            //   : optIn.d.exeState.canRun
+            // let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+            //
+            // if (state === 'wait') {
+            //   if (modified) return colorTheme.blocks.wait
+            //   return colorTheme.blocks.wait
+            // } else if (state === 'cancel') {
+            //   if (hasVar(canRun)) {
+            //     if (!canRun) return colorTheme.blocks.cancelOp
+            //   }
+            //   return colorTheme.blocks.cancelSys
+            // } else return colorTheme.blocks.shutdown
+          },
+          blockOpac: function (optIn) {
+            let state = hasVar(optIn.state)
+              ? optIn.state
+              : optIn.d.exeState.state
+            let canRun = hasVar(optIn.canRun)
+              ? optIn.canRun
+              : optIn.d.exeState.canRun
+            let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+
+            if (state === 'wait') {
+              if (modified) return 0.2
+              return 1
+            } else if (state === 'run') {
+              return 1
+            } else if (state === 'cancel') {
+              if (hasVar(canRun)) {
+                if (!canRun) return 1
+              }
+              return 1
+            } else return 1
+          },
+          blockPattern: function (optIn) {
+            let startT = hasVar(optIn.startTime)
+              ? optIn.startTime
+              : optIn.d.startTime
+            if (startT < shared.data.server.timeOfNight.now) return 'url(#patternLock)'
+            return 'none'
+          }
+        })
       }
+      svgBlocksQueueServer.updateData()
     }
     this.switchMainMode = switchMainMode
   }
@@ -3728,6 +3818,51 @@ let mainSchedBlocksController = function (optIn) {
       updateOverview()
     }
     this.initData = initData
+    function initScrollBox (tag, g, box, background) {
+      if (background.enabled) {
+        g.append('rect')
+          .attr('class', 'background')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', box.w)
+          .attr('height', box.h)
+          .style('fill', background.fill)
+          .style('stroke', background.stroke)
+          .style('stroke-width', background.strokeWidth)
+      }
+
+      let scrollBox = new ScrollBox()
+      scrollBox.init({
+        tag: tag,
+        gBox: g,
+        boxData: {
+          x: 0,
+          y: 0,
+          w: box.w,
+          h: box.h
+        },
+        useRelativeCoords: true,
+        locker: new Locker(),
+        lockerV: [tag + 'updateData'],
+        lockerZoom: {
+          all: tag + 'zoom',
+          during: tag + 'zoomDuring',
+          end: tag + 'zoomEnd'
+        },
+        runLoop: new RunLoop({tag: tag}),
+        canScroll: true,
+        scrollVertical: true,
+        scrollHorizontal: false,
+        scrollHeight: 0,
+        scrollWidth: 0,
+        background: 'transparent',
+        scrollRecH: {h: 4},
+        scrollRecV: {w: 4}
+      })
+      return scrollBox
+      // com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
+      // com.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: com.component.contentDiv._groups[0][0].scrollHeight})
+    }
 
     function update () {
       updateOverview()
@@ -3823,7 +3958,6 @@ let mainSchedBlocksController = function (optIn) {
           merge.each(function (d, i) {
             let g = d3.select(this)
             let overflow = (index % square) + blocks.length > square ? square - ((index % square) + blocks.length) : 0
-            console.log(overflow);
             g.attr('transform', 'translate(' + (height * (i + overflow)) + ',' + (offset) + ')')
           })
           current
@@ -3878,12 +4012,20 @@ let mainSchedBlocksController = function (optIn) {
                 focusManager.focusOn('schedBlock', d.id)
               })
               .on('mouseover', function () {
-                blockCore(d.blocks, g.append('g').attr('id', 'blocks'), height, i)
+                gback.select('g#blocks').remove()
+                let gb = g.append('g').attr('id', 'blocks')
+                // let overflow = (i % square) + d.blocks.length > square ? square - ((i % square) + d.blocks.length) : 0
+                // gb.append('rect')
+                //   .attr('x', overflow * height)
+                //   .attr('y', height * 0.75)
+                //   .attr('width', d.blocks.length * height)
+                //   .attr('height', height * 1.25)
+                blockCore(d.blocks, gb, height, i)
                 d3.select(this).style('cursor', 'pointer')
                 d3.select(this).attr('fill', colorTheme.darker.background)
               })
               .on('mouseout', function () {
-                g.select('g#blocks').remove()
+                // g.select('g#blocks').remove()
                 d3.select(this).style('cursor', 'default')
                 d3.select(this).attr('fill', colorTheme.dark.background)
               })
@@ -4281,27 +4423,8 @@ let mainSchedBlocksController = function (optIn) {
     }
 
     function initOverview () {
-      let allBox = {
-        blocks: {
-          x: 0,
-          y: 0,
-          w: reserved.box.w * 0.8,
-          h: reserved.box.h * 0.2
-        },
-        targets: {
-          x: 0,
-          y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.3,
-          w: reserved.box.w
-        },
-        tels: {
-          x: 0,
-          y: reserved.box.h * 0.52,
-          w: reserved.box.w,
-          h: reserved.box.h * 0.47
-        }
-      }
-
+      reserved.overview = {}
+      let allBox
       function createBlocksInformation () {
         let box = allBox.blocks
         let g = reserved.g.append('g').attr('id', 'blocksInformation')
@@ -4387,7 +4510,8 @@ let mainSchedBlocksController = function (optIn) {
       }
       function createPointingInformation () {
         let box = allBox.targets
-        let g = reserved.g.append('g').attr('id', 'pointingInformation')
+        let g = reserved.g.append('g')
+          .attr('id', 'pointingInformation')
           .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
         box.y = 0
         g.append('text')
@@ -4417,10 +4541,10 @@ let mainSchedBlocksController = function (optIn) {
           .attr('height', headerSize)
           .attr('fill', colorTheme.dark.stroke)
         let label = [
-          {x: box.w * 0.08, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Targets'},
-          {x: box.w * 0.24, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Scheds'},
-          {x: box.w * 0.36, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Obs'},
-          {x: box.w * 0.7, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Running blocks'}
+          {x: box.w * 0.01, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Targets'},
+          {x: box.w * 0.15, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Scheds'},
+          {x: box.w * 0.3, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Obs'},
+          {x: box.w * 0.45, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Running blocks'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -4428,12 +4552,21 @@ let mainSchedBlocksController = function (optIn) {
             .style('fill', colorTheme.medium.background)
             .style('font-weight', 'bold')
             .style('font-size', txtSize + 'px')
-            .attr('text-anchor', 'middle')
+            .attr('text-anchor', 'start')
             .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
         }
-        box.y += headerSize + 4
-        g.append('g').attr('id', 'targets')
+        box.y += headerSize + 0
+        let targ = g.append('g').attr('id', 'targets')
           .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+        reserved.overview.scrollBox = initScrollBox('targetRessourceScroll', targ, box, {enabled: false})
+        reserved.overview.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: shared.data.server.targets.length * 40})
+        g.append('line')
+          .attr('x1', box.x)
+          .attr('y1', box.y + box.h)
+          .attr('x2', box.w)
+          .attr('y2', box.y + box.h)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
       }
       function createTelescopeInformation () {
         let box = allBox.tels
@@ -4527,7 +4660,7 @@ let mainSchedBlocksController = function (optIn) {
               medium: {
                 g: undefined,
                 opt: {
-                  telsPerRow: 3,
+                  telsPerRow: 4,
                   nbl: 0,
                   size: 1,
                   ratio: 1
@@ -4620,32 +4753,109 @@ let mainSchedBlocksController = function (optIn) {
         })
         reserved.telescopeRunning.init()
       }
-      createBlocksInformation()
-      createPointingInformation()
-      createTelescopeInformation()
-    }
-    function updateOverview () {
-      let allBox = {
-        blocks: {
-          x: 0,
-          y: 0,
-          w: reserved.box.w * 0.8,
-          h: reserved.box.h * 0.2
-        },
-        targets: {
-          x: 0,
-          y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.3,
-          w: reserved.box.w
-        },
-        tels: {
-          x: 0,
-          y: reserved.box.h * 0.52,
-          w: reserved.box.w,
-          h: reserved.box.h * 0.47
-        }
+
+      function createModificationsInformation () {
+        let box = allBox.modifications
+        let g = reserved.g.append('g')
+          .attr('id', 'modificationsInformation')
+          .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+        box.y = 0
+        g.append('text')
+          .text('Modifications')
+          .attr('x', box.w * 0.01)
+          .attr('y', box.y)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .style('font-size', titleSize + 'px')
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+        box.y += 2
+        g.append('line')
+          .attr('x1', 0)
+          .attr('y1', box.y)
+          .attr('x2', reserved.box.w)
+          .attr('y2', box.y)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+      }
+      function createConflictsInformation () {
+        let box = allBox.conflicts
+        let g = reserved.g.append('g')
+          .attr('id', 'conflictsInformation')
+          .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+        box.y = 0
+        g.append('text')
+          .text('Conflicts')
+          .attr('x', box.w * 0.01)
+          .attr('y', box.y)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'start')
+          .style('font-size', titleSize + 'px')
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+        box.y += 2
+        g.append('line')
+          .attr('x1', 0)
+          .attr('y1', box.y)
+          .attr('x2', reserved.box.w)
+          .attr('y2', box.y)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
       }
 
+      if (shared.mode === 'inspector') {
+        allBox = {
+          blocks: {
+            x: 0,
+            y: 0,
+            w: reserved.box.w * 0.8,
+            h: reserved.box.h * 0.2
+          },
+          targets: {
+            x: 0,
+            y: reserved.box.h * 0.125,
+            h: reserved.box.h * 0.32,
+            w: reserved.box.w
+          },
+          tels: {
+            x: 0,
+            y: reserved.box.h * 0.52,
+            w: reserved.box.w,
+            h: reserved.box.h * 0.47
+          }
+        }
+        createBlocksInformation()
+        createPointingInformation()
+        createTelescopeInformation()
+      } else if (shared.mode === 'modifier') {
+        allBox = {
+          blocks: {
+            x: 0,
+            y: 0,
+            w: reserved.box.w * 0.8,
+            h: reserved.box.h * 0.2
+          },
+          modifications: {
+            x: 0,
+            y: reserved.box.h * 0.125,
+            h: reserved.box.h * 0.32,
+            w: reserved.box.w
+          },
+          conflicts: {
+            x: 0,
+            y: reserved.box.h * 0.52,
+            w: reserved.box.w,
+            h: reserved.box.h * 0.47
+          }
+        }
+        createModificationsInformation()
+        createConflictsInformation()
+      }
+    }
+    function updateOverview () {
+      let allBox
       function updateBlocksInformation () {
         let box = allBox.blocks
         let g = reserved.g.select('#blocksInformation')
@@ -4701,15 +4911,16 @@ let mainSchedBlocksController = function (optIn) {
       }
       function updatePointingInformation () {
         let box = allBox.targets
-        let g = reserved.g.select('g#pointingInformation').select('g#targets')
-
+        let innerg = reserved.overview.scrollBox.get('innerG')
         let rectBox = {
           y: 0,
           w: box.w,
-          h: (box.h - headerSize + 4) / shared.data.server.targets.length
+          h: Math.max(Math.min((box.h - headerSize + 4) / shared.data.server.targets.length, 50), 30)
         }
+        let height = rectBox.h * 0.9
         let schedB = getSchedBlocksData()
-        let targets = g
+
+        let targets = innerg
           .selectAll('g.target')
           .data(shared.data.server.targets, function (d) {
             return d.id
@@ -4720,18 +4931,17 @@ let mainSchedBlocksController = function (optIn) {
           .attr('class', 'target')
         enter.each(function (d, i) {
           let g = d3.select(this)
-          let height = rectBox.h * 0.9
           g.attr('transform', 'translate(' + (0) + ',' + (rectBox.y + rectBox.h * i) + ')')
           g.append('rect')
-            .attr('x', rectBox.w * 0.0)
+            .attr('x', 0)
             .attr('y', 0)
-            .attr('width', rectBox.w * 0.065)
+            .attr('width', height)
             .attr('height', height)
             .attr('fill', colorTheme.dark.background)
             .attr('stroke', colorTheme.medium.stroke)
-            .attr('stroke-width', 0.2)
+            .attr('stroke-width', 0.6)
             // .style('boxShadow', '10px 20px 30px black')
-            .attr('rx', 0)
+            .attr('rx', height)
             .on('click', function () {
               focusManager.focusOn('target', d.id)
             })
@@ -4744,19 +4954,20 @@ let mainSchedBlocksController = function (optIn) {
               d3.select(this).attr('fill', colorTheme.dark.background)
             })
           g.append('svg:image')
-            .attr('xlink:href', '/static/icons/target.svg')
-            .attr('width', 15)
-            .attr('height', 15)
-            .attr('x', rectBox.w * 0.01)
-            .attr('y', height * 0.5 - 7.5)
+            .attr('xlink:href', '/static/icons/round-target.svg')
+            .attr('width', height * 1)
+            .attr('height', height * 1)
+            .attr('x', height * 0.0)
+            .attr('y', height * 0.5 - height * 0.5)
+            .style('opacity', 0.5)
             .style('pointer-events', 'none')
           g.append('text')
-            .text(d.name)
-            .attr('x', rectBox.w * 0.01 + 2 + rectBox.w * 0.065)
+            .text('T' + d.name.split('_')[1])
+            .attr('x', height * 0.5)
             .attr('y', height * 0.5 + txtSize * 0.3)
             .style('font-weight', '')
-            .attr('text-anchor', 'start')
-            .style('font-size', txtSize + 'px')
+            .attr('text-anchor', 'middle')
+            .style('font-size', headerSize + 'px')
             .attr('dy', 0)
             .style('pointer-events', 'none')
             .attr('fill', colorTheme.dark.text)
@@ -4778,7 +4989,7 @@ let mainSchedBlocksController = function (optIn) {
 
           let txt = g.append('text')
             .text(nbSched)
-            .attr('x', rectBox.w * 0.2)
+            .attr('x', rectBox.w * 0.15)
             .attr('y', rectBox.h * 0.5)
             .style('font-weight', 'bold')
             .attr('text-anchor', 'start')
@@ -4802,10 +5013,10 @@ let mainSchedBlocksController = function (optIn) {
           bbox = txt.node().getBBox()
           txt = g.append('text')
             .text(nbObs)
-            .attr('x', rectBox.w * 0.36)
+            .attr('x', rectBox.w * 0.3)
             .attr('y', rectBox.h * 0.5)
             .style('font-weight', 'bold')
-            .attr('text-anchor', 'end')
+            .attr('text-anchor', 'start')
             .style('font-size', txtSize + 'px')
             .attr('dy', 0)
             .style('pointer-events', 'none')
@@ -4881,7 +5092,7 @@ let mainSchedBlocksController = function (optIn) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (rectBox.w * 0.5 + rectBox.w * 0.09 * i) + ',' + (0) + ')')
+            g.attr('transform', 'translate(' + (rectBox.w * 0.45 + rectBox.w * 0.09 * i) + ',' + (0) + ')')
           })
           current
             .exit()
@@ -4896,6 +5107,7 @@ let mainSchedBlocksController = function (optIn) {
           .duration(timeD.animArc)
           .style('opacity', 0)
           .remove()
+        reserved.overview.scrollBox.updateVerticalScroller({canScroll: true, scrollHeight: shared.data.server.targets.length * rectBox.h})
       }
       function updateTelescopeInformation () {
         reserved.telescopeRunning.updateData({
@@ -4908,9 +5120,31 @@ let mainSchedBlocksController = function (optIn) {
           }
         })
       }
-      updateBlocksInformation()
-      updatePointingInformation()
-      updateTelescopeInformation()
+      if (shared.mode === 'inspector') {
+        allBox = {
+          blocks: {
+            x: 0,
+            y: 0,
+            w: reserved.box.w * 0.8,
+            h: reserved.box.h * 0.2
+          },
+          targets: {
+            x: 0,
+            y: reserved.box.h * 0.125,
+            h: reserved.box.h * 0.3,
+            w: reserved.box.w
+          },
+          tels: {
+            x: 0,
+            y: reserved.box.h * 0.52,
+            w: reserved.box.w,
+            h: reserved.box.h * 0.47
+          }
+        }
+        updateBlocksInformation()
+        updatePointingInformation()
+        updateTelescopeInformation()
+      }
     }
 
     function createSchedBlocksInfoPanel (id) {
@@ -4926,7 +5160,7 @@ let mainSchedBlocksController = function (optIn) {
           x: box.rightInfo.w * 0.0,
           y: box.rightInfo.h * 0.125,
           w: box.rightInfo.w * 1.0,
-          h: box.rightInfo.h * 0.2
+          h: box.rightInfo.h * 0.25
         },
         target: {
           x: box.rightInfo.w * 0.0,
@@ -4988,39 +5222,42 @@ let mainSchedBlocksController = function (optIn) {
           .attr('transform', 'translate(' + (box.w * 0.0 + dimPoly * 0.5) + ',' + (box.h * 0.1 + dimPoly * 0.5 + txtSize * 0.3) + ')')
           .style('pointer-events', 'none')
 
-        // for (let i = 0; i < schedB.blocks.length; i++) {
-        //   let color = shared.style.blockCol(schedB.blocks[i])
-        //   g.append('rect')
-        //     .attr('x', (box.w * 0.15) + (box.h * 0.75 * i))
-        //     .attr('y', box.h * 0.3)
-        //     .attr('width', box.h * 0.6)
-        //     .attr('height', box.h * 0.6)
-        //     .attr('fill', color.background)
-        //     .attr('stroke', color.stroke)
-        //     .attr('stroke-width', 0.2)
-        //     .on('click', function () {
-        //       focusManager.focusOn('block', schedB.blocks[i].obId)
-        //     })
-        //     .on('mouseover', function (d) {
-        //       d3.select(this).style('cursor', 'pointer')
-        //       d3.select(this).attr('fill', d3.color(color.background).darker(0.9))
-        //     })
-        //     .on('mouseout', function (d) {
-        //       d3.select(this).style('cursor', 'default')
-        //       d3.select(this).attr('fill', color.background)
-        //     })
-        //   g.append('text')
-        //     .text(schedB.blocks[i].metaData.nObs)
-        //     .style('fill', color.text)
-        //     .style('font-weight', '')
-        //     .style('font-size', txtSize + 'px')
-        //     .attr('text-anchor', 'middle')
-        //     .attr('transform', 'translate(' + ((box.w * 0.15) + (box.h * 0.75 * i) + (box.h * 0.6 * 0.5)) + ',' + (box.h * 0.6 + txtSize * 0.3) + ')')
-        //     .style('pointer-events', 'none')
-        // }
+        let height = dimPoly * 0.5
+        for (let i = 0; i < schedB.blocks.length; i++) {
+          let color = shared.style.blockCol(schedB.blocks[i])
+          g.append('rect')
+            .attr('x', (box.w * 0.2) + ((height + 4) * i))
+            .attr('y', box.h * 0.9 - height)
+            .attr('width', height)
+            .attr('height', height)
+            .attr('fill', color.background)
+            .attr('stroke', color.stroke)
+            .attr('stroke-width', 0.2)
+            .attr('stroke-dasharray', [])
+            .on('click', function () {
+              focusManager.focusOn('block', schedB.blocks[i].obId)
+            })
+            .on('mouseover', function (d) {
+              d3.select(this).style('cursor', 'pointer')
+              d3.select(this).attr('fill', d3.color(color.background).darker(0.9))
+            })
+            .on('mouseout', function (d) {
+              d3.select(this).style('cursor', 'default')
+              d3.select(this).attr('fill', color.background)
+            })
+          g.append('text')
+            .text(schedB.blocks[i].metaData.nObs)
+            .style('fill', color.text)
+            .style('font-weight', '')
+            .style('font-size', txtSize + 'px')
+            .attr('text-anchor', 'middle')
+            .attr('transform', 'translate(' + ((box.w * 0.2) + ((height + 4) * i) + height * 0.5) + ',' + (box.h * 0.9 - height * 0.5 + txtSize * 0.3) + ')')
+            .style('pointer-events', 'none')
+        }
       }
       function createTimeInformation () {
-        let box = allBox.time
+        reserved.sched = {}
+        let box = deepCopy(allBox.time)
         let g = reserved.g.append('g')
           .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
 
@@ -5047,11 +5284,11 @@ let mainSchedBlocksController = function (optIn) {
           .attr('height', headerSize)
           .attr('fill', colorTheme.dark.stroke)
         let label = [
-          {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Blocks', anchor: 'start'},
-          {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Start', anchor: 'start'},
-          {x: box.w * 0.3, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Duration', anchor: 'start'},
-          {x: box.w * 0.45, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'End', anchor: 'start'},
-          {x: box.w * 0.65, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Pointing', anchor: 'start'}
+          {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Blocks', anchor: 'start'},
+          {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Start', anchor: 'start'},
+          {x: box.w * 0.3, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Duration', anchor: 'start'},
+          {x: box.w * 0.45, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.2, text: 'End', anchor: 'start'},
+          {x: box.w * 0.65, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.35, text: 'Pointing', anchor: 'start'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -5061,10 +5298,22 @@ let mainSchedBlocksController = function (optIn) {
             .style('font-size', txtSize + 'px')
             .attr('text-anchor', label[i].anchor)
             .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+          g.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', label[i].w)
+            .attr('height', box.h - headerSize - 4)
+            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.darker.background)
+            .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
         }
 
+        box.h -= headerSize + 3
+        let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (headerSize + 3) + ')')
+        reserved.sched.scrollBox = initScrollBox('targetRessourceScroll', blockg, box, {enabled: false})
+        let innerg = reserved.sched.scrollBox.get('innerG')
+
         let line = Math.max(Math.min(titleSize * 2, box.h / schedB.blocks.length), titleSize)
-        let current = g
+        let current = innerg
           .selectAll('g.block')
           .data(schedB.blocks, function (d) {
             return d.obId
@@ -5077,7 +5326,14 @@ let mainSchedBlocksController = function (optIn) {
           let color = shared.style.blockCol(d)
 
           let g = d3.select(this)
-          g.attr('transform', 'translate(' + (0) + ',' + ((line + 2) * (i + 0.75)) + ')')
+          g.attr('transform', 'translate(' + (2) + ',' + (2 + (line + 2) * (i)) + ')')
+          g.append('rect')
+            .attr('x', -2)
+            .attr('y', -1)
+            .attr('width', box.w)
+            .attr('height', line + 2)
+            .attr('fill', '#000000')
+            .attr('opacity', i % 2 === 1 ? 0 : 0.1)
 
           g.append('rect')
             .attr('x', 0)
@@ -5105,6 +5361,7 @@ let mainSchedBlocksController = function (optIn) {
             .style('font-size', txtSize + 'px')
             .attr('text-anchor', 'middle')
             .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+            .style('pointer-events', 'none')
 
           let startTime = new Date(shared.data.server.timeOfNight.date_start)
           startTime.setSeconds(startTime.getSeconds() + d.startTime)
@@ -5151,6 +5408,16 @@ let mainSchedBlocksController = function (optIn) {
           .duration(timeD.animArc)
           .style('opacity', 0)
           .remove()
+
+        reserved.sched.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: (line + 2) * schedB.blocks.length})
+        box.h += headerSize + 3
+        g.append('line')
+          .attr('x1', box.x)
+          .attr('y1', box.h)
+          .attr('x2', box.w)
+          .attr('y2', box.h)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
       }
       function createPointingInformation () {
         let target = getTargetById(schedB.target.id)
@@ -5166,9 +5433,9 @@ let mainSchedBlocksController = function (optIn) {
           .attr('height', headerSize)
           .attr('fill', colorTheme.dark.stroke)
         let label = [
-          {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Target', anchor: 'start'},
-          {x: box.w * 0.33, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Pointing', anchor: 'start'},
-          {x: box.w * 0.66, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'offset', anchor: 'start'}
+          {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.33, text: 'Target', anchor: 'start'},
+          {x: box.w * 0.33, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.33, text: 'Pointing', anchor: 'start'},
+          {x: box.w * 0.66, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.34, text: 'offset', anchor: 'start'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -5178,6 +5445,13 @@ let mainSchedBlocksController = function (optIn) {
             .style('font-size', txtSize + 'px')
             .attr('text-anchor', label[i].anchor)
             .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+          g.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', label[i].w)
+            .attr('height', box.w * 0.19 - headerSize - 4)
+            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.darker.background)
+            .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
         }
 
         g.append('text')
@@ -5252,14 +5526,14 @@ let mainSchedBlocksController = function (optIn) {
         g.append('text')
           .text(target.pos[0])
           .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', 'bold')
+          .style('font-weight', '')
           .style('font-size', txtSize + 'px')
           .attr('text-anchor', 'start')
           .attr('transform', 'translate(' + (box.w * 0.01) + ',' + ((box.w * 0.075) + txtSize * 1.6) + ')')
         g.append('text')
           .text(target.pos[1])
           .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', 'bold')
+          .style('font-weight', '')
           .style('font-size', txtSize + 'px')
           .attr('text-anchor', 'start')
           .attr('transform', 'translate(' + (box.w * 0.01) + ',' + ((box.w * 0.075) + txtSize * 3.2) + ')')
@@ -5275,14 +5549,14 @@ let mainSchedBlocksController = function (optIn) {
         g.append('text')
           .attr('id', 'pointingPosX')
           .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', 'bold')
+          .style('font-weight', '')
           .style('font-size', txtSize + 'px')
           .attr('text-anchor', 'start')
           .attr('transform', 'translate(' + (box.w * 0.33) + ',' + ((box.w * 0.075) + txtSize * 1.6) + ')')
         g.append('text')
           .attr('id', 'pointingPosY')
           .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', 'bold')
+          .style('font-weight', '')
           .style('font-size', txtSize + 'px')
           .attr('text-anchor', 'start')
           .attr('transform', 'translate(' + (box.w * 0.33) + ',' + ((box.w * 0.075) + txtSize * 3.2) + ')')
@@ -5314,40 +5588,33 @@ let mainSchedBlocksController = function (optIn) {
           if (!targetData.pointing.includes(p)) targetData.pointing.push(p)
         }
 
-        g.append('rect')
-          .attr('x', 0)
-          .attr('y', box.w * 0.19 + 3)
-          .attr('width', box.w * 0.14)
-          .attr('height', headerSize + 4)
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.1)
-          .on('click', function () {
-            focusManager.focusOn('target', target.id)
-          })
-          .on('mouseover', function (d) {
-            d3.select(this).style('cursor', 'pointer')
-            d3.select(this).attr('fill', colorTheme.darker.background)
-          })
-          .on('mouseout', function (d) {
-            d3.select(this).style('cursor', 'default')
-            d3.select(this).attr('fill', colorTheme.dark.background)
-          })
-        g.append('text')
-          .text(targetData.id)
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + 2 + ',' + (3 + box.w * 0.19 + headerSize * 1) + ')')
-          .style('pointer-events', 'none')
-        g.append('line')
-          .attr('x1', 0)
-          .attr('y1', 3 + box.w * 0.19 + headerSize + 4)
-          .attr('x2', box.w * 0.14)
-          .attr('y2', 3 + box.w * 0.19 + headerSize + 4)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.2)
+        // g.append('rect')
+        //   .attr('x', 0)
+        //   .attr('y', box.w * 0.19 + 3)
+        //   .attr('width', box.w * 0.14)
+        //   .attr('height', headerSize + 4)
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.1)
+        //   .on('click', function () {
+        //     focusManager.focusOn('target', target.id)
+        //   })
+        //   .on('mouseover', function (d) {
+        //     d3.select(this).style('cursor', 'pointer')
+        //     d3.select(this).attr('fill', colorTheme.darker.background)
+        //   })
+        //   .on('mouseout', function (d) {
+        //     d3.select(this).style('cursor', 'default')
+        //     d3.select(this).attr('fill', colorTheme.dark.background)
+        //   })
+        // g.append('text')
+        //   .text(targetData.id)
+        //   .style('fill', colorTheme.dark.stroke)
+        //   .style('font-weight', '')
+        //   .style('font-size', headerSize + 'px')
+        //   .attr('text-anchor', 'start')
+        //   .attr('transform', 'translate(' + 2 + ',' + (3 + box.w * 0.19 + headerSize * 1) + ')')
+        //   .style('pointer-events', 'none')
         // g.append('rect')
         //   .attr('x', headerSize * 5)
         //   .attr('y', box.w * 0.075 - headerSize)
@@ -5369,16 +5636,58 @@ let mainSchedBlocksController = function (optIn) {
         //     d3.select(this).style('cursor', 'default')
         //     d3.select(this).attr('fill', colorTheme.dark.background)
         //   })
-        g.append('svg:image')
-          .attr('xlink:href', '/static/icons/target.svg')
-          .attr('width', headerSize * 1.4)
-          .attr('height', headerSize * 1.4)
-          .attr('x', box.w * 0.14 - headerSize * 1.4)
-          .attr('y', box.w * 0.19 + 3)
-          .style('pointer-events', 'none')
-          .style('opacity', 0.6)
 
-        let offsetY = 3 + box.w * 0.19 + headerSize * 1 + 6
+        let height = box.w * 0.09
+        g.append('rect')
+          .attr('x', box.w * 0.01)
+          .attr('y', box.w * 0.19 + 3)
+          .attr('width', height)
+          .attr('height', height)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 0.6)
+          // .style('boxShadow', '10px 20px 30px black')
+          .attr('rx', height)
+          .on('click', function () {
+            focusManager.focusOn('target', targetData.id)
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).style('cursor', 'pointer')
+            d3.select(this).attr('fill', colorTheme.darker.background)
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).style('cursor', 'default')
+            d3.select(this).attr('fill', colorTheme.dark.background)
+          })
+        g.append('svg:image')
+          .attr('xlink:href', '/static/icons/round-target.svg')
+          .attr('width', height * 1)
+          .attr('height', height * 1)
+          .attr('x', box.w * 0.01)
+          .attr('y', box.w * 0.19 + 3)
+          .style('opacity', 0.5)
+          .style('pointer-events', 'none')
+        g.append('text')
+          .text('T' + targetData.id.split('/')[0].split('_')[1])
+          .attr('x', box.w * 0.01 + height * 0.5)
+          .attr('y', box.w * 0.19 + 3 + height * 0.5 + txtSize * 0.3)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('font-size', headerSize + 'px')
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+
+        g.append('line')
+          .attr('x1', 0)
+          .attr('y1', 3 + box.w * 0.19 + height + 4)
+          .attr('x2', box.w * 0.14)
+          .attr('y2', 3 + box.w * 0.19 + height + 4)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.2)
+
+        let offsetY = 3 + box.w * 0.19 + height + 6
         let current = g
           .selectAll('g.pointing')
           .data(targetData.pointing, function (d) {
@@ -5390,15 +5699,21 @@ let mainSchedBlocksController = function (optIn) {
           .attr('class', 'pointing')
         enter.each(function (d, i) {
           let ig = d3.select(this)
-          ig.attr('transform', 'translate(' + (headerSize * 2) + ',' + (offsetY + titleSize * 1.5 * i) + ')')
+          ig.attr('transform', 'translate(' + (headerSize * 3) + ',' + (offsetY + titleSize * 2 * i) + ')')
+
           ig.append('rect')
             .attr('x', -box.w * 0.025)
             .attr('y', 0)
-            .attr('width', box.w * 0.1)
-            .attr('height', headerSize * 1.5)
+            .attr('width', headerSize * 2)
+            .attr('height', headerSize * 2)
             .attr('fill', colorTheme.dark.background)
-            .attr('stroke', colorTheme.dark.stroke)
-            .attr('stroke-width', 0.0)
+            .attr('stroke', colorTheme.medium.stroke)
+            .attr('stroke-width', 0.6)
+            // .style('boxShadow', '10px 20px 30px black')
+            .attr('rx', 0)
+            .on('click', function () {
+              focusManager.focusOn('target', targetData.id)
+            })
             .on('mouseover', function () {
               g.select('text#pointingName').text(d.id)
               g.select('text#pointingPosX').text(d.position[0])
@@ -5406,21 +5721,32 @@ let mainSchedBlocksController = function (optIn) {
 
               g.select('text#offsetX').text(d.position[0] - target.pos[0])
               g.select('text#offsetY').text(d.position[1] - target.pos[1])
-              // d3.select(this).style('cursor', 'pointer')
+              d3.select(this).style('cursor', 'pointer')
               d3.select(this).attr('fill', colorTheme.darker.background)
             })
             .on('mouseout', function () {
-              // d3.select(this).style('cursor', 'default')
+              d3.select(this).style('cursor', 'default')
               d3.select(this).attr('fill', colorTheme.dark.background)
             })
-          ig.append('text')
-            .attr('y', headerSize)
-            .text(d.id)
-            .style('fill', colorTheme.dark.stroke)
-            .style('font-weight', '')
-            .style('font-size', headerSize + 'px')
-            .attr('text-anchor', 'start')
+          ig.append('svg:image')
+            .attr('xlink:href', '/static/icons/square-target.svg')
+            .attr('width', headerSize * 2)
+            .attr('height', headerSize * 2)
+            .attr('x', -box.w * 0.025)
+            .attr('y', 0)
+            .style('opacity', 0.5)
             .style('pointer-events', 'none')
+          ig.append('text')
+            .text('P' + d.id.split('_')[1])
+            .attr('x', -box.w * 0.025 + headerSize * 2 * 0.5)
+            .attr('y', 0 + headerSize * 2 * 0.5 + txtSize * 0.3)
+            .style('font-weight', 'bold')
+            .attr('text-anchor', 'middle')
+            .style('font-size', headerSize + 'px')
+            .attr('dy', 0)
+            .style('pointer-events', 'none')
+            .attr('fill', colorTheme.dark.text)
+            .attr('stroke', 'none')
         })
         let merge = current.merge(enter)
         merge.each(function (d, i) {
@@ -5488,7 +5814,7 @@ let mainSchedBlocksController = function (optIn) {
           x: box.rightInfo.w * 0.0,
           y: box.rightInfo.h * 0.6,
           w: box.rightInfo.w * 1.0,
-          h: box.rightInfo.h * 0.4
+          h: box.rightInfo.h * 0.39
         }
       }
 
@@ -5533,7 +5859,7 @@ let mainSchedBlocksController = function (optIn) {
         //   .style('font-size', txtSize * 1.2)
         //   .attr('text-anchor', 'start')
         //   .attr('transform', 'translate(' + (box.w * 0.25) + ',' + (box.h * 0.25 + txtSize * 0.3) + ')')
-        let dimPoly = box.h * 0.8
+        let dimPoly = box.h * 0.5
         let poly = [
           {x: dimPoly * 0.3, y: dimPoly * 0.0},
           {x: dimPoly * 0.7, y: dimPoly * 0.0},
@@ -5559,7 +5885,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
-          .attr('transform', 'translate(' + (box.w * 0.2) + ',' + (box.h * 0.1) + ')')
+          .attr('transform', 'translate(' + (box.w * 0.2) + ',' + (box.h * 0.9 - dimPoly) + ')')
           .on('click', function () {
             focusManager.focusOn('schedBlock', schedB.blocks[0].sbId)
           })
@@ -5575,9 +5901,9 @@ let mainSchedBlocksController = function (optIn) {
           .text('S' + schedB.blocks[0].metaData.nSched)
           .style('fill', colorTheme.dark.text)
           .style('font-weight', '')
-          .style('font-size', txtSize * 1.4 + 'px')
+          .style('font-size', txtSize * 1.2 + 'px')
           .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (box.w * 0.2 + dimPoly * 0.5) + ',' + (box.h * 0.1 + dimPoly * 0.5 + txtSize * 0.3) + ')')
+          .attr('transform', 'translate(' + (box.w * 0.2 + dimPoly * 0.5) + ',' + (box.h * 0.9 - dimPoly * 0.5 + txtSize * 0.3) + ')')
           .style('pointer-events', 'none')
 
         // g.append('text')
@@ -5590,10 +5916,10 @@ let mainSchedBlocksController = function (optIn) {
         for (let i = 0; i < schedB.blocks.length; i++) {
           let color = shared.style.blockCol(schedB.blocks[i])
           g.append('rect')
-            .attr('x', (box.w * 0.35) + (box.h * 0.75 * i))
-            .attr('y', box.h * 0.3)
-            .attr('width', box.h * 0.6)
-            .attr('height', box.h * 0.6)
+            .attr('x', (box.w * 0.3) + (dimPoly * i))
+            .attr('y', box.h * 0.9 - dimPoly * 0.8)
+            .attr('width', dimPoly * 0.8)
+            .attr('height', dimPoly * 0.8)
             .attr('fill', color.background)
             .attr('stroke', color.stroke)
             .attr('stroke-width', data.obId === schedB.blocks[i].obId ? 1 : 0.2)
@@ -5615,7 +5941,7 @@ let mainSchedBlocksController = function (optIn) {
             .style('font-weight', '')
             .style('font-size', txtSize + 'px')
             .attr('text-anchor', 'middle')
-            .attr('transform', 'translate(' + ((box.w * 0.35) + (box.h * 0.75 * i) + (box.h * 0.6 * 0.5)) + ',' + (box.h * 0.6 + txtSize * 0.3) + ')')
+            .attr('transform', 'translate(' + ((box.w * 0.3) + (dimPoly * i) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.4 + txtSize * 0.3) + ')')
             .style('pointer-events', 'none')
         }
       }
@@ -5705,10 +6031,10 @@ let mainSchedBlocksController = function (optIn) {
           .attr('height', headerSize)
           .attr('fill', colorTheme.dark.stroke)
         let label = [
-          {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Date', anchor: 'start'},
-          {x: box.w * 0.5, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Start', anchor: 'start'},
-          {x: box.w * 0.65, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Duration', anchor: 'start'},
-          {x: box.w * 0.8, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'End', anchor: 'start'}
+          {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.2, text: 'Date', anchor: 'start'},
+          {x: box.w * 0.2, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Start', anchor: 'start'},
+          {x: box.w * 0.35, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Duration', anchor: 'start'},
+          {x: box.w * 0.5, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.5, text: 'End', anchor: 'start'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -5718,6 +6044,13 @@ let mainSchedBlocksController = function (optIn) {
             .style('font-size', txtSize + 'px')
             .attr('text-anchor', label[i].anchor)
             .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+          g.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', label[i].w)
+            .attr('height', box.h - headerSize - 4)
+            .attr('fill', i % 2 === 1 ? colorTheme.dark.background : colorTheme.darker.background)
+            .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
         }
 
         let startTime = new Date(shared.data.server.timeOfNight.date_start)
@@ -5732,14 +6065,14 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-weight', '')
           .style('font-size', txtSize + 'px')
           .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.15) + ',' + (3 + headerSize + txtSize * 1.3) + ')')
+          .attr('transform', 'translate(' + (box.w * 0.02) + ',' + (3 + headerSize + txtSize * 1.3) + ')')
         g.append('text')
-          .text(d3.timeFormat('%B %Y')(startTime))
+          .text(d3.timeFormat('%b %Y')(startTime))
           .style('fill', colorTheme.dark.stroke)
           .style('font-weight', '')
           .style('font-size', txtSize + 'px')
           .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.15) + ',' + (3 + headerSize + txtSize * 2.6) + ')')
+          .attr('transform', 'translate(' + (box.w * 0.02) + ',' + (3 + headerSize + txtSize * 2.6) + ')')
         // g.append('text')
         //   .text('GMT' + d3.timeFormat('%Z')(startTime))
         //   .style('fill', colorTheme.dark.stroke)
@@ -5769,7 +6102,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-weight', '')
           .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.5) + ',' + (box.h * 0.4 + headerSize) + ')')
+          .attr('transform', 'translate(' + (box.w * 0.2 + 4) + ',' + (3 + headerSize + txtSize * 1.3) + ')')
 
         // g.append('text')
         //   .text(data.duration + ' s')
@@ -5784,7 +6117,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-weight', '')
           .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.65) + ',' + (box.h * 0.4 + headerSize) + ')')
+          .attr('transform', 'translate(' + (box.w * 0.35 + 4) + ',' + (3 + headerSize + txtSize * 1.3) + ')')
 
         // g.append('text')
         //   .text(data.endTime + ' s')
@@ -5799,7 +6132,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-weight', '')
           .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.8) + ',' + (box.h * 0.4 + headerSize) + ')')
+          .attr('transform', 'translate(' + (box.w * 0.5 + 4) + ',' + (3 + headerSize + txtSize * 1.3) + ')')
       }
       function createPointingInformation () {
         let box = allBox.target
@@ -5807,7 +6140,7 @@ let mainSchedBlocksController = function (optIn) {
         let g = reserved.g.append('g')
           .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
         g.append('text')
-          .text('Pointing')
+          .text('Targets & pointings')
           .style('fill', colorTheme.dark.stroke)
           .style('font-weight', 'bold')
           .style('font-size', titleSize + 'px')
@@ -5823,13 +6156,14 @@ let mainSchedBlocksController = function (optIn) {
 
         g.append('rect')
           .attr('id', 'headerStrip')
-          .attr('x', 0)
+          .attr('x', box.h + headerSize * 0)
           .attr('y', 3)
-          .attr('width', box.w)
+          .attr('width', box.w - box.h - headerSize * 0)
           .attr('height', headerSize)
           .attr('fill', colorTheme.dark.stroke)
         let label = [
-          {x: (box.h + ((box.w - box.h) * 0.5)), y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Target/Pointing/Offset', anchor: 'middle'}
+          {x: (box.h + ((box.w - box.h) * 0.02)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.25), text: 'Links', anchor: 'start'},
+          {x: (box.h + ((box.w - box.h) * 0.25)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.75), text: 'Positions', anchor: 'start'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -5839,13 +6173,20 @@ let mainSchedBlocksController = function (optIn) {
             .style('font-size', txtSize + 'px')
             .attr('text-anchor', label[i].anchor)
             .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+          g.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', label[i].w)
+            .attr('height', box.h - headerSize)
+            .attr('fill', i % 2 === 1 ? colorTheme.dark.background : colorTheme.darker.background)
+            .attr('transform', 'translate(' + (i === 0 ? box.h : label[i].x) + ',' + (headerSize + 3) + ')')
         }
 
         g.append('rect')
           .attr('x', box.w * 0.0)
           .attr('y', 3)
-          .attr('width', box.h * 1)
-          .attr('height', box.h * 1)
+          .attr('width', box.h)
+          .attr('height', box.h)
           .attr('fill', colorTheme.bright.background)
           .attr('stroke', colorTheme.bright.stroke)
           .attr('stroke-width', 0.2)
@@ -5880,20 +6221,21 @@ let mainSchedBlocksController = function (optIn) {
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' + (box.h * 0.5 + 3 + offX) + ',' + ((data.pointingPos[1] < target.pos[1] ? -txtSize * 1.3 : txtSize * 1.3) + box.h * 0.5 + offY) + ')')
 
+        let height = box.w * 0.09
         g.append('rect')
-          .attr('x', box.h + headerSize)
-          .attr('y', box.h * 0.05 + headerSize * 1)
-          .attr('width', headerSize * 2)
-          .attr('height', headerSize * 2)
+          .attr('x', box.w * 0.48)
+          .attr('y', box.h * 0.15)
+          .attr('width', height)
+          .attr('height', height)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.medium.stroke)
-          .attr('stroke-width', 0.2)
+          .attr('stroke-width', 0.6)
           // .style('boxShadow', '10px 20px 30px black')
-          .attr('rx', 0)
+          .attr('rx', height)
           .on('click', function () {
             focusManager.focusOn('target', data.targetId)
           })
-          .on('mouseover', function () {
+          .on('mouseover', function (d) {
             d3.select(this).style('cursor', 'pointer')
             d3.select(this).attr('fill', colorTheme.darker.background)
           })
@@ -5902,78 +6244,122 @@ let mainSchedBlocksController = function (optIn) {
             d3.select(this).attr('fill', colorTheme.dark.background)
           })
         g.append('svg:image')
-          .attr('xlink:href', '/static/icons/target.svg')
-          .attr('width', headerSize * 1.5)
-          .attr('height', headerSize * 1.5)
-          .attr('x', box.h + headerSize * 1.25)
-          .attr('y', box.h * 0.05 + headerSize * 1.25)
-          .style('opacity', 0.6)
+          .attr('xlink:href', '/static/icons/round-target.svg')
+          .attr('width', height * 1)
+          .attr('height', height * 1)
+          .attr('x', box.w * 0.48)
+          .attr('y', box.h * 0.15)
+          .style('opacity', 0.5)
           .style('pointer-events', 'none')
         g.append('text')
-          .text('Target: ' + data.pointingName.split('/')[0])
-          .style('fill', colorTheme.dark.stroke)
+          .text('T' + data.pointingName.split('/')[0].split('_')[1])
+          .attr('x', box.w * 0.48 + height * 0.5)
+          .attr('y', box.h * 0.15 + height * 0.5 + txtSize * 0.3)
           .style('font-weight', 'bold')
-          .style('font-style', '')
-          .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'middle')
-          .style('text-decoration', '')
-          .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + box.h * 0.175 + ')')
+          .style('font-size', headerSize + 'px')
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+
+        g.append('rect')
+          .attr('x', box.w * 0.48)
+          .attr('y', box.h * 0.5)
+          .attr('width', height)
+          .attr('height', height)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 0.6)
+          // .style('boxShadow', '10px 20px 30px black')
+          .attr('rx', 0)
+          .on('click', function () {
+            focusManager.focusOn('target', data.targetId)
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).style('cursor', 'pointer')
+            d3.select(this).attr('fill', colorTheme.darker.background)
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).style('cursor', 'default')
+            d3.select(this).attr('fill', colorTheme.dark.background)
+          })
+        g.append('svg:image')
+          .attr('xlink:href', '/static/icons/square-target.svg')
+          .attr('width', height * 1)
+          .attr('height', height * 1)
+          .attr('x', box.w * 0.48)
+          .attr('y', box.h * 0.5)
+          .style('opacity', 0.5)
+          .style('pointer-events', 'none')
+        g.append('text')
+          .text('P' + data.pointingName.split('/')[1].split('_')[1])
+          .attr('x', box.w * 0.48 + height * 0.5)
+          .attr('y', box.h * 0.5 + height * 0.5 + txtSize * 0.3)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('font-size', headerSize + 'px')
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+
         g.append('text')
           .text(target.pos[0])
           .style('fill', colorTheme.dark.stroke)
           .style('font-weight', '')
           .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.175 + headerSize * 1.3) + ')')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.175 + headerSize * 0.5) + ')')
         g.append('text')
           .text(target.pos[1])
           .style('fill', colorTheme.dark.stroke)
           .style('font-weight', '')
           .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.175 + headerSize * 2.6) + ')')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.175 + headerSize * 2) + ')')
 
-        g.append('text')
-          .text('Pointing: ' + data.pointingName.split('/')[1])
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', 'bold')
-          .style('font-style', '')
-          .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'middle')
-          .style('text-decoration', '')
-          .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.7 - (headerSize * 2.6)) + ')')
+        // g.append('text')
+        //   .text('Pointing: ' + data.pointingName.split('/')[1])
+        //   .style('fill', colorTheme.dark.stroke)
+        //   .style('font-weight', 'bold')
+        //   .style('font-style', '')
+        //   .style('font-size', headerSize + 'px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('text-decoration', '')
+        //   .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.7 - (headerSize * 2.6)) + ')')
         g.append('text')
           .text(data.pointingPos[0])
           .style('fill', colorTheme.dark.stroke)
           .style('font-weight', '')
           .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.7 - (headerSize * 1.3)) + ')')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.55 + headerSize * 0.5) + ')')
         g.append('text')
           .text(data.pointingPos[1])
           .style('fill', colorTheme.dark.stroke)
           .style('font-weight', '')
           .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.7) + ')')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.55 + headerSize * 2) + ')')
 
-        g.append('text')
-          .text((data.pointingPos[0] - target.pos[0]) + ' A')
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-style', 'italic')
-          .style('font-size', txtSize + 'px')
-          .attr('text-anchor', 'middle')
-          .style('text-decoration', '')
-          .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.9) + ')')
-        g.append('text')
-          .text((data.pointingPos[1] - target.pos[1]) + ' B')
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-style', 'italic')
-          .style('font-size', txtSize * 1.0 + 'px')
-          .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.9 + headerSize * 1.3) + ')')
+        // g.append('text')
+        //   .text((data.pointingPos[0] - target.pos[0]) + ' A')
+        //   .style('fill', colorTheme.dark.stroke)
+        //   .style('font-weight', '')
+        //   .style('font-style', 'italic')
+        //   .style('font-size', txtSize + 'px')
+        //   .attr('text-anchor', 'middle')
+        //   .style('text-decoration', '')
+        //   .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.9) + ')')
+        // g.append('text')
+        //   .text((data.pointingPos[1] - target.pos[1]) + ' B')
+        //   .style('fill', colorTheme.dark.stroke)
+        //   .style('font-weight', '')
+        //   .style('font-style', 'italic')
+        //   .style('font-size', txtSize * 1.0 + 'px')
+        //   .attr('text-anchor', 'middle')
+        //   .attr('transform', 'translate(' + (box.h + ((box.w - box.h) * 0.5)) + ',' + (box.h * 0.9 + headerSize * 1.3) + ')')
       }
       function createTelescopeInformation () {
         let box = allBox.tels
@@ -5982,27 +6368,50 @@ let mainSchedBlocksController = function (optIn) {
           .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
         box.y = 0
         g.append('text')
-          .text('Telescopes list')
+          .text('Telescopes')
           .attr('x', box.w * 0.01)
-          .attr('y', box.y)
+          .attr('y', box.y + box.h)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
           .style('font-size', titleSize + 'px')
           .style('pointer-events', 'none')
           .attr('fill', colorTheme.dark.text)
           .attr('stroke', 'none')
-        box.y += 2
+        box.y -= 2 + titleSize
         g.append('line')
           .attr('x1', 0)
-          .attr('y1', box.y)
+          .attr('y1', box.y + box.h)
           .attr('x2', reserved.box.w)
-          .attr('y2', box.y)
+          .attr('y2', box.y + box.h)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
 
-        box.y += 1
+        box.y -= 1
+        // g.append('rect')
+        //   .attr('id', 'headerStrip')
+        //   .attr('x', 0)
+        //   .attr('y', box.y)
+        //   .attr('width', box.w)
+        //   .attr('height', headerSize)
+        //   .attr('fill', colorTheme.dark.stroke)
+        // let label = [
+        //   {x: box.w * 0.5, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Minimal < Current < Maximal', anchor: 'middle'}
+        // ]
+        // for (let i = 0; i < label.length; i++) {
+        //   g.append('text')
+        //     .text(label[i].text)
+        //     .style('fill', colorTheme.medium.background)
+        //     .style('font-weight', 'bold')
+        //     .style('font-size', txtSize + 'px')
+        //     .attr('text-anchor', label[i].anchor)
+        //     .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+        // }
+
+        // box.y += 21
+        // box.h -= 21
         let xx = box.w * 0.02
         let ww = box.w * 0.98
+        box.h -= titleSize * 1.5
         let largeBox = {
           x: xx,
           y: 0,
@@ -6033,7 +6442,7 @@ let mainSchedBlocksController = function (optIn) {
             background: {
               fill: colorTheme.medium.background,
               stroke: colorTheme.medium.stroke,
-              strokeWidth: 0.0
+              strokeWidth: 0
             },
             isSouth: isSouth,
             colorTheme: colorTheme
@@ -6059,7 +6468,7 @@ let mainSchedBlocksController = function (optIn) {
                 opt: {
                   telsPerRow: 1,
                   nbl: 0,
-                  size: 2.5,
+                  size: 2,
                   ratio: 1
                 },
                 box: largeBox
@@ -6069,7 +6478,7 @@ let mainSchedBlocksController = function (optIn) {
                 opt: {
                   telsPerRow: 4,
                   nbl: 0,
-                  size: 1.2,
+                  size: 1,
                   ratio: 1
                 },
                 box: mediumBox
@@ -6077,9 +6486,9 @@ let mainSchedBlocksController = function (optIn) {
               small: {
                 g: undefined,
                 opt: {
-                  telsPerRow: 9,
+                  telsPerRow: 8,
                   nbl: 0,
-                  size: 1,
+                  size: 0.5,
                   ratio: 1
                 },
                 box: smallBox
@@ -6105,7 +6514,7 @@ let mainSchedBlocksController = function (optIn) {
                 enabled: false
               },
               left: {
-                enabled: true
+                enabled: false
               }
             }
           },
@@ -6159,14 +6568,48 @@ let mainSchedBlocksController = function (optIn) {
           }
         })
         reserved.telescopeRunningBlock.init()
-        let tels = []
-        for (let i = 0; i < data.telIds.length; i++) {
-          tels.push(getTelescopeById(data.telIds[i]))
+        let tels = {
+          large: [],
+          medium: [],
+          small: []
         }
+        for (let i = 0; i < data.telIds.length; i++) {
+          let id = data.telIds[i]
+          if (id[0] === 'S') {
+            tels.small.push(getTelescopeById(id))
+          } else if (id[0] === 'M') {
+            tels.medium.push(getTelescopeById(id))
+          } else if (id[0] === 'L') {
+            tels.large.push(getTelescopeById(id))
+          }
+        }
+
+        g.append('text')
+          .text(tels.large.length)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', 'bold')
+          .style('font-size', titleSize + 'px')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (largeBox.x + largeBox.w * 0.5) + ',' + (box.y + box.h + headerSize + titleSize * 0.33) + ')')
+        g.append('text')
+          .text(tels.medium.length)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', 'bold')
+          .style('font-size', titleSize + 'px')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (mediumBox.x + mediumBox.w * 0.5) + ',' + (box.y + box.h + headerSize + titleSize * 0.33) + ')')
+        g.append('text')
+          .text(tels.small.length)
+          .style('fill', colorTheme.medium.text)
+          .style('font-weight', 'bold')
+          .style('font-size', titleSize + 'px')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (smallBox.x + smallBox.w * 0.5) + ',' + (box.y + box.h + headerSize + titleSize * 0.33) + ')')
+
         reserved.telescopeRunningBlock.updateData({
           data: {
             raw: {
-              telescopes: tels,
+              telescopes: [].concat(tels.small).concat(tels.medium).concat(tels.large),
               blocks: []// shared.data.server.blocks.run
             },
             modified: []
@@ -6198,7 +6641,7 @@ let mainSchedBlocksController = function (optIn) {
         blocks: {
           x: 0,
           y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.75,
+          h: reserved.box.h * 0.2,
           w: reserved.box.w
         },
         target: {
@@ -6212,17 +6655,18 @@ let mainSchedBlocksController = function (optIn) {
         let box = allBox.title
         let g = reserved.g.append('g')
           .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+        let height = box.h * 0.7
 
         g.append('rect')
           .attr('x', 0)
           .attr('y', 0)
-          .attr('width', box.h)
-          .attr('height', box.h)
+          .attr('width', height)
+          .attr('height', height)
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.medium.stroke)
-          .attr('stroke-width', 0.0)
+          .attr('stroke-width', 0.6)
           // .style('boxShadow', '10px 20px 30px black')
-          .attr('rx', 0)
+          .attr('rx', height)
           .on('click', function () {
             focusManager.focusOn('target', tar.id)
           })
@@ -6235,23 +6679,27 @@ let mainSchedBlocksController = function (optIn) {
             d3.select(this).attr('fill', colorTheme.dark.background)
           })
         g.append('svg:image')
-          .attr('xlink:href', '/static/icons/target.svg')
-          .attr('width', box.h * 0.8)
-          .attr('height', box.h * 0.8)
-          .attr('x', box.h * 0.1)
-          .attr('y', box.h * 0.1)
-          .style('opacity', 0.6)
+          .attr('xlink:href', '/static/icons/round-target.svg')
+          .attr('width', height * 1)
+          .attr('height', height * 1)
+          .attr('x', height * 0.0)
+          .attr('y', height * 0.5 - height * 0.5)
+          .style('opacity', 0.5)
           .style('pointer-events', 'none')
         g.append('text')
-          .text(tar.name)
-          .style('fill', colorTheme.dark.stroke)
+          .text('T' + tar.name.split('_')[1])
+          .attr('x', height * 0.5)
+          .attr('y', height * 0.5 + txtSize * 0.3)
           .style('font-weight', '')
-          .style('font-size', titleSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.h * 1.1) + ',' + (box.h * 0.5 + txtSize * 0.3) + ')')
+          .attr('text-anchor', 'middle')
+          .style('font-size', headerSize + 'px')
+          .attr('dy', 0)
           .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
       }
       function createAssociatedBlocks () {
+        reserved.target = {}
         let box = allBox.blocks
         let g = reserved.g.append('g')
           .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
@@ -6278,8 +6726,8 @@ let mainSchedBlocksController = function (optIn) {
           .attr('height', headerSize)
           .attr('fill', colorTheme.dark.stroke)
         let label = [
-          {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Sched', anchor: 'start'},
-          {x: box.w * 0.17, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Obs', anchor: 'start'}
+          {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.17, text: 'Sched', anchor: 'start'},
+          {x: box.w * 0.17, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.83, text: 'Obs', anchor: 'start'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -6289,7 +6737,19 @@ let mainSchedBlocksController = function (optIn) {
             .style('font-size', txtSize + 'px')
             .attr('text-anchor', label[i].anchor)
             .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+          g.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', label[i].w)
+            .attr('height', box.h)
+            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.darker.background)
+            .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
         }
+
+        let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (4 + headerSize) + ')')
+        reserved.target.scrollBox = initScrollBox('targetRessourceScroll', blockg, box, {enabled: false})
+        let innerg = reserved.target.scrollBox.get('innerG')
+
         let inter = createSchedBlocks(shared.data.server.blocks)
         let scheds = []
         for (let key in inter) {
@@ -6343,7 +6803,7 @@ let mainSchedBlocksController = function (optIn) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (line * i) + ',' + (offset) + ')')
+            g.attr('transform', 'translate(' + (4 + line * i) + ',' + (offset) + ')')
           })
           current
             .exit()
@@ -6366,6 +6826,13 @@ let mainSchedBlocksController = function (optIn) {
             .attr('class', 'sched')
           enter.each(function (d, i) {
             let g = d3.select(this)
+            g.append('rect')
+              .attr('x', -2)
+              .attr('y', -2)
+              .attr('width', box.w)
+              .attr('height', line)
+              .attr('fill', '#666666')
+              .attr('opacity', i % 2 === 0 ? 0 : 0.1)
             let dimPoly = line * 0.9
             let poly = [
               {x: dimPoly * 0.3, y: dimPoly * 0.0},
@@ -6391,7 +6858,7 @@ let mainSchedBlocksController = function (optIn) {
               })
               .attr('fill', colorTheme.dark.background)
               .attr('stroke', colorTheme.dark.stroke)
-              .attr('stroke-width', 0.2)
+              .attr('stroke-width', 0.8)
               .on('click', function () {
                 focusManager.focusOn('schedBlock', d.id)
               })
@@ -6415,7 +6882,7 @@ let mainSchedBlocksController = function (optIn) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (box.w * 0.01) + ',' + (offset + innerOffset + line * i) + ')')
+            g.attr('transform', 'translate(' + (box.w * 0.02) + ',' + (offset + innerOffset + line * i) + ')')
             // innerOffset += line
             blockCore(d.blocks, g, 0)
           })
@@ -6426,9 +6893,17 @@ let mainSchedBlocksController = function (optIn) {
             .style('opacity', 0)
             .remove()
         }
-
-        schedCore(scheds, g, 5 + titleSize)
+        schedCore(scheds, innerg, 0)
+        reserved.target.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: scheds.length * line})
+        blockg.append('line')
+          .attr('x1', box.x)
+          .attr('y1', box.h)
+          .attr('x2', box.w)
+          .attr('y2', box.h)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
       }
+
       function createPointingInformation () {
         let target = tar
         let box = allBox.target
@@ -6443,9 +6918,9 @@ let mainSchedBlocksController = function (optIn) {
           .attr('height', headerSize)
           .attr('fill', colorTheme.dark.stroke)
         let label = [
-          {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Target', anchor: 'start'},
-          {x: box.w * 0.33, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Pointing', anchor: 'start'},
-          {x: box.w * 0.66, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'offset', anchor: 'start'}
+          {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.33, text: 'Target', anchor: 'start'},
+          {x: box.w * 0.33, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.33, text: 'Pointing', anchor: 'start'},
+          {x: box.w * 0.66, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.34, text: 'offset', anchor: 'start'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -6455,10 +6930,17 @@ let mainSchedBlocksController = function (optIn) {
             .style('font-size', txtSize + 'px')
             .attr('text-anchor', label[i].anchor)
             .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+          g.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', label[i].w)
+            .attr('height', box.w * 0.19 - headerSize - 4)
+            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.darker.background)
+            .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
         }
 
         g.append('text')
-          .text('Pointing')
+          .text('Pointing:')
           .style('fill', colorTheme.dark.stroke)
           .style('font-weight', 'bold')
           .style('font-size', titleSize + 'px')
@@ -6472,70 +6954,9 @@ let mainSchedBlocksController = function (optIn) {
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
 
-        g.append('text')
-          .text(target.name)
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', 'bold')
-          .style('font-style', '')
-          .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.01) + ',' + (box.w * 0.075) + ')')
-        g.append('text')
-          .text(target.pos[0])
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', txtSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.01) + ',' + ((box.w * 0.075) + txtSize * 1.3) + ')')
-        g.append('text')
-          .text(target.pos[1])
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', txtSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.01) + ',' + ((box.w * 0.075) + txtSize * 2.6) + ')')
-
-        g.append('text')
-          .attr('id', 'pointingName')
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', 'bold')
-          .style('font-style', '')
-          .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.33) + ',' + (box.w * 0.075) + ')')
-        g.append('text')
-          .attr('id', 'pointingPosX')
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', txtSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.33) + ',' + ((box.w * 0.075) + txtSize * 1.3) + ')')
-        g.append('text')
-          .attr('id', 'pointingPosY')
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', txtSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.33) + ',' + ((box.w * 0.075) + txtSize * 2.6) + ')')
-
-        g.append('text')
-          .attr('id', 'offsetX')
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', txtSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.66) + ',' + ((box.w * 0.075) + txtSize * 1.3) + ')')
-        g.append('text')
-          .attr('id', 'offsetY')
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', txtSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (box.w * 0.66) + ',' + ((box.w * 0.075) + txtSize * 2.6) + ')')
-
         g.append('rect')
           .attr('x', box.w * 0.15)
-          .attr('y', 3 + box.w * 0.17)
+          .attr('y', 3 + box.w * 0.19)
           .attr('width', box.w * 0.7)
           .attr('height', box.w * 0.7)
           .attr('fill', colorTheme.bright.background)
@@ -6543,7 +6964,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('stroke-width', 0.2)
         let center = {
           x: box.w * 0.15 + box.w * 0.35,
-          y: 3 + box.w * 0.15 + box.w * 0.35
+          y: 3 + box.w * 0.19 + box.w * 0.35
         }
         g.append('text')
           .text('+')
@@ -6559,6 +6980,67 @@ let mainSchedBlocksController = function (optIn) {
           .style('font-size', txtSize + 'px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' + center.x + ',' + (center.y + txtSize * 1.3) + ')')
+
+        g.append('text')
+          .text(target.name)
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-style', '')
+          .style('font-size', headerSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.w * 0.01) + ',' + (box.w * 0.075) + ')')
+        g.append('text')
+          .text(target.pos[0])
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.w * 0.01) + ',' + ((box.w * 0.075) + txtSize * 1.6) + ')')
+        g.append('text')
+          .text(target.pos[1])
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.w * 0.01) + ',' + ((box.w * 0.075) + txtSize * 3.2) + ')')
+
+        g.append('text')
+          .attr('id', 'pointingName')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-style', '')
+          .style('font-size', headerSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.w * 0.33) + ',' + (box.w * 0.075) + ')')
+        g.append('text')
+          .attr('id', 'pointingPosX')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.w * 0.33) + ',' + ((box.w * 0.075) + txtSize * 1.6) + ')')
+        g.append('text')
+          .attr('id', 'pointingPosY')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.w * 0.33) + ',' + ((box.w * 0.075) + txtSize * 3.2) + ')')
+
+        g.append('text')
+          .attr('id', 'offsetX')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.w * 0.66) + ',' + ((box.w * 0.075) + txtSize * 1.6) + ')')
+        g.append('text')
+          .attr('id', 'offsetY')
+          .style('fill', colorTheme.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', txtSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (box.w * 0.66) + ',' + ((box.w * 0.075) + txtSize * 3.2) + ')')
 
         let targetData = {
           id: target.name,
@@ -6576,21 +7058,57 @@ let mainSchedBlocksController = function (optIn) {
           }
         }
 
+        let height = box.w * 0.09
+        g.append('rect')
+          .attr('x', box.w * 0.01)
+          .attr('y', box.w * 0.19 + 3)
+          .attr('width', height)
+          .attr('height', height)
+          .attr('fill', colorTheme.dark.background)
+          .attr('stroke', colorTheme.medium.stroke)
+          .attr('stroke-width', 0.6)
+          // .style('boxShadow', '10px 20px 30px black')
+          .attr('rx', height)
+          .on('click', function () {
+            focusManager.focusOn('target', targetData.id)
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).style('cursor', 'pointer')
+            d3.select(this).attr('fill', colorTheme.darker.background)
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).style('cursor', 'default')
+            d3.select(this).attr('fill', colorTheme.dark.background)
+          })
+        g.append('svg:image')
+          .attr('xlink:href', '/static/icons/round-target.svg')
+          .attr('width', height * 1)
+          .attr('height', height * 1)
+          .attr('x', box.w * 0.01)
+          .attr('y', box.w * 0.19 + 3)
+          .style('opacity', 0.5)
+          .style('pointer-events', 'none')
         g.append('text')
-          .text(targetData.id)
-          .style('fill', colorTheme.dark.stroke)
-          .style('font-weight', '')
+          .text('T' + targetData.id.split('/')[0].split('_')[1])
+          .attr('x', box.w * 0.01 + height * 0.5)
+          .attr('y', box.w * 0.19 + 3 + height * 0.5 + txtSize * 0.3)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
           .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + 0 + ',' + (3 + box.w * 0.17 + headerSize) + ')')
+          .attr('dy', 0)
+          .style('pointer-events', 'none')
+          .attr('fill', colorTheme.dark.text)
+          .attr('stroke', 'none')
+
         g.append('line')
           .attr('x1', 0)
-          .attr('y1', 3 + box.w * 0.17 + headerSize + 2)
-          .attr('x2', box.w * 0.135)
-          .attr('y2', 3 + box.w * 0.17 + headerSize + 2)
+          .attr('y1', 3 + box.w * 0.19 + height + 4)
+          .attr('x2', box.w * 0.14)
+          .attr('y2', 3 + box.w * 0.19 + height + 4)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
 
+        let offsetY = 3 + box.w * 0.19 + height + 6
         let current = g
           .selectAll('g.pointing')
           .data(targetData.pointing, function (d) {
@@ -6602,15 +7120,21 @@ let mainSchedBlocksController = function (optIn) {
           .attr('class', 'pointing')
         enter.each(function (d, i) {
           let ig = d3.select(this)
-          ig.attr('transform', 'translate(' + (headerSize * 2) + ',' + (3 + box.w * 0.17 + headerSize * 1 + 4 + titleSize * 1.5 * i) + ')')
+          ig.attr('transform', 'translate(' + (headerSize * 3) + ',' + (offsetY + titleSize * 2 * i) + ')')
+
           ig.append('rect')
             .attr('x', -box.w * 0.025)
             .attr('y', 0)
-            .attr('width', box.w * 0.1)
-            .attr('height', headerSize * 1.5)
+            .attr('width', headerSize * 2)
+            .attr('height', headerSize * 2)
             .attr('fill', colorTheme.dark.background)
-            .attr('stroke', colorTheme.dark.stroke)
-            .attr('stroke-width', 0.0)
+            .attr('stroke', colorTheme.medium.stroke)
+            .attr('stroke-width', 0.6)
+            // .style('boxShadow', '10px 20px 30px black')
+            .attr('rx', 0)
+            .on('click', function () {
+              focusManager.focusOn('target', targetData.id)
+            })
             .on('mouseover', function () {
               g.select('text#pointingName').text(d.id)
               g.select('text#pointingPosX').text(d.position[0])
@@ -6618,21 +7142,32 @@ let mainSchedBlocksController = function (optIn) {
 
               g.select('text#offsetX').text(d.position[0] - target.pos[0])
               g.select('text#offsetY').text(d.position[1] - target.pos[1])
-              // d3.select(this).style('cursor', 'pointer')
+              d3.select(this).style('cursor', 'pointer')
               d3.select(this).attr('fill', colorTheme.darker.background)
             })
             .on('mouseout', function () {
-              // d3.select(this).style('cursor', 'default')
+              d3.select(this).style('cursor', 'default')
               d3.select(this).attr('fill', colorTheme.dark.background)
             })
-          ig.append('text')
-            .attr('y', headerSize)
-            .text(d.id)
-            .style('fill', colorTheme.dark.stroke)
-            .style('font-weight', '')
-            .style('font-size', headerSize + 'px')
-            .attr('text-anchor', 'start')
+          ig.append('svg:image')
+            .attr('xlink:href', '/static/icons/square-target.svg')
+            .attr('width', headerSize * 2)
+            .attr('height', headerSize * 2)
+            .attr('x', -box.w * 0.025)
+            .attr('y', 0)
+            .style('opacity', 0.5)
             .style('pointer-events', 'none')
+          ig.append('text')
+            .text('P' + d.id.split('_')[1])
+            .attr('x', -box.w * 0.025 + headerSize * 2 * 0.5)
+            .attr('y', 0 + headerSize * 2 * 0.5 + txtSize * 0.3)
+            .style('font-weight', 'bold')
+            .attr('text-anchor', 'middle')
+            .style('font-size', headerSize + 'px')
+            .attr('dy', 0)
+            .style('pointer-events', 'none')
+            .attr('fill', colorTheme.dark.text)
+            .attr('stroke', 'none')
 
           let offX = (d.position[0] - target.pos[0]) * 12
           let offY = (d.position[1] - target.pos[1]) * 12
@@ -6660,15 +7195,6 @@ let mainSchedBlocksController = function (optIn) {
           .duration(timeD.animArc)
           .style('opacity', 0)
           .remove()
-
-        // g.append('text')
-        //   .text('Pointing:')
-        //   .style('fill', colorTheme.dark.stroke)
-        //   .style('font-weight', 'bold')
-        //   .style('font-style', '')
-        //   .style('font-size', headerSize + 'px')
-        //   .attr('text-anchor', 'start')
-        //   .attr('transform', 'translate(' + (box.w * 0.33) + ',' + (box.w * 0.075) + ')')
       }
       createTitle()
       createAssociatedBlocks()
@@ -6692,7 +7218,7 @@ let mainSchedBlocksController = function (optIn) {
         blocks: {
           x: 0,
           y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.75,
+          h: reserved.box.h * 0.87,
           w: reserved.box.w
         }
       }
@@ -6778,6 +7304,7 @@ let mainSchedBlocksController = function (optIn) {
           .attr('transform', 'translate(' + (box.w * 0.4) + ',' + (box.h * 0.6 + txtSize * 0.2) + ')')
       }
       function createAssociatedBlocks () {
+        reserved.telescope = {}
         let box = allBox.blocks
         let g = reserved.g.append('g')
           .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
@@ -6805,8 +7332,8 @@ let mainSchedBlocksController = function (optIn) {
           .attr('fill', colorTheme.dark.stroke)
         let label = [
           {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Targets', anchor: 'start'},
-          {x: box.w * 0.24, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Sched', anchor: 'start'},
-          {x: box.w * 0.4, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Obs', anchor: 'start'}
+          {x: box.w * 0.12, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Sched', anchor: 'start'},
+          {x: box.w * 0.23, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Obs', anchor: 'start'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -6817,6 +7344,10 @@ let mainSchedBlocksController = function (optIn) {
             .attr('text-anchor', label[i].anchor)
             .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
         }
+
+        let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+        reserved.telescope.scrollBox = initScrollBox('targetRessourceScroll', blockg, box, {enabled: false})
+        let innerg = reserved.telescope.scrollBox.get('innerG')
 
         let blocks = []
         for (let key in shared.data.server.blocks) {
@@ -6852,10 +7383,10 @@ let mainSchedBlocksController = function (optIn) {
             let g = d3.select(this)
             let color = shared.style.blockCol(d)
             g.append('rect')
-              .attr('x', box.w * 0.15)
-              .attr('y', line * 0.1)
+              .attr('x', 0)
+              .attr('y', 0)
               .attr('width', line * 0.95)
-              .attr('height', line * 0.8)
+              .attr('height', line * 0.95)
               .attr('fill', color.background)
               .attr('stroke', color.stroke)
               .attr('stroke-width', 0.1)
@@ -6876,13 +7407,13 @@ let mainSchedBlocksController = function (optIn) {
               .style('font-weight', 'bold')
               .style('font-size', headerSize + 'px')
               .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (box.w * 0.2) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+              .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
               .style('pointer-events', 'none')
           })
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (line * i) + ',' + (offset) + ')')
+            g.attr('transform', 'translate(' + (2 + line * (i + 1)) + ',' + (offset) + ')')
           })
           current
             .exit()
@@ -6905,7 +7436,7 @@ let mainSchedBlocksController = function (optIn) {
             .attr('class', 'sched')
           enter.each(function (d, i) {
             let g = d3.select(this)
-            let dimPoly = line * 0.9
+            let dimPoly = line * 0.95
             let poly = [
               {x: dimPoly * 0.3, y: dimPoly * 0.0},
               {x: dimPoly * 0.7, y: dimPoly * 0.0},
@@ -6930,7 +7461,7 @@ let mainSchedBlocksController = function (optIn) {
               })
               .attr('fill', colorTheme.dark.background)
               .attr('stroke', colorTheme.dark.stroke)
-              .attr('stroke-width', 0.2)
+              .attr('stroke-width', 0.8)
               .on('click', function () {
                 focusManager.focusOn('schedBlock', d.id)
               })
@@ -6954,8 +7485,8 @@ let mainSchedBlocksController = function (optIn) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (box.w * 0.24) + ',' + (offset + innerOffset + line * i) + ')')
-            offsetY += line
+            g.attr('transform', 'translate(' + (box.w * 0.12) + ',' + (offset + innerOffset + line * i) + ')')
+            offsetY += line * 0.85
             // innerOffset += line
             blockCore(d.blocks, g, 0)
           })
@@ -6967,7 +7498,7 @@ let mainSchedBlocksController = function (optIn) {
             .remove()
         }
 
-        let current = g
+        let current = innerg
           .selectAll('g.targ')
           .data(targs, function (d) {
             return d.target.id
@@ -6982,13 +7513,13 @@ let mainSchedBlocksController = function (optIn) {
           g.append('rect')
             .attr('x', 0)
             .attr('y', 0)
-            .attr('width', line * 1)
+            .attr('width', line)
             .attr('height', line)
             .attr('fill', colorTheme.dark.background)
             .attr('stroke', colorTheme.medium.stroke)
-            .attr('stroke-width', 0.1)
+            .attr('stroke-width', 0.6)
             // .style('boxShadow', '10px 20px 30px black')
-            .attr('rx', 0)
+            .attr('rx', line)
             .on('click', function () {
               focusManager.focusOn('target', d.target.id)
             })
@@ -7001,21 +7532,24 @@ let mainSchedBlocksController = function (optIn) {
               d3.select(this).attr('fill', colorTheme.dark.background)
             })
           g.append('svg:image')
-            .attr('xlink:href', '/static/icons/target.svg')
-            .attr('width', line * 0.8)
-            .attr('height', line * 0.8)
-            .attr('x', line * 0.1)
-            .attr('y', line * 0.1)
-            .style('opacity', 0.6)
+            .attr('xlink:href', '/static/icons/round-target.svg')
+            .attr('width', line * 1)
+            .attr('height', line * 1)
+            .attr('x', line * 0.0)
+            .attr('y', line * 0.5 - line * 0.5)
+            .style('opacity', 0.5)
             .style('pointer-events', 'none')
           g.append('text')
-            .text(d.target.name)
-            .style('fill', colorTheme.dark.stroke)
+            .text('T' + d.target.name.split('_')[1])
+            .attr('x', line * 0.5)
+            .attr('y', line * 0.5 + txtSize * 0.3)
             .style('font-weight', '')
-            .style('font-size', titleSize + 'px')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(' + (line * 1.1) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+            .attr('text-anchor', 'middle')
+            .style('font-size', headerSize + 'px')
+            .attr('dy', 0)
             .style('pointer-events', 'none')
+            .attr('fill', colorTheme.dark.text)
+            .attr('stroke', 'none')
         })
         let merge = current.merge(enter)
         merge.each(function (d, i) {
@@ -7030,6 +7564,15 @@ let mainSchedBlocksController = function (optIn) {
           .duration(timeD.animArc)
           .style('opacity', 0)
           .remove()
+
+        reserved.telescope.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: line * inter.length})
+        blockg.append('line')
+          .attr('x1', box.x)
+          .attr('y1', box.h)
+          .attr('x2', box.w)
+          .attr('y2', box.h)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
       }
 
       createTitle()

@@ -2242,7 +2242,7 @@ function mainSchedBlocks (optIn) {
             large: {
               g: undefined,
               opt: {
-                telsPerRow: 2,
+                telsPerRow: 1,
                 nbl: 0,
                 size: 2,
                 ratio: 1
@@ -2252,7 +2252,7 @@ function mainSchedBlocks (optIn) {
             medium: {
               g: undefined,
               opt: {
-                telsPerRow: 6,
+                telsPerRow: 5,
                 nbl: 0,
                 size: 1.3,
                 ratio: 1
@@ -2262,7 +2262,7 @@ function mainSchedBlocks (optIn) {
             small: {
               g: undefined,
               opt: {
-                telsPerRow: 14,
+                telsPerRow: 10,
                 nbl: 0,
                 size: 1,
                 ratio: 1
