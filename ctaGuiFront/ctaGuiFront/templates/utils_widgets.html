@@ -44,7 +44,7 @@
           </div>
         </app-header-layout>
       </app-drawer>
-      
+
       <!-- ==================================================================================================== -->
       <!-- Left Navigation content -->
       <!-- ==================================================================================================== -->
@@ -105,7 +105,7 @@
                         <paper-item class="iconListItem" onclick="window.location.href='logout'">
                           <iron-icon icon="social:person"></iron-icon> Log out / switch user
                         </paper-item>
-                    </paper-listbox> 
+                    </paper-listbox>
                   </iron-collapse>
 
                 </div>
@@ -124,9 +124,9 @@
       <app-header-layout has-scrolling-region force-narrow>
         <app-header slot="header" fixed>
           <app-toolbar  class="drawerToolbar">
-            
+
             <div class="horizEle" style="width: 100%;">
-              
+
               <div class="buttonRow primaryColFab">
                 <paper-fab mini icon="menu" id="togDrawerPanel0" on-click=tog_paperDrawerPanel0></paper-fab>
               </div>
@@ -136,7 +136,7 @@
               <div class="flexEle"></div>
 
               <div class="menuHeader" id="userNameDiv"></div>
-              
+
               <div id="connectStatusDiv" style="opacity: 0">
                   <div id="connectStatusDiv_txt" class="horizEle centJustEle">?</div>
                   <div id="connectStatusDiv_tog" class="horizEle centJustEle">
@@ -189,7 +189,7 @@
   <!-- ==================================================================================================== -->
   <!--  -->
   <!-- ==================================================================================================== -->
-  <script> 
+  <script>
     class BaseApp extends Polymer.Element {
       static get is() { return 'base-app' }
 
@@ -222,7 +222,7 @@
         var widgetName = this.widgetName;
 
         if(widgetName === "notFound") console.warn('ready(base-app)...',widgetName);
-        
+
         var divApp0 = document.createElement(this.getMainName());
         divApp0.id  = this.getMainName();
         Polymer.dom(this.shadowRoot.querySelector("#addMainDiv")).appendChild(divApp0);
@@ -279,7 +279,7 @@
       }
       // getMainName()   { return String(this.widgetName+"-main"); }
       // getDrawerName() { return String(this.widgetName+"-my-drawer").toLowerCase(); }
-      
+
       main()   { return this.shadowRoot.querySelector("#"+this.getMainName());   }
       drawer() { return this.shadowRoot.querySelector("#"+this.getDrawerName()); }
       getEle(tag) { return this.shadowRoot.querySelector("#"+tag); }
@@ -472,7 +472,7 @@
       _ready() {
         this.widget = null;
         // this.collapseId = this.unique();
-        
+
         // for debugging.....
         var _this = this;
         setTimeout(function() {
@@ -493,7 +493,7 @@
         // ------------------------------------------------------------------------
 
         // notify the outside that this function has completed
-        this.dispatchEvent(new CustomEvent('widget-drawer-ready', { bubbles:true, composed:true, detail:{} })) 
+        this.dispatchEvent(new CustomEvent('widget-drawer-ready', { bubbles:true, composed:true, detail:{} }))
 
         return;
       }

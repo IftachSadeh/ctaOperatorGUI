@@ -13,7 +13,6 @@
 /* global BlockForm */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
-loadScript({ source: 'utils_scrollTable', script: '/js/utils_blockForm.js' })
 
 // ---------------------------------------------------------------------------------------------------
 //
@@ -1803,8 +1802,7 @@ window.BlockDisplayer = function (optIn) {
           if (bbox.x < minX) minX = bbox.x
           if (bbox.width > maxWidth) maxWidth = bbox.width
         }
-        let ww = com.blockQueue2.schedBlocks.label.size
-        ww = ww ? ww : maxWidth
+        let ww = com.blockQueue2.schedBlocks.label.size ? com.blockQueue2.schedBlocks.label.size : maxWidth
         let poly = [
           {x: minX, y: 0},
           {x: minX + ww * 0.85, y: 0},
@@ -1835,8 +1833,7 @@ window.BlockDisplayer = function (optIn) {
         .each(function (d, i) {
           d.blocks = setDefaultStyleForBlocks(d.blocks)
           setBlockRect(d.blocks, {x: 0, y: (height * i), w: com.main.box.w, h: height})
-          let ww = com.blockQueue2.schedBlocks.label.size
-          ww = ww ? ww : maxWidth
+          let ww = com.blockQueue2.schedBlocks.label.size ? com.blockQueue2.schedBlocks.label.size : maxWidth
           let poly = [
             {x: minX, y: 0},
             {x: minX + ww * 0.85, y: 0},

@@ -36,9 +36,9 @@ var mainScriptTag = 'schedBlocks'
 /* global telHealthCol */
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollGrid.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_telescopeDisplayer.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockDisplayer.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_eventDisplayer.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/telescopes/utils_telescopeDisplayer.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_blockDisplayer.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/events/utils_eventDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotBrushZoom.js' })
 // ---------------------------------------------------------------------------------------------------
