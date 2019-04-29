@@ -212,10 +212,11 @@ window.TelescopeDisplayer = function (optIn) {
         .attr('text-anchor', 'middle')
         .attr('opacity', 0)
 
+      let transY = !com.gridBib.header.top ? 0 : (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0)
       com.gridBib.back.append('rect')
         .attr('id', 'name')
         .attr('x', 0)
-        .attr('y', (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0))
+        .attr('y', transY)
         .attr('width', com.main.box.w)
         .attr('height', com.gridBib.header.background.height)
         .attr('fill', com.gridBib.header.background.color)
@@ -228,7 +229,7 @@ window.TelescopeDisplayer = function (optIn) {
         .style('font-size', com.gridBib.header.text.size + 'px')
         .attr('text-anchor', 'middle')
         .attr('y', com.gridBib.header.background.height * 0.5 + com.gridBib.header.text.size * 0.33)
-        .attr('transform', 'translate(' + (com.gridBib.telescope.large.box.w * 0.5) + ',' + (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0) + ')')
+        .attr('transform', 'translate(' + (com.gridBib.telescope.large.box.w * 0.5) + ',' + transY + ')')
       com.gridBib.telescope.medium.g.append('text')
         .attr('id', 'title')
         .text('Medium')
@@ -237,7 +238,7 @@ window.TelescopeDisplayer = function (optIn) {
         .style('font-size', com.gridBib.header.text.size + 'px')
         .attr('text-anchor', 'middle')
         .attr('y', com.gridBib.header.background.height * 0.5 + com.gridBib.header.text.size * 0.33)
-        .attr('transform', 'translate(' + (com.gridBib.telescope.medium.box.w * 0.5) + ',' + (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0) + ')')
+        .attr('transform', 'translate(' + (com.gridBib.telescope.medium.box.w * 0.5) + ',' + transY + ')')
       if (com.main.isSouth) {
         com.gridBib.telescope.small.g.append('text')
           .attr('id', 'title')
@@ -247,7 +248,7 @@ window.TelescopeDisplayer = function (optIn) {
           .style('font-size', com.gridBib.header.text.size + 'px')
           .attr('text-anchor', 'middle')
           .attr('y', com.gridBib.header.background.height * 0.5 + com.gridBib.header.text.size * 0.33)
-          .attr('transform', 'translate(' + (com.gridBib.telescope.small.box.w * 0.5) + ',' + (-com.gridBib.header.background.height + com.gridBib.telescope.large.box.h * 1.0) + ')')
+          .attr('transform', 'translate(' + (com.gridBib.telescope.small.box.w * 0.5) + ',' + transY + ')')
       }
     }
     this.init = init
@@ -502,9 +503,10 @@ window.TelescopeDisplayer = function (optIn) {
       com.gridBib.maxHeight = com.main.box.h - com.gridBib.header.background.height
       computeSizeRows()
 
+      let transY = !com.gridBib.header.top ? com.gridBib.header.background.height : 0
       let offset = {
         x: 0,
-        y: 0// com.gridBib.header.background.height
+        y: transY
       }
 
       if (com.gridBib.telescope.enabled) {
@@ -624,7 +626,7 @@ window.TelescopeDisplayer = function (optIn) {
         })
         offset = {
           x: 0,
-          y: 0// com.gridBib.header.background.height
+          y: transY
         }
         let merge = current.merge(enter)
         merge.each(function (d, i) {
@@ -681,7 +683,7 @@ window.TelescopeDisplayer = function (optIn) {
 
         offset = {
           x: 0,
-          y: 0// com.gridBib.header.background.height
+          y: transY
         }
         for (let i = 0; i < com.data.raw.blocks.length; i++) {
           let sizeRow = com.gridBib.maxHeight * com.data.raw.blocks[i].rowHeight

@@ -51,7 +51,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 6
+  let h0 = 8
   let w0 = 12
   let divKey = 'main'
 
@@ -469,6 +469,8 @@ let mainSchedBlocksController = function (optIn) {
     svgBrush.updateData()
     svgRightInfo.update()
 
+    console.log(getBlocksData());
+
     locker.remove('updateData')
   }
   function updateData (dataIn) {
@@ -829,13 +831,18 @@ let mainSchedBlocksController = function (optIn) {
   }
   function switchMainMode () {
     if (shared.mode === 'inspector') {
+      // svg.svg.style('background', colorTheme.medium.background)
+      // svg.back.selectAll('rect').attr('fill', colorTheme.darker.stroke)
       shared.data.copy = undefined
       svg.g.select('rect#createNewSchedButton').remove()
       svgBrush.translateTo(box.brushZoom.x, box.brushZoom.y)
     } else if (shared.mode === 'modifier') {
+      // svg.svg.style('background', '#CFD8DC')
+      // svg.back.selectAll('rect').attr('fill', '#37474F')
+      let cp = deepCopy(shared.data.server.blocks)
       shared.data.copy = {
-        blocks: deepCopy(shared.data.server.blocks),
-        schedBlocks: deepCopy(shared.data.server.schedBlocks)
+        blocks: cp,
+        schedBlocks: createSchedBlocks(cp)
       }
       svgBrush.translateTo(box.brushZoom.x, box.brushZoom.y + 16)
       svg.g.append('rect')

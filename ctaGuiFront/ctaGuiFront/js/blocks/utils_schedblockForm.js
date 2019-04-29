@@ -103,6 +103,91 @@ window.SchedblockForm = function (optIn) {
   }
   this.update = update
 
+  function changeBlockTime (block, type, hour, min, sec) {
+    console.log('change', type);
+    let startTime = new Date(com.data.timeOfNight.date_start)
+    let endTime = new Date(com.data.timeOfNight.date_end)
+    switch (type) {
+      case 'startTime':
+        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
+          endTime.setHours(Number(hour))
+          endTime.setMinutes(Number(min))
+          endTime.setSeconds(Number(sec))
+        } else {
+          endTime = new Date(com.data.timeOfNight.date_start)
+          endTime.setHours(Number(hour))
+          endTime.setMinutes(Number(min))
+          endTime.setSeconds(Number(sec))
+        }
+        block.startTime = (endTime - startTime) / 1000
+        block.endTime = block.startTime + block.duration
+        break
+      case 'duration':
+        block.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec)
+        block.endTime = block.startTime + block.duration
+        console.log(block);
+        break
+      case 'endTime':
+        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
+          endTime.setHours(Number(hour))
+          endTime.setMinutes(Number(min))
+          endTime.setSeconds(Number(sec))
+        } else {
+          endTime = new Date(com.data.timeOfNight.date_start)
+          endTime.setHours(Number(hour))
+          endTime.setMinutes(Number(min))
+          endTime.setSeconds(Number(sec))
+        }
+        block.endTime = (endTime - startTime) / 1000
+        block.duration = block.endTime - block.startTime
+        break
+      default:
+        return
+    }
+
+    function updateTime (id, time) {
+      let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
+      let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
+      let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
+
+      let current = com.schedule.scrollBox.get('innerG')
+        .selectAll('g.block')
+        .data([block], function (d) {
+          return d.obId
+        })
+      current.each(function () {
+        let g = d3.select(this).select('g#' + id)
+        g.select('#hour').select('input').property('value', hour)
+        g.select('#minute').select('input').property('value', min)
+        g.select('#second').select('input').property('value', sec)
+      })
+    }
+
+    startTime = new Date(com.data.timeOfNight.date_start)
+    startTime.setSeconds(startTime.getSeconds() + block.startTime)
+    endTime = new Date(com.data.timeOfNight.date_start)
+    endTime.setSeconds(endTime.getSeconds() + block.startTime + block.duration)
+    let duration = new Date(endTime)
+    duration.setHours(duration.getHours() - startTime.getHours())
+    duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
+    duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
+
+    updateTime('startTime', startTime)
+    updateTime('duration', duration)
+    updateTime('endTime', endTime)
+  }
+  function changeState (newState) {
+    com.data.block.exeState.state = newState
+  }
+  function changeTarget (newTarget) {
+    let save = com.data.block.pointingName.split('/')[1]
+    com.data.block.pointingName = newTarget + '/' + save
+  }
+  function changePointing (newPointing) {
+    let save = com.data.block.pointingName.split('/')[0]
+    com.data.block.pointingName = save + '/' + newPointing
+  }
+
   function initScrollBox (tag, g, box, background) {
     if (background.enabled) {
       g.append('rect')
@@ -264,21 +349,22 @@ window.SchedblockForm = function (optIn) {
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.12, text: 'Blocks', anchor: 'start'},
-      {x: box.w * 0.12, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'State', anchor: 'start'},
-      {x: box.w * 0.25, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'Start', anchor: 'start'},
-      {x: box.w * 0.42, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'Duration', anchor: 'start'},
-      {x: box.w * 0.6, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'End', anchor: 'start'},
-      {x: box.w * 0.78, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.22, text: 'Pointing', anchor: 'start'}
+      {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.09, text: 'Blocks', anchor: 'middle'},
+      {x: box.w * 0.09, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.19, text: 'State', anchor: 'middle'},
+      {x: box.w * 0.28, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.17, text: 'Start', anchor: 'middle'},
+      {x: box.w * 0.45, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.0, text: '', anchor: 'middle'},
+      {x: box.w * 0.45, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'End', anchor: 'middle'},
+      {x: box.w * 0.63, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.36, text: 'Pointing', anchor: 'middle'}
     ]
     for (let i = 0; i < label.length; i++) {
+      let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
       g.append('text')
         .text(label[i].text)
         .style('fill', colorPalette.medium.background)
         .style('font-weight', 'bold')
         .style('font-size', txtSize + 'px')
         .attr('text-anchor', label[i].anchor)
-        .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+        .attr('transform', 'translate(' + (label[i].x + off) + ',' + (label[i].y) + ')')
       g.append('rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -314,7 +400,7 @@ window.SchedblockForm = function (optIn) {
         .attr('width', box.w)
         .attr('height', line + 2)
         .attr('fill', '#000000')
-        .attr('opacity', i % 2 === 1 ? 0 : 0.1)
+        .attr('opacity', i % 2 === 1 ? 0 : 0.05)
 
       g.append('rect')
         .attr('x', 0)
@@ -344,53 +430,60 @@ window.SchedblockForm = function (optIn) {
         .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
         .style('pointer-events', 'none')
 
-      function drawTime (id, x, y, time) {
+      function drawTime (id, x, w, y, time) {
         let stock = {}
         let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
         let hbox = {
           x: x,
           y: y,
-          w: 12.5,
+          w: 14,
           h: headerSize * 2
         }
         let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
         let mbox = {
           x: x + 16,
           y: y,
-          w: 12.5,
+          w: 14,
           h: headerSize * 2
         }
         let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
         let sbox = {
           x: x + 32,
           y: y,
-          w: 12.5,
+          w: 14,
           h: headerSize * 2
         }
-        stock.hour = inputNumber(g,
+
+        let ig = g.append('g').attr('id', id)
+          .attr('transform', 'translate(' + ((w - (14 * 3)) * 0.33) + ',0)')
+
+        stock.hour = inputDate(ig,
           hbox,
-          {value: hour, min: 0, max: 23, step: 1},
-          {change: (d) => { changeBlockTime(id, 'hour', d) }, enter: (d) => { stock.minute.node().focus() }})
-        g.append('text')
+          'hour',
+          {value: hour, min: 0, max: 23, step: 1, 'button-disabled': false},
+          {change: (e) => { changeBlockTime(d, id, e, stock.minute.property('value'), stock.second.property('value')) }, enter: (d) => { stock.minute.node().focus() }})
+        ig.append('text')
           .text(':')
           .style('fill', colorPalette.dark.stroke)
           .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5) + ',' + (y + headerSize * 1.1) + ')')
-        stock.minute = inputNumber(g,
+        stock.minute = inputDate(ig,
           mbox,
-          {value: min, min: 0, max: 60, step: 1},
-          {change: (d) => { changeBlockTime(id, 'minute', d) }, enter: (d) => { stock.second.node().focus() }})
-        g.append('text')
+          'minute',
+          {value: min, min: 0, max: 60, step: 1, 'button-disabled': false},
+          {change: (e) => { changeBlockTime(d, id, stock.hour.property('value'), e, stock.second.property('value')) }, enter: (d) => { stock.second.node().focus() }})
+        ig.append('text')
           .text(':')
           .style('fill', colorPalette.dark.stroke)
           .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5) + ',' + (y + headerSize * 1.1) + ')')
-        stock.second = inputNumber(g,
+        stock.second = inputDate(ig,
           sbox,
-          {value: sec, min: 0, max: 60, step: 1},
-          {change: (d) => { changeBlockTime(id, 'second', d) }, enter: (d) => { stock.second.node().blur() }})
+          'second',
+          {value: sec, min: 0, max: 60, step: 1, 'button-disabled': false},
+          {change: (e) => { changeBlockTime(d, id, stock.hour.property('value'), stock.minute.property('value'), e) }, enter: (d) => { stock.second.node().blur() }})
       }
 
       let startTime = new Date(com.data.timeOfNight.date_start)
@@ -402,25 +495,44 @@ window.SchedblockForm = function (optIn) {
       duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
       duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
 
-      g.append('text')
-        .text(d.exeState.state)
-        .style('fill', colorPalette.dark.stroke)
-        .style('font-weight', '')
-        .style('font-size', titleSize + 'px')
-        .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (label[1].x) + ',' + (0 + txtSize * 1.3) + ')')
+      let sbox = {
+        x: label[1].x,
+        y: 0,
+        w: label[1].w,
+        h: headerSize * 2
+      }
+      dropDownDiv(g,
+        sbox,
+        'state',
+        {disabled: false, value: d.exeState.state, options: ['done', 'fail', 'cancel', 'wait', 'run']},
+        {change: (e) => { changeState(d, e) }, enter: (e) => { changeState(d, e) }})
 
-      drawTime('startTime', label[2].x, 0, startTime)
-      drawTime('duration', label[3].x, 0, duration)
-      drawTime('endTime', label[4].x, 0, endTime)
+      drawTime('startTime', label[2].x, label[2].w, 0, startTime)
+      // drawTime('duration', label[3].x, label[3].w, 0, duration)
+      drawTime('endTime', label[4].x, label[4].w, 0, endTime)
 
-      g.append('text')
-        .text(d.pointingName)
-        .style('fill', colorPalette.dark.stroke)
-        .style('font-weight', '')
-        .style('font-size', headerSize + 'px')
-        .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (label[5].x) + ',' + (line * 0.5 + headerSize * 0.3) + ')')
+      let tbox = {
+        x: label[5].x,
+        y: 0,
+        w: label[5].w * 0.5,
+        h: headerSize * 2
+      }
+      dropDownDiv(g,
+        tbox,
+        'target',
+        {disabled: false, value: d.pointingName.split('/')[0], options: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5', 'trg_6', 'trg_7']},
+        {change: (e) => { changeTarget(d, e) }, enter: (e) => { changeTarget(d, e) }})
+      let pbox = {
+        x: label[5].x + label[5].w * 0.5,
+        y: 0,
+        w: label[5].w * 0.5,
+        h: headerSize * 2
+      }
+      dropDownDiv(g,
+        pbox,
+        'pointing',
+        {disabled: false, value: d.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
+        {change: (e) => { changePointing(d, e) }, enter: (e) => { changePointing(d, e) }})
     })
     let merge = current.merge(enter)
     merge.each(function (d, i) {
@@ -793,23 +905,25 @@ window.SchedblockForm = function (optIn) {
     //   .attr('transform', 'translate(' + (box.w * 0.33) + ',' + (box.w * 0.075) + ')')
   }
 
-  function inputNumber (g, box, optIn, events) {
-    com.component = {}
-    com.component.fo = g.append('foreignObject')
+  function inputDate (g, box, id, optIn, events) {
+    let fo = g.append('foreignObject')
       .attr('width', box.w + 'px')
       .attr('height', box.h + 'px')
       .attr('x', box.x + 'px')
       .attr('y', box.y + 'px')
-    com.component.rootDiv = com.component.fo.append('xhtml:div')
+    let rootDiv = fo.append('xhtml:div')
       .attr('class', 'quantity')
+      .attr('id', id)
       .style('width', '100%')
       .style('height', '100%')
-    let input = com.component.rootDiv.append('input')
+    let input = rootDiv.append('input')
       .attr('type', 'number')
       .attr('min', function (d) { return optIn.min })
       .attr('max', function (d) { return optIn.max })
       .attr('step', function (d) { return optIn.step })
-      .style('font-size', headerSize + 'px')
+      .style('font-size', 11 + 'px')
+      // .style('display', 'inline-block')
+      // .style('color', '#000000')
       .style('background', 'transparent')
     input.property('value', function () {
       return optIn.value
@@ -845,9 +959,9 @@ window.SchedblockForm = function (optIn) {
         events.enter(input.property('value'))
       }
     })
-    let nav = com.component.rootDiv.append('div')
+    if (optIn['button-disabled']) return
+    let nav = rootDiv.append('div')
       .attr('class', 'quantity-nav')
-      .style('opacity', 0.1)
     nav.append('div')
       .attr('class', 'quantity-button quantity-down')
       .html('-')
@@ -884,5 +998,73 @@ window.SchedblockForm = function (optIn) {
       })
 
     return input
+  }
+  function dropDownDiv (g, box, id, optIn, events) {
+    let fo = g.append('foreignObject')
+      .attr('width', box.w + 'px')
+      .attr('height', box.h + 'px')
+      .attr('x', box.x + 'px')
+      .attr('y', box.y + 'px')
+    let rootDiv = fo.append('xhtml:div')
+      .attr('id', id)
+      .attr('class', 'dropdown')
+      .style('color', '#000000')
+    if (optIn.disabled) {
+      rootDiv.html(optIn.value)
+      return
+    }
+    // div.on('mouseover', function (d) {
+    //   if (d.event.mouseover) {
+    //     div.style('background', function (d) {
+    //       return (d.style && d.style.color) ? d3.color(d.style.color).darker(0.4) : d3.color(colorTheme.brighter.background).darker(0.4)
+    //     })
+    //     d.event.mouseover(d)
+    //   }
+    // })
+    // div.on('mouseout', function (d) {
+    //   if (d.event.mouseout) {
+    //     div.style('background', function (d) {
+    //       return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
+    //     })
+    //     d.event.mouseout(d)
+    //   }
+    // })
+
+    // div.attr('class', 'divForm dropDownDiv')
+    // let d = div.data()[0]
+    // div.append('label')
+    //   .attr('class', 'key')
+    //   .html(function (d) { return d.key })
+    //   .attr('id', 'key')
+    //   .style('display', 'inline-block')
+    //   .style('color', '#000000')
+    //   // .style('font-size', 10 + 'px')
+    //   .style('background', 'transparent')
+    //   // .style('margin-left', '6px')
+    // div.append('label')
+    //   .attr('class', 'dot')
+    //   .attr('id', 'dot')
+    //   .html(' : ')
+    //   .style('display', 'inline-block')
+    //   .style('color', '#000000')
+    //   // .style('font-size', 10 + 'px')
+    //   .style('background', 'transparent')
+
+    let selector = rootDiv.append('select')
+      .style('width', '100%')
+      .style('height', '100%')
+      .style('box-shadow', '0 0 0 0.1pt #eeeeee inset')
+      .on('change', function (d) {
+        events.change(selector.property('value'))
+      })
+    selector.selectAll('option')
+      .data(optIn.options)
+      .enter()
+      .append('option')
+      .text(function (d) { return d })
+    selector.property('value', function () {
+      return optIn.value
+    })
+    // if (!d.editable) selector.attr('disabled', true)
   }
 }

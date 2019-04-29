@@ -1,4 +1,5 @@
 /* global d3 */
+/* global $ */
 /* global blockStyle */
 /* global loadScript */
 /* global colorPalette */
@@ -105,6 +106,7 @@ window.ObsblockForm = function (optIn) {
   this.update = update
 
   function changeBlockTime (type, hour, min, sec) {
+    console.log(type, hour, min, sec);
     let startTime = new Date(com.data.timeOfNight.date_start)
     let endTime = new Date(com.data.timeOfNight.date_end)
     switch (type) {
@@ -123,7 +125,7 @@ window.ObsblockForm = function (optIn) {
         com.data.block.endTime = com.data.block.startTime + com.data.block.duration
         break
       case 'duration':
-        com.data.block.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec) * 60
+        com.data.block.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec)
         com.data.block.endTime = com.data.block.startTime + com.data.block.duration
         break
       case 'endTime':
@@ -138,12 +140,48 @@ window.ObsblockForm = function (optIn) {
           endTime.setSeconds(Number(sec))
         }
         com.data.block.endTime = (endTime - startTime) / 1000
-        com.data.block.duration = com.data.block.endTime + com.data.block.startTime
+        com.data.block.duration = com.data.block.endTime - com.data.block.startTime
         break
       default:
         return
     }
-    console.log(type, hour, min, sec)
+
+    function updateTime (id, time) {
+      let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
+      let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
+      let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
+
+      let g = com.main.g.select('g#' + id)
+      console.log(g);
+
+      g.select('#hour').select('input').property('value', hour)
+      g.select('#minute').select('input').property('value', min)
+      g.select('#second').select('input').property('value', sec)
+    }
+
+    startTime = new Date(com.data.timeOfNight.date_start)
+    startTime.setSeconds(startTime.getSeconds() + com.data.block.startTime)
+    endTime = new Date(com.data.timeOfNight.date_start)
+    endTime.setSeconds(endTime.getSeconds() + com.data.block.startTime + com.data.block.duration)
+    let duration = new Date(endTime)
+    duration.setHours(duration.getHours() - startTime.getHours())
+    duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
+    duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
+
+    updateTime('startTime', startTime)
+    updateTime('duration', duration)
+    updateTime('endTime', endTime)
+  }
+  function changeState (newState) {
+    com.data.block.exeState.state = newState
+  }
+  function changeTarget (newTarget) {
+    let save = com.data.block.pointingName.split('/')[1]
+    com.data.block.pointingName = newTarget + '/' + save
+  }
+  function changePointing (newPointing) {
+    let save = com.data.block.pointingName.split('/')[0]
+    com.data.block.pointingName = save + '/' + newPointing
   }
 
   function initSchedulingObservingBlocksTree () {
@@ -306,20 +344,21 @@ window.ObsblockForm = function (optIn) {
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'State', anchor: 'start'},
-      {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.20, text: 'Start', anchor: 'start'},
-      {x: box.w * 0.35, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.20, text: 'Duration', anchor: 'start'},
-      {x: box.w * 0.55, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.20, text: 'End', anchor: 'start'},
-      {x: box.w * 0.75, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.45, text: 'Pointing', anchor: 'start'}
+      {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'State', anchor: 'middle'},
+      {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'Start', anchor: 'middle'},
+      {x: box.w * 0.33, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'Duration', anchor: 'middle'},
+      {x: box.w * 0.51, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'End', anchor: 'middle'},
+      {x: box.w * 0.69, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.31, text: 'Target & pointing', anchor: 'middle'}
     ]
     for (let i = 0; i < label.length; i++) {
+      let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
       g.append('text')
         .text(label[i].text)
         .style('fill', colorPalette.medium.background)
         .style('font-weight', 'bold')
         .style('font-size', txtSize + 'px')
         .attr('text-anchor', label[i].anchor)
-        .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+        .attr('transform', 'translate(' + (label[i].x + off) + ',' + (label[i].y) + ')')
       g.append('rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -329,51 +368,58 @@ window.ObsblockForm = function (optIn) {
         .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
     }
 
-    function drawTime (id, x, y, time) {
+    function drawTime (id, x, w, y, time) {
       let stock = {}
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
       let hbox = {
         x: x,
         y: y,
-        w: 12.5,
+        w: 14,
         h: headerSize * 2
       }
       let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
       let mbox = {
         x: x + 16,
         y: y,
-        w: 12.5,
+        w: 14,
         h: headerSize * 2
       }
       let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
       let sbox = {
         x: x + 32,
         y: y,
-        w: 12.5,
+        w: 14,
         h: headerSize * 2
       }
-      stock.hour = inputDate(g,
+
+      let ig = g.append('g').attr('id', id)
+        .attr('transform', 'translate(' + ((w - (14 * 3)) * 0.33) + ',0)')
+
+      stock.hour = inputDate(ig,
         hbox,
+        'hour',
         {value: hour, min: 0, max: 23, step: 1},
         {change: (d) => { changeBlockTime(id, d, stock.minute.property('value'), stock.second.property('value')) }, enter: (d) => { stock.minute.node().focus() }})
-      g.append('text')
+      ig.append('text')
         .text(':')
         .style('fill', colorPalette.dark.stroke)
         .style('font-size', headerSize + 'px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5) + ',' + (y + headerSize * 1.1) + ')')
-      stock.minute = inputDate(g,
+      stock.minute = inputDate(ig,
         mbox,
+        'minute',
         {value: min, min: 0, max: 60, step: 1},
         {change: (d) => { changeBlockTime(id, stock.hour.property('value'), d, stock.second.property('value')) }, enter: (d) => { stock.second.node().focus() }})
-      g.append('text')
+      ig.append('text')
         .text(':')
         .style('fill', colorPalette.dark.stroke)
         .style('font-size', headerSize + 'px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5) + ',' + (y + headerSize * 1.1) + ')')
-      stock.second = inputDate(g,
+      stock.second = inputDate(ig,
         sbox,
+        'second',
         {value: sec, min: 0, max: 60, step: 1},
         {change: (d) => { changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), d) }, enter: (d) => { stock.second.node().blur() }})
     }
@@ -387,230 +433,205 @@ window.ObsblockForm = function (optIn) {
     duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
     duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
 
-    g.append('text')
-      .text(data.exeState.state)
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', '')
-      .style('font-size', titleSize + 'px')
-      .attr('text-anchor', 'start')
-      .attr('transform', 'translate(' + (box.w * 0.02) + ',' + (3 + headerSize * 1.5 + txtSize * 1.3) + ')')
+    let sbox = {
+      x: label[0].x,
+      y: 3 + headerSize * 1.5,
+      w: label[0].w,
+      h: headerSize * 2
+    }
+    dropDownDiv(g,
+      sbox,
+      'state',
+      {disabled: false, value: data.exeState.state, options: ['done', 'fail', 'cancel', 'wait', 'run']},
+      {change: (d) => { changeState(d) }, enter: (d) => { changeState(d) }})
 
-    drawTime('startTime', label[1].x, 3 + headerSize * 1.5, startTime)
-    drawTime('duration', label[2].x, 3 + headerSize * 1.5, duration)
-    drawTime('endTime', label[3].x, 3 + headerSize * 1.5, endTime)
+    drawTime('startTime', label[1].x, label[1].w, 2 + headerSize * 1.5, startTime)
+    drawTime('duration', label[2].x, label[2].w, 2 + headerSize * 1.5, duration)
+    drawTime('endTime', label[3].x, label[3].w, 2 + headerSize * 1.5, endTime)
 
-    g.append('text')
-      .text(data.pointingName)
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', '')
-      .style('font-size', headerSize + 'px')
-      .attr('text-anchor', 'start')
-      .attr('transform', 'translate(' + (label[4].x) + ',' + (3 + headerSize * 1.5 + headerSize * 1.3) + ')')
+    let tbox = {
+      x: label[4].x,
+      y: 3 + headerSize * 1.5,
+      w: label[4].w * 0.5,
+      h: headerSize * 2
+    }
+    dropDownDiv(g,
+      tbox,
+      'target',
+      {disabled: false, value: data.pointingName.split('/')[0], options: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5', 'trg_6', 'trg_7']},
+      {change: (d) => { changeTarget(d) }, enter: (d) => { changeTarget(d) }})
+    let pbox = {
+      x: label[4].x + label[4].w * 0.5,
+      y: 3 + headerSize * 1.5,
+      w: label[4].w * 0.5,
+      h: headerSize * 2
+    }
+    dropDownDiv(g,
+      pbox,
+      'pointing',
+      {disabled: false, value: data.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
+      {change: (d) => { changePointing(d) }, enter: (d) => { changePointing(d) }})
   }
-  function inputDate (g, box, optIn, events) {
-    com.component = {}
-    com.component.fo = g.append('foreignObject')
+  function inputDate (g, box, id, optIn, events) {
+    let fo = g.append('foreignObject')
       .attr('width', box.w + 'px')
       .attr('height', box.h + 'px')
       .attr('x', box.x + 'px')
       .attr('y', box.y + 'px')
-    com.component.rootDiv = com.component.fo.append('xhtml:div')
+    let rootDiv = fo.append('xhtml:div')
       .attr('class', 'quantity')
-      // .style('display', 'inline-block')
-      // .style('border', 0 + 'px solid #78909C')
-      // .style('background-color', 'transparent')
+      .attr('id', id)
       .style('width', '100%')
       .style('height', '100%')
+    let input = rootDiv.append('input')
+      .attr('type', 'number')
+      .attr('min', function (d) { return optIn.min })
+      .attr('max', function (d) { return optIn.max })
+      .attr('step', function (d) { return optIn.step })
+      .style('font-size', 11 + 'px')
+      // .style('display', 'inline-block')
+      // .style('color', '#000000')
+      .style('background', 'transparent')
+    input.property('value', function () {
+      return optIn.value
+    })
+    input.on('change', function (d) {
+      let newVal = parseInt(input.property('value'))
+      if (newVal > optIn.max) newVal = optIn.max
+      else if (newVal < optIn.min) newVal = optIn.min
+      input.property('value', ('0' + newVal).slice(-2))
+      events.change(input.property('value'))
+    })
+    input.on('focus', function () {
+      $(this).select()
+    })
+    input.on('wheel', function (d) {
+      if (!$(this).is(':focus')) {
+        return
+      }
+      d3.event.preventDefault()
+      let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+      let newVal = parseInt(input.property('value'))
+      if (direction === 'up') newVal += 1
+      else if (direction === 'down') newVal -= 1
+      if (newVal > optIn.max) newVal = optIn.min
+      else if (newVal < optIn.min) newVal = optIn.max
+      input.property('value', ('0' + newVal).slice(-2))
+      events.change(input.property('value'))
+    })
+    input.on('keyup', function () {
+      let event = d3.event
+      if (event.keyCode === 13) {
+        event.preventDefault()
+        events.enter(input.property('value'))
+      }
+    })
+    let nav = rootDiv.append('div')
+      .attr('class', 'quantity-nav')
+    nav.append('div')
+      .attr('class', 'quantity-button quantity-down')
+      .html('-')
+      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
+      .style('border-radius', '10px 0px 0px 10px')
+      .style('font-size', headerSize + 'px')
+      .on('click', function () {
+        let oldValue = parseInt(input.property('value'))
+        let newVal = oldValue
+        if (oldValue > optIn.min) {
+          newVal = oldValue - 1
+        } else {
+          newVal = optIn.max
+        }
+        input.property('value', ('0' + newVal).slice(-2))
+        events.change(input.property('value'))
+      })
+    nav.append('div')
+      .attr('class', 'quantity-button quantity-up')
+      .html('+')
+      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
+      .style('border-radius', '0px 10px 10px 0px')
+      .style('font-size', headerSize + 'px')
+      .on('click', function () {
+        let oldValue = parseInt(input.property('value'))
+        let newVal = oldValue
+        if (oldValue < optIn.max) {
+          newVal = oldValue + 1
+        } else {
+          newVal = optIn.min
+        }
+        input.property('value', ('0' + newVal).slice(-2))
+        events.change(input.property('value'))
+      })
+
+    return input
+  }
+  function dropDownDiv (g, box, id, optIn, events) {
+    let fo = g.append('foreignObject')
+      .attr('width', box.w + 'px')
+      .attr('height', box.h + 'px')
+      .attr('x', box.x + 'px')
+      .attr('y', box.y + 'px')
+    let rootDiv = fo.append('xhtml:div')
+      .attr('id', id)
+      .attr('class', 'dropdown')
+      .style('color', '#000000')
+    if (optIn.disabled) {
+      rootDiv.html(optIn.value)
+      return
+    }
+    // div.on('mouseover', function (d) {
+    //   if (d.event.mouseover) {
+    //     div.style('background', function (d) {
+    //       return (d.style && d.style.color) ? d3.color(d.style.color).darker(0.4) : d3.color(colorTheme.brighter.background).darker(0.4)
+    //     })
+    //     d.event.mouseover(d)
+    //   }
+    // })
+    // div.on('mouseout', function (d) {
+    //   if (d.event.mouseout) {
+    //     div.style('background', function (d) {
+    //       return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
+    //     })
+    //     d.event.mouseout(d)
+    //   }
+    // })
+
+    // div.attr('class', 'divForm dropDownDiv')
+    // let d = div.data()[0]
     // div.append('label')
-    //   .html(function (d) { return d.key })
     //   .attr('class', 'key')
+    //   .html(function (d) { return d.key })
     //   .attr('id', 'key')
     //   .style('display', 'inline-block')
     //   .style('color', '#000000')
     //   // .style('font-size', 10 + 'px')
     //   .style('background', 'transparent')
+    //   // .style('margin-left', '6px')
     // div.append('label')
-    //   .attr('id', 'dot')
     //   .attr('class', 'dot')
+    //   .attr('id', 'dot')
     //   .html(' : ')
     //   .style('display', 'inline-block')
     //   .style('color', '#000000')
     //   // .style('font-size', 10 + 'px')
     //   .style('background', 'transparent')
-    let input = com.component.rootDiv.append('input')
-      .attr('type', 'number')
-      .attr('min', function (d) { return optIn.min })
-      .attr('max', function (d) { return optIn.max })
-      .attr('step', function (d) { return optIn.step })
-      .style('font-size', headerSize + 'px')
-      // .style('display', 'inline-block')
-      // .style('color', '#000000')
-      .style('background', 'transparent')
-    input.property('value', function () {
-      return optIn.value
-    })
-    input.on('change', function (d) {
-      let newVal = parseInt(input.property('value'))
-      if (newVal > optIn.max) newVal = optIn.max
-      else if (newVal < optIn.min) newVal = optIn.min
-      input.property('value', ('0' + newVal).slice(-2))
-      events.change(input.property('value'))
-    })
-    input.on('focus', function () {
-      $(this).select()
-    })
-    input.on('wheel', function (d) {
-      if (!$(this).is(':focus')) {
-        return
-      }
-      d3.event.preventDefault()
-      let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
-      let newVal = parseInt(input.property('value'))
-      if (direction === 'up') newVal += 1
-      else if (direction === 'down') newVal -= 1
-      if (newVal > optIn.max) newVal = optIn.min
-      else if (newVal < optIn.min) newVal = optIn.max
-      input.property('value', ('0' + newVal).slice(-2))
-      events.change(input.property('value'))
-    })
-    input.on('keyup', function () {
-      let event = d3.event
-      if (event.keyCode === 13) {
-        event.preventDefault()
-        events.enter(input.property('value'))
-      }
-    })
-    let nav = com.component.rootDiv.append('div')
-      .attr('class', 'quantity-nav')
-    nav.append('div')
-      .attr('class', 'quantity-button quantity-down')
-      .html('-')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '10px 0px 0px 10px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(input.property('value'))
-        let newVal = oldValue
-        if (oldValue > optIn.min) {
-          newVal = oldValue - 1
-        } else {
-          newVal = optIn.max
-        }
-        input.property('value', ('0' + newVal).slice(-2))
-        events.change(input.property('value'))
-      })
-    nav.append('div')
-      .attr('class', 'quantity-button quantity-up')
-      .html('+')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '0px 10px 10px 0px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(input.property('value'))
-        let newVal = oldValue
-        if (oldValue < optIn.max) {
-          newVal = oldValue + 1
-        } else {
-          newVal = optIn.min
-        }
-        input.property('value', ('0' + newVal).slice(-2))
-        events.change(input.property('value'))
-      })
 
-    return input
-  }
-  function inputNumber (g, box, optIn, events) {
-    com.component = {}
-    com.component.fo = g.append('foreignObject')
-      .attr('width', box.w + 'px')
-      .attr('height', box.h + 'px')
-      .attr('x', box.x + 'px')
-      .attr('y', box.y + 'px')
-    com.component.rootDiv = com.component.fo.append('xhtml:div')
-      .attr('class', 'quantity')
+    let selector = rootDiv.append('select')
       .style('width', '100%')
       .style('height', '100%')
-    let input = com.component.rootDiv.append('input')
-      .attr('type', 'number')
-      .attr('min', function (d) { return optIn.min })
-      .attr('max', function (d) { return optIn.max })
-      .attr('step', function (d) { return optIn.step })
-      .style('font-size', headerSize + 'px')
-      // .style('display', 'inline-block')
-      // .style('color', '#000000')
-      .style('background', 'transparent')
-    input.property('value', function () {
+      .style('box-shadow', '0 0 0 0.1pt #eeeeee inset')
+      .on('change', function (d) {
+        events.change(selector.property('value'))
+      })
+    selector.selectAll('option')
+      .data(optIn.options)
+      .enter()
+      .append('option')
+      .text(function (d) { return d })
+    selector.property('value', function () {
       return optIn.value
     })
-    input.on('change', function (d) {
-      let newVal = parseInt(input.property('value'))
-      if (newVal > optIn.max) newVal = optIn.max
-      else if (newVal < optIn.min) newVal = optIn.min
-      input.property('value', ('0' + newVal).slice(-2))
-      events.change(input.property('value'))
-    })
-    input.on('focus', function () {
-      $(this).select()
-    })
-    input.on('wheel', function (d) {
-      if (!$(this).is(':focus')) {
-        return
-      }
-      d3.event.preventDefault()
-      let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
-      let newVal = parseInt(input.property('value'))
-      if (direction === 'up') newVal += 1
-      else if (direction === 'down') newVal -= 1
-      if (newVal > optIn.max) newVal = optIn.min
-      else if (newVal < optIn.min) newVal = optIn.max
-      input.property('value', ('0' + newVal).slice(-2))
-      events.change(input.property('value'))
-    })
-    input.on('keyup', function () {
-      let event = d3.event
-      if (event.keyCode === 13) {
-        event.preventDefault()
-        events.enter(input.property('value'))
-      }
-    })
-    let nav = com.component.rootDiv.append('div')
-      .attr('class', 'quantity-nav')
-    nav.append('div')
-      .attr('class', 'quantity-button quantity-down')
-      .html('-')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '10px 0px 0px 10px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(input.property('value'))
-        let newVal = oldValue
-        if (oldValue > optIn.min) {
-          newVal = oldValue - 1
-        } else {
-          newVal = optIn.max
-        }
-        input.property('value', ('0' + newVal).slice(-2))
-        events.change(input.property('value'))
-      })
-    nav.append('div')
-      .attr('class', 'quantity-button quantity-up')
-      .html('+')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '0px 10px 10px 0px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(input.property('value'))
-        let newVal = oldValue
-        if (oldValue < optIn.max) {
-          newVal = oldValue + 1
-        } else {
-          newVal = optIn.min
-        }
-        input.property('value', ('0' + newVal).slice(-2))
-        events.change(input.property('value'))
-      })
-
-    return input
+    // if (!d.editable) selector.attr('disabled', true)
   }
 
   function initPointingInformation () {
@@ -643,17 +664,18 @@ window.ObsblockForm = function (optIn) {
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: (box.h + ((box.w - box.h) * 0.02)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.25), text: 'Links', anchor: 'start'},
+      {x: (box.h + ((box.w - box.h) * 0.0)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.25), text: 'Links', anchor: 'middle'},
       {x: (box.h + ((box.w - box.h) * 0.25)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.75), text: 'Positions', anchor: 'start'}
     ]
     for (let i = 0; i < label.length; i++) {
+      let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
       g.append('text')
         .text(label[i].text)
         .style('fill', colorPalette.medium.background)
         .style('font-weight', 'bold')
         .style('font-size', txtSize + 'px')
         .attr('text-anchor', label[i].anchor)
-        .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+        .attr('transform', 'translate(' + (label[i].x + off) + ',' + (label[i].y) + ')')
       g.append('rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -880,6 +902,7 @@ window.ObsblockForm = function (optIn) {
       displayer: 'gridBib',
       gridBib: {
         header: {
+          top: true,
           text: {
             size: headerSize,
             color: colorPalette.medium.background
