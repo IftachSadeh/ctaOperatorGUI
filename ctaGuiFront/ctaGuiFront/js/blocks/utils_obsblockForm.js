@@ -106,7 +106,6 @@ window.ObsblockForm = function (optIn) {
   this.update = update
 
   function changeBlockTime (type, hour, min, sec) {
-    console.log(type, hour, min, sec);
     let startTime = new Date(com.data.timeOfNight.date_start)
     let endTime = new Date(com.data.timeOfNight.date_end)
     switch (type) {
@@ -152,7 +151,6 @@ window.ObsblockForm = function (optIn) {
       let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
 
       let g = com.main.g.select('g#' + id)
-      console.log(g);
 
       g.select('#hour').select('input').property('value', hour)
       g.select('#minute').select('input').property('value', min)
@@ -373,21 +371,21 @@ window.ObsblockForm = function (optIn) {
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
       let hbox = {
         x: x,
-        y: y,
+        y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
         w: 14,
         h: headerSize * 2
       }
       let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
       let mbox = {
         x: x + 16,
-        y: y,
+        y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
         w: 14,
         h: headerSize * 2
       }
       let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
       let sbox = {
         x: x + 32,
-        y: y,
+        y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
         w: 14,
         h: headerSize * 2
       }
@@ -398,29 +396,29 @@ window.ObsblockForm = function (optIn) {
       stock.hour = inputDate(ig,
         hbox,
         'hour',
-        {value: hour, min: 0, max: 23, step: 1},
+        {disabled: !com.schedule.editabled, value: hour, min: 0, max: 23, step: 1},
         {change: (d) => { changeBlockTime(id, d, stock.minute.property('value'), stock.second.property('value')) }, enter: (d) => { stock.minute.node().focus() }})
       ig.append('text')
         .text(':')
         .style('fill', colorPalette.dark.stroke)
         .style('font-size', headerSize + 'px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5) + ',' + (y + headerSize * 1.1) + ')')
+        .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
       stock.minute = inputDate(ig,
         mbox,
         'minute',
-        {value: min, min: 0, max: 60, step: 1},
+        {disabled: !com.schedule.editabled, value: min, min: 0, max: 60, step: 1},
         {change: (d) => { changeBlockTime(id, stock.hour.property('value'), d, stock.second.property('value')) }, enter: (d) => { stock.second.node().focus() }})
       ig.append('text')
         .text(':')
         .style('fill', colorPalette.dark.stroke)
         .style('font-size', headerSize + 'px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5) + ',' + (y + headerSize * 1.1) + ')')
+        .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
       stock.second = inputDate(ig,
         sbox,
         'second',
-        {value: sec, min: 0, max: 60, step: 1},
+        {disabled: !com.schedule.editabled, value: sec, min: 0, max: 60, step: 1},
         {change: (d) => { changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), d) }, enter: (d) => { stock.second.node().blur() }})
     }
 
@@ -442,7 +440,7 @@ window.ObsblockForm = function (optIn) {
     dropDownDiv(g,
       sbox,
       'state',
-      {disabled: false, value: data.exeState.state, options: ['done', 'fail', 'cancel', 'wait', 'run']},
+      {disabled: !com.schedule.editabled, value: data.exeState.state, options: ['done', 'fail', 'cancel', 'wait', 'run']},
       {change: (d) => { changeState(d) }, enter: (d) => { changeState(d) }})
 
     drawTime('startTime', label[1].x, label[1].w, 2 + headerSize * 1.5, startTime)
@@ -458,7 +456,7 @@ window.ObsblockForm = function (optIn) {
     dropDownDiv(g,
       tbox,
       'target',
-      {disabled: false, value: data.pointingName.split('/')[0], options: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5', 'trg_6', 'trg_7']},
+      {disabled: !com.schedule.editabled, value: data.pointingName.split('/')[0], options: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5', 'trg_6', 'trg_7']},
       {change: (d) => { changeTarget(d) }, enter: (d) => { changeTarget(d) }})
     let pbox = {
       x: label[4].x + label[4].w * 0.5,
@@ -469,171 +467,9 @@ window.ObsblockForm = function (optIn) {
     dropDownDiv(g,
       pbox,
       'pointing',
-      {disabled: false, value: data.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
+      {disabled: !com.schedule.editabled, value: data.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
       {change: (d) => { changePointing(d) }, enter: (d) => { changePointing(d) }})
   }
-  function inputDate (g, box, id, optIn, events) {
-    let fo = g.append('foreignObject')
-      .attr('width', box.w + 'px')
-      .attr('height', box.h + 'px')
-      .attr('x', box.x + 'px')
-      .attr('y', box.y + 'px')
-    let rootDiv = fo.append('xhtml:div')
-      .attr('class', 'quantity')
-      .attr('id', id)
-      .style('width', '100%')
-      .style('height', '100%')
-    let input = rootDiv.append('input')
-      .attr('type', 'number')
-      .attr('min', function (d) { return optIn.min })
-      .attr('max', function (d) { return optIn.max })
-      .attr('step', function (d) { return optIn.step })
-      .style('font-size', 11 + 'px')
-      // .style('display', 'inline-block')
-      // .style('color', '#000000')
-      .style('background', 'transparent')
-    input.property('value', function () {
-      return optIn.value
-    })
-    input.on('change', function (d) {
-      let newVal = parseInt(input.property('value'))
-      if (newVal > optIn.max) newVal = optIn.max
-      else if (newVal < optIn.min) newVal = optIn.min
-      input.property('value', ('0' + newVal).slice(-2))
-      events.change(input.property('value'))
-    })
-    input.on('focus', function () {
-      $(this).select()
-    })
-    input.on('wheel', function (d) {
-      if (!$(this).is(':focus')) {
-        return
-      }
-      d3.event.preventDefault()
-      let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
-      let newVal = parseInt(input.property('value'))
-      if (direction === 'up') newVal += 1
-      else if (direction === 'down') newVal -= 1
-      if (newVal > optIn.max) newVal = optIn.min
-      else if (newVal < optIn.min) newVal = optIn.max
-      input.property('value', ('0' + newVal).slice(-2))
-      events.change(input.property('value'))
-    })
-    input.on('keyup', function () {
-      let event = d3.event
-      if (event.keyCode === 13) {
-        event.preventDefault()
-        events.enter(input.property('value'))
-      }
-    })
-    let nav = rootDiv.append('div')
-      .attr('class', 'quantity-nav')
-    nav.append('div')
-      .attr('class', 'quantity-button quantity-down')
-      .html('-')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '10px 0px 0px 10px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(input.property('value'))
-        let newVal = oldValue
-        if (oldValue > optIn.min) {
-          newVal = oldValue - 1
-        } else {
-          newVal = optIn.max
-        }
-        input.property('value', ('0' + newVal).slice(-2))
-        events.change(input.property('value'))
-      })
-    nav.append('div')
-      .attr('class', 'quantity-button quantity-up')
-      .html('+')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '0px 10px 10px 0px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(input.property('value'))
-        let newVal = oldValue
-        if (oldValue < optIn.max) {
-          newVal = oldValue + 1
-        } else {
-          newVal = optIn.min
-        }
-        input.property('value', ('0' + newVal).slice(-2))
-        events.change(input.property('value'))
-      })
-
-    return input
-  }
-  function dropDownDiv (g, box, id, optIn, events) {
-    let fo = g.append('foreignObject')
-      .attr('width', box.w + 'px')
-      .attr('height', box.h + 'px')
-      .attr('x', box.x + 'px')
-      .attr('y', box.y + 'px')
-    let rootDiv = fo.append('xhtml:div')
-      .attr('id', id)
-      .attr('class', 'dropdown')
-      .style('color', '#000000')
-    if (optIn.disabled) {
-      rootDiv.html(optIn.value)
-      return
-    }
-    // div.on('mouseover', function (d) {
-    //   if (d.event.mouseover) {
-    //     div.style('background', function (d) {
-    //       return (d.style && d.style.color) ? d3.color(d.style.color).darker(0.4) : d3.color(colorTheme.brighter.background).darker(0.4)
-    //     })
-    //     d.event.mouseover(d)
-    //   }
-    // })
-    // div.on('mouseout', function (d) {
-    //   if (d.event.mouseout) {
-    //     div.style('background', function (d) {
-    //       return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
-    //     })
-    //     d.event.mouseout(d)
-    //   }
-    // })
-
-    // div.attr('class', 'divForm dropDownDiv')
-    // let d = div.data()[0]
-    // div.append('label')
-    //   .attr('class', 'key')
-    //   .html(function (d) { return d.key })
-    //   .attr('id', 'key')
-    //   .style('display', 'inline-block')
-    //   .style('color', '#000000')
-    //   // .style('font-size', 10 + 'px')
-    //   .style('background', 'transparent')
-    //   // .style('margin-left', '6px')
-    // div.append('label')
-    //   .attr('class', 'dot')
-    //   .attr('id', 'dot')
-    //   .html(' : ')
-    //   .style('display', 'inline-block')
-    //   .style('color', '#000000')
-    //   // .style('font-size', 10 + 'px')
-    //   .style('background', 'transparent')
-
-    let selector = rootDiv.append('select')
-      .style('width', '100%')
-      .style('height', '100%')
-      .style('box-shadow', '0 0 0 0.1pt #eeeeee inset')
-      .on('change', function (d) {
-        events.change(selector.property('value'))
-      })
-    selector.selectAll('option')
-      .data(optIn.options)
-      .enter()
-      .append('option')
-      .text(function (d) { return d })
-    selector.property('value', function () {
-      return optIn.value
-    })
-    // if (!d.editable) selector.attr('disabled', true)
-  }
-
   function initPointingInformation () {
     let box = com.target.box
     let data = com.data.block
@@ -1052,5 +888,171 @@ window.ObsblockForm = function (optIn) {
         modified: []
       }
     })
+  }
+
+  function inputDate (g, box, id, optIn, events) {
+    let fo = g.append('foreignObject')
+      .attr('width', box.w + 'px')
+      .attr('height', box.h + 'px')
+      .attr('x', box.x + 'px')
+      .attr('y', box.y + 'px')
+    let rootDiv = fo.append('xhtml:div')
+      .attr('class', 'quantity')
+      .attr('id', id)
+      .style('width', '100%')
+      .style('height', '100%')
+    let input = rootDiv.append('input')
+      .attr('type', 'number')
+      .attr('min', function (d) { return optIn.min })
+      .attr('max', function (d) { return optIn.max })
+      .attr('step', function (d) { return optIn.step })
+      .style('font-size', 11 + 'px')
+      // .style('display', 'inline-block')
+      // .style('color', '#000000')
+      .style('background', 'transparent')
+    input.property('value', function () {
+      return optIn.value
+    })
+    if (optIn.disabled) {
+      input.attr('disabled')
+      return
+    }
+    input.on('change', function (d) {
+      let newVal = parseInt(input.property('value'))
+      if (newVal > optIn.max) newVal = optIn.max
+      else if (newVal < optIn.min) newVal = optIn.min
+      input.property('value', ('0' + newVal).slice(-2))
+      events.change(input.property('value'))
+    })
+    input.on('focus', function () {
+      $(this).select()
+    })
+    input.on('wheel', function (d) {
+      if (!$(this).is(':focus')) {
+        return
+      }
+      d3.event.preventDefault()
+      let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+      let newVal = parseInt(input.property('value'))
+      if (direction === 'up') newVal += 1
+      else if (direction === 'down') newVal -= 1
+      if (newVal > optIn.max) newVal = optIn.min
+      else if (newVal < optIn.min) newVal = optIn.max
+      input.property('value', ('0' + newVal).slice(-2))
+      events.change(input.property('value'))
+    })
+    input.on('keyup', function () {
+      let event = d3.event
+      if (event.keyCode === 13) {
+        event.preventDefault()
+        events.enter(input.property('value'))
+      }
+    })
+    let nav = rootDiv.append('div')
+      .attr('class', 'quantity-nav')
+    nav.append('div')
+      .attr('class', 'quantity-button quantity-down')
+      .html('-')
+      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
+      .style('border-radius', '10px 0px 0px 10px')
+      .style('font-size', headerSize + 'px')
+      .on('click', function () {
+        let oldValue = parseInt(input.property('value'))
+        let newVal = oldValue
+        if (oldValue > optIn.min) {
+          newVal = oldValue - 1
+        } else {
+          newVal = optIn.max
+        }
+        input.property('value', ('0' + newVal).slice(-2))
+        events.change(input.property('value'))
+      })
+    nav.append('div')
+      .attr('class', 'quantity-button quantity-up')
+      .html('+')
+      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
+      .style('border-radius', '0px 10px 10px 0px')
+      .style('font-size', headerSize + 'px')
+      .on('click', function () {
+        let oldValue = parseInt(input.property('value'))
+        let newVal = oldValue
+        if (oldValue < optIn.max) {
+          newVal = oldValue + 1
+        } else {
+          newVal = optIn.min
+        }
+        input.property('value', ('0' + newVal).slice(-2))
+        events.change(input.property('value'))
+      })
+
+    return input
+  }
+  function dropDownDiv (g, box, id, optIn, events) {
+    let fo = g.append('foreignObject')
+      .attr('width', box.w + 'px')
+      .attr('height', box.h + 'px')
+      .attr('x', box.x + 'px')
+      .attr('y', box.y + 'px')
+    let rootDiv = fo.append('xhtml:div')
+      .attr('id', id)
+      .attr('class', 'dropdown')
+      .style('color', '#000000')
+    if (optIn.disabled) {
+      rootDiv.html(optIn.value)
+      return
+    }
+    // div.on('mouseover', function (d) {
+    //   if (d.event.mouseover) {
+    //     div.style('background', function (d) {
+    //       return (d.style && d.style.color) ? d3.color(d.style.color).darker(0.4) : d3.color(colorTheme.brighter.background).darker(0.4)
+    //     })
+    //     d.event.mouseover(d)
+    //   }
+    // })
+    // div.on('mouseout', function (d) {
+    //   if (d.event.mouseout) {
+    //     div.style('background', function (d) {
+    //       return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
+    //     })
+    //     d.event.mouseout(d)
+    //   }
+    // })
+
+    // div.attr('class', 'divForm dropDownDiv')
+    // let d = div.data()[0]
+    // div.append('label')
+    //   .attr('class', 'key')
+    //   .html(function (d) { return d.key })
+    //   .attr('id', 'key')
+    //   .style('display', 'inline-block')
+    //   .style('color', '#000000')
+    //   // .style('font-size', 10 + 'px')
+    //   .style('background', 'transparent')
+    //   // .style('margin-left', '6px')
+    // div.append('label')
+    //   .attr('class', 'dot')
+    //   .attr('id', 'dot')
+    //   .html(' : ')
+    //   .style('display', 'inline-block')
+    //   .style('color', '#000000')
+    //   // .style('font-size', 10 + 'px')
+    //   .style('background', 'transparent')
+
+    let selector = rootDiv.append('select')
+      .style('width', '100%')
+      .style('height', '100%')
+      .style('box-shadow', '0 0 0 0.1pt #eeeeee inset')
+      .on('change', function (d) {
+        events.change(selector.property('value'))
+      })
+    selector.selectAll('option')
+      .data(optIn.options)
+      .enter()
+      .append('option')
+      .text(function (d) { return d })
+    selector.property('value', function () {
+      return optIn.value
+    })
+    // if (!d.editable) selector.attr('disabled', true)
   }
 }

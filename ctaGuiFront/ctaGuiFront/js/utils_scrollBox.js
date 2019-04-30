@@ -1566,7 +1566,6 @@ window.ScrollBox = function () {
     if (hasVar(optIn.scrollHeight)) com.scrollHeight = optIn.scrollHeight
     // if (hasVar(optIn.boxWidth)) com.scrollWidth = optIn.boxWidth
     // if (hasVar(optIn.frac)) com.scrollWidth = optIn.frac
-    console.log(com.scrollHeight);
     updateVerticalScrollState(true)
     com.setVerticalRecScroll()
     com.doVerticalTrans({ frac: com.scrollTransV.frac, duration: 0 })

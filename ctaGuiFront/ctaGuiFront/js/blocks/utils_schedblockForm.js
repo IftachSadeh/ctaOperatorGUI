@@ -435,21 +435,21 @@ window.SchedblockForm = function (optIn) {
         let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
         let hbox = {
           x: x,
-          y: y,
+          y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
           w: 14,
           h: headerSize * 2
         }
         let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
         let mbox = {
           x: x + 16,
-          y: y,
+          y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
           w: 14,
           h: headerSize * 2
         }
         let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
         let sbox = {
           x: x + 32,
-          y: y,
+          y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
           w: 14,
           h: headerSize * 2
         }
@@ -460,29 +460,29 @@ window.SchedblockForm = function (optIn) {
         stock.hour = inputDate(ig,
           hbox,
           'hour',
-          {value: hour, min: 0, max: 23, step: 1, 'button-disabled': false},
+          {disabled: !com.schedule.editabled, value: hour, min: 0, max: 23, step: 1, 'button-disabled': false},
           {change: (e) => { changeBlockTime(d, id, e, stock.minute.property('value'), stock.second.property('value')) }, enter: (d) => { stock.minute.node().focus() }})
         ig.append('text')
           .text(':')
           .style('fill', colorPalette.dark.stroke)
           .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5) + ',' + (y + headerSize * 1.1) + ')')
+          .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
         stock.minute = inputDate(ig,
           mbox,
           'minute',
-          {value: min, min: 0, max: 60, step: 1, 'button-disabled': false},
+          {disabled: !com.schedule.editabled, value: min, min: 0, max: 60, step: 1, 'button-disabled': false},
           {change: (e) => { changeBlockTime(d, id, stock.hour.property('value'), e, stock.second.property('value')) }, enter: (d) => { stock.second.node().focus() }})
         ig.append('text')
           .text(':')
           .style('fill', colorPalette.dark.stroke)
           .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5) + ',' + (y + headerSize * 1.1) + ')')
+          .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
         stock.second = inputDate(ig,
           sbox,
           'second',
-          {value: sec, min: 0, max: 60, step: 1, 'button-disabled': false},
+          {disabled: !com.schedule.editabled, value: sec, min: 0, max: 60, step: 1, 'button-disabled': false},
           {change: (e) => { changeBlockTime(d, id, stock.hour.property('value'), stock.minute.property('value'), e) }, enter: (d) => { stock.second.node().blur() }})
       }
 
@@ -504,7 +504,7 @@ window.SchedblockForm = function (optIn) {
       dropDownDiv(g,
         sbox,
         'state',
-        {disabled: false, value: d.exeState.state, options: ['done', 'fail', 'cancel', 'wait', 'run']},
+        {disabled: !com.schedule.editabled, value: d.exeState.state, options: ['done', 'fail', 'cancel', 'wait', 'run']},
         {change: (e) => { changeState(d, e) }, enter: (e) => { changeState(d, e) }})
 
       drawTime('startTime', label[2].x, label[2].w, 0, startTime)
@@ -520,7 +520,7 @@ window.SchedblockForm = function (optIn) {
       dropDownDiv(g,
         tbox,
         'target',
-        {disabled: false, value: d.pointingName.split('/')[0], options: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5', 'trg_6', 'trg_7']},
+        {disabled: !com.schedule.editabled, value: d.pointingName.split('/')[0], options: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5', 'trg_6', 'trg_7']},
         {change: (e) => { changeTarget(d, e) }, enter: (e) => { changeTarget(d, e) }})
       let pbox = {
         x: label[5].x + label[5].w * 0.5,
@@ -531,7 +531,7 @@ window.SchedblockForm = function (optIn) {
       dropDownDiv(g,
         pbox,
         'pointing',
-        {disabled: false, value: d.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
+        {disabled: !com.schedule.editabled, value: d.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
         {change: (e) => { changePointing(d, e) }, enter: (e) => { changePointing(d, e) }})
     })
     let merge = current.merge(enter)
@@ -928,6 +928,10 @@ window.SchedblockForm = function (optIn) {
     input.property('value', function () {
       return optIn.value
     })
+    if (optIn.disabled) {
+      input.attr('disabled')
+      return
+    }
     input.on('change', function (d) {
       let newVal = parseInt(input.property('value'))
       if (newVal > optIn.max) newVal = optIn.max
@@ -959,7 +963,6 @@ window.SchedblockForm = function (optIn) {
         events.enter(input.property('value'))
       }
     })
-    if (optIn['button-disabled']) return
     let nav = rootDiv.append('div')
       .attr('class', 'quantity-nav')
     nav.append('div')
