@@ -183,7 +183,7 @@ class schedBlocksController():
             schedBlocksController.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['startTime'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['startTime'],"%Y-%m-%d %H:%M:%S")).total_seconds())
-                cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])
+                cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
             )
 
         return

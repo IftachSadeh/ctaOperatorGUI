@@ -722,12 +722,7 @@ let mainSchedBlocksController = function (optIn) {
               state: b.exeState.state,
               canRun: true
             },
-            target: {
-              id: b.targetId,
-              name: b.targetName,
-              pos: b.targetPos,
-              observability: {}
-            },
+            targets: b.targets,
             blocks: [b]
           }
         } else {
@@ -1380,9 +1375,9 @@ let mainSchedBlocksController = function (optIn) {
             } else return 1
           },
           blockPattern: function (optIn) {
-            let startT = hasVar(optIn.startTime)
-              ? optIn.startTime
-              : optIn.d.startTime
+            let startT = hasVar(optIn.time.start)
+              ? optIn.time.start
+              : optIn.d.time.start
             if (startT < shared.data.server.timeOfNight.now) return 'url(#patternLock)'
             return 'none'
           }
@@ -1724,7 +1719,7 @@ let mainSchedBlocksController = function (optIn) {
       let scaleY = d3.scaleLinear()
         .range([reserved.box.h, reserved.box.h * 0.2])
         .domain([0, 1])
-      let projBlockStart = {x: scaleX(block.startTime), y: -1}
+      let projBlockStart = {x: scaleX(block.time.start), y: -1}
 
       if (projBlockStart.x < target.getPointAtLength(0).x || projBlockStart.x > target.getPointAtLength(target.getTotalLength()).x) {
         projBlockStart.y = scaleY(0)
@@ -1760,7 +1755,7 @@ let mainSchedBlocksController = function (optIn) {
           .style('fill-opacity', 1)
       }
 
-      let projBlockEnd = {x: scaleX(block.endTime), y: -1}
+      let projBlockEnd = {x: scaleX(block.time.end), y: -1}
       if (projBlockEnd.x < target.getPointAtLength(0).x || projBlockEnd.x > target.getPointAtLength(target.getTotalLength()).x) {
         projBlockEnd.y = scaleY(0)
         reserved.clipping.clipBody.append('text')
@@ -2018,49 +2013,61 @@ let mainSchedBlocksController = function (optIn) {
           if (b.exeState.state === 'cancel') continue
           if (block && b.obId === block.obId) continue
 
-          if (!largeTels[b.startTime]) largeTels[b.startTime] = 0// 4
-          if (!mediumTels[b.startTime]) mediumTels[b.startTime] = 0// 24
-          if (!smallTels[b.startTime]) smallTels[b.startTime] = 0// 70
-          if (!largeTels[b.endTime]) largeTels[b.endTime] = 0// 4
-          if (!mediumTels[b.endTime]) mediumTels[b.endTime] = 0// 24
-          if (!smallTels[b.endTime]) smallTels[b.endTime] = 0// 70
+          if (!largeTels[b.time.start]) largeTels[b.time.start] = 0// 4
+          if (!mediumTels[b.time.start]) mediumTels[b.time.start] = 0// 24
+          if (!smallTels[b.time.start]) smallTels[b.time.start] = 0// 70
+          if (!largeTels[b.time.end]) largeTels[b.time.end] = 0// 4
+          if (!mediumTels[b.time.end]) mediumTels[b.time.end] = 0// 24
+          if (!smallTels[b.time.end]) smallTels[b.time.end] = 0// 70
 
-          for (let j = 0; j < b.telIds.length; j++) {
-            let tid = b.telIds[j]
-            if (tid[0] === 'S') {
-              smallTels[b.startTime] -= 1
-              smallTels[b.endTime] += 1
-            } else if (tid[0] === 'M') {
-              mediumTels[b.startTime] -= 1
-              mediumTels[b.endTime] += 1
-            } else if (tid[0] === 'L') {
-              largeTels[b.startTime] -= 1
-              largeTels[b.endTime] += 1
-            }
-          }
+          smallTels[b.time.start] -= b.telescopes.small.ids.length
+          smallTels[b.time.end] += b.telescopes.small.ids.length
+          mediumTels[b.time.start] -= b.telescopes.medium.ids.length
+          mediumTels[b.time.end] += b.telescopes.medium.ids.length
+          largeTels[b.time.start] -= b.telescopes.large.ids.length
+          largeTels[b.time.end] += b.telescopes.large.ids.length
+          // for (let j = 0; j < b.telIds.length; j++) {
+          //   let tid = b.telIds[j]
+          //   if (tid[0] === 'S') {
+          //     smallTels[b.startTime] -= 1
+          //     smallTels[b.endTime] += 1
+          //   } else if (tid[0] === 'M') {
+          //     mediumTels[b.startTime] -= 1
+          //     mediumTels[b.endTime] += 1
+          //   } else if (tid[0] === 'L') {
+          //     largeTels[b.startTime] -= 1
+          //     largeTels[b.endTime] += 1
+          //   }
+          // }
         }
       }
       if (block) {
-        if (!largeTels[block.startTime]) largeTels[block.startTime] = 0
-        if (!mediumTels[block.startTime]) mediumTels[block.startTime] = 0
-        if (!smallTels[block.startTime]) smallTels[block.startTime] = 0
-        if (!largeTels[block.endTime]) largeTels[block.endTime] = 0
-        if (!mediumTels[block.endTime]) mediumTels[block.endTime] = 0
-        if (!smallTels[block.endTime]) smallTels[block.endTime] = 0
+        if (!largeTels[block.time.start]) largeTels[block.time.start] = 0// 4
+        if (!mediumTels[block.time.start]) mediumTels[block.time.start] = 0// 24
+        if (!smallTels[block.time.start]) smallTels[block.time.start] = 0// 70
+        if (!largeTels[block.time.end]) largeTels[block.time.end] = 0// 4
+        if (!mediumTels[block.time.end]) mediumTels[block.time.end] = 0// 24
+        if (!smallTels[block.time.end]) smallTels[block.time.end] = 0// 70
 
-        for (let j = 0; j < block.telIds.length; j++) {
-          let tid = block.telIds[j]
-          if (tid[0] === 'S') {
-            smallTels[block.startTime] -= 1
-            smallTels[block.endTime] += 1
-          } else if (tid[0] === 'M') {
-            mediumTels[block.startTime] -= 1
-            mediumTels[block.endTime] += 1
-          } else if (tid[0] === 'L') {
-            largeTels[block.startTime] -= 1
-            largeTels[block.endTime] += 1
-          }
-        }
+        smallTels[block.time.start] -= block.telescopes.small.ids.length
+        smallTels[block.time.end] += block.telescopes.small.ids.length
+        mediumTels[block.time.start] -= block.telescopes.medium.ids.length
+        mediumTels[block.time.end] += block.telescopes.medium.ids.length
+        largeTels[block.time.start] -= block.telescopes.large.ids.length
+        largeTels[block.time.end] += block.telescopes.large.ids.length
+        // for (let j = 0; j < block.telIds.length; j++) {
+        //   let tid = block.telIds[j]
+        //   if (tid[0] === 'S') {
+        //     smallTels[block.startTime] -= 1
+        //     smallTels[block.endTime] += 1
+        //   } else if (tid[0] === 'M') {
+        //     mediumTels[block.startTime] -= 1
+        //     mediumTels[block.endTime] += 1
+        //   } else if (tid[0] === 'L') {
+        //     largeTels[block.startTime] -= 1
+        //     largeTels[block.endTime] += 1
+        //   }
+        // }
       // smallTels[shared.data.server.timeOfNight.end] = 0
       // mediumTels[shared.data.server.timeOfNight.end] = 0
       // largeTels[shared.data.server.timeOfNight.end] = 0
@@ -2447,9 +2454,9 @@ let mainSchedBlocksController = function (optIn) {
         .range([0, reserved.drag.box.w])
         .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
       reserved.drag.position = {
-        width: reserved.drag.timeScale(d.endTime) - reserved.drag.timeScale(d.startTime),
-        left: reserved.drag.timeScale(d.startTime),
-        right: reserved.drag.timeScale(d.endTime)
+        width: reserved.drag.timeScale(d.time.end) - reserved.drag.timeScale(d.time.start),
+        left: reserved.drag.timeScale(d.time.start),
+        right: reserved.drag.timeScale(d.time.end)
       }
       createDragColumn(d)
       // createDragBlock(d)
@@ -3666,12 +3673,14 @@ let mainSchedBlocksController = function (optIn) {
           let nbObs = 0
           let runningObs = []
           for (let key in schedB) {
-            if (schedB[key].target.id === d.id) {
-              nbSched += 1
-              nbObs += schedB[key].blocks.length
-              for (let i = 0; i < schedB[key].blocks.length; i++) {
-                if (schedB[key].blocks[i].exeState.state === 'run') {
-                  runningObs.push(schedB[key].blocks[i])
+            for (let j = 0; j < schedB[key].targets.length; j++) {
+              if (schedB[key].targets[j].id === d.id) {
+                nbSched += 1
+                nbObs += schedB[key].blocks.length
+                for (let i = 0; i < schedB[key].blocks.length; i++) {
+                  if (schedB[key].blocks[i].exeState.state === 'run') {
+                    runningObs.push(schedB[key].blocks[i])
+                  }
                 }
               }
             }
@@ -3731,10 +3740,12 @@ let mainSchedBlocksController = function (optIn) {
           g.attr('transform', 'translate(' + (0) + ',' + (rectBox.y + rectBox.h * i) + ')')
           let runningObs = []
           for (let key in schedB) {
-            if (schedB[key].target.id === d.id) {
-              for (let i = 0; i < schedB[key].blocks.length; i++) {
-                if (schedB[key].blocks[i].exeState.state === 'run') {
-                  runningObs.push(schedB[key].blocks[i])
+            for (let j = 0; j < schedB[key].targets.length; j++) {
+              if (schedB[key].targets[j].id === d.id) {
+                for (let i = 0; i < schedB[key].blocks.length; i++) {
+                  if (schedB[key].blocks[i].exeState.state === 'run') {
+                    runningObs.push(schedB[key].blocks[i])
+                  }
                 }
               }
             }
@@ -3850,7 +3861,7 @@ let mainSchedBlocksController = function (optIn) {
         tree: {
           x: box.rightInfo.w * 0.0,
           y: box.rightInfo.h * 0.0,
-          w: box.rightInfo.w * 0.8,
+          w: box.rightInfo.w * 1,
           h: box.rightInfo.h * 0.1
         },
         time: {
@@ -3863,7 +3874,7 @@ let mainSchedBlocksController = function (optIn) {
           x: box.rightInfo.w * 0.0,
           y: box.rightInfo.h * 0.41,
           w: box.rightInfo.w * 1.0,
-          h: box.rightInfo.h * 0.3
+          h: box.rightInfo.h * 0.59
         }
       }
       reserved.schedblockForm = new SchedblockForm({
@@ -3905,8 +3916,7 @@ let mainSchedBlocksController = function (optIn) {
         },
         data: {
           schedB: schedB,
-          timeOfNight: shared.data.server.timeOfNight,
-          target: getTargetById(schedB.target.id)
+          timeOfNight: shared.data.server.timeOfNight
         },
         debug: {
           enabled: false
@@ -3972,16 +3982,25 @@ let mainSchedBlocksController = function (optIn) {
         medium: [],
         small: []
       }
-      for (let i = 0; i < data.telIds.length; i++) {
-        let id = data.telIds[i]
-        if (id[0] === 'S') {
-          tels.small.push(getTelescopeById(id))
-        } else if (id[0] === 'M') {
-          tels.medium.push(getTelescopeById(id))
-        } else if (id[0] === 'L') {
-          tels.large.push(getTelescopeById(id))
-        }
+      for (let i = 0; i < data.telescopes.large.ids.length; i++) {
+        tels.large.push(getTelescopeById(data.telescopes.large.ids[i]))
       }
+      for (let i = 0; i < data.telescopes.medium.ids.length; i++) {
+        tels.medium.push(getTelescopeById(data.telescopes.medium.ids[i]))
+      }
+      for (let i = 0; i < data.telescopes.small.ids.length; i++) {
+        tels.small.push(getTelescopeById(data.telescopes.small.ids[i]))
+      }
+      // for (let i = 0; i < data.telIds.length; i++) {
+      //   let id = data.telIds[i]
+      //   if (id[0] === 'S') {
+      //     tels.small.push(getTelescopeById(id))
+      //   } else if (id[0] === 'M') {
+      //     tels.medium.push(getTelescopeById(id))
+      //   } else if (id[0] === 'L') {
+      //     tels.large.push(getTelescopeById(id))
+      //   }
+      // }
 
       reserved.obsblockForm = new ObsblockForm({
         main: {
@@ -4072,9 +4091,11 @@ let mainSchedBlocksController = function (optIn) {
       let inter = createSchedBlocks(shared.data.server.blocks)
       let scheds = []
       for (let key in inter) {
-        if (inter[key].target.id !== tar.id) continue
-        inter[key].id = key
-        scheds.push(inter[key])
+        for (let j = 0; j < inter[key].targets.length; j++) {
+          if (inter[key].targets[j].id !== tar.id) continue
+          inter[key].id = key
+          scheds.push(inter[key])
+        }
       }
       let innerbox = {
         x: box.rightInfo.w * 0.0,
@@ -4097,9 +4118,9 @@ let mainSchedBlocksController = function (optIn) {
         },
         target: {
           x: box.rightInfo.w * 0.0,
-          y: box.rightInfo.h * 0.4,
+          y: box.rightInfo.h * 0.41,
           w: box.rightInfo.w * 1.0,
-          h: box.rightInfo.h * 0.3
+          h: box.rightInfo.h * 0.59
         }
       }
 
@@ -4184,7 +4205,7 @@ let mainSchedBlocksController = function (optIn) {
         blocks: {
           x: 0,
           y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.87,
+          h: reserved.box.h * 0.845,
           w: reserved.box.w
         }
       }

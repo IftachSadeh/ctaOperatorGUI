@@ -1,6 +1,6 @@
 /* global d3 */
 
-let nameSize = 10
+let nameSize = 8
 
 window.targetIcon = function (g, dim, name, events, colorTheme) {
   g.append('rect')
@@ -14,13 +14,15 @@ window.targetIcon = function (g, dim, name, events, colorTheme) {
     // .style('boxShadow', '10px 20px 30px black')
     .attr('rx', dim.w)
     .on('click', function () {
-      events.click()
+      if (events.click) events.click()
     })
     .on('mouseover', function (d) {
+      if (events.over) events.over()
       d3.select(this).style('cursor', 'pointer')
       d3.select(this).attr('fill', colorTheme.darker.background)
     })
     .on('mouseout', function (d) {
+      if (events.out) events.out()
       d3.select(this).style('cursor', 'default')
       d3.select(this).attr('fill', colorTheme.dark.background)
     })
@@ -56,13 +58,15 @@ window.pointingIcon = function (g, dim, name, events, colorTheme) {
     .attr('stroke-width', 0.6)
     // .style('boxShadow', '10px 20px 30px black')
     .on('click', function () {
-      events.click()
+      if (events.click) events.click()
     })
     .on('mouseover', function (d) {
+      if (events.over) events.over()
       d3.select(this).style('cursor', 'pointer')
       d3.select(this).attr('fill', colorTheme.darker.background)
     })
     .on('mouseout', function (d) {
+      if (events.out) events.out()
       d3.select(this).style('cursor', 'default')
       d3.select(this).attr('fill', colorTheme.dark.background)
     })
@@ -74,6 +78,12 @@ window.pointingIcon = function (g, dim, name, events, colorTheme) {
     .attr('y', 0)
     .style('opacity', 0.5)
     .style('pointer-events', 'none')
+    .attr('transform', function () {
+      let scale = {w: 1, h: 1}
+      if (dim.h < dim.w) scale.w = dim.w / dim.h
+      if (dim.w < dim.h) scale.h = dim.h / dim.w
+      return 'translate(' + (-((scale.w * dim.w) - dim.w) * 0.5) + ',' + (-((scale.h * dim.h) - dim.h) * 0.5) + ') scale(' + scale.w + ',' + scale.h + ')'
+    })
   g.append('text')
     .text(name)
     .attr('x', dim.w * 0.5)

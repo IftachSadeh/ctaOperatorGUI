@@ -68,8 +68,8 @@ class telPos():
 
         telPntPos = dict()
         for nBlock in range(len(blocks)):
-            telIds = blocks[nBlock]["telIds"]
-            pntPos = blocks[nBlock]["pointingPos"]
+            telIds = blocks[nBlock]["telescopes"]["large"]["ids"] + blocks[nBlock]["telescopes"]["medium"]["ids"] + blocks[nBlock]["telescopes"]["small"]["ids"]
+            pntPos = blocks[nBlock]["pointings"][0]["pos"]
 
             for idNow in telIds:
                 telPntPos[idNow] = pntPos

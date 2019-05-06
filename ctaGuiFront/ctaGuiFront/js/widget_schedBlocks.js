@@ -361,10 +361,10 @@ function mainSchedBlocks (optIn) {
         marg: lenD.w[0] * 0.01
       }
       box.freeTels = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.585,
-        w: lenD.w[0] * 1,
-        h: lenD.h[0] * 0.414,
+        x: lenD.w[0] * 0.002,
+        y: lenD.h[0] * 0.5875,
+        w: lenD.w[0] * 0.996,
+        h: lenD.h[0] * 0.41,
         marg: lenD.w[0] * 0.01
       }
       box.currentBlocks = {
@@ -2114,7 +2114,7 @@ function mainSchedBlocks (optIn) {
         let grunphase = d3.select(this).select('g#grunphase')
         updateConfigDataFinish(grunphase)
         let step = dispatchRunPhase(d3.select(this).select('#grunphase'), block.runPhase, d3.select(this).select('#text'))
-        let percent = 1 - (block.endTime - shared.data.server.timeOfNight.now) / (block.endTime - block.startTime)
+        let percent = 1 - (block.time.end - shared.data.server.timeOfNight.now) / (block.time.end - block.time.start)
         let middleRect = headerBoxRunningPhase.x + (headerBoxRunningPhase.w * 0.5)
 
         d3.select(this).select('#middle')

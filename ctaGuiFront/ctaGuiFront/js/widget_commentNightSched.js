@@ -44,11 +44,11 @@ var mainScriptTag = 'commentNightSched'
 /* global runWhenReady */
 /* global ScrollBox */
 
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
+// window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
 // window.loadScript({ source: mainScriptTag, script: '/js/utils_blockList.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockFilters.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_blockDisplayer.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_EventQueue.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_blockFilters.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_blockDisplayer.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/events/utils_EventQueue.js' })
 // window.loadScript({ source: mainScriptTag, script: '/js/utils_TelsArray.js' })
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })

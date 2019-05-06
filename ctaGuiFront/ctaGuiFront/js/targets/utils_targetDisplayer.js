@@ -113,7 +113,7 @@ window.TargetDisplayer = function (optIn) {
           .attr('height', com.defaultBib.skymap.box.h)
           .attr('fill', colorTheme.bright.background)
           .attr('stroke', colorTheme.bright.stroke)
-          .attr('stroke-width', 0.2)
+          .attr('stroke-width', 0.1)
         com.defaultBib.skymap.g.append('text')
           .attr('id', 'mainTargetCross')
           .text('+')
@@ -124,7 +124,7 @@ window.TargetDisplayer = function (optIn) {
           .attr('transform', 'translate(' + (com.defaultBib.skymap.box.w * 0.5) + ',' + (com.defaultBib.skymap.box.h * 0.5 + txtSize * 0.33) + ')')
         com.defaultBib.skymap.g.append('text')
           .attr('id', 'mainTargetName')
-          .text(com.defaultBib.skymap.mainTarget.id)
+          // .text(com.defaultBib.skymap.mainTarget.id)
           .style('fill', colorTheme.dark.stroke)
           .style('font-weight', '')
           .style('font-size', txtSize + 'px')
@@ -158,10 +158,17 @@ window.TargetDisplayer = function (optIn) {
 
     function update () {
       let txtSize = 10
-      for (let i = 0; i < com.data.filtered.targets.length; i++) {
-        let data = com.data.filtered.targets[i]
-        let offX = (data.pos[0] - com.defaultBib.skymap.mainTarget.pos[0]) * 4
-        let offY = (data.pos[1] - com.defaultBib.skymap.mainTarget.pos[1]) * 4
+
+      if (!com.defaultBib.skymap.mainTarget) {
+        com.defaultBib.skymap.mainTarget = com.data.filtered.targets[0]
+        com.defaultBib.skymap.g.select('text#mainTargetName')
+          .text(com.defaultBib.skymap.mainTarget.id)
+      }
+
+      for (let i = 0; i < com.data.filtered.pointings.length; i++) {
+        let data = com.data.filtered.pointings[i]
+        let offX = (data.pos[0] - com.defaultBib.skymap.mainTarget.pos[0]) * 6
+        let offY = (data.pos[1] - com.defaultBib.skymap.mainTarget.pos[1]) * 6
         com.defaultBib.skymap.g.append('text')
           .text('+')
           .style('fill', colorTheme.dark.stroke)
@@ -200,15 +207,15 @@ window.TargetDisplayer = function (optIn) {
   this.init = init
   function initScrollBox () {
     com.main.scroll.scrollBoxG = com.main.g.append('g')
-    com.main.scroll.scrollBoxG.append('rect')
-      .attr('class', 'background')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', com.main.box.w)
-      .attr('height', com.main.box.h)
-      .style('fill', com.main.background.fill)
-      .style('stroke', com.main.background.stroke)
-      .style('stroke-width', com.main.background.strokeWidth)
+    // com.main.scroll.scrollBoxG.append('rect')
+    //   .attr('class', 'background')
+    //   .attr('x', 0)
+    //   .attr('y', 0)
+    //   .attr('width', com.main.box.w)
+    //   .attr('height', com.main.box.h)
+    //   .style('fill', com.main.background.fill)
+    //   .style('stroke', com.main.background.stroke)
+    //   .style('stroke-width', com.main.background.strokeWidth)
 
     com.main.scroll.scrollBox = new ScrollBox()
     let ntag = com.main.tag + 'Scroll'
@@ -257,7 +264,7 @@ window.TargetDisplayer = function (optIn) {
   this.initBackground = initBackground
 
   function filterData (optIn) {
-    return {data: com.data.raw.targets}
+    return {data: {targets: com.data.raw.targets, pointings: com.data.raw.pointings}}
     function checkFilter (d, f) {
       let op = f.operation
       let co = f.contains
@@ -411,7 +418,7 @@ window.TargetDisplayer = function (optIn) {
   function updateData (dataIn) {
     com.data.raw = dataIn.data.raw
     // com.filters.filtering = updateFiltering()
-    com.data.filtered.targets = filterData({}).data
+    com.data.filtered = filterData({}).data
     createTargetsGroup()
 
     if (com.displayer === 'defaultBib') {

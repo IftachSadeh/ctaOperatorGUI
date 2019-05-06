@@ -610,7 +610,7 @@ window.BlockDisplayer = function (optIn) {
           })
 
           ovelaps.sort(function (a, b) {
-            let diffTime = a.data.data.startTime - b.data.data.startTime
+            let diffTime = a.data.data.time.start - b.data.data.time.start
             let diffTel = b.data.data.telIds.length - a.data.data.telIds.length
             return diffTel !== 0 ? diffTel : diffTime
           })
@@ -681,9 +681,9 @@ window.BlockDisplayer = function (optIn) {
         let id = dataNow.obId
         let state = dataNow.exeState.state
         let nTels = dataNow.telIds.length
-        let start = (dataNow.startTime - optIn.start) * xScale
-        let end = (dataNow.endTime - optIn.start) * xScale
-        let overlap = (dataNow.endTime - dataNow.startTime) * xScale * 0.2 // allow small overlap in x between blocks
+        let start = (dataNow.time.start - optIn.start) * xScale
+        let end = (dataNow.time.endTime - optIn.start) * xScale
+        let overlap = (dataNow.time.endTime - dataNow.time.start) * xScale * 0.2 // allow small overlap in x between blocks
         let x0 = box.x + start
         let w0 = end - start
         let h0 = optIn.yScale ? (nTels * yScale) : (box.h * 0.3)
@@ -751,7 +751,7 @@ window.BlockDisplayer = function (optIn) {
 
         let cols = com.style.blockCol({ d: b })
 
-        bDisplay.w = timeScale(b.endTime) - timeScale(b.startTime)
+        bDisplay.w = timeScale(b.time.endTime) - timeScale(b.time.start)
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
@@ -937,9 +937,9 @@ window.BlockDisplayer = function (optIn) {
           .attr('stroke', d.display.stroke)
           .style('fill', d.display.fill)
           .style('fill-opacity', d.display.fillOpacity)
-          .attr('x', timeScale(d.startTime))
+          .attr('x', timeScale(d.time.start))
           .attr('y', d.display.y - 2)
-          .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+          .attr('width', timeScale(d.time.end) - timeScale(d.time.start))
           .attr('height', d.display.h)
           .attr('stroke-width', d.display.strokeWidth)
           .style('stroke-opacity', d.display.strokeOpacity)
@@ -947,9 +947,9 @@ window.BlockDisplayer = function (optIn) {
         d3.select(this).select('rect.pattern')
           .transition('inOut')
           .duration(timeD.animArc)
-          .attr('x', timeScale(d.startTime))
+          .attr('x', timeScale(d.time.start))
           .attr('y', d.display.y - 2)
-          .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+          .attr('width', timeScale(d.time.end) - timeScale(d.time.start))
           .attr('height', d.display.h)
           .style('fill', d.display.patternFill)
           .style('fill-opacity', d.display.patternOpacity)
@@ -969,7 +969,7 @@ window.BlockDisplayer = function (optIn) {
           .style('opacity', d.display.fillOpacity)
           .style('stroke-opacity', d.display.fillOpacity)
           .style('fill-opacity', d.display.fillOpacity)
-          .attr('x', timeScale(d.startTime + d.duration * 0.5))
+          .attr('x', timeScale(d.time.start + d.time.duration * 0.5))
           .attr('y', d.display.y + d.display.h / 2)
       })
     }
@@ -1319,9 +1319,9 @@ window.BlockDisplayer = function (optIn) {
         // d3.select(this).select('rect.pattern')
         //   .transition('inOut')
         //   .duration(timeD.animArc)
-        //   .attr('x', timeScale(d.startTime))
+        //   .attr('x', timeScale(d.time.start))
         //   .attr('y', d.display.y - 2)
-        //   .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+        //   .attr('width', timeScale(d.time.endTime) - timeScale(d.time.start))
         //   .attr('height', d.display.h)
         //   .style('fill', d.display.patternFill)
         //   .style('fill-opacity', d.display.patternOpacity)
@@ -1571,9 +1571,9 @@ window.BlockDisplayer = function (optIn) {
         // d3.select(this).select('rect.pattern')
         //   .transition('inOut')
         //   .duration(timeD.animArc)
-        //   .attr('x', timeScale(d.startTime))
+        //   .attr('x', timeScale(d.time.start))
         //   .attr('y', d.display.y - 2)
-        //   .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+        //   .attr('width', timeScale(d.time.endTime) - timeScale(d.time.start))
         //   .attr('height', d.display.h)
         //   .style('fill', d.display.patternFill)
         //   .style('fill-opacity', d.display.patternOpacity)
@@ -1755,7 +1755,7 @@ window.BlockDisplayer = function (optIn) {
           }
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
-      let minX = com.main.box.w + 2
+      let minX = com.blockQueue2.schedBlocks.label.position === 'left' ? -2 : com.main.box.w + 2
       let maxWidth = 0
       enterAllScheds.each(function (d, i) {
         d3.select(this).append('line')
@@ -1798,27 +1798,10 @@ window.BlockDisplayer = function (optIn) {
             .style('pointer-events', 'none')
             .attr('fill', colorTheme.darker.text)
             .attr('stroke', 'none')
-          let bbox = text.node().getBBox()
-          if (bbox.x < minX) minX = bbox.x
-          if (bbox.width > maxWidth) maxWidth = bbox.width
+          // let bbox = text.node().getBBox()
+          // if (bbox.x < minX) minX = bbox.x
+          // if (bbox.width > maxWidth) maxWidth = bbox.width
         }
-        let ww = com.blockQueue2.schedBlocks.label.size ? com.blockQueue2.schedBlocks.label.size : maxWidth
-        let poly = [
-          {x: minX, y: 0},
-          {x: minX + ww * 0.85, y: 0},
-
-          {x: minX + ww, y: height * 0.3},
-          {x: minX + ww, y: height * 0.7},
-
-          {x: minX + ww * 0.85, y: height},
-          {x: minX, y: height}
-        ]
-        d3.select(this).select('polygon')
-          .attr('points', function () {
-            return poly.map(function (d) {
-              return [d.x, d.y].join(',')
-            }).join(' ')
-          })
       })
       enterAllScheds.merge(allScheds)
         .transition()
@@ -1833,7 +1816,9 @@ window.BlockDisplayer = function (optIn) {
         .each(function (d, i) {
           d.blocks = setDefaultStyleForBlocks(d.blocks)
           setBlockRect(d.blocks, {x: 0, y: (height * i), w: com.main.box.w, h: height})
+
           let ww = com.blockQueue2.schedBlocks.label.size ? com.blockQueue2.schedBlocks.label.size : maxWidth
+          ww = com.blockQueue2.schedBlocks.label.position === 'left' ? -ww : ww
           let poly = [
             {x: minX, y: 0},
             {x: minX + ww * 0.85, y: 0},
@@ -1873,9 +1858,9 @@ window.BlockDisplayer = function (optIn) {
           .transition('inOut')
           .duration(0)
           .ease(d3.easeLinear)
-          .attr('x', timeScale(d.startTime))
+          .attr('x', timeScale(d.time.start))
           .attr('y', 0)
-          .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+          .attr('width', timeScale(d.time.end) - timeScale(d.time.start))
           .attr('height', box.h)
           .style('fill', d.display.fill)
           .style('fill-opacity', d.display.fillOpacity)
@@ -1885,9 +1870,9 @@ window.BlockDisplayer = function (optIn) {
         d3.select(this).select('rect.pattern')
           .transition('inOut')
           .duration(0)
-          .attr('x', timeScale(d.startTime))
+          .attr('x', timeScale(d.time.start))
           .attr('y', 0)
-          .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+          .attr('width', timeScale(d.time.end) - timeScale(d.time.start))
           .attr('height', box.h)
           .style('fill', d.display.patternFill)
           .style('fill-opacity', d.display.patternOpacity)
@@ -1897,7 +1882,7 @@ window.BlockDisplayer = function (optIn) {
           .text(d.metaData.nObs)
           .style('font-size', (box.h * 0.5) + 'px')
           .attr('dy', 1)
-          .attr('x', timeScale(d.startTime) + (timeScale(d.endTime) - timeScale(d.startTime)) * 0.5)
+          .attr('x', timeScale(d.time.start) + (timeScale(d.time.end) - timeScale(d.time.start)) * 0.5)
           .attr('y', (box.h * 0.5))
           .style('opacity', d.display.fillOpacity)
           .style('stroke-opacity', d.display.fillOpacity)
@@ -1922,9 +1907,9 @@ window.BlockDisplayer = function (optIn) {
           }
           ret.push({
             y: translate.y,
-            x: timeScale(scheds[i].blocks[j].startTime),
+            x: timeScale(scheds[i].blocks[j].time.start),
             h: height,
-            w: timeScale(scheds[i].blocks[j].endTime) - timeScale(scheds[i].blocks[j].startTime),
+            w: timeScale(scheds[i].blocks[j].time.end) - timeScale(scheds[i].blocks[j].time.start),
             block: scheds[i].blocks[j]
           })
         }
@@ -2198,8 +2183,8 @@ window.BlockDisplayer = function (optIn) {
         let startT
         let endT
         for (let j = 0; j < scheds[i].blocks.length; j++) {
-          if (startT === undefined || scheds[i].blocks[j].startTime < startT) startT = scheds[i].blocks[j].startTime
-          if (endT === undefined || scheds[i].blocks[j].endTime > endT) endT = scheds[i].blocks[j].endTime
+          if (startT === undefined || scheds[i].blocks[j].time.start < startT) startT = scheds[i].blocks[j].time.start
+          if (endT === undefined || scheds[i].blocks[j].time.end > endT) endT = scheds[i].blocks[j].time.end
         }
         let insert = false
         for (let j = 0; j < track.length; j++) {
@@ -2231,8 +2216,8 @@ window.BlockDisplayer = function (optIn) {
       let tracks = computeTrack(scheds)
 
       let nLine = tracks.length
-      let height = nLine >= 13 ? (com.main.box.h / nLine) : (com.main.box.h / 13)
-      let offsetY = nLine >= 13 ? 0 : (com.main.box.h - ((com.main.box.h / 13) * nLine)) / (nLine - 1)
+      let height = nLine >= 8 ? (com.main.box.h / nLine) : (com.main.box.h / 8)
+      let offsetY = nLine >= 8 ? 0 : (com.main.box.h - ((com.main.box.h / 8) * nLine)) / (nLine - 1)
 
       let currentTrack = com.main.scroll.scrollG
         .selectAll('g.track')
@@ -2409,9 +2394,9 @@ window.BlockDisplayer = function (optIn) {
           .transition('inOut')
           .duration(timeD.animArc)
           .ease(d3.easeLinear)
-          .attr('x', timeScale(d.startTime))
+          .attr('x', timeScale(d.time.start))
           .attr('y', 0)
-          .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+          .attr('width', timeScale(d.time.end) - timeScale(d.time.start))
           .attr('height', box.h)
           .style('fill', d.display.fill)
           .style('fill-opacity', d.display.fillOpacity)
@@ -2421,9 +2406,9 @@ window.BlockDisplayer = function (optIn) {
         d3.select(this).select('rect.pattern')
           .transition('inOut')
           .duration(timeD.animArc)
-          .attr('x', timeScale(d.startTime))
+          .attr('x', timeScale(d.time.start))
           .attr('y', 0)
-          .attr('width', timeScale(d.endTime) - timeScale(d.startTime))
+          .attr('width', timeScale(d.time.end) - timeScale(d.time.start))
           .attr('height', box.h)
           .style('fill', d.display.patternFill)
           .style('fill-opacity', d.display.patternOpacity)
@@ -2434,7 +2419,7 @@ window.BlockDisplayer = function (optIn) {
           .text(d.metaData.nObs)
           .style('font-size', (box.h * 0.5) + 'px')
           .attr('dy', 1)
-          .attr('x', timeScale(d.startTime) + (timeScale(d.endTime) - timeScale(d.startTime)) * 0.5)
+          .attr('x', timeScale(d.time.start) + (timeScale(d.time.end) - timeScale(d.time.start)) * 0.5)
           .attr('y', (box.h * 0.5))
           .style('opacity', d.display.fillOpacity)
           .style('stroke-opacity', d.display.fillOpacity)
@@ -2459,9 +2444,9 @@ window.BlockDisplayer = function (optIn) {
           }
           ret.push({
             y: translate.y,
-            x: timeScale(scheds[i].blocks[j].startTime),
+            x: timeScale(scheds[i].blocks[j].time.start),
             h: height,
-            w: timeScale(scheds[i].blocks[j].endTime) - timeScale(scheds[i].blocks[j].startTime),
+            w: timeScale(scheds[i].blocks[j].time.endTime) - timeScale(scheds[i].blocks[j].time.start),
             block: scheds[i].blocks[j]
           })
         }

@@ -259,39 +259,49 @@ window.TelescopeForm = function (optIn) {
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Targets', anchor: 'start'},
-      {x: box.w * 0.12, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Sched', anchor: 'start'},
-      {x: box.w * 0.23, y: 3 + headerSize * 0.5 + txtSize * 0.3, text: 'Obs', anchor: 'start'}
+      {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Targets', anchor: 'middle'},
+      {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.7, text: 'Obs', anchor: 'middle'},
+      {x: box.w * 0.85, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Sched', anchor: 'middle'}
     ]
     for (let i = 0; i < label.length; i++) {
+      let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
       g.append('text')
         .text(label[i].text)
         .style('fill', colorPalette.medium.background)
         .style('font-weight', 'bold')
         .style('font-size', txtSize + 'px')
         .attr('text-anchor', label[i].anchor)
-        .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
+        .attr('transform', 'translate(' + (label[i].x + off) + ',' + (label[i].y) + ')')
+      g.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', label[i].w)
+        .attr('height', box.h)
+        .attr('fill', i % 2 === 0 ? colorPalette.dark.background : colorPalette.darker.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.05)
+        .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
     }
 
-    let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-    com.ressource.scrollBox = initScrollBox('targetRessourceScroll', blockg, box, {enabled: false})
+    let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (headerSize * 1.5) + ')')
+    let sbox = {
+      x: 0,
+      y: 0,
+      w: box.w,
+      h: box.h - (headerSize * 1.5)
+    }
+    com.ressource.scrollBox = initScrollBox('targetRessourceScroll', blockg, sbox, {enabled: false})
     let innerg = com.ressource.scrollBox.get('innerG')
 
-    let scheds = com.data.schedB
-    let inter = {}
-    for (let key in scheds) {
-      if (!inter[scheds[key].target.id]) inter[scheds[key].target.id] = {target: scheds[key].target, scheds: []}
-      scheds[key].id = key
-      inter[scheds[key].target.id].scheds.push(scheds[key])
-    }
-    let targs = []
-    for (let key in inter) {
-      targs.push(inter[key])
+    let scheds = []
+    for (let key in com.data.schedB) {
+      // if (!inter[com.data.schedB[key].target.id]) inter[com.data.schedB[key].target.id] = {target: com.data.schedB[key].target, scheds: []}
+      // com.data.schedB[key].id = key
+      scheds.push(com.data.schedB[key])
     }
 
-    let line = titleSize * 3
-    let offsetY = titleSize * 1.5
     function blockCore (blocks, g, offset) {
+      let line = 30
       let current = g
         .selectAll('g.block')
         .data(blocks, function (d) {
@@ -335,7 +345,7 @@ window.TelescopeForm = function (optIn) {
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (2 + line * (i + 1)) + ',' + (offset) + ')')
+        g.attr('transform', 'translate(' + (label[1].x + label[1].w * 0.5 - blocks.length * line * 0.95 * 0.5 + line * i) + ',' + (offset) + ')')
       })
       current
         .exit()
@@ -346,7 +356,9 @@ window.TelescopeForm = function (optIn) {
       // offsetY += line * 1
     }
     function schedCore (scheds, g, offset) {
-      let innerOffset = 0
+      let line = 30
+      let dimPoly = line * 0.95
+      let centering = 10 // (sbox.h - (line * scheds.length)) / (scheds.length + 1)
       let current = g
         .selectAll('g.sched')
         .data(scheds, function (d) {
@@ -358,7 +370,6 @@ window.TelescopeForm = function (optIn) {
         .attr('class', 'sched')
       enter.each(function (d, i) {
         let g = d3.select(this)
-        let dimPoly = line * 0.95
         let poly = [
           {x: dimPoly * 0.3, y: dimPoly * 0.0},
           {x: dimPoly * 0.7, y: dimPoly * 0.0},
@@ -407,10 +418,8 @@ window.TelescopeForm = function (optIn) {
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (box.w * 0.12) + ',' + (offset + innerOffset + line * i) + ')')
-        offsetY += line * 0.85
-        // innerOffset += line
-        blockCore(d.blocks, g, 0)
+        g.attr('transform', 'translate(' + (label[2].x + label[2].w * 0.5 - dimPoly * 0.5) + ',' + (offset + centering + (line + centering) * i) + ')')
+        blockCore(d.blocks, innerg.append('g'), (offset + centering * 1 + (line + centering) * i))
       })
       current
         .exit()
@@ -419,81 +428,150 @@ window.TelescopeForm = function (optIn) {
         .style('opacity', 0)
         .remove()
     }
+    schedCore(scheds, innerg, 0)
 
-    let current = innerg
-      .selectAll('g.targ')
-      .data(targs, function (d) {
-        return d.target.id
-      })
-    let enter = current
-      .enter()
-      .append('g')
-      .attr('class', 'targ')
-    enter.each(function (d, i) {
-      let g = d3.select(this)
-
-      g.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', line)
-        .attr('height', line)
-        .attr('fill', colorPalette.dark.background)
-        .attr('stroke', colorPalette.medium.stroke)
-        .attr('stroke-width', 0.6)
-        // .style('boxShadow', '10px 20px 30px black')
-        .attr('rx', line)
-        .on('click', function () {
-          com.ressource.events.click('target', d.target.id)
-        })
-        .on('mouseover', function (d) {
-          d3.select(this).style('cursor', 'pointer')
-          d3.select(this).attr('fill', colorPalette.darker.background)
-        })
-        .on('mouseout', function (d) {
-          d3.select(this).style('cursor', 'default')
-          d3.select(this).attr('fill', colorPalette.dark.background)
-        })
-      g.append('svg:image')
-        .attr('xlink:href', '/static/icons/round-target.svg')
-        .attr('width', line * 1)
-        .attr('height', line * 1)
-        .attr('x', line * 0.0)
-        .attr('y', line * 0.5 - line * 0.5)
-        .style('opacity', 0.5)
-        .style('pointer-events', 'none')
-      g.append('text')
-        .text('T' + d.target.name.split('_')[1])
-        .attr('x', line * 0.5)
-        .attr('y', line * 0.5 + txtSize * 0.3)
-        .style('font-weight', '')
-        .attr('text-anchor', 'middle')
-        .style('font-size', headerSize + 'px')
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .attr('fill', colorPalette.dark.text)
-        .attr('stroke', 'none')
-    })
-    let merge = current.merge(enter)
-    merge.each(function (d, i) {
-      let g = d3.select(this)
-      g.attr('transform', 'translate(' + 0 + ',' + (offsetY) + ')')
-      schedCore(d.scheds, g, 0)
-      offsetY += line * 0.33
-    })
-    current
-      .exit()
-      .transition('inOut')
-      .duration(timeD.animArc)
-      .style('opacity', 0)
-      .remove()
-
-    com.ressource.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: line * inter.length})
-    blockg.append('line')
-      .attr('x1', box.x)
-      .attr('y1', box.h)
-      .attr('x2', box.w)
-      .attr('y2', box.h)
-      .attr('stroke', colorPalette.dark.stroke)
-      .attr('stroke-width', 0.4)
+    // let inter = {}
+    // for (let key in scheds) {
+    //   if (!inter[scheds[key].target.id]) inter[scheds[key].target.id] = {target: scheds[key].target, scheds: []}
+    //   scheds[key].id = key
+    //   inter[scheds[key].target.id].scheds.push(scheds[key])
+    // }
+    // let targs = []
+    // for (let key in inter) {
+    //   targs.push(inter[key])
+    // }
+    //
+    // let line = titleSize * 3
+    // let offsetY = titleSize * 1.5
+    // function blockCore (blocks, g, offset) {
+    //   let current = g
+    //     .selectAll('g.block')
+    //     .data(blocks, function (d) {
+    //       return d.obId
+    //     })
+    //   let enter = current
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'block')
+    //   enter.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     let palette = blockStyle(d)
+    //     g.append('rect')
+    //       .attr('x', 0)
+    //       .attr('y', 0)
+    //       .attr('width', line * 0.95)
+    //       .attr('height', line * 0.95)
+    //       .attr('fill', palette.color.background)
+    //       .attr('stroke', palette.color.stroke)
+    //       .attr('stroke-width', 0.1)
+    //       .on('click', function () {
+    //         com.ressource.events.click('block', d.obId)
+    //       })
+    //       .on('mouseover', function (d) {
+    //         d3.select(this).style('cursor', 'pointer')
+    //         d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
+    //       })
+    //       .on('mouseout', function (d) {
+    //         d3.select(this).style('cursor', 'default')
+    //         d3.select(this).attr('fill', palette.color.background)
+    //       })
+    //     g.append('text')
+    //       .text(d.metaData.nObs)
+    //       .style('fill', '#000000')
+    //       .style('font-weight', 'bold')
+    //       .style('font-size', headerSize + 'px')
+    //       .attr('text-anchor', 'middle')
+    //       .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+    //       .style('pointer-events', 'none')
+    //   })
+    //   let merge = current.merge(enter)
+    //   merge.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     g.attr('transform', 'translate(' + (2 + line * (i + 1)) + ',' + (offset) + ')')
+    //   })
+    //   current
+    //     .exit()
+    //     .transition('inOut')
+    //     .duration(timeD.animArc)
+    //     .style('opacity', 0)
+    //     .remove()
+    //   // offsetY += line * 1
+    // }
+    //
+    // let current = innerg
+    //   .selectAll('g.targ')
+    //   .data(targs, function (d) {
+    //     return d.target.id
+    //   })
+    // let enter = current
+    //   .enter()
+    //   .append('g')
+    //   .attr('class', 'targ')
+    // enter.each(function (d, i) {
+    //   let g = d3.select(this)
+    //
+    //   g.append('rect')
+    //     .attr('x', 0)
+    //     .attr('y', 0)
+    //     .attr('width', line)
+    //     .attr('height', line)
+    //     .attr('fill', colorPalette.dark.background)
+    //     .attr('stroke', colorPalette.medium.stroke)
+    //     .attr('stroke-width', 0.6)
+    //     // .style('boxShadow', '10px 20px 30px black')
+    //     .attr('rx', line)
+    //     .on('click', function () {
+    //       com.ressource.events.click('target', d.target.id)
+    //     })
+    //     .on('mouseover', function (d) {
+    //       d3.select(this).style('cursor', 'pointer')
+    //       d3.select(this).attr('fill', colorPalette.darker.background)
+    //     })
+    //     .on('mouseout', function (d) {
+    //       d3.select(this).style('cursor', 'default')
+    //       d3.select(this).attr('fill', colorPalette.dark.background)
+    //     })
+    //   g.append('svg:image')
+    //     .attr('xlink:href', '/static/icons/round-target.svg')
+    //     .attr('width', line * 1)
+    //     .attr('height', line * 1)
+    //     .attr('x', line * 0.0)
+    //     .attr('y', line * 0.5 - line * 0.5)
+    //     .style('opacity', 0.5)
+    //     .style('pointer-events', 'none')
+    //   g.append('text')
+    //     .text('T' + d.target.name.split('_')[1])
+    //     .attr('x', line * 0.5)
+    //     .attr('y', line * 0.5 + txtSize * 0.3)
+    //     .style('font-weight', '')
+    //     .attr('text-anchor', 'middle')
+    //     .style('font-size', headerSize + 'px')
+    //     .attr('dy', 0)
+    //     .style('pointer-events', 'none')
+    //     .attr('fill', colorPalette.dark.text)
+    //     .attr('stroke', 'none')
+    // })
+    // let merge = current.merge(enter)
+    // merge.each(function (d, i) {
+    //   let g = d3.select(this)
+    //   g.attr('transform', 'translate(' + 0 + ',' + (offsetY) + ')')
+    //   schedCore(d.scheds, g, 0)
+    //   offsetY += line * 0.33
+    // })
+    // current
+    //   .exit()
+    //   .transition('inOut')
+    //   .duration(timeD.animArc)
+    //   .style('opacity', 0)
+    //   .remove()
+    //
+    // com.ressource.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: line * inter.length})
+    // blockg.append('line')
+    //   .attr('x1', box.x)
+    //   .attr('y1', box.h)
+    //   .attr('x2', box.w)
+    //   .attr('y2', box.h)
+    //   .attr('stroke', colorPalette.dark.stroke)
+    //   .attr('stroke-width', 0.4)
   }
 }

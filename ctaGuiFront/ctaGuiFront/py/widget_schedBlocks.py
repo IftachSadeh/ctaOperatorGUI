@@ -171,7 +171,7 @@ class schedBlocks():
             key = keyV[0]
             blocks = self.redis.pipe.execute(packed=True)
             schedBlocks.blocks[key] = sorted(
-                blocks, cmp=lambda a, b: int(a['startTime']) - int(b['startTime']))
+                blocks, cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start']))
 
         # schedBlocks.blocks['run'] = schedBlocks.blocks['wait'][0:6]
         # for bb in (schedBlocks.blocks['run']):

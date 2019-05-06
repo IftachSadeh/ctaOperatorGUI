@@ -498,12 +498,17 @@ class obsBlocks_noACS():
                 totObsBlockDuration = 0
                 obsBlockStartTime = totBlockDuration
 
-                idIndex = (obsBlockStartTime / (self.durationNight / len(targetsIds))) + 0.75
-                idIndex = int(idIndex + ((self.rndGen.random() - 0.5) * 2))
-                idIndex = min(max(0, idIndex), len(targetsIds) -1)
-
-                targetId = targetsIds[idIndex]
-                target = self.redis.get(name=targetId, packed=True, defVal={})
+                nbTarget = max(1, int(self.rndGen.random() * 3))
+                targetIds = []
+                targets = []
+                for z in range(nbTarget):
+                    idIndex = (obsBlockStartTime / (self.durationNight / len(targetsIds))) + 0.75
+                    idIndex = int(idIndex + ((self.rndGen.random() - 0.5) * 3))
+                    idIndex = min(max(0, idIndex), len(targetsIds) - 1)
+                    if not (targetsIds[idIndex] in targetIds):
+                        targetIds.append(targetsIds[idIndex])
+                        targets.append(self.redis.get(name=targetsIds[idIndex], packed=True, defVal={}))
+                print targetIds
 
                 for nObsNow in range(nObsBlocks):
                     obsBlockId = "obsBlock_"+baseName + \
@@ -531,43 +536,86 @@ class obsBlocks_noACS():
                     # integrated time for all obs blocks within this sched block
                     totObsBlockDuration += obsBlockDuration
 
-                    pntPos = copy.deepcopy(target["pos"])
-                    pntPos[0] += (self.rndGen.random() - 0.5) * 10
-                    pntPos[1] += (self.rndGen.random() - 0.5) * 10
+                    pointings = []
+                    nbDividing = max(1, int(self.rndGen.random() * 5))
+                    for z in range(nbDividing):
+                        trg = targets[max(0, int(self.rndGen.random() * len(targets)))]
+                        pnt = {'id': schedBlockId+"_"+obsBlockId, 'name': trg["name"] + "/p_" + str(nObsNow) + "-" + str(z)}
 
-                    if pntPos[0] > self.azMinMax[1]:
-                        pntPos[0] -= 360
-                    elif pntPos[0] < self.azMinMax[0]:
-                        pntPos[0] += 360
+                        pntPos = copy.deepcopy(trg["pos"])
+                        pntPos[0] += (self.rndGen.random() - 0.5) * 10
+                        pntPos[1] += (self.rndGen.random() - 0.5) * 10
+
+                        if pntPos[0] > self.azMinMax[1]:
+                            pntPos[0] -= 360
+                        elif pntPos[0] < self.azMinMax[0]:
+                            pntPos[0] += 360
+                        pnt['pos'] = pntPos
+                        pointings.append(pnt)
+                    print pointings
 
                     if debugTmp:
                         print ' --- nObsNow / startTime / duration:', \
                             nObsNow, obsBlockStartTime, obsBlockDuration, '-------', obsBlockId
 
+                    # exeState = {'state': "wait", 'canRun': True}
+                    # metaData = {'nSched': nSchedBlocks, 'nObs': nObsNow,
+                    #             'blockName': str(nSchedBlocks)+" ("+str(nObsNow)+")"}
+                    # block = dict()
+                    # block["sbId"] = schedBlockId
+                    # block["obId"] = obsBlockId
+                    # block["metaData"] = metaData
+                    # block["timeStamp"] = getTime()
+                    # block["telIds"] = schedTelIds
+                    # # block["startTime"] = obsBlockStartTime.strftime("%Y-%m-%d %H:%M:%S")
+                    # # block["duration"] = (obsBlockDuration-overheadDuration).total_seconds()
+                    # # block["endTime"] = (obsBlockStartTime+(obsBlockDuration-overheadDuration)).strftime("%Y-%m-%d %H:%M:%S")
+                    # block["startTime"] = obsBlockStartTime
+                    # block["duration"] = obsBlockDuration-overheadDuration
+                    # block["endTime"] = block["startTime"]+block["duration"]
+                    # block["exeState"] = exeState
+                    # block["runPhase"] = []
+                    # block["targetId"] = targetId
+                    # block["targetName"] = targetId
+                    # block["targetPos"] = target["pos"]
+                    # block["pointingId"] = schedBlockId+"_"+obsBlockId
+                    # block["pointingName"] = block["targetName"] + \
+                    #     "/p_"+str(nObsNow)
+                    # block["pointingPos"] = pntPos
+
+                    time = {'start': obsBlockStartTime, 'duration': obsBlockDuration-overheadDuration, 'end': obsBlockStartTime+obsBlockDuration-overheadDuration}
                     exeState = {'state': "wait", 'canRun': True}
                     metaData = {'nSched': nSchedBlocks, 'nObs': nObsNow,
                                 'blockName': str(nSchedBlocks)+" ("+str(nObsNow)+")"}
+                    telescopes = {'large': {'min': 0, 'max': 99, 'ids': filter(lambda x: 'L' in x, schedTelIds)},
+                                  'medium': {'min': 0, 'max': 99, 'ids': filter(lambda x: 'M' in x, schedTelIds)},
+                                  'small': {'min': 0, 'max': 99, 'ids': filter(lambda x: 'S' in x, schedTelIds)}}
+                    print telescopes
                     block = dict()
                     block["sbId"] = schedBlockId
                     block["obId"] = obsBlockId
+                    block["time"] = time
                     block["metaData"] = metaData
                     block["timeStamp"] = getTime()
+                    block["telescopes"] = telescopes
+                    block["exeState"] = exeState
+                    block["runPhase"] = []
+                    block["targets"] = targets
+                    block["pointings"] = pointings
                     block["telIds"] = schedTelIds
                     # block["startTime"] = obsBlockStartTime.strftime("%Y-%m-%d %H:%M:%S")
                     # block["duration"] = (obsBlockDuration-overheadDuration).total_seconds()
                     # block["endTime"] = (obsBlockStartTime+(obsBlockDuration-overheadDuration)).strftime("%Y-%m-%d %H:%M:%S")
-                    block["startTime"] = obsBlockStartTime
-                    block["duration"] = obsBlockDuration-overheadDuration
-                    block["endTime"] = block["startTime"]+block["duration"]
-                    block["exeState"] = exeState
-                    block["runPhase"] = []
-                    block["targetId"] = targetId
-                    block["targetName"] = targetId
-                    block["targetPos"] = target["pos"]
-                    block["pointingId"] = schedBlockId+"_"+obsBlockId
-                    block["pointingName"] = block["targetName"] + \
-                        "/p_"+str(nObsNow)
-                    block["pointingPos"] = pntPos
+                    # block["startTime"] = obsBlockStartTime
+                    # block["duration"] = obsBlockDuration-overheadDuration
+                    # block["endTime"] = block["startTime"]+block["duration"]
+                    # block["targetId"] = targetId
+                    # block["targetName"] = targetId
+                    # block["targetPos"] = target["pos"]
+                    # block["pointingId"] = schedBlockId+"_"+obsBlockId
+                    # block["pointingName"] = block["targetName"] + \
+                    #     "/p_"+str(nObsNow)
+                    # block["pointingPos"] = pntPos
                     # block["fullObsBlock"] = self.getObsBlockTemplate()
                     self.redis.pipe.set(
                         name=block["obId"], data=block, expire=self.expire, packed=True)
@@ -682,7 +730,7 @@ class obsBlocks_noACS():
 
         hasChange = False
         for block in waitV:
-            if timeNow < block["startTime"] - self.loopSleep: # datetime.strptime(block["startTime"], "%Y-%m-%d %H:%M:%S"): # - deltatime(self.loopSleep):
+            if timeNow < block["time"]["start"] - self.loopSleep: # datetime.strptime(block["startTime"], "%Y-%m-%d %H:%M:%S"): # - deltatime(self.loopSleep):
                 continue
 
             block['exeState']['state'] = "run"
@@ -708,7 +756,7 @@ class obsBlocks_noACS():
                 # # adjust the starting/ending time
                 # block["endTime"] = block["startTime"] + block["duration"]
 
-                if timeNow >= block["endTime"] or (self.rndGen.random() < self.phaseRndFrac["cancel"] * 0.1): # datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") or (self.rndGen.random() < self.phaseRndFrac["cancel"] * 0.1):
+                if timeNow >= block["time"]["end"] or (self.rndGen.random() < self.phaseRndFrac["cancel"] * 0.1): # datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") or (self.rndGen.random() < self.phaseRndFrac["cancel"] * 0.1):
                     block['exeState']['state'] = "cancel"
                     if self.rndGen.random() < self.errorRndFrac["E1"]:
                         block['exeState']['error'] = "E1"
@@ -772,11 +820,11 @@ class obsBlocks_noACS():
 
                     elif phaseNow in self.exePhases["during"]:
                         isDone = (
-                            timeNow >= (block["endTime"] -
-                                        block["duration"] * self.phaseRndFrac['finish']))# (datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") - timedelta(seconds = int(block["duration"]) * self.phaseRndFrac['finish'])))
+                            timeNow >= (block["time"]["end"] -
+                                        block["time"]["duration"] * self.phaseRndFrac['finish']))# (datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") - timedelta(seconds = int(block["duration"]) * self.phaseRndFrac['finish'])))
 
                     else:
-                        isDone = (timeNow >= block["endTime"]) # isDone = (timeNow >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"))
+                        isDone = (timeNow >= block["time"]["end"]) # isDone = (timeNow >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"))
 
                     if isDone:
                         block['runPhase'].remove(phaseNow)
@@ -814,7 +862,7 @@ class obsBlocks_noACS():
 
         hasChange = False
         for block in runV:
-            if  timeNow < block["endTime"]: #timeNow < datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"):
+            if  timeNow < block["time"]["end"]: #timeNow < datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"):
                 continue
 
             if self.rndGen.random() < self.phaseRndFrac["cancel"]:
@@ -903,9 +951,9 @@ class obsBlocks_noACS():
         allTelIds = copy.deepcopy(utils.telIds)
 
         for nBlock in range(len(blocks)):
-            blkTelIds = blocks[nBlock]["telIds"]
-            pntId = blocks[nBlock]["pointingId"]
-            pntN = blocks[nBlock]["pointingName"]
+            blkTelIds = blocks[nBlock]["telescopes"]["large"]["ids"] + blocks[nBlock]["telescopes"]["medium"]["ids"] + blocks[nBlock]["telescopes"]["small"]["ids"]
+            pntId = blocks[nBlock]["pointings"][0]["id"]
+            pntN = blocks[nBlock]["pointings"][0]["name"]
 
             # compile the telescope list for this block
             telV = []

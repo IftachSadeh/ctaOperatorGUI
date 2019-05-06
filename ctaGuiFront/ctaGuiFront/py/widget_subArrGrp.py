@@ -124,12 +124,14 @@ class subArrGrp():
 
         for nBlock in range(len(blocks)):
             blkTelIds = blocks[nBlock]["telIds"]
-            trgId = blocks[nBlock]["targetId"]
-            pntId = blocks[nBlock]["pointingId"]
-            trgN = blocks[nBlock]["targetName"]
-            pntN = blocks[nBlock]["pointingName"]
-            trgPos = blocks[nBlock]["targetPos"]
-            pntPos = blocks[nBlock]["pointingPos"]
+
+            trgId = blocks[nBlock]['targets'][0]["id"]
+            trgN = blocks[nBlock]['targets'][0]["name"]
+            trgPos = blocks[nBlock]['targets'][0]["pos"]
+
+            pntId = blocks[nBlock]['pointings'][0]["id"]
+            pntN = blocks[nBlock]['pointings'][0]["name"]
+            pntPos = blocks[nBlock]['pointings'][0]["pos"]
 
             # compile the telescope list for this block
             telV = []

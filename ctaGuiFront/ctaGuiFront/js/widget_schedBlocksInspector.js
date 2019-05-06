@@ -158,14 +158,13 @@ let mainSchedBlocksInspector = function (optIn) {
     },
     focus: undefined, // {type: block, id: idBlock}
     over: undefined,
-    mode: 'inspector'
+    mode: 'modifier'
   }
   let svg = {}
   let box = {}
   let lenD = {}
 
   let blockQueue = null
-  let blockQueueCopy = null
   let brushZoom = null
 
   // let thisSchedBlocksInspector = this
@@ -184,6 +183,283 @@ let mainSchedBlocksInspector = function (optIn) {
   let locker = new Locker()
   // locker.add('inInit')
   let runLoop = new RunLoop({ tag: widgetId })
+
+  function setStandbyMode () {
+    let modificationOverlay = svg.svg.append('g')
+    let sizepat = 5
+    let pattern = {}
+    pattern.select = {}
+    pattern.select.defs = modificationOverlay.append('defs')
+    pattern.select.patternLock = pattern.select.defs.append('pattern')
+      .attr('id', 'bar')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', sizepat)
+      .attr('height', sizepat)
+      .attr('fill', '#000000')
+      .attr('patternUnits', 'userSpaceOnUse')
+    pattern.select.patternLock.append('rect')
+      .attr('x', sizepat * 0.05)
+      .attr('y', sizepat * 0.05)
+      .attr('width', sizepat * 0.9)
+      .attr('height', sizepat * 0.9)
+      .attr('fill', colorPalette.darker.background)
+      .attr('stroke', colorPalette.medium.background)
+      .attr('stroke-width', sizepat * 0.1)
+    // pattern.select.patternLock.append('line')
+    //   .attr('x1', sizepat)
+    //   .attr('y1', 0)
+    //   .attr('x2', 0)
+    //   .attr('y2', sizepat)
+    //   .attr('stroke', '#000000')
+    //   .attr('stroke-width', 1)
+    let modificationOverlayRect = modificationOverlay.append('g')
+    modificationOverlayRect.append('rect')
+      .attr('id', 'blockQueue')
+      .attr('x', lenD.w[0] * 0.34)
+      .attr('y', lenD.h[0] * 0.02)
+      .attr('width', lenD.w[0] * 0.66)
+      .attr('height', lenD.h[0] * 0.64) // - 2 * lenD.h[0] * 0.02)
+      .attr('fill', 'url(#bar)')
+      .style('opacity', 0.9)
+      .on('click', function () {
+        shared.mode = 'modifier'
+        svgBlocksQueueServer.updateData()
+        modificationOverlayRect.select('rect#blockQueue')
+          .transition()
+          .duration(400)
+          .style('opacity', 0)
+          .on('end', function () {
+            modificationOverlayRect.remove()
+            // pattern.select.patternLock.selectAll('rect')
+            //   .transition()
+            //   .duration(400)
+            //   .attr('x', sizepat * 0.5)
+            //   .attr('y', sizepat * 0.5)
+            //   .attr('width', sizepat * 0.0)
+            //   .attr('height', sizepat * 0.0)
+          })
+
+        svgTargets.updateData()
+        svgTelsConflict.updateData()
+        modificationOverlayRect.select('rect#targets')
+          .transition()
+          .duration(400)
+          .style('opacity', 0)
+      })
+      // .style('pointer-events', 'none')
+    modificationOverlayRect.append('rect')
+      .attr('id', 'targets')
+      .attr('x', lenD.w[0] * 0.34)
+      .attr('y', lenD.h[0] * 0.68)
+      .attr('width', lenD.w[0] * 0.66)
+      .attr('height', lenD.h[0] * 0.3) // - 2 * lenD.h[0] * 0.02)
+      .attr('fill', 'url(#bar)')
+      .style('opacity', 0.9)
+      .on('click', function () {
+        pattern.select.patternLock.selectAll('rect')
+          .transition()
+          .duration(400)
+          .attr('stroke-width', 0)
+          .attr('x', sizepat * 0.5)
+          .attr('y', sizepat * 0.5)
+          .attr('width', sizepat * 0.0)
+          .attr('height', sizepat * 0.0)
+          .on('end', function () {
+            shared.mode = 'modifier'
+            svgBlocksQueueServer.updateData()
+            svgTargets.updateData()
+            svgTelsConflict.updateData()
+
+            // pattern.select.patternLock.selectAll('rect')
+            //   .transition()
+            //   .duration(400)
+            //   .attr('x', sizepat * 0.5)
+            //   .attr('y', sizepat * 0.5)
+            //   .attr('width', sizepat * 0.0)
+            //   .attr('height', sizepat * 0.0)
+          })
+      })
+      // .style('pointer-events', 'none')
+
+    modificationOverlayRect.append('rect')
+      .attr('id', 'menu')
+      .attr('x', lenD.w[0] * 0.005)
+      .attr('y', lenD.h[0] * 0.02)
+      .attr('width', lenD.w[0] * 0.315)
+      .attr('height', lenD.h[0] * 0.1)
+      .attr('fill', 'url(#bar)')
+      .style('opacity', 1)
+      .on('click', function () {
+        pattern.select.patternLock.selectAll('rect')
+          .transition()
+          .duration(400)
+          .attr('stroke-width', 0)
+          .attr('x', sizepat * 0.5)
+          .attr('y', sizepat * 0.5)
+          .attr('width', sizepat * 0.0)
+          .attr('height', sizepat * 0.0)
+          .on('end', function () {
+            shared.mode = 'modifier'
+            svgBlocksQueueServer.updateData()
+            svgTargets.updateData()
+            svgTelsConflict.updateData()
+
+            // pattern.select.patternLock.selectAll('rect')
+            //   .transition()
+            //   .duration(400)
+            //   .attr('x', sizepat * 0.5)
+            //   .attr('y', sizepat * 0.5)
+            //   .attr('width', sizepat * 0.0)
+            //   .attr('height', sizepat * 0.0)
+          })
+      })
+      // .style('pointer-events', 'none')
+    modificationOverlayRect.append('rect')
+      .attr('id', 'modifications')
+      .attr('x', lenD.w[0] * 0.005)
+      .attr('y', lenD.h[0] * 0.265)
+      .attr('width', lenD.w[0] * 0.315)
+      .attr('height', lenD.h[0] * 0.28)
+      .attr('fill', 'url(#bar)')
+      .style('opacity', 1)
+      .on('click', function () {
+        pattern.select.patternLock.selectAll('rect')
+          .transition()
+          .duration(400)
+          .attr('stroke-width', 0)
+          .attr('x', sizepat * 0.5)
+          .attr('y', sizepat * 0.5)
+          .attr('width', sizepat * 0.0)
+          .attr('height', sizepat * 0.0)
+          .on('end', function () {
+            shared.mode = 'modifier'
+            svgBlocksQueueServer.updateData()
+            svgTargets.updateData()
+            svgTelsConflict.updateData()
+
+            // pattern.select.patternLock.selectAll('rect')
+            //   .transition()
+            //   .duration(400)
+            //   .attr('x', sizepat * 0.5)
+            //   .attr('y', sizepat * 0.5)
+            //   .attr('width', sizepat * 0.0)
+            //   .attr('height', sizepat * 0.0)
+          })
+      })
+      // .style('pointer-events', 'none')
+    modificationOverlayRect.append('rect')
+      .attr('id', 'conflicts')
+      .attr('x', lenD.w[0] * 0.005)
+      .attr('y', lenD.h[0] * 0.6)
+      .attr('width', lenD.w[0] * 0.315)
+      .attr('height', lenD.h[0] * 0.4)
+      .attr('fill', 'url(#bar)')
+      .style('opacity', 1)
+      .on('click', function () {
+        pattern.select.patternLock.selectAll('rect')
+          .transition()
+          .duration(400)
+          .attr('stroke-width', 0)
+          .attr('x', sizepat * 0.5)
+          .attr('y', sizepat * 0.5)
+          .attr('width', sizepat * 0.0)
+          .attr('height', sizepat * 0.0)
+          .on('end', function () {
+            shared.mode = 'modifier'
+            svgBlocksQueueServer.updateData()
+            svgTargets.updateData()
+            svgTelsConflict.updateData()
+
+            // pattern.select.patternLock.selectAll('rect')
+            //   .transition()
+            //   .duration(400)
+            //   .attr('x', sizepat * 0.5)
+            //   .attr('y', sizepat * 0.5)
+            //   .attr('width', sizepat * 0.0)
+            //   .attr('height', sizepat * 0.0)
+          })
+      })
+      // .style('pointer-events', 'none')
+
+    // modificationOverlayRect.append('rect')
+    //   .attr('x', lenD.w[0] * 0.45)
+    //   .attr('y', lenD.h[0] * 0.45)
+    //   .attr('width', lenD.w[0] * 0.1)
+    //   .attr('height', lenD.h[0] * 0.1)
+    //   .attr('fill', colorTheme.dark.background)
+    //   .attr('stroke', colorTheme.medium.stroke)
+    //   .attr('stroke-width', 0.6)
+    //   // .style('boxShadow', '10px 20px 30px black')
+    //   .on('click', function () {
+    //   })
+    //   .on('mouseover', function (d) {
+    //     d3.select(this).style('cursor', 'pointer')
+    //     d3.select(this).attr('fill', colorTheme.darker.background)
+    //   })
+    //   .on('mouseout', function (d) {
+    //     d3.select(this).style('cursor', 'default')
+    //     d3.select(this).attr('fill', colorTheme.dark.background)
+    //   })
+    modificationOverlayRect.append('image')
+      .attr('xlink:href', '/static/icons/server-to-client.svg')
+      .attr('x', lenD.w[0] * 0.34 + lenD.w[0] * 0.33 - 20)
+      .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.32 - 20)
+      .attr('width', 40)
+      .attr('height', 40)
+      .style('opacity', 0.8)
+      // .style('pointer-events', 'none')
+      .on('click', function () {
+        shared.mode = 'modifier'
+        modificationOverlayRect.select('image').remove()
+        svgBlocksQueueServer.updateData()
+        modificationOverlayRect.select('rect#blockQueue')
+          .transition()
+          .duration(400)
+          .style('opacity', 0)
+          .on('end', function () {
+            modificationOverlayRect.remove()
+            // pattern.select.patternLock.selectAll('rect')
+            //   .transition()
+            //   .duration(400)
+            //   .attr('x', sizepat * 0.5)
+            //   .attr('y', sizepat * 0.5)
+            //   .attr('width', sizepat * 0.0)
+            //   .attr('height', sizepat * 0.0)
+          })
+
+        svgTargets.updateData()
+        svgTelsConflict.updateData()
+        modificationOverlayRect.select('rect#targets')
+          .transition()
+          .duration(400)
+          .style('opacity', 0)
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).style('cursor', 'pointer')
+        pattern.select.patternLock.select('rect')
+          .style('opacity', 0.8)
+          .attr('fill', d3.color(colorPalette.darker.background).darker(0.1))
+        // d3.select(this).attr('fill', colorTheme.darker.background)
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).style('cursor', 'default')
+        pattern.select.patternLock.select('rect')
+          .style('opacity', 1)
+          .attr('fill', colorPalette.darker.background)
+        // d3.select(this).attr('fill', colorTheme.dark.background)
+      })
+
+    // svg.svg.append('rect')
+    //   .attr('x', lenD.w[0] * 0.0)
+    //   .attr('y', lenD.h[0] * 0.02)
+    //   .attr('width', lenD.w[0] * 0.25)
+    //   .attr('height', lenD.h[0] * 0.25)
+    //   .attr('stroke', colorPalette.darker.stroke)
+    //   .attr('stroke-width', 0.4)
+    //   .attr('fill', colorPalette.darker.background)
+    //   .style('opacity', 1)
+  }
 
   function initData (dataIn) {
     function initSvg () {
@@ -232,7 +508,7 @@ let mainSchedBlocksInspector = function (optIn) {
       //   .attr('transform', 'translate(' + (lenD.w[0] * 0.06) + ',' + (lenD.h[0] * 0.015) + ')')
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.0)
+        .attr('x', lenD.w[0] * 0.34)
         .attr('y', 0)
         .attr('width', lenD.w[0] * 0.66)
         .attr('height', lenD.h[0] * 0.02)
@@ -245,10 +521,10 @@ let mainSchedBlocksInspector = function (optIn) {
         .style('font-weight', 'bold')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.33) + ',' + (lenD.h[0] * 0.015) + ')')
+        .attr('transform', 'translate(' + (lenD.w[0] * 0.67) + ',' + (lenD.h[0] * 0.015) + ')')
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.0)
+        .attr('x', lenD.w[0] * 0.34)
         .attr('y', lenD.h[0] * 0.98)
         .attr('width', lenD.w[0] * 0.66)
         .attr('height', lenD.h[0] * 0.02)
@@ -261,10 +537,10 @@ let mainSchedBlocksInspector = function (optIn) {
         .style('font-weight', 'bold')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.33) + ',' + (lenD.h[0] * 0.995) + ')')
+        .attr('transform', 'translate(' + (lenD.w[0] * 0.67) + ',' + (lenD.h[0] * 0.995) + ')')
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.68)
+        .attr('x', lenD.w[0] * 0.0)
         .attr('y', 0)
         .attr('width', lenD.w[0] * 0.32)
         .attr('height', lenD.h[0] * 0.02)
@@ -277,71 +553,43 @@ let mainSchedBlocksInspector = function (optIn) {
         .style('font-weight', 'bold')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.84) + ',' + (lenD.h[0] * 0.015) + ')')
+        .attr('transform', 'translate(' + (lenD.w[0] * 0.16) + ',' + (lenD.h[0] * 0.015) + ')')
     }
     function initBox () {
       box.blockQueueServer = {
-        x: lenD.w[0] * 0.004,
+        x: lenD.w[0] * 0.374,
         y: lenD.h[0] * 0.025,
         w: lenD.w[0] * 0.62,
         h: lenD.h[0] * 0.6,
         marg: lenD.w[0] * 0.01
       }
-      box.blockQueueCopy = {
-        x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.025 + lenD.h[0] * 0.6 * 0.5,
-        w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.6 * 0.5,
-        marg: lenD.w[0] * 0.01
-      }
       box.brushZoom = {
-        x: lenD.w[0] * 0.004,
+        x: lenD.w[0] * 0.374,
         y: lenD.h[0] * 0.612,
         w: lenD.w[0] * 0.62,
         h: lenD.h[0] * 0.05,
         marg: lenD.w[0] * 0.01
       }
       box.tools = {
-        x: lenD.w[0] * 0.004,
+        x: lenD.w[0] * 0.374,
         y: lenD.h[0] * 0.707,
         w: lenD.w[0] * 0.62,
         h: lenD.h[0] * 0.268,
         marg: lenD.w[0] * 0.01
       }
       box.focusOverlay = {
-        x: lenD.w[0] * 0.004,
+        x: lenD.w[0] * 0.374,
         y: lenD.h[0] * 0.025,
         w: lenD.w[0] * 0.62,
         h: lenD.h[0] * 0.955,
         marg: lenD.w[0] * 0.01
       }
 
-      box.pushPull = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.03,
-        w: lenD.w[0] * 0.12,
-        h: lenD.h[0] * 0.6,
-        marg: lenD.w[0] * 0.01
-      }
-      box.blockQueueOptimized = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.35,
-        w: lenD.w[0] * 0.625,
-        h: lenD.h[0] * 0.3,
-        marg: lenD.w[0] * 0.01
-      }
-      box.blockQueueModif = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.65,
-        w: lenD.w[0] * 0.625,
-        h: lenD.h[0] * 0.35,
-        marg: lenD.w[0] * 0.01
-      }
       box.rightInfo = {
-        x: lenD.w[0] * 0.68,
-        y: lenD.h[0] * 0.025,
+        x: lenD.w[0] * 0.004, // lenD.w[0] * 0.68,
+        y: lenD.h[0] * 0.15,
         w: lenD.w[0] * 0.315,
-        h: lenD.h[0] * 0.97,
+        h: lenD.h[0] * 0.845,
         marg: lenD.w[0] * 0.01
       }
       // box.tab = {
@@ -422,6 +670,11 @@ let mainSchedBlocksInspector = function (optIn) {
 
     shared.data.server = dataIn.data
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
+    let cp = deepCopy(shared.data.server.blocks)
+    shared.data.copy = {
+      blocks: cp,
+      schedBlocks: createSchedBlocks(cp)
+    }
 
     svgBrush.initData()
     // svgWarningArea.initData({
@@ -456,17 +709,18 @@ let mainSchedBlocksInspector = function (optIn) {
     svgBlocksQueueServer.initData()
     // svgBlocksQueueCopy.initData()
 
-    svgBlocksQueueServer.updateData()
-    // svgBlocksQueueCopy.updateData()
     svgBrush.updateData()
+
+    svgBlocksQueueServer.updateData()
     svgTargets.updateData()
     svgTelsConflict.updateData()
 
-    shared.mode = 'modifier'
-    switchMainMode()
+    shared.mode = 'standby'
+    setStandbyMode()
   }
   this.initData = initData
   function updateDataOnce (dataIn) {
+    if (shared.mode === 'standby') return
     if (!locker.isFreeV(['pushNewSchedule'])) {
       // console.log('pushing...');
       setTimeout(function () {
@@ -751,15 +1005,6 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     return cleanQueue
   }
-  function updateAllBlocksQueue () {
-    if (shared.data.copy.length === 0) return
-    // createSchedBlocks()
-    svgBlocksQueueServer.updateData()
-    svgBlocksQueueInsert.updateData()
-    svgBlocksQueueOptimized.updateData()
-    svgSchedBlocksIcons.updateData()
-    svgTelsConflict.updateData()
-  }
   function pushNewBlockQueue () {
     locker.add('pushNewSchedule')
     let pushingG = svg.g.append('g')
@@ -841,36 +1086,20 @@ let mainSchedBlocksInspector = function (optIn) {
     // console.log(getSchedBlocksData()['newBlockSbID'])
   }
   function switchMainMode () {
-    if (shared.mode === 'inspector') {
-      // svg.svg.style('background', colorTheme.medium.background)
-      // svg.back.selectAll('rect').attr('fill', colorTheme.darker.stroke)
-      shared.data.copy = undefined
-      svg.g.select('rect#createNewSchedButton').remove()
-      svgBrush.translateTo(box.brushZoom.x, box.brushZoom.y)
-    } else if (shared.mode === 'modifier') {
-      // svg.svg.style('background', '#CFD8DC')
-      // svg.back.selectAll('rect').attr('fill', '#37474F')
-      let cp = deepCopy(shared.data.server.blocks)
-      shared.data.copy = {
-        blocks: cp,
-        schedBlocks: createSchedBlocks(cp)
-      }
-      svgBrush.translateTo(box.brushZoom.x, box.brushZoom.y + 24)
-      svg.g.append('rect')
-        .attr('id', 'createNewSchedButton')
-        .attr('x', box.brushZoom.x)
-        .attr('y', box.brushZoom.y + lenD.h[0] * 0.015)
-        .attr('width', box.brushZoom.w)
-        .attr('height', 21)
-        .attr('fill', colorTheme.brighter.background)
-        .attr('stroke', colorTheme.brighter.stroke)
-        .attr('stroke-width', 0.2)
-        .attr('rx', 2)
-        .on('click', function () {
-          createDummyBlock()
-        })
-    }
-    svgBlocksQueueServer.switchMainMode()
+    svgBrush.translateTo(box.brushZoom.x, box.brushZoom.y + 24)
+    svg.g.append('rect')
+      .attr('id', 'createNewSchedButton')
+      .attr('x', box.brushZoom.x)
+      .attr('y', box.brushZoom.y + lenD.h[0] * 0.015)
+      .attr('width', box.brushZoom.w)
+      .attr('height', 21)
+      .attr('fill', colorTheme.brighter.background)
+      .attr('stroke', colorTheme.brighter.stroke)
+      .attr('stroke-width', 0.2)
+      .attr('rx', 2)
+      .on('click', function () {
+        createDummyBlock()
+      })
   }
   function pullData () {
     let ori = {blocks: deepCopy(shared.data.server).blocks}
@@ -1479,7 +1708,7 @@ let mainSchedBlocksInspector = function (optIn) {
           schedBlocks: {
             label: {
               enabled: true,
-              position: 'right',
+              position: 'left',
               clickable: true,
               size: (lenD.w[0] * 0.65 - adjustedBox.w)
             }
@@ -1613,6 +1842,83 @@ let mainSchedBlocksInspector = function (optIn) {
         }
       })
       blockQueue.init()
+      blockQueue.switchStyle({
+        runRecCol: colorTheme.blocks.shutdown,
+        blockCol: function (optIn) {
+          let state = hasVar(optIn.state)
+            ? optIn.state
+            : optIn.d.exeState.state
+          let canRun = hasVar(optIn.canRun)
+            ? optIn.canRun
+            : optIn.d.exeState.canRun
+          let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+
+          if (state === 'wait') {
+            if (modified) return colorTheme.blocks.wait
+            return colorTheme.blocks.wait
+          } else if (state === 'done') {
+            return colorTheme.blocks.done
+          } else if (state === 'fail') {
+            return colorTheme.blocks.fail
+          } else if (state === 'run') {
+            return colorTheme.blocks.run
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return colorTheme.blocks.cancelOp
+            }
+            return colorTheme.blocks.cancelSys
+          } else return colorTheme.blocks.shutdown
+          // let startT = hasVar(optIn.startTime)
+          //   ? optIn.startTime
+          //   : optIn.d.startTime
+          // if (startT < shared.data.server.timeOfNight.now) return colorTheme.blocks.shutdown
+          // let state = hasVar(optIn.state)
+          //   ? optIn.state
+          //   : optIn.d.exeState.state
+          // let canRun = hasVar(optIn.canRun)
+          //   ? optIn.canRun
+          //   : optIn.d.exeState.canRun
+          // let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+          //
+          // if (state === 'wait') {
+          //   if (modified) return colorTheme.blocks.wait
+          //   return colorTheme.blocks.wait
+          // } else if (state === 'cancel') {
+          //   if (hasVar(canRun)) {
+          //     if (!canRun) return colorTheme.blocks.cancelOp
+          //   }
+          //   return colorTheme.blocks.cancelSys
+          // } else return colorTheme.blocks.shutdown
+        },
+        blockOpac: function (optIn) {
+          let state = hasVar(optIn.state)
+            ? optIn.state
+            : optIn.d.exeState.state
+          let canRun = hasVar(optIn.canRun)
+            ? optIn.canRun
+            : optIn.d.exeState.canRun
+          let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+
+          if (state === 'wait') {
+            if (modified) return 0.2
+            return 1
+          } else if (state === 'run') {
+            return 1
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return 1
+            }
+            return 1
+          } else return 1
+        },
+        blockPattern: function (optIn) {
+          let startT = hasVar(optIn.startTime)
+            ? optIn.startTime
+            : optIn.d.startTime
+          if (startT < shared.data.server.timeOfNight.now) return 'url(#patternLock)'
+          return 'none'
+        }
+        })
     }
     this.initData = initData
 
@@ -1656,459 +1962,6 @@ let mainSchedBlocksInspector = function (optIn) {
       })
     }
     this.update = update
-
-    function switchMainMode () {
-      if (shared.mode === 'inspector') {
-        blockQueue.switchStyle()
-      } else if (shared.mode === 'modifier') {
-        blockQueue.switchStyle({
-          runRecCol: colorTheme.blocks.shutdown,
-          blockCol: function (optIn) {
-            let state = hasVar(optIn.state)
-              ? optIn.state
-              : optIn.d.exeState.state
-            let canRun = hasVar(optIn.canRun)
-              ? optIn.canRun
-              : optIn.d.exeState.canRun
-            let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
-
-            if (state === 'wait') {
-              if (modified) return colorTheme.blocks.wait
-              return colorTheme.blocks.wait
-            } else if (state === 'done') {
-              return colorTheme.blocks.done
-            } else if (state === 'fail') {
-              return colorTheme.blocks.fail
-            } else if (state === 'run') {
-              return colorTheme.blocks.run
-            } else if (state === 'cancel') {
-              if (hasVar(canRun)) {
-                if (!canRun) return colorTheme.blocks.cancelOp
-              }
-              return colorTheme.blocks.cancelSys
-            } else return colorTheme.blocks.shutdown
-            // let startT = hasVar(optIn.startTime)
-            //   ? optIn.startTime
-            //   : optIn.d.startTime
-            // if (startT < shared.data.server.timeOfNight.now) return colorTheme.blocks.shutdown
-            // let state = hasVar(optIn.state)
-            //   ? optIn.state
-            //   : optIn.d.exeState.state
-            // let canRun = hasVar(optIn.canRun)
-            //   ? optIn.canRun
-            //   : optIn.d.exeState.canRun
-            // let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
-            //
-            // if (state === 'wait') {
-            //   if (modified) return colorTheme.blocks.wait
-            //   return colorTheme.blocks.wait
-            // } else if (state === 'cancel') {
-            //   if (hasVar(canRun)) {
-            //     if (!canRun) return colorTheme.blocks.cancelOp
-            //   }
-            //   return colorTheme.blocks.cancelSys
-            // } else return colorTheme.blocks.shutdown
-          },
-          blockOpac: function (optIn) {
-            let state = hasVar(optIn.state)
-              ? optIn.state
-              : optIn.d.exeState.state
-            let canRun = hasVar(optIn.canRun)
-              ? optIn.canRun
-              : optIn.d.exeState.canRun
-            let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
-
-            if (state === 'wait') {
-              if (modified) return 0.2
-              return 1
-            } else if (state === 'run') {
-              return 1
-            } else if (state === 'cancel') {
-              if (hasVar(canRun)) {
-                if (!canRun) return 1
-              }
-              return 1
-            } else return 1
-          },
-          blockPattern: function (optIn) {
-            let startT = hasVar(optIn.startTime)
-              ? optIn.startTime
-              : optIn.d.startTime
-            if (startT < shared.data.server.timeOfNight.now) return 'url(#patternLock)'
-            return 'none'
-          }
-        })
-      }
-      svgBlocksQueueServer.updateData()
-    }
-    this.switchMainMode = switchMainMode
-  }
-  let SvgBlocksQueueCopy = function () {
-    function initData () {
-      let adjustedBox = {
-        x: box.blockQueueCopy.x,
-        y: box.blockQueueCopy.y,
-        w: box.blockQueueCopy.w,
-        h: box.blockQueueCopy.h,
-        marg: lenD.w[0] * 0.01
-      }
-      let gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
-
-      blockQueueCopy = new BlockDisplayer({
-        main: {
-          tag: 'blockQueueCopyMiddleTag',
-          g: gBlockBox,
-          scroll: {},
-          box: adjustedBox,
-          background: {
-            fill: colorTheme.medium.background,
-            stroke: colorTheme.medium.stroke,
-            strokeWidth: 0.4
-          },
-          colorTheme: colorTheme
-        },
-
-        displayer: 'blockQueue2', // 'blockQueue2',
-        blockQueue: {
-          axis: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, 0],
-            showText: true,
-            orientation: 'axisTop',
-            attr: {
-              text: {
-                stroke: colorTheme.medium.stroke,
-                fill: colorTheme.medium.stroke
-              },
-              path: {
-                stroke: colorTheme.medium.stroke,
-                fill: colorTheme.medium.stroke
-              }
-            }
-          },
-          blocks: {
-            enabled: true,
-            run: {
-              enabled: true,
-              g: undefined,
-              box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
-              events: {
-                click: () => {},
-                mouseover: () => {},
-                mouseout: () => {},
-                drag: {
-                  start: () => {},
-                  tick: () => {},
-                  end: () => {}
-                }
-              },
-              background: {
-                fill: colorTheme.brighter.background,
-                stroke: 'none',
-                strokeWidth: 0
-              }
-            },
-            cancel: {
-              enabled: true,
-              g: undefined,
-              box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
-              events: {
-                click: () => {},
-                mouseover: () => {},
-                mouseout: () => {},
-                drag: {
-                  start: () => {},
-                  tick: () => {},
-                  end: () => {}
-                }
-              },
-              background: {
-                fill: colorTheme.brighter.background,
-                stroke: colorTheme.brighter.stroke,
-                strokeWidth: 0
-              }
-            },
-            modification: {
-              enabled: true,
-              g: undefined,
-              box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
-              events: {
-                click: () => {},
-                mouseover: () => {},
-                mouseout: () => {},
-                drag: {
-                  start: () => {},
-                  tick: () => {},
-                  end: () => {}
-                }
-              },
-              background: {
-                fill: colorTheme.brighter.background,
-                stroke: colorTheme.brighter.stroke,
-                strokeWidth: 0
-              }
-            },
-            colorPalette: colorTheme.blocks
-          },
-          timeBars: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
-          }
-        },
-        blockQueue2: {
-          g: undefined,
-          schedBlocks: {
-            label: {
-              enabled: true,
-              position: 'right',
-              clickable: true,
-              size: (lenD.w[0] * 0.515 - adjustedBox.w)
-            }
-          },
-          axis: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, 0],
-            showAxis: false,
-            orientation: 'axisTop',
-            attr: {
-              text: {
-                size: 10,
-                stroke: colorTheme.medium.stroke,
-                fill: colorTheme.medium.stroke
-              },
-              path: {
-                stroke: colorTheme.medium.stroke,
-                fill: colorTheme.medium.stroke
-              }
-            }
-          },
-          timeBars: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 2, marg: adjustedBox.marg}
-          }
-        },
-        blockTrackShrink: {
-          g: undefined,
-          schedBlocks: {
-            label: {
-              enabled: true,
-              position: 'left'
-            }
-          },
-          axis: {
-            enabled: true,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, 0],
-            showText: true,
-            orientation: 'bottom',
-            attr: {
-              text: {
-                size: 14,
-                stroke: colorTheme.medium.stroke,
-                fill: colorTheme.medium.stroke
-              },
-              path: {
-                stroke: colorTheme.medium.stroke,
-                fill: colorTheme.medium.stroke
-              }
-            }
-          },
-          timeBars: {
-            enabled: false,
-            g: undefined,
-            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
-          }
-        },
-        blockList: {
-
-        },
-        blockForm: {
-          mosaic: {
-            box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
-            order: 'nSched'
-          },
-          forms: {
-            g: undefined,
-            box: {x: adjustedBox.w * 0.22,
-              y: adjustedBox.h * 0.02,
-              w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
-              h: adjustedBox.h * 0.96,
-              marg: adjustedBox.marg},
-            display: 'list',
-            scroll: {}
-          }
-        },
-
-        filters: {
-          blockFilters: [],
-          filtering: []
-        },
-        time: {
-          currentTime: {time: 0, date: undefined},
-          startTime: {time: 0, date: undefined},
-          endTime: {time: 0, date: undefined}
-        },
-        data: {
-          raw: undefined,
-          formated: undefined,
-          modified: undefined
-        },
-        debug: {
-          enabled: false
-        },
-        pattern: {},
-        events: {
-          block: {
-            click: focusManager.focusOn,
-            mouseover: focusManager.over,
-            mouseout: focusManager.out,
-            drag: {
-              start: svgFocusOverlay.dragStart,
-              tick: svgFocusOverlay.dragTick,
-              end: function (d) {
-                let res = svgFocusOverlay.dragEnd(d)
-                if (res) changeBlockProperties('', res.id, res.modif)
-              }
-            }
-          },
-          sched: {
-            click: focusManager.focusOn,
-            mouseover: focusManager.over,
-            mouseout: focusManager.out
-          }
-        },
-        input: {
-          focus: {schedBlocks: undefined, block: undefined},
-          over: {schedBlocks: undefined, block: undefined},
-          selection: []
-        }
-      })
-      blockQueueCopy.init()
-    }
-    this.initData = initData
-
-    function updateData () {
-      let telIds = []
-      $.each(shared.data.server.telHealth, function (index, dataNow) {
-        telIds.push(dataNow.id)
-      })
-
-      let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-      let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
-      let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
-      blockQueueCopy.updateData({
-        time: {
-          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
-          startTime: startTime,
-          endTime: endTime
-        },
-        data: {
-          raw: {
-            blocks: getBlocksData(),
-            telIds: telIds
-          },
-          modified: []
-        }
-      })
-    }
-    this.updateData = updateData
-
-    function update () {
-      let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-      let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
-      let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
-
-      blockQueueCopy.update({
-        time: {
-          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
-          startTime: startTime,
-          endTime: endTime
-        }
-      })
-    }
-    this.update = update
-
-    function switchMainMode () {
-      if (shared.mode === 'inspector') {
-        blockQueue.switchStyle()
-      } else if (shared.mode === 'modifier') {
-        blockQueue.switchStyle({
-          runRecCol: colorTheme.blocks.shutdown,
-          blockCol: function (optIn) {
-            let state = hasVar(optIn.state)
-              ? optIn.state
-              : optIn.d.exeState.state
-            let canRun = hasVar(optIn.canRun)
-              ? optIn.canRun
-              : optIn.d.exeState.canRun
-            let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
-
-            if (state === 'wait') {
-              if (modified) return colorTheme.blocks.wait
-              return colorTheme.blocks.wait
-            } else if (state === 'done') {
-              return colorTheme.blocks.done
-            } else if (state === 'fail') {
-              return colorTheme.blocks.fail
-            } else if (state === 'run') {
-              return colorTheme.blocks.run
-            } else if (state === 'cancel') {
-              if (hasVar(canRun)) {
-                if (!canRun) return colorTheme.blocks.cancelOp
-              }
-              return colorTheme.blocks.cancelSys
-            } else return colorTheme.blocks.shutdown
-          },
-          blockOpac: function (optIn) {
-            let state = hasVar(optIn.state)
-              ? optIn.state
-              : optIn.d.exeState.state
-            let canRun = hasVar(optIn.canRun)
-              ? optIn.canRun
-              : optIn.d.exeState.canRun
-            let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
-
-            if (state === 'wait') {
-              if (modified) return 0.2
-              return 1
-            } else if (state === 'run') {
-              return 1
-            } else if (state === 'cancel') {
-              if (hasVar(canRun)) {
-                if (!canRun) return 1
-              }
-              return 1
-            } else return 1
-          },
-          blockPattern: function (optIn) {
-            let startT = hasVar(optIn.startTime)
-              ? optIn.startTime
-              : optIn.d.startTime
-            if (startT < shared.data.server.timeOfNight.now) return 'url(#patternLock)'
-            return 'none'
-          }
-        })
-      }
-      svgBlocksQueueServer.updateData()
-    }
-    this.switchMainMode = switchMainMode
   }
   let SvgBrush = function () {
     let reserved = {}
@@ -2952,7 +2805,7 @@ let mainSchedBlocksInspector = function (optIn) {
       let scaleY = d3.scaleLinear()
         .range([reserved.box.h, reserved.box.h * 0.2])
         .domain([0, 1])
-      let projBlockStart = {x: scaleX(block.startTime), y: -1}
+      let projBlockStart = {x: scaleX(block.time.start), y: -1}
 
       if (projBlockStart.x < target.getPointAtLength(0).x || projBlockStart.x > target.getPointAtLength(target.getTotalLength()).x) {
         projBlockStart.y = scaleY(0)
@@ -2988,7 +2841,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .style('fill-opacity', 1)
       }
 
-      let projBlockEnd = {x: scaleX(block.endTime), y: -1}
+      let projBlockEnd = {x: scaleX(block.time.end), y: -1}
       if (projBlockEnd.x < target.getPointAtLength(0).x || projBlockEnd.x > target.getPointAtLength(target.getTotalLength()).x) {
         projBlockEnd.y = scaleY(0)
         reserved.clipping.clipBody.append('text')
@@ -3094,7 +2947,7 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('width', reserved.box.w)
         .attr('height', reserved.box.h)
       reserved.clipBody = reserved.gTargets.append('g')
-        .attr('clip-path', '') //'url(#clip)')
+        .attr('clip-path', '') // 'url(#clip)')
 
       let range = reserved.box.h * 0.33333
       reserved.clipBody.append('rect')
@@ -3246,49 +3099,61 @@ let mainSchedBlocksInspector = function (optIn) {
           if (b.exeState.state === 'cancel') continue
           if (block && b.obId === block.obId) continue
 
-          if (!largeTels[b.startTime]) largeTels[b.startTime] = 0// 4
-          if (!mediumTels[b.startTime]) mediumTels[b.startTime] = 0// 24
-          if (!smallTels[b.startTime]) smallTels[b.startTime] = 0// 70
-          if (!largeTels[b.endTime]) largeTels[b.endTime] = 0// 4
-          if (!mediumTels[b.endTime]) mediumTels[b.endTime] = 0// 24
-          if (!smallTels[b.endTime]) smallTels[b.endTime] = 0// 70
+          if (!largeTels[b.time.start]) largeTels[b.time.start] = 0// 4
+          if (!mediumTels[b.time.start]) mediumTels[b.time.start] = 0// 24
+          if (!smallTels[b.time.start]) smallTels[b.time.start] = 0// 70
+          if (!largeTels[b.time.end]) largeTels[b.time.end] = 0// 4
+          if (!mediumTels[b.time.end]) mediumTels[b.time.end] = 0// 24
+          if (!smallTels[b.time.end]) smallTels[b.time.end] = 0// 70
 
-          for (let j = 0; j < b.telIds.length; j++) {
-            let tid = b.telIds[j]
-            if (tid[0] === 'S') {
-              smallTels[b.startTime] -= 1
-              smallTels[b.endTime] += 1
-            } else if (tid[0] === 'M') {
-              mediumTels[b.startTime] -= 1
-              mediumTels[b.endTime] += 1
-            } else if (tid[0] === 'L') {
-              largeTels[b.startTime] -= 1
-              largeTels[b.endTime] += 1
-            }
-          }
+          smallTels[b.time.start] -= b.telescopes.small.ids.length
+          smallTels[b.time.end] += b.telescopes.small.ids.length
+          mediumTels[b.time.start] -= b.telescopes.medium.ids.length
+          mediumTels[b.time.end] += b.telescopes.medium.ids.length
+          largeTels[b.time.start] -= b.telescopes.large.ids.length
+          largeTels[b.time.end] += b.telescopes.large.ids.length
+          // for (let j = 0; j < b.telIds.length; j++) {
+          //   let tid = b.telIds[j]
+          //   if (tid[0] === 'S') {
+          //     smallTels[b.startTime] -= 1
+          //     smallTels[b.endTime] += 1
+          //   } else if (tid[0] === 'M') {
+          //     mediumTels[b.startTime] -= 1
+          //     mediumTels[b.endTime] += 1
+          //   } else if (tid[0] === 'L') {
+          //     largeTels[b.startTime] -= 1
+          //     largeTels[b.endTime] += 1
+          //   }
+          // }
         }
       }
       if (block) {
-        if (!largeTels[block.startTime]) largeTels[block.startTime] = 0
-        if (!mediumTels[block.startTime]) mediumTels[block.startTime] = 0
-        if (!smallTels[block.startTime]) smallTels[block.startTime] = 0
-        if (!largeTels[block.endTime]) largeTels[block.endTime] = 0
-        if (!mediumTels[block.endTime]) mediumTels[block.endTime] = 0
-        if (!smallTels[block.endTime]) smallTels[block.endTime] = 0
+        if (!largeTels[block.time.start]) largeTels[block.time.start] = 0// 4
+        if (!mediumTels[block.time.start]) mediumTels[block.time.start] = 0// 24
+        if (!smallTels[block.time.start]) smallTels[block.time.start] = 0// 70
+        if (!largeTels[block.time.end]) largeTels[block.time.end] = 0// 4
+        if (!mediumTels[block.time.end]) mediumTels[block.time.end] = 0// 24
+        if (!smallTels[block.time.end]) smallTels[block.time.end] = 0// 70
 
-        for (let j = 0; j < block.telIds.length; j++) {
-          let tid = block.telIds[j]
-          if (tid[0] === 'S') {
-            smallTels[block.startTime] -= 1
-            smallTels[block.endTime] += 1
-          } else if (tid[0] === 'M') {
-            mediumTels[block.startTime] -= 1
-            mediumTels[block.endTime] += 1
-          } else if (tid[0] === 'L') {
-            largeTels[block.startTime] -= 1
-            largeTels[block.endTime] += 1
-          }
-        }
+        smallTels[block.time.start] -= block.telescopes.small.ids.length
+        smallTels[block.time.end] += block.telescopes.small.ids.length
+        mediumTels[block.time.start] -= block.telescopes.medium.ids.length
+        mediumTels[block.time.end] += block.telescopes.medium.ids.length
+        largeTels[block.time.start] -= block.telescopes.large.ids.length
+        largeTels[block.time.end] += block.telescopes.large.ids.length
+        // for (let j = 0; j < block.telIds.length; j++) {
+        //   let tid = block.telIds[j]
+        //   if (tid[0] === 'S') {
+        //     smallTels[block.startTime] -= 1
+        //     smallTels[block.endTime] += 1
+        //   } else if (tid[0] === 'M') {
+        //     mediumTels[block.startTime] -= 1
+        //     mediumTels[block.endTime] += 1
+        //   } else if (tid[0] === 'L') {
+        //     largeTels[block.startTime] -= 1
+        //     largeTels[block.endTime] += 1
+        //   }
+        // }
       // smallTels[shared.data.server.timeOfNight.end] = 0
       // mediumTels[shared.data.server.timeOfNight.end] = 0
       // largeTels[shared.data.server.timeOfNight.end] = 0
@@ -4918,336 +4783,6 @@ let mainSchedBlocksInspector = function (optIn) {
 
     function initOverview () {
       reserved.overview = {}
-      let allBox
-      function createBlocksInformation () {
-        let box = allBox.blocks
-        let g = reserved.g.append('g').attr('id', 'blocksInformation')
-          .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-        box.y += titleSize
-        g.append('text')
-          .text('Execution states')
-          .attr('x', 0)
-          .attr('y', box.y)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorTheme.dark.text)
-          .attr('stroke', 'none')
-        box.y += 2
-        g.append('line')
-          .attr('x1', 0)
-          .attr('y1', box.y)
-          .attr('x2', box.w)
-          .attr('y2', box.y)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.2)
-
-        box.y += headerSize
-        createD3Node(g,
-          'text',
-          {'id': 'sbs', 'x': reserved.box.w * 0.44, 'y': box.y, 'text-anchor': 'end', 'fill': colorTheme.dark.text},
-          {'font-size': txtSize + 'px', 'font-weight': 'bold', 'pointer-events': 'none'}
-        ).text('?') // Object.keys(getSchedBlocksData()).length
-        createD3Node(g,
-          'text',
-          {'x': reserved.box.w * 0.45, 'y': box.y, 'text-anchor': 'start', 'fill': colorTheme.dark.text},
-          {'font-size': txtSize + 'px', 'font-weight': '', 'pointer-events': 'none'}
-        ).text('Sbs')
-
-        createD3Node(g,
-          'text',
-          {id: 'obs', 'x': reserved.box.w * 0.6, 'y': box.y, 'text-anchor': 'end', 'fill': colorTheme.dark.text},
-          {'font-size': txtSize + 'px', 'font-weight': 'bold', 'pointer-events': 'none'}
-        ).text('?')
-        createD3Node(g,
-          'text',
-          {'x': reserved.box.w * 0.61, 'y': box.y, 'text-anchor': 'start', 'fill': colorTheme.dark.text},
-          {'font-size': txtSize + 'px', 'font-weight': '', 'pointer-events': 'none'}
-        ).text('Obs')
-
-        let infoState = [
-          {state: 'run'},
-          {state: 'done'},
-          {state: 'fail'},
-          {state: 'cancel'},
-          {state: 'wait'}
-        ]
-
-        box.y += 4
-        let rects = g
-          .selectAll('g.state')
-          .data(infoState, function (d) {
-            return d.state
-          })
-        let enter = rects
-          .enter()
-          .append('g')
-          .attr('class', 'state')
-        enter.each(function (d) {
-          d3.select(this).append('rect')
-            .attr('y', box.y)
-            .attr('height', txtSize * 2)
-            .attr('stroke', setCol({state: d.state, canRun: true}).stroke)
-            .attr('fill', setCol({state: d.state, canRun: true}).background)
-            .attr('stroke-width', 0.2)
-          d3.select(this).append('text')
-            .attr('y', box.y + txtSize + txtSize * 0.3)
-            .text(d.nb)
-            .style('font-weight', 'bold')
-            .attr('text-anchor', 'middle')
-            .style('font-size', txtSize + 'px')
-            .style('pointer-events', 'none')
-            .attr('fill', setCol({state: d.state, canRun: true}).text)
-            .attr('stroke', 'none')
-        })
-      }
-      function createPointingInformation () {
-        let box = allBox.targets
-        let g = reserved.g.append('g')
-          .attr('id', 'pointingInformation')
-          .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-        box.y = 0
-        g.append('text')
-          .text('Targets list')
-          .attr('x', box.x)
-          .attr('y', box.y)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorTheme.dark.text)
-          .attr('stroke', 'none')
-        box.y += 2
-        g.append('line')
-          .attr('x1', 0)
-          .attr('y1', box.y)
-          .attr('x2', reserved.box.w)
-          .attr('y2', box.y)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.2)
-        box.y += 1
-        g.append('rect')
-          .attr('id', 'headerStrip')
-          .attr('x', 0)
-          .attr('y', box.y)
-          .attr('width', box.w)
-          .attr('height', headerSize)
-          .attr('fill', colorTheme.dark.stroke)
-        let label = [
-          {x: box.w * 0.01, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Targets'},
-          {x: box.w * 0.15, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Scheds'},
-          {x: box.w * 0.3, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Obs'},
-          {x: box.w * 0.45, y: box.y + headerSize * 0.5 + txtSize * 0.3, text: 'Running blocks'}
-        ]
-        for (let i = 0; i < label.length; i++) {
-          g.append('text')
-            .text(label[i].text)
-            .style('fill', colorTheme.medium.background)
-            .style('font-weight', 'bold')
-            .style('font-size', txtSize + 'px')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
-        }
-        box.y += headerSize + 0
-        let targ = g.append('g').attr('id', 'targets')
-          .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-        reserved.overview.scrollBox = initScrollBox('targetRessourceScroll', targ, box, {enabled: false})
-        reserved.overview.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: shared.data.server.targets.length * 40})
-        g.append('line')
-          .attr('x1', box.x)
-          .attr('y1', box.y + box.h)
-          .attr('x2', box.w)
-          .attr('y2', box.y + box.h)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.4)
-      }
-      function createTelescopeInformation () {
-        let box = allBox.tels
-        let g = reserved.g.append('g')
-          .attr('id', 'telescopesInformation')
-          .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-        box.y = 0
-        g.append('text')
-          .text('Telescopes list')
-          .attr('x', box.w * 0.01)
-          .attr('y', box.y)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorTheme.dark.text)
-          .attr('stroke', 'none')
-        box.y += 2
-        g.append('line')
-          .attr('x1', 0)
-          .attr('y1', box.y)
-          .attr('x2', reserved.box.w)
-          .attr('y2', box.y)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.2)
-
-        box.y += 1
-        let xx = box.w * 0.12
-        let ww = box.w * 0.88
-        let largeBox = {
-          x: xx,
-          y: 0,
-          w: ww * 0.1,
-          h: box.h
-        }
-        let mediumBox = {
-          x: xx + ww * 0.13,
-          y: 0,
-          w: ww * 0.3,
-          h: box.h
-        }
-        let smallBox = {
-          x: xx + ww * 0.46,
-          y: 0,
-          w: ww * 0.54,
-          h: box.h
-        }
-        let gt = g.append('g')
-          .attr('id', 'telsDisplayer')
-          .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-        reserved.telescopeRunning = new TelescopeDisplayer({
-          main: {
-            tag: 'telescopeRootTag',
-            g: gt,
-            scroll: {},
-            box: box,
-            background: {
-              fill: colorTheme.medium.background,
-              stroke: colorTheme.medium.stroke,
-              strokeWidth: 0.0
-            },
-            isSouth: isSouth,
-            colorTheme: colorTheme
-          },
-
-          displayer: 'gridBib',
-          gridBib: {
-            header: {
-              text: {
-                size: 8,
-                color: colorTheme.medium.background
-              },
-              background: {
-                height: 10,
-                color: colorTheme.dark.stroke
-              }
-            },
-            telescope: {
-              enabled: true,
-              centering: true,
-              large: {
-                g: undefined,
-                opt: {
-                  telsPerRow: 1,
-                  nbl: 0,
-                  size: 1,
-                  ratio: 1
-                },
-                box: largeBox
-              },
-              medium: {
-                g: undefined,
-                opt: {
-                  telsPerRow: 4,
-                  nbl: 0,
-                  size: 1,
-                  ratio: 1
-                },
-                box: mediumBox
-              },
-              small: {
-                g: undefined,
-                opt: {
-                  telsPerRow: 7,
-                  nbl: 0,
-                  size: 1,
-                  ratio: 1
-                },
-                box: smallBox
-              }
-            },
-            idle: {
-              txtSize: 9,
-              enabled: true,
-              background: {
-                middle: {
-                  color: colorTheme.darker.background,
-                  opacity: 1
-                },
-                side: {
-                  color: colorTheme.dark.background,
-                  opacity: 1
-                }
-              }
-            },
-            blocks: {
-              txtSize: 9,
-              right: {
-                enabled: false
-              },
-              left: {
-                enabled: true
-              }
-            }
-          },
-
-          filters: {
-            telescopeFilters: [],
-            filtering: []
-          },
-          data: {
-            raw: {
-              telescopes: []
-            },
-            filtered: {},
-            modified: []
-          },
-          debug: {
-            enabled: false
-          },
-          pattern: {
-            select: {}
-          },
-          events: {
-            block: {
-              click: (d) => { focusManager.focusOn('block', d.obId) },
-              mouseover: (d) => { console.log(d) },
-              mouseout: (d) => { console.log(d) },
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            },
-            telescope: {
-              click: (d) => { focusManager.focusOn('telescope', d.id) },
-              mouseover: (d) => { console.log(d) },
-              mouseout: (d) => { console.log(d) },
-              drag: {
-                start: () => {},
-                tick: () => {},
-                end: () => {}
-              }
-            }
-          },
-          input: {
-            over: {
-              telescope: undefined
-            },
-            focus: {
-              telescope: undefined
-            }
-          }
-        })
-        reserved.telescopeRunning.init()
-      }
-
       function createModificationsInformation () {
         let box = allBox.modifications
         let g = reserved.g.append('g')
@@ -5299,54 +4834,28 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('stroke-width', 0.2)
       }
 
-      if (shared.mode === 'inspector') {
-        allBox = {
-          blocks: {
+      let allBox = {
+        blocks: {
             x: 0,
             y: 0,
             w: reserved.box.w * 0.8,
             h: reserved.box.h * 0.2
           },
-          targets: {
+        modifications: {
             x: 0,
             y: reserved.box.h * 0.125,
             h: reserved.box.h * 0.32,
             w: reserved.box.w
           },
-          tels: {
+        conflicts: {
             x: 0,
             y: reserved.box.h * 0.52,
             w: reserved.box.w,
             h: reserved.box.h * 0.47
           }
-        }
-        createBlocksInformation()
-        createPointingInformation()
-        createTelescopeInformation()
-      } else if (shared.mode === 'modifier') {
-        allBox = {
-          blocks: {
-            x: 0,
-            y: 0,
-            w: reserved.box.w * 0.8,
-            h: reserved.box.h * 0.2
-          },
-          modifications: {
-            x: 0,
-            y: reserved.box.h * 0.125,
-            h: reserved.box.h * 0.32,
-            w: reserved.box.w
-          },
-          conflicts: {
-            x: 0,
-            y: reserved.box.h * 0.52,
-            w: reserved.box.w,
-            h: reserved.box.h * 0.47
-          }
-        }
-        createModificationsInformation()
-        createConflictsInformation()
       }
+      createModificationsInformation()
+      createConflictsInformation()
     }
     function updateOverview () {
       let allBox
@@ -6066,7 +5575,6 @@ let mainSchedBlocksInspector = function (optIn) {
   }
 
   let svgBlocksQueueServer = new SvgBlocksQueueServer()
-  let svgBlocksQueueCopy = new SvgBlocksQueueCopy()
   let svgBrush = new SvgBrush()
   let svgWarningArea = new SvgWarningArea()
   let svgTargets = new SvgTargets()

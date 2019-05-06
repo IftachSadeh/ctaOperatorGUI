@@ -90,6 +90,7 @@ window.ObsblockForm = function (optIn) {
   }
 
   function init () {
+    console.log(com.data.block);
     initSchedulingObservingBlocksTree()
     initTimeInformation()
     initPointingInformation()
@@ -104,6 +105,50 @@ window.ObsblockForm = function (optIn) {
     // initTelescopeInformation()
   }
   this.update = update
+
+  function initScrollBox (tag, g, box, background) {
+    if (background.enabled) {
+      g.append('rect')
+        .attr('class', 'background')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', box.w)
+        .attr('height', box.h)
+        .style('fill', background.fill)
+        .style('stroke', background.stroke)
+        .style('stroke-width', background.strokeWidth)
+    }
+
+    let scrollBox = new ScrollBox()
+    scrollBox.init({
+      tag: tag,
+      gBox: g,
+      boxData: {
+        x: 0,
+        y: 0,
+        w: box.w,
+        h: box.h
+      },
+      useRelativeCoords: true,
+      locker: new Locker(),
+      lockerV: [tag + 'updateData'],
+      lockerZoom: {
+        all: tag + 'zoom',
+        during: tag + 'zoomDuring',
+        end: tag + 'zoomEnd'
+      },
+      runLoop: new RunLoop({tag: tag}),
+      canScroll: true,
+      scrollVertical: true,
+      scrollHorizontal: false,
+      scrollHeight: 0,
+      scrollWidth: 0,
+      background: 'transparent',
+      scrollRecH: {h: 4},
+      scrollRecV: {w: 4}
+    })
+    return scrollBox
+  }
 
   function changeBlockTime (type, hour, min, sec) {
     let startTime = new Date(com.data.timeOfNight.date_start)
@@ -251,8 +296,8 @@ window.ObsblockForm = function (optIn) {
       })
       .attr('fill', colorPalette.dark.background)
       .attr('stroke', colorPalette.dark.stroke)
-      .attr('stroke-width', 0.2)
-      .attr('transform', 'translate(' + (box.w * 0.2) + ',' + (box.h * 0.9 - dimPoly) + ')')
+      .attr('stroke-width', 0.4)
+      .attr('transform', 'translate(' + (box.w * 0.5 - dimPoly * 0.5) + ',' + (box.h * 0.5 - dimPoly) + ')')
       .on('click', function () {
         com.tree.events.click('schedBlock', data.sbId)
       })
@@ -270,7 +315,7 @@ window.ObsblockForm = function (optIn) {
       .style('font-weight', '')
       .style('font-size', txtSize * 1.2 + 'px')
       .attr('text-anchor', 'middle')
-      .attr('transform', 'translate(' + (box.w * 0.2 + dimPoly * 0.5) + ',' + (box.h * 0.9 - dimPoly * 0.5 + txtSize * 0.3) + ')')
+      .attr('transform', 'translate(' + (box.w * 0.5) + ',' + (box.h * 0.5 - dimPoly * 0.5 + txtSize * 0.4) + ')')
       .style('pointer-events', 'none')
 
     // g.append('text')
@@ -283,22 +328,25 @@ window.ObsblockForm = function (optIn) {
     for (let i = 0; i < schedB.blocks.length; i++) {
       let palette = blockStyle(schedB.blocks[i])
       g.append('rect')
-        .attr('x', (box.w * 0.3) + (dimPoly * i))
-        .attr('y', box.h * 0.9 - dimPoly * 0.8)
+        .attr('x', 2 + (box.w * 0.5 - (schedB.blocks.length * dimPoly) * 0.5) + (dimPoly * i))
+        .attr('y', box.h * 0.9 - dimPoly * 0.7)
         .attr('width', dimPoly * 0.8)
         .attr('height', dimPoly * 0.8)
         .attr('fill', palette.color.background)
         .attr('stroke', palette.color.stroke)
-        .attr('stroke-width', data.obId === schedB.blocks[i].obId ? 1 : 0.2)
+        .attr('stroke-width', data.obId === schedB.blocks[i].obId ? 2 : 0.2)
         .attr('stroke-dasharray', data.obId === schedB.blocks[i].obId ? [2, 2] : [])
         .on('click', function () {
+          if (data.obId === schedB.blocks[i].obId) return
           com.tree.events.click('block', schedB.blocks[i].obId)
         })
         .on('mouseover', function (d) {
+          if (data.obId === schedB.blocks[i].obId) return
           d3.select(this).style('cursor', 'pointer')
           d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
         })
         .on('mouseout', function (d) {
+          if (data.obId === schedB.blocks[i].obId) return
           d3.select(this).style('cursor', 'default')
           d3.select(this).attr('fill', palette.color.background)
         })
@@ -308,7 +356,7 @@ window.ObsblockForm = function (optIn) {
         .style('font-weight', '')
         .style('font-size', txtSize + 'px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + ((box.w * 0.3) + (dimPoly * i) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.4 + txtSize * 0.3) + ')')
+        .attr('transform', 'translate(' + (2 + (box.w * 0.5 - (schedB.blocks.length * dimPoly) * 0.5) + (dimPoly * i) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txtSize * 0.3) + ')')
         .style('pointer-events', 'none')
     }
   }
@@ -342,11 +390,11 @@ window.ObsblockForm = function (optIn) {
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'State', anchor: 'middle'},
-      {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'Start', anchor: 'middle'},
-      {x: box.w * 0.33, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'Duration', anchor: 'middle'},
-      {x: box.w * 0.51, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.18, text: 'End', anchor: 'middle'},
-      {x: box.w * 0.69, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.31, text: 'Target & pointing', anchor: 'middle'}
+      {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.2, text: 'State', anchor: 'middle'},
+      {x: box.w * 0.2, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.266, text: 'Start', anchor: 'middle'},
+      {x: box.w * 0.466, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.266, text: 'Duration', anchor: 'middle'},
+      {x: box.w * 0.732, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.266, text: 'End', anchor: 'middle'}
+      // {x: box.w * 0.69, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.31, text: 'Target & pointing', anchor: 'middle'}
     ]
     for (let i = 0; i < label.length; i++) {
       let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
@@ -363,6 +411,8 @@ window.ObsblockForm = function (optIn) {
         .attr('width', label[i].w)
         .attr('height', box.h - headerSize - 4)
         .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.darker.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.05)
         .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
     }
 
@@ -423,9 +473,9 @@ window.ObsblockForm = function (optIn) {
     }
 
     let startTime = new Date(com.data.timeOfNight.date_start)
-    startTime.setSeconds(startTime.getSeconds() + data.startTime)
+    startTime.setSeconds(startTime.getSeconds() + data.time.start)
     let endTime = new Date(com.data.timeOfNight.date_start)
-    endTime.setSeconds(endTime.getSeconds() + data.startTime + data.duration)
+    endTime.setSeconds(endTime.getSeconds() + data.time.start + data.time.duration)
     let duration = new Date(endTime)
     duration.setHours(duration.getHours() - startTime.getHours())
     duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
@@ -443,37 +493,37 @@ window.ObsblockForm = function (optIn) {
       {disabled: !com.schedule.editabled, value: data.exeState.state, options: ['done', 'fail', 'cancel', 'wait', 'run']},
       {change: (d) => { changeState(d) }, enter: (d) => { changeState(d) }})
 
-    drawTime('startTime', label[1].x, label[1].w, 2 + headerSize * 1.5, startTime)
-    drawTime('duration', label[2].x, label[2].w, 2 + headerSize * 1.5, duration)
-    drawTime('endTime', label[3].x, label[3].w, 2 + headerSize * 1.5, endTime)
+    drawTime('startTime', label[1].x + txtSize * 0.5, label[1].w, 2 + headerSize * 1.5, startTime)
+    drawTime('duration', label[2].x + txtSize * 0.5, label[2].w, 2 + headerSize * 1.5, duration)
+    drawTime('endTime', label[3].x + txtSize * 0.5, label[3].w, 2 + headerSize * 1.5, endTime)
 
-    let tbox = {
-      x: label[4].x,
-      y: 3 + headerSize * 1.5,
-      w: label[4].w * 0.5,
-      h: headerSize * 2
-    }
-    dropDownDiv(g,
-      tbox,
-      'target',
-      {disabled: !com.schedule.editabled, value: data.pointingName.split('/')[0], options: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5', 'trg_6', 'trg_7']},
-      {change: (d) => { changeTarget(d) }, enter: (d) => { changeTarget(d) }})
-    let pbox = {
-      x: label[4].x + label[4].w * 0.5,
-      y: 3 + headerSize * 1.5,
-      w: label[4].w * 0.5,
-      h: headerSize * 2
-    }
-    dropDownDiv(g,
-      pbox,
-      'pointing',
-      {disabled: !com.schedule.editabled, value: data.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
-      {change: (d) => { changePointing(d) }, enter: (d) => { changePointing(d) }})
+    // let tbox = {
+    //   x: label[4].x,
+    //   y: 3 + headerSize * 1.5,
+    //   w: label[4].w * 0.5,
+    //   h: headerSize * 2
+    // }
+    // dropDownDiv(g,
+    //   tbox,
+    //   'target',
+    //   {disabled: !com.schedule.editabled, value: data.pointingName.split('/')[0], options: ['trg_1', 'trg_2', 'trg_3', 'trg_4', 'trg_5', 'trg_6', 'trg_7']},
+    //   {change: (d) => { changeTarget(d) }, enter: (d) => { changeTarget(d) }})
+    // let pbox = {
+    //   x: label[4].x + label[4].w * 0.5,
+    //   y: 3 + headerSize * 1.5,
+    //   w: label[4].w * 0.5,
+    //   h: headerSize * 2
+    // }
+    // dropDownDiv(g,
+    //   pbox,
+    //   'pointing',
+    //   {disabled: !com.schedule.editabled, value: data.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
+    //   {change: (d) => { changePointing(d) }, enter: (d) => { changePointing(d) }})
   }
   function initPointingInformation () {
     let box = com.target.box
     let data = com.data.block
-    let target = com.data.target
+    // let target = com.data.target
     let g = com.main.g.append('g')
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     com.target.g = g
@@ -494,14 +544,14 @@ window.ObsblockForm = function (optIn) {
 
     g.append('rect')
       .attr('id', 'headerStrip')
-      .attr('x', box.h + headerSize * 0)
+      .attr('x', 0)
       .attr('y', 3)
       .attr('width', box.w - box.h - headerSize * 0)
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: (box.h + ((box.w - box.h) * 0.0)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.25), text: 'Links', anchor: 'middle'},
-      {x: (box.h + ((box.w - box.h) * 0.25)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.75), text: 'Positions', anchor: 'start'}
+      {x: (0 + ((box.w - box.h) * 0.0)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.25), text: 'Links', anchor: 'middle'},
+      {x: (0 + ((box.w - box.h) * 0.25)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.75), text: 'Positions', anchor: 'start'}
     ]
     for (let i = 0; i < label.length; i++) {
       let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
@@ -518,63 +568,200 @@ window.ObsblockForm = function (optIn) {
         .attr('width', label[i].w)
         .attr('height', box.h - headerSize)
         .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.darker.background)
-        .attr('transform', 'translate(' + (i === 0 ? box.h : label[i].x) + ',' + (headerSize + 3) + ')')
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.05)
+        .attr('transform', 'translate(' + (label[i].x) + ',' + (headerSize + 3) + ')')
     }
 
-    let height = box.w * 0.09
-
-    let tg = g.append('g').attr('transform', 'translate(' + (box.w * 0.48) + ',' + (box.h * 0.15) + ')')
-    let tevents = {
-      click: function () { com.target.events.click('target', data.targetId) }
+    let trgtPnt = []
+    for (let i = 0; i < data.pointings.length; i++) {
+      let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+      if (tar) {
+        tar.pointings.push(data.pointings[i])
+      } else {
+        tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+        tar.pointings = [data.pointings[i]]
+        trgtPnt.push(tar)
+      }
     }
-    targetIcon(tg, {w: height, h: height}, 'T' + data.pointingName.split('/')[0].split('_')[1], tevents, colorPalette)
 
-    let pg = g.append('g').attr('transform', 'translate(' + (box.w * 0.48) + ',' + (box.h * 0.5) + ')')
-    let pevents = {
-      click: function () { com.target.events.click('target', data.targetId) }
+    let tbox = {x: 0, y: 3 + headerSize, w: (box.w - box.h), h: box.h - headerSize}
+    let blockg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
+    let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
+    let innerg = scrollBox.get('innerG')
+
+    let line = box.h * 0.15
+    let marg = line * 0.2
+    let interOffset = 0
+    let scrollHeight = headerSize * 0.2
+    function pointingCore (pointings, g, offset) {
+      let current = g
+        .selectAll('g.pointing')
+        .data(pointings, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'pointing')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        g.append('rect')
+          .attr('x', -line * 0.58)
+          .attr('y', -marg * 0.5)
+          .attr('width', box.w * 0.535)
+          .attr('height', line + marg) // Math.min(box.h, (line + 2) * schedB.blocks.length))
+          .attr('fill', 'none') // i % 2 === 0 ? colorPalette.dark.background : colorPalette.darker.background)
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 0.05)
+          // .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
+        g.attr('transform', 'translate(' + (line * 0.35) + ',' + (offset + (marg + line) * i) + ')')
+        let pevents = {
+          click: function () { com.target.events.click('target', d.targetId) }
+        }
+        pointingIcon(g, {w: line, h: line}, 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
+        g.append('text')
+          .text(d.pos[0])
+          .style('fill', colorPalette.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', headerSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (line * 2) + ',' + (line * 0.2 + headerSize * 0.5) + ')')
+        g.append('text')
+          .text(d.pos[1])
+          .style('fill', colorPalette.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', headerSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (line * 2) + ',' + (line * 0.2 + headerSize * 1.4) + ')')
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        g.attr('transform', 'translate(' + (line * 0.35) + ',' + (offset + (marg + line) * i) + ')')
+        interOffset += marg + line
+        scrollHeight += marg + line
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+      // offsetY += line * 1
     }
-    pointingIcon(pg, {w: height, h: height}, 'P' + data.pointingName.split('/')[1].split('_')[1], pevents, colorPalette)
+    function targetCore (targets, g, offset) {
+      let current = g
+        .selectAll('g.target')
+        .data(targets, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'target')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        g.attr('transform', 'translate(' + (label[0].x + line * 0.25) + ',' + (offset + interOffset + (marg + line) * i) + ')')
+        let tevents = {
+          click: function () { com.target.events.click('target', d.id) }
+        }
+        targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
 
-    g.append('text')
-      .text(target.pos[0])
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', '')
-      .style('font-size', headerSize + 'px')
-      .attr('text-anchor', 'start')
-      .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.175 + headerSize * 0.5) + ')')
-    g.append('text')
-      .text(target.pos[1])
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', '')
-      .style('font-size', headerSize + 'px')
-      .attr('text-anchor', 'start')
-      .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.175 + headerSize * 2) + ')')
+        g.append('text')
+          .text(d.pos[0])
+          .style('fill', colorPalette.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', headerSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (label[0].w) + ',' + (line * 0.2 + headerSize * 0.5) + ')')
+        g.append('text')
+          .text(d.pos[1])
+          .style('fill', colorPalette.dark.stroke)
+          .style('font-weight', '')
+          .style('font-size', headerSize + 'px')
+          .attr('text-anchor', 'start')
+          .attr('transform', 'translate(' + (label[0].w) + ',' + (line * 0.2 + headerSize * 1.4) + ')')
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        g.attr('transform', 'translate(' + (0 + line * 0.25) + ',' + (offset + interOffset + (marg + line + 4) * i) + ')')
+        scrollHeight += marg + line + 4
+        // innerOffset += line
+        pointingCore(d.pointings, g, line * 1.1 + marg)
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    targetCore(trgtPnt, innerg, headerSize * 0.5)
+    g.append('line')
+      .attr('x1', tbox.x)
+      .attr('y1', tbox.y + tbox.h)
+      .attr('x2', tbox.x + tbox.w)
+      .attr('y2', tbox.y + tbox.h)
+      .attr('stroke', colorPalette.dark.stroke)
+      .attr('stroke-width', 0.4)
+      .style('opacity', scrollHeight > tbox.h ? 1 : 0)
+    scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: scrollHeight})
+    // let height = box.w * 0.09
+    // for (let i = 0; i < data.pointings.length; i++) {
+    //   let pg = g.append('g').attr('transform', 'translate(' + (box.w * 0.48) + ',' + (box.h * 0.5) + ')')
+    //   let pevents = {
+    //     click: function () { com.target.events.click('target', data.targetId) }
+    //   }
+    //   pointingIcon(pg, {w: height, h: height}, 'P' + data.pointingName.split('/')[1].split('_')[1], pevents, colorPalette)
+    //   g.append('text')
+    //     .text(data.pointingPos[0])
+    //     .style('fill', colorPalette.dark.stroke)
+    //     .style('font-weight', '')
+    //     .style('font-size', headerSize + 'px')
+    //     .attr('text-anchor', 'start')
+    //     .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.55 + headerSize * 0.5) + ')')
+    //   g.append('text')
+    //     .text(data.pointingPos[1])
+    //     .style('fill', colorPalette.dark.stroke)
+    //     .style('font-weight', '')
+    //     .style('font-size', headerSize + 'px')
+    //     .attr('text-anchor', 'start')
+    //     .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.55 + headerSize * 2) + ')')
+    // }
 
-    g.append('text')
-      .text(data.pointingPos[0])
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', '')
-      .style('font-size', headerSize + 'px')
-      .attr('text-anchor', 'start')
-      .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.55 + headerSize * 0.5) + ')')
-    g.append('text')
-      .text(data.pointingPos[1])
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', '')
-      .style('font-size', headerSize + 'px')
-      .attr('text-anchor', 'start')
-      .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.55 + headerSize * 2) + ')')
+    // let tg = g.append('g').attr('transform', 'translate(' + (box.w * 0.48) + ',' + (box.h * 0.15) + ')')
+    // let tevents = {
+    //   click: function () { com.target.events.click('target', data.targetId) }
+    // }
+    // targetIcon(tg, {w: height, h: height}, 'T' + data.pointingName.split('/')[0].split('_')[1], tevents, colorPalette)
+
+    // g.append('text')
+    //   .text(target.pos[0])
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', headerSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.175 + headerSize * 0.5) + ')')
+    // g.append('text')
+    //   .text(target.pos[1])
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', headerSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.175 + headerSize * 2) + ')')
 
     let gt = g.append('g')
       .attr('id', 'telsDisplayer')
-      .attr('transform', 'translate(' + 0 + ',' + 3 + ')')
+      .attr('transform', 'translate(' + box.w * 0.55 + ',' + (headerSize * 0.5) + ')')
 
     com.targetBlock = new TargetDisplayer({
       main: {
         tag: 'targetRootTag',
         g: gt,
         scroll: {},
-        box: {x: 0, y: 0, w: box.w * 0.45, h: box.h, marg: 0},
+        box: {x: box.w * 0.45 * 0.025, y: box.h * 0.025, w: box.w * 0.45 * 0.95, h: box.h * 0.95, marg: 0},
         background: {
           fill: colorPalette.brighter.background,
           stroke: colorPalette.brighter.stroke,
@@ -604,8 +791,8 @@ window.ObsblockForm = function (optIn) {
         skymap: {
           enabled: true,
           g: undefined,
-          box: {x: 0, y: 0, w: box.w * 0.45, h: box.h, marg: 0},
-          mainTarget: target
+          box: {x: box.w * 0.45 * 0.025, y: box.h * 0.025, w: box.w * 0.45 * 0.95, h: box.h * 0.95, marg: 0},
+          mainTarget: undefined
         },
         legend: {
           enabled: false
@@ -642,7 +829,8 @@ window.ObsblockForm = function (optIn) {
     com.targetBlock.updateData({
       data: {
         raw: {
-          targets: [{id: data.pointingId, name: data.pointingName, pos: data.pointingPos}]
+          targets: com.data.block.targets,
+          pointings: com.data.block.pointings
         },
         modified: []
       }
@@ -997,6 +1185,7 @@ window.ObsblockForm = function (optIn) {
       .attr('id', id)
       .attr('class', 'dropdown')
       .style('color', '#000000')
+      .style('font-size', '11px')
     if (optIn.disabled) {
       rootDiv.html(optIn.value)
       return
