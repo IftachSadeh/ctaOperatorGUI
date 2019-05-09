@@ -535,8 +535,8 @@ window.TelescopeDisplayer = function (optIn) {
             .attr('y', sizeRow * 0.08)
             .attr('width', com.main.box.w * 1.0)
             .attr('height', sizeRow * 0.84)
-            .attr('fill', colorTheme.blocks.run.background)
-            .attr('fill-opacity', 0.3)
+            .attr('fill', com.gridBib.blocks.background.side.color)
+            .attr('fill-opacity', com.gridBib.blocks.background.side.opacity)
             .attr('stroke-width', 0.0)
             .attr('stroke', colorTheme.dark.stroke)
           d3.select(this).append('rect')
@@ -545,8 +545,8 @@ window.TelescopeDisplayer = function (optIn) {
             .attr('y', sizeRow * 0.08)
             .attr('width', com.gridBib.telescope.medium.box.w)
             .attr('height', sizeRow * 0.84)
-            .attr('fill', colorTheme.blocks.run.background)
-            .attr('fill-opacity', 0.4)
+            .attr('fill', com.gridBib.blocks.background.middle.color) // colorTheme.blocks.run.background)
+            .attr('fill-opacity', com.gridBib.blocks.background.middle.opacity)
             .attr('stroke-width', 0.0)
             .attr('stroke', colorTheme.dark.stroke)
 
@@ -595,7 +595,7 @@ window.TelescopeDisplayer = function (optIn) {
               .attr('x', com.main.box.w * 0.04)
               .attr('y', sizeRow * 0.5 + 0.5 * fontSize)
               .text(function (d) {
-                return d.metaData.blockName
+                return d.metaData ? d.metaData.blockName : d.name.split('_')[2]
               })
               .style('fill', colorTheme.blocks.run.text)
               .style('font-weight', 'bold')

@@ -70,6 +70,7 @@ window.pointingIcon = function (g, dim, name, events, colorTheme) {
       d3.select(this).style('cursor', 'default')
       d3.select(this).attr('fill', colorTheme.dark.background)
     })
+    .attr('rx', 4)
   g.append('svg:image')
     .attr('xlink:href', '/static/icons/square-target.svg')
     .attr('width', dim.w)

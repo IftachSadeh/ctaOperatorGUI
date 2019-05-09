@@ -508,7 +508,6 @@ class obsBlocks_noACS():
                     if not (targetsIds[idIndex] in targetIds):
                         targetIds.append(targetsIds[idIndex])
                         targets.append(self.redis.get(name=targetsIds[idIndex], packed=True, defVal={}))
-                print targetIds
 
                 for nObsNow in range(nObsBlocks):
                     obsBlockId = "obsBlock_"+baseName + \
@@ -538,6 +537,7 @@ class obsBlocks_noACS():
 
                     pointings = []
                     nbDividing = max(1, int(self.rndGen.random() * 5))
+                    totTelIds = copy.deepcopy(schedTelIds)
                     for z in range(nbDividing):
                         trg = targets[max(0, int(self.rndGen.random() * len(targets)))]
                         pnt = {'id': schedBlockId+"_"+obsBlockId, 'name': trg["name"] + "/p_" + str(nObsNow) + "-" + str(z)}
@@ -552,7 +552,12 @@ class obsBlocks_noACS():
                             pntPos[0] += 360
                         pnt['pos'] = pntPos
                         pointings.append(pnt)
-                    print pointings
+                        tels = random.sample(totTelIds, int(len(schedTelIds) / nbDividing))
+                        if z == nbDividing - 1:
+                            tels = totTelIds
+                        # and remove them from allTels list
+                        totTelIds = [x for x in totTelIds if x not in tels]
+                        pnt['telIds'] = tels
 
                     if debugTmp:
                         print ' --- nObsNow / startTime / duration:', \

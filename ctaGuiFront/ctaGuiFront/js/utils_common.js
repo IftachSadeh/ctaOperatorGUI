@@ -297,6 +297,11 @@ window.colorTheme = {
         text: '#000000'
       }
     },
+    darkest: {
+      background: '#9E9E9E',
+      stroke: '#444444',
+      text: '#444444'
+    },
     darker: {
       background: '#E0E0E0',
       stroke: '#444444',
@@ -471,9 +476,11 @@ window.faD = faD
 // ---------------------------------------------------------------------------------------------------
 
 var blockTemplate = {
-  startTime: null,
-  endTime: null,
-  duration: null,
+  time: {
+    start: null,
+    duration: null,
+    end: null
+  },
   exeState: {
     state: null,
     canRun: null
@@ -484,15 +491,16 @@ var blockTemplate = {
     nSched: null
   },
   obId: null,
-  pointingId: null,
-  pointingName: null,
-  pointingPos: null,
+  pointings: [],
   runphase: null,
   sbId: null,
-  targetId: null,
-  targetName: null,
-  targetPos: null,
+  target: [],
   telIds: [],
+  telescopes: {
+    large: {min: 0, max: 0, ids: []},
+    medium: {min: 0, max: 0, ids: []},
+    small: {min: 0, max: 0, ids: []}
+  },
   timeStamp: null
 }
 window.blockTemplate = blockTemplate

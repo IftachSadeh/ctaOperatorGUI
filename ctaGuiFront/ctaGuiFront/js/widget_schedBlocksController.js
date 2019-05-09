@@ -2942,6 +2942,16 @@ let mainSchedBlocksController = function (optIn) {
               },
               left: {
                 enabled: false
+              },
+              background: {
+                middle: {
+                  color: colorPalette.blocks.run.background,
+                  opacity: 0.4
+                },
+                side: {
+                  color: colorPalette.blocks.run.background,
+                  opacity: 0.3
+                }
               }
             }
           },
@@ -3396,6 +3406,16 @@ let mainSchedBlocksController = function (optIn) {
               },
               left: {
                 enabled: true
+              },
+              background: {
+                middle: {
+                  color: colorPalette.blocks.run.background,
+                  opacity: 0.4
+                },
+                side: {
+                  color: colorPalette.blocks.run.background,
+                  opacity: 0.3
+                }
               }
             }
           },
@@ -4113,14 +4133,14 @@ let mainSchedBlocksController = function (optIn) {
         blocks: {
           x: 0,
           y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.2,
+          h: reserved.box.h * 0.3,
           w: reserved.box.w
         },
         target: {
           x: box.rightInfo.w * 0.0,
-          y: box.rightInfo.h * 0.41,
+          y: box.rightInfo.h * 0.45,
           w: box.rightInfo.w * 1.0,
-          h: box.rightInfo.h * 0.59
+          h: box.rightInfo.h * 0.55
         }
       }
 

@@ -1719,7 +1719,7 @@ window.BlockDisplayer = function (optIn) {
         .range(com.blockQueue2.axis.range)
 
       if (!com.blockQueue2.axis.enabled) return
-      let minTxtSize = com.blockTrackShrink.axis.attr.text.size ? com.blockTrackShrink.axis.attr.text.size : com.main.box.w * 0.04
+      let minTxtSize = com.blockQueue2.axis.attr.text.size ? com.blockQueue2.axis.attr.text.size : com.main.box.w * 0.04
       // console.log(com.blockQueue2.axis.domain, com.blockQueue2.axis.range);
       com.blockQueue2.axis.main.scale(com.blockQueue2.axis.scale)
       if (!com.blockQueue2.axis.showAxis) return
@@ -1730,7 +1730,7 @@ window.BlockDisplayer = function (optIn) {
       com.blockQueue2.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.blockQueue2.axis.attr.path.stroke)
       com.blockQueue2.axis.g.selectAll('g.tick').selectAll('text')
         .attr('stroke', com.blockQueue2.axis.attr.text.stroke)
-        .attr('stroke-width', 0.5)
+        .attr('stroke-width', 0.3)
         .attr('fill', com.blockQueue2.axis.attr.text.fill)
         .style('font-size', minTxtSize + 'px')
     }

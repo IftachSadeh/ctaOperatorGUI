@@ -313,7 +313,6 @@ window.SchedblockForm = function (optIn) {
       .attr('fill', colorPalette.dark.background)
       .attr('stroke', colorPalette.dark.stroke)
       .attr('stroke-width', 2)
-      .attr('stroke-dasharray', [2, 2])
       .attr('transform', 'translate(' + (box.w * 0.5 - dimPoly * 0.5) + ',' + (box.h * 0.5 - dimPoly) + ')')
       .on('click', function () {
         // com.tree.events.click('schedBlock', data.sbId)
@@ -611,6 +610,885 @@ window.SchedblockForm = function (optIn) {
   function createPointingInformation () {
     // let target = com.data.target
     let schedB = com.data.schedB
+    let box = com.target.box
+    let line = 20
+    let spaceBlock = ((box.w * 0.85) - (schedB.blocks.length * line)) / (schedB.blocks.length)
+    let tbox = {x: 0, y: headerSize + 4 + line, w: box.w, h: box.h * 0.45 - headerSize - 4 - line}
+    let g = com.main.g.append('g')
+      .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+    com.schedule.g = g
+
+    g.append('text')
+      .text('Targets:')
+      .style('fill', colorPalette.dark.stroke)
+      .style('font-weight', 'bold')
+      .style('font-size', titleSize + 'px')
+      .attr('text-anchor', 'start')
+      .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+    g.append('line')
+      .attr('x1', 0)
+      .attr('y1', 2)
+      .attr('x2', box.w * 1.0)
+      .attr('y2', 2)
+      .attr('stroke', colorPalette.dark.stroke)
+      .attr('stroke-width', 0.2)
+
+    g.append('rect')
+      .attr('id', 'headerStrip')
+      .attr('x', 0)
+      .attr('y', 3)
+      .attr('width', tbox.w)
+      .attr('height', headerSize)
+      .attr('fill', colorPalette.dark.stroke)
+    let label = [
+      {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Target', anchor: 'middle'},
+      {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.85, text: 'Blocks & Pointings', anchor: 'middle'}
+    ]
+    for (let i = 0; i < label.length; i++) {
+      let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
+      g.append('text')
+        .text(label[i].text)
+        .style('fill', colorPalette.medium.background)
+        .style('font-weight', 'bold')
+        .style('font-size', txtSize + 'px')
+        .attr('text-anchor', label[i].anchor)
+        .attr('transform', 'translate(' + (label[i].x + off) + ',' + (label[i].y) + ')')
+      // g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', label[i].w)
+      //   .attr('height', tbox.h + line)
+      //   .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.darker.background)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.05)
+      //   .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
+    }
+
+    let pntsPos = {}
+    function blockCore (blocks, g, offset) {
+      let current = g
+        .selectAll('g.block')
+        .data(blocks, function (d) {
+          return d.obId
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'block')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        let palette = blockStyle(d)
+        g.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', line * 1)
+          .attr('height', line * 1)
+          .attr('fill', palette.color.background)
+          .attr('stroke', palette.color.stroke)
+          .attr('stroke-width', 0.1)
+          .on('click', function () {
+            com.tree.events.click('block', d.obId)
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).style('cursor', 'pointer')
+            d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).style('cursor', 'default')
+            d3.select(this).attr('fill', palette.color.background)
+          })
+        g.append('text')
+          .text(d.metaData.nObs)
+          .style('fill', '#000000')
+          .style('font-weight', 'bold')
+          .style('font-size', headerSize + 'px')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+          .style('pointer-events', 'none')
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        pntsPos[d.obId] = (box.w * 0.15 + (spaceBlock + line) * i)
+        g.attr('transform', 'translate(' + (box.w * 0.15 + spaceBlock * 0.5 + (spaceBlock + line) * i) + ',' + (offset) + ')')
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+      // offsetY += line * 1
+    }
+    blockCore(schedB.blocks, g, headerSize + 5)
+
+    let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + tbox.y + ')')
+    let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
+    let innerg = scrollBox.get('innerG')
+
+    let trgtPnt = []
+    for (let j = 0; j < schedB.blocks.length; j++) {
+      let data = schedB.blocks[j]
+      for (let i = 0; i < data.pointings.length; i++) {
+        let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+        if (tar) {
+          if (!(data.obId in tar.pointings)) tar.pointings[data.obId] = []
+          tar.pointings[data.obId].push(data.pointings[i])
+        } else {
+          tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+          // allTar.push(tar)
+          tar.pointings = {}
+          tar.pointings[data.obId] = [data.pointings[i]]
+          trgtPnt.push(tar)
+        }
+        // allPoint.push(data.pointings[i])
+      }
+    }
+
+    let marg = line * 0.2
+    let interOffset = 0
+    let scrollHeight = 0
+
+    let squareTemplate = {
+      '1': [{x: 0.5, y: 0.5}],
+      '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
+      '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
+      '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+      '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
+      '6': [],
+      '7': [],
+      '8': [],
+      '9': []
+    }
+    function pointingCore (pointings, pg, x, y, w, h) {
+      pg.attr('transform', 'translate(' + x + ',' + y + ')')
+      pg.append('rect')
+        .attr('x', 4)
+        .attr('y', 4)
+        .attr('width', w - 8)
+        .attr('height', h - 8)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', colorPalette.darker.stroke)
+        .attr('stroke-width', 0.2)
+      let psize = {
+        w: Math.min(w / 3, 25),
+        h: Math.min(h / 3, 20)
+      }
+      let current = pg
+        .selectAll('g.pointing')
+        .data(pointings, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'pointing')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        let pevents = {
+          click: function () {},
+          over: function () {},
+          out: function () {}
+        }
+        pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
+        scrollHeight += (marg + line * 0.9)
+        // g.append('rect')
+        //   .attr('x', 0)
+        //   .attr('y', 0)
+        //   .attr('width', w)
+        //   .attr('height', h)
+        //   .attr('fill', '#888888')
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        let pos = squareTemplate[pointings.length][i]
+        g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.5)) + ')')
+        interOffset += marg + line * 0.9
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+      // offsetY += line * 1
+    }
+    function targetCore (targets, g, offset) {
+      let space = ((tbox.h * 1) - (targets.length * line)) / (targets.length)
+      let current = g
+        .selectAll('g.target')
+        .data(targets, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'target')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        let tevents = {
+          click: function () { com.target.events.click('target', d.id) },
+          over: function () {
+
+          },
+          out: function () {}
+        }
+        targetIcon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
+        scrollHeight += marg + line + 4
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
+        g.attr('transform', 'translate(' + offX + ',' + (space * 0.5 + (space + line) * i) + ')')
+        // innerOffset += line
+        for (var key in d.pointings) {
+          pointingCore(d.pointings[key], g.append('g').attr('id', 'pointings' + key), pntsPos[key] - offX, -space * 0.5, spaceBlock + line, space + line)
+        }
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    targetCore(trgtPnt, innerg, 0)
+
+    // g.append('rect')
+    //   .attr('x', box.w * 0.15)
+    //   .attr('y', 3 + box.w * 0.19)
+    //   .attr('width', box.w * 0.7)
+    //   .attr('height', box.w * 0.7)
+    //   .attr('fill', colorPalette.bright.background)
+    //   .attr('stroke', colorPalette.bright.stroke)
+    //   .attr('stroke-width', 0.2)
+    // let center = {
+    //   x: box.w * 0.15 + box.w * 0.35,
+    //   y: 3 + box.w * 0.19 + box.w * 0.35
+    // }
+    // g.append('text')
+    //   .text('+')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', 'bold')
+    //   .style('font-size', txtSize * 1.4 + 'px')
+    //   .attr('text-anchor', 'middle')
+    //   .attr('transform', 'translate(' + center.x + ',' + (center.y + txtSize * 0.3) + ')')
+    // g.append('text')
+    //   .text('trg')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'middle')
+    //   .attr('transform', 'translate(' + center.x + ',' + (center.y + txtSize * 1.3) + ')')
+    //
+    // for (let i = 0; i < schedB.blocks.length; i++) {
+    //   let offX = (schedB.blocks[i].pointingPos[0] - target.pos[0]) * 12
+    //   let offY = (schedB.blocks[i].pointingPos[1] - target.pos[1]) * 12
+    //   g.append('text')
+    //     .text('+')
+    //     .style('fill', colorPalette.dark.stroke)
+    //     .style('font-weight', 'bold')
+    //     .style('font-size', txtSize * 1.4 + 'px')
+    //     .attr('text-anchor', 'middle')
+    //     .attr('transform', 'translate(' + (center.x + offX) + ',' + (center.y + offY + txtSize * 0.3) + ')')
+    //   g.append('text')
+    //     .text('ptg-' + schedB.blocks[i].metaData.nObs)
+    //     .style('fill', colorPalette.dark.stroke)
+    //     .style('font-weight', '')
+    //     .style('font-size', txtSize * 0.8 + 'px')
+    //     .attr('text-anchor', 'middle')
+    //     .attr('transform', 'translate(' + (center.x + offX) + ',' + ((schedB.blocks[i].pointingPos[1] < target.pos[1] ? -txtSize * 1.3 : txtSize * 1.3) + center.y + offY) + ')')
+    // }
+
+    // g.append('text')
+    //   .attr('id', 'targetName')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', 'bold')
+    //   .style('font-style', '')
+    //   .style('font-size', headerSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.01) + ',' + (box.w * 0.075) + ')')
+    // g.append('text')
+    //   .attr('id', 'targetPosX')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.01) + ',' + ((box.w * 0.075) + txtSize * 1.6) + ')')
+    // g.append('text')
+    //   .attr('id', 'targetPosY')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.01) + ',' + ((box.w * 0.075) + txtSize * 3.2) + ')')
+    //
+    // g.append('text')
+    //   .attr('id', 'pointingName')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', 'bold')
+    //   .style('font-style', '')
+    //   .style('font-size', headerSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.33) + ',' + (box.w * 0.075) + ')')
+    // g.append('text')
+    //   .attr('id', 'pointingPosX')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.33) + ',' + ((box.w * 0.075) + txtSize * 1.6) + ')')
+    // g.append('text')
+    //   .attr('id', 'pointingPosY')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.33) + ',' + ((box.w * 0.075) + txtSize * 3.2) + ')')
+    //
+    // g.append('text')
+    //   .attr('id', 'offsetX')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.66) + ',' + ((box.w * 0.075) + txtSize * 1.6) + ')')
+    // g.append('text')
+    //   .attr('id', 'offsetY')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', '')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.66) + ',' + ((box.w * 0.075) + txtSize * 3.2) + ')')
+
+    // g.append('rect')
+    //   .attr('id', 'headerStrip')
+    //   .attr('x', 0)
+    //   .attr('y', headerSize * 6)
+    //   .attr('width', box.w * 0.14)
+    //   .attr('height', headerSize)
+    //   .attr('fill', colorPalette.dark.stroke)
+    // g.append('text')
+    //   .text('Link list')
+    //   .style('fill', colorPalette.medium.background)
+    //   .style('font-weight', 'bold')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'middle')
+    //   .attr('transform', 'translate(' + (box.w * 0.14 * 0.5) + ',' + (headerSize * 6.5 + txtSize * 0.33) + ')')
+
+    // let tbox = {x: 0, y: headerSize * 6 + headerSize, w: box.w * 0.14, h: box.h - headerSize * 7.5}
+    // let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + tbox.y + ')')
+    // let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
+    // let innerg = scrollBox.get('innerG')
+    //
+    // let trgtPnt = []
+    // let allTar = []
+    // let allPoint = []
+    // for (let j = 0; j < schedB.blocks.length; j++) {
+    //   let data = schedB.blocks[j]
+    //   for (let i = 0; i < data.pointings.length; i++) {
+    //     let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+    //     if (tar) {
+    //       tar.pointings.push(data.pointings[i])
+    //     } else {
+    //       tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+    //       allTar.push(tar)
+    //       tar.pointings = [data.pointings[i]]
+    //       trgtPnt.push(tar)
+    //     }
+    //     allPoint.push(data.pointings[i])
+    //   }
+    // }
+    //
+    // let line = 20
+    // let marg = line * 0.2
+    // let interOffset = 0
+    // let scrollHeight = headerSize * 0.2
+    // function pointingCore (pointings, pg, offset) {
+    //   let current = pg
+    //     .selectAll('g.pointing')
+    //     .data(pointings, function (d) {
+    //       return d.id
+    //     })
+    //   let enter = current
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'pointing')
+    //   enter.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     let pevents = {
+    //       click: function () { com.target.events.click('target', d.targetId) },
+    //       over: function () {
+    //         com.schedule.g.select('text#targetName').text(pg.data()[0].name)
+    //         com.schedule.g.select('text#targetPosX').text(pg.data()[0].pos[0])
+    //         com.schedule.g.select('text#targetPosY').text(pg.data()[0].pos[1])
+    //
+    //         com.schedule.g.select('text#pointingName').text(d.name)
+    //         com.schedule.g.select('text#pointingPosX').text(d.pos[0])
+    //         com.schedule.g.select('text#pointingPosY').text(d.pos[1])
+    //
+    //         com.schedule.g.select('text#offsetX').text(d.pos[0] - pg.data()[0].pos[0])
+    //         com.schedule.g.select('text#offsetY').text(d.pos[1] - pg.data()[0].pos[1])
+    //       },
+    //       out: function () {}
+    //     }
+    //     pointingIcon(g, {w: line * 1.4, h: line * 0.9}, 'P' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
+    //     scrollHeight += (marg + line * 0.9)
+    //   })
+    //   let merge = current.merge(enter)
+    //   merge.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     g.attr('transform', 'translate(' + (line * 0.4) + ',' + (offset + (marg + line * 0.9) * i) + ')')
+    //     interOffset += marg + line * 0.9
+    //   })
+    //   current
+    //     .exit()
+    //     .transition('inOut')
+    //     .duration(timeD.animArc)
+    //     .style('opacity', 0)
+    //     .remove()
+    //   // offsetY += line * 1
+    // }
+    // function targetCore (targets, g, offset) {
+    //   let current = g
+    //     .selectAll('g.target')
+    //     .data(targets, function (d) {
+    //       return d.id
+    //     })
+    //   let enter = current
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'target')
+    //   enter.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     let tevents = {
+    //       click: function () { com.target.events.click('target', d.id) },
+    //       over: function () {
+    //         com.schedule.g.select('text#targetName').text(d.name)
+    //         com.schedule.g.select('text#targetPosX').text(d.pos[0])
+    //         com.schedule.g.select('text#targetPosY').text(d.pos[1])
+    //         if (com.schedule.g.select('text#pointingName').text().includes(d.name)) return
+    //         com.schedule.g.select('text#pointingName').text('')
+    //         com.schedule.g.select('text#pointingPosX').text('')
+    //         com.schedule.g.select('text#pointingPosY').text('')
+    //
+    //         com.schedule.g.select('text#offsetX').text('')
+    //         com.schedule.g.select('text#offsetY').text('')
+    //       },
+    //       out: function () {}
+    //     }
+    //     targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+    //     scrollHeight += marg + line + 4
+    //   })
+    //   let merge = current.merge(enter)
+    //   merge.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     g.attr('transform', 'translate(' + (label[0].x + line * 0.0) + ',' + (offset + interOffset + (marg + line + 4) * i) + ')')
+    //     // innerOffset += line
+    //     pointingCore(d.pointings, g, line * 1.1 + marg)
+    //   })
+    //   current
+    //     .exit()
+    //     .transition('inOut')
+    //     .duration(timeD.animArc)
+    //     .style('opacity', 0)
+    //     .remove()
+    // }
+    // targetCore(trgtPnt, innerg, headerSize * 0.2)
+    //
+    // g.append('line')
+    //   .attr('x1', 0)
+    //   .attr('y1', box.h - headerSize * 0.5)
+    //   .attr('x2', box.w * 0.14)
+    //   .attr('y2', box.h - headerSize * 0.5)
+    //   .attr('stroke', colorPalette.dark.stroke)
+    //   .attr('stroke-width', 0.4)
+    //   .style('opacity', scrollHeight > tbox.h ? 1 : 0)
+    // scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: scrollHeight})
+    //
+    // let gt = g.append('g')
+    //   .attr('id', 'telsDisplayer')
+    //   .attr('transform', 'translate(' + (box.w * 0.15) + ',' + (headerSize * 6) + ')')
+    // com.targetBlock = new TargetDisplayer({
+    //   main: {
+    //     tag: 'targetRootTag',
+    //     g: gt,
+    //     scroll: {},
+    //     box: {x: 0, y: 0, w: box.w * 0.7, h: box.h - headerSize * 6.5, marg: 0},
+    //     background: {
+    //       fill: colorPalette.brighter.background,
+    //       stroke: colorPalette.brighter.stroke,
+    //       strokeWidth: 0.5
+    //     }
+    //   },
+    //
+    //   displayer: 'defaultBib',
+    //   defaultBib: {
+    //     quickmap: {
+    //       enabled: false,
+    //       target: {
+    //         events: {
+    //           click: () => {},
+    //           over: () => {},
+    //           out: () => {}
+    //         }
+    //       },
+    //       pointing: {
+    //         events: {
+    //           click: () => {},
+    //           over: () => {},
+    //           out: () => {}
+    //         }
+    //       }
+    //     },
+    //     skymap: {
+    //       enabled: true,
+    //       g: undefined,
+    //       box: {x: 0, y: 0, w: box.w * 0.7, h: box.h - headerSize * 6.5, marg: 0},
+    //       mainTarget: undefined
+    //     },
+    //     legend: {
+    //       enabled: false
+    //     }
+    //   },
+    //
+    //   filters: {
+    //     targetFilters: [],
+    //     filtering: []
+    //   },
+    //   data: {
+    //     raw: {
+    //       targets: []
+    //     },
+    //     filtered: {},
+    //     modified: []
+    //   },
+    //   debug: {
+    //     enabled: false
+    //   },
+    //   pattern: {
+    //     select: {}
+    //   },
+    //   input: {
+    //     over: {
+    //       target: undefined
+    //     },
+    //     focus: {
+    //       target: undefined
+    //     }
+    //   }
+    // })
+    // com.targetBlock.init()
+    // com.targetBlock.updateData({
+    //   data: {
+    //     raw: {
+    //       targets: allTar,
+    //       pointings: allPoint
+    //     },
+    //     modified: []
+    //   }
+    // })
+
+    // let targetData = {
+    //   id: schedB.target.name,
+    //   pointing: []
+    // }
+    // for (let i = 0; i < schedB.blocks.length; i++) {
+    //   let p = {
+    //     id: schedB.blocks[i].pointingName.split('/')[1],
+    //     position: schedB.blocks[i].pointingPos
+    //   }
+    //   if (!targetData.pointing.includes(p)) targetData.pointing.push(p)
+    // }
+    //
+    // // g.append('rect')
+    // //   .attr('x', 0)
+    // //   .attr('y', box.w * 0.19 + 3)
+    // //   .attr('width', box.w * 0.14)
+    // //   .attr('height', headerSize + 4)
+    // //   .attr('fill', colorPalette.dark.background)
+    // //   .attr('stroke', colorPalette.dark.stroke)
+    // //   .attr('stroke-width', 0.05)
+    // //   .on('click', function () {
+    // //     focusManager.focusOn('target', target.id)
+    // //   })
+    // //   .on('mouseover', function (d) {
+    // //     d3.select(this).style('cursor', 'pointer')
+    // //     d3.select(this).attr('fill', colorPalette.darker.background)
+    // //   })
+    // //   .on('mouseout', function (d) {
+    // //     d3.select(this).style('cursor', 'default')
+    // //     d3.select(this).attr('fill', colorPalette.dark.background)
+    // //   })
+    // // g.append('text')
+    // //   .text(targetData.id)
+    // //   .style('fill', colorPalette.dark.stroke)
+    // //   .style('font-weight', '')
+    // //   .style('font-size', headerSize + 'px')
+    // //   .attr('text-anchor', 'start')
+    // //   .attr('transform', 'translate(' + 2 + ',' + (3 + box.w * 0.19 + headerSize * 1) + ')')
+    // //   .style('pointer-events', 'none')
+    // // g.append('rect')
+    // //   .attr('x', headerSize * 5)
+    // //   .attr('y', box.w * 0.075 - headerSize)
+    // //   .attr('width', headerSize * 2)
+    // //   .attr('height', headerSize * 2)
+    // //   .attr('fill', colorPalette.dark.background)
+    // //   .attr('stroke', colorPalette.medium.stroke)
+    // //   .attr('stroke-width', 0.2)
+    // //   // .style('boxShadow', '10px 20px 30px black')
+    // //   .attr('rx', 0)
+    // //   .on('click', function () {
+    // //     focusManager.focusOn('target', target.id)
+    // //   })
+    // //   .on('mouseover', function (d) {
+    // //     d3.select(this).style('cursor', 'pointer')
+    // //     d3.select(this).attr('fill', colorPalette.darker.background)
+    // //   })
+    // //   .on('mouseout', function (d) {
+    // //     d3.select(this).style('cursor', 'default')
+    // //     d3.select(this).attr('fill', colorPalette.dark.background)
+    // //   })
+    //
+    // let height = box.w * 0.09
+    // g.append('rect')
+    //   .attr('x', box.w * 0.01)
+    //   .attr('y', box.w * 0.19 + 3)
+    //   .attr('width', height)
+    //   .attr('height', height)
+    //   .attr('fill', colorPalette.dark.background)
+    //   .attr('stroke', colorPalette.medium.stroke)
+    //   .attr('stroke-width', 0.6)
+    //   // .style('boxShadow', '10px 20px 30px black')
+    //   .attr('rx', height)
+    //   .on('click', function () {
+    //     com.target.events.click('target', targetData.id)
+    //   })
+    //   .on('mouseover', function (d) {
+    //     d3.select(this).style('cursor', 'pointer')
+    //     d3.select(this).attr('fill', colorPalette.darker.background)
+    //   })
+    //   .on('mouseout', function (d) {
+    //     d3.select(this).style('cursor', 'default')
+    //     d3.select(this).attr('fill', colorPalette.dark.background)
+    //   })
+    // g.append('svg:image')
+    //   .attr('xlink:href', '/static/icons/round-target.svg')
+    //   .attr('width', height * 1)
+    //   .attr('height', height * 1)
+    //   .attr('x', box.w * 0.01)
+    //   .attr('y', box.w * 0.19 + 3)
+    //   .style('opacity', 0.5)
+    //   .style('pointer-events', 'none')
+    // g.append('text')
+    //   .text('T' + targetData.id.split('/')[0].split('_')[1])
+    //   .attr('x', box.w * 0.01 + height * 0.5)
+    //   .attr('y', box.w * 0.19 + 3 + height * 0.5 + txtSize * 0.3)
+    //   .style('font-weight', 'bold')
+    //   .attr('text-anchor', 'middle')
+    //   .style('font-size', headerSize + 'px')
+    //   .attr('dy', 0)
+    //   .style('pointer-events', 'none')
+    //   .attr('fill', colorPalette.dark.text)
+    //   .attr('stroke', 'none')
+    //
+    // g.append('line')
+    //   .attr('x1', 0)
+    //   .attr('y1', 3 + box.w * 0.19 + height + 4)
+    //   .attr('x2', box.w * 0.14)
+    //   .attr('y2', 3 + box.w * 0.19 + height + 4)
+    //   .attr('stroke', colorPalette.dark.stroke)
+    //   .attr('stroke-width', 0.2)
+    //
+    // let offsetY = 3 + box.w * 0.19 + height + 6
+    // let current = g
+    //   .selectAll('g.pointing')
+    //   .data(targetData.pointing, function (d) {
+    //     return d.id
+    //   })
+    // let enter = current
+    //   .enter()
+    //   .append('g')
+    //   .attr('class', 'pointing')
+    // enter.each(function (d, i) {
+    //   let ig = d3.select(this)
+    //   ig.attr('transform', 'translate(' + (headerSize * 3) + ',' + (offsetY + titleSize * 2 * i) + ')')
+    //
+    //   ig.append('rect')
+    //     .attr('x', -box.w * 0.025)
+    //     .attr('y', 0)
+    //     .attr('width', headerSize * 2)
+    //     .attr('height', headerSize * 2)
+    //     .attr('fill', colorPalette.dark.background)
+    //     .attr('stroke', colorPalette.medium.stroke)
+    //     .attr('stroke-width', 0.6)
+    //     // .style('boxShadow', '10px 20px 30px black')
+    //     .attr('rx', 0)
+    //     .on('click', function () {
+    //       com.target.events.click('target', targetData.id)
+    //     })
+    //     .on('mouseover', function () {
+    //       g.select('text#pointingName').text(d.id)
+    //       g.select('text#pointingPosX').text(d.position[0])
+    //       g.select('text#pointingPosY').text(d.position[1])
+    //
+    //       g.select('text#offsetX').text(d.position[0] - target.pos[0])
+    //       g.select('text#offsetY').text(d.position[1] - target.pos[1])
+    //       d3.select(this).style('cursor', 'pointer')
+    //       d3.select(this).attr('fill', colorPalette.darker.background)
+    //     })
+    //     .on('mouseout', function () {
+    //       d3.select(this).style('cursor', 'default')
+    //       d3.select(this).attr('fill', colorPalette.dark.background)
+    //     })
+    //   ig.append('svg:image')
+    //     .attr('xlink:href', '/static/icons/square-target.svg')
+    //     .attr('width', headerSize * 2)
+    //     .attr('height', headerSize * 2)
+    //     .attr('x', -box.w * 0.025)
+    //     .attr('y', 0)
+    //     .style('opacity', 0.5)
+    //     .style('pointer-events', 'none')
+    //   ig.append('text')
+    //     .text('P' + d.id.split('_')[1])
+    //     .attr('x', -box.w * 0.025 + headerSize * 2 * 0.5)
+    //     .attr('y', 0 + headerSize * 2 * 0.5 + txtSize * 0.3)
+    //     .style('font-weight', 'bold')
+    //     .attr('text-anchor', 'middle')
+    //     .style('font-size', headerSize + 'px')
+    //     .attr('dy', 0)
+    //     .style('pointer-events', 'none')
+    //     .attr('fill', colorPalette.dark.text)
+    //     .attr('stroke', 'none')
+    // })
+    // let merge = current.merge(enter)
+    // merge.each(function (d, i) {
+    // })
+    // current
+    //   .exit()
+    //   .transition('inOut')
+    //   .duration(timeD.animArc)
+    //   .style('opacity', 0)
+    //   .remove()
+
+    // g.append('text')
+    //   .text('Pointing:')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', 'bold')
+    //   .style('font-style', '')
+    //   .style('font-size', headerSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + (box.w * 0.33) + ',' + (box.w * 0.075) + ')')
+
+    trgtPnt = []
+    let allTar = []
+    let allPoint = []
+    for (let j = 0; j < schedB.blocks.length; j++) {
+      let data = schedB.blocks[j]
+      for (let i = 0; i < data.pointings.length; i++) {
+        let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+        if (tar) {
+          tar.pointings.push(data.pointings[i])
+        } else {
+          tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+          allTar.push(tar)
+          tar.pointings = [data.pointings[i]]
+          trgtPnt.push(tar)
+        }
+        allPoint.push(data.pointings[i])
+      }
+    }
+
+    let gt = g.append('g')
+      .attr('id', 'telsDisplayer')
+      .attr('transform', 'translate(' + (box.w * 0.25) + ',' + (box.h * 0.48) + ')')
+    com.targetBlock = new TargetDisplayer({
+      main: {
+        tag: 'targetRootTag',
+        g: gt,
+        scroll: {},
+        box: {x: 0, y: 0, w: box.w * 0.5, h: box.h * 0.5, marg: 0},
+        background: {
+          fill: colorPalette.brighter.background,
+          stroke: colorPalette.brighter.stroke,
+          strokeWidth: 0.5
+        }
+      },
+
+      displayer: 'defaultBib',
+      defaultBib: {
+        quickmap: {
+          enabled: false,
+          target: {
+            events: {
+              click: () => {},
+              over: () => {},
+              out: () => {}
+            }
+          },
+          pointing: {
+            events: {
+              click: () => {},
+              over: () => {},
+              out: () => {}
+            }
+          }
+        },
+        skymap: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: 0, w: box.w * 0.4, h: box.h * 0.5, marg: 0},
+          mainTarget: undefined
+        },
+        legend: {
+          enabled: false
+        }
+      },
+
+      filters: {
+        targetFilters: [],
+        filtering: []
+      },
+      data: {
+        raw: {
+          targets: []
+        },
+        filtered: {},
+        modified: []
+      },
+      debug: {
+        enabled: false
+      },
+      pattern: {
+        select: {}
+      },
+      input: {
+        over: {
+          target: undefined
+        },
+        focus: {
+          target: undefined
+        }
+      }
+    })
+    com.targetBlock.init()
+    com.targetBlock.updateData({
+      data: {
+        raw: {
+          targets: allTar,
+          pointings: allPoint
+        },
+        modified: []
+      }
+    })
+  }
+
+  function createPointingInformationOld () {
+    // let target = com.data.target
+    let schedB = com.data.schedB
+    console.log(schedB);
     let box = com.target.box
     let g = com.main.g.append('g')
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')

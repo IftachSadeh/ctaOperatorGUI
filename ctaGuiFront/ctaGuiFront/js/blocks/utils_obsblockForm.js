@@ -165,12 +165,12 @@ window.ObsblockForm = function (optIn) {
           endTime.setMinutes(Number(min))
           endTime.setSeconds(Number(sec))
         }
-        com.data.block.startTime = (endTime - startTime) / 1000
-        com.data.block.endTime = com.data.block.startTime + com.data.block.duration
+        com.data.block.time.start = (endTime - startTime) / 1000
+        com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
         break
       case 'duration':
-        com.data.block.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec)
-        com.data.block.endTime = com.data.block.startTime + com.data.block.duration
+        com.data.block.time.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec)
+        com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
         break
       case 'endTime':
         if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
@@ -183,12 +183,14 @@ window.ObsblockForm = function (optIn) {
           endTime.setMinutes(Number(min))
           endTime.setSeconds(Number(sec))
         }
-        com.data.block.endTime = (endTime - startTime) / 1000
-        com.data.block.duration = com.data.block.endTime - com.data.block.startTime
+        com.data.block.time.end = (endTime - startTime) / 1000
+        com.data.block.time.duration = com.data.block.endTime - com.data.block.time.start
         break
       default:
         return
     }
+
+    console.log(com.data.block.time);
 
     function updateTime (id, time) {
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
@@ -203,14 +205,13 @@ window.ObsblockForm = function (optIn) {
     }
 
     startTime = new Date(com.data.timeOfNight.date_start)
-    startTime.setSeconds(startTime.getSeconds() + com.data.block.startTime)
+    startTime.setSeconds(startTime.getSeconds() + com.data.block.time.start)
     endTime = new Date(com.data.timeOfNight.date_start)
-    endTime.setSeconds(endTime.getSeconds() + com.data.block.startTime + com.data.block.duration)
+    endTime.setSeconds(endTime.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
     let duration = new Date(endTime)
     duration.setHours(duration.getHours() - startTime.getHours())
     duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
     duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
-
     updateTime('startTime', startTime)
     updateTime('duration', duration)
     updateTime('endTime', endTime)
@@ -335,7 +336,6 @@ window.ObsblockForm = function (optIn) {
         .attr('fill', palette.color.background)
         .attr('stroke', palette.color.stroke)
         .attr('stroke-width', data.obId === schedB.blocks[i].obId ? 2 : 0.2)
-        .attr('stroke-dasharray', data.obId === schedB.blocks[i].obId ? [2, 2] : [])
         .on('click', function () {
           if (data.obId === schedB.blocks[i].obId) return
           com.tree.events.click('block', schedB.blocks[i].obId)
@@ -546,12 +546,12 @@ window.ObsblockForm = function (optIn) {
       .attr('id', 'headerStrip')
       .attr('x', 0)
       .attr('y', 3)
-      .attr('width', box.w - box.h - headerSize * 0)
+      .attr('width', box.w * 0.54)
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: (0 + ((box.w - box.h) * 0.0)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.25), text: 'Links', anchor: 'middle'},
-      {x: (0 + ((box.w - box.h) * 0.25)), y: 3 + headerSize * 0.5 + txtSize * 0.3, w: ((box.w - box.h) * 0.75), text: 'Positions', anchor: 'start'}
+      {x: 0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.12, text: 'Targets', anchor: 'middle'},
+      {x: box.w * 0.12, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.42, text: 'Pointings', anchor: 'middle'}
     ]
     for (let i = 0; i < label.length; i++) {
       let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
@@ -562,40 +562,57 @@ window.ObsblockForm = function (optIn) {
         .style('font-size', txtSize + 'px')
         .attr('text-anchor', label[i].anchor)
         .attr('transform', 'translate(' + (label[i].x + off) + ',' + (label[i].y) + ')')
-      g.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', label[i].w)
-        .attr('height', box.h - headerSize)
-        .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.darker.background)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.05)
-        .attr('transform', 'translate(' + (label[i].x) + ',' + (headerSize + 3) + ')')
     }
+
+    let line = 20
+    let tbox = {x: 0, y: 3 + headerSize, w: box.w * 0.54, h: box.h - headerSize}
+    let blockg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
+    let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
+    let innerg = scrollBox.get('innerG')
 
     let trgtPnt = []
     for (let i = 0; i < data.pointings.length; i++) {
       let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
       if (tar) {
-        tar.pointings.push(data.pointings[i])
+        if (!(data.obId in tar.pointings)) tar.pointings[data.obId] = []
+        tar.pointings[data.obId].push(data.pointings[i])
       } else {
         tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
-        tar.pointings = [data.pointings[i]]
+        // allTar.push(tar)
+        tar.pointings = {}
+        tar.pointings[data.obId] = [data.pointings[i]]
         trgtPnt.push(tar)
       }
     }
 
-    let tbox = {x: 0, y: 3 + headerSize, w: (box.w - box.h), h: box.h - headerSize}
-    let blockg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
-    let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
-    let innerg = scrollBox.get('innerG')
-
-    let line = box.h * 0.15
     let marg = line * 0.2
-    let interOffset = 0
-    let scrollHeight = headerSize * 0.2
-    function pointingCore (pointings, g, offset) {
-      let current = g
+
+    let squareTemplate = {
+      '1': [{x: 0.5, y: 0.5}],
+      '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
+      '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
+      '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+      '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
+      '6': [],
+      '7': [],
+      '8': [],
+      '9': []
+    }
+    function pointingCore (pointings, pg, x, y, w, h) {
+      pg.attr('transform', 'translate(' + x + ',' + y + ')')
+      pg.append('rect')
+        .attr('x', 4)
+        .attr('y', 4)
+        .attr('width', w - 8)
+        .attr('height', h - 8)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', colorPalette.darker.stroke)
+        .attr('stroke-width', 0.2)
+      let psize = {
+        w: Math.min(w / 3, 25),
+        h: Math.min(h / 3, 20)
+      }
+      let current = pg
         .selectAll('g.pointing')
         .data(pointings, function (d) {
           return d.id
@@ -606,41 +623,24 @@ window.ObsblockForm = function (optIn) {
         .attr('class', 'pointing')
       enter.each(function (d, i) {
         let g = d3.select(this)
-        g.append('rect')
-          .attr('x', -line * 0.58)
-          .attr('y', -marg * 0.5)
-          .attr('width', box.w * 0.535)
-          .attr('height', line + marg) // Math.min(box.h, (line + 2) * schedB.blocks.length))
-          .attr('fill', 'none') // i % 2 === 0 ? colorPalette.dark.background : colorPalette.darker.background)
-          .attr('stroke', '#000000')
-          .attr('stroke-width', 0.05)
-          // .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
-        g.attr('transform', 'translate(' + (line * 0.35) + ',' + (offset + (marg + line) * i) + ')')
         let pevents = {
-          click: function () { com.target.events.click('target', d.targetId) }
+          click: function () {},
+          over: function () {},
+          out: function () {}
         }
-        pointingIcon(g, {w: line, h: line}, 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
-        g.append('text')
-          .text(d.pos[0])
-          .style('fill', colorPalette.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (line * 2) + ',' + (line * 0.2 + headerSize * 0.5) + ')')
-        g.append('text')
-          .text(d.pos[1])
-          .style('fill', colorPalette.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (line * 2) + ',' + (line * 0.2 + headerSize * 1.4) + ')')
+        pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
+        // g.append('rect')
+        //   .attr('x', 0)
+        //   .attr('y', 0)
+        //   .attr('width', w)
+        //   .attr('height', h)
+        //   .attr('fill', '#888888')
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (line * 0.35) + ',' + (offset + (marg + line) * i) + ')')
-        interOffset += marg + line
-        scrollHeight += marg + line
+        let pos = squareTemplate[pointings.length][i]
+        g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.5)) + ')')
       })
       current
         .exit()
@@ -651,6 +651,7 @@ window.ObsblockForm = function (optIn) {
       // offsetY += line * 1
     }
     function targetCore (targets, g, offset) {
+      let space = ((tbox.h * 1) - (targets.length * line)) / (targets.length)
       let current = g
         .selectAll('g.target')
         .data(targets, function (d) {
@@ -662,34 +663,24 @@ window.ObsblockForm = function (optIn) {
         .attr('class', 'target')
       enter.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (label[0].x + line * 0.25) + ',' + (offset + interOffset + (marg + line) * i) + ')')
         let tevents = {
-          click: function () { com.target.events.click('target', d.id) }
-        }
-        targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+          click: function () { com.target.events.click('target', d.id) },
+          over: function () {
 
-        g.append('text')
-          .text(d.pos[0])
-          .style('fill', colorPalette.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (label[0].w) + ',' + (line * 0.2 + headerSize * 0.5) + ')')
-        g.append('text')
-          .text(d.pos[1])
-          .style('fill', colorPalette.dark.stroke)
-          .style('font-weight', '')
-          .style('font-size', headerSize + 'px')
-          .attr('text-anchor', 'start')
-          .attr('transform', 'translate(' + (label[0].w) + ',' + (line * 0.2 + headerSize * 1.4) + ')')
+          },
+          out: function () {}
+        }
+        targetIcon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (0 + line * 0.25) + ',' + (offset + interOffset + (marg + line + 4) * i) + ')')
-        scrollHeight += marg + line + 4
+        let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
+        g.attr('transform', 'translate(' + offX + ',' + (space * 0.5 + (space + line) * i) + ')')
         // innerOffset += line
-        pointingCore(d.pointings, g, line * 1.1 + marg)
+        for (var key in d.pointings) {
+          pointingCore(d.pointings[key], g.append('g').attr('id', 'pointings' + key), label[1].x - line * 0.5, -space * 0.5, label[1].w, space + line)
+        }
       })
       current
         .exit()
@@ -698,16 +689,144 @@ window.ObsblockForm = function (optIn) {
         .style('opacity', 0)
         .remove()
     }
-    targetCore(trgtPnt, innerg, headerSize * 0.5)
-    g.append('line')
-      .attr('x1', tbox.x)
-      .attr('y1', tbox.y + tbox.h)
-      .attr('x2', tbox.x + tbox.w)
-      .attr('y2', tbox.y + tbox.h)
-      .attr('stroke', colorPalette.dark.stroke)
-      .attr('stroke-width', 0.4)
-      .style('opacity', scrollHeight > tbox.h ? 1 : 0)
-    scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: scrollHeight})
+    targetCore(trgtPnt, innerg, 0)
+
+
+    // let trgtPnt = []
+    // for (let i = 0; i < data.pointings.length; i++) {
+    //   let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+    //   if (tar) {
+    //     tar.pointings.push(data.pointings[i])
+    //   } else {
+    //     tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+    //     tar.pointings = [data.pointings[i]]
+    //     trgtPnt.push(tar)
+    //   }
+    // }
+    //
+    // let tbox = {x: 0, y: 3 + headerSize, w: box.w * 0.54, h: box.h - headerSize}
+    // let blockg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
+    // let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
+    // let innerg = scrollBox.get('innerG')
+    //
+    // let line = box.h * 0.15
+    // let marg = line * 0.2
+    // let interOffset = 0
+    // let scrollHeight = headerSize * 0.2
+    // function pointingCore (pointings, g, offset) {
+    //   let current = g
+    //     .selectAll('g.pointing')
+    //     .data(pointings, function (d) {
+    //       return d.id
+    //     })
+    //   let enter = current
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'pointing')
+    //   enter.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     g.append('rect')
+    //       .attr('x', -line * 0.58)
+    //       .attr('y', -marg * 0.5)
+    //       .attr('width', box.w * 0.535)
+    //       .attr('height', line + marg) // Math.min(box.h, (line + 2) * schedB.blocks.length))
+    //       .attr('fill', 'none') // i % 2 === 0 ? colorPalette.dark.background : colorPalette.darker.background)
+    //       .attr('stroke', '#000000')
+    //       .attr('stroke-width', 0.05)
+    //       // .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
+    //     g.attr('transform', 'translate(' + (line * 0.35) + ',' + (offset + (marg + line) * i) + ')')
+    //     let pevents = {
+    //       click: function () { com.target.events.click('target', d.targetId) }
+    //     }
+    //     pointingIcon(g, {w: line, h: line}, 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
+    //     g.append('text')
+    //       .text(d.pos[0])
+    //       .style('fill', colorPalette.dark.stroke)
+    //       .style('font-weight', '')
+    //       .style('font-size', headerSize + 'px')
+    //       .attr('text-anchor', 'start')
+    //       .attr('transform', 'translate(' + (line * 2) + ',' + (line * 0.2 + headerSize * 0.5) + ')')
+    //     g.append('text')
+    //       .text(d.pos[1])
+    //       .style('fill', colorPalette.dark.stroke)
+    //       .style('font-weight', '')
+    //       .style('font-size', headerSize + 'px')
+    //       .attr('text-anchor', 'start')
+    //       .attr('transform', 'translate(' + (line * 2) + ',' + (line * 0.2 + headerSize * 1.4) + ')')
+    //   })
+    //   let merge = current.merge(enter)
+    //   merge.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     g.attr('transform', 'translate(' + (line * 0.35) + ',' + (offset + (marg + line) * i) + ')')
+    //     interOffset += marg + line
+    //     scrollHeight += marg + line
+    //   })
+    //   current
+    //     .exit()
+    //     .transition('inOut')
+    //     .duration(timeD.animArc)
+    //     .style('opacity', 0)
+    //     .remove()
+    //   // offsetY += line * 1
+    // }
+    // function targetCore (targets, g, offset) {
+    //   let current = g
+    //     .selectAll('g.target')
+    //     .data(targets, function (d) {
+    //       return d.id
+    //     })
+    //   let enter = current
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'target')
+    //   enter.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     g.attr('transform', 'translate(' + (label[0].x + line * 0.25) + ',' + (offset + interOffset + (marg + line) * i) + ')')
+    //     let tevents = {
+    //       click: function () { com.target.events.click('target', d.id) }
+    //     }
+    //     targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+    //
+    //     g.append('text')
+    //       .text(d.pos[0])
+    //       .style('fill', colorPalette.dark.stroke)
+    //       .style('font-weight', '')
+    //       .style('font-size', headerSize + 'px')
+    //       .attr('text-anchor', 'start')
+    //       .attr('transform', 'translate(' + (label[0].w) + ',' + (line * 0.2 + headerSize * 0.5) + ')')
+    //     g.append('text')
+    //       .text(d.pos[1])
+    //       .style('fill', colorPalette.dark.stroke)
+    //       .style('font-weight', '')
+    //       .style('font-size', headerSize + 'px')
+    //       .attr('text-anchor', 'start')
+    //       .attr('transform', 'translate(' + (label[0].w) + ',' + (line * 0.2 + headerSize * 1.4) + ')')
+    //   })
+    //   let merge = current.merge(enter)
+    //   merge.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     g.attr('transform', 'translate(' + (0 + line * 0.25) + ',' + (offset + interOffset + (marg + line + 4) * i) + ')')
+    //     scrollHeight += marg + line + 4
+    //     // innerOffset += line
+    //     pointingCore(d.pointings, g, line * 1.1 + marg)
+    //   })
+    //   current
+    //     .exit()
+    //     .transition('inOut')
+    //     .duration(timeD.animArc)
+    //     .style('opacity', 0)
+    //     .remove()
+    // }
+    // targetCore(trgtPnt, innerg, headerSize * 0.5)
+    // g.append('line')
+    //   .attr('x1', tbox.x)
+    //   .attr('y1', tbox.y + tbox.h)
+    //   .attr('x2', tbox.x + tbox.w)
+    //   .attr('y2', tbox.y + tbox.h)
+    //   .attr('stroke', colorPalette.dark.stroke)
+    //   .attr('stroke-width', 0.4)
+    //   .style('opacity', scrollHeight > tbox.h ? 1 : 0)
+    // scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: scrollHeight})
     // let height = box.w * 0.09
     // for (let i = 0; i < data.pointings.length; i++) {
     //   let pg = g.append('g').attr('transform', 'translate(' + (box.w * 0.48) + ',' + (box.h * 0.5) + ')')
@@ -884,8 +1003,8 @@ window.ObsblockForm = function (optIn) {
 
     // box.y += 21
     // box.h -= 21
-    let xx = box.w * 0.02
-    let ww = box.w * 0.98
+    let xx = box.w * 0.11
+    let ww = box.w * 0.86
     box.h -= titleSize * 1.5
     let largeBox = {
       x: xx,
@@ -985,12 +1104,22 @@ window.ObsblockForm = function (optIn) {
           }
         },
         blocks: {
-          txtSize: 0,
+          txtSize: 10,
           right: {
             enabled: false
           },
           left: {
-            enabled: false
+            enabled: true
+          },
+          background: {
+            middle: {
+              color: colorPalette.darkest.background,
+              opacity: 0.3
+            },
+            side: {
+              color: colorPalette.darker.background,
+              opacity: 1
+            }
           }
         }
       },
@@ -1071,7 +1200,7 @@ window.ObsblockForm = function (optIn) {
       data: {
         raw: {
           telescopes: [].concat(com.data.tels.small).concat(com.data.tels.medium).concat(com.data.tels.large),
-          blocks: []// shared.data.server.blocks.run
+          blocks: com.data.block.pointings
         },
         modified: []
       }

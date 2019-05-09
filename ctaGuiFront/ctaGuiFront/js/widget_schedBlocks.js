@@ -2291,6 +2291,16 @@ function mainSchedBlocks (optIn) {
             },
             left: {
               enabled: true
+            },
+            background: {
+              middle: {
+                color: colorTheme.blocks.run.background,
+                opacity: 0.4
+              },
+              side: {
+                color: colorTheme.blocks.run.background,
+                opacity: 0.3
+              }
             }
           }
         },

@@ -227,7 +227,7 @@ window.TargetForm = function (optIn) {
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.17, text: 'Sched', anchor: 'start'},
+      {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.119, text: 'Sched', anchor: 'start'},
       {x: box.w * 0.12, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.88, text: 'Obs', anchor: 'start'}
     ]
     for (let i = 0; i < label.length; i++) {
@@ -238,23 +238,88 @@ window.TargetForm = function (optIn) {
         .style('font-size', txtSize + 'px')
         .attr('text-anchor', label[i].anchor)
         .attr('transform', 'translate(' + (label[i].x) + ',' + (label[i].y) + ')')
-      g.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', label[i].w)
-        .attr('height', box.h)
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.05)
-        .attr('fill', i % 2 === 0 ? colorPalette.dark.background : colorPalette.darker.background)
-        .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
+      // g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', label[i].w)
+      //   .attr('height', box.h)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.05)
+      //   .attr('fill', i % 2 === 0 ? colorPalette.dark.background : colorPalette.darker.background)
+      //   .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
     }
 
     let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (3 + headerSize) + ')')
     com.ressource.scrollBox = initScrollBox('targetRessourceScroll', blockg, box, {enabled: false})
     let innerg = com.ressource.scrollBox.get('innerG')
 
-    let line = titleSize * 2.5
+    let squareTemplate = {
+      '1': [{x: 0.5, y: 0.5}],
+      '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
+      '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
+      '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+      '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
+      '6': [],
+      '7': [],
+      '8': [],
+      '9': []
+    }
+    let line = 80
+    let dimPoly = 25
+    function pointingCore (pointings, pg, x, y, w, h) {
+      pg.attr('transform', 'translate(' + x + ',' + y + ')')
+      pg.append('rect')
+        .attr('x', 4)
+        .attr('y', 4)
+        .attr('width', w - 8)
+        .attr('height', h - 8)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', colorPalette.darker.stroke)
+        .attr('stroke-width', 0.2)
+      let psize = {
+        w: Math.min(w / 3, 25),
+        h: Math.min(h / 3, 20)
+      }
+      let current = pg
+        .selectAll('g.pointing')
+        .data(pointings, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'pointing')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        let pevents = {
+          click: function () {},
+          over: function () {},
+          out: function () {}
+        }
+        pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        let pos = squareTemplate[pointings.length][i]
+        g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.5)) + ')')
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+      // offsetY += line * 1
+    }
     function blockCore (blocks, g, offset) {
+      let blockSize = {
+        w: Math.min((label[1].w * 0.98) / blocks.length, 40),
+        h: 20
+      }
+      let spaceBlock = ((label[1].w * 0.98) - (blocks.length * blockSize.w)) / (blocks.length)
+
+      g.attr('transform', 'translate(' + label[1].x + ',' + 0 + ')')
       let current = g
         .selectAll('g.block')
         .data(blocks, function (d) {
@@ -268,10 +333,10 @@ window.TargetForm = function (optIn) {
         let g = d3.select(this)
         let palette = blockStyle(d)
         g.append('rect')
-          .attr('x', box.w * 0.175)
-          .attr('y', line * 0.1)
-          .attr('width', line * 0.7)
-          .attr('height', line * 0.7)
+          .attr('x', blockSize.h * 0.5)
+          .attr('y', 0)
+          .attr('width', blockSize.h)
+          .attr('height', blockSize.h)
           .attr('fill', palette.color.background)
           .attr('stroke', palette.color.stroke)
           .attr('stroke-width', 0.1)
@@ -292,13 +357,14 @@ window.TargetForm = function (optIn) {
           .style('font-weight', 'bold')
           .style('font-size', headerSize + 'px')
           .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (box.w * 0.205) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+          .attr('transform', 'translate(' + (blockSize.h) + ',' + (blockSize.h * 0.5 + txtSize * 0.3) + ')')
           .style('pointer-events', 'none')
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (-line * 0.5 + line * i) + ',' + (offset) + ')')
+        g.attr('transform', 'translate(' + (spaceBlock * 0.5 + (spaceBlock + blockSize.w) * i) + ',' + (offset) + ')')
+        pointingCore(d.pointings, g.append('g').attr('id', 'pointings' + d.obId), -spaceBlock * 0.5, blockSize.h * 0.75, spaceBlock + blockSize.w, line - blockSize.h * 1.25)
       })
       current
         .exit()
@@ -321,16 +387,16 @@ window.TargetForm = function (optIn) {
         .attr('class', 'sched')
       enter.each(function (d, i) {
         let g = d3.select(this)
-        g.append('rect')
-          .attr('x', -6)
-          .attr('y', -2)
-          .attr('width', box.w)
-          .attr('height', line)
-          .attr('fill', '#666666')
-          .attr('stroke', '#000000')
-          .attr('stroke-width', 0.05)
-          .attr('fill-opacity', i % 2 === 0 ? 0 : 0.0)
-        let dimPoly = line * 0.8
+        // g.append('rect')
+        //   .attr('x', 0)
+        //   .attr('y', 0)
+        //   .attr('width', box.w)
+        //   .attr('height', line)
+        //   .attr('fill', '#666666')
+        //   .attr('stroke', '#000000')
+        //   .attr('stroke-width', 0.05)
+        //   .attr('fill-opacity', i % 2 === 0 ? 0.05 : 0.1)
+        //   .attr('rx', 4)
         let poly = [
           {x: dimPoly * 0.3, y: dimPoly * 0.0},
           {x: dimPoly * 0.7, y: dimPoly * 0.0},
@@ -367,21 +433,22 @@ window.TargetForm = function (optIn) {
             d3.select(this).style('cursor', 'default')
             d3.select(this).attr('fill', colorPalette.dark.background)
           })
+          .attr('transform', 'translate(' + ((label[0].w - dimPoly) * 0.5) + ',' + ((line - dimPoly) * 0.5) + ')')
         g.append('text')
           .text('S' + d.blocks[0].metaData.nSched)
           .style('fill', colorPalette.dark.text)
           .style('font-weight', 'bold')
           .style('font-size', titleSize + 'px')
           .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (dimPoly * 0.5) + ',' + (dimPoly * 0.5 + txtSize * 0.3) + ')')
+          .attr('transform', 'translate(' + (label[0].w * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
           .style('pointer-events', 'none')
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (box.w * 0.02) + ',' + (offset + innerOffset + line * i) + ')')
+        g.attr('transform', 'translate(' + 0 + ',' + (offset + innerOffset + line * i) + ')')
         // innerOffset += line
-        blockCore(d.blocks, g, 0)
+        blockCore(d.blocks, g.append('g'), 0)
       })
       current
         .exit()
@@ -391,7 +458,7 @@ window.TargetForm = function (optIn) {
         .remove()
     }
     schedCore(scheds, innerg, 4)
-    com.ressource.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: scheds.length * line})
+    com.ressource.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: 2 + scheds.length * line})
     blockg.append('line')
       .attr('x1', box.x)
       .attr('y1', box.h)
@@ -407,20 +474,20 @@ window.TargetForm = function (optIn) {
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     com.target.g = g
 
-    g.append('text')
-      .text('Pointing:')
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', 'bold')
-      .style('font-size', titleSize + 'px')
-      .attr('text-anchor', 'start')
-      .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-    g.append('line')
-      .attr('x1', 0)
-      .attr('y1', 2)
-      .attr('x2', box.w * 1.0)
-      .attr('y2', 2)
-      .attr('stroke', colorPalette.dark.stroke)
-      .attr('stroke-width', 0.2)
+    // g.append('text')
+    //   .text('Pointing:')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', 'bold')
+    //   .style('font-size', titleSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+    // g.append('line')
+    //   .attr('x1', 0)
+    //   .attr('y1', 2)
+    //   .attr('x2', box.w * 1.0)
+    //   .attr('y2', 2)
+    //   .attr('stroke', colorPalette.dark.stroke)
+    //   .attr('stroke-width', 0.2)
 
     g.append('rect')
       .attr('id', 'headerStrip')
