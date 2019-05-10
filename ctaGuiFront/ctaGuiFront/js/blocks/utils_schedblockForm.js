@@ -754,9 +754,9 @@ window.SchedblockForm = function (optIn) {
       '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
       '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
       '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
-      '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
-      '6': [],
-      '7': [],
+      '5': [{x: 0.3, y: 0.25}, {x: 0.7, y: 0.25}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.75}, {x: 0.7, y: 0.75}],
+      '6': [{x: 0.3, y: 0.25}, {x: 0.7, y: 0.25}, {x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}, {x: 0.3, y: 0.75}, {x: 0.7, y: 0.75}],
+      '7': [{x: 0.3, y: 0.25}, {x: 0.7, y: 0.25}, {x: 0.2, y: 0.5}, {x: 0.5, y: 0.5}, {x: 0.8, y: 0.5}, {x: 0.3, y: 0.75}, {x: 0.7, y: 0.75}],
       '8': [],
       '9': []
     }
@@ -771,8 +771,8 @@ window.SchedblockForm = function (optIn) {
         .attr('stroke', colorPalette.darker.stroke)
         .attr('stroke-width', 0.2)
       let psize = {
-        w: Math.min(w / 3, 25),
-        h: Math.min(h / 3, 20)
+        w: Math.min(w / 3, 15),
+        h: Math.min(h / 3, 10)
       }
       let current = pg
         .selectAll('g.pointing')
@@ -790,7 +790,7 @@ window.SchedblockForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
+        pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
         scrollHeight += (marg + line * 0.9)
         // g.append('rect')
         //   .attr('x', 0)

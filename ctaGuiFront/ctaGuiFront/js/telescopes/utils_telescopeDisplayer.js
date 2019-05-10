@@ -339,6 +339,7 @@ window.TelescopeDisplayer = function (optIn) {
             small: smallT.length
           }
           let max = Math.max(Math.max(l, m), s)
+          if (max === 0) max = com.gridBib.telescope.small.opt.size
           b.rowHeight = max
           com.gridBib.ratio += max
         }

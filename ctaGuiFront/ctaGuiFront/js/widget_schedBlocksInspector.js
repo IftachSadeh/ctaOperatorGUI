@@ -5342,7 +5342,7 @@ let mainSchedBlocksInspector = function (optIn) {
           tels.large.push(getTelescopeById(id))
         }
       }
-
+      console.log(shared);
       reserved.obsblockForm = new ObsblockForm({
         main: {
           tag: 'blockFormTag',
@@ -5373,6 +5373,7 @@ let mainSchedBlocksInspector = function (optIn) {
           }
         },
         target: {
+          editable: true,
           box: allBox.target,
           events: {
             click: focusManager.focusOn,
@@ -5392,7 +5393,7 @@ let mainSchedBlocksInspector = function (optIn) {
           block: data,
           schedB: schedB,
           timeOfNight: shared.data.server.timeOfNight,
-          target: getTargetById(data.targetId),
+          target: shared.data.server.targets,
           tels: tels
         },
         debug: {

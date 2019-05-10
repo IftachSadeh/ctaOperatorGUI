@@ -8,6 +8,7 @@
 /* global pointingIcon */
 /* global TargetDisplayer */
 /* global TelescopeDisplayer */
+/* global deepCopy */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/blocks/utils_blockCommon.js' })
 
@@ -190,8 +191,6 @@ window.ObsblockForm = function (optIn) {
         return
     }
 
-    console.log(com.data.block.time);
-
     function updateTime (id, time) {
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
       let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
@@ -226,6 +225,47 @@ window.ObsblockForm = function (optIn) {
   function changePointing (newPointing) {
     let save = com.data.block.pointingName.split('/')[0]
     com.data.block.pointingName = save + '/' + newPointing
+  }
+  function changeTelescopeNumber (type, d) {
+    let data = com.data.block.telescopes[type]
+    function removeTelFromList () {
+      data.ids = data.ids.splice(-d)
+      com.data.block.telIds = [].concat(com.data.block.telescopes.large.ids)
+        .concat(com.data.block.telescopes.medium.ids)
+        .concat(com.data.block.telescopes.small.ids)
+    }
+    function addTelToList () {
+
+    }
+    if (data.ids.length < d) addTelToList()
+    if (data.ids.length > d) removeTelFromList()
+
+    reassignTelescope()
+  }
+  function reassignTelescope () {
+    let allTels = deepCopy(com.data.block.telIds)
+    let sizeChunk = allTels.length / com.data.block.pointings.length
+    function getRandom (arr, size) {
+      let rand = []
+      let stats = {large: 0, medium: 0, small: 0}
+      for (let i = 0; i < size && arr.length > 0; i++) {
+        let index = Math.floor(Math.random() * arr.length)
+        let tt = arr.splice(index, 1)[0]
+        if (tt.includes('L')) stats.large += 1
+        if (tt.includes('M')) stats.medium += 1
+        if (tt.includes('S')) stats.small += 1
+        rand.push(tt)
+      }
+      return {ids: rand, stats: stats}
+    }
+    for (let i = 0; i < com.data.block.pointings.length - 1; i++) {
+      let tels = getRandom(allTels, sizeChunk)
+      com.data.block.pointings[i].telIds = tels.ids
+      com.data.block.pointings[i].telsInfo = tels.stats
+    }
+    let tels = getRandom(allTels, allTels.length)
+    com.data.block.pointings[com.data.block.pointings.length - 1].telIds = tels.ids
+    com.data.block.pointings[com.data.block.pointings.length - 1].telsInfo = tels.stats
   }
 
   function initSchedulingObservingBlocksTree () {
@@ -483,14 +523,20 @@ window.ObsblockForm = function (optIn) {
 
     let sbox = {
       x: label[0].x,
-      y: 3 + headerSize * 1.5,
+      y: 3 + headerSize,
       w: label[0].w,
-      h: headerSize * 2
+      h: box.h - headerSize - 4
     }
+
+    let options = []
+    if (data.exeState.state === 'wait') options = ['cancel', 'wait']
+    if (data.exeState.state === 'cancel') options = ['cancel', 'wait']
+    if (data.exeState.state === 'run') options = ['run', 'cancel']
+
     dropDownDiv(g,
       sbox,
       'state',
-      {disabled: !com.schedule.editabled, value: data.exeState.state, options: ['done', 'fail', 'cancel', 'wait', 'run']},
+      {disabled: !com.schedule.editabled, value: data.exeState.state, options: options},
       {change: (d) => { changeState(d) }, enter: (d) => { changeState(d) }})
 
     drawTime('startTime', label[1].x + txtSize * 0.5, label[1].w, 2 + headerSize * 1.5, startTime)
@@ -519,6 +565,25 @@ window.ObsblockForm = function (optIn) {
     //   'pointing',
     //   {disabled: !com.schedule.editabled, value: data.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
     //   {change: (d) => { changePointing(d) }, enter: (d) => { changePointing(d) }})
+  }
+
+  function addNewTarget (trgName) {
+    for (let i = 0; i < com.data.target.length; i++) {
+      if (com.data.target[i].name === trgName) {
+        com.data.block.targets.push(com.data.target[i])
+        addNewPointing(com.data.target[i])
+      }
+    }
+  }
+  function addNewPointing (trg) {
+    let newPointng = {id: com.data.block.sbId + '_' + com.data.block.obId}
+    newPointng.name = trg.name + '/p_' + com.data.block.metaData.nObs + '-' + com.data.block.pointings.length
+    newPointng.pos = [trg.pos[0], trg.pos[1]]
+    newPointng.telIds = []
+    newPointng.telsInfo = {large: 0, medium: 0, small: 0}
+
+    com.data.block.pointings.push(newPointng)
+    reassignTelescope()
   }
   function initPointingInformation () {
     let box = com.target.box
@@ -565,7 +630,7 @@ window.ObsblockForm = function (optIn) {
     }
 
     let line = 20
-    let tbox = {x: 0, y: 3 + headerSize, w: box.w * 0.54, h: box.h - headerSize}
+    let tbox = {x: 0, y: 3 + headerSize, w: box.w * 0.54, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
     let blockg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
     let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
     let innerg = scrollBox.get('innerG')
@@ -578,27 +643,27 @@ window.ObsblockForm = function (optIn) {
         tar.pointings[data.obId].push(data.pointings[i])
       } else {
         tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
-        // allTar.push(tar)
         tar.pointings = {}
         tar.pointings[data.obId] = [data.pointings[i]]
         trgtPnt.push(tar)
       }
     }
 
-    let marg = line * 0.2
-
     let squareTemplate = {
       '1': [{x: 0.5, y: 0.5}],
       '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
       '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
       '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
-      '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
-      '6': [],
+      '5': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+      '6': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.3}, {x: 0.5, y: 0.7}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
       '7': [],
       '8': [],
       '9': []
     }
-    function pointingCore (pointings, pg, x, y, w, h) {
+    function pointingCore (trg, pointings, pg, x, y, w, h) {
+      if (com.target.editable) {
+        pointings.push({id: 'newPointing'})
+      }
       pg.attr('transform', 'translate(' + x + ',' + y + ')')
       pg.append('rect')
         .attr('x', 4)
@@ -623,24 +688,34 @@ window.ObsblockForm = function (optIn) {
         .attr('class', 'pointing')
       enter.each(function (d, i) {
         let g = d3.select(this)
-        let pevents = {
-          click: function () {},
-          over: function () {},
-          out: function () {}
+        if (i === (pointings.length - 1) && com.target.editable) {
+          let pevents = {
+            click: function () { addNewPointing(trg) },
+            over: function () {},
+            out: function () {}
+          }
+          pointingIcon(g, {w: psize.w * 0.66, h: psize.h * 0.66}, '+', pevents, colorPalette)
+        } else {
+          let pevents = {
+            click: function () {},
+            over: function () {},
+            out: function () {}
+          }
+          pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
         }
-        pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
-        // g.append('rect')
-        //   .attr('x', 0)
-        //   .attr('y', 0)
-        //   .attr('width', w)
-        //   .attr('height', h)
-        //   .attr('fill', '#888888')
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        let pos = squareTemplate[pointings.length][i]
-        g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.5)) + ')')
+        if (i === (pointings.length - 1) && com.target.editable) {
+          let index = pointings.length
+          let pos = squareTemplate[index][i]
+          g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.66 * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.66 * 0.5)) + ')')
+        } else {
+          let index = pointings.length
+          let pos = squareTemplate[index][i]
+          g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.5)) + ')')
+        }
       })
       current
         .exit()
@@ -648,7 +723,6 @@ window.ObsblockForm = function (optIn) {
         .duration(timeD.animArc)
         .style('opacity', 0)
         .remove()
-      // offsetY += line * 1
     }
     function targetCore (targets, g, offset) {
       let space = ((tbox.h * 1) - (targets.length * line)) / (targets.length)
@@ -665,9 +739,7 @@ window.ObsblockForm = function (optIn) {
         let g = d3.select(this)
         let tevents = {
           click: function () { com.target.events.click('target', d.id) },
-          over: function () {
-
-          },
+          over: function () {},
           out: function () {}
         }
         targetIcon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
@@ -679,7 +751,7 @@ window.ObsblockForm = function (optIn) {
         g.attr('transform', 'translate(' + offX + ',' + (space * 0.5 + (space + line) * i) + ')')
         // innerOffset += line
         for (var key in d.pointings) {
-          pointingCore(d.pointings[key], g.append('g').attr('id', 'pointings' + key), label[1].x - line * 0.5, -space * 0.5, label[1].w, space + line)
+          pointingCore(d, d.pointings[key], g.append('g').attr('id', 'pointings' + key), label[1].x - line * 0.5, -space * 0.5, label[1].w, space + line)
         }
       })
       current
@@ -691,6 +763,29 @@ window.ObsblockForm = function (optIn) {
     }
     targetCore(trgtPnt, innerg, 0)
 
+    if (com.target.editable) {
+      let tevents = {
+        click: function () {},
+        over: function () {},
+        out: function () {}
+      }
+      let sizeNewTarget = line * 0.8
+      let addTargetg = g.append('g').attr('transform', 'translate(' + (label[1].x + (label[1].w * 0.5) - sizeNewTarget * 1.25) + ',' + (tbox.y + tbox.h) + ')')
+      targetIcon(addTargetg, {w: sizeNewTarget, h: sizeNewTarget}, '+', tevents, colorPalette)
+      dropDownDiv(addTargetg,
+        {x: -sizeNewTarget * 0.25, y: -sizeNewTarget * 0.15, w: sizeNewTarget * 2.5, h: sizeNewTarget * 1.3},
+        'trg',
+        {disabled: !com.schedule.editabled, value: '', options: com.data.target.map(x => x.name).filter(x => !com.data.block.targets.map(x => x.name).includes(x))},
+        {change: (d) => { addNewTarget(d) }, enter: (d) => { addNewTarget(d) }})
+    }
+    // addTargetg.append('rect')
+    //   .attr('x', (label[0].w * 0.5) + sizeNewTarget * 0.5 + 4)
+    //   .attr('y', 4)
+    //   .attr('width', label[1].w - 8)
+    //   .attr('height', sizeNewTarget - 8)
+    //   .attr('fill', colorPalette.darker.background)
+    //   .attr('stroke', colorPalette.darker.stroke)
+    //   .attr('stroke-width', 0.2)
 
     // let trgtPnt = []
     // for (let i = 0; i < data.pointings.length; i++) {
@@ -874,7 +969,6 @@ window.ObsblockForm = function (optIn) {
     let gt = g.append('g')
       .attr('id', 'telsDisplayer')
       .attr('transform', 'translate(' + box.w * 0.55 + ',' + (headerSize * 0.5) + ')')
-
     com.targetBlock = new TargetDisplayer({
       main: {
         tag: 'targetRootTag',
@@ -1038,7 +1132,7 @@ window.ObsblockForm = function (optIn) {
           stroke: colorPalette.medium.stroke,
           strokeWidth: 0
         },
-        isSouth: false,
+        isSouth: true,
         colorPalette: colorPalette
       },
 
@@ -1174,27 +1268,24 @@ window.ObsblockForm = function (optIn) {
     })
     com.telescopeRunningBlock.init()
 
-    g.append('text')
-      .text(com.data.tels.large.length)
-      .style('fill', colorPalette.medium.text)
-      .style('font-weight', 'bold')
-      .style('font-size', titleSize + 'px')
-      .attr('text-anchor', 'middle')
-      .attr('transform', 'translate(' + (largeBox.x + largeBox.w * 0.5) + ',' + (box.y + box.h + headerSize + titleSize * 0.33) + ')')
-    g.append('text')
-      .text(com.data.tels.medium.length)
-      .style('fill', colorPalette.medium.text)
-      .style('font-weight', 'bold')
-      .style('font-size', titleSize + 'px')
-      .attr('text-anchor', 'middle')
-      .attr('transform', 'translate(' + (mediumBox.x + mediumBox.w * 0.5) + ',' + (box.y + box.h + headerSize + titleSize * 0.33) + ')')
-    g.append('text')
-      .text(com.data.tels.small.length)
-      .style('fill', colorPalette.medium.text)
-      .style('font-weight', 'bold')
-      .style('font-size', titleSize + 'px')
-      .attr('text-anchor', 'middle')
-      .attr('transform', 'translate(' + (smallBox.x + smallBox.w * 0.5) + ',' + (box.y + box.h + headerSize + titleSize * 0.33) + ')')
+    let tels = {}
+    tels.large = inputNumber(g,
+      {x: (largeBox.x + largeBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
+      'large',
+      {disabled: !com.schedule.editabled, value: com.data.tels.large.length, min: com.data.block.telescopes.large.min, max: com.data.block.telescopes.large.max, step: 1},
+      {change: (d) => { changeTelescopeNumber('large', d) }, enter: (d) => { changeTelescopeNumber('large', d) }})
+
+    tels.medium = inputNumber(g,
+      {x: (mediumBox.x + mediumBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
+      'small',
+      {disabled: !com.schedule.editabled, value: com.data.tels.medium.length, min: com.data.block.telescopes.medium.min, max: com.data.block.telescopes.medium.max, step: 1},
+      {change: (d) => { changeTelescopeNumber('medium', d) }, enter: (d) => { changeTelescopeNumber('medium', d) }})
+
+    tels.small = inputNumber(g,
+      {x: (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
+      'small',
+      {disabled: !com.schedule.editabled, value: com.data.tels.small.length, min: com.data.block.telescopes.small.min, max: com.data.block.telescopes.small.max, step: 1},
+      {change: (d) => { changeTelescopeNumber('small', d) }, enter: (d) => { changeTelescopeNumber('small', d) }})
 
     com.telescopeRunningBlock.updateData({
       data: {
@@ -1304,6 +1395,111 @@ window.ObsblockForm = function (optIn) {
 
     return input
   }
+  function inputNumber (g, box, id, optIn, events) {
+    let linker = {}
+    let fo = g.append('foreignObject')
+      .attr('width', box.w + 'px')
+      .attr('height', box.h + 'px')
+      .attr('x', box.x + 'px')
+      .attr('y', box.y + 'px')
+    let rootDiv = fo.append('xhtml:div')
+      .attr('class', 'numberSelectorH')
+      .attr('id', id)
+      .style('width', '100%')
+      .style('height', '100%')
+
+    let navLeft = rootDiv.append('div')
+      .attr('class', 'numberSelectorH-nav')
+    if (!optIn.disabled) {
+      navLeft.append('div')
+        .attr('class', 'numberSelectorH-button numberSelectorH-down')
+        .html('-')
+        .style('box-shadow', '0 0 0 0.3pt #000000 inset')
+        .style('border-radius', '10px 0px 0px 10px')
+        .style('font-size', headerSize + 'px')
+        .on('click', function () {
+          let oldValue = parseInt(linker.input.property('value'))
+          let newVal = oldValue
+          if (oldValue > optIn.min) {
+            newVal = oldValue - 1
+          } else {
+            newVal = optIn.max
+          }
+          linker.input.property('value', ('' + newVal).slice(-2))
+          events.change(linker.input.property('value'))
+        })
+    }
+
+    linker.input = rootDiv.append('input')
+      .attr('type', 'number')
+      .attr('min', function (d) { return optIn.min })
+      .attr('max', function (d) { return optIn.max })
+      .attr('step', function (d) { return optIn.step })
+      .style('font-size', 11 + 'px')
+      // .style('display', 'inline-block')
+      // .style('color', '#000000')
+      .style('background', 'transparent')
+    linker.input.property('value', function () {
+      return optIn.value
+    })
+    if (optIn.disabled) {
+      linker.input.attr('disabled')
+      return
+    }
+    linker.input.on('change', function (d) {
+      let newVal = parseInt(linker.input.property('value'))
+      if (newVal > optIn.max) newVal = optIn.max
+      else if (newVal < optIn.min) newVal = optIn.min
+      linker.input.property('value', ('' + newVal).slice(-2))
+      events.change(linker.input.property('value'))
+    })
+    linker.input.on('focus', function () {
+      $(this).select()
+    })
+    linker.input.on('wheel', function (d) {
+      if (!$(this).is(':focus')) {
+        return
+      }
+      d3.event.preventDefault()
+      let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
+      let newVal = parseInt(linker.input.property('value'))
+      if (direction === 'up') newVal += 1
+      else if (direction === 'down') newVal -= 1
+      if (newVal > optIn.max) newVal = optIn.min
+      else if (newVal < optIn.min) newVal = optIn.max
+      linker.input.property('value', ('' + newVal).slice(-2))
+      events.change(linker.input.property('value'))
+    })
+    linker.input.on('keyup', function () {
+      let event = d3.event
+      if (event.keyCode === 13) {
+        event.preventDefault()
+        events.enter(linker.input.property('value'))
+      }
+    })
+
+    let navRight = rootDiv.append('div')
+      .attr('class', 'numberSelectorH-nav')
+    navRight.append('div')
+      .attr('class', 'numberSelectorH-button numberSelectorH-up')
+      .html('+')
+      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
+      .style('border-radius', '0px 10px 10px 0px')
+      .style('font-size', headerSize + 'px')
+      .on('click', function () {
+        let oldValue = parseInt(linker.input.property('value'))
+        let newVal = oldValue
+        if (oldValue < optIn.max) {
+          newVal = oldValue + 1
+        } else {
+          newVal = optIn.min
+        }
+        linker.input.property('value', ('' + newVal).slice(-2))
+        events.change(linker.input.property('value'))
+      })
+
+    return linker.input
+  }
   function dropDownDiv (g, box, id, optIn, events) {
     let fo = g.append('foreignObject')
       .attr('width', box.w + 'px')
@@ -1317,7 +1513,7 @@ window.ObsblockForm = function (optIn) {
       .style('font-size', '11px')
     if (optIn.disabled) {
       rootDiv.html(optIn.value)
-      return
+      return rootDiv
     }
     // div.on('mouseover', function (d) {
     //   if (d.event.mouseover) {
@@ -1371,6 +1567,7 @@ window.ObsblockForm = function (optIn) {
     selector.property('value', function () {
       return optIn.value
     })
+    return selector
     // if (!d.editable) selector.attr('disabled', true)
   }
 }
