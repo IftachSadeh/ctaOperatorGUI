@@ -592,9 +592,9 @@ class obsBlocks_noACS():
                     exeState = {'state': "wait", 'canRun': True}
                     metaData = {'nSched': nSchedBlocks, 'nObs': nObsNow,
                                 'blockName': str(nSchedBlocks)+" ("+str(nObsNow)+")"}
-                    telescopes = {'large': {'min': 0, 'max': 99, 'ids': filter(lambda x: 'L' in x, schedTelIds)},
-                                  'medium': {'min': 0, 'max': 99, 'ids': filter(lambda x: 'M' in x, schedTelIds)},
-                                  'small': {'min': 0, 'max': 99, 'ids': filter(lambda x: 'S' in x, schedTelIds)}}
+                    telescopes = {'large': {'min': int(len(filter(lambda x: 'L' in x, schedTelIds)) / 3), 'max': 4, 'ids': filter(lambda x: 'L' in x, schedTelIds)},
+                                  'medium': {'min': int(len(filter(lambda x: 'M' in x, schedTelIds)) / 3), 'max': 25, 'ids': filter(lambda x: 'M' in x, schedTelIds)},
+                                  'small': {'min': int(len(filter(lambda x: 'S' in x, schedTelIds)) / 3), 'max': 70, 'ids': filter(lambda x: 'S' in x, schedTelIds)}}
                     print telescopes
                     block = dict()
                     block["sbId"] = schedBlockId
