@@ -913,7 +913,7 @@ window.BlockDisplayer = function (optIn) {
       let box = group.box
       // let g = group.g
 
-      let minTxtSize = box.w * 0.016
+      let minTxtSize = 6
       let timeScale = d3.scaleLinear()
         .range(com.blockQueue.axis.range)
         .domain([com.time.startTime.time, com.time.endTime.time])
@@ -958,7 +958,7 @@ window.BlockDisplayer = function (optIn) {
           .duration(timeD.animArc)
           .text(d.metaData.blockName)
           .style('font-size', function (d) {
-            d.display.size = Math.max(minTxtSize, Math.min(d.display.w, d.display.h)) / 3
+            d.display.size = minTxtSize
             if (!hasVar(d.display.size)) {
               console.error('_blockQueue_ERROR:', com.main.tag, minTxtSize, d.display.w, d.display.h)
             } // should not happen....
@@ -1979,7 +1979,7 @@ window.BlockDisplayer = function (optIn) {
           id: com.main.tag + 'now',
           x: com.blockQueue2.axis.scale(com.time.currentTime.date),
           y: com.blockQueue2.timeBars.box.y,
-          w: com.blockQueue2.timeBars.box.marg,
+          w: com.blockQueue2.timeBars.box.marg * 0.25,
           h: com.blockQueue2.timeBars.box.h + com.blockQueue2.timeBars.box.marg * 2
         }
       ]
@@ -2147,7 +2147,7 @@ window.BlockDisplayer = function (optIn) {
     }
 
     function update () {
-      if (com.blockTrackShrink.axis.enabled) updateAxis()
+      updateAxis()
       if (com.blockTrackShrink.timeBars.enabled) setTimeRect()
 
       updateSchedulingBlocks()
@@ -2160,6 +2160,7 @@ window.BlockDisplayer = function (optIn) {
       com.blockTrackShrink.axis.scale
         .domain(com.blockTrackShrink.axis.domain)
         .range(com.blockTrackShrink.axis.range)
+      console.log(com.blockTrackShrink.axis);
         // .nice()
 
       if (!com.blockTrackShrink.axis.enabled) return
@@ -2168,7 +2169,8 @@ window.BlockDisplayer = function (optIn) {
       com.blockTrackShrink.axis.main.scale(com.blockTrackShrink.axis.scale)
       com.blockTrackShrink.axis.main.ticks(5)
       com.blockTrackShrink.axis.main.tickSize(4)
-      com.blockTrackShrink.axis.g.call(com.blockTrackShrink.axis.main)
+      console.log(com.blockTrackShrink.axis.g.call(com.blockTrackShrink.axis.main));
+
       com.blockTrackShrink.axis.g.select('path').attr('stroke-width', 0.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
       com.blockTrackShrink.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 0.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
       com.blockTrackShrink.axis.g.selectAll('g.tick').selectAll('text')
@@ -2176,6 +2178,7 @@ window.BlockDisplayer = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('fill', com.blockTrackShrink.axis.attr.text.fill)
         .style('font-size', minTxtSize + 'px')
+      console.log(com.blockTrackShrink.axis.g.selectAll('g.tick'));
     }
     function computeTrack (scheds) {
       let track = []
@@ -2216,8 +2219,8 @@ window.BlockDisplayer = function (optIn) {
       let tracks = computeTrack(scheds)
 
       let nLine = tracks.length
-      let height = nLine >= 8 ? (com.main.box.h / nLine) : (com.main.box.h / 8)
-      let offsetY = nLine >= 8 ? 0 : (com.main.box.h - ((com.main.box.h / 8) * nLine)) / (nLine - 1)
+      let height = nLine >= 13 ? (com.main.box.h / nLine) : (com.main.box.h / 13)
+      let offsetY = nLine >= 13 ? 0 : (com.main.box.h - ((com.main.box.h / 13) * nLine)) / (nLine - 1)
 
       let currentTrack = com.main.scroll.scrollG
         .selectAll('g.track')

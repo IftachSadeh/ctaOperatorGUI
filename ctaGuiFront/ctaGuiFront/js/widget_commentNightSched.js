@@ -53,7 +53,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/events/utils_EventQueue.
 
 window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_buttonPanel.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/utils_clockEvents.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/events/utils_clockEvents.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollTable.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_formManager.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
@@ -3066,7 +3066,7 @@ let mainCommentNightSched = function (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'blockQueue2',
+        displayer: 'blockTrackShrinkBib',
         blockQueue: {
           axis: {
             enabled: true,
@@ -3080,6 +3080,7 @@ let mainCommentNightSched = function (optIn) {
             orientation: 'axisTop',
             attr: {
               text: {
+                size: 10,
                 stroke: colorTheme.medium.stroke,
                 fill: colorTheme.medium.stroke
               },
@@ -3094,7 +3095,7 @@ let mainCommentNightSched = function (optIn) {
             run: {
               enabled: true,
               g: undefined,
-              box: {x: 0, y: box.blockQueueServerContent.h * 0.66875, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.33125, marg: box.blockQueueServerContent.marg},
+              box: {x: 0, y: box.blockQueueServerContent.h * 0.32, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.68, marg: box.blockQueueServerContent.marg},
               events: {
                 click: () => {},
                 mouseover: () => {},
@@ -3114,7 +3115,7 @@ let mainCommentNightSched = function (optIn) {
             cancel: {
               enabled: true,
               g: undefined,
-              box: {x: 0, y: box.blockQueueServerContent.h * 0.15, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.1525, marg: box.blockQueueServerContent.marg},
+              box: {x: 0, y: box.blockQueueServerContent.h * 0.0, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.3, marg: box.blockQueueServerContent.marg},
               events: {
                 click: () => {},
                 mouseover: () => {},
@@ -3186,6 +3187,42 @@ let mainCommentNightSched = function (optIn) {
             enabled: true,
             g: undefined,
             box: {x: 0, y: box.blockQueueServerContent.h * 0.025, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.975, marg: box.blockQueueServerContent.marg}
+          }
+        },
+        blockTrackShrink: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'left'
+            }
+          },
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: box.blockQueueServerContent.h, w: box.blockQueueServerContent.w, h: 0, marg: box.blockQueueServerContent.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'bottom',
+            attr: {
+              text: {
+                size: 14,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: box.blockQueueServerContent.h, w: box.blockQueueServerContent.w, h: 0, marg: box.blockQueueServerContent.marg},
           }
         },
         blockList: {
@@ -3262,6 +3299,10 @@ let mainCommentNightSched = function (optIn) {
       $.each(shared.data.server.telHealth, function (index, dataNow) {
         telIds.push(dataNow.id)
       })
+      console.log(shared.data.server.timeOfNight);
+      let startTime = {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)}
+      let endTime = {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+      console.log(startTime);
       blockQueueServer.updateData({
         time: {
           currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},

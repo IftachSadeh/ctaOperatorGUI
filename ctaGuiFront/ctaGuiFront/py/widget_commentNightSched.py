@@ -91,6 +91,14 @@ class commentNightSched():
     # -----------------------------------------------------------------------------------------------------------
     def getData(self):
         commentNightSched.timeOfNight = getTimeOfNight(self)
+        timeOfNightDate = {
+            "date_start": datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_end": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(commentNightSched.timeOfNight['end']))).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_now": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(commentNightSched.timeOfNight['now']))).strftime('%Y-%m-%d %H:%M:%S'),
+            "now": int(commentNightSched.timeOfNight['now']),
+            "start": int(commentNightSched.timeOfNight['start']),
+            "end": int(commentNightSched.timeOfNight['end'])
+            }
 
         self.getBlocks()
         self.getTelHealth()
@@ -98,7 +106,7 @@ class commentNightSched():
         self.getClockEvents()
 
         data = {
-            "timeOfNight": commentNightSched.timeOfNight,
+            "timeOfNight": timeOfNightDate,
             "telHealth": commentNightSched.telHealth,
             "blocks": commentNightSched.blocks,
             "external_events": commentNightSched.external_events,
@@ -164,7 +172,7 @@ class commentNightSched():
             commentNightSched.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['startTime'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['startTime'],"%Y-%m-%d %H:%M:%S")).total_seconds())
-                cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])
+                cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
             )
 
         return

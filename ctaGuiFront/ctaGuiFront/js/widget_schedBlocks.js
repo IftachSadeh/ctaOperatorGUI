@@ -2245,7 +2245,8 @@ function mainSchedBlocks (optIn) {
                 telsPerRow: 1,
                 nbl: 0,
                 size: 2,
-                ratio: 1
+                ratio: 1,
+                max: 24
               },
               box: largeBox
             },
@@ -2255,7 +2256,8 @@ function mainSchedBlocks (optIn) {
                 telsPerRow: 5,
                 nbl: 0,
                 size: 1.3,
-                ratio: 1
+                ratio: 1,
+                max: 20
               },
               box: mediumBox
             },
@@ -2265,7 +2267,8 @@ function mainSchedBlocks (optIn) {
                 telsPerRow: 10,
                 nbl: 0,
                 size: 1,
-                ratio: 1
+                ratio: 1,
+                max: 18
               },
               box: smallBox
             }

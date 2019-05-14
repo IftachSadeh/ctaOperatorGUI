@@ -379,6 +379,8 @@ window.TelescopeDisplayer = function (optIn) {
         w: (opt.size * 0.5) * 0.9,
         h: (opt.ratio > 1 ? opt.size * 0.5 : opt.size * 0.5 * opt.ratio) * 0.9
       }
+      if (opt.max && size.w > opt.max) size.w = opt.max
+      if (opt.max && size.h > opt.max) size.h = opt.max
 
       let fontsize = opt.size * 0.4
       let offset = {
@@ -1037,6 +1039,14 @@ window.TelescopeDisplayer = function (optIn) {
         .attr('y', 0)
         .attr('text-anchor', 'middle')
     })
+    // let merged = enter
+    //   .merge(rect)
+    rect
+      .exit()
+      .transition('inOut')
+      .duration(timeD.animArc)
+      .style('opacity', 0)
+      .remove()
   }
   function updateData (dataIn) {
     com.data.raw = dataIn.data.raw

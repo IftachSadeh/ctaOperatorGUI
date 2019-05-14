@@ -592,9 +592,10 @@ class obsBlocks_noACS():
                     exeState = {'state': "wait", 'canRun': True}
                     metaData = {'nSched': nSchedBlocks, 'nObs': nObsNow,
                                 'blockName': str(nSchedBlocks)+" ("+str(nObsNow)+")"}
-                    telescopes = {'large': {'min': int(len(filter(lambda x: 'L' in x, schedTelIds)) / 3), 'max': 4, 'ids': filter(lambda x: 'L' in x, schedTelIds)},
-                                  'medium': {'min': int(len(filter(lambda x: 'M' in x, schedTelIds)) / 3), 'max': 25, 'ids': filter(lambda x: 'M' in x, schedTelIds)},
-                                  'small': {'min': int(len(filter(lambda x: 'S' in x, schedTelIds)) / 3), 'max': 70, 'ids': filter(lambda x: 'S' in x, schedTelIds)}}
+                    # min int(len(filter(lambda x: 'L' in x, schedTelIds)) / 3)
+                    telescopes = {'large': {'min': 1, 'max': 4, 'ids': filter(lambda x: 'L' in x, schedTelIds)},
+                                  'medium': {'min': 1, 'max': 25, 'ids': filter(lambda x: 'M' in x, schedTelIds)},
+                                  'small': {'min': 1, 'max': 70, 'ids': filter(lambda x: 'S' in x, schedTelIds)}}
                     print telescopes
                     block = dict()
                     block["sbId"] = schedBlockId
@@ -994,7 +995,7 @@ class obsBlocks_noACS():
         return
 
     def external_generateEvents(self):
-        if self.rndGen.random() < 0.05:
+        if self.rndGen.random() < 0.02:
             newEvent = {'id': getTime() + random.randint(1, 99999), 'start_time': self.timeOfNight.getCurrentTime()}
             newEvent['priority'] = random.randint(1, 3)
             if self.rndGen.random() < 0.1:

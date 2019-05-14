@@ -214,22 +214,17 @@ window.ObsblockForm = function (optIn) {
     updateTime('startTime', startTime)
     updateTime('duration', duration)
     updateTime('endTime', endTime)
+
+    com.schedule.events.click()
   }
   function changeState (newState) {
-    com.data.block.exeState.state = newState
-  }
-  function changeTarget (newTarget) {
-    let save = com.data.block.pointingName.split('/')[1]
-    com.data.block.pointingName = newTarget + '/' + save
-  }
-  function changePointing (newPointing) {
-    let save = com.data.block.pointingName.split('/')[0]
-    com.data.block.pointingName = save + '/' + newPointing
+    com.schedule.events.change(com.data.block, newState)
   }
   function changeTelescopeNumber (type, d) {
     let data = com.data.block.telescopes[type]
     function removeTelFromList () {
-      data.ids = data.ids.splice(-d)
+      let rem = data.ids.splice(0, 1)[0]
+      com.data.tels[type] = com.data.tels[type].filter(x => x.id !== rem)
       com.data.block.telIds = [].concat(com.data.block.telescopes.large.ids)
         .concat(com.data.block.telescopes.medium.ids)
         .concat(com.data.block.telescopes.small.ids)
@@ -266,6 +261,9 @@ window.ObsblockForm = function (optIn) {
     let tels = getRandom(allTels, allTels.length)
     com.data.block.pointings[com.data.block.pointings.length - 1].telIds = tels.ids
     com.data.block.pointings[com.data.block.pointings.length - 1].telsInfo = tels.stats
+
+    initPointingInformation()
+    updateTelescopeInformation()
   }
 
   function initSchedulingObservingBlocksTree () {
@@ -369,24 +367,22 @@ window.ObsblockForm = function (optIn) {
     for (let i = 0; i < schedB.blocks.length; i++) {
       let palette = blockStyle(schedB.blocks[i])
       g.append('rect')
-        .attr('x', 2 + (box.w * 0.5 - (schedB.blocks.length * dimPoly) * 0.5) + (dimPoly * i))
+        .attr('x', 2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * i))
         .attr('y', box.h * 0.9 - dimPoly * 0.7)
         .attr('width', dimPoly * 0.8)
         .attr('height', dimPoly * 0.8)
         .attr('fill', palette.color.background)
         .attr('stroke', palette.color.stroke)
-        .attr('stroke-width', data.obId === schedB.blocks[i].obId ? 2 : 0.2)
+        .attr('stroke-width', 0.2)
+        .attr('stroke-dasharray', [])
         .on('click', function () {
-          if (data.obId === schedB.blocks[i].obId) return
           com.tree.events.click('block', schedB.blocks[i].obId)
         })
         .on('mouseover', function (d) {
-          if (data.obId === schedB.blocks[i].obId) return
           d3.select(this).style('cursor', 'pointer')
           d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
         })
         .on('mouseout', function (d) {
-          if (data.obId === schedB.blocks[i].obId) return
           d3.select(this).style('cursor', 'default')
           d3.select(this).attr('fill', palette.color.background)
         })
@@ -396,7 +392,37 @@ window.ObsblockForm = function (optIn) {
         .style('font-weight', '')
         .style('font-size', txtSize + 'px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (2 + (box.w * 0.5 - (schedB.blocks.length * dimPoly) * 0.5) + (dimPoly * i) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txtSize * 0.3) + ')')
+        .attr('transform', 'translate(' + (2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * i) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txtSize * 0.3) + ')')
+        .style('pointer-events', 'none')
+    }
+    if (com.schedule.editabled) {
+      g.append('rect')
+        .attr('x', 2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * schedB.blocks.length))
+        .attr('y', box.h * 0.9 - dimPoly * 0.7)
+        .attr('width', dimPoly * 0.8)
+        .attr('height', dimPoly * 0.8)
+        .attr('fill', colorPalette.dark.background)
+        .attr('stroke', colorPalette.dark.stroke)
+        .attr('stroke-width', 0.2)
+        .attr('stroke-dasharray', [])
+        .on('click', function () {
+          com.tree.events.change(com.data.schedB)
+        })
+        .on('mouseover', function (d) {
+          d3.select(this).style('cursor', 'pointer')
+          d3.select(this).attr('fill', d3.color(colorPalette.dark.background).darker(0.9))
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).style('cursor', 'default')
+          d3.select(this).attr('fill', colorPalette.dark.background)
+        })
+      g.append('text')
+        .text('+')
+        .style('fill', colorPalette.dark.text)
+        .style('font-weight', 'bold')
+        .style('font-size', txtSize + 'px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * schedB.blocks.length) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txtSize * 0.3) + ')')
         .style('pointer-events', 'none')
     }
   }
@@ -588,8 +614,11 @@ window.ObsblockForm = function (optIn) {
   function initPointingInformation () {
     let box = com.target.box
     let data = com.data.block
-    // let target = com.data.target
+
+    if (com.main.g.select('g#pointing')) com.main.g.select('g#pointing').remove()
+
     let g = com.main.g.append('g')
+      .attr('id', 'pointing')
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     com.target.g = g
     g.append('text')
@@ -772,6 +801,7 @@ window.ObsblockForm = function (optIn) {
       let sizeNewTarget = line * 0.8
       let addTargetg = g.append('g').attr('transform', 'translate(' + (label[1].x + (label[1].w * 0.5) - sizeNewTarget * 1.25) + ',' + (tbox.y + tbox.h) + ')')
       targetIcon(addTargetg, {w: sizeNewTarget, h: sizeNewTarget}, '+', tevents, colorPalette)
+      console.log(com.data.target, com.data.block.targets);
       dropDownDiv(addTargetg,
         {x: -sizeNewTarget * 0.25, y: -sizeNewTarget * 0.15, w: sizeNewTarget * 2.5, h: sizeNewTarget * 1.3},
         'trg',
@@ -967,7 +997,7 @@ window.ObsblockForm = function (optIn) {
     //   .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.175 + headerSize * 2) + ')')
 
     let gt = g.append('g')
-      .attr('id', 'telsDisplayer')
+      .attr('id', 'targetDisplayer')
       .attr('transform', 'translate(' + box.w * 0.55 + ',' + (headerSize * 0.5) + ')')
     com.targetBlock = new TargetDisplayer({
       main: {
@@ -1185,7 +1215,7 @@ window.ObsblockForm = function (optIn) {
         },
         idle: {
           txtSize: 0,
-          enabled: true,
+          enabled: false,
           background: {
             middle: {
               color: colorPalette.darker.background,
@@ -1287,6 +1317,17 @@ window.ObsblockForm = function (optIn) {
       {disabled: !com.schedule.editabled, value: com.data.tels.small.length, min: com.data.block.telescopes.small.min, max: com.data.block.telescopes.small.max, step: 1},
       {change: (d) => { changeTelescopeNumber('small', d) }, enter: (d) => { changeTelescopeNumber('small', d) }})
 
+    com.telescopeRunningBlock.updateData({
+      data: {
+        raw: {
+          telescopes: [].concat(com.data.tels.small).concat(com.data.tels.medium).concat(com.data.tels.large),
+          blocks: com.data.block.pointings
+        },
+        modified: []
+      }
+    })
+  }
+  function updateTelescopeInformation () {
     com.telescopeRunningBlock.updateData({
       data: {
         raw: {
@@ -1422,8 +1463,6 @@ window.ObsblockForm = function (optIn) {
           let newVal = oldValue
           if (oldValue > optIn.min) {
             newVal = oldValue - 1
-          } else {
-            newVal = optIn.max
           }
           linker.input.property('value', ('' + newVal).slice(-2))
           events.change(linker.input.property('value'))
@@ -1463,10 +1502,8 @@ window.ObsblockForm = function (optIn) {
       d3.event.preventDefault()
       let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
       let newVal = parseInt(linker.input.property('value'))
-      if (direction === 'up') newVal += 1
-      else if (direction === 'down') newVal -= 1
-      if (newVal > optIn.max) newVal = optIn.min
-      else if (newVal < optIn.min) newVal = optIn.max
+      if (direction === 'up' && newVal < optIn.max) newVal += 1
+      else if (direction === 'down' && newVal > optIn.min) newVal -= 1
       linker.input.property('value', ('' + newVal).slice(-2))
       events.change(linker.input.property('value'))
     })
@@ -1491,8 +1528,6 @@ window.ObsblockForm = function (optIn) {
         let newVal = oldValue
         if (oldValue < optIn.max) {
           newVal = oldValue + 1
-        } else {
-          newVal = optIn.min
         }
         linker.input.property('value', ('' + newVal).slice(-2))
         events.change(linker.input.property('value'))

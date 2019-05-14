@@ -474,21 +474,6 @@ window.TargetForm = function (optIn) {
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     com.target.g = g
 
-    // g.append('text')
-    //   .text('Pointing:')
-    //   .style('fill', colorPalette.dark.stroke)
-    //   .style('font-weight', 'bold')
-    //   .style('font-size', titleSize + 'px')
-    //   .attr('text-anchor', 'start')
-    //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-    // g.append('line')
-    //   .attr('x1', 0)
-    //   .attr('y1', 2)
-    //   .attr('x2', box.w * 1.0)
-    //   .attr('y2', 2)
-    //   .attr('stroke', colorPalette.dark.stroke)
-    //   .attr('stroke-width', 0.2)
-
     g.append('rect')
       .attr('id', 'headerStrip')
       .attr('x', 0)

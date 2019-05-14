@@ -44,6 +44,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_blockDispla
 window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_obsblockForm.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_schedblockForm.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/targets/utils_targetForm.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/events/utils_eventDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotBrushZoom.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 
@@ -165,7 +166,7 @@ let mainSchedBlocksController = function (optIn) {
   let lenD = {}
 
   let blockQueue = null
-  let blockQueueCopy = null
+  let eventQueueServer = null
   let brushZoom = null
 
   // let thisSchedBlocksController = this
@@ -282,16 +283,16 @@ let mainSchedBlocksController = function (optIn) {
     function initBox () {
       box.blockQueueServer = {
         x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.025,
+        y: lenD.h[0] * 0.175,
         w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.6,
+        h: lenD.h[0] * 0.45,
         marg: lenD.w[0] * 0.01
       }
-      box.blockQueueCopy = {
+      box.eventQueueServer = {
         x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.025 + lenD.h[0] * 0.6 * 0.5,
+        y: lenD.h[0] * 0.025,
         w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.6 * 0.5,
+        h: lenD.h[0] * 0.14,
         marg: lenD.w[0] * 0.01
       }
       box.brushZoom = {
@@ -424,6 +425,7 @@ let mainSchedBlocksController = function (optIn) {
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
 
     svgBrush.initData()
+    svgEventsQueueServer.initData()
     // svgWarningArea.initData({
     //   tag: 'pushPull',
     //   g: svg.g.append('g'),
@@ -456,6 +458,7 @@ let mainSchedBlocksController = function (optIn) {
     svgBlocksQueueServer.initData()
     // svgBlocksQueueCopy.initData()
 
+    svgEventsQueueServer.updateData()
     svgBlocksQueueServer.updateData()
     // svgBlocksQueueCopy.updateData()
     svgBrush.updateData()
@@ -479,6 +482,7 @@ let mainSchedBlocksController = function (optIn) {
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
 
     svgBlocksQueueServer.updateData()
+    svgEventsQueueServer.updateData()
     svgBrush.updateData()
     svgRightInfo.update()
 
@@ -1002,6 +1006,144 @@ let mainSchedBlocksController = function (optIn) {
   //   }
   //   this.updateData = updateData
   // }
+  let SvgEventsQueueServer = function () {
+    let reserved = {}
+    function initData () {
+      let adjustedBox = {
+        x: box.eventQueueServer.x,
+        y: box.eventQueueServer.y,
+        w: box.eventQueueServer.w,
+        h: box.eventQueueServer.h,
+        marg: lenD.w[0] * 0.01
+      }
+
+      reserved.g = svg.g.append('g')
+        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+
+      eventQueueServer = new EventDisplayer({
+        main: {
+          tag: 'eventDisplayerMiddleTag',
+          g: reserved.g,
+          scroll: {},
+          box: adjustedBox,
+          background: {
+            fill: colorTheme.medium.background,
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.4
+          },
+          colorTheme: colorTheme
+        },
+
+        displayer: 'eventQueue',
+        eventTrack: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'left'
+            }
+          },
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            show: false,
+            orientation: 'top',
+            attr: {
+              text: {
+                size: 14,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
+        },
+
+        filters: {
+          eventFilters: [],
+          filtering: []
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {},
+        events: {
+          event: {
+            click: (d) => { console.log(d) },
+            mouseover: (d) => { console.log(d) },
+            mouseout: (d) => { console.log(d) },
+            drag: {
+              start: () => {},
+              tick: () => {},
+              end: () => {}
+            }
+          }
+        },
+        input: {
+          focus: {schedBlocks: undefined, block: undefined},
+          over: {schedBlocks: undefined, block: undefined},
+          selection: []
+        }
+      })
+      eventQueueServer.init()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+      let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
+      let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
+      eventQueueServer.updateData({
+        time: {
+          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+          startTime: startTime,
+          endTime: endTime
+        },
+        data: {
+          raw: {
+            events_ponctual: shared.data.server.external_events[0],
+            events_scheduled: shared.data.server.external_clockEvents[0]
+          },
+          modified: []
+        }
+      })
+    }
+    this.updateData = updateData
+
+    function update () {
+      // blockQueueServerPast.update({
+      //   time: {
+      //     currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+      //     startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
+      //     endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+      //   }
+      // })
+    }
+    this.update = update
+  }
   let SvgBlocksQueueServer = function () {
     function initData () {
       let adjustedBox = {
@@ -1156,7 +1298,7 @@ let mainSchedBlocksController = function (optIn) {
           timeBars: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: 0, w: adjustedBox.w, h: adjustedBox.h * 2, marg: adjustedBox.marg}
+            box: {x: 0, y: -adjustedBox.y, w: adjustedBox.w, h: adjustedBox.h * 3, marg: adjustedBox.marg}
           }
         },
         blockTrackShrink: {
@@ -1546,6 +1688,7 @@ let mainSchedBlocksController = function (optIn) {
     this.translateTo = translateTo
 
     function updateData () {
+      console.log(shared.data.server.timeOfNight);
       let startTime = {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)}
       let endTime = {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
 
@@ -4302,6 +4445,7 @@ let mainSchedBlocksController = function (optIn) {
     this.clean = clean
   }
 
+  let svgEventsQueueServer = new SvgEventsQueueServer()
   let svgBlocksQueueServer = new SvgBlocksQueueServer()
   let svgBrush = new SvgBrush()
   let svgTargets = new SvgTargets()
