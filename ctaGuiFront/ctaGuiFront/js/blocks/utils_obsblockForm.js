@@ -220,11 +220,277 @@ window.ObsblockForm = function (optIn) {
   function changeState (newState) {
     com.schedule.events.change(com.data.block, newState)
   }
+  function getAllTel (elem, tel) {
+    let allTel = com.events.allTel()
+    let trueBlock = []
+    for (let i = 0; i < allTel.blocks.length; i++) {
+      if (allTel.blocks[i].obId !== com.data.block.obId) trueBlock.push(allTel.blocks[i])
+    }
+
+    let box = {
+      x: com.telescope.box.x,
+      y: com.telescope.box.y - com.telescope.box.h * 0.08,
+      w: com.telescope.box.w,
+      h: com.telescope.box.h
+    }
+    let g = com.main.g.append('g')
+      .attr('id', 'pointing')
+      .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+    g.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', box.w)
+      .attr('height', box.h)
+      .attr('fill', colorPalette.dark.background)
+      .attr('stroke', colorPalette.dark.stroke)
+      .attr('stroke-width', 0.4)
+
+    let ibox = {
+      x: 4,
+      y: 4,
+      w: box.w * 0.6,
+      h: box.h - 8
+    }
+    let largeBox = {x: 0, y: 0, w: 0, h: 0}
+    let mediumBox = {x: 0, y: 0, w: 0, h: 0}
+    let smallBox = {x: 0, y: 0, w: 0, h: 0}
+
+    if (tel.id.includes('L')) {
+      largeBox = {x: ibox.w * 0.35, y: 0, w: ibox.w * 0.3, h: ibox.h * 0.9}
+      allTel.allTels = allTel.allTels.filter(d => d.id.includes('L'))
+    } else if (tel.id.includes('M')) {
+      mediumBox = {x: ibox.w * 0.15, y: 0, w: ibox.w * 0.7, h: ibox.h * 0.9}
+      allTel.allTels = allTel.allTels.filter(d => d.id.includes('M'))
+    } else if (tel.id.includes('S')) {
+      smallBox = {x: ibox.w * 0.08, y: 0, w: ibox.w * 0.95, h: ibox.h * 0.9}
+      allTel.allTels = allTel.allTels.filter(d => d.id.includes('S'))
+    }
+
+    let gt = g.append('g')
+      .attr('id', 'telsDisplayer')
+      .attr('transform', 'translate(' + ibox.x + ',' + ibox.y + ')')
+    com.telescopeRunningBlock = new TelescopeDisplayer({
+      main: {
+        tag: 'telescopeRootTag',
+        g: gt,
+        scroll: {},
+        box: ibox,
+        background: {
+          fill: 'none',
+          stroke: colorPalette.medium.stroke,
+          strokeWidth: 0
+        },
+        isSouth: true,
+        colorPalette: colorPalette
+      },
+
+      displayer: 'gridBib',
+      gridBib: {
+        header: {
+          top: false,
+          text: {
+            size: 0,
+            color: colorPalette.medium.background
+          },
+          background: {
+            height: 0,
+            color: colorPalette.dark.stroke
+          }
+        },
+        telescope: {
+          enabled: true,
+          centering: true,
+          large: {
+            g: undefined,
+            opt: {
+              telsPerRow: 1,
+              nbl: 0,
+              size: 2,
+              ratio: 1
+            },
+            box: largeBox
+          },
+          medium: {
+            g: undefined,
+            opt: {
+              telsPerRow: 4,
+              nbl: 0,
+              size: 1,
+              ratio: 1
+            },
+            box: mediumBox
+          },
+          small: {
+            g: undefined,
+            opt: {
+              telsPerRow: 12,
+              nbl: 0,
+              size: 0.5,
+              ratio: 1
+            },
+            box: smallBox
+          }
+        },
+        idle: {
+          txtSize: 10,
+          enabled: true,
+          background: {
+            enabled: false,
+            middle: {
+              color: colorPalette.dark.background,
+              opacity: 0
+            },
+            side: {
+              color: colorPalette.dark.background,
+              opacity: 0
+            }
+          }
+        },
+        blocks: {
+          txtSize: 8,
+          right: {
+            enabled: false
+          },
+          left: {
+            enabled: true
+          },
+          background: {
+            middle: {
+              color: colorPalette.darkest.background,
+              opacity: 0.3
+            },
+            side: {
+              color: colorPalette.darker.background,
+              opacity: 1
+            }
+          }
+        }
+      },
+
+      filters: {
+        telescopeFilters: [],
+        filtering: []
+      },
+      data: {
+        raw: {
+          telescopes: []
+        },
+        filtered: {},
+        modified: []
+      },
+      debug: {
+        enabled: false
+      },
+      pattern: {
+        select: {}
+      },
+      events: {
+        block: {
+          click: (d) => {},
+          mouseover: (d) => {},
+          mouseout: (d) => {},
+          drag: {
+            start: () => {},
+            tick: () => {},
+            end: () => {}
+          }
+        },
+        telescope: {
+          click: (d) => {},
+          mouseover: (d) => {},
+          mouseout: (d) => {},
+          drag: {
+            start: () => {},
+            tick: () => {},
+            end: () => {}
+          }
+        }
+      }
+    })
+    com.telescopeRunningBlock.init()
+    com.telescopeRunningBlock.updateData({
+      data: {
+        raw: {
+          telescopes: allTel.allTels,
+          blocks: trueBlock
+        },
+        modified: []
+      }
+    })
+
+    g.append('g').attr('id', 'chooseTarget').attr('transform', 'translate(' + (4) + ',' + (box.h * 0.5) + ')')
+
+    g.append('rect')
+      .attr('x', -20)
+      .attr('y', -10)
+      .attr('width', 40)
+      .attr('height', 13)
+      .attr('fill', colorPalette.darker.background)
+      .attr('stroke', colorPalette.darker.stroke)
+      .attr('stroke-width', 0.4)
+      .attr('transform', 'translate(' + (box.w * 0.7) + ',' + (box.h * 0.95) + ')')
+      .on('click', function () {
+        g.remove()
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).attr('fill', colorPalette.darker.background)
+      })
+    g.append('text')
+      .text('Cancel')
+      .style('fill', colorPalette.dark.stroke)
+      .style('font-weight', 'bold')
+      .style('font-size', 10 + 'px')
+      .attr('text-anchor', 'middle')
+      .style('pointer-events', 'none')
+      .attr('transform', 'translate(' + (box.w * 0.7) + ',' + (box.h * 0.95) + ')')
+
+    g.append('rect')
+      .attr('x', -20)
+      .attr('y', -10)
+      .attr('width', 40)
+      .attr('height', 13)
+      .attr('fill', colorPalette.darker.background)
+      .attr('stroke', colorPalette.darker.stroke)
+      .attr('stroke-width', 0.4)
+      .attr('transform', 'translate(' + (box.w * 0.9) + ',' + (box.h * 0.95) + ')')
+      .on('click', function () {
+        if (!target) target = com.data.block.targets[0]
+        pointing = {id: com.data.block.sbId + '_' + com.data.block.obId}
+        pointing.name = target.name + '/p_' + com.data.block.metaData.nObs + '-' + com.data.block.pointings.length
+        pointing.pos = [target.pos[0], target.pos[1]]
+        pointing.telIds = []
+        pointing.telsInfo = {large: 0, medium: 0, small: 0}
+        com.data.block.pointings.push(pointing)
+        com.data.block.targets.push(target)
+        reassignTelescope()
+        g.remove()
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).attr('fill', colorPalette.darker.background)
+      })
+    g.append('text')
+      .text('Ok')
+      .style('fill', colorPalette.dark.stroke)
+      .style('font-weight', 'bold')
+      .style('font-size', 10 + 'px')
+      .attr('text-anchor', 'middle')
+      .style('pointer-events', 'none')
+      .attr('transform', 'translate(' + (box.w * 0.9) + ',' + (box.h * 0.95) + ')')
+  }
   function changeTelescopeNumber (type, d) {
     let data = com.data.block.telescopes[type]
     function removeTelFromList () {
-      let rem = data.ids.splice(0, 1)[0]
-      com.data.tels[type] = com.data.tels[type].filter(x => x.id !== rem)
+      let diff = data.ids.length - d
+      let rem = data.ids.splice(0, diff)
+      for (let i = 0; i < rem.length; i++) {
+        com.data.tels[type] = com.data.tels[type].filter(x => x.id !== rem[i])
+      }
       com.data.block.telIds = [].concat(com.data.block.telescopes.large.ids)
         .concat(com.data.block.telescopes.medium.ids)
         .concat(com.data.block.telescopes.small.ids)
@@ -597,19 +863,195 @@ window.ObsblockForm = function (optIn) {
     for (let i = 0; i < com.data.target.length; i++) {
       if (com.data.target[i].name === trgName) {
         com.data.block.targets.push(com.data.target[i])
-        addNewPointing(com.data.target[i])
+        initPointingInformation()
+        // addNewPointing(com.data.target[i])
       }
     }
   }
-  function addNewPointing (trg) {
-    let newPointng = {id: com.data.block.sbId + '_' + com.data.block.obId}
-    newPointng.name = trg.name + '/p_' + com.data.block.metaData.nObs + '-' + com.data.block.pointings.length
-    newPointng.pos = [trg.pos[0], trg.pos[1]]
-    newPointng.telIds = []
-    newPointng.telsInfo = {large: 0, medium: 0, small: 0}
+  function addNewPointing (type) {
+    let box = {
+      x: com.target.box.x + com.target.box.w * 0.2,
+      y: com.target.box.y + com.target.box.h * 0.1,
+      w: com.target.box.w * 0.8,
+      h: com.target.box.h * 0.9
+    }
+    let line = 20
+    if (type === 'coordinates') {
+      let target
+      let pointing
+      let g = com.main.g.append('g')
+        .attr('id', 'pointing')
+        .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+      g.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', box.w)
+        .attr('height', box.h)
+        .attr('fill', colorPalette.dark.background)
+        .attr('stroke', colorPalette.dark.stroke)
+        .attr('stroke-width', 0.4)
 
-    com.data.block.pointings.push(newPointng)
-    reassignTelescope()
+      {
+        let tevents = {
+          click: function () {},
+          over: function () {},
+          out: function () {}
+        }
+        let sizeNewPointing = line * 0.8
+        let addPointingg = g.append('g').attr('transform', 'translate(' + (4) + ',' + (4) + ')')
+        targetIcon(addPointingg, {w: sizeNewPointing, h: sizeNewPointing}, '+', tevents, colorPalette)
+        dropDownDiv(addPointingg,
+          {x: -2, y: -2, w: sizeNewPointing * 2, h: sizeNewPointing * 1.3},
+          'trg',
+          {disabled: !com.schedule.editabled, value: '', options: com.data.target.map(x => x.name)},
+          {change: (d) => {
+            let chooseTarget = g.select('g#chooseTarget')
+            chooseTarget.selectAll('*').remove()
+            for (let i = 0; i < com.data.target.length; i++) {
+              if (com.data.target[i].name === d) {
+                target = com.data.target[i]
+                targetIcon(chooseTarget, {w: sizeNewPointing * 1.2, h: sizeNewPointing * 1.2}, target.name.split('_')[1], tevents, colorPalette)
+                return
+              }
+            }
+            target = undefined
+          },
+          enter: (d) => {
+          }})
+        g.append('g').attr('id', 'chooseTarget').attr('transform', 'translate(' + (4) + ',' + (box.h * 0.5) + ')')
+
+        g.append('text')
+          .text('Coordinates')
+          .style('fill', colorPalette.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', 10 + 'px')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (box.w * 0.6) + ',' + 10 + ')')
+        g.append('rect')
+          .attr('x', -box.w * 0.2)
+          .attr('y', 0)
+          .attr('width', box.w * 0.55)
+          .attr('height', 18)
+          .attr('fill', colorPalette.bright.background)
+          .attr('stroke', colorPalette.bright.stroke)
+          .attr('stroke-width', 0.2)
+          .attr('transform', 'translate(' + (box.w * 0.6) + ',' + (box.h * 0.2) + ')')
+        g.append('rect')
+          .attr('x', -box.w * 0.2)
+          .attr('y', 0)
+          .attr('width', box.w * 0.55)
+          .attr('height', 18)
+          .attr('fill', colorPalette.bright.background)
+          .attr('stroke', colorPalette.bright.stroke)
+          .attr('stroke-width', 0.2)
+          .attr('transform', 'translate(' + (box.w * 0.6) + ',' + (box.h * 0.4) + ')')
+
+        g.append('rect')
+          .attr('x', -20)
+          .attr('y', -10)
+          .attr('width', 40)
+          .attr('height', 13)
+          .attr('fill', colorPalette.darker.background)
+          .attr('stroke', colorPalette.darker.stroke)
+          .attr('stroke-width', 0.4)
+          .attr('transform', 'translate(' + (box.w * 0.7) + ',' + (box.h * 0.95) + ')')
+          .on('click', function () {
+            g.remove()
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).attr('fill', colorPalette.darker.background)
+          })
+        g.append('text')
+          .text('Cancel')
+          .style('fill', colorPalette.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', 10 + 'px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .attr('transform', 'translate(' + (box.w * 0.7) + ',' + (box.h * 0.95) + ')')
+
+        g.append('rect')
+          .attr('x', -20)
+          .attr('y', -10)
+          .attr('width', 40)
+          .attr('height', 13)
+          .attr('fill', colorPalette.darker.background)
+          .attr('stroke', colorPalette.darker.stroke)
+          .attr('stroke-width', 0.4)
+          .attr('transform', 'translate(' + (box.w * 0.9) + ',' + (box.h * 0.95) + ')')
+          .on('click', function () {
+            if (!target) target = com.data.block.targets[0]
+            pointing = {id: com.data.block.sbId + '_' + com.data.block.obId}
+            pointing.name = target.name + '/p_' + com.data.block.metaData.nObs + '-' + com.data.block.pointings.length
+            pointing.pos = [target.pos[0], target.pos[1]]
+            pointing.telIds = []
+            pointing.telsInfo = {large: 0, medium: 0, small: 0}
+            com.data.block.pointings.push(pointing)
+            com.data.block.targets.push(target)
+            reassignTelescope()
+            g.remove()
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).attr('fill', colorPalette.darker.background)
+          })
+        g.append('text')
+          .text('Ok')
+          .style('fill', colorPalette.dark.stroke)
+          .style('font-weight', 'bold')
+          .style('font-size', 10 + 'px')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+          .attr('transform', 'translate(' + (box.w * 0.9) + ',' + (box.h * 0.95) + ')')
+
+        // let tbox = {x: label[0].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[0].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
+        // let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
+        // let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, {enabled: false})
+        // let innertg = scrollBoxt.get('innerG')
+        // function targetCore (targets, g, offset) {
+        //   let space = ((tbox.h * 1) - (targets.length * line)) / (targets.length)
+        //   let current = g
+        //     .selectAll('g.target')
+        //     .data(targets, function (d) {
+        //       return d.id
+        //     })
+        //   let enter = current
+        //     .enter()
+        //     .append('g')
+        //     .attr('class', 'target')
+        //   enter.each(function (d, i) {
+        //     let g = d3.select(this)
+        //     let tevents = {
+        //       click: function () { com.target.events.click('target', d.id) },
+        //       over: function () {},
+        //       out: function () {}
+        //     }
+        //     targetIcon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
+        //   })
+        //   let merge = current.merge(enter)
+        //   merge.each(function (d, i) {
+        //     let g = d3.select(this)
+        //     let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
+        //     let offY = (space * 0.5 + (space + line) * i)
+        //     if (line * targets.length > tbox.h) offY = line * i
+        //     g.attr('transform', 'translate(' + offX + ',' + offY + ')')
+        //   })
+        //   current
+        //     .exit()
+        //     .transition('inOut')
+        //     .duration(timeD.animArc)
+        //     .style('opacity', 0)
+        //     .remove()
+        // }
+        // targetCore(data.targets, innertg, 0)
+        // scrollBoxt.resetVerticalScroller({canScroll: true, scrollHeight: line * data.targets.length})
+      }
+    }
   }
   function initPointingInformation () {
     let box = com.target.box
@@ -640,12 +1082,14 @@ window.ObsblockForm = function (optIn) {
       .attr('id', 'headerStrip')
       .attr('x', 0)
       .attr('y', 3)
-      .attr('width', box.w * 0.54)
+      .attr('width', box.w * 1)
       .attr('height', headerSize)
       .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: 0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.12, text: 'Targets', anchor: 'middle'},
-      {x: box.w * 0.12, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.42, text: 'Pointings', anchor: 'middle'}
+      {x: 0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 1, text: 'Targets & pointings mapping', anchor: 'middle'}
+      // {x: 0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.10, text: 'Tgts', anchor: 'middle'},
+      // {x: box.w * 0.10, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.10, text: 'Ptgs', anchor: 'middle'},
+      // {x: box.w * 0.2, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.8, text: 'Mapping', anchor: 'middle'}
     ]
     for (let i = 0; i < label.length; i++) {
       let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
@@ -659,164 +1103,211 @@ window.ObsblockForm = function (optIn) {
     }
 
     let line = 20
-    let tbox = {x: 0, y: 3 + headerSize, w: box.w * 0.54, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
-    let blockg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
-    let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
-    let innerg = scrollBox.get('innerG')
+    let tbox = {x: label[0].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[0].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
+    // let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
+    // let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, {enabled: false})
+    // let innertg = scrollBoxt.get('innerG')
+    // let trgtPnt = []
+    // for (let i = 0; i < data.pointings.length; i++) {
+    //   let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+    //   if (tar) {
+    //     if (!(data.obId in tar.pointings)) tar.pointings[data.obId] = []
+    //     tar.pointings[data.obId].push(data.pointings[i])
+    //   } else {
+    //     tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+    //     tar.pointings = {}
+    //     tar.pointings[data.obId] = [data.pointings[i]]
+    //     trgtPnt.push(tar)
+    //   }
+    // }
+    // let squareTemplate = {
+    //   '1': [{x: 0.5, y: 0.5}],
+    //   '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
+    //   '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
+    //   '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+    //   '5': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+    //   '6': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.3}, {x: 0.5, y: 0.7}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+    //   '7': [],
+    //   '8': [],
+    //   '9': []
+    // }
 
-    let trgtPnt = []
-    for (let i = 0; i < data.pointings.length; i++) {
-      let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
-      if (tar) {
-        if (!(data.obId in tar.pointings)) tar.pointings[data.obId] = []
-        tar.pointings[data.obId].push(data.pointings[i])
-      } else {
-        tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
-        tar.pointings = {}
-        tar.pointings[data.obId] = [data.pointings[i]]
-        trgtPnt.push(tar)
-      }
-    }
+    // function targetCore (targets, g, offset) {
+    //   let space = ((tbox.h * 1) - (targets.length * line)) / (targets.length)
+    //   let current = g
+    //     .selectAll('g.target')
+    //     .data(targets, function (d) {
+    //       return d.id
+    //     })
+    //   let enter = current
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'target')
+    //   enter.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     let tevents = {
+    //       click: function () { com.target.events.click('target', d.id) },
+    //       over: function () {},
+    //       out: function () {}
+    //     }
+    //     targetIcon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
+    //   })
+    //   let merge = current.merge(enter)
+    //   merge.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
+    //     let offY = (space * 0.5 + (space + line) * i)
+    //     if (line * targets.length > tbox.h) offY = line * i
+    //     g.attr('transform', 'translate(' + offX + ',' + offY + ')')
+    //   })
+    //   current
+    //     .exit()
+    //     .transition('inOut')
+    //     .duration(timeD.animArc)
+    //     .style('opacity', 0)
+    //     .remove()
+    // }
+    // targetCore(data.targets, innertg, 0)
+    // scrollBoxt.resetVerticalScroller({canScroll: true, scrollHeight: line * data.targets.length})
 
-    let squareTemplate = {
-      '1': [{x: 0.5, y: 0.5}],
-      '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
-      '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
-      '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
-      '5': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
-      '6': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.3}, {x: 0.5, y: 0.7}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
-      '7': [],
-      '8': [],
-      '9': []
-    }
-    function pointingCore (trg, pointings, pg, x, y, w, h) {
-      if (com.target.editable) {
-        pointings.push({id: 'newPointing'})
-      }
-      pg.attr('transform', 'translate(' + x + ',' + y + ')')
-      pg.append('rect')
-        .attr('x', 4)
-        .attr('y', 4)
-        .attr('width', w - 8)
-        .attr('height', h - 8)
-        .attr('fill', colorPalette.darker.background)
-        .attr('stroke', colorPalette.darker.stroke)
-        .attr('stroke-width', 0.2)
-      let psize = {
-        w: Math.min(w / 3, 25),
-        h: Math.min(h / 3, 20)
-      }
-      let current = pg
-        .selectAll('g.pointing')
-        .data(pointings, function (d) {
-          return d.id
-        })
-      let enter = current
-        .enter()
-        .append('g')
-        .attr('class', 'pointing')
-      enter.each(function (d, i) {
-        let g = d3.select(this)
-        if (i === (pointings.length - 1) && com.target.editable) {
-          let pevents = {
-            click: function () { addNewPointing(trg) },
-            over: function () {},
-            out: function () {}
-          }
-          pointingIcon(g, {w: psize.w * 0.66, h: psize.h * 0.66}, '+', pevents, colorPalette)
-        } else {
-          let pevents = {
-            click: function () {},
-            over: function () {},
-            out: function () {}
-          }
-          pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
-        }
-      })
-      let merge = current.merge(enter)
-      merge.each(function (d, i) {
-        let g = d3.select(this)
-        if (i === (pointings.length - 1) && com.target.editable) {
-          let index = pointings.length
-          let pos = squareTemplate[index][i]
-          g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.66 * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.66 * 0.5)) + ')')
-        } else {
-          let index = pointings.length
-          let pos = squareTemplate[index][i]
-          g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.5)) + ')')
-        }
-      })
-      current
-        .exit()
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .style('opacity', 0)
-        .remove()
-    }
-    function targetCore (targets, g, offset) {
-      let space = ((tbox.h * 1) - (targets.length * line)) / (targets.length)
-      let current = g
-        .selectAll('g.target')
-        .data(targets, function (d) {
-          return d.id
-        })
-      let enter = current
-        .enter()
-        .append('g')
-        .attr('class', 'target')
-      enter.each(function (d, i) {
-        let g = d3.select(this)
-        let tevents = {
-          click: function () { com.target.events.click('target', d.id) },
-          over: function () {},
-          out: function () {}
-        }
-        targetIcon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
-      })
-      let merge = current.merge(enter)
-      merge.each(function (d, i) {
-        let g = d3.select(this)
-        let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
-        g.attr('transform', 'translate(' + offX + ',' + (space * 0.5 + (space + line) * i) + ')')
-        // innerOffset += line
-        for (var key in d.pointings) {
-          pointingCore(d, d.pointings[key], g.append('g').attr('id', 'pointings' + key), label[1].x - line * 0.5, -space * 0.5, label[1].w, space + line)
-        }
-      })
-      current
-        .exit()
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .style('opacity', 0)
-        .remove()
-    }
-    targetCore(trgtPnt, innerg, 0)
+    // let pbox = {x: label[1].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[1].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
+    // let blockpg = g.append('g').attr('transform', 'translate(' + pbox.x + ',' + pbox.y + ')')
+    // let scrollBoxp = initScrollBox('pointingListScroll', blockpg, pbox, {enabled: false})
+    // let innerpg = scrollBoxp.get('innerG')
+    // let trgtPnt = []
+    // for (let i = 0; i < data.pointings.length; i++) {
+    //   let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+    //   if (tar) {
+    //     if (!(data.obId in tar.pointings)) tar.pointings[data.obId] = []
+    //     tar.pointings[data.obId].push(data.pointings[i])
+    //   } else {
+    //     tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+    //     tar.pointings = {}
+    //     tar.pointings[data.obId] = [data.pointings[i]]
+    //     trgtPnt.push(tar)
+    //   }
+    // }
+    // let squareTemplate = {
+    //   '1': [{x: 0.5, y: 0.5}],
+    //   '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
+    //   '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
+    //   '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+    //   '5': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+    //   '6': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.3}, {x: 0.5, y: 0.7}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
+    //   '7': [],
+    //   '8': [],
+    //   '9': []
+    // }
 
-    if (com.target.editable) {
-      let tevents = {
-        click: function () {},
-        over: function () {},
-        out: function () {}
-      }
-      let sizeNewTarget = line * 0.8
-      let addTargetg = g.append('g').attr('transform', 'translate(' + (label[1].x + (label[1].w * 0.5) - sizeNewTarget * 1.25) + ',' + (tbox.y + tbox.h) + ')')
-      targetIcon(addTargetg, {w: sizeNewTarget, h: sizeNewTarget}, '+', tevents, colorPalette)
-      console.log(com.data.target, com.data.block.targets);
-      dropDownDiv(addTargetg,
-        {x: -sizeNewTarget * 0.25, y: -sizeNewTarget * 0.15, w: sizeNewTarget * 2.5, h: sizeNewTarget * 1.3},
-        'trg',
-        {disabled: !com.schedule.editabled, value: '', options: com.data.target.map(x => x.name).filter(x => !com.data.block.targets.map(x => x.name).includes(x))},
-        {change: (d) => { addNewTarget(d) }, enter: (d) => { addNewTarget(d) }})
-    }
-    // addTargetg.append('rect')
-    //   .attr('x', (label[0].w * 0.5) + sizeNewTarget * 0.5 + 4)
+    // function pointingCore (pointings, g, offset) {
+    //   let space = ((tbox.h * 1) - (pointings.length * line)) / (pointings.length)
+    //   let current = g
+    //     .selectAll('g.target')
+    //     .data(pointings, function (d) {
+    //       return d.id
+    //     })
+    //   let enter = current
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'target')
+    //   enter.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     let pevents = {
+    //       click: function () {},
+    //       over: function () {},
+    //       out: function () {}
+    //     }
+    //     pointingIcon(g, {w: box.w * 0.07, h: line}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
+    //   })
+    //   let merge = current.merge(enter)
+    //   merge.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
+    //     let offY = (space * 0.5 + (space + line) * i)
+    //     if (line * pointings.length > pbox.h) offY = line * i
+    //     g.attr('transform', 'translate(' + offX + ',' + offY + ')')
+    //   })
+    //   current
+    //     .exit()
+    //     .transition('inOut')
+    //     .duration(timeD.animArc)
+    //     .style('opacity', 0)
+    //     .remove()
+    // }
+    // pointingCore(data.pointings, innerpg, 0)
+    // scrollBoxp.resetVerticalScroller({canScroll: true, scrollHeight: line * data.pointings.length})
+    // function pointingCore (trg, pointings, pg, x, y, w, h) {
+    //   if (com.target.editable) {
+    //     pointings.push({id: 'newPointing'})
+    //   }
+    //   pg.attr('transform', 'translate(' + x + ',' + y + ')')
+    //   pg.append('rect')
+    //     .attr('x', 4)
+    //     .attr('y', 4)
+    //     .attr('width', w - 8)
+    //     .attr('height', h - 8)
+    //     .attr('fill', colorPalette.darker.background)
+    //     .attr('stroke', colorPalette.darker.stroke)
+    //     .attr('stroke-width', 0.2)
+    //   let psize = {
+    //     w: Math.min(w / 3, 25),
+    //     h: Math.min(h / 3, 20)
+    //   }
+    //   let current = pg
+    //     .selectAll('g.pointing')
+    //     .data(pointings, function (d) {
+    //       return d.id
+    //     })
+    //   let enter = current
+    //     .enter()
+    //     .append('g')
+    //     .attr('class', 'pointing')
+    //   enter.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     if (i === (pointings.length - 1) && com.target.editable) {
+    //       let pevents = {
+    //         click: function () { addNewPointing(trg) },
+    //         over: function () {},
+    //         out: function () {}
+    //       }
+    //       pointingIcon(g, {w: psize.w * 0.66, h: psize.h * 0.66}, '+', pevents, colorPalette)
+    //     } else {
+    //       let pevents = {
+    //         click: function () {},
+    //         over: function () {},
+    //         out: function () {}
+    //       }
+    //       pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
+    //     }
+    //   })
+    //   let merge = current.merge(enter)
+    //   merge.each(function (d, i) {
+    //     let g = d3.select(this)
+    //     if (i === (pointings.length - 1) && com.target.editable) {
+    //       let index = pointings.length
+    //       let pos = squareTemplate[index][i]
+    //       g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.66 * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.66 * 0.5)) + ')')
+    //     } else {
+    //       let index = pointings.length
+    //       let pos = squareTemplate[index][i]
+    //       g.attr('transform', 'translate(' + ((pos.x * w) - (psize.w * 0.5)) + ',' + ((pos.y * h) - (psize.h * 0.5)) + ')')
+    //     }
+    //   })
+    //   current
+    //     .exit()
+    //     .transition('inOut')
+    //     .duration(timeD.animArc)
+    //     .style('opacity', 0)
+    //     .remove()
+    // }
+    // addPointingg.append('rect')
+    //   .attr('x', (label[0].w * 0.5) + sizeNewPointing * 0.5 + 4)
     //   .attr('y', 4)
     //   .attr('width', label[1].w - 8)
-    //   .attr('height', sizeNewTarget - 8)
+    //   .attr('height', sizeNewPointing - 8)
     //   .attr('fill', colorPalette.darker.background)
     //   .attr('stroke', colorPalette.darker.stroke)
     //   .attr('stroke-width', 0.2)
-
     // let trgtPnt = []
     // for (let i = 0; i < data.pointings.length; i++) {
     //   let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
@@ -974,13 +1465,11 @@ window.ObsblockForm = function (optIn) {
     //     .attr('text-anchor', 'start')
     //     .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.55 + headerSize * 2) + ')')
     // }
-
     // let tg = g.append('g').attr('transform', 'translate(' + (box.w * 0.48) + ',' + (box.h * 0.15) + ')')
     // let tevents = {
     //   click: function () { com.target.events.click('target', data.targetId) }
     // }
     // targetIcon(tg, {w: height, h: height}, 'T' + data.pointingName.split('/')[0].split('_')[1], tevents, colorPalette)
-
     // g.append('text')
     //   .text(target.pos[0])
     //   .style('fill', colorPalette.dark.stroke)
@@ -998,13 +1487,13 @@ window.ObsblockForm = function (optIn) {
 
     let gt = g.append('g')
       .attr('id', 'targetDisplayer')
-      .attr('transform', 'translate(' + box.w * 0.55 + ',' + (headerSize * 0.5) + ')')
+      .attr('transform', 'translate(' + label[0].x + ',' + (label[0].y + 3) + ')')
     com.targetBlock = new TargetDisplayer({
       main: {
         tag: 'targetRootTag',
         g: gt,
         scroll: {},
-        box: {x: box.w * 0.45 * 0.025, y: box.h * 0.025, w: box.w * 0.45 * 0.95, h: box.h * 0.95, marg: 0},
+        box: {x: 0, y: 0, w: box.w, h: box.h * 0.9, marg: 0},
         background: {
           fill: colorPalette.brighter.background,
           stroke: colorPalette.brighter.stroke,
@@ -1012,7 +1501,7 @@ window.ObsblockForm = function (optIn) {
         }
       },
 
-      displayer: 'defaultBib',
+      displayer: 'linkMap',
       defaultBib: {
         quickmap: {
           enabled: false,
@@ -1034,11 +1523,18 @@ window.ObsblockForm = function (optIn) {
         skymap: {
           enabled: true,
           g: undefined,
-          box: {x: box.w * 0.45 * 0.025, y: box.h * 0.025, w: box.w * 0.45 * 0.95, h: box.h * 0.95, marg: 0},
+          box: {x: 0, y: 0, w: label[0].w, h: box.h * 0.9, marg: 0},
           mainTarget: undefined
         },
         legend: {
           enabled: false
+        }
+      },
+      linkMap: {
+        map: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: 0, w: box.w, h: box.h * 0.9, marg: 0}
         }
       },
 
@@ -1078,9 +1574,31 @@ window.ObsblockForm = function (optIn) {
         modified: []
       }
     })
+
+    if (com.target.editable) {
+      let pevents = {
+        click: function (d) {},
+        over: function () {},
+        out: function () {}
+      }
+      let sizeNewPointing = line * 0.8
+      let addPointingg = g.append('g').attr('transform', 'translate(' + (label[0].x + 2) + ',' + (tbox.y + 4 - headerSize * 2) + ')')
+      dropDownDiv(addPointingg,
+        {x: -2, y: -4, w: sizeNewPointing * 2, h: sizeNewPointing * 1.3},
+        'trg',
+        {disabled: !com.schedule.editabled, value: '', options: ['coordinates', 'divergentes']},
+        {change: (d) => { addNewPointing(d) }, enter: (d) => { addNewPointing(d) }})
+      pointingIcon(addPointingg, {w: sizeNewPointing * 0.8, h: sizeNewPointing * 0.8}, '+', pevents, colorPalette)
+    }
   }
   function initTelescopeInformation () {
-    let box = com.telescope.box
+    console.log(com.telescope.box);
+    let box = {
+      x: com.telescope.box.x,
+      y: com.telescope.box.y,
+      w: com.telescope.box.w,
+      h: com.telescope.box.h
+    }
     let g = com.main.g.append('g')
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     com.telescope.g = g
@@ -1285,14 +1803,23 @@ window.ObsblockForm = function (optIn) {
             tick: () => {},
             end: () => {}
           }
+        },
+        other: {
+          allTel: getAllTel
         }
       },
-      input: {
-        over: {
-          telescope: undefined
+      interaction: {
+        delete: {
+          enabled: true,
+          event: () => {}
         },
-        focus: {
-          telescope: undefined
+        drag: {
+          enabled: true,
+          event: () => {}
+        },
+        switch: {
+          enabled: true,
+          event: () => {}
         }
       }
     })

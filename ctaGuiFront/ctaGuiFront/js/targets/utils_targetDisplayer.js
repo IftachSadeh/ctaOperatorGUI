@@ -6,6 +6,8 @@
 /* global ScrollBox */
 /* global Locker */
 /* global RunLoop */
+/* global targetIcon */
+/* global pointingIcon */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/utils_scrollBox.js' })
 
@@ -215,6 +217,128 @@ window.TargetDisplayer = function (optIn) {
     this.remove = remove
   }
   let defaultBib = new DefaultBib()
+  let LinkMapBib = function () {
+    function init () {
+      function initMap () {
+        if (!com.linkMap.map.enabled) return
+        let txtSize = 10
+        com.linkMap.map.g = com.main.g.append('g')
+          .attr('id', 'map')
+          .attr('transform', 'translate(' + com.linkMap.map.box.x + ',' + com.linkMap.map.box.y + ')')
+        com.linkMap.map.g.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', com.linkMap.map.box.w)
+          .attr('height', com.linkMap.map.box.h)
+          .attr('fill', colorTheme.bright.background)
+          .attr('stroke', colorTheme.bright.stroke)
+          .attr('stroke-width', 0.1)
+      }
+      initMap()
+    }
+    this.init = init
+
+    function update () {
+      if (com.data.filtered.targets.length === 0 && com.data.filtered.pointings.length === 0) return
+
+      let sizeTarget = 22
+      let sizePointing = 22
+      let max = 24
+
+      let data = {nodes: [], links: []}
+      for (let i = 0; i < com.data.filtered.targets.length; i++) {
+        data.nodes.push({type: 'target', id: com.data.filtered.targets[i].id, data: com.data.filtered.targets[i], x: com.linkMap.map.box.w * 0.5, y: com.linkMap.map.box.h * 0.5})
+      }
+      for (let i = 0; i < com.data.filtered.pointings.length; i++) {
+        data.nodes.push({type: 'pointing', id: com.data.filtered.pointings[i].name, data: com.data.filtered.pointings[i], x: com.linkMap.map.box.w * 0.5, y: com.linkMap.map.box.h * 0.5})
+        data.links.push({type: 'link', source: com.data.filtered.pointings[i].name, target: com.data.filtered.pointings[i].name.split('/')[0]})
+      }
+
+      let simulation = d3.forceSimulation()
+        .force('link', d3.forceLink().id(function (d) { return d.id }))
+        .force('collide', d3.forceCollide(function (d) {
+          if (d.type === 'target') return sizeTarget * 0.65
+          else if (d.type === 'pointing') return sizePointing * 0.65
+        }).iterations(32))
+        .force('charge', d3.forceManyBody().strength(function (d) {
+          return -500
+        }))
+        .force('center', d3.forceCenter((com.linkMap.map.box.w / 2), (com.linkMap.map.box.h / 2)))
+        .force('y', d3.forceY())
+        .force('x', d3.forceX())
+        // .alphaDecay(0.0005)
+        .velocityDecay(0.6)
+        // .alpha(0.1).restart()
+      simulation.nodes(data.nodes)
+      simulation.force('link').links(data.links).distance(function (d) {
+        return 4
+      })
+      var link = com.linkMap.map.g.append('g')
+        .attr('class', 'links')
+        .selectAll('line')
+        .data(data.links)
+        .enter()
+        .append('line')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.4)
+
+      var node = com.linkMap.map.g.append('g')
+        .attr('class', 'nodes')
+        .selectAll('g')
+        .data(data.nodes)
+        .enter().append('g')
+        .attr('id', function (d) { return d.id })
+        .each(function (d) {
+          let g = d3.select(this)
+          if (d.type === 'target') targetIcon(g, {w: sizeTarget, h: sizeTarget}, d.data.name.split('_')[1], {}, colorPalette)
+          else if (d.type === 'pointing') pointingIcon(g, {w: sizePointing, h: sizePointing * 0.8}, d.data.name.split('-')[1], {}, colorPalette)
+        })
+        .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
+
+      let simulationDurationInMs = 1000
+      let startTime = Date.now()
+      let endTime = startTime + simulationDurationInMs
+      simulation.on('tick', function () {
+        // if (Date.now() > endTime) {
+        //   simulation.stop()
+        //   return
+        // }
+        link
+          .attr('x1', function (d) { return Math.max(max, Math.min(com.linkMap.map.box.w - max, d.source.x)) })
+          .attr('y1', function (d) { return Math.max(max, Math.min(com.linkMap.map.box.h - max, d.source.y)) })
+          .attr('x2', function (d) { return Math.max(max, Math.min(com.linkMap.map.box.w - max, d.target.x)) })
+          .attr('y2', function (d) { return Math.max(max, Math.min(com.linkMap.map.box.h - max, d.target.y)) })
+
+        node.attr('transform', function (d) {
+          if (d.type === 'target') {
+            d.x = Math.max(sizeTarget, Math.min(com.linkMap.map.box.w - sizeTarget, d.x)) - sizeTarget / 2
+            d.y = Math.max(sizeTarget, Math.min(com.linkMap.map.box.h - sizeTarget, d.y)) - sizeTarget / 2
+          } else if (d.type === 'pointing') {
+            d.x = Math.max(sizePointing, Math.min(com.linkMap.map.box.w - sizePointing, d.x)) - sizePointing / 2
+            d.y = Math.max(sizePointing, Math.min(com.linkMap.map.box.h - sizePointing, d.y)) - sizePointing / 2
+          }
+          return 'translate(' + d.x + ',' + d.y + ')'
+        })
+        // .attr('cx', function (d) {
+        //   d.x = Math.max(10, Math.min(com.linkMap.map.box.w - 10, d.x))
+        //   return d.x
+        // })
+        // .attr('cy', function (d) {
+        //   d.y = Math.max(10, Math.min(com.linkMap.map.box.h - 10, d.y))
+        //   return d.y
+        // })
+      })
+    }
+    this.update = update
+
+    function remove () {
+      if (com.target.axis.enabled) com.target.axis.g.remove()
+      if (com.target.targets.enabled) com.target.targets.clipping.g.remove()
+      if (com.target.timeBars.enabled) com.target.timeBars.g.remove()
+    }
+    this.remove = remove
+  }
+  let linkMapBib = new LinkMapBib()
 
   function init () {
     setDefaultStyle()
@@ -222,6 +346,8 @@ window.TargetDisplayer = function (optIn) {
 
     if (com.displayer === 'defaultBib') {
       defaultBib.init()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.init()
     }
   }
   this.init = init
@@ -443,6 +569,8 @@ window.TargetDisplayer = function (optIn) {
 
     if (com.displayer === 'defaultBib') {
       defaultBib.update()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.update()
     }
   }
   this.updateData = updateData
@@ -452,6 +580,8 @@ window.TargetDisplayer = function (optIn) {
     createTargetsGroup()
     if (com.displayer === 'defaultBib') {
       defaultBib.update()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.update()
     }
   }
   this.update = update
@@ -461,12 +591,17 @@ window.TargetDisplayer = function (optIn) {
 
     if (com.displayer === 'defaultBib') {
       defaultBib.remove()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.remove()
     }
 
     com.displayer = newDisplayer
     if (com.displayer === 'defaultBib') {
       defaultBib.init()
       defaultBib.update()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.init()
+      linkMapBib.update()
     }
   }
   this.changeDisplayer = changeDisplayer
@@ -475,6 +610,8 @@ window.TargetDisplayer = function (optIn) {
     com.input.over.target = id
     if (com.displayer === 'defaultBib') {
       defaultBib.update()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.update()
     }
   }
   this.overTarget = overTarget
@@ -482,6 +619,8 @@ window.TargetDisplayer = function (optIn) {
     com.input.over.target = undefined
     if (com.displayer === 'defaultBib') {
       defaultBib.update()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.update()
     }
   }
   this.outTarget = outTarget
@@ -490,6 +629,8 @@ window.TargetDisplayer = function (optIn) {
     com.input.focus.target = id
     if (com.displayer === 'defaultBib') {
       defaultBib.update()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.update()
     }
   }
   this.focusOnTarget = focusOnTarget
@@ -497,6 +638,8 @@ window.TargetDisplayer = function (optIn) {
     com.input.focus.target = undefined
     if (com.displayer === 'defaultBib') {
       defaultBib.update()
+    } else if (com.displayer === 'linkMap') {
+      linkMapBib.update()
     }
   }
   this.unfocusOnTarget = unfocusOnTarget

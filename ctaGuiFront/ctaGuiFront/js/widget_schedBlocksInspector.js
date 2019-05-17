@@ -5170,6 +5170,7 @@ let mainSchedBlocksInspector = function (optIn) {
       createConflictsInformation()
     }
     function updateOverview () {
+      if (shared.focus) return
       let allBox
       function updateBlocksInformation () {
         let box = allBox.blocks
@@ -5556,6 +5557,13 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     this.focusOnSchedBlock = focusOnSchedBlock
 
+    function getBlocksByTime (blocks, start, end) {
+      let ret = []
+      for (var key in blocks) {
+        ret = ret.concat(blocks[key].filter(d => (d.time.start <= start && d.time.end >= start) || (d.time.start <= end && d.time.end >= end)))
+      }
+      return {allTels: shared.data.server.telHealth, blocks: ret}
+    }
     function createBlocksInfoPanel (idBlock) {
       let data = getBlockById(getBlocksData(), idBlock).data
       let schedB = getSchedBlocksData()[data.sbId]
@@ -5675,6 +5683,9 @@ let mainSchedBlocksInspector = function (optIn) {
             schedBlocks: undefined,
             block: undefined
           }
+        },
+        events: {
+          allTel: function () { return getBlocksByTime(getBlocksData(), data.time.start, data.time.end) }
         }
       })
       reserved.obsblockForm.init()

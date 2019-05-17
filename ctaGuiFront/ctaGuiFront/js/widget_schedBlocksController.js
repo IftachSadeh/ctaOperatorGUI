@@ -1688,7 +1688,6 @@ let mainSchedBlocksController = function (optIn) {
     this.translateTo = translateTo
 
     function updateData () {
-      console.log(shared.data.server.timeOfNight);
       let startTime = {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)}
       let endTime = {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
 
@@ -3715,6 +3714,7 @@ let mainSchedBlocksController = function (optIn) {
       }
     }
     function updateOverview () {
+      if (shared.focus) return
       let allBox
       function updateBlocksInformation () {
         let box = allBox.blocks

@@ -198,14 +198,14 @@ window.TelescopeDisplayer = function (optIn) {
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.1)
         .attr('stroke', colorTheme.dark.stroke)
-        .style('opacity', side.opacity ? side.opacity : 1)
+        .style('opacity', side.hasOwnProperty('opacity') ? side.opacity : 1)
       com.gridBib.back.append('rect')
         .attr('id', 'idleMiddle')
         .attr('fill', middle.color ? middle.color : colorTheme.dark.background)
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.05)
         .attr('stroke', colorTheme.dark.stroke)
-        .style('opacity', middle.opacity ? middle.opacity : 1)
+        .style('opacity', middle.hasOwnProperty('opacity') ? middle.opacity : 1)
       com.gridBib.back.append('text')
         .attr('id', 'idle')
         .text('Idle')
@@ -308,6 +308,158 @@ window.TelescopeDisplayer = function (optIn) {
       return telescopes
     }
 
+    let cloned, hoveredStart, hoveredEnd, action
+    function openSwitchCommand (elem, tel) {
+      com.events.other.allTel(elem, tel)
+    }
+    function dragstarted (d) {
+      cloned = clone(d3.select(this.parentNode))
+      cloned.style('pointer-events', 'none')
+      d3.select(this.parentNode).style('opacity', 0.5)
+
+      com.main.foreground.selectAll('g.' + com.main.tag + 'telescopes').style('pointer-events', 'none')
+      com.main.background.append('rect')
+        .attr('id', 'trash')
+        .attr('x', com.main.box.w - 20)
+        .attr('y', com.main.box.h - 20 - (!com.gridBib.header.top ? 0 : com.gridBib.header.background.height))
+        .attr('width', 20)
+        .attr('height', 20)
+        .on('mouseover', function () {
+          action = 'trash'
+        })
+        .on('mouseout', function () {
+          action = undefined
+        })
+      com.main.background.append('rect')
+        .attr('id', 'switch')
+        .attr('x', com.main.box.w - 20)
+        .attr('y', com.main.box.h - 40 - (!com.gridBib.header.top ? 0 : com.gridBib.header.background.height))
+        .attr('width', 20)
+        .attr('height', 20)
+        .on('mouseover', function () {
+          action = 'switch'
+          console.log('over');
+        })
+        .on('mouseout', function () {
+          action = undefined
+          console.log('out');
+        })
+    }
+    function dragged (d) {
+      let trans = cloned.attr('transform')
+      trans = {
+        x: Number(trans.split('(')[1].split(',')[0]) + d3.event.dx,
+        y: Number(trans.split(',')[1].split(')')[0]) + d3.event.dy
+      }
+      cloned.attr('transform', 'translate(' + trans.x + ',' + trans.y + ')')
+    }
+    function dragended (d) {
+      d3.select(this.parentNode).style('opacity', 1)
+      if (action) {
+        console.log(action);
+        if (action === 'trash') {
+          let tel = hoveredStart.telIds.splice(hoveredStart.telIds.indexOf(d.id), 1)
+          if (tel.includes('L')) {
+            hoveredStart.telsInfo.large -= 1
+          }
+          if (tel.includes('M')) {
+            hoveredStart.telsInfo.medium -= 1
+          }
+          if (tel.includes('S')) {
+            hoveredStart.telsInfo.small -= 1
+          }
+          for (let i = 0; i < com.data.raw.telescopes.length; i++) {
+            if (com.data.raw.telescopes[i].id === tel[0]) {
+              console.log(com.data.raw.telescopes.splice(i, 1))
+              break
+            }
+          }
+          for (let i = 0; i < com.data.filtered.telescopes.length; i++) {
+            if (com.data.filtered.telescopes[i].id === tel[0]) {
+              console.log(com.data.filtered.telescopes.splice(i, 1))
+              break
+            }
+          }
+        } else if (action === 'switch') {
+          openSwitchCommand(hoveredStart, d)
+        }
+      } else if (hoveredEnd) {
+        let tel = hoveredStart.telIds.splice(hoveredStart.telIds.indexOf(d.id), 1)
+        hoveredEnd.telIds.push(tel[0])
+        if (tel.includes('L')) {
+          hoveredStart.telsInfo.large -= 1
+          hoveredEnd.telsInfo.large += 1
+        }
+        if (tel.includes('M')) {
+          hoveredStart.telsInfo.medium -= 1
+          hoveredEnd.telsInfo.medium += 1
+        }
+        if (tel.includes('S')) {
+          hoveredStart.telsInfo.small -= 1
+          hoveredEnd.telsInfo.small += 1
+        }
+      }
+      cloned.remove()
+      cloned = undefined
+      hoveredStart = undefined
+      hoveredEnd = undefined
+      action = undefined
+      com.gridBib.back.selectAll('rect#stripLeft').attr('fill', com.gridBib.blocks.background.side.color)
+      com.gridBib.back.selectAll('rect#stripMiddle').attr('fill', com.gridBib.blocks.background.middle.color)
+      com.gridBib.back.selectAll('rect#stripRight').attr('fill', com.gridBib.blocks.background.side.color)
+      com.main.foreground.selectAll('g.' + com.main.tag + 'telescopes').style('pointer-events', 'auto')
+
+      com.main.background.select('rect#trash').remove()
+      com.main.background.select('rect#switch').remove()
+
+      createTelescopesGroup()
+      update()
+    }
+
+    function mouseover (elem, d) {
+      elem.style('cursor', 'pointer')
+      com.events.telescope.mouseover('telescope', d.obId)
+      // let parent = d3.select(elem.node().parentNode)
+      // let dim = {
+      //   cx: Number(elem.attr('cx')),
+      //   cy: Number(elem.attr('cy')),
+      //   rx: Number(elem.attr('rx')),
+      //   ry: Number(elem.attr('ry'))
+      // }
+      // parent.append('rect')
+      //   .attr('id', 'switch')
+      //   .attr('x', dim.cx - 25)
+      //   .attr('y', dim.cy - 22)
+      //   .attr('width', 20)
+      //   .attr('height', 20)
+      // parent.append('rect')
+      //   .attr('id', 'switch')
+      //   .attr('x', dim.cx - 25)
+      //   .attr('y', dim.cy + 2)
+      //   .attr('width', 20)
+      //   .attr('height', 20)
+
+      // let p = 2 * Math.PI * Math.sqrt((dim.rx * dim.rx + dim.ry * dim.ry) / 2)
+      // elem.attr('stroke-dasharray', [0, p])
+      //   .attr('stroke-width', 4)
+      //   .transition()
+      //   .duration(1000)
+      //   .attrTween('stroke-dasharray', function (d) {
+      //     let interpolate = d3.interpolate(0, p)
+      //     return function (t) {
+      //       let int = interpolate(t)
+      //       return [int, p - int]
+      //     }
+      //   })
+    }
+    this.mouseover = mouseover
+    function mouseout (elem, d) {
+      elem.style('cursor', 'default')
+      com.events.telescope.mouseout('telescope', d.obId)
+      elem.attr('stroke-width', 0.2)
+    }
+    this.mouseout = mouseout
+
     function computeSizeRows () {
       com.gridBib.telescope.large.opt.size = com.gridBib.telescope.large.box.w / com.gridBib.telescope.large.opt.telsPerRow
       com.gridBib.telescope.medium.opt.size = com.gridBib.telescope.medium.box.w / com.gridBib.telescope.medium.opt.telsPerRow
@@ -394,6 +546,12 @@ window.TelescopeDisplayer = function (optIn) {
       let rect = com.main.foreground
         .selectAll('g.' + com.main.tag + 'telescopes')
         .filter(function (d) { return tels.includes(d.id) })
+      if (com.interaction && com.interaction.drag.enabled) {
+        rect.select('ellipse#back').call(d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended))
+      }
       rect.each(function (d, i) {
         let g = d3.select(this)
         g.transition()
@@ -406,7 +564,6 @@ window.TelescopeDisplayer = function (optIn) {
         g.select('ellipse#back')
           .style('fill-opacity', 1)
           .style('stroke-opacity', 1)
-          .attr('stroke-width', 0.2)
           .attr('stroke', colorTheme.dark.stroke)
           .transition()
           .duration(timeD.animArc)
@@ -424,7 +581,30 @@ window.TelescopeDisplayer = function (optIn) {
           .style('font-size', fontsize + 'px')
           .style('opacity', 1)
           .style('stroke', '#000000')
+        // if (com.interaction) {
+        //   if (com.interaction.delete.enabled) {
+        //     console.log(d3.select('rect#deleteBack'))
+        //     g.select('rect#deleteBack')
+        //       .attr('x', size.w - size.h * 0.5)
+        //       .attr('y', -size.h * 0.75)
+        //       .attr('width', size.h)
+        //       .attr('height', size.h)
+        //       .style('opacity', 0)
+        //     g.select('text#delete')
+        //       .style('opacity', 1)
+        //       .style('font-size', (size.h * 1) + 'px')
+        //       .attr('x', size.w)
+        //       .attr('y', 0)
+        //   }
+        // }
       })
+
+      rect
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
       // console.log(rect);
       // return
       // let current = g
@@ -513,12 +693,11 @@ window.TelescopeDisplayer = function (optIn) {
         x: 0,
         y: transY
       }
-
       if (com.gridBib.telescope.enabled) {
         let current = com.gridBib.back
           .selectAll('g.block')
           .data(com.data.raw.blocks, function (d) {
-            return d.obId
+            return d.obId ? d.obId : d.name
           })
         let enter = current
           .enter()
@@ -532,17 +711,34 @@ window.TelescopeDisplayer = function (optIn) {
             offset.y += sizeRow
             return 'translate(' + tx + ',' + ty + ')'
           })
-          d3.select(this).append('rect')
-            .attr('id', 'strip')
-            .attr('x', 0)
+          function enter (d) {
+            if (!cloned) return
+            if (!hoveredStart) hoveredStart = d
+            hoveredEnd = d
+            left.attr('fill', d3.color(com.gridBib.blocks.background.side.color).darker(0.4))
+            middle.attr('fill', d3.color(com.gridBib.blocks.background.middle.color).darker(0.9))
+            right.attr('fill', d3.color(com.gridBib.blocks.background.side.color).darker(0.4))
+          }
+          function leave (d) {
+            if (!cloned) return
+            hoveredEnd = undefined
+            left.attr('fill', com.gridBib.blocks.background.side.color)
+            middle.attr('fill', com.gridBib.blocks.background.middle.color)
+            right.attr('fill', com.gridBib.blocks.background.side.color)
+          }
+          let left = d3.select(this).append('rect')
+            .attr('id', 'stripLeft')
+            .attr('x', 0) // com.gridBib.telescope.large.box.x)
             .attr('y', sizeRow * 0.08)
-            .attr('width', com.main.box.w * 1.0)
+            .attr('width', com.gridBib.telescope.medium.box.x)
             .attr('height', sizeRow * 0.84)
             .attr('fill', com.gridBib.blocks.background.side.color)
             .attr('fill-opacity', com.gridBib.blocks.background.side.opacity)
             .attr('stroke-width', 0.0)
             .attr('stroke', colorTheme.dark.stroke)
-          d3.select(this).append('rect')
+            .on('mouseenter', enter)
+            .on('mouseleave', leave)
+          let middle = d3.select(this).append('rect')
             .attr('id', 'stripMiddle')
             .attr('x', com.gridBib.telescope.medium.box.x)
             .attr('y', sizeRow * 0.08)
@@ -552,6 +748,20 @@ window.TelescopeDisplayer = function (optIn) {
             .attr('fill-opacity', com.gridBib.blocks.background.middle.opacity)
             .attr('stroke-width', 0.0)
             .attr('stroke', colorTheme.dark.stroke)
+            .on('mouseenter', enter)
+            .on('mouseleave', leave)
+          let right = d3.select(this).append('rect')
+            .attr('id', 'stripRight')
+            .attr('x', com.gridBib.telescope.medium.box.x + com.gridBib.telescope.medium.box.w)
+            .attr('y', sizeRow * 0.08)
+            .attr('width', com.main.box.w - (com.gridBib.telescope.medium.box.x + com.gridBib.telescope.medium.box.w))
+            .attr('height', sizeRow * 0.84)
+            .attr('fill', com.gridBib.blocks.background.side.color)
+            .attr('fill-opacity', com.gridBib.blocks.background.side.opacity)
+            .attr('stroke-width', 0.0)
+            .attr('stroke', colorTheme.dark.stroke)
+            .on('mouseenter', enter)
+            .on('mouseleave', leave)
 
           let fontSize = com.gridBib.blocks.txtSize ? com.gridBib.blocks.txtSize : Math.max(Math.min(sizeRow * 0.24, 18), 18)
 
@@ -656,19 +866,20 @@ window.TelescopeDisplayer = function (optIn) {
             .attr('y', 1)
             .attr('width', com.main.box.w * 0.08)
             .attr('height', sizeRow - 2)
-          d3.select(this).select('rect#strip')
+          d3.select(this).select('rect#stripLeft')
             .transition()
             .duration(timeD.animArc)
-            .attr('x', 0)
             .attr('y', 2)
-            .attr('width', com.main.box.w * 1)
             .attr('height', sizeRow - 4)
           d3.select(this).select('rect#stripMiddle')
             .transition()
             .duration(timeD.animArc)
-            .attr('x', com.gridBib.telescope.medium.box.x)
             .attr('y', 2)
-            .attr('width', com.gridBib.telescope.medium.box.w)
+            .attr('height', sizeRow - 4)
+          d3.select(this).select('rect#stripRight')
+            .transition()
+            .duration(timeD.animArc)
+            .attr('y', 2)
             .attr('height', sizeRow - 4)
 
           let fontSize = com.gridBib.blocks.txtSize ? com.gridBib.blocks.txtSize : Math.max(Math.min(sizeRow * 0.24, 18), 10)
@@ -945,6 +1156,34 @@ window.TelescopeDisplayer = function (optIn) {
     return {data: filtered, stats: stats}
   }
   this.filterData = filterData
+
+  function clone (d3obj) {
+    var node = d3obj.node()
+    return d3.select(node.parentNode.insertBefore(node.cloneNode(true), node.nextSibling))
+  }
+
+  function defaultclick () {
+
+  }
+  function defaultdblclick () {
+
+  }
+  function defaultmouseover (elem, d) {
+    if (com.displayer === 'gridBib') {
+      gridBib.mouseover(elem, d)
+    } else {
+      elem.style('cursor', 'pointer')
+      com.events.telescope.mouseover('telescope', d.obId)
+    }
+  }
+  function defaultmouseout (elem, d) {
+    if (com.displayer === 'gridBib') {
+      gridBib.mouseout(elem, d)
+    } else {
+      elem.style('cursor', 'default')
+      com.events.telescope.mouseout('telescope', d.obId)
+    }
+  }
   function createTelescopesGroup () {
     let all = [].concat(com.data.filtered.telescopes)
 
@@ -993,12 +1232,10 @@ window.TelescopeDisplayer = function (optIn) {
           node.attr('clicked', 2)
         })
         .on('mouseover', function (d) {
-          d3.select(this).style('cursor', 'pointer')
-          com.events.telescope.mouseover('telescope', d.obId)
+          defaultmouseover(d3.select(this), d)
         })
         .on('mouseout', function (d) {
-          d3.select(this).style('cursor', 'default')
-          com.events.telescope.mouseout('telescope', d.obId)
+          defaultmouseout(d3.select(this), d)
         })
         .call(d3.drag()
           .on('start', function (d) {
@@ -1038,6 +1275,33 @@ window.TelescopeDisplayer = function (optIn) {
         .attr('x', 0)
         .attr('y', 0)
         .attr('text-anchor', 'middle')
+
+      // if (com.interaction) {
+      //   if (com.interaction.delete.enabled) {
+      //     d3.select(this).append('rect')
+      //       .attr('id', 'deleteBack')
+      //       .attr('x', 0)
+      //       .attr('y', 0)
+      //       .attr('width', 0)
+      //       .attr('height', 0)
+      //       .attr('stroke', colorTheme.darker.stroke)
+      //       .style('fill', colorTheme.darker.background)
+      //       .style('opacity', 0)
+      //       .attr('vector-effect', 'non-scaling-stroke')
+      //     d3.select(this).append('text')
+      //       .attr('id', 'delete')
+      //       .text('x')
+      //       .attr('x', 0)
+      //       .attr('y', 0)
+      //       .style('font-size', 8 + 'px')
+      //       .style('font-weight', 'bold')
+      //       .style('opacity', 0)
+      //       .style('fill', '#000000')
+      //       .attr('vector-effect', 'non-scaling-stroke')
+      //       .style('pointer-events', 'none')
+      //       .attr('text-anchor', 'middle')
+      //   }
+      // }
     })
     // let merged = enter
     //   .merge(rect)
