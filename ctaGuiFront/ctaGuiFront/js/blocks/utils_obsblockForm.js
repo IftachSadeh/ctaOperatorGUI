@@ -11,6 +11,7 @@
 /* global deepCopy */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/blocks/utils_blockCommon.js' })
+loadScript({ source: 'utils_scrollTable', script: '/js/blocks/utils_telescopeCommon.js' })
 
 window.ObsblockForm = function (optIn) {
   let com = {
@@ -98,7 +99,6 @@ window.ObsblockForm = function (optIn) {
     initTelescopeInformation()
   }
   this.init = init
-
   function update () {
     // initSchedulingObservingBlocksTree()
     // initTimeInformation()
@@ -149,387 +149,6 @@ window.ObsblockForm = function (optIn) {
       scrollRecV: {w: 4}
     })
     return scrollBox
-  }
-
-  function changeBlockTime (type, hour, min, sec) {
-    let startTime = new Date(com.data.timeOfNight.date_start)
-    let endTime = new Date(com.data.timeOfNight.date_end)
-    switch (type) {
-      case 'startTime':
-        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
-          endTime.setHours(Number(hour))
-          endTime.setMinutes(Number(min))
-          endTime.setSeconds(Number(sec))
-        } else {
-          endTime = new Date(com.data.timeOfNight.date_start)
-          endTime.setHours(Number(hour))
-          endTime.setMinutes(Number(min))
-          endTime.setSeconds(Number(sec))
-        }
-        com.data.block.time.start = (endTime - startTime) / 1000
-        com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
-        break
-      case 'duration':
-        com.data.block.time.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec)
-        com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
-        break
-      case 'endTime':
-        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
-          endTime.setHours(Number(hour))
-          endTime.setMinutes(Number(min))
-          endTime.setSeconds(Number(sec))
-        } else {
-          endTime = new Date(com.data.timeOfNight.date_start)
-          endTime.setHours(Number(hour))
-          endTime.setMinutes(Number(min))
-          endTime.setSeconds(Number(sec))
-        }
-        com.data.block.time.end = (endTime - startTime) / 1000
-        com.data.block.time.duration = com.data.block.endTime - com.data.block.time.start
-        break
-      default:
-        return
-    }
-
-    function updateTime (id, time) {
-      let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
-      let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
-      let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
-
-      let g = com.main.g.select('g#' + id)
-
-      g.select('#hour').select('input').property('value', hour)
-      g.select('#minute').select('input').property('value', min)
-      g.select('#second').select('input').property('value', sec)
-    }
-
-    startTime = new Date(com.data.timeOfNight.date_start)
-    startTime.setSeconds(startTime.getSeconds() + com.data.block.time.start)
-    endTime = new Date(com.data.timeOfNight.date_start)
-    endTime.setSeconds(endTime.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
-    let duration = new Date(endTime)
-    duration.setHours(duration.getHours() - startTime.getHours())
-    duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
-    duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
-    updateTime('startTime', startTime)
-    updateTime('duration', duration)
-    updateTime('endTime', endTime)
-
-    com.schedule.events.click()
-  }
-  function changeState (newState) {
-    com.schedule.events.change(com.data.block, newState)
-  }
-  function getAllTel (elem, tel) {
-    let allTel = com.events.allTel()
-    let trueBlock = []
-    for (let i = 0; i < allTel.blocks.length; i++) {
-      if (allTel.blocks[i].obId !== com.data.block.obId) trueBlock.push(allTel.blocks[i])
-    }
-
-    let box = {
-      x: com.telescope.box.x,
-      y: com.telescope.box.y - com.telescope.box.h * 0.08,
-      w: com.telescope.box.w,
-      h: com.telescope.box.h
-    }
-    let g = com.main.g.append('g')
-      .attr('id', 'pointing')
-      .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
-    g.append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', box.w)
-      .attr('height', box.h)
-      .attr('fill', colorPalette.dark.background)
-      .attr('stroke', colorPalette.dark.stroke)
-      .attr('stroke-width', 0.4)
-
-    let ibox = {
-      x: 4,
-      y: 4,
-      w: box.w * 0.6,
-      h: box.h - 8
-    }
-    let largeBox = {x: 0, y: 0, w: 0, h: 0}
-    let mediumBox = {x: 0, y: 0, w: 0, h: 0}
-    let smallBox = {x: 0, y: 0, w: 0, h: 0}
-
-    if (tel.id.includes('L')) {
-      largeBox = {x: ibox.w * 0.35, y: 0, w: ibox.w * 0.3, h: ibox.h * 0.9}
-      allTel.allTels = allTel.allTels.filter(d => d.id.includes('L'))
-    } else if (tel.id.includes('M')) {
-      mediumBox = {x: ibox.w * 0.15, y: 0, w: ibox.w * 0.7, h: ibox.h * 0.9}
-      allTel.allTels = allTel.allTels.filter(d => d.id.includes('M'))
-    } else if (tel.id.includes('S')) {
-      smallBox = {x: ibox.w * 0.08, y: 0, w: ibox.w * 0.95, h: ibox.h * 0.9}
-      allTel.allTels = allTel.allTels.filter(d => d.id.includes('S'))
-    }
-
-    let gt = g.append('g')
-      .attr('id', 'telsDisplayer')
-      .attr('transform', 'translate(' + ibox.x + ',' + ibox.y + ')')
-    com.telescopeRunningBlock = new TelescopeDisplayer({
-      main: {
-        tag: 'telescopeRootTag',
-        g: gt,
-        scroll: {},
-        box: ibox,
-        background: {
-          fill: 'none',
-          stroke: colorPalette.medium.stroke,
-          strokeWidth: 0
-        },
-        isSouth: true,
-        colorPalette: colorPalette
-      },
-
-      displayer: 'gridBib',
-      gridBib: {
-        header: {
-          top: false,
-          text: {
-            size: 0,
-            color: colorPalette.medium.background
-          },
-          background: {
-            height: 0,
-            color: colorPalette.dark.stroke
-          }
-        },
-        telescope: {
-          enabled: true,
-          centering: true,
-          large: {
-            g: undefined,
-            opt: {
-              telsPerRow: 1,
-              nbl: 0,
-              size: 2,
-              ratio: 1
-            },
-            box: largeBox
-          },
-          medium: {
-            g: undefined,
-            opt: {
-              telsPerRow: 4,
-              nbl: 0,
-              size: 1,
-              ratio: 1
-            },
-            box: mediumBox
-          },
-          small: {
-            g: undefined,
-            opt: {
-              telsPerRow: 12,
-              nbl: 0,
-              size: 0.5,
-              ratio: 1
-            },
-            box: smallBox
-          }
-        },
-        idle: {
-          txtSize: 10,
-          enabled: true,
-          background: {
-            enabled: false,
-            middle: {
-              color: colorPalette.dark.background,
-              opacity: 0
-            },
-            side: {
-              color: colorPalette.dark.background,
-              opacity: 0
-            }
-          }
-        },
-        blocks: {
-          txtSize: 8,
-          right: {
-            enabled: false
-          },
-          left: {
-            enabled: true
-          },
-          background: {
-            middle: {
-              color: colorPalette.darkest.background,
-              opacity: 0.3
-            },
-            side: {
-              color: colorPalette.darker.background,
-              opacity: 1
-            }
-          }
-        }
-      },
-
-      filters: {
-        telescopeFilters: [],
-        filtering: []
-      },
-      data: {
-        raw: {
-          telescopes: []
-        },
-        filtered: {},
-        modified: []
-      },
-      debug: {
-        enabled: false
-      },
-      pattern: {
-        select: {}
-      },
-      events: {
-        block: {
-          click: (d) => {},
-          mouseover: (d) => {},
-          mouseout: (d) => {},
-          drag: {
-            start: () => {},
-            tick: () => {},
-            end: () => {}
-          }
-        },
-        telescope: {
-          click: (d) => {},
-          mouseover: (d) => {},
-          mouseout: (d) => {},
-          drag: {
-            start: () => {},
-            tick: () => {},
-            end: () => {}
-          }
-        }
-      }
-    })
-    com.telescopeRunningBlock.init()
-    com.telescopeRunningBlock.updateData({
-      data: {
-        raw: {
-          telescopes: allTel.allTels,
-          blocks: trueBlock
-        },
-        modified: []
-      }
-    })
-
-    g.append('g').attr('id', 'chooseTarget').attr('transform', 'translate(' + (4) + ',' + (box.h * 0.5) + ')')
-
-    g.append('rect')
-      .attr('x', -20)
-      .attr('y', -10)
-      .attr('width', 40)
-      .attr('height', 13)
-      .attr('fill', colorPalette.darker.background)
-      .attr('stroke', colorPalette.darker.stroke)
-      .attr('stroke-width', 0.4)
-      .attr('transform', 'translate(' + (box.w * 0.7) + ',' + (box.h * 0.95) + ')')
-      .on('click', function () {
-        g.remove()
-      })
-      .on('mouseover', function (d) {
-        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
-      })
-      .on('mouseout', function (d) {
-        d3.select(this).attr('fill', colorPalette.darker.background)
-      })
-    g.append('text')
-      .text('Cancel')
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', 'bold')
-      .style('font-size', 10 + 'px')
-      .attr('text-anchor', 'middle')
-      .style('pointer-events', 'none')
-      .attr('transform', 'translate(' + (box.w * 0.7) + ',' + (box.h * 0.95) + ')')
-
-    g.append('rect')
-      .attr('x', -20)
-      .attr('y', -10)
-      .attr('width', 40)
-      .attr('height', 13)
-      .attr('fill', colorPalette.darker.background)
-      .attr('stroke', colorPalette.darker.stroke)
-      .attr('stroke-width', 0.4)
-      .attr('transform', 'translate(' + (box.w * 0.9) + ',' + (box.h * 0.95) + ')')
-      .on('click', function () {
-        if (!target) target = com.data.block.targets[0]
-        pointing = {id: com.data.block.sbId + '_' + com.data.block.obId}
-        pointing.name = target.name + '/p_' + com.data.block.metaData.nObs + '-' + com.data.block.pointings.length
-        pointing.pos = [target.pos[0], target.pos[1]]
-        pointing.telIds = []
-        pointing.telsInfo = {large: 0, medium: 0, small: 0}
-        com.data.block.pointings.push(pointing)
-        com.data.block.targets.push(target)
-        reassignTelescope()
-        g.remove()
-      })
-      .on('mouseover', function (d) {
-        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
-      })
-      .on('mouseout', function (d) {
-        d3.select(this).attr('fill', colorPalette.darker.background)
-      })
-    g.append('text')
-      .text('Ok')
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', 'bold')
-      .style('font-size', 10 + 'px')
-      .attr('text-anchor', 'middle')
-      .style('pointer-events', 'none')
-      .attr('transform', 'translate(' + (box.w * 0.9) + ',' + (box.h * 0.95) + ')')
-  }
-  function changeTelescopeNumber (type, d) {
-    let data = com.data.block.telescopes[type]
-    function removeTelFromList () {
-      let diff = data.ids.length - d
-      let rem = data.ids.splice(0, diff)
-      for (let i = 0; i < rem.length; i++) {
-        com.data.tels[type] = com.data.tels[type].filter(x => x.id !== rem[i])
-      }
-      com.data.block.telIds = [].concat(com.data.block.telescopes.large.ids)
-        .concat(com.data.block.telescopes.medium.ids)
-        .concat(com.data.block.telescopes.small.ids)
-    }
-    function addTelToList () {
-
-    }
-    if (data.ids.length < d) addTelToList()
-    if (data.ids.length > d) removeTelFromList()
-
-    reassignTelescope()
-  }
-  function reassignTelescope () {
-    let allTels = deepCopy(com.data.block.telIds)
-    let sizeChunk = allTels.length / com.data.block.pointings.length
-    function getRandom (arr, size) {
-      let rand = []
-      let stats = {large: 0, medium: 0, small: 0}
-      for (let i = 0; i < size && arr.length > 0; i++) {
-        let index = Math.floor(Math.random() * arr.length)
-        let tt = arr.splice(index, 1)[0]
-        if (tt.includes('L')) stats.large += 1
-        if (tt.includes('M')) stats.medium += 1
-        if (tt.includes('S')) stats.small += 1
-        rand.push(tt)
-      }
-      return {ids: rand, stats: stats}
-    }
-    for (let i = 0; i < com.data.block.pointings.length - 1; i++) {
-      let tels = getRandom(allTels, sizeChunk)
-      com.data.block.pointings[i].telIds = tels.ids
-      com.data.block.pointings[i].telsInfo = tels.stats
-    }
-    let tels = getRandom(allTels, allTels.length)
-    com.data.block.pointings[com.data.block.pointings.length - 1].telIds = tels.ids
-    com.data.block.pointings[com.data.block.pointings.length - 1].telsInfo = tels.stats
-
-    initPointingInformation()
-    updateTelescopeInformation()
   }
 
   function initSchedulingObservingBlocksTree () {
@@ -691,6 +310,76 @@ window.ObsblockForm = function (optIn) {
         .attr('transform', 'translate(' + (2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * schedB.blocks.length) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txtSize * 0.3) + ')')
         .style('pointer-events', 'none')
     }
+  }
+
+  function changeBlockTime (type, hour, min, sec) {
+    let startTime = new Date(com.data.timeOfNight.date_start)
+    let endTime = new Date(com.data.timeOfNight.date_end)
+    switch (type) {
+      case 'startTime':
+        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
+          endTime.setHours(Number(hour))
+          endTime.setMinutes(Number(min))
+          endTime.setSeconds(Number(sec))
+        } else {
+          endTime = new Date(com.data.timeOfNight.date_start)
+          endTime.setHours(Number(hour))
+          endTime.setMinutes(Number(min))
+          endTime.setSeconds(Number(sec))
+        }
+        com.data.block.time.start = (endTime - startTime) / 1000
+        com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
+        break
+      case 'duration':
+        com.data.block.time.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec)
+        com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
+        break
+      case 'endTime':
+        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
+          endTime.setHours(Number(hour))
+          endTime.setMinutes(Number(min))
+          endTime.setSeconds(Number(sec))
+        } else {
+          endTime = new Date(com.data.timeOfNight.date_start)
+          endTime.setHours(Number(hour))
+          endTime.setMinutes(Number(min))
+          endTime.setSeconds(Number(sec))
+        }
+        com.data.block.time.end = (endTime - startTime) / 1000
+        com.data.block.time.duration = com.data.block.endTime - com.data.block.time.start
+        break
+      default:
+        return
+    }
+
+    function updateTime (id, time) {
+      let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
+      let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
+      let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
+
+      let g = com.main.g.select('g#' + id)
+
+      g.select('#hour').select('input').property('value', hour)
+      g.select('#minute').select('input').property('value', min)
+      g.select('#second').select('input').property('value', sec)
+    }
+
+    startTime = new Date(com.data.timeOfNight.date_start)
+    startTime.setSeconds(startTime.getSeconds() + com.data.block.time.start)
+    endTime = new Date(com.data.timeOfNight.date_start)
+    endTime.setSeconds(endTime.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
+    let duration = new Date(endTime)
+    duration.setHours(duration.getHours() - startTime.getHours())
+    duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
+    duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
+    updateTime('startTime', startTime)
+    updateTime('duration', duration)
+    updateTime('endTime', endTime)
+
+    com.schedule.events.click()
+  }
+  function changeState (newState) {
+    com.schedule.events.change(com.data.block, newState)
   }
   function initTimeInformation () {
     let data = com.data.block
@@ -1591,8 +1280,481 @@ window.ObsblockForm = function (optIn) {
       pointingIcon(addPointingg, {w: sizeNewPointing * 0.8, h: sizeNewPointing * 0.8}, '+', pevents, colorPalette)
     }
   }
+
+  function switchTel (elem, tel) {
+    let allTel = com.events.allTel()
+    let trueBlockReference = []
+    let trueBlock = []
+    for (let i = 0; i < allTel.blocks.length; i++) {
+      if (allTel.blocks[i].obId !== com.data.block.obId) {
+        trueBlockReference.push(allTel.blocks[i])
+        trueBlock.push(deepCopy(allTel.blocks[i]))
+      }
+    }
+
+    let box = {
+      x: com.telescope.box.x,
+      y: com.telescope.box.y - com.telescope.box.h * 0.08,
+      w: com.telescope.box.w,
+      h: com.telescope.box.h
+    }
+    let g = com.main.g.append('g')
+      .attr('id', 'pointing')
+      .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+    g.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', box.w)
+      .attr('height', box.h)
+      .attr('fill', colorPalette.dark.background)
+      .attr('stroke', colorPalette.medium.stroke)
+      .attr('stroke-width', 0.4)
+      .attr('rx', 2)
+
+    let ibox = {
+      x: 4,
+      y: 4,
+      w: box.w * 0.8,
+      h: box.h - 16
+    }
+    let largeBox = {x: 0, y: 0, w: 0, h: 0}
+    let mediumBox = {x: 0, y: 0, w: 0, h: 0}
+    let smallBox = {x: 0, y: 0, w: 0, h: 0}
+
+    function duplicateTels () {
+      for (let i = 0; i < trueBlock.length; i++) {
+        let b1 = trueBlock[i]
+        let newBlock = {metaData: {nObs: '', nSched: '', blockName: '+'}, obId: '+', name: '+', telIds: []}
+        for (let z = b1.telIds.length - 1; z >= 0; z--) {
+          let dupli = false
+          for (let j = i + 1; j < trueBlock.length; j++) {
+            let b2Index = trueBlock[j].telIds.indexOf(b1.telIds[z])
+            if (b2Index !== -1) {
+              dupli = true
+              trueBlock[j].telIds.splice(b2Index, 1)
+            }
+          }
+          if (dupli) newBlock.telIds.push(b1.telIds.splice(z, 1)[0])
+        }
+        if (newBlock.telIds.length > 0) trueBlock.push(newBlock)
+      }
+    }
+
+    if (tel.id.includes('L')) {
+      largeBox = {x: ibox.w * 0.35, y: 0, w: ibox.w * 0.16, h: ibox.h * 0.9}
+      allTel.allTels = allTel.allTels.filter(d => d.id.includes('L'))
+      trueBlock = trueBlock.filter(d => d.telescopes.large.ids.length > 0)
+      duplicateTels()
+    } else if (tel.id.includes('M')) {
+      mediumBox = {x: ibox.w * 0.2, y: 0, w: ibox.w * 0.5, h: ibox.h * 0.9}
+      allTel.allTels = allTel.allTels.filter(d => d.id.includes('M'))
+      trueBlock = trueBlock.filter(d => d.telescopes.medium.ids.length > 0)
+      duplicateTels()
+    } else if (tel.id.includes('S')) {
+      smallBox = {x: ibox.w * 0.08, y: 0, w: ibox.w * 0.7, h: ibox.h * 0.9}
+      allTel.allTels = allTel.allTels.filter(d => d.id.includes('S'))
+      trueBlock = trueBlock.filter(d => d.telescopes.small.ids.length > 0)
+      duplicateTels()
+    }
+
+    let choosenTel
+    let gt = g.append('g')
+      .attr('id', 'telsDisplayer')
+      .attr('transform', 'translate(' + ibox.x + ',' + ibox.y + ')')
+    com.telescopeSwitch = new TelescopeDisplayer({
+      main: {
+        tag: 'telescopeRootTag',
+        g: gt,
+        scroll: {},
+        box: ibox,
+        background: {
+          fill: 'none',
+          stroke: colorPalette.medium.stroke,
+          strokeWidth: 0
+        },
+        isSouth: true,
+        colorPalette: colorPalette
+      },
+
+      displayer: 'gridBib',
+      gridBib: {
+        header: {
+          top: false,
+          text: {
+            size: 0,
+            color: colorPalette.medium.background
+          },
+          background: {
+            height: 0,
+            color: colorPalette.dark.stroke
+          }
+        },
+        telescope: {
+          enabled: true,
+          centering: true,
+          large: {
+            g: undefined,
+            opt: {
+              telsPerRow: 1,
+              nbl: 0,
+              size: 2,
+              ratio: 1
+            },
+            box: largeBox
+          },
+          medium: {
+            g: undefined,
+            opt: {
+              telsPerRow: 4,
+              nbl: 0,
+              size: 1,
+              ratio: 1
+            },
+            box: mediumBox
+          },
+          small: {
+            g: undefined,
+            opt: {
+              telsPerRow: 12,
+              nbl: 0,
+              size: 0.5,
+              ratio: 1
+            },
+            box: smallBox
+          }
+        },
+        idle: {
+          txtSize: 10,
+          enabled: true,
+          background: {
+            enabled: false,
+            middle: {
+              color: colorPalette.dark.background,
+              opacity: 0
+            },
+            side: {
+              color: colorPalette.dark.background,
+              opacity: 0
+            }
+          }
+        },
+        blocks: {
+          txtSize: 8,
+          right: {
+            enabled: false
+          },
+          left: {
+            enabled: true
+          },
+          background: {
+            middle: {
+              color: colorPalette.darkest.background,
+              opacity: 0.0
+            },
+            side: {
+              color: colorPalette.darker.background,
+              opacity: 0
+            }
+          }
+        }
+      },
+
+      filters: {
+        telescopeFilters: [],
+        filtering: []
+      },
+      data: {
+        raw: {
+          telescopes: []
+        },
+        filtered: {},
+        modified: []
+      },
+      debug: {
+        enabled: false
+      },
+      pattern: {
+        select: {}
+      },
+      events: {
+        block: {
+          click: (d) => {},
+          mouseover: (d) => {},
+          mouseout: (d) => {},
+          drag: {
+            start: () => {},
+            tick: () => {},
+            end: () => {}
+          }
+        },
+        telescope: {
+          click: (d) => {
+            if (choosenTel && d.id === choosenTel.id) {
+              g.select('circle#choosenTelCircle')
+                .attr('fill', colorPalette.dark.background)
+                .attr('stroke-dasharray', [2, 2])
+              g.select('text#choosenTelName')
+                .text('Click')
+              choosenTel = undefined
+            } else {
+              choosenTel = d
+              g.select('circle#choosenTelCircle')
+                .attr('stroke-dasharray', [])
+                .attr('fill', telHealthCol(choosenTel.val))
+              g.select('text#choosenTelName')
+                .text(choosenTel.id.split('_')[1])
+            }
+          },
+          mouseover: (d) => {},
+          mouseout: (d) => {},
+          drag: {
+            start: () => {},
+            tick: () => {},
+            end: () => {}
+          }
+        }
+      }
+    })
+    com.telescopeSwitch.init()
+    com.telescopeSwitch.updateData({
+      data: {
+        raw: {
+          telescopes: allTel.allTels,
+          blocks: trueBlock
+        },
+        modified: []
+      }
+    })
+
+    g.append('g').attr('id', 'chooseTarget').attr('transform', 'translate(' + (4) + ',' + (box.h * 0.5) + ')')
+
+    // g.append('text')
+    //   .text('Exchange')
+    //   .attr('x', box.w * 0.8)
+    //   .attr('y', box.h * 0.35)
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', 'bold')
+    //   .style('font-size', 10 + 'px')
+    //   .attr('text-anchor', 'middle')
+    //   .style('pointer-events', 'none')
+    g.append('circle')
+      .attr('id', 'choosenTelCircle')
+      .attr('cx', box.w * 0.7)
+      .attr('cy', box.h * 0.4)
+      .attr('r', box.h * 0.075)
+      .attr('fill', colorPalette.dark.background)
+      .attr('stroke', colorPalette.dark.stroke)
+      .attr('stroke-width', 0.4)
+      .attr('stroke-dasharray', [2, 2])
+    g.append('text')
+      .attr('id', 'choosenTelName')
+      .text('Click')
+      .attr('x', box.w * 0.7)
+      .attr('y', box.h * 0.4 + txtSize * 0.33)
+      .style('fill', colorPalette.dark.stroke)
+      .style('font-weight', 'bold')
+      .style('font-size', 9 + 'px')
+      .attr('text-anchor', 'middle')
+      .style('pointer-events', 'none')
+    g.append('circle')
+      .attr('cx', box.w * 0.9)
+      .attr('cy', box.h * 0.4)
+      .attr('r', box.h * 0.075)
+      .attr('fill', telHealthCol(tel.health))
+      .attr('stroke', colorPalette.dark.stroke)
+      .attr('stroke-width', 0.4)
+    g.append('text')
+      .text(tel.id.split('_')[1])
+      .attr('x', box.w * 0.9)
+      .attr('y', box.h * 0.4 + txtSize * 0.33)
+      .style('fill', colorPalette.dark.stroke)
+      .style('font-weight', 'bold')
+      .style('font-size', 10 + 'px')
+      .attr('text-anchor', 'middle')
+      .style('pointer-events', 'none')
+
+    g.append('rect')
+      .attr('x', -16)
+      .attr('y', -10)
+      .attr('width', 32)
+      .attr('height', 13)
+      .attr('fill', colorPalette.dark.background)
+      .attr('stroke', colorPalette.darker.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('transform', 'translate(' + (box.w * 0.8) + ',' + (box.h * 0.36) + ')')
+      .on('click', function () {
+        if (!choosenTel) return
+        for (let i = 0; i < trueBlockReference.length; i++) {
+          if (trueBlockReference[i].telIds.indexOf(choosenTel.id) !== -1) removeTelescopeFromBlock(trueBlockReference[i], choosenTel)
+        }
+        removeTel(tel)
+        g.remove()
+        updateTelescopeInformation()
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).attr('fill', colorPalette.dark.background)
+      })
+      .attr('rx', 4)
+    g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-right.svg')
+      .attr('width', 50)
+      .attr('height', 13)
+      .attr('x', -25)
+      .attr('y', -10)
+      .style('opacity', 0.5)
+      .attr('transform', 'translate(' + (box.w * 0.8) + ',' + (box.h * 0.36) + ')')
+      .style('pointer-events', 'none')
+    // g.append('text')
+    //   .text('Exchange')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', 'bold')
+    //   .style('font-size', 10 + 'px')
+    //   .attr('text-anchor', 'middle')
+    //   .style('pointer-events', 'none')
+    //   .attr('transform', 'translate(' + (box.w * 0.8) + ',' + (box.h * 0.25) + ')')
+
+    g.append('rect')
+      .attr('x', -16)
+      .attr('y', -10)
+      .attr('width', 32)
+      .attr('height', 13)
+      .attr('fill', colorPalette.dark.background)
+      .attr('stroke', colorPalette.dark.stroke)
+      .attr('stroke-width', 0.0)
+      .attr('transform', 'translate(' + (box.w * 0.8) + ',' + (box.h * 0.5) + ')')
+      .on('click', function () {
+        if (!choosenTel) return
+        for (let i = 0; i < trueBlockReference.length; i++) {
+          if (trueBlockReference[i].telIds.indexOf(choosenTel.id) !== -1) removeTelFromBlock(trueBlockReference[i], choosenTel)
+        }
+        removeTelFromBlock(com.data.block, tel)
+        g.remove()
+        updateTelescopeInformation()
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).attr('fill', colorPalette.dark.background)
+      })
+      .attr('rx', 4)
+    g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-left.svg')
+      .attr('width', 50)
+      .attr('height', 13)
+      .attr('x', -25)
+      .attr('y', -10)
+      .style('opacity', 0.5)
+      .attr('transform', 'translate(' + (box.w * 0.78) + ',' + (box.h * 0.5) + ')')
+      .style('pointer-events', 'none')
+    g.append('svg:image')
+      .attr('xlink:href', '/static/icons/arrow-right.svg')
+      .attr('width', 50)
+      .attr('height', 13)
+      .attr('x', -25)
+      .attr('y', -10)
+      .style('opacity', 0.5)
+      .attr('transform', 'translate(' + (box.w * 0.82) + ',' + (box.h * 0.5) + ')')
+      .style('pointer-events', 'none')
+
+    g.append('rect')
+      .attr('x', -20)
+      .attr('y', -10)
+      .attr('width', 40)
+      .attr('height', 13)
+      .attr('fill', colorPalette.darker.background)
+      .attr('stroke', colorPalette.darker.stroke)
+      .attr('stroke-width', 0.4)
+      .attr('transform', 'translate(' + (box.w * 0.8) + ',' + (box.h * 0.95) + ')')
+      .on('click', function () {
+        g.remove()
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).attr('fill', colorPalette.darker.background)
+      })
+    g.append('text')
+      .text('Cancel')
+      .style('fill', colorPalette.dark.stroke)
+      .style('font-weight', 'bold')
+      .style('font-size', 10 + 'px')
+      .attr('text-anchor', 'middle')
+      .style('pointer-events', 'none')
+      .attr('transform', 'translate(' + (box.w * 0.8) + ',' + (box.h * 0.95) + ')')
+  }
+  function changeTelescopeNumber (type, d) {
+    let data = com.data.block.telescopes[type]
+    function removeTelFromList () {
+      let diff = data.ids.length - d
+      for (let i = 0; i < diff; i++) {
+        removeTelescope({id: data.ids[0]})
+      }
+    }
+    function addTelToList () {
+
+    }
+    if (data.ids.length < d) addTelToList()
+    if (data.ids.length > d) removeTelFromList()
+
+    updateInput()
+    reassignTelescope()
+  }
+  function reassignTelescope () {
+    let allTels = deepCopy(com.data.block.telIds)
+    let sizeChunk = allTels.length / com.data.block.pointings.length
+    function getRandom (arr, size) {
+      let rand = []
+      let stats = {large: 0, medium: 0, small: 0}
+      for (let i = 0; i < size && arr.length > 0; i++) {
+        let index = Math.floor(Math.random() * arr.length)
+        let tt = arr.splice(index, 1)[0]
+        if (tt.includes('L')) stats.large += 1
+        if (tt.includes('M')) stats.medium += 1
+        if (tt.includes('S')) stats.small += 1
+        rand.push(tt)
+      }
+      return {ids: rand, stats: stats}
+    }
+    for (let i = 0; i < com.data.block.pointings.length - 1; i++) {
+      let tels = getRandom(allTels, sizeChunk)
+      com.data.block.pointings[i].telIds = tels.ids
+      com.data.block.pointings[i].telsInfo = tels.stats
+    }
+    let tels = getRandom(allTels, allTels.length)
+    com.data.block.pointings[com.data.block.pointings.length - 1].telIds = tels.ids
+    com.data.block.pointings[com.data.block.pointings.length - 1].telsInfo = tels.stats
+
+    // initPointingInformation()
+    updateTelescopeInformation()
+  }
+  function addTelescope (t) {
+    console.log(t);
+  }
+  function removeTel (t) {
+    removeTelescope(t)
+    updateInput()
+    reassignTelescope()
+  }
+  function removeTelescope (t) {
+    removeTelescopeFromBlock(com.data.block, {id: t.id})
+  }
+  function updateInput () {
+    com.telescope.tels.large.property('value', function () {
+      return com.data.block.telescopes.large.ids.length
+    })
+    com.telescope.tels.medium.property('value', function () {
+      return com.data.block.telescopes.medium.ids.length
+    })
+    com.telescope.tels.small.property('value', function () {
+      return com.data.block.telescopes.small.ids.length
+    })
+  }
   function initTelescopeInformation () {
-    console.log(com.telescope.box);
     let box = {
       x: com.telescope.box.x,
       y: com.telescope.box.y,
@@ -1666,6 +1828,23 @@ window.ObsblockForm = function (optIn) {
       w: ww * 0.54,
       h: box.h
     }
+
+    // let tels = {
+    //   large: [],
+    //   medium: [],
+    //   small: []
+    // }
+    // for (let i = 0; i < data.telIds.length; i++) {
+    //   let id = data.telIds[i]
+    //   if (id[0] === 'S') {
+    //     tels.small.push(getTelescopeById(id))
+    //   } else if (id[0] === 'M') {
+    //     tels.medium.push(getTelescopeById(id))
+    //   } else if (id[0] === 'L') {
+    //     tels.large.push(getTelescopeById(id))
+    //   }
+    // }
+
     let gt = g.append('g')
       .attr('id', 'telsDisplayer')
       .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
@@ -1795,7 +1974,7 @@ window.ObsblockForm = function (optIn) {
           }
         },
         telescope: {
-          click: (d) => { com.telescope.events.click('telescope', d.id) },
+          click: (d) => {},
           mouseover: (d) => {},
           mouseout: (d) => {},
           drag: {
@@ -1805,7 +1984,8 @@ window.ObsblockForm = function (optIn) {
           }
         },
         other: {
-          allTel: getAllTel
+          delTel: (d) => { removeTel(d) },
+          switchTel: (elem, t) => { switchTel(elem, t) }
         }
       },
       interaction: {
@@ -1825,40 +2005,43 @@ window.ObsblockForm = function (optIn) {
     })
     com.telescopeRunningBlock.init()
 
-    let tels = {}
-    tels.large = inputNumber(g,
+    com.telescope.tels = {}
+    com.telescope.tels.large = inputNumber(g,
       {x: (largeBox.x + largeBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
       'large',
-      {disabled: !com.schedule.editabled, value: com.data.tels.large.length, min: com.data.block.telescopes.large.min, max: com.data.block.telescopes.large.max, step: 1},
+      {disabled: !com.schedule.editabled, value: com.data.block.telescopes.large.ids.length, min: com.data.block.telescopes.large.min, max: com.data.block.telescopes.large.max, step: 1},
       {change: (d) => { changeTelescopeNumber('large', d) }, enter: (d) => { changeTelescopeNumber('large', d) }})
 
-    tels.medium = inputNumber(g,
+    com.telescope.tels.medium = inputNumber(g,
       {x: (mediumBox.x + mediumBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
       'small',
-      {disabled: !com.schedule.editabled, value: com.data.tels.medium.length, min: com.data.block.telescopes.medium.min, max: com.data.block.telescopes.medium.max, step: 1},
+      {disabled: !com.schedule.editabled, value: com.data.block.telescopes.medium.ids.length, min: com.data.block.telescopes.medium.min, max: com.data.block.telescopes.medium.max, step: 1},
       {change: (d) => { changeTelescopeNumber('medium', d) }, enter: (d) => { changeTelescopeNumber('medium', d) }})
 
-    tels.small = inputNumber(g,
+    com.telescope.tels.small = inputNumber(g,
       {x: (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
       'small',
-      {disabled: !com.schedule.editabled, value: com.data.tels.small.length, min: com.data.block.telescopes.small.min, max: com.data.block.telescopes.small.max, step: 1},
+      {disabled: !com.schedule.editabled, value: com.data.block.telescopes.small.ids.length, min: com.data.block.telescopes.small.min, max: com.data.block.telescopes.small.max, step: 1},
       {change: (d) => { changeTelescopeNumber('small', d) }, enter: (d) => { changeTelescopeNumber('small', d) }})
 
-    com.telescopeRunningBlock.updateData({
-      data: {
-        raw: {
-          telescopes: [].concat(com.data.tels.small).concat(com.data.tels.medium).concat(com.data.tels.large),
-          blocks: com.data.block.pointings
-        },
-        modified: []
-      }
-    })
+    updateTelescopeInformation()
   }
   function updateTelescopeInformation () {
+    let tels = []
+    for (let i = 0; i < com.data.block.telescopes.large.ids.length; i++) {
+      tels.push({id: com.data.block.telescopes.large.ids[i], health: com.data.tels.find(x => x.id === com.data.block.telescopes.large.ids[i]).val})
+    }
+    for (let i = 0; i < com.data.block.telescopes.medium.ids.length; i++) {
+      tels.push({id: com.data.block.telescopes.medium.ids[i], health: com.data.tels.find(x => x.id === com.data.block.telescopes.medium.ids[i]).val})
+    }
+    for (let i = 0; i < com.data.block.telescopes.small.ids.length; i++) {
+      tels.push({id: com.data.block.telescopes.small.ids[i], health: com.data.tels.find(x => x.id === com.data.block.telescopes.small.ids[i]).val})
+    }
+    console.log(tels);
     com.telescopeRunningBlock.updateData({
       data: {
         raw: {
-          telescopes: [].concat(com.data.tels.small).concat(com.data.tels.medium).concat(com.data.tels.large),
+          telescopes: tels,
           blocks: com.data.block.pointings
         },
         modified: []

@@ -60,7 +60,7 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   optIn.eleProps = {}
   optIn.eleProps[divKey] = {
     autoPos: true,
-    isDarkEle: true,
+    isDarkEle: false,
     gsId: optIn.widgetDivId + divKey,
     x: x0,
     y: y0,
@@ -522,8 +522,8 @@ let mainSchedBlocksInspector = function (optIn) {
       svg.g = svg.svg.append('g')
     }
     function initBackground () {
-      svg.svg
-        .style('background', colorTheme.medium.background)
+      // svg.svg
+      //   .style('background', colorTheme.medium.background)
       svg.back = svg.svg.append('g')
       // svg.back.append('rect')
       //   .attr('x', 0)
@@ -716,6 +716,7 @@ let mainSchedBlocksInspector = function (optIn) {
       blocks: cp,
       schedBlocks: createSchedBlocks(cp)
     }
+    associateBlockAndTels()
 
     svgBrush.initData()
     svgEventsQueueServer.initData()
@@ -773,6 +774,7 @@ let mainSchedBlocksInspector = function (optIn) {
     locker.add('updateData')
     shared.data.server = dataIn.data
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
+    associateBlockAndTels()
 
     svgBlocksQueueServer.updateData()
     svgEventsQueueServer.updateData()
@@ -787,6 +789,9 @@ let mainSchedBlocksInspector = function (optIn) {
   this.updateData = updateData
   runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
+  function associateBlockAndTels () {
+    console.log(shared.data.server);
+  }
   function getBlocksData () {
     if (shared.mode === 'inspector') {
       return shared.data.server.blocks
@@ -5601,21 +5606,6 @@ let mainSchedBlocksInspector = function (optIn) {
         }
       }
 
-      let tels = {
-        large: [],
-        medium: [],
-        small: []
-      }
-      for (let i = 0; i < data.telIds.length; i++) {
-        let id = data.telIds[i]
-        if (id[0] === 'S') {
-          tels.small.push(getTelescopeById(id))
-        } else if (id[0] === 'M') {
-          tels.medium.push(getTelescopeById(id))
-        } else if (id[0] === 'L') {
-          tels.large.push(getTelescopeById(id))
-        }
-      }
       reserved.obsblockForm = new ObsblockForm({
         main: {
           tag: 'blockFormTag',
@@ -5669,7 +5659,7 @@ let mainSchedBlocksInspector = function (optIn) {
           schedB: schedB,
           timeOfNight: shared.data.server.timeOfNight,
           target: shared.data.server.targets,
-          tels: tels
+          tels: shared.data.server.telHealth
         },
         debug: {
           enabled: false

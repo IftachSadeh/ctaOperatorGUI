@@ -309,9 +309,6 @@ window.TelescopeDisplayer = function (optIn) {
     }
 
     let cloned, hoveredStart, hoveredEnd, action
-    function openSwitchCommand (elem, tel) {
-      com.events.other.allTel(elem, tel)
-    }
     function dragstarted (d) {
       cloned = clone(d3.select(this.parentNode))
       cloned.style('pointer-events', 'none')
@@ -354,36 +351,53 @@ window.TelescopeDisplayer = function (optIn) {
       cloned.attr('transform', 'translate(' + trans.x + ',' + trans.y + ')')
     }
     function dragended (d) {
+      function removeClone () {
+        cloned.remove()
+        cloned = undefined
+        hoveredStart = undefined
+        hoveredEnd = undefined
+        action = undefined
+        com.gridBib.back.selectAll('rect#stripLeft').attr('fill', com.gridBib.blocks.background.side.color)
+        com.gridBib.back.selectAll('rect#stripMiddle').attr('fill', com.gridBib.blocks.background.middle.color)
+        com.gridBib.back.selectAll('rect#stripRight').attr('fill', com.gridBib.blocks.background.side.color)
+        com.main.foreground.selectAll('g.' + com.main.tag + 'telescopes').style('pointer-events', 'auto')
+
+        com.main.background.select('rect#trash').remove()
+        com.main.background.select('rect#switch').remove()
+      }
       d3.select(this.parentNode).style('opacity', 1)
       if (action) {
-        console.log(action);
         if (action === 'trash') {
-          let tel = hoveredStart.telIds.splice(hoveredStart.telIds.indexOf(d.id), 1)
-          if (tel.includes('L')) {
-            hoveredStart.telsInfo.large -= 1
-          }
-          if (tel.includes('M')) {
-            hoveredStart.telsInfo.medium -= 1
-          }
-          if (tel.includes('S')) {
-            hoveredStart.telsInfo.small -= 1
-          }
-          for (let i = 0; i < com.data.raw.telescopes.length; i++) {
-            if (com.data.raw.telescopes[i].id === tel[0]) {
-              console.log(com.data.raw.telescopes.splice(i, 1))
-              break
-            }
-          }
-          for (let i = 0; i < com.data.filtered.telescopes.length; i++) {
-            if (com.data.filtered.telescopes[i].id === tel[0]) {
-              console.log(com.data.filtered.telescopes.splice(i, 1))
-              break
-            }
-          }
+          removeClone()
+          com.events.other.delTel(d)
+          // let tel = hoveredStart.telIds.splice(hoveredStart.telIds.indexOf(d.id), 1)
+          // if (tel.includes('L')) {
+          //   hoveredStart.telsInfo.large -= 1
+          // }
+          // if (tel.includes('M')) {
+          //   hoveredStart.telsInfo.medium -= 1
+          // }
+          // if (tel.includes('S')) {
+          //   hoveredStart.telsInfo.small -= 1
+          // }
+          // for (let i = 0; i < com.data.raw.telescopes.length; i++) {
+          //   if (com.data.raw.telescopes[i].id === tel[0]) {
+          //     console.log(com.data.raw.telescopes.splice(i, 1))
+          //     break
+          //   }
+          // }
+          // for (let i = 0; i < com.data.filtered.telescopes.length; i++) {
+          //   if (com.data.filtered.telescopes[i].id === tel[0]) {
+          //     console.log(com.data.filtered.telescopes.splice(i, 1))
+          //     break
+          //   }
+          // }
         } else if (action === 'switch') {
-          openSwitchCommand(hoveredStart, d)
+          removeClone()
+          com.events.other.switchTel(hoveredStart, d)
         }
       } else if (hoveredEnd) {
+        console.log(hoveredEnd);
         let tel = hoveredStart.telIds.splice(hoveredStart.telIds.indexOf(d.id), 1)
         hoveredEnd.telIds.push(tel[0])
         if (tel.includes('L')) {
@@ -398,22 +412,10 @@ window.TelescopeDisplayer = function (optIn) {
           hoveredStart.telsInfo.small -= 1
           hoveredEnd.telsInfo.small += 1
         }
+        removeClone()
+        createTelescopesGroup()
+        update()
       }
-      cloned.remove()
-      cloned = undefined
-      hoveredStart = undefined
-      hoveredEnd = undefined
-      action = undefined
-      com.gridBib.back.selectAll('rect#stripLeft').attr('fill', com.gridBib.blocks.background.side.color)
-      com.gridBib.back.selectAll('rect#stripMiddle').attr('fill', com.gridBib.blocks.background.middle.color)
-      com.gridBib.back.selectAll('rect#stripRight').attr('fill', com.gridBib.blocks.background.side.color)
-      com.main.foreground.selectAll('g.' + com.main.tag + 'telescopes').style('pointer-events', 'auto')
-
-      com.main.background.select('rect#trash').remove()
-      com.main.background.select('rect#switch').remove()
-
-      createTelescopesGroup()
-      update()
     }
 
     function mouseover (elem, d) {
@@ -1189,7 +1191,7 @@ window.TelescopeDisplayer = function (optIn) {
 
     let rect = com.main.foreground
       .selectAll('g.' + com.main.tag + 'telescopes')
-      .data(all, function (d) {
+      .data(all, function (d, i) {
         return d.id
       })
     let enter = rect
@@ -1239,8 +1241,6 @@ window.TelescopeDisplayer = function (optIn) {
         })
         .call(d3.drag()
           .on('start', function (d) {
-            com.interaction = {}
-            com.interaction.oldG = parent
             com.events.telescope.drag.start(d)
           })
           .on('drag', function (d) {

@@ -69,3 +69,20 @@ window.blockIcon = function (g, dim, name, events, colorTheme) {
     .attr('fill', colorTheme.dark.text)
     .attr('stroke', 'none')
 }
+
+window.removeTelescopeFromBlock = function (b, t) {
+  if (b.telIds && b.telIds.indexOf(t.id) !== -1) b.telIds.splice(b.telIds.indexOf(t.id), 1)
+  if (t.id.includes('L')) {
+    b.telescopes.large.ids.splice(b.telescopes.large.ids.indexOf(t.id), 1)
+  } else if (t.id.includes('M')) {
+    b.telescopes.medium.ids.splice(b.telescopes.medium.ids.indexOf(t.id), 1)
+  } else if (t.id.includes('S')) {
+    b.telescopes.small.ids.splice(b.telescopes.small.ids.indexOf(t.id), 1)
+  }
+  for (let i = 0; i < b.pointings.length; i++) {
+    if (b.pointings[i].telIds.indexOf(t.id) !== -1) {
+      b.pointings[i].telIds.splice(b.pointings[i].telIds.indexOf(t.id), 1)
+      break
+    }
+  }
+}
