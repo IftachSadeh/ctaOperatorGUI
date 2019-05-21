@@ -92,7 +92,6 @@ window.ObsblockForm = function (optIn) {
   }
 
   function init () {
-    console.log(com.data.block);
     initSchedulingObservingBlocksTree()
     initTimeInformation()
     initPointingInformation()
@@ -1285,6 +1284,7 @@ window.ObsblockForm = function (optIn) {
     let allTel = com.events.allTel()
     let trueBlockReference = []
     let trueBlock = []
+    allTel.allTels = allTel.allTels.filter(function (d) { return com.data.block.telIds.indexOf(d.id) === -1 })
     for (let i = 0; i < allTel.blocks.length; i++) {
       if (allTel.blocks[i].obId !== com.data.block.obId) {
         trueBlockReference.push(allTel.blocks[i])
@@ -1343,18 +1343,27 @@ window.ObsblockForm = function (optIn) {
     if (tel.id.includes('L')) {
       largeBox = {x: ibox.w * 0.35, y: 0, w: ibox.w * 0.16, h: ibox.h * 0.9}
       allTel.allTels = allTel.allTels.filter(d => d.id.includes('L'))
-      trueBlock = trueBlock.filter(d => d.telescopes.large.ids.length > 0)
+      trueBlock.map(function (d) {
+        d.telIds = d.telIds.filter(dd => dd.includes('L'))
+      })
       duplicateTels()
+      trueBlock = trueBlock.filter(d => d.telIds.length > 0)
     } else if (tel.id.includes('M')) {
       mediumBox = {x: ibox.w * 0.2, y: 0, w: ibox.w * 0.5, h: ibox.h * 0.9}
       allTel.allTels = allTel.allTels.filter(d => d.id.includes('M'))
-      trueBlock = trueBlock.filter(d => d.telescopes.medium.ids.length > 0)
+      trueBlock.map(function (d) {
+        d.telIds = d.telIds.filter(dd => dd.includes('M'))
+      })
       duplicateTels()
+      trueBlock = trueBlock.filter(d => d.telIds.length > 0)
     } else if (tel.id.includes('S')) {
       smallBox = {x: ibox.w * 0.08, y: 0, w: ibox.w * 0.7, h: ibox.h * 0.9}
       allTel.allTels = allTel.allTels.filter(d => d.id.includes('S'))
-      trueBlock = trueBlock.filter(d => d.telescopes.small.ids.length > 0)
+      trueBlock.map(function (d) {
+        d.telIds = d.telIds.filter(dd => dd.includes('S'))
+      })
       duplicateTels()
+      trueBlock = trueBlock.filter(d => d.telIds.length > 0)
     }
 
     let choosenTel
@@ -1587,8 +1596,11 @@ window.ObsblockForm = function (optIn) {
         for (let i = 0; i < trueBlockReference.length; i++) {
           if (trueBlockReference[i].telIds.indexOf(choosenTel.id) !== -1) removeTelescopeFromBlock(trueBlockReference[i], choosenTel)
         }
-        removeTel(tel)
+        removeTelescopeFromBlock(com.data.block, tel)
+        addTelescopeToBlock(com.data.block, choosenTel, elem)
         g.remove()
+        updateInput()
+        // reassignTelescope()
         updateTelescopeInformation()
       })
       .on('mouseover', function (d) {
@@ -1628,10 +1640,17 @@ window.ObsblockForm = function (optIn) {
       .on('click', function () {
         if (!choosenTel) return
         for (let i = 0; i < trueBlockReference.length; i++) {
-          if (trueBlockReference[i].telIds.indexOf(choosenTel.id) !== -1) removeTelFromBlock(trueBlockReference[i], choosenTel)
+          if (trueBlockReference[i].telIds.indexOf(choosenTel.id) !== -1) {
+            let p = getTelescopePointing(trueBlockReference[i], choosenTel)
+            removeTelescopeFromBlock(trueBlockReference[i], choosenTel)
+            addTelescopeToBlock(trueBlockReference[i], tel, p)
+          }
         }
-        removeTelFromBlock(com.data.block, tel)
+        removeTelescopeFromBlock(com.data.block, tel)
+        addTelescopeToBlock(com.data.block, choosenTel, elem)
         g.remove()
+        updateInput()
+        // reassignTelescope()
         updateTelescopeInformation()
       })
       .on('mouseover', function (d) {
@@ -1687,6 +1706,325 @@ window.ObsblockForm = function (optIn) {
       .style('pointer-events', 'none')
       .attr('transform', 'translate(' + (box.w * 0.8) + ',' + (box.h * 0.95) + ')')
   }
+  function openOtherBlocks () {
+    com.events.blurry()
+    let allTel = com.events.allTel()
+    allTel.blocks = allTel.blocks.filter(d => d.obId !== com.data.block.obId)
+    let innerOtherBlock = {}
+    function initTelescopeInformation (block, box) {
+      innerOtherBlock[block.obId] = {}
+      let g = com.main.g.append('g')
+        .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+      g.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', box.w)
+        .attr('height', box.h)
+        .attr('fill', '#999999')
+      innerOtherBlock[block.obId].g = g
+      box.y = 0
+      g.append('text')
+        .text('Block: ' + block.metaData.blockName)
+        .attr('x', box.w * 0.01)
+        .attr('y', box.y + box.h)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('font-size', titleSize + 'px')
+        .style('pointer-events', 'none')
+        .attr('fill', colorPalette.dark.text)
+        .attr('stroke', 'none')
+      box.x = 5
+      box.w -= 10
+      box.y = 5
+      box.h -= 10
+      let xx = box.w * 0.11
+      let ww = box.w * 0.86
+      box.h -= titleSize * 1.5
+      let largeBox = {
+        x: xx,
+        y: 0,
+        w: ww * 0.1,
+        h: box.h
+      }
+      let mediumBox = {
+        x: xx + ww * 0.13,
+        y: 0,
+        w: ww * 0.3,
+        h: box.h
+      }
+      let smallBox = {
+        x: xx + ww * 0.46,
+        y: 0,
+        w: ww * 0.54,
+        h: box.h
+      }
+      let gt = g.append('g')
+        .attr('id', 'telsDisplayer')
+        .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+      innerOtherBlock[block.obId].displayer = new TelescopeDisplayer({
+        main: {
+          tag: 'telescopeRootTag' + block.obId,
+          g: gt,
+          scroll: {},
+          box: box,
+          background: {
+            fill: colorPalette.medium.background,
+            stroke: colorPalette.medium.stroke,
+            strokeWidth: 0
+          },
+          isSouth: true,
+          colorPalette: colorPalette
+        },
+
+        displayer: 'gridBib',
+        gridBib: {
+          header: {
+            top: true,
+            text: {
+              size: headerSize,
+              color: colorPalette.medium.background
+            },
+            background: {
+              height: headerSize + 2,
+              color: colorPalette.dark.stroke
+            }
+          },
+          telescope: {
+            enabled: true,
+            centering: true,
+            large: {
+              g: undefined,
+              opt: {
+                telsPerRow: 1,
+                nbl: 0,
+                size: 2,
+                ratio: 1
+              },
+              box: largeBox
+            },
+            medium: {
+              g: undefined,
+              opt: {
+                telsPerRow: 4,
+                nbl: 0,
+                size: 1,
+                ratio: 1
+              },
+              box: mediumBox
+            },
+            small: {
+              g: undefined,
+              opt: {
+                telsPerRow: 8,
+                nbl: 0,
+                size: 0.5,
+                ratio: 1
+              },
+              box: smallBox
+            }
+          },
+          idle: {
+            txtSize: 0,
+            enabled: true,
+            background: {
+              middle: {
+                color: colorPalette.darker.background,
+                opacity: 1
+              },
+              side: {
+                color: colorPalette.dark.background,
+                opacity: 1
+              }
+            }
+          },
+          blocks: {
+            txtSize: 10,
+            right: {
+              enabled: false
+            },
+            left: {
+              enabled: true
+            },
+            background: {
+              middle: {
+                color: colorPalette.darkest.background,
+                opacity: 0.3
+              },
+              side: {
+                color: colorPalette.darker.background,
+                opacity: 1
+              }
+            }
+          }
+        },
+
+        filters: {
+          telescopeFilters: [],
+          filtering: []
+        },
+        data: {
+          raw: {
+            telescopes: []
+          },
+          filtered: {},
+          modified: []
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {
+          select: {}
+        },
+        events: {
+          block: {
+            click: (d) => { com.telescope.events.click('block', d.obId) },
+            mouseover: (d) => {},
+            mouseout: (d) => {},
+            drag: {
+              start: () => {},
+              tick: () => {},
+              end: () => {}
+            }
+          },
+          telescope: {
+            click: (d) => {},
+            mouseover: (d) => {},
+            mouseout: (d) => {},
+            drag: {
+              start: () => {},
+              tick: () => {},
+              end: () => {}
+            }
+          },
+          other: {
+            delTel: (d) => { removeTel(d) },
+            switchTel: (elem, t) => { switchTel(elem, t) }
+          }
+        },
+        interaction: {
+          delete: {
+            enabled: true,
+            event: () => {}
+          },
+          drag: {
+            enabled: true,
+            event: () => {}
+          },
+          switch: {
+            enabled: true,
+            event: () => {}
+          }
+        }
+      })
+      innerOtherBlock[block.obId].displayer.init()
+
+      function changeTelescopeNumber (type, d) {
+        let data = block.telescopes[type]
+        function removeTelFromList () {
+          let diff = data.ids.length - d
+          for (let i = 0; i < diff; i++) {
+            removeTelescope({id: data.ids[0]})
+          }
+        }
+        function addTelToList () {
+          let diff = d - data.ids.length
+
+          let allTel = com.events.allTel()
+          allTel.allTels = allTel.allTels.filter(function (d) {
+            return (type === 'large' ? d.id.includes('L') : (type === 'medium' ? d.id.includes('M') : d.id.includes('S')))
+          })
+          let idle = allTel.allTels.filter(function (d) {
+            for (let i = 0; i < allTel.blocks.length; i++) {
+              if (allTel.blocks[i].telescopes[type].ids.indexOf(d.id) !== -1) return false
+            }
+            return true
+          })
+          for (let i = 0; (i < diff && i < idle.length); i++) {
+            addTelescope(idle[i])
+          }
+        }
+        if (data.ids.length < d) addTelToList()
+        if (data.ids.length > d) removeTelFromList()
+
+        updateInput()
+        updateTelescopeInformation()
+        // reassignTelescope()
+      }
+
+      innerOtherBlock[block.obId].tels = {}
+      innerOtherBlock[block.obId].tels.large = inputNumber(g,
+        {x: (largeBox.x + largeBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
+        'large',
+        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.large.ids.length, min: com.data.block.telescopes.large.min, max: com.data.block.telescopes.large.max, step: 1},
+        {change: (d) => { changeTelescopeNumber('large', d) }, enter: (d) => { changeTelescopeNumber('large', d) }})
+
+      innerOtherBlock[block.obId].tels.medium = inputNumber(g,
+        {x: (mediumBox.x + mediumBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
+        'small',
+        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.medium.ids.length, min: com.data.block.telescopes.medium.min, max: com.data.block.telescopes.medium.max, step: 1},
+        {change: (d) => { changeTelescopeNumber('medium', d) }, enter: (d) => { changeTelescopeNumber('medium', d) }})
+
+      innerOtherBlock[block.obId].tels.small = inputNumber(g,
+        {x: (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 50, h: 15},
+        'small',
+        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.small.ids.length, min: com.data.block.telescopes.small.min, max: com.data.block.telescopes.small.max, step: 1},
+        {change: (d) => { changeTelescopeNumber('small', d) }, enter: (d) => { changeTelescopeNumber('small', d) }})
+
+      let layoutBox = {
+        x: box.w - 17,
+        y: box.y + box.h * 1,
+        w: 17,
+        h: 17
+      }
+      g.append('rect')
+        .attr('x', layoutBox.x)
+        .attr('y', layoutBox.y)
+        .attr('width', layoutBox.w)
+        .attr('height', layoutBox.h)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', colorPalette.darker.stroke)
+        .attr('stroke-width', 0.2)
+        .on('click', function () {
+          reassignTelescope()
+          updateTelescopeInformation()
+        })
+        .on('mouseover', function (d) {
+          d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).attr('fill', colorPalette.dark.background)
+        })
+
+      let tels = []
+      for (let i = 0; i < block.telescopes.large.ids.length; i++) {
+        tels.push({id: block.telescopes.large.ids[i], health: com.data.tels.find(x => x.id === block.telescopes.large.ids[i]).val})
+      }
+      for (let i = 0; i < block.telescopes.medium.ids.length; i++) {
+        tels.push({id: block.telescopes.medium.ids[i], health: com.data.tels.find(x => x.id === block.telescopes.medium.ids[i]).val})
+      }
+      for (let i = 0; i < block.telescopes.small.ids.length; i++) {
+        tels.push({id: block.telescopes.small.ids[i], health: com.data.tels.find(x => x.id === block.telescopes.small.ids[i]).val})
+      }
+      innerOtherBlock[block.obId].displayer.updateData({
+        data: {
+          raw: {
+            telescopes: tels,
+            blocks: block.pointings
+          },
+          modified: []
+        }
+      })
+    }
+    for (let i = 0; i < allTel.blocks.length; i++) {
+      let box = {
+        x: com.telescope.box.x + com.telescope.box.w + 5 + (com.telescope.box.w * 0.66 + 5) *  parseInt(i / 2),
+        y: com.telescope.box.y - (com.telescope.box.h + 5) * (i % 2) - 12,
+        w: com.telescope.box.w * 0.66,
+        h: com.telescope.box.h
+      }
+      initTelescopeInformation(allTel.blocks[i], box)
+    }
+  }
   function changeTelescopeNumber (type, d) {
     let data = com.data.block.telescopes[type]
     function removeTelFromList () {
@@ -1696,13 +2034,28 @@ window.ObsblockForm = function (optIn) {
       }
     }
     function addTelToList () {
+      let diff = d - data.ids.length
 
+      let allTel = com.events.allTel()
+      allTel.allTels = allTel.allTels.filter(function (d) {
+        return (type === 'large' ? d.id.includes('L') : (type === 'medium' ? d.id.includes('M') : d.id.includes('S')))
+      })
+      let idle = allTel.allTels.filter(function (d) {
+        for (let i = 0; i < allTel.blocks.length; i++) {
+          if (allTel.blocks[i].telescopes[type].ids.indexOf(d.id) !== -1) return false
+        }
+        return true
+      })
+      for (let i = 0; (i < diff && i < idle.length); i++) {
+        addTelescope(idle[i])
+      }
     }
     if (data.ids.length < d) addTelToList()
     if (data.ids.length > d) removeTelFromList()
 
     updateInput()
-    reassignTelescope()
+    updateTelescopeInformation()
+    // reassignTelescope()
   }
   function reassignTelescope () {
     let allTels = deepCopy(com.data.block.telIds)
@@ -1730,15 +2083,15 @@ window.ObsblockForm = function (optIn) {
     com.data.block.pointings[com.data.block.pointings.length - 1].telsInfo = tels.stats
 
     // initPointingInformation()
-    updateTelescopeInformation()
   }
-  function addTelescope (t) {
-    console.log(t);
+  function addTelescope (t, elem) {
+    addTelescopeToBlock(com.data.block, t, elem)
   }
   function removeTel (t) {
     removeTelescope(t)
     updateInput()
-    reassignTelescope()
+    updateTelescopeInformation()
+    // reassignTelescope()
   }
   function removeTelescope (t) {
     removeTelescopeFromBlock(com.data.block, {id: t.id})
@@ -1912,7 +2265,7 @@ window.ObsblockForm = function (optIn) {
         },
         idle: {
           txtSize: 0,
-          enabled: false,
+          enabled: true,
           background: {
             middle: {
               color: colorPalette.darker.background,
@@ -2024,6 +2377,55 @@ window.ObsblockForm = function (optIn) {
       {disabled: !com.schedule.editabled, value: com.data.block.telescopes.small.ids.length, min: com.data.block.telescopes.small.min, max: com.data.block.telescopes.small.max, step: 1},
       {change: (d) => { changeTelescopeNumber('small', d) }, enter: (d) => { changeTelescopeNumber('small', d) }})
 
+    let layoutBox = {
+      x: box.w - 38,
+      y: box.y + box.h * 1,
+      w: 17,
+      h: 17
+    }
+    g.append('rect')
+      .attr('x', layoutBox.x)
+      .attr('y', layoutBox.y)
+      .attr('width', layoutBox.w)
+      .attr('height', layoutBox.h)
+      .attr('fill', colorPalette.darker.background)
+      .attr('stroke', colorPalette.darker.stroke)
+      .attr('stroke-width', 0.2)
+      .on('click', function () {
+        reassignTelescope()
+        updateTelescopeInformation()
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).attr('fill', colorPalette.dark.background)
+      })
+
+    let otherBox = {
+      x: box.w - 17,
+      y: box.y + box.h * 1,
+      w: 17,
+      h: 17
+    }
+    g.append('rect')
+      .attr('x', otherBox.x)
+      .attr('y', otherBox.y)
+      .attr('width', otherBox.w)
+      .attr('height', otherBox.h)
+      .attr('fill', colorPalette.darker.background)
+      .attr('stroke', colorPalette.darker.stroke)
+      .attr('stroke-width', 0.2)
+      .on('click', function () {
+        openOtherBlocks()
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).attr('fill', colorPalette.dark.background)
+      })
+
     updateTelescopeInformation()
   }
   function updateTelescopeInformation () {
@@ -2037,7 +2439,7 @@ window.ObsblockForm = function (optIn) {
     for (let i = 0; i < com.data.block.telescopes.small.ids.length; i++) {
       tels.push({id: com.data.block.telescopes.small.ids[i], health: com.data.tels.find(x => x.id === com.data.block.telescopes.small.ids[i]).val})
     }
-    console.log(tels);
+    console.log(tels,com.data.block.pointings);
     com.telescopeRunningBlock.updateData({
       data: {
         raw: {

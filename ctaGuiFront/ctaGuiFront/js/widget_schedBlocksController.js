@@ -4140,20 +4140,6 @@ let mainSchedBlocksController = function (optIn) {
         }
       }
 
-      let tels = {
-        large: [],
-        medium: [],
-        small: []
-      }
-      for (let i = 0; i < data.telescopes.large.ids.length; i++) {
-        tels.large.push(getTelescopeById(data.telescopes.large.ids[i]))
-      }
-      for (let i = 0; i < data.telescopes.medium.ids.length; i++) {
-        tels.medium.push(getTelescopeById(data.telescopes.medium.ids[i]))
-      }
-      for (let i = 0; i < data.telescopes.small.ids.length; i++) {
-        tels.small.push(getTelescopeById(data.telescopes.small.ids[i]))
-      }
       // for (let i = 0; i < data.telIds.length; i++) {
       //   let id = data.telIds[i]
       //   if (id[0] === 'S') {
@@ -4215,8 +4201,8 @@ let mainSchedBlocksController = function (optIn) {
           block: data,
           schedB: schedB,
           timeOfNight: shared.data.server.timeOfNight,
-          target: getTargetById(data.targetId),
-          tels: tels
+          target: shared.data.server.targets,
+          tels: shared.data.server.telHealth
         },
         debug: {
           enabled: false

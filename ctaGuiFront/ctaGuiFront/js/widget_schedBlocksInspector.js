@@ -436,38 +436,38 @@ let mainSchedBlocksInspector = function (optIn) {
           .duration(400)
           .style('opacity', 0)
 
-        let poly = [
-          {x: -2 + box.brushZoom.x, y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.3},
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.25), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h},
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.75), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h},
-
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.3},
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.7},
-
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.75), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h},
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.25), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h},
-          {x: -2 + box.brushZoom.x, y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.7}
-        ]
-        svg.g.append('polygon')
-          .attr('fill', colorTheme.dark.background)
-          .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-width', 0.2)
-          .attr('points', function () {
-            return poly.map(function (d) {
-              return [d.x, d.y].join(',')
-            }).join(' ')
-          })
-          .on('click', function () {
-            createDummyBlock()
-          })
-          .on('mouseover', function () {
-            d3.select(this).attr('fill', colorPalette.darker.background)
-            // com.events.sched.mouseover('schedBlock', d.id)
-          })
-          .on('mouseout', function () {
-            d3.select(this).attr('fill', colorTheme.dark.background)
-            // com.events.sched.mouseout('schedBlock', d.id)
-          })
+        // let poly = [
+        //   {x: -2 + box.brushZoom.x, y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.3},
+        //   {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.25), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h},
+        //   {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.75), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h},
+        //
+        //   {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.3},
+        //   {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.7},
+        //
+        //   {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.75), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h},
+        //   {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.25), y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h},
+        //   {x: -2 + box.brushZoom.x, y: 5 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.7}
+        // ]
+        // svg.g.append('polygon')
+        //   .attr('fill', colorTheme.dark.background)
+        //   .attr('stroke', colorTheme.dark.stroke)
+        //   .attr('stroke-width', 0.2)
+        //   .attr('points', function () {
+        //     return poly.map(function (d) {
+        //       return [d.x, d.y].join(',')
+        //     }).join(' ')
+        //   })
+        //   .on('click', function () {
+        //     createDummyBlock()
+        //   })
+        //   .on('mouseover', function () {
+        //     d3.select(this).attr('fill', colorPalette.darker.background)
+        //     // com.events.sched.mouseover('schedBlock', d.id)
+        //   })
+        //   .on('mouseout', function () {
+        //     d3.select(this).attr('fill', colorTheme.dark.background)
+        //     // com.events.sched.mouseout('schedBlock', d.id)
+        //   })
       })
       .on('mouseover', function (d) {
         d3.select(this).style('cursor', 'pointer')
@@ -748,8 +748,9 @@ let mainSchedBlocksInspector = function (optIn) {
     // })
     svgTargets.initData()
     svgTelsConflict.initData()
-    svgRightInfo.initData()
     svgBlocksQueueServer.initData()
+    svgFocusOverlay.initData()
+    svgRightInfo.initData()
     // svgBlocksQueueCopy.initData()
 
     svgBrush.updateData()
@@ -1117,6 +1118,7 @@ let mainSchedBlocksInspector = function (optIn) {
   this.pushNewBlockQueue = pushNewBlockQueue
 
   function switchMainMode () {
+    return
     svgBrush.translateTo(box.brushZoom.x, box.brushZoom.y + 24)
     svg.g.append('rect')
       .attr('id', 'createNewSchedButton')
@@ -1824,6 +1826,11 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     this.initData = initData
 
+    function blurry () {
+      reserved.g.style('opacity', 0.2)
+    }
+    this.blurry = blurry
+
     function updateData () {
       let axisTop = brushZoom.getAxis('top').axis.scale().domain()
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
@@ -1857,6 +1864,7 @@ let mainSchedBlocksInspector = function (optIn) {
     this.update = update
   }
   let SvgBlocksQueueServer = function () {
+    let reserved = {}
     function initData () {
       let adjustedBox = {
         x: box.blockQueueServer.x,
@@ -1865,13 +1873,13 @@ let mainSchedBlocksInspector = function (optIn) {
         h: box.blockQueueServer.h,
         marg: lenD.w[0] * 0.01
       }
-      let gBlockBox = svg.g.append('g')
+      reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
 
       blockQueue = new BlockDisplayer({
         main: {
           tag: 'blockQueueMiddleTag',
-          g: gBlockBox,
+          g: reserved.g,
           scroll: {},
           box: adjustedBox,
           background: {
@@ -2192,20 +2200,24 @@ let mainSchedBlocksInspector = function (optIn) {
         }
       })
 
-      let axisTop = brushZoom.getAxis('top')
-      console.log(axisTop.scale(new Date(shared.data.server.timeOfNight.date_now)));
-      svg.svg.append('rect')
-        .attr('id', 'cloak')
-        .attr('x', box.blockQueueServer.x)
-        .attr('y', 0)
-        .attr('width', 0)
-        .attr('height', lenD.h[0])
-        .attr('fill', colorTheme.darker.stroke)
-        .attr('stroke', 'none')
-        .style('opacity', 0.2)
-        .style('pointer-events', 'none')
+      // let axisTop = brushZoom.getAxis('top')
+      // svg.svg.append('rect')
+      //   .attr('id', 'cloak')
+      //   .attr('x', box.blockQueueServer.x)
+      //   .attr('y', 0)
+      //   .attr('width', 0)
+      //   .attr('height', lenD.h[0])
+      //   .attr('fill', colorTheme.darker.stroke)
+      //   .attr('stroke', 'none')
+      //   .style('opacity', 0.2)
+      //   .style('pointer-events', 'none')
     }
     this.initData = initData
+
+    function blurry () {
+      reserved.g.style('opacity', 0.2)
+    }
+    this.blurry = blurry
 
     function updateData () {
       let telIds = []
@@ -2410,6 +2422,11 @@ let mainSchedBlocksInspector = function (optIn) {
       brushZoom.init()
     }
     this.initData = initData
+
+    function blurry () {
+      reserved.g.style('opacity', 0.2)
+    }
+    this.blurry = blurry
 
     function translateTo (x, y) {
       reserved.g.attr('transform', 'translate(' + x + ',' + y + ')')
@@ -2962,6 +2979,7 @@ let mainSchedBlocksInspector = function (optIn) {
 
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
+      reserved.g = gBlockBox
       // gBlockBox.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
@@ -2998,6 +3016,11 @@ let mainSchedBlocksInspector = function (optIn) {
     this.updateData = updateData
     function update () {}
     this.update = update
+
+    function blurry () {
+      reserved.g.style('opacity', 0.2)
+    }
+    this.blurry = blurry
 
     function drawTargets () {
       let scaleX = d3.scaleLinear()
@@ -3224,6 +3247,7 @@ let mainSchedBlocksInspector = function (optIn) {
 
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
+      reserved.g = gBlockBox
       // gBlockBox.append('text')
       //   .text('MODIFICATIONS')
       //   .style('fill', colorTheme.medium.text)
@@ -3280,6 +3304,11 @@ let mainSchedBlocksInspector = function (optIn) {
     this.updateData = updateData
     function update () {}
     this.update = update
+
+    function blurry () {
+      reserved.g.style('opacity', 0.2)
+    }
+    this.blurry = blurry
 
     function drawTelsAvailabilityCurve (block) {
       let curve = computeTelsCurve(block)
@@ -3497,8 +3526,17 @@ let mainSchedBlocksInspector = function (optIn) {
     // ---------------------------------------------------------------------------------------------------
     function initData () {
       reserved.hasData = false
+      reserved.main = {
+        g: svg.g.append('g')
+      }
     }
     this.initData = initData
+
+    function blurry () {
+      reserved.main.g.style('opacity', 0.2)
+    }
+    this.blurry = blurry
+
     function updateData () {
       reserved.hasData = true
     }
@@ -3868,7 +3906,7 @@ let mainSchedBlocksInspector = function (optIn) {
         h: box.focusOverlay.h,
         marg: lenD.w[0] * 0.01
       }
-      reserved.drag.g = svg.g.append('g')
+      reserved.drag.g = reserved.main.g.append('g')
         .attr('transform', 'translate(' + reserved.drag.box.x + ',' + reserved.drag.box.y + ')')
       // reserved.drag.g.append('rect')
       //   .attr('x', 0)
@@ -5675,7 +5713,15 @@ let mainSchedBlocksInspector = function (optIn) {
           }
         },
         events: {
-          allTel: function () { return getBlocksByTime(getBlocksData(), data.time.start, data.time.end) }
+          allTel: function () { return getBlocksByTime(getBlocksData(), data.time.start, data.time.end) },
+          blurry: function () {
+            svgEventsQueueServer.blurry()
+            svgBlocksQueueServer.blurry()
+            svgBrush.blurry()
+            svgTargets.blurry()
+            svgTelsConflict.blurry()
+            svgFocusOverlay.blurry()
+          }
         }
       })
       reserved.obsblockForm.init()

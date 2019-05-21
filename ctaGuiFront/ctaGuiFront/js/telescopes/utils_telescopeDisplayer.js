@@ -348,15 +348,20 @@ window.TelescopeDisplayer = function (optIn) {
         x: Number(trans.split('(')[1].split(',')[0]) + d3.event.dx,
         y: Number(trans.split(',')[1].split(')')[0]) + d3.event.dy
       }
+      // let r = {
+      //   rx: Number(cloned.attr('rx')),
+      //   ry: Number(cloned.attr('ry'))
+      // }
+      // if (trans.x - (r.rx * 2) < 0) trans.x = (r.rx * 2)
+      // if (trans.y - (r.ry * 2) < 0) trans.y = (r.ry * 2)
+      // if (trans.x + (r.rx * 2) > com.main.box.w) trans.x = com.main.box.w - (r.rx * 2)
+      // if (trans.y + (r.ry * 2) > com.main.box.h) trans.y = com.main.box.h - (r.ry * 2)
       cloned.attr('transform', 'translate(' + trans.x + ',' + trans.y + ')')
     }
     function dragended (d) {
-      function removeClone () {
+      function removeCloneP1 () {
         cloned.remove()
         cloned = undefined
-        hoveredStart = undefined
-        hoveredEnd = undefined
-        action = undefined
         com.gridBib.back.selectAll('rect#stripLeft').attr('fill', com.gridBib.blocks.background.side.color)
         com.gridBib.back.selectAll('rect#stripMiddle').attr('fill', com.gridBib.blocks.background.middle.color)
         com.gridBib.back.selectAll('rect#stripRight').attr('fill', com.gridBib.blocks.background.side.color)
@@ -365,10 +370,15 @@ window.TelescopeDisplayer = function (optIn) {
         com.main.background.select('rect#trash').remove()
         com.main.background.select('rect#switch').remove()
       }
+      function removeCloneP2 () {
+        hoveredStart = undefined
+        hoveredEnd = undefined
+        action = undefined
+      }
       d3.select(this.parentNode).style('opacity', 1)
+      removeCloneP1()
       if (action) {
         if (action === 'trash') {
-          removeClone()
           com.events.other.delTel(d)
           // let tel = hoveredStart.telIds.splice(hoveredStart.telIds.indexOf(d.id), 1)
           // if (tel.includes('L')) {
@@ -393,11 +403,9 @@ window.TelescopeDisplayer = function (optIn) {
           //   }
           // }
         } else if (action === 'switch') {
-          removeClone()
           com.events.other.switchTel(hoveredStart, d)
         }
       } else if (hoveredEnd) {
-        console.log(hoveredEnd);
         let tel = hoveredStart.telIds.splice(hoveredStart.telIds.indexOf(d.id), 1)
         hoveredEnd.telIds.push(tel[0])
         if (tel.includes('L')) {
@@ -412,10 +420,10 @@ window.TelescopeDisplayer = function (optIn) {
           hoveredStart.telsInfo.small -= 1
           hoveredEnd.telsInfo.small += 1
         }
-        removeClone()
-        createTelescopesGroup()
-        update()
       }
+      removeCloneP2()
+      createTelescopesGroup()
+      update()
     }
 
     function mouseover (elem, d) {

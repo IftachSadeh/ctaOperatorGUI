@@ -86,3 +86,35 @@ window.removeTelescopeFromBlock = function (b, t) {
     }
   }
 }
+
+window.getTelescopePointing = function (b, t) {
+  for (let i = 1; i < b.pointings.length; i++) {
+    if (b.pointings[i].telIds.indexOf(t.id) !== -1) return b.pointings[i]
+  }
+  return null
+}
+
+window.addTelescopeToBlock = function (b, t, p) {
+  // if (t === undefined) {
+  //   b.telIds.push(t)
+  //   return
+  // }
+  if (b.telIds) b.telIds.push(t.id)
+  if (t.id.includes('L')) {
+    b.telescopes.large.ids.push(t.id)
+  } else if (t.id.includes('M')) {
+    b.telescopes.medium.ids.push(t.id)
+  } else if (t.id.includes('S')) {
+    b.telescopes.small.ids.push(t.id)
+  }
+  if (p) {
+    p.telIds.push(t.id)
+  }
+  // else {
+  //   let min = b.pointings[0]
+  //   for (let i = 1; i < b.pointings.length; i++) {
+  //     if (b.pointings[i].telIds.length < min.telIds.length) min = b.pointings[i]
+  //   }
+  //   min.telIds.push(t.id)
+  // }
+}
