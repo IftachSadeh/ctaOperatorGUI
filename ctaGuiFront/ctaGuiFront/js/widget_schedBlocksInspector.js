@@ -791,7 +791,7 @@ let mainSchedBlocksInspector = function (optIn) {
   runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
   function associateBlockAndTels () {
-    console.log(shared.data.server);
+    // console.log(shared.data.server);
   }
   function getBlocksData () {
     if (shared.mode === 'inspector') {
@@ -1827,9 +1827,13 @@ let mainSchedBlocksInspector = function (optIn) {
     this.initData = initData
 
     function blurry () {
-      reserved.g.style('opacity', 0.2)
+      reserved.g.style('opacity', 0.1)
     }
     this.blurry = blurry
+    function focus () {
+      reserved.g.style('opacity', 1)
+    }
+    this.focus = focus
 
     function updateData () {
       let axisTop = brushZoom.getAxis('top').axis.scale().domain()
@@ -2215,9 +2219,13 @@ let mainSchedBlocksInspector = function (optIn) {
     this.initData = initData
 
     function blurry () {
-      reserved.g.style('opacity', 0.2)
+      reserved.g.style('opacity', 0.1)
     }
     this.blurry = blurry
+    function focus () {
+      reserved.g.style('opacity', 1)
+    }
+    this.focus = focus
 
     function updateData () {
       let telIds = []
@@ -2424,9 +2432,13 @@ let mainSchedBlocksInspector = function (optIn) {
     this.initData = initData
 
     function blurry () {
-      reserved.g.style('opacity', 0.2)
+      reserved.g.style('opacity', 0.1)
     }
     this.blurry = blurry
+    function focus () {
+      reserved.g.style('opacity', 1)
+    }
+    this.focus = focus
 
     function translateTo (x, y) {
       reserved.g.attr('transform', 'translate(' + x + ',' + y + ')')
@@ -3018,9 +3030,13 @@ let mainSchedBlocksInspector = function (optIn) {
     this.update = update
 
     function blurry () {
-      reserved.g.style('opacity', 0.2)
+      reserved.g.style('opacity', 0.1)
     }
     this.blurry = blurry
+    function focus () {
+      reserved.g.style('opacity', 1)
+    }
+    this.focus = focus
 
     function drawTargets () {
       let scaleX = d3.scaleLinear()
@@ -3306,9 +3322,13 @@ let mainSchedBlocksInspector = function (optIn) {
     this.update = update
 
     function blurry () {
-      reserved.g.style('opacity', 0.2)
+      reserved.g.style('opacity', 0.1)
     }
     this.blurry = blurry
+    function focus () {
+      reserved.g.style('opacity', 1)
+    }
+    this.focus = focus
 
     function drawTelsAvailabilityCurve (block) {
       let curve = computeTelsCurve(block)
@@ -3536,6 +3556,10 @@ let mainSchedBlocksInspector = function (optIn) {
       reserved.main.g.style('opacity', 0.2)
     }
     this.blurry = blurry
+    function focus () {
+      reserved.main.g.style('opacity', 1)
+    }
+    this.focus = focus
 
     function updateData () {
       reserved.hasData = true
@@ -5721,6 +5745,14 @@ let mainSchedBlocksInspector = function (optIn) {
             svgTargets.blurry()
             svgTelsConflict.blurry()
             svgFocusOverlay.blurry()
+          },
+          focus: function () {
+            svgEventsQueueServer.focus()
+            svgBlocksQueueServer.focus()
+            svgBrush.focus()
+            svgTargets.focus()
+            svgTelsConflict.focus()
+            svgFocusOverlay.focus()
           }
         }
       })

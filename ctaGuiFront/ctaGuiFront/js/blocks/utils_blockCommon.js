@@ -118,3 +118,30 @@ window.addTelescopeToBlock = function (b, t, p) {
   //   min.telIds.push(t.id)
   // }
 }
+
+window.extractRandomTelsFromBlock = function (blocks, teltype) {
+  function canExtract (tel) {
+    for (let i = 0; i < blocks.length; i++) {
+      if (blocks[i].telescopes[teltype].ids.indexOf(tel) !== -1 && blocks[i].telescopes[teltype].ids.length <= blocks[i].telescopes[teltype].min) return false
+    }
+    for (let i = 0; i < blocks.length; i++) {
+      removeTelescopeFromBlock(blocks[i], {id: tel})
+    }
+    return true
+  }
+  for (let i = 0; i < blocks.length; i++) {
+    let b = blocks[i]
+    if (b.telescopes[teltype].ids.length <= b.telescopes[teltype].min) continue
+    for (let j = 0; j < (b.telescopes[teltype].ids.length - b.telescopes[teltype].min); j++) {
+      let t = b.telescopes[teltype].ids[j]
+      if (canExtract(t)) return t
+    }
+  }
+  return undefined
+}
+
+window.forceExtractTelsFromBlock = function (blocks, tel) {
+  for (let i = 0; i < blocks.length; i++) {
+    removeTelescopeFromBlock(blocks[i], {id: tel})
+  }
+}
