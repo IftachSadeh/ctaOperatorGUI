@@ -378,8 +378,8 @@ class obsBlocks_noACS():
         self.phaseRndFrac = dict()
         self.phaseRndFrac["start"] = 0.29
         self.phaseRndFrac["finish"] = 0.1
-        self.phaseRndFrac["cancel"] = 0.2
-        self.phaseRndFrac["fail"] = 0.41
+        self.phaseRndFrac["cancel"] = 0.06
+        self.phaseRndFrac["fail"] = 0.1
         self.loopSleep = 2
 
         self.obsBlockDuration = 1800 # timedelta(weeks = 0, days = 0, hours = 0, minutes = 30 * self.timeOfNight.getTimeScale(), seconds = 0, milliseconds = 0, microseconds = 0)  # 1800 = 30 minutes
@@ -593,9 +593,9 @@ class obsBlocks_noACS():
                     metaData = {'nSched': nSchedBlocks, 'nObs': nObsNow,
                                 'blockName': str(nSchedBlocks)+" ("+str(nObsNow)+")"}
                     # min int(len(filter(lambda x: 'L' in x, schedTelIds)) / 3)
-                    telescopes = {'large': {'min': int(len(filter(lambda x: 'L' in x, schedTelIds)) / 3), 'max': 4, 'ids': filter(lambda x: 'L' in x, schedTelIds)},
-                                  'medium': {'min': int(len(filter(lambda x: 'M' in x, schedTelIds)) / 3), 'max': 25, 'ids': filter(lambda x: 'M' in x, schedTelIds)},
-                                  'small': {'min': int(len(filter(lambda x: 'S' in x, schedTelIds)) / 3), 'max': 70, 'ids': filter(lambda x: 'S' in x, schedTelIds)}}
+                    telescopes = {'large': {'min': int(len(filter(lambda x: 'L' in x, schedTelIds)) / 2), 'max': 4, 'ids': filter(lambda x: 'L' in x, schedTelIds)},
+                                  'medium': {'min': int(len(filter(lambda x: 'M' in x, schedTelIds)) / 2), 'max': 25, 'ids': filter(lambda x: 'M' in x, schedTelIds)},
+                                  'small': {'min': int(len(filter(lambda x: 'S' in x, schedTelIds)) / 2), 'max': 70, 'ids': filter(lambda x: 'S' in x, schedTelIds)}}
                     print telescopes
                     block = dict()
                     block["sbId"] = schedBlockId

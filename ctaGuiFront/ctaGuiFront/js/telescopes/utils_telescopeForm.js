@@ -573,6 +573,7 @@ window.TelescopeForm = function (optIn) {
   //   //   .attr('stroke-width', 0.4)
   // }
   function createAssociatedBlocks () {
+    console.log(com.data);
     let scheds = []
     for (let key in com.data.schedB) {
       com.data.schedB[key].id = key

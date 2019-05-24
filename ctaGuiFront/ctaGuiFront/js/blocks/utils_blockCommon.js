@@ -73,11 +73,14 @@ window.blockIcon = function (g, dim, name, events, colorTheme) {
 window.removeTelescopeFromBlock = function (b, t) {
   if (b.telIds && b.telIds.indexOf(t.id) !== -1) b.telIds.splice(b.telIds.indexOf(t.id), 1)
   if (t.id.includes('L')) {
-    b.telescopes.large.ids.splice(b.telescopes.large.ids.indexOf(t.id), 1)
+    let index = b.telescopes.large.ids.indexOf(t.id)
+    if (index !== -1) b.telescopes.large.ids.splice(index, 1)
   } else if (t.id.includes('M')) {
-    b.telescopes.medium.ids.splice(b.telescopes.medium.ids.indexOf(t.id), 1)
+    let index = b.telescopes.medium.ids.indexOf(t.id)
+    if (index !== -1) b.telescopes.medium.ids.splice(index, 1)
   } else if (t.id.includes('S')) {
-    b.telescopes.small.ids.splice(b.telescopes.small.ids.indexOf(t.id), 1)
+    let index = b.telescopes.small.ids.indexOf(t.id)
+    if (index !== -1) b.telescopes.small.ids.splice(index, 1)
   }
   for (let i = 0; i < b.pointings.length; i++) {
     if (b.pointings[i].telIds.indexOf(t.id) !== -1) {
@@ -144,4 +147,33 @@ window.forceExtractTelsFromBlock = function (blocks, tel) {
   for (let i = 0; i < blocks.length; i++) {
     removeTelescopeFromBlock(blocks[i], {id: tel})
   }
+}
+
+window.getBlocksByTime = function (blocks, start, end) {
+  let ret = []
+  if (Array.isArray(blocks)) {
+    ret = blocks.filter(d => (d.time.start <= start && d.time.end >= start) || (d.time.start <= end && d.time.end >= end))
+  } else {
+    for (var key in blocks) {
+      ret = ret.concat(blocks[key].filter(d => (d.time.start <= start && d.time.end >= start) || (d.time.start <= end && d.time.end >= end)))
+    }
+  }
+  return ret
+}
+window.balanceTelescopesBetweenBlocks = function (b, blocks) {
+  function balance (type) {
+    let data = b.telescopes[type]
+    if (data.min <= data.ids.length) {
+      return
+    } else {
+      for (let i = data.ids.length; i < data.min; i++) {
+        let t = extractRandomTelsFromBlock(blocks.filter(d => d.obId !== b.obId), type)
+        if (t === undefined) break
+        addTelescopeToBlock(b, {id: t})
+      }
+    }
+  }
+  balance('large')
+  balance('medium')
+  balance('small')
 }

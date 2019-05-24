@@ -674,7 +674,7 @@ window.SchedblockForm = function (optIn) {
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     com.schedule.g = g
     let line = 20
-    let back = {enabled: true, fill: colorPalette.darker.background, stroke: colorPalette.darker.stroke, 'stroke-width': 0.2}
+    let back = {enabled: false, fill: colorPalette.darker.background, stroke: colorPalette.darker.stroke, 'stroke-width': 0.2}
 
     g.append('text')
       .text('Targets and pointings')
@@ -949,7 +949,7 @@ window.SchedblockForm = function (optIn) {
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (line * 0.4) + ',' + (offset + (marg + line * 0.9) * i) + ')')
+        g.attr('transform', 'translate(' + (-line * 0.6) + ',' + (offset + (marg + line * 0.9) * i) + ')')
         innerOffset += marg + line * 0.9
         scrollHeight += marg + line * 0.9
       })
@@ -1005,7 +1005,7 @@ window.SchedblockForm = function (optIn) {
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + (0) + ',' + (offset + innerOffset + line * i) + ')')
+        g.attr('transform', 'translate(' + (line * 0.8) + ',' + (offset + innerOffset + line * i) + ')')
         innerOffset += line
         pointingCore(d.pointings, g, line + marg * 2)
         scrollHeight = (offset + innerOffset + line * i) + marg * 2

@@ -134,9 +134,9 @@ class telHealth():
             arrPropD_[idNow] = self.telHealth_s0[idNow]
 
             rnd = rndGen.random()
-            if rnd < 0.3:
+            if rnd < 0.06:
                 healthTot = rndGen.randint(0, 100)
-            elif rnd < 0.7:
+            elif rnd < 0.1:
                 healthTot = rndGen.randint(40, 100)
             else:
                 healthTot = rndGen.randint(60, 100)

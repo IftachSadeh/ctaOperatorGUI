@@ -4361,8 +4361,9 @@ let mainSchedBlocksController = function (optIn) {
       let g = reserved.g.append('g')
 
       let blocks = []
-      for (let key in shared.data.server.blocks) {
-        blocks = blocks.concat(shared.data.server.blocks[key])
+      let copyBlock = getBlocksData()
+      for (let key in copyBlock) {
+        blocks = blocks.concat(copyBlock[key])
       }
       blocks = blocks.filter(b => b.telIds.includes(tel.id))
       let scheds = createSchedBlocks(blocks)

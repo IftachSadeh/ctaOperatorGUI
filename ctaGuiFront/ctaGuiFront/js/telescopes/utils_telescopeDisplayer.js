@@ -308,8 +308,9 @@ window.TelescopeDisplayer = function (optIn) {
       return telescopes
     }
 
-    let cloned, hoveredStart, hoveredEnd, action
+    let click, cloned, hoveredStart, hoveredEnd, action
     function dragstarted (d) {
+      click = true
       cloned = clone(d3.select(this.parentNode))
       cloned.style('pointer-events', 'none')
       d3.select(this.parentNode).style('opacity', 0.5)
@@ -343,6 +344,7 @@ window.TelescopeDisplayer = function (optIn) {
         })
     }
     function dragged (d) {
+      click = false
       let trans = cloned.attr('transform')
       trans = {
         x: Number(trans.split('(')[1].split(',')[0]) + d3.event.dx,
@@ -359,6 +361,11 @@ window.TelescopeDisplayer = function (optIn) {
       cloned.attr('transform', 'translate(' + trans.x + ',' + trans.y + ')')
     }
     function dragended (d) {
+      if (click) {
+        console.log(d);
+        com.events.telescope.click(d)
+        return
+      }
       function removeCloneP1 () {
         cloned.remove()
         cloned = undefined

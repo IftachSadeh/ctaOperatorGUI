@@ -376,6 +376,7 @@ window.ObsblockForm = function (optIn) {
     updateTime('endTime', endTime)
 
     com.schedule.events.click()
+    com.events.conflict()
   }
   function changeState (newState) {
     com.schedule.events.change(com.data.block, newState)
@@ -792,8 +793,8 @@ window.ObsblockForm = function (optIn) {
     }
 
     let line = 20
-    let tbox = {x: label[0].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[0].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
 
+    let tbox = {x: label[0].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[0].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
     let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
     let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, {enabled: false})
     let innertg = scrollBoxt.get('innerG')
@@ -860,10 +861,10 @@ window.ObsblockForm = function (optIn) {
     targetCore(data.targets, innertg, 0)
     scrollBoxt.resetVerticalScroller({canScroll: true, scrollHeight: line * data.targets.length})
 
-    // let pbox = {x: label[1].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[1].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
-    // let blockpg = g.append('g').attr('transform', 'translate(' + pbox.x + ',' + pbox.y + ')')
-    // let scrollBoxp = initScrollBox('pointingListScroll', blockpg, pbox, {enabled: false})
-    // let innerpg = scrollBoxp.get('innerG')
+    let pbox = {x: label[1].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[1].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
+    let blockpg = g.append('g').attr('transform', 'translate(' + pbox.x + ',' + pbox.y + ')')
+    let scrollBoxp = initScrollBox('pointingListScroll', blockpg, pbox, {enabled: false})
+    let innerpg = scrollBoxp.get('innerG')
     // let trgtPnt = []
     // for (let i = 0; i < data.pointings.length; i++) {
     //   let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
@@ -889,43 +890,44 @@ window.ObsblockForm = function (optIn) {
     //   '9': []
     // }
 
-    // function pointingCore (pointings, g, offset) {
-    //   let space = ((tbox.h * 1) - (pointings.length * line)) / (pointings.length)
-    //   let current = g
-    //     .selectAll('g.target')
-    //     .data(pointings, function (d) {
-    //       return d.id
-    //     })
-    //   let enter = current
-    //     .enter()
-    //     .append('g')
-    //     .attr('class', 'target')
-    //   enter.each(function (d, i) {
-    //     let g = d3.select(this)
-    //     let pevents = {
-    //       click: function () {},
-    //       over: function () {},
-    //       out: function () {}
-    //     }
-    //     pointingIcon(g, {w: box.w * 0.07, h: line}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
-    //   })
-    //   let merge = current.merge(enter)
-    //   merge.each(function (d, i) {
-    //     let g = d3.select(this)
-    //     let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
-    //     let offY = (space * 0.5 + (space + line) * i)
-    //     if (line * pointings.length > pbox.h) offY = line * i
-    //     g.attr('transform', 'translate(' + offX + ',' + offY + ')')
-    //   })
-    //   current
-    //     .exit()
-    //     .transition('inOut')
-    //     .duration(timeD.animArc)
-    //     .style('opacity', 0)
-    //     .remove()
-    // }
-    // pointingCore(data.pointings, innerpg, 0)
-    // scrollBoxp.resetVerticalScroller({canScroll: true, scrollHeight: line * data.pointings.length})
+    function pointingCore (pointings, g, offset) {
+      let space = ((tbox.h * 1) - (pointings.length * line)) / (pointings.length)
+      let current = g
+        .selectAll('g.target')
+        .data(pointings, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'target')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        let pevents = {
+          click: function () {},
+          over: function () {},
+          out: function () {}
+        }
+        pointingIcon(g, {w: box.w * 0.07, h: line}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
+        let offY = (space * 0.5 + (space + line) * i)
+        if (line * pointings.length > pbox.h) offY = line * i
+        g.attr('transform', 'translate(' + offX + ',' + offY + ')')
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    pointingCore(data.pointings, innerpg, 0)
+    scrollBoxp.resetVerticalScroller({canScroll: true, scrollHeight: line * data.pointings.length})
+
     // function pointingCore (trg, pointings, pg, x, y, w, h) {
     //   if (com.target.editable) {
     //     pointings.push({id: 'newPointing'})
@@ -1175,110 +1177,110 @@ window.ObsblockForm = function (optIn) {
     //   .attr('text-anchor', 'start')
     //   .attr('transform', 'translate(' + (box.h + height * 1.6) + ',' + (box.h * 0.175 + headerSize * 2) + ')')
 
-    // let gt = g.append('g')
-    //   .attr('id', 'targetDisplayer')
-    //   .attr('transform', 'translate(' + label[0].x + ',' + (label[0].y + 3) + ')')
-    // com.targetBlock = new TargetDisplayer({
-    //   main: {
-    //     tag: 'targetRootTag',
-    //     g: gt,
-    //     scroll: {},
-    //     box: {x: 0, y: 0, w: box.w, h: box.h * 0.9, marg: 0},
-    //     background: {
-    //       fill: colorPalette.brighter.background,
-    //       stroke: colorPalette.brighter.stroke,
-    //       strokeWidth: 0.5
-    //     }
-    //   },
-    //
-    //   displayer: 'linkMap',
-    //   defaultBib: {
-    //     quickmap: {
-    //       enabled: false,
-    //       target: {
-    //         events: {
-    //           click: () => {},
-    //           over: () => {},
-    //           out: () => {}
-    //         }
-    //       },
-    //       pointing: {
-    //         events: {
-    //           click: () => {},
-    //           over: () => {},
-    //           out: () => {}
-    //         }
-    //       }
-    //     },
-    //     skymap: {
-    //       enabled: true,
-    //       g: undefined,
-    //       box: {x: 0, y: 0, w: label[0].w, h: box.h * 0.9, marg: 0},
-    //       mainTarget: undefined
-    //     },
-    //     legend: {
-    //       enabled: false
-    //     }
-    //   },
-    //   linkMap: {
-    //     map: {
-    //       enabled: true,
-    //       g: undefined,
-    //       box: {x: 0, y: 0, w: box.w, h: box.h * 0.9, marg: 0}
-    //     }
-    //   },
-    //
-    //   filters: {
-    //     targetFilters: [],
-    //     filtering: []
-    //   },
-    //   data: {
-    //     raw: {
-    //       targets: []
-    //     },
-    //     filtered: {},
-    //     modified: []
-    //   },
-    //   debug: {
-    //     enabled: false
-    //   },
-    //   pattern: {
-    //     select: {}
-    //   },
-    //   input: {
-    //     over: {
-    //       target: undefined
-    //     },
-    //     focus: {
-    //       target: undefined
-    //     }
-    //   }
-    // })
-    // com.targetBlock.init()
-    // com.targetBlock.updateData({
-    //   data: {
-    //     raw: {
-    //       targets: com.data.block.targets,
-    //       pointings: com.data.block.pointings
-    //     },
-    //     modified: []
-    //   }
-    // })
-    // if (com.target.editable) {
-    //   let pevents = {
-    //     click: function (d) {},
-    //     over: function () {},
-    //     out: function () {}
-    //   }
-    //   let sizeNewPointing = line * 0.8
-    //   let addPointingg = g.append('g').attr('transform', 'translate(' + (label[0].x + 2) + ',' + (tbox.y + 4 - headerSize * 2) + ')')
-    //   dropDownDiv(addPointingg,
-    //     {x: -2, y: -4, w: sizeNewPointing * 2, h: sizeNewPointing * 1.3},
-    //     'trg',
-    //     {disabled: !com.schedule.editabled, value: '', options: ['coordinates', 'divergentes']},
-    //     {change: (d) => { addNewPointing(d) }, enter: (d) => { addNewPointing(d) }})
-    //   pointingIcon(addPointingg, {w: sizeNewPointing * 0.8, h: sizeNewPointing * 0.8}, '+', pevents, colorPalette)
-    // }
+    let gt = g.append('g')
+      .attr('id', 'targetDisplayer')
+      .attr('transform', 'translate(' + label[2].x + ',' + (label[2].y + 3) + ')')
+    com.targetBlock = new TargetDisplayer({
+      main: {
+        tag: 'targetRootTag',
+        g: gt,
+        scroll: {},
+        box: {x: 0, y: 0, w: label[2].w, h: box.h * 0.9, marg: 0},
+        background: {
+          fill: colorPalette.brighter.background,
+          stroke: colorPalette.brighter.stroke,
+          strokeWidth: 0.5
+        }
+      },
+
+      displayer: 'defaultBib',
+      defaultBib: {
+        quickmap: {
+          enabled: false,
+          target: {
+            events: {
+              click: () => {},
+              over: () => {},
+              out: () => {}
+            }
+          },
+          pointing: {
+            events: {
+              click: () => {},
+              over: () => {},
+              out: () => {}
+            }
+          }
+        },
+        skymap: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: 0, w: label[2].w, h: box.h * 0.9, marg: 0},
+          mainTarget: undefined
+        },
+        legend: {
+          enabled: false
+        }
+      },
+      linkMap: {
+        map: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: 0, w: box.w, h: box.h * 0.9, marg: 0}
+        }
+      },
+
+      filters: {
+        targetFilters: [],
+        filtering: []
+      },
+      data: {
+        raw: {
+          targets: []
+        },
+        filtered: {},
+        modified: []
+      },
+      debug: {
+        enabled: false
+      },
+      pattern: {
+        select: {}
+      },
+      input: {
+        over: {
+          target: undefined
+        },
+        focus: {
+          target: undefined
+        }
+      }
+    })
+    com.targetBlock.init()
+    com.targetBlock.updateData({
+      data: {
+        raw: {
+          targets: com.data.block.targets,
+          pointings: com.data.block.pointings
+        },
+        modified: []
+      }
+    })
+    if (com.target.editable) {
+      let pevents = {
+        click: function (d) {},
+        over: function () {},
+        out: function () {}
+      }
+      let sizeNewPointing = line * 0.8
+      let addPointingg = g.append('g').attr('transform', 'translate(' + (label[1].x - sizeNewPointing) + ',' + (tbox.y + 4 - headerSize * 2) + ')')
+      dropDownDiv(addPointingg,
+        {x: -(label[1].x - sizeNewPointing), y: -4, w: label[0].w + label[1].w, h: sizeNewPointing * 1.3},
+        'trg',
+        {disabled: !com.schedule.editabled, value: '', options: ['coordinates', 'divergentes']},
+        {change: (d) => { addNewPointing(d) }, enter: (d) => { addNewPointing(d) }})
+      pointingIcon(addPointingg, {w: sizeNewPointing * 0.8, h: sizeNewPointing * 0.8}, '+', pevents, colorPalette)
+    }
   }
 
   function switchTel (elem, tel) {
@@ -2372,7 +2374,7 @@ window.ObsblockForm = function (optIn) {
           }
         },
         telescope: {
-          click: (d) => {},
+          click: (d) => { com.telescope.events.click('telescope', d.id)},
           mouseover: (d) => {},
           mouseout: (d) => {},
           drag: {
@@ -2388,22 +2390,21 @@ window.ObsblockForm = function (optIn) {
       },
       interaction: {
         delete: {
-          enabled: true,
+          enabled: com.schedule.editabled,
           event: () => {}
         },
         drag: {
-          enabled: true,
+          enabled: com.schedule.editabled,
           event: () => {}
         },
         switch: {
-          enabled: true,
+          enabled: com.schedule.editabled,
           event: () => {}
         }
       }
     })
     com.telescopeRunningBlock.init()
 
-    com.telescope.tels = {}
     g.append('text')
       .attr('id', 'largeTelNumber')
       .text(com.data.block.telescopes.large.ids.length)
@@ -2415,11 +2416,6 @@ window.ObsblockForm = function (optIn) {
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
-    com.telescope.tels.large = inputNumber(g,
-      {x: (largeBox.x + largeBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
-      'large',
-      {disabled: !com.schedule.editabled, value: com.data.block.telescopes.large.min, min: 0, max: com.data.block.telescopes.large.max, step: 1},
-      {change: (d) => { changeTelescopeNumber('large', d) }, enter: (d) => { changeTelescopeNumber('large', d) }})
     g.append('text')
       .attr('id', 'mediumTelNumber')
       .text(com.data.block.telescopes.medium.ids.length)
@@ -2431,11 +2427,6 @@ window.ObsblockForm = function (optIn) {
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
-    com.telescope.tels.medium = inputNumber(g,
-      {x: (mediumBox.x + mediumBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
-      'small',
-      {disabled: !com.schedule.editabled, value: com.data.block.telescopes.medium.min, min: 0, max: com.data.block.telescopes.medium.max, step: 1},
-      {change: (d) => { changeTelescopeNumber('medium', d) }, enter: (d) => { changeTelescopeNumber('medium', d) }})
     g.append('text')
       .attr('id', 'smallTelNumber')
       .text(com.data.block.telescopes.small.ids.length)
@@ -2447,70 +2438,82 @@ window.ObsblockForm = function (optIn) {
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
-    com.telescope.tels.small = inputNumber(g,
-      {x: (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
-      'small',
-      {disabled: !com.schedule.editabled, value: com.data.block.telescopes.small.min, min: 0, max: com.data.block.telescopes.small.max, step: 1},
-      {change: (d) => { changeTelescopeNumber('small', d) }, enter: (d) => { changeTelescopeNumber('small', d) }})
 
-    let layoutBox = {
-      x: box.w - 38,
-      y: box.y + box.h * 1,
-      w: 17,
-      h: 17
+    if (com.schedule.editabled) {
+      com.telescope.tels = {}
+      com.telescope.tels.large = inputNumber(g,
+        {x: (largeBox.x + largeBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
+        'large',
+        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.large.min, min: 0, max: com.data.block.telescopes.large.max, step: 1},
+        {change: (d) => { changeTelescopeNumber('large', d) }, enter: (d) => { changeTelescopeNumber('large', d) }})
+      com.telescope.tels.medium = inputNumber(g,
+        {x: (mediumBox.x + mediumBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
+        'small',
+        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.medium.min, min: 0, max: com.data.block.telescopes.medium.max, step: 1},
+        {change: (d) => { changeTelescopeNumber('medium', d) }, enter: (d) => { changeTelescopeNumber('medium', d) }})
+      com.telescope.tels.small = inputNumber(g,
+        {x: (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
+        'small',
+        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.small.min, min: 0, max: com.data.block.telescopes.small.max, step: 1},
+        {change: (d) => { changeTelescopeNumber('small', d) }, enter: (d) => { changeTelescopeNumber('small', d) }})
+      let layoutBox = {
+        x: box.w - 38,
+        y: box.y + box.h * 1,
+        w: 17,
+        h: 17
+      }
+      g.append('rect')
+        .attr('x', layoutBox.x)
+        .attr('y', layoutBox.y)
+        .attr('width', layoutBox.w)
+        .attr('height', layoutBox.h)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', colorPalette.darker.stroke)
+        .attr('stroke-width', 0.2)
+        .on('click', function () {
+          reassignTelescope()
+          updateTelescopeInformation()
+        })
+        .on('mouseover', function (d) {
+          d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).attr('fill', colorPalette.dark.background)
+        })
+      let otherBox = {
+        x: box.w - 17,
+        y: box.y + box.h * 1,
+        w: 17,
+        h: 17
+      }
+      g.append('rect')
+        .attr('id', 'openOtherBox')
+        .attr('x', otherBox.x)
+        .attr('y', otherBox.y)
+        .attr('width', otherBox.w)
+        .attr('height', otherBox.h)
+        .attr('fill', colorPalette.darkest.background)
+        .attr('stroke', colorPalette.darker.stroke)
+        .attr('stroke-width', 0.2)
+        .attr('enabled', 'false')
+        .attr('clicked', 'false')
+        .on('click', function () {
+          if (d3.select(this).attr('enabled') === 'false') return
+          if (d3.select(this).attr('clicked') === 'false') {
+            d3.select(this).attr('clicked', 'true')
+            openOtherBlocks()
+          } else if (d3.select(this).attr('clicked') === 'true') {
+            d3.select(this).attr('clicked', 'false')
+            closeOtherBlocks()
+          }
+        })
+        .on('mouseover', function (d) {
+          if (d3.select(this).attr('enabled') === 'true') d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
+        })
+        .on('mouseout', function (d) {
+          if (d3.select(this).attr('enabled') === 'true') d3.select(this).attr('fill', colorPalette.dark.background)
+        })
     }
-    g.append('rect')
-      .attr('x', layoutBox.x)
-      .attr('y', layoutBox.y)
-      .attr('width', layoutBox.w)
-      .attr('height', layoutBox.h)
-      .attr('fill', colorPalette.darker.background)
-      .attr('stroke', colorPalette.darker.stroke)
-      .attr('stroke-width', 0.2)
-      .on('click', function () {
-        reassignTelescope()
-        updateTelescopeInformation()
-      })
-      .on('mouseover', function (d) {
-        d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
-      })
-      .on('mouseout', function (d) {
-        d3.select(this).attr('fill', colorPalette.dark.background)
-      })
-
-    let otherBox = {
-      x: box.w - 17,
-      y: box.y + box.h * 1,
-      w: 17,
-      h: 17
-    }
-    g.append('rect')
-      .attr('id', 'openOtherBox')
-      .attr('x', otherBox.x)
-      .attr('y', otherBox.y)
-      .attr('width', otherBox.w)
-      .attr('height', otherBox.h)
-      .attr('fill', colorPalette.darkest.background)
-      .attr('stroke', colorPalette.darker.stroke)
-      .attr('stroke-width', 0.2)
-      .attr('enabled', 'false')
-      .attr('clicked', 'false')
-      .on('click', function () {
-        if (d3.select(this).attr('enabled') === 'false') return
-        if (d3.select(this).attr('clicked') === 'false') {
-          d3.select(this).attr('clicked', 'true')
-          openOtherBlocks()
-        } else if (d3.select(this).attr('clicked') === 'true') {
-          d3.select(this).attr('clicked', 'false')
-          closeOtherBlocks()
-        }
-      })
-      .on('mouseover', function (d) {
-        if (d3.select(this).attr('enabled') === 'true') d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
-      })
-      .on('mouseout', function (d) {
-        if (d3.select(this).attr('enabled') === 'true') d3.select(this).attr('fill', colorPalette.dark.background)
-      })
 
     updateTelescopeInformation()
   }
