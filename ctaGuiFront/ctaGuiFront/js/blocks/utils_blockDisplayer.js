@@ -221,12 +221,12 @@ window.BlockDisplayer = function (optIn) {
     },
     input: {
       over: {
-        schedBlocks: undefined,
-        block: undefined
+        schedBlocks: [],
+        block: []
       },
       focus: {
-        schedBlocks: undefined,
-        block: undefined
+        schedBlocks: [],
+        block: []
       }
     }
   }
@@ -1669,7 +1669,7 @@ window.BlockDisplayer = function (optIn) {
         bDisplay.text = cols.text
         bDisplay.patternFill = com.style.blockPattern({ d: b })
         bDisplay.patternOpacity = 1
-        if (b.sbId === com.input.focus.schedBlocks) {
+        if (com.input.focus.schedBlocks.indexOf(b.sbId) !== -1) {
           if (!(com.input.over.schedBlocks !== undefined && com.input.over.schedBlocks !== com.input.focus.schedBlocks)) { // b.stroke = colorTheme.blocks.critical.background
             // b.patternFill = 'url(#patternHover)'
             bDisplay.patternFill = 'url(#patternSelect)'
@@ -1679,19 +1679,19 @@ window.BlockDisplayer = function (optIn) {
           bDisplay.strokeOpacity = 1
           // b.strokeDasharray = [2, 2]
         }
-        if (b.sbId === com.input.over.schedBlocks) {
+        if (com.input.over.schedBlocks.indexOf(b.sbId) !== -1) {
           bDisplay.strokeWidth = 1
           bDisplay.strokeOpacity = 1
           // b.strokeDasharray = [2, 2]
           bDisplay.patternFill = 'url(#patternSelect)'
           bDisplay.patternOpacity = 1
         }
-        if (b.obId === com.input.focus.block) {
+        if (com.input.focus.blocks.indexOf(b.obId) !== -1) {
           if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) bDisplay.strokeDasharray = [8, 4]
           bDisplay.strokeWidth = 6
           bDisplay.strokeOpacity = 1
         }
-        if (b.obId === com.input.over.block) {
+        if (com.input.over.blocks.indexOf(b.obId) !== -1) {
           bDisplay.strokeWidth = 6
           bDisplay.strokeOpacity = 1
           bDisplay.strokeDasharray = []
@@ -1890,6 +1890,11 @@ window.BlockDisplayer = function (optIn) {
       })
     }
 
+    function highlightBlocks (blocks) {
+      com.input.over.blocks = blocks.map(d => d.obId)
+      updateSchedulingBlocks()
+    }
+    this.highlightBlocks = highlightBlocks
     function getBlocksRows () {
       let timeScale = d3.scaleLinear()
         .range(com.blockQueue2.axis.range)
@@ -2430,6 +2435,11 @@ window.BlockDisplayer = function (optIn) {
       })
     }
 
+    function highlightBlocks (blocks) {
+      com.input.over.block = blocks[0]
+      updateSchedulingBlocks()
+    }
+    this.highlightBlocks = highlightBlocks
     function getBlocksRows () {
       let timeScale = d3.scaleLinear()
         .range(com.blockTrackShrink.axis.range)
@@ -2955,6 +2965,17 @@ window.BlockDisplayer = function (optIn) {
     }
   }
   this.getBlocksRows = getBlocksRows
+
+  function highlightBlocks (blocks) {
+    if (com.displayer === 'blockQueue') {
+      blockQueueBib.highlightBlocks(blocks)
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.highlightBlocks(blocks)
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+      blockTrackShrinkBib.highlightBlocks(blocks)
+    }
+  }
+  this.highlightBlocks = highlightBlocks
 
   // ---------------------------------------------------------------------------------------------------
   //

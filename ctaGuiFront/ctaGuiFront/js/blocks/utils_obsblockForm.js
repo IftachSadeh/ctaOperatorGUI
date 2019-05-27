@@ -316,7 +316,7 @@ window.ObsblockForm = function (optIn) {
     let endTime = new Date(com.data.timeOfNight.date_end)
     switch (type) {
       case 'startTime':
-        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
+        if (Number(hour) >= 0 && Number(hour) <= endTime.getHours()) {
           endTime.setHours(Number(hour))
           endTime.setMinutes(Number(min))
           endTime.setSeconds(Number(sec))
@@ -334,7 +334,7 @@ window.ObsblockForm = function (optIn) {
         com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
         break
       case 'endTime':
-        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
+        if (Number(hour) >= 0 && Number(hour) <= endTime.getHours()) {
           endTime.setHours(Number(hour))
           endTime.setMinutes(Number(min))
           endTime.setSeconds(Number(sec))
@@ -345,12 +345,12 @@ window.ObsblockForm = function (optIn) {
           endTime.setSeconds(Number(sec))
         }
         com.data.block.time.end = (endTime - startTime) / 1000
-        com.data.block.time.duration = com.data.block.endTime - com.data.block.time.start
+        com.data.block.time.duration = com.data.block.time.end - com.data.block.time.start
         break
       default:
         return
     }
-
+    console.log(com.data.block.time.start, com.data.block.time.end, com.data.block.time.duration);
     function updateTime (id, time) {
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
       let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
@@ -376,7 +376,7 @@ window.ObsblockForm = function (optIn) {
     updateTime('endTime', endTime)
 
     com.schedule.events.click()
-    com.events.conflict()
+    com.events.conflict(com.data.block)
   }
   function changeState (newState) {
     com.schedule.events.change(com.data.block, newState)
@@ -2537,272 +2537,5 @@ window.ObsblockForm = function (optIn) {
         modified: []
       }
     })
-  }
-
-  function inputDate (g, box, id, optIn, events) {
-    let fo = g.append('foreignObject')
-      .attr('width', box.w + 'px')
-      .attr('height', box.h + 'px')
-      .attr('x', box.x + 'px')
-      .attr('y', box.y + 'px')
-    let rootDiv = fo.append('xhtml:div')
-      .attr('class', 'quantity')
-      .attr('id', id)
-      .style('width', '100%')
-      .style('height', '100%')
-    let input = rootDiv.append('input')
-      .attr('type', 'number')
-      .attr('min', function (d) { return optIn.min })
-      .attr('max', function (d) { return optIn.max })
-      .attr('step', function (d) { return optIn.step })
-      .style('font-size', 11 + 'px')
-      // .style('display', 'inline-block')
-      // .style('color', '#000000')
-      .style('background', 'transparent')
-    input.property('value', function () {
-      return optIn.value
-    })
-    if (optIn.disabled) {
-      input.attr('disabled')
-      return
-    }
-    input.on('change', function (d) {
-      let newVal = parseInt(input.property('value'))
-      if (newVal > optIn.max) newVal = optIn.max
-      else if (newVal < optIn.min) newVal = optIn.min
-      input.property('value', ('0' + newVal).slice(-2))
-      events.change(input.property('value'))
-    })
-    input.on('focus', function () {
-      $(this).select()
-    })
-    input.on('wheel', function (d) {
-      if (!$(this).is(':focus')) {
-        return
-      }
-      d3.event.preventDefault()
-      let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
-      let newVal = parseInt(input.property('value'))
-      if (direction === 'up') newVal += 1
-      else if (direction === 'down') newVal -= 1
-      if (newVal > optIn.max) newVal = optIn.min
-      else if (newVal < optIn.min) newVal = optIn.max
-      input.property('value', ('0' + newVal).slice(-2))
-      events.change(input.property('value'))
-    })
-    input.on('keyup', function () {
-      let event = d3.event
-      if (event.keyCode === 13) {
-        event.preventDefault()
-        events.enter(input.property('value'))
-      }
-    })
-    let nav = rootDiv.append('div')
-      .attr('class', 'quantity-nav')
-    nav.append('div')
-      .attr('class', 'quantity-button quantity-down')
-      .html('-')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '10px 0px 0px 10px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(input.property('value'))
-        let newVal = oldValue
-        if (oldValue > optIn.min) {
-          newVal = oldValue - 1
-        } else {
-          newVal = optIn.max
-        }
-        input.property('value', ('0' + newVal).slice(-2))
-        events.change(input.property('value'))
-      })
-    nav.append('div')
-      .attr('class', 'quantity-button quantity-up')
-      .html('+')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '0px 10px 10px 0px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(input.property('value'))
-        let newVal = oldValue
-        if (oldValue < optIn.max) {
-          newVal = oldValue + 1
-        } else {
-          newVal = optIn.min
-        }
-        input.property('value', ('0' + newVal).slice(-2))
-        events.change(input.property('value'))
-      })
-
-    return input
-  }
-  function inputNumber (g, box, id, optIn, events) {
-    let linker = {}
-    let fo = g.append('foreignObject')
-      .attr('width', box.w + 'px')
-      .attr('height', box.h + 'px')
-      .attr('x', box.x + 'px')
-      .attr('y', box.y + 'px')
-    let rootDiv = fo.append('xhtml:div')
-      .attr('class', 'numberSelectorH')
-      .attr('id', id)
-      .style('width', '100%')
-      .style('height', '100%')
-
-    let navLeft = rootDiv.append('div')
-      .attr('class', 'numberSelectorH-nav')
-    if (!optIn.disabled) {
-      navLeft.append('div')
-        .attr('class', 'numberSelectorH-button numberSelectorH-down')
-        .html('-')
-        .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-        .style('border-radius', '10px 0px 0px 10px')
-        .style('font-size', headerSize + 'px')
-        .on('click', function () {
-          let oldValue = parseInt(linker.input.property('value'))
-          let newVal = oldValue
-          if (oldValue > optIn.min) {
-            newVal = oldValue - 1
-          }
-          linker.input.property('value', ('' + newVal).slice(-2))
-          events.change(linker.input.property('value'))
-        })
-    }
-
-    linker.input = rootDiv.append('input')
-      .attr('type', 'number')
-      .attr('min', function (d) { return optIn.min })
-      .attr('max', function (d) { return optIn.max })
-      .attr('step', function (d) { return optIn.step })
-      .style('font-size', 11 + 'px')
-      // .style('display', 'inline-block')
-      // .style('color', '#000000')
-      .style('background', 'transparent')
-    linker.input.property('value', function () {
-      return optIn.value
-    })
-    if (optIn.disabled) {
-      linker.input.attr('disabled')
-      return
-    }
-    linker.input.on('change', function (d) {
-      let newVal = parseInt(linker.input.property('value'))
-      if (newVal > optIn.max) newVal = optIn.max
-      else if (newVal < optIn.min) newVal = optIn.min
-      linker.input.property('value', ('' + newVal).slice(-2))
-      events.change(linker.input.property('value'))
-    })
-    linker.input.on('focus', function () {
-      $(this).select()
-    })
-    linker.input.on('wheel', function (d) {
-      if (!$(this).is(':focus')) {
-        return
-      }
-      d3.event.preventDefault()
-      let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
-      let newVal = parseInt(linker.input.property('value'))
-      if (direction === 'up' && newVal < optIn.max) newVal += 1
-      else if (direction === 'down' && newVal > optIn.min) newVal -= 1
-      linker.input.property('value', ('' + newVal).slice(-2))
-      events.change(linker.input.property('value'))
-    })
-    linker.input.on('keyup', function () {
-      let event = d3.event
-      if (event.keyCode === 13) {
-        event.preventDefault()
-        events.enter(linker.input.property('value'))
-      }
-    })
-
-    let navRight = rootDiv.append('div')
-      .attr('class', 'numberSelectorH-nav')
-    navRight.append('div')
-      .attr('class', 'numberSelectorH-button numberSelectorH-up')
-      .html('+')
-      .style('box-shadow', '0 0 0 0.3pt #000000 inset')
-      .style('border-radius', '0px 10px 10px 0px')
-      .style('font-size', headerSize + 'px')
-      .on('click', function () {
-        let oldValue = parseInt(linker.input.property('value'))
-        let newVal = oldValue
-        if (oldValue < optIn.max) {
-          newVal = oldValue + 1
-        }
-        linker.input.property('value', ('' + newVal).slice(-2))
-        events.change(linker.input.property('value'))
-      })
-
-    return linker.input
-  }
-  function dropDownDiv (g, box, id, optIn, events) {
-    let fo = g.append('foreignObject')
-      .attr('width', box.w + 'px')
-      .attr('height', box.h + 'px')
-      .attr('x', box.x + 'px')
-      .attr('y', box.y + 'px')
-    let rootDiv = fo.append('xhtml:div')
-      .attr('id', id)
-      .attr('class', 'dropdown')
-      .style('color', '#000000')
-      .style('font-size', '11px')
-    if (optIn.disabled) {
-      rootDiv.html(optIn.value)
-      return rootDiv
-    }
-    // div.on('mouseover', function (d) {
-    //   if (d.event.mouseover) {
-    //     div.style('background', function (d) {
-    //       return (d.style && d.style.color) ? d3.color(d.style.color).darker(0.4) : d3.color(colorTheme.brighter.background).darker(0.4)
-    //     })
-    //     d.event.mouseover(d)
-    //   }
-    // })
-    // div.on('mouseout', function (d) {
-    //   if (d.event.mouseout) {
-    //     div.style('background', function (d) {
-    //       return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
-    //     })
-    //     d.event.mouseout(d)
-    //   }
-    // })
-
-    // div.attr('class', 'divForm dropDownDiv')
-    // let d = div.data()[0]
-    // div.append('label')
-    //   .attr('class', 'key')
-    //   .html(function (d) { return d.key })
-    //   .attr('id', 'key')
-    //   .style('display', 'inline-block')
-    //   .style('color', '#000000')
-    //   // .style('font-size', 10 + 'px')
-    //   .style('background', 'transparent')
-    //   // .style('margin-left', '6px')
-    // div.append('label')
-    //   .attr('class', 'dot')
-    //   .attr('id', 'dot')
-    //   .html(' : ')
-    //   .style('display', 'inline-block')
-    //   .style('color', '#000000')
-    //   // .style('font-size', 10 + 'px')
-    //   .style('background', 'transparent')
-
-    let selector = rootDiv.append('select')
-      .style('width', '100%')
-      .style('height', '100%')
-      .style('box-shadow', '0 0 0 0.1pt #eeeeee inset')
-      .on('change', function (d) {
-        events.change(selector.property('value'))
-      })
-    selector.selectAll('option')
-      .data(optIn.options)
-      .enter()
-      .append('option')
-      .text(function (d) { return d })
-    selector.property('value', function () {
-      return optIn.value
-    })
-    return selector
-    // if (!d.editable) selector.attr('disabled', true)
   }
 }

@@ -1393,8 +1393,8 @@ let mainSchedBlocksController = function (optIn) {
           }
         },
         input: {
-          focus: {schedBlocks: undefined, block: undefined},
-          over: {schedBlocks: undefined, block: undefined},
+          focus: {schedBlocks: [], blocks: []},
+          over: {schedBlocks: [], blocks: []},
           selection: []
         }
       })
