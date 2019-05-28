@@ -160,10 +160,10 @@ window.ObsblockForm = function (optIn) {
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     com.tree.g = g
     g.append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', box.h)
-      .attr('height', box.h)
+      .attr('x', box.h * 0.1)
+      .attr('y', box.h * 0.1)
+      .attr('width', box.h * 0.8)
+      .attr('height', box.h * 0.8)
       .attr('fill', palette.color.background)
       .attr('stroke', palette.color.stroke)
       .attr('stroke-width', 0.2)
@@ -185,6 +185,14 @@ window.ObsblockForm = function (optIn) {
       .style('font-size', titleSize + 'px')
       .attr('text-anchor', 'middle')
       .attr('transform', 'translate(' + (box.w * 0.075) + ',' + (box.h * 0.5 + titleSize * 0.3) + ')')
+      .style('pointer-events', 'none')
+    g.append('svg:image')
+      .attr('xlink:href', '/static/icons/cross.svg')
+      .attr('x', box.h - 13)
+      .attr('y', 0)
+      .attr('width', 15)
+      .attr('height', 15)
+      .style('opacity', 0.5)
       .style('pointer-events', 'none')
 
     // g.append('text')
@@ -350,7 +358,6 @@ window.ObsblockForm = function (optIn) {
       default:
         return
     }
-    console.log(com.data.block.time.start, com.data.block.time.end, com.data.block.time.duration);
     function updateTime (id, time) {
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
       let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
@@ -380,6 +387,7 @@ window.ObsblockForm = function (optIn) {
   }
   function changeState (newState) {
     com.schedule.events.change(com.data.block, newState)
+    initSchedulingObservingBlocksTree()
   }
   function initTimeInformation () {
     let data = com.data.block
@@ -761,12 +769,15 @@ window.ObsblockForm = function (optIn) {
     let box = com.target.box
     let data = com.data.block
 
-    if (com.main.g.select('g#pointing')) com.main.g.select('g#pointing').remove()
+    if (!com.target.g) {
+      com.target.g = com.main.g.append('g')
+        .attr('id', 'pointing')
+        .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+    }
+    let g = com.target.g
 
-    let g = com.main.g.append('g')
-      .attr('id', 'pointing')
-      .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
-    com.target.g = g
+    com.main.g.select('g#pointing').selectAll().remove()
+
     g.append('text')
       .text('Targets & pointings')
       .style('fill', colorPalette.dark.stroke)
@@ -1740,6 +1751,7 @@ window.ObsblockForm = function (optIn) {
     let resources = com.events.allTel()
     let allTel = resources.allTels
     let blocks = resources.blocks.filter(d => d.obId !== com.data.block.obId)
+    com.otherBlocks = blocks
     let innerOtherBlock = {}
     let otherg = com.main.g.append('g').attr('id', 'otherg')
       .attr('transform', 'translate(' + box.x + ',' + (box.y + box.h) + ')')
@@ -1987,8 +1999,7 @@ window.ObsblockForm = function (optIn) {
               return true
             })
             for (let i = 0; (i < diff && i < idle.length); i++) {
-              addTelescope(idle[i])
-              // addTelescopeToBlock(block, idle[i])
+              addTelescopeToBlock(block, idle[i])
             }
             for (let i = data.ids.length; i < data.min; i++) {
               let t = extractRandomTelsFromBlock(blocks, type)
@@ -2132,6 +2143,7 @@ window.ObsblockForm = function (optIn) {
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
+
     otherg.append('rect')
       .attr('id', 'validateConflict')
       .attr('x', box.w - 24)
@@ -2152,31 +2164,49 @@ window.ObsblockForm = function (optIn) {
       .on('mouseout', function (d) {
         d3.select(this).attr('fill', colorPalette.darker.background)
       })
-    function updateTotals () {
-      let l = com.data.block.telescopes.large.min + blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.large.min), 0)
-      let m = com.data.block.telescopes.medium.min + blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.medium.min), 0)
-      let s = com.data.block.telescopes.small.min + blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.small.min), 0)
-      otherg.select('text#totalLarge')
-        .text(l)
-      otherg.select('text#totalMedium')
-        .text(m)
-      otherg.select('text#totalSmall')
-        .text(s)
-      otherg.select('rect#isbalanced')
-        .attr('fill', function () {
-          if (l > 4 || m > 25 || s > 70) return '#FFCCBC'
-          return '#C8E6C9'
-        })
-      otherg.select('rect#validateConflict')
-        .style('opacity', function () {
-          if (l > 4 || m > 25 || s > 70) return 0
-          return 0.8
-        })
-    }
+    otherg.append('image')
+      .attr('id', 'checkedConflict')
+      .attr('xlink:href', '/static/icons/checked.svg')
+      .attr('x', box.w - 20)
+      .attr('y', box.h + 14)
+      .attr('width', 12)
+      .attr('height', 12)
+      .style('opacity', 0)
+      .style('pointer-events', 'none')
     updateTotals()
+  }
+  function updateTotals () {
+    let otherg = com.main.g.select('g#otherg')
+    if (!com.otherBlocks) return
+    let l = com.data.block.telescopes.large.min + com.otherBlocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.large.min), 0)
+    let m = com.data.block.telescopes.medium.min + com.otherBlocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.medium.min), 0)
+    let s = com.data.block.telescopes.small.min + com.otherBlocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.small.min), 0)
+    otherg.select('text#totalLarge')
+      .text(l)
+    otherg.select('text#totalMedium')
+      .text(m)
+    otherg.select('text#totalSmall')
+      .text(s)
+    otherg.select('rect#isbalanced')
+      .attr('fill', function () {
+        if (l > 4 || m > 25 || s > 70) return '#FFCCBC'
+        return '#C8E6C9'
+      })
+
+    otherg.select('rect#validateConflict')
+      .style('opacity', function () {
+        if (l > 4 || m > 25 || s > 70) return 0
+        return 0.8
+      })
+    otherg.select('image#checkedConflict')
+      .style('opacity', function () {
+        if (l > 4 || m > 25 || s > 70) return 0
+        return 0.8
+      })
   }
   function closeOtherBlocks () {
     // com.events.focus()
+    com.otherBlocks = []
     com.telescope.g
       .transition()
       .duration(800)
@@ -2189,12 +2219,10 @@ window.ObsblockForm = function (optIn) {
     function errorTelescopeNumber () {
       com.main.g.select('rect#openOtherBox')
         .attr('enabled', true)
-        .attr('fill', colorPalette.dark.background)
     }
     function correctTelescopeNumber () {
       com.main.g.select('rect#openOtherBox')
         .attr('enabled', false)
-        .attr('fill', colorPalette.darkest.background)
     }
     function decreaseMinimumTelsNumber () {
       data.min = Number(d)
@@ -2239,6 +2267,7 @@ window.ObsblockForm = function (optIn) {
     }
 
     updateInput()
+    updateTotals()
     updateTelescopeInformation()
     // reassignTelescope()
   }

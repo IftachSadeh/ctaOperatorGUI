@@ -297,7 +297,7 @@ let mainSchedBlocksController = function (optIn) {
       }
       box.brushZoom = {
         x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.612,
+        y: lenD.h[0] * 0.65,
         w: lenD.w[0] * 0.62,
         h: lenD.h[0] * 0.05,
         marg: lenD.w[0] * 0.01
@@ -1145,6 +1145,8 @@ let mainSchedBlocksController = function (optIn) {
     this.update = update
   }
   let SvgBlocksQueueServer = function () {
+    let reserved = {}
+
     function initData () {
       let adjustedBox = {
         x: box.blockQueueServer.x,
@@ -1153,13 +1155,13 @@ let mainSchedBlocksController = function (optIn) {
         h: box.blockQueueServer.h,
         marg: lenD.w[0] * 0.01
       }
-      let gBlockBox = svg.g.append('g')
+      reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
 
       blockQueue = new BlockDisplayer({
         main: {
           tag: 'blockQueueMiddleTag',
-          g: gBlockBox,
+          g: reserved.g,
           scroll: {},
           box: adjustedBox,
           background: {
@@ -1281,7 +1283,7 @@ let mainSchedBlocksController = function (optIn) {
             scale: undefined,
             domain: [0, 1000],
             range: [0, 0],
-            showAxis: false,
+            showAxis: true,
             orientation: 'axisTop',
             attr: {
               text: {
@@ -1298,7 +1300,7 @@ let mainSchedBlocksController = function (optIn) {
           timeBars: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: -adjustedBox.y, w: adjustedBox.w, h: adjustedBox.h * 3, marg: adjustedBox.marg}
+            box: {x: 0, y: -adjustedBox.h, w: adjustedBox.w, h: adjustedBox.h * 4, marg: adjustedBox.marg}
           }
         },
         blockTrackShrink: {
@@ -1380,11 +1382,6 @@ let mainSchedBlocksController = function (optIn) {
             click: focusManager.focusOn,
             mouseover: focusManager.over,
             mouseout: focusManager.out,
-            drag: {
-              start: () => {},
-              tick: () => {},
-              end: () => {}
-            }
           },
           sched: {
             click: focusManager.focusOn,
@@ -1399,6 +1396,95 @@ let mainSchedBlocksController = function (optIn) {
         }
       })
       blockQueue.init()
+      blockQueue.switchStyle({
+        runRecCol: colorTheme.blocks.shutdown,
+        blockCol: function (optIn) {
+          let state = hasVar(optIn.state)
+            ? optIn.state
+            : optIn.d.exeState.state
+          let canRun = hasVar(optIn.canRun)
+            ? optIn.canRun
+            : optIn.d.exeState.canRun
+          let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+
+          if (state === 'wait') {
+            if (modified) return colorTheme.blocks.wait
+            return colorTheme.blocks.wait
+          } else if (state === 'done') {
+            return colorTheme.blocks.done
+          } else if (state === 'fail') {
+            return colorTheme.blocks.fail
+          } else if (state === 'run') {
+            return colorTheme.blocks.run
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return colorTheme.blocks.cancelOp
+            }
+            return colorTheme.blocks.cancelSys
+          } else return colorTheme.blocks.shutdown
+          // let startT = hasVar(optIn.startTime)
+          //   ? optIn.startTime
+          //   : optIn.d.startTime
+          // if (startT < shared.data.server.timeOfNight.now) return colorTheme.blocks.shutdown
+          // let state = hasVar(optIn.state)
+          //   ? optIn.state
+          //   : optIn.d.exeState.state
+          // let canRun = hasVar(optIn.canRun)
+          //   ? optIn.canRun
+          //   : optIn.d.exeState.canRun
+          // let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+          //
+          // if (state === 'wait') {
+          //   if (modified) return colorTheme.blocks.wait
+          //   return colorTheme.blocks.wait
+          // } else if (state === 'cancel') {
+          //   if (hasVar(canRun)) {
+          //     if (!canRun) return colorTheme.blocks.cancelOp
+          //   }
+          //   return colorTheme.blocks.cancelSys
+          // } else return colorTheme.blocks.shutdown
+        },
+        blockOpac: function (optIn) {
+          let state = hasVar(optIn.state)
+            ? optIn.state
+            : optIn.d.exeState.state
+          let canRun = hasVar(optIn.canRun)
+            ? optIn.canRun
+            : optIn.d.exeState.canRun
+          let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+
+          if (state === 'wait') {
+            if (modified) return 0.2
+            return 1
+          } else if (state === 'run') {
+            return 1
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return 1
+            }
+            return 1
+          } else return 1
+        },
+        blockPattern: function (optIn) {
+          let startT = hasVar(optIn.startTime)
+            ? optIn.startTime
+            : optIn.d.startTime
+          if (startT < shared.data.server.timeOfNight.now) return 'url(#patternLock)'
+          return 'none'
+        }
+      })
+
+      let axisTop = brushZoom.getAxis('top')
+      reserved.g.append('rect')
+        .attr('id', 'cloak')
+        .attr('x', 0)
+        .attr('y', -adjustedBox.y)
+        .attr('width', 0)
+        .attr('height', lenD.h[0])
+        .attr('fill', colorTheme.darker.stroke)
+        .attr('stroke', 'none')
+        .style('opacity', 0.2)
+        .style('pointer-events', 'none')
     }
     this.initData = initData
 
@@ -1409,6 +1495,11 @@ let mainSchedBlocksController = function (optIn) {
       })
 
       let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+      let newWidth = brushZoom.getAxis('top').scale(new Date(shared.data.server.timeOfNight.date_now))
+      if (newWidth < 0) newWidth = 0
+      if (newWidth > box.blockQueueServer.w) newWidth = box.blockQueueServer.w
+      reserved.g.select('rect#cloak').attr('width', newWidth)
+
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
       let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
       blockQueue.updateData({
@@ -1541,6 +1632,15 @@ let mainSchedBlocksController = function (optIn) {
       }
       reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + brushBox.x + ',' + brushBox.y + ')')
+      reserved.g.append('rect')
+        .attr('x', 0)
+        .attr('y', -brushBox.h * 0.6)
+        .attr('width', brushBox.w)
+        .attr('height', brushBox.h * 0.7)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.4)
+        .attr('stroke-dasharray', [0, brushBox.w, brushBox.h * 0.7, brushBox.w, brushBox.h * 0.7])
 
       brushZoom = new PlotBrushZoom({
         main: {
@@ -1548,7 +1648,7 @@ let mainSchedBlocksController = function (optIn) {
           box: brushBox
         },
         clipping: {
-          enabled: true
+          enabled: false
         },
         axis: [
           {
@@ -1567,7 +1667,7 @@ let mainSchedBlocksController = function (optIn) {
                   fill: colorTheme.medium.stroke
                 },
                 path: {
-                  enabled: true,
+                  enabled: false,
                   stroke: colorTheme.medium.stroke,
                   fill: colorTheme.medium.stroke
                 }
@@ -1649,9 +1749,9 @@ let mainSchedBlocksController = function (optIn) {
           enabled: true,
           main: {
             g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+            box: {x: 0, y: brushBox.h * 0.15, w: brushBox.w, h: brushBox.h * 0.65, marg: 0},
             attr: {
-              fill: colorTheme.medium.background
+              fill: colorPalette.medium.background
             }
           }
         },
@@ -1659,11 +1759,11 @@ let mainSchedBlocksController = function (optIn) {
           enabled: true,
           main: {
             g: undefined,
-            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+            box: {x: 0, y: brushBox.h * 0.15, w: brushBox.w, h: brushBox.h * 0.65, marg: 0},
             attr: {
-              fill: colorTheme.darker.background,
+              fill: colorPalette.darker.background,
               opacity: 1,
-              stroke: colorTheme.darker.background
+              stroke: colorPalette.darker.background
             }
           }
         },
@@ -1681,6 +1781,15 @@ let mainSchedBlocksController = function (optIn) {
       brushZoom.init()
     }
     this.initData = initData
+
+    function blurry () {
+      reserved.g.style('opacity', 0.1)
+    }
+    this.blurry = blurry
+    function focus () {
+      reserved.g.style('opacity', 1)
+    }
+    this.focus = focus
 
     function translateTo (x, y) {
       reserved.g.attr('transform', 'translate(' + x + ',' + y + ')')
@@ -1723,6 +1832,7 @@ let mainSchedBlocksController = function (optIn) {
 
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
+      reserved.g = gBlockBox
       // gBlockBox.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
@@ -1759,6 +1869,15 @@ let mainSchedBlocksController = function (optIn) {
     this.updateData = updateData
     function update () {}
     this.update = update
+
+    function blurry () {
+      reserved.g.style('opacity', 0.1)
+    }
+    this.blurry = blurry
+    function focus () {
+      reserved.g.style('opacity', 1)
+    }
+    this.focus = focus
 
     function drawTargets () {
       let scaleX = d3.scaleLinear()
@@ -1935,7 +2054,12 @@ let mainSchedBlocksController = function (optIn) {
     this.showPercentTarget = showPercentTarget
     function highlightTarget (block) {
       let tarG = reserved.clipping.clipBody.selectAll('g.target')
-        .filter(function (d) { return (block.targetId === d.id) })
+        .filter(function (d) {
+          for (let i = 0; i < block.targets.length; i++) {
+            if (block.targets[i].id === d.id) return true
+          }
+          return false
+        })
       tarG.select('path')
         .attr('fill', colorTheme.dark.background)
         .attr('stroke', colorTheme.dark.stroke)
@@ -1951,10 +2075,15 @@ let mainSchedBlocksController = function (optIn) {
     this.highlightTarget = highlightTarget
     function unhighlightTarget (block) {
       if (!block) return
-      reserved.clipping.clipBody.select('text.percentStart').remove()
-      reserved.clipping.clipBody.select('text.percentEnd').remove()
+      reserved.clipping.clipBody.selectAll('text.percentStart').remove()
+      reserved.clipping.clipBody.selectAll('text.percentEnd').remove()
       let tarG = reserved.clipping.clipBody.selectAll('g.target')
-        .filter(function (d) { return (block.targetId === d.id) })
+        .filter(function (d) {
+          for (let i = 0; i < block.targets.length; i++) {
+            if (block.targets[i].id === d.id) return true
+          }
+          return false
+        })
       tarG.select('path')
         .attr('fill', 'none')
         .attr('stroke', colorTheme.dark.stroke)
@@ -2356,19 +2485,20 @@ let mainSchedBlocksController = function (optIn) {
         reserved.drag.timer.g.append('line')
           .attr('id', 'leftBar')
           .attr('x1', -4)
-          .attr('y1', 4)
+          .attr('y1', 4 + 20)
           .attr('x2', 0)
-          .attr('y2', -1)
+          .attr('y2', -1 + 20)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.6)
         reserved.drag.timer.g.append('line')
           .attr('id', 'rightBar')
           .attr('x1', reserved.drag.position.width + 4)
-          .attr('y1', 4)
+          .attr('y1', 4 + 20)
           .attr('x2', reserved.drag.position.width)
-          .attr('y2', -1)
+          .attr('y2', -1 + 20)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.6)
+
         reserved.drag.timer.g.append('text')
           .attr('class', 'hourLeft')
           .text(function () {
@@ -2377,7 +2507,7 @@ let mainSchedBlocksController = function (optIn) {
             return d3.timeFormat('%H:')(time)
           })
           .attr('x', -24)
-          .attr('y', 9) // - Number(reserved.drag.oldRect.attr('height')))
+          .attr('y', 30) // - Number(reserved.drag.oldRect.attr('height')))
           .style('font-weight', 'bold')
           .style('opacity', 1)
           .style('fill-opacity', 0.7)
@@ -2398,7 +2528,7 @@ let mainSchedBlocksController = function (optIn) {
             return d3.timeFormat('%M')(time)
           })
           .attr('x', -12)
-          .attr('y', 9) // - Number(reserved.drag.oldRect.attr('height')))
+          .attr('y', 30) // - Number(reserved.drag.oldRect.attr('height')))
           .style('font-weight', 'bold')
           .style('opacity', 1)
           .style('fill-opacity', 0.7)
@@ -2420,7 +2550,7 @@ let mainSchedBlocksController = function (optIn) {
             return d3.timeFormat('%H:')(time)
           })
           .attr('x', reserved.drag.position.width + 12)
-          .attr('y', 9) // - Number(reserved.drag.oldRect.attr('height')))
+          .attr('y', 30) // - Number(reserved.drag.oldRect.attr('height')))
           .style('font-weight', 'bold')
           .style('opacity', 1)
           .style('fill-opacity', 0.7)
@@ -2441,7 +2571,7 @@ let mainSchedBlocksController = function (optIn) {
             return d3.timeFormat('%M')(time)
           })
           .attr('x', reserved.drag.position.width + 24)
-          .attr('y', 9) // - Number(reserved.drag.oldRect.attr('height')))
+          .attr('y', 30) // - Number(reserved.drag.oldRect.attr('height')))
           .style('font-weight', 'bold')
           .style('opacity', 1)
           .style('fill-opacity', 0.7)

@@ -116,20 +116,20 @@ window.TargetDisplayer = function (optIn) {
           .attr('fill', colorTheme.bright.background)
           .attr('stroke', colorTheme.bright.stroke)
           .attr('stroke-width', 0.1)
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 10; i++) {
           com.defaultBib.skymap.g.append('line')
             .attr('x1', 0)
-            .attr('y1', (com.defaultBib.skymap.box.h / 20) * i)
+            .attr('y1', (com.defaultBib.skymap.box.h / 10) * i)
             .attr('x2', com.defaultBib.skymap.box.w)
-            .attr('y2', (com.defaultBib.skymap.box.h / 20) * i)
+            .attr('y2', (com.defaultBib.skymap.box.h / 10) * i)
             .attr('stroke', colorTheme.bright.stroke)
             .attr('stroke-width', 0.1)
         }
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 10; i++) {
           com.defaultBib.skymap.g.append('line')
-            .attr('x1', (com.defaultBib.skymap.box.w / 20) * i)
+            .attr('x1', (com.defaultBib.skymap.box.w / 10) * i)
             .attr('y1', 0)
-            .attr('x2', (com.defaultBib.skymap.box.w / 20) * i)
+            .attr('x2', (com.defaultBib.skymap.box.w / 10) * i)
             .attr('y2', com.defaultBib.skymap.box.h)
             .attr('stroke', colorTheme.bright.stroke)
             .attr('stroke-width', 0.1)

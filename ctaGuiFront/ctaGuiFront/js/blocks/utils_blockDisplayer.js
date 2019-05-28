@@ -1688,11 +1688,11 @@ window.BlockDisplayer = function (optIn) {
         }
         if (com.input.focus.blocks.indexOf(b.obId) !== -1) {
           if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) bDisplay.strokeDasharray = [8, 4]
-          bDisplay.strokeWidth = 6
+          bDisplay.strokeWidth = 4
           bDisplay.strokeOpacity = 1
         }
         if (com.input.over.blocks.indexOf(b.obId) !== -1) {
-          bDisplay.strokeWidth = 6
+          bDisplay.strokeWidth = 4
           bDisplay.strokeOpacity = 1
           bDisplay.strokeDasharray = []
         }
@@ -1860,8 +1860,8 @@ window.BlockDisplayer = function (optIn) {
           .ease(d3.easeLinear)
           .attr('x', timeScale(d.time.start))
           .attr('y', 0)
-          .attr('width', timeScale(d.time.end) - timeScale(d.time.start))
-          .attr('height', box.h)
+          .attr('width', (timeScale(d.time.end) - timeScale(d.time.start)) - d.display.strokeWidth * 0.5)
+          .attr('height', box.h - d.display.strokeWidth * 0.5)
           .style('fill', d.display.fill)
           .style('fill-opacity', d.display.fillOpacity)
           .attr('stroke-width', d.display.strokeWidth)
@@ -1872,8 +1872,8 @@ window.BlockDisplayer = function (optIn) {
           .duration(0)
           .attr('x', timeScale(d.time.start))
           .attr('y', 0)
-          .attr('width', timeScale(d.time.end) - timeScale(d.time.start))
-          .attr('height', box.h)
+          .attr('width', (timeScale(d.time.end) - timeScale(d.time.start)) - d.display.strokeWidth * 0.5)
+          .attr('height', box.h - d.display.strokeWidth * 0.5)
           .style('fill', d.display.patternFill)
           .style('fill-opacity', d.display.patternOpacity)
         d3.select(this).select('text')
@@ -2022,9 +2022,11 @@ window.BlockDisplayer = function (optIn) {
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
         .merge(rectNow)
-        .transition('inOut')
-        .duration(timeD.animArc)
+        // .transition('inOut')
+        // .duration(timeD.animArc)
         .attr('x', function (d, i) {
+          if (d.x < 0) return 0
+          if (d.x > com.blockQueue2.axis.box.w) return com.blockQueue2.axis.box.w
           return d.x
         })
         // .attr("y", function(d,i) { return d.y; })

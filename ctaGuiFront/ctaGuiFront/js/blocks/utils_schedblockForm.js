@@ -110,7 +110,7 @@ window.SchedblockForm = function (optIn) {
     let endTime = new Date(com.data.timeOfNight.date_end)
     switch (type) {
       case 'startTime':
-        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
+        if (Number(hour) >= 0 && Number(hour) <= endTime.getHours()) {
           endTime.setHours(Number(hour))
           endTime.setMinutes(Number(min))
           endTime.setSeconds(Number(sec))
@@ -128,7 +128,7 @@ window.SchedblockForm = function (optIn) {
         block.time.end = block.time.start + block.time.duration
         break
       case 'endTime':
-        if (Number(hour) > 0 && Number(hour) <= endTime.getHours()) {
+        if (Number(hour) >= 0 && Number(hour) <= endTime.getHours()) {
           endTime.setHours(Number(hour))
           endTime.setMinutes(Number(min))
           endTime.setSeconds(Number(sec))
@@ -139,7 +139,7 @@ window.SchedblockForm = function (optIn) {
           endTime.setSeconds(Number(sec))
         }
         block.time.end = (endTime - startTime) / 1000
-        block.time.duration = block.endTime - block.time.start
+        block.time.duration = block.time.end - block.time.start
         break
       default:
         return
@@ -169,10 +169,12 @@ window.SchedblockForm = function (optIn) {
     updateTime('duration', duration)
     updateTime('endTime', endTime)
 
-    // com.schedule.events.click()
+    com.schedule.events.click()
+    com.events.conflict(block)
   }
-  function changeState (newState) {
-    com.data.block.exeState.state = newState
+  function changeState (block, newState) {
+    com.schedule.events.change(block, newState)
+    createSchedulingObservingBlocksTree()
   }
   function changeTarget (newTarget) {
     let save = com.data.block.pointingName.split('/')[1]
@@ -279,6 +281,14 @@ window.SchedblockForm = function (optIn) {
       .style('font-size', txtSize * 1.4 + 'px')
       .attr('text-anchor', 'middle')
       .attr('transform', 'translate(' + (box.w * 0.0 + dimPoly * 0.5) + ',' + (box.h * 0.1 + dimPoly * 0.5 + txtSize * 0.3) + ')')
+      .style('pointer-events', 'none')
+    g.append('svg:image')
+      .attr('xlink:href', '/static/icons/cross.svg')
+      .attr('x', box.h - 18)
+      .attr('y', 3)
+      .attr('width', 15)
+      .attr('height', 15)
+      .style('opacity', 0.5)
       .style('pointer-events', 'none')
 
     dimPoly = box.h * 0.5

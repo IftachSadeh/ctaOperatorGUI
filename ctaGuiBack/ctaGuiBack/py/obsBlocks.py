@@ -1013,15 +1013,15 @@ class obsBlocks_noACS():
             elif self.rndGen.random() < 0.5:
                 newEvent['name'] = 'sun'
                 newEvent['icon'] = 'sun.svg'
-            elif self.rndGen.random() < 0.6:
-                newEvent['name'] = 'dolphin'
-                newEvent['icon'] = 'dolphin.svg'
-            elif self.rndGen.random() < 0.8:
-                newEvent['name'] = 'eagle'
-                newEvent['icon'] = 'eagle.svg'
-            elif self.rndGen.random() < 1:
-                newEvent['name'] = 'chicken'
-                newEvent['icon'] = 'chicken.svg'
+            # elif self.rndGen.random() < 0.6:
+            #     newEvent['name'] = 'dolphin'
+            #     newEvent['icon'] = 'dolphin.svg'
+            # elif self.rndGen.random() < 0.8:
+            #     newEvent['name'] = 'eagle'
+            #     newEvent['icon'] = 'eagle.svg'
+            # elif self.rndGen.random() < 1:
+            #     newEvent['name'] = 'chicken'
+            #     newEvent['icon'] = 'chicken.svg'
             self.external_events.append(newEvent)
         self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
 
