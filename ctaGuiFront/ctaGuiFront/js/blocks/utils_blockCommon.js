@@ -380,6 +380,7 @@ window.inputNumber = function (g, box, id, optIn, events) {
       return
     }
     d3.event.preventDefault()
+    d3.event.stopPropagation()
     let direction = d3.event.wheelDelta < 0 ? 'down' : 'up'
     let newVal = parseInt(linker.input.property('value'))
     if (direction === 'up' && newVal < optIn.max) newVal += 1
@@ -471,6 +472,7 @@ window.dropDownDiv = function (g, box, id, optIn, events) {
     .style('width', '100%')
     .style('height', '100%')
     .style('box-shadow', '0 0 0 0.1pt #eeeeee inset')
+    .style('font-size', optIn['font-size'])
     .on('change', function (d) {
       events.change(selector.property('value'))
     })
@@ -484,4 +486,32 @@ window.dropDownDiv = function (g, box, id, optIn, events) {
   })
   return selector
   // if (!d.editable) selector.attr('disabled', true)
+}
+
+window.reassignTelescope = function (block) {
+  let allTels = deepCopy(block.telIds)
+  let sizeChunk = allTels.length / block.pointings.length
+  function getRandom (arr, size) {
+    let rand = []
+    let stats = {large: 0, medium: 0, small: 0}
+    for (let i = 0; i < size && arr.length > 0; i++) {
+      let index = Math.floor(Math.random() * arr.length)
+      let tt = arr.splice(index, 1)[0]
+      if (tt.includes('L')) stats.large += 1
+      if (tt.includes('M')) stats.medium += 1
+      if (tt.includes('S')) stats.small += 1
+      rand.push(tt)
+    }
+    return {ids: rand, stats: stats}
+  }
+  for (let i = 0; i < block.pointings.length - 1; i++) {
+    let tels = getRandom(allTels, sizeChunk)
+    block.pointings[i].telIds = tels.ids
+    block.pointings[i].telsInfo = tels.stats
+  }
+  let tels = getRandom(allTels, allTels.length)
+  block.pointings[block.pointings.length - 1].telIds = tels.ids
+  block.pointings[block.pointings.length - 1].telsInfo = tels.stats
+
+  // initPointingInformation()
 }

@@ -1001,6 +1001,29 @@ window.SchedblockForm = function (optIn) {
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
           .style('pointer-events', 'none')
+        g.append('rect')
+          .attr('width', 12)
+          .attr('height', 12)
+          .attr('x', -line * 0.7)
+          .attr('y', line * 0.4)
+          .attr('fill', function () {
+            return 'transparent'
+          })
+          .on('click', function () {})
+          .on('mouseover', function (d) {
+            d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).attr('fill', 'transparent')
+          })
+        g.append('svg:image')
+          .attr('xlink:href', '/static/icons/up-triangle.svg')
+          .attr('width', 10)
+          .attr('height', 10)
+          .attr('x', -line * 0.65)
+          .attr('y', line * 0.44)
+          .style('opacity', 1)
+          .style('pointer-events', 'none')
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
