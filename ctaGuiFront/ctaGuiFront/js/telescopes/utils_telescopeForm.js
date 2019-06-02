@@ -193,6 +193,17 @@ window.TelescopeForm = function (optIn) {
       .attr('fill', color)
       .attr('stroke', '#000000')
       .attr('stroke-width', 0.2)
+      .on('click', function () {
+        com.tree.events.click('telescope', com.data.telescope.id)
+      })
+      .on('mouseover', function (d) {
+        d3.select(this).style('cursor', 'pointer')
+        d3.select(this).attr('fill', d3.color(color).darker(0.9))
+      })
+      .on('mouseout', function (d) {
+        d3.select(this).style('cursor', 'default')
+        d3.select(this).attr('fill', color)
+      })
     g.append('text')
       .text(tel.id)
       .style('fill', color.text)
@@ -200,6 +211,16 @@ window.TelescopeForm = function (optIn) {
       .style('font-size', headerSize + 'px')
       .attr('text-anchor', 'middle')
       .attr('transform', 'translate(' + (box.w * 0.1) + ',' + (box.h * 0.35 + txtSize * 0.3) + ')')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none')
+    g.append('svg:image')
+      .attr('xlink:href', '/static/icons/cross.svg')
+      .attr('x', box.h * 0.45)
+      .attr('y', 0)
+      .attr('width', 15)
+      .attr('height', 15)
+      .style('opacity', 0.5)
+      .style('pointer-events', 'none')
     // g.append('circle')
     //   .attr('cx', box.w * 0.38)
     //   .attr('cy', box.h * 0.5)
@@ -573,7 +594,6 @@ window.TelescopeForm = function (optIn) {
   //   //   .attr('stroke-width', 0.4)
   // }
   function createAssociatedBlocks () {
-    console.log(com.data);
     let scheds = []
     for (let key in com.data.schedB) {
       com.data.schedB[key].id = key
@@ -665,7 +685,6 @@ window.TelescopeForm = function (optIn) {
         .attr('class', 'target')
       enter.each(function (d, i) {
         let g = d3.select(this)
-        console.log(com);
         let tevents = {
           click: function () { com.ressource.events.click('target', d.id) },
           over: function () {
@@ -673,7 +692,7 @@ window.TelescopeForm = function (optIn) {
           },
           out: function () {}
         }
-        targetIcon(g, {w: line * 1.4, h: line * 1.4}, '' + d.name.split('_')[1], tevents, colorPalette)
+        targetIcon(g, {w: line * 1.4, h: line * 1.4}, 'T' + d.name.split('_')[1], tevents, colorPalette)
         // scrollHeight += marg + line + 4
       })
       let merge = current.merge(enter)

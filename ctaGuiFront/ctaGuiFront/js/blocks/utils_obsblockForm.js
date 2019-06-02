@@ -279,7 +279,7 @@ window.ObsblockForm = function (optIn) {
           d3.select(this).attr('fill', palette.color.background)
         })
       g.append('text')
-        .text(schedB.blocks[i].metaData.nObs)
+        .text('' + schedB.blocks[i].metaData.nObs)
         .style('fill', palette.color.text)
         .style('font-weight', '')
         .style('font-size', txtSize + 'px')
@@ -560,7 +560,7 @@ window.ObsblockForm = function (optIn) {
     for (let i = 0; i < com.data.target.length; i++) {
       if (com.data.target[i].name === trgName) {
         com.data.block.targets.push(com.data.target[i])
-        initPointingInformation()
+        updatePointingInformation()
         // addNewPointing(com.data.target[i])
       }
     }
@@ -701,7 +701,7 @@ window.ObsblockForm = function (optIn) {
             }
             if (insertTarget) com.data.block.targets.push(target)
 
-            initPointingInformation()
+            updatePointingInformation()
             reassignTelescope(com.data.block)
             updateTelescopeInformation()
             g.remove()
@@ -769,11 +769,9 @@ window.ObsblockForm = function (optIn) {
     let box = com.target.box
     let data = com.data.block
 
-    if (!com.target.g) {
-      com.target.g = com.main.g.append('g')
-        .attr('id', 'pointing')
-        .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
-    }
+    com.target.g = com.main.g.append('g')
+      .attr('id', 'pointing')
+      .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     let g = com.target.g
 
     com.main.g.select('g#pointing').selectAll().remove()
@@ -823,6 +821,10 @@ window.ObsblockForm = function (optIn) {
     let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
     let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, {enabled: false})
     let innertg = scrollBoxt.get('innerG')
+    com.target.target = {
+      scroll: scrollBoxt,
+      box: tbox
+    }
     // let trgtPnt = []
     // for (let i = 0; i < data.pointings.length; i++) {
     //   let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
@@ -866,7 +868,7 @@ window.ObsblockForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        targetIcon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
+        targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -890,6 +892,10 @@ window.ObsblockForm = function (optIn) {
     let blockpg = g.append('g').attr('transform', 'translate(' + pbox.x + ',' + pbox.y + ')')
     let scrollBoxp = initScrollBox('pointingListScroll', blockpg, pbox, {enabled: false})
     let innerpg = scrollBoxp.get('innerG')
+    com.target.pointing = {
+      scroll: scrollBoxp,
+      box: pbox
+    }
     // let trgtPnt = []
     // for (let i = 0; i < data.pointings.length; i++) {
     //   let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
@@ -933,7 +939,7 @@ window.ObsblockForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        pointingIcon(g, {w: box.w * 0.07, h: line}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
+        pointingIcon(g, {w: box.w * 0.07, h: line}, 'P' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -1308,6 +1314,114 @@ window.ObsblockForm = function (optIn) {
       picon.style('pointer-events', 'none')
     }
   }
+  function updatePointingInformation () {
+    let box = com.target.box
+    let data = com.data.block
+
+    let g = com.target.g
+
+    let label = [
+      // {x: 0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 1, text: 'Targets & pointings mapping', anchor: 'middle'}
+      {x: 0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.10, text: 'Tgts', anchor: 'middle'},
+      {x: box.w * 0.10, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.10, text: 'Ptgs', anchor: 'middle'},
+      {x: box.w * 0.2, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.8, text: 'Mapping', anchor: 'middle'}
+    ]
+
+    let line = 20
+
+    let tbox = com.target.target.box
+    let innertg = com.target.target.scroll.get('innerG')
+
+    function targetCore (targets, g, offset) {
+      let space = ((tbox.h * 1) - (targets.length * line)) / (targets.length)
+      let current = g
+        .selectAll('g.target')
+        .data(targets, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'target')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        let tevents = {
+          click: function () { com.target.events.click('target', d.id) },
+          over: function () {},
+          out: function () {}
+        }
+        targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
+        let offY = (space * 0.5 + (space + line) * i)
+        if (line * targets.length > tbox.h) offY = line * i
+        g.attr('transform', 'translate(' + offX + ',' + offY + ')')
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    targetCore(data.targets, innertg, 0)
+    com.target.target.scroll.resetVerticalScroller({canScroll: true, scrollHeight: line * data.targets.length})
+
+    let pbox = com.target.pointing.box
+    let innerpg = com.target.pointing.scroll.get('innerG')
+
+    function pointingCore (pointings, g, offset) {
+      let space = ((tbox.h * 1) - (pointings.length * line)) / (pointings.length)
+      let current = g
+        .selectAll('g.target')
+        .data(pointings, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'target')
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        let pevents = {
+          click: function () {},
+          over: function () {},
+          out: function () {}
+        }
+        pointingIcon(g, {w: box.w * 0.07, h: line}, 'P' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
+      })
+      let merge = current.merge(enter)
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
+        let offY = (space * 0.5 + (space + line) * i)
+        if (line * pointings.length > pbox.h) offY = line * i
+        g.attr('transform', 'translate(' + offX + ',' + offY + ')')
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    pointingCore(data.pointings, innerpg, 0)
+    com.target.pointing.scroll.resetVerticalScroller({canScroll: true, scrollHeight: line * data.pointings.length})
+
+    com.targetBlock.updateData({
+      data: {
+        raw: {
+          targets: com.data.block.targets,
+          pointings: com.data.block.pointings
+        },
+        modified: []
+      }
+    })
+  }
+
 
   function switchTel (elem, tel) {
     let allTel = com.events.allTel()
@@ -2023,6 +2137,7 @@ window.ObsblockForm = function (optIn) {
         // svgTelsConflict.drawTelsAvailabilityCurve()
         updateInput()
         updateTelescopeInformation()
+        com.events.conflict(block)
       }
       innerOtherBlock[block.obId].updateOtherInput = function () {
         innerOtherBlock[block.obId].tels.large.property('value', function () {
@@ -2269,6 +2384,7 @@ window.ObsblockForm = function (optIn) {
     updateInput()
     updateTotals()
     updateTelescopeInformation()
+    com.events.conflict(com.data.block)
     // reassignTelescope()
   }
   function addTelescope (t, elem) {
@@ -2477,7 +2593,8 @@ window.ObsblockForm = function (optIn) {
             enabled: false
           },
           left: {
-            enabled: true
+            enabled: true,
+            template: 'pointing'
           },
           background: {
             middle: {
@@ -2511,9 +2628,9 @@ window.ObsblockForm = function (optIn) {
       },
       events: {
         block: {
-          click: (d) => { com.telescope.events.click('block', d.obId) },
-          mouseover: (d) => {},
-          mouseout: (d) => {},
+          click: undefined,
+          mouseover: undefined,
+          mouseout: undefined,
           drag: {
             start: () => {},
             tick: () => {},

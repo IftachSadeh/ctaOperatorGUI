@@ -731,7 +731,7 @@ window.SchedblockForm = function (optIn) {
       //   .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
     }
 
-    let tbox = {x: 40, y: headerSize + 3, w: box.w - 40, h: line}
+    let tbox = {x: 40, y: headerSize + 3, w: box.w - 40, h: line * 1.5}
     let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
     let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, back)
     let innertg = scrollBoxt.get('innerG')
@@ -772,12 +772,12 @@ window.SchedblockForm = function (optIn) {
           },
           out: function () {}
         }
-        targetIcon(g, {w: line * 0.8, h: line * 0.8}, '' + d.name.split('_')[1], tevents, colorPalette)
+        targetIcon(g, {w: line * 1.2, h: line * 1.2}, 'T' + d.name.split('_')[1], tevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
-        let offY = (tbox.h - line * 0.8) * 0.5
+        let offY = (tbox.h - line * 1.2) * 0.5
         g.attr('transform', 'translate(' + (space * 0.5 + (space + line) * i) + ',' + offY + ')')
       })
       current
@@ -926,7 +926,8 @@ window.SchedblockForm = function (optIn) {
     let marg = 2
     let innerOffset = 0
     let scrollHeight = 0
-    function pointingCore (pointings, pg, offset) {
+    function pointingCore (block, pg, offset) {
+      let pointings = block.pointings
       // let pointings = []
       // let linkbetween = {}
       // for (let i = 0; i < blocks.length; i++) {
@@ -950,11 +951,11 @@ window.SchedblockForm = function (optIn) {
       enter.each(function (d, i) {
         let g = d3.select(this)
         let pevents = {
-          click: function () {},
+          click: function () { com.schedule.events.click('block', block.obId) },
           over: function () {},
           out: function () {}
         }
-        pointingIcon(g, {w: line * 1.2, h: line * 0.8}, 'P' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
+        pointingIcon(g, {w: line * 1.2, h: line * 0.8}, 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -994,7 +995,9 @@ window.SchedblockForm = function (optIn) {
           })
           .attr('stroke', palette.color.stroke)
           .attr('stroke-width', 0.1)
-          .on('click', function () {})
+          .on('click', function () {
+            com.schedule.events.click('block', d.obId)
+          })
           .on('mouseover', function (d) {
             d3.select(this).style('cursor', 'pointer')
             d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
@@ -1019,7 +1022,9 @@ window.SchedblockForm = function (optIn) {
           .attr('fill', function () {
             return 'transparent'
           })
-          .on('click', function () {})
+          .on('click', function () {
+
+          })
           .on('mouseover', function (d) {
             d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
           })
@@ -1040,7 +1045,7 @@ window.SchedblockForm = function (optIn) {
         let g = d3.select(this)
         g.attr('transform', 'translate(' + (line * 0.8) + ',' + (offset + innerOffset + line * i) + ')')
         innerOffset += line
-        pointingCore(d.pointings, g, line + marg * 2)
+        pointingCore(d, g, line + marg * 2)
         scrollHeight = (offset + innerOffset + line * i) + marg * 2
       })
       current
@@ -1073,13 +1078,13 @@ window.SchedblockForm = function (optIn) {
     }
     let gt = g.append('g')
       .attr('id', 'telsDisplayer')
-      .attr('transform', 'translate(' + (42) + ',' + (headerSize + line + 5) + ')')
+      .attr('transform', 'translate(' + (42) + ',' + (headerSize + line + 14) + ')')
     com.targetBlock = new TargetDisplayer({
       main: {
         tag: 'targetRootTag',
         g: gt,
         scroll: {},
-        box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 10 + headerSize), marg: 0},
+        box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 20 + headerSize), marg: 0},
         background: {
           fill: colorPalette.brighter.background,
           stroke: colorPalette.brighter.stroke,
@@ -1109,7 +1114,7 @@ window.SchedblockForm = function (optIn) {
         skymap: {
           enabled: true,
           g: undefined,
-          box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 10 + headerSize), marg: 0},
+          box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 20 + headerSize), marg: 0},
           mainTarget: undefined
         },
         legend: {

@@ -316,32 +316,54 @@ window.TelescopeDisplayer = function (optIn) {
       d3.select(this.parentNode).style('opacity', 0.5)
 
       com.main.foreground.selectAll('g.' + com.main.tag + 'telescopes').style('pointer-events', 'none')
-      com.main.background.append('rect')
+      let trashback = com.main.background.append('rect')
         .attr('id', 'trash')
         .attr('x', com.main.box.w - 20)
         .attr('y', com.main.box.h - 20 - (!com.gridBib.header.top ? 0 : com.gridBib.header.background.height))
         .attr('width', 20)
         .attr('height', 20)
+        .attr('fill', colorPalette.darker.background)
         .on('mouseover', function () {
           action = 'trash'
+          trashback.attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
         })
         .on('mouseout', function () {
           action = undefined
+          trashback.attr('fill', colorPalette.darker.background)
         })
-      com.main.background.append('rect')
+      com.main.background.append('svg:image')
+        .attr('id', 'trash')
+        .attr('xlink:href', '/static/icons/trashbin.svg')
+        .attr('x', com.main.box.w - 17.5)
+        .attr('y', com.main.box.h - 17.5 - (!com.gridBib.header.top ? 0 : com.gridBib.header.background.height))
+        .attr('width', 15)
+        .attr('height', 15)
+        .style('opacity', 0.5)
+        .style('pointer-events', 'none')
+      let switchback = com.main.background.append('rect')
         .attr('id', 'switch')
         .attr('x', com.main.box.w - 20)
         .attr('y', com.main.box.h - 40 - (!com.gridBib.header.top ? 0 : com.gridBib.header.background.height))
         .attr('width', 20)
         .attr('height', 20)
+        .attr('fill', colorPalette.darker.background)
         .on('mouseover', function () {
           action = 'switch'
-          console.log('over');
+          switchback.attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
         })
         .on('mouseout', function () {
           action = undefined
-          console.log('out');
+          switchback.attr('fill', colorPalette.darker.background)
         })
+      com.main.background.append('svg:image')
+        .attr('id', 'switch')
+        .attr('xlink:href', '/static/icons/arrow-bothside.svg')
+        .attr('x', com.main.box.w - 17.5)
+        .attr('y', com.main.box.h - 37.5 - (!com.gridBib.header.top ? 0 : com.gridBib.header.background.height))
+        .attr('width', 15)
+        .attr('height', 15)
+        .style('opacity', 0.5)
+        .style('pointer-events', 'none')
     }
     function dragged (d) {
       click = false
@@ -375,7 +397,9 @@ window.TelescopeDisplayer = function (optIn) {
         com.main.foreground.selectAll('g.' + com.main.tag + 'telescopes').style('pointer-events', 'auto')
 
         com.main.background.select('rect#trash').remove()
+        com.main.background.select('image#trash').remove()
         com.main.background.select('rect#switch').remove()
+        com.main.background.select('image#switch').remove()
       }
       function removeCloneP2 () {
         hoveredStart = undefined
@@ -789,7 +813,10 @@ window.TelescopeDisplayer = function (optIn) {
               .attr('y', sizeRow * 0.05)
               .attr('width', com.main.box.w * 0.08)
               .attr('height', sizeRow * 0.9)
-              .attr('fill', colorTheme.blocks.run.background)
+              .attr('fill', function () {
+                if (com.gridBib.blocks.left.template === 'pointing') return colorPalette.dark.background
+                return colorTheme.blocks.run.background
+              })
               .attr('fill-opacity', 1)
               .attr('stroke-width', 0.4)
               .attr('stroke', colorTheme.dark.stroke)
@@ -805,7 +832,7 @@ window.TelescopeDisplayer = function (optIn) {
                   } else {
                     // com.input.selection = [that]
                   }
-                  com.events.block.click(d)
+                  if (com.events.block.click) com.events.block.click(d)
                 }, 250)
               })
               .on('dblclick', function (d) {
@@ -813,10 +840,12 @@ window.TelescopeDisplayer = function (optIn) {
                 node.attr('clicked', 2)
               })
               .on('mouseover', function (d) {
+                if (!com.events.block.click) return
                 d3.select(this).style('cursor', 'pointer')
                 com.events.block.mouseover('telescope', d.obId)
               })
               .on('mouseout', function (d) {
+                if (!com.events.block.click) return
                 d3.select(this).style('cursor', 'default')
                 com.events.block.mouseout('telescope', d.obId)
               })
@@ -825,7 +854,7 @@ window.TelescopeDisplayer = function (optIn) {
               .attr('x', com.main.box.w * 0.04)
               .attr('y', sizeRow * 0.5 + 0.5 * fontSize)
               .text(function (d) {
-                return d.metaData ? d.metaData.blockName : d.name.split('_')[2]
+                return d.metaData ? d.metaData.blockName : 'P' + d.name.split('-')[1]
               })
               .style('fill', colorTheme.blocks.run.text)
               .style('font-weight', 'bold')

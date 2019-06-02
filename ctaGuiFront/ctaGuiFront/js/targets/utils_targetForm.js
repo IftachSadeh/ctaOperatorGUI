@@ -196,6 +196,14 @@ window.TargetForm = function (optIn) {
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
+    g.append('svg:image')
+      .attr('xlink:href', '/static/icons/cross.svg')
+      .attr('x', height * 0.7)
+      .attr('y', 0)
+      .attr('width', 15)
+      .attr('height', 15)
+      .style('opacity', 0.5)
+      .style('pointer-events', 'none')
   }
   function createAssociatedBlocks () {
     let scheds = com.data.schedB
@@ -296,7 +304,7 @@ window.TargetForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        pointingIcon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
+        pointingIcon(g, {w: psize.w, h: psize.h}, 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -627,7 +635,7 @@ window.TargetForm = function (optIn) {
           },
           out: function () {}
         }
-        pointingIcon(g, {w: line * 1.4, h: line * 0.9}, 'P' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
+        pointingIcon(g, {w: line * 1.4, h: line * 0.9}, d.name.split('/')[1].split('-')[0].split('_')[1] + 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
         scrollHeight += (marg + line * 0.9)
       })
       let merge = current.merge(enter)

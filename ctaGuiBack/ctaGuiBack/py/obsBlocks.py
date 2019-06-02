@@ -596,7 +596,6 @@ class obsBlocks_noACS():
                     telescopes = {'large': {'min': int(len(filter(lambda x: 'L' in x, schedTelIds)) / 2), 'max': 4, 'ids': filter(lambda x: 'L' in x, schedTelIds)},
                                   'medium': {'min': int(len(filter(lambda x: 'M' in x, schedTelIds)) / 2), 'max': 25, 'ids': filter(lambda x: 'M' in x, schedTelIds)},
                                   'small': {'min': int(len(filter(lambda x: 'S' in x, schedTelIds)) / 2), 'max': 70, 'ids': filter(lambda x: 'S' in x, schedTelIds)}}
-                    print telescopes
                     block = dict()
                     block["sbId"] = schedBlockId
                     block["obId"] = obsBlockId
@@ -1010,7 +1009,7 @@ class obsBlocks_noACS():
             elif self.rndGen.random() < 0.4:
                 newEvent['name'] = 'moon'
                 newEvent['icon'] = 'moon.svg'
-            elif self.rndGen.random() < 0.5:
+            elif self.rndGen.random() < 1:
                 newEvent['name'] = 'sun'
                 newEvent['icon'] = 'sun.svg'
             # elif self.rndGen.random() < 0.6:

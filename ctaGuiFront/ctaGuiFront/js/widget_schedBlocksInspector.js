@@ -1977,6 +1977,7 @@ let mainSchedBlocksInspector = function (optIn) {
     this.focus = focus
 
     function updateData () {
+      console.log(shared.data.server.external_events[0], shared.data.server.external_clockEvents[0]);
       let axisTop = brushZoom.getAxis('top').axis.scale().domain()
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
       let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
@@ -3440,6 +3441,29 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('clip-path', '') // 'url(#clip)')
 
       let range = reserved.box.h * 0.33333
+
+      reserved.clipBody.append('text')
+        .text('L')
+        .style('fill', colorTheme.dark.stroke)
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .attr('text-anchor', 'end')
+        .attr('transform', 'translate(' + (-4) + ',' + (range * 0.5 + 5) + ')')
+      reserved.clipBody.append('text')
+        .text('M')
+        .style('fill', colorTheme.dark.stroke)
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .attr('text-anchor', 'end')
+        .attr('transform', 'translate(' + (-4) + ',' + (range * 1.5 + 5) + ')')
+      reserved.clipBody.append('text')
+        .text('S')
+        .style('fill', colorTheme.dark.stroke)
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .attr('text-anchor', 'end')
+        .attr('transform', 'translate(' + (-4) + ',' + (range * 2.5 + 5) + ')')
+
       reserved.clipBody.append('rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -3520,7 +3544,7 @@ let mainSchedBlocksInspector = function (optIn) {
           let y = Math.abs(scaleYSmall(d.smallTels))
           if (d.smallTels >= scaleYSmall.domain()[1]) y = range
           if (d.smallTels <= scaleYSmall.domain()[0]) y = 0
-          return y
+          return range * 2 + y
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('fill', function (d, i) {
@@ -3584,7 +3608,7 @@ let mainSchedBlocksInspector = function (optIn) {
           let y = Math.abs(scaleYLarge(d.largeTels))
           if (d.largeTels >= scaleYLarge.domain()[1]) y = range
           if (d.largeTels <= scaleYLarge.domain()[0]) y = 0
-          return range * 2 + y
+          return range * 0 + y
         })
         .attr('fill', function (d, i) {
           if (d.largeTels < scaleYLarge.domain()[0]) {
@@ -5490,6 +5514,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('fill', colorPalette.dark.background)
           .attr('stroke', colorPalette.dark.stroke)
           .attr('stroke-width', 0.1)
+          .style('opacity', 0.2)
         g.append('text')
           .text('Obs')
           .attr('x', marg + line * 0.5)
@@ -5500,6 +5525,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .style('pointer-events', 'none')
           .attr('fill', colorPalette.dark.text)
           .attr('stroke', 'none')
+          .style('opacity', 0.2)
         g.append('text')
           .text('L M S')
           .attr('x', marg + line * 0.5)
@@ -5510,6 +5536,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .style('pointer-events', 'none')
           .attr('fill', colorPalette.dark.text)
           .attr('stroke', 'none')
+          .style('opacity', 0.2)
 
         reserved.overview.conflicts.scrollBox = initScrollBox('conflictListScroll', g, box, {enabled: false}, false)
       }
@@ -6272,7 +6299,7 @@ let mainSchedBlocksInspector = function (optIn) {
             .attr('fill', colorPalette.dark.text)
             .attr('stroke', 'none')
           g.append('text')
-            .text(d.large + ' ' + d.medium + ' ' + d.small)
+            .text(d.large + '-' + d.medium + '-' + d.small)
             .attr('x', line * 0.5)
             .attr('y', line * 0.55 + txtSize * 0.33)
             .style('font-weight', '')
