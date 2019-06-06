@@ -12,6 +12,7 @@
 
 loadScript({ source: 'utils_scrollTable', script: '/js/blocks/utils_blockCommon.js' })
 loadScript({ source: 'utils_scrollTable', script: '/js/blocks/utils_telescopeCommon.js' })
+loadScript({ source: 'utils_scrollTable', script: '/js/utils_commonD3.js' })
 
 window.ObsblockForm = function (optIn) {
   let com = {
@@ -446,10 +447,154 @@ window.ObsblockForm = function (optIn) {
     }
 
     function drawTime (id, x, w, y, time) {
+      function createInput (type, g, innerbox) {
+        stock[type + 'MinusButton'] = new buttonD3()
+        stock[type + 'MinusButton'].init({
+          main: {
+            id: type + 'MinusButton',
+            g: g,
+            box: {x: innerbox.x - 3, y: innerbox.y + 12, width: 9, height: 9},
+            background: {
+              common: {
+                style: {
+                  fill: colorPalette.medium.background,
+                  stroke: colorPalette.medium.stroke,
+                  'stroke-width': 0.1
+                },
+                attr: {
+                  rx: 2
+                }
+              },
+              hovered: {
+                style: {
+                  fill: colorPalette.darkest.background,
+                  stroke: colorPalette.darkest.stroke,
+                  'stroke-width': 0.1
+                },
+                attr: {}
+              }
+            }
+          },
+          foreground: {
+            type: 'text',
+            value: '-',
+            common: {
+              style: {
+                font: 'bold',
+                'font-size': '9px',
+                fill: colorPalette.medium.text,
+                anchor: 'middle',
+                'pointer-events': 'none',
+                'user-select': 'none'
+              },
+              attr: {
+                x: innerbox.x - 3 + 3,
+                y: innerbox.y + 12 + 7
+              }
+            },
+            hovered: {
+              style: {
+                font: 'bold',
+                'font-size': '14px',
+                fill: colorPalette.medium.text,
+                anchor: 'start',
+                'pointer-events': 'none',
+                'user-select': 'none'
+              },
+              attr: {}
+            }
+          },
+          events: {
+            click: (d) => {
+              let oldValue = parseInt(stock[type].property('value'))
+              let newVal = oldValue
+              if (oldValue > stock[type + 'Opts'].min) {
+                newVal = oldValue - 1
+              } else {
+                newVal = stock[type + 'Opts'].max
+              }
+              stock[type].property('value', ('0' + newVal).slice(-2))
+              changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), stock.second.property('value'))
+            }
+          }
+        })
+
+        stock[type + 'PlusButton'] = new buttonD3()
+        stock[type + 'PlusButton'].init({
+          main: {
+            id: type + 'PlusButton',
+            g: g,
+            box: {x: innerbox.x + 6, y: innerbox.y + 12, width: 9, height: 9},
+            background: {
+              common: {
+                style: {
+                  fill: colorPalette.medium.background,
+                  stroke: colorPalette.medium.stroke,
+                  'stroke-width': 0.1
+                },
+                attr: {
+                  rx: 2
+                }
+              },
+              hovered: {
+                style: {
+                  fill: colorPalette.darkest.background,
+                  stroke: colorPalette.darkest.stroke,
+                  'stroke-width': 0.1
+                },
+                attr: {}
+              }
+            }
+          },
+          foreground: {
+            type: 'text',
+            value: '+',
+            common: {
+              style: {
+                font: 'bold',
+                'font-size': '9px',
+                fill: colorPalette.medium.text,
+                anchor: 'middle',
+                'pointer-events': 'none',
+                'user-select': 'none'
+              },
+              attr: {
+                x: innerbox.x + 6 + 2,
+                y: innerbox.y + 12 + 7
+              }
+            },
+            hovered: {
+              style: {
+                font: 'bold',
+                'font-size': '14px',
+                fill: colorPalette.medium.text,
+                anchor: 'start',
+                'pointer-events': 'none',
+                'user-select': 'none'
+              },
+              attr: {}
+            }
+          },
+          events: {
+            click: (d) => {
+              let oldValue = parseInt(stock[type].property('value'))
+              let newVal = oldValue
+              if (oldValue < stock[type + 'Opts'].max) {
+                newVal = oldValue + 1
+              } else {
+                newVal = stock[type + 'Opts'].min
+              }
+              stock[type].property('value', ('0' + newVal).slice(-2))
+              changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), stock.second.property('value'))
+            }
+          }
+        })
+      }
+
       let stock = {}
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
       let hbox = {
-        x: x,
+        x: x - 6,
         y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
         w: 14,
         h: headerSize * 2
@@ -463,7 +608,7 @@ window.ObsblockForm = function (optIn) {
       }
       let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
       let sbox = {
-        x: x + 32,
+        x: x + 38,
         y: y + (com.schedule.editabled ? 0 : headerSize * 0.35),
         w: 14,
         h: headerSize * 2
@@ -471,34 +616,39 @@ window.ObsblockForm = function (optIn) {
 
       let ig = g.append('g').attr('id', id)
         .attr('transform', 'translate(' + ((w - (14 * 3)) * 0.33) + ',0)')
-
-      stock.hour = inputDate(ig,
+      stock.hourOpts = {disabled: !com.schedule.editabled, value: hour, min: 0, max: 23, step: 1}
+      stock.hour = inputDateD3(ig,
         hbox,
         'hour',
-        {disabled: !com.schedule.editabled, value: hour, min: 0, max: 23, step: 1},
+        stock.hourOpts,
         {change: (d) => { changeBlockTime(id, d, stock.minute.property('value'), stock.second.property('value')) }, enter: (d) => { stock.minute.node().focus() }})
+      createInput('hour', ig, hbox)
       ig.append('text')
         .text(':')
         .style('fill', colorPalette.dark.stroke)
         .style('font-size', headerSize + 'px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
-      stock.minute = inputDate(ig,
+        .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
+      stock.minuteOpts = {disabled: !com.schedule.editabled, value: min, min: 0, max: 60, step: 1}
+      stock.minute = inputDateD3(ig,
         mbox,
         'minute',
-        {disabled: !com.schedule.editabled, value: min, min: 0, max: 60, step: 1},
+        stock.minuteOpts,
         {change: (d) => { changeBlockTime(id, stock.hour.property('value'), d, stock.second.property('value')) }, enter: (d) => { stock.second.node().focus() }})
+      createInput('minute', ig, mbox)
       ig.append('text')
         .text(':')
         .style('fill', colorPalette.dark.stroke)
         .style('font-size', headerSize + 'px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
-      stock.second = inputDate(ig,
+        .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
+      stock.secondOpts = {disabled: !com.schedule.editabled, value: sec, min: 0, max: 60, step: 1}
+      stock.second = inputDateD3(ig,
         sbox,
         'second',
-        {disabled: !com.schedule.editabled, value: sec, min: 0, max: 60, step: 1},
+        stock.secondOpts,
         {change: (d) => { changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), d) }, enter: (d) => { stock.second.node().blur() }})
+      createInput('second', ig, sbox)
     }
 
     let startTime = new Date(com.data.timeOfNight.date_start)
@@ -510,23 +660,120 @@ window.ObsblockForm = function (optIn) {
     duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
     duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
 
-    let sbox = {
-      x: label[0].x,
-      y: 3 + headerSize,
-      w: label[0].w,
-      h: box.h - headerSize - 4
-    }
-
     let options = []
     if (data.exeState.state === 'wait') options = ['cancel', 'wait']
     if (data.exeState.state === 'cancel') options = ['cancel', 'wait']
     if (data.exeState.state === 'run') options = ['run', 'cancel']
 
-    dropDownDiv(g,
-      sbox,
-      'state',
-      {disabled: !com.schedule.editabled, value: data.exeState.state, options: options},
-      {change: (d) => { changeState(d) }, enter: (d) => { changeState(d) }})
+    // dropDownDiv(g,
+    //   sbox,
+    //   'state',
+    //   {disabled: !com.schedule.editabled, value: data.exeState.state, options: options},
+    //   {change: (d) => { changeState(d) }, enter: (d) => { changeState(d) }})
+    let gdropstate = g.append('g').attr('transform', 'translate(' + label[0].x + ',' + (3 + headerSize) + ')')
+    let dropState = new dropDownD3()
+    dropState.init({
+      main: {
+        id: 'dropState',
+        g: gdropstate,
+        dim: {w: label[0].w, h: box.h - headerSize - 4},
+        background: {
+          common: {
+            style: {
+              fill: colorPalette.medium.background,
+              stroke: colorPalette.medium.stroke,
+              'stroke-width': 0.2
+            },
+            attr: {}
+          },
+          hovered: {
+            style: {
+              fill: colorPalette.darkest.background,
+              stroke: colorPalette.darkest.stroke,
+              'stroke-width': 0.2
+            },
+            attr: {}
+          }
+        },
+        text: {
+          common: {
+            style: {
+              font: 'bold',
+              'font-size': '14px',
+              fill: colorPalette.medium.text,
+              anchor: 'start',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {}
+          },
+          hovered: {
+            style: {
+              font: 'bold',
+              'font-size': '14px',
+              fill: colorPalette.medium.text,
+              anchor: 'start',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {}
+          }
+        }
+      },
+      options: {
+        value: data.exeState.state,
+        blocked: false,
+        keepDropOpen: false,
+        list: options,
+        dim: {w: label[0].w, h: titleSize * 1.5},
+        nb: 1,
+        background: {
+          common: {
+            style: {
+              fill: colorPalette.medium.background,
+              stroke: colorPalette.medium.stroke,
+              'stroke-width': 0.2
+            },
+            attr: {}
+          },
+          hovered: {
+            style: {
+              fill: colorPalette.darkest.background,
+              stroke: colorPalette.darkest.stroke,
+              'stroke-width': 0.2
+            },
+            attr: {}
+          }
+        },
+        text: {
+          common: {
+            style: {
+              font: 'bold',
+              'font-size': '12px',
+              fill: colorPalette.medium.text,
+              anchor: 'start',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {}
+          },
+          hovered: {
+            style: {
+              font: 'bold',
+              'font-size': '12px',
+              fill: colorPalette.medium.text,
+              anchor: 'start',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {}
+          }
+        }
+      },
+      events: {
+        change: (d) => { changeState(d) }
+      }
+    })
 
     drawTime('startTime', label[1].x + txtSize * 0.5, label[1].w, 2 + headerSize * 1.5, startTime)
     drawTime('duration', label[2].x + txtSize * 0.5, label[2].w, 2 + headerSize * 1.5, duration)
@@ -603,25 +850,142 @@ window.ObsblockForm = function (optIn) {
         }
         let sizeNewPointing = line * 0.8
         let addPointingg = g.append('g').attr('transform', 'translate(' + (box.w * 0.15) + ',' + (box.h * 0.2) + ')')
-        targetIcon(addPointingg, {w: sizeNewPointing, h: sizeNewPointing}, '+', tevents, colorPalette)
-        dropDownDiv(addPointingg,
-          {x: -2, y: -6, w: sizeNewPointing * 2, h: sizeNewPointing * 1.3},
-          'trg',
-          {disabled: !com.schedule.editabled, value: '', options: com.data.target.map(x => x.name), 'font-size': '0px'},
-          {change: (d) => {
-            let chooseTarget = g.select('g#chooseTarget')
-            chooseTarget.selectAll('*').remove()
-            for (let i = 0; i < com.data.target.length; i++) {
-              if (com.data.target[i].name === d) {
-                target = com.data.target[i]
-                targetIcon(chooseTarget, {w: sizeNewPointing * 1.2, h: sizeNewPointing * 1.2}, target.name.split('_')[1], tevents, colorPalette)
-                return
+        let dropState = new dropDownD3()
+        dropState.init({
+          main: {
+            id: 'dropState',
+            g: addPointingg,
+            dim: {w: sizeNewPointing * 2, h: sizeNewPointing * 1.3},
+            background: {
+              common: {
+                style: {
+                  fill: colorPalette.medium.background,
+                  stroke: colorPalette.medium.stroke,
+                  'stroke-width': 0.2
+                },
+                attr: {}
+              },
+              hovered: {
+                style: {
+                  fill: colorPalette.darkest.background,
+                  stroke: colorPalette.darkest.stroke,
+                  'stroke-width': 0.2
+                },
+                attr: {}
+              }
+            },
+            text: {
+              common: {
+                style: {
+                  font: 'bold',
+                  'font-size': '14px',
+                  fill: colorPalette.medium.text,
+                  anchor: 'start',
+                  'pointer-events': 'none',
+                  'user-select': 'none'
+                },
+                attr: {}
+              },
+              hovered: {
+                style: {
+                  font: 'bold',
+                  'font-size': '14px',
+                  fill: colorPalette.medium.text,
+                  anchor: 'start',
+                  'pointer-events': 'none',
+                  'user-select': 'none'
+                },
+                attr: {}
               }
             }
-            target = undefined
           },
-          enter: (d) => {
-          }})
+          options: {
+            value: '',
+            blocked: true,
+            keepDropOpen: false,
+            list: com.data.target.map(x => x.name),
+            dim: {w: sizeNewPointing * 2.2, h: sizeNewPointing * 1},
+            nb: 3,
+            background: {
+              common: {
+                style: {
+                  fill: colorPalette.medium.background,
+                  stroke: colorPalette.medium.stroke,
+                  'stroke-width': 0.2
+                },
+                attr: {}
+              },
+              hovered: {
+                style: {
+                  fill: colorPalette.darkest.background,
+                  stroke: colorPalette.darkest.stroke,
+                  'stroke-width': 0.2
+                },
+                attr: {}
+              }
+            },
+            text: {
+              common: {
+                style: {
+                  font: 'bold',
+                  'font-size': '10px',
+                  fill: colorPalette.medium.text,
+                  anchor: 'start',
+                  'pointer-events': 'none',
+                  'user-select': 'none'
+                },
+                attr: {}
+              },
+              hovered: {
+                style: {
+                  font: 'bold',
+                  'font-size': '12px',
+                  fill: colorPalette.medium.text,
+                  anchor: 'start',
+                  'pointer-events': 'none',
+                  'user-select': 'none'
+                },
+                attr: {}
+              }
+            }
+          },
+          events: {
+            change: (d) => {
+              let chooseTarget = g.select('g#chooseTarget')
+              chooseTarget.selectAll('*').remove()
+              for (let i = 0; i < com.data.target.length; i++) {
+                if (com.data.target[i].name === d) {
+                  target = com.data.target[i]
+                  targetIcon(chooseTarget, {w: sizeNewPointing * 1.2, h: sizeNewPointing * 1.2}, target.name.split('_')[1], tevents, colorPalette)
+                  return
+                }
+              }
+              target = undefined
+            }
+          }
+        })
+
+        let ticon = targetIcon(addPointingg.append('g'), {w: sizeNewPointing, h: sizeNewPointing}, '+', tevents, colorPalette)
+        ticon.style('pointer-events', 'none')
+          .attr('transform', 'translate(' + (sizeNewPointing * 0.3) + ',' + (sizeNewPointing * 0.15) + ')')
+        // dropDownDiv(addPointingg,
+        //   {x: -2, y: -6, w: sizeNewPointing * 2, h: sizeNewPointing * 1.3},
+        //   'trg',
+        //   {disabled: !com.schedule.editabled, value: '', options: com.data.target.map(x => x.name), 'font-size': '0px'},
+        //   {change: (d) => {
+        //     let chooseTarget = g.select('g#chooseTarget')
+        //     chooseTarget.selectAll('*').remove()
+        //     for (let i = 0; i < com.data.target.length; i++) {
+        //       if (com.data.target[i].name === d) {
+        //         target = com.data.target[i]
+        //         targetIcon(chooseTarget, {w: sizeNewPointing * 1.2, h: sizeNewPointing * 1.2}, target.name.split('_')[1], tevents, colorPalette)
+        //         return
+        //       }
+        //     }
+        //     target = undefined
+        //   },
+        //   enter: (d) => {
+        //   }})
         g.append('g').attr('id', 'chooseTarget').attr('transform', 'translate(' + (box.w * 0.16) + ',' + (box.h * 0.5) + ')')
 
         g.append('text')
@@ -720,48 +1084,6 @@ window.ObsblockForm = function (optIn) {
           .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .attr('transform', 'translate(' + (box.w * 0.9) + ',' + (box.h * 0.95) + ')')
-
-        // let tbox = {x: label[0].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[0].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
-        // let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
-        // let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, {enabled: false})
-        // let innertg = scrollBoxt.get('innerG')
-        // function targetCore (targets, g, offset) {
-        //   let space = ((tbox.h * 1) - (targets.length * line)) / (targets.length)
-        //   let current = g
-        //     .selectAll('g.target')
-        //     .data(targets, function (d) {
-        //       return d.id
-        //     })
-        //   let enter = current
-        //     .enter()
-        //     .append('g')
-        //     .attr('class', 'target')
-        //   enter.each(function (d, i) {
-        //     let g = d3.select(this)
-        //     let tevents = {
-        //       click: function () { com.target.events.click('target', d.id) },
-        //       over: function () {},
-        //       out: function () {}
-        //     }
-        //     targetIcon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
-        //   })
-        //   let merge = current.merge(enter)
-        //   merge.each(function (d, i) {
-        //     let g = d3.select(this)
-        //     let offX = (label[0].x + label[0].w * 0.5 - line * 0.5)
-        //     let offY = (space * 0.5 + (space + line) * i)
-        //     if (line * targets.length > tbox.h) offY = line * i
-        //     g.attr('transform', 'translate(' + offX + ',' + offY + ')')
-        //   })
-        //   current
-        //     .exit()
-        //     .transition('inOut')
-        //     .duration(timeD.animArc)
-        //     .style('opacity', 0)
-        //     .remove()
-        // }
-        // targetCore(data.targets, innertg, 0)
-        // scrollBoxt.resetVerticalScroller({canScroll: true, scrollHeight: line * data.targets.length})
       }
     }
   }
@@ -1298,20 +1620,108 @@ window.ObsblockForm = function (optIn) {
       }
     })
     if (com.target.editable) {
-      let pevents = {
-        click: function () {},
-        over: function () {},
-        out: function () {}
-      }
       let sizeNewPointing = line * 0.8
-      let addPointingg = g.append('g').attr('transform', 'translate(' + (label[1].x - sizeNewPointing) + ',' + (tbox.y + 4 - headerSize * 2) + ')')
-      let selector = dropDownDiv(addPointingg,
-        {x: -(label[1].x - sizeNewPointing), y: -8, w: label[0].w + label[1].w, h: sizeNewPointing * 1.3},
-        'trg',
-        {disabled: !com.schedule.editabled, value: '', options: ['coordinates', 'divergentes'], 'font-size': '0px'},
-        {change: (d) => { addNewPointing(d) }, enter: (d) => { addNewPointing(d) }})
-      let picon = pointingIcon(addPointingg, {w: sizeNewPointing * 1, h: sizeNewPointing * 0.8}, '+', pevents, colorPalette)
+      let gdropPointing = g.append('g').attr('transform', 'translate(' + (label[0].x) + ',' + (tbox.y - headerSize * 2) + ')')
+      let dropPointing = new dropDownD3()
+      dropPointing.init({
+        main: {
+          id: 'dropPointing',
+          g: gdropPointing,
+          dim: {w: label[0].w + label[1].w, h: sizeNewPointing * 1.3},
+          background: {
+            common: {
+              style: {
+                fill: colorPalette.medium.background,
+                stroke: colorPalette.medium.stroke,
+                'stroke-width': 0.2
+              },
+              attr: {}
+            },
+            hovered: {
+              style: {
+                fill: colorPalette.darkest.background,
+                stroke: colorPalette.darkest.stroke,
+                'stroke-width': 0.2
+              },
+              attr: {}
+            }
+          },
+          text: {
+            common: {
+              style: {
+                font: 'bold',
+                'font-size': '0px',
+                fill: colorPalette.medium.text,
+                anchor: 'start',
+                'pointer-events': 'none',
+                'user-select': 'none'
+              },
+              attr: {}
+            },
+            hovered: {
+              style: {},
+              attr: {}
+            }
+          }
+        },
+        options: {
+          value: '',
+          blocked: true,
+          keepDropOpen: false,
+          list: ['coordinates', 'divergentes'],
+          dim: {w: (label[0].w + label[1].w) * 1.2, h: titleSize * 1.5},
+          nb: 2,
+          background: {
+            common: {
+              style: {
+                fill: colorPalette.medium.background,
+                stroke: colorPalette.medium.stroke,
+                'stroke-width': 0.2
+              },
+              attr: {}
+            },
+            hovered: {
+              style: {
+                fill: colorPalette.darkest.background,
+                stroke: colorPalette.darkest.stroke,
+                'stroke-width': 0.2
+              },
+              attr: {}
+            }
+          },
+          text: {
+            common: {
+              style: {
+                font: 'bold',
+                'font-size': '12px',
+                fill: colorPalette.medium.text,
+                anchor: 'start',
+                'pointer-events': 'none',
+                'user-select': 'none'
+              },
+              attr: {}
+            },
+            hovered: {
+              style: {},
+              attr: {}
+            }
+          }
+        },
+        events: {
+          change: (d) => { addNewPointing(d) }
+        }
+      })
+
+      // let sizeNewPointing = line * 0.8
+      // let selector = dropDownDiv(addPointingg,
+      //   {x: -(label[1].x - sizeNewPointing), y: -8, w: label[0].w + label[1].w, h: sizeNewPointing * 1.3},
+      //   'trg',
+      //   {disabled: !com.schedule.editabled, value: '', options: ['coordinates', 'divergentes'], 'font-size': '0px'},
+      //   {change: (d) => { addNewPointing(d) }, enter: (d) => { addNewPointing(d) }})
+
+      let picon = pointingIcon(gdropPointing.append('g'), {w: sizeNewPointing * 1, h: sizeNewPointing * 0.8}, '+', {}, colorPalette)
       picon.style('pointer-events', 'none')
+        .attr('transform', 'translate(' + ((label[0].w + label[1].w - sizeNewPointing) * 0.3) + ',' + (sizeNewPointing * 0.25) + ')')
     }
   }
   function updatePointingInformation () {
@@ -2703,23 +3113,159 @@ window.ObsblockForm = function (optIn) {
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
 
+    function createInput (telType, g, innerbox) {
+      com.telescope.tels[telType + 'Opts'] = {disabled: !com.schedule.editabled, value: com.data.block.telescopes[telType].min, min: 0, max: com.data.block.telescopes[telType].max, step: 1}
+      com.telescope.tels[telType] = inputNumberD3(g,
+        {x: (innerbox.x + innerbox.w * 0.5 - 6), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
+        telType,
+        com.telescope.tels[telType + 'Opts'],
+        {change: (d) => { changeTelescopeNumber(telType, d) }, enter: (d) => { changeTelescopeNumber(telType, d) }})
+
+      com.telescope.tels[telType + 'MinusButton'] = new buttonD3()
+      com.telescope.tels[telType + 'MinusButton'].init({
+        main: {
+          id: telType + 'MinusButton',
+          g: g,
+          box: {x: (innerbox.x + innerbox.w * 0.5 - 23), y: (box.y + box.h + headerSize * 2), width: 15, height: 15},
+          background: {
+            common: {
+              style: {
+                fill: colorPalette.medium.background,
+                stroke: colorPalette.medium.stroke,
+                'stroke-width': 0.1
+              },
+              attr: {
+                rx: 2
+              }
+            },
+            hovered: {
+              style: {
+                fill: colorPalette.darkest.background,
+                stroke: colorPalette.darkest.stroke,
+                'stroke-width': 0.1
+              },
+              attr: {}
+            }
+          }
+        },
+        foreground: {
+          type: 'text',
+          value: '-',
+          common: {
+            style: {
+              font: 'bold',
+              'font-size': '18px',
+              fill: colorPalette.medium.text,
+              anchor: 'middle',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {
+              x: (innerbox.x + innerbox.w * 0.5 - 28) + 10,
+              y: (box.y + box.h + headerSize * 2) + 12.5
+            }
+          },
+          hovered: {
+            style: {
+              font: 'bold',
+              'font-size': '14px',
+              fill: colorPalette.medium.text,
+              anchor: 'start',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {}
+          }
+        },
+        events: {
+          click: (d) => {
+            let oldValue = parseInt(com.telescope.tels[telType].property('value'))
+            let newVal = oldValue
+            if (oldValue > com.telescope.tels[telType + 'Opts'].min) {
+              newVal = oldValue - 1
+            }
+            com.telescope.tels[telType].property('value', ('' + newVal).slice(-2))
+            changeTelescopeNumber(telType, com.telescope.tels[telType].property('value'))
+          }
+        }
+      })
+
+      com.telescope.tels[telType + 'PlusButton'] = new buttonD3()
+      com.telescope.tels[telType + 'PlusButton'].init({
+        main: {
+          id: telType + 'PlusButton',
+          g: g,
+          box: {x: (innerbox.x + innerbox.w * 0.5 + 8), y: (box.y + box.h + headerSize * 2), width: 15, height: 15},
+          background: {
+            common: {
+              style: {
+                fill: colorPalette.medium.background,
+                stroke: colorPalette.medium.stroke,
+                'stroke-width': 0.1
+              },
+              attr: {
+                rx: 2
+              }
+            },
+            hovered: {
+              style: {
+                fill: colorPalette.darkest.background,
+                stroke: colorPalette.darkest.stroke,
+                'stroke-width': 0.1
+              },
+              attr: {}
+            }
+          }
+        },
+        foreground: {
+          type: 'text',
+          value: '+',
+          common: {
+            style: {
+              font: 'bold',
+              'font-size': '14px',
+              fill: colorPalette.medium.text,
+              anchor: 'middle',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {
+              x: (innerbox.x + innerbox.w * 0.5 + 8) + 4,
+              y: (box.y + box.h + headerSize * 2) + 12.5
+            }
+          },
+          hovered: {
+            style: {
+              font: 'bold',
+              'font-size': '14px',
+              fill: colorPalette.medium.text,
+              anchor: 'start',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {}
+          }
+        },
+        events: {
+          click: (d) => {
+            let oldValue = parseInt(com.telescope.tels[telType].property('value'))
+            let newVal = oldValue
+            if (oldValue < com.telescope.tels[telType + 'Opts'].max) {
+              newVal = oldValue + 1
+            }
+            com.telescope.tels[telType].property('value', ('' + newVal).slice(-2))
+            changeTelescopeNumber(telType, com.telescope.tels[telType].property('value'))
+          }
+        }
+      })
+    }
     if (com.schedule.editabled) {
       com.telescope.tels = {}
-      com.telescope.tels.large = inputNumber(g,
-        {x: (largeBox.x + largeBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
-        'large',
-        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.large.min, min: 0, max: com.data.block.telescopes.large.max, step: 1},
-        {change: (d) => { changeTelescopeNumber('large', d) }, enter: (d) => { changeTelescopeNumber('large', d) }})
-      com.telescope.tels.medium = inputNumber(g,
-        {x: (mediumBox.x + mediumBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
-        'small',
-        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.medium.min, min: 0, max: com.data.block.telescopes.medium.max, step: 1},
-        {change: (d) => { changeTelescopeNumber('medium', d) }, enter: (d) => { changeTelescopeNumber('medium', d) }})
-      com.telescope.tels.small = inputNumber(g,
-        {x: (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
-        'small',
-        {disabled: !com.schedule.editabled, value: com.data.block.telescopes.small.min, min: 0, max: com.data.block.telescopes.small.max, step: 1},
-        {change: (d) => { changeTelescopeNumber('small', d) }, enter: (d) => { changeTelescopeNumber('small', d) }})
+
+      createInput('large', g, largeBox)
+      createInput('medium', g, mediumBox)
+      createInput('small', g, smallBox)
+
       let layoutBox = {
         x: box.w - 17,
         y: box.y + box.h * 1,

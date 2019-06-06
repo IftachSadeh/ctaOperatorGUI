@@ -874,6 +874,16 @@ window.createD3Node = function (g, type, attr, style) {
   }
   return ret
 }
+window.applyAttrToNode = function (node, attrs) {
+  for (let key in attrs) {
+    node.attr(key, attrs[key])
+  }
+}
+window.applyStyleToNode = function (node, styles) {
+  for (let key in styles) {
+    node.style(key, styles[key])
+  }
+}
 // ---------------------------------------------------------------------------------------------------
 // move a node up inside an svg's hierarchy
 // see: http://bl.ocks.org/eesur/4e0a69d57d3bfc8a82c2
@@ -2116,6 +2126,13 @@ window.thisTrans = function (me) {
 // ---------------------------------------------------------------------------------------------------
 // deep copy an object or array
 // ---------------------------------------------------------------------------------------------------
+
+window.mergeObject = function (obj, src) {
+  for (var key in src) {
+    if (src.hasOwnProperty(key)) obj[key] = src[key]
+  }
+  return obj
+}
 
 window.deepCopy = function (objIn) {
   if (Array.isArray(objIn)) return objIn.slice(0, objIn.length)

@@ -61,7 +61,7 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   optIn.eleProps = {}
   optIn.eleProps[divKey] = {
     autoPos: true,
-    isDarkEle: true,
+    isDarkEle: false,
     gsId: optIn.widgetDivId + divKey,
     x: x0,
     y: y0,

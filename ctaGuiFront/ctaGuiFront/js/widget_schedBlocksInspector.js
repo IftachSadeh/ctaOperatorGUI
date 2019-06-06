@@ -44,6 +44,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_blockDispla
 window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_obsblockForm.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_schedblockForm.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/targets/utils_targetForm.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/events/utils_eventDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotBrushZoom.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 
@@ -3402,6 +3403,7 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     this.unhighlightTarget = unhighlightTarget
   }
+
   let SvgTelsConflict = function () {
     let reserved = {}
     reserved.drag = {}
@@ -3494,7 +3496,7 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     this.initData = initData
     function updateData () {
-      drawTelsAvailabilityCurve()
+      // drawTelsAvailabilityCurve()
     }
     this.updateData = updateData
     function update () {}
@@ -3511,11 +3513,11 @@ let mainSchedBlocksInspector = function (optIn) {
 
     function drawTelsAvailabilityCurve (block) {
       let curve = computeTelsCurve(block)
+      conflictSquare = []
 
       let scaleX = d3.scaleLinear()
         .range([0, reserved.box.w])
         .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
-      // console.log(blockQueue.get('axis').range, blockQueue.get('axis').domain);
       let range = reserved.box.h * 0.33333
       let scaleYSmall = d3.scaleLinear()
         .range([0, range])
@@ -3569,6 +3571,9 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .each(function (d) {
+          if (d.smallTels < scaleYSmall.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
+        })
 
       gMerge.select('rect.medium')
         .attr('x', function (d) { return scaleX(d.start) })
@@ -3601,6 +3606,9 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .each(function (d) {
+          if (d.mediumTels < scaleYMedium.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
+        })
 
       gMerge.select('rect.high')
         .attr('x', function (d) { return scaleX(d.start) })
@@ -3633,6 +3641,9 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .each(function (d) {
+          if (d.largeTels < scaleYLarge.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
+        })
     }
     this.drawTelsAvailabilityCurve = drawTelsAvailabilityCurve
     function computeTelsCurve (block) {
@@ -4619,6 +4630,7 @@ let mainSchedBlocksInspector = function (optIn) {
       balanceBlocks(d)
       svgTelsConflict.drawTelsAvailabilityCurve(d)
       listAllConflicts()
+      linkConflicts()
       reserved.drag.locked = false
       // if (!reserved.drag.atLeastOneTick) return
       // console.log('dragEnd')
@@ -4748,6 +4760,93 @@ let mainSchedBlocksInspector = function (optIn) {
     // else if (block.telescopes.small.ids.length < block.telescopes.small.min) svgRightInfo.addConflict(cblocks)
     // }
   }
+
+  let conflictFocused = {d: undefined, d3: undefined}
+  let conflictSquare = []
+  let conflictButton = []
+  function linkConflicts () {
+    for (let i = conflictSquare.length - 1; i >= 0; i--) {
+      let linked = []
+      for (let j = conflictButton.length - 1; j >= 0; j--) {
+        if (conflictButton[j].d.large + conflictSquare[i].d.largeTels === 4 &&
+          conflictButton[j].d.medium + conflictSquare[i].d.mediumTels === 25 &&
+          conflictButton[j].d.small + conflictSquare[i].d.smallTels === 70) {
+          linked.push(conflictButton[j])
+        }
+      }
+      if (linked.length > 0) {
+        conflictSquare[i].d3
+          .on('click', function () {
+            svgRightInfo.focusOnConflict(linked[0])
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).style('cursor', 'pointer')
+            d3.select(this).attr('fill', d3.color('#FF5722').darker(0.9))
+            for (let j = linked.length - 1; j >= 0; j--) {
+              linked[j].d3.select('rect').attr('fill', colorPalette.darkest.background)
+              blockQueue.highlightBlocks(linked[j].d.blocks)
+            }
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).style('cursor', 'default')
+            console.log(linked.length - 1);
+            for (let j = linked.length - 1; j >= 0; j--) {
+              console.log(conflictFocused.d , linked);
+              if (conflictFocused.d === linked[j].d) return
+            }
+            d3.select(this).attr('fill', '#FF5722')
+            for (let j = linked.length - 1; j >= 0; j--) {
+              linked[j].d3.select('rect').attr('fill', colorPalette.dark.background)
+              blockQueue.highlightBlocks([])
+            }
+          })
+      } else {
+        conflictSquare[i].d3
+          .on('click', function () {})
+          .on('mouseover', function (d) {})
+          .on('mouseout', function (d) {})
+        conflictSquare.splice(i, 1)
+      }
+    }
+
+    for (let j = conflictButton.length - 1; j >= 0; j--) {
+      let linked = []
+      for (let i = conflictSquare.length - 1; i >= 0; i--) {
+        if (conflictButton[j].d.large + conflictSquare[i].d.largeTels === 4 &&
+          conflictButton[j].d.medium + conflictSquare[i].d.mediumTels === 25 &&
+          conflictButton[j].d.small + conflictSquare[i].d.smallTels === 70) {
+          linked.push(conflictSquare[i])
+        }
+      }
+      if (linked.length > 0) {
+        conflictButton[j].d3
+          .on('mouseover', function (d) {
+            d3.select(this)
+              .style('cursor', 'pointer')
+              .select('rect').attr('fill', colorPalette.darkest.background)
+            blockQueue.highlightBlocks(conflictButton[j].d.blocks)
+            for (let j = linked.length - 1; j >= 0; j--) {
+              linked[j].d3.attr('fill', d3.color('#FF5722').darker(0.9))
+            }
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).style('cursor', 'default')
+            if (conflictFocused.d === conflictButton[j].d) return
+            blockQueue.highlightBlocks([])
+            d3.select(this).select('rect').attr('fill', colorPalette.darker.background)
+            for (let j = linked.length - 1; j >= 0; j--) {
+              linked[j].d3.attr('fill', '#FF5722')
+            }
+          })
+      } else {
+        // conflictButton[j].d3
+        //   .on('click', function () {})
+        //   .on('mouseover', function (d) {})
+        //   .on('mouseout', function (d) {})
+        conflictButton.splice(j, 1)
+      }
+    }
+  }
   function listAllConflicts () {
     let conflicts = []
     let allBlocks = []
@@ -4769,7 +4868,7 @@ let mainSchedBlocksInspector = function (optIn) {
     }
 
     let blocks = clusterBlocksByTime(allBlocks)
-    console.log(blocks);
+
     for (var j = 0; j < blocks.length; j++) {
       let group = blocks[j]
       let s = 0
@@ -4779,7 +4878,6 @@ let mainSchedBlocksInspector = function (optIn) {
       group.map(function (d) { idg += '|' + d.obId; l += d.telescopes.large.min; m += d.telescopes.medium.min; s += d.telescopes.small.min })
       idg = idg.slice(1)
       if (s > 70 || m > 25 || l > 4) {
-        console.log({id: idg, blocks: group, small: s, medium: m, large: l});
         if (!checkDuplicata(idg)) conflicts.push({id: idg, blocks: group, small: s, medium: m, large: l})
       }
     }
@@ -5419,11 +5517,32 @@ let mainSchedBlocksInspector = function (optIn) {
       )
     }
 
-    let conflictFocused = {data: undefined, d3: undefined}
+    let allBox
+
     function initOverview () {
       reserved.overview = {
         modifications: {},
         conflicts: {}
+      }
+      let allBox = {
+        blocks: {
+          x: 0,
+          y: 0,
+          w: reserved.box.w * 0.8,
+          h: reserved.box.h * 0.2
+        },
+        modifications: {
+          x: 0,
+          y: reserved.box.h * 0.125,
+          h: reserved.box.h * 0.75,
+          w: reserved.box.w
+        },
+        conflicts: {
+          x: 0,
+          y: reserved.box.h * 0.9,
+          w: reserved.box.w,
+          h: reserved.box.h * 0.1
+        }
       }
       function createModificationsInformation () {
         let box = allBox.modifications
@@ -5541,7 +5660,12 @@ let mainSchedBlocksInspector = function (optIn) {
         reserved.overview.conflicts.scrollBox = initScrollBox('conflictListScroll', g, box, {enabled: false}, false)
       }
 
-      let allBox = {
+      createModificationsInformation()
+      createConflictsInformation()
+    }
+
+    function openOtherBlocks (conflict) {
+      allBox = {
         blocks: {
           x: 0,
           y: 0,
@@ -5551,528 +5675,535 @@ let mainSchedBlocksInspector = function (optIn) {
         modifications: {
           x: 0,
           y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.75,
+          h: reserved.box.h * 0.42,
           w: reserved.box.w
         },
         conflicts: {
           x: 0,
-          y: reserved.box.h * 0.9,
+          y: reserved.box.h * 0.62,
           w: reserved.box.w,
-          h: reserved.box.h * 0.1
+          h: reserved.box.h * 0.37
         }
       }
-      createModificationsInformation()
-      createConflictsInformation()
-    }
-    function updateOverview () {
-      if (shared.focus) return
-      function openOtherBlocks (conflict) {
-        reserved.g.select('g#conflictsInformation').select('g#otherg').remove()
-        // svgEventsQueueServer.blurry()
-        // svgBlocksQueueServer.blurry()
-        // svgBrush.blurry()
-        // svgTargets.blurry()
-        // svgTelsConflict.blurry()
-        // svgFocusOverlay.blurry()
+      reserved.g.select('g#conflictsInformation').select('g#otherg').remove()
+      // svgEventsQueueServer.blurry()
+      // svgBlocksQueueServer.blurry()
+      // svgBrush.blurry()
+      // svgTargets.blurry()
+      // svgTelsConflict.blurry()
+      // svgFocusOverlay.blurry()
 
-        let allTel = shared.data.server.telHealth
-        let innerOtherBlock = {}
-        let box = {
+      let allTel = shared.data.server.telHealth
+      let innerOtherBlock = {}
+      let box = {
+        x: 0,
+        y: 0,
+        w: allBox.conflicts.w,
+        h: allBox.modifications.h * 1.4
+      }
+      let otherg = reserved.g.select('g#conflictsInformation').append('g').attr('id', 'otherg')
+        .attr('transform', 'translate(' + 0 + ',' + (-allBox.modifications.h * 1.75) + ')')
+      let scroll = initScrollBox('focusedConflictListScroll', otherg, box, {enabled: false}, true)
+      function initTelescopeInformation (block, box) {
+        innerOtherBlock[block.obId] = {}
+        let g = scroll.get('innerG').append('g')
+          .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+        // g.append('rect')
+        //   .attr('x', 0)
+        //   .attr('y', 0)
+        //   .attr('width', box.w)
+        //   .attr('height', box.h)
+        //   .attr('fill', colorPalette.dark.background)
+        //   .attr('stroke', colorPalette.dark.stroke)
+        //   .attr('stroke-width', 0.2)
+
+        innerOtherBlock[block.obId].g = g
+        box.y = 0
+        box.x = 45
+        g.append('text')
+          .text(block.metaData.blockName)
+          .attr('x', box.x)
+          .attr('y', box.y + titleSize * 1.5)
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'end')
+          .style('font-size', titleSize + 'px')
+          .style('pointer-events', 'none')
+          .attr('fill', colorPalette.dark.text)
+          .attr('stroke', 'none')
+        box.x = 50
+        box.w -= 60
+        box.y = 4
+        let largeBox = {
           x: 0,
           y: 0,
-          w: allBox.conflicts.w,
-          h: allBox.modifications.h * 1.4
+          w: box.w * 0.16,
+          h: box.h
         }
-        let otherg = reserved.g.select('g#conflictsInformation').append('g').attr('id', 'otherg')
-          .attr('transform', 'translate(' + 0 + ',' + (-allBox.modifications.h * 1.75) + ')')
-        let scroll = initScrollBox('focusedConflictListScroll', otherg, box, {enabled: false}, true)
-        function initTelescopeInformation (block, box) {
-          innerOtherBlock[block.obId] = {}
-          let g = scroll.get('innerG').append('g')
-            .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
-          // g.append('rect')
-          //   .attr('x', 0)
-          //   .attr('y', 0)
-          //   .attr('width', box.w)
-          //   .attr('height', box.h)
-          //   .attr('fill', colorPalette.dark.background)
-          //   .attr('stroke', colorPalette.dark.stroke)
-          //   .attr('stroke-width', 0.2)
-
-          innerOtherBlock[block.obId].g = g
-          box.y = 0
-          box.x = 45
-          g.append('text')
-            .text(block.metaData.blockName)
-            .attr('x', box.x)
-            .attr('y', box.y + titleSize * 1.5)
-            .style('font-weight', 'bold')
-            .attr('text-anchor', 'end')
-            .style('font-size', titleSize + 'px')
-            .style('pointer-events', 'none')
-            .attr('fill', colorPalette.dark.text)
-            .attr('stroke', 'none')
-          box.x = 50
-          box.w -= 60
-          box.y = 4
-          let largeBox = {
-            x: 0,
-            y: 0,
-            w: box.w * 0.16,
-            h: box.h
-          }
-          let mediumBox = {
-            x: box.w * 0.16,
-            y: 0,
-            w: box.w * 0.35,
-            h: box.h
-          }
-          let smallBox = {
-            x: box.w * 0.51,
-            y: 0,
-            w: box.w * 0.49,
-            h: box.h
-          }
-          box.h -= titleSize * 2
-          let gt = g.append('g')
-            .attr('id', 'telsDisplayer')
-            .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
-          innerOtherBlock[block.obId].displayer = new TelescopeDisplayer({
-            main: {
-              tag: 'telescopeRootTag' + block.obId,
-              g: gt,
-              scroll: {},
-              box: box,
-              background: {
-                fill: colorPalette.medium.background,
-                stroke: colorPalette.medium.stroke,
-                strokeWidth: 0.1
-              },
-              isSouth: true,
-              colorPalette: colorPalette
+        let mediumBox = {
+          x: box.w * 0.16,
+          y: 0,
+          w: box.w * 0.35,
+          h: box.h
+        }
+        let smallBox = {
+          x: box.w * 0.51,
+          y: 0,
+          w: box.w * 0.49,
+          h: box.h
+        }
+        box.h -= titleSize * 2
+        let gt = g.append('g')
+          .attr('id', 'telsDisplayer')
+          .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+        console.log(('BOX', box));
+        innerOtherBlock[block.obId].displayer = new TelescopeDisplayer({
+          main: {
+            tag: 'telescopeRootTag' + block.obId,
+            g: gt,
+            scroll: {},
+            box: box,
+            background: {
+              fill: colorPalette.medium.background,
+              stroke: colorPalette.medium.stroke,
+              strokeWidth: 0.1
             },
+            isSouth: true,
+            colorPalette: colorPalette
+          },
 
-            displayer: 'gridBib',
-            gridBib: {
-              header: {
-                top: true,
-                text: {
-                  size: 0, //headerSize,
-                  color: colorPalette.medium.background
-                },
-                background: {
-                  height: 0, //headerSize + 2,
-                  color: colorPalette.dark.stroke
-                }
+          displayer: 'gridBib',
+          gridBib: {
+            header: {
+              top: true,
+              text: {
+                size: 0, //headerSize,
+                color: colorPalette.medium.background
               },
-              telescope: {
-                enabled: true,
-                centering: true,
-                large: {
-                  g: undefined,
-                  opt: {
-                    telsPerRow: 3,
-                    nbl: 0,
-                    size: 2,
-                    ratio: 1
-                  },
-                  box: largeBox
+              background: {
+                height: 0, //headerSize + 2,
+                color: colorPalette.dark.stroke
+              }
+            },
+            telescope: {
+              enabled: true,
+              centering: true,
+              large: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 3,
+                  nbl: 0,
+                  size: 2,
+                  ratio: 1
                 },
-                medium: {
-                  g: undefined,
-                  opt: {
-                    telsPerRow: 10,
-                    nbl: 0,
-                    size: 1,
-                    ratio: 1
-                  },
-                  box: mediumBox
-                },
-                small: {
-                  g: undefined,
-                  opt: {
-                    telsPerRow: 18,
-                    nbl: 0,
-                    size: 0.5,
-                    ratio: 1
-                  },
-                  box: smallBox
-                }
+                box: largeBox
               },
-              idle: {
-                txtSize: 0,
-                enabled: true,
-                background: {
-                  middle: {
-                    color: colorPalette.darker.background,
-                    opacity: 1
-                  },
-                  side: {
-                    color: colorPalette.darker.background,
-                    opacity: 1
-                  }
-                }
+              medium: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 10,
+                  nbl: 0,
+                  size: 1,
+                  ratio: 1
+                },
+                box: mediumBox
               },
-              blocks: {
-                txtSize: 10,
-                right: {
-                  enabled: false
+              small: {
+                g: undefined,
+                opt: {
+                  telsPerRow: 18,
+                  nbl: 0,
+                  size: 0.5,
+                  ratio: 1
                 },
-                left: {
-                  enabled: true
+                box: smallBox
+              }
+            },
+            idle: {
+              txtSize: 0,
+              enabled: true,
+              background: {
+                middle: {
+                  color: colorPalette.darker.background,
+                  opacity: 1
                 },
-                background: {
-                  middle: {
-                    color: colorPalette.darkest.background,
-                    opacity: 0.3
-                  },
-                  side: {
-                    color: colorPalette.darker.background,
-                    opacity: 1
-                  }
+                side: {
+                  color: colorPalette.darker.background,
+                  opacity: 1
                 }
               }
             },
+            blocks: {
+              txtSize: 10,
+              right: {
+                enabled: false
+              },
+              left: {
+                enabled: true
+              },
+              background: {
+                middle: {
+                  color: colorPalette.darkest.background,
+                  opacity: 0.3
+                },
+                side: {
+                  color: colorPalette.darker.background,
+                  opacity: 1
+                }
+              }
+            }
+          },
 
-            filters: {
-              telescopeFilters: [],
-              filtering: []
+          filters: {
+            telescopeFilters: [],
+            filtering: []
+          },
+          data: {
+            raw: {
+              telescopes: []
             },
+            filtered: {},
+            modified: []
+          },
+          debug: {
+            enabled: false
+          },
+          pattern: {
+            select: {}
+          },
+          events: {
+            block: {
+              click: (d) => {}, // com.telescope.events.click('block', d.obId) },
+              mouseover: (d) => {},
+              mouseout: (d) => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            telescope: {
+              click: (d) => {},
+              mouseover: (d) => {},
+              mouseout: (d) => {},
+              drag: {
+                start: () => {},
+                tick: () => {},
+                end: () => {}
+              }
+            },
+            other: {
+              delTel: (d) => {}, // removeTel(d) },
+              switchTel: (elem, t) => {} // switchTel(elem, t) }
+            }
+          },
+          interaction: {
+            delete: {
+              enabled: false,
+              event: () => {}
+            },
+            drag: {
+              enabled: false,
+              event: () => {}
+            },
+            switch: {
+              enabled: false,
+              event: () => {}
+            }
+          }
+        })
+        innerOtherBlock[block.obId].displayer.init()
+
+        function changeOtherTelescopeNumber (type, d) {
+          let data = block.telescopes[type]
+          function errorInTelescopeNumber () {
+
+          }
+          function decreaseMinimumTelsNumber () {
+            data.min = Number(d)
+            for (let i = data.min; i < data.ids.length; i++) {
+              let t = data.ids[0]
+              forceExtractTelsFromBlock([block], t)
+              // addTelescopeToBlock(com.data.block, {id: t})
+            }
+          }
+          function increaseMinimumTelsNumber () {
+            data.min = Number(d)
+            if (data.min < data.ids.length) {
+              return
+            } else {
+              let diff = d - data.ids.length
+              let allTelCopy = allTel.filter(function (d) {
+                return (type === 'large' ? d.id.includes('L') : (type === 'medium' ? d.id.includes('M') : d.id.includes('S')))
+              })
+              let idle = allTelCopy.filter(function (d) {
+                for (let i = 0; i < conflict.blocks.length; i++) {
+                  if (conflict.blocks[i].telescopes[type].ids.indexOf(d.id) !== -1) return false
+                }
+                return true
+              })
+              for (let i = 0; (i < diff && i < idle.length); i++) {
+                addTelescopeToBlock(block, idle[i])
+              }
+              for (let i = data.ids.length; i < data.min; i++) {
+                let t = extractRandomTelsFromBlock(conflict.blocks.filter(d => d.obId !== block.obId), type)
+                if (t === undefined) break
+                addTelescopeToBlock(block, {id: t})
+              }
+            }
+          }
+          if (data.min < d) increaseMinimumTelsNumber()
+          if (data.min > d) decreaseMinimumTelsNumber()
+
+          if (data.ids.length < data.min) {
+            errorInTelescopeNumber()
+          }
+
+          for (let i = 0; i < conflict.blocks.length; i++) {
+            innerOtherBlock[conflict.blocks[i].obId].updateOtherInput()
+            innerOtherBlock[conflict.blocks[i].obId].updateOtherTelescopeInformation()
+          }
+          updateTotals()
+          svgTelsConflict.drawTelsAvailabilityCurve()
+          linkConflicts()
+          // updateInput()
+          // updateTelescopeInformation()
+        }
+        innerOtherBlock[block.obId].updateOtherInput = function () {
+          innerOtherBlock[block.obId].tels.large.property('value', function () {
+            return block.telescopes.large.min
+          })
+          innerOtherBlock[block.obId].tels.medium.property('value', function () {
+            return block.telescopes.medium.min
+          })
+          innerOtherBlock[block.obId].tels.small.property('value', function () {
+            return block.telescopes.small.min
+          })
+        }
+        innerOtherBlock[block.obId].updateOtherTelescopeInformation = function () {
+          let tels = []
+          for (let i = 0; i < block.telescopes.large.ids.length; i++) {
+            tels.push({id: block.telescopes.large.ids[i], health: allTel.find(x => x.id === block.telescopes.large.ids[i]).val})
+          }
+          for (let i = 0; i < block.telescopes.medium.ids.length; i++) {
+            tels.push({id: block.telescopes.medium.ids[i], health: allTel.find(x => x.id === block.telescopes.medium.ids[i]).val})
+          }
+          for (let i = 0; i < block.telescopes.small.ids.length; i++) {
+            tels.push({id: block.telescopes.small.ids[i], health: allTel.find(x => x.id === block.telescopes.small.ids[i]).val})
+          }
+          innerOtherBlock[block.obId].displayer.updateData({
             data: {
               raw: {
-                telescopes: []
+                telescopes: tels,
+                blocks: block
               },
-              filtered: {},
               modified: []
-            },
-            debug: {
-              enabled: false
-            },
-            pattern: {
-              select: {}
-            },
-            events: {
-              block: {
-                click: (d) => {}, // com.telescope.events.click('block', d.obId) },
-                mouseover: (d) => {},
-                mouseout: (d) => {},
-                drag: {
-                  start: () => {},
-                  tick: () => {},
-                  end: () => {}
-                }
-              },
-              telescope: {
-                click: (d) => {},
-                mouseover: (d) => {},
-                mouseout: (d) => {},
-                drag: {
-                  start: () => {},
-                  tick: () => {},
-                  end: () => {}
-                }
-              },
-              other: {
-                delTel: (d) => {}, // removeTel(d) },
-                switchTel: (elem, t) => {} // switchTel(elem, t) }
-              }
-            },
-            interaction: {
-              delete: {
-                enabled: false,
-                event: () => {}
-              },
-              drag: {
-                enabled: false,
-                event: () => {}
-              },
-              switch: {
-                enabled: false,
-                event: () => {}
-              }
             }
           })
-          innerOtherBlock[block.obId].displayer.init()
-
-          function changeOtherTelescopeNumber (type, d) {
-            let data = block.telescopes[type]
-            function errorInTelescopeNumber () {
-
-            }
-            function decreaseMinimumTelsNumber () {
-              data.min = Number(d)
-              for (let i = data.min; i < data.ids.length; i++) {
-                let t = data.ids[0]
-                forceExtractTelsFromBlock([block], t)
-                // addTelescopeToBlock(com.data.block, {id: t})
-              }
-            }
-            function increaseMinimumTelsNumber () {
-              data.min = Number(d)
-              if (data.min < data.ids.length) {
-                return
-              } else {
-                let diff = d - data.ids.length
-                let allTelCopy = allTel.filter(function (d) {
-                  return (type === 'large' ? d.id.includes('L') : (type === 'medium' ? d.id.includes('M') : d.id.includes('S')))
-                })
-                let idle = allTelCopy.filter(function (d) {
-                  for (let i = 0; i < conflict.blocks.length; i++) {
-                    if (conflict.blocks[i].telescopes[type].ids.indexOf(d.id) !== -1) return false
-                  }
-                  return true
-                })
-                for (let i = 0; (i < diff && i < idle.length); i++) {
-                  addTelescopeToBlock(block, idle[i])
-                }
-                for (let i = data.ids.length; i < data.min; i++) {
-                  let t = extractRandomTelsFromBlock(conflict.blocks.filter(d => d.obId !== block.obId), type)
-                  if (t === undefined) break
-                  addTelescopeToBlock(block, {id: t})
-                }
-              }
-            }
-            if (data.min < d) increaseMinimumTelsNumber()
-            if (data.min > d) decreaseMinimumTelsNumber()
-
-            if (data.ids.length < data.min) {
-              errorInTelescopeNumber()
-            }
-
-            for (let i = 0; i < conflict.blocks.length; i++) {
-              innerOtherBlock[conflict.blocks[i].obId].updateOtherInput()
-              innerOtherBlock[conflict.blocks[i].obId].updateOtherTelescopeInformation()
-            }
-            updateTotals()
-            svgTelsConflict.drawTelsAvailabilityCurve()
-            // updateInput()
-            // updateTelescopeInformation()
-          }
-          innerOtherBlock[block.obId].updateOtherInput = function () {
-            innerOtherBlock[block.obId].tels.large.property('value', function () {
-              return block.telescopes.large.min
-            })
-            innerOtherBlock[block.obId].tels.medium.property('value', function () {
-              return block.telescopes.medium.min
-            })
-            innerOtherBlock[block.obId].tels.small.property('value', function () {
-              return block.telescopes.small.min
-            })
-          }
-          innerOtherBlock[block.obId].updateOtherTelescopeInformation = function () {
-            let tels = []
-            for (let i = 0; i < block.telescopes.large.ids.length; i++) {
-              tels.push({id: block.telescopes.large.ids[i], health: allTel.find(x => x.id === block.telescopes.large.ids[i]).val})
-            }
-            for (let i = 0; i < block.telescopes.medium.ids.length; i++) {
-              tels.push({id: block.telescopes.medium.ids[i], health: allTel.find(x => x.id === block.telescopes.medium.ids[i]).val})
-            }
-            for (let i = 0; i < block.telescopes.small.ids.length; i++) {
-              tels.push({id: block.telescopes.small.ids[i], health: allTel.find(x => x.id === block.telescopes.small.ids[i]).val})
-            }
-            innerOtherBlock[block.obId].displayer.updateData({
-              data: {
-                raw: {
-                  telescopes: tels,
-                  blocks: block
-                },
-                modified: []
-              }
-            })
-          }
-
-          innerOtherBlock[block.obId].tels = {}
-          innerOtherBlock[block.obId].tels.large = inputNumber(g,
-            {x: box.x + 2, y: (box.y + box.h + 1), w: 40, h: 15},
-            'large',
-            {disabled: false, value: block.telescopes.large.min, min: 0, max: block.telescopes.large.max, step: 1},
-            {change: (d) => { changeOtherTelescopeNumber('large', d) }, enter: (d) => { changeOtherTelescopeNumber('large', d) }})
-          innerOtherBlock[block.obId].tels.medium = inputNumber(g,
-            {x: box.x + (5 + mediumBox.x + mediumBox.w * 0.5 - 20), y: (box.y + box.h + 1), w: 40, h: 15},
-            'small',
-            {disabled: false, value: block.telescopes.medium.min, min: 0, max: block.telescopes.medium.max, step: 1},
-            {change: (d) => { changeOtherTelescopeNumber('medium', d) }, enter: (d) => { changeOtherTelescopeNumber('medium', d) }})
-          innerOtherBlock[block.obId].tels.small = inputNumber(g,
-            {x: box.x + (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 40, h: 15},
-            'small',
-            {disabled: false, value: block.telescopes.small.min, min: 0, max: block.telescopes.small.max, step: 1},
-            {change: (d) => { changeOtherTelescopeNumber('small', d) }, enter: (d) => { changeOtherTelescopeNumber('small', d) }})
-          innerOtherBlock[block.obId].updateOtherTelescopeInformation()
         }
-        let sizeRow = (allBox.modifications.h * 1.5) / 6
-        for (let i = 0; i < conflict.blocks.length; i++) {
-          let ibox = {
-            x: 0,
-            y: sizeRow * i + (conflict.blocks.length < 6 ? (sizeRow * (5.5 - conflict.blocks.length)) : 0),
-            w: allBox.conflicts.w * 1,
-            h: sizeRow
-          }
-          initTelescopeInformation(conflict.blocks[i], ibox)
-        }
-        scroll.resetVerticalScroller({canScroll: true, scrollHeight: sizeRow * conflict.blocks.length})
 
-        otherg.append('line')
-          .attr('x1', 0)
-          .attr('y1', allBox.modifications.h * 1.4)
-          .attr('x2', box.w)
-          .attr('y2', allBox.modifications.h * 1.4)
-          .attr('stroke', colorPalette.dark.stroke)
-          .attr('stroke-width', 0.4)
-        otherg.append('rect')
-          .attr('id', 'isbalanced')
-          .attr('x', 0)
-          .attr('y', allBox.modifications.h * 1.4)
-          .attr('width', box.w)
-          .attr('height', allBox.modifications.h * 0.2)
+        innerOtherBlock[block.obId].tels = {}
+        innerOtherBlock[block.obId].tels.large = inputNumber(g,
+          {x: box.x + 2, y: (box.y + box.h + 1), w: 40, h: 15},
+          'large',
+          {disabled: false, value: block.telescopes.large.min, min: 0, max: block.telescopes.large.max, step: 1},
+          {change: (d) => { changeOtherTelescopeNumber('large', d) }, enter: (d) => { changeOtherTelescopeNumber('large', d) }})
+        innerOtherBlock[block.obId].tels.medium = inputNumber(g,
+          {x: box.x + (5 + mediumBox.x + mediumBox.w * 0.5 - 20), y: (box.y + box.h + 1), w: 40, h: 15},
+          'small',
+          {disabled: false, value: block.telescopes.medium.min, min: 0, max: block.telescopes.medium.max, step: 1},
+          {change: (d) => { changeOtherTelescopeNumber('medium', d) }, enter: (d) => { changeOtherTelescopeNumber('medium', d) }})
+        innerOtherBlock[block.obId].tels.small = inputNumber(g,
+          {x: box.x + (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 40, h: 15},
+          'small',
+          {disabled: false, value: block.telescopes.small.min, min: 0, max: block.telescopes.small.max, step: 1},
+          {change: (d) => { changeOtherTelescopeNumber('small', d) }, enter: (d) => { changeOtherTelescopeNumber('small', d) }})
+        innerOtherBlock[block.obId].updateOtherTelescopeInformation()
+      }
+      let sizeRow = (allBox.modifications.h * 1.5) / 6
+      for (let i = 0; i < conflict.blocks.length; i++) {
+        let ibox = {
+          x: 0,
+          y: sizeRow * i + (conflict.blocks.length < 6 ? (sizeRow * (5.5 - conflict.blocks.length)) : 0),
+          w: allBox.conflicts.w * 1,
+          h: sizeRow
+        }
+        initTelescopeInformation(conflict.blocks[i], ibox)
+      }
+      scroll.resetVerticalScroller({canScroll: true, scrollHeight: sizeRow * conflict.blocks.length})
+
+      otherg.append('line')
+        .attr('x1', 0)
+        .attr('y1', allBox.modifications.h * 1.4)
+        .attr('x2', box.w)
+        .attr('y2', allBox.modifications.h * 1.4)
+        .attr('stroke', colorPalette.dark.stroke)
+        .attr('stroke-width', 0.4)
+      otherg.append('rect')
+        .attr('id', 'isbalanced')
+        .attr('x', 0)
+        .attr('y', allBox.modifications.h * 1.4)
+        .attr('width', box.w)
+        .attr('height', allBox.modifications.h * 0.2)
+        .attr('fill', function () {
+          return  '#FFCCBC'
+        })
+      otherg.append('text')
+        .text('Totals:')
+        .attr('x', box.w * 0.12)
+        .attr('y', allBox.modifications.h * 1.5)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'end')
+        .style('font-size', titleSize + 'px')
+        .style('pointer-events', 'none')
+        .attr('fill', colorPalette.dark.text)
+        .attr('stroke', 'none')
+      otherg.append('text')
+        .attr('id', 'totalLarge')
+        .text(conflict.blocks.reduce((accumulator, currentValue) => accumulator + currentValue.telescopes.large.min, 0))
+        .attr('x', box.w * 0.23)
+        .attr('y', allBox.modifications.h * 1.5)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'end')
+        .style('font-size', titleSize + 'px')
+        .style('pointer-events', 'none')
+        .attr('fill', colorPalette.dark.text)
+        .attr('stroke', 'none')
+      otherg.append('text')
+        .attr('id', 'totalMedium')
+        .text(conflict.blocks.reduce((accumulator, currentValue) => accumulator + currentValue.telescopes.medium.min, 0))
+        .attr('x', box.w * 0.45)
+        .attr('y', allBox.modifications.h * 1.5)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'end')
+        .style('font-size', titleSize + 'px')
+        .style('pointer-events', 'none')
+        .attr('fill', colorPalette.dark.text)
+        .attr('stroke', 'none')
+      otherg.append('text')
+        .attr('id', 'totalSmall')
+        .text(conflict.blocks.reduce((accumulator, currentValue) => accumulator + currentValue.telescopes.small.min, 0))
+        .attr('x', box.w * 0.78)
+        .attr('y', allBox.modifications.h * 1.5)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'end')
+        .style('font-size', titleSize + 'px')
+        .style('pointer-events', 'none')
+        .attr('fill', colorPalette.dark.text)
+        .attr('stroke', 'none')
+
+      otherg.append('text')
+        .text('/4')
+        .attr('x', box.w * 0.27)
+        .attr('y', allBox.modifications.h * 1.54)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'end')
+        .style('font-size', titleSize + 'px')
+        .style('pointer-events', 'none')
+        .attr('fill', colorPalette.dark.text)
+        .attr('stroke', 'none')
+      otherg.append('text')
+        .text('/25')
+        .attr('x', box.w * 0.5)
+        .attr('y', allBox.modifications.h * 1.54)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'end')
+        .style('font-size', titleSize + 'px')
+        .style('pointer-events', 'none')
+        .attr('fill', colorPalette.dark.text)
+        .attr('stroke', 'none')
+      otherg.append('text')
+        .text('/70')
+        .attr('x', box.w * 0.84)
+        .attr('y', allBox.modifications.h * 1.54)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'end')
+        .style('font-size', titleSize + 'px')
+        .style('pointer-events', 'none')
+        .attr('fill', colorPalette.dark.text)
+        .attr('stroke', 'none')
+
+      otherg.append('rect')
+        .attr('id', 'validateConflict')
+        .attr('x', box.w - 24)
+        .attr('y', allBox.modifications.h * 1.4 + (allBox.modifications.h * 0.2 - 20) * 0.5)
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', colorPalette.darker.stroke)
+        .attr('stroke-width', 0.1)
+        .style('opacity', 0)
+        .on('click', function () {
+          for (let i = 0; i < conflict.blocks.length; i++) {
+            reassignTelescope(conflict.blocks[i])
+          }
+          blockQueue.highlightBlocks([])
+          closeOtherBlocks()
+          svgTelsConflict.drawTelsAvailabilityCurve()
+          listAllConflicts()
+          linkConflicts()
+        })
+        .on('mouseover', function () {
+          d3.select(this).attr('fill', colorPalette.darkest.background)
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).attr('fill', colorPalette.darker.background)
+        })
+      otherg.append('image')
+        .attr('id', 'checkedConflict')
+        .attr('xlink:href', '/static/icons/checked.svg')
+        .attr('x', box.w - 20)
+        .attr('y', allBox.modifications.h * 1.4 + (allBox.modifications.h * 0.2 - 20) * 0.5 + 4)
+        .attr('width', 12)
+        .attr('height', 12)
+        .style('opacity', 0)
+        .style('pointer-events', 'none')
+      function updateTotals () {
+        let l = conflict.blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.large.min), 0)
+        let m = conflict.blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.medium.min), 0)
+        let s = conflict.blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.small.min), 0)
+        otherg.select('text#totalLarge')
+          .text(l)
+        otherg.select('text#totalMedium')
+          .text(m)
+        otherg.select('text#totalSmall')
+          .text(s)
+        otherg.select('rect#isbalanced')
           .attr('fill', function () {
-            return  '#FFCCBC'
+            if (l > 4 || m > 25 || s > 70) return '#FFCCBC'
+            return '#C8E6C9'
           })
-        otherg.append('text')
-          .text('Totals:')
-          .attr('x', box.w * 0.12)
-          .attr('y', allBox.modifications.h * 1.5)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'end')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorPalette.dark.text)
-          .attr('stroke', 'none')
-        otherg.append('text')
-          .attr('id', 'totalLarge')
-          .text(conflict.blocks.reduce((accumulator, currentValue) => accumulator + currentValue.telescopes.large.min, 0))
-          .attr('x', box.w * 0.23)
-          .attr('y', allBox.modifications.h * 1.5)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'end')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorPalette.dark.text)
-          .attr('stroke', 'none')
-        otherg.append('text')
-          .attr('id', 'totalMedium')
-          .text(conflict.blocks.reduce((accumulator, currentValue) => accumulator + currentValue.telescopes.medium.min, 0))
-          .attr('x', box.w * 0.45)
-          .attr('y', allBox.modifications.h * 1.5)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'end')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorPalette.dark.text)
-          .attr('stroke', 'none')
-        otherg.append('text')
-          .attr('id', 'totalSmall')
-          .text(conflict.blocks.reduce((accumulator, currentValue) => accumulator + currentValue.telescopes.small.min, 0))
-          .attr('x', box.w * 0.78)
-          .attr('y', allBox.modifications.h * 1.5)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'end')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorPalette.dark.text)
-          .attr('stroke', 'none')
-
-        otherg.append('text')
-          .text('/4')
-          .attr('x', box.w * 0.27)
-          .attr('y', allBox.modifications.h * 1.54)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'end')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorPalette.dark.text)
-          .attr('stroke', 'none')
-        otherg.append('text')
-          .text('/25')
-          .attr('x', box.w * 0.5)
-          .attr('y', allBox.modifications.h * 1.54)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'end')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorPalette.dark.text)
-          .attr('stroke', 'none')
-        otherg.append('text')
-          .text('/70')
-          .attr('x', box.w * 0.84)
-          .attr('y', allBox.modifications.h * 1.54)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'end')
-          .style('font-size', titleSize + 'px')
-          .style('pointer-events', 'none')
-          .attr('fill', colorPalette.dark.text)
-          .attr('stroke', 'none')
-
-        otherg.append('rect')
-          .attr('id', 'validateConflict')
-          .attr('x', box.w - 24)
-          .attr('y', allBox.modifications.h * 1.4 + (allBox.modifications.h * 0.2 - 20) * 0.5)
-          .attr('width', 20)
-          .attr('height', 20)
-          .attr('fill', colorPalette.darker.background)
-          .attr('stroke', colorPalette.darker.stroke)
-          .attr('stroke-width', 0.1)
-          .style('opacity', 0)
-          .on('click', function () {
-            for (let i = 0; i < conflict.blocks.length; i++) {
-              reassignTelescope(conflict.blocks[i])
-            }
-            blockQueue.highlightBlocks([])
-            closeOtherBlocks()
-            svgTelsConflict.drawTelsAvailabilityCurve()
-            listAllConflicts()
+        otherg.select('rect#validateConflict')
+          .style('opacity', function () {
+            if (l > 4 || m > 25 || s > 70) return 0
+            return 0.8
           })
-          .on('mouseover', function () {
-            d3.select(this).attr('fill', colorPalette.darkest.background)
+        otherg.select('image#checkedConflict')
+          .style('opacity', function () {
+            if (l > 4 || m > 25 || s > 70) return 0
+            return 0.8
           })
-          .on('mouseout', function (d) {
-            d3.select(this).attr('fill', colorPalette.darker.background)
-          })
-        otherg.append('image')
-          .attr('id', 'checkedConflict')
-          .attr('xlink:href', '/static/icons/checked.svg')
-          .attr('x', box.w - 20)
-          .attr('y', allBox.modifications.h * 1.4 + (allBox.modifications.h * 0.2 - 20) * 0.5 + 4)
-          .attr('width', 12)
-          .attr('height', 12)
-          .style('opacity', 0)
-          .style('pointer-events', 'none')
-        function updateTotals () {
-          let l = conflict.blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.large.min), 0)
-          let m = conflict.blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.medium.min), 0)
-          let s = conflict.blocks.reduce((accumulator, currentValue) => accumulator + Number(currentValue.telescopes.small.min), 0)
-          otherg.select('text#totalLarge')
-            .text(l)
-          otherg.select('text#totalMedium')
-            .text(m)
-          otherg.select('text#totalSmall')
-            .text(s)
-          otherg.select('rect#isbalanced')
-            .attr('fill', function () {
-              if (l > 4 || m > 25 || s > 70) return '#FFCCBC'
-              return '#C8E6C9'
-            })
-          otherg.select('rect#validateConflict')
-            .style('opacity', function () {
-              if (l > 4 || m > 25 || s > 70) return 0
-              return 0.8
-            })
-          otherg.select('image#checkedConflict')
-            .style('opacity', function () {
-              if (l > 4 || m > 25 || s > 70) return 0
-              return 0.8
-            })
-        }
-        updateTotals()
       }
-      function closeOtherBlocks () {
-        // svgEventsQueueServer.focus()
-        // svgBlocksQueueServer.focus()
-        // svgBrush.focus()
-        // svgTargets.focus()
-        // svgTelsConflict.focus()
-        // svgFocusOverlay.focus()
-        reserved.g.select('g#conflictsInformation').select('g#otherg').remove()
+      updateTotals()
+    }
+    function closeOtherBlocks () {
+      reserved.g.select('g#conflictsInformation').select('g#otherg').remove()
+    }
+    function focusOnConflict (d) {
+      if (!conflictFocused.d) {
+        conflictFocused = d
+        openOtherBlocks(d.d)
+      } else if (conflictFocused.d.id === d.d.id) {
+        conflictFocused = {d: undefined, d3: undefined}
+        closeOtherBlocks(d)
+      } else {
+        conflictFocused = d
+        closeOtherBlocks(d)
+        openOtherBlocks(d.d)
       }
+    }
+    this.focusOnConflict = focusOnConflict
+    function updateOverview () {
+      if (shared.focus) return
       function updateModificationsInformation () {
         return
         let box = allBox.modifications
@@ -6240,6 +6371,7 @@ let mainSchedBlocksInspector = function (optIn) {
         reserved.overview.modifications.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: line * index})
       }
       function updateConflictsInformation () {
+        conflictButton = []
         // let tbox = {x: label[0].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[0].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
         // let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
         let line = 38
@@ -6266,27 +6398,7 @@ let mainSchedBlocksInspector = function (optIn) {
             .attr('stroke', colorPalette.dark.stroke)
             .attr('stroke-width', 0.1)
             .on('click', function () {
-              if (!conflictFocused.data) {
-                conflictFocused = {data: d, d3: d3.select(this)}
-                openOtherBlocks(d)
-              } else if (conflictFocused.data.id === d.id) {
-                conflictFocused = {data: undefined, d3: undefined}
-                closeOtherBlocks(d)
-              } else {
-                conflictFocused.d3.attr('fill', colorPalette.dark.background)
-                conflictFocused = {data: d, d3: d3.select(this)}
-                closeOtherBlocks(d)
-                openOtherBlocks(d)
-              }
-            })
-            .on('mouseover', function () {
-              d3.select(this).attr('fill', colorPalette.darkest.background)
-              blockQueue.highlightBlocks(d.blocks)
-            })
-            .on('mouseout', function (d) {
-              if (conflictFocused.data === d) return
-              d3.select(this).attr('fill', colorPalette.dark.background)
-              blockQueue.highlightBlocks([])
+              focusOnConflict({d3: d3.select(this), d: d})
             })
           g.append('text')
             .text(d.blocks.length + ' obs')
@@ -6325,6 +6437,7 @@ let mainSchedBlocksInspector = function (optIn) {
           let offX = marg * 1 + (line + marg) * i
           let offY = marg * 1
           g.attr('transform', 'translate(' + offX + ',' + offY + ')')
+          conflictButton.push({d3: g, d: d})
         })
         current
           .exit()
@@ -6335,26 +6448,6 @@ let mainSchedBlocksInspector = function (optIn) {
         reserved.overview.conflicts.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: (line + marg) * shared.data.copy.conflicts.length})
       }
 
-      let allBox = {
-        blocks: {
-          x: 0,
-          y: 0,
-          w: reserved.box.w * 0.8,
-          h: reserved.box.h * 0.2
-        },
-        modifications: {
-          x: 0,
-          y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.42,
-          w: reserved.box.w
-        },
-        conflicts: {
-          x: 0,
-          y: reserved.box.h * 0.62,
-          w: reserved.box.w,
-          h: reserved.box.h * 0.37
-        }
-      }
       updateModificationsInformation()
       updateConflictsInformation()
     }
@@ -6466,6 +6559,7 @@ let mainSchedBlocksInspector = function (optIn) {
             balanceBlocks(d)
             svgTelsConflict.drawTelsAvailabilityCurve(d)
             listAllConflicts()
+            linkConflicts()
           }
         }
       })
@@ -6604,6 +6698,7 @@ let mainSchedBlocksInspector = function (optIn) {
             balanceBlocks(d)
             svgTelsConflict.drawTelsAvailabilityCurve(d)
             listAllConflicts()
+            linkConflicts()
           }
         }
       })

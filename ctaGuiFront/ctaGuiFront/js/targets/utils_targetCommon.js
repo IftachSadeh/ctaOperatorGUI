@@ -45,6 +45,7 @@ window.targetIcon = function (g, dim, name, events, colorTheme) {
     .style('pointer-events', 'none')
     .attr('fill', colorTheme.dark.text)
     .attr('stroke', 'none')
+  return g
 }
 
 window.pointingIcon = function (g, dim, name, events, colorTheme) {
@@ -94,7 +95,8 @@ window.pointingIcon = function (g, dim, name, events, colorTheme) {
     .style('font-size', nameSize + 'px')
     .attr('dy', 0)
     .style('pointer-events', 'none')
+    .style('user-select', 'none')
     .attr('fill', colorTheme.dark.text)
     .attr('stroke', 'none')
-  return back
+  return g
 }
