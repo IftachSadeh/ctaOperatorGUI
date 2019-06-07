@@ -298,7 +298,7 @@ window.colorTheme = {
       }
     },
     darkest: {
-      background: '#9E9E9E',
+      background: '#BDBDBD',
       stroke: '#444444',
       text: '#444444'
     },

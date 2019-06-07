@@ -1735,8 +1735,28 @@ window.BlockDisplayer = function (optIn) {
         .style('font-size', minTxtSize + 'px')
     }
     function updateSchedulingBlocks () {
+      function blockOverlap (b, bs) {
+        let ov = bs.filter(function (bb) {
+          return blocksIntersect(b, bb)
+        })
+        if (ov.length === 0) return 1
+        ov = ov.map(function (bb) {
+          return blockOverlap(bb, ov.filter(d => d.obId !== bb.obId))
+        })
+        return 1 + ov.reduce(function (a, b) { return Math.max(a, b) })
+      }
+      function lineCount () {
+        let tot = 0
+        scheds.forEach(function (sc) {
+          let size = sc.blocks.map(function (b) {
+            return blockOverlap(b, sc.blocks.filter(d => d.obId !== b.obId))
+          })
+          tot += size.reduce(function (a, b) { return Math.max(a, b) })
+        })
+        return tot
+      }
       let scheds = groupBlocksBySchedule(com.data.filtered)
-      let nLine = scheds.length
+      let nLine = lineCount()
       let height = com.main.box.h / nLine
 
       let allScheds = com.main.g

@@ -160,6 +160,13 @@ window.getBlocksByTime = function (blocks, start, end) {
   }
   return ret
 }
+window.blocksIntersect = function (b1, b2) {
+  if (b1.time.start <= b2.time.start && b1.time.end >= b2.time.start) return true
+  if (b1.time.end >= b2.time.start && b1.time.end <= b2.time.end) return true
+  if (b1.time.start >= b2.time.start && b1.time.start <= b2.time.end) return true
+  if (b1.time.start <= b2.time.start && b1.time.end >= b2.time.end) return true
+  return false
+}
 window.balanceTelescopesBetweenBlocks = function (b, blocks) {
   function balance (type) {
     let data = b.telescopes[type]
@@ -178,13 +185,6 @@ window.balanceTelescopesBetweenBlocks = function (b, blocks) {
   balance('small')
 }
 window.clusterBlocksByTime = function (blocks) {
-  function intersect (b1, b2) {
-    if (b1.time.start <= b2.time.start && b1.time.end >= b2.time.start) return true
-    if (b1.time.end >= b2.time.start && b1.time.end <= b2.time.end) return true
-    if (b1.time.start >= b2.time.start && b1.time.start <= b2.time.end) return true
-    if (b1.time.start <= b2.time.start && b1.time.end >= b2.time.end) return true
-    return false
-  }
   function checkDuplicata (c1, c2) {
     let count = 0
     c2.map(function (d) {
@@ -199,7 +199,7 @@ window.clusterBlocksByTime = function (blocks) {
       if (i === j) continue
       let inter = true
       for (let z = 0; z < clusters[j].length; z++) {
-        if (!intersect(clusters[j][z], blocks[i])) {
+        if (!blocksIntersect(clusters[j][z], blocks[i])) {
           inter = false
           break
         }
