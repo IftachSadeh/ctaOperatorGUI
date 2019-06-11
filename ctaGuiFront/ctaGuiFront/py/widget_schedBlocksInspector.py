@@ -189,25 +189,27 @@ class schedBlocksInspector():
         return
 
     # data.zoomTarget = name of telescope focus on (ex: L_2)
-    def schedBlockInspectorPushNewBlockQueue(self, *args):
+    def schedBlockInspectorPushNewSchedule(self, *args):
         self.expire = 86400 # one day
-        print 'schedBlockInspectorPushNewBlockQueue'
-        data = args[0]['newBlockQueue']['blocks']
-        blockIds = {"wait": [], "run": [], "done": [], "cancel": [], "fail": []}
-        newBlocks = []
-        for key in data:
-            for i in range(len(data[key])):
-                if self.redis.exists(data[key][i]["obId"]):
-                    blockIds[data[key][i]['exeState']['state']].append(data[key][i]["obId"])
-                    self.redis.pipe.set(
-                        name=data[key][i]["obId"], data=data[key][i], expire=self.expire, packed=True)
-                else:
-                    newBlocks.append(data[key][i])
-        for key, val in blockIds.iteritems():
-            self.redis.pipe.set(name='obsBlockIds_'+key, data=val, packed=True)
+        print 'schedBlockInspectorPushNewSchedule'
+        data = args[0]['newSchedule']
+        self.redis.pipe.reset()
+        self.redis.pipe.set(name='blockUpdate', data=data, packed=True)
+        # blockIds = {"wait": [], "run": [], "done": [], "cancel": [], "fail": []}
+        # newBlocks = []
+        # for key in data:
+        #     for i in range(len(data[key])):
+        #         if self.redis.exists(data[key][i]["obId"]):
+        #             blockIds[data[key][i]['exeState']['state']].append(data[key][i]["obId"])
+        #             self.redis.pipe.set(
+        #                 name=data[key][i]["obId"], data=data[key][i], expire=self.expire, packed=True)
+        #         else:
+        #             newBlocks.append(data[key][i])
+        # for key, val in blockIds.iteritems():
+        #     self.redis.pipe.set(name='obsBlockIds_'+key, data=val, packed=True)
 
         self.redis.pipe.execute()
-        print newBlocks
+        # print newBlocks
 
         self.mySock.socketEvtWidgetV(
             evtName="newSchedulePushed",

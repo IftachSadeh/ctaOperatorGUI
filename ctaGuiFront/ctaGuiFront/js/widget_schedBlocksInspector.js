@@ -98,18 +98,18 @@ let sockSchedBlocksInspector = function (optIn) {
   // }
 
   // FUNCTION TO SEND DATA TO THE REDIS DATABASE (need eqivalent function in .py)
-  this.pushNewBlockQueue = function (optIn) {
+  this.pushNewSchedule = function (optIn) {
     if (sock.conStat.isOffline()) return
 
     let data = {}
     data.widgetId = optIn.widgetId
-    data.newBlockQueue = optIn.newBlockQueue
+    data.newSchedule = optIn.newSchedule
 
     let dataEmit = {
       widgetSource: widgetSource,
       widgetName: widgetType,
       widgetId: data.widgetId,
-      methodName: 'schedBlockInspectorPushNewBlockQueue',
+      methodName: 'schedBlockInspectorPushNewSchedule',
       methodArgs: data
     }
     sock.socket.emit('widget', dataEmit)
@@ -451,7 +451,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('stroke-width', 0.1)
           .attr('rx', 48)
           .on('click', function () {
-
+            pushNewSchedule()
           })
           .on('mouseover', function (d) {
             d3.select(this).attr('fill', colorTheme.darkest.background)
@@ -1192,17 +1192,22 @@ let mainSchedBlocksInspector = function (optIn) {
       return colorTheme.blocks.cancelSys
     } else return colorTheme.blocks.shutdown
   }
-  function cleanOptimizedBlockQueue () {
-    let cleanQueue = deepCopy(shared.data.copy[shared.data.current].optimized)
-    for (let key in cleanQueue.blocks) {
-      let group = cleanQueue.blocks[key]
+  function cleanBlocks () {
+    let cleanSchedule = []
+    for (let key in shared.data.copy.blocks) {
+      let group = shared.data.copy.blocks[key]
       for (let i = 0; i < group.length; i++) {
-        delete group[i].modifications
+        let cleanBlock = deepCopy(group[i])
+        delete cleanBlock.display
+        delete cleanBlock.filtered
+        delete cleanBlock.nLine
+        cleanSchedule.push(cleanBlock)
       }
     }
-    return cleanQueue
+    return cleanSchedule
   }
-  function pushNewBlockQueue () {
+  function pushNewSchedule () {
+    console.log(shared.data.copy);
     locker.add('pushNewSchedule')
     let pushingG = svg.g.append('g')
       .attr('class', 'pushingNewSchedule')
@@ -1217,10 +1222,10 @@ let mainSchedBlocksInspector = function (optIn) {
       .duration(400)
       .style('opacity', 0.8)
       .on('end', function () {
-        let cleanQueue = cleanOptimizedBlockQueue()
-        sock.widgetV[widgetType].SockFunc.pushNewBlockQueue({
+        let cleanQueue = cleanBlocks()
+        sock.widgetV[widgetType].SockFunc.pushNewSchedule({
           widgetId: widgetId,
-          newBlockQueue: cleanQueue
+          newSchedule: cleanQueue
         })
 
         function loop (circle) {
@@ -1261,9 +1266,8 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('x', lenD.w[0] * 0.3)
           .attr('y', lenD.h[0] * 0.6)
       })
-
   }
-  this.pushNewBlockQueue = pushNewBlockQueue
+  this.pushNewSchedule = pushNewSchedule
 
   function switchMainMode () {
     svgBrush.translateTo(box.brushZoom.x, box.brushZoom.y + 24)
@@ -3460,21 +3464,21 @@ let mainSchedBlocksInspector = function (optIn) {
 
       let range = reserved.box.h * 0.33333
 
-      reserved.clipBody.append('text')
+      reserved.clipping.g.append('text')
         .text('L')
         .style('fill', colorTheme.dark.stroke)
         .style('font-weight', 'bold')
         .style('font-size', '16px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (-10) + ',' + (range * 0.5 + 5) + ')')
-      reserved.clipBody.append('text')
+      reserved.clipping.g.append('text')
         .text('M')
         .style('fill', colorTheme.dark.stroke)
         .style('font-weight', 'bold')
         .style('font-size', '16px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (-10) + ',' + (range * 1.5 + 5) + ')')
-      reserved.clipBody.append('text')
+      reserved.clipping.g.append('text')
         .text('S')
         .style('fill', colorTheme.dark.stroke)
         .style('font-weight', 'bold')

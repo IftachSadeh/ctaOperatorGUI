@@ -1739,11 +1739,16 @@ window.BlockDisplayer = function (optIn) {
         let ov = bs.filter(function (bb) {
           return blocksIntersect(b, bb)
         })
-        if (ov.length === 0) return 1
+        if (ov.length === 0) {
+          b.nLine = 1
+          return 1
+        }
         ov = ov.map(function (bb) {
           return blockOverlap(bb, ov.filter(d => d.obId !== bb.obId))
         })
-        return 1 + ov.reduce(function (a, b) { return Math.max(a, b) })
+        let index = 1 + ov.reduce(function (a, b) { return Math.max(a, b) })
+        b.nLine = index
+        return index
       }
       function lineCount () {
         let tot = 0
@@ -1811,7 +1816,7 @@ window.BlockDisplayer = function (optIn) {
                 com.events.sched.mouseout('schedBlock', d.id)
               })
           }
-          let text = d3.select(this).append('text')
+          d3.select(this).append('text')
             .attr('class', 'schedId')
             .text('S' + d.name)
             .attr('x', com.blockQueue2.schedBlocks.label.position === 'left' ? -2 : com.main.box.w + 2)
@@ -1822,9 +1827,6 @@ window.BlockDisplayer = function (optIn) {
             .style('pointer-events', 'none')
             .attr('fill', colorTheme.darker.text)
             .attr('stroke', 'none')
-          // let bbox = text.node().getBBox()
-          // if (bbox.x < minX) minX = bbox.x
-          // if (bbox.width > maxWidth) maxWidth = bbox.width
         }
       })
 
@@ -1839,7 +1841,7 @@ window.BlockDisplayer = function (optIn) {
           }
           d3.select(this).attr('transform', 'translate(' + translate.x + ',' + translate.y + ')')
           d.blocks = setDefaultStyleForBlocks(d.blocks)
-          setBlockRect(d.blocks, {x: 0, y: (height * mainOffset), w: com.main.box.w, h: height * d.nLine})
+          setBlockRect(d.blocks, {x: 0, y: (height * mainOffset), w: com.main.box.w, h: height})
 
           let ww = com.blockQueue2.schedBlocks.label.size ? com.blockQueue2.schedBlocks.label.size : maxWidth
           ww = com.blockQueue2.schedBlocks.label.position === 'left' ? -ww : ww
@@ -1859,6 +1861,8 @@ window.BlockDisplayer = function (optIn) {
                 return [d.x, d.y].join(',')
               }).join(' ')
             })
+          d3.select(this).select('text.schedId')
+            .attr('y', height * 0.75)
           mainOffset += d.nLine
         })
       allScheds.exit().remove()
@@ -1877,7 +1881,7 @@ window.BlockDisplayer = function (optIn) {
         d3.select(this)
           .transition('inOut')
           .duration(0)
-          .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
+          .attr('transform', 'translate(' + box.x + ',' + (box.y + ((d.nLine - 1) * box.h)) + ')')
           .attr('opacity', d => d.display.opacity)
         d3.select(this).select('rect.back')
           .transition('inOut')
