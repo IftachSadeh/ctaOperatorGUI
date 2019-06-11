@@ -1751,7 +1751,9 @@ window.BlockDisplayer = function (optIn) {
           let size = sc.blocks.map(function (b) {
             return blockOverlap(b, sc.blocks.filter(d => d.obId !== b.obId))
           })
-          tot += size.reduce(function (a, b) { return Math.max(a, b) })
+          let res = size.reduce(function (a, b) { return Math.max(a, b) })
+          tot += res
+          sc.nLine = res
         })
         return tot
       }
@@ -1759,6 +1761,7 @@ window.BlockDisplayer = function (optIn) {
       let nLine = lineCount()
       let height = com.main.box.h / nLine
 
+      let mainOffset = 0
       let allScheds = com.main.g
         .selectAll('g.allScheds')
         .data(scheds, function (d) {
@@ -1770,9 +1773,10 @@ window.BlockDisplayer = function (optIn) {
         .attr('class', 'allScheds')
         .attr('transform', function (d, i) {
           let translate = {
-            y: height * i,
+            y: height * mainOffset,
             x: 0
           }
+          mainOffset += d.nLine
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
       let minX = com.blockQueue2.schedBlocks.label.position === 'left' ? -2 : com.main.box.w + 2
@@ -1823,19 +1827,19 @@ window.BlockDisplayer = function (optIn) {
           // if (bbox.width > maxWidth) maxWidth = bbox.width
         }
       })
+
+      mainOffset = 0
       enterAllScheds.merge(allScheds)
         .transition()
         .duration(timeD.animArc)
-        .attr('transform', function (d, i) {
+        .each(function (d, i) {
           let translate = {
-            y: height * i,
+            y: height * mainOffset,
             x: 0
           }
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
-        .each(function (d, i) {
+          d3.select(this).attr('transform', 'translate(' + translate.x + ',' + translate.y + ')')
           d.blocks = setDefaultStyleForBlocks(d.blocks)
-          setBlockRect(d.blocks, {x: 0, y: (height * i), w: com.main.box.w, h: height})
+          setBlockRect(d.blocks, {x: 0, y: (height * mainOffset), w: com.main.box.w, h: height * d.nLine})
 
           let ww = com.blockQueue2.schedBlocks.label.size ? com.blockQueue2.schedBlocks.label.size : maxWidth
           ww = com.blockQueue2.schedBlocks.label.position === 'left' ? -ww : ww
@@ -1843,11 +1847,11 @@ window.BlockDisplayer = function (optIn) {
             {x: minX, y: 0},
             {x: minX + ww * 0.85, y: 0},
 
-            {x: minX + ww, y: height * 0.3},
-            {x: minX + ww, y: height * 0.7},
+            {x: minX + ww, y: (height * d.nLine) * 0.3},
+            {x: minX + ww, y: (height * d.nLine) * 0.7},
 
-            {x: minX + ww * 0.85, y: height},
-            {x: minX, y: height}
+            {x: minX + ww * 0.85, y: (height * d.nLine)},
+            {x: minX, y: (height * d.nLine)}
           ]
           d3.select(this).select('polygon')
             .attr('points', function () {
@@ -1855,6 +1859,7 @@ window.BlockDisplayer = function (optIn) {
                 return [d.x, d.y].join(',')
               }).join(' ')
             })
+          mainOffset += d.nLine
         })
       allScheds.exit().remove()
     }
