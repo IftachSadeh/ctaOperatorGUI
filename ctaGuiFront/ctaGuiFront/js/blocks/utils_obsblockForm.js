@@ -385,9 +385,11 @@ window.ObsblockForm = function (optIn) {
 
     com.schedule.events.click()
     com.events.conflict(com.data.block)
+    com.events.modification(com.data.block)
   }
   function changeState (newState) {
     com.schedule.events.change(com.data.block, newState)
+    com.events.modification(com.data.block)
     initSchedulingObservingBlocksTree()
   }
   function initTimeInformation () {
@@ -1068,6 +1070,7 @@ window.ObsblockForm = function (optIn) {
             updatePointingInformation()
             reassignTelescope(com.data.block)
             updateTelescopeInformation()
+            com.events.modification(com.data.block)
             g.remove()
           })
           .on('mouseover', function (d) {
@@ -2205,6 +2208,7 @@ window.ObsblockForm = function (optIn) {
         updateInput()
         // reassignTelescope()
         updateTelescopeInformation()
+        com.events.modification(com.data.block)
       })
       .on('mouseover', function (d) {
         d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
@@ -2795,6 +2799,7 @@ window.ObsblockForm = function (optIn) {
     updateTotals()
     updateTelescopeInformation()
     com.events.conflict(com.data.block)
+    com.events.modification(com.data.block)
     // reassignTelescope()
   }
   function addTelescope (t, elem) {
@@ -3058,7 +3063,7 @@ window.ObsblockForm = function (optIn) {
           }
         },
         other: {
-          delTel: (d) => { removeTel(d) },
+          delTel: (d) => { removeTel(d); com.events.modification(com.data.block) },
           switchTel: (elem, t) => { switchTel(elem, t) }
         }
       },
@@ -3283,6 +3288,7 @@ window.ObsblockForm = function (optIn) {
         .on('click', function () {
           reassignTelescope(com.data.block)
           updateTelescopeInformation()
+          com.events.modification(com.data.block)
         })
         .on('mouseover', function (d) {
           d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))

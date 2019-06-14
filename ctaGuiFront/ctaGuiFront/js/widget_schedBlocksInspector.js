@@ -757,9 +757,9 @@ let mainSchedBlocksInspector = function (optIn) {
       }
       box.tools = {
         x: lenD.w[0] * 0.374,
-        y: lenD.h[0] * 0.707,
+        y: lenD.h[0] * 0.75,
         w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.268,
+        h: lenD.h[0] * 0.225,
         marg: lenD.w[0] * 0.01
       }
       box.focusOverlay = {
@@ -918,14 +918,14 @@ let mainSchedBlocksInspector = function (optIn) {
       return
     }
     locker.add('updateData')
-    shared.data.server = dataIn.data
-    shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
-    associateBlockAndTels()
-
-    svgBlocksQueueServer.updateData()
-    svgEventsQueueServer.updateData()
-    svgBrush.updateData()
-    svgRightInfo.update()
+    // shared.data.server = dataIn.data
+    // shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
+    // associateBlockAndTels()
+    //
+    // svgBlocksQueueServer.updateData()
+    // svgEventsQueueServer.updateData()
+    // svgBrush.updateData()
+    // svgRightInfo.update()
 
     // let currentTime = {date: new Date(shared.data.server.timeOfNight.date_now)}
     // svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
@@ -1473,93 +1473,97 @@ let mainSchedBlocksInspector = function (optIn) {
   // ---------------------------------------------------------------------------------------------------
   // modify blocks
   // ---------------------------------------------------------------------------------------------------
-  function applyModification (id, modif) {
-    let old
-    switch (modif.prop) {
-      case 'startTime':
-        old = block.modified.data.startTime
-        block.modified.data.startTime = modif.new
-        block.modified.data.endTime = modif.new + block.modified.data.duration
+  // function applyModification (id, modif) {
+  //   let old
+  //   switch (modif.prop) {
+  //     case 'startTime':
+  //       old = block.modified.data.startTime
+  //       block.modified.data.startTime = modif.new
+  //       block.modified.data.endTime = modif.new + block.modified.data.duration
+  //
+  //       if (block.original.data.startTime === modif.new) {
+  //         delete block.modified.data.modifications.userModifications[modif.prop]
+  //         return false
+  //       }
+  //       if (!block.modified.data.modifications.userModifications[modif.prop]) block.modified.data.modifications.userModifications[modif.prop] = []
+  //       block.modified.data.modifications.userModifications[modif.prop].push({new: modif.new, old: old})
+  //       break
+  //     case ('state'):
+  //       old = block.modified.data.exeState.state
+  //       block.modified.data.exeState.state = modif.new
+  //       if (block.original.data.exeState.state === modif.new) {
+  //         delete block.modified.data.modifications.userModifications[modif.prop]
+  //         return false
+  //       }
+  //
+  //       if (!block.modified.data.modifications.userModifications['state']) block.modified.data.modifications.userModifications['state'] = []
+  //       block.modified.data.modifications.userModifications['state'].push({new: modif.new, old: old})
+  //       break
+  //     case ('canRun'):
+  //       old = block.modified.data.exeState
+  //       block.modified.data.exeState = {state: 'cancel', canRun: modif.new}
+  //
+  //       if (block.original.data.exeState.canRun === modif.new) {
+  //         delete block.modified.data.modifications.userModifications[modif.prop]
+  //         return false
+  //       }
+  //       if (old.state !== 'cancel') {
+  //         if (!block.modified.data.modifications.userModifications['state']) block.modified.data.modifications.userModifications['state'] = []
+  //         block.modified.data.modifications.userModifications['state'].push({new: 'cancel', old: old.state})
+  //       }
+  //       if (!block.modified.data.modifications.userModifications[modif.prop]) block.modified.data.modifications.userModifications[modif.prop] = []
+  //       block.modified.data.modifications.userModifications['canRun'].push({new: modif.new, old: old.canRun})
+  //       break
+  //     default:
+  //   }
+  //   return true
+  // }
+  // function changeSchedBlocksProperties (from, schedId, modifs) {
+  //   for (let key in shared.data.copy[shared.data.current].modified.blocks) {
+  //     let group = shared.data.copy[shared.data.current].modified.blocks[key]
+  //     for (let i = group.length - 1; i > -1; i--) {
+  //       if (group[i].sbId === schedId) {
+  //         changeBlockProperties(from, group[i].obId, modifs)
+  //       }
+  //     }
+  //   }
+  // }
+  // function changeBlockProperties (from, blockId, modifs) {
+  //   let block = getBlockById(blockId)
+  //   // for (let key in shared.data.copy[shared.data.current].original.blocks) {
+  //   //   let group = shared.data.copy[shared.data.current].original.blocks[key]
+  //   //   for (let i = 0; i < group.length; i++) {
+  //   //     if (group[i].obId === blockId) {
+  //   //       group[i].modifications.modified = true
+  //   //     }
+  //   //   }
+  //   // }
+  //   // shared.data.copy[shared.data.current].original.blocks[block.original.key][block.original.index]
+  //   block.original.data.modifications.modified = true
+  //   block.optimized.data.modifications.modified = true
+  //   for (let modif in modifs) {
+  //     applyModification(block, modifs[modif])
+  //     if (modifs[modif].prop === 'state') {
+  //       shared.data.copy[shared.data.current].modified.blocks[block.modified.key].splice(block.modified.index, 1)
+  //       if (modifs[modif].new === 'cancel') {
+  //         shared.data.copy[shared.data.current].modified.blocks['done'].push(block.modified.data)
+  //       } else if (modifs[modif].new === 'wait') {
+  //         shared.data.copy[shared.data.current].modified.blocks['wait'].push(block.modified.data)
+  //       } else if (modifs[modif].new === 'run') {
+  //         shared.data.copy[shared.data.current].modified.blocks['run'].push(block.modified.data)
+  //       }
+  //     }
+  //   }
+  //   if (Object.keys(block.optimized.data.modifications.userModifications).length === 0) {
+  //     block.original.data.modifications.modified = false
+  //     block.optimized.data.modifications.modified = false
+  //   }
+  //
+  //   optimizer()
+  // }
 
-        if (block.original.data.startTime === modif.new) {
-          delete block.modified.data.modifications.userModifications[modif.prop]
-          return false
-        }
-        if (!block.modified.data.modifications.userModifications[modif.prop]) block.modified.data.modifications.userModifications[modif.prop] = []
-        block.modified.data.modifications.userModifications[modif.prop].push({new: modif.new, old: old})
-        break
-      case ('state'):
-        old = block.modified.data.exeState.state
-        block.modified.data.exeState.state = modif.new
-        if (block.original.data.exeState.state === modif.new) {
-          delete block.modified.data.modifications.userModifications[modif.prop]
-          return false
-        }
-
-        if (!block.modified.data.modifications.userModifications['state']) block.modified.data.modifications.userModifications['state'] = []
-        block.modified.data.modifications.userModifications['state'].push({new: modif.new, old: old})
-        break
-      case ('canRun'):
-        old = block.modified.data.exeState
-        block.modified.data.exeState = {state: 'cancel', canRun: modif.new}
-
-        if (block.original.data.exeState.canRun === modif.new) {
-          delete block.modified.data.modifications.userModifications[modif.prop]
-          return false
-        }
-        if (old.state !== 'cancel') {
-          if (!block.modified.data.modifications.userModifications['state']) block.modified.data.modifications.userModifications['state'] = []
-          block.modified.data.modifications.userModifications['state'].push({new: 'cancel', old: old.state})
-        }
-        if (!block.modified.data.modifications.userModifications[modif.prop]) block.modified.data.modifications.userModifications[modif.prop] = []
-        block.modified.data.modifications.userModifications['canRun'].push({new: modif.new, old: old.canRun})
-        break
-      default:
-    }
-    return true
-  }
-  function changeSchedBlocksProperties (from, schedId, modifs) {
-    for (let key in shared.data.copy[shared.data.current].modified.blocks) {
-      let group = shared.data.copy[shared.data.current].modified.blocks[key]
-      for (let i = group.length - 1; i > -1; i--) {
-        if (group[i].sbId === schedId) {
-          changeBlockProperties(from, group[i].obId, modifs)
-        }
-      }
-    }
-  }
-  function changeBlockProperties (from, blockId, modifs) {
-    let block = getBlockById(blockId)
-    // for (let key in shared.data.copy[shared.data.current].original.blocks) {
-    //   let group = shared.data.copy[shared.data.current].original.blocks[key]
-    //   for (let i = 0; i < group.length; i++) {
-    //     if (group[i].obId === blockId) {
-    //       group[i].modifications.modified = true
-    //     }
-    //   }
-    // }
-    // shared.data.copy[shared.data.current].original.blocks[block.original.key][block.original.index]
-    block.original.data.modifications.modified = true
-    block.optimized.data.modifications.modified = true
-    for (let modif in modifs) {
-      applyModification(block, modifs[modif])
-      if (modifs[modif].prop === 'state') {
-        shared.data.copy[shared.data.current].modified.blocks[block.modified.key].splice(block.modified.index, 1)
-        if (modifs[modif].new === 'cancel') {
-          shared.data.copy[shared.data.current].modified.blocks['done'].push(block.modified.data)
-        } else if (modifs[modif].new === 'wait') {
-          shared.data.copy[shared.data.current].modified.blocks['wait'].push(block.modified.data)
-        } else if (modifs[modif].new === 'run') {
-          shared.data.copy[shared.data.current].modified.blocks['run'].push(block.modified.data)
-        }
-      }
-    }
-    if (Object.keys(block.optimized.data.modifications.userModifications).length === 0) {
-      block.original.data.modifications.modified = false
-      block.optimized.data.modifications.modified = false
-    }
-
-    optimizer()
+  function changeBlockProperties (block) {
+    console.log(block);
   }
 
   function createDummyBlock () {
@@ -3521,7 +3525,7 @@ let mainSchedBlocksInspector = function (optIn) {
     this.updateData = updateData
     function update () {
       drawTelsAvailabilityCurve()
-      linkConflicts()
+      // linkConflicts()
     }
     this.update = update
 
@@ -3556,7 +3560,7 @@ let mainSchedBlocksInspector = function (optIn) {
         .domain([0, 4])
       let allg = reserved.clipBody.selectAll('g.telsCurve')
         .data(curve, function (d, i) {
-          return i
+          return d.id
         })
       let gEnter = allg.enter()
         .append('g')
@@ -3597,10 +3601,11 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {})
+        .on('mouseout', function (d) {})
         .each(function (d) {
           if (d.smallTels < scaleYSmall.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
         })
-
       gMerge.select('rect.medium')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
@@ -3632,10 +3637,11 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {})
+        .on('mouseout', function (d) {})
         .each(function (d) {
           if (d.mediumTels < scaleYMedium.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
         })
-
       gMerge.select('rect.high')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
@@ -3667,15 +3673,45 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {})
+        .on('mouseout', function (d) {})
         .each(function (d) {
           if (d.largeTels < scaleYLarge.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
         })
+
+      allg
+        .exit()
+        .style('opacity', 0)
+        .remove()
+
+      listAllConflicts(curve)
     }
     this.drawTelsAvailabilityCurve = drawTelsAvailabilityCurve
     function computeTelsCurve (block) {
+      function core (b) {
+        if (!largeTels[b.time.start]) largeTels[b.time.start] = 0// 4
+        if (!mediumTels[b.time.start]) mediumTels[b.time.start] = 0// 24
+        if (!smallTels[b.time.start]) smallTels[b.time.start] = 0// 70
+        if (!largeTels[b.time.end]) largeTels[b.time.end] = 0// 4
+        if (!mediumTels[b.time.end]) mediumTels[b.time.end] = 0// 24
+        if (!smallTels[b.time.end]) smallTels[b.time.end] = 0// 70
+
+        smallTels[b.time.start] += b.telescopes.small.min
+        smallTels[b.time.end] -= b.telescopes.small.min
+        mediumTels[b.time.start] += b.telescopes.medium.min
+        mediumTels[b.time.end] -= b.telescopes.medium.min
+        largeTels[b.time.start] += b.telescopes.large.min
+        largeTels[b.time.end] -= b.telescopes.large.min
+
+        if (!bIds[b.time.start]) bIds[b.time.start] = {type: 'add', ids: []}
+        if (!bIds[b.time.end]) bIds[b.time.end] = {type: 'rem', ids: []}
+        bIds[b.time.start].ids.push(b.obId)
+        bIds[b.time.end].ids.push(b.obId)
+      }
       let largeTels = {}
       let mediumTels = {}
       let smallTels = {}
+      let bIds = {}
       // smallTels[shared.data.server.timeOfNight.start] = 0
       // mediumTels[shared.data.server.timeOfNight.start] = 0
       // largeTels[shared.data.server.timeOfNight.start] = 0
@@ -3686,55 +3722,21 @@ let mainSchedBlocksInspector = function (optIn) {
           if (b.exeState.state === 'cancel') continue
           if (block && b.obId === block.obId) continue
 
-          if (!largeTels[b.time.start]) largeTels[b.time.start] = 0// 4
-          if (!mediumTels[b.time.start]) mediumTels[b.time.start] = 0// 24
-          if (!smallTels[b.time.start]) smallTels[b.time.start] = 0// 70
-          if (!largeTels[b.time.end]) largeTels[b.time.end] = 0// 4
-          if (!mediumTels[b.time.end]) mediumTels[b.time.end] = 0// 24
-          if (!smallTels[b.time.end]) smallTels[b.time.end] = 0// 70
-
-          smallTels[b.time.start] += b.telescopes.small.min
-          smallTels[b.time.end] -= b.telescopes.small.min
-          mediumTels[b.time.start] += b.telescopes.medium.min
-          mediumTels[b.time.end] -= b.telescopes.medium.min
-          largeTels[b.time.start] += b.telescopes.large.min
-          largeTels[b.time.end] -= b.telescopes.large.min
-          // for (let j = 0; j < b.telIds.length; j++) {
-          //   let tid = b.telIds[j]
-          //   if (tid[0] === 'S') {
-          //     smallTels[b.startTime] -= 1
-          //     smallTels[b.endTime] += 1
-          //   } else if (tid[0] === 'M') {
-          //     mediumTels[b.startTime] -= 1
-          //     mediumTels[b.endTime] += 1
-          //   } else if (tid[0] === 'L') {
-          //     largeTels[b.startTime] -= 1
-          //     largeTels[b.endTime] += 1
-          //   }
-          // }
+          core(b)
         }
       }
       if (block) {
-        if (!largeTels[block.time.start]) largeTels[block.time.start] = 0// 4
-        if (!mediumTels[block.time.start]) mediumTels[block.time.start] = 0// 24
-        if (!smallTels[block.time.start]) smallTels[block.time.start] = 0// 70
-        if (!largeTels[block.time.end]) largeTels[block.time.end] = 0// 4
-        if (!mediumTels[block.time.end]) mediumTels[block.time.end] = 0// 24
-        if (!smallTels[block.time.end]) smallTels[block.time.end] = 0// 70
-
-        smallTels[block.time.start] += block.telescopes.small.min
-        smallTels[block.time.end] -= block.telescopes.small.min
-        mediumTels[block.time.start] += block.telescopes.medium.min
-        mediumTels[block.time.end] -= block.telescopes.medium.min
-        largeTels[block.time.start] += block.telescopes.large.min
-        largeTels[block.time.end] -= block.telescopes.large.min
+        core(block)
       }
+
       let timeMarker = []
       for (var key in smallTels) {
         timeMarker.push(Number(key))
       }
       timeMarker.sort((a, b) => a - b)
+
       let telsFree = []
+      let currentBlockIds = []
       for (let i = -1; i < timeMarker.length; i++) {
         if (i === -1) {
           telsFree.push({
@@ -3743,7 +3745,8 @@ let mainSchedBlocksInspector = function (optIn) {
             end: timeMarker[i + 1],
             smallTels: 70,
             mediumTels: 25,
-            largeTels: 4
+            largeTels: 4,
+            blocks: []
           })
         } else if (i === timeMarker.length - 1) {
           telsFree.push({
@@ -3752,16 +3755,23 @@ let mainSchedBlocksInspector = function (optIn) {
             end: Number(shared.data.server.timeOfNight.end),
             smallTels: 70,
             mediumTels: 25,
-            largeTels: 4
+            largeTels: 4,
+            blocks: []
           })
         } else {
+          if (bIds[timeMarker[i]].type === 'rem') {
+            currentBlockIds = currentBlockIds.filter(d => bIds[timeMarker[i]].ids.indexOf(d) < 0)
+          } else {
+            currentBlockIds = currentBlockIds.concat(bIds[timeMarker[i]].ids.filter(d => currentBlockIds.indexOf(d) < 0))
+          }
           telsFree.push({
             id: 'LMS' + timeMarker[i] + timeMarker[i + 1],
             start: timeMarker[i],
             end: timeMarker[i + 1],
             smallTels: telsFree[i].smallTels - smallTels[timeMarker[i]],
             mediumTels: telsFree[i].mediumTels - mediumTels[timeMarker[i]],
-            largeTels: telsFree[i].largeTels - largeTels[timeMarker[i]]
+            largeTels: telsFree[i].largeTels - largeTels[timeMarker[i]],
+            blocks: deepCopy(currentBlockIds)
           })
         }
       }
@@ -4729,9 +4739,10 @@ let mainSchedBlocksInspector = function (optIn) {
     function dragEnd (d) {
       balanceBlocks(d)
       svgTelsConflict.drawTelsAvailabilityCurve(d)
-      listAllConflicts()
-      linkConflicts()
+      // listAllConflicts()
+      // linkConflicts()
       reserved.drag.locked = false
+      changeBlockProperties(d)
       // if (!reserved.drag.atLeastOneTick) return
       // console.log('dragEnd')
       // d3.event.sourceEvent.stopPropagation()
@@ -4865,70 +4876,119 @@ let mainSchedBlocksInspector = function (optIn) {
   let conflictSquare = []
   let conflictButton = []
   function linkConflicts () {
-    for (let i = conflictSquare.length - 1; i >= 0; i--) {
-      let linkedButton = []
-      for (let j = conflictButton.length - 1; j >= 0; j--) {
-        if (conflictButton[j].d.large + conflictSquare[i].d.largeTels === 4 &&
-          conflictButton[j].d.medium + conflictSquare[i].d.mediumTels === 25 &&
-          conflictButton[j].d.small + conflictSquare[i].d.smallTels === 70) {
-          linkedButton.push(conflictButton[j])
-        }
-      }
-      if (linkedButton.length > 0) {
-        let linkedOther = []
-        for (let j = conflictSquare.length - 1; j >= 0; j--) {
-          if (i !== j && conflictSquare[i].d.id === conflictSquare[j].d.id) {
-            linkedOther.push(conflictSquare[j])
-          }
-        }
-        conflictSquare[i].d3
-          .on('click', function () {
-            svgRightInfo.focusOnConflict(linkedButton[0])
-          })
-          .on('mouseover', function (d) {
-            d3.select(this).style('cursor', 'pointer')
-            d3.select(this).attr('fill', d3.color('#FF5722').darker(0.9))
-            for (let j = linkedButton.length - 1; j >= 0; j--) {
-              if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.darkest.background)
-              blockQueue.highlightBlocks(linkedButton[j].d.blocks)
-            }
-            for (let j = linkedOther.length - 1; j >= 0; j--) {
-              linkedOther[j].d3.attr('fill', d3.color('#FF5722').darker(0.9))
-            }
-          })
-          .on('mouseout', function (d) {
-            d3.select(this).style('cursor', 'default')
-            for (let j = linkedButton.length - 1; j >= 0; j--) {
-              if (conflictFocused.d === linkedButton[j].d) return
-            }
-            d3.select(this).attr('fill', '#FF5722')
-            for (let j = linkedButton.length - 1; j >= 0; j--) {
-              if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.dark.background)
-              blockQueue.highlightBlocks([])
-            }
-            for (let j = linkedOther.length - 1; j >= 0; j--) {
-              linkedOther[j].d3.attr('fill', '#FF5722')
-            }
-          })
-      } else {
-        conflictSquare[i].d3
-          .on('click', function () {})
-          .on('mouseover', function (d) {})
-          .on('mouseout', function (d) {})
-        conflictSquare.splice(i, 1)
-      }
-    }
+    // for (let i = conflictSquare.length - 1; i >= 0; i--) {
+    // let linkedButton = []
+    // for (let j = conflictButton.length - 1; j >= 0; j--) {
+    //   if (conflictButton[j].d.large + conflictSquare[i].d.largeTels === 4 &&
+    //     conflictButton[j].d.medium + conflictSquare[i].d.mediumTels === 25 &&
+    //     conflictButton[j].d.small + conflictSquare[i].d.smallTels === 70) {
+    //     linkedButton.push(conflictButton[j])
+    //   }
+    // }
+    //   if (linkedButton.length > 0) {
+    //     let linkedOther = []
+    //     for (let j = conflictSquare.length - 1; j >= 0; j--) {
+    //       if (i !== j && conflictSquare[i].d.id === conflictSquare[j].d.id) {
+    //         linkedOther.push(conflictSquare[j])
+    //       }
+    //     }
+    //     conflictSquare[i].d3
+    //       .on('click', function () {
+    //         svgRightInfo.focusOnConflict(linkedButton[0])
+    //       })
+    //       .on('mouseover', function (d) {
+    //         d3.select(this).style('cursor', 'pointer')
+    //         d3.select(this).attr('fill', d3.color('#000000').darker(0.9))
+    //         for (let j = linkedButton.length - 1; j >= 0; j--) {
+    //           if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.darkest.background)
+    //           blockQueue.highlightBlocks(linkedButton[j].d.blocks)
+    //         }
+    //         for (let j = linkedOther.length - 1; j >= 0; j--) {
+    //           linkedOther[j].d3.attr('fill', d3.color('#000000').darker(0.9))
+    //         }
+    //       })
+    //       .on('mouseout', function (d) {
+    //         d3.select(this).style('cursor', 'default')
+    //         d3.select(this).attr('fill', '#FF5722')
+    //         // for (let j = linkedButton.length - 1; j >= 0; j--) {
+    //         //   if (conflictFocused.d === linkedButton[j].d) return
+    //         // }
+    //         for (let j = linkedButton.length - 1; j >= 0; j--) {
+    //           if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.dark.background)
+    //           blockQueue.highlightBlocks([])
+    //         }
+    //         for (let j = linkedOther.length - 1; j >= 0; j--) {
+    //           linkedOther[j].d3.attr('fill', '#FF5722')
+    //         }
+    //       })
+    //   } else {
+    //     conflictSquare[i].d3
+    //       .on('click', function () {})
+    //       .on('mouseover', function (d) {})
+    //       .on('mouseout', function (d) {})
+    //     conflictSquare.splice(i, 1)
+    //   }
+    // }
 
+    let azerty = []
+    let totLinked = 0
     for (let j = conflictButton.length - 1; j >= 0; j--) {
       let linked = []
       for (let i = conflictSquare.length - 1; i >= 0; i--) {
-        if (conflictButton[j].d.large + conflictSquare[i].d.largeTels === 4 &&
-          conflictButton[j].d.medium + conflictSquare[i].d.mediumTels === 25 &&
-          conflictButton[j].d.small + conflictSquare[i].d.smallTels === 70) {
+        // let allIntersect = true
+        // for (var z = 0; z < conflictButton[j].d.blocks.length; z++) {
+        //   if (!blocksIntersect(conflictButton[j].d.blocks[z], {time: {start: conflictSquare[i].d.start, end: conflictSquare[i].d.end}})) allIntersect = false
+        // }
+        let intersect = conflictButton[j].d.blocks.filter(value => conflictSquare[i].d.blocks.includes(value.obId))
+        if (intersect.length === conflictSquare[i].d.blocks.length) {
           linked.push(conflictSquare[i])
+          azerty.push(conflictSquare[i])
+          totLinked++
         }
+        // if (allIntersect) linked.push(conflictSquare[i])
       }
-      if (linked.length > 0 && conflictButton[j].d3) {
+      for (let i = 0; i < linked.length; i++) {
+        linked[i].d3
+          .on('click', function () {
+            svgRightInfo.focusOnConflict(conflictButton[j])
+          })
+          .on('mouseover', function (d) {
+            for (let j = 0; j < linked.length; j++) {
+              linked[j].d3.attr('fill', d3.color('#000000').darker(0.9))
+            }
+            d3.select(this).style('cursor', 'pointer')
+            if (conflictButton[j].d3) conflictButton[j].d3.select('rect').attr('fill', colorPalette.darkest.background)
+            blockQueue.highlightBlocks(conflictButton[j].d.blocks)
+            // d3.select(this).attr('fill', d3.color('#000000').darker(0.9))
+            // for (let j = linkedButton.length - 1; j >= 0; j--) {
+            //   if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.darkest.background)
+            //   blockQueue.highlightBlocks(linkedButton[j].d.blocks)
+            // }
+            // for (let j = linkedOther.length - 1; j >= 0; j--) {
+            //   linkedOther[j].d3.attr('fill', d3.color('#000000').darker(0.9))
+            // }
+          })
+          .on('mouseout', function (d) {
+            for (let j = 0; j < linked.length; j++) {
+              linked[j].d3.attr('fill', '#FF5722')
+            }
+            d3.select(this).style('cursor', 'default')
+            if (conflictButton[j].d3) conflictButton[j].d3.select('rect').attr('fill', colorPalette.darker.background)
+            blockQueue.highlightBlocks([])
+            // d3.select(this).attr('fill', '#FF5722')
+            // for (let j = linkedButton.length - 1; j >= 0; j--) {
+            //   if (conflictFocused.d === linkedButton[j].d) return
+            // }
+            // for (let j = linkedButton.length - 1; j >= 0; j--) {
+            //   if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.dark.background)
+            //   blockQueue.highlightBlocks([])
+            // }
+            // for (let j = linkedOther.length - 1; j >= 0; j--) {
+            //   linkedOther[j].d3.attr('fill', '#FF5722')
+            // }
+          })
+      }
+      if (conflictButton[j].d3) {
         conflictButton[j].d3
           .on('mouseover', function (d) {
             d3.select(this)
@@ -4936,7 +4996,7 @@ let mainSchedBlocksInspector = function (optIn) {
               .select('rect').attr('fill', colorPalette.darkest.background)
             blockQueue.highlightBlocks(conflictButton[j].d.blocks)
             for (let j = linked.length - 1; j >= 0; j--) {
-              linked[j].d3.attr('fill', d3.color('#FF5722').darker(0.9))
+              linked[j].d3.attr('fill', d3.color('#000000'))
             }
           })
           .on('mouseout', function (d) {
@@ -4949,49 +5009,67 @@ let mainSchedBlocksInspector = function (optIn) {
             }
           })
       }
+      console.log(conflictButton.length, conflictSquare.length, totLinked)
+      // console.log(conflictButton, conflictSquare.filter(d => azerty.indexOf(d) === -1));
     }
   }
-  function listAllConflicts () {
+  function listAllConflicts (data) {
     let conflicts = []
     let allBlocks = []
     conflictButton = []
-
+    //
     for (let key in getBlocksData()) {
       allBlocks = allBlocks.concat(getBlocksData()[key])
     }
 
-    function checkDuplicata (idg) {
-      let ids = idg.split('|')
-      for (let i = 0; i < conflicts.length; i++) {
-        let cids = conflicts[i].id.split('|')
-        let count = 0
-        cids.map(function (d) {
-          if (ids.indexOf(d) !== -1) count += 1
-        })
-        if (count === ids.length && count === cids.length) return true
-      }
-      return false
+    // function checkDuplicata (idg) {
+    //   let ids = idg.split('|')
+    //   for (let i = 0; i < conflicts.length; i++) {
+    //     let cids = conflicts[i].id.split('|')
+    //     let count = 0
+    //     cids.map(function (d) {
+    //       if (ids.indexOf(d) !== -1) count += 1
+    //     })
+    //     if (count === ids.length && count === cids.length) return true
+    //   }
+    //   return false
+    // }
+    // let blocks = clusterBlocksByTime(allBlocks)
+
+    let filtered = data.filter(d => (d.smallTels < 0 || d.mediumTels < 0 || d.largeTels < 0))
+    // for (let j = 0; j < filtered.length; j++) {
+    //   for (let z = j + 1; z < filtered.length; z++) {
+    //     let intersect = filtered[j].blocks.filter(value => filtered[z].blocks.includes(value))
+    //     if (intersect.length === filtered[j].blocks.length) {
+    //       filtered[j].blocks = filtered[z].blocks
+    //       filtered.splice(z, 1)
+    //       z--
+    //       break
+    //     } else if (intersect.length === filtered[z].blocks.length) {
+    //       filtered.splice(z, 1)
+    //       z--
+    //       break
+    //     }
+    //   }
+    // }
+    for (let j = 0; j < filtered.length; j++) {
+      let group = filtered[j]
+      // let s = 0
+      // let m = 0
+      // let l = 0
+      // let idg = ''
+      // group.map(function (d) { idg += '|' + d.obId; l += d.telescopes.large.min; m += d.telescopes.medium.min; s += d.telescopes.small.min })
+      // idg = idg.slice(1)
+      // if (!checkDuplicata(idg)) {
+      let blocks = group.blocks.map(d => allBlocks.filter(ab => ab.obId === d)[0])
+      conflicts.push({id: group.id, blocks: blocks, small: 70 - group.smallTels, medium: 25 - group.mediumTels, large: 4 - group.largeTels})
+      conflictButton.push({d: {id: group.id, blocks: blocks, small: 70 - group.smallTels, medium: 25 - group.mediumTels, large: 4 - group.largeTels}, d3: undefined})
+      // }
     }
 
-    let blocks = clusterBlocksByTime(allBlocks)
-
-    for (var j = 0; j < blocks.length; j++) {
-      let group = blocks[j]
-      let s = 0
-      let m = 0
-      let l = 0
-      let idg = ''
-      group.map(function (d) { idg += '|' + d.obId; l += d.telescopes.large.min; m += d.telescopes.medium.min; s += d.telescopes.small.min })
-      idg = idg.slice(1)
-      if (s > 70 || m > 25 || l > 4) {
-        if (!checkDuplicata(idg)) {
-          conflicts.push({id: idg, blocks: group, small: s, medium: m, large: l})
-          conflictButton.push({d: {id: idg, blocks: group, small: s, medium: m, large: l}, d3: undefined})
-        }
-      }
-    }
     shared.data.copy.conflicts = conflicts
     svgRightInfo.updateOverview()
+    linkConflicts()
   }
 
   let SvgRightInfo = function () {
@@ -6073,7 +6151,7 @@ let mainSchedBlocksInspector = function (optIn) {
           }
           updateTotals()
           svgTelsConflict.drawTelsAvailabilityCurve()
-          linkConflicts()
+          // linkConflicts()
           // updateInput()
           // updateTelescopeInformation()
         }
@@ -6248,7 +6326,7 @@ let mainSchedBlocksInspector = function (optIn) {
           blockQueue.highlightBlocks([])
           closeOtherBlocks()
           svgTelsConflict.drawTelsAvailabilityCurve()
-          listAllConflicts()
+          // listAllConflicts()
           linkConflicts()
         })
         .on('mouseover', function () {
@@ -6296,6 +6374,7 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     function closeOtherBlocks () {
       reserved.g.select('g#conflictsInformation').select('g#otherg').remove()
+      svgTelsConflict.drawTelsAvailabilityCurve()
     }
     function focusOnConflict (d) {
       if (shared.focus) focusManager.focusOn(shared.focus.type, shared.focus.id)
@@ -6487,6 +6566,7 @@ let mainSchedBlocksInspector = function (optIn) {
         let line = 38
         let marg = 4
         let innerg = reserved.overview.conflicts.scrollBox.get('innerG')
+        innerg.selectAll('*').remove()
         let current = innerg
           .selectAll('g.conflict')
           .data(shared.data.copy.conflicts, function (d, i) {
@@ -6540,27 +6620,32 @@ let mainSchedBlocksInspector = function (optIn) {
             .style('pointer-events', 'none')
             .attr('fill', colorPalette.dark.text)
             .attr('stroke', 'none')
-        })
-        let merge = current.merge(enter)
-        merge.each(function (d, i) {
-          let g = d3.select(this)
+
           let offX = marg * 1 + (line + marg) * i
           let offY = marg * 1
           g.attr('transform', 'translate(' + offX + ',' + offY + ')')
           conflictButton.push({d3: g, d: d})
         })
-        current
-          .exit()
-          .transition('inOut')
-          .duration(timeD.animArc)
-          .style('opacity', 0)
-          .remove()
+        // let merge = current.merge(enter)
+        // merge.each(function (d, i) {
+        //   let g = d3.select(this)
+        //   let offX = marg * 1 + (line + marg) * i
+        //   let offY = marg * 1
+        //   g.attr('transform', 'translate(' + offX + ',' + offY + ')')
+        //   conflictButton.push({d3: g, d: d})
+        // })
+        // current
+        //   .exit()
+        //   .each(d => console.log(d.id))
+        //   .transition('inOut')
+        //   .duration(timeD.animArc)
+        //   .style('opacity', 0)
+        //   .remove()
         reserved.overview.conflicts.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: (line + marg) * shared.data.copy.conflicts.length})
       }
 
       updateModificationsInformation()
       updateConflictsInformation()
-      linkConflicts()
     }
     this.updateOverview = updateOverview
 
@@ -6669,8 +6754,8 @@ let mainSchedBlocksInspector = function (optIn) {
           conflict: function (d) {
             balanceBlocks(d)
             svgTelsConflict.drawTelsAvailabilityCurve(d)
-            listAllConflicts()
-            linkConflicts()
+            // listAllConflicts()
+            // linkConflicts()
           }
         }
       })
@@ -6809,9 +6894,10 @@ let mainSchedBlocksInspector = function (optIn) {
           conflict: function (d) {
             balanceBlocks(d)
             svgTelsConflict.drawTelsAvailabilityCurve(d)
-            listAllConflicts()
-            linkConflicts()
-          }
+            // listAllConflicts()
+            // linkConflicts()
+          },
+          modification: changeBlockProperties
         }
       })
       reserved.obsblockForm.init()

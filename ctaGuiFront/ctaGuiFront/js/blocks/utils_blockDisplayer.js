@@ -1862,7 +1862,7 @@ window.BlockDisplayer = function (optIn) {
               }).join(' ')
             })
           d3.select(this).select('text.schedId')
-            .attr('y', height * 0.75)
+            .attr('y', (height * d.nLine) * 0.5 + (height * 0.25))
           mainOffset += d.nLine
         })
       allScheds.exit().remove()

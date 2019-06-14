@@ -161,10 +161,10 @@ window.getBlocksByTime = function (blocks, start, end) {
   return ret
 }
 window.blocksIntersect = function (b1, b2) {
-  if (b1.time.start <= b2.time.start && b1.time.end >= b2.time.start) return true
-  if (b1.time.end >= b2.time.start && b1.time.end <= b2.time.end) return true
-  if (b1.time.start >= b2.time.start && b1.time.start <= b2.time.end) return true
   if (b1.time.start <= b2.time.start && b1.time.end >= b2.time.end) return true
+  if (b1.time.end >= b2.time.start && b1.time.end <= b2.time.end) return true
+  if (b1.time.start >= b2.time.start && b1.time.end <= b2.time.end) return true
+  if (b1.time.start <= b2.time.end && b1.time.end >= b2.time.end) return true
   return false
 }
 window.balanceTelescopesBetweenBlocks = function (b, blocks) {
