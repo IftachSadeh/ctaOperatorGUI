@@ -166,6 +166,14 @@ window.EventDisplayer = function (optIn) {
       .attr('stroke-opacity', 0.6)
   }
 
+  function timeIntersect (time1, time2) {
+    if (time1.start <= time2.start && time1.end >= time2.end) return true
+    if (time1.end >= time2.start && time1.end <= time2.end) return true
+    if (time1.start >= time2.start && time1.end <= time2.end) return true
+    if (time1.start <= time2.end && time1.end >= time2.end) return true
+    return false
+  }
+
   let EventTrackBib = function () {
     function init () {
       com.eventTrack.g = com.main.g.append('g')
@@ -272,107 +280,171 @@ window.EventDisplayer = function (optIn) {
     function computeTrack (events) {
       let track = []
       for (let i = 0; i < events.length; i++) {
-        let startT
-        let endT
-        startT = events[i].start_time
-        if (events[i].end_time) endT = events[i].end_time
-        else endT = startT + 60
+        let start
+        let end
+        start = events[i].start_time
+        if (events[i].end_time) end = events[i].end_time
+        else end = start + 3600
 
         let insert = false
         for (let j = 0; j < track.length; j++) {
-          if (track[j].endT + 3600 > startT && track[j].type === events[i].name) {
+          let intersect = false
+          for (let z = 0; z < track[j].length; z++) {
+            if (timeIntersect(track[j][z], {start: start, end: end})) intersect = true // { // && track[j].type === events[i].name) {
+            // track[j].start = track[j].start < start ? track[j].start : start
+            // track[j].end = track[j].end > end ? track[j].end : end
+            // events[i].track = j
+            // events[i].start = track[j].start
+            // events[i].end = track[j].end
+            // track[j] = {time: end, type: events[i].name}
+          //  }
+          }
+          if (!intersect) {
+            track[j].push(events[i])
+            events[i].start = start
+            events[i].end = end
             events[i].track = j
-            events[i].startT = track[j].startT
-            events[i].endT = track[j].endT
-            // track[j] = {time: endT, type: events[i].name}
             insert = true
             break
           }
         }
+        // if (!insert) {
+        //   for (let j = 0; j < track.length; j++) {
+        //     if (track[j].end + 3600 < start) {
+        //       events[i].track = j
+        //       events[i].start = start
+        //       events[i].end = end
+        //       track[j] = {start: start, end: end, type: events[i].name}
+        //       insert = true
+        //       break
+        //     }
+        //   }
+        // }
         if (!insert) {
-          for (let j = 0; j < track.length; j++) {
-            if (track[j].endT + 3600 < startT) {
-              events[i].track = j
-              events[i].startT = startT
-              events[i].endT = endT
-              track[j] = {startT: startT, endT: endT, type: events[i].name}
-              insert = true
-              break
-            }
-          }
-        }
-        if (!insert) {
-          track.push({startT: startT, endT: endT, type: events[i].name})
-          events[i].startT = startT
-          events[i].endT = endT
+          track.push([events[i]])
+          events[i].start = start
+          events[i].end = end
           events[i].track = track.length - 1
         }
       }
-
       return track
     }
     function updateEvents () {
       let allEvents = [].concat(com.data.filtered.events_ponctual).concat(com.data.filtered.events_scheduled)
       let tracks = computeTrack(allEvents)
 
-      let nLine = tracks.length
-      let height = nLine >= 6 ? (com.main.box.h / nLine) : (com.main.box.h / 6)
-      let offsetY = nLine >= 6 ? 0 : (com.main.box.h - ((com.main.box.h / 6) * nLine)) / (nLine - 1)
+      // let nLine = tracks.length
+      // let height = nLine >= 6 ? (com.main.box.h / nLine) : (com.main.box.h / 6)
+      // let offsetY = nLine >= 6 ? 0 : (com.main.box.h - ((com.main.box.h / 6) * nLine)) / (nLine - 1)
 
-      let currentTrack = com.main.scroll.scrollG
-        .selectAll('g.track')
-        .data(tracks, function (d, i) {
-          return i
-        })
-      let enterTrack = currentTrack
-        .enter()
-        .append('g')
-        .attr('class', 'track')
-        .attr('transform', function (d, i) {
-          let translate = {
-            y: (offsetY + height) * i,
-            x: 0
-          }
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
-      enterTrack.each(function (d, i) {
-        // d3.select(this).append('line')
-        //   .attr('class', 'background')
-        //   .attr('x1', 0)
-        //   .attr('y1', 0)
-        //   .attr('x2', com.main.box.w)
-        //   .attr('y2', 0)
-        //   .attr('fill', 'transparent')
-        //   .attr('fill-opacity', 1)
-        //   .attr('stroke', colorTheme.dark.stroke)
-        //   .attr('stroke-width', 0.2)
-        //   .attr('stroke-dasharray', [2, 2])
-      })
-      enterTrack.merge(currentTrack)
-        .transition()
-        .duration(timeD.animArc)
-        .ease(d3.easeLinear)
-        .attr('transform', function (d, i) {
-          let translate = {
-            y: (offsetY + height) * i,
-            x: 0
-          }
-          return 'translate(' + translate.x + ',' + translate.y + ')'
-        })
-      currentTrack.exit()
-        .transition('inOut').duration(timeD.animArc)
-        .attr('width', 0)
-        .style('opacity', 0)
-        .remove()
-
-      setEvenIcon(allEvents, tracks)
+      // let currentTrack = com.main.scroll.scrollG
+      //   .selectAll('g.track')
+      //   .data(tracks, function (d, i) {
+      //     return i
+      //   })
+      // let enterTrack = currentTrack
+      //   .enter()
+      //   .append('g')
+      //   .attr('class', 'track')
+      //   .attr('transform', function (d, i) {
+      //     let translate = {
+      //       y: (offsetY + height) * i,
+      //       x: 0
+      //     }
+      //     return 'translate(' + translate.x + ',' + translate.y + ')'
+      //   })
+      // enterTrack.each(function (d, i) {
+      //   // d3.select(this).append('line')
+      //   //   .attr('class', 'background')
+      //   //   .attr('x1', 0)
+      //   //   .attr('y1', 0)
+      //   //   .attr('x2', com.main.box.w)
+      //   //   .attr('y2', 0)
+      //   //   .attr('fill', 'transparent')
+      //   //   .attr('fill-opacity', 1)
+      //   //   .attr('stroke', colorTheme.dark.stroke)
+      //   //   .attr('stroke-width', 0.2)
+      //   //   .attr('stroke-dasharray', [2, 2])
+      // })
+      // enterTrack.merge(currentTrack)
+      //   .transition()
+      //   .duration(timeD.animArc)
+      //   .ease(d3.easeLinear)
+      //   .attr('transform', function (d, i) {
+      //     let translate = {
+      //       y: (offsetY + height) * i,
+      //       x: 0
+      //     }
+      //     return 'translate(' + translate.x + ',' + translate.y + ')'
+      //   })
+      // currentTrack.exit()
+      //   .transition('inOut').duration(timeD.animArc)
+      //   .attr('width', 0)
+      //   .style('opacity', 0)
+      //   .remove()
+      setEventIcon(allEvents, tracks)
     }
-    function setEvenIcon (events, tracks) {
+    function setEventIcon (events, tracks) {
       events = setDefaultStyleForEvents(events)
 
+      // let sizeTarget = 20
+      // let node = []
+      // for (let i = 0; i < events.length; i++) {
+      //   node.push({id: events[i].id, data: events[i], x: com.linkMap.map.box.w * 0.5, y: com.linkMap.map.box.h * 0.5})
+      // }
+      //
+      // let simulation = d3.forceSimulation()
+      //   .force('link', d3.forceLink().id(function (d) { return d.id }))
+      //   .force('collide', d3.forceCollide(sizeTarget).iterations(32))
+      //   .force('charge', d3.forceManyBody().strength(function (d) {
+      //     return -500
+      //   }))
+      //   .force('y', d3.forceY())
+      //   .force('x', d3.forceX())
+      //   // .alphaDecay(0.0005)
+      //   .velocityDecay(0.6)
+      //   // .alpha(0.1).restart()
+      // simulation.nodes(node)
+      // // simulation.force('link').links(data.links).distance(function (d) {
+      // //   return 4
+      // // })
+      // // var node = com.linkMap.map.g.append('g')
+      // //   .attr('class', 'nodes')
+      // //   .selectAll('g')
+      // //   .data(data.nodes)
+      // //   .enter().append('g')
+      // //   .attr('id', function (d) { return d.id })
+      // //   .each(function (d) {
+      // //     let g = d3.select(this)
+      // //     if (d.type === 'target') targetIcon(g, {w: sizeTarget, h: sizeTarget}, d.data.name.split('_')[1], {}, colorPalette)
+      // //     else if (d.type === 'pointing') pointingIcon(g, {w: sizePointing, h: sizePointing * 0.8}, d.data.name.split('-')[1], {}, colorPalette)
+      // //   })
+      // //   .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
+      //
+      // let simulationDurationInMs = 1000
+      // let startTime = Date.now()
+      // let endTime = startTime + simulationDurationInMs
+      // simulation.on('tick', function () {
+      //   if (Date.now() > endTime) {
+      //     simulation.stop()
+      //     return
+      //   }
+      //
+      //   d.x = Math.max(sizeTarget, Math.min(com.linkMap.map.box.w - sizeTarget, d.x)) - sizeTarget / 2
+      //   d.y = Math.max(sizeTarget, Math.min(com.linkMap.map.box.h - sizeTarget, d.y)) - sizeTarget / 2
+      //   // .attr('cx', function (d) {
+      //   //   d.x = Math.max(10, Math.min(com.linkMap.map.box.w - 10, d.x))
+      //   //   return d.x
+      //   // })
+      //   // .attr('cy', function (d) {
+      //   //   d.y = Math.max(10, Math.min(com.linkMap.map.box.h - 10, d.y))
+      //   //   return d.y
+      //   // })
+      // })
+
       let nLine = tracks.length
-      let height = nLine >= 6 ? (com.main.box.h / nLine) : (com.main.box.h / 6)
-      let offsetY = nLine >= 6 ? 0 : (com.main.box.h - ((com.main.box.h / 6) * nLine)) / (nLine - 1)
+      let height = nLine >= 2 ? ((com.main.box.h) / nLine) : ((com.main.box.h) / 2)
+      let offsetY = nLine >= 2 ? 0 : ((com.main.box.h) - (((com.main.box.h) / 2) * nLine)) / (nLine - 1)
 
       let timeScale = d3.scaleLinear()
         .range(com.eventTrack.axis.range)
@@ -385,39 +457,38 @@ window.EventDisplayer = function (optIn) {
         })
 
       rect.each(function (d, i) {
-        let box = {x: 0, y: (offsetY + height) * d.track, w: com.main.box.w, h: height * 1}
+        let box = {x: timeScale(d.start), y: (offsetY + height) * d.track, w: timeScale(d.end) - timeScale(d.start), h: height}
         d3.select(this)
-          .transition('inOut')
-          .duration(timeD.animArc)
-          .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
+          // .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
           .attr('opacity', d => d.display.opacity)
+        d3.select(this).select('circle.anchor')
+          .attr('cx', box.x + box.h * 0.5)
+          .attr('cy', box.y + box.h * 0.5)
+          .attr('r', box.h * 0.5)
+          .attr('fill', '#bcbcbc')
+          .attr('stroke', '#000000')
         d3.select(this).select('rect.back')
-          .transition('inOut')
-          .duration(timeD.animArc)
-          .ease(d3.easeLinear)
-          .attr('x', timeScale(d.startT))
-          .attr('y', 0)
-          .attr('width', box.h) // timeScale(d.endT) - timeScale(d.startT))
-          .attr('height', box.h)
+          .attr('x', box.x)
+          .attr('y', box.y + box.h * 0.4)
+          .attr('width', box.w) // timeScale(d.endT) - timeScale(d.startT))
+          .attr('height', box.h * 0.2)
           .style('fill', d.display.fill)
           .style('fill-opacity', d.display.fillOpacity)
           .attr('stroke-width', d.display.strokeWidth)
           .style('stroke-opacity', d.display.strokeOpacity)
           .style('stroke-dasharray', d.display.strokeDasharray)
         d3.select(this).select('rect.pattern')
-          .transition('inOut')
-          .duration(timeD.animArc)
-          .attr('x', timeScale(d.startT))
-          .attr('y', 0)
-          .attr('width', timeScale(d.endT) - timeScale(d.startT))
+          .attr('x', timeScale(d.start))
+          .attr('y', box.y)
+          .attr('width', timeScale(d.end) - timeScale(d.start))
           .attr('height', box.h)
           .style('fill', d.display.patternFill)
           .style('fill-opacity', d.display.patternOpacity)
         d3.select(this).select('#icon')
-          .attr('width', box.h)
-          .attr('height', box.h)
-          .attr('x', timeScale(d.startT))
-          .attr('y', 0)
+          .attr('width', box.h * 0.8)
+          .attr('height', box.h * 0.8)
+          .attr('x', box.x + box.h * 0.1)
+          .attr('y', box.y + box.h * 0.1)
         // d3.select(this).select('text')
         //   .transition('inOut')
         //   .duration(timeD.animArc)
@@ -1276,6 +1347,10 @@ window.EventDisplayer = function (optIn) {
         .style('fill', 'none')
         .style('fill-opacity', 1)
         .style('stroke-opacity', 0)
+        .style('pointer-events', 'none')
+        .attr('vector-effect', 'non-scaling-stroke')
+      d3.select(this).append('circle')
+        .attr('class', 'anchor')
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
       d3.select(this).append('text')

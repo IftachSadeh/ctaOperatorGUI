@@ -859,7 +859,8 @@ let mainSchedBlocksInspector = function (optIn) {
     shared.data.copy = {
       blocks: cp,
       schedBlocks: createSchedBlocks(cp),
-      conflicts: []
+      conflicts: [],
+      modifications: []
     }
     associateBlockAndTels()
 
@@ -941,13 +942,13 @@ let mainSchedBlocksInspector = function (optIn) {
   function associateBlockAndTels () {
     // console.log(shared.data.server);
   }
-  function getBlocksData () {
-    if (shared.mode === 'inspector') {
+  function getBlocksData (from) {
+    if (from === 'server') {
       return shared.data.server.blocks
-    }
-    if (shared.mode === 'modifier') {
+    } else if (from === 'copy') {
       return shared.data.copy.blocks
     }
+    return shared.data.copy.blocks
   }
   function getSchedBlocksData () {
     if (shared.mode === 'inspector') {
@@ -1562,8 +1563,43 @@ let mainSchedBlocksInspector = function (optIn) {
   //   optimizer()
   // }
 
+  function checkBlocksDifference (reference, changed) {
+    let diff = []
+    function diffTime () {
+      if (reference.time.start !== changed.time.start || reference.time.duration !== changed.time.duration) {
+        diff.push({type: 'time',
+          start: {old: reference.time.start, new: changed.time.start},
+          end: {old: reference.time.end, new: changed.time.end}
+        })
+      }
+    }
+    function diffState () {
+      if (reference.exeState.state !== changed.exeState.state) {
+        diff.push({type: 'state', old: reference.exeState.state, new: changed.exeState.state})
+      }
+    }
+    function diffPointing () {}
+    function diffTel () {}
+    diffState()
+    diffTime()
+    diffPointing()
+    diffTel()
+    return diff
+  }
   function changeBlockProperties (block) {
-    console.log(block);
+    let sched = shared.data.copy.modifications.filter(d => d.id === block.sbId)
+    if (sched.length === 0) {
+      shared.data.copy.modifications.push({id: block.sbId, name: block.metaData.nSched, blocks: [block]})
+    } else {
+      let index = sched[0].blocks.indexOf(block)
+      if (index === -1) {
+        sched[0].blocks.push(block)
+      } else {
+        sched[0].blocks[index] = block
+      }
+    }
+    console.log(shared.data.copy.modifications);
+    svgRightInfo.updateOverview()
   }
 
   function createDummyBlock () {
@@ -1898,7 +1934,7 @@ let mainSchedBlocksInspector = function (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'eventQueue',
+        displayer: 'eventTrack',
         eventTrack: {
           g: undefined,
           schedBlocks: {
@@ -5711,7 +5747,7 @@ let mainSchedBlocksInspector = function (optIn) {
         modifications: {},
         conflicts: {}
       }
-      let allBox = {
+      allBox = {
         blocks: {
           x: 0,
           y: 0,
@@ -5763,10 +5799,12 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('height', headerSize)
           .attr('fill', colorTheme.dark.stroke)
         let label = [
-          {x: box.w * 0.0, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Blocks'},
-          {x: box.w * 0.15, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.25, text: 'Properties'},
-          {x: box.w * 0.4, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.3, text: 'new values'},
-          {x: box.w * 0.7, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.3, text: 'Old values'}
+          {x: box.w * 0.0, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.13, text: 'Scheds'},
+          {x: box.w * 0.13, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.13, text: 'Blocks'},
+          {x: box.w * (0.26 + 0.185 * 0), y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.185, text: 'State'},
+          {x: box.w * (0.26 + 0.185 * 1), y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.185, text: 'Scheduled'},
+          {x: box.w * (0.26 + 0.185 * 2), y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.185, text: 'Pointing'},
+          {x: box.w * (0.26 + 0.185 * 3), y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.185, text: 'Telescope'}
         ]
         for (let i = 0; i < label.length; i++) {
           g.append('text')
@@ -5884,12 +5922,19 @@ let mainSchedBlocksInspector = function (optIn) {
       let innerOtherBlock = {}
       let box = {
         x: 0,
-        y: 0,
+        y: -6,
         w: allBox.conflicts.w,
-        h: allBox.modifications.h * 1.4
+        h: allBox.modifications.h * 1.4 + 70
       }
       let otherg = reserved.g.select('g#conflictsInformation').append('g').attr('id', 'otherg')
         .attr('transform', 'translate(' + 0 + ',' + (-allBox.modifications.h * 1.75) + ')')
+      otherg.append('rect')
+        .attr('id', 'background')
+        .attr('x', box.x)
+        .attr('y', box.y)
+        .attr('width', box.w)
+        .attr('height', box.h)
+        .attr('fill', colorPalette.bright.background)
       let scroll = initScrollBox('focusedConflictListScroll', otherg, box, {enabled: false}, true)
       function initTelescopeInformation (block, box) {
         innerOtherBlock[block.obId] = {}
@@ -6394,24 +6439,24 @@ let mainSchedBlocksInspector = function (optIn) {
     function updateOverview () {
       if (shared.focus) return
       function updateModificationsInformation () {
-        return
+        if (!shared.data.copy) return
         let box = allBox.modifications
-        let g = reserved.g.select('g#modificationsInformation')
-        let line = 30
+        let innerg = reserved.overview.modifications.scrollBox.get('innerG')
+        let line = 25
         let marg = 2
-        let label = [
-          {x: box.w * 0.0, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.15, text: 'Blocks'},
-          {x: box.w * 0.15, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.25, text: 'Properties'},
-          {x: box.w * 0.4, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.3, text: 'new values'},
-          {x: box.w * 0.7, y: box.y + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.3, text: 'Old values'}
+        let labels = [
+          {x: box.w * 0.0, w: box.w * 0.13},
+          {x: box.w * 0.13, w: box.w * 0.13},
+          {x: box.w * (0.26 + 0.185 * 0), w: box.w * 0.185},
+          {x: box.w * (0.26 + 0.185 * 1), w: box.w * 0.185},
+          {x: box.w * (0.26 + 0.185 * 2), w: box.w * 0.185},
+          {x: box.w * (0.26 + 0.185 * 3), w: box.w * 0.185}
         ]
-        let scheds = []
-        let inter = getSchedBlocksData()
-        for (let key in inter) {
-          inter[key].id = key
-          scheds.push(inter[key])
-        }
-        let index = 0
+
+        let schedIndex = 0
+        let blockIndex = 0
+        let propIndex = 0
+
         function schedCore (scheds, g, offset) {
           let current = g
             .selectAll('g.sched')
@@ -6424,6 +6469,9 @@ let mainSchedBlocksInspector = function (optIn) {
             .attr('class', 'sched')
           enter.each(function (d, i) {
             let g = d3.select(this)
+            g.append('g').attr('id', 'blocks')
+            let header = g.append('g').attr('id', 'header')
+
             let dimPoly = line
             let poly = [
               {x: dimPoly * 0.3, y: dimPoly * 0.0},
@@ -6438,7 +6486,7 @@ let mainSchedBlocksInspector = function (optIn) {
               {x: dimPoly * 0.0, y: dimPoly * 0.7},
               {x: dimPoly * 0.0, y: dimPoly * 0.3}
             ]
-            g.selectAll('polygon')
+            header.selectAll('polygon')
               .data([poly])
               .enter()
               .append('polygon')
@@ -6451,7 +6499,7 @@ let mainSchedBlocksInspector = function (optIn) {
               .attr('stroke', colorPalette.dark.stroke)
               .attr('stroke-width', 0.8)
               .on('click', function () {
-                com.ressource.events.click('schedBlock', d.id)
+                focusManager.focusOn('schedBlock', d.id)
               })
               .on('mouseover', function (d) {
                 d3.select(this).style('cursor', 'pointer')
@@ -6461,23 +6509,25 @@ let mainSchedBlocksInspector = function (optIn) {
                 d3.select(this).style('cursor', 'default')
                 d3.select(this).attr('fill', colorPalette.dark.background)
               })
-              .attr('transform', 'translate(' + ((label[0].w - dimPoly) * 0.5) + ',' + ((line - dimPoly) * 0.5) + ')')
-            g.append('text')
+              .attr('transform', 'translate(' + ((labels[0].w - dimPoly) * 0.5) + ',' + ((line - dimPoly) * 0.5) + ')')
+            header.append('text')
               .text('S' + d.blocks[0].metaData.nSched)
               .style('fill', colorPalette.dark.text)
               .style('font-weight', 'bold')
               .style('font-size', titleSize + 'px')
               .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (label[0].w * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+              .attr('transform', 'translate(' + (labels[0].w * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
               .style('pointer-events', 'none')
           })
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + -5 + ',' + (index * (line + marg) + offset) + ')')
-            index += 1
+            g.attr('transform', 'translate(' + -5 + ',' + (schedIndex * (line + marg) + offset) + ')')
             // innerOffset += line
-            blockCore(d.blocks, g.append('g'), marg + line)
+            blockIndex = 1
+            blockCore(d.blocks, g.select('g#header'), 0)
+            schedIndex += blockIndex
+            // index += 1
           })
           current
             .exit()
@@ -6545,8 +6595,12 @@ let mainSchedBlocksInspector = function (optIn) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (label[1].x) + ',' + (offset + (line + marg) * i) + ')')
-            index += 1
+            g.attr('transform', 'translate(' + (labels[1].x) + ',' + (offset + (line + marg) * blockIndex) + ')')
+            let old = getBlockById(getBlocksData('server'), d.obId).data
+            let diff = checkBlocksDifference(old, d)
+            propIndex = 0
+            propCore(diff, g.append('g').attr('id', 'props'), 0)
+            blockIndex += propIndex + 1
           })
           current
             .exit()
@@ -6555,9 +6609,136 @@ let mainSchedBlocksInspector = function (optIn) {
             .style('opacity', 0)
             .remove()
         }
-        schedCore(scheds, reserved.overview.modifications.scrollBox.get('innerG'), marg)
-        // blockCore(allBlocks, reserved.overview.modifications.scrollBox.get('innerG'), marg)
-        reserved.overview.modifications.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: line * index})
+        function propCore (props, g, offset) {
+          function drawDiffTime (g, d) {
+            let timeS = new Date(shared.data.server.timeOfNight.date_start)
+            timeS.setSeconds(timeS.getSeconds() + d.start.new)
+            let timeE = new Date(shared.data.server.timeOfNight.date_start)
+            timeE.setSeconds(timeE.getSeconds() + d.end.new)
+            let offset = labels[3].x - labels[1].x - labels[1].w
+            g.append('image')
+              .attr('xlink:href', '/static/icons/arrow-' + (d.start.new > d.start.old ? 'right' : 'left') + '.svg')
+              .attr('x', offset + (d.start.new > d.start.old ? 4 : -4))
+              .attr('y', line * 0.0)
+              .attr('width', line * 0.66)
+              .attr('height', line * 0.33)
+              .style('opacity', 0.8)
+              .style('pointer-events', 'none')
+            g.append('image')
+              .attr('xlink:href', '/static/icons/clock.svg')
+              .attr('x', offset)
+              .attr('y', line * 0.33)
+              .attr('width', line * 0.66)
+              .attr('height', line * 0.66)
+              .style('opacity', 0.8)
+              .style('pointer-events', 'none')
+            g.append('text')
+              .text(d3.timeFormat('%H:%M')(timeS))
+              .style('fill', '#000000')
+              .style('font-weight', '')
+              .style('font-size', headerSize + 'px')
+              .attr('text-anchor', 'start')
+              .attr('transform', 'translate(' + (offset + line * 0.8) + ',' + (line * 0.33 + txtSize * 0.3) + ')')
+              .style('pointer-events', 'none')
+            g.append('text')
+              .text(d3.timeFormat('%H:%M')(timeE))
+              .style('fill', '#000000')
+              .style('font-weight', '')
+              .style('font-size', headerSize + 'px')
+              .attr('text-anchor', 'start')
+              .attr('transform', 'translate(' + (offset + line * 0.8) + ',' + (line * 0.8 + txtSize * 0.3) + ')')
+              .style('pointer-events', 'none')
+          }
+          function drawDiffState (g, d) {
+            let offset = labels[2].x - labels[1].x - labels[1].w
+            g.append('text')
+              .text(d.old)
+              .style('fill', '#000000')
+              .style('font-weight', '')
+              .style('font-size', headerSize + 'px')
+              .attr('text-anchor', 'start')
+              .attr('transform', 'translate(' + (offset) + ',' + (line * 0.33 + txtSize * 0.3) + ')')
+              .style('pointer-events', 'none')
+            g.append('text')
+              .text(d.new)
+              .style('fill', '#000000')
+              .style('font-weight', '')
+              .style('font-size', headerSize + 'px')
+              .attr('text-anchor', 'start')
+              .attr('transform', 'translate(' + (offset) + ',' + (line * 0.8 + txtSize * 0.3) + ')')
+              .style('pointer-events', 'none')
+          }
+          let current = g
+            .selectAll('g.prop')
+            .data(props, function (d, i) {
+              return i
+            })
+          let enter = current
+            .enter()
+            .append('g')
+            .attr('class', 'block')
+          enter.each(function (d, i) {
+            let g = d3.select(this)
+            if (d.type === 'time') drawDiffTime(g, d)
+            else if (d.type === 'state') drawDiffState(g, d)
+            // g.append('rect')
+            //   .attr('x', 0)
+            //   .attr('y', 0)
+            //   .attr('width', labels[2].w)
+            //   .attr('height', line)
+            //   .attr('fill', 'none')
+            //   .attr('stroke', '#000000')
+            //   .attr('stroke-width', 0.6)
+            //   .attr('stroke-dasharray', [0, labels[2].w + line, labels[2].w + line * 0.5, line * 0.5])
+            //   // .on('click', function () {})
+            //   // .on('mouseover', function (d) {
+            //   //   d3.select(this).style('cursor', 'pointer')
+            //   //   d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
+            //   // })
+            //   // .on('mouseout', function (d) {
+            //   //   d3.select(this).style('cursor', 'default')
+            //   //   d3.select(this).attr('fill', palette.color.background)
+            //   // })
+
+            // g.append('text')
+            //   .text(d.metaData.nObs)
+            //   .style('fill', '#000000')
+            //   .style('font-weight', 'bold')
+            //   .style('font-size', headerSize + 'px')
+            //   .attr('text-anchor', 'middle')
+            //   .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
+            //   .style('pointer-events', 'none')
+            // g.append('rect')
+            //   .attr('width', 12)
+            //   .attr('height', 12)
+            //   .attr('x', -line * 0.7)
+            //   .attr('y', line * 0.4)
+            //   .attr('fill', function () {
+            //     return 'transparent'
+            //   })
+            //   .on('click', function () {})
+            //   .on('mouseover', function (d) {
+            //     d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
+            //   })
+            //   .on('mouseout', function (d) {
+            //     d3.select(this).attr('fill', 'transparent')
+            //   })
+          })
+          let merge = current.merge(enter)
+          merge.each(function (d, i) {
+            let g = d3.select(this)
+            g.attr('transform', 'translate(' + (labels[2].x - labels[1].x) + ',' + (offset + (line + marg) * propIndex) + ')')
+            // propIndex += 1
+          })
+          current
+            .exit()
+            .transition('inOut')
+            .duration(timeD.animArc)
+            .style('opacity', 0)
+            .remove()
+        }
+        schedCore(shared.data.copy.modifications, innerg, marg)
+        reserved.overview.modifications.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: line * (schedIndex + blockIndex)})
       }
       function updateConflictsInformation () {
         conflictButton = []

@@ -564,7 +564,7 @@ function mainSchedBlocks (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'eventQueue',
+        displayer: 'eventTrack',
         eventTrack: {
           g: undefined,
           schedBlocks: {
@@ -704,7 +704,7 @@ function mainSchedBlocks (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'eventQueue',
+        displayer: 'eventTrack',
         eventTrack: {
           g: undefined,
           schedBlocks: {
