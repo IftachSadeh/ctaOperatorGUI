@@ -423,6 +423,11 @@ let mainSchedBlocksController = function (optIn) {
 
     shared.data.server = dataIn.data
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
+    let ce = shared.data.server.external_clockEvents[0]
+    for (let i = 0; i < ce.length; i++) {
+      ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_now)) / 1000
+      ce[i].end_time = ce[i].end_date === '' ? ce[i].start_time + 1000 : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_now)) / 1000
+    }
 
     svgBrush.initData()
     svgEventsQueueServer.initData()
@@ -480,6 +485,11 @@ let mainSchedBlocksController = function (optIn) {
     locker.add('updateData')
     shared.data.server = dataIn.data
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
+    let ce = shared.data.server.external_clockEvents[0]
+    for (let i = 0; i < ce.length; i++) {
+      ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_now)) / 1000
+      ce[i].end_time = ce[i].end_date === '' ? ce[i].start_time + 1000 : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_now)) / 1000
+    }
 
     svgBlocksQueueServer.updateData()
     svgEventsQueueServer.updateData()
@@ -1034,7 +1044,7 @@ let mainSchedBlocksController = function (optIn) {
           colorTheme: colorTheme
         },
 
-        displayer: 'eventQueue',
+        displayer: 'eventTrack',
         eventTrack: {
           g: undefined,
           schedBlocks: {

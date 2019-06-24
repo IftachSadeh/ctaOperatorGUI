@@ -565,6 +565,35 @@ function mainSchedBlocks (optIn) {
         },
 
         displayer: 'eventTrack',
+        eventQueue: {
+          g: undefined,
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            show: false,
+            orientation: 'top',
+            attr: {
+              text: {
+                size: 14,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          details: {
+            range: 'in',
+            anchor: 'right'
+          }
+        },
         eventTrack: {
           g: undefined,
           schedBlocks: {
@@ -648,6 +677,11 @@ function mainSchedBlocks (optIn) {
       let axisTop = brushZoomPast.getAxis('top').axis.scale().domain()
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
       let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
+      console.log({
+        currentTime: currentTime,
+        startTime: startTime,
+        endTime: endTime
+      });
       eventQueueServerPast.updateData({
         time: {
           currentTime: currentTime,
@@ -705,6 +739,35 @@ function mainSchedBlocks (optIn) {
         },
 
         displayer: 'eventTrack',
+        eventQueue: {
+          g: undefined,
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            show: false,
+            orientation: 'top',
+            attr: {
+              text: {
+                size: 14,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          details: {
+            range: 'in',
+            anchor: 'left'
+          }
+        },
         eventTrack: {
           g: undefined,
           schedBlocks: {

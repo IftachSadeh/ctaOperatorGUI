@@ -2196,7 +2196,6 @@ window.BlockDisplayer = function (optIn) {
       com.blockTrackShrink.axis.scale
         .domain(com.blockTrackShrink.axis.domain)
         .range(com.blockTrackShrink.axis.range)
-      console.log(com.blockTrackShrink.axis);
         // .nice()
 
       if (!com.blockTrackShrink.axis.enabled) return
@@ -2205,7 +2204,6 @@ window.BlockDisplayer = function (optIn) {
       com.blockTrackShrink.axis.main.scale(com.blockTrackShrink.axis.scale)
       com.blockTrackShrink.axis.main.ticks(5)
       com.blockTrackShrink.axis.main.tickSize(4)
-      console.log(com.blockTrackShrink.axis.g.call(com.blockTrackShrink.axis.main));
 
       com.blockTrackShrink.axis.g.select('path').attr('stroke-width', 0.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
       com.blockTrackShrink.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 0.5).attr('stroke', com.blockTrackShrink.axis.attr.path.stroke)
@@ -2214,7 +2212,6 @@ window.BlockDisplayer = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('fill', com.blockTrackShrink.axis.attr.text.fill)
         .style('font-size', minTxtSize + 'px')
-      console.log(com.blockTrackShrink.axis.g.selectAll('g.tick'));
     }
     function computeTrack (scheds) {
       let track = []

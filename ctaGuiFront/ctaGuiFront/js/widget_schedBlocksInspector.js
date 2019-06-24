@@ -165,6 +165,7 @@ let mainSchedBlocksInspector = function (optIn) {
   let box = {}
   let lenD = {}
 
+  let blockQueueOverlay = null
   let blockQueue = null
   let eventQueueServer = null
   let brushZoom = null
@@ -855,6 +856,11 @@ let mainSchedBlocksInspector = function (optIn) {
 
     shared.data.server = dataIn.data
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
+    let ce = shared.data.server.external_clockEvents[0]
+    for (let i = 0; i < ce.length; i++) {
+      ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
+      ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
+    }
     let cp = deepCopy(shared.data.server.blocks)
     shared.data.copy = {
       blocks: cp,
@@ -921,8 +927,13 @@ let mainSchedBlocksInspector = function (optIn) {
     locker.add('updateData')
     // shared.data.server = dataIn.data
     // shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
+    // let ce = shared.data.server.external_clockEvents[0]
+    // for (let i = 0; i < ce.length; i++) {
+    //   ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
+    //   ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
+    // }
     // associateBlockAndTels()
-    //
+    // //
     // svgBlocksQueueServer.updateData()
     // svgEventsQueueServer.updateData()
     // svgBrush.updateData()
@@ -1569,6 +1580,7 @@ let mainSchedBlocksInspector = function (optIn) {
       if (reference.time.start !== changed.time.start || reference.time.duration !== changed.time.duration) {
         diff.push({type: 'time',
           start: {old: reference.time.start, new: changed.time.start},
+          duration: {old: reference.time.duration, new: changed.time.duration},
           end: {old: reference.time.end, new: changed.time.end}
         })
       }
@@ -1578,8 +1590,18 @@ let mainSchedBlocksInspector = function (optIn) {
         diff.push({type: 'state', old: reference.exeState.state, new: changed.exeState.state})
       }
     }
-    function diffPointing () {}
-    function diffTel () {}
+    function diffPointing () {
+      console.log(changed);
+    }
+    function diffTel () {
+      let l = changed.telescopes.large.ids.length - reference.telescopes.large.ids.length
+      let m = changed.telescopes.medium.ids.length - reference.telescopes.medium.ids.length
+      let s = changed.telescopes.small.ids.length - reference.telescopes.small.ids.length
+
+      if (l !== 0 || m !== 0 || s !== 0) {
+        diff.push({type: 'telescope', small: s, medium: m, large: l})
+      }
+    }
     diffState()
     diffTime()
     diffPointing()
@@ -1589,16 +1611,27 @@ let mainSchedBlocksInspector = function (optIn) {
   function changeBlockProperties (block) {
     let sched = shared.data.copy.modifications.filter(d => d.id === block.sbId)
     if (sched.length === 0) {
+      let old = getBlockById(getBlocksData('server'), block.obId).data
+      let diff = checkBlocksDifference(old, block)
+      if (diff.length === 0) return
       shared.data.copy.modifications.push({id: block.sbId, name: block.metaData.nSched, blocks: [block]})
     } else {
       let index = sched[0].blocks.indexOf(block)
       if (index === -1) {
+        let old = getBlockById(getBlocksData('server'), block.obId).data
+        let diff = checkBlocksDifference(old, block)
+        if (diff.length === 0) return
         sched[0].blocks.push(block)
       } else {
+        let old = getBlockById(getBlocksData('server'), block.obId).data
+        let diff = checkBlocksDifference(old, block)
+        if (diff.length === 0) {
+          sched[0].blocks.splice(index, 1)
+          return
+        }
         sched[0].blocks[index] = block
       }
     }
-    console.log(shared.data.copy.modifications);
     svgRightInfo.updateOverview()
   }
 
@@ -1935,6 +1968,35 @@ let mainSchedBlocksInspector = function (optIn) {
         },
 
         displayer: 'eventTrack',
+        eventQueue: {
+          g: undefined,
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            show: false,
+            orientation: 'top',
+            attr: {
+              text: {
+                size: 14,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          details: {
+            range: 'in',
+            anchor: 'right'
+          }
+        },
         eventTrack: {
           g: undefined,
           schedBlocks: {
@@ -2063,8 +2125,187 @@ let mainSchedBlocksInspector = function (optIn) {
         h: box.blockQueueServer.h,
         marg: lenD.w[0] * 0.01
       }
+      let overlay = svg.g.append('g')
+        .attr('transform', 'translate(' + (adjustedBox.x) + ',' + adjustedBox.y + ')')
+        .style('opacity', 0.3)
+        .style('pointer-events', 'auto')
       reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+        .style('opacity', 1)
+        .style('pointer-events', 'auto')
+
+      blockQueueOverlay = new BlockDisplayer({
+        main: {
+          tag: 'blockQueueOverlayMiddleTag',
+          g: overlay,
+          scroll: {},
+          box: adjustedBox,
+          background: {
+            fill: 'none',
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.4
+          },
+          colorTheme: colorTheme
+        },
+
+        displayer: 'blockQueue2', // 'blockQueue2',
+        blockQueue: {
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          blocks: {
+            enabled: true,
+            run: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: 'none',
+                strokeWidth: 0
+              }
+            },
+            cancel: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            modification: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            colorPalette: colorTheme.blocks
+          },
+          timeBars: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
+        },
+        blockQueue2: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: false,
+              position: 'left',
+              clickable: true,
+              size: (lenD.w[0] * 0.65 - adjustedBox.w)
+            }
+          },
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showAxis: false,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                size: 10,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: -adjustedBox.h, w: adjustedBox.w, h: adjustedBox.h * 4, marg: adjustedBox.marg}
+          }
+        },
+
+        filters: {
+          blockFilters: [],
+          filtering: []
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {},
+        events: {},
+        input: {
+          focus: {schedBlocks: [], blocks: []},
+          over: {schedBlocks: [], blocks: []},
+          selection: []
+        }
+      })
+      blockQueueOverlay.init()
 
       blockQueue = new BlockDisplayer({
         main: {
@@ -2073,7 +2314,7 @@ let mainSchedBlocksInspector = function (optIn) {
           scroll: {},
           box: adjustedBox,
           background: {
-            fill: colorTheme.medium.background,
+            fill: 'none',
             stroke: colorTheme.medium.stroke,
             strokeWidth: 0.4
           },
@@ -2427,6 +2668,21 @@ let mainSchedBlocksInspector = function (optIn) {
 
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
       let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
+
+      blockQueueOverlay.updateData({
+        time: {
+          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+          startTime: startTime,
+          endTime: endTime
+        },
+        data: {
+          raw: {
+            blocks: getBlocksData('server'),
+            telIds: telIds
+          },
+          modified: []
+        }
+      })
       blockQueue.updateData({
         time: {
           currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
@@ -2449,6 +2705,13 @@ let mainSchedBlocksInspector = function (optIn) {
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
       let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
 
+      blockQueueOverlay.update({
+        time: {
+          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+          startTime: startTime,
+          endTime: endTime
+        }
+      })
       blockQueue.update({
         time: {
           currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
@@ -6469,6 +6732,7 @@ let mainSchedBlocksInspector = function (optIn) {
             .attr('class', 'sched')
           enter.each(function (d, i) {
             let g = d3.select(this)
+            g.append('path').attr('id', 'backpath')
             g.append('g').attr('id', 'blocks')
             let header = g.append('g').attr('id', 'header')
 
@@ -6523,6 +6787,22 @@ let mainSchedBlocksInspector = function (optIn) {
           merge.each(function (d, i) {
             let g = d3.select(this)
             g.attr('transform', 'translate(' + -5 + ',' + (schedIndex * (line + marg) + offset) + ')')
+
+            let points = [{x: labels[0].w * 0.5, y: labels[0].w * 0.5}]
+            for (let j = 0; j < d.blocks.length; j++) {
+              points.push({x: labels[0].w * 0.5, y: (line + marg) * ((j + 1) + 0.5)})
+              points.push({x: line * 2, y: (line + marg) * ((j + 1) + 0.5)})
+              points.push({x: labels[0].w * 0.5, y: (line + marg) * ((j + 1) + 0.5)})
+            }
+            let lineGenerator = d3.line()
+              .x(function (d) { return d.x })
+              .y(function (d) { return d.y })
+              .curve(d3.curveLinear)
+            g.select('path#backpath')
+              .attr('d', lineGenerator(points))
+              .attr('fill', 'none')
+              .attr('stroke', colorPalette.darker.background)
+              .attr('stroke-width', 4)
             // innerOffset += line
             blockIndex = 1
             blockCore(d.blocks, g.select('g#header'), 0)
@@ -6611,61 +6891,214 @@ let mainSchedBlocksInspector = function (optIn) {
         }
         function propCore (props, g, offset) {
           function drawDiffTime (g, d) {
-            let timeS = new Date(shared.data.server.timeOfNight.date_start)
-            timeS.setSeconds(timeS.getSeconds() + d.start.new)
-            let timeE = new Date(shared.data.server.timeOfNight.date_start)
-            timeE.setSeconds(timeE.getSeconds() + d.end.new)
+            // let timeS = new Date(shared.data.server.timeOfNight.date_start)
+            // timeS.setSeconds(timeS.getSeconds() + d.start.new)
+            // let timeE = new Date(shared.data.server.timeOfNight.date_start)
+            // timeE.setSeconds(timeE.getSeconds() + d.end.new)
             let offset = labels[3].x - labels[1].x - labels[1].w
-            g.append('image')
-              .attr('xlink:href', '/static/icons/arrow-' + (d.start.new > d.start.old ? 'right' : 'left') + '.svg')
-              .attr('x', offset + (d.start.new > d.start.old ? 4 : -4))
-              .attr('y', line * 0.0)
-              .attr('width', line * 0.66)
-              .attr('height', line * 0.33)
-              .style('opacity', 0.8)
-              .style('pointer-events', 'none')
-            g.append('image')
-              .attr('xlink:href', '/static/icons/clock.svg')
-              .attr('x', offset)
-              .attr('y', line * 0.33)
-              .attr('width', line * 0.66)
-              .attr('height', line * 0.66)
-              .style('opacity', 0.8)
-              .style('pointer-events', 'none')
-            g.append('text')
-              .text(d3.timeFormat('%H:%M')(timeS))
-              .style('fill', '#000000')
-              .style('font-weight', '')
-              .style('font-size', headerSize + 'px')
-              .attr('text-anchor', 'start')
-              .attr('transform', 'translate(' + (offset + line * 0.8) + ',' + (line * 0.33 + txtSize * 0.3) + ')')
-              .style('pointer-events', 'none')
-            g.append('text')
-              .text(d3.timeFormat('%H:%M')(timeE))
-              .style('fill', '#000000')
-              .style('font-weight', '')
-              .style('font-size', headerSize + 'px')
-              .attr('text-anchor', 'start')
-              .attr('transform', 'translate(' + (offset + line * 0.8) + ',' + (line * 0.8 + txtSize * 0.3) + ')')
-              .style('pointer-events', 'none')
+
+            // g.append('rect')
+            //   .attr('x', offset)
+            //   .attr('y', 0)
+            //   .attr('width', labels[3].w)
+            //   .attr('height', line)
+            //   .attr('fill', colorPalette.darker.background)
+              // .on('click', function () {})
+              // .on('mouseover', function (d) {
+              //   d3.select(this).style('cursor', 'pointer')
+              //   d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
+              // })
+              // .on('mouseout', function (d) {
+              //   d3.select(this).style('cursor', 'default')
+              //   d3.select(this).attr('fill', palette.color.background)
+              // })
+
+            if (d.start.new !== d.start.old) {
+              g.append('image')
+                .attr('xlink:href', '/static/icons/arrow-' + (d.start.new > d.start.old ? 'right' : 'left') + '.svg')
+                .attr('x', offset + line * 0.33 + (d.start.new > d.start.old ? 4 : -4))
+                .attr('y', line * 0.0)
+                .attr('width', line * 0.66)
+                .attr('height', line * 0.33)
+                .style('opacity', 0.8)
+                .style('pointer-events', 'none')
+              g.append('image')
+                .attr('xlink:href', '/static/icons/clock.svg')
+                .attr('x', offset + labels[3].w * 0.15)
+                .attr('y', line * 0.33)
+                .attr('width', line * 0.66)
+                .attr('height', line * 0.66)
+                .style('opacity', 0.8)
+                .style('pointer-events', 'none')
+            }
+            if (d.duration.new !== d.duration.old) {
+              g.append('text')
+                .text(d.duration.new > d.duration.old ? '+' : '-')
+                .style('fill', '#000000')
+                .style('font-weight', 'bold')
+                .style('font-size', titleSize + 'px')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'translate(' + (offset + labels[3].w * 0.85 - line * 0.33) + ',' + (txtSize * 0.8) + ')')
+                .style('pointer-events', 'none')
+              g.append('image')
+                .attr('xlink:href', '/static/icons/sandclock.svg')
+                .attr('x', offset + labels[3].w * 0.85 - line * 0.66)
+                .attr('y', line * 0.33)
+                .attr('width', line * 0.66)
+                .attr('height', line * 0.66)
+                .style('opacity', 0.8)
+                .style('pointer-events', 'none')
+            }
+
+            // g.append('text')
+            //   .text(d3.timeFormat('%H:%M')(timeS))
+            //   .style('fill', '#000000')
+            //   .style('font-weight', '')
+            //   .style('font-size', headerSize + 'px')
+            //   .attr('text-anchor', 'start')
+            //   .attr('transform', 'translate(' + (offset + line * 0.8) + ',' + (line * 0.33 + txtSize * 0.3) + ')')
+            //   .style('pointer-events', 'none')
+            // g.append('text')
+            //   .text(d3.timeFormat('%H:%M')(timeE))
+            //   .style('fill', '#000000')
+            //   .style('font-weight', '')
+            //   .style('font-size', headerSize + 'px')
+            //   .attr('text-anchor', 'start')
+            //   .attr('transform', 'translate(' + (offset + line * 0.8) + ',' + (line * 0.8 + txtSize * 0.3) + ')')
+            //   .style('pointer-events', 'none')
           }
           function drawDiffState (g, d) {
             let offset = labels[2].x - labels[1].x - labels[1].w
+
+            // g.append('rect')
+            //   .attr('x', offset + 2)
+            //   .attr('y', 0)
+            //   .attr('width', labels[3].w - 4)
+            //   .attr('height', line)
+            //   .attr('fill', 'none')
+            //   .attr('stroke', '#000000')
+            //   .attr('stroke-width', 0.2)
+
+            g.append('image')
+              .attr('xlink:href', '/static/icons/arrow-curve-rtl.svg')
+              .attr('x', 0)
+              .attr('y', 0)
+              .attr('width', line)
+              .attr('height', line)
+              .style('opacity', 0.8)
+              .style('pointer-events', 'none')
+              .attr('transform', 'translate(-4, ' + line + ') scale(0.7,1) rotate(-90)')
+            g.append('rect')
+              .attr('x', offset + labels[2].w * 0.3 - line * 0.16)
+              .attr('y', 0)
+              .attr('width', line * 0.45)
+              .attr('height', line * 0.45)
+              .attr('fill', colorPalette.blocks[d.old === 'cancel' ? 'cancelOp' : d.old].background)
+              .attr('stroke', colorPalette.blocks[d.old === 'cancel' ? 'cancelOp' : d.old].stroke)
+              .attr('stroke-width', 0.2)
+
+            g.append('rect')
+              .attr('x', offset + labels[2].w * 0.3 - line * 0.16)
+              .attr('y', line - line * 0.45)
+              .attr('width', line * 0.45)
+              .attr('height', line * 0.45)
+              .attr('fill', colorPalette.blocks[d.new === 'cancel' ? 'cancelOp' : d.new].background)
+              .attr('stroke', colorPalette.blocks[d.new === 'cancel' ? 'cancelOp' : d.new].stroke)
+              .attr('stroke-width', 0.2)
             g.append('text')
-              .text(d.old)
+              .text(d.old.substring(0, 4))
               .style('fill', '#000000')
               .style('font-weight', '')
               .style('font-size', headerSize + 'px')
               .attr('text-anchor', 'start')
-              .attr('transform', 'translate(' + (offset) + ',' + (line * 0.33 + txtSize * 0.3) + ')')
+              .attr('transform', 'translate(' + (offset + labels[2].w * 0.4 + line * 0.16) + ',' + (line * 0.25 + txtSize * 0.3) + ')')
               .style('pointer-events', 'none')
             g.append('text')
-              .text(d.new)
+              .text(d.new.substring(0, 4))
               .style('fill', '#000000')
               .style('font-weight', '')
               .style('font-size', headerSize + 'px')
               .attr('text-anchor', 'start')
-              .attr('transform', 'translate(' + (offset) + ',' + (line * 0.8 + txtSize * 0.3) + ')')
+              .attr('transform', 'translate(' + (offset + labels[2].w * 0.4 + line * 0.16) + ',' + (line * 0.8 + txtSize * 0.3) + ')')
+              .style('pointer-events', 'none')
+          }
+          function drawDiffTels (g, d) {
+            let offset = labels[5].x - labels[1].x - labels[1].w
+            g.append('circle')
+              .attr('cx', offset + labels[5].w * 0.2)
+              .attr('cy', line * 0.5)
+              .attr('r', labels[5].w * 0.2)
+              .attr('fill', colorPalette.dark.background)
+              .attr('stroke', '#000000')
+              .attr('stroke-width', 0.2)
+            g.append('circle')
+              .attr('cx', offset + labels[5].w * 0.56)
+              .attr('cy', line * 0.5)
+              .attr('r', labels[5].w * 0.16)
+              .attr('fill', colorPalette.dark.background)
+              .attr('stroke', '#000000')
+              .attr('stroke-width', 0.2)
+            g.append('circle')
+              .attr('cx', offset + labels[5].w * 0.86)
+              .attr('cy', line * 0.5)
+              .attr('r', labels[5].w * 0.14)
+              .attr('fill', colorPalette.dark.background)
+              .attr('stroke', '#000000')
+              .attr('stroke-width', 0.2)
+
+            // g.append('text')
+            //   .text('L')
+            //   .style('fill', '#000000')
+            //   .style('font-weight', 'bold')
+            //   .style('font-size', 24 + 'px')
+            //   .attr('text-anchor', 'middle')
+            //   .style('fill', '#cccccc')
+            //   .attr('stroke', '#cccccc')
+            //   .attr('transform', 'translate(' + (labels[5].w * 0.2) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+            //   .style('pointer-events', 'none')
+            g.append('text')
+              .text(Math.abs(d.large))
+              .style('fill', d.large < 0 ? 'red' : (d.large > 0 ? 'green' : '#000000'))
+              .style('font-weight', 'bold')
+              .style('font-size', titleSize + 'px')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + (offset + labels[5].w * 0.2) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+              .style('pointer-events', 'none')
+            // g.append('text')
+            //   .text('M')
+            //   .style('fill', '#000000')
+            //   .style('font-weight', 'bold')
+            //   .style('font-size', 24 + 'px')
+            //   .attr('text-anchor', 'middle')
+            //   .style('fill', '#cccccc')
+            //   .attr('stroke', '#cccccc')
+            //   .attr('transform', 'translate(' + (labels[5].w * 0.575) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+            //   .style('pointer-events', 'none')
+            g.append('text')
+              .text(Math.abs(d.medium))
+              .style('fill', d.medium < 0 ? 'red' : (d.medium > 0 ? 'green' : '#000000'))
+              .style('font-weight', 'bold')
+              .style('font-size', titleSize + 'px')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + (offset + labels[5].w * 0.56) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+              .style('pointer-events', 'none')
+            // g.append('text')
+            //   .text('S')
+            //   .style('fill', '#000000')
+            //   .style('font-weight', 'bold')
+            //   .style('font-size', 24 + 'px')
+            //   .attr('text-anchor', 'middle')
+            //   .style('fill', '#cccccc')
+            //   .attr('stroke', '#cccccc')
+            //   .attr('transform', 'translate(' + (labels[5].w * 0.875) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+            //   .style('pointer-events', 'none')
+            g.append('text')
+              .text(Math.abs(d.small))
+              .style('fill', d.small < 0 ? 'red' : (d.small > 0 ? 'green' : '#000000'))
+              .style('font-weight', 'bold')
+              .style('font-size', titleSize + 'px')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + (offset + labels[5].w * 0.86) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
               .style('pointer-events', 'none')
           }
           let current = g
@@ -6679,8 +7112,6 @@ let mainSchedBlocksInspector = function (optIn) {
             .attr('class', 'block')
           enter.each(function (d, i) {
             let g = d3.select(this)
-            if (d.type === 'time') drawDiffTime(g, d)
-            else if (d.type === 'state') drawDiffState(g, d)
             // g.append('rect')
             //   .attr('x', 0)
             //   .attr('y', 0)
@@ -6689,17 +7120,18 @@ let mainSchedBlocksInspector = function (optIn) {
             //   .attr('fill', 'none')
             //   .attr('stroke', '#000000')
             //   .attr('stroke-width', 0.6)
-            //   .attr('stroke-dasharray', [0, labels[2].w + line, labels[2].w + line * 0.5, line * 0.5])
-            //   // .on('click', function () {})
-            //   // .on('mouseover', function (d) {
-            //   //   d3.select(this).style('cursor', 'pointer')
-            //   //   d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
-            //   // })
-            //   // .on('mouseout', function (d) {
-            //   //   d3.select(this).style('cursor', 'default')
-            //   //   d3.select(this).attr('fill', palette.color.background)
-            //   // })
-
+            //   .on('click', function () {})
+            //   .on('mouseover', function (d) {
+            //     d3.select(this).style('cursor', 'pointer')
+            //     d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
+            //   })
+            //   .on('mouseout', function (d) {
+            //     d3.select(this).style('cursor', 'default')
+            //     d3.select(this).attr('fill', palette.color.background)
+            //   })
+            if (d.type === 'time') drawDiffTime(g, d)
+            else if (d.type === 'state') drawDiffState(g, d)
+            else if (d.type === 'telescope') drawDiffTels(g, d)
             // g.append('text')
             //   .text(d.metaData.nObs)
             //   .style('fill', '#000000')
@@ -6727,7 +7159,7 @@ let mainSchedBlocksInspector = function (optIn) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (labels[2].x - labels[1].x) + ',' + (offset + (line + marg) * propIndex) + ')')
+            g.attr('transform', 'translate(' + (labels[1].x) + ',' + (offset + (line + marg) * propIndex) + ')')
             // propIndex += 1
           })
           current
