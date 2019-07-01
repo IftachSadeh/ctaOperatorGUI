@@ -838,6 +838,7 @@ window.ScrollBox = function () {
   }
   function resetVerticalScroller (optIn) {
     if (!hasVar(optIn)) optIn = {}
+    let old = {frac: com.scrollTransV.frac, scrollHeight: com.scrollHeight}
     let duration = hasVar(optIn.duration) ? optIn.duration : timeD.animArc / 2
 
     if (hasVar(optIn.canScroll)) com.canScroll = optIn.canScroll
@@ -845,32 +846,34 @@ window.ScrollBox = function () {
     if (hasVar(optIn.scrollHeight)) com.scrollHeight = optIn.scrollHeight
 
     let prevActive = com.scrollTransV.active
-    setVerticalScrollState()
+    setVerticalScrollState((optIn.keepFrac && old.scrollHeight > 0) ? old : undefined)
 
+    // if (optIn.keepFrac) {
+    //   com.scrollTransV.frac = (old.frac * com.scrollHeight) / old.scrollHeight
+    // }
     if (prevActive !== com.scrollTransV.active) {
       setBox()
     }
-
-    com.innerG
-      .transition('move')
-      .duration(duration)
-      .attr('transform', function (d, i) {
-        let shift = posShift()
-        return 'translate(' + shift[0] + ',' + shift[1] + ')'
-      })
-
-    com.clipRecInner
-      .transition('move')
-      .duration(duration)
-      .attr('transform', 'translate(0,0)')
-
-    com.clipRecOuter
-      .transition('move')
-      .duration(duration)
-      .attr('transform', function (d, i) {
-        let shift = posShift()
-        return 'translate(' + -shift[0] + ',' + -shift[1] + ')'
-      })
+    // com.innerG
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', function (d, i) {
+    //     let shift = posShift()
+    //     return 'translate(' + shift[0] + ',' + shift[1] + ')'
+    //   })
+    //
+    // com.clipRecInner
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', 'translate(0,0)')
+    //
+    // com.clipRecOuter
+    //   .transition('move')
+    //   .duration(duration)
+    //   .attr('transform', function (d, i) {
+    //     let shift = posShift()
+    //     return 'translate(' + -shift[0] + ',' + -shift[1] + ')'
+    //   })
 
     if (prevActive !== com.scrollTransV.active) {
       setVerticalZoomStatus()
@@ -878,9 +881,13 @@ window.ScrollBox = function () {
     } else if (com.scrollTransV.active) {
       com.setVerticalRecScroll()
     }
+    updateVerticalScrollState(true)
+    com.setVerticalRecScroll()
+    com.doVerticalTrans({ frac: com.scrollTransV.frac, duration: 0 })
+
   }
   this.resetVerticalScroller = resetVerticalScroller
-  function setVerticalScrollState () {
+  function setVerticalScrollState (old) {
     let boxH = com.innerBox.h // com.outerBox.h - com.outerBox.marg * 2;
 
     if (com.canScroll && com.scrollVertical) {
@@ -891,8 +898,16 @@ window.ScrollBox = function () {
       ? -1 * Math.abs(com.scrollHeight - boxH)
       : 0
     com.scrollTransV.max = 0
-    com.scrollTransV.frac = 0
-    com.scrollTransV.now = com.scrollTransV.max
+    if (old) {
+      if (old.frac < 1) com.scrollTransV.frac = com.scrollTransV.now / com.scrollTransV.min
+      else {
+        com.scrollTransV.frac = 1
+        com.scrollTransV.now = com.scrollTransV.min * com.scrollTransV.frac
+      }
+    } else {
+      com.scrollTransV.frac = 0
+      com.scrollTransV.now = com.scrollTransV.min * com.scrollTransV.frac
+    }
     com.scrollRecV.h = boxH * boxH / Math.abs(com.scrollHeight)
   }
   function updateVerticalScrollState (keepFrac) {
@@ -1644,4 +1659,13 @@ window.ScrollBox = function () {
   //   }
   // }
   // this.updateScrollerSize = updateScrollerSize
+
+  function getScrollProp (mode) {
+    if (mode === 'vertical') {
+      return com.scrollTransV
+    } else if (mode === 'horizontal') {
+      return com.scrollTransH
+    }
+  }
+  this.getScrollProp = getScrollProp
 }

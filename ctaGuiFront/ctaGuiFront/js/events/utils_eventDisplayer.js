@@ -465,27 +465,41 @@ window.EventDisplayer = function (optIn) {
           .attr('x', box.x)
           .attr('y', box.y)
           .attr('width', box.h)
-          .attr('height', box.h * 0.8)
-          .style('fill', '#dddddd')
-          .style('stroke', '#000000')
+          .attr('height', box.h * 1)
+          .style('fill', colorPalette.medium.background)
+          .style('stroke', colorPalette.medium.stroke)
           .attr('stroke-width', 0.4)
           .style('stroke-opacity', 1)
           .style('fill-opacity', 1) // d.display.fillOpacity)
-        d3.select(this).select('rect.anchor')
-          .attr('x', box.x)
-          .attr('y', box.y + box.h * 0.8)
-          .attr('width', function () {
-            let w = timeScale(d.end) - timeScale(d.start)
-            if (w === 0) {
-              d3.select(this).attr('rx', 10)
-              return 10
-            }
-            return w
+        d3.select(this).select('path.anchor')
+          .attr('d', function () {
+            let lineGenerator = d3.line()
+              .x(function (d) { return d.x })
+              .y(function (d) { return d.y })
+              .curve(d3.curveLinear)
+            return lineGenerator([
+              {x: box.x, y: box.y},
+              {x: box.x, y: box.y + box.h},
+              {x: box.x, y: box.y + box.h * 0.5},
+              {x: box.x + timeScale(d.end) - timeScale(d.start), y: box.y + box.h * 0.5},
+              {x: box.x + timeScale(d.end) - timeScale(d.start), y: box.y + box.h * 0.3},
+              {x: box.x + timeScale(d.end) - timeScale(d.start), y: box.y + box.h * 0.7}
+            ])
           })
-          .attr('height', box.h * 0.2)
-          .style('fill', '#444444')
+          // .attr('x', box.x)
+          // .attr('y', box.y + box.h * 0.45)
+          // .attr('width', function () {
+          //   let w = timeScale(d.end) - timeScale(d.start)
+          //   if (w === 0) {
+          //     d3.select(this).attr('rx', 10)
+          //     return 10
+          //   }
+          //   return w
+          // })
+          // .attr('height', box.h * 0.1)
+          .style('fill', 'none')
           .style('fill-opacity', d.display.fillOpacity)
-          .attr('stroke-width', d.display.strokeWidth)
+          .attr('stroke-width', 4)
           .style('stroke-opacity', d.display.strokeOpacity)
           .style('stroke-dasharray', d.display.strokeDasharray)
         d3.select(this).select('rect.pattern')
@@ -1198,6 +1212,26 @@ window.EventDisplayer = function (optIn) {
       .style('fill', com.main.background.fill)
       .style('stroke', com.main.background.stroke)
       .style('stroke-width', com.main.background.strokeWidth)
+    com.main.scroll.scrollBoxG.append('rect')
+      .attr('id', 'serifleft')
+      .attr('x', -6)
+      .attr('y', 0)
+      .attr('width', 5)
+      .attr('height', com.main.box.h)
+      .style('fill', 'none')
+      .style('stroke', com.main.background.stroke)
+      .style('stroke-width', 1)
+      .attr('stroke-dasharray', [5 + com.main.box.h + 5, com.main.box.h])
+    com.main.scroll.scrollBoxG.append('rect')
+      .attr('id', 'serifright')
+      .attr('x', com.main.box.w + 1)
+      .attr('y', 0)
+      .attr('width', 5)
+      .attr('height', com.main.box.h)
+      .style('fill', 'none')
+      .style('stroke', com.main.background.stroke)
+      .style('stroke-width', 1)
+      .attr('stroke-dasharray', [5, com.main.box.h, 5 + com.main.box.h])
 
     com.main.scroll.scrollBox = new ScrollBox()
     com.main.scroll.scrollBox.init({
@@ -1364,6 +1398,12 @@ window.EventDisplayer = function (optIn) {
       .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     rectEnter.each(function (d, i) {
       let parent = d3.select(this)
+      d3.select(this).append('path')
+        .attr('class', 'anchor')
+        .style('pointer-events', 'none')
+        .attr('vector-effect', 'non-scaling-stroke')
+        .attr('stroke', com.main.colorTheme.dark.stroke)
+        .style('fill', colsMix[i])
       d3.select(this).append('rect')
         .attr('class', 'back')
         .attr('x', 0)
@@ -1428,12 +1468,6 @@ window.EventDisplayer = function (optIn) {
         .style('stroke-opacity', 0)
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
-      d3.select(this).append('rect')
-        .attr('class', 'anchor')
-        .style('pointer-events', 'none')
-        .attr('vector-effect', 'non-scaling-stroke')
-        .attr('stroke', com.main.colorTheme.dark.stroke)
-        .style('fill', colsMix[i])
       // d3.select(this).append('text')
       //   .attr('class', 'name')
       //   .text(d.name)

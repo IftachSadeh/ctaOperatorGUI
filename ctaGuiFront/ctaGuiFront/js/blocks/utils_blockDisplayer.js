@@ -1702,6 +1702,45 @@ window.BlockDisplayer = function (optIn) {
       return blocks
     }
 
+    function blockOverlap (b, bs) {
+      let ov = bs.filter(function (bb) {
+        return blocksIntersect(b, bb)
+      })
+      if (ov.length === 0) {
+        b.nLine = 1
+        return 1
+      }
+      ov = ov.map(function (bb) {
+        return blockOverlap(bb, ov.filter(d => d.obId !== bb.obId))
+      })
+      let index = 1 + ov.reduce(function (a, b) { return Math.max(a, b) })
+      b.nLine = index
+      return index
+    }
+    function lineCount (scheds) {
+      let tot = 0
+      scheds.forEach(function (sc) {
+        let size = sc.blocks.map(function (b) {
+          return blockOverlap(b, sc.blocks.filter(d => d.obId !== b.obId))
+        })
+        let res = size.reduce(function (a, b) { return Math.max(a, b) })
+        tot += res
+        sc.nLine = res
+      })
+      return tot
+    }
+    function getLineLayout () {
+      let scheds = groupBlocksBySchedule(com.data.filtered)
+      lineCount(scheds)
+      scheds.forEach(d => (d.blocks = d.blocks.map(function (dd) { return {obId: dd.obId, nLine: dd.nLine} })))
+      return scheds
+    }
+    this.getLineLayout = getLineLayout
+    function setLineLayout (layout) {
+      com.blockQueue2.schedBlocks.layout = layout
+    }
+    this.setLineLayout = setLineLayout
+
     function update () {
       if (com.blockQueue2.axis.enabled) updateAxis()
       if (com.blockQueue2.timeBars.enabled) setTimeRect()
@@ -1735,35 +1774,19 @@ window.BlockDisplayer = function (optIn) {
         .style('font-size', minTxtSize + 'px')
     }
     function updateSchedulingBlocks () {
-      function blockOverlap (b, bs) {
-        let ov = bs.filter(function (bb) {
-          return blocksIntersect(b, bb)
-        })
-        if (ov.length === 0) {
-          b.nLine = 1
-          return 1
-        }
-        ov = ov.map(function (bb) {
-          return blockOverlap(bb, ov.filter(d => d.obId !== bb.obId))
-        })
-        let index = 1 + ov.reduce(function (a, b) { return Math.max(a, b) })
-        b.nLine = index
-        return index
-      }
-      function lineCount () {
-        let tot = 0
-        scheds.forEach(function (sc) {
-          let size = sc.blocks.map(function (b) {
-            return blockOverlap(b, sc.blocks.filter(d => d.obId !== b.obId))
-          })
-          let res = size.reduce(function (a, b) { return Math.max(a, b) })
-          tot += res
-          sc.nLine = res
-        })
-        return tot
-      }
       let scheds = groupBlocksBySchedule(com.data.filtered)
-      let nLine = lineCount()
+      let nLine = 0
+      if (com.blockQueue2.schedBlocks.layout) {
+        scheds.forEach(function (d) {
+          let shcedLayout = com.blockQueue2.schedBlocks.layout.filter(dd => dd.id === d.id)[0]
+          d.nLine = shcedLayout.nLine
+          nLine += shcedLayout.nLine
+          d.blocks.forEach(function (dd) {
+            dd.nLine = shcedLayout.blocks.filter(ddd => dd.obId === ddd.obId)[0].nLine
+          })
+        })
+      } else nLine = lineCount(scheds)
+
       let height = com.main.box.h / nLine
 
       let mainOffset = 0
@@ -1846,14 +1869,14 @@ window.BlockDisplayer = function (optIn) {
           let ww = com.blockQueue2.schedBlocks.label.size ? com.blockQueue2.schedBlocks.label.size : maxWidth
           ww = com.blockQueue2.schedBlocks.label.position === 'left' ? -ww : ww
           let poly = [
-            {x: minX, y: 0},
-            {x: minX + ww * 0.85, y: 0},
+            {x: minX, y: 1},
+            {x: minX + ww * 0.85, y: 1},
 
             {x: minX + ww, y: (height * d.nLine) * 0.3},
             {x: minX + ww, y: (height * d.nLine) * 0.7},
 
-            {x: minX + ww * 0.85, y: (height * d.nLine)},
-            {x: minX, y: (height * d.nLine)}
+            {x: minX + ww * 0.85, y: (height * d.nLine) - 1},
+            {x: minX, y: (height * d.nLine) - 1}
           ]
           d3.select(this).select('polygon')
             .attr('points', function () {
@@ -2651,6 +2674,26 @@ window.BlockDisplayer = function (optIn) {
       .style('fill', com.main.background.fill)
       .style('stroke', com.main.background.stroke)
       .style('stroke-width', com.main.background.strokeWidth)
+    com.main.scroll.scrollBoxG.append('rect')
+      .attr('id', 'serifleft')
+      .attr('x', -6)
+      .attr('y', 0)
+      .attr('width', 5)
+      .attr('height', com.main.box.h)
+      .style('fill', 'none')
+      .style('stroke', com.main.background.stroke)
+      .style('stroke-width', 1)
+      .attr('stroke-dasharray', [5 + com.main.box.h + 5, com.main.box.h])
+    com.main.scroll.scrollBoxG.append('rect')
+      .attr('id', 'serifright')
+      .attr('x', com.main.box.w + 1)
+      .attr('y', 0)
+      .attr('width', 5)
+      .attr('height', com.main.box.h)
+      .style('fill', 'none')
+      .style('stroke', com.main.background.stroke)
+      .style('stroke-width', 1)
+      .attr('stroke-dasharray', [5, com.main.box.h, 5 + com.main.box.h])
 
     com.main.scroll.scrollBox = new ScrollBox()
     com.main.scroll.scrollBox.init({
@@ -2801,6 +2844,72 @@ window.BlockDisplayer = function (optIn) {
     return {data: filtered, stats: stats}
   }
   this.filterData = filterData
+
+  // function clickcancel () {
+  //   var dispatcher = d3.dispatch('click', 'dblclick');
+  //   function cc (selection) {
+  //     var down
+  //     var tolerance = 5
+  //     var last
+  //     var wait = null
+  //     var args
+  //     function dist (a, b) {
+  //       return Math.sqrt(Math.pow(a[0] - b[0], 2), Math.pow(a[1] - b[1], 2))
+  //     }
+  //     selection.on('mousedown', function () {
+  //       console.log('mousedown');
+  //       down = d3.mouse(document.body)
+  //       last = +new Date()
+  //       args = arguments
+  //     })
+  //     selection.on('mouseup', function () {
+  //       console.log('mouseup');
+  //       if (dist(down, d3.mouse(document.body)) > tolerance) {
+  //         return
+  //       } else {
+  //         if (wait) {
+  //           window.clearTimeout(wait)
+  //           wait = null
+  //           dispatcher.apply('dblclick', this, args)
+  //         } else {
+  //           wait = window.setTimeout((function () {
+  //             return function () {
+  //               dispatcher.apply('click', this, args)
+  //               wait = null
+  //             }
+  //           })(), 300)
+  //         }
+  //       }
+  //     })
+  //   }
+  //   var d3rebind = function (target, source) {
+  //     var i = 1
+  //     var n = arguments.length
+  //     var method
+  //     while (++i < n) target[method = arguments[i]] = d3_rebind(target, source, source[method])
+  //     return target
+  //   }
+  //
+  //   // Method is assumed to be a standard D3 getter-setter:
+  //   // If passed with no arguments, gets the value.
+  //   // If passed with arguments, sets the value and returns the target.
+  //   function d3_rebind (target, source, method) {
+  //     return function () {
+  //       var value = method.apply(source, arguments)
+  //       return value === source ? target : value
+  //     }
+  //   }
+  //   return d3rebind(cc, dispatcher, 'on')
+  // }
+  // .call(cc)
+  // var cc = clickcancel()
+  // cc.on('click', function (d, index) {
+  //   console.log('click')
+  // })
+  // cc.on('dblclick', function (d, index) {
+  //   console.log('dbclick')
+  // })
+
   function createBlocksGroup () {
     let allBlocks = [].concat(com.data.filtered.done)
       .concat(com.data.filtered.run)
@@ -2820,6 +2929,7 @@ window.BlockDisplayer = function (optIn) {
       .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     rectEnter.each(function (d, i) {
       let parent = d3.select(this)
+      let timeout
       d3.select(this).append('rect')
         .attr('class', 'back')
         .attr('x', 0)
@@ -2834,23 +2944,31 @@ window.BlockDisplayer = function (optIn) {
         .style('stroke-dasharray', [])
         .attr('vector-effect', 'non-scaling-stroke')
         .on('click', function (d) {
-          let event = d3.event
-          let node = d3.select(this)
-          node.attr('clicked', 1)
-
-          setTimeout(function () {
-            if (node.attr('clicked') === '2') return
-            if (event.ctrlKey) {
-              // com.input.selection.push(that)
-            } else {
-              // com.input.selection = [that]
-            }
-            com.events.block.click('block', d.obId)
-          }, 250)
+          clearTimeout(timeout);
+          timeout = setTimeout(function() {
+            console.log('click');
+            com.events.block.click(d)
+          }, 200)
+          // let event = d3.event
+          // let node = d3.select(this)
+          // node.attr('clicked', 1)
+          //
+          // setTimeout(function () {
+          //   if (node.attr('clicked') === '2') return
+          //   if (event.ctrlKey) {
+          //     // com.input.selection.push(that)
+          //   } else {
+          //     // com.input.selection = [that]
+          //   }
+          //   com.events.block.click('block', d.obId)
+          // }, 250)
         })
         .on('dblclick', function (d) {
-          let node = d3.select(this)
-          node.attr('clicked', 2)
+          clearTimeout(timeout);
+          console.log('dbclick');
+          com.events.block.dbclick(d)
+          // let node = d3.select(this)
+          // node.attr('clicked', 2)
         })
         .on('mouseover', function (d) {
           d3.select(this).style('cursor', 'pointer')
@@ -2945,6 +3063,28 @@ window.BlockDisplayer = function (optIn) {
     }
   }
   this.update = update
+
+  function getLineLayout () {
+    if (com.displayer === 'blockQueue') {
+    } else if (com.displayer === 'blockList') {
+    } else if (com.displayer === 'blockForm') {
+    } else if (com.displayer === 'blockQueue2') {
+      return blockQueue2Bib.getLineLayout()
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+    }
+  }
+  this.getLineLayout = getLineLayout
+  function setLineLayout (layout) {
+    if (com.displayer === 'blockQueue') {
+    } else if (com.displayer === 'blockList') {
+    } else if (com.displayer === 'blockForm') {
+    } else if (com.displayer === 'blockQueue2') {
+      blockQueue2Bib.setLineLayout(layout)
+    } else if (com.displayer === 'blockTrackShrinkBib') {
+    }
+  }
+  this.setLineLayout = setLineLayout
+
 
   function changeDisplayer (newDisplayer) {
     if (com.displayer === newDisplayer) return
