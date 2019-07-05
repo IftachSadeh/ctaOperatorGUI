@@ -73,6 +73,7 @@ function sockSchedBlocks (optIn) {}
 
 function mainSchedBlocks (optIn) {
   let colorTheme = getColorTheme('bright-Grey')
+  window.colorPalette = getColorTheme('bright-Grey')
 
   let myUniqueId = unique()
   let displayMode = 'detail'
@@ -455,6 +456,11 @@ function mainSchedBlocks (optIn) {
     initBox()
 
     shared.data.server = dataIn.data
+    let ce = shared.data.server.external_clockEvents[0]
+    for (let i = 0; i < ce.length; i++) {
+      ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
+      ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
+    }
     // sortBlocksByState()
 
     svgBrushPast.initData()
@@ -517,8 +523,8 @@ function mainSchedBlocks (optIn) {
 
     let ce = shared.data.server.external_clockEvents[0]
     for (let i = 0; i < ce.length; i++) {
-      ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_now)) / 1000
-      ce[i].end_time = ce[i].end_date === '' ? ce[i].start_time + 1000 : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_now)) / 1000
+      ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
+      ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
     }
     // sortBlocksByState()
     update()
@@ -677,11 +683,6 @@ function mainSchedBlocks (optIn) {
       let axisTop = brushZoomPast.getAxis('top').axis.scale().domain()
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
       let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
-      console.log({
-        currentTime: currentTime,
-        startTime: startTime,
-        endTime: endTime
-      });
       eventQueueServerPast.updateData({
         time: {
           currentTime: currentTime,

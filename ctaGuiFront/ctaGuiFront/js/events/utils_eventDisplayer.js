@@ -285,7 +285,6 @@ window.EventDisplayer = function (optIn) {
         start = events[i].start_time
         if (events[i].end_time) end = events[i].end_time
         else end = start
-
         let insert = false
         for (let j = 0; j < track.length; j++) {
           let intersect = false
@@ -331,6 +330,7 @@ window.EventDisplayer = function (optIn) {
     }
     function updateEvents () {
       let allEvents = [].concat(com.data.filtered.events_ponctual).concat(com.data.filtered.events_scheduled)
+      console.log(allEvents);
       let tracks = computeTrack(allEvents)
 
       // let nLine = tracks.length
@@ -385,6 +385,7 @@ window.EventDisplayer = function (optIn) {
       setEventIcon(allEvents, tracks)
     }
     function setEventIcon (events, tracks) {
+      console.log(events);
       events = setDefaultStyleForEvents(events)
 
       // let sizeTarget = 20

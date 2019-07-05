@@ -158,6 +158,7 @@ let mainSchedBlocksInspector = function (optIn) {
       // current: 0
     },
     focus: undefined, // {type: block, id: idBlock}
+    history: {list: [], index: -1},
     over: undefined,
     mode: 'modifier'
   }
@@ -1113,10 +1114,32 @@ let mainSchedBlocksInspector = function (optIn) {
         } else {
           unfocus()
           shared.focus = {type: type, id: id}
+          // if (shared.history.index === -1 || shared.history.list[shared.history.index].id !== id) {
+          //   shared.history.list.push({type: type, id: id})
+          //   shared.history.index = shared.history.list.length - 1
+          // }
+          // if (shared.history.index === shared.history.list.length - 1) {
+          //   shared.history.list.push({type: type, id: id})
+          //   shared.history.index = shared.history.list.length - 1
+          // } else {
+          //   shared.history.list.splice(shared.history.index, shared.history.list.length, {type: type, id: id})
+          //   shared.history.index = shared.history.list.length - 1
+          // }
           focusCore(shared.focus.type, shared.focus.id)
         }
       } else {
         shared.focus = {type: type, id: id}
+        // if (shared.history.index === -1 || shared.history.list[shared.history.index].id !== id) {
+        //   shared.history.list.push({type: type, id: id})
+        //   shared.history.index = shared.history.list.length - 1
+        // }
+        // if (shared.history.index === shared.history.list.length - 1) {
+        //   shared.history.list.push({type: type, id: id})
+        //   shared.history.index = shared.history.list.length - 1
+        // } else {
+        //   shared.history.list.splice(shared.history.index, shared.history.list.length, {type: type, id: id})
+        //   shared.history.index = shared.history.list.length - 1
+        // }
         focusCore(shared.focus.type, shared.focus.id)
       }
     }
@@ -1154,6 +1177,27 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     this.out = out
   }()
+  function navigateHistory (mode) {
+    console.log('navigateHistory', mode)
+    console.log(shared.history);
+    if (shared.history.index === -1) {
+      if (shared.history.list.length > 0) changeBlockProperties(shared.history.list[0].old, true)
+    } else {
+      changeBlockProperties(shared.history.list[shared.history.index].new, true)
+    }
+    // if (mode === 'backward') {
+    //   if (shared.history.index === -1) {
+    //     changeBlockProperties(shared.history.list[0].old)
+    //   } else {
+    //     changeBlockProperties(shared.history.list[shared.history.index].new)
+    //   }
+    // }
+    // if (mode === 'forward') {
+    //   if (shared.history.index === shared.history.list.length) shared.history.index--
+    //   changeBlockProperties(shared.history.list[shared.history.index].new)
+    // }
+    // focusManager.focusOn(shared.history.list[shared.history.index].type, shared.history.list[shared.history.index].id)
+  }
 
   function scheduleSuccessfullyUpdate () {
     svg.g.selectAll('g.pushingNewSchedule')
@@ -1635,7 +1679,7 @@ let mainSchedBlocksInspector = function (optIn) {
       let ns = changed.telescopes.small.ids.filter(d => reference.telescopes.small.ids.indexOf(d) === -1)
       let rs = reference.telescopes.small.ids.filter(d => changed.telescopes.small.ids.indexOf(d) === -1)
 
-      if (l !== 0 || m !== 0 || s !== 0) {
+      if ((nl.length > 0 || rl.length > 0) || (nm.length > 0 || rm.length > 0) || (ns.length > 0 || rs.length > 0)) {
         diff.push({type: 'telescope',
           small: {diff: s, new: ns, rem: rs},
           medium: {diff: m, new: nm, rem: rm},
@@ -1649,31 +1693,38 @@ let mainSchedBlocksInspector = function (optIn) {
     diffTel()
     return diff
   }
-  function changeBlockProperties (block) {
-    console.log(block);
+  function changeBlockProperties (block, nohistory) {
     let sched = shared.data.copy.modifications.filter(d => d.id === block.sbId)
+    let old = getBlockById(getBlocksData('server'), block.obId).data
+    let diff = checkBlocksDifference(old, block)
+
     if (sched.length === 0) {
-      let old = getBlockById(getBlocksData('server'), block.obId).data
-      let diff = checkBlocksDifference(old, block)
-      if (diff.length === 0) return
-      shared.data.copy.modifications.push({id: block.sbId, name: block.metaData.nSched, blocks: [block]})
+      if (diff.length !== 0) shared.data.copy.modifications.push({id: block.sbId, name: block.metaData.nSched, blocks: [block]})
     } else {
-      let index = sched[0].blocks.indexOf(block)
-      if (index === -1) {
-        let old = getBlockById(getBlocksData('server'), block.obId).data
-        let diff = checkBlocksDifference(old, block)
-        if (diff.length === 0) return
-        sched[0].blocks.push(block)
+      let b = sched[0].blocks.filter(d => d.obId === block.obId)
+      if (b.length === 0) {
+        if (diff.length !== 0) sched[0].blocks.push(block)
       } else {
-        let old = getBlockById(getBlocksData('server'), block.obId).data
-        let diff = checkBlocksDifference(old, block)
-        if (diff.length === 0) {
-          sched[0].blocks.splice(index, 1)
-          return
+        if (diff.length !== 0) b = block
+        else {
+          sched[0].blocks.splice(sched[0].blocks.indexOf(b), 1)
+          if (sched[0].blocks.length === 0) {
+            shared.data.copy.modifications.splice(shared.data.copy.modifications.indexOf(sched[0]), 1)
+          }
         }
-        sched[0].blocks[index] = block
       }
     }
+    if (!nohistory) {
+      if (shared.history.index === shared.history.list.length - 1) {
+        shared.history.list.push({old: deepCopy(old), new: deepCopy(block)})
+        shared.history.index = shared.history.list.length - 1
+      } else {
+        shared.history.list.splice(shared.history.index, shared.history.list.length, {old: deepCopy(old), new: deepCopy(block)})
+        shared.history.index = shared.history.list.length - 1
+      }
+    }
+    console.log(diff);
+    console.log('modif', shared.data.copy.modifications);
     svgRightInfo.updateOverview()
   }
 
@@ -4930,12 +4981,14 @@ let mainSchedBlocksInspector = function (optIn) {
       reserved.box = deepCopy(box.rightInfo)
       reserved.g = svg.g.append('g').attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
       reserved.quickg = svg.g.append('g').attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
+      reserved.historyg = svg.g.append('g').attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
       // reserved.g.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
       //   .attr('width', reserved.box.w)
       //   .attr('height', reserved.box.h)
       //   .attr('fill', colorTheme.dark.background)
+      createHistoryArrow()
       createQuickAccess()
       initOverview()
       updateOverview()
@@ -4990,6 +5043,57 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     this.update = update
 
+    function createHistoryArrow () {
+      let box = {
+        x: reserved.box.w * 0.092,
+        y: 0,
+        w: reserved.box.w * 0.2,
+        h: reserved.box.h * 0.03
+      }
+      reserved.historyg.append('svg:image')
+        .attr('xlink:href', '/static/icons/arrow-left.svg')
+        .attr('x', box.x - box.w * 0.5)
+        .attr('y', box.y)
+        .attr('width', box.w * 0.5)
+        .attr('height', box.h)
+        .style('opacity', 0.5)
+        // .style('pointer-events', 'none')
+        .on('click', function () {
+          if (shared.history.index === -1) return
+          shared.history.index--
+          navigateHistory('backward')
+        })
+        .on('mouseover', function (d) {
+          d3.select(this).style('cursor', 'pointer')
+          d3.select(this).style('opacity', 1)
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).style('cursor', 'default')
+          d3.select(this).style('opacity', 0.5)
+        })
+      reserved.historyg.append('svg:image')
+        .attr('xlink:href', '/static/icons/arrow-right.svg')
+        .attr('x', box.x)
+        .attr('y', box.y)
+        .attr('width', box.w * 0.5)
+        .attr('height', box.h)
+        .style('opacity', 0.5)
+        // .style('pointer-events', 'none')
+        .on('click', function () {
+          if (shared.history.index === shared.history.list.length - 1) return
+          shared.history.index++
+          navigateHistory('forward')
+        })
+        .on('mouseover', function (d) {
+          d3.select(this).style('cursor', 'pointer')
+          d3.select(this).style('opacity', 1)
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).style('cursor', 'default')
+          d3.select(this).style('opacity', 0.5)
+        })
+    }
+
     function createQuickAccess () {
       let box = {
         icons: {
@@ -5012,16 +5116,18 @@ let mainSchedBlocksInspector = function (optIn) {
       function cleanBack () {
         gback.selectAll('*').remove()
         reserved.g.attr('opacity', 1)
+        reserved.historyg.attr('opacity', 1)
       }
       function createBlockMapping () {
+        reserved.g.attr('opacity', 0.05)
+        reserved.historyg.attr('opacity', 0)
+
         let scheds = []
         let inter = getSchedBlocksData()
         for (let key in inter) {
           inter[key].id = key
           scheds.push(inter[key])
         }
-
-        reserved.g.attr('opacity', 0.05)
 
         let height = headerSize * 2.5
         let square = parseInt(Math.sqrt(scheds.length))
@@ -5179,6 +5285,7 @@ let mainSchedBlocksInspector = function (optIn) {
       }
       function createTargetsMapping () {
         reserved.g.attr('opacity', 0.05)
+        reserved.historyg.attr('opacity', 0)
 
         let height = headerSize * 3
         let square = parseInt(Math.sqrt(shared.data.server.targets.length))
@@ -5260,6 +5367,7 @@ let mainSchedBlocksInspector = function (optIn) {
       }
       function createTelescopesMapping () {
         reserved.g.attr('opacity', 0.1)
+        reserved.historyg.attr('opacity', 0)
 
         let xx = box.mapping.w * 0.05
         let ww = box.mapping.w * 0.95
@@ -6316,6 +6424,7 @@ let mainSchedBlocksInspector = function (optIn) {
                 d3.select(this).attr('fill', colorPalette.dark.background)
               })
               .attr('transform', 'translate(' + ((labels[0].w - dimPoly) * 0.5) + ',' + ((line - dimPoly) * 0.5) + ')')
+            console.log(d);
             header.append('text')
               .text('S' + d.blocks[0].metaData.nSched)
               .style('fill', colorPalette.dark.text)
@@ -6421,7 +6530,8 @@ let mainSchedBlocksInspector = function (optIn) {
             let old = getBlockById(getBlocksData('server'), d.obId).data
             let diff = checkBlocksDifference(old, d)
             propIndex = 0
-            propCore(diff, g.append('g').attr('id', 'props'), 0)
+            // g.selectAll('g#props').remove()
+            propCore(diff, g, 0)
             blockIndex += 1
           })
           current
@@ -6538,108 +6648,101 @@ let mainSchedBlocksInspector = function (optIn) {
                 .attr('transform', 'translate(' + (labels[3].x + labels[3].w + 3) + ',' + (line * 1.3 + txtSize * 0.3) + ')')
                 .style('pointer-events', 'none')
             }
-            // let timeS = new Date(shared.data.server.timeOfNight.date_start)
-            // timeS.setSeconds(timeS.getSeconds() + d.start.new)
-            // let timeE = new Date(shared.data.server.timeOfNight.date_start)
-            // timeE.setSeconds(timeE.getSeconds() + d.end.new)
             let offset = labels[3].x - labels[1].x - labels[1].w
 
             if (d.start.new !== d.start.old) {
-              g.append('rect')
-                .attr('x', offset + labels[3].w * 0.15)
-                .attr('y', line * 0.0)
-                .attr('width', line * 0.66)
-                .attr('height', line)
-                .attr('fill', 'transparent')
-                .attr('rx', 0)
-                .on('mouseover', function () {
-                  d3.select(this).attr('fill', colorPalette.darkest.background)
-                  drawHoverClock()
-                })
-                .on('mouseout', function () {
+              if (!g.select('rect#timeStart').empty()) {
+                g.select('image#timeStartIncDec')
+                  .attr('xlink:href', '/static/icons/arrow-' + (d.start.new > d.start.old ? 'right' : 'left') + '.svg')
+              } else {
+                g.append('rect')
+                  .attr('id', 'timeStart')
+                  .attr('x', offset + labels[3].w * 0.15)
+                  .attr('y', line * 0.0)
+                  .attr('width', line * 0.66)
+                  .attr('height', line)
+                  .attr('fill', 'transparent')
+                  .attr('rx', 0)
+                  .on('mouseover', function () {
+                    d3.select(this).attr('fill', colorPalette.darkest.background)
+                    drawHoverClock()
+                  })
+                  .on('mouseout', function () {
                   d3.select(this).attr('fill', 'transparent')
                   reserved.g.selectAll('g#clockhover').remove()
                 })
-              g.append('image')
-                .attr('xlink:href', '/static/icons/arrow-' + (d.start.new > d.start.old ? 'right' : 'left') + '.svg')
-                .attr('x', offset + line * 0.33 + (d.start.new > d.start.old ? 4 : -4))
-                .attr('y', line * 0.0)
-                .attr('width', line * 0.66)
-                .attr('height', line * 0.33)
-                .style('opacity', 0.8)
-                .style('pointer-events', 'none')
-              g.append('image')
-                .attr('xlink:href', '/static/icons/clock.svg')
-                .attr('x', offset + labels[3].w * 0.15)
-                .attr('y', line * 0.33)
-                .attr('width', line * 0.66)
-                .attr('height', line * 0.66)
-                .style('opacity', 0.8)
-                .style('pointer-events', 'none')
+                g.append('image')
+                  .attr('id', 'timeStartIncDec')
+                  .attr('xlink:href', '/static/icons/arrow-' + (d.start.new > d.start.old ? 'right' : 'left') + '.svg')
+                  .attr('x', offset + line * 0.33) //  + (d.start.new > d.start.old ? 4 : -4))
+                  .attr('y', line * 0.0)
+                  .attr('width', line * 0.66)
+                  .attr('height', line * 0.33)
+                  .style('opacity', 0.8)
+                  .style('pointer-events', 'none')
+                g.append('image')
+                  .attr('xlink:href', '/static/icons/clock.svg')
+                  .attr('x', offset + labels[3].w * 0.15)
+                  .attr('y', line * 0.33)
+                  .attr('width', line * 0.66)
+                  .attr('height', line * 0.66)
+                  .style('opacity', 0.8)
+                  .style('pointer-events', 'none')
+              }
             }
             if (d.duration.new !== d.duration.old) {
-              g.append('rect')
-                .attr('x', offset + labels[3].w * 0.85 - line * 0.66)
-                .attr('y', line * 0.0)
-                .attr('width', line * 0.66)
-                .attr('height', line)
-                .attr('fill', 'transparent')
-                .attr('rx', 4)
-                .on('mouseover', function () {
-                  d3.select(this).attr('fill', colorPalette.darkest.background)
-                  drawHoverSandclock()
-                })
-                .on('mouseout', function () {
-                  d3.select(this).attr('fill', 'transparent')
-                  reserved.g.selectAll('g#sandclockhover').remove()
-                })
-              g.append('text')
-                .text(d.duration.new > d.duration.old ? '+' : '-')
-                .style('fill', '#000000')
-                .style('font-weight', 'bold')
-                .style('font-size', titleSize + 'px')
-                .attr('text-anchor', 'middle')
-                .attr('transform', 'translate(' + (offset + labels[3].w * 0.85 - line * 0.33) + ',' + (txtSize * 0.8) + ')')
-                .style('pointer-events', 'none')
-              g.append('image')
-                .attr('xlink:href', '/static/icons/sandclock.svg')
-                .attr('x', offset + labels[3].w * 0.85 - line * 0.66)
-                .attr('y', line * 0.33)
-                .attr('width', line * 0.66)
-                .attr('height', line * 0.66)
-                .style('opacity', 0.8)
-                .style('pointer-events', 'none')
+              if (!g.select('rect#timeDuration').empty()) {
+                g.select('text#timeDurationIncDec')
+                  .text(d.duration.new > d.duration.old ? '+' : '-')
+              } else {
+                g.append('rect')
+                  .attr('id', 'timeDuration')
+                  .attr('x', offset + labels[3].w * 0.85 - line * 0.66)
+                  .attr('y', line * 0.0)
+                  .attr('width', line * 0.66)
+                  .attr('height', line)
+                  .attr('fill', 'transparent')
+                  .attr('rx', 4)
+                  .on('mouseover', function () {
+                    d3.select(this).attr('fill', colorPalette.darkest.background)
+                    drawHoverSandclock()
+                  })
+                  .on('mouseout', function () {
+                    d3.select(this).attr('fill', 'transparent')
+                    reserved.g.selectAll('g#sandclockhover').remove()
+                  })
+                g.append('text')
+                  .attr('id', 'timeDurationIncDec')
+                  .text(d.duration.new > d.duration.old ? '+' : '-')
+                  .style('fill', '#000000')
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .attr('transform', 'translate(' + (offset + labels[3].w * 0.85 - line * 0.33) + ',' + (txtSize * 0.8) + ')')
+                  .style('pointer-events', 'none')
+                g.append('image')
+                  .attr('xlink:href', '/static/icons/sandclock.svg')
+                  .attr('x', offset + labels[3].w * 0.85 - line * 0.66)
+                  .attr('y', line * 0.33)
+                  .attr('width', line * 0.66)
+                  .attr('height', line * 0.66)
+                  .style('opacity', 0.8)
+                  .style('pointer-events', 'none')
+              }
             }
-
-            // g.append('text')
-            //   .text(d3.timeFormat('%H:%M')(timeS))
-            //   .style('fill', '#000000')
-            //   .style('font-weight', '')
-            //   .style('font-size', headerSize + 'px')
-            //   .attr('text-anchor', 'start')
-            //   .attr('transform', 'translate(' + (offset + line * 0.8) + ',' + (line * 0.33 + txtSize * 0.3) + ')')
-            //   .style('pointer-events', 'none')
-            // g.append('text')
-            //   .text(d3.timeFormat('%H:%M')(timeE))
-            //   .style('fill', '#000000')
-            //   .style('font-weight', '')
-            //   .style('font-size', headerSize + 'px')
-            //   .attr('text-anchor', 'start')
-            //   .attr('transform', 'translate(' + (offset + line * 0.8) + ',' + (line * 0.8 + txtSize * 0.3) + ')')
-            //   .style('pointer-events', 'none')
           }
           function drawDiffState (g, d) {
             let offset = labels[2].x - labels[1].x - labels[1].w
 
-            // g.append('rect')
-            //   .attr('x', offset + 2)
-            //   .attr('y', 0)
-            //   .attr('width', labels[3].w - 4)
-            //   .attr('height', line)
-            //   .attr('fill', 'none')
-            //   .attr('stroke', '#000000')
-            //   .attr('stroke-width', 0.2)
-
+            if (!g.select('text').empty()) {
+              if (d.old) {
+                g.select('rect')
+                  .attr('fill', colorPalette.blocks[d.old === 'cancel' ? 'cancelOp' : d.old].background)
+                  .attr('stroke', colorPalette.blocks[d.old === 'cancel' ? 'cancelOp' : d.old].stroke)
+              }
+              g.select('text').text(d.old ? d.old.substring(0, 4) : 'New')
+              return
+            }
             g.append('image')
               .attr('xlink:href', '/static/icons/arrow-left.svg')
               .attr('x', -line * 0.4)
@@ -6649,7 +6752,6 @@ let mainSchedBlocksInspector = function (optIn) {
               .style('opacity', 0.8)
               .style('pointer-events', 'none')
               .attr('transform', 'translate(0, ' + 0 + ') scale(1,0.5)')
-
             if (d.old) {
               g.append('rect')
                 .attr('x', offset + labels[2].w * 0.3 - line * 0.16)
@@ -6668,27 +6770,17 @@ let mainSchedBlocksInspector = function (optIn) {
               .attr('text-anchor', 'start')
               .attr('transform', 'translate(' + (offset + labels[2].w * 0.3 + (d.old ? line * 0.43 : 0)) + ',' + (line * 0.5 + txtSize * 0.35) + ')')
               .style('pointer-events', 'none')
-
-            // g.append('rect')
-            //   .attr('x', offset + labels[2].w * 0.3 - line * 0.16)
-            //   .attr('y', line - line * 0.45)
-            //   .attr('width', line * 0.45)
-            //   .attr('height', line * 0.45)
-            //   .attr('fill', colorPalette.blocks[d.new === 'cancel' ? 'cancelOp' : d.new].background)
-            //   .attr('stroke', colorPalette.blocks[d.new === 'cancel' ? 'cancelOp' : d.new].stroke)
-            //   .attr('stroke-width', 0.2)
-            // g.append('text')
-            //   .text(d.new.substring(0, 4))
-            //   .style('fill', '#000000')
-            //   .style('font-weight', '')
-            //   .style('font-size', headerSize + 'px')
-            //   .attr('text-anchor', 'start')
-            //   .attr('transform', 'translate(' + (offset + labels[2].w * 0.4 + line * 0.16) + ',' + (line * 0.8 + txtSize * 0.3) + ')')
-            //   .style('pointer-events', 'none')
           }
           function drawDiffTels (g, d) {
             let localoffset = (line + marg) * (propIndex + blockIndex + schedIndex)
+            let marg1 = 6
+            let marg2 = 2
             function drawHoverLarge () {
+              if (d.large.new.length === 0 && d.large.rem.length === 0) return
+              let marg = 2 * marg1 + ((d.large.new.length > 0 && d.large.rem.length > 0) ? marg1 * 2 : 0)
+              let newH = (titleSize + marg2) * (parseInt(d.large.new.length / 2) + (d.large.new.length % 2 !== 0 ? 1 : 0))
+              let remH = (titleSize + marg2) * (parseInt(d.large.rem.length / 2) + (d.large.rem.length % 2 !== 0 ? 1 : 0))
+
               let g = reserved.g.select('g#modificationsInformation')
               let largeg = g.append('g')
                 .attr('id', 'largehover')
@@ -6702,11 +6794,58 @@ let mainSchedBlocksInspector = function (optIn) {
                 .attr('x', labels[5].x - 55)
                 .attr('y', line * 0.5)
                 .attr('width', 54)
-                .attr('height', (d.large.new.length > 0 ? 12 : 0) + (d.large.rem.length > 0 ? 12 : 0) + titleSize * ((d.large.new.length + d.large.rem.length) * 0.5))
-                .attr('fill', colorPalette.dark.background)
-                .attr('stroke', colorPalette.dark.stroke)
-                .attr('stroke-width', 0.2)
-                .attr('rx', 2)
+                .attr('height', function () {
+                  return newH + marg * 0.5 - 1
+                })
+                .attr('fill', colorPalette.darker.background)
+                .attr('stroke-width', 0)
+              largeg.append('rect')
+                .attr('x', labels[5].x - 55)
+                .attr('y', line * 0.5 + marg * 0.5 + newH + 2)
+                .attr('width', 54)
+                .attr('height', function () {
+                  return remH + marg * 0.5 - 1
+                })
+                .attr('fill', colorPalette.darker.background)
+                .attr('stroke-width', 0)
+              largeg.append('rect')
+                .attr('x', labels[5].x - 55)
+                .attr('y', line * 0.5)
+                .attr('width', 54)
+                .attr('height', function () {
+                  return marg + newH + remH
+                })
+                .attr('fill', 'none')
+                .attr('stroke', colorPalette.medium.stroke)
+                .attr('stroke-dasharray', function () {
+                  if (d.large.new.length === 0) return [54 + newH + marg + remH + 20, 14, 20 + remH + marg + newH]
+                  else if (d.large.rem.length === 0) return [20, 14, 20 + newH + marg + remH + 54 + remH + marg + newH]
+                  else return [20, 14, 20 + newH, marg, remH + 20, 14, 20 + remH, marg, newH]
+                })
+                .attr('stroke-width', 1)
+                // .attr('rx', 2)
+              if (d.large.new.length > 0) {
+                largeg.append('text')
+                  .text('+')
+                  .attr('x', labels[5].x - 28)
+                  .attr('y', line * 0.5 + titleSize * 0.33)
+                  .style('fill', '#000000')
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .style('pointer-events', 'none')
+              }
+              if (d.large.rem.length > 0) {
+                largeg.append('text')
+                  .text('-')
+                  .attr('x', labels[5].x - 28)
+                  .attr('y',  marg + newH + remH + line * 0.5 + titleSize * 0.33)
+                  .style('fill', '#000000')
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .style('pointer-events', 'none')
+              }
 
               for (let i = 0; i < d.large.new.length; i++) {
                 largeg.append('text')
@@ -6715,12 +6854,12 @@ let mainSchedBlocksInspector = function (optIn) {
                   .attr('y', line * 0.5)
                   .style('fill', '#000000')
                   .style('font-weight', '')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', headerSize + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (15 + 22 * (i % 2)) + ',' + (12 + titleSize * (i / 2)) + ')')
+                  .attr('transform', 'translate(' + (15 + 22 * (i % 2)) + ',' + ((marg1 + titleSize) + (titleSize + marg2) * parseInt(i / 2)) + ')')
                   .style('pointer-events', 'none')
               }
-              let noffset = (d.large.new.length > 0 ? 12 : 0) + titleSize * (d.large.new.length / 2)
+              let midOffset = d.large.new.length > 0 ? (marg1 * 2 + (titleSize + marg2) * Math.ceil(d.large.new.length / 2)) : 0
               for (let i = 0; i < d.large.rem.length; i++) {
                 largeg.append('text')
                   .text(d.large.rem[i])
@@ -6728,13 +6867,18 @@ let mainSchedBlocksInspector = function (optIn) {
                   .attr('y', line * 0.5)
                   .style('fill', '#000000')
                   .style('font-weight', '')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', headerSize + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (15 + 22 * (i % 2)) + ',' + (noffset + 12 + titleSize * (i / 2)) + ')')
+                  .attr('transform', 'translate(' + (15 + 22 * (i % 2)) + ',' + (midOffset + (marg1 + titleSize) + (titleSize + marg2) * parseInt(i / 2)) + ')')
                   .style('pointer-events', 'none')
               }
             }
             function drawHoverMedium () {
+              if (d.medium.new.length === 0 && d.medium.rem.length === 0) return
+              let marg = 2 * marg1 + ((d.medium.new.length > 0 && d.medium.rem.length > 0) ? (marg1 * 2) : 0)
+              let newH = (headerSize + marg2) * (parseInt(d.medium.new.length / 2) + (d.medium.new.length % 2 !== 0 ? 1 : 0))
+              let remH = (headerSize + marg2) * (parseInt(d.medium.rem.length / 2) + (d.medium.rem.length % 2 !== 0 ? 1 : 0))
+
               let g = reserved.g.select('g#modificationsInformation')
               let mediumg = g.append('g')
                 .attr('id', 'mediumhover')
@@ -6744,15 +6888,62 @@ let mainSchedBlocksInspector = function (optIn) {
                   let ty = localoffset + popupOffset
                   return 'translate(' + tx + ',' + ty + ')'
                 })
+
               mediumg.append('rect')
                 .attr('x', labels[5].x - 55)
                 .attr('y', line * 0.5)
                 .attr('width', 74)
-                .attr('height', (d.medium.new.length > 0 ? 12 : 0) + (d.medium.rem.length > 0 ? titleSize : 0) + titleSize * ((d.medium.new.length + d.medium.rem.length) * 0.5))
-                .attr('fill', colorPalette.dark.background)
-                .attr('stroke', colorPalette.dark.stroke)
-                .attr('stroke-width', 0.2)
-                .attr('rx', 2)
+                .attr('height', function () {
+                  return newH + marg * 0.5 - 1
+                })
+                .attr('fill', colorPalette.darker.background)
+                .attr('stroke-width', 0)
+              mediumg.append('rect')
+                .attr('x', labels[5].x - 55)
+                .attr('y', line * 0.5 + marg * 0.5 + newH + 2)
+                .attr('width', 74)
+                .attr('height', function () {
+                  return remH + marg * 0.5 - 1
+                })
+                .attr('fill', colorPalette.darker.background)
+                .attr('stroke-width', 0)
+              mediumg.append('rect')
+                .attr('x', labels[5].x - 55)
+                .attr('y', line * 0.5)
+                .attr('width', 74)
+                .attr('height', function () {
+                  return marg + newH + remH
+                })
+                .attr('fill', 'none')
+                .attr('stroke', colorPalette.medium.stroke)
+                .attr('stroke-dasharray', function () {
+                  if (d.medium.new.length === 0) return [74 + newH + marg + remH + 30, 14, 30 + remH + marg + newH]
+                  else if (d.medium.rem.length === 0) return [30, 14, 30 + newH + marg + remH + 74 + remH + marg + newH]
+                  else return [30, 14, 30 + newH, marg, remH + 30, 14, 30 + remH, marg, newH]
+                })
+                .attr('stroke-width', 1)
+              if (d.medium.new.length > 0) {
+                mediumg.append('text')
+                  .text('+')
+                  .attr('x', labels[5].x - 18)
+                  .attr('y', line * 0.5 + titleSize * 0.33)
+                  .style('fill', '#000000')
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .style('pointer-events', 'none')
+              }
+              if (d.medium.rem.length > 0) {
+                mediumg.append('text')
+                  .text('-')
+                  .attr('x', labels[5].x - 18)
+                  .attr('y', marg + newH + remH + line * 0.5 + titleSize * 0.33)
+                  .style('fill', '#000000')
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .style('pointer-events', 'none')
+              }
 
               for (let i = 0; i < d.medium.new.length; i++) {
                 mediumg.append('text')
@@ -6761,12 +6952,12 @@ let mainSchedBlocksInspector = function (optIn) {
                   .attr('y', line * 0.5)
                   .style('fill', '#000000')
                   .style('font-weight', '')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', headerSize + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (18 + 38 * (i % 2)) + ',' + (12 + titleSize * parseInt(i / 2)) + ')')
+                  .attr('transform', 'translate(' + (18 + 38 * (i % 2)) + ',' + ((marg1 + headerSize) + (headerSize + marg2) * parseInt(i / 2)) + ')')
                   .style('pointer-events', 'none')
               }
-              let noffset = (d.medium.new.length > 0 ? 12 : 0) + titleSize * (d.medium.new.length / 2)
+              let midOffset = d.medium.new.length > 0 ? (marg1 * 2 + (headerSize + marg2) * Math.ceil(d.medium.new.length / 2)) : 0
               for (let i = 0; i < d.medium.rem.length; i++) {
                 mediumg.append('text')
                   .text(d.medium.rem[i])
@@ -6774,13 +6965,18 @@ let mainSchedBlocksInspector = function (optIn) {
                   .attr('y', line * 0.5)
                   .style('fill', '#000000')
                   .style('font-weight', '')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', headerSize + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (18 + 38 * (i % 2)) + ',' + (noffset + 12 + titleSize * parseInt(i / 2)) + ')')
+                  .attr('transform', 'translate(' + (18 + 38 * (i % 2)) + ',' + (midOffset + (marg1 + headerSize) + (headerSize + marg2) * parseInt(i / 2)) + ')')
                   .style('pointer-events', 'none')
               }
             }
             function drawHoverSmall () {
+              if (d.small.new.length === 0 && d.small.rem.length === 0) return
+              let marg = 2 * marg1 + ((d.small.new.length > 0 && d.small.rem.length > 0) ? marg1 * 2 : 0)
+              let newH = (txtSize + marg2) * (parseInt(d.small.new.length / 3) + (d.small.new.length % 3 !== 0 ? 1 : 0))
+              let remH = (txtSize + marg2) * (parseInt(d.small.rem.length / 3) + (d.small.rem.length % 3 !== 0 ? 1 : 0))
+
               let g = reserved.g.select('g#modificationsInformation')
               let smallg = g.append('g')
                 .attr('id', 'smallhover')
@@ -6794,11 +6990,57 @@ let mainSchedBlocksInspector = function (optIn) {
                 .attr('x', labels[5].x - 55)
                 .attr('y', line * 0.5)
                 .attr('width', 94)
-                .attr('height', (d.small.new.length > 0 ? 12 : 0) + (d.small.rem.length > 0 ? titleSize : 0) + titleSize * (parseInt(d.small.new.length + d.small.rem.length) * 0.5))
-                .attr('fill', colorPalette.dark.background)
-                .attr('stroke', colorPalette.dark.stroke)
-                .attr('stroke-width', 0.2)
-                .attr('rx', 2)
+                .attr('height', function () {
+                  return newH + marg * 0.5 - 1
+                })
+                .attr('fill', colorPalette.darker.background)
+                .attr('stroke-width', 0)
+              smallg.append('rect')
+                .attr('x', labels[5].x - 55)
+                .attr('y', line * 0.5 + marg * 0.5 + newH + 2)
+                .attr('width', 94)
+                .attr('height', function () {
+                  return remH + marg * 0.5 - 1
+                })
+                .attr('fill', colorPalette.darker.background)
+                .attr('stroke-width', 0)
+              smallg.append('rect')
+                .attr('x', labels[5].x - 55)
+                .attr('y', line * 0.5)
+                .attr('width', 94)
+                .attr('height', function () {
+                  return marg + newH + remH
+                })
+                .attr('fill', 'none')
+                .attr('stroke', colorPalette.medium.stroke)
+                .attr('stroke-dasharray', function () {
+                  if (d.small.new.length === 0) return [94 + newH + marg + remH + 40, 14, 40 + remH + marg + newH]
+                  else if (d.small.rem.length === 0) return [40, 14, 40 + newH + marg + remH + 94 + remH + marg + newH]
+                  else return [40, 14, 40 + newH, marg, remH + 40, 14, 40 + remH, marg, newH]
+                })
+                .attr('stroke-width', 1)
+              if (d.small.new.length > 0) {
+                smallg.append('text')
+                  .text('+')
+                  .attr('x', labels[5].x - 8)
+                  .attr('y', line * 0.5 + titleSize * 0.33)
+                  .style('fill', '#000000')
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .style('pointer-events', 'none')
+              }
+              if (d.small.rem.length > 0) {
+                smallg.append('text')
+                  .text('-')
+                  .attr('x', labels[5].x - 8)
+                  .attr('y', marg + newH + remH + line * 0.5 + titleSize * 0.33)
+                  .style('fill', '#000000')
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .style('pointer-events', 'none')
+              }
 
               for (let i = 0; i < d.small.new.length; i++) {
                 smallg.append('text')
@@ -6809,10 +7051,10 @@ let mainSchedBlocksInspector = function (optIn) {
                   .style('font-weight', '')
                   .style('font-size', txtSize + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (18 + 28 * (i % 3)) + ',' + (12 + titleSize * parseInt(i / 3)) + ')')
+                  .attr('transform', 'translate(' + (18 + 28 * (i % 3)) + ',' + ((marg1 + txtSize) + (txtSize + marg2) * parseInt(i / 3)) + ')')
                   .style('pointer-events', 'none')
               }
-              let noffset = (d.small.new.length > 0 ? 12 : 0) + titleSize * (d.small.new.length / 2)
+              let midOffset = d.small.new.length > 0 ? (marg1 * 2 + (txtSize + marg2) * Math.ceil(d.small.new.length / 3)) : 0
               for (let i = 0; i < d.small.rem.length; i++) {
                 smallg.append('text')
                   .text(d.small.rem[i])
@@ -6822,112 +7064,112 @@ let mainSchedBlocksInspector = function (optIn) {
                   .style('font-weight', '')
                   .style('font-size', txtSize + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (18 + 28 * (i % 3)) + ',' + (noffset + 12 + titleSize * parseInt(i / 3)) + ')')
+                  .attr('transform', 'translate(' + (18 + 28 * (i % 3)) + ',' + (midOffset + (marg1 + txtSize) + (txtSize + marg2) * parseInt(i / 3)) + ')')
                   .style('pointer-events', 'none')
               }
             }
 
             let offset = labels[5].x - labels[1].x - labels[1].w
-            g.append('circle')
-              .attr('cx', offset + labels[5].w * 0.2)
-              .attr('cy', line * 0.5)
-              .attr('r', labels[5].w * 0.2)
-              .attr('fill', colorPalette.dark.background)
-              .attr('stroke', '#000000')
-              .attr('stroke-width', 0.2)
-              .on('mouseover', function () {
-                d3.select(this).attr('fill', colorPalette.darkest.background)
-                drawHoverLarge()
-              })
-              .on('mouseout', function () {
-                d3.select(this).attr('fill', colorPalette.dark.background)
-                reserved.g.selectAll('g#largehover').remove()
-              })
-            g.append('circle')
-              .attr('cx', offset + labels[5].w * 0.56)
-              .attr('cy', line * 0.5)
-              .attr('r', labels[5].w * 0.16)
-              .attr('fill', colorPalette.dark.background)
-              .attr('stroke', '#000000')
-              .attr('stroke-width', 0.2)
-              .on('mouseover', function () {
-                d3.select(this).attr('fill', colorPalette.darkest.background)
-                drawHoverMedium()
-              })
-              .on('mouseout', function () {
-                d3.select(this).attr('fill', colorPalette.dark.background)
-                reserved.g.selectAll('g#mediumhover').remove()
-              })
-            g.append('circle')
-              .attr('cx', offset + labels[5].w * 0.86)
-              .attr('cy', line * 0.5)
-              .attr('r', labels[5].w * 0.14)
-              .attr('fill', colorPalette.dark.background)
-              .attr('stroke', '#000000')
-              .attr('stroke-width', 0.2)
-              .on('mouseover', function () {
-                d3.select(this).attr('fill', colorPalette.darkest.background)
-                drawHoverSmall()
-              })
-              .on('mouseout', function () {
-                d3.select(this).attr('fill', colorPalette.dark.background)
-                reserved.g.selectAll('g#smallhover').remove()
-              })
 
-            // g.append('text')
-            //   .text('L')
-            //   .style('fill', '#000000')
-            //   .style('font-weight', 'bold')
-            //   .style('font-size', 24 + 'px')
-            //   .attr('text-anchor', 'middle')
-            //   .style('fill', '#cccccc')
-            //   .attr('stroke', '#cccccc')
-            //   .attr('transform', 'translate(' + (labels[5].w * 0.2) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
-            //   .style('pointer-events', 'none')
-            g.append('text')
-              .text(Math.abs(d.large.diff))
-              .style('fill', d.large.diff < 0 ? 'red' : (d.large.diff > 0 ? 'green' : '#000000'))
-              .style('font-weight', 'bold')
-              .style('font-size', titleSize + 'px')
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (offset + labels[5].w * 0.2) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
-              .style('pointer-events', 'none')
-            // g.append('text')
-            //   .text('M')
-            //   .style('fill', '#000000')
-            //   .style('font-weight', 'bold')
-            //   .style('font-size', 24 + 'px')
-            //   .attr('text-anchor', 'middle')
-            //   .style('fill', '#cccccc')
-            //   .attr('stroke', '#cccccc')
-            //   .attr('transform', 'translate(' + (labels[5].w * 0.575) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
-            //   .style('pointer-events', 'none')
-            g.append('text')
-              .text(Math.abs(d.medium.diff))
-              .style('fill', d.medium < 0 ? 'red' : (d.medium > 0 ? 'green' : '#000000'))
-              .style('font-weight', 'bold')
-              .style('font-size', titleSize + 'px')
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (offset + labels[5].w * 0.56) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
-              .style('pointer-events', 'none')
-            // g.append('text')
-            //   .text('S')
-            //   .style('fill', '#000000')
-            //   .style('font-weight', 'bold')
-            //   .style('font-size', 24 + 'px')
-            //   .attr('text-anchor', 'middle')
-            //   .style('fill', '#cccccc')
-            //   .attr('stroke', '#cccccc')
-            //   .attr('transform', 'translate(' + (labels[5].w * 0.875) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
-            //   .style('pointer-events', 'none')
-            g.append('text')
-              .text(Math.abs(d.small.diff))
-              .style('fill', d.small < 0 ? 'red' : (d.small > 0 ? 'green' : '#000000'))
-              .style('font-weight', 'bold')
-              .style('font-size', titleSize + 'px')
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (offset + labels[5].w * 0.86) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
-              .style('pointer-events', 'none')
+            if (d.large.new.length !== 0 || d.large.rem.length !== 0) {
+              if (!g.select('g#circleLarge').empty()) {
+                g.select('g#circleLarge').select('text')
+                  .text(Math.abs(d.large.diff))
+              } else {
+                let glarge = g.append('g')
+                  .attr('id', 'circleLarge')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.2) + ',' + (line * 0.5) + ')')
+                glarge.append('circle')
+                  .attr('cx', 0)
+                  .attr('cy', 0)
+                  .attr('r', labels[5].w * 0.2)
+                  .attr('fill', colorPalette.dark.background)
+                  .attr('stroke', '#000000')
+                  .attr('stroke-width', 0.2)
+                  .on('mouseover', function () {
+                    d3.select(this).attr('fill', colorPalette.darkest.background)
+                    drawHoverLarge()
+                  })
+                  .on('mouseout', function () {
+                    d3.select(this).attr('fill', colorPalette.dark.background)
+                    reserved.g.selectAll('g#largehover').remove()
+                  })
+                g.append('text')
+                  .text(Math.abs(d.large.diff))
+                  .style('fill', d.large.diff < 0 ? 'red' : (d.large.diff > 0 ? 'green' : '#000000'))
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.2) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+                  .style('pointer-events', 'none')
+              }
+            }
+            if (d.medium.new.length !== 0 || d.medium.rem.length !== 0) {
+              if (!g.select('g#circleMedium').empty()) {
+                g.select('g#circleMedium').select('text')
+                  .text(Math.abs(d.medium.diff))
+              } else {
+                let gmedium = g.append('g')
+                  .attr('id', 'circleMedium')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.56) + ',' + (line * 0.5) + ')')
+                gmedium.append('circle')
+                  .attr('cx', 0)
+                  .attr('cy', 0)
+                  .attr('r', labels[5].w * 0.16)
+                  .attr('fill', colorPalette.dark.background)
+                  .attr('stroke', '#000000')
+                  .attr('stroke-width', 0.2)
+                  .on('mouseover', function () {
+                    d3.select(this).attr('fill', colorPalette.darkest.background)
+                    drawHoverMedium()
+                  })
+                  .on('mouseout', function () {
+                    d3.select(this).attr('fill', colorPalette.dark.background)
+                    reserved.g.selectAll('g#mediumhover').remove()
+                  })
+                g.append('text')
+                  .text(Math.abs(d.medium.diff))
+                  .style('fill', d.medium.diff < 0 ? 'red' : (d.medium.diff > 0 ? 'green' : '#000000'))
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.56) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+                  .style('pointer-events', 'none')
+              }
+            }
+            if (d.small.new.length !== 0 || d.small.rem.length !== 0) {
+              if (!g.select('g#circleSmall').empty()) {
+                g.select('g#circleSmall').select('text')
+                  .text(Math.abs(d.small.diff))
+              } else {
+                let gsmall = g.append('g')
+                  .attr('id', 'circleSmall')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.86) + ',' + (line * 0.5) + ')')
+                gsmall.append('circle')
+                  .attr('cx', 0)
+                  .attr('cy', 0)
+                  .attr('r', labels[5].w * 0.14)
+                  .attr('fill', colorPalette.dark.background)
+                  .attr('stroke', '#000000')
+                  .attr('stroke-width', 0.2)
+                  .on('mouseover', function () {
+                    d3.select(this).attr('fill', colorPalette.darkest.background)
+                    drawHoverSmall()
+                  })
+                  .on('mouseout', function () {
+                    d3.select(this).attr('fill', colorPalette.dark.background)
+                    reserved.g.selectAll('g#smallhover').remove()
+                  })
+                g.append('text')
+                  .text(Math.abs(d.small.diff))
+                  .style('fill', d.small.diff < 0 ? 'red' : (d.small.diff > 0 ? 'green' : '#000000'))
+                  .style('font-weight', 'bold')
+                  .style('font-size', titleSize + 'px')
+                  .attr('text-anchor', 'middle')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.86) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+                  .style('pointer-events', 'none')
+              }
+            }
           }
           let current = g
             .selectAll('g.prop')
@@ -6937,57 +7179,20 @@ let mainSchedBlocksInspector = function (optIn) {
           let enter = current
             .enter()
             .append('g')
-            .attr('class', 'block')
+            .attr('class', 'prop')
           enter.each(function (d, i) {
             let g = d3.select(this)
-            // g.append('rect')
-            //   .attr('x', 0)
-            //   .attr('y', 0)
-            //   .attr('width', labels[2].w)
-            //   .attr('height', line)
-            //   .attr('fill', 'none')
-            //   .attr('stroke', '#000000')
-            //   .attr('stroke-width', 0.6)
-            //   .on('click', function () {})
-            //   .on('mouseover', function (d) {
-            //     d3.select(this).style('cursor', 'pointer')
-            //     d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
-            //   })
-            //   .on('mouseout', function (d) {
-            //     d3.select(this).style('cursor', 'default')
-            //     d3.select(this).attr('fill', palette.color.background)
-            //   })
             if (d.type === 'time') drawDiffTime(g, d)
             else if (d.type === 'state') drawDiffState(g, d)
             else if (d.type === 'telescope') drawDiffTels(g, d)
-            // g.append('text')
-            //   .text(d.metaData.nObs)
-            //   .style('fill', '#000000')
-            //   .style('font-weight', 'bold')
-            //   .style('font-size', headerSize + 'px')
-            //   .attr('text-anchor', 'middle')
-            //   .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
-            //   .style('pointer-events', 'none')
-            // g.append('rect')
-            //   .attr('width', 12)
-            //   .attr('height', 12)
-            //   .attr('x', -line * 0.7)
-            //   .attr('y', line * 0.4)
-            //   .attr('fill', function () {
-            //     return 'transparent'
-            //   })
-            //   .on('click', function () {})
-            //   .on('mouseover', function (d) {
-            //     d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
-            //   })
-            //   .on('mouseout', function (d) {
-            //     d3.select(this).attr('fill', 'transparent')
-            //   })
           })
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
             g.attr('transform', 'translate(' + (labels[1].x) + ',' + (offset + (line + marg) * propIndex) + ')')
+            if (d.type === 'time') drawDiffTime(g, d)
+            else if (d.type === 'state') drawDiffState(g, d)
+            else if (d.type === 'telescope') drawDiffTels(g, d)
             // propIndex += 1
           })
           current
