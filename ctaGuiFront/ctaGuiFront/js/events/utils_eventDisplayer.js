@@ -330,7 +330,6 @@ window.EventDisplayer = function (optIn) {
     }
     function updateEvents () {
       let allEvents = [].concat(com.data.filtered.events_ponctual).concat(com.data.filtered.events_scheduled)
-      console.log(allEvents);
       let tracks = computeTrack(allEvents)
 
       // let nLine = tracks.length
@@ -385,7 +384,6 @@ window.EventDisplayer = function (optIn) {
       setEventIcon(allEvents, tracks)
     }
     function setEventIcon (events, tracks) {
-      console.log(events);
       events = setDefaultStyleForEvents(events)
 
       // let sizeTarget = 20

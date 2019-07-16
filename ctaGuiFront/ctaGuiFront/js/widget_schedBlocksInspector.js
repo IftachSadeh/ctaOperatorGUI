@@ -878,7 +878,6 @@ let mainSchedBlocksInspector = function (optIn) {
       conflicts: [],
       modifications: []
     }
-    associateBlockAndTels()
 
     svgBrush.initData()
     svgEventsQueueServer.initData()
@@ -928,13 +927,14 @@ let mainSchedBlocksInspector = function (optIn) {
   function updateDataOnce (dataIn) {
     if (shared.mode === 'standby') return
     if (!locker.isFreeV(['pushNewSchedule'])) {
-      // console.log('pushing...');
       setTimeout(function () {
         updateDataOnce(dataIn)
       }, 10)
       return
     }
+
     locker.add('updateData')
+
     shared.data.server = dataIn.data
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
     let ce = shared.data.server.external_clockEvents[0]
@@ -942,8 +942,11 @@ let mainSchedBlocksInspector = function (optIn) {
       ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
       ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
     }
-    associateBlockAndTels()
-    //
+    console.log(shared);
+    console.log([].concat(shared.data.copy.blocks['wait']).concat(shared.data.copy.blocks['run']).concat(shared.data.copy.blocks['done']).length);
+    updateRuntoDoneBlocks()
+    console.log([].concat(shared.data.copy.blocks['wait']).concat(shared.data.copy.blocks['run']).concat(shared.data.copy.blocks['done']).length);
+
     svgBlocksQueueServer.updateData()
     svgEventsQueueServer.updateData()
     svgBrush.updateData()
@@ -960,8 +963,32 @@ let mainSchedBlocksInspector = function (optIn) {
   this.updateData = updateData
   runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
-  function associateBlockAndTels () {
-    // console.log(shared.data.server);
+  function updateRuntoDoneBlocks () {
+    let change = false
+    for (let i = shared.data.copy.blocks['run'].length - 1; i >= 0; i--) {
+      let d = getBlockById(shared.data.server.blocks, shared.data.copy.blocks['run'][i].obId)
+      if (d.key === 'done') {
+        shared.data.copy.blocks['run'].splice(i, 1)
+        shared.data.copy.blocks['done'].push(d.data)
+        change = true
+      }
+    }
+    for (let i = shared.data.copy.blocks['wait'].length - 1; i >= 0; i--) {
+      let d = getBlockById(shared.data.server.blocks, shared.data.copy.blocks['wait'][i].obId)
+      if (d.key === 'run') {
+        shared.data.copy.blocks['wait'].splice(i, 1)
+        shared.data.copy.blocks['run'].push(d.data)
+        change = true
+      } else if (d.key === 'done') {
+        shared.data.copy.blocks['wait'].splice(i, 1)
+        shared.data.copy.blocks['done'].push(d.data)
+        // let ex = shared.data.copy.blocks['wait'].splice(i, 1)[0]
+        // ex.exeState = d.data.exeState
+        // shared.data.copy.blocks['done'].push(ex)
+        change = true
+      }
+    }
+    if (change) createModificationsList()
   }
   function getBlocksData (from) {
     if (from === 'server') {
@@ -1178,25 +1205,21 @@ let mainSchedBlocksInspector = function (optIn) {
     this.out = out
   }()
   function navigateHistory (mode) {
-    console.log('navigateHistory', mode)
-    console.log(shared.history);
-    if (shared.history.index === -1) {
-      if (shared.history.list.length > 0) changeBlockProperties(shared.history.list[0].old, true)
-    } else {
-      changeBlockProperties(shared.history.list[shared.history.index].new, true)
+    if (mode === 'backward') {
+      shared.history.index -= 1
+      if (shared.history.index === -1) shared.data.copy.blocks = deepCopy(getBlocksData('server'))
+      else shared.data.copy.blocks = deepCopy(shared.history.list[shared.history.index].data)
+    } else if (mode === 'forward') {
+      shared.history.index += 1
+      shared.data.copy.blocks = deepCopy(shared.history.list[shared.history.index].data)
     }
-    // if (mode === 'backward') {
-    //   if (shared.history.index === -1) {
-    //     changeBlockProperties(shared.history.list[0].old)
-    //   } else {
-    //     changeBlockProperties(shared.history.list[shared.history.index].new)
-    //   }
-    // }
-    // if (mode === 'forward') {
-    //   if (shared.history.index === shared.history.list.length) shared.history.index--
-    //   changeBlockProperties(shared.history.list[shared.history.index].new)
-    // }
-    // focusManager.focusOn(shared.history.list[shared.history.index].type, shared.history.list[shared.history.index].id)
+    updateRuntoDoneBlocks()
+    createModificationsList()
+    svgBlocksQueueServer.updateData()
+    svgTelsConflict.update()
+    svgRightInfo.updateOverview()
+    // console.log(shared.data.copy.blocks);
+    // console.log(getBlocksData('server'))
   }
 
   function scheduleSuccessfullyUpdate () {
@@ -1535,98 +1558,41 @@ let mainSchedBlocksInspector = function (optIn) {
     // }
     return block
   }
-  // ---------------------------------------------------------------------------------------------------
-  // modify blocks
-  // ---------------------------------------------------------------------------------------------------
-  // function applyModification (id, modif) {
-  //   let old
-  //   switch (modif.prop) {
-  //     case 'startTime':
-  //       old = block.modified.data.startTime
-  //       block.modified.data.startTime = modif.new
-  //       block.modified.data.endTime = modif.new + block.modified.data.duration
-  //
-  //       if (block.original.data.startTime === modif.new) {
-  //         delete block.modified.data.modifications.userModifications[modif.prop]
-  //         return false
-  //       }
-  //       if (!block.modified.data.modifications.userModifications[modif.prop]) block.modified.data.modifications.userModifications[modif.prop] = []
-  //       block.modified.data.modifications.userModifications[modif.prop].push({new: modif.new, old: old})
-  //       break
-  //     case ('state'):
-  //       old = block.modified.data.exeState.state
-  //       block.modified.data.exeState.state = modif.new
-  //       if (block.original.data.exeState.state === modif.new) {
-  //         delete block.modified.data.modifications.userModifications[modif.prop]
-  //         return false
-  //       }
-  //
-  //       if (!block.modified.data.modifications.userModifications['state']) block.modified.data.modifications.userModifications['state'] = []
-  //       block.modified.data.modifications.userModifications['state'].push({new: modif.new, old: old})
-  //       break
-  //     case ('canRun'):
-  //       old = block.modified.data.exeState
-  //       block.modified.data.exeState = {state: 'cancel', canRun: modif.new}
-  //
-  //       if (block.original.data.exeState.canRun === modif.new) {
-  //         delete block.modified.data.modifications.userModifications[modif.prop]
-  //         return false
-  //       }
-  //       if (old.state !== 'cancel') {
-  //         if (!block.modified.data.modifications.userModifications['state']) block.modified.data.modifications.userModifications['state'] = []
-  //         block.modified.data.modifications.userModifications['state'].push({new: 'cancel', old: old.state})
-  //       }
-  //       if (!block.modified.data.modifications.userModifications[modif.prop]) block.modified.data.modifications.userModifications[modif.prop] = []
-  //       block.modified.data.modifications.userModifications['canRun'].push({new: modif.new, old: old.canRun})
-  //       break
-  //     default:
-  //   }
-  //   return true
-  // }
-  // function changeSchedBlocksProperties (from, schedId, modifs) {
-  //   for (let key in shared.data.copy[shared.data.current].modified.blocks) {
-  //     let group = shared.data.copy[shared.data.current].modified.blocks[key]
-  //     for (let i = group.length - 1; i > -1; i--) {
-  //       if (group[i].sbId === schedId) {
-  //         changeBlockProperties(from, group[i].obId, modifs)
-  //       }
-  //     }
-  //   }
-  // }
-  // function changeBlockProperties (from, blockId, modifs) {
-  //   let block = getBlockById(blockId)
-  //   // for (let key in shared.data.copy[shared.data.current].original.blocks) {
-  //   //   let group = shared.data.copy[shared.data.current].original.blocks[key]
-  //   //   for (let i = 0; i < group.length; i++) {
-  //   //     if (group[i].obId === blockId) {
-  //   //       group[i].modifications.modified = true
-  //   //     }
-  //   //   }
-  //   // }
-  //   // shared.data.copy[shared.data.current].original.blocks[block.original.key][block.original.index]
-  //   block.original.data.modifications.modified = true
-  //   block.optimized.data.modifications.modified = true
-  //   for (let modif in modifs) {
-  //     applyModification(block, modifs[modif])
-  //     if (modifs[modif].prop === 'state') {
-  //       shared.data.copy[shared.data.current].modified.blocks[block.modified.key].splice(block.modified.index, 1)
-  //       if (modifs[modif].new === 'cancel') {
-  //         shared.data.copy[shared.data.current].modified.blocks['done'].push(block.modified.data)
-  //       } else if (modifs[modif].new === 'wait') {
-  //         shared.data.copy[shared.data.current].modified.blocks['wait'].push(block.modified.data)
-  //       } else if (modifs[modif].new === 'run') {
-  //         shared.data.copy[shared.data.current].modified.blocks['run'].push(block.modified.data)
-  //       }
-  //     }
-  //   }
-  //   if (Object.keys(block.optimized.data.modifications.userModifications).length === 0) {
-  //     block.original.data.modifications.modified = false
-  //     block.optimized.data.modifications.modified = false
-  //   }
-  //
-  //   optimizer()
-  // }
+  function overrideProperties (from, to) {
+    for (let key in from) {
+      to[key] = from[key]
+    }
+  }
 
+  function createModificationsList () {
+    shared.data.copy.modifications = []
+    for (let key in shared.data.copy.blocks) {
+      for (let i = 0; i < shared.data.copy.blocks[key].length; i++) {
+        let block = shared.data.copy.blocks[key][i]
+        let sched = shared.data.copy.modifications.filter(d => d.id === block.sbId)
+        let old = getBlockById(getBlocksData('server'), block.obId).data
+        let diff = checkBlocksDifference(old, block)
+
+        if (sched.length === 0) {
+          if (diff.length !== 0) shared.data.copy.modifications.push({id: block.sbId, name: block.metaData.nSched, blocks: [block]})
+        } else {
+          let b = sched[0].blocks.filter(d => d.obId === block.obId)
+          if (b.length === 0) {
+            if (diff.length !== 0) sched[0].blocks.push(block)
+          } else {
+            if (diff.length !== 0) b = block
+            else {
+              sched[0].blocks.splice(sched[0].blocks.indexOf(b), 1)
+              if (sched[0].blocks.length === 0) {
+                shared.data.copy.modifications.splice(shared.data.copy.modifications.indexOf(sched[0]), 1)
+              }
+            }
+          }
+        }
+      }
+    }
+    console.log(shared.data.copy.modifications);
+  }
   function checkBlocksDifference (reference, changed) {
     let diff = []
     function diffTime () {
@@ -1693,38 +1659,21 @@ let mainSchedBlocksInspector = function (optIn) {
     diffTel()
     return diff
   }
-  function changeBlockProperties (block, nohistory) {
-    let sched = shared.data.copy.modifications.filter(d => d.id === block.sbId)
-    let old = getBlockById(getBlocksData('server'), block.obId).data
-    let diff = checkBlocksDifference(old, block)
-
-    if (sched.length === 0) {
-      if (diff.length !== 0) shared.data.copy.modifications.push({id: block.sbId, name: block.metaData.nSched, blocks: [block]})
-    } else {
-      let b = sched[0].blocks.filter(d => d.obId === block.obId)
-      if (b.length === 0) {
-        if (diff.length !== 0) sched[0].blocks.push(block)
-      } else {
-        if (diff.length !== 0) b = block
-        else {
-          sched[0].blocks.splice(sched[0].blocks.indexOf(b), 1)
-          if (sched[0].blocks.length === 0) {
-            shared.data.copy.modifications.splice(shared.data.copy.modifications.indexOf(sched[0]), 1)
-          }
-        }
-      }
-    }
+  let globalcounth = 0
+  function changeBlockProperties (block, nohistory, type) {
+    console.log(nohistory, type);
+    createModificationsList()
     if (!nohistory) {
-      if (shared.history.index === shared.history.list.length - 1) {
-        shared.history.list.push({old: deepCopy(old), new: deepCopy(block)})
-        shared.history.index = shared.history.list.length - 1
+      shared.history.list.splice(shared.history.index + 1, shared.history.list.length)
+      let last = shared.history.list[shared.history.index]
+      if (shared.history.index >= 0 && last.id === block.obId && last.type === type) {
+        shared.history.list[shared.history.index] = {data: deepCopy(getBlocksData('copy')), count: globalcounth, id: block.obId, type: type}
       } else {
-        shared.history.list.splice(shared.history.index, shared.history.list.length, {old: deepCopy(old), new: deepCopy(block)})
+        shared.history.list.push({data: deepCopy(getBlocksData('copy')), count: globalcounth, id: block.obId, type: type})
         shared.history.index = shared.history.list.length - 1
+        globalcounth++
       }
     }
-    console.log(diff);
-    console.log('modif', shared.data.copy.modifications);
     svgRightInfo.updateOverview()
   }
 
@@ -1786,7 +1735,7 @@ let mainSchedBlocksInspector = function (optIn) {
 
     focusManager.focusOn('block', newBlock.obId)
 
-    changeBlockProperties(newBlock)
+    changeBlockProperties(newBlock, false, 'newblock')
     updateView()
   }
   function updateBlockState (block, newState) {
@@ -2626,7 +2575,7 @@ let mainSchedBlocksInspector = function (optIn) {
             click: d => focusManager.focusOn('block', d.obId),
             dbclick: function (d) {
               d.exeState.state = 'cancel'
-              changeBlockProperties(d)
+              changeBlockProperties(d, false, 'state')
             },
             mouseover: focusManager.over,
             mouseout: focusManager.out,
@@ -2635,8 +2584,7 @@ let mainSchedBlocksInspector = function (optIn) {
               tick: svgFocusOverlay.dragTick,
               end: function (d) {
                 let res = svgFocusOverlay.dragEnd(d)
-                console.log(res);
-                if (res) changeBlockProperties('', res.id, res.modif)
+                if (res) changeBlockProperties(d, false, 'startTime')
               }
             }
           },
@@ -4552,13 +4500,15 @@ let mainSchedBlocksInspector = function (optIn) {
       reserved.drag.mode = {}
       reserved.drag.mode.current = 'general'
       reserved.drag.mode.previous = 'general'
-      reserved.drag.atLeastOneTick = true
+      reserved.drag.atLeastOneTick = false
       reserved.drag.locked = true
     }
     this.dragStart = dragStart
     function dragTick (d) {
       if (!canDrag(d)) return
       if (d.exeState.state === 'run') return
+
+      reserved.drag.atLeastOneTick = true
 
       if (d3.event.dx < 0 &&
         Math.floor(reserved.drag.timeScale.invert(reserved.drag.position.left)) < Number(shared.data.server.timeOfNight.now)) return
@@ -4628,12 +4578,13 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     this.dragTick = dragTick
     function dragEnd (d) {
+      reserved.drag.locked = false
+      if (!reserved.drag.atLeastOneTick) return
       balanceBlocks(d)
       svgTelsConflict.drawTelsAvailabilityCurve(d)
       // listAllConflicts()
       // linkConflicts()
-      reserved.drag.locked = false
-      changeBlockProperties(d)
+      changeBlockProperties(d, false, 'startTime')
       // if (!reserved.drag.atLeastOneTick) return
       // console.log('dragEnd')
       // d3.event.sourceEvent.stopPropagation()
@@ -4651,7 +4602,6 @@ let mainSchedBlocksInspector = function (optIn) {
       // //   modif.push({prop: 'state', old: d.exeState.state, new: 'cancel'})
       // // }
       //
-      // // changeBlockProperties('', d.obId, modif)
       // // blockQueue.saveModificationAndUpdateBlock(newBlock, modif)
       // // if (isGeneratingTelsConflict(newBlock)) {
       // //   com.data.modified.conflict.push(newBlock)
@@ -5060,7 +5010,6 @@ let mainSchedBlocksInspector = function (optIn) {
         // .style('pointer-events', 'none')
         .on('click', function () {
           if (shared.history.index === -1) return
-          shared.history.index--
           navigateHistory('backward')
         })
         .on('mouseover', function (d) {
@@ -5081,7 +5030,6 @@ let mainSchedBlocksInspector = function (optIn) {
         // .style('pointer-events', 'none')
         .on('click', function () {
           if (shared.history.index === shared.history.list.length - 1) return
-          shared.history.index++
           navigateHistory('forward')
         })
         .on('mouseover', function (d) {
@@ -6382,7 +6330,11 @@ let mainSchedBlocksInspector = function (optIn) {
             .attr('class', 'sched')
           enter.each(function (d, i) {
             let g = d3.select(this)
-            g.append('path').attr('id', 'backpath')
+            g.append('path')
+              .attr('id', 'backpath')
+              .attr('fill', 'none')
+              .attr('stroke', colorPalette.darker.background)
+              .attr('stroke-width', 2)
             g.append('g').attr('id', 'blocks')
             let header = g.append('g').attr('id', 'header')
 
@@ -6424,7 +6376,6 @@ let mainSchedBlocksInspector = function (optIn) {
                 d3.select(this).attr('fill', colorPalette.dark.background)
               })
               .attr('transform', 'translate(' + ((labels[0].w - dimPoly) * 0.5) + ',' + ((line - dimPoly) * 0.5) + ')')
-            console.log(d);
             header.append('text')
               .text('S' + d.blocks[0].metaData.nSched)
               .style('fill', colorPalette.dark.text)
@@ -6451,9 +6402,6 @@ let mainSchedBlocksInspector = function (optIn) {
               .curve(d3.curveLinear)
             g.select('path#backpath')
               .attr('d', lineGenerator(points))
-              .attr('fill', 'none')
-              .attr('stroke', colorPalette.darker.background)
-              .attr('stroke-width', 4)
             // innerOffset += line
             blockIndex = 1
             blockCore(d.blocks, g.select('g#header'), 0)
@@ -6815,7 +6763,11 @@ let mainSchedBlocksInspector = function (optIn) {
                 .attr('height', function () {
                   return marg + newH + remH
                 })
-                .attr('fill', 'none')
+                .attr('fill', function () {
+                  if (d.large.new.length === 0) return colorPalette.darker.background
+                  else if (d.large.rem.length === 0) return colorPalette.darker.background
+                  else return 'none'
+                })
                 .attr('stroke', colorPalette.medium.stroke)
                 .attr('stroke-dasharray', function () {
                   if (d.large.new.length === 0) return [54 + newH + marg + remH + 20, 14, 20 + remH + marg + newH]
@@ -6914,7 +6866,11 @@ let mainSchedBlocksInspector = function (optIn) {
                 .attr('height', function () {
                   return marg + newH + remH
                 })
-                .attr('fill', 'none')
+                .attr('fill', function () {
+                  if (d.medium.new.length === 0) return colorPalette.darker.background
+                  else if (d.medium.rem.length === 0) return colorPalette.darker.background
+                  else return 'none'
+                })
                 .attr('stroke', colorPalette.medium.stroke)
                 .attr('stroke-dasharray', function () {
                   if (d.medium.new.length === 0) return [74 + newH + marg + remH + 30, 14, 30 + remH + marg + newH]
@@ -7011,7 +6967,11 @@ let mainSchedBlocksInspector = function (optIn) {
                 .attr('height', function () {
                   return marg + newH + remH
                 })
-                .attr('fill', 'none')
+                .attr('fill', function () {
+                  if (d.small.new.length === 0) return colorPalette.darker.background
+                  else if (d.small.rem.length === 0) return colorPalette.darker.background
+                  else return 'none'
+                })
                 .attr('stroke', colorPalette.medium.stroke)
                 .attr('stroke-dasharray', function () {
                   if (d.small.new.length === 0) return [94 + newH + marg + remH + 40, 14, 40 + remH + marg + newH]

@@ -391,11 +391,11 @@ window.ObsblockForm = function (optIn) {
 
     com.schedule.events.click()
     com.events.conflict(com.data.block)
-    com.events.modification(com.data.block)
+    com.events.modification(com.data.block, false, (type === 'startTime' ? 'startTime' : 'duration'))
   }
   function changeState (newState) {
     com.schedule.events.change(com.data.block, newState)
-    com.events.modification(com.data.block)
+    com.events.modification(com.data.block, false, 'state')
     initSchedulingObservingBlocksTree()
   }
   function initTimeInformation () {
@@ -1076,7 +1076,7 @@ window.ObsblockForm = function (optIn) {
             updatePointingInformation()
             reassignTelescope(com.data.block)
             updateTelescopeInformation()
-            com.events.modification(com.data.block)
+            com.events.modification(com.data.block, false, 'pointings')
             g.remove()
           })
           .on('mouseover', function (d) {
@@ -2214,7 +2214,7 @@ window.ObsblockForm = function (optIn) {
         updateInput()
         // reassignTelescope()
         updateTelescopeInformation()
-        com.events.modification(com.data.block)
+        com.events.modification(com.data.block, false, 'switchTelescope')
       })
       .on('mouseover', function (d) {
         d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))
@@ -2805,7 +2805,7 @@ window.ObsblockForm = function (optIn) {
     updateTotals()
     updateTelescopeInformation()
     com.events.conflict(com.data.block)
-    com.events.modification(com.data.block)
+    com.events.modification(com.data.block, false, 'telescopes' + type)
     // reassignTelescope()
   }
   function addTelescope (t, elem) {
@@ -3069,7 +3069,7 @@ window.ObsblockForm = function (optIn) {
           }
         },
         other: {
-          delTel: (d) => { removeTel(d); com.events.modification(com.data.block) },
+          delTel: (d) => { removeTel(d); com.events.modification(com.data.block, false, 'deleteTelescope') },
           switchTel: (elem, t) => { switchTel(elem, t) }
         }
       },
@@ -3294,7 +3294,7 @@ window.ObsblockForm = function (optIn) {
         .on('click', function () {
           reassignTelescope(com.data.block)
           updateTelescopeInformation()
-          com.events.modification(com.data.block)
+          com.events.modification(com.data.block, false, 'changeTelescopesLayout')
         })
         .on('mouseover', function (d) {
           d3.select(this).attr('fill', d3.color(colorPalette.darker.background).darker(0.9))

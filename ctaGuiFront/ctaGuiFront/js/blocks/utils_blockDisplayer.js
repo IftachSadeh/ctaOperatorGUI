@@ -1779,8 +1779,10 @@ window.BlockDisplayer = function (optIn) {
       if (com.blockQueue2.schedBlocks.layout) {
         scheds.forEach(function (d) {
           let shcedLayout = com.blockQueue2.schedBlocks.layout.filter(dd => dd.id === d.id)[0]
+          // com.blockQueue2.schedBlocks.layout.forEach(dd => console.log(shcedLayout, (dd.id === d.id), dd.id))
           d.nLine = shcedLayout.nLine
           nLine += shcedLayout.nLine
+          // console.log(d.blocks.length, shcedLayout.blocks.length);
           d.blocks.forEach(function (dd) {
             dd.nLine = shcedLayout.blocks.filter(ddd => dd.obId === ddd.obId)[0].nLine
           })
