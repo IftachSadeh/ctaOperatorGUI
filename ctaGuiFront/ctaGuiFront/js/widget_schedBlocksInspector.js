@@ -445,6 +445,7 @@ let mainSchedBlocksInspector = function (optIn) {
         svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
 
         svg.back.append('rect')
+          .attr('id', 'pushonServer')
           .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.25 - 24)
           .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 24)
           .attr('width', 48)
@@ -464,7 +465,7 @@ let mainSchedBlocksInspector = function (optIn) {
           })
         svg.back.append('image')
           .attr('xlink:href', '/static/icons/server-from-client.svg')
-          .attr('x', lenD.w[0] * 0.25 + lenD.w[0] * 0.025 - 15)
+          .attr('x', lenD.w[0] * 0.25 + lenD.w[0] * 0.025 - 18)
           .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 15)
           .attr('width', 30)
           .attr('height', 30)
@@ -506,15 +507,6 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('fill', '#43A047')
           .attr('stroke', colorTheme.bright.stroke)
           .attr('stroke-width', 0.1)
-          .on('click', function () {
-
-          })
-          .on('mouseover', function (d) {
-            d3.select(this).attr('fill', colorTheme.darkest.background)
-          })
-          .on('mouseout', function (d) {
-            d3.select(this).attr('fill', colorTheme.bright.background)
-          })
         svg.back.append('text')
           .text('Modifications:')
           .attr('stroke', colorTheme.bright.background)
@@ -529,6 +521,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .style('user-select', 'none')
 
         svg.back.append('rect')
+          .attr('id', 'conflictlighton')
           .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.25 - 40)
           .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 + 5)
           .attr('width', 10)
@@ -536,15 +529,6 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('fill', '#43A047')
           .attr('stroke', colorTheme.bright.stroke)
           .attr('stroke-width', 0.1)
-          .on('click', function () {
-
-          })
-          .on('mouseover', function (d) {
-            d3.select(this).attr('fill', colorTheme.darkest.background)
-          })
-          .on('mouseout', function (d) {
-            d3.select(this).attr('fill', colorTheme.bright.background)
-          })
         svg.back.append('text')
           .text('Conflicts:')
           .attr('stroke', colorTheme.bright.background)
@@ -963,6 +947,31 @@ let mainSchedBlocksInspector = function (optIn) {
   this.updateData = updateData
   runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
+  function updatePushonServer () {
+    if (shared.data.copy.conflicts.length > 0) {
+      svg.back.select('rect#conflictlighton')
+        .attr('fill', colorPalette.blocks.fail.background)
+      svg.back.select('rect#pushonServer')
+        .attr('fill', colorTheme.darkest.stroke)
+        .on('click', () => {})
+        .on('mouseover', () => {})
+        .on('mouseout', () => {})
+    } else {
+      svg.back.select('rect#conflictlighton')
+        .attr('fill', '#43A047')
+      svg.back.select('rect#pushonServer')
+        .attr('fill', colorTheme.bright.background)
+        .on('click', function () {
+          pushNewSchedule()
+        })
+        .on('mouseover', function (d) {
+          d3.select(this).attr('fill', colorTheme.darkest.background)
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).attr('fill', colorTheme.bright.background)
+        })
+    }
+  }
   function updateRuntoDoneBlocks () {
     let change = false
     for (let i = shared.data.copy.blocks['run'].length - 1; i >= 0; i--) {
@@ -3792,7 +3801,6 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('height', reserved.box.h)
       reserved.clipping.clipBody = reserved.clipping.g.append('g')
         .attr('clip-path', 'url(#clip)')
-      reserved.g = reserved.clipping.clipBody.append('g')
     }
     function initData () {
       reserved.box = {
@@ -3811,8 +3819,7 @@ let mainSchedBlocksInspector = function (optIn) {
       //   .attr('text-anchor', 'middle')
       //   .attr('transform', 'translate(-5,' + (reserved.box.h * 0.5) + ') rotate(270)')
 
-      reserved.gTargets = reserved.g
-      reserved.clipBody = reserved.gTargets
+      reserved.gTargets = reserved.clipping.clipBody.append('g')
 
       let range = reserved.box.h * 0.33333
 
@@ -3838,7 +3845,7 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (-10) + ',' + (range * 2.5 + 5) + ')')
 
-      reserved.clipBody.append('rect')
+      reserved.gTargets.append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', reserved.box.w)
@@ -3847,7 +3854,7 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('fill-opacity', 0.55)
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.5)
-      reserved.clipBody.append('rect')
+      reserved.gTargets.append('rect')
         .attr('x', 0)
         .attr('y', range * 1)
         .attr('width', reserved.box.w)
@@ -3856,7 +3863,7 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('fill-opacity', 0.55)
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.5)
-      reserved.clipBody.append('rect')
+      reserved.gTargets.append('rect')
         .attr('x', 0)
         .attr('y', range * 2)
         .attr('width', reserved.box.w)
@@ -3887,6 +3894,51 @@ let mainSchedBlocksInspector = function (optIn) {
     this.focus = focus
 
     function drawTelsAvailabilityCurve (block) {
+      function mouseHover (g, d) {
+        g.style('opacity', 0.3)
+        let dim = {
+          w: 40,
+          h: 40,
+          marg: 1
+        }
+        let middleoffset = scaleX(d.end) + scaleX(d.start)
+        let finaloffset = ((middleoffset - ((dim.w + dim.marg) * d.blocks.length) + dim.marg) * 0.5)
+        if (finaloffset < 0) finaloffset = 0
+        if ((finaloffset + ((dim.w + dim.marg) * d.blocks.length) - dim.marg) > reserved.box.w) finaloffset = reserved.box.w - (((dim.w + dim.marg) * d.blocks.length) - dim.marg)
+        let inngerg = reserved.clipping.g.append('g')
+          .attr('id', 'innerg' + d.id)
+          .attr('transform', 'translate(' + finaloffset + ',0)')
+        for (let i = 0; i < d.blocks.length; i++) {
+          let b = getBlockById(getBlocksData(), d.blocks[i]).data
+          let bcolor = blockStyle(b)
+          inngerg.append('rect')
+            .attr('x', i * (dim.w + dim.marg))
+            .attr('y', -dim.h)
+            .attr('width', dim.w)
+            .attr('height', dim.h)
+            .attr('fill', bcolor.color.background)
+            .attr('stroke', bcolor.color.stroke)
+            .attr('stroke-width', 0.2)
+          inngerg.append('text')
+            .text(function () {
+              return b.metaData.blockName
+            })
+            .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
+            .attr('y', -dim.h + 11) // - Number(reserved.drag.oldRect.attr('height')))
+            .style('font-weight', '')
+            .style('fill', '#000000')
+            .style('stroke-width', 0.3)
+            .attr('vector-effect', 'non-scaling-stroke')
+            .style('pointer-events', 'none')
+            .style('stroke', 'none')
+            .attr('text-anchor', 'middle')
+            .style('font-size', '11px')
+        }
+      }
+      function mouseOut (g, d) {
+        g.style('opacity', 0)
+        reserved.clipping.g.select('g#innerg' + d.id).remove()
+      }
       let curve = computeTelsCurve(block)
       conflictSquare = []
 
@@ -3906,16 +3958,19 @@ let mainSchedBlocksInspector = function (optIn) {
       let scaleYLarge = d3.scaleLinear()
         .range([0, range])
         .domain([0, 4])
-      let allg = reserved.clipBody.selectAll('g.telsCurve')
+      let allg = reserved.gTargets.selectAll('g.telsCurve')
         .data(curve, function (d, i) {
           return d.id
         })
       let gEnter = allg.enter()
         .append('g')
+        .attr('id', d => d.id)
         .attr('class', 'telsCurve')
+      gEnter.append('rect').attr('class', 'hover')
       gEnter.append('rect').attr('class', 'small')
       gEnter.append('rect').attr('class', 'medium')
       gEnter.append('rect').attr('class', 'high')
+
       let gMerge = allg.merge(gEnter)
 
       gMerge.select('rect.small')
@@ -3949,8 +4004,12 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
-        .on('mouseover', function (d) {})
-        .on('mouseout', function (d) {})
+        .on('mouseover', function (d) {
+          mouseHover(gMerge.select('g#' + d.id + ' rect.hover'), d)
+        })
+        .on('mouseout', function (d) {
+          mouseOut(gMerge.select('g#' + d.id + ' rect.hover'), d)
+        })
         .each(function (d) {
           if (d.smallTels < scaleYSmall.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
         })
@@ -3985,8 +4044,12 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
-        .on('mouseover', function (d) {})
-        .on('mouseout', function (d) {})
+        .on('mouseover', function (d) {
+          mouseHover(gMerge.select('g#' + d.id + ' rect.hover'), d)
+        })
+        .on('mouseout', function (d) {
+          mouseOut(gMerge.select('g#' + d.id + ' rect.hover'), d)
+        })
         .each(function (d) {
           if (d.mediumTels < scaleYMedium.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
         })
@@ -4021,10 +4084,27 @@ let mainSchedBlocksInspector = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
-        .on('mouseover', function (d) {})
-        .on('mouseout', function (d) {})
+        .on('mouseover', function (d) {
+          mouseHover(gMerge.select('g#' + d.id + ' rect.hover'), d)
+        })
+        .on('mouseout', function (d) {
+          mouseOut(gMerge.select('g#' + d.id + ' rect.hover'), d)
+        })
         .each(function (d) {
           if (d.largeTels < scaleYLarge.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
+        })
+      gMerge.select('rect.hover')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', 0)
+        .attr('fill', colorPalette.darker.stroke)
+        .style('opacity', 0)
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', range * 3)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(this), d)
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(this), d)
         })
 
       allg
@@ -4910,6 +4990,8 @@ let mainSchedBlocksInspector = function (optIn) {
     shared.data.copy.conflicts = conflicts
     svgRightInfo.updateOverview()
     linkConflicts()
+
+    updatePushonServer()
   }
 
   let SvgRightInfo = function () {
@@ -7366,7 +7448,8 @@ let mainSchedBlocksInspector = function (optIn) {
             svgTelsConflict.drawTelsAvailabilityCurve(d)
             // listAllConflicts()
             // linkConflicts()
-          }
+          },
+          modification: changeBlockProperties
         }
       })
       reserved.schedblockForm.init()

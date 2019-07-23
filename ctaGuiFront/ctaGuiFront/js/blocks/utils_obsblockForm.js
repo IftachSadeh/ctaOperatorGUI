@@ -161,6 +161,7 @@ window.ObsblockForm = function (optIn) {
       .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
     com.tree.g = g
     g.append('rect')
+      .attr('id', data.obId)
       .attr('x', box.h * 0.3)
       .attr('y', box.h * 0.4)
       .attr('width', box.h * 0.8)
@@ -266,6 +267,7 @@ window.ObsblockForm = function (optIn) {
     for (let i = 0; i < schedB.blocks.length; i++) {
       let palette = blockStyle(schedB.blocks[i])
       g.append('rect')
+        .attr('id', schedB.blocks[i].obId)
         .attr('x', 2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * i))
         .attr('y', box.h * 0.9 - dimPoly * 0.7)
         .attr('width', dimPoly * 0.8)
@@ -323,6 +325,15 @@ window.ObsblockForm = function (optIn) {
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (2 + (box.w * 0.5 - ((schedB.blocks.length + (com.schedule.editabled ? 1 : 0)) * dimPoly) * 0.5) + (dimPoly * schedB.blocks.length) + (dimPoly * 0.4)) + ',' + (box.h * 0.9 - dimPoly * 0.3 + txtSize * 0.3) + ')')
         .style('pointer-events', 'none')
+    }
+  }
+  function updateSchedulingObservingBlocksTree () {
+    let schedB = com.data.schedB
+
+    for (let i = 0; i < schedB.blocks.length; i++) {
+      let palette = blockStyle(schedB.blocks[i])
+      com.tree.g.selectAll('rect#' + schedB.blocks[i].obId)
+        .attr('fill', palette.color.background)
     }
   }
 
@@ -396,7 +407,7 @@ window.ObsblockForm = function (optIn) {
   function changeState (newState) {
     com.schedule.events.change(com.data.block, newState)
     com.events.modification(com.data.block, false, 'state')
-    initSchedulingObservingBlocksTree()
+    updateSchedulingObservingBlocksTree()
   }
   function initTimeInformation () {
     let data = com.data.block
