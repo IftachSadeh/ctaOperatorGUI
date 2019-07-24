@@ -3894,23 +3894,42 @@ let mainSchedBlocksInspector = function (optIn) {
     this.focus = focus
 
     function drawTelsAvailabilityCurve (block) {
-      function mouseHover (g, d) {
-        g.style('opacity', 0.3)
+      function mouseHover (g, d, type) {
+        // let nb = {x: Number(g.select('rect#' + type + 'min').attr('x')),
+        //   y: Number(g.select('rect#' + type + 'min').attr('y')),
+        //   w: Number(g.select('rect#' + type + 'min').attr('width')),
+        //   h: Number(g.select('rect#' + type + 'min').attr('height'))
+        // }
+        let color = d3.color(g.select('rect#' + type + 'min').attr('fill')).darker(1).darker(1)
+        g.select('rect#' + type + 'min')
+          .attr('fill', color)
+          // .attr('x', nb.x + 2)
+          // .attr('y', nb.y + 2)
+          // .attr('width', nb.w - 4)
+          // .attr('height', nb.h - 4)
+          // .attr('stroke', '#000000')
+          // .attr('stroke-width', 4)
+
+        let coloru = d3.color(g.select('rect#' + type + 'used').attr('fill')).darker(1).darker(1)
+        g.select('rect#' + type + 'used')
+          .attr('fill', coloru)
+
         let dim = {
-          w: 40,
-          h: 40,
+          w: 30,
+          h: 30,
           marg: 1
         }
         let middleoffset = scaleX(d.end) + scaleX(d.start)
         let finaloffset = ((middleoffset - ((dim.w + dim.marg) * d.blocks.length) + dim.marg) * 0.5)
-        if (finaloffset < 0) finaloffset = 0
-        if ((finaloffset + ((dim.w + dim.marg) * d.blocks.length) - dim.marg) > reserved.box.w) finaloffset = reserved.box.w - (((dim.w + dim.marg) * d.blocks.length) - dim.marg)
+        if (finaloffset < 0) finaloffset = 10
+        if ((finaloffset + ((dim.w + dim.marg) * d.blocks.length) - dim.marg) > reserved.box.w) finaloffset = -10 + reserved.box.w - (((dim.w + dim.marg) * d.blocks.length) - dim.marg)
         let inngerg = reserved.clipping.g.append('g')
           .attr('id', 'innerg' + d.id)
           .attr('transform', 'translate(' + finaloffset + ',0)')
         for (let i = 0; i < d.blocks.length; i++) {
           let b = getBlockById(getBlocksData(), d.blocks[i]).data
           let bcolor = blockStyle(b)
+          let txtSize = 8
           inngerg.append('rect')
             .attr('x', i * (dim.w + dim.marg))
             .attr('y', -dim.h)
@@ -3924,7 +3943,7 @@ let mainSchedBlocksInspector = function (optIn) {
               return b.metaData.blockName
             })
             .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
-            .attr('y', -dim.h + 11) // - Number(reserved.drag.oldRect.attr('height')))
+            .attr('y', -dim.h + txtSize * 1.2) // - Number(reserved.drag.oldRect.attr('height')))
             .style('font-weight', '')
             .style('fill', '#000000')
             .style('stroke-width', 0.3)
@@ -3932,11 +3951,58 @@ let mainSchedBlocksInspector = function (optIn) {
             .style('pointer-events', 'none')
             .style('stroke', 'none')
             .attr('text-anchor', 'middle')
-            .style('font-size', '11px')
+            .style('font-size', txtSize + 'px')
+          inngerg.append('text')
+            .text(function () {
+              return b.telescopes[type].ids.length + '/' + b.telescopes[type].min
+            })
+            .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
+            .attr('y', -dim.h + txtSize * 2.8) // - Number(reserved.drag.oldRect.attr('height')))
+            .style('font-weight', '')
+            .style('fill', '#000000')
+            .style('stroke-width', 0.3)
+            .attr('vector-effect', 'non-scaling-stroke')
+            .style('pointer-events', 'none')
+            .style('stroke', 'none')
+            .attr('text-anchor', 'middle')
+            .style('font-size', txtSize + 'px')
+          // inngerg.append('text')
+          //   .text(function () {
+          //     return b.telescopes.medium.ids.length + '/' + b.telescopes.medium.min
+          //   })
+          //   .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
+          //   .attr('y', -dim.h + txtSize * 3.6) // - Number(reserved.drag.oldRect.attr('height')))
+          //   .style('font-weight', '')
+          //   .style('fill', '#000000')
+          //   .style('stroke-width', 0.3)
+          //   .attr('vector-effect', 'non-scaling-stroke')
+          //   .style('pointer-events', 'none')
+          //   .style('stroke', 'none')
+          //   .attr('text-anchor', 'middle')
+          //   .style('font-size', txtSize + 'px')
+          // inngerg.append('text')
+          //   .text(function () {
+          //     return b.telescopes.small.ids.length + '/' + b.telescopes.small.min
+          //   })
+          //   .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
+          //   .attr('y', -dim.h + txtSize * 4.8) // - Number(reserved.drag.oldRect.attr('height')))
+          //   .style('font-weight', '')
+          //   .style('fill', '#000000')
+          //   .style('stroke-width', 0.3)
+          //   .attr('vector-effect', 'non-scaling-stroke')
+          //   .style('pointer-events', 'none')
+          //   .style('stroke', 'none')
+          //   .attr('text-anchor', 'middle')
+          //   .style('font-size', txtSize + 'px')
         }
       }
-      function mouseOut (g, d) {
-        g.style('opacity', 0)
+      function mouseOut (g, d, type) {
+        let color = d3.color(g.select('rect#' + type + 'min').attr('fill')).brighter(1).brighter(1)
+        g.select('rect#' + type + 'min')
+          .attr('fill', color)
+        let coloru = d3.color(g.select('rect#' + type + 'used').attr('fill')).brighter(1).brighter(1)
+        g.select('rect#' + type + 'used')
+          .attr('fill', coloru)
         reserved.clipping.g.select('g#innerg' + d.id).remove()
       }
       let curve = computeTelsCurve(block)
@@ -3966,32 +4032,51 @@ let mainSchedBlocksInspector = function (optIn) {
         .append('g')
         .attr('id', d => d.id)
         .attr('class', 'telsCurve')
-      gEnter.append('rect').attr('class', 'hover')
-      gEnter.append('rect').attr('class', 'small')
-      gEnter.append('rect').attr('class', 'medium')
-      gEnter.append('rect').attr('class', 'high')
+      // gEnter.append('rect').attr('class', 'hover')
+
+      // gEnter.append('rect').attr('id', 'hoversmall')
+      gEnter.append('rect').attr('id', 'smallused')
+      gEnter.append('rect').attr('id', 'smallmin')
+
+      // gEnter.append('rect').attr('id', 'hovermedium')
+      gEnter.append('rect').attr('id', 'mediumused')
+      gEnter.append('rect').attr('id', 'mediummin')
+
+      // gEnter.append('rect').attr('id', 'hoverlarge')
+      gEnter.append('rect').attr('id', 'largeused')
+      gEnter.append('rect').attr('id', 'largemin')
 
       let gMerge = allg.merge(gEnter)
 
-      gMerge.select('rect.small')
+      gMerge.select('rect#hoversmall')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', range * 2)
+        .attr('fill', colorPalette.darker.stroke)
+        .style('opacity', 0)
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', range)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(this), d, 'small')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(this), d, 'small')
+        })
+      gMerge.select('rect#smallused')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYSmall(d.smallTels))
-          if (d.smallTels >= scaleYSmall.domain()[1]) y = range
-          if (d.smallTels <= scaleYSmall.domain()[0]) y = 0
+          let y = Math.abs(scaleYSmall(d.smallTels.used))
+          if (d.smallTels.used >= scaleYSmall.domain()[1]) y = range
+          if (d.smallTels.used <= scaleYSmall.domain()[0]) y = 0
           return range * 2 + y
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('fill', function (d, i) {
-          if (d.smallTels < scaleYSmall.domain()[0]) {
-            return '#FF5722'
-          }
           return '#43A047'
         })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYSmall(d.smallTels))
-          if (d.smallTels >= scaleYSmall.domain()[1]) height = 0
-          if (d.smallTels <= scaleYSmall.domain()[0]) height = range
+          let height = range - Math.abs(scaleYSmall(d.smallTels.used))
+          if (d.smallTels.used >= scaleYSmall.domain()[1]) height = 0
+          if (d.smallTels.used <= scaleYSmall.domain()[0]) height = range
           return height
         })
         .attr('stroke', function (d) {
@@ -4005,33 +4090,81 @@ let mainSchedBlocksInspector = function (optIn) {
         })
         .attr('fill-opacity', 0.6)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id + ' rect.hover'), d)
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'small')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id + ' rect.hover'), d)
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'small')
         })
-        .each(function (d) {
-          if (d.smallTels < scaleYSmall.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
-        })
-      gMerge.select('rect.medium')
+      gMerge.select('rect#smallmin')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYMedium(d.mediumTels))
-          if (d.mediumTels >= scaleYMedium.domain()[1]) y = range
-          if (d.mediumTels <= scaleYMedium.domain()[0]) y = 0
+          let y = Math.abs(scaleYSmall(d.smallTels.min))
+          if (d.smallTels.min >= scaleYSmall.domain()[1]) y = range
+          if (d.smallTels.min <= scaleYSmall.domain()[0]) y = 0
+          return range * 2 + y
+        })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('fill', function (d, i) {
+          if (d.smallTels.min < scaleYSmall.domain()[0] || d.smallTels.used > d.smallTels.min) {
+            return '#FF5722'
+          }
+          return '#444444'
+        })
+        .attr('height', function (d) {
+          let height = range - Math.abs(scaleYSmall(d.smallTels.min))
+          if (d.smallTels.min >= scaleYSmall.domain()[1]) height = 0
+          if (d.smallTels.min <= scaleYSmall.domain()[0]) height = range
+          return height
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'small')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'small')
+        })
+        .each(function (d) {
+          if (d.smallTels.min < scaleYSmall.domain()[0] || d.smallTels.used > d.smallTels.min) conflictSquare.push({d3: d3.select(this), d: d})
+        })
+
+      gMerge.select('rect#hovermedium')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', range)
+        .attr('fill', colorPalette.darker.stroke)
+        .style('opacity', 0)
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', range)
+        .on('mouseover', function (d) {
+          mouseHover(gMerge.select('g#' + d.id), d, 'medium')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(gMerge.select('g#' + d.id), d, 'medium')
+        })
+      gMerge.select('rect#mediumused')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) {
+          let y = Math.abs(scaleYMedium(d.mediumTels.used))
+          if (d.mediumTels.used >= scaleYMedium.domain()[1]) y = range
+          if (d.mediumTels.used <= scaleYMedium.domain()[0]) y = 0
           return range + y
         })
         .attr('fill', function (d, i) {
-          if (d.mediumTels < scaleYMedium.domain()[0]) {
-            return '#FF5722'
-          }
           return '#43A047'
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYMedium(d.mediumTels))
-          if (d.mediumTels >= scaleYMedium.domain()[1]) height = 0
-          if (d.mediumTels <= scaleYMedium.domain()[0]) height = range
+          let height = range - Math.abs(scaleYMedium(d.mediumTels.used))
+          if (d.mediumTels.used >= scaleYMedium.domain()[1]) height = 0
+          if (d.mediumTels.used <= scaleYMedium.domain()[0]) height = range
           return height
         })
         .attr('stroke', function (d) {
@@ -4045,33 +4178,30 @@ let mainSchedBlocksInspector = function (optIn) {
         })
         .attr('fill-opacity', 0.6)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id + ' rect.hover'), d)
+          mouseHover(gMerge.select('g#' + d.id), d, 'medium')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id + ' rect.hover'), d)
+          mouseOut(gMerge.select('g#' + d.id), d, 'medium')
         })
-        .each(function (d) {
-          if (d.mediumTels < scaleYMedium.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
-        })
-      gMerge.select('rect.high')
+      gMerge.select('rect#mediummin')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYLarge(d.largeTels))
-          if (d.largeTels >= scaleYLarge.domain()[1]) y = range
-          if (d.largeTels <= scaleYLarge.domain()[0]) y = 0
-          return range * 0 + y
+          let y = Math.abs(scaleYMedium(d.mediumTels.min))
+          if (d.mediumTels.min >= scaleYMedium.domain()[1]) y = range
+          if (d.mediumTels.min <= scaleYMedium.domain()[0]) y = 0
+          return range + y
         })
         .attr('fill', function (d, i) {
-          if (d.largeTels < scaleYLarge.domain()[0]) {
+          if (d.mediumTels.min < scaleYMedium.domain()[0] || d.mediumTels.used > d.mediumTels.min) {
             return '#FF5722'
           }
-          return '#43A047'
+          return '#444444'
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYLarge(d.largeTels))
-          if (d.largeTels >= scaleYLarge.domain()[1]) height = 0
-          if (d.largeTels <= scaleYLarge.domain()[0]) height = range
+          let height = range - Math.abs(scaleYMedium(d.mediumTels.min))
+          if (d.mediumTels.min >= scaleYMedium.domain()[1]) height = 0
+          if (d.mediumTels.min <= scaleYMedium.domain()[0]) height = range
           return height
         })
         .attr('stroke', function (d) {
@@ -4085,26 +4215,101 @@ let mainSchedBlocksInspector = function (optIn) {
         })
         .attr('fill-opacity', 0.6)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id + ' rect.hover'), d)
+          mouseHover(gMerge.select('g#' + d.id), d, 'medium')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id + ' rect.hover'), d)
+          mouseOut(gMerge.select('g#' + d.id), d, 'medium')
         })
         .each(function (d) {
-          if (d.largeTels < scaleYLarge.domain()[0]) conflictSquare.push({d3: d3.select(this), d: d})
+          if (d.mediumTels.min < scaleYMedium.domain()[0] || d.mediumTels.used > d.mediumTels.min) conflictSquare.push({d3: d3.select(this), d: d})
         })
-      gMerge.select('rect.hover')
+
+      gMerge.select('rect#hoverlarge')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', 0)
         .attr('fill', colorPalette.darker.stroke)
         .style('opacity', 0)
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
-        .attr('height', range * 3)
+        .attr('height', range)
         .on('mouseover', function (d) {
-          mouseHover(d3.select(this), d)
+          mouseHover(gMerge.select('g#' + d.id), d, 'large')
         })
         .on('mouseout', function (d) {
-          mouseOut(d3.select(this), d)
+          mouseOut(gMerge.select('g#' + d.id), d, 'large')
+        })
+      gMerge.select('rect#largeused')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) {
+          let y = Math.abs(scaleYLarge(d.largeTels.used))
+          if (d.largeTels.used >= scaleYLarge.domain()[1]) y = range
+          if (d.largeTels.used <= scaleYLarge.domain()[0]) y = 0
+          return range * 0 + y
+        })
+        .attr('fill', function (d, i) {
+          return '#43A047'
+        })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', function (d) {
+          let height = range - Math.abs(scaleYLarge(d.largeTels.used))
+          if (d.largeTels.used >= scaleYLarge.domain()[1]) height = 0
+          if (d.largeTels.used <= scaleYLarge.domain()[0]) height = range
+          return height
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(gMerge.select('g#' + d.id), d, 'large')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(gMerge.select('g#' + d.id), d, 'large')
+        })
+      gMerge.select('rect#largemin')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) {
+          let y = Math.abs(scaleYLarge(d.largeTels.min))
+          if (d.largeTels.min >= scaleYLarge.domain()[1]) y = range
+          if (d.largeTels.min <= scaleYLarge.domain()[0]) y = 0
+          return range * 0 + y
+        })
+        .attr('fill', function (d, i) {
+          if (d.largeTels.min < scaleYLarge.domain()[0] || d.largeTels.used > d.largeTels.min) {
+            return '#FF5722'
+          }
+          return '#444444'
+        })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', function (d) {
+          let height = range - Math.abs(scaleYLarge(d.largeTels.min))
+          if (d.largeTels.min >= scaleYLarge.domain()[1]) height = 0
+          if (d.largeTels.min <= scaleYLarge.domain()[0]) height = range
+          return height
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(gMerge.select('g#' + d.id), d, 'large')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(gMerge.select('g#' + d.id), d, 'large')
+        })
+        .each(function (d) {
+          if (d.largeTels.min < scaleYLarge.domain()[0] || d.largeTels.used > d.largeTels.min) conflictSquare.push({d3: d3.select(this), d: d})
         })
 
       allg
@@ -4117,19 +4322,28 @@ let mainSchedBlocksInspector = function (optIn) {
     this.drawTelsAvailabilityCurve = drawTelsAvailabilityCurve
     function computeTelsCurve (block) {
       function core (b) {
-        if (!largeTels[b.time.start]) largeTels[b.time.start] = 0// 4
-        if (!mediumTels[b.time.start]) mediumTels[b.time.start] = 0// 24
-        if (!smallTels[b.time.start]) smallTels[b.time.start] = 0// 70
-        if (!largeTels[b.time.end]) largeTels[b.time.end] = 0// 4
-        if (!mediumTels[b.time.end]) mediumTels[b.time.end] = 0// 24
-        if (!smallTels[b.time.end]) smallTels[b.time.end] = 0// 70
+        if (!largeTels[b.time.start]) largeTels[b.time.start] = {min: 0, used: 0}// 4
+        if (!mediumTels[b.time.start]) mediumTels[b.time.start] = {min: 0, used: 0}// 24
+        if (!smallTels[b.time.start]) smallTels[b.time.start] = {min: 0, used: 0}// 70
+        if (!largeTels[b.time.end]) largeTels[b.time.end] = {min: 0, used: 0}// 4
+        if (!mediumTels[b.time.end]) mediumTels[b.time.end] = {min: 0, used: 0}// 24
+        if (!smallTels[b.time.end]) smallTels[b.time.end] = {min: 0, used: 0}// 70
 
-        smallTels[b.time.start] += b.telescopes.small.min
-        smallTels[b.time.end] -= b.telescopes.small.min
-        mediumTels[b.time.start] += b.telescopes.medium.min
-        mediumTels[b.time.end] -= b.telescopes.medium.min
-        largeTels[b.time.start] += b.telescopes.large.min
-        largeTels[b.time.end] -= b.telescopes.large.min
+        smallTels[b.time.start].min += b.telescopes.small.min
+        smallTels[b.time.end].min -= b.telescopes.small.min
+        smallTels[b.time.start].used += b.telescopes.small.ids.length // min
+        smallTels[b.time.end].used -= b.telescopes.small.ids.length // min
+
+        mediumTels[b.time.start].min += b.telescopes.medium.min
+        mediumTels[b.time.end].min -= b.telescopes.medium.min
+        mediumTels[b.time.start].used += b.telescopes.medium.ids.length // min
+        mediumTels[b.time.end].used -= b.telescopes.medium.ids.length // min
+
+        largeTels[b.time.start].min += b.telescopes.large.min
+        largeTels[b.time.end].min -= b.telescopes.large.min
+        largeTels[b.time.start].used += b.telescopes.large.ids.length // min
+        largeTels[b.time.end].used -= b.telescopes.large.ids.length // min
+
 
         if (!bIds[b.time.start]) bIds[b.time.start] = {type: 'add', ids: []}
         if (!bIds[b.time.end]) bIds[b.time.end] = {type: 'rem', ids: []}
@@ -4171,9 +4385,9 @@ let mainSchedBlocksInspector = function (optIn) {
             id: 'LMS' + timeMarker[i] + Number(shared.data.server.timeOfNight.start),
             start: Number(shared.data.server.timeOfNight.start),
             end: timeMarker[i + 1],
-            smallTels: 70,
-            mediumTels: 25,
-            largeTels: 4,
+            smallTels: {min: 70, used: 70},
+            mediumTels: {min: 25, used: 25},
+            largeTels: {min: 4, used: 4},
             blocks: []
           })
         } else if (i === timeMarker.length - 1) {
@@ -4181,9 +4395,9 @@ let mainSchedBlocksInspector = function (optIn) {
             id: 'LMS' + timeMarker[i] + Number(shared.data.server.timeOfNight.end),
             start: timeMarker[i],
             end: Number(shared.data.server.timeOfNight.end),
-            smallTels: 70,
-            mediumTels: 25,
-            largeTels: 4,
+            smallTels: {min: 70, used: 70},
+            mediumTels: {min: 25, used: 25},
+            largeTels: {min: 4, used: 4},
             blocks: []
           })
         } else {
@@ -4192,13 +4406,16 @@ let mainSchedBlocksInspector = function (optIn) {
           } else {
             currentBlockIds = currentBlockIds.concat(bIds[timeMarker[i]].ids.filter(d => currentBlockIds.indexOf(d) < 0))
           }
+          let s = {min: telsFree[i].smallTels.min - smallTels[timeMarker[i]].min, used: telsFree[i].smallTels.used - smallTels[timeMarker[i]].used}
+          let m = {min: telsFree[i].mediumTels.min - mediumTels[timeMarker[i]].min, used: telsFree[i].mediumTels.used - mediumTels[timeMarker[i]].used}
+          let l = {min: telsFree[i].largeTels.min - largeTels[timeMarker[i]].min, used: telsFree[i].largeTels.used - largeTels[timeMarker[i]].used}
           telsFree.push({
             id: 'LMS' + timeMarker[i] + timeMarker[i + 1],
             start: timeMarker[i],
             end: timeMarker[i + 1],
-            smallTels: telsFree[i].smallTels - smallTels[timeMarker[i]],
-            mediumTels: telsFree[i].mediumTels - mediumTels[timeMarker[i]],
-            largeTels: telsFree[i].largeTels - largeTels[timeMarker[i]],
+            smallTels: s,
+            mediumTels: m,
+            largeTels: l,
             blocks: deepCopy(currentBlockIds)
           })
         }
@@ -4797,76 +5014,15 @@ let mainSchedBlocksInspector = function (optIn) {
   let conflictSquare = []
   let conflictButton = []
   function linkConflicts () {
-    // for (let i = conflictSquare.length - 1; i >= 0; i--) {
-    // let linkedButton = []
-    // for (let j = conflictButton.length - 1; j >= 0; j--) {
-    //   if (conflictButton[j].d.large + conflictSquare[i].d.largeTels === 4 &&
-    //     conflictButton[j].d.medium + conflictSquare[i].d.mediumTels === 25 &&
-    //     conflictButton[j].d.small + conflictSquare[i].d.smallTels === 70) {
-    //     linkedButton.push(conflictButton[j])
-    //   }
-    // }
-    //   if (linkedButton.length > 0) {
-    //     let linkedOther = []
-    //     for (let j = conflictSquare.length - 1; j >= 0; j--) {
-    //       if (i !== j && conflictSquare[i].d.id === conflictSquare[j].d.id) {
-    //         linkedOther.push(conflictSquare[j])
-    //       }
-    //     }
-    //     conflictSquare[i].d3
-    //       .on('click', function () {
-    //         svgRightInfo.focusOnConflict(linkedButton[0])
-    //       })
-    //       .on('mouseover', function (d) {
-    //         d3.select(this).style('cursor', 'pointer')
-    //         d3.select(this).attr('fill', d3.color('#000000').darker(0.9))
-    //         for (let j = linkedButton.length - 1; j >= 0; j--) {
-    //           if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.darkest.background)
-    //           blockQueue.highlightBlocks(linkedButton[j].d.blocks)
-    //         }
-    //         for (let j = linkedOther.length - 1; j >= 0; j--) {
-    //           linkedOther[j].d3.attr('fill', d3.color('#000000').darker(0.9))
-    //         }
-    //       })
-    //       .on('mouseout', function (d) {
-    //         d3.select(this).style('cursor', 'default')
-    //         d3.select(this).attr('fill', '#FF5722')
-    //         // for (let j = linkedButton.length - 1; j >= 0; j--) {
-    //         //   if (conflictFocused.d === linkedButton[j].d) return
-    //         // }
-    //         for (let j = linkedButton.length - 1; j >= 0; j--) {
-    //           if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.dark.background)
-    //           blockQueue.highlightBlocks([])
-    //         }
-    //         for (let j = linkedOther.length - 1; j >= 0; j--) {
-    //           linkedOther[j].d3.attr('fill', '#FF5722')
-    //         }
-    //       })
-    //   } else {
-    //     conflictSquare[i].d3
-    //       .on('click', function () {})
-    //       .on('mouseover', function (d) {})
-    //       .on('mouseout', function (d) {})
-    //     conflictSquare.splice(i, 1)
-    //   }
-    // }
-
     let azerty = []
-    let totLinked = 0
     for (let j = conflictButton.length - 1; j >= 0; j--) {
       let linked = []
       for (let i = conflictSquare.length - 1; i >= 0; i--) {
-        // let allIntersect = true
-        // for (var z = 0; z < conflictButton[j].d.blocks.length; z++) {
-        //   if (!blocksIntersect(conflictButton[j].d.blocks[z], {time: {start: conflictSquare[i].d.start, end: conflictSquare[i].d.end}})) allIntersect = false
-        // }
         let intersect = conflictButton[j].d.blocks.filter(value => conflictSquare[i].d.blocks.includes(value.obId))
         if (intersect.length === conflictSquare[i].d.blocks.length) {
           linked.push(conflictSquare[i])
           azerty.push(conflictSquare[i])
-          totLinked++
         }
-        // if (allIntersect) linked.push(conflictSquare[i])
       }
       for (let i = 0; i < linked.length; i++) {
         linked[i].d3
@@ -4875,38 +5031,39 @@ let mainSchedBlocksInspector = function (optIn) {
           })
           .on('mouseover', function (d) {
             for (let j = 0; j < linked.length; j++) {
-              linked[j].d3.attr('fill', d3.color('#000000').darker(0.9))
+              let nb = {x: Number(linked[j].d3.attr('x')),
+                y: Number(linked[j].d3.attr('y')),
+                w: Number(linked[j].d3.attr('width')),
+                h: Number(linked[j].d3.attr('height'))
+              }
+              linked[j].d3.attr('stroke', '#000000')
+                .attr('stroke-width', 4)
+                .attr('x', nb.x + 2)
+                .attr('y', nb.y + 2)
+                .attr('width', nb.w - 4)
+                .attr('height', nb.h - 4)
             }
             d3.select(this).style('cursor', 'pointer')
             if (conflictButton[j].d3) conflictButton[j].d3.select('rect').attr('fill', colorPalette.darkest.background)
             blockQueue.highlightBlocks(conflictButton[j].d.blocks)
-            // d3.select(this).attr('fill', d3.color('#000000').darker(0.9))
-            // for (let j = linkedButton.length - 1; j >= 0; j--) {
-            //   if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.darkest.background)
-            //   blockQueue.highlightBlocks(linkedButton[j].d.blocks)
-            // }
-            // for (let j = linkedOther.length - 1; j >= 0; j--) {
-            //   linkedOther[j].d3.attr('fill', d3.color('#000000').darker(0.9))
-            // }
           })
           .on('mouseout', function (d) {
             for (let j = 0; j < linked.length; j++) {
-              linked[j].d3.attr('fill', '#FF5722')
+              let nb = {x: Number(linked[j].d3.attr('x')),
+                y: Number(linked[j].d3.attr('y')),
+                w: Number(linked[j].d3.attr('width')),
+                h: Number(linked[j].d3.attr('height'))
+              }
+              linked[j].d3.attr('stroke', '#000000')
+                .attr('stroke-width', 0)
+                .attr('x', nb.x - 2)
+                .attr('y', nb.y - 2)
+                .attr('width', nb.w + 4)
+                .attr('height', nb.h + 4)
             }
             d3.select(this).style('cursor', 'default')
             if (conflictButton[j].d3) conflictButton[j].d3.select('rect').attr('fill', colorPalette.darker.background)
             blockQueue.highlightBlocks([])
-            // d3.select(this).attr('fill', '#FF5722')
-            // for (let j = linkedButton.length - 1; j >= 0; j--) {
-            //   if (conflictFocused.d === linkedButton[j].d) return
-            // }
-            // for (let j = linkedButton.length - 1; j >= 0; j--) {
-            //   if (linkedButton[j].d3) linkedButton[j].d3.select('rect').attr('fill', colorPalette.dark.background)
-            //   blockQueue.highlightBlocks([])
-            // }
-            // for (let j = linkedOther.length - 1; j >= 0; j--) {
-            //   linkedOther[j].d3.attr('fill', '#FF5722')
-            // }
           })
       }
       if (conflictButton[j].d3) {
@@ -4930,7 +5087,6 @@ let mainSchedBlocksInspector = function (optIn) {
             }
           })
       }
-      // console.log(conflictButton, conflictSquare.filter(d => azerty.indexOf(d) === -1));
     }
   }
   function listAllConflicts (data) {
@@ -4956,7 +5112,7 @@ let mainSchedBlocksInspector = function (optIn) {
     // }
     // let blocks = clusterBlocksByTime(allBlocks)
 
-    let filtered = data.filter(d => (d.smallTels < 0 || d.mediumTels < 0 || d.largeTels < 0))
+    let filtered = data.filter(d => (d.smallTels.min < 0 || d.mediumTels.min < 0 || d.largeTels.min < 0))
     // for (let j = 0; j < filtered.length; j++) {
     //   for (let z = j + 1; z < filtered.length; z++) {
     //     let intersect = filtered[j].blocks.filter(value => filtered[z].blocks.includes(value))
@@ -4982,8 +5138,8 @@ let mainSchedBlocksInspector = function (optIn) {
       // idg = idg.slice(1)
       // if (!checkDuplicata(idg)) {
       let blocks = group.blocks.map(d => allBlocks.filter(ab => ab.obId === d)[0])
-      conflicts.push({id: group.id, blocks: blocks, small: 70 - group.smallTels, medium: 25 - group.mediumTels, large: 4 - group.largeTels})
-      conflictButton.push({d: {id: group.id, blocks: blocks, small: 70 - group.smallTels, medium: 25 - group.mediumTels, large: 4 - group.largeTels}, d3: undefined})
+      conflicts.push({id: group.id, blocks: blocks, small: 70 - group.smallTels.min, medium: 25 - group.mediumTels.min, large: 4 - group.largeTels.min})
+      conflictButton.push({d: {id: group.id, blocks: blocks, small: 70 - group.smallTels.min, medium: 25 - group.mediumTels.min, large: 4 - group.largeTels.min}, d3: undefined})
       // }
     }
 
