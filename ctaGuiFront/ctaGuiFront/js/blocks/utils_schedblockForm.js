@@ -1037,57 +1037,157 @@ window.SchedblockForm = function (optIn) {
     let line = 20
     let back = {enabled: false, fill: colorPalette.darker.background, stroke: colorPalette.darker.stroke, 'stroke-width': 0.2}
 
-    g.append('text')
-      .text('Targets and pointings')
-      .style('fill', colorPalette.dark.stroke)
-      .style('font-weight', 'bold')
-      .style('font-size', titleSize + 'px')
-      .attr('text-anchor', 'start')
-      .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-    g.append('line')
-      .attr('x1', 0)
-      .attr('y1', 2)
-      .attr('x2', box.w * 1.0)
-      .attr('y2', 2)
-      .attr('stroke', colorPalette.dark.stroke)
-      .attr('stroke-width', 0.2)
+    // g.append('text')
+    //   .text('Targets and pointings')
+    //   .style('fill', colorPalette.dark.stroke)
+    //   .style('font-weight', 'bold')
+    //   .style('font-size', titleSize + 'px')
+    //   .attr('text-anchor', 'start')
+    //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+    // g.append('line')
+    //   .attr('x1', 0)
+    //   .attr('y1', 2)
+    //   .attr('x2', box.w * 1.0)
+    //   .attr('y2', 2)
+    //   .attr('stroke', colorPalette.dark.stroke)
+    //   .attr('stroke-width', 0.2)
 
-    let label = [
-      {x: 40, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w - 40, text: 'Targets', anchor: 'middle'}
-    ]
-    g.append('rect')
-      .attr('id', 'headerStrip')
-      .attr('x', label[0].x)
-      .attr('y', 3)
-      .attr('width', label[0].w)
-      .attr('height', headerSize)
-      .attr('fill', colorPalette.dark.stroke)
-    for (let i = 0; i < label.length; i++) {
-      let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
-      g.append('text')
-        .text(label[i].text)
-        .style('fill', colorPalette.medium.background)
-        .style('font-weight', 'bold')
-        .style('font-size', txtSize + 'px')
-        .attr('text-anchor', label[i].anchor)
-        .attr('transform', 'translate(' + (label[i].x + off) + ',' + (label[i].y) + ')')
-      // g.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', label[i].w)
-      //   .attr('height', tbox.h + line)
-      //   .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.darker.background)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 0.05)
-      //   .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
+    // let label = [
+    //   {x: 40, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w - 40, text: 'Targets', anchor: 'middle'}
+    // ]
+    // g.append('rect')
+    //   .attr('id', 'headerStrip')
+    //   .attr('x', label[0].x)
+    //   .attr('y', 3)
+    //   .attr('width', label[0].w)
+    //   .attr('height', headerSize)
+    //   .attr('fill', colorPalette.dark.stroke)
+    // for (let i = 0; i < label.length; i++) {
+    //   let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
+    //   g.append('text')
+    //     .text(label[i].text)
+    //     .style('fill', colorPalette.medium.background)
+    //     .style('font-weight', 'bold')
+    //     .style('font-size', txtSize + 'px')
+    //     .attr('text-anchor', label[i].anchor)
+    //     .attr('transform', 'translate(' + (label[i].x + off) + ',' + (label[i].y) + ')')
+    //   // g.append('rect')
+    //   //   .attr('x', 0)
+    //   //   .attr('y', 0)
+    //   //   .attr('width', label[i].w)
+    //   //   .attr('height', tbox.h + line)
+    //   //   .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.darker.background)
+    //   //   .attr('stroke', '#000000')
+    //   //   .attr('stroke-width', 0.05)
+    //   //   .attr('transform', 'translate(' + (i === 0 ? 0 : label[i].x) + ',' + (headerSize + 3) + ')')
+    // }
+    let trgtPnt = []
+    let allTar = []
+    let allPoint = []
+    for (let j = 0; j < schedB.blocks.length; j++) {
+      let data = schedB.blocks[j]
+      for (let i = 0; i < data.pointings.length; i++) {
+        let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+        if (tar) {
+          tar.pointings.push(data.pointings[i])
+        } else {
+          tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+          allTar.push(tar)
+          tar.pointings = [data.pointings[i]]
+          trgtPnt.push(tar)
+        }
+        allPoint.push(data.pointings[i])
+      }
     }
+    let gt = g.append('g')
+      .attr('id', 'telsDisplayer')
+      .attr('transform', 'translate(' + (42) + ',' + (headerSize + line + 14) + ')')
+    com.targetBlock = new TargetDisplayer({
+      main: {
+        tag: 'targetRootTag',
+        g: gt,
+        scroll: {},
+        box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 20 + headerSize), marg: 0},
+        background: {
+          fill: colorPalette.brighter.background,
+          stroke: colorPalette.brighter.stroke,
+          strokeWidth: 0.5
+        }
+      },
 
-    let tbox = {x: 40, y: headerSize + 3, w: box.w - 40, h: line * 1.5}
+      displayer: 'defaultBib',
+      defaultBib: {
+        quickmap: {
+          enabled: false,
+          target: {
+            events: {
+              click: () => {},
+              over: () => {},
+              out: () => {}
+            }
+          },
+          pointing: {
+            events: {
+              click: () => {},
+              over: () => {},
+              out: () => {}
+            }
+          }
+        },
+        skymap: {
+          enabled: true,
+          g: undefined,
+          box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 20 + headerSize), marg: 0},
+          mainTarget: undefined
+        },
+        legend: {
+          enabled: false
+        }
+      },
+
+      filters: {
+        targetFilters: [],
+        filtering: []
+      },
+      data: {
+        raw: {
+          targets: []
+        },
+        filtered: {},
+        modified: []
+      },
+      debug: {
+        enabled: false
+      },
+      pattern: {
+        select: {}
+      },
+      input: {
+        over: {
+          target: undefined
+        },
+        focus: {
+          target: undefined
+        }
+      }
+    })
+    com.targetBlock.init()
+    com.targetBlock.updateData({
+      data: {
+        raw: {
+          targets: allTar,
+          pointings: allPoint
+        },
+        modified: []
+      }
+    })
+
+    let tbox = {x: 40, y: headerSize + line * 1.6, w: box.w - 40, h: line * 1.5}
     let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
     let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, back)
     let innertg = scrollBoxt.get('innerG')
 
-    let trgtPnt = []
+    trgtPnt = []
     for (let j = 0; j < schedB.blocks.length; j++) {
       let data = schedB.blocks[j]
       for (let i = 0; i < data.pointings.length; i++) {
@@ -1104,7 +1204,7 @@ window.SchedblockForm = function (optIn) {
       }
     }
     function targetCore (targets, g, offset) {
-      let space = ((tbox.w * 1) - (targets.length * line)) / (targets.length)
+      // let space = ((tbox.w * 1) - (targets.length * line)) / (targets.length)
       let current = g
         .selectAll('g.target')
         .data(targets, function (d) {
@@ -1116,20 +1216,24 @@ window.SchedblockForm = function (optIn) {
         .attr('class', 'target')
       enter.each(function (d, i) {
         let g = d3.select(this)
+        g.style('opacity', 0.5)
         let tevents = {
           click: function () { com.target.events.click('target', d.id) },
           over: function () {
-
+            g.style('opacity', 1)
           },
-          out: function () {}
+          out: function () {
+            g.style('opacity', 0.5)
+          }
         }
-        targetIcon(g, {w: line * 1.2, h: line * 1.2}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+        targetIcon(g, {w: line * 1, h: line * 1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
         let g = d3.select(this)
         let offY = (tbox.h - line * 1.2) * 0.5
-        g.attr('transform', 'translate(' + (space * 0.5 + (space + line) * i) + ',' + offY + ')')
+        g.attr('transform', 'translate(' + (tbox.w - (line + 2) * (i + 1)) + ',' + offY + ')')
+        // g.attr('transform', 'translate(' + (space * 0.5 + (space + line) * i) + ',' + offY + ')')
       })
       current
         .exit()
@@ -1252,28 +1356,26 @@ window.SchedblockForm = function (optIn) {
     //     .remove()
     // }
     // targetCore(trgtPnt, innerg, 0)
-    g.append('rect')
-      .attr('id', 'headerStrip')
-      .attr('x', 0)
-      .attr('y', headerSize + line + 5)
-      .attr('width', 40)
-      .attr('height', headerSize)
-      .attr('fill', colorPalette.dark.stroke)
-    g.append('text')
-      .text('Pointings')
-      .style('fill', colorPalette.medium.background)
-      .style('font-weight', 'bold')
-      .style('font-size', txtSize + 'px')
-      .attr('text-anchor', 'middle')
-      .attr('transform', 'translate(' + (20) + ',' + (headerSize * 1.5 + line + 5 + txtSize * 0.33) + ')')
+    // g.append('rect')
+    //   .attr('id', 'headerStrip')
+    //   .attr('x', 0)
+    //   .attr('y', headerSize + line + 5)
+    //   .attr('width', 40)
+    //   .attr('height', headerSize)
+    //   .attr('fill', colorPalette.dark.stroke)
+    // g.append('text')
+    //   .text('Pointings')
+    //   .style('fill', colorPalette.medium.background)
+    //   .style('font-weight', 'bold')
+    //   .style('font-size', txtSize + 'px')
+    //   .attr('text-anchor', 'middle')
+    //   .attr('transform', 'translate(' + (20) + ',' + (headerSize * 1.5 + line + 5 + txtSize * 0.33) + ')')
 
     let pbox = {x: 0, y: headerSize * 2 + line + 5, w: 40, h: box.h - (headerSize * 2 + 10 + line)}
     let blockpg = g.append('g').attr('transform', 'translate(' + 0 + ',' + pbox.y + ')')
     let scrollBoxp = initScrollBox('pointingListScroll', blockpg, pbox, back)
     let innerpg = scrollBoxp.get('innerG')
-    //
-    // let allPoint = []
-    // let line = 20
+
     let marg = 2
     let innerOffset = 0
     let scrollHeight = 0
@@ -1365,31 +1467,31 @@ window.SchedblockForm = function (optIn) {
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' + (line * 0.5) + ',' + (line * 0.5 + txtSize * 0.3) + ')')
           .style('pointer-events', 'none')
-        g.append('rect')
-          .attr('width', 12)
-          .attr('height', 12)
-          .attr('x', -line * 0.7)
-          .attr('y', line * 0.4)
-          .attr('fill', function () {
-            return 'transparent'
-          })
-          .on('click', function () {
-
-          })
-          .on('mouseover', function (d) {
-            d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
-          })
-          .on('mouseout', function (d) {
-            d3.select(this).attr('fill', 'transparent')
-          })
-        g.append('svg:image')
-          .attr('xlink:href', '/static/icons/up-triangle.svg')
-          .attr('width', 10)
-          .attr('height', 10)
-          .attr('x', -line * 0.65)
-          .attr('y', line * 0.44)
-          .style('opacity', 1)
-          .style('pointer-events', 'none')
+        // g.append('rect')
+        //   .attr('width', 12)
+        //   .attr('height', 12)
+        //   .attr('x', -line * 0.7)
+        //   .attr('y', line * 0.4)
+        //   .attr('fill', function () {
+        //     return 'transparent'
+        //   })
+        //   .on('click', function () {
+        //
+        //   })
+        //   .on('mouseover', function (d) {
+        //     d3.select(this).attr('fill', d3.color(palette.color.background).darker(0.9))
+        //   })
+        //   .on('mouseout', function (d) {
+        //     d3.select(this).attr('fill', 'transparent')
+        //   })
+        // g.append('svg:image')
+        //   .attr('xlink:href', '/static/icons/up-triangle.svg')
+        //   .attr('width', 10)
+        //   .attr('height', 10)
+        //   .attr('x', -line * 0.65)
+        //   .attr('y', line * 0.44)
+        //   .style('opacity', 1)
+        //   .style('pointer-events', 'none')
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -1408,106 +1510,5 @@ window.SchedblockForm = function (optIn) {
     }
     blockCore(com.data.schedB.blocks, innerpg, marg)
     scrollBoxp.resetVerticalScroller({canScroll: true, scrollHeight: scrollHeight})
-
-    trgtPnt = []
-    let allTar = []
-    let allPoint = []
-    for (let j = 0; j < schedB.blocks.length; j++) {
-      let data = schedB.blocks[j]
-      for (let i = 0; i < data.pointings.length; i++) {
-        let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
-        if (tar) {
-          tar.pointings.push(data.pointings[i])
-        } else {
-          tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
-          allTar.push(tar)
-          tar.pointings = [data.pointings[i]]
-          trgtPnt.push(tar)
-        }
-        allPoint.push(data.pointings[i])
-      }
-    }
-    let gt = g.append('g')
-      .attr('id', 'telsDisplayer')
-      .attr('transform', 'translate(' + (42) + ',' + (headerSize + line + 14) + ')')
-    com.targetBlock = new TargetDisplayer({
-      main: {
-        tag: 'targetRootTag',
-        g: gt,
-        scroll: {},
-        box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 20 + headerSize), marg: 0},
-        background: {
-          fill: colorPalette.brighter.background,
-          stroke: colorPalette.brighter.stroke,
-          strokeWidth: 0.5
-        }
-      },
-
-      displayer: 'defaultBib',
-      defaultBib: {
-        quickmap: {
-          enabled: false,
-          target: {
-            events: {
-              click: () => {},
-              over: () => {},
-              out: () => {}
-            }
-          },
-          pointing: {
-            events: {
-              click: () => {},
-              over: () => {},
-              out: () => {}
-            }
-          }
-        },
-        skymap: {
-          enabled: true,
-          g: undefined,
-          box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 20 + headerSize), marg: 0},
-          mainTarget: undefined
-        },
-        legend: {
-          enabled: false
-        }
-      },
-
-      filters: {
-        targetFilters: [],
-        filtering: []
-      },
-      data: {
-        raw: {
-          targets: []
-        },
-        filtered: {},
-        modified: []
-      },
-      debug: {
-        enabled: false
-      },
-      pattern: {
-        select: {}
-      },
-      input: {
-        over: {
-          target: undefined
-        },
-        focus: {
-          target: undefined
-        }
-      }
-    })
-    com.targetBlock.init()
-    com.targetBlock.updateData({
-      data: {
-        raw: {
-          targets: allTar,
-          pointings: allPoint
-        },
-        modified: []
-      }
-    })
   }
 }

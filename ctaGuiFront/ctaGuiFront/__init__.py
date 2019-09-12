@@ -118,7 +118,7 @@ def main(global_config, **settings):
   # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
   utils.allWidgets = [
     "view102", "view000", "viewRefreshAll",
-    "view200", "view201", "view202", "view203", "view204", "view205", "view206", "view2051"
+    "view200", "view201", "view202", "view203", "view204", "view205", "view206", "view207", "view2051"
   ]
 
   for viewName in utils.allWidgets:

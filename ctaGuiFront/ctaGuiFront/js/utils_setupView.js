@@ -206,21 +206,15 @@ setupView.view206 = function () {
     hasIcon: false,
     hasDrawer: true
   })
-  // sock.addWidget({
-  //   nameTag: 'obsBlockControl',
-  //   tableTitle: 'Scheduling Block Control',
-  //   hasIcon: true,
-  //   hasDrawer: false
-  // })
-  // sock.addWidget({
-  //   nameTag:"nightSched", tableTitle:"Nightly Schedule", hasIcon:true, hasDrawer:false
-  // })
-  // sock.addWidget({
-  //   nameTag:"schedBlocks", tableTitle:"Observing blocks", hasIcon:true, hasDrawer:false
-  // })
-  // sock.addWidget({
-  //   nameTag:"arrZoomer", tableTitle:"Telescope health", hasIcon:true, hasDrawer:false
-  // })
+}
+
+setupView.view207 = function () {
+  sock.addWidget({
+    nameTag: 'weatherMonitoring',
+    tableTitle: 'Weather Monitoring',
+    hasIcon: true,
+    hasDrawer: false
+  })
 }
 
 // -----------------------------------------------------------------------------------------------------------

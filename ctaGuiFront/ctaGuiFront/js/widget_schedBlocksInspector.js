@@ -3575,8 +3575,76 @@ let mainSchedBlocksInspector = function (optIn) {
       let gEnter = allg.enter()
         .append('g')
         .attr('class', 'target')
-      gEnter.append('path')
-        .attr('d', function (d) {
+      gEnter.each(function (d) {
+        let ig = d3.select(this)
+          .style('opacity', function (d) {
+            return 0.4
+          })
+        ig.append('path')
+          .attr('d', function () {
+            let targetPoints = [
+              {x: scaleX(d.observability.minimal), y: scaleY(0)},
+              {x: scaleX(d.observability.optimal), y: scaleY(1)},
+              {x: scaleX(d.observability.maximal), y: scaleY(0)}
+            ]
+            return lineGenerator(targetPoints)
+          })
+          .attr('fill', function (d) {
+            // if (block.targetId === d.id) return colorTheme.dark.background
+            return 'none'
+          })
+          .attr('stroke', function (d) {
+            // if (block.targetId === d.id) return colorTheme.dark.stroke
+            return colorTheme.dark.stroke
+          })
+          .attr('stroke-width', function (d) {
+            // if (block.targetId === d.id) return 0.2
+            return 0.4
+          })
+          .attr('stroke-opacity', function (d) {
+            // if (block.targetId === d.id) return 1
+            return 0.4
+          })
+          .attr('fill-opacity', 0.15)
+          .attr('stroke-dasharray', function (d) {
+            // if (block.targetId === d.id) return []
+            return [4, 6]
+          })
+        let tig = ig.append('g')
+          .attr('id', 'targetIcon')
+          .attr('transform', 'translate(' + (scaleX((d.observability.minimal + d.observability.maximal) * 0.5) - 10) + ',' + (reserved.box.h - 20) + ')')
+        targetIcon(tig, {w: 15, h: 15}, d.id.split('_')[1], {
+          click: function () { focusManager.focusOn('target', d.id) },
+          over: function () { ig.style('opacity', 1) },
+          out: function () { ig.style('opacity', 0.4) }
+        }, colorPalette)
+      })
+      // gEnter.append('text')
+      //   .text(function (d) {
+      //     return d.id
+      //   })
+      //   .attr('x', function (d) {
+      //     let xx = scaleX(d.observability.minimal) + 10
+      //     return xx
+      //     // return (xx < 0) ? 10 : xx
+      //   })
+      //   .attr('y', reserved.box.h - 3)
+      //   .attr('text-anchor', 'start')
+      //   .attr('font-size', 10)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .style('fill', function (d) {
+      //     // if (block.targetId === d.id) return colorTheme.dark.stroke
+      //     return colorTheme.dark.stroke
+      //   })
+      //   .style('fill-opacity', function (d) {
+      //     // if (block.targetId === d.id) return 1
+      //     return 0.6
+      //   })
+      let gMerge = allg.merge(gEnter)
+      gMerge.each(function (d) {
+        let ig = d3.select(this)
+        ig.select('path').attr('d', function (d) {
           let targetPoints = [
             {x: scaleX(d.observability.minimal), y: scaleY(0)},
             {x: scaleX(d.observability.optimal), y: scaleY(1)},
@@ -3584,62 +3652,8 @@ let mainSchedBlocksInspector = function (optIn) {
           ]
           return lineGenerator(targetPoints)
         })
-        .attr('fill', function (d) {
-          // if (block.targetId === d.id) return colorTheme.dark.background
-          return 'none'
-        })
-        .attr('stroke', function (d) {
-          // if (block.targetId === d.id) return colorTheme.dark.stroke
-          return colorTheme.dark.stroke
-        })
-        .attr('stroke-width', function (d) {
-          // if (block.targetId === d.id) return 0.2
-          return 0.4
-        })
-        .attr('stroke-opacity', function (d) {
-          // if (block.targetId === d.id) return 1
-          return 0.4
-        })
-        .attr('fill-opacity', 0.15)
-        .attr('stroke-dasharray', function (d) {
-          // if (block.targetId === d.id) return []
-          return [4, 6]
-        })
-      gEnter.append('text')
-        .text(function (d) {
-          return d.id
-        })
-        .attr('x', function (d) {
-          let xx = scaleX(d.observability.minimal) + 10
-          return xx
-          // return (xx < 0) ? 10 : xx
-        })
-        .attr('y', reserved.box.h - 3)
-        .attr('text-anchor', 'start')
-        .attr('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .style('fill', function (d) {
-          // if (block.targetId === d.id) return colorTheme.dark.stroke
-          return colorTheme.dark.stroke
-        })
-        .style('fill-opacity', function (d) {
-          // if (block.targetId === d.id) return 1
-          return 0.6
-        })
-      let gMerge = allg.merge(gEnter)
-      gMerge.select('path').attr('d', function (d) {
-        let targetPoints = [
-          {x: scaleX(d.observability.minimal), y: scaleY(0)},
-          {x: scaleX(d.observability.optimal), y: scaleY(1)},
-          {x: scaleX(d.observability.maximal), y: scaleY(0)}
-        ]
-        return lineGenerator(targetPoints)
-      })
-      gMerge.select('text').attr('x', function (d) {
-        let xx = scaleX(d.observability.minimal) + 10
-        return xx
-        // return (xx < 0) ? 10 : xx
+        ig.select('g#targetIcon')
+          .attr('transform', 'translate(' + (scaleX((d.observability.minimal + d.observability.maximal) * 0.5) - 10) + ',' + (reserved.box.h - 14) + ')')
       })
     }
     function showPercentTarget (block) {
@@ -3743,16 +3757,15 @@ let mainSchedBlocksInspector = function (optIn) {
           }
           return false
         })
+      tarG.style('opacity', function (d) {
+        return 1
+      })
       tarG.select('path')
         .attr('fill', colorTheme.dark.background)
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.8)
         .attr('stroke-opacity', 1)
-        .attr('fill-opacity', 0.55)
         .attr('stroke-dasharray', [])
-      tarG.select('text')
-        .style('fill', colorTheme.dark.stroke)
-        .style('fill-opacity', 1)
       showPercentTarget(block)
     }
     this.highlightTarget = highlightTarget
@@ -3767,6 +3780,7 @@ let mainSchedBlocksInspector = function (optIn) {
           }
           return false
         })
+      tarG.style('opacity', 0.4)
       tarG.select('path')
         .attr('fill', 'none')
         .attr('stroke', colorTheme.dark.stroke)
@@ -3774,9 +3788,9 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('stroke-opacity', 0.4)
         .attr('fill-opacity', 0.15)
         .attr('stroke-dasharray', [4, 6])
-      tarG.select('text')
-        .style('fill', colorTheme.dark.stroke)
-        .style('fill-opacity', 0.3)
+      // tarG.select('text')
+      //   .style('fill', colorTheme.dark.stroke)
+      //   .style('fill-opacity', 0.3)
     }
     this.unhighlightTarget = unhighlightTarget
   }
@@ -4144,10 +4158,10 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', range)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id), d, 'medium')
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id), d, 'medium')
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
         })
       gMerge.select('rect#mediumused')
         .attr('x', function (d) { return scaleX(d.start) })
@@ -4178,10 +4192,10 @@ let mainSchedBlocksInspector = function (optIn) {
         })
         .attr('fill-opacity', 0.6)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id), d, 'medium')
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id), d, 'medium')
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
         })
       gMerge.select('rect#mediummin')
         .attr('x', function (d) { return scaleX(d.start) })
@@ -4215,10 +4229,10 @@ let mainSchedBlocksInspector = function (optIn) {
         })
         .attr('fill-opacity', 0.6)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id), d, 'medium')
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id), d, 'medium')
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
         })
         .each(function (d) {
           if (d.mediumTels.min < scaleYMedium.domain()[0] || d.mediumTels.used > d.mediumTels.min) conflictSquare.push({d3: d3.select(this), d: d})
@@ -4232,10 +4246,10 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', range)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id), d, 'large')
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id), d, 'large')
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
         })
       gMerge.select('rect#largeused')
         .attr('x', function (d) { return scaleX(d.start) })
@@ -4266,10 +4280,10 @@ let mainSchedBlocksInspector = function (optIn) {
         })
         .attr('fill-opacity', 0.6)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id), d, 'large')
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id), d, 'large')
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
         })
       gMerge.select('rect#largemin')
         .attr('x', function (d) { return scaleX(d.start) })
@@ -4303,10 +4317,10 @@ let mainSchedBlocksInspector = function (optIn) {
         })
         .attr('fill-opacity', 0.6)
         .on('mouseover', function (d) {
-          mouseHover(gMerge.select('g#' + d.id), d, 'large')
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
         })
         .on('mouseout', function (d) {
-          mouseOut(gMerge.select('g#' + d.id), d, 'large')
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
         })
         .each(function (d) {
           if (d.largeTels.min < scaleYLarge.domain()[0] || d.largeTels.used > d.largeTels.min) conflictSquare.push({d3: d3.select(this), d: d})
@@ -7794,7 +7808,7 @@ let mainSchedBlocksInspector = function (optIn) {
         blocks: {
           x: 0,
           y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.3,
+          h: reserved.box.h * 0.45,
           w: reserved.box.w
         },
         target: {
