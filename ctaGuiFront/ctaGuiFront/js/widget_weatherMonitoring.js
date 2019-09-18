@@ -432,6 +432,8 @@ let mainWeatherMonitoring = function (optIn) {
   this.updateData = updateData
   runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
+
+
   let SvgBlocksQueueServer = function () {
     function initData () {
       let adjustedBox = {
@@ -453,13 +455,194 @@ let mainWeatherMonitoring = function (optIn) {
   let SvgHeathMapSensors = function () {
     let box
     let step = 20
+    let expanded = false
 
+    function displayOnOffButton (g) {
+      g.select('rect#background').attr('fill', d3.color(colorPalette.darker.background).darker(0.2))
+      g.selectAll('g.sensorline').transition()
+        .duration(300)
+        .attr('transform', function (d, i) {
+          return 'translate(' + 28 + ',' + (i * 12) + ')'
+        })
+
+      let ig = g.selectAll('g.sensorline')
+        .append('g')
+        .attr('id', 'onoffButton')
+        .on('click', function (d, i) {
+          if (d[i].running) {
+            d[i].running = false
+            ig.select('rect#slideback')
+              .transition()
+              .duration(200)
+              .attr('fill', (d, i) => {
+                return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+              })
+            ig.select('circle#slidebutton')
+              .transition()
+              .duration(200)
+              .attr('cx', (d, i) => {
+                return d[i].running ? -12 : -22
+              })
+              .attr('fill', (d, i) => {
+                return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+              })
+          } else {
+            d[i].running = true
+            ig.select('rect#slideback')
+              .transition()
+              .duration(200)
+              .attr('fill', (d, i) => {
+                return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+              })
+            ig.select('circle#slidebutton')
+              .transition()
+              .duration(200)
+              .attr('cx', (d, i) => {
+                return d[i].running ? -12 : -22
+              })
+              .attr('fill', (d, i) => {
+                return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+              })
+          }
+          onOffSensor(d3.select(d3.select(this).node().parentNode), i)
+        })
+      ig.append('rect')
+        .attr('id', 'slideback')
+        .attr('x', -28)
+        .attr('y', (d, i) => (i * 8.5) - 4)
+        .attr('width', 22)
+        .attr('height', 12)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+        .attr('fill', (d, i) => {
+          return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+        })
+        .style('opacity', 0.5)
+        .attr('rx', 6)
+      ig.append('circle')
+        .attr('id', 'slidebutton')
+        .attr('cx', (d, i) => {
+          return d[i].running ? -12 : -22
+        })
+        .attr('cy', (d, i) => (i * 8.5) + 2)
+        .attr('r', 5.5)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+        .attr('fill', (d, i) => {
+          return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+        })
+      // ig.append('rect')
+      //   .attr('id', 'slideoverlay')
+      //   .attr('x', -28)
+      //   .attr('y', (d, i) => (i * 8.5) - 4)
+      //   .attr('width', 22)
+      //   .attr('height', 12)
+      //   .attr('stroke', 'none')
+      //   .attr('fill', 'transparent')
+      //   .attr('rx', 6)
+      //   .on('click', function (d, i) {
+      //     if (d[i].running) {
+      //       d[i].running = false
+      //       ig.select('rect#slideback')
+      //         .attr('fill', (d, i) => {
+      //           return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+      //         })
+      //       ig.select('circle#slidebutton')
+      //         .attr('cx', (d, i) => {
+      //           return d[i].running ? -12 : -22
+      //         })
+      //         .attr('fill', (d, i) => {
+      //           return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+      //         })
+      //     } else {
+      //       d[i].running = true
+      //       ig.select('rect#slideback')
+      //         .attr('fill', (d, i) => {
+      //           return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+      //         })
+      //       ig.select('circle#slidebutton')
+      //         .attr('cx', (d, i) => {
+      //           return d[i].running ? -12 : -22
+      //         })
+      //         .attr('fill', (d, i) => {
+      //           return d[i].running ? colorPalette.blocks.run.background : colorPalette.darkest.stroke
+      //         })
+      //     }
+      //   })
+    }
+    function hideOnOffButton (g) {
+      g.selectAll('g.sensorline').selectAll('g#onoffButton').remove()
+      g.select('rect#background').attr('fill', 'transparent')
+      g.selectAll('g.sensorline').transition()
+        .duration(300)
+        .attr('transform', function (d, i) {
+          return 'translate(' + 0 + ',' + (i * 12) + ')'
+        })
+    }
     function expandSensor (g) {
+      let offset = 0
+      g.selectAll('g.sensor')
+        .each(function (d, i) {
+          let g = d3.select(this)
+          g.on('mouseenter', function (d) {
+            displayOnOffButton(g)
+          })
+          g.on('mouseleave', function (d) {
+            hideOnOffButton(g)
+          })
+          // g.on('click', () => {
+          //   console.log(d3.event);
+          //   console.log('click2')
+          // })
+          offset += 24
+          // let localCpOffset = offset
+          g.append('text')
+            .attr('id', 'label')
+            .text(d => d[0].name)
+            .attr('x', -6)
+            .attr('y', '-14px')
+            .style('font-weight', 'bold')
+            .style('font-size', '12px')
+          g.append('rect')
+            .attr('id', 'label')
+            .attr('x', -4)
+            .attr('y', -11)
+            .attr('width', 2)
+            .attr('height', d.length * (box.h / 30 + 12))
+          g.select('rect#background')
+            .attr('x', -6)
+            .attr('y', -26)
+            .attr('width', box.w)
+            .attr('height', d.length * (box.h / 30 + 12) + 8 + 16)
+            .attr('fill', 'transparent')
+          g.transition()
+            .duration(600)
+            .attr('transform', 'translate(' + 6 + ',' + (offset) + ')')
+
+          g.selectAll('g.sensorline')
+            .append('text')
+            .attr('id', 'label')
+            .text((d, i) => d[i].id)
+            .attr('x', 0)
+            .attr('y', -1)
+            .style('font-size', '10px')
+            .attr('transform', function (d, i) {
+              return 'translate(' + 0 + ',' + (i * 8) + ')'
+            })
+          g.selectAll('g.sensorline')
+            .transition()
+            .duration(600)
+            .attr('transform', function (d, i) {
+              return 'translate(' + 0 + ',' + (i * 12) + ')'
+            })
+          offset += d.length * (box.h / 30 + 11)
+        })
+    }
+    function shrinkSensor (g) {
       let offset = 0
       g.selectAll('g.sensor')
         .each(function (d) {
           let g = d3.select(this)
-          offset += 24
           g.transition()
             .duration(600)
             .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
@@ -467,13 +650,19 @@ let mainWeatherMonitoring = function (optIn) {
             .transition()
             .duration(600)
             .attr('transform', function (d, i) {
-              return 'translate(' + 0 + ',' + (i * 10) + ')'
+              return 'translate(' + 0 + ',' + 0 + ')'
             })
-          offset += d.length * (box.h / 30 + 11)
+          offset += 12 + d.length * (box.h / 30)
         })
+      g.selectAll('text#label').remove()
     }
-    function shrinkSensor (g) {
-
+    function onOffSensor (g, j) {
+      g.selectAll('rect')
+        .attr('fill', (d, i) => {
+          if (d[j].status.previous[i] === 'RUNNING') return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker().darker()
+          if (d[j].status.previous[i] === 'ERROR') return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker().darker()
+          if (d[j].status.previous[i] === 'OFF') return d[j].running === true ? d3.color('#333333') : d3.color('#333333').darker().darker()
+        })
     }
     function SensorCore (sensors, g) {
       let current = g
@@ -488,6 +677,7 @@ let mainWeatherMonitoring = function (optIn) {
 
       enter.each(function (d, i) {
         let g = d3.select(this)
+        g.append('rect').attr('id', 'background')
         for (let j = 0; j < d.length; j++) {
           let ig = g.append('g').attr('class', 'sensorline')
           for (let i = 0; i < d[j].status.previous.length; i++) {
@@ -557,7 +747,7 @@ let mainWeatherMonitoring = function (optIn) {
       merge.each(function (d, i) {
         let g = d3.select(this)
         g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-        offset += 2 + d.length * (box.h / 30)
+        offset += 12 + d.length * (box.h / 30)
       })
       current
         .exit()
@@ -590,28 +780,28 @@ let mainWeatherMonitoring = function (optIn) {
         return status
       }
       let data = [
-        [{id: 'id0', name: 'Illuminator', status: fillfun(), running: true}],
-        [{id: 'id1', name: 'Photometer', status: fillfun(), running: true}],
-        [{id: 'id2', name: 'All-sky-camera', status: fillfun(), running: true}],
-        [{id: 'id3', name: 'Ceilometer', status: fillfun(), running: false},
-          {id: 'id4', name: 'Ceilometer', status: fillfun(), running: true}],
-        [{id: 'id5', name: 'FRAM', status: fillfun(), running: true}],
-        [{id: 'id6', name: 'LIDARs', status: fillfun(), running: false},
-          {id: 'id7', name: 'LIDARs', status: fillfun(), running: true}],
-        [{id: 'id8', name: 'Weather-stations', status: fillfun(), running: true},
-          {id: 'id9', name: 'Weather-stations', status: fillfun(), running: true},
-          {id: 'id10', name: 'Weather-stations', status: fillfun(), running: true}],
-        [{id: 'id11', name: 'Anemometers', status: fillfun(), running: true},
-          {id: 'id12', name: 'Anemometers', status: fillfun(), running: true},
-          {id: 'id13', name: 'Anemometers', status: fillfun(), running: true},
-          {id: 'id14', name: 'Anemometers', status: fillfun(), running: false},
-          {id: 'id15', name: 'Anemometers', status: fillfun(), running: true},
-          {id: 'id16', name: 'Anemometers', status: fillfun(), running: true}],
-        [{id: 'id17', name: 'Precipitation', status: fillfun(), running: false},
-          {id: 'id18', name: 'Precipitation', status: fillfun(), running: true},
-          {id: 'id19', name: 'Precipitation', status: fillfun(), running: true}],
-        [{id: 'id20', name: 'Dust', status: fillfun(), running: true}],
-        [{id: 'id21', name: 'Accelerometers', status: fillfun(), running: false},
+        [{id: 'id0', name: 'Illuminator', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id1', name: 'Photometer', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id2', name: 'All-sky-camera', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id3', name: 'Ceilometer', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id4', name: 'Ceilometer', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id5', name: 'FRAM', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id6', name: 'LIDARs', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id7', name: 'LIDARs', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id8', name: 'Weather-stations', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id9', name: 'Weather-stations', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id10', name: 'Weather-stations', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id11', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id12', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id13', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id14', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id15', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id16', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id17', name: 'Precipitation', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id18', name: 'Precipitation', status: fillfun(), running: Math.random() < 0.5},
+          {id: 'id19', name: 'Precipitation', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id20', name: 'Dust', status: fillfun(), running: Math.random() < 0.5}],
+        [{id: 'id21', name: 'Accelerometers', status: fillfun(), running: Math.random() < 0.5},
           {id: 'id22', name: 'Accelerometers', status: fillfun(), running: true}]
       ]
 
@@ -636,7 +826,13 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('stroke-width', 0)
         .style('boxShadow', '10px 20px 30px black')
         .on('click', function () {
-          expandSensor(gsens)
+          if (expanded) {
+            expanded = false
+            shrinkSensor(gsens)
+          } else {
+            expanded = true
+            expandSensor(gsens)
+          }
         })
         .on('mouseover', function (d) {
           d3.select(this).style('cursor', 'pointer')
