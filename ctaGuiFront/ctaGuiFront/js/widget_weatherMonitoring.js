@@ -151,81 +151,22 @@ let mainWeatherMonitoring = function (optIn) {
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (lenD.w[0] * 0.125) + ',' + (lenD.h[0] * 0.015) + ')')
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.0)
-      //   .attr('y', lenD.h[0] * 0.07)
-      //   .attr('width', lenD.w[0] * 0.25)
-      //   .attr('height', lenD.h[0] * 0.25)
-      //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
 
-      // svg.back.append('text')
-      //   .text('Measured Data')
-      //   .style('fill', '#000000')
-      //   .style('font-weight', 'bold')
-      //   .style('font-size', '18px')
-      //   .attr('text-anchor', 'start')
-      //   .attr('transform', 'translate(' + (lenD.w[0] * 0.0) + ',' + (lenD.h[0] * 0.38) + ')')
-      // let startY = lenD.h[0] * 0.4
-      // let endY = lenD.h[0] * 0.6
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.0)
-      //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.015)
-      //   .attr('height', endY)
-      //   .attr('fill', '#0288D1')
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.015)
-      //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.015)
-      //   .attr('height', endY)
-      //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.03)
-      //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.03)
-      //   .attr('height', endY)
-      //   .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.06)
-      //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.015)
-      //   .attr('height', endY)
-      //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.075)
-      //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.015)
-      //   .attr('height', endY)
-      //   .attr('fill', '#0288D1')
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
-
-
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.0)
-      //   .attr('y', lenD.h[0] * 0.98)
-      //   .attr('width', lenD.w[0] * 0.25)
-      //   .attr('height', lenD.h[0] * 0.02)
-      //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
-      // svg.back.append('text')
-      //   .text('Plots List')
-      //   .style('fill', colorPalette.bright.background)
-      //   .style('font-weight', 'bold')
-      //   .style('font-size', '8px')
-      //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + (lenD.w[0] * 0.125) + ',' + (lenD.h[0] * 0.995) + ')')
+      svg.back.append('rect')
+        .attr('x', lenD.w[0] * 0.0)
+        .attr('y', lenD.h[0] * 0.98)
+        .attr('width', lenD.w[0] * 0.25)
+        .attr('height', lenD.h[0] * 0.02)
+        .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
+        .attr('stroke', 'none')
+        .attr('rx', 0)
+      svg.back.append('text')
+        .text('Plots List')
+        .style('fill', colorPalette.bright.background)
+        .style('font-weight', 'bold')
+        .style('font-size', '8px')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (lenD.w[0] * 0.125) + ',' + (lenD.h[0] * 0.995) + ')')
 
       svg.back.append('rect')
         .attr('x', lenD.w[0] * 0.26)
@@ -403,6 +344,7 @@ let mainWeatherMonitoring = function (optIn) {
     initBox()
 
     svgHeathMapSensors.initData()
+    svgMeasuredData.initData()
 
     shared.data.server = dataIn.data
 
@@ -457,6 +399,60 @@ let mainWeatherMonitoring = function (optIn) {
     let step = 20
     let expanded = false
 
+    function shift () {
+      let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
+      svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
+        .attr('opacity', 1)
+        .transition()
+        .duration(400)
+        .delay((d, i) => i * (400 / count))
+        .attr('opacity', 0)
+        .on('end', function () {
+          d3.select(this).attr('visibility', 'hidden')
+        })
+
+      svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
+        .transition()
+        .duration(600)
+        .delay((d, i) => i * (600 / count))
+        .attr('transform', function (d, i) {
+          return 'translate(' + (-box.w * 0.7 + box.w * 0.25 * (i % 4)) + ',' + (parseInt(i / 4) * 30) + ')'
+        })
+    }
+    this.shift = shift
+    function unshift () {
+      let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
+      svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
+        .attr('visibility', 'visible')
+        .attr('opacity', 0)
+        .transition()
+        .duration(600)
+        .delay((d, i) => 600 - i * (600 / count))
+        .attr('opacity', 1)
+
+      let offset = 0
+      svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
+        .transition()
+        .duration(400)
+        .delay((d, i) => 400 - i * (400 / count))
+        .attr('transform', (d, i) => {
+          let trans = offset
+          offset += 12 + d.length * (box.h / 30)
+          return 'translate(' + 0 + ',' + trans + ')'
+        })
+
+      // let offset = 0
+      // svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
+      //   .each(function (d, i) {
+      //     let g = d3.select(this)
+      //     g.transition()
+      //       .duration(600)
+      //       .delay((d, i) => 600 - i * (600 / count))
+      //       .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
+      //     offset += 12 + d.length * (box.h / 30)
+      //   })
+    }
+    this.unshift = unshift
     function displayOnOffButton (g) {
       g.select('rect#background').attr('fill', d3.color(colorPalette.darker.background).darker(0.2))
       g.selectAll('g.sensorline').transition()
@@ -580,6 +576,7 @@ let mainWeatherMonitoring = function (optIn) {
         })
     }
     function expandSensor (g) {
+      svgMeasuredData.shift()
       let offset = 0
       g.selectAll('g.sensor')
         .each(function (d, i) {
@@ -639,10 +636,13 @@ let mainWeatherMonitoring = function (optIn) {
         })
     }
     function shrinkSensor (g) {
+      svgMeasuredData.unshift()
       let offset = 0
       g.selectAll('g.sensor')
         .each(function (d) {
           let g = d3.select(this)
+          g.on('mouseenter', () => {})
+          g.on('mouseleave', () => {})
           g.transition()
             .duration(600)
             .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
@@ -654,14 +654,21 @@ let mainWeatherMonitoring = function (optIn) {
             })
           offset += 12 + d.length * (box.h / 30)
         })
+      g.selectAll('rect#label').remove()
       g.selectAll('text#label').remove()
     }
     function onOffSensor (g, j) {
-      g.selectAll('rect')
+      g.selectAll('rect#timestamp')
         .attr('fill', (d, i) => {
           if (d[j].status.previous[i] === 'RUNNING') return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker().darker()
           if (d[j].status.previous[i] === 'ERROR') return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker().darker()
           if (d[j].status.previous[i] === 'OFF') return d[j].running === true ? d3.color('#333333') : d3.color('#333333').darker().darker()
+        })
+      g.selectAll('rect#current')
+        .attr('fill', (d, i) => {
+          if (d[j].status.current === 'RUNNING') return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker()
+          if (d[j].status.current === 'ERROR') return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker()
+          if (d[j].status.current === 'OFF') return d[j].running === true ? d3.color('#333333') : d3.color('#333333').darker()
         })
     }
     function SensorCore (sensors, g) {
@@ -680,8 +687,10 @@ let mainWeatherMonitoring = function (optIn) {
         g.append('rect').attr('id', 'background')
         for (let j = 0; j < d.length; j++) {
           let ig = g.append('g').attr('class', 'sensorline')
+          let tg = ig.append('g').attr('id', 'timestampsline')
           for (let i = 0; i < d[j].status.previous.length; i++) {
-            ig.append('rect')
+            tg.append('rect')
+              .attr('id', 'timestamp')
               .attr('x', 0 + (i * (box.w * 0.66) / d[j].status.previous.length))
               .attr('y', 0 + j * box.h / 30)
               .attr('width', (box.w * 0.66) / d[j].status.previous.length)
@@ -696,6 +705,7 @@ let mainWeatherMonitoring = function (optIn) {
               // .style('opacity', d[j].running === true ? 1 : 0.2)
           }
           ig.append('rect')
+            .attr('id', 'current')
             .attr('x', box.w * 0.72)
             .attr('y', 0 + j * box.h / 30)
             .attr('width', (box.w * 0.05))
@@ -708,37 +718,37 @@ let mainWeatherMonitoring = function (optIn) {
             .attr('stroke', '#000000')
             .attr('stroke-width', 0.2)
             .attr('rx', 0)
-          if (d[j].status.current === 'ERROR') {
-            ig.append('rect')
-              .attr('x', box.w * 0.8)
-              .attr('y', 0 + j * box.h / 30)
-              .attr('width', box.h / 30)
-              .attr('height', box.h / 30)
-              .attr('fill', 'none')
-              .attr('stroke-width', 0)
-              // .style('boxShadow', '10px 20px 30px black')
-              // .on('click', function () {
-              //   cleanBack()
-              //   display = undefined
-              //   focusManager.focusOn('target', d.id)
-              // })
-              // .on('mouseover', function (d) {
-              //   d3.select(this).style('cursor', 'pointer')
-              //   d3.select(this).attr('fill', colorTheme.darker.background)
-              // })
-              // .on('mouseout', function (d) {
-              //   d3.select(this).style('cursor', 'default')
-              //   d3.select(this).attr('fill', colorTheme.dark.background)
-              // })
-            ig.append('svg:image')
-              .attr('xlink:href', '/static/icons/warning-tri.svg')
-              .attr('x', box.w * 0.8)
-              .attr('y', 0 + j * box.h / 30 - box.h / 30 * 0.5)
-              .attr('width', box.h / 30 * 2)
-              .attr('height', box.h / 30 * 2)
-              .style('opacity', 0.5)
-              .style('pointer-events', 'none')
-          }
+          // if (d[j].status.current === 'ERROR') {
+            // ig.append('rect')
+            //   .attr('x', box.w * 0.8)
+            //   .attr('y', 0 + j * box.h / 30 - box.h / 30 * 0.5)
+            //   .attr('width', box.h / 30 * 2)
+            //   .attr('height', box.h / 30 * 2)
+            //   .attr('fill', 'gold')
+            //   .attr('stroke-width', 0)
+            //   // .style('boxShadow', '10px 20px 30px black')
+            //   // .on('click', function () {
+            //   //   cleanBack()
+            //   //   display = undefined
+            //   //   focusManager.focusOn('target', d.id)
+            //   // })
+            //   // .on('mouseover', function (d) {
+            //   //   d3.select(this).style('cursor', 'pointer')
+            //   //   d3.select(this).attr('fill', colorTheme.darker.background)
+            //   // })
+            //   // .on('mouseout', function (d) {
+            //   //   d3.select(this).style('cursor', 'default')
+            //   //   d3.select(this).attr('fill', colorTheme.dark.background)
+            //   // })
+            // ig.append('svg:image')
+            //   .attr('xlink:href', '/static/icons/warning-tri.svg')
+            //   .attr('x', box.w * 0.8)
+            //   .attr('y', 0 + j * box.h / 30 - box.h / 30 * 0.5)
+            //   .attr('width', box.h / 30 * 2)
+            //   .attr('height', box.h / 30 * 2)
+            //   .style('opacity', 0.5)
+            //   .style('pointer-events', 'none')
+          // }
         }
       })
       let merge = current.merge(enter)
@@ -805,7 +815,8 @@ let mainWeatherMonitoring = function (optIn) {
           {id: 'id22', name: 'Accelerometers', status: fillfun(), running: true}]
       ]
 
-      svg.g.append('text')
+      let main = svg.g.append('g').attr('id', 'hardwareMonitoring')
+      main.append('text')
         .text('Hardware Monitoring')
         .style('fill', '#000000')
         .style('font-weight', 'bold')
@@ -813,11 +824,11 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('text-anchor', 'start')
         .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
 
-      let gsens = svg.g.append('g')
+      let gsens = main.append('g')
         .attr('id', 'heatmapSensors')
         .attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.05) + ')')
 
-      svg.g.append('rect')
+      main.append('rect')
         .attr('x', box.x + box.w * 0.72)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
@@ -842,7 +853,7 @@ let mainWeatherMonitoring = function (optIn) {
           d3.select(this).style('cursor', 'default')
           d3.select(this).attr('fill', 'transparent')
         })
-      svg.g.append('svg:image')
+      main.append('svg:image')
         .attr('xlink:href', '/static/icons/full-size.svg')
         .attr('x', box.x + box.w * 0.72)
         .attr('y', (box.y - 14) + 'px')
@@ -860,6 +871,274 @@ let mainWeatherMonitoring = function (optIn) {
     function update () {}
     this.update = update
   }
+  let SvgMeasuredData = function () {
+    let box
+    let expanded = false
+
+    function shift () {
+      svg.g.select('g#measuredData')
+        .transition()
+        .duration(600)
+        .attr('transform', 'translate(' + 0 + ',' + box.h + ')')
+    }
+    this.shift = shift
+    function unshift () {
+      svg.g.select('g#measuredData')
+        .transition()
+        .duration(600)
+        .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+    }
+    this.unshift = unshift
+    function expand (g) {
+      svgHeathMapSensors.shift()
+    }
+    function shrink (g) {
+      svgHeathMapSensors.unshift()
+    }
+    function measuredCore (data, g) {
+      let current = g
+        .selectAll('g.sensor')
+        .data(data, function (d) {
+          return d.id
+        })
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'measures')
+
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        g.append('rect').attr('id', 'background')
+        let main = g.append('g').attr('id', 'mainMeasure')
+        main.append('rect')
+          .attr('x', 12)
+          .attr('y', 4)
+          .attr('width', box.w * 0.075)
+          .attr('height', 8)
+          .attr('fill', colorPalette.blocks.fail.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+          .style('opacity', 0.6)
+        main.append('rect')
+          .attr('x', 12 + box.w * 0.075)
+          .attr('y', 4)
+          .attr('width', box.w * 0.075)
+          .attr('height', 8)
+          .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+          .style('opacity', 0.6)
+        main.append('rect')
+          .attr('x', 12 + box.w * 0.15)
+          .attr('y', 4)
+          .attr('width', box.w * 0.15)
+          .attr('height', 8)
+          .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+          .style('opacity', 0.6)
+        main.append('rect')
+          .attr('x', 12 + box.w * 0.3)
+          .attr('y', 4)
+          .attr('width', box.w * 0.075)
+          .attr('height', 8)
+          .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+          .style('opacity', 0.6)
+        main.append('rect')
+          .attr('x', 12 + box.w * 0.375)
+          .attr('y', 4)
+          .attr('width', box.w * 0.075)
+          .attr('height', 8)
+          .attr('fill', colorPalette.blocks.fail.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+          .style('opacity', 0.6)
+
+        main.append('text')
+          .attr('id', 'measurelabel')
+          .text(d.name)
+          .attr('x', box.w * 0)
+          .attr('y', -2)
+          .style('font-size', '14px')
+        main.append('text')
+          .attr('id', 'valuelabel')
+          .text(d.status.current)
+          .attr('x', box.w * 0.55)
+          .attr('y', 14)
+          .style('font-size', '14px')
+          .style('font-weight', 'bold')
+        main.append('text')
+          .attr('id', 'unitlabel')
+          .text(d.unit)
+          .attr('x', box.w * 0.72)
+          .attr('y', 14)
+          .style('font-size', '12px')
+          .style('font-weight', '')
+      })
+      let merge = current.merge(enter)
+
+      let offset = 0
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
+        offset += 30
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    function initData () {
+      box = {
+        x: lenD.w[0] * 0.0,
+        y: lenD.h[0] * 0.45,
+        w: lenD.w[0] * 0.25,
+        h: lenD.h[0] * 0.55,
+        marg: lenD.w[0] * 0.01
+      }
+
+      let fillfun = function () {
+        let status = {current: '', previous: []}
+        status.current = (Math.random() * 50).toFixed(2)
+        for (let i = 0; i < 4; i++) {
+          status.previous.push((Math.random() * 50).toFixed(2))
+        }
+        return status
+      }
+      let data = [
+        {id: 'id0', name: 'Measure1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+        {id: 'id1', name: 'Measure2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+        {id: 'id2', name: 'Measure3', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+        {id: 'id3', name: 'Measure4', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+          {id: 'id4', name: 'subMeasure.14', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+        ]},
+        {id: 'id5', name: 'Measure5', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+        {id: 'id6', name: 'Measure6', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+          {id: 'id7', name: 'subMeasure6.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+        ]},
+        {id: 'id8', name: 'Measure7', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+          {id: 'id9', name: 'subMeasure7.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+          {id: 'id10', name: 'subMeasure7.2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+        ]},
+        {id: 'id11', name: 'Measure8', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+          {id: 'id12', name: 'subMeasure8.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+          {id: 'id13', name: 'subMeasure8.2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+          {id: 'id14', name: 'subMeasure8.3', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+          {id: 'id15', name: 'subMeasure8.4', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+          {id: 'id16', name: 'subMeasure8.5', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+        ]},
+        {id: 'id17', name: 'Measure9', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+          {id: 'id18', name: 'subMeasure9.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+          {id: 'id19', name: 'subMeasure9.2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+        ]},
+        {id: 'id20', name: 'Measure10', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+        {id: 'id21', name: 'Measure11', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+          {id: 'id22', name: 'subMeasure11.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+        ]}
+      ]
+
+      let main = svg.g.append('g').attr('id', 'measuredData')
+      main.append('text')
+        .text('Measured Data')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '18px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+      // let startY = lenD.h[0] * 0.4
+      // let endY = lenD.h[0] * 0.6
+      // svg.g.append('rect')
+      //   .attr('x', lenD.w[0] * 0.0)
+      //   .attr('y', startY)
+      //   .attr('width', lenD.w[0] * 0.015)
+      //   .attr('height', endY)
+      //   .attr('fill', '#0288D1')
+      //   .attr('stroke', 'none')
+      //   .attr('rx', 0)
+      // svg.g.append('rect')
+      //   .attr('x', lenD.w[0] * 0.015)
+      //   .attr('y', startY)
+      //   .attr('width', lenD.w[0] * 0.015)
+      //   .attr('height', endY)
+      //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+      //   .attr('stroke', 'none')
+      //   .attr('rx', 0)
+      // svg.g.append('rect')
+      //   .attr('x', lenD.w[0] * 0.03)
+      //   .attr('y', startY)
+      //   .attr('width', lenD.w[0] * 0.03)
+      //   .attr('height', endY)
+      //   .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
+      //   .attr('stroke', 'none')
+      //   .attr('rx', 0)
+      // svg.g.append('rect')
+      //   .attr('x', lenD.w[0] * 0.06)
+      //   .attr('y', startY)
+      //   .attr('width', lenD.w[0] * 0.015)
+      //   .attr('height', endY)
+      //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+      //   .attr('stroke', 'none')
+      //   .attr('rx', 0)
+      // svg.g.append('rect')
+      //   .attr('x', lenD.w[0] * 0.075)
+      //   .attr('y', startY)
+      //   .attr('width', lenD.w[0] * 0.015)
+      //   .attr('height', endY)
+      //   .attr('fill', '#0288D1')
+      //   .attr('stroke', 'none')
+      //   .attr('rx', 0)
+      let gmes = main.append('g')
+        .attr('id', 'measured')
+        .attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.05) + ')')
+
+      main.append('rect')
+        .attr('x', box.x + box.w * 0.72)
+        .attr('y', (box.y - 14) + 'px')
+        .attr('width', '16px')
+        .attr('height', '16px')
+        .attr('fill', 'transparent')
+        .attr('stroke-width', 0)
+        .style('boxShadow', '10px 20px 30px black')
+        .on('click', function () {
+          if (expanded) {
+            expanded = false
+            shrink(gmes)
+          } else {
+            expanded = true
+            expand(gmes)
+          }
+        })
+        .on('mouseover', function (d) {
+          d3.select(this).style('cursor', 'pointer')
+          d3.select(this).attr('fill', colorPalette.darkest.background)
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).style('cursor', 'default')
+          d3.select(this).attr('fill', 'transparent')
+        })
+      main.append('svg:image')
+        .attr('xlink:href', '/static/icons/full-size.svg')
+        .attr('x', box.x + box.w * 0.72)
+        .attr('y', (box.y - 14) + 'px')
+        .attr('width', '16px')
+        .attr('height', '16px')
+        .style('pointer-events', 'none')
+
+      measuredCore(data, gmes)
+    }
+    this.initData = initData
+
+    function updateData () {}
+    this.updateData = updateData
+
+    function update () {}
+    this.update = update
+  }
+  let svgMeasuredData = new SvgMeasuredData()
   let svgHeathMapSensors = new SvgHeathMapSensors()
   let svgBlocksQueueServer = new SvgBlocksQueueServer()
 }
