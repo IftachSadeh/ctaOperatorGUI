@@ -30,10 +30,7 @@ var mainScriptTag = 'azPlots'
 // ---------------------------------------------------------------------------------------------------
 
 // // load additional js files:
-window.loadScript({
-  source: mainScriptTag,
-  script: '/js/utils_plotTimeSeries.js'
-})
+window.loadScript({source: mainScriptTag, script: '/js/utils_plotTimeSeries.js'})
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotTimeBar.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollGrid.js' })
 window.loadScript({source: mainScriptTag, script: '/js/utils_quickMap.js'})

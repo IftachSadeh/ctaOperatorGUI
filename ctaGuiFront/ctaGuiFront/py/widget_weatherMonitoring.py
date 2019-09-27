@@ -4,11 +4,11 @@ import gevent
 from gevent import sleep
 from gevent.coros import BoundedSemaphore
 from math import sqrt, ceil, floor
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 from random import Random
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, getTime
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, getTimeOfNight
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
@@ -21,6 +21,8 @@ class weatherMonitoring():
 
     # all session ids for this user/widget
     wgtGrpToSessV = dict()
+
+    timeOfNight = {}
 
     # -----------------------------------------------------------------------------------------------------------
     #
@@ -84,8 +86,18 @@ class weatherMonitoring():
     #
     # -----------------------------------------------------------------------------------------------------------
     def getData(self):
+        weatherMonitoring.timeOfNight = getTimeOfNight(self)
+        timeOfNightDate = {
+            "date_start": datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_end": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(weatherMonitoring.timeOfNight['end']))).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_now": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(weatherMonitoring.timeOfNight['now']))).strftime('%Y-%m-%d %H:%M:%S'),
+            "now": int(weatherMonitoring.timeOfNight['now']),
+            "start": int(weatherMonitoring.timeOfNight['start']),
+            "end": int(weatherMonitoring.timeOfNight['end'])
+            }
+
         data = {
-            "rnd": Random(getTime()).random(), 'time': getTime()
+            "timeOfNight": timeOfNightDate
         }
 
         return data

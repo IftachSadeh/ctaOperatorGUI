@@ -101,6 +101,7 @@ window.PlotTimeSeries = function () {
         h: com.innerBox.h * 0.4
       }
     }
+    console.log(com.top);
 
     com.top.axis.transX =
       'translate(' +

@@ -22,7 +22,54 @@ window.ScrollBox = function () {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
+  function updateClipping (box) {
+    com.outerBox = deepCopy(box)
+    com.clipRecInner
+      .attr('x', com.outerBox.x)
+      .attr('y', com.outerBox.y)
+      .attr('width', com.outerBox.w)
+      .attr('height', com.outerBox.h)
+    com.clipRecOuter
+      .attr('x', com.outerBox.x)
+      .attr('y', com.outerBox.y)
+      .attr('width', com.outerBox.w)
+      .attr('height', com.outerBox.h)
 
+    com.outerG
+      .selectAll('rect.' + com.mainTag + 'blockBoxOuter')
+      .data([com.outerBox], function (d) {
+        return d.id
+      })
+      .attr('x', function (d, i) {
+        return d.x
+      })
+      .attr('y', function (d, i) {
+        return d.y
+      })
+      .attr('width', function (d, i) {
+        return d.w
+      })
+      .attr('height', function (d, i) {
+        return d.h
+      })
+    com.scrollOuterG
+      .selectAll('rect.' + com.mainTag + 'blockBoxInner')
+      .data([com.outerBox], function (d) {
+        return d.id
+      })
+      .attr('x', function (d, i) {
+        return d.x
+      })
+      .attr('y', function (d, i) {
+        return d.y
+      })
+      .attr('width', function (d, i) {
+        return d.w
+      })
+      .attr('height', function (d, i) {
+        return d.h
+      })
+  }
   function initClipping (optIn) {
     com.tagClipPath = optIn.tagClipPath
     if (!hasVar(com.tagClipPath)) {
@@ -1469,6 +1516,11 @@ window.ScrollBox = function () {
     else if (com.scrollTransH.now > com.scrollTransH.max) com.scrollTransH.now = com.scrollTransH.max
     com.scrollRecH.w = boxW * boxW / Math.abs(com.scrollWidth)
   } // NO
+
+  function updateBox (box) {
+    updateClipping(box)
+  }
+  this.updateBox = updateBox
 
   function resetScroller (optIn) {
     if (!hasVar(optIn)) optIn = {}

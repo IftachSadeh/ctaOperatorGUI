@@ -24,7 +24,10 @@ var mainScriptTag = 'weatherMonitoring'
 /* global bckPattern */
 /* global colsMix */
 /* global unique */
-
+/* global ScrollBox */
+window.loadScript({source: mainScriptTag, script: '/js/utils_plotTimeSeries.js'})
+window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_plotTimeBar.js' })
 // // load additional js files:
 // window.loadScript({ source:mainScriptTag, script:"/js/utils_scrollGrid.js"});
 
@@ -32,7 +35,7 @@ var mainScriptTag = 'weatherMonitoring'
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 12
+  let h0 = 10
   let w0 = 12
   let divKey = 'main'
 
@@ -84,8 +87,9 @@ let mainWeatherMonitoring = function (optIn) {
   let sideId = optIn.sideId
 
   let shared = {
-    data: {
-      server: undefined
+    server: {},
+    time: {
+      current: undefined
     }
   }
   let svg = {}
@@ -108,6 +112,41 @@ let mainWeatherMonitoring = function (optIn) {
   let locker = new Locker()
   // locker.add('inInit')
   let runLoop = new RunLoop({ tag: widgetId })
+
+  function addPlot (optIn) {
+    let plotId = optIn.plotId
+
+    let plotg = svg.g.append('g')
+
+    let plotBoxData = {
+      x: lenD.w[0] * 0.26 + 20,
+      y: lenD.h[0] * 0.17 + 20,
+      w: lenD.w[0] * 0.48 - 40,
+      h: lenD.h[0] * 0.4 - 40
+    }
+
+    let plot = new PlotTimeSeries()
+
+    plot.init({
+      tag: plotId,
+      gBox: plotg,
+      hasBotPlot: false,
+      updateDomainY: false,
+      overviewLine: true,
+      style: { hasOutline: true },
+      boxData: plotBoxData,
+      locker: locker,
+      lockerV: [plotId + 'updateData'],
+      lockerZoom: {
+        all: plotId + 'zoom',
+        during: plotId + 'zoomDuring',
+        end: plotId + 'zoomEnd'
+      },
+      runLoop: runLoop
+    })
+    // com.plot[plotId].plugPlotTimeBar(com.plot['associate'])
+  }
+
   function initData (dataIn) {
     function initSvg () {
       lenD.w = {}
@@ -131,51 +170,102 @@ let mainWeatherMonitoring = function (optIn) {
           d3.event.preventDefault()
         })
       }
+      svg.back = svg.svg.append('g')
       svg.g = svg.svg.append('g')
     }
     function initBackground () {
-      svg.back = svg.svg.append('g')
-
+      // svg.back.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', lenD.w[0] * 0.2)
+      //   .attr('height', lenD.h[0] * 0.06)
+      //   .attr('fill', 'none') // colorPalette.dark.background)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.4)
+      //   .attr('rx', 0)
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.0)
+        .attr('x', 0)
         .attr('y', 0)
-        .attr('width', lenD.w[0] * 0.25)
-        .attr('height', lenD.h[0] * 0.06)
-        .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-        .attr('stroke', 'none')
+        .attr('width', lenD.w[0] * 0.2)
+        .attr('height', lenD.h[0] * 0.065)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', colorPalette.darkest.stroke)
+        .attr('stroke-width', 0.3)
         .attr('rx', 0)
       svg.back.append('text')
-        .text('Date Time')
-        .style('fill', colorPalette.bright.background)
+        .attr('id', 'currentHourTop')
+        .attr('stroke', '#000000') // colorPalette.bright.stroke)
+        .attr('stroke-width', 0.0)
+        .attr('fill', '#000000') // colorPalette.bright.stroke)
+        .attr('x', lenD.w[0] * 0.1)
+        .attr('y', lenD.h[0] * 0.024)
         .style('font-weight', 'bold')
-        .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.125) + ',' + (lenD.h[0] * 0.015) + ')')
-
-      svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.0)
-        .attr('y', lenD.h[0] * 0.98)
-        .attr('width', lenD.w[0] * 0.25)
-        .attr('height', lenD.h[0] * 0.02)
-        .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
+        .style('font-size', '18px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+      // svg.back.append('text')
+      //   .attr('id', 'currentHourLeftBottom')
+      //   .attr('stroke', colorPalette.bright.background)
+      //   .attr('stroke-width', 0.5)
+      //   .attr('fill', colorPalette.bright.background)
+      //   .attr('x', lenD.w[0] * 0.055)
+      //   .attr('y', lenD.h[0] * 0.05)
+      //   .style('font-weight', 'bold')
+      //   .attr('text-anchor', 'middle')
+      //   .style('font-size', '18px')
+      //   .style('pointer-events', 'none')
+      //   .style('user-select', 'none')
       svg.back.append('text')
-        .text('Plots List')
-        .style('fill', colorPalette.bright.background)
+        .attr('id', 'currentHourBottom')
+        .attr('stroke', '#000000') // colorPalette.bright.stroke)
+        .attr('stroke-width', 0.0)
+        .attr('fill', '#000000') // colorPalette.bright.stroke)
+        .attr('x', lenD.w[0] * 0.1)
+        .attr('y', lenD.h[0] * 0.05)
         .style('font-weight', 'bold')
-        .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.125) + ',' + (lenD.h[0] * 0.995) + ')')
+        .style('font-size', '20px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
 
-      svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.26)
-        .attr('y', lenD.h[0] * 0.0)
-        .attr('width', lenD.w[0] * 0.48)
-        .attr('height', lenD.h[0] * 0.495)
-        .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
+      let pattern = {select: {}}
+      pattern.select.defs = svg.g.append('defs')
+      pattern.select.patternLock = pattern.select.defs.append('pattern')
+        .attr('id', 'patternLock')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr('fill', 'none')
+        .attr('patternUnits', 'userSpaceOnUse')
+      pattern.select.patternLock.append('line')
+        .attr('x1', 0)
+        .attr('y1', 0)
+        .attr('x2', 20)
+        .attr('y2', 20)
+        .attr('stroke', 'gold')
+        .attr('stroke-width', 8)
+        .attr('stroke-opacity', 0.6)
+
+      // svg.back.append('rect')
+      //   .attr('x', lenD.w[0] * 0.0)
+      //   .attr('y', lenD.h[0] * 0.45)
+      //   .attr('width', lenD.w[0] * 0.25)
+      //   .attr('height', lenD.h[0] * 0.22)
+      //   .attr('fill', colorPalette.dark.background)
+      //   .attr('stroke', colorPalette.dark.stroke)
+      //   .attr('stroke-width', 0.6)
+
+
+      // svg.back.append('rect')
+      //   .attr('x', lenD.w[0] * 0.26)
+      //   .attr('y', lenD.h[0] * 0.17)
+      //   .attr('width', lenD.w[0] * 0.48)
+      //   .attr('height', lenD.h[0] * 0.4)
+      //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
+      //   .attr('stroke', 'none')
+      //   .attr('rx', 0)
       svg.back.append('text')
         .text('Big Plot')
         .style('fill', colorPalette.bright.background)
@@ -183,37 +273,22 @@ let mainWeatherMonitoring = function (optIn) {
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (lenD.w[0] * 0.5) + ',' + (lenD.h[0] * 0.25) + ')')
-      svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.26)
-        .attr('y', lenD.h[0] * 0.505)
-        .attr('width', lenD.w[0] * 0.48)
-        .attr('height', lenD.h[0] * 0.495)
-        .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
-      svg.back.append('text')
-        .text('Map plot')
-        .style('fill', colorPalette.bright.background)
-        .style('font-weight', 'bold')
-        .style('font-size', '8px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.5) + ',' + (lenD.h[0] * 0.75) + ')')
       let fo = svg.back.append('foreignObject')
         .attr('x', lenD.w[0] * 0.26 + 'px')
-        .attr('y', lenD.h[0] * 0.505 + 'px')
+        .attr('y', lenD.h[0] * 0.6 + 'px')
         .attr('width', lenD.w[0] * 0.48 + 'px')
         .attr('height', lenD.h[0] * 0.495 + 'px').node()
 
       let iframe = document.createElement('iframe')
-      iframe.width = '650px'
-      iframe.height = '650px'
+      iframe.width = (lenD.w[0] * 0.48) + 'px'
+      iframe.height = (lenD.h[0] * 0.4) + 'px'
       iframe.src = "https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"
 
       fo.appendChild(iframe)
       svg.svg._groups[0][0].appendChild(fo)
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.75)
+        .attr('x', lenD.w[0] * 0.78)
         .attr('y', 0)
         .attr('width', lenD.w[0] * 0.25)
         .attr('height', lenD.h[0] * 0.02)
@@ -230,9 +305,9 @@ let mainWeatherMonitoring = function (optIn) {
       for (var i = 0; i < 8; i++) {
         for (var j = 0; j < 2; j++) {
           svg.back.append('rect')
-            .attr('x', lenD.w[0] * 0.75 + j * lenD.w[0] * 0.13)
+            .attr('x', lenD.w[0] * 0.78 + j * lenD.w[0] * 0.12)
             .attr('y', lenD.h[0] * 0.03 + i * (lenD.h[0] * 0.1 + lenD.h[0] * 0.02))
-            .attr('width', lenD.w[0] * 0.12)
+            .attr('width', lenD.w[0] * 0.10)
             .attr('height', lenD.h[0] * 0.1)
             .attr('fill', colorPalette.darker.background) // colorPalette.dark.background)
             .attr('stroke', 'none')
@@ -240,7 +315,7 @@ let mainWeatherMonitoring = function (optIn) {
         }
       }
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.75)
+        .attr('x', lenD.w[0] * 0.78)
         .attr('y', lenD.h[0] * 0.98)
         .attr('width', lenD.w[0] * 0.25)
         .attr('height', lenD.h[0] * 0.02)
@@ -343,10 +418,17 @@ let mainWeatherMonitoring = function (optIn) {
     initBackground()
     initBox()
 
-    svgHeathMapSensors.initData()
     svgMeasuredData.initData()
+    svgHeathMapSensors.initData()
+    svgSupervision.initData()
+    addPlot({ plotId: 'default', propId: 'default' })
 
-    shared.data.server = dataIn.data
+    shared.server = dataIn.data
+    shared.time.current = new Date(shared.server.timeOfNight.date_now)
+    let currentTime = {date: new Date(shared.server.timeOfNight.date_now)}
+    svg.back.select('text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
+    // svg.back.select('text#currentHourLeftBottom').text(d3.timeFormat('%Y UTC')(currentTime.date))
+    svg.back.select('text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
 
     svgBlocksQueueServer.initData()
   }
@@ -362,9 +444,10 @@ let mainWeatherMonitoring = function (optIn) {
 
     locker.add('updateData')
 
-    shared.data.server = dataIn.data
+    shared.server = dataIn.data
 
     svgBlocksQueueServer.updateData()
+    shared.time.current = new Date(shared.server.timeOfNight.date_now)
 
     locker.remove('updateData')
   }
@@ -374,7 +457,49 @@ let mainWeatherMonitoring = function (optIn) {
   this.updateData = updateData
   runLoop.init({ tag: 'updateData', func: updateDataOnce, nKeep: 1 })
 
+  function initScrollBox (tag, g, box, background, isVertical) {
+    if (background.enabled) {
+      g.append('rect')
+        .attr('class', 'background')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', box.w)
+        .attr('height', box.h)
+        .style('fill', background.fill)
+        .style('stroke', background.stroke)
+        .style('stroke-width', background.strokeWidth)
+    }
 
+    let scrollBox = new ScrollBox()
+    scrollBox.init({
+      tag: tag,
+      gBox: g,
+      boxData: {
+        x: 0,
+        y: 0,
+        w: box.w,
+        h: box.h
+      },
+      useRelativeCoords: true,
+      locker: new Locker(),
+      lockerV: [tag + 'updateData'],
+      lockerZoom: {
+        all: tag + 'zoom',
+        during: tag + 'zoomDuring',
+        end: tag + 'zoomEnd'
+      },
+      runLoop: new RunLoop({tag: tag}),
+      canScroll: true,
+      scrollVertical: isVertical,
+      scrollHorizontal: !isVertical,
+      scrollHeight: 0,
+      scrollWidth: 0,
+      background: 'transparent',
+      scrollRecH: {h: 4},
+      scrollRecV: {w: 4}
+    })
+    return scrollBox
+  }
 
   let SvgBlocksQueueServer = function () {
     function initData () {
@@ -397,9 +522,50 @@ let mainWeatherMonitoring = function (optIn) {
   let SvgHeathMapSensors = function () {
     let box
     let step = 20
-    let expanded = false
+    let currentState = 'default'
+    let spaceSize = 6
+    let lineSize
+    let scrollbox
+    // reserved.overview.modifications.scrollBox.get('innerG')
+    function changeState (from, action) {
+      if (from === 'heatmap') {
+        if (currentState === 'default') {
+          currentState = 'expanded'
+          expandSensor()
+        } else if (currentState === 'expanded') {
+          currentState = 'default'
+          defaultDisplay()
+        } else if (currentState === 'shift') {
+          currentState = 'expanded'
+          expandSensor()
+        }
+      } else if (from === 'measured') {
+        if (action === 'expanded') {
+          currentState = 'shift'
+          shrinkSensor()
+        } else if (action === 'default') {
+          currentState = 'default'
+          defaultDisplay()
+        }
+      }
+    }
+    this.changeState = changeState
+    function shrinkSensor () {
+      svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
+        .each(function (d) {
+          let g = d3.select(this)
+          g.on('mouseenter', () => {})
+          g.on('mouseleave', () => {})
+          g.selectAll('g.sensorline')
+            .transition()
+            .duration(600)
+            .attr('transform', function (d, i) {
+              return 'translate(' + 0 + ',' + 0 + ')'
+            })
+        })
+      svg.g.select('g#hardwareMonitoring').selectAll('rect#label').remove()
+      svg.g.select('g#hardwareMonitoring').selectAll('text#label').remove()
 
-    function shift () {
       let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
       svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
         .attr('opacity', 1)
@@ -419,40 +585,30 @@ let mainWeatherMonitoring = function (optIn) {
           return 'translate(' + (-box.w * 0.7 + box.w * 0.25 * (i % 4)) + ',' + (parseInt(i / 4) * 30) + ')'
         })
     }
-    this.shift = shift
-    function unshift () {
-      let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
-      svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
-        .attr('visibility', 'visible')
-        .attr('opacity', 0)
-        .transition()
-        .duration(600)
-        .delay((d, i) => 600 - i * (600 / count))
-        .attr('opacity', 1)
-
-      let offset = 0
-      svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
-        .transition()
-        .duration(400)
-        .delay((d, i) => 400 - i * (400 / count))
-        .attr('transform', (d, i) => {
-          let trans = offset
-          offset += 12 + d.length * (box.h / 30)
-          return 'translate(' + 0 + ',' + trans + ')'
-        })
-
-      // let offset = 0
-      // svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
-      //   .each(function (d, i) {
-      //     let g = d3.select(this)
-      //     g.transition()
-      //       .duration(600)
-      //       .delay((d, i) => 600 - i * (600 / count))
-      //       .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-      //     offset += 12 + d.length * (box.h / 30)
-      //   })
-    }
-    this.unshift = unshift
+    // function unshift () {
+    //
+    //   let offset = 0
+    //   svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
+    //     .transition()
+    //     .duration(400)
+    //     .delay((d, i) => 400 - i * (400 / count))
+    //     .attr('transform', (d, i) => {
+    //       let trans = offset
+    //       offset += 12 + d.length * (lineSize)
+    //       return 'translate(' + 0 + ',' + trans + ')'
+    //     })
+    //
+    //   // let offset = 0
+    //   // svg.g.select('g#hardwareMonitoring').selectAll('g.sensor')
+    //   //   .each(function (d, i) {
+    //   //     let g = d3.select(this)
+    //   //     g.transition()
+    //   //       .duration(600)
+    //   //       .delay((d, i) => 600 - i * (600 / count))
+    //   //       .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
+    //   //     offset += 12 + d.length * (lineSize)
+    //   //   })
+    // }
     function displayOnOffButton (g) {
       g.select('rect#background').attr('fill', d3.color(colorPalette.darker.background).darker(0.2))
       g.selectAll('g.sensorline').transition()
@@ -575,10 +731,19 @@ let mainWeatherMonitoring = function (optIn) {
           return 'translate(' + 0 + ',' + (i * 12) + ')'
         })
     }
-    function expandSensor (g) {
-      svgMeasuredData.shift()
+    function expandSensor () {
+      // svgMeasuredData.shift()
       let offset = 0
-      g.selectAll('g.sensor')
+      svg.g.select('g#hardwareMonitoring')
+        .transition()
+        .duration(600)
+        .attr('transform', 'translate(' + 0 + ',' + -box.y * 0.2 + ')')
+      svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
+        .attr('visibility', 'visible')
+        .transition()
+        .duration(600)
+        .attr('opacity', 1)
+      svg.g.select('g#heatmapSensors').selectAll('g.sensor')
         .each(function (d, i) {
           let g = d3.select(this)
           g.on('mouseenter', function (d) {
@@ -605,12 +770,12 @@ let mainWeatherMonitoring = function (optIn) {
             .attr('x', -4)
             .attr('y', -11)
             .attr('width', 2)
-            .attr('height', d.length * (box.h / 30 + 12))
+            .attr('height', d.length * (lineSize + 12))
           g.select('rect#background')
             .attr('x', -6)
             .attr('y', -26)
             .attr('width', box.w)
-            .attr('height', d.length * (box.h / 30 + 12) + 8 + 16)
+            .attr('height', d.length * (lineSize + 12) + 8 + 16)
             .attr('fill', 'transparent')
           g.transition()
             .duration(600)
@@ -624,7 +789,7 @@ let mainWeatherMonitoring = function (optIn) {
             .attr('y', -1)
             .style('font-size', '10px')
             .attr('transform', function (d, i) {
-              return 'translate(' + 0 + ',' + (i * 8) + ')'
+              return 'translate(' + 0 + ',' + (i * 9) + ')'
             })
           g.selectAll('g.sensorline')
             .transition()
@@ -632,13 +797,31 @@ let mainWeatherMonitoring = function (optIn) {
             .attr('transform', function (d, i) {
               return 'translate(' + 0 + ',' + (i * 12) + ')'
             })
-          offset += d.length * (box.h / 30 + 11)
+          offset += d.length * (lineSize + 11)
         })
+
+      scrollbox.updateBox({x: 0, y: 0, w: box.w, h: (box.y * 0.2 + box.h)})
+      scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (offset)})
     }
-    function shrinkSensor (g) {
-      svgMeasuredData.unshift()
+    function defaultDisplay () {
+      // svgMeasuredData.unshift()
+      svg.g.select('g#hardwareMonitoring')
+        .transition()
+        .duration(600)
+        .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+        .on('end', function () {
+          scrollbox.updateBox({x: 0, y: 0, w: box.w, h: box.h})
+          scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: 0})
+        })
+      let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
+      svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
+        .attr('visibility', 'visible')
+        .transition()
+        .duration(600)
+        .delay((d, i) => i * (600 / count))
+        .attr('opacity', 1)
       let offset = 0
-      g.selectAll('g.sensor')
+      svg.g.select('g#heatmapSensors').selectAll('g.sensor')
         .each(function (d) {
           let g = d3.select(this)
           g.on('mouseenter', () => {})
@@ -652,10 +835,10 @@ let mainWeatherMonitoring = function (optIn) {
             .attr('transform', function (d, i) {
               return 'translate(' + 0 + ',' + 0 + ')'
             })
-          offset += 12 + d.length * (box.h / 30)
+          offset += spaceSize + d.length * (lineSize)
         })
-      g.selectAll('rect#label').remove()
-      g.selectAll('text#label').remove()
+      svg.g.select('g#heatmapSensors').selectAll('rect#label').remove()
+      svg.g.select('g#heatmapSensors').selectAll('text#label').remove()
     }
     function onOffSensor (g, j) {
       g.selectAll('rect#timestamp')
@@ -672,6 +855,11 @@ let mainWeatherMonitoring = function (optIn) {
         })
     }
     function SensorCore (sensors, g) {
+      let rows = 0
+      for (let el in sensors) {
+        rows += sensors[el].length
+      }
+      lineSize = (box.h - sensors.length * spaceSize) / rows
       let current = g
         .selectAll('g.sensor')
         .data(sensors, function (d) {
@@ -691,10 +879,10 @@ let mainWeatherMonitoring = function (optIn) {
           for (let i = 0; i < d[j].status.previous.length; i++) {
             tg.append('rect')
               .attr('id', 'timestamp')
-              .attr('x', 0 + (i * (box.w * 0.66) / d[j].status.previous.length))
-              .attr('y', 0 + j * box.h / 30)
-              .attr('width', (box.w * 0.66) / d[j].status.previous.length)
-              .attr('height', box.h / 30)
+              .attr('x', 0 + (i * (box.w * 0.8) / d[j].status.previous.length))
+              .attr('y', j * lineSize)
+              .attr('width', (box.w * 0.8) / d[j].status.previous.length)
+              .attr('height', lineSize)
               .attr('fill', () => {
                 if (d[j].status.previous[i] === 'RUNNING') return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker().darker()
                 if (d[j].status.previous[i] === 'ERROR') return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker().darker()
@@ -706,10 +894,10 @@ let mainWeatherMonitoring = function (optIn) {
           }
           ig.append('rect')
             .attr('id', 'current')
-            .attr('x', box.w * 0.72)
-            .attr('y', 0 + j * box.h / 30)
+            .attr('x', box.w * 0.85)
+            .attr('y', j * lineSize)
             .attr('width', (box.w * 0.05))
-            .attr('height', box.h / 30)
+            .attr('height', lineSize)
             .attr('fill', () => {
               if (d[j].status.current === 'RUNNING') return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker()
               if (d[j].status.current === 'ERROR') return d[j].running === true ? d3.color(colorPalette.blocks.fail.background) : d3.color(colorPalette.blocks.fail.background).darker()
@@ -721,9 +909,9 @@ let mainWeatherMonitoring = function (optIn) {
           // if (d[j].status.current === 'ERROR') {
             // ig.append('rect')
             //   .attr('x', box.w * 0.8)
-            //   .attr('y', 0 + j * box.h / 30 - box.h / 30 * 0.5)
-            //   .attr('width', box.h / 30 * 2)
-            //   .attr('height', box.h / 30 * 2)
+            //   .attr('y', 0 + j * lineSize - lineSize * 0.5)
+            //   .attr('width', lineSize * 2)
+            //   .attr('height', lineSize * 2)
             //   .attr('fill', 'gold')
             //   .attr('stroke-width', 0)
             //   // .style('boxShadow', '10px 20px 30px black')
@@ -743,9 +931,9 @@ let mainWeatherMonitoring = function (optIn) {
             // ig.append('svg:image')
             //   .attr('xlink:href', '/static/icons/warning-tri.svg')
             //   .attr('x', box.w * 0.8)
-            //   .attr('y', 0 + j * box.h / 30 - box.h / 30 * 0.5)
-            //   .attr('width', box.h / 30 * 2)
-            //   .attr('height', box.h / 30 * 2)
+            //   .attr('y', 0 + j * lineSize - lineSize * 0.5)
+            //   .attr('width', lineSize * 2)
+            //   .attr('height', lineSize * 2)
             //   .style('opacity', 0.5)
             //   .style('pointer-events', 'none')
           // }
@@ -757,7 +945,7 @@ let mainWeatherMonitoring = function (optIn) {
       merge.each(function (d, i) {
         let g = d3.select(this)
         g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-        offset += 12 + d.length * (box.h / 30)
+        offset += spaceSize + d.length * (lineSize)
       })
       current
         .exit()
@@ -769,9 +957,9 @@ let mainWeatherMonitoring = function (optIn) {
     function initData () {
       box = {
         x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.09,
-        w: lenD.w[0] * 0.25,
-        h: lenD.h[0] * 0.25,
+        y: lenD.h[0] * 0.7,
+        w: lenD.w[0] * 0.23,
+        h: lenD.h[0] * 0.28,
         marg: lenD.w[0] * 0.01
       }
 
@@ -789,7 +977,7 @@ let mainWeatherMonitoring = function (optIn) {
         }
         return status
       }
-      let data = [
+      shared.server.sensors = [
         [{id: 'id0', name: 'Illuminator', status: fillfun(), running: Math.random() < 0.5}],
         [{id: 'id1', name: 'Photometer', status: fillfun(), running: Math.random() < 0.5}],
         [{id: 'id2', name: 'All-sky-camera', status: fillfun(), running: Math.random() < 0.5}],
@@ -816,20 +1004,30 @@ let mainWeatherMonitoring = function (optIn) {
       ]
 
       let main = svg.g.append('g').attr('id', 'hardwareMonitoring')
+      scrollbox = initScrollBox('heatmapScrollbox', main.append('g').attr('id', 'heatmapSensors').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.05) + ')'), box, {}, true)
+      // main.append('rect')
+      //   .attr('x', box.x)
+      //   .attr('y', box.y)
+      //   .attr('width', box.w)
+      //   .attr('height', box.y)
+      //   .attr('fill', colorPalette.darker.background)
+      main.append('rect')
+        .attr('x', box.x)
+        .attr('y', (box.y - 18) + 'px')
+        .attr('width', box.w)
+        .attr('height', '24px')
+        .attr('fill', colorPalette.darker.background)
       main.append('text')
         .text('Hardware Monitoring')
         .style('fill', '#000000')
         .style('font-weight', 'bold')
         .style('font-size', '18px')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
+        .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y) + ')')
 
-      let gsens = main.append('g')
-        .attr('id', 'heatmapSensors')
-        .attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.05) + ')')
-
+      let gsens = scrollbox.get('innerG')
       main.append('rect')
-        .attr('x', box.x + box.w * 0.72)
+        .attr('x', box.x + box.w * 0.9)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
         .attr('height', '16px')
@@ -837,17 +1035,11 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('stroke-width', 0)
         .style('boxShadow', '10px 20px 30px black')
         .on('click', function () {
-          if (expanded) {
-            expanded = false
-            shrinkSensor(gsens)
-          } else {
-            expanded = true
-            expandSensor(gsens)
-          }
+          changeState('heatmap')
         })
         .on('mouseover', function (d) {
           d3.select(this).style('cursor', 'pointer')
-          d3.select(this).attr('fill', colorPalette.darkest.background)
+          d3.select(this).attr('fill', colorPalette.darker.background)
         })
         .on('mouseout', function (d) {
           d3.select(this).style('cursor', 'default')
@@ -855,13 +1047,13 @@ let mainWeatherMonitoring = function (optIn) {
         })
       main.append('svg:image')
         .attr('xlink:href', '/static/icons/full-size.svg')
-        .attr('x', box.x + box.w * 0.72)
+        .attr('x', box.x + box.w * 0.9)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
         .attr('height', '16px')
         .style('pointer-events', 'none')
 
-      SensorCore(data, gsens)
+      SensorCore(shared.server.sensors, gsens)
     }
     this.initData = initData
 
@@ -874,12 +1066,13 @@ let mainWeatherMonitoring = function (optIn) {
   let SvgMeasuredData = function () {
     let box
     let expanded = false
+    let scrollbox
 
     function shift () {
       svg.g.select('g#measuredData')
         .transition()
         .duration(600)
-        .attr('transform', 'translate(' + 0 + ',' + box.h + ')')
+        .attr('transform', 'translate(' + 0 + ',' + box.h * 0.7 + ')')
     }
     this.shift = shift
     function unshift () {
@@ -890,10 +1083,21 @@ let mainWeatherMonitoring = function (optIn) {
     }
     this.unshift = unshift
     function expand (g) {
-      svgHeathMapSensors.shift()
+      // svgHeathMapSensors.changeState('measured', 'expanded')
+
+      // svg.g.select('g#measuredData')
+      //   .transition()
+      //   .delay(250)
+      //   .duration(600)
+      //   .attr('transform', 'translate(' + 0 + ',' + -box.h * 0.35 + ')')
     }
     function shrink (g) {
-      svgHeathMapSensors.unshift()
+      svgHeathMapSensors.changeState('measured', 'default')
+
+      // svg.g.select('g#measuredData')
+      //   .transition()
+      //   .duration(600)
+      //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     }
     function measuredCore (data, g) {
       let current = g
@@ -910,80 +1114,212 @@ let mainWeatherMonitoring = function (optIn) {
         let g = d3.select(this)
         g.append('rect').attr('id', 'background')
         let main = g.append('g').attr('id', 'mainMeasure')
+
+        let min = Math.min(...d.status.previous, d.status.current)
+        let max = Math.max(...d.status.previous, d.status.current)
+
+        // main.append('defs')
+        //   .append('clipPath')
+        //   .attr('id', 'rect-clip' + d.id)
+        //   .append('rect')
+        //   .attr('x', 12 + (box.w * 0.45 / 50 * min))
+        //   .attr('y', -12)
+        //   .attr('width', (box.w * 0.45 / 50 * (max - min)))
+        //   .attr('height', 12)
+        //   .style('fill-opacity', 0)
+        // main.append('rect')
+        //   .attr('x', 0)
+        //   .attr('y', -12)
+        //   .attr('width', box.w * 0.075)
+        //   .attr('height', 12)
+        //   .attr('fill', colorPalette.blocks.fail.background)
+        //   .attr('stroke', 'none')
+        //   .attr('rx', 0)
+        //   .style('opacity', 0.8)
+        //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+        // main.append('rect')
+        //   .attr('x', 0 + box.w * 0.075)
+        //   .attr('y', -12)
+        //   .attr('width', box.w * 0.075)
+        //   .attr('height', 12)
+        //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+        //   .attr('stroke', 'none')
+        //   .attr('rx', 0)
+        //   .style('opacity', 0.8)
+        //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+        // main.append('rect')
+        //   .attr('x', 0 + box.w * 0.15)
+        //   .attr('y', -12)
+        //   .attr('width', box.w * 0.15)
+        //   .attr('height', 12)
+        //   .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
+        //   .attr('stroke', 'none')
+        //   .attr('rx', 0)
+        //   .style('opacity', 0.8)
+        //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+        // main.append('rect')
+        //   .attr('x', 0 + box.w * 0.3)
+        //   .attr('y', -12)
+        //   .attr('width', box.w * 0.075)
+        //   .attr('height', 12)
+        //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
+        //   .attr('stroke', 'none')
+        //   .attr('rx', 0)
+        //   .style('opacity', 0.8)
+        //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+        // main.append('rect')
+        //   .attr('x', 0 + box.w * 0.375)
+        //   .attr('y', -12)
+        //   .attr('width', box.w * 0.075)
+        //   .attr('height', 12)
+        //   .attr('fill', colorPalette.blocks.fail.background)
+        //   .attr('stroke', 'none')
+        //   .attr('rx', 0)
+        //   .style('opacity', 0.8)
+        //   .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+        //
+        // main.append('rect')
+        //   .attr('x', 0 + (box.w * 0.45 / 50 * d.status.current))
+        //   .attr('y', -12)
+        //   .attr('width', 3)
+        //   .attr('height', 12)
+        //   .attr('fill', '#000000') // colorPalette.dark.background)
+        //   .attr('stroke', 'none')
+        //   .attr('rx', 0)
+        //
+        // main.append('text')
+        //   .attr('id', 'measurelabel')
+        //   .text(d.name + ':')
+        //   .attr('x', box.w * 0.48)
+        //   .attr('y', 0)
+        //   .style('font-size', '12px')
+        // main.append('text')
+        //   .attr('id', 'valuelabel')
+        //   .text(d.status.current)
+        //   .attr('x', box.w * 0.75)
+        //   .attr('y', 0)
+        //   .style('font-size', '12px')
+        //   .style('font-weight', 'bold')
+        // main.append('text')
+        //   .attr('id', 'unitlabel')
+        //   .text(d.unit)
+        //   .attr('x', box.w * 0.88)
+        //   .attr('y', 0)
+        //   .style('font-size', '9px')
+        //   .style('font-weight', '')
+
         main.append('rect')
           .attr('x', 12)
-          .attr('y', 4)
+          .attr('y', -13)
+          .attr('width', (box.w * 0.45))
+          .attr('height', 30)
+          .attr('fill', 'none')
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 0.1)
+        main.append('defs')
+          .append('clipPath')
+          .attr('id', 'rect-clip' + d.id)
+          .append('rect')
+          .attr('x', 12 + (box.w * 0.45 / 50 * min))
+          .attr('y', -13)
+          .attr('width', (box.w * 0.45 / 50 * (max - min)))
+          .attr('height', 30)
+          .style('fill-opacity', 0)
+        main.append('rect')
+          .attr('x', 12)
+          .attr('y', -13)
           .attr('width', box.w * 0.075)
-          .attr('height', 8)
+          .attr('height', 30)
           .attr('fill', colorPalette.blocks.fail.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
-          .style('opacity', 0.6)
+          .style('opacity', 0.8)
+          .attr('clip-path', 'url(#rect-clip' + d.id + ')')
         main.append('rect')
           .attr('x', 12 + box.w * 0.075)
-          .attr('y', 4)
+          .attr('y', -13)
           .attr('width', box.w * 0.075)
-          .attr('height', 8)
+          .attr('height', 30)
           .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
-          .style('opacity', 0.6)
+          .style('opacity', 0.8)
+          .attr('clip-path', 'url(#rect-clip' + d.id + ')')
         main.append('rect')
           .attr('x', 12 + box.w * 0.15)
-          .attr('y', 4)
+          .attr('y', -13)
           .attr('width', box.w * 0.15)
-          .attr('height', 8)
+          .attr('height', 30)
           .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
-          .style('opacity', 0.6)
+          .style('opacity', 0.8)
+          .attr('clip-path', 'url(#rect-clip' + d.id + ')')
         main.append('rect')
           .attr('x', 12 + box.w * 0.3)
-          .attr('y', 4)
+          .attr('y', -13)
           .attr('width', box.w * 0.075)
-          .attr('height', 8)
+          .attr('height', 30)
           .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
-          .style('opacity', 0.6)
+          .style('opacity', 0.8)
+          .attr('clip-path', 'url(#rect-clip' + d.id + ')')
         main.append('rect')
           .attr('x', 12 + box.w * 0.375)
-          .attr('y', 4)
+          .attr('y', -13)
           .attr('width', box.w * 0.075)
-          .attr('height', 8)
+          .attr('height', 30)
           .attr('fill', colorPalette.blocks.fail.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
-          .style('opacity', 0.6)
+          .style('opacity', 0.8)
+          .attr('clip-path', 'url(#rect-clip' + d.id + ')')
+
+        main.append('rect')
+          .attr('x', 12 + (box.w * 0.45 / 50 * d.status.current))
+          .attr('y', -13)
+          .attr('width', 1)
+          .attr('height', 30)
+          .attr('fill', '#000000') // colorPalette.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+        main.append('circle')
+          .attr('cx', 13 + (box.w * 0.45 / 50 * d.status.current))
+          .attr('cy', 0)
+          .attr('r', 4)
+          .attr('fill', '#000000')
+          .attr('stroke', 'none')
+          .attr('rx', 0)
 
         main.append('text')
           .attr('id', 'measurelabel')
           .text(d.name)
-          .attr('x', box.w * 0)
-          .attr('y', -2)
-          .style('font-size', '14px')
+          .attr('x', box.w * 0.55)
+          .attr('y', -5)
+          .style('font-size', '12px')
         main.append('text')
           .attr('id', 'valuelabel')
           .text(d.status.current)
           .attr('x', box.w * 0.55)
-          .attr('y', 14)
-          .style('font-size', '14px')
+          .attr('y', 12)
+          .style('font-size', '16px')
           .style('font-weight', 'bold')
         main.append('text')
           .attr('id', 'unitlabel')
           .text(d.unit)
-          .attr('x', box.w * 0.72)
-          .attr('y', 14)
-          .style('font-size', '12px')
+          .attr('x', box.w * 0.73)
+          .attr('y', 12)
+          .style('font-size', '10px')
           .style('font-weight', '')
       })
       let merge = current.merge(enter)
 
-      let offset = 0
+      let offset = 14
       merge.each(function (d, i) {
         let g = d3.select(this)
         g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-        offset += 30
+        offset += 38
       })
       current
         .exit()
@@ -995,21 +1331,22 @@ let mainWeatherMonitoring = function (optIn) {
     function initData () {
       box = {
         x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.45,
-        w: lenD.w[0] * 0.25,
+        y: lenD.h[0] * 0.09,
+        w: lenD.w[0] * 0.23,
         h: lenD.h[0] * 0.55,
         marg: lenD.w[0] * 0.01
       }
 
       let fillfun = function () {
         let status = {current: '', previous: []}
-        status.current = (Math.random() * 50).toFixed(2)
-        for (let i = 0; i < 4; i++) {
-          status.previous.push((Math.random() * 50).toFixed(2))
+        status.current = (Math.random() * 50)
+        for (let i = 0; i < 2; i++) {
+          status.previous.push((status.current + ((Math.random() * 30) - 10)).toFixed(2))
         }
+        status.current = status.current.toFixed(2)
         return status
       }
-      let data = [
+      shared.server.measures = [
         {id: 'id0', name: 'Measure1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
         {id: 'id1', name: 'Measure2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
         {id: 'id2', name: 'Measure3', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
@@ -1042,13 +1379,21 @@ let mainWeatherMonitoring = function (optIn) {
       ]
 
       let main = svg.g.append('g').attr('id', 'measuredData')
+      scrollbox = initScrollBox('measuredScrollbox', main.append('g').attr('id', 'measured').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.03) + ')'), box, {}, true)
+
+      main.append('rect')
+        .attr('x', box.x)
+        .attr('y', (box.y - 18) + 'px')
+        .attr('width', box.w)
+        .attr('height', '24px')
+        .attr('fill', colorPalette.darker.background)
       main.append('text')
         .text('Measured Data')
         .style('fill', '#000000')
         .style('font-weight', 'bold')
         .style('font-size', '18px')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+        .attr('transform', 'translate(' + box.x + 2 + ',' + box.y + ')')
       // let startY = lenD.h[0] * 0.4
       // let endY = lenD.h[0] * 0.6
       // svg.g.append('rect')
@@ -1091,12 +1436,10 @@ let mainWeatherMonitoring = function (optIn) {
       //   .attr('fill', '#0288D1')
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
-      let gmes = main.append('g')
-        .attr('id', 'measured')
-        .attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.05) + ')')
+      let gmes = scrollbox.get('innerG')
 
       main.append('rect')
-        .attr('x', box.x + box.w * 0.72)
+        .attr('x', box.x + box.w * 0.9)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
         .attr('height', '16px')
@@ -1114,7 +1457,7 @@ let mainWeatherMonitoring = function (optIn) {
         })
         .on('mouseover', function (d) {
           d3.select(this).style('cursor', 'pointer')
-          d3.select(this).attr('fill', colorPalette.darkest.background)
+          d3.select(this).attr('fill', colorPalette.darker.background)
         })
         .on('mouseout', function (d) {
           d3.select(this).style('cursor', 'default')
@@ -1122,13 +1465,13 @@ let mainWeatherMonitoring = function (optIn) {
         })
       main.append('svg:image')
         .attr('xlink:href', '/static/icons/full-size.svg')
-        .attr('x', box.x + box.w * 0.72)
+        .attr('x', box.x + box.w * 0.9)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
         .attr('height', '16px')
         .style('pointer-events', 'none')
 
-      measuredCore(data, gmes)
+      measuredCore(shared.server.measures, gmes)
     }
     this.initData = initData
 
@@ -1138,6 +1481,179 @@ let mainWeatherMonitoring = function (optIn) {
     function update () {}
     this.update = update
   }
+  let SvgSupervision = function () {
+    let box
+    let expanded = false
+    let scrollbox
+
+    // function expand (g) {
+    //   // svgHeathMapSensors.changeState('measured', 'expanded')
+    //
+    //   // svg.g.select('g#measuredData')
+    //   //   .transition()
+    //   //   .delay(250)
+    //   //   .duration(600)
+    //   //   .attr('transform', 'translate(' + 0 + ',' + -box.h * 0.35 + ')')
+    // }
+    // function shrink (g) {
+    //   svgHeathMapSensors.changeState('measured', 'default')
+    //
+    //   // svg.g.select('g#measuredData')
+    //   //   .transition()
+    //   //   .duration(600)
+    //   //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+    // }
+    function createUrgentList () {
+      let urgentList = []
+      for (let i = 0; i < shared.server.sensors.length; i++) {
+        for (let j = 0; j < shared.server.sensors[i].length; j++) {
+          if (shared.server.sensors[i][j].status.current === 'ERROR') urgentList.push({type: 'sensor', data: shared.server.sensors[i][j]})
+        }
+      }
+      for (let i = 0; i < shared.server.sensors.length; i++) {
+        if (shared.server.measures[i].status.current < 10 || shared.server.measures[i].status.current > 40) {
+          urgentList.push({type: 'measure', data: shared.server.measures[i]})
+        }
+      }
+      return urgentList
+    }
+    function serpervisionCore (g) {
+      let data = createUrgentList()
+      let size = {x: 6, y: 26, w: 30, h: 30, marg: 4}
+
+      let current = g
+        .selectAll('g.urgent')
+        .data(data)
+      let enter = current
+        .enter()
+        .append('g')
+        .attr('class', 'urgent')
+
+      enter.each(function (d, i) {
+        let g = d3.select(this)
+        g.append('rect')
+          .attr('x', size.x)
+          .attr('y', size.y)
+          .attr('width', size.w)
+          .attr('height', size.h)
+          .attr('fill', function () {
+            if (d.type === 'measure') return 'red'
+            if (d.type === 'sensor') return 'blue'
+          })
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+          .style('opacity', 0.6)
+
+        g.append('text')
+          .attr('id', 'label')
+          .text(function () {
+            if (d.type === 'measure') return d.data.name
+            if (d.type === 'sensor') return d.data.name
+          })
+          .attr('x', size.x)
+          .attr('y', size.y + size.h / 2)
+          .style('font-size', '14px')
+        // g.append('text')
+        //   .attr('id', 'unitlabel')
+        //   .text(d.unit)
+        //   .attr('x', box.w * 0.72)
+        //   .attr('y', 14)
+        //   .style('font-size', '12px')
+        //   .style('font-weight', '')
+      })
+      let merge = current.merge(enter)
+
+      merge.each(function (d, i) {
+        let g = d3.select(this)
+        g.attr('transform', 'translate(' + ((i % 6) * (size.w + size.marg)) + ',' + (parseInt(i / 6) * (size.h + size.marg)) + ')')
+      })
+      current
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
+    }
+    function initData () {
+      box = {
+        x: lenD.w[0] * 0.26,
+        y: lenD.h[0] * 0.0,
+        w: lenD.w[0] * 0.48,
+        h: lenD.h[0] * 0.13,
+        marg: lenD.w[0] * 0.01
+      }
+
+      let main = svg.g.append('g').attr('id', 'urgentSupervision')
+      scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.03) + ')'), box, {}, true)
+
+      // main.append('rect')
+      //   .attr('x', box.x)
+      //   .attr('y', box.y)
+      //   .attr('width', box.w)
+      //   .attr('height', box.h)
+      //   .attr('fill', 'none') // 'url(#patternLock)')
+      //   .attr('stroke', colorPalette.dark.stroke)
+      //   .attr('stroke-width', 0.2)
+      //   .style('opacity', 0.2)
+      main.append('rect')
+        .attr('x', box.x)
+        .attr('y', box.y)
+        .attr('width', box.w)
+        .attr('height', '24px')
+        .attr('fill', colorPalette.darker.background)
+      main.append('text')
+        .text('Urgent Supervision')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '18px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y + 18) + ')')
+
+      let gmes = scrollbox.get('innerG')
+
+      // main.append('rect')
+      //   .attr('x', box.x + box.w * 0.9)
+      //   .attr('y', (box.y - 14) + 'px')
+      //   .attr('width', '16px')
+      //   .attr('height', '16px')
+      //   .attr('fill', 'transparent')
+      //   .attr('stroke-width', 0)
+      //   .style('boxShadow', '10px 20px 30px black')
+      //   .on('click', function () {
+      //     if (expanded) {
+      //       expanded = false
+      //       shrink(gmes)
+      //     } else {
+      //       expanded = true
+      //       expand(gmes)
+      //     }
+      //   })
+      //   .on('mouseover', function (d) {
+      //     d3.select(this).style('cursor', 'pointer')
+      //     d3.select(this).attr('fill', colorPalette.darker.background)
+      //   })
+      //   .on('mouseout', function (d) {
+      //     d3.select(this).style('cursor', 'default')
+      //     d3.select(this).attr('fill', 'transparent')
+      //   })
+      // main.append('svg:image')
+      //   .attr('xlink:href', '/static/icons/full-size.svg')
+      //   .attr('x', box.x + box.w * 0.9)
+      //   .attr('y', (box.y - 14) + 'px')
+      //   .attr('width', '16px')
+      //   .attr('height', '16px')
+      //   .style('pointer-events', 'none')
+      serpervisionCore(gmes)
+    }
+    this.initData = initData
+
+    function updateData () {}
+    this.updateData = updateData
+
+    function update () {}
+    this.update = update
+  }
+  let svgSupervision = new SvgSupervision()
   let svgMeasuredData = new SvgMeasuredData()
   let svgHeathMapSensors = new SvgHeathMapSensors()
   let svgBlocksQueueServer = new SvgBlocksQueueServer()
