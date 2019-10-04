@@ -25,9 +25,12 @@ var mainScriptTag = 'weatherMonitoring'
 /* global colsMix */
 /* global unique */
 /* global ScrollBox */
+/* global PlotBrushZoom */
+
 window.loadScript({source: mainScriptTag, script: '/js/utils_plotTimeSeries.js'})
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotTimeBar.js' })
+window.loadScript({ source: mainScriptTag, script: '/js/utils_plotBrushZoom.js' })
 // // load additional js files:
 // window.loadScript({ source:mainScriptTag, script:"/js/utils_scrollGrid.js"});
 
@@ -38,7 +41,6 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   let h0 = 10
   let w0 = 12
   let divKey = 'main'
-
   let content = "<div id='" + optIn.baseName + divKey + "'>" +
   // '<iframe width="600" height="500" id="gmap_canvas" src="https://maps.google.com/maps?q=la%20palma&t=&z=13&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>' +
   // '<iframe width="650" height="650" src="https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" frameborder="0"></iframe>' +
@@ -113,58 +115,48 @@ let mainWeatherMonitoring = function (optIn) {
   // locker.add('inInit')
   let runLoop = new RunLoop({ tag: widgetId })
 
-  function addPlot (optIn) {
-    let plotId = optIn.plotId
-
-    let plotg = svg.g.append('g')
-
-    let plotBoxData = {
-      x: lenD.w[0] * 0.26 + 20,
-      y: lenD.h[0] * 0.17 + 20,
-      w: lenD.w[0] * 0.48 - 40,
-      h: lenD.h[0] * 0.4 - 40
-    }
-
-    let plot = new PlotTimeSeries()
-
-    plot.init({
-      tag: plotId,
-      gBox: plotg,
-      hasBotPlot: false,
-      updateDomainY: false,
-      overviewLine: true,
-      style: { hasOutline: true },
-      boxData: plotBoxData,
-      locker: locker,
-      lockerV: [plotId + 'updateData'],
-      lockerZoom: {
-        all: plotId + 'zoom',
-        during: plotId + 'zoomDuring',
-        end: plotId + 'zoomEnd'
-      },
-      runLoop: runLoop
-    })
-    // com.plot[plotId].plugPlotTimeBar(com.plot['associate'])
-  }
-
   function initData (dataIn) {
     function initSvg () {
       lenD.w = {}
       lenD.h = {}
       lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0] / sgvTag.main.whRatio
-
+      lenD.h[0] = lenD.w[0]// / sgvTag.main.whRatio
       svg.svg = d3
+        .select(svgDiv)
+        .append('svg')
+        // .attr('preserveAspectRatio', 'xMidYMid meet')
+        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .style('position', 'relative')
+        .style('width', '80%')
+        .style('height', '100%')
+        .style('top', '0%')
+        .style('left', '20%')
+        .on('dblclick.zoom', null)
+
+      svg.floatingMenu = d3
         .select(svgDiv)
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
         .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
-        .style('position', 'relative')
-        .style('width', '100%')
-        .style('height', '100%')
-        .style('top', '0px')
-        .style('left', '0px')
-        .on('dblclick.zoom', null)
+        .style('position', 'fixed')
+        .style('top', 'inherit')
+        .style('left', '10px')
+        .style('pointer-events', 'none')
+
+      function adjustDim () {
+        $(svg.floatingMenu.node()).width($(svgDiv).width())
+        $(svg.floatingMenu.node()).height($(svgDiv).height())
+      }
+
+      $(window).resize(
+        function () {
+          adjustDim()
+        })
+      adjustDim()
+
+      svg.floatingMenuRoot = svg.floatingMenu.append('g')
+        .attr('transform', 'translate(' + -lenD.w[0] * 0.12 + ',' + 0 + ')')
+
       if (disableScrollSVG) {
         svg.svg.on('wheel', function () {
           d3.event.preventDefault()
@@ -174,61 +166,6 @@ let mainWeatherMonitoring = function (optIn) {
       svg.g = svg.svg.append('g')
     }
     function initBackground () {
-      // svg.back.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', lenD.w[0] * 0.2)
-      //   .attr('height', lenD.h[0] * 0.06)
-      //   .attr('fill', 'none') // colorPalette.dark.background)
-      //   .attr('stroke', '#000000')
-      //   .attr('stroke-width', 0.4)
-      //   .attr('rx', 0)
-      svg.back.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', lenD.w[0] * 0.2)
-        .attr('height', lenD.h[0] * 0.065)
-        .attr('fill', colorPalette.darker.background)
-        .attr('stroke', colorPalette.darkest.stroke)
-        .attr('stroke-width', 0.3)
-        .attr('rx', 0)
-      svg.back.append('text')
-        .attr('id', 'currentHourTop')
-        .attr('stroke', '#000000') // colorPalette.bright.stroke)
-        .attr('stroke-width', 0.0)
-        .attr('fill', '#000000') // colorPalette.bright.stroke)
-        .attr('x', lenD.w[0] * 0.1)
-        .attr('y', lenD.h[0] * 0.024)
-        .style('font-weight', 'bold')
-        .attr('text-anchor', 'middle')
-        .style('font-size', '18px')
-        .style('pointer-events', 'none')
-        .style('user-select', 'none')
-      // svg.back.append('text')
-      //   .attr('id', 'currentHourLeftBottom')
-      //   .attr('stroke', colorPalette.bright.background)
-      //   .attr('stroke-width', 0.5)
-      //   .attr('fill', colorPalette.bright.background)
-      //   .attr('x', lenD.w[0] * 0.055)
-      //   .attr('y', lenD.h[0] * 0.05)
-      //   .style('font-weight', 'bold')
-      //   .attr('text-anchor', 'middle')
-      //   .style('font-size', '18px')
-      //   .style('pointer-events', 'none')
-      //   .style('user-select', 'none')
-      svg.back.append('text')
-        .attr('id', 'currentHourBottom')
-        .attr('stroke', '#000000') // colorPalette.bright.stroke)
-        .attr('stroke-width', 0.0)
-        .attr('fill', '#000000') // colorPalette.bright.stroke)
-        .attr('x', lenD.w[0] * 0.1)
-        .attr('y', lenD.h[0] * 0.05)
-        .style('font-weight', 'bold')
-        .attr('text-anchor', 'middle')
-        .style('font-size', '20px')
-        .style('pointer-events', 'none')
-        .style('user-select', 'none')
-
       let pattern = {select: {}}
       pattern.select.defs = svg.g.append('defs')
       pattern.select.patternLock = pattern.select.defs.append('pattern')
@@ -418,19 +355,16 @@ let mainWeatherMonitoring = function (optIn) {
     initBackground()
     initBox()
 
-    svgMeasuredData.initData()
-    svgHeathMapSensors.initData()
-    svgSupervision.initData()
-    addPlot({ plotId: 'default', propId: 'default' })
-
     shared.server = dataIn.data
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
-    let currentTime = {date: new Date(shared.server.timeOfNight.date_now)}
-    svg.back.select('text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
-    // svg.back.select('text#currentHourLeftBottom').text(d3.timeFormat('%Y UTC')(currentTime.date))
-    svg.back.select('text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
 
-    svgBlocksQueueServer.initData()
+    svgMeasuredData.initData()
+    svgHeathMapSensors.initData()
+    svgFMDate.initData()
+    svgFMTimeline.initData()
+    svgFMSupervision.initData()
+
+    svgPlotDisplay.initData()
   }
   this.initData = initData
   function updateDataOnce (dataIn) {
@@ -446,8 +380,9 @@ let mainWeatherMonitoring = function (optIn) {
 
     shared.server = dataIn.data
 
-    svgBlocksQueueServer.updateData()
+    svgPlotDisplay.updateData()
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
+    svgFMDate.updateData()
 
     locker.remove('updateData')
   }
@@ -501,19 +436,228 @@ let mainWeatherMonitoring = function (optIn) {
     return scrollBox
   }
 
-  let SvgBlocksQueueServer = function () {
+  let SvgPlotDisplay = function () {
+    let plotbox
+    let plot
+    let brushbox
+    let brush
+
+    function addPlot (optIn) {
+      let plotId = optIn.plotId
+
+      let plotg = svg.g.append('g')
+
+      let plot = new PlotTimeSeries()
+      plot.init({
+        tag: plotId,
+        gBox: plotg,
+        hasBotPlot: false,
+        updateDomainY: false,
+        overviewLine: true,
+        style: { hasOutline: true },
+        boxData: plotbox,
+        axis: [
+          {
+            id: 'bottom',
+            showAxis: true,
+            main: {
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 14,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushbox.w]
+          },
+          {
+            id: 'left',
+            showAxis: true,
+            main: {
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 14,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushbox.w]
+          }
+        ],
+        locker: locker,
+        lockerV: [plotId + 'updateData'],
+        lockerZoom: {
+          all: plotId + 'zoom',
+          during: plotId + 'zoomDuring',
+          end: plotId + 'zoomEnd'
+        },
+        runLoop: runLoop
+      })
+      // com.plot[plotId].plugPlotTimeBar(com.plot['associate'])
+    }
+    function addBrush (optIn) {
+      let brushg = svg.g.append('g')
+
+      brush = new PlotBrushZoom({
+        main: {
+          g: brushg,
+          box: brushbox
+        },
+        clipping: {
+          enabled: false
+        },
+        axis: [
+          {
+            id: 'top',
+            enabled: true,
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushbox.h * 0.14, w: brushbox.w, h: brushbox.h * 0.2, marg: 0},
+              type: 'bottom',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 14,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushbox.w],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'middle',
+            enabled: true,
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushbox.h * 0.9, w: brushbox.w, h: brushbox.h * 0.0, marg: 0},
+              type: 'top',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 9,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: false,
+                  stroke: colorPalette.medium.background,
+                  fill: colorPalette.medium.background
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushbox.w],
+            brush: {
+              zoom: false,
+              brush: false
+            }
+          }
+        ],
+        content: {
+          enabled: true,
+          main: {
+            g: undefined,
+            box: {x: 0, y: brushbox.h * 0.15, w: brushbox.w, h: brushbox.h * 0.65, marg: 0},
+            attr: {
+              fill: colorPalette.medium.background
+            }
+          }
+        },
+        focus: {
+          enabled: true,
+          main: {
+            g: undefined,
+            box: {x: 0, y: brushbox.h * 0.15, w: brushbox.w, h: brushbox.h * 0.65, marg: 0},
+            attr: {
+              fill: colorPalette.darkest.background,
+              opacity: 1,
+              stroke: colorPalette.darkest.background
+            }
+          }
+        },
+        brush: {
+          coef: {x: 0, y: 0},
+          callback: () => {}
+        },
+        zoom: {
+          coef: {kx: 1, ky: 1, x: 0, y: 0},
+          callback: function () {}
+        }
+      })
+      brush.init()
+    }
+
     function initData () {
-      let adjustedBox = {
-        x: box.blockQueueServer.x,
-        y: box.blockQueueServer.y,
-        w: box.blockQueueServer.w,
-        h: box.blockQueueServer.h,
-        marg: lenD.w[0] * 0.01
+      plotbox = {
+        x: lenD.w[0] * 0.26 + 20,
+        y: lenD.h[0] * 0.17 + 20,
+        w: lenD.w[0] * 0.48 - 40,
+        h: lenD.h[0] * 0.4 - 40
       }
+      brushbox = {
+        x: lenD.w[0] * 0.26 + 20,
+        y: lenD.h[0] * 0.57 - 26,
+        w: lenD.w[0] * 0.48 - 40,
+        h: lenD.h[0] * 0.05
+      }
+
+      addPlot({ plotId: 'default', propId: 'default' })
+      addBrush()
+
+      updateData()
     }
     this.initData = initData
 
-    function updateData () {}
+    function updateData () {
+      let startTime = {date: new Date(shared.server.timeOfNight.date_start), time: Number(shared.server.timeOfNight.start)}
+      let endTime = {date: new Date(shared.server.timeOfNight.date_end), time: Number(shared.server.timeOfNight.end)}
+
+      brush.updateAxis({
+        id: 'top',
+        domain: [startTime.date, endTime.date]
+      })
+      brush.updateAxis({
+        id: 'middle',
+        domain: [startTime.date, endTime.date]
+      })
+    }
     this.updateData = updateData
 
     function update () {}
@@ -1331,7 +1475,7 @@ let mainWeatherMonitoring = function (optIn) {
     function initData () {
       box = {
         x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.09,
+        y: lenD.h[0] * 0.018,
         w: lenD.w[0] * 0.23,
         h: lenD.h[0] * 0.55,
         marg: lenD.w[0] * 0.01
@@ -1481,7 +1625,7 @@ let mainWeatherMonitoring = function (optIn) {
     function update () {}
     this.update = update
   }
-  let SvgSupervision = function () {
+  let SvgFMSupervision = function () {
     let box
     let expanded = false
     let scrollbox
@@ -1565,7 +1709,7 @@ let mainWeatherMonitoring = function (optIn) {
 
       merge.each(function (d, i) {
         let g = d3.select(this)
-        g.attr('transform', 'translate(' + ((i % 6) * (size.w + size.marg)) + ',' + (parseInt(i / 6) * (size.h + size.marg)) + ')')
+        g.attr('transform', 'translate(' + ((i % 1) * (size.w + size.marg)) + ',' + (parseInt(i / 1) * (size.h + size.marg)) + ')')
       })
       current
         .exit()
@@ -1576,14 +1720,14 @@ let mainWeatherMonitoring = function (optIn) {
     }
     function initData () {
       box = {
-        x: lenD.w[0] * 0.26,
-        y: lenD.h[0] * 0.0,
-        w: lenD.w[0] * 0.48,
-        h: lenD.h[0] * 0.13,
+        x: lenD.w[0] * 0.0,
+        y: lenD.h[0] * 0.2,
+        w: lenD.w[0] * 0.225,
+        h: lenD.h[0] * 0.4,
         marg: lenD.w[0] * 0.01
       }
 
-      let main = svg.g.append('g').attr('id', 'urgentSupervision')
+      let main = svg.floatingMenuRoot.append('g').attr('id', 'urgentSupervision')
       scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.03) + ')'), box, {}, true)
 
       // main.append('rect')
@@ -1653,10 +1797,134 @@ let mainWeatherMonitoring = function (optIn) {
     function update () {}
     this.update = update
   }
-  let svgSupervision = new SvgSupervision()
+  let SvgFMDate = function () {
+    let box
+
+    function initData () {
+      box = {
+        x: 8,
+        y: 0,
+        w: lenD.w[0] * 0.2,
+        h: lenD.h[0] * 0.065
+      }
+
+      let main = svg.floatingMenuRoot.append('g').attr('id', 'fmdate')
+
+      main.append('rect')
+        .attr('x', box.x)
+        .attr('y', box.y)
+        .attr('width', box.w)
+        .attr('height', box.h)
+        .attr('fill', colorPalette.darkest.stroke)
+        .attr('stroke', colorPalette.darkest.stroke)
+        .attr('stroke-width', 0.3)
+        .attr('rx', 0)
+      main.append('text')
+        .attr('id', 'currentHourTop')
+        .attr('stroke', colorPalette.bright.background)
+        .attr('stroke-width', 0.0)
+        .attr('fill', colorPalette.bright.background)
+        .attr('x', box.w * 0.5)
+        .attr('y', box.h * 0.4)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '18px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+      main.append('text')
+        .attr('id', 'currentHourBottom')
+        .attr('stroke', colorPalette.bright.background)
+        .attr('stroke-width', 0.0)
+        .attr('fill', colorPalette.bright.background)
+        .attr('x', box.w * 0.5)
+        .attr('y', box.h * 0.8)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '20px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+
+      updateData()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let currentTime = {date: new Date(shared.server.timeOfNight.date_now)}
+      svg.floatingMenuRoot.select('g#fmdate text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
+      svg.floatingMenuRoot.select('g#fmdate text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
+    }
+    this.updateData = updateData
+
+    function update () {}
+    this.update = update
+  }
+  let SvgFMTimeline = function () {
+    let box
+
+    function initData () {
+      box = {
+        x: 8,
+        y: lenD.h[0] * 0.08,
+        w: lenD.w[0] * 0.2,
+        h: lenD.h[0] * 0.1
+      }
+
+      let main = svg.floatingMenuRoot.append('g').attr('id', 'fmdate')
+
+      main.append('rect')
+        .attr('x', box.x)
+        .attr('y', box.y)
+        .attr('width', box.w)
+        .attr('height', box.h)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', colorPalette.darkest.stroke)
+        .attr('stroke-width', 0.3)
+        .attr('rx', 0)
+      main.append('text')
+        .attr('id', 'currentHourTop')
+        .attr('stroke', '#000000') // colorPalette.bright.stroke)
+        .attr('stroke-width', 0.0)
+        .attr('fill', '#000000') // colorPalette.bright.stroke)
+        .attr('x', box.w * 0.5)
+        .attr('y', box.h * 0.4)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '18px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+      main.append('text')
+        .attr('id', 'currentHourBottom')
+        .attr('stroke', '#000000') // colorPalette.bright.stroke)
+        .attr('stroke-width', 0.0)
+        .attr('fill', '#000000') // colorPalette.bright.stroke)
+        .attr('x', box.w * 0.5)
+        .attr('y', box.h * 0.8)
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('font-size', '20px')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+
+      updateData()
+    }
+    this.initData = initData
+
+    function updateData () {
+      let currentTime = {date: new Date(shared.server.timeOfNight.date_now)}
+      svg.floatingMenuRoot.select('text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
+      svg.floatingMenuRoot.select('text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
+    }
+    this.updateData = updateData
+
+    function update () {}
+    this.update = update
+  }
+  let svgFMTimeline = new SvgFMTimeline()
+  let svgFMDate = new SvgFMDate()
+  let svgFMSupervision = new SvgFMSupervision()
   let svgMeasuredData = new SvgMeasuredData()
   let svgHeathMapSensors = new SvgHeathMapSensors()
-  let svgBlocksQueueServer = new SvgBlocksQueueServer()
+  let svgPlotDisplay = new SvgPlotDisplay()
 }
 // ---------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
