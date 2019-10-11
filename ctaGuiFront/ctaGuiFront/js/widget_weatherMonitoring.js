@@ -21,16 +21,15 @@ var mainScriptTag = 'weatherMonitoring'
 /* global appendToDom */
 /* global runWhenReady */
 /* global disableScrollSVG */
-/* global bckPattern */
-/* global colsMix */
-/* global unique */
+/* global PlotTimeSeries */
 /* global ScrollBox */
 /* global PlotBrushZoom */
 
-window.loadScript({source: mainScriptTag, script: '/js/utils_plotTimeSeries.js'})
+window.loadScript({source: mainScriptTag, script: '/js/utils_plotTimeSeriesV2.js'})
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotTimeBar.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotBrushZoom.js' })
+window.loadScript({ source: 'utils_scrollTable', script: '/js/utils_commonD3.js' })
 // // load additional js files:
 // window.loadScript({ source:mainScriptTag, script:"/js/utils_scrollGrid.js"});
 
@@ -91,8 +90,11 @@ let mainWeatherMonitoring = function (optIn) {
   let shared = {
     server: {},
     time: {
-      current: undefined
-    }
+      current: undefined,
+      from: undefined,
+      range: undefined
+    },
+    data: []
   }
   let svg = {}
   let box = {}
@@ -121,41 +123,67 @@ let mainWeatherMonitoring = function (optIn) {
       lenD.h = {}
       lenD.w[0] = 1000
       lenD.h[0] = lenD.w[0]// / sgvTag.main.whRatio
+
+      d3.select(svgDiv)
+        .style('width', 'calc(100% - 200px)')
+        .style('height', '100%')
+        .style('top', '0%')
+        .style('margin-left', '200px')
+        .style('overflow', 'scroll')
+        .style('max-height', ($(document).height() * 0.8) + 'px')
       svg.svg = d3
         .select(svgDiv)
         .append('svg')
         // .attr('preserveAspectRatio', 'xMidYMid meet')
         .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
         .style('position', 'relative')
-        .style('width', '80%')
+        .style('width', '100%')
         .style('height', '100%')
         .style('top', '0%')
-        .style('left', '20%')
+        .style('left', '0%')
+        // .style('max-height', ($(document).height() * 0.8) + 'px')
         .on('dblclick.zoom', null)
 
-      svg.floatingMenu = d3
-        .select(svgDiv)
-        .append('svg')
-        .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
-        .style('position', 'fixed')
-        .style('top', 'inherit')
-        .style('left', '10px')
+      d3.select(svgDivFM)
+        .style('position', 'absolute')
+        .style('width', '200px')
+        .style('height', '100%')
+        .style('top', '0%')
+        .style('left', '0%')
         .style('pointer-events', 'none')
+        // .style('max-height', ($(document).height() * 0.8) + 'px')
+      svg.floatingMenu = d3
+        .select(svgDivFM)
+        .append('svg')
+        // .attr('preserveAspectRatio', 'xMidYMid meet')
+        // .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('top', '0%')
+        .style('left', '0%')
+        .style('pointer-events', 'none')
+      svg.floatingMenu.append('rect')
+        .attr('x', '98%')
+        .attr('y', 0)
+        .attr('width', '1px')
+        .attr('height', '100%')
+        .attr('fill', colorPalette.darkest.stroke)
+        .attr('stroke', colorPalette.darkest.stroke)
+        .attr('stroke-width', 0.0)
 
-      function adjustDim () {
-        $(svg.floatingMenu.node()).width($(svgDiv).width())
-        $(svg.floatingMenu.node()).height($(svgDiv).height())
-      }
-
-      $(window).resize(
-        function () {
-          adjustDim()
-        })
-      adjustDim()
+      // function adjustDim () {
+      //   // $(svg.floatingMenu.node()).width($(svgDiv).width())
+      //   $(svg.floatingMenu.node()).height($(svgDiv).height())
+      // }
+      //
+      // $(window).resize(
+      //   function () {
+      //     adjustDim()
+      //   })
+      // adjustDim()
 
       svg.floatingMenuRoot = svg.floatingMenu.append('g')
-        .attr('transform', 'translate(' + -lenD.w[0] * 0.12 + ',' + 0 + ')')
+      // .attr('transform', 'translate(' + -lenD.w[0] * 0.12 + ',' + 0 + ')')
 
       if (disableScrollSVG) {
         svg.svg.on('wheel', function () {
@@ -185,15 +213,25 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('stroke-width', 8)
         .attr('stroke-opacity', 0.6)
 
-      // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.0)
-      //   .attr('y', lenD.h[0] * 0.45)
-      //   .attr('width', lenD.w[0] * 0.25)
-      //   .attr('height', lenD.h[0] * 0.22)
-      //   .attr('fill', colorPalette.dark.background)
-      //   .attr('stroke', colorPalette.dark.stroke)
-      //   .attr('stroke-width', 0.6)
-
+      svg.back.append('rect')
+        .attr('x', lenD.w[0] * 0.0)
+        .attr('y', lenD.h[0] * 0.0)
+        .attr('width', lenD.w[0] * 0.26)
+        .attr('height', 30)
+        .attr('fill', colorPalette.darker.background)
+      svg.back.append('rect')
+        .attr('x', lenD.w[0] * 0.26 - 30)
+        .attr('y', lenD.h[0] * 0.0)
+        .attr('width', 30)
+        .attr('height', lenD.h[0] * 1)
+        .attr('fill', colorPalette.darker.background)
+      svg.back.append('text')
+        .text('Data tracking')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '22px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (4) + ',' + (lenD.h[0] * 0.022) + ')')
 
       // svg.back.append('rect')
       //   .attr('x', lenD.w[0] * 0.26)
@@ -211,7 +249,7 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (lenD.w[0] * 0.5) + ',' + (lenD.h[0] * 0.25) + ')')
       let fo = svg.back.append('foreignObject')
-        .attr('x', lenD.w[0] * 0.26 + 'px')
+        .attr('x', lenD.w[0] * 0.5 + 'px')
         .attr('y', lenD.h[0] * 0.6 + 'px')
         .attr('width', lenD.w[0] * 0.48 + 'px')
         .attr('height', lenD.h[0] * 0.495 + 'px').node()
@@ -222,10 +260,10 @@ let mainWeatherMonitoring = function (optIn) {
       iframe.src = "https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"
 
       fo.appendChild(iframe)
-      svg.svg._groups[0][0].appendChild(fo)
+      // svg.svg._groups[0][0].appendChild(fo)
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.78)
+        .attr('x', lenD.w[0] * 0.27)
         .attr('y', 0)
         .attr('width', lenD.w[0] * 0.25)
         .attr('height', lenD.h[0] * 0.02)
@@ -236,36 +274,36 @@ let mainWeatherMonitoring = function (optIn) {
         .text('Plots List')
         .style('fill', colorPalette.bright.background)
         .style('font-weight', 'bold')
-        .style('font-size', '8px')
+        .style('font-size', '12px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.875) + ',' + (lenD.h[0] * 0.015) + ')')
-      for (var i = 0; i < 8; i++) {
+        .attr('transform', 'translate(' + (lenD.w[0] * 0.34) + ',' + (lenD.h[0] * 0.015) + ')')
+      for (var i = 0; i < 6; i++) {
         for (var j = 0; j < 2; j++) {
           svg.back.append('rect')
-            .attr('x', lenD.w[0] * 0.78 + j * lenD.w[0] * 0.12)
-            .attr('y', lenD.h[0] * 0.03 + i * (lenD.h[0] * 0.1 + lenD.h[0] * 0.02))
+            .attr('x', lenD.w[0] * 0.27 + i * lenD.w[0] * 0.12)
+            .attr('y', lenD.h[0] * 0.03 + j * (lenD.h[0] * 0.06 + lenD.h[0] * 0.01))
             .attr('width', lenD.w[0] * 0.10)
-            .attr('height', lenD.h[0] * 0.1)
+            .attr('height', lenD.h[0] * 0.06)
             .attr('fill', colorPalette.darker.background) // colorPalette.dark.background)
             .attr('stroke', 'none')
             .attr('rx', 0)
         }
       }
-      svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.78)
-        .attr('y', lenD.h[0] * 0.98)
-        .attr('width', lenD.w[0] * 0.25)
-        .attr('height', lenD.h[0] * 0.02)
-        .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
-      svg.back.append('text')
-        .text('Plots List')
-        .style('fill', colorPalette.bright.background)
-        .style('font-weight', 'bold')
-        .style('font-size', '8px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.875) + ',' + (lenD.h[0] * 0.995) + ')')
+      // svg.back.append('rect')
+      //   .attr('x', lenD.w[0] * 0.78)
+      //   .attr('y', lenD.h[0] * 0.98)
+      //   .attr('width', lenD.w[0] * 0.25)
+      //   .attr('height', lenD.h[0] * 0.02)
+      //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
+      //   .attr('stroke', 'none')
+      //   .attr('rx', 0)
+      // svg.back.append('text')
+      //   .text('Plots List')
+      //   .style('fill', colorPalette.bright.background)
+      //   .style('font-weight', 'bold')
+      //   .style('font-size', '8px')
+      //   .attr('text-anchor', 'middle')
+      //   .attr('transform', 'translate(' + (lenD.w[0] * 0.875) + ',' + (lenD.h[0] * 0.995) + ')')
 
       // svg.back.append('rect')
       //   .attr('x', lenD.w[0] * 0.0)
@@ -330,13 +368,19 @@ let mainWeatherMonitoring = function (optIn) {
       iconDivV: iconDivV
     })
     let svgDivId = sgvTag.main.id + 'svg'
+    let svgDivFMId = sgvTag.main.id + 'FM'
+    let parent = sgvTag.main.widget.getEle(sgvTag.main.id)
+
     let svgDiv = sgvTag.main.widget.getEle(svgDivId)
+    let svgDivFM = sgvTag.main.widget.getEle(svgDivFMId)
     if (!hasVar(svgDiv)) {
-      let parent = sgvTag.main.widget.getEle(sgvTag.main.id)
       let svgDiv = document.createElement('div')
       svgDiv.id = svgDivId
-
       appendToDom(parent, svgDiv)
+
+      let svgDivFM = document.createElement('div')
+      svgDivFM.id = svgDivFMId
+      appendToDom(parent, svgDivFM)
 
       runWhenReady({
         pass: function () {
@@ -357,6 +401,10 @@ let mainWeatherMonitoring = function (optIn) {
 
     shared.server = dataIn.data
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
+    shared.time.range = 1000 * (3600 * parseInt(6) + 60 * parseInt(0))
+    shared.time.from = new Date()
+    shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
+    loadMesures()
 
     svgMeasuredData.initData()
     svgHeathMapSensors.initData()
@@ -380,7 +428,7 @@ let mainWeatherMonitoring = function (optIn) {
 
     shared.server = dataIn.data
 
-    svgPlotDisplay.updateData()
+    // svgPlotDisplay.updateData()
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     svgFMDate.updateData()
 
@@ -435,6 +483,61 @@ let mainWeatherMonitoring = function (optIn) {
     })
     return scrollBox
   }
+  function addDataToPlot (data) {
+    for (let i = 0; i < shared.data.length; i++) {
+      if (shared.data[i].id === data.id) {
+        shared.data.splice(i, 1)
+        svgPlotDisplay.unbindData(data)
+        return
+      }
+    }
+    shared.data.push(data)
+    svgPlotDisplay.bindData(data)
+  }
+  function loadMesures () {
+    let fillfun = function (index) {
+      let status = {current: '', previous: []}
+      status.current = shared.server.dataOut[Math.floor(index / 4)][index % 4].data[0]
+      status.current.x = new Date(shared.server.timeOfNight.date_now)
+      for (let i = 1; i < (shared.time.range / 100 / 3600); i++) {
+        status.previous.push(shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2])
+        status.previous[i - 1].x = new Date ()
+        status.previous[i - 1].x.setTime(status.current.x.getTime() - i * 3600 * 100)
+      }
+      return status
+    }
+    shared.server.measures = [
+      {id: 'id0', name: 'Measure1', status: fillfun(1), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', name: 'Measure2', status: fillfun(2), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id2', name: 'Measure3', status: fillfun(3), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id3', name: 'Measure4', status: fillfun(4), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id4', name: 'subMeasure.14', status: fillfun(5), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]},
+      {id: 'id5', name: 'Measure5', status: fillfun(6), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id6', name: 'Measure6', status: fillfun(7), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id7', name: 'subMeasure6.1', status: fillfun(8), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]},
+      {id: 'id8', name: 'Measure7', status: fillfun(9), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id9', name: 'subMeasure7.1', status: fillfun(10), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id10', name: 'subMeasure7.2', status: fillfun(11), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]},
+      {id: 'id11', name: 'Measure8', status: fillfun(12), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id12', name: 'subMeasure8.1', status: fillfun(13), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id13', name: 'subMeasure8.2', status: fillfun(14), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id14', name: 'subMeasure8.3', status: fillfun(15), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id15', name: 'subMeasure8.4', status: fillfun(16), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id16', name: 'subMeasure8.5', status: fillfun(17), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]},
+      {id: 'id17', name: 'Measure9', status: fillfun(18), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id18', name: 'subMeasure9.1', status: fillfun(19), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id19', name: 'subMeasure9.2', status: fillfun(20), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]},
+      {id: 'id20', name: 'Measure10', status: fillfun(21), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id21', name: 'Measure11', status: fillfun(22), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id22', name: 'subMeasure11.1', status: fillfun(23), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]}
+    ]
+  }
 
   let SvgPlotDisplay = function () {
     let plotbox
@@ -443,28 +546,27 @@ let mainWeatherMonitoring = function (optIn) {
     let brush
 
     function addPlot (optIn) {
-      let plotId = optIn.plotId
-
       let plotg = svg.g.append('g')
 
-      let plot = new PlotTimeSeries()
+      plot = new PlotTimeSeries()
       plot.init({
-        tag: plotId,
-        gBox: plotg,
-        hasBotPlot: false,
-        updateDomainY: false,
-        overviewLine: true,
-        style: { hasOutline: true },
-        boxData: plotbox,
+        main: {
+          g: plotg,
+          box: plotbox,
+          clipping: true
+        },
         axis: [
           {
             id: 'bottom',
-            showAxis: true,
+            showAxis: false,
             main: {
+              g: undefined,
+              box: {x: 0, y: 0, w: 0, h: plotbox.h, marg: 0},
+              type: 'bottom',
               attr: {
                 text: {
                   enabled: true,
-                  size: 14,
+                  size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
                 },
@@ -478,16 +580,24 @@ let mainWeatherMonitoring = function (optIn) {
             axis: undefined,
             scale: undefined,
             domain: [0, 1000],
-            range: [0, brushbox.w]
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
           },
           {
             id: 'left',
             showAxis: true,
             main: {
+              g: undefined,
+              box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+              type: 'left',
+              mode: 'linear',
               attr: {
                 text: {
                   enabled: true,
-                  size: 14,
+                  size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
                 },
@@ -501,19 +611,46 @@ let mainWeatherMonitoring = function (optIn) {
             axis: undefined,
             scale: undefined,
             domain: [0, 1000],
-            range: [0, brushbox.w]
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'right',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: plotbox.w, y: 0, w: 0, h: 0, marg: 0},
+              type: 'right',
+              mode: 'linear',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
           }
         ],
-        locker: locker,
-        lockerV: [plotId + 'updateData'],
-        lockerZoom: {
-          all: plotId + 'zoom',
-          during: plotId + 'zoomDuring',
-          end: plotId + 'zoomEnd'
-        },
-        runLoop: runLoop
+        content: {}
       })
-      // com.plot[plotId].plugPlotTimeBar(com.plot['associate'])
     }
     function addBrush (optIn) {
       let brushg = svg.g.append('g')
@@ -569,7 +706,7 @@ let mainWeatherMonitoring = function (optIn) {
               attr: {
                 text: {
                   enabled: true,
-                  size: 9,
+                  size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
                 },
@@ -604,7 +741,7 @@ let mainWeatherMonitoring = function (optIn) {
           enabled: true,
           main: {
             g: undefined,
-            box: {x: 0, y: brushbox.h * 0.15, w: brushbox.w, h: brushbox.h * 0.65, marg: 0},
+            box: {x: 0, y: brushbox.h * 0.5, w: brushbox.w, h: brushbox.h * 0.3, marg: 0},
             attr: {
               fill: colorPalette.darkest.background,
               opacity: 1,
@@ -618,7 +755,14 @@ let mainWeatherMonitoring = function (optIn) {
         },
         zoom: {
           coef: {kx: 1, ky: 1, x: 0, y: 0},
-          callback: function () {}
+          callback: function () {
+            plot.updateAxis({
+              id: 'bottom',
+              domain: brush.getAxis('top').scale.domain(),
+              range: [0, plotbox.w]
+            })
+            plot.updateData()
+          }
         }
       })
       brush.init()
@@ -626,28 +770,52 @@ let mainWeatherMonitoring = function (optIn) {
 
     function initData () {
       plotbox = {
-        x: lenD.w[0] * 0.26 + 20,
+        x: lenD.w[0] * 0.5 + 20,
         y: lenD.h[0] * 0.17 + 20,
         w: lenD.w[0] * 0.48 - 40,
         h: lenD.h[0] * 0.4 - 40
       }
       brushbox = {
-        x: lenD.w[0] * 0.26 + 20,
+        x: lenD.w[0] * 0.5 + 20,
         y: lenD.h[0] * 0.57 - 26,
         w: lenD.w[0] * 0.48 - 40,
         h: lenD.h[0] * 0.05
       }
 
-      addPlot({ plotId: 'default', propId: 'default' })
+      addPlot()
       addBrush()
 
       updateData()
     }
     this.initData = initData
 
+    function bindData (data) {
+      plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
+    }
+    this.bindData = bindData
+    function unbindData (data) {
+      plot.unbindData(data.id)
+    }
+    this.unbindData = unbindData
+
     function updateData () {
-      let startTime = {date: new Date(shared.server.timeOfNight.date_start), time: Number(shared.server.timeOfNight.start)}
-      let endTime = {date: new Date(shared.server.timeOfNight.date_end), time: Number(shared.server.timeOfNight.end)}
+      let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+      let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+      plot.updateAxis({
+        id: 'bottom',
+        domain: [startTime.date, endTime.date],
+        range: [0, plotbox.w]
+      })
+      plot.updateAxis({
+        id: 'left',
+        domain: [0, 100],
+        range: [plotbox.h, 0]
+      })
+      plot.updateAxis({
+        id: 'right',
+        domain: [0, 100],
+        range: [plotbox.h, 0]
+      })
 
       brush.updateAxis({
         id: 'top',
@@ -1166,6 +1334,7 @@ let mainWeatherMonitoring = function (optIn) {
         .style('fill', '#000000')
         .style('font-weight', 'bold')
         .style('font-size', '18px')
+        .style('user-select', 'none')
         .attr('text-anchor', 'start')
         .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y) + ')')
 
@@ -1243,10 +1412,11 @@ let mainWeatherMonitoring = function (optIn) {
       //   .duration(600)
       //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     }
-    function measuredCore (data, g) {
-      let current = g
-        .selectAll('g.sensor')
-        .data(data, function (d) {
+    function measuredCore () {
+      console.log(shared.server.measures);
+      let current = scrollbox.get('innerG')
+        .selectAll('g.measures')
+        .data(shared.server.measures, function (d) {
           return d.id
         })
       let enter = current
@@ -1258,9 +1428,24 @@ let mainWeatherMonitoring = function (optIn) {
         let g = d3.select(this)
         g.append('rect').attr('id', 'background')
         let main = g.append('g').attr('id', 'mainMeasure')
-
-        let min = Math.min(...d.status.previous, d.status.current)
-        let max = Math.max(...d.status.previous, d.status.current)
+          .on('mouseenter', () => {
+            d3.select(this).style('cursor', 'pointer')
+            main.select('#background').attr('fill', colorPalette.darker.background)
+          })
+          .on('mouseleave', () => {
+            d3.select(this).style('cursor', 'default')
+            main.select('#background').attr('fill', 'transparent')
+          })
+          .on('click', () => addDataToPlot(d))
+        main.append('rect')
+          .attr('id', 'background')
+          .attr('x', 0)
+          .attr('y', -18)
+          .attr('width', box.w)
+          .attr('height', 38)
+          .attr('fill', 'transparent')
+        let min = Math.min(...d.status.previous.map((a) => a.y), d.status.current.y)
+        let max = Math.max(...d.status.previous.map((a) => a.y), d.status.current.y)
 
         // main.append('defs')
         //   .append('clipPath')
@@ -1364,12 +1549,13 @@ let mainWeatherMonitoring = function (optIn) {
           .append('clipPath')
           .attr('id', 'rect-clip' + d.id)
           .append('rect')
-          .attr('x', 12 + (box.w * 0.45 / 50 * min))
+          .attr('x', 12 + (box.w * 0.45 / 100 * min))
           .attr('y', -13)
-          .attr('width', (box.w * 0.45 / 50 * (max - min)))
+          .attr('width', (box.w * 0.45 / 100 * (max - min)))
           .attr('height', 30)
           .style('fill-opacity', 0)
-        main.append('rect')
+        let healthg = main.append('g').attr('id', 'healthGroup')
+        healthg.append('rect')
           .attr('x', 12)
           .attr('y', -13)
           .attr('width', box.w * 0.075)
@@ -1379,7 +1565,7 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-        main.append('rect')
+        healthg.append('rect')
           .attr('x', 12 + box.w * 0.075)
           .attr('y', -13)
           .attr('width', box.w * 0.075)
@@ -1389,7 +1575,7 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-        main.append('rect')
+        healthg.append('rect')
           .attr('x', 12 + box.w * 0.15)
           .attr('y', -13)
           .attr('width', box.w * 0.15)
@@ -1399,7 +1585,7 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-        main.append('rect')
+        healthg.append('rect')
           .attr('x', 12 + box.w * 0.3)
           .attr('y', -13)
           .attr('width', box.w * 0.075)
@@ -1409,7 +1595,7 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
-        main.append('rect')
+        healthg.append('rect')
           .attr('x', 12 + box.w * 0.375)
           .attr('y', -13)
           .attr('width', box.w * 0.075)
@@ -1421,7 +1607,7 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
 
         main.append('rect')
-          .attr('x', 12 + (box.w * 0.45 / 50 * d.status.current))
+          .attr('x', 12 + (box.w * 0.45 / 100 * d.status.current.y))
           .attr('y', -13)
           .attr('width', 1)
           .attr('height', 30)
@@ -1429,7 +1615,7 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('stroke', 'none')
           .attr('rx', 0)
         main.append('circle')
-          .attr('cx', 13 + (box.w * 0.45 / 50 * d.status.current))
+          .attr('cx', 13 + (box.w * 0.45 / 100 * d.status.current.y))
           .attr('cy', 0)
           .attr('r', 4)
           .attr('fill', '#000000')
@@ -1442,13 +1628,15 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('x', box.w * 0.55)
           .attr('y', -5)
           .style('font-size', '12px')
+          .style('user-select', 'none')
         main.append('text')
           .attr('id', 'valuelabel')
-          .text(d.status.current)
+          .text(d.status.current.y)
           .attr('x', box.w * 0.55)
           .attr('y', 12)
           .style('font-size', '16px')
           .style('font-weight', 'bold')
+          .style('user-select', 'none')
         main.append('text')
           .attr('id', 'unitlabel')
           .text(d.unit)
@@ -1456,12 +1644,23 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('y', 12)
           .style('font-size', '10px')
           .style('font-weight', '')
+          .style('user-select', 'none')
       })
       let merge = current.merge(enter)
 
-      let offset = 14
+      let offset = 16
       merge.each(function (d, i) {
+        let min = Math.min(...d.status.previous.map((a) => a.y), d.status.current.y)
+        let max = Math.max(...d.status.previous.map((a) => a.y), d.status.current.y)
+
         let g = d3.select(this)
+        g.select('g#mainMeasure')
+          .on('click', () => addDataToPlot(d))
+        g.select('g#mainMeasure clipPath#rect-clip' + d.id + ' rect')
+          .transition()
+          .duration(400)
+          .attr('x', 12 + (box.w * 0.45 / 100 * min))
+          .attr('width', (box.w * 0.45 / 100 * (max - min)))
         g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
         offset += 38
       })
@@ -1475,52 +1674,11 @@ let mainWeatherMonitoring = function (optIn) {
     function initData () {
       box = {
         x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.018,
+        y: 48,
         w: lenD.w[0] * 0.23,
         h: lenD.h[0] * 0.55,
         marg: lenD.w[0] * 0.01
       }
-
-      let fillfun = function () {
-        let status = {current: '', previous: []}
-        status.current = (Math.random() * 50)
-        for (let i = 0; i < 2; i++) {
-          status.previous.push((status.current + ((Math.random() * 30) - 10)).toFixed(2))
-        }
-        status.current = status.current.toFixed(2)
-        return status
-      }
-      shared.server.measures = [
-        {id: 'id0', name: 'Measure1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-        {id: 'id1', name: 'Measure2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-        {id: 'id2', name: 'Measure3', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-        {id: 'id3', name: 'Measure4', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-          {id: 'id4', name: 'subMeasure.14', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
-        ]},
-        {id: 'id5', name: 'Measure5', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-        {id: 'id6', name: 'Measure6', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-          {id: 'id7', name: 'subMeasure6.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
-        ]},
-        {id: 'id8', name: 'Measure7', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-          {id: 'id9', name: 'subMeasure7.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-          {id: 'id10', name: 'subMeasure7.2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
-        ]},
-        {id: 'id11', name: 'Measure8', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-          {id: 'id12', name: 'subMeasure8.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-          {id: 'id13', name: 'subMeasure8.2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-          {id: 'id14', name: 'subMeasure8.3', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-          {id: 'id15', name: 'subMeasure8.4', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-          {id: 'id16', name: 'subMeasure8.5', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
-        ]},
-        {id: 'id17', name: 'Measure9', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-          {id: 'id18', name: 'subMeasure9.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-          {id: 'id19', name: 'subMeasure9.2', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
-        ]},
-        {id: 'id20', name: 'Measure10', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-        {id: 'id21', name: 'Measure11', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-          {id: 'id22', name: 'subMeasure11.1', status: fillfun(), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
-        ]}
-      ]
 
       let main = svg.g.append('g').attr('id', 'measuredData')
       scrollbox = initScrollBox('measuredScrollbox', main.append('g').attr('id', 'measured').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.03) + ')'), box, {}, true)
@@ -1530,14 +1688,15 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('y', (box.y - 18) + 'px')
         .attr('width', box.w)
         .attr('height', '24px')
-        .attr('fill', colorPalette.darker.background)
+        .attr('fill', colorPalette.dark.background)
       main.append('text')
         .text('Measured Data')
         .style('fill', '#000000')
         .style('font-weight', 'bold')
         .style('font-size', '18px')
+        .style('user-select', 'none')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + box.x + 2 + ',' + box.y + ')')
+        .attr('transform', 'translate(' + box.x + 4 + ',' + box.y + ')')
       // let startY = lenD.h[0] * 0.4
       // let endY = lenD.h[0] * 0.6
       // svg.g.append('rect')
@@ -1580,7 +1739,6 @@ let mainWeatherMonitoring = function (optIn) {
       //   .attr('fill', '#0288D1')
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
-      let gmes = scrollbox.get('innerG')
 
       main.append('rect')
         .attr('x', box.x + box.w * 0.9)
@@ -1615,11 +1773,13 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('height', '16px')
         .style('pointer-events', 'none')
 
-      measuredCore(shared.server.measures, gmes)
+      measuredCore()
     }
     this.initData = initData
 
-    function updateData () {}
+    function updateData () {
+      measuredCore()
+    }
     this.updateData = updateData
 
     function update () {}
@@ -1720,15 +1880,16 @@ let mainWeatherMonitoring = function (optIn) {
     }
     function initData () {
       box = {
-        x: lenD.w[0] * 0.0,
+        x: 8,
         y: lenD.h[0] * 0.2,
-        w: lenD.w[0] * 0.225,
+        w: lenD.w[0] * 0.18,
         h: lenD.h[0] * 0.4,
         marg: lenD.w[0] * 0.01
       }
 
       let main = svg.floatingMenuRoot.append('g').attr('id', 'urgentSupervision')
-      scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.03) + ')'), box, {}, true)
+        .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
+      scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + 0 + ',' + 6 + ')'), box, {}, true)
 
       // main.append('rect')
       //   .attr('x', box.x)
@@ -1740,18 +1901,18 @@ let mainWeatherMonitoring = function (optIn) {
       //   .attr('stroke-width', 0.2)
       //   .style('opacity', 0.2)
       main.append('rect')
-        .attr('x', box.x)
-        .attr('y', box.y)
+        .attr('x', 0)
+        .attr('y', 0)
         .attr('width', box.w)
-        .attr('height', '24px')
-        .attr('fill', colorPalette.darker.background)
+        .attr('height', '22px')
+        .attr('fill', colorPalette.darkest.background)
       main.append('text')
-        .text('Urgent Supervision')
+        .text('Urgent supervision')
         .style('fill', '#000000')
         .style('font-weight', 'bold')
-        .style('font-size', '18px')
+        .style('font-size', '15px')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y + 18) + ')')
+        .attr('transform', 'translate(' + (4) + ',' + (16) + ')')
 
       let gmes = scrollbox.get('innerG')
 
@@ -1804,7 +1965,7 @@ let mainWeatherMonitoring = function (optIn) {
       box = {
         x: 8,
         y: 0,
-        w: lenD.w[0] * 0.2,
+        w: lenD.w[0] * 0.18,
         h: lenD.h[0] * 0.065
       }
 
@@ -1860,50 +2021,261 @@ let mainWeatherMonitoring = function (optIn) {
   }
   let SvgFMTimeline = function () {
     let box
+    let stock = {}
 
+    function changeBlockTime (a, b) {
+      shared.time.range = 1000 * (3600 * (parseInt(a) - 1) + 60 * parseInt(b))
+      shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
+      loadMesures()
+      svgMeasuredData.updateData()
+      svgPlotDisplay.updateData()
+    }
+    function createInput (type, g, innerbox) {
+      stock[type + 'MinusButton'] = new buttonD3()
+      stock[type + 'MinusButton'].init({
+        main: {
+          id: type + 'MinusButton',
+          g: g,
+          box: {x: innerbox.x - 3, y: innerbox.y + 12, width: 9, height: 9},
+          background: {
+            common: {
+              style: {
+                fill: colorPalette.medium.background,
+                stroke: colorPalette.medium.stroke,
+                'stroke-width': 0.1
+              },
+              attr: {
+                rx: 2
+              }
+            },
+            hovered: {
+              style: {
+                fill: colorPalette.darkest.background,
+                stroke: colorPalette.darkest.stroke,
+                'stroke-width': 0.1
+              },
+              attr: {}
+            }
+          }
+        },
+        foreground: {
+          type: 'text',
+          value: '-',
+          common: {
+            style: {
+              font: 'bold',
+              'font-size': '9px',
+              fill: colorPalette.medium.text,
+              anchor: 'middle',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {
+              x: innerbox.x - 3 + 3,
+              y: innerbox.y + 12 + 7
+            }
+          },
+          hovered: {
+            style: {
+              font: 'bold',
+              'font-size': '14px',
+              fill: colorPalette.medium.text,
+              anchor: 'start',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {}
+          }
+        },
+        events: {
+          click: (d) => {
+            let oldValue = parseInt(stock[type].property('value'))
+            let newVal = oldValue
+            if (oldValue > stock[type + 'Opts'].min) {
+              newVal = oldValue - 1
+            } else {
+              newVal = stock[type + 'Opts'].max
+            }
+            stock[type].property('value', ('0' + newVal).slice(-2))
+            changeBlockTime(stock.hour.property('value'), stock.minute.property('value'))
+          }
+        }
+      })
+
+      stock[type + 'PlusButton'] = new buttonD3()
+      stock[type + 'PlusButton'].init({
+        main: {
+          id: type + 'PlusButton',
+          g: g,
+          box: {x: innerbox.x + 6, y: innerbox.y + 12, width: 9, height: 9},
+          background: {
+            common: {
+              style: {
+                fill: colorPalette.medium.background,
+                stroke: colorPalette.medium.stroke,
+                'stroke-width': 0.1
+              },
+              attr: {
+                rx: 2
+              }
+            },
+            hovered: {
+              style: {
+                fill: colorPalette.darkest.background,
+                stroke: colorPalette.darkest.stroke,
+                'stroke-width': 0.1
+              },
+              attr: {}
+            }
+          }
+        },
+        foreground: {
+          type: 'text',
+          value: '+',
+          common: {
+            style: {
+              font: 'bold',
+              'font-size': '9px',
+              fill: colorPalette.medium.text,
+              anchor: 'middle',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {
+              x: innerbox.x + 6 + 2,
+              y: innerbox.y + 12 + 7
+            }
+          },
+          hovered: {
+            style: {
+              font: 'bold',
+              'font-size': '14px',
+              fill: colorPalette.medium.text,
+              anchor: 'start',
+              'pointer-events': 'none',
+              'user-select': 'none'
+            },
+            attr: {}
+          }
+        },
+        events: {
+          click: (d) => {
+            let oldValue = parseInt(stock[type].property('value'))
+            let newVal = oldValue
+            if (oldValue < stock[type + 'Opts'].max) {
+              newVal = oldValue + 1
+            } else {
+              newVal = stock[type + 'Opts'].min
+            }
+            stock[type].property('value', ('0' + newVal).slice(-2))
+            changeBlockTime(stock.hour.property('value'), stock.minute.property('value'))
+          }
+        }
+      })
+    }
     function initData () {
       box = {
         x: 8,
-        y: lenD.h[0] * 0.08,
-        w: lenD.w[0] * 0.2,
+        y: lenD.h[0] * 0.07,
+        w: lenD.w[0] * 0.18,
         h: lenD.h[0] * 0.1
       }
 
       let main = svg.floatingMenuRoot.append('g').attr('id', 'fmdate')
+        .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
+        .style('pointer-events', 'auto')
 
       main.append('rect')
-        .attr('x', box.x)
-        .attr('y', box.y)
+        .attr('x', 0)
+        .attr('y', 0)
         .attr('width', box.w)
-        .attr('height', box.h)
-        .attr('fill', colorPalette.darker.background)
-        .attr('stroke', colorPalette.darkest.stroke)
-        .attr('stroke-width', 0.3)
-        .attr('rx', 0)
+        .attr('height', '22px')
+        .attr('fill', colorPalette.darkest.background)
       main.append('text')
-        .attr('id', 'currentHourTop')
-        .attr('stroke', '#000000') // colorPalette.bright.stroke)
-        .attr('stroke-width', 0.0)
-        .attr('fill', '#000000') // colorPalette.bright.stroke)
-        .attr('x', box.w * 0.5)
-        .attr('y', box.h * 0.4)
+        .text('Timeline range')
+        .style('fill', '#000000')
         .style('font-weight', 'bold')
+        .style('font-size', '15px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (4) + ',' + (16) + ')')
+      main.append('rect')
+        .attr('x', 0)
+        .attr('y', box.h * 0.26)
+        .attr('width', box.w * 0.96)
+        .attr('height', box.h * 0.38)
+        .attr('fill', colorPalette.dark.background)
+        .attr('rx', 2)
+      main.append('rect')
+        .attr('x', 0)
+        .attr('y', box.h * 0.68)
+        .attr('width', box.w * 0.96)
+        .attr('height', box.h * 0.42)
+        .attr('fill', colorPalette.dark.background)
+        .attr('rx', 2)
+
+      let gDateSelector = main.append('g').attr('transform', 'translate(' + (box.w * 0.0) + ',' + (box.h * 0.28) + '), scale(1.5,1.5)')
+      gDateSelector.append('text')
+        .text('Last:')
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', '9px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (15) + ',' + (box.h * 0.12) + ')')
+
+      let fontSize = 11
+      let time = new Date(18000000)
+      let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
+      let hbox = {
+        x: box.w * 0.3,
+        y: 0,
+        w: 14,
+        h: 18
+      }
+      let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
+      let mbox = {
+        x: box.w * 0.45,
+        y: 0,
+        w: 14,
+        h: 18
+      }
+
+      stock.hourOpts = {disabled: false, value: hour, min: 0, max: 23, step: 1}
+      stock.hour = inputDateD3(gDateSelector,
+        hbox,
+        'hour',
+        stock.hourOpts,
+        {change: (d) => { changeBlockTime(d, stock.minute.property('value')) }, enter: (d) => { stock.minute.node().focus() }})
+      createInput('hour', gDateSelector, hbox)
+      gDateSelector.append('text')
+        .text(':')
+        .style('fill', colorPalette.dark.stroke)
+        .style('font-size', fontSize + 'px')
         .attr('text-anchor', 'middle')
-        .style('font-size', '18px')
-        .style('pointer-events', 'none')
-        .style('user-select', 'none')
-      main.append('text')
-        .attr('id', 'currentHourBottom')
-        .attr('stroke', '#000000') // colorPalette.bright.stroke)
-        .attr('stroke-width', 0.0)
-        .attr('fill', '#000000') // colorPalette.bright.stroke)
-        .attr('x', box.w * 0.5)
-        .attr('y', box.h * 0.8)
-        .style('font-weight', 'bold')
-        .attr('text-anchor', 'middle')
-        .style('font-size', '20px')
-        .style('pointer-events', 'none')
-        .style('user-select', 'none')
+        .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 5) + ',' + (hbox.h * 0.5) + ')')
+      stock.minuteOpts = {disabled: false, value: min, min: 0, max: 59, step: 1}
+      stock.minute = inputDateD3(gDateSelector,
+        mbox,
+        'minute',
+        stock.minuteOpts,
+        {change: (d) => { changeBlockTime(stock.hour.property('value'), d) }, enter: (d) => { stock.second.node().focus() }})
+      createInput('minute', gDateSelector, mbox)
+
+      let gFromToSelector = main.append('g').attr('transform', 'translate(' + (box.w * 0.03) + ',' + (box.h * 0.7) + ')')
+        .style('opacity', 0.2)
+      gFromToSelector.append('text')
+        .text('From:')
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', '13.5px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (15) + ',' + (box.h * 0.12) + ')')
+      gFromToSelector.append('text')
+        .text('To:')
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', '13.5px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (15) + ',' + (box.h * 0.34) + ')')
 
       updateData()
     }

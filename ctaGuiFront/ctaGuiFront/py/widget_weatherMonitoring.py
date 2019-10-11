@@ -50,6 +50,9 @@ class weatherMonitoring():
         #
         self.nIcon = -1
 
+        self.PrimaryGroup = ['LSTS','MSTS','SSTS','AUX']
+        self.PrimaryKey = ['mirror','camera','mount','aux']
+
     # -----------------------------------------------------------------------------------------------------------
     #
     # -----------------------------------------------------------------------------------------------------------
@@ -96,8 +99,34 @@ class weatherMonitoring():
             "end": int(weatherMonitoring.timeOfNight['end'])
             }
 
+        indexRange = 6
+        keyV = {}
+        keyV[0] = ['mirror','camera','mount','aux']
+        dataOut = {}
+
+        for index in range(indexRange):
+            for k, v in keyV.items():
+                for key in v:
+                    self.redis.pipe.zGet('telHealth;'+telIds[index]+';'+key)
+            data = self.redis.pipe.execute(packedScore=True)
+            nEle = sum([len(v) for k, v in keyV.items()])
+            if len(data) != nEle:
+                print keyV
+                print data
+                Assert(self.log, " - problem with redis.pipe.execute ?!?! " +
+                       str(len(data))+"/"+str(nEle), False)
+            nEleNow = 0
+            for k, v in keyV.items():
+                dataOut[index] = []
+                for key in v:
+                    dataNow = data[nEleNow]
+                    nEleNow += 1
+                    dataOut[index].append(
+                        {'id': telIds[index]+';'+key, 'data': [{'y': x[0]['data'], 'x':x[1]} for x in dataNow]})
+
         data = {
-            "timeOfNight": timeOfNightDate
+            "timeOfNight": timeOfNightDate,
+            "dataOut":dataOut
         }
 
         return data
@@ -112,3 +141,24 @@ class weatherMonitoring():
         # ])
 
         return
+
+    def checkSytemHealth(self, agregate, key, row):
+        if float(row["mirror"]) < 30:
+            agregate["critical"]["mirror"].append(key)
+        elif float(row["mirror"]) < 55:
+            agregate["warning"]["mirror"].append(key)
+
+        if float(row["camera"]) < 30:
+            agregate["critical"]["camera"].append(key)
+        elif float(row["camera"]) < 55:
+            agregate["warning"]["camera"].append(key)
+
+        if float(row["aux"]) < 30:
+            agregate["critical"]["aux"].append(key)
+        elif float(row["aux"]) < 55:
+            agregate["warning"]["aux"].append(key)
+
+        if float(row["mount"]) < 30:
+            agregate["critical"]["mount"].append(key)
+        elif float(row["mount"]) < 55:
+            agregate["warning"]["mount"].append(key)

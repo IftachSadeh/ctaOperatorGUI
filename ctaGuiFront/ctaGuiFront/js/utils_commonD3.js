@@ -30,7 +30,7 @@ window.inputDateD3 = function (g, box, id, optIn, events) {
     .attr('min', function (d) { return optIn.min })
     .attr('max', function (d) { return optIn.max })
     .attr('step', function (d) { return optIn.step })
-    .style('font-size', 11 + 'px')
+    .style('font-size', (optIn.fontSize ? optIn.fontSize : 11) + 'px')
     // .style('display', 'inline-block')
     // .style('color', '#000000')
     .style('background', 'transparent')

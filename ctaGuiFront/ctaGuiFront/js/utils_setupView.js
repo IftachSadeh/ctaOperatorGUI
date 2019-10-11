@@ -70,7 +70,7 @@ setupView.view102 = function () {
 
   // sock.addWidget({
   //   nameTag:"arrZoomer", tableTitle:"Telescope health", hasIcon:true, hasDrawer:true
-  // })
+  // })+"; overflow: hidden"
   // sock.addWidget({
   //   nameTag:"subArrGrp", tableTitle:"Sub-array pointings", hasIcon:true, hasDrawer:false
   // });
