@@ -37,7 +37,7 @@ window.loadScript({ source: 'utils_scrollTable', script: '/js/utils_commonD3.js'
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 10
+  let h0 = 12
   let w0 = 12
   let divKey = 'main'
   let content = "<div id='" + optIn.baseName + divKey + "'>" +
@@ -126,11 +126,11 @@ let mainWeatherMonitoring = function (optIn) {
 
       d3.select(svgDiv)
         .style('width', 'calc(100% - 200px)')
-        .style('height', '100%')
-        .style('top', '0%')
+        .style('height', 'calc(100% - 175px)')
+        .style('margin-top', '175px')
         .style('margin-left', '200px')
         .style('overflow', 'scroll')
-        .style('max-height', ($(document).height() * 0.8) + 'px')
+        .style('max-height', ($(document).height() * 0.8 - 175) + 'px')
       svg.svg = d3
         .select(svgDiv)
         .append('svg')
@@ -154,6 +154,33 @@ let mainWeatherMonitoring = function (optIn) {
         // .style('max-height', ($(document).height() * 0.8) + 'px')
       svg.floatingMenu = d3
         .select(svgDivFM)
+        .append('svg')
+        // .attr('preserveAspectRatio', 'xMidYMid meet')
+        // .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('top', '0%')
+        .style('left', '0%')
+        .style('pointer-events', 'none')
+      svg.floatingMenu.append('rect')
+        .attr('x', '98%')
+        .attr('y', 0)
+        .attr('width', '1px')
+        .attr('height', '100%')
+        .attr('fill', colorPalette.darkest.stroke)
+        .attr('stroke', colorPalette.darkest.stroke)
+        .attr('stroke-width', 0.0)
+
+      d3.select(svgDivPL)
+        .style('position', 'absolute')
+        .style('width', 'calc(100% - 200px)')
+        .style('height', '160px')
+        .style('top', '0%')
+        .style('left', '200px')
+        .style('pointer-events', 'none')
+        // .style('max-height', ($(document).height() * 0.8) + 'px')
+      svg.plotList = d3
+        .select(svgDivPL)
         .append('svg')
         // .attr('preserveAspectRatio', 'xMidYMid meet')
         // .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
@@ -213,6 +240,30 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('stroke-width', 8)
         .attr('stroke-opacity', 0.6)
 
+      pattern.select.warningGrid = pattern.select.defs.append('pattern')
+        .attr('id', 'warningGrid')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', 22)
+        .attr('height', 22)
+        .attr('fill', 'none')
+      pattern.select.warningGrid.append('line')
+        .attr('x1', 0)
+        .attr('y1', 0)
+        .attr('x2', 22)
+        .attr('y2', 22)
+        .attr('stroke', colorPalette.blocks.fail.background)
+        .attr('stroke-width', 6)
+        .attr('stroke-opacity', 6)
+      pattern.select.warningGrid.append('line')
+        .attr('x1', 22)
+        .attr('y1', 0)
+        .attr('x2', 0)
+        .attr('y2', 22)
+        .attr('stroke', colorPalette.blocks.fail.background)
+        .attr('stroke-width', 6)
+        .attr('stroke-opacity', 6)
+
       svg.back.append('rect')
         .attr('x', lenD.w[0] * 0.0)
         .attr('y', lenD.h[0] * 0.0)
@@ -262,26 +313,26 @@ let mainWeatherMonitoring = function (optIn) {
       fo.appendChild(iframe)
       // svg.svg._groups[0][0].appendChild(fo)
 
-      svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.27)
+      svg.plotList.append('rect')
+        .attr('x', 0)
         .attr('y', 0)
         .attr('width', lenD.w[0] * 0.25)
         .attr('height', lenD.h[0] * 0.02)
         .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
         .attr('stroke', 'none')
         .attr('rx', 0)
-      svg.back.append('text')
+      svg.plotList.append('text')
         .text('Plots List')
         .style('fill', colorPalette.bright.background)
         .style('font-weight', 'bold')
         .style('font-size', '12px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.34) + ',' + (lenD.h[0] * 0.015) + ')')
-      for (var i = 0; i < 6; i++) {
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (lenD.w[0] * 0.05) + ',' + (lenD.h[0] * 0.015) + ')')
+      for (var i = 0; i < 7; i++) {
         for (var j = 0; j < 2; j++) {
-          svg.back.append('rect')
-            .attr('x', lenD.w[0] * 0.27 + i * lenD.w[0] * 0.12)
-            .attr('y', lenD.h[0] * 0.03 + j * (lenD.h[0] * 0.06 + lenD.h[0] * 0.01))
+          svg.plotList.append('rect')
+            .attr('x', lenD.w[0] * 0.01 + i * lenD.w[0] * 0.12)
+            .attr('y', lenD.h[0] * 0.025 + j * (lenD.h[0] * 0.06 + lenD.h[0] * 0.01))
             .attr('width', lenD.w[0] * 0.10)
             .attr('height', lenD.h[0] * 0.06)
             .attr('fill', colorPalette.darker.background) // colorPalette.dark.background)
@@ -369,10 +420,12 @@ let mainWeatherMonitoring = function (optIn) {
     })
     let svgDivId = sgvTag.main.id + 'svg'
     let svgDivFMId = sgvTag.main.id + 'FM'
+    let svgDivPLId = sgvTag.main.id + 'PL'
     let parent = sgvTag.main.widget.getEle(sgvTag.main.id)
 
     let svgDiv = sgvTag.main.widget.getEle(svgDivId)
     let svgDivFM = sgvTag.main.widget.getEle(svgDivFMId)
+    let svgDivPL = sgvTag.main.widget.getEle(svgDivPLId)
     if (!hasVar(svgDiv)) {
       let svgDiv = document.createElement('div')
       svgDiv.id = svgDivId
@@ -381,6 +434,10 @@ let mainWeatherMonitoring = function (optIn) {
       let svgDivFM = document.createElement('div')
       svgDivFM.id = svgDivFMId
       appendToDom(parent, svgDivFM)
+
+      let svgDivPL = document.createElement('div')
+      svgDivPL.id = svgDivPLId
+      appendToDom(parent, svgDivPL)
 
       runWhenReady({
         pass: function () {
@@ -401,7 +458,7 @@ let mainWeatherMonitoring = function (optIn) {
 
     shared.server = dataIn.data
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
-    shared.time.range = 1000 * (3600 * parseInt(6) + 60 * parseInt(0))
+    shared.time.range = 1000 * (3600 * parseInt(3) + 60 * parseInt(0))
     shared.time.from = new Date()
     shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
     loadMesures()
@@ -426,10 +483,16 @@ let mainWeatherMonitoring = function (optIn) {
 
     locker.add('updateData')
 
-    shared.server = dataIn.data
+    for (let key in dataIn.data) {
+      shared.server[key] = dataIn.data[key]
+    }
 
     // svgPlotDisplay.updateData()
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
+    updateMesures()
+
+    svgMeasuredData.updateData()
+    svgPlotDisplay.updateData()
     svgFMDate.updateData()
 
     locker.remove('updateData')
@@ -494,59 +557,111 @@ let mainWeatherMonitoring = function (optIn) {
     shared.data.push(data)
     svgPlotDisplay.bindData(data)
   }
+  function linearRegression (x, y) {
+    var lr = {}
+    var n = y.length
+    var sumx = 0
+    var sumy = 0
+    var sumxy = 0
+    var sumxx = 0
+    var sumyy = 0
+
+    for (let i = 0; i < y.length; i++) {
+      sumx += x[i]
+      sumy += y[i]
+      sumxy += (x[i] * y[i])
+      sumxx += (x[i] * x[i])
+      sumyy += (y[i] * y[i])
+    }
+
+    lr['slope'] = (n * sumxy - sumx * sumy) / (n * sumxx - sumx * sumx)
+    lr['intercept'] = (sumy - lr.slope * sumx) / n
+    lr['r2'] = Math.pow((n * sumxy - sumx * sumy) / Math.sqrt((n * sumxx - sumx * sumx) * (n * sumyy - sumy * sumy)), 2)
+
+    return lr
+  }
+  function updateMesures () {
+    let fillfun = function (index) {
+      let status = {current: '', previous: []}
+      status.current = deepCopy(shared.server.dataOut[Math.floor(index / 4)][index % 4].data[0])
+      status.current.x = new Date(shared.server.timeOfNight.date_now)
+      for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
+        if (shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2] === undefined ||
+          shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) break
+        status.previous.push(deepCopy(shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2]))
+        status.previous[i].x = new Date()
+        status.previous[i].x.setTime(status.current.x.getTime() - i * 3600 * 100)
+      }
+      status.gradient = (linearRegression(status.previous.map((a) => a.x.getTime()), status.previous.map((a) => a.y)).slope * 1000000).toFixed(1)
+      return status
+    }
+    let index = 0
+    for (var i = 0; i < shared.server.measures.length; i++) {
+      index += 1
+      shared.server.measures[i].status = fillfun(index)
+      for (var j = 0; j < shared.server.measures[i].subMeasures.length; j++) {
+        index += 1
+        shared.server.measures[i].subMeasures[j].status = fillfun(index)
+      }
+    }
+  }
   function loadMesures () {
     let fillfun = function (index) {
       let status = {current: '', previous: []}
-      status.current = shared.server.dataOut[Math.floor(index / 4)][index % 4].data[0]
+      status.current = deepCopy(shared.server.dataOut[Math.floor(index / 4)][index % 4].data[0])
       status.current.x = new Date(shared.server.timeOfNight.date_now)
-      for (let i = 1; i < (shared.time.range / 100 / 3600); i++) {
-        status.previous.push(shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2])
-        status.previous[i - 1].x = new Date ()
-        status.previous[i - 1].x.setTime(status.current.x.getTime() - i * 3600 * 100)
+      status.gradient = Math.floor((Math.random() * 20) - 10)
+      for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
+        if (shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2] === undefined ||
+          shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) break
+        status.previous.push(deepCopy(shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2]))
+        status.previous[i].x = new Date()
+        status.previous[i].x.setTime(status.current.x.getTime() - i * 3600 * 100)
       }
       return status
     }
     shared.server.measures = [
-      {id: 'id0', name: 'Measure1', status: fillfun(1), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id1', name: 'Measure2', status: fillfun(2), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id2', name: 'Measure3', status: fillfun(3), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id3', name: 'Measure4', status: fillfun(4), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id4', name: 'subMeasure.14', status: fillfun(5), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      {id: 'id0', name: 'Measure1', status: fillfun(1), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', name: 'Measure2', status: fillfun(2), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id2', name: 'Measure3', status: fillfun(3), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id3', name: 'Measure4', status: fillfun(4), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id4', name: 'subMeasure.14', status: fillfun(5), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
       ]},
-      {id: 'id5', name: 'Measure5', status: fillfun(6), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id6', name: 'Measure6', status: fillfun(7), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id7', name: 'subMeasure6.1', status: fillfun(8), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      {id: 'id5', name: 'Measure5', status: fillfun(6), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id6', name: 'Measure6', status: fillfun(7), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id7', name: 'subMeasure6.1', status: fillfun(8), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
       ]},
-      {id: 'id8', name: 'Measure7', status: fillfun(9), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id9', name: 'subMeasure7.1', status: fillfun(10), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id10', name: 'subMeasure7.2', status: fillfun(11), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      {id: 'id8', name: 'Measure7', status: fillfun(9), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id9', name: 'subMeasure7.1', status: fillfun(10), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id10', name: 'subMeasure7.2', status: fillfun(11), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
       ]},
-      {id: 'id11', name: 'Measure8', status: fillfun(12), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id12', name: 'subMeasure8.1', status: fillfun(13), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id13', name: 'subMeasure8.2', status: fillfun(14), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id14', name: 'subMeasure8.3', status: fillfun(15), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id15', name: 'subMeasure8.4', status: fillfun(16), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id16', name: 'subMeasure8.5', status: fillfun(17), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      {id: 'id11', name: 'Measure8', status: fillfun(12), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id12', name: 'subMeasure8.1', status: fillfun(13), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id13', name: 'subMeasure8.2', status: fillfun(14), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id14', name: 'subMeasure8.3', status: fillfun(15), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id15', name: 'subMeasure8.4', status: fillfun(16), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id16', name: 'subMeasure8.5', status: fillfun(17), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
       ]},
-      {id: 'id17', name: 'Measure9', status: fillfun(18), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id18', name: 'subMeasure9.1', status: fillfun(19), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id19', name: 'subMeasure9.2', status: fillfun(20), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      {id: 'id17', name: 'Measure9', status: fillfun(18), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id18', name: 'subMeasure9.1', status: fillfun(19), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
+        {id: 'id19', name: 'subMeasure9.2', status: fillfun(20), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
       ]},
-      {id: 'id20', name: 'Measure10', status: fillfun(21), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id21', name: 'Measure11', status: fillfun(22), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id22', name: 'subMeasure11.1', status: fillfun(23), unit: ['C°', '%', 'µg/m3', 'km/h'][Math.floor((Math.random() * 3))]}
+      {id: 'id20', name: 'Measure10', status: fillfun(21), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id21', name: 'Measure11', status: fillfun(22), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id22', name: 'subMeasure11.1', status: fillfun(23), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
       ]}
     ]
   }
 
   let SvgPlotDisplay = function () {
+    let maing
     let plotbox
     let plot
     let brushbox
     let brush
 
     function addPlot (optIn) {
-      let plotg = svg.g.append('g')
+      let plotg = maing.append('g')
 
       plot = new PlotTimeSeries()
       plot.init({
@@ -558,14 +673,14 @@ let mainWeatherMonitoring = function (optIn) {
         axis: [
           {
             id: 'bottom',
-            showAxis: false,
+            showAxis: true,
             main: {
               g: undefined,
               box: {x: 0, y: 0, w: 0, h: plotbox.h, marg: 0},
               type: 'bottom',
               attr: {
                 text: {
-                  enabled: true,
+                  enabled: false,
                   size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
@@ -574,7 +689,8 @@ let mainWeatherMonitoring = function (optIn) {
                   enabled: true,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
-                }
+                },
+                tickSize: -plotbox.h
               }
             },
             axis: undefined,
@@ -605,7 +721,8 @@ let mainWeatherMonitoring = function (optIn) {
                   enabled: true,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
-                }
+                },
+                tickSize: -plotbox.w
               }
             },
             axis: undefined,
@@ -636,7 +753,8 @@ let mainWeatherMonitoring = function (optIn) {
                   enabled: true,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
-                }
+                },
+                tickSize: -plotbox.w
               }
             },
             axis: undefined,
@@ -653,7 +771,7 @@ let mainWeatherMonitoring = function (optIn) {
       })
     }
     function addBrush (optIn) {
-      let brushg = svg.g.append('g')
+      let brushg = maing.append('g')
 
       brush = new PlotBrushZoom({
         main: {
@@ -771,16 +889,30 @@ let mainWeatherMonitoring = function (optIn) {
     function initData () {
       plotbox = {
         x: lenD.w[0] * 0.5 + 20,
-        y: lenD.h[0] * 0.17 + 20,
+        y: lenD.h[0] * 0.05 + 20,
         w: lenD.w[0] * 0.48 - 40,
         h: lenD.h[0] * 0.4 - 40
       }
       brushbox = {
         x: lenD.w[0] * 0.5 + 20,
-        y: lenD.h[0] * 0.57 - 26,
+        y: lenD.h[0] * 0.45 - 26,
         w: lenD.w[0] * 0.48 - 40,
         h: lenD.h[0] * 0.05
       }
+
+      maing = svg.g.append('g')
+      // maing.append('rect')
+      //   .attr('x', plotbox.x - 30)
+      //   .attr('y', plotbox.y - 22)
+      //   .attr('width', plotbox.w + 60)
+      //   .attr('height', plotbox.h + 44)
+      //   .attr('fill', colorPalette.darker.background)
+      // maing.append('rect')
+      //   .attr('x', plotbox.x)
+      //   .attr('y', plotbox.y)
+      //   .attr('width', plotbox.w)
+      //   .attr('height', plotbox.h)
+      //   .attr('fill', colorPalette.dark.background)
 
       addPlot()
       addBrush()
@@ -1191,9 +1323,9 @@ let mainWeatherMonitoring = function (optIn) {
           for (let i = 0; i < d[j].status.previous.length; i++) {
             tg.append('rect')
               .attr('id', 'timestamp')
-              .attr('x', 0 + (i * (box.w * 0.8) / d[j].status.previous.length))
+              .attr('x', 0 + (i * (box.w * 0.74) / d[j].status.previous.length))
               .attr('y', j * lineSize)
-              .attr('width', (box.w * 0.8) / d[j].status.previous.length)
+              .attr('width', (box.w * 0.74) / d[j].status.previous.length)
               .attr('height', lineSize)
               .attr('fill', () => {
                 if (d[j].status.previous[i] === 'RUNNING') return d[j].running === true ? d3.color(colorPalette.blocks.done.background) : d3.color(colorPalette.blocks.done.background).darker().darker()
@@ -1206,7 +1338,7 @@ let mainWeatherMonitoring = function (optIn) {
           }
           ig.append('rect')
             .attr('id', 'current')
-            .attr('x', box.w * 0.85)
+            .attr('x', box.w * 0.78)
             .attr('y', j * lineSize)
             .attr('width', (box.w * 0.05))
             .attr('height', lineSize)
@@ -1218,37 +1350,23 @@ let mainWeatherMonitoring = function (optIn) {
             .attr('stroke', '#000000')
             .attr('stroke-width', 0.2)
             .attr('rx', 0)
-          // if (d[j].status.current === 'ERROR') {
-            // ig.append('rect')
-            //   .attr('x', box.w * 0.8)
-            //   .attr('y', 0 + j * lineSize - lineSize * 0.5)
-            //   .attr('width', lineSize * 2)
-            //   .attr('height', lineSize * 2)
-            //   .attr('fill', 'gold')
-            //   .attr('stroke-width', 0)
-            //   // .style('boxShadow', '10px 20px 30px black')
-            //   // .on('click', function () {
-            //   //   cleanBack()
-            //   //   display = undefined
-            //   //   focusManager.focusOn('target', d.id)
-            //   // })
-            //   // .on('mouseover', function (d) {
-            //   //   d3.select(this).style('cursor', 'pointer')
-            //   //   d3.select(this).attr('fill', colorTheme.darker.background)
-            //   // })
-            //   // .on('mouseout', function (d) {
-            //   //   d3.select(this).style('cursor', 'default')
-            //   //   d3.select(this).attr('fill', colorTheme.dark.background)
-            //   // })
-            // ig.append('svg:image')
-            //   .attr('xlink:href', '/static/icons/warning-tri.svg')
-            //   .attr('x', box.w * 0.8)
-            //   .attr('y', 0 + j * lineSize - lineSize * 0.5)
-            //   .attr('width', lineSize * 2)
-            //   .attr('height', lineSize * 2)
-            //   .style('opacity', 0.5)
-            //   .style('pointer-events', 'none')
-          // }
+          if (d[j].status.current === 'ERROR') {
+            ig.append('rect')
+              .attr('x', box.w * 0.88)
+              .attr('y', 0 + j * lineSize - lineSize * 0.5)
+              .attr('width', lineSize * 2.5)
+              .attr('height', lineSize * 2.5)
+              .attr('fill', 'gold')
+              .attr('stroke-width', 0)
+            ig.append('svg:image')
+              .attr('xlink:href', '/static/icons/warning-tri.svg')
+              .attr('x', box.w * 0.88)
+              .attr('y', 0 + j * lineSize - lineSize * 0.5)
+              .attr('width', lineSize * 2.5)
+              .attr('height', lineSize * 2.5)
+              .style('opacity', 0.5)
+              .style('pointer-events', 'none')
+          }
         }
       })
       let merge = current.merge(enter)
@@ -1270,7 +1388,7 @@ let mainWeatherMonitoring = function (optIn) {
       box = {
         x: lenD.w[0] * 0.0,
         y: lenD.h[0] * 0.7,
-        w: lenD.w[0] * 0.23,
+        w: lenD.w[0] * 0.265,
         h: lenD.h[0] * 0.28,
         marg: lenD.w[0] * 0.01
       }
@@ -1326,9 +1444,9 @@ let mainWeatherMonitoring = function (optIn) {
       main.append('rect')
         .attr('x', box.x)
         .attr('y', (box.y - 18) + 'px')
-        .attr('width', box.w)
+        .attr('width', box.w * 0.87)
         .attr('height', '24px')
-        .attr('fill', colorPalette.darker.background)
+        .attr('fill', colorPalette.dark.background)
       main.append('text')
         .text('Hardware Monitoring')
         .style('fill', '#000000')
@@ -1340,7 +1458,7 @@ let mainWeatherMonitoring = function (optIn) {
 
       let gsens = scrollbox.get('innerG')
       main.append('rect')
-        .attr('x', box.x + box.w * 0.9)
+        .attr('x', box.x + box.w * 0.78)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
         .attr('height', '16px')
@@ -1360,7 +1478,7 @@ let mainWeatherMonitoring = function (optIn) {
         })
       main.append('svg:image')
         .attr('xlink:href', '/static/icons/full-size.svg')
-        .attr('x', box.x + box.w * 0.9)
+        .attr('x', box.x + box.w * 0.78)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
         .attr('height', '16px')
@@ -1413,7 +1531,11 @@ let mainWeatherMonitoring = function (optIn) {
       //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     }
     function measuredCore () {
-      console.log(shared.server.measures);
+      let lineDim = {
+        w: box.w,
+        h: 30,
+        marg: 6
+      }
       let current = scrollbox.get('innerG')
         .selectAll('g.measures')
         .data(shared.server.measures, function (d) {
@@ -1426,8 +1548,14 @@ let mainWeatherMonitoring = function (optIn) {
 
       enter.each(function (d, i) {
         let g = d3.select(this)
-        g.append('rect').attr('id', 'background')
-        let main = g.append('g').attr('id', 'mainMeasure')
+        let min = d.status.current.y
+        let max = d.status.current.y
+        for (let j = 0; j < d.status.previous.length; j++) {
+          if (d.status.previous[j].y < min) min = d.status.previous[j].y
+          if (d.status.previous[j].y > max) max = d.status.previous[j].y
+        }
+
+        let main = g.attr('id', 'mainMeasure')
           .on('mouseenter', () => {
             d3.select(this).style('cursor', 'pointer')
             main.select('#background').attr('fill', colorPalette.darker.background)
@@ -1436,16 +1564,16 @@ let mainWeatherMonitoring = function (optIn) {
             d3.select(this).style('cursor', 'default')
             main.select('#background').attr('fill', 'transparent')
           })
-          .on('click', () => addDataToPlot(d))
+          .on('click', () => {
+            addDataToPlot(d)
+          })
         main.append('rect')
           .attr('id', 'background')
           .attr('x', 0)
           .attr('y', -18)
-          .attr('width', box.w)
-          .attr('height', 38)
+          .attr('width', lineDim.w)
+          .attr('height', lineDim.h * 1.4)
           .attr('fill', 'transparent')
-        let min = Math.min(...d.status.previous.map((a) => a.y), d.status.current.y)
-        let max = Math.max(...d.status.previous.map((a) => a.y), d.status.current.y)
 
         // main.append('defs')
         //   .append('clipPath')
@@ -1540,8 +1668,8 @@ let mainWeatherMonitoring = function (optIn) {
         main.append('rect')
           .attr('x', 12)
           .attr('y', -13)
-          .attr('width', (box.w * 0.45))
-          .attr('height', 30)
+          .attr('width', (lineDim.w * 0.36))
+          .attr('height', lineDim.h)
           .attr('fill', 'none')
           .attr('stroke', '#000000')
           .attr('stroke-width', 0.1)
@@ -1549,75 +1677,85 @@ let mainWeatherMonitoring = function (optIn) {
           .append('clipPath')
           .attr('id', 'rect-clip' + d.id)
           .append('rect')
-          .attr('x', 12 + (box.w * 0.45 / 100 * min))
+          .attr('x', 12 + (lineDim.w * 0.36 / 100 * min))
           .attr('y', -13)
-          .attr('width', (box.w * 0.45 / 100 * (max - min)))
-          .attr('height', 30)
+          .attr('width', (lineDim.w * 0.36 / 100 * (max - min)))
+          .attr('height', lineDim.h)
           .style('fill-opacity', 0)
         let healthg = main.append('g').attr('id', 'healthGroup')
+          .style('opacity', 0.7)
         healthg.append('rect')
           .attr('x', 12)
           .attr('y', -13)
-          .attr('width', box.w * 0.075)
-          .attr('height', 30)
+          .attr('width', lineDim.w * 0.06)
+          .attr('height', lineDim.h)
           .attr('fill', colorPalette.blocks.fail.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
         healthg.append('rect')
-          .attr('x', 12 + box.w * 0.075)
+          .attr('x', 12 + lineDim.w * 0.06)
           .attr('y', -13)
-          .attr('width', box.w * 0.075)
-          .attr('height', 30)
+          .attr('width', lineDim.w * 0.06)
+          .attr('height', lineDim.h)
           .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
         healthg.append('rect')
-          .attr('x', 12 + box.w * 0.15)
+          .attr('x', 12 + lineDim.w * 0.12)
           .attr('y', -13)
-          .attr('width', box.w * 0.15)
-          .attr('height', 30)
+          .attr('width', lineDim.w * 0.12)
+          .attr('height', lineDim.h)
           .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
         healthg.append('rect')
-          .attr('x', 12 + box.w * 0.3)
+          .attr('x', 12 + lineDim.w * 0.24)
           .attr('y', -13)
-          .attr('width', box.w * 0.075)
-          .attr('height', 30)
+          .attr('width', lineDim.w * 0.06)
+          .attr('height', lineDim.h)
           .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
         healthg.append('rect')
-          .attr('x', 12 + box.w * 0.375)
+          .attr('x', 12 + lineDim.w * 0.3)
           .attr('y', -13)
-          .attr('width', box.w * 0.075)
-          .attr('height', 30)
+          .attr('width', lineDim.w * 0.06)
+          .attr('height', lineDim.h)
           .attr('fill', colorPalette.blocks.fail.background)
           .attr('stroke', 'none')
           .attr('rx', 0)
           .style('opacity', 0.8)
           .attr('clip-path', 'url(#rect-clip' + d.id + ')')
 
-        main.append('rect')
-          .attr('x', 12 + (box.w * 0.45 / 100 * d.status.current.y))
-          .attr('y', -13)
-          .attr('width', 1)
-          .attr('height', 30)
-          .attr('fill', '#000000') // colorPalette.dark.background)
-          .attr('stroke', 'none')
-          .attr('rx', 0)
+        // main.append('rect')
+        //   .attr('x', 12 + (box.w * 0.36 / 100 * d.status.current.y))
+        //   .attr('y', -13)
+        //   .attr('width', 1)
+        //   .attr('height', 30)
+        //   .attr('fill', '#000000') // colorPalette.dark.background)
+        //   .attr('stroke', 'none')
+        //   .attr('rx', 0)
+        let valueline = d3.line()
+          .curve(d3.curveBundle)
+          .x(function (d, j) { return 12 + (box.w * 0.36 / 100 * d.y) })
+          .y(function (dd, j) { return -13 + 30 - (30 / d.status.previous.length) * j })
+        main.append('path')
+          .attr('d', valueline(d.status.previous))
+          .attr('fill', 'none')
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 1.5)
         main.append('circle')
-          .attr('cx', 13 + (box.w * 0.45 / 100 * d.status.current.y))
-          .attr('cy', 0)
-          .attr('r', 4)
+          .attr('cx', 13 + (lineDim.w * 0.36 / 100 * d.status.current.y))
+          .attr('cy', 16)
+          .attr('r', 3)
           .attr('fill', '#000000')
           .attr('stroke', 'none')
           .attr('rx', 0)
@@ -1625,44 +1763,123 @@ let mainWeatherMonitoring = function (optIn) {
         main.append('text')
           .attr('id', 'measurelabel')
           .text(d.name)
-          .attr('x', box.w * 0.55)
+          .attr('x', box.w * 0.43)
           .attr('y', -5)
-          .style('font-size', '12px')
+          .style('font-size', '16px')
           .style('user-select', 'none')
+          .style('text-anchor', 'start')
         main.append('text')
           .attr('id', 'valuelabel')
           .text(d.status.current.y)
-          .attr('x', box.w * 0.55)
-          .attr('y', 12)
-          .style('font-size', '16px')
+          .attr('x', box.w * 0.62)
+          .attr('y', 16)
+          .style('font-size', '20px')
           .style('font-weight', 'bold')
           .style('user-select', 'none')
+          .style('text-anchor', 'end')
         main.append('text')
           .attr('id', 'unitlabel')
-          .text(d.unit)
-          .attr('x', box.w * 0.73)
-          .attr('y', 12)
-          .style('font-size', '10px')
+          .text('(' + d.unit + ')')
+          .attr('x', box.w * 0.86)
+          .attr('y', -7)
+          .style('font-size', '14px')
           .style('font-weight', '')
+          .style('user-select', 'none')
+          .style('text-anchor', 'end')
+
+        main.append('text')
+          .attr('id', 'gradient')
+          .text(d.status.gradient)
+          .attr('x', box.w * 0.68)
+          .attr('y', 16)
+          .style('font-size', '18px')
+          .style('text-anchor', 'start')
+          .style('font-weight', '')
+          .style('user-select', 'none')
+
+        let errorbox = main.append('g').attr('id', 'errorbox')
+          .attr('display', 'none')
+          .style('opacity', 1)
+        errorbox.append('rect')
+          .attr('id', 'background')
+          .attr('x', box.w * 0.9)
+          .attr('y', -6)
+          .attr('width', 22)
+          .attr('height', 22)
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 1)
+        errorbox.append('rect')
+          .attr('id', 'pattern')
+          .attr('x', box.w * 0.9 + 4)
+          .attr('y', -2)
+          .attr('width', 14)
+          .attr('height', 14)
+        errorbox.append('text')
+          .text('!')
+          .attr('x', box.w * 0.9 + 11)
+          .attr('y', 12)
+          .style('font-size', '18px')
+          .style('text-anchor', 'middle')
+          .style('font-weight', 'bold')
           .style('user-select', 'none')
       })
       let merge = current.merge(enter)
 
-      let offset = 16
+      let offset = 18
       merge.each(function (d, i) {
         let min = Math.min(...d.status.previous.map((a) => a.y), d.status.current.y)
         let max = Math.max(...d.status.previous.map((a) => a.y), d.status.current.y)
 
         let g = d3.select(this)
-        g.select('g#mainMeasure')
-          .on('click', () => addDataToPlot(d))
-        g.select('g#mainMeasure clipPath#rect-clip' + d.id + ' rect')
+        g.on('click', () => {
+          addDataToPlot(d)
+        })
+        g.select('clipPath#rect-clip' + d.id + ' rect')
           .transition()
           .duration(400)
-          .attr('x', 12 + (box.w * 0.45 / 100 * min))
-          .attr('width', (box.w * 0.45 / 100 * (max - min)))
+          .attr('x', 12 + (box.w * 0.36 / 100 * min))
+          .attr('width', (box.w * 0.36 / 100 * (max - min)))
+
+        let valueline = d3.line()
+          .curve(d3.curveBundle)
+          .x(function (d, j) { return 12 + (box.w * 0.36 / 100 * d.y) })
+          .y(function (dd, j) { return -13 + 30 - (30 / d.status.previous.length) * j })
+        g.select('path')
+          .transition()
+          .duration(400)
+          .attr('d', valueline(d.status.previous))
+        g.select('circle')
+          .transition()
+          .duration(400)
+          .attr('cx', 13 + (box.w * 0.36 / 100 * d.status.current.y))
+          .attr('cy', 16)
+        g.select('text#valuelabel')
+          .text(d.status.current.y)
+        g.select('text#gradient')
+          .text(d.status.gradient)
+
+        if (d.status.current.y < 16.6 || d.status.current.y > 83.4) {
+          g.select('g#errorbox').attr('display', 'auto')
+          g.select('g#errorbox rect#background').attr('fill', colorPalette.blocks.fail.background)
+          g.select('g#errorbox rect#pattern').attr('fill', colorPalette.blocks.fail.background)
+        } else if (d.status.current.y < 33.2 || d.status.current.y > 66) {
+          g.select('g#errorbox').attr('display', 'auto')
+          g.select('g#errorbox rect#background').attr('fill', colorPalette.blocks.warning.background)
+          if ((d.status.current.y + d.status.gradient) < 16.6 || (d.status.current.y + d.status.gradient) > 83.4) {
+            g.select('g#errorbox rect#pattern').attr('fill', colorPalette.blocks.fail.background)
+          } else {
+            g.select('g#errorbox rect#pattern').attr('fill', colorPalette.blocks.warning.background)
+          }
+        } else if ((d.status.current.y + d.status.gradient) < 33.2 || (d.status.current.y + d.status.gradient) > 66) {
+          g.select('g#errorbox').attr('display', 'auto')
+          g.select('g#errorbox rect#background').attr('fill', colorPalette.blocks.done.background)
+          g.select('g#errorbox rect#pattern').attr('fill', colorPalette.blocks.warning.background)
+        } else {
+          g.select('g#errorbox').attr('display', 'none')
+        }
+
         g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-        offset += 38
+        offset += 50
       })
       current
         .exit()
@@ -1675,7 +1892,7 @@ let mainWeatherMonitoring = function (optIn) {
       box = {
         x: lenD.w[0] * 0.0,
         y: 48,
-        w: lenD.w[0] * 0.23,
+        w: lenD.w[0] * 0.26,
         h: lenD.h[0] * 0.55,
         marg: lenD.w[0] * 0.01
       }
@@ -1686,17 +1903,17 @@ let mainWeatherMonitoring = function (optIn) {
       main.append('rect')
         .attr('x', box.x)
         .attr('y', (box.y - 18) + 'px')
-        .attr('width', box.w)
+        .attr('width', box.w * 0.885)
         .attr('height', '24px')
         .attr('fill', colorPalette.dark.background)
       main.append('text')
-        .text('Measured Data')
+        .text('Measures')
         .style('fill', '#000000')
         .style('font-weight', 'bold')
         .style('font-size', '18px')
         .style('user-select', 'none')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + box.x + 4 + ',' + box.y + ')')
+        .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y) + ')')
       // let startY = lenD.h[0] * 0.4
       // let endY = lenD.h[0] * 0.6
       // svg.g.append('rect')
@@ -1741,7 +1958,7 @@ let mainWeatherMonitoring = function (optIn) {
       //   .attr('rx', 0)
 
       main.append('rect')
-        .attr('x', box.x + box.w * 0.9)
+        .attr('x', box.x + box.w * 0.78)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
         .attr('height', '16px')
@@ -1767,7 +1984,7 @@ let mainWeatherMonitoring = function (optIn) {
         })
       main.append('svg:image')
         .attr('xlink:href', '/static/icons/full-size.svg')
-        .attr('x', box.x + box.w * 0.9)
+        .attr('x', box.x + box.w * 0.78)
         .attr('y', (box.y - 14) + 'px')
         .attr('width', '16px')
         .attr('height', '16px')
@@ -1854,8 +2071,8 @@ let mainWeatherMonitoring = function (optIn) {
             if (d.type === 'measure') return d.data.name
             if (d.type === 'sensor') return d.data.name
           })
-          .attr('x', size.x)
-          .attr('y', size.y + size.h / 2)
+          .attr('x', size.x + size.w + 4)
+          .attr('y', size.y + size.h)
           .style('font-size', '14px')
         // g.append('text')
         //   .attr('id', 'unitlabel')
@@ -2024,7 +2241,7 @@ let mainWeatherMonitoring = function (optIn) {
     let stock = {}
 
     function changeBlockTime (a, b) {
-      shared.time.range = 1000 * (3600 * (parseInt(a) - 1) + 60 * parseInt(b))
+      shared.time.range = 1000 * (3600 * (parseInt(a)) + 60 * parseInt(b))
       shared.time.from.setTime(shared.time.current.getTime() - shared.time.range)
       loadMesures()
       svgMeasuredData.updateData()
@@ -2223,7 +2440,7 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('transform', 'translate(' + (15) + ',' + (box.h * 0.12) + ')')
 
       let fontSize = 11
-      let time = new Date(18000000)
+      let time = new Date(1000 * (3600 * (parseInt(2)) + 60 * parseInt(0)))
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
       let hbox = {
         x: box.w * 0.3,
