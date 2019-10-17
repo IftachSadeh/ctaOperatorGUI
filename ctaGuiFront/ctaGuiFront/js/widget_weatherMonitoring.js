@@ -122,7 +122,7 @@ let mainWeatherMonitoring = function (optIn) {
       lenD.w = {}
       lenD.h = {}
       lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0]// / sgvTag.main.whRatio
+      lenD.h[0] = lenD.w[0] * 1.33 // / sgvTag.main.whRatio
 
       d3.select(svgDiv)
         .style('width', 'calc(100% - 200px)')
@@ -174,7 +174,7 @@ let mainWeatherMonitoring = function (optIn) {
       d3.select(svgDivPL)
         .style('position', 'absolute')
         .style('width', 'calc(100% - 200px)')
-        .style('height', '160px')
+        .style('height', '174px')
         .style('top', '0%')
         .style('left', '200px')
         .style('pointer-events', 'none')
@@ -189,25 +189,30 @@ let mainWeatherMonitoring = function (optIn) {
         .style('top', '0%')
         .style('left', '0%')
         .style('pointer-events', 'none')
-      svg.floatingMenu.append('rect')
-        .attr('x', '98%')
-        .attr('y', 0)
-        .attr('width', '1px')
-        .attr('height', '100%')
+      svg.plotList.append('rect')
+        .attr('x', 0)
+        .attr('y', '99%')
+        .attr('width', '100%')
+        .attr('height', '1px')
         .attr('fill', colorPalette.darkest.stroke)
         .attr('stroke', colorPalette.darkest.stroke)
         .attr('stroke-width', 0.0)
 
-      // function adjustDim () {
-      //   // $(svg.floatingMenu.node()).width($(svgDiv).width())
-      //   $(svg.floatingMenu.node()).height($(svgDiv).height())
-      // }
-      //
-      // $(window).resize(
-      //   function () {
-      //     adjustDim()
-      //   })
-      // adjustDim()
+      function adjustDim () {
+        box.pl = {
+          x: 0,
+          y: 0,
+          w: $(svg.plotList.node()).width(),
+          h: $(svg.plotList.node()).height()
+        }
+        svgPL.adjustScrollBox()
+        svgPL.adjustPlotDistribution()
+      }
+
+      $(window).resize(
+        function () {
+          adjustDim()
+        })
 
       svg.floatingMenuRoot = svg.floatingMenu.append('g')
       // .attr('transform', 'translate(' + -lenD.w[0] * 0.12 + ',' + 0 + ')')
@@ -282,7 +287,7 @@ let mainWeatherMonitoring = function (optIn) {
         .style('font-weight', 'bold')
         .style('font-size', '22px')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (4) + ',' + (lenD.h[0] * 0.022) + ')')
+        .attr('transform', 'translate(' + (4) + ',' + (20) + ')')
 
       // svg.back.append('rect')
       //   .attr('x', lenD.w[0] * 0.26)
@@ -301,45 +306,18 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('transform', 'translate(' + (lenD.w[0] * 0.5) + ',' + (lenD.h[0] * 0.25) + ')')
       let fo = svg.back.append('foreignObject')
         .attr('x', lenD.w[0] * 0.5 + 'px')
-        .attr('y', lenD.h[0] * 0.6 + 'px')
+        .attr('y', lenD.h[0] * 0.36 + 'px')
         .attr('width', lenD.w[0] * 0.48 + 'px')
         .attr('height', lenD.h[0] * 0.495 + 'px').node()
 
       let iframe = document.createElement('iframe')
       iframe.width = (lenD.w[0] * 0.48) + 'px'
-      iframe.height = (lenD.h[0] * 0.4) + 'px'
+      iframe.height = (lenD.h[0] * 0.3) + 'px'
       iframe.src = "https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"
 
       fo.appendChild(iframe)
       // svg.svg._groups[0][0].appendChild(fo)
 
-      svg.plotList.append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', lenD.w[0] * 0.25)
-        .attr('height', lenD.h[0] * 0.02)
-        .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
-      svg.plotList.append('text')
-        .text('Plots List')
-        .style('fill', colorPalette.bright.background)
-        .style('font-weight', 'bold')
-        .style('font-size', '12px')
-        .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.05) + ',' + (lenD.h[0] * 0.015) + ')')
-      for (var i = 0; i < 7; i++) {
-        for (var j = 0; j < 2; j++) {
-          svg.plotList.append('rect')
-            .attr('x', lenD.w[0] * 0.01 + i * lenD.w[0] * 0.12)
-            .attr('y', lenD.h[0] * 0.025 + j * (lenD.h[0] * 0.06 + lenD.h[0] * 0.01))
-            .attr('width', lenD.w[0] * 0.10)
-            .attr('height', lenD.h[0] * 0.06)
-            .attr('fill', colorPalette.darker.background) // colorPalette.dark.background)
-            .attr('stroke', 'none')
-            .attr('rx', 0)
-        }
-      }
       // svg.back.append('rect')
       //   .attr('x', lenD.w[0] * 0.78)
       //   .attr('y', lenD.h[0] * 0.98)
@@ -379,6 +357,12 @@ let mainWeatherMonitoring = function (optIn) {
         w: lenD.w[0] * 0.59,
         h: lenD.h[0] * 0.47,
         marg: lenD.w[0] * 0.01
+      }
+      box.pl = {
+        x: 0,
+        y: 0,
+        w: $(svg.plotList.node()).width(),
+        h: $(svg.plotList.node()).height()
       }
     }
     function initDefaultStyle () {
@@ -465,9 +449,14 @@ let mainWeatherMonitoring = function (optIn) {
 
     svgMeasuredData.initData()
     svgHeathMapSensors.initData()
+
+    createUrgentList()
+
     svgFMDate.initData()
     svgFMTimeline.initData()
     svgFMSupervision.initData()
+
+    svgPL.initData()
 
     svgPlotDisplay.initData()
   }
@@ -490,10 +479,12 @@ let mainWeatherMonitoring = function (optIn) {
     // svgPlotDisplay.updateData()
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     updateMesures()
+    createUrgentList()
 
     svgMeasuredData.updateData()
     svgPlotDisplay.updateData()
     svgFMDate.updateData()
+    svgFMSupervision.updateData()
 
     locker.remove('updateData')
   }
@@ -551,11 +542,13 @@ let mainWeatherMonitoring = function (optIn) {
       if (shared.data[i].id === data.id) {
         shared.data.splice(i, 1)
         svgPlotDisplay.unbindData(data)
+        svgMeasuredData.unselectMeasure(data.id)
         return
       }
     }
     shared.data.push(data)
     svgPlotDisplay.bindData(data)
+    svgMeasuredData.selectMeasure(data.id)
   }
   function linearRegression (x, y) {
     var lr = {}
@@ -651,6 +644,30 @@ let mainWeatherMonitoring = function (optIn) {
         {id: 'id22', name: 'subMeasure11.1', status: fillfun(23), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
       ]}
     ]
+  }
+  function createUrgentList () {
+    shared.server.urgent = []
+    for (let i = 0; i < shared.server.sensors.length; i++) {
+      for (let j = 0; j < shared.server.sensors[i].length; j++) {
+        if (shared.server.sensors[i][j].status.current === 'ERROR') shared.server.urgent.push({type: 'sensor', data: shared.server.sensors[i][j]})
+      }
+    }
+    for (let i = 0; i < shared.server.measures.length; i++) {
+      let d = shared.server.measures[i]
+      if (d.status.current.y < 16.6 || d.status.current.y > 83.4) {
+        shared.server.urgent.push({type: 'measure', data: d})
+      }
+      // else if (d.status.current.y < 33.2 || d.status.current.y > 66) {
+      //
+      //   if ((d.status.current.y + d.status.gradient) < 16.6 || (d.status.current.y + d.status.gradient) > 83.4) {
+      //
+      //   } else {
+      //
+      //   }
+      // } else if ((d.status.current.y + d.status.gradient) < 33.2 || (d.status.current.y + d.status.gradient) > 66) {
+      //
+      // }
+    }
   }
 
   let SvgPlotDisplay = function () {
@@ -891,11 +908,11 @@ let mainWeatherMonitoring = function (optIn) {
         x: lenD.w[0] * 0.5 + 20,
         y: lenD.h[0] * 0.05 + 20,
         w: lenD.w[0] * 0.48 - 40,
-        h: lenD.h[0] * 0.4 - 40
+        h: lenD.h[0] * 0.27 - 40
       }
       brushbox = {
         x: lenD.w[0] * 0.5 + 20,
-        y: lenD.h[0] * 0.45 - 26,
+        y: lenD.h[0] * 0.32 - 26,
         w: lenD.w[0] * 0.48 - 40,
         h: lenD.h[0] * 0.05
       }
@@ -1181,7 +1198,7 @@ let mainWeatherMonitoring = function (optIn) {
       svg.g.select('g#hardwareMonitoring')
         .transition()
         .duration(600)
-        .attr('transform', 'translate(' + 0 + ',' + -box.y * 0.2 + ')')
+        .attr('transform', 'translate(' + 0 + ',' + -box.y * 0.08 + ')')
       svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
         .attr('visibility', 'visible')
         .transition()
@@ -1206,15 +1223,15 @@ let mainWeatherMonitoring = function (optIn) {
             .attr('id', 'label')
             .text(d => d[0].name)
             .attr('x', -6)
-            .attr('y', '-14px')
+            .attr('y', '-18px')
             .style('font-weight', 'bold')
-            .style('font-size', '12px')
+            .style('font-size', '16px')
           g.append('rect')
             .attr('id', 'label')
             .attr('x', -4)
             .attr('y', -11)
             .attr('width', 2)
-            .attr('height', d.length * (lineSize + 12))
+            .attr('height', d.length * (lineSize + 16))
           g.select('rect#background')
             .attr('x', -6)
             .attr('y', -26)
@@ -1231,7 +1248,7 @@ let mainWeatherMonitoring = function (optIn) {
             .text((d, i) => d[i].id)
             .attr('x', 0)
             .attr('y', -1)
-            .style('font-size', '10px')
+            .style('font-size', '14px')
             .attr('transform', function (d, i) {
               return 'translate(' + 0 + ',' + (i * 9) + ')'
             })
@@ -1239,50 +1256,50 @@ let mainWeatherMonitoring = function (optIn) {
             .transition()
             .duration(600)
             .attr('transform', function (d, i) {
-              return 'translate(' + 0 + ',' + (i * 12) + ')'
+              return 'translate(' + 0 + ',' + (i * 18) + ')'
             })
-          offset += d.length * (lineSize + 11)
+          offset += d.length * (lineSize + 22)
         })
 
-      scrollbox.updateBox({x: 0, y: 0, w: box.w, h: (box.y * 0.2 + box.h)})
+      scrollbox.updateBox({x: 0, y: 0, w: box.w, h: (box.y * 0.08 + box.h)})
       scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (offset)})
     }
     function defaultDisplay () {
       // svgMeasuredData.unshift()
       svg.g.select('g#hardwareMonitoring')
         .transition()
-        .duration(600)
+        .duration(200)
         .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
         .on('end', function () {
           scrollbox.updateBox({x: 0, y: 0, w: box.w, h: box.h})
           scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: 0})
-        })
-      let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
-      svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
-        .attr('visibility', 'visible')
-        .transition()
-        .duration(600)
-        .delay((d, i) => i * (600 / count))
-        .attr('opacity', 1)
-      let offset = 0
-      svg.g.select('g#heatmapSensors').selectAll('g.sensor')
-        .each(function (d) {
-          let g = d3.select(this)
-          g.on('mouseenter', () => {})
-          g.on('mouseleave', () => {})
-          g.transition()
-            .duration(600)
-            .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
-          g.selectAll('g.sensorline')
+          let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
+          svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
+            .attr('visibility', 'visible')
             .transition()
             .duration(600)
-            .attr('transform', function (d, i) {
-              return 'translate(' + 0 + ',' + 0 + ')'
+            .delay((d, i) => i * (600 / count))
+            .attr('opacity', 1)
+          let offset = 0
+          svg.g.select('g#heatmapSensors').selectAll('g.sensor')
+            .each(function (d) {
+              let g = d3.select(this)
+              g.on('mouseenter', () => {})
+              g.on('mouseleave', () => {})
+              g.transition()
+                .duration(600)
+                .attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
+              g.selectAll('g.sensorline')
+                .transition()
+                .duration(600)
+                .attr('transform', function (d, i) {
+                  return 'translate(' + 0 + ',' + 0 + ')'
+                })
+              offset += spaceSize + d.length * (lineSize)
             })
-          offset += spaceSize + d.length * (lineSize)
+          svg.g.select('g#heatmapSensors').selectAll('rect#label').remove()
+          svg.g.select('g#heatmapSensors').selectAll('text#label').remove()
         })
-      svg.g.select('g#heatmapSensors').selectAll('rect#label').remove()
-      svg.g.select('g#heatmapSensors').selectAll('text#label').remove()
     }
     function onOffSensor (g, j) {
       g.selectAll('rect#timestamp')
@@ -1350,23 +1367,45 @@ let mainWeatherMonitoring = function (optIn) {
             .attr('stroke', '#000000')
             .attr('stroke-width', 0.2)
             .attr('rx', 0)
-          if (d[j].status.current === 'ERROR') {
-            ig.append('rect')
-              .attr('x', box.w * 0.88)
-              .attr('y', 0 + j * lineSize - lineSize * 0.5)
-              .attr('width', lineSize * 2.5)
-              .attr('height', lineSize * 2.5)
-              .attr('fill', 'gold')
-              .attr('stroke-width', 0)
-            ig.append('svg:image')
-              .attr('xlink:href', '/static/icons/warning-tri.svg')
-              .attr('x', box.w * 0.88)
-              .attr('y', 0 + j * lineSize - lineSize * 0.5)
-              .attr('width', lineSize * 2.5)
-              .attr('height', lineSize * 2.5)
-              .style('opacity', 0.5)
-              .style('pointer-events', 'none')
-          }
+
+          let errorbox = ig.append('g').attr('id', 'errorbox')
+            .attr('display', 'auto')
+            .style('opacity', 1)
+          errorbox.append('rect')
+            .attr('id', 'background')
+            .attr('x', box.w * 0.9)
+            .attr('y', 0 + j * lineSize - lineSize * 0.5)
+            .attr('width', lineSize * 2)
+            .attr('height', lineSize * 2)
+            .attr('stroke', '#000000')
+            .attr('stroke-width', 1)
+          errorbox.append('text')
+            .text('!')
+            .attr('x', box.w * 0.9 + 9)
+            .attr('y', 16 + j * lineSize - lineSize * 0.5)
+            .style('font-size', '18px')
+            .style('text-anchor', 'middle')
+            .style('font-weight', 'bold')
+            .style('user-select', 'none')
+            .style('pointer-events', 'none')
+
+          // if (d[j].status.current === 'ERROR') {
+          //   ig.append('rect')
+          //     .attr('x', box.w * 0.88)
+          //     .attr('y', 0 + j * lineSize - lineSize * 0.5)
+          //     .attr('width', lineSize * 2.5)
+          //     .attr('height', lineSize * 2.5)
+          //     .attr('fill', 'gold')
+          //     .attr('stroke-width', 0)
+          //   ig.append('svg:image')
+          //     .attr('xlink:href', '/static/icons/warning-tri.svg')
+          //     .attr('x', box.w * 0.88)
+          //     .attr('y', 0 + j * lineSize - lineSize * 0.5)
+          //     .attr('width', lineSize * 2.5)
+          //     .attr('height', lineSize * 2.5)
+          //     .style('opacity', 0.5)
+          //     .style('pointer-events', 'none')
+          // }
         }
       })
       let merge = current.merge(enter)
@@ -1374,6 +1413,17 @@ let mainWeatherMonitoring = function (optIn) {
       let offset = 0
       merge.each(function (d, i) {
         let g = d3.select(this)
+
+        g.selectAll('g.sensorline').each(function (d, j) {
+          let g = d3.select(this)
+          if (d[j].status.current === 'ERROR') {
+            g.select('g#errorbox').attr('display', 'auto')
+            g.select('g#errorbox rect#background').attr('fill', colorPalette.blocks.fail.background)
+          } else {
+            g.select('g#errorbox').attr('display', 'none')
+          }
+        })
+
         g.attr('transform', 'translate(' + 0 + ',' + (offset) + ')')
         offset += spaceSize + d.length * (lineSize)
       })
@@ -1448,7 +1498,7 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('height', '24px')
         .attr('fill', colorPalette.dark.background)
       main.append('text')
-        .text('Hardware Monitoring')
+        .text('Hardware')
         .style('fill', '#000000')
         .style('font-weight', 'bold')
         .style('font-size', '18px')
@@ -1530,6 +1580,18 @@ let mainWeatherMonitoring = function (optIn) {
       //   .duration(600)
       //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     }
+    function selectMeasure (id) {
+      let g = scrollbox.get('innerG').select('g#' + id)
+      g.select('rect#background').attr('fill', colorPalette.darkest.background)
+      g.data()[0].selected = true
+    }
+    this.selectMeasure = selectMeasure
+    function unselectMeasure (id) {
+      let g = scrollbox.get('innerG').select('g#' + id)
+      g.select('rect#background').attr('fill', 'transparent')
+      delete g.data()[0]['selected']
+    }
+    this.unselectMeasure = unselectMeasure
     function measuredCore () {
       let lineDim = {
         w: box.w,
@@ -1555,13 +1617,15 @@ let mainWeatherMonitoring = function (optIn) {
           if (d.status.previous[j].y > max) max = d.status.previous[j].y
         }
 
-        let main = g.attr('id', 'mainMeasure')
+        let main = g.attr('id', d.id)
           .on('mouseenter', () => {
             d3.select(this).style('cursor', 'pointer')
+            if (g.data()[0].selected) return
             main.select('#background').attr('fill', colorPalette.darker.background)
           })
           .on('mouseleave', () => {
             d3.select(this).style('cursor', 'default')
+            if (g.data()[0].selected) return
             main.select('#background').attr('fill', 'transparent')
           })
           .on('click', () => {
@@ -1752,9 +1816,12 @@ let mainWeatherMonitoring = function (optIn) {
           .attr('fill', 'none')
           .attr('stroke', '#000000')
           .attr('stroke-width', 1.5)
-        main.append('circle')
+        main.append('polygon')
           .attr('cx', 13 + (lineDim.w * 0.36 / 100 * d.status.current.y))
           .attr('cy', 16)
+          .attr('points', (13 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 16 + ' ' +
+            (6 + lineDim.w * 0.36 / 100 * d.status.current.y) + ',' + 24 + ' ' +
+            (20 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 24)
           .attr('r', 3)
           .attr('fill', '#000000')
           .attr('stroke', 'none')
@@ -1782,7 +1849,7 @@ let mainWeatherMonitoring = function (optIn) {
           .text('(' + d.unit + ')')
           .attr('x', box.w * 0.86)
           .attr('y', -7)
-          .style('font-size', '14px')
+          .style('font-size', '12px')
           .style('font-weight', '')
           .style('user-select', 'none')
           .style('text-anchor', 'end')
@@ -1792,7 +1859,7 @@ let mainWeatherMonitoring = function (optIn) {
           .text(d.status.gradient)
           .attr('x', box.w * 0.68)
           .attr('y', 16)
-          .style('font-size', '18px')
+          .style('font-size', '16px')
           .style('text-anchor', 'start')
           .style('font-weight', '')
           .style('user-select', 'none')
@@ -1848,11 +1915,12 @@ let mainWeatherMonitoring = function (optIn) {
           .transition()
           .duration(400)
           .attr('d', valueline(d.status.previous))
-        g.select('circle')
+        g.select('polygon')
           .transition()
           .duration(400)
-          .attr('cx', 13 + (box.w * 0.36 / 100 * d.status.current.y))
-          .attr('cy', 16)
+          .attr('points', (13 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 16 + ' ' +
+            (6 + lineDim.w * 0.36 / 100 * d.status.current.y) + ',' + 24 + ' ' +
+            (20 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 24)
         g.select('text#valuelabel')
           .text(d.status.current.y)
         g.select('text#gradient')
@@ -2024,27 +2092,102 @@ let mainWeatherMonitoring = function (optIn) {
     //   //   .duration(600)
     //   //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     // }
-    function createUrgentList () {
-      let urgentList = []
-      for (let i = 0; i < shared.server.sensors.length; i++) {
-        for (let j = 0; j < shared.server.sensors[i].length; j++) {
-          if (shared.server.sensors[i][j].status.current === 'ERROR') urgentList.push({type: 'sensor', data: shared.server.sensors[i][j]})
-        }
+    function serpervisionCore () {
+      function drawHardware (g, d, i) {
+        g.append('rect')
+          .attr('x', box.x - 2)
+          .attr('y', size.y - 2)
+          .attr('width', box.w + 4)
+          .attr('height', size.h + 4)
+          .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.medium.background)
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 0.2)
+          .attr('stroke-dasharray', [box.w + 4, box.w + 4 + (size.h + 4) * 2])
+        g.append('rect')
+          .attr('x', size.x)
+          .attr('y', size.y)
+          .attr('width', size.w)
+          .attr('height', size.h)
+          .attr('fill', 'none')
+          .attr('stroke-width', 0)
+          .attr('stroke', '#000000')
+        g.append('svg:image')
+          .attr('xlink:href', '/static/icons/gears.svg')
+          .attr('x', size.x)
+          .attr('y', size.y)
+          .attr('width', size.w)
+          .attr('height', size.h)
+          .style('opacity', 0.5)
+          .style('pointer-events', 'none')
+
+        g.append('text')
+          .attr('id', 'label')
+          .text(d.data.name)
+          .attr('x', size.x + size.w + 6)
+          .attr('y', size.y + size.h * 0.4)
+          .style('font-size', '12px')
+        g.append('text')
+          .attr('id', 'label')
+          .text(d.data.id)
+          .attr('x', size.x + size.w + 6)
+          .attr('y', size.y + size.h * 0.85)
+          .style('font-size', '12px')
       }
-      for (let i = 0; i < shared.server.sensors.length; i++) {
-        if (shared.server.measures[i].status.current < 10 || shared.server.measures[i].status.current > 40) {
-          urgentList.push({type: 'measure', data: shared.server.measures[i]})
-        }
+      function drawMeasure (g, d, i) {
+        g.append('rect')
+          .attr('x', box.x - 2)
+          .attr('y', size.y - 2)
+          .attr('width', box.w + 4)
+          .attr('height', size.h + 4)
+          .attr('fill', i % 2 === 1 ? colorPalette.dark.background : colorPalette.medium.background)
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 0.2)
+          .attr('stroke-dasharray', [box.w + 4, box.w + 4 + (size.h + 4) * 2])
+        g.append('rect')
+          .attr('x', size.x)
+          .attr('y', size.y)
+          .attr('width', size.w)
+          .attr('height', size.h)
+          .attr('fill', 'none')
+          .attr('stroke-width', 0)
+          .attr('stroke', '#000000')
+        g.append('svg:image')
+          .attr('xlink:href', '/static/icons/speedometer.svg')
+          .attr('x', size.x)
+          .attr('y', size.y)
+          .attr('width', size.w * 0.8)
+          .attr('height', size.h * 0.8)
+          .style('opacity', 0.5)
+          .style('pointer-events', 'none')
+
+        g.append('text')
+          .attr('id', 'label')
+          .text(d.data.name)
+          .attr('x', size.x + size.w + 6)
+          .attr('y', size.y + size.h * 0.4)
+          .style('font-size', '12px')
+        g.append('text')
+          .attr('id', 'label')
+          .text(d.data.id)
+          .attr('x', size.x + size.w + 6)
+          .attr('y', size.y + size.h * 0.85)
+          .style('font-size', '12px')
+        g.append('text')
+          .attr('id', 'label')
+          .text(d.data.status.current.y + ' >> ' + 84)
+          .attr('x', box.w * 0.95)
+          .attr('y', size.y + size.h * 0.66)
+          .style('font-weight', '')
+          .style('text-anchor', 'end')
+          .style('font-size', '11px')
+
       }
-      return urgentList
-    }
-    function serpervisionCore (g) {
-      let data = createUrgentList()
+      let g = scrollbox.get('innerG')
       let size = {x: 6, y: 26, w: 30, h: 30, marg: 4}
 
       let current = g
         .selectAll('g.urgent')
-        .data(data)
+        .data(shared.server.urgent)
       let enter = current
         .enter()
         .append('g')
@@ -2052,35 +2195,8 @@ let mainWeatherMonitoring = function (optIn) {
 
       enter.each(function (d, i) {
         let g = d3.select(this)
-        g.append('rect')
-          .attr('x', size.x)
-          .attr('y', size.y)
-          .attr('width', size.w)
-          .attr('height', size.h)
-          .attr('fill', function () {
-            if (d.type === 'measure') return 'red'
-            if (d.type === 'sensor') return 'blue'
-          })
-          .attr('stroke', 'none')
-          .attr('rx', 0)
-          .style('opacity', 0.6)
-
-        g.append('text')
-          .attr('id', 'label')
-          .text(function () {
-            if (d.type === 'measure') return d.data.name
-            if (d.type === 'sensor') return d.data.name
-          })
-          .attr('x', size.x + size.w + 4)
-          .attr('y', size.y + size.h)
-          .style('font-size', '14px')
-        // g.append('text')
-        //   .attr('id', 'unitlabel')
-        //   .text(d.unit)
-        //   .attr('x', box.w * 0.72)
-        //   .attr('y', 14)
-        //   .style('font-size', '12px')
-        //   .style('font-weight', '')
+        if (d.type === 'measure') drawMeasure(g, d, i)
+        else if (d.type === 'sensor') drawHardware(g, d, i)
       })
       let merge = current.merge(enter)
 
@@ -2131,8 +2247,6 @@ let mainWeatherMonitoring = function (optIn) {
         .attr('text-anchor', 'start')
         .attr('transform', 'translate(' + (4) + ',' + (16) + ')')
 
-      let gmes = scrollbox.get('innerG')
-
       // main.append('rect')
       //   .attr('x', box.x + box.w * 0.9)
       //   .attr('y', (box.y - 14) + 'px')
@@ -2165,11 +2279,13 @@ let mainWeatherMonitoring = function (optIn) {
       //   .attr('width', '16px')
       //   .attr('height', '16px')
       //   .style('pointer-events', 'none')
-      serpervisionCore(gmes)
+      serpervisionCore()
     }
     this.initData = initData
 
-    function updateData () {}
+    function updateData () {
+      serpervisionCore()
+    }
     this.updateData = updateData
 
     function update () {}
@@ -2508,6 +2624,521 @@ let mainWeatherMonitoring = function (optIn) {
     function update () {}
     this.update = update
   }
+  let SvgPL = function () {
+    let scrollbox
+    let plotbox
+    let plotList = []
+
+    function adjustScrollBox () {
+      if (!scrollbox) return
+      let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
+      scrollbox.updateBox({x: 0, y: 0, w: box.pl.w, h: box.pl.h})
+      scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(plotList.length / nbperline))})
+      // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
+    }
+    this.adjustScrollBox = adjustScrollBox
+
+    function adjustPlotDistribution () {
+      let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
+      console.log(d3.select(plotList[6].get('main').g.node().parentNode.parentNode.parentNode.parentNode).attr('transform'))
+      for (let i = 0; i < plotList.length; i++) {
+        d3.select(plotList[i].get('main').g.node().parentNode.parentNode.parentNode.parentNode)
+          .transition()
+          .duration(400)
+          .attr('transform', 'translate(' + (25 + (plotbox.w + 30) * (i % nbperline)) + ',' + (15 + plotbox.h * 0.15 + (plotbox.h + 20) * parseInt(i / nbperline)) + ')')
+      }
+    }
+    this.adjustPlotDistribution = adjustPlotDistribution
+    function createPlot (optIn) {
+      let plot = new PlotTimeSeries()
+      plot.init({
+        main: {
+          g: optIn.g,
+          box: optIn.box,
+          clipping: true
+        },
+        axis: [
+          {
+            id: 'bottom',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: 0, w: 0, h: optIn.box.h, marg: 0},
+              type: 'bottom',
+              attr: {
+                text: {
+                  enabled: false,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -optIn.box.h
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'left',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+              type: 'left',
+              mode: 'linear',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -optIn.box.w
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          // {
+          //   id: 'right',
+          //   showAxis: true,
+          //   main: {
+          //     g: undefined,
+          //     box: {x: plotbox.w, y: 0, w: 0, h: 0, marg: 0},
+          //     type: 'right',
+          //     mode: 'linear',
+          //     attr: {
+          //       text: {
+          //         enabled: true,
+          //         size: 11,
+          //         stroke: colorPalette.medium.stroke,
+          //         fill: colorPalette.medium.stroke
+          //       },
+          //       path: {
+          //         enabled: true,
+          //         stroke: colorPalette.medium.stroke,
+          //         fill: colorPalette.medium.stroke
+          //       },
+          //       tickSize: -plotbox.w
+          //     }
+          //   },
+          //   axis: undefined,
+          //   scale: undefined,
+          //   domain: [0, 1000],
+          //   range: [0, 0],
+          //   brush: {
+          //     zoom: true,
+          //     brush: true
+          //   }
+          // }
+        ],
+        content: {}
+      })
+      return plot
+    }
+    function initData () {
+      plotbox = {
+        x: 0,
+        y: 0,
+        w: lenD.w[0] * 0.18,
+        h: lenD.h[0] * 0.16 * 0.7
+      }
+
+      let plotlistg = svg.plotList.append('g').attr('id', 'plotList')
+        .style('pointer-events', 'auto')
+
+      scrollbox = initScrollBox('plotListScrollbox', plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + 0 + ',' + 0 + ')'), box.pl, {}, true)
+      let pinnedPlot = scrollbox.get('innerG')
+
+      let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
+      for (var i = 0; i < 8; i++) {
+        let optIn = {g: pinnedPlot.append('g'),
+          box: plotbox
+        }
+        optIn.g.attr('transform', 'translate(' + (25 + (plotbox.w + 30) * (i % nbperline)) + ',' + (15 + plotbox.h * 0.15 + (plotbox.h + 20) * parseInt(i / nbperline)) + ')')
+        optIn.g = optIn.g.append('g')
+        let plot = createPlot(optIn)
+        plotList.push(plot)
+
+        let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+        let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+        plot.updateAxis({
+          id: 'bottom',
+          domain: [startTime.date, endTime.date],
+          range: [0, optIn.box.w]
+        })
+        plot.updateAxis({
+          id: 'left',
+          domain: [0, 100],
+          range: [optIn.box.h, 0]
+        })
+
+        let data = shared.server.measures[Math.floor((Math.random() * 11))]
+        plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
+      }
+
+      adjustScrollBox()
+      adjustPlotDistribution()
+
+      plotlistg.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', '200px')
+        .attr('height', '20px')
+        .attr('fill', colorPalette.darkest.background) // colorPalette.dark.background)
+        .attr('stroke', 'none')
+        .attr('rx', 0)
+      plotlistg.append('text')
+        .text('Plots List')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '14px')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'translate(' + (10) + ',' + (16) + ')')
+    }
+    this.initData = initData
+
+    function updateData () {
+    }
+    this.updateData = updateData
+
+    function update () {}
+    this.update = update
+  }
+  let SvgObservationSite = function () {
+    let maing
+    let plotbox
+    let plot
+    let brushbox
+    let brush
+
+    function addPlot (optIn) {
+      let plotg = maing.append('g')
+
+      plot = new PlotTimeSeries()
+      plot.init({
+        main: {
+          g: plotg,
+          box: plotbox,
+          clipping: true
+        },
+        axis: [
+          {
+            id: 'bottom',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: 0, w: 0, h: plotbox.h, marg: 0},
+              type: 'bottom',
+              attr: {
+                text: {
+                  enabled: false,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -plotbox.h
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'left',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+              type: 'left',
+              mode: 'linear',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -plotbox.w
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'right',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: plotbox.w, y: 0, w: 0, h: 0, marg: 0},
+              type: 'right',
+              mode: 'linear',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -plotbox.w
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          }
+        ],
+        content: {}
+      })
+    }
+    function addBrush (optIn) {
+      let brushg = maing.append('g')
+
+      brush = new PlotBrushZoom({
+        main: {
+          g: brushg,
+          box: brushbox
+        },
+        clipping: {
+          enabled: false
+        },
+        axis: [
+          {
+            id: 'top',
+            enabled: true,
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushbox.h * 0.14, w: brushbox.w, h: brushbox.h * 0.2, marg: 0},
+              type: 'bottom',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 14,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushbox.w],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'middle',
+            enabled: true,
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: brushbox.h * 0.9, w: brushbox.w, h: brushbox.h * 0.0, marg: 0},
+              type: 'top',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: false,
+                  stroke: colorPalette.medium.background,
+                  fill: colorPalette.medium.background
+                }
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, brushbox.w],
+            brush: {
+              zoom: false,
+              brush: false
+            }
+          }
+        ],
+        content: {
+          enabled: true,
+          main: {
+            g: undefined,
+            box: {x: 0, y: brushbox.h * 0.15, w: brushbox.w, h: brushbox.h * 0.65, marg: 0},
+            attr: {
+              fill: colorPalette.medium.background
+            }
+          }
+        },
+        focus: {
+          enabled: true,
+          main: {
+            g: undefined,
+            box: {x: 0, y: brushbox.h * 0.5, w: brushbox.w, h: brushbox.h * 0.3, marg: 0},
+            attr: {
+              fill: colorPalette.darkest.background,
+              opacity: 1,
+              stroke: colorPalette.darkest.background
+            }
+          }
+        },
+        brush: {
+          coef: {x: 0, y: 0},
+          callback: () => {}
+        },
+        zoom: {
+          coef: {kx: 1, ky: 1, x: 0, y: 0},
+          callback: function () {
+            plot.updateAxis({
+              id: 'bottom',
+              domain: brush.getAxis('top').scale.domain(),
+              range: [0, plotbox.w]
+            })
+            plot.updateData()
+          }
+        }
+      })
+      brush.init()
+    }
+
+    function initData () {
+      plotbox = {
+        x: lenD.w[0] * 0.5 + 20,
+        y: lenD.h[0] * 0.06 + 20,
+        w: lenD.w[0] * 0.48 - 40,
+        h: lenD.h[0] * 0.3 - 40
+      }
+      brushbox = {
+        x: lenD.w[0] * 0.5 + 20,
+        y: lenD.h[0] * 0.36 - 26,
+        w: lenD.w[0] * 0.48 - 40,
+        h: lenD.h[0] * 0.05
+      }
+
+      maing = svg.g.append('g')
+      // maing.append('rect')
+      //   .attr('x', plotbox.x - 30)
+      //   .attr('y', plotbox.y - 22)
+      //   .attr('width', plotbox.w + 60)
+      //   .attr('height', plotbox.h + 44)
+      //   .attr('fill', colorPalette.darker.background)
+      // maing.append('rect')
+      //   .attr('x', plotbox.x)
+      //   .attr('y', plotbox.y)
+      //   .attr('width', plotbox.w)
+      //   .attr('height', plotbox.h)
+      //   .attr('fill', colorPalette.dark.background)
+
+      addPlot()
+      addBrush()
+
+      updateData()
+    }
+    this.initData = initData
+
+    function bindData (data) {
+      plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
+    }
+    this.bindData = bindData
+    function unbindData (data) {
+      plot.unbindData(data.id)
+    }
+    this.unbindData = unbindData
+
+    function updateData () {
+      let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+      let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+      plot.updateAxis({
+        id: 'bottom',
+        domain: [startTime.date, endTime.date],
+        range: [0, plotbox.w]
+      })
+      plot.updateAxis({
+        id: 'left',
+        domain: [0, 100],
+        range: [plotbox.h, 0]
+      })
+      plot.updateAxis({
+        id: 'right',
+        domain: [0, 100],
+        range: [plotbox.h, 0]
+      })
+
+      brush.updateAxis({
+        id: 'top',
+        domain: [startTime.date, endTime.date]
+      })
+      brush.updateAxis({
+        id: 'middle',
+        domain: [startTime.date, endTime.date]
+      })
+    }
+    this.updateData = updateData
+
+    function update () {}
+    this.update = update
+  }
+  let svgObservationSite = new SvgObservationSite()
+  let svgPL = new SvgPL()
   let svgFMTimeline = new SvgFMTimeline()
   let svgFMDate = new SvgFMDate()
   let svgFMSupervision = new SvgFMSupervision()

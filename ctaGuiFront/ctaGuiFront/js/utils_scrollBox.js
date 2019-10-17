@@ -931,7 +931,6 @@ window.ScrollBox = function () {
     updateVerticalScrollState(true)
     com.setVerticalRecScroll()
     com.doVerticalTrans({ frac: com.scrollTransV.frac, duration: 0 })
-
   }
   this.resetVerticalScroller = resetVerticalScroller
   function setVerticalScrollState (old) {
@@ -1447,37 +1446,19 @@ window.ScrollBox = function () {
   } // NO
   function resetHorizontalScroller (optIn) {
     if (!hasVar(optIn)) optIn = {}
+    let old = {frac: com.scrollTransH.frac, scrollWidth: com.scrollWidth}
     let duration = hasVar(optIn.duration) ? optIn.duration : timeD.animArc / 2
 
     if (hasVar(optIn.canScroll)) com.canScroll = optIn.canScroll
-    if (hasVar(optIn.scrollHorizontal)) com.scrollHorizontal = optIn.scrollHorizontal
+    if (hasVar(optIn.scrollVertical)) com.scrollHorizontal = optIn.scrollHorizontal
     if (hasVar(optIn.scrollWidth)) com.scrollWidth = optIn.scrollWidth
 
     let prevActive = com.scrollTransH.active
-    setHorizontalScrollState()
+    setHorizontalScrollState((optIn.keepFrac && old.scrollWidth > 0) ? old : undefined)
 
     if (prevActive !== com.scrollTransH.active) {
       setBox()
     }
-
-    com.innerG
-      .transition('move')
-      .duration(duration)
-      .attr('transform', function (d, i) {
-        let shift = posShift()
-        return 'translate(' + shift[0] + ',' + shift[1] + ')'
-      })
-    com.clipRecInner
-      .transition('move')
-      .duration(duration)
-      .attr('transform', 'translate(0,0)')
-    com.clipRecOuter
-      .transition('move')
-      .duration(duration)
-      .attr('transform', function (d, i) {
-        let shift = posShift()
-        return 'translate(' + -shift[0] + ',' + -shift[1] + ')'
-      })
 
     if (prevActive !== com.scrollTransH.active) {
       setHorizontalZoomStatus()
@@ -1485,6 +1466,9 @@ window.ScrollBox = function () {
     } else if (com.scrollTransH.active) {
       com.setHorizontalRecScroll()
     }
+    updateHorizontalScrollState(true)
+    com.setHorizontalRecScroll()
+    com.doHorizontalTrans({ frac: com.scrollTransH.frac, duration: 0 })
   }
   this.resetHorizontalScroller = resetHorizontalScroller
   function setHorizontalScrollState () {

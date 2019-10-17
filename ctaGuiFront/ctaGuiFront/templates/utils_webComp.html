@@ -225,7 +225,7 @@
           // get rid of the background stripe
           this.shadowRoot.querySelector("#tabBckDiv").setAttribute("style", "opacity:0");
           // the default space, in case we dont add an icon later...
-          this.shadowRoot.querySelector("#noIconBr").setAttribute("style", "line-height:100%");
+          // this.shadowRoot.querySelector("#noIconBr").setAttribute("style", "line-height:100%");
         }
         // if this is the first icon requested
         if(!this.hasInitIcon && iconDivId != undefined) {
@@ -309,9 +309,9 @@
           var w0     = gsW/wTot;
           var width  = (100*w0 - .5)+"%";
           var height = (h0*gsH)+"px";
-
+          var maxHeight = $(document).height() * 0.8
           _this.shadowRoot.querySelector('#'+gsId).setAttribute("style",
-            "display: inline-block; position:relative; margin: 0.25%; border: 0px; width:"+width+"; height:"+height
+            "display: inline-block; position:relative; margin: 0.25%; border: 0px; width:"+width+"; height:"+height+"; max-height:" + maxHeight + "px"
           );
 
           return;
