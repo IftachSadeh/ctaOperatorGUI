@@ -455,6 +455,7 @@ let mainWeatherMonitoring = function (optIn) {
     svgFMDate.initData()
     svgFMTimeline.initData()
     svgFMSupervision.initData()
+    svgObservationSite.initData()
 
     svgPL.initData()
 
@@ -1198,7 +1199,7 @@ let mainWeatherMonitoring = function (optIn) {
       svg.g.select('g#hardwareMonitoring')
         .transition()
         .duration(600)
-        .attr('transform', 'translate(' + 0 + ',' + -box.y * 0.08 + ')')
+        .attr('transform', 'translate(' + 0 + ',' + -box.y * 0.00 + ')')
       svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
         .attr('visibility', 'visible')
         .transition()
@@ -1261,7 +1262,7 @@ let mainWeatherMonitoring = function (optIn) {
           offset += d.length * (lineSize + 22)
         })
 
-      scrollbox.updateBox({x: 0, y: 0, w: box.w, h: (box.y * 0.08 + box.h)})
+      scrollbox.updateBox({x: 0, y: 0, w: box.w, h: (box.y * 0.00 + box.h)})
       scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (offset)})
     }
     function defaultDisplay () {
@@ -1373,10 +1374,10 @@ let mainWeatherMonitoring = function (optIn) {
             .style('opacity', 1)
           errorbox.append('rect')
             .attr('id', 'background')
-            .attr('x', box.w * 0.9)
+            .attr('x', box.w * 0.89)
             .attr('y', 0 + j * lineSize - lineSize * 0.5)
-            .attr('width', lineSize * 2)
-            .attr('height', lineSize * 2)
+            .attr('width', lineSize * 1.75)
+            .attr('height', lineSize * 1.75)
             .attr('stroke', '#000000')
             .attr('stroke-width', 1)
           errorbox.append('text')
@@ -2763,7 +2764,7 @@ let mainWeatherMonitoring = function (optIn) {
         x: 0,
         y: 0,
         w: lenD.w[0] * 0.18,
-        h: lenD.h[0] * 0.16 * 0.7
+        h: lenD.h[0] * 0.16 * 0.58
       }
 
       let plotlistg = svg.plotList.append('g').attr('id', 'plotList')
@@ -2828,281 +2829,115 @@ let mainWeatherMonitoring = function (optIn) {
     this.update = update
   }
   let SvgObservationSite = function () {
-    let maing
-    let plotbox
-    let plot
-    let brushbox
-    let brush
-
-    function addPlot (optIn) {
-      let plotg = maing.append('g')
-
-      plot = new PlotTimeSeries()
-      plot.init({
-        main: {
-          g: plotg,
-          box: plotbox,
-          clipping: true
-        },
-        axis: [
-          {
-            id: 'bottom',
-            showAxis: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: 0, w: 0, h: plotbox.h, marg: 0},
-              type: 'bottom',
-              attr: {
-                text: {
-                  enabled: false,
-                  size: 11,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                },
-                tickSize: -plotbox.h
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, 0],
-            brush: {
-              zoom: true,
-              brush: true
-            }
-          },
-          {
-            id: 'left',
-            showAxis: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
-              type: 'left',
-              mode: 'linear',
-              attr: {
-                text: {
-                  enabled: true,
-                  size: 11,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                },
-                tickSize: -plotbox.w
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, 0],
-            brush: {
-              zoom: true,
-              brush: true
-            }
-          },
-          {
-            id: 'right',
-            showAxis: true,
-            main: {
-              g: undefined,
-              box: {x: plotbox.w, y: 0, w: 0, h: 0, marg: 0},
-              type: 'right',
-              mode: 'linear',
-              attr: {
-                text: {
-                  enabled: true,
-                  size: 11,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                },
-                tickSize: -plotbox.w
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, 0],
-            brush: {
-              zoom: true,
-              brush: true
-            }
-          }
-        ],
-        content: {}
-      })
-    }
-    function addBrush (optIn) {
-      let brushg = maing.append('g')
-
-      brush = new PlotBrushZoom({
-        main: {
-          g: brushg,
-          box: brushbox
-        },
-        clipping: {
-          enabled: false
-        },
-        axis: [
-          {
-            id: 'top',
-            enabled: true,
-            showAxis: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushbox.h * 0.14, w: brushbox.w, h: brushbox.h * 0.2, marg: 0},
-              type: 'bottom',
-              attr: {
-                text: {
-                  enabled: true,
-                  size: 14,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                },
-                path: {
-                  enabled: true,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushbox.w],
-            brush: {
-              zoom: true,
-              brush: true
-            }
-          },
-          {
-            id: 'middle',
-            enabled: true,
-            showAxis: true,
-            main: {
-              g: undefined,
-              box: {x: 0, y: brushbox.h * 0.9, w: brushbox.w, h: brushbox.h * 0.0, marg: 0},
-              type: 'top',
-              attr: {
-                text: {
-                  enabled: true,
-                  size: 11,
-                  stroke: colorPalette.medium.stroke,
-                  fill: colorPalette.medium.stroke
-                },
-                path: {
-                  enabled: false,
-                  stroke: colorPalette.medium.background,
-                  fill: colorPalette.medium.background
-                }
-              }
-            },
-            axis: undefined,
-            scale: undefined,
-            domain: [0, 1000],
-            range: [0, brushbox.w],
-            brush: {
-              zoom: false,
-              brush: false
-            }
-          }
-        ],
-        content: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushbox.h * 0.15, w: brushbox.w, h: brushbox.h * 0.65, marg: 0},
-            attr: {
-              fill: colorPalette.medium.background
-            }
-          }
-        },
-        focus: {
-          enabled: true,
-          main: {
-            g: undefined,
-            box: {x: 0, y: brushbox.h * 0.5, w: brushbox.w, h: brushbox.h * 0.3, marg: 0},
-            attr: {
-              fill: colorPalette.darkest.background,
-              opacity: 1,
-              stroke: colorPalette.darkest.background
-            }
-          }
-        },
-        brush: {
-          coef: {x: 0, y: 0},
-          callback: () => {}
-        },
-        zoom: {
-          coef: {kx: 1, ky: 1, x: 0, y: 0},
-          callback: function () {
-            plot.updateAxis({
-              id: 'bottom',
-              domain: brush.getAxis('top').scale.domain(),
-              range: [0, plotbox.w]
-            })
-            plot.updateData()
-          }
-        }
-      })
-      brush.init()
-    }
+    let obsbox
 
     function initData () {
-      plotbox = {
-        x: lenD.w[0] * 0.5 + 20,
-        y: lenD.h[0] * 0.06 + 20,
-        w: lenD.w[0] * 0.48 - 40,
-        h: lenD.h[0] * 0.3 - 40
-      }
-      brushbox = {
-        x: lenD.w[0] * 0.5 + 20,
-        y: lenD.h[0] * 0.36 - 26,
-        w: lenD.w[0] * 0.48 - 40,
-        h: lenD.h[0] * 0.05
+      obsbox = {
+        x: lenD.w[0] * 0.55,
+        y: lenD.h[0] * 0.68,
+        w: lenD.h[0] * 0.32,
+        h: lenD.h[0] * 0.32
       }
 
-      maing = svg.g.append('g')
-      // maing.append('rect')
-      //   .attr('x', plotbox.x - 30)
-      //   .attr('y', plotbox.y - 22)
-      //   .attr('width', plotbox.w + 60)
-      //   .attr('height', plotbox.h + 44)
-      //   .attr('fill', colorPalette.darker.background)
-      // maing.append('rect')
-      //   .attr('x', plotbox.x)
-      //   .attr('y', plotbox.y)
-      //   .attr('width', plotbox.w)
-      //   .attr('height', plotbox.h)
-      //   .attr('fill', colorPalette.dark.background)
+      let maing = svg.g.append('g')
+      maing.append('rect')
+        .attr('x', obsbox.x)
+        .attr('y', obsbox.y)
+        .attr('width', obsbox.w)
+        .attr('height', obsbox.h)
+        .attr('fill', 'rgb(56, 59, 66)')
+        .attr('stroke', '#000000')
+        .attr('stroke-width', '0.4px')
+      maing.append('circle')
+        .attr('cx', obsbox.x + obsbox.w * 0.5)
+        .attr('cy', obsbox.y + obsbox.h * 0.5)
+        .attr('r', obsbox.w * 0.45)
+        .attr('fill', '#FEFEFE')
+        .attr('stroke', '#000000')
+        .attr('stroke-width', '0.4px')
+      bckPattern({
+        com: {},
+        gNow: maing.append('g').attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.05) + ',' + (obsbox.y + obsbox.h * 0.05) + ')'),
+        gTag: 'hex',
+        lenWH: [obsbox.w * 0.9, obsbox.h * 0.9],
+        opac: 0.15,
+        hexR: 18
+      })
 
-      addPlot()
-      addBrush()
+      maing.append('rect')
+        .attr('x', (obsbox.x + obsbox.w * 0.29))
+        .attr('y', (obsbox.y + obsbox.h * 0.25))
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('fill', colorPalette.blocks.done.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', '0.4px')
+        .attr('transform', 'rotate(45 ' + (15 + obsbox.x + obsbox.w * 0.29) + ' ' + (15 + obsbox.y + obsbox.h * 0.25) + ')')
+      maing.append('text')
+        .text('1')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.29 + 15) + ',' + (obsbox.y + obsbox.h * 0.25 + 22) + ')')
 
-      updateData()
+      maing.append('rect')
+        .attr('x', (obsbox.x + obsbox.w * 0.37))
+        .attr('y', (obsbox.y + obsbox.h * 0.76))
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('fill', colorPalette.blocks.fail.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', '0.4px')
+        .attr('transform', 'rotate(45 ' + (15 + obsbox.x + obsbox.w * 0.37) + ' ' + (15 + obsbox.y + obsbox.h * 0.76) + ')')
+      maing.append('text')
+        .text('2')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.37 + 15) + ',' + (obsbox.y + obsbox.h * 0.76 + 22) + ')')
+
+      maing.append('rect')
+        .attr('x', (obsbox.x + obsbox.w * 0.5))
+        .attr('y', (obsbox.y + obsbox.h * 0.57))
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('fill', colorPalette.blocks.done.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', '0.4px')
+        .attr('transform', 'rotate(45 ' + (15 + obsbox.x + obsbox.w * 0.5) + ' ' + (15 + obsbox.y + obsbox.h * 0.57) + ')')
+      maing.append('text')
+        .text('3')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.5 + 15) + ',' + (obsbox.y + obsbox.h * 0.57 + 22) + ')')
+
+      maing.append('rect')
+        .attr('x', (obsbox.x + obsbox.w * 0.72))
+        .attr('y', (obsbox.y + obsbox.h * 0.33))
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('fill', colorPalette.blocks.done.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', '0.4px')
+        .attr('transform', 'rotate(45 ' + (15 + obsbox.x + obsbox.w * 0.72) + ' ' + (15 + obsbox.y + obsbox.h * 0.33) + ')')
+      maing.append('text')
+        .text('4')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.72 + 15) + ',' + (obsbox.y + obsbox.h * 0.33 + 22) + ')')
+
     }
     this.initData = initData
-
-    function bindData (data) {
-      plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
-    }
-    this.bindData = bindData
-    function unbindData (data) {
-      plot.unbindData(data.id)
-    }
-    this.unbindData = unbindData
 
     function updateData () {
       let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
