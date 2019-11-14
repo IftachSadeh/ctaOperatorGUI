@@ -7,7 +7,7 @@ from math import sqrt, ceil, floor
 from datetime import datetime
 import random
 from random import Random
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, flatDictById
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, flatDictById
 from ctaGuiUtils.py.utils_redis import redisManager
 # from json import dumps, loads
 # rndGen = Random(111111)
@@ -152,9 +152,10 @@ class arrZoomer():
     #
     # -----------------------------------------------------------------------------------------------------------
     def getInitData(self):
+        inst_info = self.mySock.arrayData.get_tel_pos()
         data = {
             "subArr": self.subArrGrp,
-            "arrInit": self.mySock.arrayData.getTelPosD(),
+            "arrInit": inst_info,
             "arrProp": self.getTelHealthS0()
         }
         return data
@@ -180,22 +181,24 @@ class arrZoomer():
         self.telSubHealthFields = dict()
 
         self.telSubHealth = self.mySock.arrayData.getTelHealthD()
+        self.telIds = self.mySock.arrayData.get_inst_ids()
 
         # a flat dict with references to each level of the original dict
         self.telSubHealthFlat = dict()
-        for idNow in telIds:
+        for idNow in self.telIds:
             self.telSubHealthFlat[idNow] = flatDictById(
                 self.telSubHealth[idNow])
 
-        for idNow in telIds:
+        for idNow in self.telIds:
             self.telHealth[idNow] = {
                 "id": idNow, "health": 0, "status": "",
                 "data": [
-                    self.telSubHealth[idNow]["camera"],
-                    self.telSubHealth[idNow]["mirror"],
-                    self.telSubHealth[idNow]["mount"],
-                    self.telSubHealth[idNow]["daq"],
-                    self.telSubHealth[idNow]["aux"]
+                    v for (k,v) in self.telSubHealth[idNow].items()
+                    # self.telSubHealth[idNow]["camera"],
+                    # self.telSubHealth[idNow]["mirror"],
+                    # self.telSubHealth[idNow]["mount"],
+                    # self.telSubHealth[idNow]["daq"],
+                    # self.telSubHealth[idNow]["aux"]
                 ]
             }
 
@@ -219,7 +222,7 @@ class arrZoomer():
                   "mirror", "mount", "daq", "aux"]
         nFilelds = len(fields)
 
-        idV = telIds if (idIn is None) else [idIn]
+        idV = self.telIds if (idIn is None) else [idIn]
 
         self.redis.pipe.reset()
         for idNow in idV:

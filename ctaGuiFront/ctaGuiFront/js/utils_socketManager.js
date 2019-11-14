@@ -35,7 +35,7 @@ function SocketManager () {
   let debugMode = true
   let gsIdV = []
   let viewInitV = {}
-  let isSouth = window.__nsType__ === 'S'
+  let isSouth = (window.__nsType__ === 'S')
   let serverName = null
   let debugServerName = true
   this.socket = null
@@ -56,6 +56,13 @@ function SocketManager () {
     topThis.socket.on('initialConnect', function (dataIn) {
       console.log("initialConnect");
       // console.log('initialConnect',dataIn);
+
+      let telInfo = {}
+      telInfo.telIds = dataIn.telIds
+      telInfo.telIdToTypes = dataIn.telIdToTypes
+      telInfo.subArrayTels = dataIn.subArrayTels
+      telInfo.telIdToSubArray = dataIn.telIdToSubArray
+      window.__sockTelInfo__ = telInfo
 
       validateServer(dataIn.serverName)
 

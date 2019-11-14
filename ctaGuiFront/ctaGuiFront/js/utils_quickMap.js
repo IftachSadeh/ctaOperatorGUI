@@ -441,10 +441,10 @@ window.QuickMap = function (optIn) {
 
     // let nRows     = isSouth ? 5 : 2;
     // let nEle = isSouth ? 99 : 19
-    let nEleInRow = isSouth ? [20, 20, 20, 20] : [10]
-    let eleR = isSouth ? lenD.ches.h[0] / 13 : lenD.ches.h[0] / 6.5
-    let eleSpace = isSouth ? [3.15, 2.5] : [3.1, 2.5]
-    let eleShift = isSouth ? [2, 2] : [2, 1.1]
+    let nEleInRow = isSouth ? [18, 18, 18, 18, 18] : [8, 8, 8]
+    let eleR = isSouth ? lenD.ches.h[0] / 16 : lenD.ches.h[0] / 6
+    let eleSpace = isSouth ? [3.9, 2.5] : [3.1, 1.5]
+    let eleShift = isSouth ? [2, 2] : [2, 3]
 
     let vorData = []
     let nEleRow = 0
@@ -452,36 +452,19 @@ window.QuickMap = function (optIn) {
     $.each(telTypeV, function (index, idNow) {
       let nEleNowInRow = nEleRow
       let nEleNowInCol = 0
-      if (nEleInRow.length > 0) {
-        if (nEleNowInRow >= nEleInRow[0]) {
-          nEleNowInRow -= nEleInRow[0]
+
+      $.each(Array(nEleInRow.length), function(i, d) {
+        if (nEleNowInRow >= nEleInRow[i]) {
+          nEleNowInRow -= nEleInRow[i]
           nEleNowInCol++
         }
-      }
-      if (nEleInRow.length > 1) {
-        if (nEleNowInRow >= nEleInRow[1]) {
-          nEleNowInRow -= nEleInRow[1]
-          nEleNowInCol++
-        }
-      }
-      if (nEleInRow.length > 2) {
-        if (nEleNowInRow >= nEleInRow[2]) {
-          nEleNowInRow -= nEleInRow[2]
-          nEleNowInCol++
-        }
-      }
-      if (nEleInRow.length > 3) {
-        if (nEleNowInRow >= nEleInRow[3]) {
-          nEleNowInRow -= nEleInRow[3]
-          nEleNowInCol++
-        }
-      }
+      })
       nEleRow++
 
       let x =
         eleR / eleShift[0] +
         eleR +
-        ((isSouth ? 0.3 : 0.15) + nEleNowInRow) * (eleSpace[0] * eleR)
+        ((isSouth ? 0.3 : 0.15*6) + nEleNowInRow) * (eleSpace[0] * eleR)
       let y = eleR / eleShift[1] + eleR + nEleNowInCol * (eleSpace[1] * eleR)
 
       com.gChes.xyr[idNow] = {
@@ -511,11 +494,13 @@ window.QuickMap = function (optIn) {
     com.gChes.vor = vorFunc.polygons(vorData)
   }
   this.createChessMap = createChessMap
-  function updateChessMap (dataV, fontScale, shiftY) {
+  function updateChessMap (dataV, shiftY) {
     let tagCirc = prop0
     let tagLbl = 'lbls00title'
     let tagState = 'state_00'
     // let tagTxt = tagState + tagLbl
+    
+    let fontScale = isSouth ? 2.7 : 4
     let titleSize = (isSouth ? 16 : 17) * fontScale
 
     let circStrk = 0
@@ -674,22 +659,22 @@ window.QuickMap = function (optIn) {
       //
       circ
         .transition('update')
-        .duration(timeD.animArc * (isOn ? 0.5 : 0.5))
+        .duration(timeD.animArc * (isOn ? 0.5 : 0.1))
         // .style("opacity", function(d) { return isEleOn(d) ? 1 : (isOn?0.5:1);  })
         .style('fill-opacity', function (d) {
-          return isEleOn(d) ? 1 : fillOpac
+          return isEleOn(d) ? 1 : 0
         })
         .attr('r', function (d) {
           return com.gChes.xyr[d.id].r * (isEleOn(d) ? rScale : 1)
         })
         .attr('stroke-width', function (d) {
-          return isEleOn(d) ? circStrk + 1.5 : circStrk
+          return isEleOn(d) ? circStrk + 1.5 : 0
         })
 
       //
       text
         .transition('update')
-        .duration(timeD.animArc * (isOn ? 1 : 0.5))
+        .duration(timeD.animArc * (isOn ? 1 : 0.1))
         .style('font-size', function (d) {
           return (isEleOn(d) ? titleSize * rScale : titleSize) + 'px'
         })
@@ -896,7 +881,8 @@ window.QuickMap = function (optIn) {
       gNow: com.gMini.circ,
       posTag: 'mini'
     })
-    updateChessMap(telData.tel, isSouth ? 2.7 : 5, false)
+    updateChessMap(telData.tel, false)
+    // updateChessMap(telData.tel, isSouth ? 2.7 : 5, false)
   }
   this.setStateOnce = setStateOnce
 

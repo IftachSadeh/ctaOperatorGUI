@@ -30,47 +30,46 @@ from ctaGuiBack.py.pubSubTest import pubSubTest
 # from ctaGuiUtils.py.utils import redisPort
 
 def main(global_config, **settings):
-  log.info([['wg'," - Starting redis-filler ..."]])
+  log.info([['wg'," - Starting redis-filler - ctaGuiBack ..."]])
   log.info([['p'," - hasACS = "],[('g' if utils.hasACS else 'r'),utils.hasACS]])
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # run it
-  # -----------------------------------------------------------------------------------------------------------
-  # utils.nsType = "N"
+  # ------------------------------------------------------------------
   utils.nsType = "S"
+  utils.nsType = "N"
 
   myTimeOfNight = utils.timeOfNight(nsType=utils.nsType)
   # myTimeOfNight = utils.timeOfNight(nsType=utils.nsType, timeScale = 0.001)
 
   # set the list of telescopes for this particular site
-  utils.telIds = utils.initTelIds(utils.nsType)
+  myArrayData = arrayData(nsType=utils.nsType)
+  # utils.telIds = myArrayData.telIds
 
-  myArrayData = arrayData()
-
-  # -----------------------------------------------------------------------------------------------------------
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # for debugging....
   flushRedisOnStart = 0
   if flushRedisOnStart:
     from ctaGuiBack.py.utils_redis import redisManager
     redis_ = redisManager(name='__init__')
     redis_.redis.flushall()
-  # -----------------------------------------------------------------------------------------------------------
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
+  # ------------------------------------------------------------------
 
-  # -----------------------------------------------------------------------------------------------------------
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # if utils.hasACS:
   #   tmpTest(nsType=nsType)
 
   telHealth(nsType=utils.nsType, timeOfNight=myTimeOfNight, arrayData=myArrayData)
-  telPos(nsType=utils.nsType)
+  telPos(nsType=utils.nsType, arrayData=myArrayData)
   mockTarget(nsType=utils.nsType)
 
   if utils.hasACS:
-    obsBlocks(nsType=utils.nsType, timeOfNight=myTimeOfNight)
+    obsBlocks(nsType=utils.nsType, timeOfNight=myTimeOfNight, arrayData=myArrayData)
   else:
-    obsBlocks_noACS(nsType=utils.nsType, timeOfNight=myTimeOfNight)
+    obsBlocks_noACS(nsType=utils.nsType, timeOfNight=myTimeOfNight, arrayData=myArrayData)
 
 
 

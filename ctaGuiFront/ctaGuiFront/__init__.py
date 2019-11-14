@@ -1,10 +1,10 @@
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 #!/usr/bin/env python
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 # no need to patch, as the gevent worker does that already...
 # from gevent import monkey
 # monkey.patch_all()
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 
 # logging interface - important to init the logger vefore importing any ACS -
 from ctaGuiUtils.py.utils import myLog
@@ -22,6 +22,7 @@ from ctaGuiFront.py.models import DBSession, Base, groupFinder
 
 # import the utils module to allow access to some global variables
 import ctaGuiUtils.py.utils as utils
+from ctaGuiUtils.py.arrayData import arrayData
 
 # the definition of all sockets (including an entry for each view)
 from ctaGuiFront.py.views import socketioService
@@ -31,11 +32,11 @@ from ctaGuiFront.py.views import viewLogin, viewLogout, viewIndex, viewNotFound,
 # the commmon view used by most (maybe all) widgets
 from ctaGuiFront.py.views import viewCommon
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 #
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def main(global_config, **settings):
-  log.info([['wg'," - Starting pyramid app ..."]])
+  log.info([['wg'," - Starting pyramid app - ctaGuiFront ..."]])
   log.info([['p'," - hasACS = "],[('g' if utils.hasACS else 'r'),utils.hasACS]])
 
   # the app name (corresponding to the directory name)
@@ -43,7 +44,7 @@ def main(global_config, **settings):
 
   # southern or northen CTA sites have different telescope configurations
   utils.nsType = 'S'
-  # utils.nsType = 'N'
+  utils.nsType = 'N'
   # utils.nsType = settings['ns_type']
 
   # define the prefix to all urls (must be non-empy string)
@@ -53,7 +54,8 @@ def main(global_config, **settings):
   utils.allowPanelSync = bool(settings['allow_panel_sync'])
 
   # set the list of telescopes for this particular site
-  utils.telIds = utils.initTelIds(utils.nsType)
+  myArrayData = arrayData(nsType=utils.nsType)
+  # utils.telIds = myArrayData.telIds
 
   # database and authentication
   engine = engine_from_config(settings, 'sqlalchemy.')
@@ -73,14 +75,14 @@ def main(global_config, **settings):
   config.include('pyramid_jinja2')
   renderer = appName+":templates/view_common.jinja2"
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # forbidden view, which simply redirects to the login
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   config.add_forbidden_view(viewForbidden)
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # basic view, open to everyone, for login/logout/redirect
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   config.add_route('login','/'+utils.appPrefix+'/login')
   config.add_view(viewLogin, route_name='login', renderer=renderer)
 
@@ -96,11 +98,11 @@ def main(global_config, **settings):
   config.add_route(utils.appPrefix,'/'+utils.appPrefix)
   config.add_view(viewEmpty, route_name=utils.appPrefix, renderer=renderer)
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # permission to view index page and sockets (set in models.py for all groups of logged-in users)
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   perm = "permit_all"
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # the index page
   config.add_route("index",'/'+utils.appPrefix+'/'+"index")
   config.add_view(viewIndex, route_name='index', renderer=renderer, permission=perm)
@@ -109,11 +111,11 @@ def main(global_config, **settings):
   config.add_route('socket_io','socket.io/*remaining')
   config.add_view(socketioService, route_name='socket_io', permission=perm)
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # priviliged view (right now, only for pre-defined users in models.initUsers)
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   perm = "permit_a"
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # list here all views, which use the shared view function
   # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
   utils.allWidgets = [
@@ -127,11 +129,11 @@ def main(global_config, **settings):
         viewCommon, route_name=viewName, permission=perm, renderer=renderer
       )
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # add paths the server will be able to access for resources
   # see: http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/assets.html
   # see: http://docs.pylonsproject.org/projects/pyramid_cookbook/en/latest/pylons/static.html
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   cache_max_age = 3600
   config.add_static_view('js', 'js', cache_max_age=cache_max_age)
   config.add_static_view('fonts', 'fonts', cache_max_age=cache_max_age)

@@ -98,12 +98,12 @@ setupView.view200 = function () {
     hasIcon: true,
     hasDrawer: true
   })
-  sock.addWidget({
-    nameTag: 'azPlots',
-    tableTitle: 'Telescope health plots',
-    hasIcon: true,
-    hasDrawer: false
-  })
+  // sock.addWidget({
+  //   nameTag: 'azPlots',
+  //   tableTitle: 'Telescope health plots',
+  //   hasIcon: true,
+  //   hasDrawer: false
+  // })
 }
 
 // -----------------------------------------------------------------------------------------------------------

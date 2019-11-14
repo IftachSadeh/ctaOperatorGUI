@@ -8,7 +8,7 @@ from datetime import datetime
 import random
 from random import Random
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, getTime, flatDictById
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, getTime, flatDictById
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
@@ -51,6 +51,8 @@ class azPlots():
 
         self.PrimaryGroup = ['LSTS','MSTS','SSTS','AUX']
         self.PrimaryKey = ['mirror','camera','mount','aux']
+
+        self.telIds = self.mySock.arrayData.get_inst_ids()
 
     # -----------------------------------------------------------------------------------------------------------
     #
@@ -107,7 +109,7 @@ class azPlots():
                   "mirror", "mount", "daq", "aux"]
         nFilelds = len(fields)
 
-        idV = telIds if (idIn is None) else [idIn]
+        idV = self.telIds if (idIn is None) else [idIn]
 
         self.redis.pipe.reset()
         for idNow in idV:
@@ -143,10 +145,10 @@ class azPlots():
     #
     #     # a flat dict with references to each level of the original dict
     #     self.telSubHealthFlat = dict()
-    #     for idNow in telIds:
+    #     for idNow in self.telIds:
     #         self.telSubHealthFlat[idNow] = flatDictById(self.telSubHealth[idNow])
     #
-    #     # for idNow in telIds:
+    #     # for idNow in self.telIds:
     #     #     self.telHealth[idNow] = {
     #     #         "id": idNow, "health": 0, "status": "",
     #     #         "data": [
@@ -170,15 +172,16 @@ class azPlots():
     #     fields = ['mirror','camera','mount','aux']
     #     self.redis.pipe.reset()
     #
-    #     for idNow in telIds:
+    #     for idNow in self.telIds:
     #         for key in fields:
     #             self.redis.pipe.zGet('telHealth;'+idNow+';'+key)
     #     data = self.redis.pipe.execute(packedScore=True)
     #     return data[0]
 
     def getInitData(self):
+        inst_info = self.mySock.arrayData.get_tel_pos()
         data = {
-            "arrPosD": self.mySock.arrayData.getTelPosD(),
+            "arrPosD": inst_info,
             "arrInit": self.getData(),
             "arrProp": self.getTelHealthS0()
         }
@@ -193,7 +196,7 @@ class azPlots():
         # print " "
         # print " "
         # print self.getGeneralData()
-        idNow = telIds[0]
+        idNow = self.telIds[0]
 
         key0 = 'mirror'
         #keyParent = self.telSubHealthFlat[idNow][key0]['parent']
@@ -307,18 +310,21 @@ class azPlots():
         }
 
         for key in telHealth:
-            if key.split('_')[0] == 'L':
+            if self.mySock.arrayData.is_tel_type(key, 'LST'):
                 agregate["LST"]["health"] += float(telHealth[key]["health"])
                 agregate["LST"]["number"] += 1
                 self.checkSytemHealth(agregate["LST"], key, telHealth[key])
-            elif key.split('_')[0] == 'M':
+            
+            elif self.mySock.arrayData.is_tel_type(key, 'MST'):
                 agregate["MST"]["health"] += float(telHealth[key]["health"])
                 agregate["MST"]["number"] += 1
                 self.checkSytemHealth(agregate["MST"], key, telHealth[key])
-            elif key.split('_')[0] == 'S':
+            
+            elif self.mySock.arrayData.is_tel_type(key, 'SST'):
                 agregate["SST"]["health"] += float(telHealth[key]["health"])
                 agregate["SST"]["number"] += 1
                 self.checkSytemHealth(agregate["SST"], key, telHealth[key])
+        
         agregate["LST"]["health"] = agregate["LST"]["health"]/agregate["LST"]["number"]
         agregate["MST"]["health"] = agregate["MST"]["health"]/agregate["MST"]["number"]
         agregate["SST"]["health"] = agregate["SST"]["health"]/agregate["SST"]["number"]
@@ -332,7 +338,7 @@ class azPlots():
                   "mirror", "mount", "daq", "aux"]
         nFilelds = len(fields)
 
-        idV = telIds if (idIn is None) else [idIn]
+        idV = self.telIds if (idIn is None) else [idIn]
 
         self.redis.pipe.reset()
         for idNow in idV:

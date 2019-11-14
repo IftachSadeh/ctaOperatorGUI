@@ -263,11 +263,13 @@ let mainArrZoomer = function (optIn) {
 
   let telFocus = {}
 
+  console.log(' -- FIXME -- generalise to any input category eg aux instruments...')
   let prop0 = 'health'
   // let propD = ["camera","daq","mount","aux","mirror"]
   let propD = ['camera', 'aux', 'mount', 'mirror']
   // let propD = ["camera","mirror","daq"]
   // let propD = ["camera"]
+  // let propD = ["inst_0", 'inst_1']
   let propDv = [prop0]
   $.each(propD, function (index, porpNow) {
     propDv.push(porpNow)
@@ -283,27 +285,7 @@ let mainArrZoomer = function (optIn) {
 
   let tauFrac = tau / propD.length
   let tauSpace = tau / 50
-
-  // ---------------------------------------------------------------------------------------------------
-  // - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME -
-  // a temporary way to get the ordered list of all tel-ids....
-  // ---------------------------------------------------------------------------------------------------
-  let telTypes = [
-    { type: 'L', nTel: isSouth ? 4 : 4 },
-    { type: 'M', nTel: isSouth ? 25 : 15 },
-    { type: 'S', nTel: isSouth ? 70 : 0 }
-  ]
-  let telTypeV = []
-  for (let nType = 0; nType < telTypes.length; nType++) {
-    for (let nTel = 0; nTel < telTypes[nType].nTel; nTel++) {
-      let telIndex = nTel
-      if (nType > 0) telIndex += telTypes[0].nTel
-      if (nType > 1) telIndex += telTypes[1].nTel
-      telTypeV.push(telTypes[nType].type + '_' + String(telIndex))
-    }
-  }
-  // - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME -
-  // ---------------------------------------------------------------------------------------------------
+  let telTypeV = telInfo.getIds()
 
   // function interpolatePct (origVal, newVal) {
   //   return d3.interpolateRound(+origVal.slice(0, -1), +newVal)
