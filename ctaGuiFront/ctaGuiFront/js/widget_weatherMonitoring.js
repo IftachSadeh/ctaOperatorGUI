@@ -2181,7 +2181,6 @@ let mainWeatherMonitoring = function (optIn) {
           .style('font-weight', '')
           .style('text-anchor', 'end')
           .style('font-size', '11px')
-
       }
       let g = scrollbox.get('innerG')
       let size = {x: 6, y: 26, w: 30, h: 30, marg: 4}

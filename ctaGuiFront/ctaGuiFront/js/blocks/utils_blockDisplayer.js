@@ -2947,8 +2947,7 @@ window.BlockDisplayer = function (optIn) {
         .attr('vector-effect', 'non-scaling-stroke')
         .on('click', function (d) {
           clearTimeout(timeout);
-          timeout = setTimeout(function() {
-            console.log('click');
+          timeout = setTimeout(function () {
             com.events.block.click(d)
           }, 200)
           // let event = d3.event
@@ -2984,13 +2983,13 @@ window.BlockDisplayer = function (optIn) {
           .on('start', function (d) {
             com.interaction = {}
             com.interaction.oldG = parent
-            com.events.block.drag.start(d)
+            if (com.events.block.drag) com.events.block.drag.start(d)
           })
           .on('drag', function (d) {
-            com.events.block.drag.tick(d)
+            if (com.events.block.drag) com.events.block.drag.tick(d)
           })
           .on('end', function (d) {
-            com.events.block.drag.end(d)
+            if (com.events.block.drag) com.events.block.drag.end(d)
           }))
       d3.select(this).append('rect')
         .attr('class', 'pattern')

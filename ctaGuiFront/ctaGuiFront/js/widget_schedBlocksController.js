@@ -639,6 +639,7 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.unfocus = unfocus
     function focusOn (type, id) {
+      console.log(type, id);
       if (shared.focus) {
         if (shared.focus.type === type && shared.focus.id === id) {
           unfocus()
@@ -1389,9 +1390,9 @@ let mainSchedBlocksController = function (optIn) {
         pattern: {},
         events: {
           block: {
-            click: focusManager.focusOn,
+            click: function (id) { focusManager.focusOn('block', id.obId) },
             mouseover: focusManager.over,
-            mouseout: focusManager.out,
+            mouseout: focusManager.out
           },
           sched: {
             click: focusManager.focusOn,
@@ -1973,7 +1974,7 @@ let mainSchedBlocksController = function (optIn) {
       reserved.clipping.clipBody.select('text.percentStart').remove()
       reserved.clipping.clipBody.select('text.percentEnd').remove()
 
-      if (!block.targetId) return
+      if (!block || !block.targetId) return
       let target = reserved.clipping.clipBody.selectAll('g.target')
         .filter(function (d) { return (block.targetId === d.id) }).select('path')._groups[0][0]
       let scaleX = d3.scaleLinear()
@@ -2065,6 +2066,7 @@ let mainSchedBlocksController = function (optIn) {
     function highlightTarget (block) {
       let tarG = reserved.clipping.clipBody.selectAll('g.target')
         .filter(function (d) {
+          if (!block) return
           for (let i = 0; i < block.targets.length; i++) {
             if (block.targets[i].id === d.id) return true
           }
@@ -2758,6 +2760,7 @@ let mainSchedBlocksController = function (optIn) {
       reserved.drag.timeScale = d3.scaleLinear()
         .range([0, reserved.drag.box.w])
         .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
+      if (!d) return
       reserved.drag.position = {
         width: reserved.drag.timeScale(d.time.end) - reserved.drag.timeScale(d.time.start),
         left: reserved.drag.timeScale(d.time.start),
