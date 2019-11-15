@@ -1044,7 +1044,7 @@ let mainAzPlots = function (optIn) {
     })
   }
   function setTelDataPhysical (dataIn) {
-    console.log("dataphyzoom", dataIn);
+    // console.log("dataphyzoom", dataIn);
     telData.xyrPhysical = {}
     telData.vor.dataPhysical = []
 

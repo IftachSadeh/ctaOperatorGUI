@@ -63,7 +63,7 @@ class arrayData():
     def init_sub_array_tels(self):
         sub_array_tels = dict()
 
-        print(' FIXME -- implement SBs ....')
+        print(' -- FIXME -- implement SBs ....')
 
         try:
             # ------------------------------------------------------------------
@@ -666,7 +666,7 @@ class arrayData():
         if temp_aux_config:
             tel_ids = [ x for x in tel_ids+aux_ids ]
             aux_ids = []
-            print('WARNING: need to fix temp_aux_config ...')
+            print(' -- FIXME -- need to fix temp_aux_config ...')
         # ------------------------------------------------------------------
         # ------------------------------------------------------------------
 
@@ -892,7 +892,7 @@ class arrayData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_tel_id_to_types(self):
+    def get_inst_id_to_types(self):
         while arrayData.tel_id_to_types is None:
             sleep(0.01)
         return copy.deepcopy(arrayData.tel_id_to_types)
@@ -918,7 +918,7 @@ class arrayData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_sub_array_tels(self):
+    def get_sub_array_insts(self):
         while arrayData.sub_array_tels is None:
             sleep(0.01)
         return copy.deepcopy(arrayData.sub_array_tels)
@@ -927,7 +927,7 @@ class arrayData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_tel_id_to_sub_array(self):
+    def get_inst_id_to_sub_array(self):
         while arrayData.tel_id_to_sub_array is None:
             sleep(0.01)
         return copy.deepcopy(arrayData.tel_id_to_sub_array)

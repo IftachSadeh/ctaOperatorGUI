@@ -325,9 +325,12 @@ class azPlots():
                 agregate["SST"]["number"] += 1
                 self.checkSytemHealth(agregate["SST"], key, telHealth[key])
         
-        agregate["LST"]["health"] = agregate["LST"]["health"]/agregate["LST"]["number"]
-        agregate["MST"]["health"] = agregate["MST"]["health"]/agregate["MST"]["number"]
-        agregate["SST"]["health"] = agregate["SST"]["health"]/agregate["SST"]["number"]
+        if agregate["LST"]["number"] > 0:
+            agregate["LST"]["health"] = agregate["LST"]["health"] / agregate["LST"]["number"]
+        if agregate["MST"]["number"] > 0:
+            agregate["MST"]["health"] = agregate["MST"]["health"] / agregate["MST"]["number"]
+        if agregate["SST"]["number"] > 0:
+            agregate["SST"]["health"] = agregate["SST"]["health"] / agregate["SST"]["number"]
         return agregate
 
     def getTelHealthS0(self, idIn=None):

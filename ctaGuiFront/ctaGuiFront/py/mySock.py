@@ -73,9 +73,7 @@ class mySock(BaseNamespace, BroadcastMixin):
         self.emit('initialConnect', {
             'serverName': mySock.serverName,
             'telIds': mySock.arrayData.get_inst_ids(),
-            'telIdToTypes': mySock.arrayData.get_tel_id_to_types(),
-            'subArrayTels': mySock.arrayData.get_sub_array_tels(),
-            'telIdToSubArray': mySock.arrayData.get_tel_id_to_sub_array(),
+            'telIdToTypes': mySock.arrayData.get_inst_id_to_types(),
         })
         return
 

@@ -54,14 +54,12 @@ function SocketManager () {
     //
     // ---------------------------------------------------------------------------------------------------
     topThis.socket.on('initialConnect', function (dataIn) {
-      console.log("initialConnect");
+      // console.log("initialConnect");
       // console.log('initialConnect',dataIn);
 
       let telInfo = {}
       telInfo.telIds = dataIn.telIds
       telInfo.telIdToTypes = dataIn.telIdToTypes
-      telInfo.subArrayTels = dataIn.subArrayTels
-      telInfo.telIdToSubArray = dataIn.telIdToSubArray
       window.__sockTelInfo__ = telInfo
 
       validateServer(dataIn.serverName)
