@@ -472,8 +472,22 @@ faD.phi = '\u03C6'
 faD.Delta = '\u0394'
 faD.delta = '\u03B4'
 faD.space = '\u00A0'
+faD.sec = '\u00A7'   // for observing bloc prefix?????
 window.faD = faD
 // ------------------------------------------------------------------
+
+// ------------------------------------------------------------------
+// prefixes for labelling
+// ------------------------------------------------------------------
+var prefixD = {}
+prefixD.sched = {}
+prefixD.sched.schedBlock = 'S'
+prefixD.sched.obsBlock = faD.sec
+prefixD.sched.target = 'T'
+prefixD.sched.pointing = 'P'
+window.prefixD = prefixD
+// ------------------------------------------------------------------
+
 
 var blockTemplate = {
   time: {

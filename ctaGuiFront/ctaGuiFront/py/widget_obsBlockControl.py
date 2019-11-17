@@ -8,13 +8,13 @@ from datetime import datetime
 import random
 from random import Random
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, getTimeOfNight
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, getTimeOfNight
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 #  obsBlockControl
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 class obsBlockControl():
     # privat lock for this widget type
     lock = BoundedSemaphore(1)
@@ -31,12 +31,10 @@ class obsBlockControl():
     timeOfNight = {}
 
     telHealth = []
-    for idNow in telIds:
-        telHealth.append({"id": idNow, "val": 0})
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def __init__(self, widgetId="", mySock=None, *args, **kwargs):
         self.log = myLog(title=__name__)
 
@@ -61,9 +59,24 @@ class obsBlockControl():
         self.nIcon = -1
         # self.telId = ""
 
-    # -----------------------------------------------------------------------------------------------------------
+        # self.telIds = self.mySock.arrayData.get_inst_ids()
+        self.telIds = self.mySock.arrayData.get_inst_ids(
+            inst_types=['LST', 'MST', 'SST']
+        )
+
+        # ------------------------------------------------------------------
+        # need to add lock ?!?!?!?!?
+        # ------------------------------------------------------------------
+        if len(obsBlockControl.telHealth) == 0:
+            for idNow in self.telIds:
+                obsBlockControl.telHealth.append({"id": idNow, "val": 0})
+
+        return
+
+
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def setup(self, *args):
         with self.mySock.lock:
@@ -89,17 +102,17 @@ class obsBlockControl():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def backFromOffline(self):
         # with obsBlockControl.lock:
         #   print '-- backFromOffline',self.widgetName, self.widgetId
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getData(self):
         obsBlockControl.timeOfNight = getTimeOfNight(self)
         self.getBlocks()
@@ -113,24 +126,24 @@ class obsBlockControl():
 
         return data
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getTelHealth(self):
         self.redis.pipe.reset()
-        for idNow in telIds:
+        for idNow in self.telIds:
             self.redis.pipe.hGet(name="telHealth;"+str(idNow), key="health")
         redData = self.redis.pipe.execute()
 
         for i in range(len(redData)):
-            idNow = telIds[i]
+            idNow = self.telIds[i]
             obsBlockControl.telHealth[i]["val"] = redData[i]
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getBlocks(self):
         for keyV in obsBlockControl.blockKeys:
             self.redis.pipe.reset()

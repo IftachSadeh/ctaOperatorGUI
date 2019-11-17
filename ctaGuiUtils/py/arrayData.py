@@ -92,6 +92,10 @@ class arrayData():
                 sub_array_tels[idNow] = [
                     'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09',
                 ]
+                idNow = 'SA_2'
+                sub_array_tels[idNow] = [
+                    'Mx05', 'Mx06', 'Mx07',
+                ]
             else:
                 raise
         except Exception:
@@ -166,6 +170,7 @@ class arrayData():
                     'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09',
                     'Mx10', 'Mx11', 'Mx12', 'Mx13', 'Mx14',
                     'Mx15', 'Mx16', 'Mx17', 'Mx18',
+                    # 'Lx00', 'Lx01', 'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09',
                 ]
             else:
                 raise
@@ -661,17 +666,6 @@ class arrayData():
         aux_ids = arrayData.aux_ids
 
         # ------------------------------------------------------------------
-        # ------------------------------------------------------------------
-        temp_aux_config = True
-        if temp_aux_config:
-            tel_ids = [ x for x in tel_ids+aux_ids ]
-            aux_ids = []
-            print(' -- FIXME -- need to fix temp_aux_config ...')
-        # ------------------------------------------------------------------
-        # ------------------------------------------------------------------
-
-
-        # ------------------------------------------------------------------
         # 
         # ------------------------------------------------------------------
         for idNow in tel_ids:
@@ -752,14 +746,14 @@ class arrayData():
                     ]
                 }
 
-            else:
-                inst_health[idNow]["mirror"] = {
-                    "id": "mirror", "ttl": "Mirror", "val": 10,
-                    "children": [
-                        {"id": "mirror_0", "ttl": "Mirror_0", "val": 3},
-                        {"id": "mirror_1", "ttl": "Mirror_1", "val": 78},
-                    ]
-                }
+            # else:
+            #     inst_health[idNow]["mirror"] = {
+            #         "id": "mirror", "ttl": "Mirror", "val": 10,
+            #         "children": [
+            #             {"id": "mirror_0", "ttl": "Mirror_0", "val": 3},
+            #             {"id": "mirror_1", "ttl": "Mirror_1", "val": 78},
+            #         ]
+            #     }
 
             inst_health[idNow]["daq"] = {
                 "id": "daq", "ttl": "DAQ", "val": 87,
@@ -787,25 +781,26 @@ class arrayData():
                 ]
             }
 
-            inst_health[idNow]["aux"] = {
-                "id": "aux", "ttl": "Aux", "val": 70,
-                "children": [
-                    {"id": "aux_0", "ttl": "Aux_0", "val": 90},
-                    {"id":  "aux_1", "ttl": "Aux_1", "val": 78,
-                     "children": [
-                         {"id": "aux_1_0", "ttl": "Aux_1_0", "val": 10},
-                         {"id": "aux_1_4", "ttl": "Aux_1_4", "val": 85},
-                     ]
-                     },
-                    {"id":  "aux_3", "ttl": "Aux_3", "val": 78,
-                     "children": [
-                         {"id": "aux_3_0", "ttl": "Aux_3_0", "val": 90},
-                         {"id": "aux_3_1", "ttl": "Aux_3_1", "val": 15},
-                         {"id": "aux_3_2", "ttl": "Aux_3_2", "val": 5},
-                     ]
-                     },
-                ]
-            }
+            if arrayData.inst_info[idNow]['type'] == 'LST':
+                inst_health[idNow]["aux"] = {
+                    "id": "aux", "ttl": "Aux", "val": 70,
+                    "children": [
+                        {"id": "aux_0", "ttl": "Aux_0", "val": 90},
+                        {"id":  "aux_1", "ttl": "Aux_1", "val": 78,
+                         "children": [
+                             {"id": "aux_1_0", "ttl": "Aux_1_0", "val": 10},
+                             {"id": "aux_1_4", "ttl": "Aux_1_4", "val": 85},
+                         ]
+                         },
+                        {"id":  "aux_3", "ttl": "Aux_3", "val": 78,
+                         "children": [
+                             {"id": "aux_3_0", "ttl": "Aux_3_0", "val": 90},
+                             {"id": "aux_3_1", "ttl": "Aux_3_1", "val": 15},
+                             {"id": "aux_3_2", "ttl": "Aux_3_2", "val": 5},
+                         ]
+                         },
+                    ]
+                }
 
         
         # ------------------------------------------------------------------
@@ -815,31 +810,31 @@ class arrayData():
             inst_health[idNow] = dict()
 
             inst_health[idNow]["inst_0"] = {
-                "id": "inst_0", "ttl": "inst_0", "val": 20,
+                "id": "inst_0", "ttl": "Inst_0", "val": 20,
                 "children": [
-                    {"id": "inst_00", "ttl": "inst_00", "val": 100},
-                    {"id": "inst_01", "ttl": "inst_01", "val": 10,
+                    {"id": "inst_00", "ttl": "Inst_00", "val": 100},
+                    {"id": "inst_01", "ttl": "Inst_01", "val": 10,
                      "children": [
-                           {"id": "inst_01_0", "ttl": "inst_01_0", "val": 3},
-                           {"id": "inst_01_1", "ttl": "inst_01_1", "val": 78},
+                           {"id": "inst_01_0", "ttl": "Inst_01_0", "val": 3},
+                           {"id": "inst_01_1", "ttl": "Inst_01_1", "val": 78},
                      ]
                      },
-                    {"id": "inst_06", "ttl": "inst_06", "val": 80},
-                    {"id": "inst_08", "ttl": "inst_08", "val": 80},
+                    {"id": "inst_06", "ttl": "Inst_06", "val": 80},
+                    {"id": "inst_08", "ttl": "Inst_08", "val": 80},
                 ]
             }
             inst_health[idNow]["inst_1"] = {
-                "id": "inst_1", "ttl": "inst_1", "val": 20,
+                "id": "inst_1", "ttl": "Inst_1", "val": 20,
                 "children": [
-                    {"id": "inst_10", "ttl": "inst_10", "val": 100},
-                    {"id": "inst_11", "ttl": "inst_11", "val": 10,
+                    {"id": "inst_10", "ttl": "Inst_10", "val": 100},
+                    {"id": "inst_11", "ttl": "Inst_11", "val": 10,
                      "children": [
-                           {"id": "inst_11_0", "ttl": "inst_11_0", "val": 3},
-                           {"id": "inst_11_1", "ttl": "inst_11_1", "val": 78},
-                           {"id": "inst_11_2", "ttl": "inst_11_2", "val": 78},
+                           {"id": "inst_11_0", "ttl": "Inst_11_0", "val": 3},
+                           {"id": "inst_11_1", "ttl": "Inst_11_1", "val": 78},
+                           {"id": "inst_11_2", "ttl": "Inst_11_2", "val": 78},
                      ]
                      },
-                    {"id": "inst_18", "ttl": "inst_18", "val": 80},
+                    {"id": "inst_18", "ttl": "Inst_18", "val": 80},
                 ]
             }
 
@@ -901,10 +896,20 @@ class arrayData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_inst_ids(self):
+    def get_inst_ids(self, inst_types=None):
         while arrayData.inst_Ids is None:
             sleep(0.01)
-        return copy.deepcopy(arrayData.inst_Ids)
+
+        if inst_types is None:
+            inst_Ids = copy.deepcopy(arrayData.inst_Ids)
+        else:
+            if isinstance(inst_types, str):
+                inst_types = [inst_types]
+            inst_Ids = [
+                i for i in arrayData.inst_Ids
+                if any(self.is_tel_type(i, inst_type) for inst_type in inst_types)
+            ]
+        return inst_Ids
 
     # ------------------------------------------------------------------
     #

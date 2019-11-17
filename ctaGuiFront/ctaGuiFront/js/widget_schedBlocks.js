@@ -184,6 +184,7 @@ function mainSchedBlocks (optIn) {
     return blocks
   }
   function getTelHealthById (id) {
+    console.log(' -- FIXME -- use TelInfo.getIds and TelInfo.telIdToTypes as in arrZoomer.js .... -- see optional filter option in the python file -- self.mySock.arrayData.get_inst_ids(inst_types=[....])')
     let index = Number(id.split('_')[1])
     return shared.data.server.telHealth[index]
   }

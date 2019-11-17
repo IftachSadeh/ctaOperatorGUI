@@ -36,7 +36,10 @@ class obsBlocks():
         self.nsType = nsType
         self.timeOfNight = timeOfNight
         self.arrayData = arrayData
-        self.telIds = self.arrayData.get_inst_ids()
+        # self.telIds = self.arrayData.get_inst_ids()
+        self.telIds = self.arrayData.get_inst_ids(
+            inst_types=['LST', 'MST', 'SST']
+        )
 
         self.className = self.__class__.__name__
         self.redis = redisManager(name=self.className, log=self.log)
@@ -327,7 +330,10 @@ class obsBlocks_noACS():
         self.nsType = nsType
         self.timeOfNight = timeOfNight
         self.arrayData = arrayData
-        self.telIds = self.arrayData.get_inst_ids()
+        # self.telIds = self.arrayData.get_inst_ids()
+        self.telIds = self.arrayData.get_inst_ids(
+            inst_types=['LST', 'MST', 'SST']
+        )
 
         self.className = self.__class__.__name__
         self.redis = redisManager(name=self.className, log=self.log)

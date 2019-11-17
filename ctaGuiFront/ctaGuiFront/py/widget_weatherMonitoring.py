@@ -8,13 +8,13 @@ from datetime import datetime, timedelta
 import random
 from random import Random
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, getTimeOfNight
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, getTimeOfNight
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 #  weatherMonitoring
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 class weatherMonitoring():
     # privat lock for this widget type
     lock = BoundedSemaphore(1)
@@ -24,9 +24,9 @@ class weatherMonitoring():
 
     timeOfNight = {}
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def __init__(self, widgetId="", mySock=None, *args, **kwargs):
         self.log = myLog(title=__name__)
 
@@ -53,9 +53,17 @@ class weatherMonitoring():
         self.PrimaryGroup = ['LSTS','MSTS','SSTS','AUX']
         self.PrimaryKey = ['mirror','camera','mount','aux']
 
-    # -----------------------------------------------------------------------------------------------------------
+        # self.telIds = self.mySock.arrayData.get_inst_ids()
+        self.telIds = self.mySock.arrayData.get_inst_ids(
+            inst_types=['LST', 'MST', 'SST']
+        )
+
+        return
+
+
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup(self, *args):
         with self.mySock.lock:
             wgt = self.redis.hGet(
@@ -77,17 +85,17 @@ class weatherMonitoring():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def backFromOffline(self):
         # with weatherMonitoring.lock:
         #   print '-- backFromOffline',self.widgetName, self.widgetId
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getData(self):
         weatherMonitoring.timeOfNight = getTimeOfNight(self)
         timeOfNightDate = {
@@ -107,7 +115,7 @@ class weatherMonitoring():
         for index in range(indexRange):
             for k, v in keyV.items():
                 for key in v:
-                    self.redis.pipe.zGet('telHealth;'+telIds[index]+';'+key)
+                    self.redis.pipe.zGet('telHealth;'+self.telIds[index]+';'+key)
             data = self.redis.pipe.execute(packedScore=True)
             nEle = sum([len(v) for k, v in keyV.items()])
             if len(data) != nEle:
@@ -122,7 +130,7 @@ class weatherMonitoring():
                     dataNow = data[nEleNow]
                     nEleNow += 1
                     dataOut[index].append(
-                        {'id': telIds[index]+';'+key, 'data': [{'y': x[0]['data'], 'x':x[1]} for x in dataNow]})
+                        {'id': self.telIds[index]+';'+key, 'data': [{'y': x[0]['data'], 'x':x[1]} for x in dataNow]})
 
         data = {
             "timeOfNight": timeOfNightDate,
@@ -131,9 +139,9 @@ class weatherMonitoring():
 
         return data
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def sendRndomMessage(self, data):
         # self.log.info([
         #     ['y', ' - got event: sendRndomMessage('],

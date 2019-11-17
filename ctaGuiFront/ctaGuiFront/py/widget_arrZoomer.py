@@ -87,6 +87,10 @@ class arrZoomer():
 
         self.redis = redisManager(name=self.widgetName, log=self.log)
 
+        self.telIds = self.mySock.arrayData.get_inst_ids()
+
+        return
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -158,33 +162,10 @@ class arrZoomer():
         inst_prop_types = dict()
         inst_ids = self.mySock.arrayData.get_inst_ids()
         for id_now in inst_ids:
-            if self.mySock.arrayData.is_tel_type(id_now, 'LST'):
-                inst_prop_types[id_now] = [
-                    { 'id': 'camera', 'title': 'Camera', },
-                    { 'id': 'mount', 'title': 'Mount', },
-                    { 'id': 'aux', 'title': 'AUX', },
-                    { 'id': 'mirror', 'title': 'Mirror', },
-                ]
-            elif self.mySock.arrayData.is_tel_type(id_now, 'MST'):
-                inst_prop_types[id_now] = [
-                    { 'id': 'camera', 'title': 'Camera', },
-                    { 'id': 'mount', 'title': 'Mount', },
-                    { 'id': 'aux', 'title': 'AUX', },
-                ]
-            elif self.mySock.arrayData.is_tel_type(id_now, 'SST'):
-                inst_prop_types[id_now] = [
-                    { 'id': 'camera', 'title': 'Camera', },
-                    { 'id': 'mount', 'title': 'Mount', },
-                    { 'id': 'aux', 'title': 'AUX', },
-                ]
-            elif self.mySock.arrayData.is_tel_type(id_now, 'AUX'):
-                inst_prop_types[id_now] = [
-                    { 'id': 'inst_0', 'title': 'Inst_0', },
-                    { 'id': 'inst_1', 'title': 'Inst_1', },
-                ]
-            else:
-                Assert(msg=(' - get_tel_type(' + str(id_now) +
-                    '): is_tel_type() not defined?'), state=False)
+            inst_prop_types[id_now] = [
+                { 'id': v['id'], 'title': v['ttl'], }
+                for (k,v) in self.telSubHealth[id_now].items()
+            ]
 
         data = {
             "subArr": self.subArrGrp,
@@ -215,7 +196,6 @@ class arrZoomer():
         self.telSubHealthFields = dict()
 
         self.telSubHealth = self.mySock.arrayData.getTelHealthD()
-        self.telIds = self.mySock.arrayData.get_inst_ids()
 
         # a flat dict with references to each level of the original dict
         self.telSubHealthFlat = dict()
@@ -228,11 +208,6 @@ class arrZoomer():
                 "id": idNow, "health": 0, "status": "",
                 "data": [
                     v for (k,v) in self.telSubHealth[idNow].items()
-                    # self.telSubHealth[idNow]["camera"],
-                    # self.telSubHealth[idNow]["mirror"],
-                    # self.telSubHealth[idNow]["mount"],
-                    # self.telSubHealth[idNow]["daq"],
-                    # self.telSubHealth[idNow]["aux"]
                 ]
             }
 
@@ -252,25 +227,29 @@ class arrZoomer():
         #print 'getTelHealthS0'
         data = dict()
 
-        fields = ["health", "status", "camera",
-                  "mirror", "mount", "daq", "aux"]
-        nFilelds = len(fields)
+        # fields = ["health", "status", "camera", "mirror", "mount", "daq", "aux"]
+        fields = dict()
+        for id_now in self.telIds:
+            fields[id_now] = [ "health", "status" ]
+            fields[id_now] += [
+                v['id'] for (k,v) in self.telSubHealth[id_now].items()
+            ]
 
         idV = self.telIds if (idIn is None) else [idIn]
 
         self.redis.pipe.reset()
-        for idNow in idV:
-            self.redis.pipe.hMget(name="telHealth;"+str(idNow), key=fields)
+        for id_now in idV:
+            self.redis.pipe.hMget(name="telHealth;"+str(id_now), key=fields[id_now])
         redData = self.redis.pipe.execute()
 
         for i in range(len(redData)):
-            idNow = idV[i]
-            data[idNow] = dict()
+            id_now = idV[i]
+            data[id_now] = dict()
 
-            for j in range(nFilelds):
-                data[idNow][fields[j]] = redData[i][j]
+            for j in range(len(fields[id_now])):
+                data[id_now][fields[id_now][j]] = redData[i][j]
 
-        return data if (idIn is None) else data[idNow]
+        return data if (idIn is None) else data[id_now]
 
     # ------------------------------------------------------------------
     #   Load data relative to telescope on focus

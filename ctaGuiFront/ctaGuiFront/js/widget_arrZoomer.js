@@ -213,6 +213,8 @@ let mainArrZoomer = function (optIn) {
   // delay counters
   let locker = new Locker()
   locker.add('inInit')
+  locker.add('inPropInit')
+  locker.add('inNewSvgInit')
   locker.add('inInitMain')
   locker.add('inInitDetail')
 
@@ -239,8 +241,8 @@ let mainArrZoomer = function (optIn) {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  function getPropPosShift (xy, r, nProp) {
-    let angle = (nProp + 0.5) * tauFrac + tau / 4
+  function getPropPosShift (xy, r, nPropNow, nProps) {
+    let angle = (nPropNow + 0.5) * getTauFrac(nProps) + tau / 4
     let labelX = r * Math.cos(angle)
     let labelY = r * Math.sin(angle)
 
@@ -265,27 +267,72 @@ let mainArrZoomer = function (optIn) {
 
   console.log(' -- FIXME -- generalise to any input category eg aux instruments...')
   let prop0 = 'health'
-  // let propD = ["camera","daq","mount","aux","mirror"]
-  let propD = ['camera', 'aux', 'mount', 'mirror']
-  // let propD = ["camera","mirror","daq"]
-  // let propD = ["camera"]
-  // let propD = ["inst_0", 'inst_1']
-  let propDv = [prop0]
-  $.each(propD, function (index, porpNow) {
-    propDv.push(porpNow)
-  })
+  let propTitle0 = 'Health'
+  
+  // // let propD = ["camera","daq","mount","aux","mirror"]
+  // let propD = ['camera', 'aux', 'mount', 'mirror']
+  // // let propD = ["camera","mirror","daq"]
+  // // let propD = ["camera"]
+  // // let propD = ["inst_0", 'inst_1']
+  // let propDv = [prop0]
+  // $.each(propD, function (index, porpNow) {
+  //   propDv.push(porpNow)
+  // })
 
-  let propTtlD = {}
-  propTtlD[prop0] = 'Health'
-  propTtlD.camera = 'Camera'
-  propTtlD.mirror = 'Mirror'
-  propTtlD.mount = 'Mount'
-  propTtlD.daq = 'DAQ'
-  propTtlD.aux = 'Aux'
+  // let propTtlD = {}
+  // propTtlD[prop0] = 'Health'
+  // propTtlD.camera = 'Camera'
+  // propTtlD.mirror = 'Mirror'
+  // propTtlD.mount = 'Mount'
+  // propTtlD.daq = 'DAQ'
+  // propTtlD.aux = 'Aux'
 
-  let tauFrac = tau / propD.length
+  // let tauFrac = tau / propD.length
   let tauSpace = tau / 50
   let telTypeV = telInfo.getIds()
+
+
+
+
+
+
+  // =================
+  let __propD = {}
+  let __propDv = {}
+  let __tauFrac = {}
+  let __propTtlD = {}
+  let allTelIds = []
+  
+  // __propD[''] = ['camera', 'aux', 'mount', 'mirror']
+  // __propDv[''] = [prop0]
+  // $.each(__propD[''], function (index, porpNow) {
+  //   __propDv[''].push(porpNow)
+  // })
+  
+  // __propD['avg'] = __propD['']
+  // __propDv['avg'] = __propDv['']
+  // __propTtlD[''] = {}
+  // __propTtlD[''][prop0] = 'Health'
+  // __propTtlD[''].camera = 'Camera'
+  // __propTtlD[''].mirror = 'Mirror'
+  // __propTtlD[''].mount = 'Mount'
+  // __propTtlD[''].daq = 'DAQ'
+  // __propTtlD[''].aux = 'Aux'
+  // __tauFrac[''] = tau / __propD[''].length
+  
+  // =================
+  
+  function getTelProps(keys, telId) {
+    return keys.filter(function(k){ return __propD[telId].indexOf(k) !== -1 })
+  }
+  function getTauFrac(nProps) {
+    return tau / nProps
+  }
+
+
+
+
+
 
   // function interpolatePct (origVal, newVal) {
   //   return d3.interpolateRound(+origVal.slice(0, -1), +newVal)
@@ -343,7 +390,7 @@ let mainArrZoomer = function (optIn) {
       let telD = {}
       telD.id = id
 
-      $.each(propDv, function (index, porpNow) {
+      $.each(__propDv[telD.id], function (index, porpNow) {
         telD[porpNow] = hasVar(dataNow[porpNow])
           ? Math.round(dataNow[porpNow])
           : 0
@@ -360,7 +407,7 @@ let mainArrZoomer = function (optIn) {
 
     // average of each property
     telData.avg.id = 'avg'
-    $.each(propDv, function (index, porpNow) {
+    $.each(__propDv[telData.avg.id], function (index, porpNow) {
       telData.avg[porpNow] = 0
 
       $.each(telData.tel, function (id, dataNow) {
@@ -379,46 +426,99 @@ let mainArrZoomer = function (optIn) {
 
     let dataIn = dataDictIn.data
 
-    // fill the local data list - element properties
-    setTelData(dataIn.arrProp, true)
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
+    // console.log(' -- FIXME -- startup0')
+    let telPropTypes = dataIn.telPropTypes
+    __propD[''] = []
+    __propDv[''] = [ prop0 ]
+    __propTtlD[''] = {}
 
-    zoomTarget = telData.tel[0].id // arbitrary but safe initialization
+    $.each(telPropTypes, function(idNow, typeV) {
+      __propD[idNow] = []
+      __propDv[idNow] = [ prop0 ]
+      __propTtlD[idNow] = {}
 
-    window.sideDiv = sock.setSideDiv({
-      id: sideId,
-      nIcon: dataDictIn.nIcon,
-      iconDivV: iconDivV
+      allTelIds.push(idNow)
+
+      $.each(typeV, function(i, typeNow) {
+        __propD[idNow].push(typeNow.id)
+        __propDv[idNow].push(typeNow.id)
+        __propTtlD[idNow][typeNow.id] = typeNow.title
+
+        // console.log('ppppppppppp', typeNow.id)
+
+        if (__propD[''].indexOf(typeNow.id) === -1) {
+          __propD[''].push(typeNow.id)
+          __propDv[''].push(typeNow.id)
+          __propTtlD[''][typeNow.id] = typeNow.title
+        }
+      })
+
+      __propTtlD[idNow][prop0] = propTitle0
+      __tauFrac[idNow] = tau / __propD[idNow].length
+      __propTtlD[''][prop0] = propTitle0
     })
+    __tauFrac[''] = tau / __propD[''].length
 
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    svgMain.initData(dataIn)
-    svgDetail.initData(dataIn)
+    locker.remove('inPropInit')
+    // console.log(' -- FIXME -- startup0 DONE!!!!!!! ')
 
-    svgQuick.initData({
-      telData: {tel: telData.tel, vor: {data: telData.vor.data}, mini: telData.mini, xyr: telData.xyr, vorDblclick: telData.vorDblclick},
-      telTypeV: telTypeV})
+    function svgDataInit() {
+      // console.log(' == svgDataInit ==')
+      // fill the local data list - element properties
+      setTelData(dataIn.arrProp, true)
 
-    if (locker.isFree('inInit') && hasVar(dataIn.arrProp.type)) {
-      console.error('double init ?!?!', dataIn)
-      updateData(dataIn.arrProp)
+      zoomTarget = telData.tel[0].id // arbitrary but safe initialization
+
+      window.sideDiv = sock.setSideDiv({
+        id: sideId,
+        nIcon: dataDictIn.nIcon,
+        iconDivV: iconDivV
+      })
+
+      // ------------------------------------------------------------------
+      //
+      // ------------------------------------------------------------------
+      svgMain.initData(dataIn)
+      svgDetail.initData(dataIn)
+
+      svgQuick.initData({
+        telData: {tel: telData.tel, vor: {data: telData.vor.data}, mini: telData.mini, xyr: telData.xyr, vorDblclick: telData.vorDblclick},
+        telTypeV: telTypeV})
+
+      if (locker.isFree('inInit') && hasVar(dataIn.arrProp.type)) {
+        console.error('double init ?!?!', dataIn)
+        updateData(dataIn.arrProp)
+      }
+
+      runWhenReady({
+        pass: function () {
+          return locker.isFreeV([
+            'inInitMain',
+            'inPropInit',
+            'inNewSvgInit',
+            'inInitDetail',
+            'inInitQuick',
+            'dataChange',
+            'setStateLock'
+          ])
+        },
+        execute: function () {
+          locker.remove('inInit')
+        }
+      })
+
+      return
     }
-
     runWhenReady({
       pass: function () {
-        return locker.isFreeV([
-          'inInitMain',
-          'inInitDetail',
-          'inInitQuick',
-          'dataChange',
-          'setStateLock'
-        ])
+        return locker.isFreeV(['inNewSvgInit',])
       },
-      execute: function () {
-        locker.remove('inInit')
-      }
+      execute: svgDataInit
     })
+
   }
   thisArrZoomer.initData = initData
 
@@ -519,7 +619,8 @@ let mainArrZoomer = function (optIn) {
     // ------------------------------------------------------------------
     // update the underlying data
     // ------------------------------------------------------------------
-    $.each(propD, function (index, porpNow) {
+    let propsNow = getTelProps(Object.keys(telData.propDataS1[telId]), telId)
+    $.each(propsNow, function (index, porpNow) {
       // update the data container with the s0 updated health
       telData.propDataS1[telId][porpNow].val = telData.tel[telIndex][porpNow]
 
@@ -795,29 +896,19 @@ let mainArrZoomer = function (optIn) {
     rScale[1].innerH0 = 1.25
     rScale[1].innerH1 = 1.3
 
-    // let s1LblXY = {}
     let arcFunc = {}
-
     let arcPrev = {}
     arcPrev.ang = {}
     arcPrev.rad = {}
-
-    // let siteScale = isSouth ? 4 / 9 : 1
 
     let lenD = {}
     lenD.w = {}
     lenD.h = {}
 
-    // lenD.w[0] = 400;
-    // lenD.h[0] = lenD.w[0];
     lenD.w[0] = 500
     lenD.h[0] = 500
-    // isSouth ? 900 : 400;
 
     let zoomTargetProp = ''
-    // lenD.r = {}
-    // lenD.r.s00 = [ 12, 13, 14 ];
-    // if(isSouth) lenD.r.s00 = [ 12*siteScale, 13*siteScale, 14*siteScale ];
 
     let avgTelD = []
     $.each([0, 1], function (nState_, nState) {
@@ -825,23 +916,18 @@ let mainArrZoomer = function (optIn) {
         avgTelD.push({ r: lenD.w[0] / 4, x: lenD.w[0] / 2, y: lenD.h[0] / 2 })
       }
       if (nState === 1) {
-        let propH = lenD.h[0] / propDv.length
+        let propH = lenD.h[0] / __propDv[''].length
         let propR = Math.min(propH * 0.4, lenD.w[0] / 15)
         let propY = propR * 1.25
 
         avgTelD.push({ r: propR, h: propY * 2 })
-        $.each(propDv, function (index, porpNow) {
+        $.each(__propDv[''], function (index, porpNow) {
           avgTelD[1][porpNow + 'x'] = propH * (0.5 + index)
           avgTelD[1][porpNow + 'y'] = lenD.h[0] - propY
-
-          // if(index == propD.length-1) {
-          //   avgTelD[1][prop0+"x"] = avgTelD[1][porpNow+"x"];
-          //   avgTelD[1][prop0+"y"] = propY;
-          // }
         })
       }
     })
-
+    
     lenD.w[1] = lenD.w[0] // - avgTelD[1].h;
     lenD.h[1] = lenD.h[0] - avgTelD[1].h * 2
 
@@ -1204,238 +1290,48 @@ let mainArrZoomer = function (optIn) {
       }
 
       if (scale <= zoomLen['0.1']) {
-        telArcs([telData.avg], 0)
+        let propsIn = { 
+          'propD': __propD[''],
+          'propDv': __propDv[''],
+          'tauFrac': __tauFrac[''],
+          'propTtlD': __propTtlD[''],
+        }
+        
+        telArcs([telData.avg], propsIn, 0)
         setSubProp({ telId: 'avg', propIn: '' })
       } else {
         let targetIndex = telData.idToIndex[zoomTarget]
+        let propsIn = { 
+          'propD': __propD[zoomTarget],
+          'propDv': __propDv[zoomTarget],
+          'tauFrac': __tauFrac[zoomTarget],
+          'propTtlD': __propTtlD[zoomTarget],
+        }
 
         if (scale < zoomLen['1.0']) {
-          telArcs([telData.tel[targetIndex]], 0)
+          telArcs([telData.tel[targetIndex]], propsIn, 0)
           setSubProp({ telId: zoomTarget, propIn: '' })
         } else {
-          telArcs([telData.tel[targetIndex]], 1)
+          telArcs([telData.tel[targetIndex]], propsIn, 1)
         }
       }
     }
     this.setStateOnce = setStateOnce
 
     // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    function setSubProp (optIn) {
-      // console.log('setSubProp',optIn)
-      zoomTargetProp = optIn.propIn
-      let telId = optIn.telId
-      let propIn = optIn.propIn
-      let parentName =
-        propIn === '' ? null : telData.propParentS1[telId][propIn]
-
-      telPropTitle({ telId: telId, propIn: propIn, parentName: parentName })
-    }
-
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    function telPropTitle (optIn) {
-      let telId = optIn.telId
-      let propIn = optIn.propIn
-      let parentName = optIn.parentName
-
-      if (propIn !== '' && !hasVar(parentName)) return
-      // console.log('telPropTitle',optIn)
-
-      // ------------------------------------------------------------------
-      // title on top
-      // ------------------------------------------------------------------
-      let tagState = 'state10'
-      let tagNow = tagState + '_title'
-
-      let ttlData = []
-      ttlData.push({
-        id: tagNow + 'telId',
-        text: telId === 'avg' ? 'Array' : telInfo.getTitle(telId),
-        x: 20,
-        y: avgTelD[1].h / 2,
-        h: 30,
-        strkW: 1
-      })
-
-      if (hasVar(parentName)) {
-        ttlData.push({
-          id: tagNow + parentName,
-          text: propTtlD[parentName],
-          x: 10,
-          y: avgTelD[1].h / 2,
-          h: 30,
-          strkW: 1
-        })
-
-        if (propIn !== parentName) {
-          ttlData.push({
-            id: tagNow + propIn,
-            text: telData.propTitleS1[telId][propIn],
-            x: 10,
-            y: avgTelD[1].h / 2,
-            h: 25,
-            strkW: 0
-          })
-        }
-      }
-
-      let title = com.s01.g
-        .selectAll('text.' + tagNow)
-        .data(ttlData, function (d, i) {
-          return i
-        })
-
-      let eleWH = [[], null]
-      $.each(ttlData, function (i, d) {
-        eleWH[0].push(null)
-      })
-
-      function textPos (d, i, isX) {
-        if (isX) {
-          let x = d.x
-          $.each(ttlData, function (index0, dataNow0) {
-            if (index0 < i) {
-              if (!hasVar(eleWH[0][index0]) || eleWH[0][index0] === 0) {
-                eleWH[0][index0] = getNodeWidthById({
-                  selction: com.s01.g.selectAll('text.' + tagNow),
-                  id: dataNow0.id
-                })
-              }
-              x += dataNow0.x + eleWH[0][index0]
-            }
-          })
-          return x
-        } else {
-          if (!hasVar(eleWH[1]) || eleWH[1] === 0) {
-            eleWH[1] = getNodeHeightById({
-              selction: com.s01.g.selectAll('text.' + tagNow),
-              id: ttlData[0].id,
-              txtScale: true
-            })
-          }
-          return d.y + eleWH[1]
-        }
-      }
-
-      title
-        .enter()
-        .append('text')
-        .text(function (d) {
-          return d.text
-        })
-        .attr('class', tagState + ' ' + tagNow) // class list for easy selection
-        .style('font-weight', function (d, i) {
-          return i === 0 ? 'bold' : 'normal'
-        })
-        .style('opacity', 0)
-        .style('fill', '#383b42')
-        .style('stroke-width', function (d) {
-          return d.strkW
-        })
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('pointer-events', 'none')
-        .style('stroke', function (d) {
-          return '#383b42'
-        })
-        .attr('font-size', function (d) {
-          return d.h + 'px'
-        })
-        .attr('transform', function (d, i) {
-          d.pos = [lenD.w[0] * 1.1, textPos(d, i, false)]
-          return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
-        })
-        .merge(title)
-        .text(function (d) {
-          return d.text
-        })
-        .transition('update1')
-        .duration(timeD.animArc) // .delay(timeD.animArc/2)
-        .attr('transform', function (d, i) {
-          d.pos = [textPos(d, i, true), textPos(d, i, false)]
-          return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
-        })
-        .style('opacity', 1)
-
-      title
-        .exit()
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .attr('transform', function (d, i) {
-          return 'translate(' + d.pos[0] * 2 + ',' + d.pos[1] + ')'
-        })
-        .style('opacity', 0)
-        .remove()
-
-      // ------------------------------------------------------------------
-      // highlight rectangle for the selected property
-      // ------------------------------------------------------------------
-      let tagRect = tagState + '_rectSelect'
-      let porpNow =
-        propD.indexOf(propIn) >= 0 || propIn === ''
-          ? propIn
-          : telData.propParentS1[telId][propIn]
-      // let porpX   = ((porpNow == "" || !clickIn) ? prop0: porpNow) + "x";
-      let porpX = (porpNow === '' ? prop0 : porpNow) + 'x'
-      let recH = avgTelD[1].h
-      let recW = recH * 1.5
-      let recX = avgTelD[1][porpX] - recH / 2 - (recW - recH) / 2
-      let recY = lenD.h[0] - recH
-
-      let dataV = svgMain.getScale() >= zoomLen['1.0'] ? [{ id: porpX }] : []
-      let rect = com.s01.g
-        .selectAll('rect.' + tagRect)
-        .data(dataV, function (d, i) {
-          return i
-        })
-      // let rect = com.s01.g.selectAll("rect."+tagRect).data( (clickIn || hasDataBase) ? [{id:0}] : [] )
-
-      rect
-        .enter()
-        .append('rect')
-        .attr('class', tagRect)
-        .style('fill', '#383b42')
-        // .style("stroke", "#383b42")
-        .style('pointer-events', 'none')
-        .style('stroke-width', '0')
-        .attr('opacity', 0)
-        .attr('height', recH)
-        .attr('width', recW)
-        .attr('transform', function (d) {
-          return 'translate(' + -recW * 2 + ',' + recY + ')'
-        })
-        .merge(rect)
-        .transition('enter')
-        .duration(timeD.animArc)
-        .attr('opacity', 0.05)
-        .attr('transform', function (d) {
-          return 'translate(' + recX + ',' + recY + ')'
-        })
-
-      rect
-        .exit()
-        .transition('out')
-        .duration(timeD.animArc)
-        .attr('transform', function (d) {
-          return 'translate(' + lenD.h[0] + ',' + recY + ')'
-        })
-        .attr('opacity', 0)
-        .remove()
-    }
-
-    // ------------------------------------------------------------------
     // innner arcs for the different properties
     // ------------------------------------------------------------------
-    function telArcs (dataV, state) {
+    function telArcs (dataV, propsIn, state) {
       let tagState = 'state01'
+      let propDin = propsIn.propD
+      let propDinV = propsIn.propDv
+      let tauFracIn = propsIn.tauFrac
+      let propTtlIn = propsIn.propTtlD
 
       if (!hasVar(com.s01.inner)) {
         com.s01.inner = true
 
-        $.each(propD, function (index, porpNow) {
-          // console.log('dddddddd',index, porpNow)
+        $.each(propDin, function (index, porpNow) {
           $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
             let tagNow = porpNow + nArcDrawNow
             let is0 = nArcDrawNow === 0
@@ -1450,13 +1346,13 @@ let mainArrZoomer = function (optIn) {
             // arcFunc[tagNow].rad10 = function (d) { return avgTelD[d.state].r * rScale[1].innerH0 * (is0 ? 1 : 0.97); };
             // arcFunc[tagNow].rad11 = function (d) { return avgTelD[d.state].r * rScale[1].innerH1 * (is0 ? 1 : 1.03); };
             arcFunc[tagNow].ang00 = function (d) {
-              return index * tauFrac + tauSpace
+              return index * tauFracIn + tauSpace
             }
             arcFunc[tagNow].ang01 = function (d) {
               return (
-                index * tauFrac +
+                index * tauFracIn +
                 tauSpace +
-                (tauFrac - tauSpace * 2) * (is0 ? 1 : telHealthFrac(d[porpNow]))
+                (tauFracIn - tauSpace * 2) * (is0 ? 1 : telHealthFrac(d[porpNow]))
               )
             }
             arcFunc[tagNow].ang10 = function (d) {
@@ -1475,7 +1371,7 @@ let mainArrZoomer = function (optIn) {
       let pos = {}
       let angState = {}
       let radState = {}
-      $.each(propDv, function (index, porpNow) {
+      $.each(propDinV, function (index, porpNow) {
         if (state === 0) {
           pos[porpNow] = { x: avgTelD[state].x, y: avgTelD[state].y }
           angState = { angStr1: 'ang00', angEnd1: 'ang01' }
@@ -1490,7 +1386,7 @@ let mainArrZoomer = function (optIn) {
         }
       })
 
-      $.each(propD, function (index, porpNow) {
+      $.each(propDin, function (index, porpNow) {
         $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
           let tagNow = porpNow + nArcDrawNow
           let is0 = nArcDrawNow === 0
@@ -1728,16 +1624,16 @@ let mainArrZoomer = function (optIn) {
       })
 
       // ------------------------------------------------------------------
-      // invisible rectangle for the selecting a property
+      // invisible rectangle for selecting a property
       // ------------------------------------------------------------------
       let tagTitle = tagState + '_title'
       let textD = []
-      $.each(propD, function (index, porpNow) {
+      $.each(propDin, function (index, porpNow) {
         let txtR = avgTelD[state].r * rScale[state].health1 * 1.2
-        let xy = getPropPosShift('xy', txtR, index)
+        let xy = getPropPosShift('xy', txtR, index, propDin.length)
         textD.push({
           id: tagTitle + porpNow,
-          text: propTtlD[porpNow],
+          text: propTtlIn[porpNow],
           h: state === 0 ? 30 : 16,
           xy: state === 0 ? xy : [0, 0],
           x: state === 0 ? avgTelD[state].x - xy[0] : pos[porpNow].x,
@@ -1823,12 +1719,12 @@ let mainArrZoomer = function (optIn) {
       // ------------------------------------------------------------------
       // invisible rectangle for the selecting a property
       // ------------------------------------------------------------------
-      $.each(propDv, function (index, porpNow) {
+      $.each(propDinV, function (index, porpNow) {
         let tagRect = tagState + porpNow + 'rect'
 
         let recH = avgTelD[1].h
         let recW = Math.abs(
-          avgTelD[1][propD[0] + 'x'] - avgTelD[1][propD[1] + 'x']
+          avgTelD[1][propDin[0] + 'x'] - avgTelD[1][propDin[1] + 'x']
         )
         let recX = avgTelD[1][porpNow + 'x'] - recH / 2 - (recW - recH) / 2
         let recY = lenD.h[0] - recH
@@ -2391,6 +2287,221 @@ let mainArrZoomer = function (optIn) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
+    function setSubProp (optIn) {
+      // console.log('setSubProp',optIn)
+      zoomTargetProp = optIn.propIn
+      let telId = optIn.telId
+      let propIn = optIn.propIn
+      let parentName =
+        propIn === '' ? null : telData.propParentS1[telId][propIn]
+
+      telPropTitle({ telId: telId, propIn: propIn, parentName: parentName })
+    }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    function telPropTitle (optIn) {
+      let telId = optIn.telId
+      let propIn = optIn.propIn
+      let parentName = optIn.parentName
+
+      if (propIn !== '' && !hasVar(parentName)) return
+      // console.log('telPropTitle',optIn)
+
+      // ------------------------------------------------------------------
+      // title on top
+      // ------------------------------------------------------------------
+      let tagState = 'state10'
+      let tagNow = tagState + '_title'
+
+      let ttlData = []
+      ttlData.push({
+        id: tagNow + 'telId',
+        text: telId === 'avg' ? 'Array' : telInfo.getTitle(telId),
+        x: 20,
+        y: avgTelD[1].h / 2,
+        h: 30,
+        strkW: 1
+      })
+
+      if (hasVar(parentName)) {
+        ttlData.push({
+          id: tagNow + parentName,
+          text: __propTtlD[telId][parentName],
+          x: 10,
+          y: avgTelD[1].h / 2,
+          h: 30,
+          strkW: 1
+        })
+
+        if (propIn !== parentName) {
+          ttlData.push({
+            id: tagNow + propIn,
+            text: telData.propTitleS1[telId][propIn],
+            x: 10,
+            y: avgTelD[1].h / 2,
+            h: 25,
+            strkW: 0
+          })
+        }
+      }
+
+      let title = com.s01.g
+        .selectAll('text.' + tagNow)
+        .data(ttlData, function (d, i) {
+          return i
+        })
+
+      let eleWH = [[], null]
+      $.each(ttlData, function (i, d) {
+        eleWH[0].push(null)
+      })
+
+      function textPos (d, i, isX) {
+        if (isX) {
+          let x = d.x
+          $.each(ttlData, function (index0, dataNow0) {
+            if (index0 < i) {
+              if (!hasVar(eleWH[0][index0]) || eleWH[0][index0] === 0) {
+                eleWH[0][index0] = getNodeWidthById({
+                  selction: com.s01.g.selectAll('text.' + tagNow),
+                  id: dataNow0.id
+                })
+              }
+              x += dataNow0.x + eleWH[0][index0]
+            }
+          })
+          return x
+        } else {
+          if (!hasVar(eleWH[1]) || eleWH[1] === 0) {
+            eleWH[1] = getNodeHeightById({
+              selction: com.s01.g.selectAll('text.' + tagNow),
+              id: ttlData[0].id,
+              txtScale: true
+            })
+          }
+          return d.y + eleWH[1]
+        }
+      }
+
+      title
+        .enter()
+        .append('text')
+        .text(function (d) {
+          return d.text
+        })
+        .attr('class', tagState + ' ' + tagNow) // class list for easy selection
+        .style('font-weight', function (d, i) {
+          return i === 0 ? 'bold' : 'normal'
+        })
+        .style('opacity', 0)
+        .style('fill', '#383b42')
+        .style('stroke-width', function (d) {
+          return d.strkW
+        })
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', function (d) {
+          return '#383b42'
+        })
+        .attr('font-size', function (d) {
+          return d.h + 'px'
+        })
+        .attr('transform', function (d, i) {
+          d.pos = [lenD.w[0] * 1.1, textPos(d, i, false)]
+          return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
+        })
+        .merge(title)
+        .text(function (d) {
+          return d.text
+        })
+        .transition('update1')
+        .duration(timeD.animArc) // .delay(timeD.animArc/2)
+        .attr('transform', function (d, i) {
+          d.pos = [textPos(d, i, true), textPos(d, i, false)]
+          return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
+        })
+        .style('opacity', 1)
+
+      title
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .attr('transform', function (d, i) {
+          return 'translate(' + d.pos[0] * 2 + ',' + d.pos[1] + ')'
+        })
+        .style('opacity', 0)
+        .remove()
+
+      // ------------------------------------------------------------------
+      // highlight rectangle for the selected property
+      // ------------------------------------------------------------------
+      let tagRect = tagState + '_rectSelect'
+
+      // let propsNow = getTelProps(Object.keys(telData.propParentS1[telId]), telId)
+
+      let porpNow = propIn
+      if (propIn !== '') {
+        porpNow = telData.propParentS1[telId][propIn]
+      }
+      // let porpNow =
+      //   propD.indexOf(propIn) >= 0 || propIn === ''
+      //     ? propIn
+      //     : telData.propParentS1[telId][propIn]
+      // console.log('llllll', [propIn, porpNow], telData.propParentS1[telId])
+
+      // let porpX   = ((porpNow == "" || !clickIn) ? prop0: porpNow) + "x";
+      let porpX = (porpNow === '' ? prop0 : porpNow) + 'x'
+      let recH = avgTelD[1].h
+      let recW = recH * 1.5
+      let recX = avgTelD[1][porpX] - recH / 2 - (recW - recH) / 2
+      let recY = lenD.h[0] - recH
+
+      let dataV = svgMain.getScale() >= zoomLen['1.0'] ? [{ id: porpX }] : []
+      let rect = com.s01.g
+        .selectAll('rect.' + tagRect)
+        .data(dataV, function (d, i) {
+          return i
+        })
+      // let rect = com.s01.g.selectAll("rect."+tagRect).data( (clickIn || hasDataBase) ? [{id:0}] : [] )
+
+      rect
+        .enter()
+        .append('rect')
+        .attr('class', tagRect)
+        .style('fill', '#383b42')
+        // .style("stroke", "#383b42")
+        .style('pointer-events', 'none')
+        .style('stroke-width', '0')
+        .attr('opacity', 0)
+        .attr('height', recH)
+        .attr('width', recW)
+        .attr('transform', function (d) {
+          return 'translate(' + -recW * 2 + ',' + recY + ')'
+        })
+        .merge(rect)
+        .transition('enter')
+        .duration(timeD.animArc)
+        .attr('opacity', 0.05)
+        .attr('transform', function (d) {
+          return 'translate(' + recX + ',' + recY + ')'
+        })
+
+      rect
+        .exit()
+        .transition('out')
+        .duration(timeD.animArc)
+        .attr('transform', function (d) {
+          return 'translate(' + lenD.h[0] + ',' + recY + ')'
+        })
+        .attr('opacity', 0)
+        .remove()
+    }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
     function updateS1 (dataIn) {
       if (
         !locker.isFreeV([
@@ -2532,8 +2643,6 @@ let mainArrZoomer = function (optIn) {
       let arrInit = dataIn.arrInit
       // let arrProp = dataIn.arrProp
       let subArr = dataIn.subArr
-      let telPropTypes = dataIn.telPropTypes
-      // console.log('ffffffffff',telPropTypes)
 
       if (hasVar(svg.g)) return
 
@@ -3183,14 +3292,15 @@ let mainArrZoomer = function (optIn) {
         // ------------------------------------------------------------------
         // calculation of coordinates for labels, added next
         // ------------------------------------------------------------------
-        $.each(propD, function (index, porpNow) {
-          s1LblXY[porpNow] = {}
-
-          $.each(telData.vor.data, function (index_, dataNow) {
-            let angle = (index + 0.5) * tauFrac + tau / 4
+        $.each(telData.vor.data, function (index_, dataNow) {
+          $.each(__propD[dataNow.id], function (index, porpNow) {
+            let angle = (index + 0.5) * __tauFrac[dataNow.id] + tau / 4
             let labelX = dataNow.r * Math.cos(angle)
             let labelY = dataNow.r * Math.sin(angle)
 
+            if (s1LblXY[porpNow] === undefined) {
+              s1LblXY[porpNow] = {}
+            }
             s1LblXY[porpNow][dataNow.id] = [labelX, labelY]
           })
         })
@@ -3637,34 +3747,41 @@ let mainArrZoomer = function (optIn) {
       if (!hasVar(com.s01.inner)) {
         com.s01.inner = true
 
-        $.each(propD, function (index, porpNow) {
-          $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
-            let tagNow = porpNow + nArcDrawNow
-            let is0 = nArcDrawNow === 0
+        // let telProps = Object.keys(__propD)
+        $.each(allTelIds, function (n_ele, key) {
+        // $.each(__propD, function (key, telProps) {
+          $.each(__propD[key], function (index, porpNow) {
+            // console.log('+', key, index, porpNow)
+            $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
+              // let tagNow = porpNow + nArcDrawNow
+              let tagNow = key + porpNow + nArcDrawNow
+              let is0 = nArcDrawNow === 0
 
-            arcFunc[tagNow] = {}
-            arcFunc[tagNow].rad00 = function (d) {
-              return telData.xyr[d.id].r * (is0 ? 0.85 : 0.81)
-            }
-            arcFunc[tagNow].rad01 = function (d) {
-              return telData.xyr[d.id].r * (is0 ? 0.95 : 0.99)
-            }
-            arcFunc[tagNow].rad10 = function (d) {
-              return telData.xyr[d.id].r * rScale[1].innerH0 * (is0 ? 1 : 0.97)
-            }
-            arcFunc[tagNow].rad11 = function (d) {
-              return telData.xyr[d.id].r * rScale[1].innerH1 * (is0 ? 1 : 1.03)
-            }
-            arcFunc[tagNow].ang00 = function (d) {
-              return index * tauFrac + tauSpace
-            }
-            arcFunc[tagNow].ang01 = function (d) {
-              return (
-                index * tauFrac +
-                tauSpace +
-                (tauFrac - tauSpace * 2) * (is0 ? 1 : telHealthFrac(d[porpNow]))
-              )
-            }
+              arcFunc[tagNow] = {}
+              arcFunc[tagNow].rad00 = function (d) {
+                return telData.xyr[d.id].r * (is0 ? 0.85 : 0.81)
+              }
+              arcFunc[tagNow].rad01 = function (d) {
+                return telData.xyr[d.id].r * (is0 ? 0.95 : 0.99)
+              }
+              arcFunc[tagNow].rad10 = function (d) {
+                return telData.xyr[d.id].r * rScale[1].innerH0 * (is0 ? 1 : 0.97)
+              }
+              arcFunc[tagNow].rad11 = function (d) {
+                return telData.xyr[d.id].r * rScale[1].innerH1 * (is0 ? 1 : 1.03)
+              }
+              arcFunc[tagNow].ang00 = function (d) {
+                return index * __tauFrac[key] + tauSpace
+              }
+              arcFunc[tagNow].ang01 = function (d) {
+                return (
+                  index * __tauFrac[key] +
+                  tauSpace +
+                  (__tauFrac[key] - tauSpace * 2) * 
+                  (is0 ? 1 : telHealthFrac(d[porpNow]))
+                )
+              }
+            })
           })
         })
       }
@@ -3678,139 +3795,155 @@ let mainArrZoomer = function (optIn) {
           focusIdV.push(dataNow.id)
         })
       }
+      // let telId = dataV.id
+      // let telId = zoomTarget
+      // DDFF
+      
+      // console.log('FIXME -- validate ... for __propD[""]/zoomTarget ....', focusIdV, telId, dataV)
 
-      $.each(propD, function (index, porpNow) {
-        $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
-          let tagNow = porpNow + nArcDrawNow
-          let is0 = nArcDrawNow === 0
+      $.each(allTelIds, function (n_ele, telId) {
+        $.each(__propD[telId], function (index, porpNow) {
+          $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
+            let tagNow = telId + porpNow + nArcDrawNow
+            let is0 = nArcDrawNow === 0
 
-          if (!hasVar(arcPrev[tagNow])) {
-            arcPrev[tagNow] = {}
-            arcPrev[tagNow].ang = {}
-            arcPrev[tagNow].rad = {}
-          }
+            if (!hasVar(arcPrev[tagNow])) {
+              arcPrev[tagNow] = {}
+              arcPrev[tagNow].ang = {}
+              arcPrev[tagNow].rad = {}
+            }
 
-          let path = com.s01.g
-            .selectAll('path.' + tagNow)
-            .data(dataV, function (d) {
-              return d.id
-            })
+            let dataVnow = dataV
+            if (dataV.length > 0) {
+              if (dataV[0].id != telId) {
+                dataVnow = []
+              }
+            }
 
-          // operate on new elements only
-          path
-            .enter()
-            .append('path')
-            .style('stroke-width', '0.05')
-            .style('pointer-events', 'none')
-            .attr('vector-effect', 'non-scaling-stroke')
-            .attr('id', function (d) {
-              return myUniqueId + d.id + tagNow
-            })
-            .attr('class', tagState + ' ' + tagNow)
-            // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
-            .style('opacity', function (d) {
-              return is0 ? '0.5' : '1'
-            })
-            .attr('transform', function (d) {
-              return (
-                'translate(' +
-                telData.xyr[d.id].x +
-                ',' +
-                telData.xyr[d.id].y +
-                ')'
-              )
-            })
-            .each(function (d, i) {
-              arcPrev[tagNow].ang[d.id] = [
-                arcFunc[tagNow].ang00(d),
-                arcFunc[tagNow].ang00(d)
-              ]
-              arcPrev[tagNow].rad[d.id] = [
-                arcFunc[tagNow].rad00(d),
-                arcFunc[tagNow].rad01(d)
-              ]
-            })
-            .merge(path)
-            .transition('in')
-            .duration(timeD.animArc) // .delay(timeD.animArc)
-            .attr('transform', function (d) {
-              return (
-                'translate(' +
-                telData.xyr[d.id].x +
-                ',' +
-                telData.xyr[d.id].y +
-                ')'
-              )
-            })
-            .style('stroke', function (d) {
-              return is0 ? null : telHealthCol(d[porpNow])
-            })
-            .style('fill', function (d) {
-              return telHealthCol(d[porpNow])
-            }) // return is0 ? "#383b42" : telHealthCol(d[porpNow]); })
-            .call(com.arcTween, {
-              tagNow: tagNow,
-              arcPrev: arcPrev,
-              angStr0: null,
-              angStr1: null,
-              angEnd0: null,
-              angEnd1: 'ang01',
-              radInr0: null,
-              radInr1: null,
-              radOut0: null,
-              radOut1: null
-            })
-            // angStr0:"ang00", angStr1:"ang00", angEnd0:"ang00", angEnd1:"ang01",
-            // radInr0:"rad00", radInr1:"rad00", radOut0:"rad01", radOut1:"rad01"
-            .transition('update')
-            .duration(timeD.animArc)
-            .call(com.arcTween, {
-              tagNow: tagNow,
-              arcPrev: arcPrev,
-              incIdV: focusIdV,
-              angStr0: null,
-              angStr1: null,
-              angEnd0: null,
-              angEnd1: null,
-              radInr0: null,
-              radInr1: 'rad10',
-              radOut0: null,
-              radOut1: 'rad11'
-            })
-            .transition('update')
-            .duration(timeD.animArc)
-            .call(com.arcTween, {
-              tagNow: tagNow,
-              arcPrev: arcPrev,
-              excIdV: focusIdV,
-              angStr0: null,
-              angStr1: null,
-              angEnd0: null,
-              angEnd1: null,
-              radInr0: null,
-              radInr1: 'rad00',
-              radOut0: null,
-              radOut1: 'rad01'
-            })
+            let path = com.s01.g
+              .selectAll('path.' + tagNow)
+              .data(dataVnow, function (d, i) {
+                return d.id
+              })
 
-          // operate on exiting elements only
-          path
-            .exit()
-            .transition('out')
-            .duration(timeD.animArc)
-            .call(com.arcTween, {
-              tagNow: tagNow,
-              arcPrev: arcPrev,
-              angStr0: null,
-              angStr1: 'ang00',
-              angEnd0: null,
-              angEnd1: 'ang00',
-              radInr0: null,
-              radInr1: 'rad00',
-              radOut0: null,
-              radOut1: 'rad01'
-            })
-            .remove()
+            // operate on new elements only
+            path
+              .enter()
+              .append('path')
+              .style('stroke-width', '0.05')
+              .style('pointer-events', 'none')
+              .attr('vector-effect', 'non-scaling-stroke')
+              .attr('id', function (d) {
+                return myUniqueId + d.id + tagNow
+              })
+              .attr('class', tagState + ' ' + tagNow)
+              // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
+              .style('opacity', function (d) {
+                return is0 ? '0.5' : '1'
+              })
+              .attr('transform', function (d) {
+                return (
+                  'translate(' +
+                  telData.xyr[d.id].x +
+                  ',' +
+                  telData.xyr[d.id].y +
+                  ')'
+                )
+              })
+              .each(function (d, i) {
+                // console.log(i,d,tagNow)
+                arcPrev[tagNow].ang[d.id] = [
+                  arcFunc[tagNow].ang00(d),
+                  arcFunc[tagNow].ang00(d)
+                ]
+                arcPrev[tagNow].rad[d.id] = [
+                  arcFunc[tagNow].rad00(d),
+                  arcFunc[tagNow].rad01(d)
+                ]
+              })
+              .merge(path)
+              .transition('in')
+              .duration(timeD.animArc) // .delay(timeD.animArc)
+              .attr('transform', function (d) {
+                return (
+                  'translate(' +
+                  telData.xyr[d.id].x +
+                  ',' +
+                  telData.xyr[d.id].y +
+                  ')'
+                )
+              })
+              .style('stroke', function (d) {
+                return is0 ? null : telHealthCol(d[porpNow])
+              })
+              .style('fill', function (d) {
+                return telHealthCol(d[porpNow])
+              }) // return is0 ? "#383b42" : telHealthCol(d[porpNow]); })
+              .call(com.arcTween, {
+                tagNow: tagNow,
+                arcPrev: arcPrev,
+                angStr0: null,
+                angStr1: null,
+                angEnd0: null,
+                angEnd1: 'ang01',
+                radInr0: null,
+                radInr1: null,
+                radOut0: null,
+                radOut1: null
+              })
+              // angStr0:"ang00", angStr1:"ang00", angEnd0:"ang00", angEnd1:"ang01",
+              // radInr0:"rad00", radInr1:"rad00", radOut0:"rad01", radOut1:"rad01"
+              .transition('update')
+              .duration(timeD.animArc)
+              .call(com.arcTween, {
+                tagNow: tagNow,
+                arcPrev: arcPrev,
+                incIdV: focusIdV,
+                angStr0: null,
+                angStr1: null,
+                angEnd0: null,
+                angEnd1: null,
+                radInr0: null,
+                radInr1: 'rad10',
+                radOut0: null,
+                radOut1: 'rad11'
+              })
+              .transition('update')
+              .duration(timeD.animArc)
+              .call(com.arcTween, {
+                tagNow: tagNow,
+                arcPrev: arcPrev,
+                excIdV: focusIdV,
+                angStr0: null,
+                angStr1: null,
+                angEnd0: null,
+                angEnd1: null,
+                radInr0: null,
+                radInr1: 'rad00',
+                radOut0: null,
+                radOut1: 'rad01'
+              })
+
+            // operate on exiting elements only
+            path
+              .exit()
+              .transition('out')
+              // .each(function (d, i) {console.log('qqq', i, d); })
+              .duration(timeD.animArc)
+              .call(com.arcTween, {
+                tagNow: tagNow,
+                arcPrev: arcPrev,
+                angStr0: null,
+                angStr1: 'ang00',
+                angEnd0: null,
+                angEnd1: 'ang00',
+                radInr0: null,
+                radInr1: 'rad00',
+                radOut0: null,
+                radOut1: 'rad01'
+              })
+              .remove()
+          })
         })
       })
 
@@ -4019,7 +4152,7 @@ let mainArrZoomer = function (optIn) {
       if (childV) {
         let telId = dataIn.id
 
-        $.each(propD, function (index, porpNow) {
+        $.each(__propD[telId], function (index, porpNow) {
           telData.propDataS1[telId] = {}
           telData.propDataS1[telId][porpNow] = null
           telData.propParentS1[telId] = {}
@@ -4028,7 +4161,8 @@ let mainArrZoomer = function (optIn) {
           telData.propTitleS1[telId][porpNow] = ''
         })
 
-        // construct the dataBase object b hand, as some properties may not be included in propD
+        // construct the dataBase object b hand, as
+        // some properties may not be included in __propD[telId]
         telData.dataBaseS1[telId] = {}
         telData.dataBaseS1[telId].id = prop0
         telData.dataBaseS1[telId].val = dataIn[prop0]
@@ -4037,7 +4171,7 @@ let mainArrZoomer = function (optIn) {
 
         $.each(childV, function (indexData, childNow) {
           let porpNow = childNow.id
-          if (propD.indexOf(porpNow) >= 0) {
+          if (__propD[telId].indexOf(porpNow) >= 0) {
             // add a reference to each property
             telData.propDataS1[telId][porpNow] = childNow
             telData.propParentS1[telId][porpNow] = porpNow
@@ -4098,6 +4232,9 @@ let mainArrZoomer = function (optIn) {
         let S10obj = function (telId) {
           let thisS10 = this
           this.telId = telId
+          this.__propD = __propD[telId]
+          this.tauFrac = __tauFrac[telId]
+          this.__propTtlD = __propTtlD[telId]
 
           let myDate = Date.now()
           let gBase = null
@@ -4111,7 +4248,7 @@ let mainArrZoomer = function (optIn) {
           let hirchDataV = null
 
           this.hirchData = {}
-          $.each(propD, function (index, porpNow) {
+          $.each(thisS10.__propD, function (index, porpNow) {
             thisS10.hirchData[porpNow] = null
           })
 
@@ -4151,7 +4288,7 @@ let mainArrZoomer = function (optIn) {
               $.each(childV, function (indexData, dataBase) {
                 let porpNow = dataBase.id
 
-                if (propD.indexOf(porpNow) >= 0) {
+                if (thisS10.__propD.indexOf(porpNow) >= 0) {
                   gTrans[porpNow] = {}
                   gHirch[porpNow] = {}
                   gHirch[porpNow].hirch = gBase.append('g')
@@ -4222,7 +4359,7 @@ let mainArrZoomer = function (optIn) {
             let remove = hasVar(optIn.remove) ? optIn.remove : false
 
             if (propIn !== '') {
-              if (propD.indexOf(propIn) < 0) {
+              if (thisS10.__propD.indexOf(propIn) < 0) {
                 if (hasVar(telData.propParentS1[telId][propIn])) {
                   propIn = telData.propParentS1[telId][propIn]
                 }
@@ -4231,18 +4368,18 @@ let mainArrZoomer = function (optIn) {
 
             let textD = []
             if (getZoomS() === 1 && !remove) {
-              $.each(propD, function (index, porpNow) {
+              $.each(thisS10.__propD, function (index, porpNow) {
                 let state = 0
                 if (propIn !== '') {
                   state = propIn === porpNow ? 1 : 2
                 }
 
                 let txtR = telData.xyr[telId].r * rScale[1].innerH1 * 1.45
-                let xy = getPropPosShift('xy', txtR, index)
+                let xy = getPropPosShift('xy', txtR, index, thisS10.__propD.length)
 
                 textD.push({
                   id: tagLbl + porpNow,
-                  text: propTtlD[porpNow],
+                  text: thisS10.__propTtlD[porpNow],
                   h: 30 / zoomLen['1.3'],
                   xy: xy,
                   x: wh / 2 - xy[0],
@@ -4339,7 +4476,7 @@ let mainArrZoomer = function (optIn) {
                 let tagNow = baseTag + porpNow
                 // let is0 = 1
 
-                let nProp = propD.indexOf(porpNow)
+                let nProp = thisS10.__propD.indexOf(porpNow)
                 if (nProp >= 0) {
                   if (!hasVar(arcs[tagNow])) {
                     arcs[tagNow] = {}
@@ -4363,10 +4500,10 @@ let mainArrZoomer = function (optIn) {
                       return telData.xyr[telId].r * rScale[1].innerH1 * 1.35
                     }
                     arcFunc[tagNow].ang00 = function (d) {
-                      return nProp * tauFrac + tauSpace
+                      return nProp * thisS10.tauFrac + tauSpace
                     }
                     arcFunc[tagNow].ang01 = function (d) {
-                      return (nProp + 1) * tauFrac - tauSpace
+                      return (nProp + 1) * thisS10.tauFrac - tauSpace
                     }
                     arcFunc[tagNow].ang10 = function (d) {
                       return 0
@@ -4375,10 +4512,10 @@ let mainArrZoomer = function (optIn) {
                       return tau
                     }
                     arcFunc[tagNow].ang20 = function (d) {
-                      return nProp * tauFrac
+                      return nProp * thisS10.tauFrac
                     }
                     arcFunc[tagNow].ang21 = function (d) {
-                      return (nProp + 1) * tauFrac
+                      return (nProp + 1) * thisS10.tauFrac
                     }
                   }
 
@@ -4507,7 +4644,7 @@ let mainArrZoomer = function (optIn) {
             hirchStyleClick({ propIn: '', id: '', isOpen: false })
 
             //
-            $.each(propD, function (index, porpNow) {
+            $.each(thisS10.__propD, function (index, porpNow) {
               let baseTag = 's10arc'
               let tagNow = baseTag + porpNow
               let path = gBckArc.selectAll('path.' + tagNow)
@@ -4553,7 +4690,7 @@ let mainArrZoomer = function (optIn) {
             let onlyOpen = hasVar(optIn.onlyOpen) ? optIn.onlyOpen : false
             let canIgnore = hasVar(optIn.canIgnore) ? optIn.canIgnore : true
 
-            if (propD.indexOf(propIn) < 0 && propIn != '') return
+            if (thisS10.__propD.indexOf(propIn) < 0 && propIn != '') return
 
             if (
               !locker.isFreeV([
@@ -4586,7 +4723,7 @@ let mainArrZoomer = function (optIn) {
             // ------------------------------------------------------------------
             //
             // ------------------------------------------------------------------
-            $.each(propD, function (index, porpNow) {
+            $.each(thisS10.__propD, function (index, porpNow) {
               let baseTag = 's10arc'
               let tagNow = baseTag + porpNow
               let path0 = gBckArc.selectAll('path.' + tagNow + '0')
@@ -4886,7 +5023,7 @@ let mainArrZoomer = function (optIn) {
                 }
               }
 
-              if (propD.indexOf(porpNow) >= 0) {
+              if (thisS10.__propD.indexOf(porpNow) >= 0) {
                 renameChildren(dataBase)
 
                 thisS10.hirchData[porpNow] = dataBase
@@ -5014,7 +5151,7 @@ let mainArrZoomer = function (optIn) {
 
                       // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                       // FIXME:
-                      // here we can set non propD names if needed.....
+                      // here we can set non thisS10.__propD names if needed.....
                       // console.log('_setPropLblInitHirch',d.data.id); setPropLbl({ propIn:d.data.id });
                       // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     }
@@ -5184,7 +5321,7 @@ let mainArrZoomer = function (optIn) {
             locker.add('updateHirch')
 
             //
-            $.each(propD, function (index, porpNow) {
+            $.each(thisS10.__propD, function (index, porpNow) {
               let baseTag = 's10arc'
               let tagNow = baseTag + porpNow
               let path = gBckArc.selectAll('path.' + tagNow)
@@ -5513,15 +5650,34 @@ let mainArrZoomer = function (optIn) {
     return dataWidget
   }
 
-  let svgMain = new SvgMain() // must come first
-  let svgDetail = new SvgDetail()
-  let svgQuick = new QuickMap({runLoop: runLoop, sgvTag: sgvTag, widgetId: widgetId, locker: locker, isSouth: isSouth})
+  let svgMain, svgDetail, svgQuick
+  function svgNewInit() {
+    // console.log(' == svgNewInit ==')
+    svgMain = new SvgMain() // must come first
+    svgDetail = new SvgDetail()
+    svgQuick = new QuickMap({
+      runLoop: runLoop, sgvTag: sgvTag,
+      widgetId: widgetId, locker: locker,
+      isSouth: isSouth,
+    })
 
-  // // ------------------------------------------------------------------
-  // // ------------------------------------------------------------------
-  // svgMain.zoomToTrgMain({ target:'M_9',  scale:zoomLen["1.2"], durFact:0.1 });
-  // svgMain.zoomToTrgMain({ target:'init', scale:zoomLen["0.0"], durFact:0.1 });
-  // svgMain.zoomToTrgMain({ target:'L_1',  scale:zoomLen["1.2"], durFact:2.0 });
-  // // ------------------------------------------------------------------
-  // // ------------------------------------------------------------------
+    locker.remove('inNewSvgInit')
+
+    // // ------------------------------------------------------------------
+    // // ------------------------------------------------------------------
+    // svgMain.zoomToTrgMain({ target:'M_9',  scale:zoomLen["1.2"], durFact:0.1 });
+    // svgMain.zoomToTrgMain({ target:'init', scale:zoomLen["0.0"], durFact:0.1 });
+    svgMain.zoomToTrgMain({ target:'Lx00',  scale:zoomLen["1.2"], durFact:2.0 }); console.log('FAKE-START')
+    // // ------------------------------------------------------------------
+    // // ------------------------------------------------------------------
+    return
+  }
+  runWhenReady({
+    pass: function () {
+      return locker.isFreeV(['inPropInit',])
+    },
+    execute: svgNewInit
+  })
+
+
 }

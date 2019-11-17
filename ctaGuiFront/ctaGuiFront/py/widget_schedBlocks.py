@@ -10,13 +10,13 @@ import time
 import random
 from random import Random
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, getTimeOfNight
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, getTimeOfNight
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 #  schedBlocks
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 class schedBlocks():
     # privat lock for this widget type
     lock = BoundedSemaphore(1)
@@ -31,12 +31,10 @@ class schedBlocks():
 
     timeOfNight = {}
     telHealth = []
-    for idNow in telIds:
-        telHealth.append({"id": idNow, "val": 0})
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def __init__(self, widgetId="", mySock=None, *args, **kwargs):
         self.log = myLog(title=__name__)
 
@@ -45,7 +43,8 @@ class schedBlocks():
         # the parent of this widget
         self.mySock = mySock
         Assert(log=self.log, msg=[
-               " - no mySock handed to", self.__class__.__name__], state=(self.mySock is not None))
+               " - no mySock handed to", self.__class__.__name__],
+               state=(self.mySock is not None))
 
         # widget-class and widget group names
         self.widgetName = self.__class__.__name__
@@ -60,9 +59,24 @@ class schedBlocks():
         #
         self.nIcon = -1
 
-    # -----------------------------------------------------------------------------------------------------------
+        # self.telIds = self.mySock.arrayData.get_inst_ids()
+        self.telIds = self.mySock.arrayData.get_inst_ids(
+            inst_types=['LST', 'MST', 'SST']
+        )
+        
+        # ------------------------------------------------------------------
+        # need to add lock ?!?!?!?!?
+        # ------------------------------------------------------------------
+        if len(schedBlocks.telHealth) == 0:
+            for idNow in self.telIds:
+                schedBlocks.telHealth.append({"id": idNow, "val": 0})
+
+        return
+
+
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup(self, *args):
         with self.mySock.lock:
             wgt = self.redis.hGet(
@@ -84,17 +98,17 @@ class schedBlocks():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def backFromOffline(self):
         # with schedBlocks.lock:
         #   print 'backFromOffline',self.widgetName, self.widgetId
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getData(self):
         schedBlocks.timeOfNight = getTimeOfNight(self)
         self.getBlocks()
@@ -113,7 +127,7 @@ class schedBlocks():
         data = {
             "timeOfNight": timeOfNightDate,
             "telHealth": schedBlocks.telHealth,
-            "telIds": telIds,
+            "telIds": self.telIds,
             "blocks": schedBlocks.blocks,
             "external_events": schedBlocks.external_events,
             "external_clockEvents": schedBlocks.external_clockEvents
@@ -123,12 +137,12 @@ class schedBlocks():
 
     def getTelHealth(self):
         self.redis.pipe.reset()
-        for idNow in telIds:
+        for idNow in self.telIds:
             self.redis.pipe.hGet(name="telHealth;"+str(idNow), key="health")
         redData = self.redis.pipe.execute()
 
         for i in range(len(redData)):
-            idNow = telIds[i]
+            idNow = self.telIds[i]
             schedBlocks.telHealth[i]["val"] = redData[i]
 
         return
@@ -151,9 +165,9 @@ class schedBlocks():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getBlocks(self):
         for keyV in schedBlocks.blockKeys:
             self.redis.pipe.reset()
