@@ -463,6 +463,8 @@ class arrZoomer():
                     widgetIdV=arrZoomer.sendV["s_0"]["widgetId"]
                 )
 
-            sleep(0.5)
+            # sleep(0.5)
+            return
+            sleep(5)
 
         return

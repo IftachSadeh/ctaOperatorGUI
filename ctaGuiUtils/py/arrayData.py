@@ -5,6 +5,7 @@ import copy
 from math import sqrt, ceil, floor
 import utils
 from utils import myLog, Assert, getTime
+# from typing import Iterable
 
 
 # ------------------------------------------------------------------
@@ -905,6 +906,10 @@ class arrayData():
         else:
             if isinstance(inst_types, str):
                 inst_types = [inst_types]
+            # else:
+            #     Assert(msg=' - inst_types must be str or list ... ' +
+            #            str(inst_types), state=isinstance(inst_types, Iterable))
+
             inst_Ids = [
                 i for i in arrayData.inst_Ids
                 if any(self.is_tel_type(i, inst_type) for inst_type in inst_types)

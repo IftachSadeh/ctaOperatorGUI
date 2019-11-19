@@ -612,6 +612,7 @@ function SocketManager () {
     let eleProps = optIn.eleProps
     let widgetDivId = optIn.widgetDivId
     let widgetTypes = Object.keys(optIn.eleProps)
+    let setupData = optIn.setupData
 
     let widgetEle = []
     $.each(widgetTypes, function (index, dataNow) {
@@ -658,7 +659,8 @@ function SocketManager () {
           widgetId: widgetId,
           iconDivV: iconDivV,
           sideId: sideId,
-          widgetEle: widgetEle
+          widgetEle: widgetEle,
+          setupData: setupData,
         })
       },
       msgFail: function () {
