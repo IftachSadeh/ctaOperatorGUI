@@ -1385,10 +1385,6 @@ let mainArrZoomer = function (optIn) {
           'propTtlD': instPropTitles[''],
         }
         
-        // console.log('wwwwwww',telData)
-        // console.log('xxxxxxx', telData.avg, telData.tel[telData.idToIndex[zoomTarget]])
-        // console.log(instProps[''])
-
         telArcs([telData.avg], propsIn, 0)
         setSubProp({ telId: 'avg', propIn: '' })
       } else {
@@ -1419,33 +1415,15 @@ let mainArrZoomer = function (optIn) {
       let propDin = propsIn.propD
       let propDinV = propsIn.propDv
       let propTtlIn = propsIn.propTtlD
-      let allPropsNow
 
       function getPropIndex(id, porpIn) {
         return instProps[id].indexOf(porpIn)
       }
 
-      // if (!hasVar(com.s01.inner)) {
       if (!hasVar(com.s01.inner)) {
         com.s01.inner = true
 
-        // let allPropsNow
-        // if (telIdIn == 'avg')
-        //   allPropsNow = allInstProps.slice()
-        // else
-        //   allPropsNow = propDin.slice()
-
-        allPropsNow = allInstProps.slice()
-        // allPropsNow.unshift('avg')
-
-        // allPropsNow = propDin
-        // console.log(allInstIds)
-        // console.log(allPropsNow)
-        // console.log(dataV)
-        // console.log('--++++++++++++++++++++++--------------')
-
-        // $.each(propDin, function (index, porpNow) {
-        $.each(allPropsNow, function (_, porpNow) {
+        $.each(allInstProps, function (_, porpNow) {
           $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
             let tagNow = porpNow + nArcDrawNow
             let is0 = nArcDrawNow === 0
@@ -1463,8 +1441,6 @@ let mainArrZoomer = function (optIn) {
               return getPropIndex(d.id, porpNow) * instTauFracs[d.id] + tauSpace
             }
             arcFunc[tagNow].ang01 = function (d) {
-              // console.log(' XFX ang01', instTauFracs[d.id],[porpNow, d[porpNow]], telHealthFrac(d[porpNow]), d)
-              // return .1
               if (d[porpNow] === undefined) return 0
               return (
                 getPropIndex(d.id, porpNow) * instTauFracs[d.id] +
@@ -1477,7 +1453,6 @@ let mainArrZoomer = function (optIn) {
               return 0.1
             }
             arcFunc[tagNow].ang11 = function (d) {
-              // return .1
               if (d[porpNow] === undefined) return 0
               return is0 ? tau : tau * telHealthFrac(d[porpNow])
             }
@@ -1492,9 +1467,6 @@ let mainArrZoomer = function (optIn) {
       let angState = {}
       let radState = {}
       
-      // console.log('QWQWQWQ -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-')
-      // console.log(allInstIds, propDin)
-      // $.each(propDinV, function (index, porpNow) {
       $.each(allInstProps0, function (_, porpNow) {
         if (state === 0) {
           pos[porpNow] = { x: avgTelD[state].x, y: avgTelD[state].y }
@@ -1510,13 +1482,11 @@ let mainArrZoomer = function (optIn) {
         }
       })
 
-      // $.each(propDin, function (index, porpNow) {
       $.each(allInstProps, function (_, porpNow) {
         $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
           let tagNow = porpNow + nArcDrawNow
 
           let is0 = nArcDrawNow === 0
-          // console.log('--1--',tagNow,[index, porpNow,nArcDrawNow, nArcDrawNow_], (dataV))
 
           if (!hasVar(arcPrev[tagNow])) {
             arcPrev[tagNow] = {}
@@ -1524,21 +1494,12 @@ let mainArrZoomer = function (optIn) {
             arcPrev[tagNow].rad = {}
           }
 
-          // console.log('dddddddd',telIdIn,dataV)
           let dataVnow = dataV
           if (dataV.length > 0) {
             if (dataV[0][porpNow] === undefined) {
               dataVnow = []
             }
           }
-          // if (dataV.length > 0) {
-          //   // if (telId==='')telId='avg'
-          //   // if (telIdIn != dataV[0].id) {
-          //   if (dataV[0].id != telId) {
-          //     dataVnow = []
-          //   }
-          //   if(dataVnow.length>0)console.log('  --- ',dataVnow)
-          // }
 
           let path = com.s01.g
             .selectAll('path.' + tagNow)
@@ -1586,7 +1547,6 @@ let mainArrZoomer = function (optIn) {
             .transition('update')
             .duration(timeD.animArc * 2)
             .attr('transform', function (d,i) {
-              // console.log('-++++++-',i,d,pos[porpNow])
               return 'translate(' + pos[porpNow].x + ',' + pos[porpNow].y + ')'
             })
             .style('stroke', function (d) {
@@ -1595,10 +1555,9 @@ let mainArrZoomer = function (optIn) {
             .style('fill', function (d) {
               return telHealthCol(d[porpNow])
             })
-            .each(function (d, i) {
-              // console.log('MNM', i, tagNow, '!!!',arcPrev[tagNow].ang[0], '!!!', d)
-              return
-            })
+            // .each(function (d, i) {
+            //   // console.log('MNM', i, tagNow, '!!!',arcPrev[tagNow].ang[0], '!!!', d)
+            // })
             // .each(function (d, i) {
             //   d.tauFracNow = tauFracIn
             // })
@@ -1620,10 +1579,6 @@ let mainArrZoomer = function (optIn) {
           path
             .exit()
             .transition('out')
-            // .each(function (d, i) {
-            //   console.log('M-EXIT-M', i, tagNow, d)
-            //   return
-            // })
             .duration(timeD.animArc)
             .call(com.arcTween, {
               tagNow: tagNow,
@@ -1787,10 +1742,8 @@ let mainArrZoomer = function (optIn) {
       let textD = []
       let recD = []
 
-      allPropsNow = (state ) ? allInstProps0 : propDinV
-      // console.log('ffffff',state)
+      let allPropsNow = (state ) ? allInstProps0 : propDinV
 
-      // $.each(allInstProps, function (index, porpNow) {
       $.each(allPropsNow, function (_, porpNow) {
         let propIndex = getPropIndex(telIdIn, porpNow)
         let txtR = avgTelD[state].r * rScale[state].health1 * 1.2
@@ -1819,11 +1772,10 @@ let mainArrZoomer = function (optIn) {
 
         let recH = avgTelD[1].h
         let recW = Math.abs(
-          // recH
-          avgTelD[1][allInstProps[0] + 'x'] - avgTelD[1][allInstProps[1] + 'x']
+          avgTelD[1][allInstProps[0] + 'x'] - 
+          avgTelD[1][allInstProps[1] + 'x']
         )
         let recX = avgTelD[1][porpNow + 'x'] - recH / 2 - (recW - recH) / 2
-        // let recX = 0
         let recY = lenD.h[0] - recH
 
         recD.push({
@@ -1836,7 +1788,6 @@ let mainArrZoomer = function (optIn) {
         })
 
       })
-      // console.log('+--------------+',textD)
 
       let eleH = null
 
@@ -1879,9 +1830,6 @@ let mainArrZoomer = function (optIn) {
         .style('font-weight', function (d) {
           return d.fWgt
         })
-        // .each(function (d, i) {
-        //   console.log('kk',i,d)
-        // })
         .attr('transform', function (d) {
           return 'translate(' + d.x + ',' + d.y + ')'
         })
@@ -1949,11 +1897,7 @@ let mainArrZoomer = function (optIn) {
       rect
         .exit()
         .transition('out')
-        // .duration(timeD.animArc)
         .duration(1)
-        // .attr('transform', function (d) {
-        //   return 'translate(' + lenD.h[0] + ',' + recY + ')'
-        // })
         .remove()
 
 
