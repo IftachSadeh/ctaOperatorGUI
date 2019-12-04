@@ -52,7 +52,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
-  let h0 = 6
+  let h0 = 9
   let w0 = 12
   let divKey = 'main'
 
@@ -220,10 +220,10 @@ let mainSchedBlocksInspector = function (optIn) {
     let modificationOverlayRect = modificationOverlay.append('g')
     modificationOverlayRect.append('rect')
       .attr('id', 'blockQueue')
-      .attr('x', lenD.w[0] * 0.34)
-      .attr('y', lenD.h[0] * 0.02)
-      .attr('width', lenD.w[0] * 0.66)
-      .attr('height', lenD.h[0] * 0.96) // - 2 * lenD.h[0] * 0.02)
+      .attr('x', box.topBox.w * 0.34)
+      .attr('y', box.topBox.h * 0.02)
+      .attr('width', box.topBox.w * 0.66)
+      .attr('height', box.topBox.h * 0.96) // - 2 * box.topBox.h * 0.02)
       .attr('fill', 'url(#bar)')
       .style('opacity', 0.9)
       .on('click', function () {
@@ -254,10 +254,10 @@ let mainSchedBlocksInspector = function (optIn) {
       // .style('pointer-events', 'none')
     // modificationOverlayRect.append('rect')
     //   .attr('id', 'targets')
-    //   .attr('x', lenD.w[0] * 0.34)
-    //   .attr('y', lenD.h[0] * 0.68)
-    //   .attr('width', lenD.w[0] * 0.66)
-    //   .attr('height', lenD.h[0] * 0.3) // - 2 * lenD.h[0] * 0.02)
+    //   .attr('x', box.topBox.w * 0.34)
+    //   .attr('y', box.topBox.h * 0.68)
+    //   .attr('width', box.topBox.w * 0.66)
+    //   .attr('height', box.topBox.h * 0.3) // - 2 * box.topBox.h * 0.02)
     //   .attr('fill', 'url(#bar)')
     //   .style('opacity', 0.9)
     //   .on('click', function () {
@@ -288,10 +288,10 @@ let mainSchedBlocksInspector = function (optIn) {
 
     // modificationOverlayRect.append('rect')
     //   .attr('id', 'menu')
-    //   .attr('x', lenD.w[0] * 0.005)
-    //   .attr('y', lenD.h[0] * 0.02)
-    //   .attr('width', lenD.w[0] * 0.315)
-    //   .attr('height', lenD.h[0] * 0.1)
+    //   .attr('x', box.topBox.w * 0.005)
+    //   .attr('y', box.topBox.h * 0.02)
+    //   .attr('width', box.topBox.w * 0.315)
+    //   .attr('height', box.topBox.h * 0.1)
     //   .attr('fill', 'url(#bar)')
     //   .style('opacity', 1)
     //   .on('click', function () {
@@ -322,10 +322,10 @@ let mainSchedBlocksInspector = function (optIn) {
 
     modificationOverlayRect.append('rect')
       .attr('id', 'modifications')
-      .attr('x', lenD.w[0] * 0.005)
-      .attr('y', lenD.h[0] * 0.28)
-      .attr('width', lenD.w[0] * 0.315)
-      .attr('height', lenD.h[0] * 0.6)
+      .attr('x', box.topBox.w * 0.005)
+      .attr('y', box.topBox.h * 0.28)
+      .attr('width', box.topBox.w * 0.315)
+      .attr('height', box.topBox.h * 0.6)
       .attr('fill', 'url(#bar)')
       .style('opacity', 1)
       .on('click', function () {
@@ -356,10 +356,10 @@ let mainSchedBlocksInspector = function (optIn) {
 
     modificationOverlayRect.append('rect')
       .attr('id', 'conflicts')
-      .attr('x', lenD.w[0] * 0.005)
-      .attr('y', lenD.h[0] * 0.915)
-      .attr('width', lenD.w[0] * 0.315)
-      .attr('height', lenD.h[0] * 0.08)
+      .attr('x', box.topBox.w * 0.005)
+      .attr('y', box.topBox.h * 0.915)
+      .attr('width', box.topBox.w * 0.315)
+      .attr('height', box.topBox.h * 0.08)
       .attr('fill', 'url(#bar)')
       .style('opacity', 1)
       .on('click', function () {
@@ -389,8 +389,8 @@ let mainSchedBlocksInspector = function (optIn) {
       // .style('pointer-events', 'none')
 
     modificationOverlayRect.append('rect')
-      .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.025 - 24)
-      .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 24)
+      .attr('x', box.topBox.w * 0.02 + box.topBox.w * 0.025 - 24)
+      .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 - 24)
       .attr('width', 48)
       .attr('height', 48)
       .attr('fill', colorTheme.bright.background)
@@ -422,8 +422,8 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('stroke', colorTheme.bright.background)
           .attr('stroke-width', 0.5)
           .attr('fill', colorTheme.bright.background)
-          .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.03)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.03)
+          .attr('x', box.topBox.w * 0.01 + box.topBox.w * 0.03)
+          .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.03)
           .style('font-weight', '')
           .attr('text-anchor', 'middle')
           .style('font-size', '12px')
@@ -434,8 +434,8 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('stroke', colorTheme.bright.background)
           .attr('stroke-width', 0.5)
           .attr('fill', colorTheme.bright.background)
-          .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.03)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.08)
+          .attr('x', box.topBox.w * 0.01 + box.topBox.w * 0.03)
+          .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.08)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'middle')
           .style('font-size', '24px')
@@ -444,37 +444,37 @@ let mainSchedBlocksInspector = function (optIn) {
         let currentTime = {date: new Date(shared.data.server.timeOfNight.date_now)}
         svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
 
-        svg.back.append('rect')
-          .attr('id', 'pushonServer')
-          .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.25 - 24)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 24)
-          .attr('width', 48)
-          .attr('height', 48)
-          .attr('fill', colorTheme.bright.background)
-          .attr('stroke', colorTheme.bright.stroke)
-          .attr('stroke-width', 0.1)
-          .attr('rx', 48)
-          .on('click', function () {
-            pushNewSchedule()
-          })
-          .on('mouseover', function (d) {
-            d3.select(this).attr('fill', colorTheme.darkest.background)
-          })
-          .on('mouseout', function (d) {
-            d3.select(this).attr('fill', colorTheme.bright.background)
-          })
-        svg.back.append('image')
-          .attr('xlink:href', '/static/icons/server-from-client.svg')
-          .attr('x', lenD.w[0] * 0.25 + lenD.w[0] * 0.025 - 18)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 15)
-          .attr('width', 30)
-          .attr('height', 30)
-          .style('opacity', 0.8)
-          .style('pointer-events', 'none')
+        // svg.back.append('rect')
+        //   .attr('id', 'pushonServer')
+        //   .attr('x', box.topBox.w * 0.01 + box.topBox.w * 0.25 - 24)
+        //   .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 - 24)
+        //   .attr('width', 48)
+        //   .attr('height', 48)
+        //   .attr('fill', colorTheme.bright.background)
+        //   .attr('stroke', colorTheme.bright.stroke)
+        //   .attr('stroke-width', 0.1)
+        //   .attr('rx', 48)
+        //   .on('click', function () {
+        //     pushNewSchedule()
+        //   })
+        //   .on('mouseover', function (d) {
+        //     d3.select(this).attr('fill', colorTheme.darkest.background)
+        //   })
+        //   .on('mouseout', function (d) {
+        //     d3.select(this).attr('fill', colorTheme.bright.background)
+        //   })
+        // svg.back.append('image')
+        //   .attr('xlink:href', '/static/icons/server-from-client.svg')
+        //   .attr('x', box.topBox.w * 0.15 + box.topBox.w * 0.025 - 18)
+        //   .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 - 15)
+        //   .attr('width', 30)
+        //   .attr('height', 30)
+        //   .style('opacity', 0.8)
+        //   .style('pointer-events', 'none')
 
         svg.back.append('rect')
-          .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.09 - 11)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 11)
+          .attr('x', box.topBox.w * 0.01 + box.topBox.w * 0.09 - 11)
+          .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 - 11)
           .attr('width', 22)
           .attr('height', 22)
           .attr('fill', colorTheme.bright.background)
@@ -492,55 +492,55 @@ let mainSchedBlocksInspector = function (optIn) {
           })
         svg.back.append('image')
           .attr('xlink:href', '/static/icons/circular-rotating-arrow.svg')
-          .attr('x', lenD.w[0] * 0.09 + lenD.w[0] * 0.02 - 10)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 9)
+          .attr('x', box.topBox.w * 0.09 + box.topBox.w * 0.01 - 10)
+          .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 - 9)
           .attr('width', 18)
           .attr('height', 18)
           .style('opacity', 0.8)
           .style('pointer-events', 'none')
 
-        svg.back.append('rect')
-          .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.25 - 40)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 12.5)
-          .attr('width', 10)
-          .attr('height', 10)
-          .attr('fill', '#43A047')
-          .attr('stroke', colorTheme.bright.stroke)
-          .attr('stroke-width', 0.1)
-        svg.back.append('text')
-          .text('Modifications:')
-          .attr('stroke', colorTheme.bright.background)
-          .attr('stroke-width', 0.5)
-          .attr('fill', colorTheme.bright.background)
-          .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.25 - 42)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 5)
-          .style('font-weight', '')
-          .attr('text-anchor', 'end')
-          .style('font-size', '9px')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
+        // svg.back.append('rect')
+        //   .attr('x', box.topBox.w * 0.02 + box.topBox.w * 0.25 - 40)
+        //   .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 - 12.5)
+        //   .attr('width', 10)
+        //   .attr('height', 10)
+        //   .attr('fill', '#43A047')
+        //   .attr('stroke', colorTheme.bright.stroke)
+        //   .attr('stroke-width', 0.1)
+        // svg.back.append('text')
+        //   .text('Modifications:')
+        //   .attr('stroke', colorTheme.bright.background)
+        //   .attr('stroke-width', 0.5)
+        //   .attr('fill', colorTheme.bright.background)
+        //   .attr('x', box.topBox.w * 0.02 + box.topBox.w * 0.25 - 42)
+        //   .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 - 5)
+        //   .style('font-weight', '')
+        //   .attr('text-anchor', 'end')
+        //   .style('font-size', '9px')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
 
-        svg.back.append('rect')
-          .attr('id', 'conflictlighton')
-          .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.25 - 40)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 + 5)
-          .attr('width', 10)
-          .attr('height', 10)
-          .attr('fill', '#43A047')
-          .attr('stroke', colorTheme.bright.stroke)
-          .attr('stroke-width', 0.1)
-        svg.back.append('text')
-          .text('Conflicts:')
-          .attr('stroke', colorTheme.bright.background)
-          .attr('stroke-width', 0.5)
-          .attr('fill', colorTheme.bright.background)
-          .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.25 - 42)
-          .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 + 12.5)
-          .style('font-weight', '')
-          .attr('text-anchor', 'end')
-          .style('font-size', '9px')
-          .style('pointer-events', 'none')
-          .style('user-select', 'none')
+        // svg.back.append('rect')
+        //   .attr('id', 'conflictlighton')
+        //   .attr('x', box.topBox.w * 0.02 + box.topBox.w * 0.25 - 40)
+        //   .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 + 5)
+        //   .attr('width', 10)
+        //   .attr('height', 10)
+        //   .attr('fill', '#43A047')
+        //   .attr('stroke', colorTheme.bright.stroke)
+        //   .attr('stroke-width', 0.1)
+        // svg.back.append('text')
+        //   .text('Conflicts:')
+        //   .attr('stroke', colorTheme.bright.background)
+        //   .attr('stroke-width', 0.5)
+        //   .attr('fill', colorTheme.bright.background)
+        //   .attr('x', box.topBox.w * 0.02 + box.topBox.w * 0.25 - 42)
+        //   .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 + 12.5)
+        //   .style('font-weight', '')
+        //   .attr('text-anchor', 'end')
+        //   .style('font-size', '9px')
+        //   .style('pointer-events', 'none')
+        //   .style('user-select', 'none')
 
         svgTargets.updateData()
         svgTelsConflict.update()
@@ -552,12 +552,12 @@ let mainSchedBlocksInspector = function (optIn) {
         let poly = [
           // {x: -2 + box.brushZoom.x, y: 8 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.3},
           {x: -1.5 + box.brushZoom.x, y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h},
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.85), y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h},
+          {x: -2 + box.brushZoom.x - (box.topBox.w * 0.03 * 0.85), y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h},
 
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03), y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h + (10 + box.brushZoom.h) * 0.3},
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03), y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h + (10 + box.brushZoom.h) * 0.7},
+          {x: -2 + box.brushZoom.x - (box.topBox.w * 0.03), y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h + (10 + box.brushZoom.h) * 0.3},
+          {x: -2 + box.brushZoom.x - (box.topBox.w * 0.03), y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h + (10 + box.brushZoom.h) * 0.7},
 
-          {x: -2 + box.brushZoom.x - (lenD.w[0] * 0.03 * 0.85), y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h + (10 + box.brushZoom.h)},
+          {x: -2 + box.brushZoom.x - (box.topBox.w * 0.03 * 0.85), y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h + (10 + box.brushZoom.h)},
           {x: -1.5 + box.brushZoom.x, y: 1.2 + box.blockQueueServer.y + box.blockQueueServer.h + (10 + box.brushZoom.h)}
           // {x: -2 + box.brushZoom.x, y: 8 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.7}
         ]
@@ -586,7 +586,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .style('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 1)
           .style('fill', colorTheme.dark.background)
-          .attr('x', box.brushZoom.x - (lenD.w[0] * 0.03 * 0.5))
+          .attr('x', box.brushZoom.x - (box.topBox.w * 0.03 * 0.5))
           .attr('y', 12 + box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.8)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'middle')
@@ -595,7 +595,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .style('user-select', 'none')
         svg.g.append('image')
           .attr('xlink:href', '/static/icons/up-triangle.svg')
-          .attr('x', box.brushZoom.x - (lenD.w[0] * 0.03 * 0.5) - 4)
+          .attr('x', box.brushZoom.x - (box.topBox.w * 0.03 * 0.5) - 4)
           .attr('y', box.blockQueueServer.y + box.blockQueueServer.h + box.brushZoom.h * 0.1)
           .attr('width', 8)
           .attr('height', 8)
@@ -616,18 +616,18 @@ let mainSchedBlocksInspector = function (optIn) {
       })
     modificationOverlayRect.append('image')
       .attr('xlink:href', '/static/icons/server-to-client.svg')
-      .attr('x', lenD.w[0] * 0.02 + lenD.w[0] * 0.025 - 15)
-      .attr('y', lenD.h[0] * 0.02 + lenD.h[0] * 0.05 - 15)
+      .attr('x', box.topBox.w * 0.02 + box.topBox.w * 0.025 - 15)
+      .attr('y', box.topBox.h * 0.02 + box.topBox.h * 0.05 - 15)
       .attr('width', 30)
       .attr('height', 30)
       .style('opacity', 0.8)
       .style('pointer-events', 'none')
 
     // svg.svg.append('rect')
-    //   .attr('x', lenD.w[0] * 0.0)
-    //   .attr('y', lenD.h[0] * 0.02)
-    //   .attr('width', lenD.w[0] * 0.25)
-    //   .attr('height', lenD.h[0] * 0.25)
+    //   .attr('x', box.topBox.w * 0.0)
+    //   .attr('y', box.topBox.h * 0.02)
+    //   .attr('width', box.topBox.w * 0.25)
+    //   .attr('height', box.topBox.h * 0.25)
     //   .attr('stroke', colorPalette.darker.stroke)
     //   .attr('stroke-width', 0.4)
     //   .attr('fill', colorPalette.darker.background)
@@ -661,129 +661,228 @@ let mainSchedBlocksInspector = function (optIn) {
       svg.g = svg.svg.append('g')
     }
     function initBackground () {
-      // svg.svg
-      //   .style('background', colorTheme.medium.background)
-      svg.back = svg.svg.append('g')
-      // svg.back.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', lenD.w[0] * 0.12)
-      //   .attr('height', lenD.h[0] * 0.02)
-      //   .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
-      // svg.back.append('text')
-      //   .text('Menu')
-      //   .style('fill', colorTheme.bright.background)
-      //   .style('font-weight', 'bold')
-      //   .style('font-size', '8px')
-      //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + (lenD.w[0] * 0.06) + ',' + (lenD.h[0] * 0.015) + ')')
+      function initTopBackground () {
+        svg.back = svg.svg.append('g')
 
-      svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.34)
-        .attr('y', 0)
-        .attr('width', lenD.w[0] * 0.66)
-        .attr('height', lenD.h[0] * 0.02)
-        .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
-      svg.back.append('text')
-        .text('Scheduling & observation blocks')
-        .style('fill', colorTheme.bright.background)
-        .style('font-weight', 'bold')
-        .style('font-size', '8px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.67) + ',' + (lenD.h[0] * 0.015) + ')')
+        svg.back.append('rect')
+          .attr('x', box.topBox.w * 0.45)
+          .attr('y', 0)
+          .attr('width', box.topBox.w * 0.55)
+          .attr('height', box.topBox.h * 0.02)
+          .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+        svg.back.append('text')
+          .text('Scheduling & observation blocks')
+          .style('fill', colorTheme.bright.background)
+          .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (box.topBox.w * 0.67) + ',' + (box.topBox.h * 0.015) + ')')
 
-      svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.34)
-        .attr('y', lenD.h[0] * 0.98)
-        .attr('width', lenD.w[0] * 0.66)
-        .attr('height', lenD.h[0] * 0.02)
-        .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
-      svg.back.append('text')
-        .text('Visualization tools')
-        .style('fill', colorTheme.bright.background)
-        .style('font-weight', 'bold')
-        .style('font-size', '8px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.67) + ',' + (lenD.h[0] * 0.995) + ')')
+        svg.back.append('rect')
+          .attr('x', box.topBox.w * 0.0)
+          .attr('y', box.topBox.h * 0.98)
+          .attr('width', box.topBox.w * 1.0)
+          .attr('height', box.topBox.h * 0.02)
+          .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+        svg.back.append('text')
+          .text('Visualization tools')
+          .style('fill', colorTheme.bright.background)
+          .style('font-weight', 'bold')
+          .style('font-size', '8px')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (box.topBox.w * 0.67) + ',' + (box.topBox.h * 0.995) + ')')
 
-      svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.0)
-        .attr('y', 0)
-        .attr('width', lenD.w[0] * 0.32)
-        .attr('height', lenD.h[0] * 0.14)
-        .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
-      svg.back.append('text')
-        .text('Information')
-        .style('fill', colorTheme.bright.background)
-        .style('font-weight', 'bold')
-        .style('font-size', '8px')
-        .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.16) + ',' + (lenD.h[0] * 0.015) + ')')
+        svg.back.append('rect')
+          .attr('x', box.topBox.w * 0.0)
+          .attr('y', 0)
+          .attr('width', box.topBox.w * 0.12)
+          .attr('height', box.topBox.h * 0.14)
+          .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+
+        svg.back.append('rect')
+          .attr('x', box.topBox.w * 0.0)
+          .attr('y', 0)
+          .attr('width', box.topBox.w * 0.01)
+          .attr('height', box.topBox.h * 1)
+          .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+        // svg.back.append('text')
+        //   .text('Information')
+        //   .style('fill', colorTheme.bright.background)
+        //   .style('font-weight', 'bold')
+        //   .style('font-size', '8px')
+        //   .attr('text-anchor', 'middle')
+        //   .attr('transform', 'translate(' + (box.topBox.w * 0.16) + ',' + (box.topBox.h * 0.015) + ')')
+      }
+      function initBotBackground () {
+        svg.back.append('rect')
+          .attr('x', box.botBox.w * 0.0)
+          .attr('y', box.botBox.y)
+          .attr('width', box.botBox.w * 0.12)
+          .attr('height', box.botBox.h * 0.14)
+          .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+
+        svg.back.append('rect')
+          .attr('x', box.botBox.w * 0.0)
+          .attr('y', box.botBox.y)
+          .attr('width', box.botBox.w * 0.01)
+          .attr('height', box.botBox.h * 1)
+          .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+          .attr('stroke', 'none')
+          .attr('rx', 0)
+        // svg.back.append('rect')
+        //   .attr('x', box.botBox.w * 0.0)
+        //   .attr('y', box.botBox.y + box.botBox.h * 0.96)
+        //   .attr('width', box.botBox.w * 1)
+        //   .attr('height', box.botBox.h * 0.04)
+        //   .attr('fill', colorTheme.darker.stroke) // colorTheme.dark.background)
+        //   .attr('stroke', 'none')
+        //   .attr('rx', 0)
+
+        svg.back.append('rect')
+          .attr('id', 'pushonServer')
+          .attr('x', box.botBox.w * 0.01 + box.botBox.w * 0.28 - 24)
+          .attr('y', box.botBox.y + box.botBox.h * 0.02 + box.botBox.h * 0.05 - 16)
+          .attr('width', 36)
+          .attr('height', 36)
+          .attr('fill', 'gold')
+          .style('opacity', 0.6)
+          .attr('stroke', colorTheme.bright.stroke)
+          .attr('stroke-width', 1)
+          .attr('rx', 48)
+          .on('click', function () {
+            pushNewSchedule()
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).attr('fill', colorTheme.darkest.background)
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).attr('fill', colorTheme.bright.background)
+          })
+        svg.back.append('image')
+          .attr('xlink:href', '/static/icons/server-from-client.svg')
+          .attr('x', box.botBox.w * 0.018 + box.botBox.w * 0.28 - 24)
+          .attr('y', box.botBox.y + box.botBox.h * 0.04 + box.botBox.h * 0.05 - 15)
+          .attr('width', 22)
+          .attr('height', 22)
+          .style('opacity', 0.8)
+          .style('pointer-events', 'none')
+
+        svg.back.append('rect')
+          .attr('id', '')
+          .attr('x', box.botBox.w * 0.01 + box.botBox.w * 0.03 - 24)
+          .attr('y', box.botBox.y + box.botBox.h * 0.02 + box.botBox.h * 0.05 - 16)
+          .attr('width', 30)
+          .attr('height', 30)
+          .attr('fill', colorTheme.bright.background)
+          .attr('stroke', colorTheme.bright.stroke)
+          .attr('stroke-width', 0.1)
+          .attr('rx', 48)
+          .on('click', function () {
+            pushNewSchedule()
+          })
+          .on('mouseover', function (d) {
+            d3.select(this).attr('fill', colorTheme.darkest.background)
+          })
+          .on('mouseout', function (d) {
+            d3.select(this).attr('fill', colorTheme.bright.background)
+          })
+        svg.back.append('image')
+          .attr('xlink:href', '/static/icons/conversion-settings.svg')
+          .attr('x', box.botBox.w * 0.017 + box.botBox.w * 0.03 - 24)
+          .attr('y', box.botBox.y + box.botBox.h * 0.04 + box.botBox.h * 0.05 - 15)
+          .attr('width', 16)
+          .attr('height', 16)
+          .style('opacity', 0.8)
+          .style('pointer-events', 'none')
+
+        svg.back.append('text')
+          .text('10 Results')
+          .attr('x', box.botBox.w * 0.05 + box.botBox.w * 0.03 - 24)
+          .attr('y', box.botBox.y + box.botBox.h * 0.08 + box.botBox.h * 0.05 - 16)
+          .style('fill', colorTheme.bright.background)
+          .style('font-weight', 'bold')
+          .style('font-size', '11px')
+          .attr('text-anchor', 'start')
+      }
+
+      initTopBackground()
+      initBotBackground()
     }
     function initBox () {
-      box.blockQueueServer = {
-        x: lenD.w[0] * 0.374,
-        y: lenD.h[0] * 0.155,
-        w: lenD.w[0] * 0.59,
-        h: lenD.h[0] * 0.47,
+      box.topBox = {
+        x: lenD.w[0] * 0,
+        y: lenD.h[0] * 0,
+        w: lenD.w[0] * 1,
+        h: lenD.h[0] * 0.65,
         marg: lenD.w[0] * 0.01
       }
+      box.blockQueueServer = {
+        x: box.topBox.w * 0.48, //0.374,
+        y: box.topBox.h * 0.155,
+        w: box.topBox.w * 0.5, // 59
+        h: box.topBox.h * 0.47,
+        marg: box.topBox.w * 0.01
+      }
       box.eventQueueServer = {
-        x: lenD.w[0] * 0.374,
-        y: lenD.h[0] * 0.03,
-        w: lenD.w[0] * 0.59,
-        h: lenD.h[0] * 0.112,
+        x: box.topBox.w * 0.48, //0.374,
+        y: box.topBox.h * 0.03,
+        w: box.topBox.w * 0.5, // 59
+        h: box.topBox.h * 0.112,
         marg: lenD.w[0] * 0.01
       }
       box.brushZoom = {
-        x: lenD.w[0] * 0.374,
-        y: lenD.h[0] * 0.655,
-        w: lenD.w[0] * 0.59,
-        h: lenD.h[0] * 0.05,
+        x: box.topBox.w * 0.48, //0.374,
+        y: box.topBox.h * 0.655,
+        w: box.topBox.w * 0.5, // 59
+        h: box.topBox.h * 0.05,
         marg: lenD.w[0] * 0.01
       }
       box.tools = {
-        x: lenD.w[0] * 0.374,
-        y: lenD.h[0] * 0.75,
-        w: lenD.w[0] * 0.59,
-        h: lenD.h[0] * 0.225,
+        x: box.topBox.w * 0.48, //0.374,
+        y: box.topBox.h * 0.75,
+        w: box.topBox.w * 0.5, // 59
+        h: box.topBox.h * 0.225,
         marg: lenD.w[0] * 0.01
       }
       box.focusOverlay = {
-        x: lenD.w[0] * 0.374,
-        y: lenD.h[0] * 0.025,
-        w: lenD.w[0] * 0.59,
-        h: lenD.h[0] * 0.955,
+        x: box.topBox.w * 0.48, //0.374,
+        y: box.topBox.h * 0.025,
+        w: box.topBox.w * 0.5, // 59
+        h: box.topBox.h * 0.955,
+        marg: lenD.w[0] * 0.01
+      }
+      box.rightInfo = {
+        x: box.topBox.w * 0.02, // lenD.w[0] * 0.68,
+        y: box.topBox.h * 0.01,
+        w: box.topBox.w * 0.41, // 0.315,
+        h: box.topBox.h * 0.95,
         marg: lenD.w[0] * 0.01
       }
 
-      box.rightInfo = {
-        x: lenD.w[0] * 0.004, // lenD.w[0] * 0.68,
-        y: lenD.h[0] * 0.15,
-        w: lenD.w[0] * 0.315,
-        h: lenD.h[0] * 0.845,
+      box.botBox = {
+        x: lenD.w[0] * 0,
+        y: lenD.h[0] * 0.65,
+        w: lenD.w[0] * 1,
+        h: lenD.h[0] * 0.35,
         marg: lenD.w[0] * 0.01
       }
-      // box.tab = {
-      //   x: 0,
-      //   y: box.rightPanel.h * 0.01,
-      //   w: box.rightPanel.w,
-      //   h: box.rightPanel.h * 0.05
-      // }
-      // box.content = {
-      //   x: 0,
-      //   y: box.rightPanel.h * 0.15,
-      //   w: box.rightPanel.w,
-      //   h: box.rightPanel.h * 0.84
-      // }
+      box.summaryMetrics = {
+        x: box.botBox.w * 0.02,
+        y: box.botBox.y + box.botBox.h * 0.02,
+        w: box.botBox.w * 0.96,
+        h: box.botBox.h * 0.96,
+        marg: box.botBox.w * 0.01
+      }
     }
     function initDefaultStyle () {
       shared.style = {}
@@ -844,9 +943,9 @@ let mainSchedBlocksInspector = function (optIn) {
     sock.emitMouseMove({ eleIn: svgDiv, data: { widgetId: widgetId } })
 
     initSvg()
+    initBox()
     initDefaultStyle()
     initBackground()
-    initBox()
 
     shared.data.server = dataIn.data
     shared.data.server.schedBlocks = createSchedBlocks(shared.data.server.blocks)
@@ -865,44 +964,18 @@ let mainSchedBlocksInspector = function (optIn) {
 
     svgBrush.initData()
     svgEventsQueueServer.initData()
-    // svgWarningArea.initData({
-    //   tag: 'pushPull',
-    //   g: svg.g.append('g'),
-    //   box: box.pushPull,
-    //   attr: {
-    //     text: {
-    //       size: 9
-    //     },
-    //     icon: {
-    //       size: 20
-    //     }
-    //   },
-    //   pull: {
-    //     g: undefined,
-    //     box: {x: 0, y: 0, w: 0.5, h: 1},
-    //     child: {}
-    //   },
-    //   push: {
-    //     g: undefined,
-    //     box: {x: 0.5, y: 0, w: 0.5, h: 1},
-    //     child: {}
-    //   },
-    //   debug: {
-    //     enabled: false
-    //   }
-    // })
     svgTargets.initData()
     svgTelsConflict.initData()
     svgBlocksQueueServer.initData()
     svgFocusOverlay.initData()
     svgRightInfo.initData()
-    // svgBlocksQueueCopy.initData()
 
     svgBrush.updateData()
-
     svgBlocksQueueServer.updateData()
     svgTargets.updateData()
     svgTelsConflict.updateData()
+
+    svgSummaryMetrics.initData()
 
     shared.mode = 'standby'
     setStandbyMode()
@@ -926,7 +999,6 @@ let mainSchedBlocksInspector = function (optIn) {
       ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
       ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
     }
-    console.log(shared);
     console.log([].concat(shared.data.copy.blocks['wait']).concat(shared.data.copy.blocks['run']).concat(shared.data.copy.blocks['done']).length);
     updateRuntoDoneBlocks()
     console.log([].concat(shared.data.copy.blocks['wait']).concat(shared.data.copy.blocks['run']).concat(shared.data.copy.blocks['done']).length);
@@ -953,6 +1025,7 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('fill', colorPalette.blocks.fail.background)
       svg.back.select('rect#pushonServer')
         .attr('fill', colorTheme.darkest.stroke)
+        .style('opacity', 1)
         .on('click', () => {})
         .on('mouseover', () => {})
         .on('mouseout', () => {})
@@ -960,7 +1033,8 @@ let mainSchedBlocksInspector = function (optIn) {
       svg.back.select('rect#conflictlighton')
         .attr('fill', '#43A047')
       svg.back.select('rect#pushonServer')
-        .attr('fill', colorTheme.bright.background)
+        .attr('fill', 'gold')
+        .style('opacity', 0.6)
         .on('click', function () {
           pushNewSchedule()
         })
@@ -2474,7 +2548,7 @@ let mainSchedBlocksInspector = function (optIn) {
               enabled: true,
               position: 'left',
               clickable: true,
-              size: (lenD.w[0] * 0.62 - adjustedBox.w)
+              size: (lenD.w[0] * 0.53 - adjustedBox.w)
             }
           },
           axis: {
@@ -2502,7 +2576,7 @@ let mainSchedBlocksInspector = function (optIn) {
           timeBars: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: -adjustedBox.h, w: adjustedBox.w, h: adjustedBox.h * 4, marg: adjustedBox.marg}
+            box: {x: 0, y: -adjustedBox.y, w: adjustedBox.w, h: box.topBox.h + box.eventQueueServer.h, marg: adjustedBox.marg}
           }
         },
         blockTrackShrink: {
@@ -2694,7 +2768,7 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('x', 0)
         .attr('y', -adjustedBox.y)
         .attr('width', 0)
-        .attr('height', lenD.h[0])
+        .attr('height', box.topBox.h)
         .attr('fill', colorTheme.darker.stroke)
         .attr('stroke', 'none')
         .style('opacity', 0.2)
@@ -2981,516 +3055,6 @@ let mainSchedBlocksInspector = function (optIn) {
 
     function update () {}
     this.update = update
-  }
-  let SvgWarningArea = function () {
-    let reserved = {}
-    function createWarning (pullOrPush) {
-      let lineGenerator = d3.line()
-        .x(function (d) { return d.x })
-        .y(function (d) { return d.y })
-      // let dataPointsPull = [
-      //   {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.1},
-      //   {x: reserved[pullOrPush].box.w * 0.9, y: reserved[pullOrPush].box.h * 0.1},
-      //   {x: reserved[pullOrPush].box.w * 0.9, y: reserved[pullOrPush].box.h * 0.2},
-      //   {x: reserved[pullOrPush].box.w * 0.7, y: reserved[pullOrPush].box.h * 0.8},
-      //   {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.8},
-      //   {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.1}
-      // ]
-      // let dataPointsPush = [
-      //   {x: reserved[pullOrPush].box.w * 0.28, y: reserved[pullOrPush].box.h * 0.1},
-      //   {x: reserved[pullOrPush].box.w * 0.9, y: reserved[pullOrPush].box.h * 0.1},
-      //   {x: reserved[pullOrPush].box.w * 0.9, y: reserved[pullOrPush].box.h * 0.8},
-      //   {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.8},
-      //   {x: reserved[pullOrPush].box.w * 0.1, y: reserved[pullOrPush].box.h * 0.6},
-      //   {x: reserved[pullOrPush].box.w * 0.28, y: reserved[pullOrPush].box.h * 0.1}
-      // ]
-      let dataPoints = [
-        {x: reserved[pullOrPush].box.w * 0.05, y: reserved[pullOrPush].box.h * 0.25},
-        {x: reserved[pullOrPush].box.w * 0.95, y: reserved[pullOrPush].box.h * 0.25},
-        {x: reserved[pullOrPush].box.w * 0.95, y: reserved[pullOrPush].box.h * 0.9},
-        {x: reserved[pullOrPush].box.w * 0.05, y: reserved[pullOrPush].box.h * 0.9},
-        {x: reserved[pullOrPush].box.w * 0.05, y: reserved[pullOrPush].box.h * 0.25}
-      ]
-
-      function loop (bool, pullOrPush) {
-        reserved[pullOrPush].child.warningExclamation
-          .transition()
-          .delay(4000)
-          .duration(100)
-          .ease(d3.easeLinear)
-          .attr('font-size', function () {
-            return reserved.attr.text.size * 6 + 'px'
-          })
-          // .attr('dy', function () {
-          //   return reserved[pullOrPush].box.h * 0.02
-          // })
-          .transition()
-          .duration(100)
-          .ease(d3.easeLinear)
-          .attr('font-size', function () {
-            return reserved.attr.text.size * 4 + 'px'
-          })
-          // .attr('dy', function () {
-          //   return reserved[pullOrPush].box.h * 0.3
-          // })
-          .on('end', function () {
-            return loop(!bool, pullOrPush)
-          })
-        // reserved[pullOrPush].child.warningExclamationBack
-        //   .transition()
-        //   .delay(4000)
-        //   .duration(100)
-        //   .ease(d3.easeLinear)
-        //   .attr('fill', function () {
-        //     return '#FFEB3B'
-        //   })
-        //   .transition()
-        //   .duration(100)
-        //   .ease(d3.easeLinear)
-        //   .attr('fill', function () {
-        //     return '#FFEB3B'
-        //   })
-      }
-      reserved[pullOrPush].child.warningTriangle = reserved[pullOrPush].g.append('path')
-        .data(function () {
-          if (pullOrPush === 'pull') return [dataPoints]
-          else return [dataPoints]
-        })
-        .attr('d', lineGenerator)
-        .attr('fill', colorTheme.brighter.background)
-        .attr('stroke', colorTheme.brighter.stroke)
-        .attr('stroke-width', 0.5)
-        .attr('stroke-opacity', 0.4)
-        .attr('fill-opacity', 1)
-        .on('click', function () {
-          if (reserved[pullOrPush].g.attr('opacity') === '0.01') reserved[pullOrPush].g.attr('opacity', 1)
-          else reserved[pullOrPush].g.attr('opacity', 0.01)
-        })
-
-      // reserved[pullOrPush].child.warningExclamationBack = reserved[pullOrPush].g.append('rect')
-      //   .attr('width', reserved[pullOrPush].box.w * 0.2)
-      //   .attr('height', reserved[pullOrPush].box.h * 0.6)
-      //   .attr('x', function () {
-      //     if (pullOrPush === 'pull') return reserved[pullOrPush].box.w * 0.74
-      //     else return reserved[pullOrPush].box.w * 0.17
-      //   })
-      //   .attr('y', reserved[pullOrPush].box.h * 0.28)
-      //   .attr('rx', 3)
-      //   .attr('ry', 3)
-      //   .attr('fill', colorTheme.warning.background)
-      //   .attr('fill-opacity', 0.6)
-      //   .attr('stroke-width', 0.0)
-      //   .attr('stroke', colorTheme.warning.stroke)
-      reserved[pullOrPush].child.warningExclamation = reserved[pullOrPush].g.append('text')
-        .text(function (d) {
-          return '! '
-        })
-        .attr('x', function () {
-          if (pullOrPush === 'pull') return reserved[pullOrPush].box.w * 0.85
-          else return reserved[pullOrPush].box.w * 0.85
-        })
-        .attr('y', reserved[pullOrPush].box.h * 0.75)
-        .style('font-weight', 'bold')
-        .attr('text-anchor', 'middle')
-        .attr('font-size', reserved.attr.text.size * 4 + 'px')
-        // .attr('dy', reserved[pullOrPush].box.h * 0.3)
-        .style('pointer-events', 'none')
-        .style('fill', colorTheme.warning.text)
-      loop(true, pullOrPush)
-
-      function pullWarning () {
-        reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'Online Schedule'
-          })
-          .attr('x', reserved[pullOrPush].box.w * 0.4)
-          .attr('y', reserved[pullOrPush].box.h * 0.35)
-          .attr('text-anchor', 'middle')
-          .attr('font-size', reserved.attr.text.size + 'px')
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine2 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'has changed'
-          })
-          .attr('x', reserved[pullOrPush].box.w * 0.4)
-          .attr('y', reserved[pullOrPush].box.h * 0.45)
-          .attr('text-anchor', 'middle')
-          .attr('font-size', reserved.attr.text.size + 'px')
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-        // reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
-        //   .text(function (d) {
-        //     return 'new schedule.'
-        //   })
-        //   .attr('x', function () {
-        //     return reserved[pullOrPush].box.w * 0.22
-        //   })
-        //   .attr('y', reserved[pullOrPush].box.h * 0.88)
-        //   .attr('text-anchor', 'start')
-        //   .attr('font-size', reserved.attr.text.size)
-        //   .attr('dy', reserved[pullOrPush].box.h * 0.02)
-        //   .style('pointer-events', 'none')
-        //   .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'Please Update'
-          })
-          .attr('x', reserved[pullOrPush].box.w * 0.4)
-          .attr('y', reserved[pullOrPush].box.h * 0.65)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'middle')
-          .attr('font-size', reserved.attr.text.size + 'px')
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'or Reset'
-          })
-          .attr('x', reserved[pullOrPush].box.w * 0.4)
-          .attr('y', reserved[pullOrPush].box.h * 0.75)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'middle')
-          .attr('font-size', reserved.attr.text.size + 'px')
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-      }
-      function pushWarning () {
-        reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'Some modifications'
-          })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.45
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.4)
-          .attr('text-anchor', 'middle')
-          .attr('font-size', reserved.attr.text.size + 'px')
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine2 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'will be invalidate'
-          })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.4
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.55)
-          .attr('text-anchor', 'middle')
-          .attr('font-size', reserved.attr.text.size + 'px')
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-        // reserved[pullOrPush].child.warningLine3 = reserved[pullOrPush].g.append('text')
-        //   .text(function (d) {
-        //     return 'changes will be lost.'
-        //   })
-        //   .attr('x', function () {
-        //     return reserved[pullOrPush].box.w * 0.26
-        //   })
-        //   .attr('y', reserved[pullOrPush].box.h * 0.88)
-        //   .attr('text-anchor', 'start')
-        //   .attr('font-size', reserved.attr.text.size)
-        //   .attr('dy', reserved[pullOrPush].box.h * 0.02)
-        //   .style('pointer-events', 'none')
-        //   .style('fill', colorTheme.brighter.text)
-        reserved[pullOrPush].child.warningLine4 = reserved[pullOrPush].g.append('text')
-        // reserved[pullOrPush].child.warningLine41 = reserved[pullOrPush].g.append('text')
-        //   .text(function (d) {
-        //     return '10:00'
-        //   })
-        //   .attr('x', function () {
-        //     return reserved[pullOrPush].box.w * 0.65
-        //   })
-        //   .attr('y', reserved[pullOrPush].box.h * 0.35)
-        //   .style('font-weight', 'bold')
-        //   .attr('text-anchor', 'middle')
-        //   .attr('font-size', reserved.attr.text.size)
-        //   .attr('dy', reserved[pullOrPush].box.h * 0.02)
-        //   .style('pointer-events', 'none')
-        //   .style('fill', colorTheme.brighter.text)
-        function countDown () {
-          var countDownDate = new Date()
-          countDownDate = countDownDate.setMinutes(countDownDate.getMinutes() + 10)
-          var cd = setInterval(function () {
-            var now = new Date()
-            var distance = countDownDate - now
-            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-            var seconds = Math.floor((distance % (1000 * 60)) / 1000)
-
-            reserved[pullOrPush].child.warningLine41
-              .text(function (d) {
-                return (minutes < 10 ? '0' + minutes : minutes) + ':' + (seconds < 10 ? '0' + seconds : seconds)
-              })
-
-            // If the count down is finished, write some text
-            if (distance < 0) {
-              clearInterval(cd)
-            }
-          }, 1000)
-        }
-        // countDown()
-        reserved[pullOrPush].child.warningLine1 = reserved[pullOrPush].g.append('text')
-          .text(function (d) {
-            return 'Please Validate'
-          })
-          .attr('x', function () {
-            return reserved[pullOrPush].box.w * 0.4
-          })
-          .attr('y', reserved[pullOrPush].box.h * 0.8)
-          .style('font-weight', 'bold')
-          .attr('text-anchor', 'middle')
-          .attr('font-size', reserved.attr.text.size + 'px')
-          .attr('dy', reserved[pullOrPush].box.h * 0.02)
-          .style('pointer-events', 'none')
-          .style('fill', colorTheme.brighter.text)
-      }
-
-      if (pullOrPush === 'pull') pullWarning()
-      else pushWarning()
-    }
-    function createPullButton () {
-      createWarning('pull')
-      reserved.pull.child.buttonBack = reserved.pull.g.append('rect')
-        .attr('id', 'pull')
-        .attr('width', reserved.pull.box.w * 0.4)
-        .attr('height', reserved.attr.icon.size)
-        .attr('x', reserved.pull.box.w * 0.1 - reserved.attr.icon.size * 0.5)
-        .attr('y', -reserved.attr.icon.size * 0.5)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0.2)
-      // reserved.pull.child.buttonIcon = reserved.g.append('svg:image')
-      //   .attr('class', 'icon')
-      //   .attr('xlink:href', '/static/arrow-up.svg')
-      //   .attr('width', reserved.attr.icon.size)
-      //   .attr('height', reserved.attr.icon.size)
-      //   .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.88 - reserved.pull.box.h * 0.24)
-      //   .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.78 - reserved.pull.box.h * 0.24)
-      //   .on('click', function () {
-      //     pullData()
-      //   })
-      reserved.pull.child.infoText = reserved.pull.g.append('text')
-        .attr('id', 'reset')
-        .text(function (d) {
-          return 'Reset'
-        })
-        .attr('x', reserved.pull.box.w * 0.2)
-        .attr('y', reserved.attr.icon.size * 0.1)
-        .attr('text-anchor', 'middle')
-        .style('font-weight', 'bold')
-        .style('font-size', reserved.attr.text.size + 'px')
-        .style('pointer-events', 'none')
-        .style('fill', colorTheme.bright.text)
-
-      reserved.pull.g.attr('opacity', 0)
-        .transition()
-        .duration(1000)
-        .ease(d3.easeLinear)
-        .attr('opacity', 1)
-    }
-    function createMergeButton () {
-      reserved.pull.child.merge = {}
-      reserved.pull.child.merge.buttonBack = reserved.pull.g.append('rect')
-        .attr('id', 'merge')
-        .attr('width', reserved.pull.box.w * 0.4)
-        .attr('height', reserved.attr.icon.size)
-        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.55)
-        .attr('y', -reserved.attr.icon.size * 0.5)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0.2)
-      // reserved.pull.child.buttonIcon = reserved.g.append('svg:image')
-      //   .attr('class', 'icon')
-      //   .attr('xlink:href', '/static/arrow-up.svg')
-      //   .attr('width', reserved.attr.icon.size)
-      //   .attr('height', reserved.attr.icon.size)
-      //   .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.88 - reserved.pull.box.h * 0.24)
-      //   .attr('y', reserved.pull.box.y + reserved.pull.box.h * 0.22 - reserved.pull.box.h * 0.24)
-      //   .on('click', function () {
-      //     pullData()
-      //   })
-      reserved.pull.child.merge.infoText = reserved.pull.g.append('text')
-        .attr('id', 'merge')
-        .text(function (d) {
-          return 'Update'
-        })
-        .attr('x', reserved.pull.box.x + reserved.pull.box.w * 0.75)
-        .attr('y', reserved.attr.icon.size * 0.1)
-        .attr('text-anchor', 'middle')
-        .style('font-weight', 'bold')
-        .style('font-size', reserved.attr.text.size + 'px')
-        .style('pointer-events', 'none')
-        .style('fill', colorTheme.bright.text)
-
-      reserved.pull.g.attr('opacity', 0)
-        .transition()
-        .duration(1000)
-        .ease(d3.easeLinear)
-        .attr('opacity', 1)
-    }
-    function createPushButton () {
-      createWarning('push')
-      reserved.push.child.merge = {}
-      reserved.push.child.merge.buttonBack = reserved.push.g.append('rect')
-        .attr('id', 'merge')
-        .attr('width', reserved.push.box.w * 0.4)
-        .attr('height', reserved.attr.icon.size)
-        .attr('x', reserved.push.box.w * 0.3)
-        .attr('y', -reserved.attr.icon.size * 0.5)
-        .attr('fill', colorTheme.dark.background)
-        .attr('stroke', colorTheme.dark.stroke)
-        .attr('stroke-width', 0.2)
-      // reserved.push.child.buttonIcon = reserved.g.append('svg:image')
-      //   .attr('class', 'icon')
-      //   .attr('xlink:href', '/static/arrow-up.svg')
-      //   .attr('width', reserved.attr.icon.size)
-      //   .attr('height', reserved.attr.icon.size)
-      //   .attr('x', reserved.push.box.x + reserved.pull.box.w * 0.12 - reserved.pull.box.h * 0.24)
-      //   .attr('y', reserved.push.box.y + reserved.pull.box.h * 0.5 - reserved.pull.box.h * 0.24)
-      //   .on('click', function () {
-      //     pushNewBlockQueue()
-      //   })
-
-      reserved.push.child.merge.infoText = reserved.push.g.append('text')
-        .attr('id', 'merge')
-        .text(function (d) {
-          return 'Validate'
-        })
-        .attr('x', reserved.push.box.w * 0.5)
-        .attr('y', reserved.attr.icon.size * 0.1)
-        .attr('text-anchor', 'middle')
-        .style('font-weight', 'bold')
-        .style('font-size', reserved.attr.text.size + 'px')
-        .style('pointer-events', 'none')
-        .style('fill', colorTheme.bright.text)
-
-      reserved.push.g.attr('opacity', 0)
-        .transition()
-        .duration(1000)
-        .ease(d3.easeLinear)
-        .attr('opacity', 1)
-    }
-
-    function initPull () {
-      reserved.pull.box = {
-        x: reserved.box.w * 0.05,
-        y: reserved.box.h * 0.25,
-        w: reserved.box.w * 0.9,
-        h: reserved.box.h * 0.28
-      }
-      reserved.pull.g = reserved.g.append('g')
-        .attr('transform', 'translate(' + reserved.pull.box.x + ',' + reserved.pull.box.y + ')')
-    }
-    function initPush () {
-      reserved.push.box = {
-        x: reserved.box.w * 0.05,
-        y: reserved.box.h * 0.6,
-        w: reserved.box.w * 0.9,
-        h: reserved.box.h * 0.2
-      }
-      reserved.push.g = reserved.g.append('g')
-        .attr('transform', 'translate(' + reserved.push.box.x + ',' + reserved.push.box.y + ')')
-    }
-    function showPushPull () {
-      let lineGenerator = d3.line()
-        .x(function (d) { return d.x })
-        .y(function (d) { return d.y })
-        .curve(d3.curveLinear)
-      reserved.initGroup.g.append('path')
-        .attr('id', 'arrow')
-        .attr('d', function (d) {
-          let targetPoints = [
-            {x: reserved.box.w * 0.5 - 2, y: reserved.box.h * 0.2},
-            {x: reserved.box.w * 0.5 - 2, y: reserved.box.h * 0.54},
-            {x: reserved.box.w * 0.5 - 6, y: reserved.box.h * 0.54},
-            {x: reserved.box.w * 0.5, y: reserved.box.h * 0.56},
-            {x: reserved.box.w * 0.5 + 6, y: reserved.box.h * 0.54},
-            {x: reserved.box.w * 0.5 + 2, y: reserved.box.h * 0.54},
-            {x: reserved.box.w * 0.5 + 2, y: reserved.box.h * 0.2}
-          ]
-          return lineGenerator(targetPoints)
-        })
-        .attr('fill', colorTheme.darker.stroke)
-        .attr('stroke', colorTheme.darker.stroke)
-        .attr('stroke-width', 0.1)
-      initPull()
-      createMergeButton()
-      createPullButton()
-      initPush()
-      createPushButton()
-    }
-    function hidePushPull () {
-      reserved.initGroup.g.select('path#arrow').remove()
-      reserved.pull.g.selectAll('*').remove()
-      reserved.push.g.selectAll('*').remove()
-    }
-    // function hideInspector () {
-    //   reserved.initGroup.g.selectAll('*').remove()
-    //   reserved.initGroup = {}
-    // }
-    function showInspector () {
-      reserved.initGroup = {}
-      reserved.initGroup.g = reserved.g.append('g')
-      reserved.initGroup.infoText = reserved.initGroup.g.append('text')
-        .text(function (d) {
-          return 'Modification status:'
-        })
-        .attr('x', reserved.box.w * 0.5)
-        .attr('y', reserved.box.h * 0.06)
-        .attr('text-anchor', 'middle')
-        .style('font-weight', '')
-        .style('font-size', reserved.attr.text.size)
-        .style('pointer-events', 'none')
-        .style('fill', colorTheme.bright.text)
-      reserved.initGroup.g.append('rect')
-        .attr('x', reserved.box.w * 0.5 - reserved.attr.icon.size * 0.5)
-        .attr('y', reserved.box.h * 0.125 - reserved.attr.icon.size * 0.5)
-        .attr('width', reserved.attr.icon.size)
-        .attr('height', reserved.attr.icon.size)
-        .attr('fill', '#aaaaaa')
-        .attr('stroke', '#000000')
-        .attr('stroke-width', 0.1)
-        .on('click', function () {
-          if (shared.mode === 'inspector') {
-            showPushPull()
-            shared.mode = 'modifier'
-            switchMainMode()
-          } else if (shared.mode === 'modifier') {
-            hidePushPull()
-            shared.mode = 'inspector'
-            switchMainMode()
-          }
-        })
-    }
-    function initData (optIn) {
-      reserved = optIn
-      reserved.g.attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
-
-      // reserved.g.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', reserved.box.w)
-      //   .attr('height', reserved.box.h)
-      //   .attr('fill', '#999999')
-      showInspector()
-      // initPull()
-      // initPush()
-      // createMergeButton()
-      // createPushButton()
-      // createPullButton()
-    }
-    this.initData = initData
-
-    function updateData () {
-
-    }
-    this.updateData = updateData
   }
   let SvgTargets = function () {
     let reserved = {}
@@ -5247,8 +4811,8 @@ let mainSchedBlocksInspector = function (optIn) {
 
     function createHistoryArrow () {
       let box = {
-        x: reserved.box.w * 0.092,
-        y: 0,
+        x: reserved.box.w * 0.525,
+        y: reserved.box.h * 0.02,
         w: reserved.box.w * 0.2,
         h: reserved.box.h * 0.03
       }
@@ -5297,16 +4861,16 @@ let mainSchedBlocksInspector = function (optIn) {
     function createQuickAccess () {
       let box = {
         icons: {
-          x: reserved.box.w * 0.8,
-          y: 0,
+          x: reserved.box.w * 0.17,
+          y: -3,
           w: reserved.box.w * 0.2,
-          h: reserved.box.h * 0.12
+          h: reserved.box.h * 0.145
         },
         mapping: {
           x: reserved.box.w * 0.0,
-          y: 0,
-          w: reserved.box.w * 0.9,
-          h: reserved.box.h * 0.6
+          y: reserved.box.h * 0.16,
+          w: reserved.box.w * 1,
+          h: reserved.box.h * 1
         }
       }
       let display
@@ -5331,7 +4895,7 @@ let mainSchedBlocksInspector = function (optIn) {
 
         let height = headerSize * 2.5
         let square = parseInt(Math.sqrt(scheds.length))
-        square = 11 // square + (scheds.length % square === 0 ? 0 : 1)
+        square = 15 // square + (scheds.length % square === 0 ? 0 : 1)
         let marg = 0
         let origin = {
           x: box.mapping.x + box.mapping.w,
@@ -5861,21 +5425,27 @@ let mainSchedBlocksInspector = function (optIn) {
       allBox = {
         blocks: {
           x: 0,
-          y: 0,
+          y: reserved.box.h * 0.2,
           w: reserved.box.w * 0.8,
           h: reserved.box.h * 0.2
         },
         modifications: {
           x: 0,
-          y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.75,
+          y: reserved.box.h * 0.18,
+          h: reserved.box.h * 0.62,
           w: reserved.box.w
         },
         conflicts: {
-          x: 0,
-          y: reserved.box.h * 0.9,
-          w: reserved.box.w,
-          h: reserved.box.h * 0.1
+          x: reserved.box.w * 0.8,
+          y: reserved.box.h * 0.85,
+          w: reserved.box.w * 0.2,
+          h: reserved.box.h * 0.15
+        },
+        summaryMetrics: {
+          x: reserved.box.w * 0.0,
+          y: reserved.box.h * 0.85,
+          w: reserved.box.w * 0.8,
+          h: reserved.box.h * 0.15
         }
       }
       function createModificationsInformation () {
@@ -5933,6 +5503,13 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('id', 'modificationsInformation')
           .attr('transform', 'translate(' + 0 + ',' + box.y + ')')
         reserved.overview.modifications.scrollBox = initScrollBox('modificationsListScroll', scrollg, box, {enabled: false}, true)
+        g.append('line')
+          .attr('x1', 0)
+          .attr('y1', box.y + box.h - 2)
+          .attr('x2', reserved.box.w)
+          .attr('y2', box.y + box.h - 2)
+          .attr('stroke', colorTheme.dark.stroke)
+          .attr('stroke-width', 0.4)
       }
       function createConflictsInformation () {
         let box = allBox.conflicts
@@ -5954,7 +5531,7 @@ let mainSchedBlocksInspector = function (optIn) {
         g.append('line')
           .attr('x1', 0)
           .attr('y1', box.y)
-          .attr('x2', reserved.box.w)
+          .attr('x2', box.w)
           .attr('y2', box.y)
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
@@ -5995,9 +5572,71 @@ let mainSchedBlocksInspector = function (optIn) {
 
         reserved.overview.conflicts.scrollBox = initScrollBox('conflictListScroll', g, box, {enabled: false}, false)
       }
+      function createSummaryMetrics () {
+        let adjustedBox = allBox.summaryMetrics
+        let g = reserved.g.append('g')
+          .attr('id', 'summaryMetrics')
+          .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+        g.append('text')
+          .text('Projected')
+          .attr('x', (adjustedBox.w * 0.23))
+          .attr('y', adjustedBox.h * 0.15)
+          .style('fill', '#000000')
+          .style('font-weight', '')
+          .style('font-size', 11 + 'px')
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+        g.append('text')
+          .text('Processed')
+          .attr('x', (adjustedBox.w * 0.23))
+          .attr('y', adjustedBox.h * 0.99)
+          .style('fill', '#000000')
+          .style('font-weight', '')
+          .style('font-size', 11 + 'px')
+          .style('font-weight', 'bold')
+          .attr('text-anchor', 'middle')
+          .style('pointer-events', 'none')
+        g.append('rect')
+          .attr('x', adjustedBox.w * 0.03)
+          .attr('y', adjustedBox.h * 0.2)
+          .attr('width', adjustedBox.w * 0.4)
+          .attr('height', 20)
+          .attr('fill', colorPalette.darker.background)
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 0.4)
+        g.append('rect')
+          .attr('x', adjustedBox.w * 0.03)
+          .attr('y', adjustedBox.h * 0.55)
+          .attr('width', adjustedBox.w * 0.4)
+          .attr('height', 20)
+          .attr('fill', colorPalette.darker.background)
+          .attr('stroke', '#000000')
+          .attr('stroke-width', 0.4)
+        let tg = g.append('g')
+          .attr('transform', 'translate(' + (adjustedBox.w * 0.36) + ',' + (adjustedBox.h * 0.0) + ')')
+        for (let i = 0; i < 6; i++) {
+          targetIcon(tg.append('g').attr('transform', 'translate(' + (adjustedBox.w * 0.12 + (parseInt(i / 3)) * adjustedBox.w * 0.16) + ',' + (adjustedBox.h * 0.05 + adjustedBox.h * 0.3 * (i % 3)) + ')'),
+            {w: 24, h: 24}, 'T' + i, {
+            click: function () {},
+            over: function () {},
+            out: function () {}
+          }, colorPalette)
+          tg.append('text')
+            .text(Math.floor(100 - (Math.random() * 20), 2) + '%')
+            .attr('x', (adjustedBox.w * 0.16 + (parseInt(i / 3)) * adjustedBox.w * 0.16) + 13)
+            .attr('y', (adjustedBox.h * 0.05 + adjustedBox.h * 0.3 * (i % 3)) + 16)
+            .style('fill', '#000000')
+            .style('font-weight', '')
+            .style('font-size', 11 + 'px')
+            .attr('text-anchor', 'start')
+            .style('pointer-events', 'none')
+        }
+      }
 
       createModificationsInformation()
       createConflictsInformation()
+      createSummaryMetrics()
     }
 
     function openOtherBlocks (conflict) {
@@ -7516,20 +7155,20 @@ let mainSchedBlocksInspector = function (optIn) {
       let g = reserved.g.append('g')
       let innerbox = {
         x: box.rightInfo.w * 0.0,
-        y: box.rightInfo.h * 0.0,
+        y: box.rightInfo.h * 0.02,
         w: box.rightInfo.w * 1.0,
         h: box.rightInfo.h * 1.0
       }
       let allBox = {
         tree: {
-          x: box.rightInfo.w * 0.0,
-          y: box.rightInfo.h * 0.0,
-          w: box.rightInfo.w * 1,
+          x: box.rightInfo.w * 0.45,
+          y: box.rightInfo.h * 0.02,
+          w: box.rightInfo.w * 0.65,
           h: box.rightInfo.h * 0.1
         },
         time: {
           x: box.rightInfo.w * 0.0,
-          y: box.rightInfo.h * 0.125,
+          y: box.rightInfo.h * 0.17,
           w: box.rightInfo.w * 1.0,
           h: box.rightInfo.h * 0.25
         },
@@ -7643,22 +7282,22 @@ let mainSchedBlocksInspector = function (optIn) {
       }
       let allBox = {
         tree: {
-          x: box.rightInfo.w * 0.0,
-          y: box.rightInfo.h * 0.0,
-          w: box.rightInfo.w * 1.0,
+          x: box.rightInfo.w * 0.45,
+          y: box.rightInfo.h * 0.02,
+          w: box.rightInfo.w * 0.65,
           h: box.rightInfo.h * 0.1
         },
         time: {
           x: box.rightInfo.w * 0.0,
-          y: box.rightInfo.h * 0.125,
+          y: box.rightInfo.h * 0.15,
           w: box.rightInfo.w * 1.0,
           h: box.rightInfo.h * 0.1
         },
         target: {
           x: box.rightInfo.w * 0.0,
-          y: box.rightInfo.h * 0.25,
-          w: box.rightInfo.w * 1.0,
-          h: box.rightInfo.h * 0.3
+          y: box.rightInfo.h * 0.26,
+          w: box.rightInfo.w * 0.8,
+          h: box.rightInfo.h * 0.28
         },
         tels: {
           x: box.rightInfo.w * 0.0,
@@ -7800,15 +7439,15 @@ let mainSchedBlocksInspector = function (optIn) {
       }
       let allBox = {
         title: {
-          x: 0,
-          y: reserved.box.h * 0.015,
-          w: reserved.box.w,
-          h: reserved.box.h * 0.1
+          x: reserved.box.w * 0.45,
+          y: reserved.box.h * 0.04,
+          w: reserved.box.w * 0.55,
+          h: reserved.box.h * 0.12
         },
         blocks: {
           x: 0,
-          y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.45,
+          y: reserved.box.h * 0.18,
+          h: reserved.box.h * 0.38,
           w: reserved.box.w
         },
         target: {
@@ -7893,15 +7532,15 @@ let mainSchedBlocksInspector = function (optIn) {
       }
       let allBox = {
         title: {
-          x: 0,
-          y: reserved.box.h * 0.01,
-          w: reserved.box.w * 0.8,
+          x: reserved.box.w * 0.45,
+          y: reserved.box.h * 0.04,
+          w: reserved.box.w * 0.55,
           h: reserved.box.h * 0.12
         },
         blocks: {
           x: 0,
-          y: reserved.box.h * 0.125,
-          h: reserved.box.h * 0.87,
+          y: reserved.box.h * 0.17,
+          h: reserved.box.h * 0.83,
           w: reserved.box.w
         }
       }
@@ -7983,9 +7622,605 @@ let mainSchedBlocksInspector = function (optIn) {
   let svgEventsQueueServer = new SvgEventsQueueServer()
   let svgBlocksQueueServer = new SvgBlocksQueueServer()
   let svgBrush = new SvgBrush()
-  let svgWarningArea = new SvgWarningArea()
   let svgTargets = new SvgTargets()
   let svgTelsConflict = new SvgTelsConflict()
   let svgFocusOverlay = new SvgFocusOverlay()
   let svgRightInfo = new SvgRightInfo()
+
+  let SvgSummaryMetrics = function () {
+    let reserved = {}
+    let blockQueue
+    function initDataBQ () {
+      let adjustedBox = {
+        x: box.summaryMetrics.w * 0.48,
+        y: box.summaryMetrics.h * 0.02,
+        w: box.summaryMetrics.w * 0.52,
+        h: box.summaryMetrics.h * 0.9,
+        marg: lenD.w[0] * 0.01
+      }
+
+      blockQueue = new BlockDisplayer({
+        main: {
+          tag: 'blockQueueMiddleTag',
+          g: reserved.g.append('g').attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')'),
+          scroll: {},
+          box: adjustedBox,
+          background: {
+            fill: 'none',
+            stroke: colorTheme.medium.stroke,
+            strokeWidth: 0.0
+          },
+          colorTheme: colorTheme
+        },
+
+        displayer: 'blockQueue2', // 'blockQueue2',
+        blockQueue: {
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          blocks: {
+            enabled: true,
+            run: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: 'none',
+                strokeWidth: 0
+              }
+            },
+            cancel: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            modification: {
+              enabled: true,
+              g: undefined,
+              box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+              events: {
+                click: () => {},
+                mouseover: () => {},
+                mouseout: () => {},
+                drag: {
+                  start: () => {},
+                  tick: () => {},
+                  end: () => {}
+                }
+              },
+              background: {
+                fill: colorTheme.brighter.background,
+                stroke: colorTheme.brighter.stroke,
+                strokeWidth: 0
+              }
+            },
+            colorPalette: colorTheme.blocks
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
+        },
+        blockQueue2: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'left',
+              clickable: true,
+              size: 30
+            }
+          },
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showAxis: true,
+            orientation: 'axisTop',
+            attr: {
+              text: {
+                size: 10,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: -adjustedBox.y, w: adjustedBox.w, h: box.topBox.h + box.eventQueueServer.h, marg: adjustedBox.marg}
+          }
+        },
+        blockTrackShrink: {
+          g: undefined,
+          schedBlocks: {
+            label: {
+              enabled: true,
+              position: 'left'
+            }
+          },
+          axis: {
+            enabled: true,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            showText: true,
+            orientation: 'bottom',
+            attr: {
+              text: {
+                size: 14,
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              },
+              path: {
+                stroke: colorTheme.medium.stroke,
+                fill: colorTheme.medium.stroke
+              }
+            }
+          },
+          timeBars: {
+            enabled: false,
+            g: undefined,
+            box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg}
+          }
+        },
+        blockList: {
+
+        },
+        blockForm: {
+          mosaic: {
+            box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+            order: 'nSched'
+          },
+          forms: {
+            g: undefined,
+            box: {x: adjustedBox.w * 0.22,
+              y: adjustedBox.h * 0.02,
+              w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
+              h: adjustedBox.h * 0.96,
+              marg: adjustedBox.marg},
+            display: 'list',
+            scroll: {}
+          }
+        },
+
+        filters: {
+          blockFilters: [],
+          filtering: []
+        },
+        time: {
+          currentTime: {time: 0, date: undefined},
+          startTime: {time: 0, date: undefined},
+          endTime: {time: 0, date: undefined}
+        },
+        data: {
+          raw: undefined,
+          formated: undefined,
+          modified: undefined
+        },
+        debug: {
+          enabled: false
+        },
+        pattern: {},
+        events: {
+          block: {
+            click: d => focusManager.focusOn('block', d.obId),
+            dbclick: function (d) {
+              d.exeState.state = 'cancel'
+              changeBlockProperties(d, false, 'state')
+            },
+            mouseover: focusManager.over,
+            mouseout: focusManager.out,
+            drag: {
+              start: svgFocusOverlay.dragStart,
+              tick: svgFocusOverlay.dragTick,
+              end: function (d) {
+                let res = svgFocusOverlay.dragEnd(d)
+                if (res) changeBlockProperties(d, false, 'startTime')
+              }
+            }
+          },
+          sched: {
+            click: focusManager.focusOn,
+            mouseover: focusManager.over,
+            mouseout: focusManager.out
+          }
+        },
+        input: {
+          focus: {schedBlocks: [], blocks: []},
+          over: {schedBlocks: [], blocks: []},
+          selection: []
+        }
+      })
+      blockQueue.init()
+      blockQueue.switchStyle({
+        runRecCol: colorTheme.blocks.shutdown,
+        blockCol: function (optIn) {
+          let state = hasVar(optIn.state)
+            ? optIn.state
+            : optIn.d.exeState.state
+          let canRun = hasVar(optIn.canRun)
+            ? optIn.canRun
+            : optIn.d.exeState.canRun
+          let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+
+          if (state === 'wait') {
+            if (modified) return colorTheme.blocks.wait
+            return colorTheme.blocks.wait
+          } else if (state === 'done') {
+            return colorTheme.blocks.done
+          } else if (state === 'fail') {
+            return colorTheme.blocks.fail
+          } else if (state === 'run') {
+            return colorTheme.blocks.run
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return colorTheme.blocks.cancelOp
+            }
+            return colorTheme.blocks.cancelSys
+          } else return colorTheme.blocks.shutdown
+          // let startT = hasVar(optIn.startTime)
+          //   ? optIn.startTime
+          //   : optIn.d.startTime
+          // if (startT < shared.data.server.timeOfNight.now) return colorTheme.blocks.shutdown
+          // let state = hasVar(optIn.state)
+          //   ? optIn.state
+          //   : optIn.d.exeState.state
+          // let canRun = hasVar(optIn.canRun)
+          //   ? optIn.canRun
+          //   : optIn.d.exeState.canRun
+          // let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+          //
+          // if (state === 'wait') {
+          //   if (modified) return colorTheme.blocks.wait
+          //   return colorTheme.blocks.wait
+          // } else if (state === 'cancel') {
+          //   if (hasVar(canRun)) {
+          //     if (!canRun) return colorTheme.blocks.cancelOp
+          //   }
+          //   return colorTheme.blocks.cancelSys
+          // } else return colorTheme.blocks.shutdown
+        },
+        blockOpac: function (optIn) {
+          let state = hasVar(optIn.state)
+            ? optIn.state
+            : optIn.d.exeState.state
+          let canRun = hasVar(optIn.canRun)
+            ? optIn.canRun
+            : optIn.d.exeState.canRun
+          let modified = optIn.d.modifications ? optIn.d.modifications.userModifications.length > 0 : false
+
+          if (state === 'wait') {
+            if (modified) return 0.2
+            return 1
+          } else if (state === 'run') {
+            return 1
+          } else if (state === 'cancel') {
+            if (hasVar(canRun)) {
+              if (!canRun) return 1
+            }
+            return 1
+          } else return 1
+        },
+        blockPattern: function (optIn) {
+          let startT = hasVar(optIn.startTime)
+            ? optIn.startTime
+            : optIn.d.startTime
+          if (startT < shared.data.server.timeOfNight.now) return 'url(#patternLock)'
+          return 'none'
+        }
+      })
+    }
+    function updateDataBQ () {
+      let telIds = []
+      $.each(shared.data.server.telHealth, function (index, dataNow) {
+        telIds.push(dataNow.id)
+      })
+
+      let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+      let newWidth = brushZoom.getAxis('top').scale(new Date(shared.data.server.timeOfNight.date_now))
+      if (newWidth < 0) newWidth = 0
+      if (newWidth > box.blockQueueServer.w) newWidth = box.blockQueueServer.w
+      reserved.g.select('rect#cloak').attr('width', newWidth)
+
+      let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
+      let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
+
+      blockQueue.updateData({
+        time: {
+          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
+          startTime: startTime,
+          endTime: endTime
+        },
+        data: {
+          raw: {
+            blocks: getBlocksData(),
+            telIds: telIds
+          },
+          modified: []
+        }
+      })
+    }
+    function initData () {
+      let adjustedBox = {
+        x: box.summaryMetrics.x,
+        y: box.summaryMetrics.y,
+        w: box.summaryMetrics.w,
+        h: box.summaryMetrics.h,
+        marg: box.summaryMetrics * 0.01
+      }
+
+      reserved.g = svg.g.append('g')
+        .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
+      // reserved.g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', adjustedBox.w)
+      //   .attr('height', adjustedBox.h)
+      //   .attr('fill', '#dddddd')
+
+      initDataBQ()
+      updateDataBQ()
+
+      // reserved.g.append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', -6)
+      //   .attr('width', adjustedBox.w * 0.125)
+      //   .attr('height', adjustedBox.h)
+      //   .attr('fill', colorPalette.darkest.background)
+      //   .attr('stroke-width', 0)
+      reserved.g.append('text')
+        .text('Projected')
+        .attr('x', (adjustedBox.w * 0.185))
+        .attr('y', adjustedBox.h * 0.15)
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', 11 + 'px')
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('pointer-events', 'none')
+      reserved.g.append('text')
+        .text('Processed')
+        .attr('x', (adjustedBox.w * 0.185))
+        .attr('y', adjustedBox.h * 0.35)
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', 11 + 'px')
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('pointer-events', 'none')
+      reserved.g.append('rect')
+        .attr('x', adjustedBox.w * 0.13)
+        .attr('y', adjustedBox.h * 0.18)
+        .attr('width', adjustedBox.w * 0.115)
+        .attr('height', 10)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.4)
+      reserved.g.append('rect')
+        .attr('x', adjustedBox.w * 0.13)
+        .attr('y', adjustedBox.h * 0.26)
+        .attr('width', adjustedBox.w * 0.115)
+        .attr('height', 10)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.4)
+
+      reserved.g.append('svg:image')
+        .attr('xlink:href', '/static/icons/arrow-right.svg')
+        .attr('x', adjustedBox.w * 0.26)
+        .attr('y', adjustedBox.h * 0.22)
+        .attr('width', 25)
+        .attr('height', 15)
+        // .style('opacity', 0.5)
+
+      reserved.g.append('text')
+        .text('Projected')
+        .attr('x', (adjustedBox.w * 0.356))
+        .attr('y', adjustedBox.h * 0.15)
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', 11 + 'px')
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('pointer-events', 'none')
+      reserved.g.append('text')
+        .text('Processed')
+        .attr('x', (adjustedBox.w * 0.356))
+        .attr('y', adjustedBox.h * 0.35)
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', 11 + 'px')
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'middle')
+        .style('pointer-events', 'none')
+      reserved.g.append('rect')
+        .attr('x', adjustedBox.w * 0.3)
+        .attr('y', adjustedBox.h * 0.18)
+        .attr('width', adjustedBox.w * 0.115)
+        .attr('height', 10)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.4)
+      reserved.g.append('rect')
+        .attr('x', adjustedBox.w * 0.3)
+        .attr('y', adjustedBox.h * 0.26)
+        .attr('width', adjustedBox.w * 0.115)
+        .attr('height', 10)
+        .attr('fill', colorPalette.darker.background)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.4)
+
+      for (let i = 0; i < 10; i++) {
+        reserved.g.append('rect')
+          .attr('x', -10)
+          .attr('y', adjustedBox.h * 0.12 + (adjustedBox.h * 0.86 / 10) * i)
+          .attr('width', adjustedBox.w * 0.115)
+          .attr('height', adjustedBox.h * 0.85 / 10)
+          .attr('fill', (i === 3) ? colorPalette.darkest.background : (i % 2) ? colorPalette.darker.background : colorPalette.dark.background)
+          .attr('stroke', '#000000')
+          .attr('stroke-width', (i === 3) ? 1 : 0)
+        reserved.g.append('text')
+          .text('Schedule-' + i + '\t \t\t(' + (106 - (i * 2)) + '%)')
+          .attr('x', 0)
+          .attr('y', adjustedBox.h * 0.12 + (adjustedBox.h * 0.86 / 10) * (i + 0.75))
+          .style('fill', '#000000')
+          .style('font-weight', '')
+          .style('font-size', 11 + 'px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+      }
+
+      let tg = reserved.g.append('g')
+        .attr('transform', 'translate(' + 0 + ',' + (adjustedBox.h * 0.1) + ')')
+      tg.append('text')
+        .text('Old')
+        .attr('x', (adjustedBox.w * 0.16))
+        .attr('y', adjustedBox.h * 0.45)
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', 11 + 'px')
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('pointer-events', 'none')
+      tg.append('text')
+        .text('New')
+        .attr('x', (adjustedBox.w * 0.21))
+        .attr('y', adjustedBox.h * 0.45)
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', 11 + 'px')
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('pointer-events', 'none')
+      tg.append('text')
+        .text('Old')
+        .attr('x', (adjustedBox.w * 0.32))
+        .attr('y', adjustedBox.h * 0.45)
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', 11 + 'px')
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('pointer-events', 'none')
+      tg.append('text')
+        .text('New')
+        .attr('x', (adjustedBox.w * 0.37))
+        .attr('y', adjustedBox.h * 0.45)
+        .style('fill', '#000000')
+        .style('font-weight', '')
+        .style('font-size', 11 + 'px')
+        .style('font-weight', 'bold')
+        .attr('text-anchor', 'start')
+        .style('pointer-events', 'none')
+      for (let i = 0; i < 6; i++) {
+        targetIcon(tg.append('g').attr('transform', 'translate(' + (adjustedBox.w * 0.12 + (parseInt(i / 3)) * adjustedBox.w * 0.16) + ',' + (adjustedBox.h * 0.5 + adjustedBox.h * 0.12 * (i % 3)) + ')'),
+          {w: 24, h: 24}, 'T' + i, {
+          click: function () {},
+          over: function () {},
+          out: function () {}
+        }, colorPalette)
+        tg.append('text')
+          .text(Math.floor(100 - (Math.random() * 20), 2) + '%')
+          .attr('x', (adjustedBox.w * 0.16 + (parseInt(i / 3)) * adjustedBox.w * 0.16))
+          .attr('y', (adjustedBox.h * 0.5 + adjustedBox.h * 0.12 * (i % 3)) + 16)
+          .style('fill', '#000000')
+          .style('font-weight', '')
+          .style('font-size', 11 + 'px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+        tg.append('svg:image')
+          .attr('xlink:href', '/static/icons/arrow-right.svg')
+          .attr('x', (adjustedBox.w * 0.185 + (parseInt(i / 3)) * adjustedBox.w * 0.16))
+          .attr('y', (adjustedBox.h * 0.5 + adjustedBox.h * 0.12 * (i % 3)) + 6)
+          .attr('width', 20)
+          .attr('height', 10)
+        tg.append('text')
+          .text(Math.floor(100 - (Math.random() * 20), 2) + '%')
+          .attr('x', (adjustedBox.w * 0.21 + (parseInt(i / 3)) * adjustedBox.w * 0.16))
+          .attr('y', (adjustedBox.h * 0.5 + adjustedBox.h * 0.12 * (i % 3)) + 16)
+          .style('fill', '#000000')
+          .style('font-weight', '')
+          .style('font-size', 11 + 'px')
+          .attr('text-anchor', 'start')
+          .style('pointer-events', 'none')
+      }
+    }
+    this.initData = initData
+
+    function expand () {
+    }
+    this.expand = expand
+    function shrink () {
+    }
+    this.shrink = shrink
+
+    function updateData () {
+
+    }
+    this.updateData = updateData
+
+    function update () {
+
+    }
+    this.update = update
+  }
+
+  let svgSummaryMetrics = new SvgSummaryMetrics()
 }

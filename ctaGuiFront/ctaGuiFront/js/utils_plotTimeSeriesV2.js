@@ -48,6 +48,9 @@ window.PlotTimeSeries = function () {
         }
       }
     ],
+    interaction: {
+
+    },
     content: {}
   }
 
@@ -73,6 +76,7 @@ window.PlotTimeSeries = function () {
     reserved.main.g.attr('transform', 'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')')
 
     initAxis()
+    initInteraction()
     initClipping()
   }
   this.init = init
@@ -173,6 +177,60 @@ window.PlotTimeSeries = function () {
         .style('pointer-events', 'none')
         .style('user-select', 'none')
       reserved.axis[i].main.g.style('opacity', 1)
+    }
+  }
+  function initInteraction () {
+    function createDeleteButton () {
+      let remg = reserved.main.g.append('g').attr('id', 'removeGroup')
+        .style('cursor', 'pointer')
+      remg.append('rect')
+        .attr('x', reserved.main.box.w - 15)
+        .attr('y', -15)
+        .attr('width', 15)
+        .attr('height', 15)
+        .attr('stroke', colorPalette.dark.stroke)
+        .attr('stroke-width', 0.2)
+        .attr('fill', colorPalette.blocks.run.background)
+        .style('opacity', '0')
+      remg.append('svg:image')
+        .attr('xlink:href', '/static/icons/cross.svg')
+        .attr('x', (reserved.main.box.w - 12.5) + 'px')
+        .attr('y', -12.5 + 'px')
+        .attr('width', 10 + 'px')
+        .attr('height', 10 + 'px')
+        .style('pointer-events', 'none')
+    }
+    function createPinnedButton () {
+      let remg = reserved.main.g.append('g').attr('id', 'removeGroup')
+        .style('cursor', 'pointer')
+      remg.append('rect')
+        .attr('x', reserved.main.box.w - 36)
+        .attr('y', -15)
+        .attr('width', 15)
+        .attr('height', 15)
+        .attr('stroke', colorPalette.dark.stroke)
+        .attr('stroke-width', 0.2)
+        .attr('fill', colorPalette.blocks.run.background)
+        .style('opacity', '0')
+      remg.append('svg:image')
+        .attr('xlink:href', '/static/icons/pin.svg')
+        .attr('x', (reserved.main.box.w - 33.5) + 'px')
+        .attr('y', -12.5 + 'px')
+        .attr('width', 10 + 'px')
+        .attr('height', 10 + 'px')
+        .style('pointer-events', 'none')
+    }
+    for (let key in reserved.interaction) {
+      switch (key) {
+        case 'pinned':
+          if (reserved.interaction[key].enabled) createPinnedButton()
+          break
+        case 'remove':
+          if (reserved.interaction[key].enabled) createDeleteButton()
+          break
+        default:
+          break
+      }
     }
   }
   // function addAxis (axis) {

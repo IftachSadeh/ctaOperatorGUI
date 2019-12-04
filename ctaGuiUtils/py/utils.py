@@ -41,7 +41,7 @@ hasACS = ('ACSROOT' in os.environ)  # (os.uname()[1] == "dawn.ifh.de")
 allWidgets = []
 allowedWidgetTypeV = {
     "synced": [
-        "arrZoomer", "azPlots", "telPos_0", "subArrGrp", "telPntSky",
+        "arrZoomer", "plotsDash", "telPos_0", "subArrGrp", "telPntSky",
         "schedBlocks", "nightSched", "obsBlockControl", "emptyExample",
         "myTestExample", "commentNightSched", "schedBlocksController", 'schedBlocksInspector',
         "weatherMonitoring"

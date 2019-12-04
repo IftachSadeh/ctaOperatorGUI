@@ -688,6 +688,16 @@ let mainWeatherMonitoring = function (optIn) {
           box: plotbox,
           clipping: true
         },
+        interaction: {
+          pinned: {
+            enabled: true,
+            event: () => { console.log('pinned') }
+          },
+          remove: {
+            enabled: false,
+            event: () => { console.log('remove') }
+          }
+        },
         axis: [
           {
             id: 'bottom',

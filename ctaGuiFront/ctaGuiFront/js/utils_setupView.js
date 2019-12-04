@@ -98,12 +98,12 @@ setupView.view200 = function () {
     hasIcon: true,
     hasDrawer: true
   })
-  sock.addWidget({
-    nameTag: 'azPlots',
-    tableTitle: 'Telescope health plots',
-    hasIcon: true,
-    hasDrawer: false
-  })
+  // sock.addWidget({
+  //   nameTag: 'azPlots',
+  //   tableTitle: 'Telescope health plots',
+  //   hasIcon: true,
+  //   hasDrawer: false
+  // })
 }
 
 // -----------------------------------------------------------------------------------------------------------
@@ -111,8 +111,8 @@ setupView.view200 = function () {
 // -----------------------------------------------------------------------------------------------------------
 setupView.view201 = function () {
   sock.addWidget({
-    nameTag: 'azPlots',
-    tableTitle: 'Telescope health plots',
+    nameTag: 'plotsDash',
+    tableTitle: 'Plots Dashboard',
     hasIcon: true,
     hasDrawer: false
   })
@@ -194,12 +194,12 @@ setupView.view2051 = function () {
 // obsBlockControl
 // -----------------------------------------------------------------------------------------------------------
 setupView.view206 = function () {
-  sock.addWidget({
-    nameTag: 'schedBlocksController',
-    tableTitle: 'Scheduling blocks inspector',
-    hasIcon: true,
-    hasDrawer: false
-  })
+  // sock.addWidget({
+  //   nameTag: 'schedBlocksController',
+  //   tableTitle: 'Scheduling blocks inspector',
+  //   hasIcon: true,
+  //   hasDrawer: false
+  // })
   sock.addWidget({
     nameTag: 'schedBlocksInspector',
     tableTitle: 'Scheduling blocks controller',
