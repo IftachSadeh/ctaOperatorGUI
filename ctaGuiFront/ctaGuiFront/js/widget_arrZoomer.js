@@ -1,15 +1,15 @@
 'use strict'
-// ---------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
 // stric mode for the following script or function (must come at the very begining!)
 // see: http://www.w3schools.com/js/js_strict.asp
-// ---------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
 // mainScriptTag used locally (will be overriden by other scripts...)
 // must be compatible with the name of this js file, according to:
 //    "/js/widget_"+mainScriptTag+".js"
 var mainScriptTag = 'arrZoomer'
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------
 
 /* global $ */
 /* global d3 */
@@ -51,32 +51,50 @@ window.loadScript({
   source: mainScriptTag,
   script: '/js/utils_quickMap.js'
 })
-// ---------------------------------------------------------------------------------------------------
+
+
+// ------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
+  let doSvgDetail = true
+  let svgDetailOnRight = true
+  let doSvgQuick = true
+
   let x0 = 0
   let y0 = 0
   let h0 = 2
   let w0 = 12
   let divKey
 
+  optIn.setupData = {
+    doSvgDetail: doSvgDetail,
+    svgDetailOnRight: svgDetailOnRight,
+    doSvgQuick: doSvgQuick,
+  }
+  
   optIn.widgetFunc = { SockFunc: sockArrZoomer, MainFunc: mainArrZoomer }
   optIn.widgetDivId = optIn.widgetId + 'widgetDiv'
   optIn.eleProps = {}
 
-  divKey = 'quick'
-  optIn.eleProps[divKey] = {
-    autoPos: true,
-    isDarkEle: true,
-    gsId: optIn.widgetDivId + divKey,
-    x: x0,
-    y: y0,
-    w: w0,
-    h: h0,
-    content: "<div id='" + optIn.baseName + divKey + "'></div>"
+  if (doSvgQuick) {
+    divKey = 'quick'
+    optIn.eleProps[divKey] = {
+      autoPos: true,
+      isDarkEle: true,
+      gsId: optIn.widgetDivId + divKey,
+      x: x0,
+      y: y0,
+      w: w0,
+      h: h0,
+      content: "<div id='" + optIn.baseName + divKey + "'></div>"
+    }
   }
 
-  w0 = 6
-  h0 = 6
+  if (doSvgDetail) {
+    if (svgDetailOnRight) {
+      w0 = 6
+      h0 = 6
+    }
+  }
   y0 += 2
 
   divKey = 'main'
@@ -91,31 +109,33 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
     content: "<div id='" + optIn.baseName + divKey + "'></div>"
   }
 
-  divKey = 'detail'
-  optIn.eleProps[divKey] = {
-    autoPos: true,
-    isDarkEle: true,
-    gsId: optIn.widgetDivId + divKey,
-    x: x0,
-    y: y0,
-    w: w0,
-    h: h0,
-    content: "<div id='" + optIn.baseName + divKey + "'></div>"
+  if (doSvgDetail) {
+    divKey = 'detail'
+    optIn.eleProps[divKey] = {
+      autoPos: true,
+      isDarkEle: true,
+      gsId: optIn.widgetDivId + divKey,
+      x: x0,
+      y: y0,
+      w: w0,
+      h: h0,
+      content: "<div id='" + optIn.baseName + divKey + "'></div>"
+    }
   }
 
   sock.addToTable(optIn)
 }
 
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------
 //
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------
 let sockArrZoomer = function (optIn) {
   let widgetType = optIn.widgetType
   let widgetSource = optIn.widgetSource
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   // update the state of this widget in the server
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   this.setWidgetState = function (optIn) {
     if (sock.conStat.isOffline()) return
 
@@ -136,9 +156,9 @@ let sockArrZoomer = function (optIn) {
     sock.socket.emit('widget', dataEmit)
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   // ask for update for state1 data for a given module
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   this.askDataS1 = function (optIn) {
     if (sock.conStat.isOffline()) return
 
@@ -158,9 +178,9 @@ let sockArrZoomer = function (optIn) {
     sock.socket.emit('widget', dataEmit)
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   // get update for state1 data which was explicitly asked for by a given module
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   sock.socket.on('arrZoomerGetDataS1', function (data) {
     if (sock.conStat.isOffline()) return
 
@@ -175,9 +195,9 @@ let sockArrZoomer = function (optIn) {
     }
   })
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   sock.socket.on('arrZoomerUpdateData', function (data) {
     if (sock.conStat.isOffline()) return
 
@@ -189,6 +209,9 @@ let sockArrZoomer = function (optIn) {
   })
 }
 
+// ------------------------------------------------------------------
+// 
+// ------------------------------------------------------------------
 let mainArrZoomer = function (optIn) {
   let myUniqueId = unique()
   let widgetType = optIn.widgetType
@@ -201,6 +224,10 @@ let mainArrZoomer = function (optIn) {
   let thisArrZoomer = this
   let isSouth = window.__nsType__ === 'S'
 
+  let doSvgDetail = optIn.setupData.doSvgDetail
+  let svgDetailOnRight = optIn.setupData.svgDetailOnRight
+  let doSvgQuick = optIn.setupData.doSvgQuick
+
   let sgvTag = {}
   $.each(widgetEle, function (index, eleNow) {
     sgvTag[eleNow.id] = {
@@ -210,11 +237,58 @@ let mainArrZoomer = function (optIn) {
     }
   })
 
+  // ------------------------------------------------------------------
   // delay counters
+  // ------------------------------------------------------------------
   let locker = new Locker()
   locker.add('inInit')
+  locker.add('inPropInit')
+  locker.add('inNewSvgInit')
   locker.add('inInitMain')
   locker.add('inInitDetail')
+
+  let svgMain = null
+  let svgDetail = null
+  let svgQuick = null
+  
+  // ------------------------------------------------------------------
+  // main initialisation, after first data come in
+  // ------------------------------------------------------------------
+  function svgNewInit() {
+    // console.log(' == svgNewInit ==')
+    svgMain = new SvgMain() // must come first
+    if (doSvgDetail) {
+      svgDetail = new SvgDetail()
+    }
+    else {
+      locker.remove('inInitDetail')
+    }
+    if (doSvgQuick) {
+        svgQuick = new QuickMap({
+        runLoop: runLoop, sgvTag: sgvTag,
+        widgetId: widgetId, locker: locker,
+        isSouth: isSouth,
+      })
+    }
+
+    locker.remove('inNewSvgInit')
+
+    // // ------------------------------------------------------------------
+    // // ------------------------------------------------------------------
+    // svgMain.zoomToTrgMain({ target:'M_9',  scale:zoomLen["1.2"], durFact:0.1 });
+    // svgMain.zoomToTrgMain({ target:'init', scale:zoomLen["0.0"], durFact:0.1 });
+    // svgMain.zoomToTrgMain({ target:'Lx00',  scale:zoomLen["1.2"], durFact:2.0 }); console.log('FAKE-START')
+    // // ------------------------------------------------------------------
+    // // ------------------------------------------------------------------
+    return
+  }
+  runWhenReady({
+    pass: function () {
+      return locker.isFreeV(['inPropInit',])
+    },
+    execute: svgNewInit
+  })
+
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -225,9 +299,9 @@ let mainArrZoomer = function (optIn) {
   //      https://www.google.de/design/spec/style/color.html#color-color-palette
   //      http://riccardoscalco.github.io/crayon/
 
-  // // ---------------------------------------------------------------------------------------------------
+  // // ------------------------------------------------------------------
   // // colours for different states (red, yellow, green)
-  // // ---------------------------------------------------------------------------------------------------
+  // // ------------------------------------------------------------------
   // let colScale = d3.scaleLinear()
   //   .domain([0, 50, 100])
   //   .range ([
@@ -236,19 +310,6 @@ let mainArrZoomer = function (optIn) {
   //     telStateCol[telStates.nominal][0]
   //   ]);
 
-  // ---------------------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------------------
-  function getPropPosShift (xy, r, nProp) {
-    let angle = (nProp + 0.5) * tauFrac + tau / 4
-    let labelX = r * Math.cos(angle)
-    let labelY = r * Math.sin(angle)
-
-    if (xy === 'x') return labelX
-    if (xy === 'y') return labelY
-    else if (xy === 'xy') return [labelX, labelY]
-    else return null
-  }
 
   let zoomTarget = ''
   // window.zoomTarget = "";
@@ -263,47 +324,106 @@ let mainArrZoomer = function (optIn) {
 
   let telFocus = {}
 
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  let telTypeV = telInfo.getIds()
+
   let prop0 = 'health'
-  // let propD = ["camera","daq","mount","aux","mirror"]
-  let propD = ['camera', 'aux', 'mount', 'mirror']
-  // let propD = ["camera","mirror","daq"]
-  // let propD = ["camera"]
-  let propDv = [prop0]
-  $.each(propD, function (index, porpNow) {
-    propDv.push(porpNow)
-  })
-
-  let propTtlD = {}
-  propTtlD[prop0] = 'Health'
-  propTtlD.camera = 'Camera'
-  propTtlD.mirror = 'Mirror'
-  propTtlD.mount = 'Mount'
-  propTtlD.daq = 'DAQ'
-  propTtlD.aux = 'Aux'
-
-  let tauFrac = tau / propD.length
+  let propTitle0 = 'Health'
   let tauSpace = tau / 50
 
-  // ---------------------------------------------------------------------------------------------------
-  // - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME -
-  // a temporary way to get the ordered list of all tel-ids....
-  // ---------------------------------------------------------------------------------------------------
-  let telTypes = [
-    { type: 'L', nTel: isSouth ? 4 : 4 },
-    { type: 'M', nTel: isSouth ? 25 : 15 },
-    { type: 'S', nTel: isSouth ? 70 : 0 }
-  ]
-  let telTypeV = []
-  for (let nType = 0; nType < telTypes.length; nType++) {
-    for (let nTel = 0; nTel < telTypes[nType].nTel; nTel++) {
-      let telIndex = nTel
-      if (nType > 0) telIndex += telTypes[0].nTel
-      if (nType > 1) telIndex += telTypes[1].nTel
-      telTypeV.push(telTypes[nType].type + '_' + String(telIndex))
+  let instProps = {}
+  let instProps0 = {}
+  let instTauFracs = {}
+  let instPropTitles = {}
+  let allInstIds = []
+  let allInstIds0 = []
+  let allInstProps = []
+  let allInstProps0 = [ ]
+
+  // ------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------
+  function initInstProps(dataIn) {
+    allInstProps0.push(prop0)
+    allInstIds0.push('')
+    instProps[''] = []
+    instProps0[''] = [ prop0 ]
+    instPropTitles[''] = {}
+
+    // --FIXME-- currently sorting by the property name, but
+    // should actually be by property title ...
+    function propSort(arrIn) {
+      arrIn
+        .sort()
+        .sort(function(a, b) {
+          if (a === prop0) return -1;
+          else             return 1;
+        })
     }
+    function propSortV(arrInV) {
+      $.each(arrInV, function(i, arrNow) { propSort(arrNow) })
+    }
+
+    $.each(dataIn, function(idNow, typeV) {
+      instProps[idNow] = []
+      instProps0[idNow] = [ prop0 ]
+      instPropTitles[idNow] = {}
+
+      allInstIds.push(idNow)
+      allInstIds0.push(idNow)
+
+      $.each(typeV, function(i, typeNow) {
+        instProps[idNow].push(typeNow.id)
+        instProps0[idNow].push(typeNow.id)
+        instPropTitles[idNow][typeNow.id] = typeNow.title
+
+        if (instProps[''].indexOf(typeNow.id) === -1) {
+          instProps[''].push(typeNow.id)
+          instProps0[''].push(typeNow.id)
+          instPropTitles[''][typeNow.id] = typeNow.title
+        }
+
+        if (allInstProps.indexOf(typeNow.id) === -1) {
+          allInstProps.push(typeNow.id)
+          allInstProps0.push(typeNow.id)
+        }
+      })
+      propSortV([instProps[idNow], instProps0[idNow]])
+
+      instPropTitles[idNow][prop0] = propTitle0
+      instTauFracs[idNow] = tau / instProps[idNow].length
+      instPropTitles[''][prop0] = propTitle0
+    })
+    instTauFracs[''] = tau / instProps[''].length
+
+    propSortV([instProps[''], instProps0[''], allInstProps, allInstProps0])
+
+    instProps['avg'] = instProps[''] //.slice()
+    instProps0['avg'] = instProps0[''] //.slice()
+    instTauFracs['avg'] = instTauFracs['']
+
+    return
   }
-  // - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME - FIXME -
-  // ---------------------------------------------------------------------------------------------------
+
+  function getTelProps(keys, telId) {
+    return keys.filter(function(k){ return instProps[telId].indexOf(k) !== -1 })
+  }
+  function getTauFrac(nProps) {
+    return tau / nProps
+  }
+
+  function getPropPosShift (xy, r, nPropNow, nProps) {
+    let angle = (nPropNow + 0.5) * getTauFrac(nProps) + tau / 4
+    let labelX = r * Math.cos(angle)
+    let labelY = r * Math.sin(angle)
+
+    if (xy === 'x') return labelX
+    if (xy === 'y') return labelY
+    else if (xy === 'xy') return [labelX, labelY]
+    else return null
+  }
 
   // function interpolatePct (origVal, newVal) {
   //   return d3.interpolateRound(+origVal.slice(0, -1), +newVal)
@@ -346,9 +466,9 @@ let mainArrZoomer = function (optIn) {
 
   // zoomLen.start = Date.now();
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   function setTelData (dataIn, isInit) {
     if (isInit) {
       telData.tel = []
@@ -361,7 +481,7 @@ let mainArrZoomer = function (optIn) {
       let telD = {}
       telD.id = id
 
-      $.each(propDv, function (index, porpNow) {
+      $.each(instProps0[telD.id], function (index, porpNow) {
         telD[porpNow] = hasVar(dataNow[porpNow])
           ? Math.round(dataNow[porpNow])
           : 0
@@ -378,71 +498,101 @@ let mainArrZoomer = function (optIn) {
 
     // average of each property
     telData.avg.id = 'avg'
-    $.each(propDv, function (index, porpNow) {
+    $.each(instProps0[telData.avg.id], function (index, porpNow) {
       telData.avg[porpNow] = 0
-
       $.each(telData.tel, function (id, dataNow) {
-        telData.avg[porpNow] += dataNow[porpNow]
+        // console.log('    ++',id,porpNow,dataNow[porpNow])
+        if (dataNow[porpNow] !== undefined && typeof dataNow[porpNow] == 'number') {
+          telData.avg[porpNow] += dataNow[porpNow]
+        }
       })
-
+      // console.log('--',porpNow,telData.avg[porpNow] , telData.tel.length)
       telData.avg[porpNow] /= telData.tel.length
     })
+    // console.log('SSS-------------SS',telData, instProps0)
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   function initData (dataDictIn) {
     if (sock.multipleInit({ id: widgetId, data: dataDictIn })) return
 
     let dataIn = dataDictIn.data
 
-    // fill the local data list - element properties
-    setTelData(dataIn.arrProp, true)
+    initInstProps(dataIn.telPropTypes)
 
-    zoomTarget = telData.tel[0].id // arbitrary but safe initialization
+    locker.remove('inPropInit')
+    // console.log(' -- FIXME -- startup0 DONE!!!!!!! ')
 
-    window.sideDiv = sock.setSideDiv({
-      id: sideId,
-      nIcon: dataDictIn.nIcon,
-      iconDivV: iconDivV
-    })
+    function svgDataInit() {
+      // console.log(' == svgDataInit ==')
+      // fill the local data list - element properties
+      setTelData(dataIn.arrProp, true)
 
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    svgMain.initData(dataIn)
-    svgDetail.initData(dataIn)
+      zoomTarget = telData.tel[0].id // arbitrary but safe initialization
 
-    svgQuick.initData({
-      telData: {tel: telData.tel, vor: {data: telData.vor.data}, mini: telData.mini, xyr: telData.xyr, vorDblclick: telData.vorDblclick},
-      telTypeV: telTypeV})
+      window.sideDiv = sock.setSideDiv({
+        id: sideId,
+        nIcon: dataDictIn.nIcon,
+        iconDivV: iconDivV
+      })
 
-    if (locker.isFree('inInit') && hasVar(dataIn.arrProp.type)) {
-      console.error('double init ?!?!', dataIn)
-      updateData(dataIn.arrProp)
+      // ------------------------------------------------------------------
+      //
+      // ------------------------------------------------------------------
+      svgMain.initData(dataIn)
+      if (svgDetail) {
+        svgDetail.initData(dataIn)
+      }
+      if (svgQuick) {
+        svgQuick.initData({
+          telData: {
+            tel: telData.tel, vor: {data: telData.vor.data},
+            mini: telData.mini, xyr: telData.xyr,
+            vorDblclick: telData.vorDblclick
+          },
+          telTypeV: telTypeV
+        })
+      }
+
+      if (locker.isFree('inInit') && hasVar(dataIn.arrProp.type)) {
+        console.error('double init ?!?!', dataIn)
+        updateData(dataIn.arrProp)
+      }
+
+      runWhenReady({
+        pass: function () {
+          return locker.isFreeV([
+            'inInitMain',
+            'inPropInit',
+            'inNewSvgInit',
+            'inInitDetail',
+            'inInitQuick',
+            'dataChange',
+            'setStateLock'
+          ])
+        },
+        execute: function () {
+          locker.remove('inInit')
+        }
+      })
+
+      return
     }
-
     runWhenReady({
       pass: function () {
-        return locker.isFreeV([
-          'inInitMain',
-          'inInitDetail',
-          'inInitQuick',
-          'dataChange',
-          'setStateLock'
-        ])
+        return locker.isFreeV(['inNewSvgInit',])
       },
-      execute: function () {
-        locker.remove('inInit')
-      }
+      execute: svgDataInit
     })
+
   }
   thisArrZoomer.initData = initData
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   // for s0 we acculumate all updates (each one is a subset of all elements which had some change)
   // for s1 we take ony the latest update (each one is a full update of all the data)
   runLoop.init({ tag: '_s00update_', func: updateS0, nKeep: -1, wait: 500 })
@@ -474,9 +624,9 @@ let mainArrZoomer = function (optIn) {
   }
   thisArrZoomer.updateData = updateData
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   // update the data for s0
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   function updateS0 (dataIn) {
     if (!locker.isFreeV(['zoom', 'autoZoomTarget', 'dataChange'])) {
       // console.log('delay-s0 ....',dataIn.type,dataIn.emitTime )
@@ -489,24 +639,25 @@ let mainArrZoomer = function (optIn) {
 
     locker.add('dataChange')
 
-    // ---------------------------------------------------------------------------------------------------
-    // fill the updated properties (accumilate all updates in order, so that if some id was updated
-    // multiple times, the latest value will be kept
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
+    // fill the updated properties (accumilate all updates in order, 
+    // so that if some id was updated multiple times,
+    // the latest value will be kept
+    // ------------------------------------------------------------------
     setTelData(dataIn.data, false)
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     setState()
 
     locker.remove('dataChange')
     // locker.remove({id:"dataChange",delay:1500}); // for testing... never delay this...
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   // update the data for s1
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   function updateS1 (dataDictIn) {
     if (svgMain.getZoomS() === 0) return
 
@@ -533,10 +684,11 @@ let mainArrZoomer = function (optIn) {
 
     locker.add('dataChange')
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // update the underlying data
-    // ---------------------------------------------------------------------------------------------------
-    $.each(propD, function (index, porpNow) {
+    // ------------------------------------------------------------------
+    let propsNow = getTelProps(Object.keys(telData.propDataS1[telId]), telId)
+    $.each(propsNow, function (index, porpNow) {
       // update the data container with the s0 updated health
       telData.propDataS1[telId][porpNow].val = telData.tel[telIndex][porpNow]
 
@@ -563,14 +715,16 @@ let mainArrZoomer = function (optIn) {
     })
 
     svgMain.updateS1(dataIn)
-    svgDetail.updateS1(dataIn)
+    if (svgDetail) {
+      svgDetail.updateS1(dataIn)
+    }
 
     locker.remove('dataChange')
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   function subArrUpdate (dataIn) {
     if (!locker.isFreeV(['zoom', 'autoZoomTarget', 'dataChange'])) {
       setTimeout(function () {
@@ -587,9 +741,9 @@ let mainArrZoomer = function (optIn) {
   }
   thisArrZoomer.setTelLayout = setTelLayout
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   runLoop.init({ tag: 'setState', func: setStateOnce, nKeep: 1 })
 
   function setState () {
@@ -611,19 +765,25 @@ let mainArrZoomer = function (optIn) {
     locker.add('setStateLock')
 
     svgMain.setStateOnce()
-    svgDetail.setStateOnce()
-    svgQuick.setStateOnce()
+    if (svgDetail) {
+      svgDetail.setStateOnce()
+    }
+    if (svgQuick) {
+      svgQuick.setStateOnce()
+    }
 
     locker.remove({ id: 'setStateLock', delay: timeD.animArc * 2 })
   }
 
   function svgZoomEnd (scale, target) {
-    svgQuick.miniZoomViewRec()
+    if (svgQuick) {
+      svgQuick.miniZoomViewRec()
+    }
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   runLoop.init({ tag: '_s1props_', func: propsS1Once, nKeep: -1 })
 
   function propsS1 (optIn) {
@@ -650,7 +810,9 @@ let mainArrZoomer = function (optIn) {
 
     // console.log('propsS1 '+optIn.debug+" :",optIn,doBckArcClick,doTelHirch)
 
-    if (doTelHirch) svgDetail.telHirch(optIn)
+    if (svgDetail) {
+      if (doTelHirch) svgDetail.telHirch(optIn)
+    }
 
     if (doBckArcClick) {
       optIn.canIgnore = false
@@ -660,11 +822,11 @@ let mainArrZoomer = function (optIn) {
     locker.remove('s1propsChange')
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   // activate a listener for getting the s1 data - this is needed in case the same data are sent more
   // then once (can happen if one element is requested, but by the time the transitions to open it
   // has ended, another was already requested too).
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   runLoop.init({ tag: '_getDataS1_', func: getDataS1Once, nKeep: 1 })
 
   function getDataS1 (widgetIdIn, dataIn) {
@@ -700,9 +862,9 @@ let mainArrZoomer = function (optIn) {
     }
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   let prevSync = {}
   function syncStateGet (dataIn) {
     if (document.hidden) return
@@ -741,9 +903,9 @@ let mainArrZoomer = function (optIn) {
   }
   this.syncStateGet = syncStateGet
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   runLoop.init({
     tag: 'syncStateSend',
     func: _syncStateSend,
@@ -786,9 +948,9 @@ let mainArrZoomer = function (optIn) {
     })
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   let SvgDetail = function () {
     let com = {}
     let svg = {}
@@ -812,29 +974,19 @@ let mainArrZoomer = function (optIn) {
     rScale[1].innerH0 = 1.25
     rScale[1].innerH1 = 1.3
 
-    // let s1LblXY = {}
     let arcFunc = {}
-
     let arcPrev = {}
     arcPrev.ang = {}
     arcPrev.rad = {}
-
-    // let siteScale = isSouth ? 4 / 9 : 1
 
     let lenD = {}
     lenD.w = {}
     lenD.h = {}
 
-    // lenD.w[0] = 400;
-    // lenD.h[0] = lenD.w[0];
     lenD.w[0] = 500
     lenD.h[0] = 500
-    // isSouth ? 900 : 400;
 
     let zoomTargetProp = ''
-    // lenD.r = {}
-    // lenD.r.s00 = [ 12, 13, 14 ];
-    // if(isSouth) lenD.r.s00 = [ 12*siteScale, 13*siteScale, 14*siteScale ];
 
     let avgTelD = []
     $.each([0, 1], function (nState_, nState) {
@@ -842,22 +994,18 @@ let mainArrZoomer = function (optIn) {
         avgTelD.push({ r: lenD.w[0] / 4, x: lenD.w[0] / 2, y: lenD.h[0] / 2 })
       }
       if (nState === 1) {
-        let propH = lenD.h[0] / propDv.length
+        let propH = lenD.h[0] / allInstProps0.length
         let propR = Math.min(propH * 0.4, lenD.w[0] / 15)
         let propY = propR * 1.25
 
         avgTelD.push({ r: propR, h: propY * 2 })
-        $.each(propDv, function (index, porpNow) {
+        $.each(allInstProps0, function (index, porpNow) {
           avgTelD[1][porpNow + 'x'] = propH * (0.5 + index)
           avgTelD[1][porpNow + 'y'] = lenD.h[0] - propY
-
-          // if(index == propD.length-1) {
-          //   avgTelD[1][prop0+"x"] = avgTelD[1][porpNow+"x"];
-          //   avgTelD[1][prop0+"y"] = propY;
-          // }
         })
       }
     })
+    // console.log('avgTelD',avgTelD)
 
     lenD.w[1] = lenD.w[0] // - avgTelD[1].h;
     lenD.h[1] = lenD.h[0] - avgTelD[1].h * 2
@@ -872,15 +1020,15 @@ let mainArrZoomer = function (optIn) {
     }
     this.zoomToPos = zoomToPos
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function initData (dataIn) {
       if (hasVar(svg.svgS0)) return
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // create the main svg element
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let svgDivId = sgvTag.detail.id + '_svg'
       let svgDiv = sgvTag.detail.widget.getEle(svgDivId)
 
@@ -903,13 +1051,12 @@ let mainArrZoomer = function (optIn) {
         return
       }
       sock.emitMouseMove({ eleIn: svgDiv, data: { widgetId: widgetId } })
-      // if(dis
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // background container & zoom behaviour
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // create the main svg element
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       svg.svgS0 = d3
         .select(svgDiv)
         // svg.svgS0 = d3.select("#"+(svgDiv.id))
@@ -925,7 +1072,8 @@ let mainArrZoomer = function (optIn) {
         .style('left', '0px')
         // .attr("viewBox", "0 0 "+lenD.w[0]+" "+lenD.h[0] * whRatio)
         // .classed("svgInGridStack_inner", true)
-        .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
+        .style('background', '#383B42') 
+        // .style("background", "red").style("border","2px solid red")
         .on('dblclick.zoom', null)
         .on('wheel', function () {
           d3.event.preventDefault()
@@ -933,9 +1081,9 @@ let mainArrZoomer = function (optIn) {
 
       svg.gS0 = svg.svgS0.append('g')
 
-      // // ---------------------------------------------------------------------------------------------------
+      // // ------------------------------------------------------------------
       // // overlying rect, just to add a frame to the entire svg
-      // // ---------------------------------------------------------------------------------------------------
+      // // ------------------------------------------------------------------
       // svg.svgS0.append("g").selectAll("rect").data([0])
       //   .enter()
       //   .append("rect")
@@ -947,9 +1095,9 @@ let mainArrZoomer = function (optIn) {
       //     .attr("fill", "transparent")
       //     .style("pointer-events", "none")
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // add one rectangle as background, and to allow click to zoom
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       svg.gS0
         .append('g')
         .selectAll('rect')
@@ -983,154 +1131,162 @@ let mainArrZoomer = function (optIn) {
         textureOrient: '2/8'
       })
 
-      // ---------------------------------------------------------------------------------------------------
-      //
-      // ---------------------------------------------------------------------------------------------------
-      let scaleStart = 0
-      com.svgZoomStartS1 = function () {
-        scaleStart = d3.event.transform.k
-      }
+      // // ------------------------------------------------------------------
+      // //
+      // // ------------------------------------------------------------------
+      // let scaleStart = 0
+      // com.svgZoomStartS1 = function () {
+      //   scaleStart = d3.event.transform.k
+      // }
 
-      com.svgZoomDuringS1 = function () {
-        svg.gS1.attr('transform', d3.event.transform)
-      }
+      // com.svgZoomDuringS1 = function () {
+      //   svg.gS1.attr('transform', d3.event.transform)
+      // }
 
-      com.svgZoomEndS1 = function () {
-        // if on minimal zoom, center
-        if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
-          if (Math.abs(d3.event.transform.k - zoomLen['0.0']) < 0.00001) {
-            if (locker.isFreeV(['autoZoomPos'])) {
-              zoomToPos({ target: null, scale: 1, durFact: 0.5 })
-            }
-          }
-        }
-      }
+      // com.svgZoomEndS1 = function () {
+      //   // if on minimal zoom, center
+      //   if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
+      //     if (Math.abs(d3.event.transform.k - zoomLen['0.0']) < 0.00001) {
+      //       if (locker.isFreeV(['autoZoomPos'])) {
+      //         zoomToPos({ target: null, scale: 1, durFact: 0.5 })
+      //       }
+      //     }
+      //   }
+      // }
 
-      com.svgS1zoom = d3.zoom().scaleExtent([zoomLen['0.0'], zoomLen['1.3']])
-      com.svgS1zoom.on('start', com.svgZoomStartS1)
-      com.svgS1zoom.on('zoom', com.svgZoomDuringS1)
-      com.svgS1zoom.on('end', com.svgZoomEndS1)
+      // com.svgS1zoom = d3.zoom().scaleExtent([zoomLen['0.0'], zoomLen['1.3']])
+      // com.svgS1zoom.on('start', com.svgZoomStartS1)
+      // com.svgS1zoom.on('zoom', com.svgZoomDuringS1)
+      // com.svgS1zoom.on('end', com.svgZoomEndS1)
 
-      // ---------------------------------------------------------------------------------------------------
-      // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
-      // ---------------------------------------------------------------------------------------------------
-      runLoop.init({
-        tag: 'zoomToPosDetail',
-        func: doZoomToTarget,
-        nKeep: -1
-      })
+      // // ------------------------------------------------------------------
+      // // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
+      // // ------------------------------------------------------------------
+      // runLoop.init({
+      //   tag: 'zoomToPosDetail',
+      //   func: doZoomToTarget,
+      //   nKeep: -1
+      // })
 
-      // the actual function to be called when a zoom needs to be put in the queue
-      zoomToPos = function (optIn) {
-        if (!locker.isFree('inInit')) {
-          setTimeout(function () {
-            zoomToPos(optIn)
-          }, timeD.waitLoop)
-          return
-        }
+      // // the actual function to be called when a zoom needs to be put in the queue
+      // zoomToPos = function (optIn) {
+      //   if (!locker.isFree('inInit')) {
+      //     setTimeout(function () {
+      //       zoomToPos(optIn)
+      //     }, timeD.waitLoop)
+      //     return
+      //   }
 
-        let zoomPos = optIn.target
-        let targetScale = optIn.scale
-        let durFact = optIn.durFact
+      //   let zoomPos = optIn.target
+      //   let targetScale = optIn.scale
+      //   let durFact = optIn.durFact
 
-        if (!locker.isFreeV(['autoZoomPos'])) return
+      //   if (!locker.isFreeV(['autoZoomPos'])) return
 
-        let transTo = hasVar(zoomPos) ? zoomPos : [lenD.w[1] / 2, lenD.h[1] / 2]
+      //   let transTo = hasVar(zoomPos) ? zoomPos : [lenD.w[1] / 2, lenD.h[1] / 2]
 
-        let funcStart = function () {
-          locker.add({ id: 'autoZoomPos', override: true })
-        }
-        let funcDuring = function () {}
-        let funcEnd = function () {
-          locker.remove('autoZoomPos')
-        }
+      //   let funcStart = function () {
+      //     locker.add({ id: 'autoZoomPos', override: true })
+      //   }
+      //   let funcDuring = function () {}
+      //   let funcEnd = function () {
+      //     locker.remove('autoZoomPos')
+      //   }
 
-        let outD = {
-          trgScale: targetScale,
-          durFact: durFact,
-          baseTime: 300,
-          transTo: transTo,
-          wh: [lenD.w[1], lenD.h[1]],
-          cent: null,
-          funcStart: funcStart,
-          funcEnd: funcEnd,
-          funcDuring: funcDuring,
-          svg: svg.svgS1,
-          svgZoom: com.svgS1zoom,
-          svgBox: svg.gS1,
-          svgZoomNode: svg.svgS1zoomNode
-        }
+      //   let outD = {
+      //     trgScale: targetScale,
+      //     durFact: durFact,
+      //     baseTime: 300,
+      //     transTo: transTo,
+      //     wh: [lenD.w[1], lenD.h[1]],
+      //     cent: null,
+      //     funcStart: funcStart,
+      //     funcEnd: funcEnd,
+      //     funcDuring: funcDuring,
+      //     svg: svg.svgS1,
+      //     svgZoom: com.svgS1zoom,
+      //     svgBox: svg.gS1,
+      //     svgZoomNode: svg.svgS1zoomNode
+      //   }
 
-        if (durFact < 0) {
-          outD.durFact = 0
-          doZoomToTarget(outD)
-        } else {
-          runLoop.push({ tag: 'zoomToPosDetail', data: outD })
-        }
-      }
-      thisDetail.zoomToPos = zoomToPos
+      //   if (durFact < 0) {
+      //     outD.durFact = 0
+      //     doZoomToTarget(outD)
+      //   } else {
+      //     runLoop.push({ tag: 'zoomToPosDetail', data: outD })
+      //   }
+      // }
+      // thisDetail.zoomToPos = zoomToPos
 
-      let svgS1W = 100 * lenD.w[1] / lenD.w[0] + '%'
-      let svgS1H = 100 * lenD.h[1] / lenD.h[0] + '%'
-      let svgS1T = 100 * ((lenD.h[0] - lenD.h[1]) / 2) / lenD.h[0] + '%'
-      let svgS1L = 100 * ((lenD.w[0] - lenD.w[1]) / 2) / lenD.w[0] + '%'
+      // let svgS1W = 100 * lenD.w[1] / lenD.w[0] + '%'
+      // let svgS1H = 100 * lenD.h[1] / lenD.h[0] + '%'
+      // let svgS1T = 100 * ((lenD.h[0] - lenD.h[1]) / 2) / lenD.h[0] + '%'
+      // let svgS1L = 100 * ((lenD.w[0] - lenD.w[1]) / 2) / lenD.w[0] + '%'
 
-      svg.svgS1 = d3
-        .select(svgDiv)
-        // svg.svgS1 = d3.select("#"+(svgDiv.id))
-        // .classed("svgInGridStack_outer", true)
-        .append('svg')
-        .attr('viewBox', '0 0 ' + lenD.w[1] + ' ' + lenD.h[1])
-        .style('position', 'absolute')
-        .style('width', svgS1W)
-        .style('height', svgS1H)
-        .style('top', svgS1T)
-        .style('left', svgS1L)
-        .style('background', 'transparent') // .style("background", "red").style('opacity',0.2)//.style("border","1px solid red")
-        .call(com.svgS1zoom)
-        .on('dblclick.zoom', null)
-        .on('wheel', function () {
-          d3.event.preventDefault()
-        })
+      // svg.svgS1 = d3
+      //   .select(svgDiv)
+      //   // svg.svgS1 = d3.select("#"+(svgDiv.id))
+      //   // .classed("svgInGridStack_outer", true)
+      //   .append('svg')
+      //   .attr('viewBox', '0 0 ' + lenD.w[1] + ' ' + lenD.h[1])
+      //   .style('position', 'absolute')
+      //   .style('width', svgS1W)
+      //   .style('height', svgS1H)
+      //   .style('top', svgS1T)
+      //   .style('left', svgS1L)
+      //   .style('background', 'transparent') 
+      //   // .style("background", "red").style("border","2px solid red")
+      //   .call(com.svgS1zoom)
+      //   .on('dblclick.zoom', null)
+      //   .on('wheel', function () {
+      //     d3.event.preventDefault()
+      //   })
 
-      svg.svgS1.attr('pointer-events', 'none').attr('opacity', 0)
+      // svg.svgS1.attr('pointer-events', 'none').attr('opacity', 0)
 
-      // save the svg node to use for d3.zoomTransform() later
-      svg.svgS1zoomNode = svg.svgS1.nodes()[0]
+      // // save the svg node to use for d3.zoomTransform() later
+      // svg.svgS1zoomNode = svg.svgS1.nodes()[0]
 
-      // add one rectangle as background
-      // ---------------------------------------------------------------------------------------------------
-      svg.svgS1
-        .append('g')
-        .selectAll('rect')
-        .data([0])
-        .enter()
-        .append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', '100%')
-        .attr('height', '100%')
-        .attr('stroke', '#383B42')
-        .attr('stroke-width', 2)
-        .style('opacity', 0.1)
-        .attr('fill', 'transparent') // .attr("fill", "red")
-      // .attr("fill", "#F2F2F2")
+      // // add one rectangle as background
+      // // ------------------------------------------------------------------
+      // svg.svgS1
+      //   .append('g')
+      //   .selectAll('rect')
+      //   .data([0])
+      //   .enter()
+      //   .append('rect')
+      //   .attr('x', 0)
+      //   .attr('y', 0)
+      //   .attr('width', '100%')
+      //   .attr('height', '100%')
+      //   .attr('stroke', '#383B42')
+      //   .attr('stroke-width', 2)
+      //   .style('opacity', 0.1)
+      //   .attr('fill', 'transparent') // .attr("fill", "red")
+      // // .attr("fill", "#F2F2F2")
 
-      svg.gS1 = svg.svgS1.append('g')
+      // svg.gS1 = svg.svgS1.append('g')
 
-      // the background grid
-      bckPattern({
-        com: com,
-        gNow: svg.gS1,
-        gTag: 'svgS1',
-        lenWH: [lenD.w[0], lenD.h[0]],
-        opac: 0.025,
-        textureOrient: '7/8'
-      })
+      // // the background grid
+      // bckPattern({
+      //   com: com,
+      //   gNow: svg.gS1,
+      //   gTag: 'svgS1',
+      //   lenWH: [lenD.w[0], lenD.h[0]],
+      //   opac: 0.025,
+      //   textureOrient: '7/8'
+      // })
 
-      // ---------------------------------------------------------------------------------------------------
+      svg.gS1 = svg.svgS0.append('g')
+
+      let s1Trans = 
+        'translate(' + (0.05 * lenD.w[1]) + ',' +
+        (0.2 * lenD.h[1]) +  ')scale(' + 0.9 + ')'
+      svg.gS1.attr('transform', s1Trans)
+
+      // ------------------------------------------------------------------
       // some initialization
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // see: http://bl.ocks.org/mbostock/5100636
       com.arcTween = function (transition, optIn) {
         // if(optIn.skip != undefined && optIn.skip) return null;
@@ -1200,6 +1356,7 @@ let mainArrZoomer = function (optIn) {
       // state-01 initialization (needed before s01inner(), s01outer())
       com.s01 = {}
       com.s01.g = svg.gS0.append('g')
+      com.s01.gText = svg.gS0.append('g')
 
       // state-1 initialization (needed before updateLiveDataS1())
       com.s10 = {}
@@ -1209,9 +1366,9 @@ let mainArrZoomer = function (optIn) {
     }
     this.initData = initData
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function setStateOnce () {
       // console.log('setStateDetail ----',getScale(),optIn)
       let scale = svgMain.getScale()
@@ -1221,240 +1378,56 @@ let mainArrZoomer = function (optIn) {
       }
 
       if (scale <= zoomLen['0.1']) {
-        telArcs([telData.avg], 0)
+        let propsIn = { 
+          'telId': 'avg',
+          'propD': instProps[''],
+          'propDv': instProps0[''],
+          'propTtlD': instPropTitles[''],
+        }
+        
+        telArcs([telData.avg], propsIn, 0)
         setSubProp({ telId: 'avg', propIn: '' })
       } else {
         let targetIndex = telData.idToIndex[zoomTarget]
+        let propsIn = { 
+          'telId': zoomTarget,
+          'propD': instProps[zoomTarget],
+          'propDv': instProps0[zoomTarget],
+          'propTtlD': instPropTitles[''],
+        }
 
         if (scale < zoomLen['1.0']) {
-          telArcs([telData.tel[targetIndex]], 0)
+          telArcs([telData.tel[targetIndex]], propsIn, 0)
           setSubProp({ telId: zoomTarget, propIn: '' })
         } else {
-          telArcs([telData.tel[targetIndex]], 1)
+          telArcs([telData.tel[targetIndex]], propsIn, 1)
         }
       }
     }
     this.setStateOnce = setStateOnce
 
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    function setSubProp (optIn) {
-      // console.log('setSubProp',optIn)
-      zoomTargetProp = optIn.propIn
-      let telId = optIn.telId
-      let propIn = optIn.propIn
-      let parentName =
-        propIn === '' ? null : telData.propParentS1[telId][propIn]
-
-      telPropTitle({ telId: telId, propIn: propIn, parentName: parentName })
-    }
-
-    // ---------------------------------------------------------------------------------------------------
-    //
-    // ---------------------------------------------------------------------------------------------------
-    function telPropTitle (optIn) {
-      let telId = optIn.telId
-      let propIn = optIn.propIn
-      let parentName = optIn.parentName
-
-      if (propIn !== '' && !hasVar(parentName)) return
-      // console.log('telPropTitle',optIn)
-
-      // ---------------------------------------------------------------------------------------------------
-      // title on top
-      // ---------------------------------------------------------------------------------------------------
-      let tagState = 'state10'
-      let tagNow = tagState + '_title'
-
-      let ttlData = []
-      ttlData.push({
-        id: tagNow + 'telId',
-        text: telId === 'avg' ? 'Array' : telInfo.getTitle(telId),
-        x: 20,
-        y: avgTelD[1].h / 2,
-        h: 30,
-        strkW: 1
-      })
-
-      if (hasVar(parentName)) {
-        ttlData.push({
-          id: tagNow + parentName,
-          text: propTtlD[parentName],
-          x: 10,
-          y: avgTelD[1].h / 2,
-          h: 30,
-          strkW: 1
-        })
-
-        if (propIn !== parentName) {
-          ttlData.push({
-            id: tagNow + propIn,
-            text: telData.propTitleS1[telId][propIn],
-            x: 10,
-            y: avgTelD[1].h / 2,
-            h: 25,
-            strkW: 0
-          })
-        }
-      }
-
-      let title = com.s01.g
-        .selectAll('text.' + tagNow)
-        .data(ttlData, function (d, i) {
-          return i
-        })
-
-      let eleWH = [[], null]
-      $.each(ttlData, function (i, d) {
-        eleWH[0].push(null)
-      })
-
-      function textPos (d, i, isX) {
-        if (isX) {
-          let x = d.x
-          $.each(ttlData, function (index0, dataNow0) {
-            if (index0 < i) {
-              if (!hasVar(eleWH[0][index0]) || eleWH[0][index0] === 0) {
-                eleWH[0][index0] = getNodeWidthById({
-                  selction: com.s01.g.selectAll('text.' + tagNow),
-                  id: dataNow0.id
-                })
-              }
-              x += dataNow0.x + eleWH[0][index0]
-            }
-          })
-          return x
-        } else {
-          if (!hasVar(eleWH[1]) || eleWH[1] === 0) {
-            eleWH[1] = getNodeHeightById({
-              selction: com.s01.g.selectAll('text.' + tagNow),
-              id: ttlData[0].id,
-              txtScale: true
-            })
-          }
-          return d.y + eleWH[1]
-        }
-      }
-
-      title
-        .enter()
-        .append('text')
-        .text(function (d) {
-          return d.text
-        })
-        .attr('class', tagState + ' ' + tagNow) // class list for easy selection
-        .style('font-weight', function (d, i) {
-          return i === 0 ? 'bold' : 'normal'
-        })
-        .style('opacity', 0)
-        .style('fill', '#383b42')
-        .style('stroke-width', function (d) {
-          return d.strkW
-        })
-        .attr('vector-effect', 'non-scaling-stroke')
-        .style('pointer-events', 'none')
-        .style('stroke', function (d) {
-          return '#383b42'
-        })
-        .attr('font-size', function (d) {
-          return d.h + 'px'
-        })
-        .attr('transform', function (d, i) {
-          d.pos = [lenD.w[0] * 1.1, textPos(d, i, false)]
-          return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
-        })
-        .merge(title)
-        .text(function (d) {
-          return d.text
-        })
-        .transition('update1')
-        .duration(timeD.animArc) // .delay(timeD.animArc/2)
-        .attr('transform', function (d, i) {
-          d.pos = [textPos(d, i, true), textPos(d, i, false)]
-          return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
-        })
-        .style('opacity', 1)
-
-      title
-        .exit()
-        .transition('inOut')
-        .duration(timeD.animArc)
-        .attr('transform', function (d, i) {
-          return 'translate(' + d.pos[0] * 2 + ',' + d.pos[1] + ')'
-        })
-        .style('opacity', 0)
-        .remove()
-
-      // ---------------------------------------------------------------------------------------------------
-      // highlight rectangle for the selected property
-      // ---------------------------------------------------------------------------------------------------
-      let tagRect = tagState + '_rectSelect'
-      let porpNow =
-        propD.indexOf(propIn) >= 0 || propIn === ''
-          ? propIn
-          : telData.propParentS1[telId][propIn]
-      // let porpX   = ((porpNow == "" || !clickIn) ? prop0: porpNow) + "x";
-      let porpX = (porpNow === '' ? prop0 : porpNow) + 'x'
-      let recH = avgTelD[1].h
-      let recW = recH * 1.5
-      let recX = avgTelD[1][porpX] - recH / 2 - (recW - recH) / 2
-      let recY = lenD.h[0] - recH
-
-      let dataV = svgMain.getScale() >= zoomLen['1.0'] ? [{ id: porpX }] : []
-      let rect = com.s01.g
-        .selectAll('rect.' + tagRect)
-        .data(dataV, function (d, i) {
-          return i
-        })
-      // let rect = com.s01.g.selectAll("rect."+tagRect).data( (clickIn || hasDataBase) ? [{id:0}] : [] )
-
-      rect
-        .enter()
-        .append('rect')
-        .attr('class', tagRect)
-        .style('fill', '#383b42')
-        // .style("stroke", "#383b42")
-        .style('pointer-events', 'none')
-        .style('stroke-width', '0')
-        .attr('opacity', 0)
-        .attr('height', recH)
-        .attr('width', recW)
-        .attr('transform', function (d) {
-          return 'translate(' + -recW * 2 + ',' + recY + ')'
-        })
-        .merge(rect)
-        .transition('enter')
-        .duration(timeD.animArc)
-        .attr('opacity', 0.05)
-        .attr('transform', function (d) {
-          return 'translate(' + recX + ',' + recY + ')'
-        })
-
-      rect
-        .exit()
-        .transition('out')
-        .duration(timeD.animArc)
-        .attr('transform', function (d) {
-          return 'translate(' + lenD.h[0] + ',' + recY + ')'
-        })
-        .attr('opacity', 0)
-        .remove()
-    }
-
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // innner arcs for the different properties
-    // ---------------------------------------------------------------------------------------------------
-    function telArcs (dataV, state) {
+    // ------------------------------------------------------------------
+    function telArcs (dataV, propsIn, state) {
       let tagState = 'state01'
+      let telIdIn = propsIn.telId
+      let propDin = propsIn.propD
+      let propDinV = propsIn.propDv
+      let propTtlIn = propsIn.propTtlD
+
+      function getPropIndex(id, porpIn) {
+        return instProps[id].indexOf(porpIn)
+      }
 
       if (!hasVar(com.s01.inner)) {
         com.s01.inner = true
 
-        $.each(propD, function (index, porpNow) {
+        $.each(allInstProps, function (_, porpNow) {
           $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
             let tagNow = porpNow + nArcDrawNow
             let is0 = nArcDrawNow === 0
+            // console.log('--0--',tagNow)
 
             arcFunc[tagNow] = {}
             arcFunc[tagNow].rad00 = function (d) {
@@ -1463,35 +1436,38 @@ let mainArrZoomer = function (optIn) {
             arcFunc[tagNow].rad01 = function (d) {
               return avgTelD[d.state].r * (is0 ? 0.95 : 0.99)
             }
-            // arcFunc[tagNow].rad10 = function (d) { return avgTelD[d.state].r * rScale[1].innerH0 * (is0 ? 1 : 0.97); };
-            // arcFunc[tagNow].rad11 = function (d) { return avgTelD[d.state].r * rScale[1].innerH1 * (is0 ? 1 : 1.03); };
             arcFunc[tagNow].ang00 = function (d) {
-              return index * tauFrac + tauSpace
+              if (d[porpNow] === undefined) return 0
+              return getPropIndex(d.id, porpNow) * instTauFracs[d.id] + tauSpace
             }
             arcFunc[tagNow].ang01 = function (d) {
+              if (d[porpNow] === undefined) return 0
               return (
-                index * tauFrac +
+                getPropIndex(d.id, porpNow) * instTauFracs[d.id] +
                 tauSpace +
-                (tauFrac - tauSpace * 2) * (is0 ? 1 : telHealthFrac(d[porpNow]))
+                (instTauFracs[d.id] - tauSpace * 2) * (is0 ? 1 : telHealthFrac(d[porpNow]))
               )
             }
             arcFunc[tagNow].ang10 = function (d) {
-              return 0
+              if (d[porpNow] === undefined) return 0
+              return 0.1
             }
             arcFunc[tagNow].ang11 = function (d) {
+              if (d[porpNow] === undefined) return 0
               return is0 ? tau : tau * telHealthFrac(d[porpNow])
             }
           })
         })
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // innner arcs for the different properties
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let pos = {}
       let angState = {}
       let radState = {}
-      $.each(propDv, function (index, porpNow) {
+      
+      $.each(allInstProps0, function (_, porpNow) {
         if (state === 0) {
           pos[porpNow] = { x: avgTelD[state].x, y: avgTelD[state].y }
           angState = { angStr1: 'ang00', angEnd1: 'ang01' }
@@ -1506,9 +1482,10 @@ let mainArrZoomer = function (optIn) {
         }
       })
 
-      $.each(propD, function (index, porpNow) {
+      $.each(allInstProps, function (_, porpNow) {
         $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
           let tagNow = porpNow + nArcDrawNow
+
           let is0 = nArcDrawNow === 0
 
           if (!hasVar(arcPrev[tagNow])) {
@@ -1517,9 +1494,16 @@ let mainArrZoomer = function (optIn) {
             arcPrev[tagNow].rad = {}
           }
 
+          let dataVnow = dataV
+          if (dataV.length > 0) {
+            if (dataV[0][porpNow] === undefined) {
+              dataVnow = []
+            }
+          }
+
           let path = com.s01.g
             .selectAll('path.' + tagNow)
-            .data(dataV, function (d, i) {
+            .data(dataVnow, function (d, i) {
               return i
             })
 
@@ -1562,7 +1546,7 @@ let mainArrZoomer = function (optIn) {
             })
             .transition('update')
             .duration(timeD.animArc * 2)
-            .attr('transform', function (d) {
+            .attr('transform', function (d,i) {
               return 'translate(' + pos[porpNow].x + ',' + pos[porpNow].y + ')'
             })
             .style('stroke', function (d) {
@@ -1571,6 +1555,12 @@ let mainArrZoomer = function (optIn) {
             .style('fill', function (d) {
               return telHealthCol(d[porpNow])
             })
+            // .each(function (d, i) {
+            //   // console.log('MNM', i, tagNow, '!!!',arcPrev[tagNow].ang[0], '!!!', d)
+            // })
+            // .each(function (d, i) {
+            //   d.tauFracNow = tauFracIn
+            // })
             .call(com.arcTween, {
               tagNow: tagNow,
               arcPrev: arcPrev,
@@ -1607,9 +1597,9 @@ let mainArrZoomer = function (optIn) {
         })
       })
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // outer rings for the prop0 (equivalent of s00_D metric in s01_D)
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let porpAll = prop0
 
       if (!hasVar(com.s01.outer)) {
@@ -1641,9 +1631,9 @@ let mainArrZoomer = function (optIn) {
         })
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
         let tagNow = porpAll + nArcDrawNow
         let is0 = nArcDrawNow === 0
@@ -1743,34 +1733,65 @@ let mainArrZoomer = function (optIn) {
           .remove()
       })
 
-      // ---------------------------------------------------------------------------------------------------
-      // invisible rectangle for the selecting a property
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
+      // invisible rectangle for selecting a property
+      // ------------------------------------------------------------------
       let tagTitle = tagState + '_title'
+      let tagRect = tagState + 'rect'
+      
       let textD = []
-      $.each(propD, function (index, porpNow) {
+      let recD = []
+
+      let allPropsNow = (state ) ? allInstProps0 : propDinV
+
+      $.each(allPropsNow, function (_, porpNow) {
+        let propIndex = getPropIndex(telIdIn, porpNow)
         let txtR = avgTelD[state].r * rScale[state].health1 * 1.2
-        let xy = getPropPosShift('xy', txtR, index)
-        textD.push({
-          id: tagTitle + porpNow,
-          text: propTtlD[porpNow],
-          h: state === 0 ? 30 : 16,
-          xy: state === 0 ? xy : [0, 0],
-          x: state === 0 ? avgTelD[state].x - xy[0] : pos[porpNow].x,
-          y: state === 0 ? avgTelD[state].y - xy[1] : pos[porpNow].y,
-          strkW: state === 1 ? 0.5 : 0.2,
-          fWgt: state === 0 ? 'bold' : 'normal',
-          opac: state === 0 ? 0.7 : 0.9,
-          anch:
-            state === 1 || Math.abs(xy[0] / avgTelD[state].r) < 0.001
-              ? 'middle'
-              : xy[0] < 0 ? 'start' : 'end'
+        let xy = getPropPosShift('xy', txtR, propIndex, propDin.length)
+        let opac = (state === 0) ? 0.7 : 0.9
+        if (state === 1 && propDin.indexOf(porpNow) === -1) opac *= 0.5
+        
+        if (allInstProps.indexOf(porpNow) >= 0) {
+          textD.push({
+            id: tagTitle + porpNow,
+            text: propTtlIn[porpNow],
+            prop: porpNow,
+            h: state === 0 ? 30 : 16,
+            xy: state === 0 ? xy : [0, 0],
+            x: state === 0 ? avgTelD[state].x - xy[0] : pos[porpNow].x,
+            y: state === 0 ? avgTelD[state].y - xy[1] : pos[porpNow].y,
+            strkW: state === 1 ? 0.5 : 0.2,
+            fWgt: state === 0 ? 'bold' : 'normal',
+            opac: opac,
+            anch:
+              state === 1 || Math.abs(xy[0] / avgTelD[state].r) < 0.001
+                ? 'middle'
+                : xy[0] < 0 ? 'start' : 'end'
+          })
+        }
+
+        let recH = avgTelD[1].h
+        let recW = Math.abs(
+          avgTelD[1][allInstProps[0] + 'x'] - 
+          avgTelD[1][allInstProps[1] + 'x']
+        )
+        let recX = avgTelD[1][porpNow + 'x'] - recH / 2 - (recW - recH) / 2
+        let recY = lenD.h[0] - recH
+
+        recD.push({
+          id: tagRect + porpNow,
+          prop: porpNow,
+          h: avgTelD[1].h,
+          w: recW,
+          x: recX,
+          y: recY,
         })
+
       })
 
       let eleH = null
 
-      let title = com.s01.g
+      let title = com.s01.gText
         .selectAll('text.' + tagTitle)
         .data(textD, function (d) {
           return d.id
@@ -1818,7 +1839,7 @@ let mainArrZoomer = function (optIn) {
         .attr('dy', function (d) {
           if (!hasVar(eleH)) {
             eleH = getNodeHeightById({
-              selction: com.s01.g.selectAll('text.' + tagTitle),
+              selction: com.s01.gText.selectAll('text.' + tagTitle),
               id: d.id,
               txtScale: true
             })
@@ -1836,93 +1857,100 @@ let mainArrZoomer = function (optIn) {
         .style('opacity', '0')
         .remove()
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // invisible rectangle for the selecting a property
-      // ---------------------------------------------------------------------------------------------------
-      $.each(propDv, function (index, porpNow) {
-        let tagRect = tagState + porpNow + 'rect'
+      // ------------------------------------------------------------------
+      let recDnow = (state === 1) ? recD : []
+      let rect = com.s01.gText
+        .selectAll('rect.' + tagRect)
+        .data(recDnow, function (d) {
+          return d.id
+        })
 
-        let recH = avgTelD[1].h
-        let recW = Math.abs(
-          avgTelD[1][propD[0] + 'x'] - avgTelD[1][propD[1] + 'x']
-        )
-        let recX = avgTelD[1][porpNow + 'x'] - recH / 2 - (recW - recH) / 2
-        let recY = lenD.h[0] - recH
+      rect
+        .enter()
+        .append('rect')
+        .attr('class', tagRect)
+        .attr('opacity', 0)
+        // .attr('opacity', 0.1)
+        .style('stroke-width', '0')
+        // .style("fill", "#383b42").style("stroke", "red").attr("opacity", 0.1).style("stroke-width", "1")
+        .attr('height', function (d) {
+          return d.h
+        })
+        .attr('width', function (d) {
+          return d.w
+        })
+        // .attr('height', recH)
+        // .attr('width', recW)
+        // .attr('transform', function (d) {
+        //   return 'translate(' + -recW * 2 + ',' + recY + ')'
+        // })
+        .merge(rect)
+        .on('click', recClick)
+        .transition('enter')
+        .duration(timeD.animArc)
+        .attr('transform', function (d) {
+          return 'translate(' + d.x + ',' + d.y + ')'
+        })
 
-        let rect = com.s01.g
-          .selectAll('rect.' + tagRect)
-          .data(state ? [{ id: 0 }] : [])
+      rect
+        .exit()
+        .transition('out')
+        .duration(1)
+        .remove()
 
-        rect
-          .enter()
-          .append('rect')
-          .attr('class', tagRect)
-          .attr('opacity', 0)
-          .style('stroke-width', '0')
-          // .style("fill", "#383b42").style("stroke", "red").attr("opacity", 0.1).style("stroke-width", "1")
-          .attr('height', recH)
-          .attr('width', recW)
-          .attr('transform', function (d) {
-            return 'translate(' + -recW * 2 + ',' + recY + ')'
-          })
-          .on('click', click)
-          .merge(rect)
-          .transition('enter')
-          .duration(timeD.animArc)
-          .attr('transform', function (d) {
-            return 'translate(' + recX + ',' + recY + ')'
-          })
 
-        rect
-          .exit()
-          .transition('out')
-          .duration(timeD.animArc)
-          .attr('transform', function (d) {
-            return 'translate(' + lenD.h[0] + ',' + recY + ')'
-          })
-          .remove()
-
-        // ---------------------------------------------------------------------------------------------------
-        //
-        // ---------------------------------------------------------------------------------------------------
-        function click (d, i) {
-          if (
-            !locker.isFreeV([
-              's10bckArcChange',
-              'dataChange',
-              's10clickHirch'
-            ])
-          ) {
-            return
-          }
-
-          let clickIn = porpNow !== prop0
-          let propIn = clickIn ? porpNow : ''
-
-          // propsS1({ telId:zoomTarget, clickIn:clickIn, propIn:propIn, debug:"telArcs" }); // before 29/9
-
-          svgMain.zoomToTrgMain({
-            target: zoomTarget,
-            scale: zoomLen['1.2'],
-            durFact: 1
-          })
-          propsS1({
-            telId: zoomTarget,
-            clickIn: clickIn,
-            propIn: propIn,
-            doFunc: ['bckArcClick'],
-            debug: 'telArcs'
-          })
-
-          // // initialize the zoom
-          // thisDetail.zoomToPos({ target:null, scale:1, durFact:1 });
+      // ------------------------------------------------------------------
+      //
+      // ------------------------------------------------------------------
+      function recClick (d, i) {
+        if (
+          !locker.isFreeV([
+            's10bckArcChange',
+            'dataChange',
+            's10clickHirch'
+          ])
+        ) {
+          return
         }
-      })
+
+        let clickIn = d.prop !== prop0
+        let propIn = clickIn ? d.prop : ''
+        if (propDin.indexOf(d.prop) === -1) {
+          clickIn = true
+          propIn = ''
+        }
+
+        // propsS1({ telId:zoomTarget, clickIn:clickIn, propIn:propIn, debug:"telArcs" }); // before 29/9
+
+        svgMain.zoomToTrgMain({
+          target: zoomTarget,
+          scale: zoomLen['1.2'],
+          durFact: 1
+        })
+        propsS1({
+          telId: zoomTarget,
+          clickIn: clickIn,
+          propIn: propIn,
+          doFunc: ['bckArcClick'],
+          debug: 'telArcs'
+        })
+
+        // // initialize the zoom
+        // thisDetail.zoomToPos({ target:null, scale:1, durFact:1 });
+      }
+
+
+
+
+
+      return
     }
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     let prevTelHirchProp = ''
     function telHirch (optIn) {
       function mayUpdate () {
@@ -1984,14 +2012,14 @@ let mainArrZoomer = function (optIn) {
         clickIn = false
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // update the title
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       setSubProp({ telId: telId, propIn: clickIn ? propIn : '' })
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       if (!remove && propIn !== '') {
         if (!hasVar(telData.propDataS1[telId][propIn])) {
           return
@@ -2000,16 +2028,17 @@ let mainArrZoomer = function (optIn) {
 
       locker.add({ id: 'updateTelHirchDetail', override: true })
 
-      // show/hide the svg
-      // ---------------------------------------------------------------------------------------------------
-      svg.svgS1
-        .attr('pointer-events', remove ? 'none' : 'auto')
-        .transition('update')
-        .duration(timeD.animArc)
-        .attr('opacity', remove ? 0 : 1)
+      // // ------------------------------------------------------------------
+      // // show/hide the svg
+      // // ------------------------------------------------------------------
+      // svg.svgS1
+      //   .attr('pointer-events', remove ? 'none' : 'auto')
+      //   .transition('update')
+      //   .duration(timeD.animArc)
+      //   .attr('opacity', remove ? 0 : 1)
 
       // define the containing g with small margins on the sides
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       if (!hasVar(com.s10.gHirch)) {
         com.s10.gHirch = com.s10.g.append('g')
         com.s10.gHirch.attr('transform', function (d) {
@@ -2021,9 +2050,9 @@ let mainArrZoomer = function (optIn) {
       let hasDataBase =
         !clickIn && !remove && hasVar(telData.dataBaseS1[telId])
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // the tree hierarchy
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let desc = []
       let dataPath = []
       let maxDepth = 0
@@ -2087,9 +2116,9 @@ let mainArrZoomer = function (optIn) {
         return Math.max(10, Math.min(d.nodeR * 2, 15))
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // circles
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let circs = com.s10.gHirch
         .selectAll('circle.' + tagNodes)
         .data(desc, getEleId) // d.data.id
@@ -2140,9 +2169,9 @@ let mainArrZoomer = function (optIn) {
         .attr('r', 0)
         .remove()
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // labels
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let text = com.s10.gHirch
         .selectAll('text.' + tagText)
         .data(desc, getEleId)
@@ -2202,9 +2231,9 @@ let mainArrZoomer = function (optIn) {
         return !d.parent || d.data.id === propIn ? '' : d.data.ttl
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // links
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let path = com.s10.gHirch
         .selectAll('path.' + tagLinks)
         .data(dataPath, getEleId)
@@ -2254,9 +2283,9 @@ let mainArrZoomer = function (optIn) {
         )
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // highlight on hover, using voronoi mapping
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let vorFunc = d3
         .voronoi()
         .x(function (d) {
@@ -2302,7 +2331,7 @@ let mainArrZoomer = function (optIn) {
         .remove()
 
       // the click function
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       function vorClick (d) {
         setSubProp({ telId: telId, propIn: d.data.data.id })
 
@@ -2338,7 +2367,7 @@ let mainArrZoomer = function (optIn) {
       }
 
       // the highlight function
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       function focusEle (dIn, isOn) {
         let dInId = dIn.data.data.id
 
@@ -2404,9 +2433,224 @@ let mainArrZoomer = function (optIn) {
     }
     this.telHirch = telHirch
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
+    function setSubProp (optIn) {
+      // console.log('setSubProp',optIn)
+      zoomTargetProp = optIn.propIn
+      let telId = optIn.telId
+      let propIn = optIn.propIn
+      let parentName =
+        propIn === '' ? null : telData.propParentS1[telId][propIn]
+
+      telPropTitle({ telId: telId, propIn: propIn, parentName: parentName })
+    }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    function telPropTitle (optIn) {
+      let telId = optIn.telId
+      let propIn = optIn.propIn
+      let parentName = optIn.parentName
+
+      if (propIn !== '' && !hasVar(parentName)) return
+      // console.log('telPropTitle',optIn)
+
+      // ------------------------------------------------------------------
+      // title on top
+      // ------------------------------------------------------------------
+      let tagState = 'state10'
+      let tagNow = tagState + '_title'
+
+      let ttlData = []
+      ttlData.push({
+        id: tagNow + 'telId',
+        text: telId === 'avg' ? 'Array' : telInfo.getTitle(telId),
+        x: 20,
+        y: avgTelD[1].h / 2,
+        h: 30,
+        strkW: 1
+      })
+
+      if (hasVar(parentName)) {
+        ttlData.push({
+          id: tagNow + parentName,
+          text: instPropTitles[telId][parentName],
+          x: 10,
+          y: avgTelD[1].h / 2,
+          h: 30,
+          strkW: 1
+        })
+
+        if (propIn !== parentName) {
+          ttlData.push({
+            id: tagNow + propIn,
+            text: telData.propTitleS1[telId][propIn],
+            x: 10,
+            y: avgTelD[1].h / 2,
+            h: 25,
+            strkW: 0
+          })
+        }
+      }
+
+      let title = com.s01.gText
+        .selectAll('text.' + tagNow)
+        .data(ttlData, function (d, i) {
+          return i
+        })
+
+      let eleWH = [[], null]
+      $.each(ttlData, function (i, d) {
+        eleWH[0].push(null)
+      })
+
+      function textPos (d, i, isX) {
+        if (isX) {
+          let x = d.x
+          $.each(ttlData, function (index0, dataNow0) {
+            if (index0 < i) {
+              if (!hasVar(eleWH[0][index0]) || eleWH[0][index0] === 0) {
+                eleWH[0][index0] = getNodeWidthById({
+                  selction: com.s01.gText.selectAll('text.' + tagNow),
+                  id: dataNow0.id
+                })
+              }
+              x += dataNow0.x + eleWH[0][index0]
+            }
+          })
+          return x
+        } else {
+          if (!hasVar(eleWH[1]) || eleWH[1] === 0) {
+            eleWH[1] = getNodeHeightById({
+              selction: com.s01.gText.selectAll('text.' + tagNow),
+              id: ttlData[0].id,
+              txtScale: true
+            })
+          }
+          return d.y + eleWH[1]
+        }
+      }
+
+      title
+        .enter()
+        .append('text')
+        .text(function (d) {
+          return d.text
+        })
+        .attr('class', tagState + ' ' + tagNow) // class list for easy selection
+        .style('font-weight', function (d, i) {
+          return i === 0 ? 'bold' : 'normal'
+        })
+        .style('opacity', 0)
+        .style('fill', '#383b42')
+        .style('stroke-width', function (d) {
+          return d.strkW
+        })
+        .attr('vector-effect', 'non-scaling-stroke')
+        .style('pointer-events', 'none')
+        .style('stroke', function (d) {
+          return '#383b42'
+        })
+        .attr('font-size', function (d) {
+          return d.h + 'px'
+        })
+        .attr('transform', function (d, i) {
+          d.pos = [lenD.w[0] * 1.1, textPos(d, i, false)]
+          return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
+        })
+        .merge(title)
+        .text(function (d) {
+          return d.text
+        })
+        .transition('update1')
+        .duration(timeD.animArc) // .delay(timeD.animArc/2)
+        .attr('transform', function (d, i) {
+          d.pos = [textPos(d, i, true), textPos(d, i, false)]
+          return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
+        })
+        .style('opacity', 1)
+
+      title
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .attr('transform', function (d, i) {
+          return 'translate(' + d.pos[0] * 2 + ',' + d.pos[1] + ')'
+        })
+        .style('opacity', 0)
+        .remove()
+
+      // ------------------------------------------------------------------
+      // highlight rectangle for the selected property
+      // ------------------------------------------------------------------
+      let tagRect = tagState + '_rectSelect'
+
+      // let propsNow = getTelProps(Object.keys(telData.propParentS1[telId]), telId)
+
+      let porpNow = propIn
+      if (propIn !== '') {
+        porpNow = telData.propParentS1[telId][propIn]
+      }
+      // let porpNow =
+      //   propD.indexOf(propIn) >= 0 || propIn === ''
+      //     ? propIn
+      //     : telData.propParentS1[telId][propIn]
+      // console.log('llllll', [propIn, porpNow], telData.propParentS1[telId])
+
+      // let porpX   = ((porpNow == "" || !clickIn) ? prop0: porpNow) + "x";
+      let porpX = (porpNow === '' ? prop0 : porpNow) + 'x'
+      let recH = avgTelD[1].h
+      let recW = recH * 1.5
+      let recX = avgTelD[1][porpX] - recH / 2 - (recW - recH) / 2
+      let recY = lenD.h[0] - recH
+
+      let dataV = svgMain.getScale() >= zoomLen['1.0'] ? [{ id: porpX }] : []
+      let rect = com.s01.g
+        .selectAll('rect.' + tagRect)
+        .data(dataV, function (d, i) {
+          return i
+        })
+      // let rect = com.s01.g.selectAll("rect."+tagRect).data( (clickIn || hasDataBase) ? [{id:0}] : [] )
+
+      rect
+        .enter()
+        .append('rect')
+        .attr('class', tagRect)
+        .style('fill', '#383b42')
+        // .style("stroke", "#383b42")
+        .style('pointer-events', 'none')
+        .style('stroke-width', '0')
+        .attr('opacity', 0)
+        .attr('height', recH)
+        .attr('width', recW)
+        .attr('transform', function (d) {
+          return 'translate(' + -recW * 2 + ',' + recY + ')'
+        })
+        .merge(rect)
+        .transition('enter')
+        .duration(timeD.animArc)
+        .attr('opacity', 0.05)
+        .attr('transform', function (d) {
+          return 'translate(' + recX + ',' + recY + ')'
+        })
+
+      rect
+        .exit()
+        .transition('out')
+        .duration(timeD.animArc)
+        .attr('transform', function (d) {
+          return 'translate(' + lenD.h[0] + ',' + recY + ')'
+        })
+        .attr('opacity', 0)
+        .remove()
+    }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
     function updateS1 (dataIn) {
       if (
         !locker.isFreeV([
@@ -2456,9 +2700,9 @@ let mainArrZoomer = function (optIn) {
     this.getWidgetState = getWidgetState
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   let SvgMain = function () {
     let com = {}
     let svg = {}
@@ -2541,9 +2785,9 @@ let mainArrZoomer = function (optIn) {
     this.getTrans = getTrans
     this.getZoomS = getZoomS
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function initData (dataIn) {
       let arrInit = dataIn.arrInit
       // let arrProp = dataIn.arrProp
@@ -2551,9 +2795,9 @@ let mainArrZoomer = function (optIn) {
 
       if (hasVar(svg.g)) return
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // create the main svg element
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let svgDivId = sgvTag.main.id + '_svg'
       let svgDiv = sgvTag.main.widget.getEle(svgDivId)
 
@@ -2577,9 +2821,9 @@ let mainArrZoomer = function (optIn) {
       }
       sock.emitMouseMove({ eleIn: svgDiv, data: { widgetId: widgetId } })
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // zoom start/on/end functions, attachd to com.svgZoom
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let scaleStart = 0
       com.svgZoomStart = function () {
         scaleStart = d3.event.transform.k
@@ -2598,7 +2842,11 @@ let mainArrZoomer = function (optIn) {
             'zoomToTargetChes'
           ])
         ) {
-          svgQuick.zoomToTrgQuick({ target: zoomTarget, scale: d3.event.transform.k, durFact: -1 })
+          if (svgQuick) {
+            svgQuick.zoomToTrgQuick({
+              target: zoomTarget, scale: d3.event.transform.k, durFact: -1
+            })
+          }
         }
 
         svgZoomUpdState()
@@ -2662,7 +2910,7 @@ let mainArrZoomer = function (optIn) {
             }
 
             // syncroniz changes with other panels
-            // ---------------------------------------------------------------------------------------------------
+            // ------------------------------------------------------------------
             syncStateSend({
               type: 'syncTelFocus',
               syncTime: Date.now(),
@@ -2682,9 +2930,9 @@ let mainArrZoomer = function (optIn) {
       com.svgZoom.on('end', com.svgZoomEnd)
       com.svgZoom.on('start', com.svgZoomStart)
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       runLoop.init({
         tag: 'zoomToTargetMain',
         func: doZoomToTarget,
@@ -2735,7 +2983,11 @@ let mainArrZoomer = function (optIn) {
         }
 
         let funcStart = function () {
-          svgQuick.zoomToTrgQuick({ target: targetName, scale: targetScale, durFact: -1 })
+          if (svgQuick) {
+            svgQuick.zoomToTrgQuick({
+              target: targetName, scale: targetScale, durFact: -1
+            })
+          }
 
           locker.add({ id: 'autoZoomTarget', override: true })
           if (targetName !== '' && targetName !== 'init') {
@@ -2788,9 +3040,9 @@ let mainArrZoomer = function (optIn) {
       }
       thisMain.zoomToTrgMain = zoomToTrgMain
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // create the main svg element
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       svg.svg = d3
         .select(svgDiv)
         // .classed("svgInGridStack_outer", true)
@@ -2815,9 +3067,9 @@ let mainArrZoomer = function (optIn) {
       svg.g = svg.svg.append('g')
       // thisMain.svgZoom = com.svgZoom;
 
-      // // ---------------------------------------------------------------------------------------------------
+      // // ------------------------------------------------------------------
       // // overlying rect, just to add a frame to the entire svg
-      // // ---------------------------------------------------------------------------------------------------
+      // // ------------------------------------------------------------------
       // svg.svg.append("g").selectAll("rect").data([0])
       //   .enter()
       //   .append("rect")
@@ -2832,9 +3084,9 @@ let mainArrZoomer = function (optIn) {
       // save the svg node to use for d3.zoomTransform() later
       svg.zoomNode = svg.svg.nodes()[0]
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       getScale = function () {
         return d3.zoomTransform(svg.zoomNode).k
       }
@@ -2857,7 +3109,7 @@ let mainArrZoomer = function (optIn) {
       // function stopped() { if (d3.event.defaultPrevented) d3.event.stopPropagation(); }
 
       // add one circle as background
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       svg.g
         .append('g')
         .selectAll('circle')
@@ -2882,9 +3134,9 @@ let mainArrZoomer = function (optIn) {
         hexR: 18
       })
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let vorFunc = d3
         .voronoi()
         .x(function (d) {
@@ -2895,17 +3147,17 @@ let mainArrZoomer = function (optIn) {
         })
         .extent([[0, 0], [lenD.w[0], lenD.h[0]]])
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       function setTelDataPhysical (dataIn) {
-        console.log("dataphyzoom", dataIn);
+        // console.log("dataphyzoom", dataIn);
         telData.xyrPhysical = {}
         telData.vor.dataPhysical = []
 
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         // get the width of the initial data (should be most inclusive)
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         let keys = Object.keys(dataIn)
         let minDataX = dataIn[keys[0]].x
         let maxDataX = dataIn[keys[0]].x
@@ -2944,10 +3196,10 @@ let mainArrZoomer = function (optIn) {
           telData.vor.dataPhysical.push({ id: id, x: x, y: y, r: eleR })
         })
 
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         // use delaunay links to get the closest neighbours of each data-point
         // see: http://christophermanning.org/projects/voronoi-diagram-with-force-directed-nodes-and-delaunay-links/
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         let linksV = {}
         $.each(vorFunc.links(telData.vor.dataPhysical), function (
           index,
@@ -2976,9 +3228,9 @@ let mainArrZoomer = function (optIn) {
 
         telData.mini = telData.xyrPhysical
       }
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       function setTelDataSubArr (dataIn) {
         telData.xyrSubArr = {}
         telData.vor.dataSubArr = []
@@ -3054,9 +3306,9 @@ let mainArrZoomer = function (optIn) {
         })
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // create voronoi cells for the dataset. see: https://bl.ocks.org/mbostock/4060366
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       telData.vorHov = function (d) {
         if (zoomTarget === d.data.id) return
         if (!locker.isFreeV(['zoom', 'autoZoomTarget'])) return
@@ -3068,9 +3320,9 @@ let mainArrZoomer = function (optIn) {
         setState()
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       runLoop.init({ tag: 'vorClickOnce', func: vorClickOnce, nKeep: 1 })
 
       telData.vorClick = function (optIn) {
@@ -3103,13 +3355,13 @@ let mainArrZoomer = function (optIn) {
         locker.remove({ id: 'vorZoomClick', delay: timeD.animArc })
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       runLoop.init({ tag: 'vorDblclickOnce', func: vorDblclickOnce, nKeep: 1 })
 
       telData.vorDblclick = function (optIn) {
-        console.log( optIn.source);
+        // console.log( optIn.source);
         if (locker.isFreeV(['zoom', 'autoZoomTarget'])) {
           runLoop.push({ tag: 'vorDblclickOnce', data: optIn })
         }
@@ -3194,25 +3446,26 @@ let mainArrZoomer = function (optIn) {
 
         vor.exit().remove()
 
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         // calculation of coordinates for labels, added next
-        // ---------------------------------------------------------------------------------------------------
-        $.each(propD, function (index, porpNow) {
-          s1LblXY[porpNow] = {}
-
-          $.each(telData.vor.data, function (index_, dataNow) {
-            let angle = (index + 0.5) * tauFrac + tau / 4
+        // ------------------------------------------------------------------
+        $.each(telData.vor.data, function (index_, dataNow) {
+          $.each(instProps[dataNow.id], function (index, porpNow) {
+            let angle = (index + 0.5) * instTauFracs[dataNow.id] + tau / 4
             let labelX = dataNow.r * Math.cos(angle)
             let labelY = dataNow.r * Math.sin(angle)
 
+            if (s1LblXY[porpNow] === undefined) {
+              s1LblXY[porpNow] = {}
+            }
             s1LblXY[porpNow][dataNow.id] = [labelX, labelY]
           })
         })
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       function setLayoutPhysical (dataIn) {
         if (hasVar(dataIn)) setTelDataPhysical(dataIn)
 
@@ -3273,19 +3526,19 @@ let mainArrZoomer = function (optIn) {
       }
       thisMain.setLayoutSubArr = setLayoutSubArr
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       if (!hasVar(com.vor)) {
         // add a voronoi-cell forground joining group members, to facilitate hover selection and area shading
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         com.vor = {}
         com.vor.g = svg.g.append('g')
         telData.vor = {}
 
         // run all variations, just to initialize all the variables
         // (but only the last one will take affect - this will be the default value)
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         telData.layout = 'physical' // set the physical layout as the default
         // telData.layout = "subArr";  // set the sub-array layout as the default value
 
@@ -3304,9 +3557,9 @@ let mainArrZoomer = function (optIn) {
         // // ------------------------------------------------------------------------
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // some initialization
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       if (!hasVar(com.arcTween)) {
         // see: http://bl.ocks.org/mbostock/5100636
         com.arcTween = function (transition, optIn) {
@@ -3387,18 +3640,18 @@ let mainArrZoomer = function (optIn) {
         com.s10 = {}
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       setState()
 
       locker.remove('inInitMain')
     }
     this.initData = initData
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function setTelLayout (optIn) {
       if (
         !locker.isFreeV([
@@ -3546,9 +3799,9 @@ let mainArrZoomer = function (optIn) {
     }
     this.subArrGrpCirc = subArrGrpCirc
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // add a lable with the
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function s00title (focusV0, focusV1) {
       let focusIdV = [
         focusV0.map(function (d) {
@@ -3642,189 +3895,212 @@ let mainArrZoomer = function (optIn) {
         .remove()
     }
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // innner arcs for the different properties
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function s01inner (dataV, focusV) {
       let tagState = 'state01'
 
       if (!hasVar(com.s01.inner)) {
         com.s01.inner = true
 
-        $.each(propD, function (index, porpNow) {
-          $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
-            let tagNow = porpNow + nArcDrawNow
-            let is0 = nArcDrawNow === 0
+        // let telProps = Object.keys(instProps)
+        $.each(allInstIds, function (n_ele, key) {
+        // $.each(instProps, function (key, telProps) {
+          $.each(instProps[key], function (index, porpNow) {
+            // console.log('+', key, index, porpNow)
+            $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
+              // let tagNow = porpNow + nArcDrawNow
+              let tagNow = key + porpNow + nArcDrawNow
+              let is0 = nArcDrawNow === 0
 
-            arcFunc[tagNow] = {}
-            arcFunc[tagNow].rad00 = function (d) {
-              return telData.xyr[d.id].r * (is0 ? 0.85 : 0.81)
-            }
-            arcFunc[tagNow].rad01 = function (d) {
-              return telData.xyr[d.id].r * (is0 ? 0.95 : 0.99)
-            }
-            arcFunc[tagNow].rad10 = function (d) {
-              return telData.xyr[d.id].r * rScale[1].innerH0 * (is0 ? 1 : 0.97)
-            }
-            arcFunc[tagNow].rad11 = function (d) {
-              return telData.xyr[d.id].r * rScale[1].innerH1 * (is0 ? 1 : 1.03)
-            }
-            arcFunc[tagNow].ang00 = function (d) {
-              return index * tauFrac + tauSpace
-            }
-            arcFunc[tagNow].ang01 = function (d) {
-              return (
-                index * tauFrac +
-                tauSpace +
-                (tauFrac - tauSpace * 2) * (is0 ? 1 : telHealthFrac(d[porpNow]))
-              )
-            }
+              arcFunc[tagNow] = {}
+              arcFunc[tagNow].rad00 = function (d) {
+                return telData.xyr[d.id].r * (is0 ? 0.85 : 0.81)
+              }
+              arcFunc[tagNow].rad01 = function (d) {
+                return telData.xyr[d.id].r * (is0 ? 0.95 : 0.99)
+              }
+              arcFunc[tagNow].rad10 = function (d) {
+                return telData.xyr[d.id].r * rScale[1].innerH0 * (is0 ? 1 : 0.97)
+              }
+              arcFunc[tagNow].rad11 = function (d) {
+                return telData.xyr[d.id].r * rScale[1].innerH1 * (is0 ? 1 : 1.03)
+              }
+              arcFunc[tagNow].ang00 = function (d) {
+                return index * instTauFracs[key] + tauSpace
+              }
+              arcFunc[tagNow].ang01 = function (d) {
+                return (
+                  index * instTauFracs[key] +
+                  tauSpace +
+                  (instTauFracs[key] - tauSpace * 2) * 
+                  (is0 ? 1 : telHealthFrac(d[porpNow]))
+                )
+              }
+            })
           })
         })
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // innner arcs for the different properties
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let focusIdV = []
       if (focusV !== undefined && focusV != null) {
         $.each(focusV, function (index, dataNow) {
           focusIdV.push(dataNow.id)
         })
       }
+      // let telId = dataV.id
+      // let telId = zoomTarget
+      // DDFF
+      
+      // console.log('FIXME -- validate ... for instProps[""]/zoomTarget ....', focusIdV, telId, dataV)
 
-      $.each(propD, function (index, porpNow) {
-        $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
-          let tagNow = porpNow + nArcDrawNow
-          let is0 = nArcDrawNow === 0
+      $.each(allInstIds, function (n_ele, telId) {
+        $.each(instProps[telId], function (index, porpNow) {
+          $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
+            let tagNow = telId + porpNow + nArcDrawNow
+            let is0 = nArcDrawNow === 0
 
-          if (!hasVar(arcPrev[tagNow])) {
-            arcPrev[tagNow] = {}
-            arcPrev[tagNow].ang = {}
-            arcPrev[tagNow].rad = {}
-          }
+            if (!hasVar(arcPrev[tagNow])) {
+              arcPrev[tagNow] = {}
+              arcPrev[tagNow].ang = {}
+              arcPrev[tagNow].rad = {}
+            }
 
-          let path = com.s01.g
-            .selectAll('path.' + tagNow)
-            .data(dataV, function (d) {
-              return d.id
-            })
+            let dataVnow = dataV
+            if (dataV.length > 0) {
+              if (dataV[0].id != telId) {
+                dataVnow = []
+              }
+            }
 
-          // operate on new elements only
-          path
-            .enter()
-            .append('path')
-            .style('stroke-width', '0.05')
-            .style('pointer-events', 'none')
-            .attr('vector-effect', 'non-scaling-stroke')
-            .attr('id', function (d) {
-              return myUniqueId + d.id + tagNow
-            })
-            .attr('class', tagState + ' ' + tagNow)
-            // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
-            .style('opacity', function (d) {
-              return is0 ? '0.5' : '1'
-            })
-            .attr('transform', function (d) {
-              return (
-                'translate(' +
-                telData.xyr[d.id].x +
-                ',' +
-                telData.xyr[d.id].y +
-                ')'
-              )
-            })
-            .each(function (d, i) {
-              arcPrev[tagNow].ang[d.id] = [
-                arcFunc[tagNow].ang00(d),
-                arcFunc[tagNow].ang00(d)
-              ]
-              arcPrev[tagNow].rad[d.id] = [
-                arcFunc[tagNow].rad00(d),
-                arcFunc[tagNow].rad01(d)
-              ]
-            })
-            .merge(path)
-            .transition('in')
-            .duration(timeD.animArc) // .delay(timeD.animArc)
-            .attr('transform', function (d) {
-              return (
-                'translate(' +
-                telData.xyr[d.id].x +
-                ',' +
-                telData.xyr[d.id].y +
-                ')'
-              )
-            })
-            .style('stroke', function (d) {
-              return is0 ? null : telHealthCol(d[porpNow])
-            })
-            .style('fill', function (d) {
-              return telHealthCol(d[porpNow])
-            }) // return is0 ? "#383b42" : telHealthCol(d[porpNow]); })
-            .call(com.arcTween, {
-              tagNow: tagNow,
-              arcPrev: arcPrev,
-              angStr0: null,
-              angStr1: null,
-              angEnd0: null,
-              angEnd1: 'ang01',
-              radInr0: null,
-              radInr1: null,
-              radOut0: null,
-              radOut1: null
-            })
-            // angStr0:"ang00", angStr1:"ang00", angEnd0:"ang00", angEnd1:"ang01",
-            // radInr0:"rad00", radInr1:"rad00", radOut0:"rad01", radOut1:"rad01"
-            .transition('update')
-            .duration(timeD.animArc)
-            .call(com.arcTween, {
-              tagNow: tagNow,
-              arcPrev: arcPrev,
-              incIdV: focusIdV,
-              angStr0: null,
-              angStr1: null,
-              angEnd0: null,
-              angEnd1: null,
-              radInr0: null,
-              radInr1: 'rad10',
-              radOut0: null,
-              radOut1: 'rad11'
-            })
-            .transition('update')
-            .duration(timeD.animArc)
-            .call(com.arcTween, {
-              tagNow: tagNow,
-              arcPrev: arcPrev,
-              excIdV: focusIdV,
-              angStr0: null,
-              angStr1: null,
-              angEnd0: null,
-              angEnd1: null,
-              radInr0: null,
-              radInr1: 'rad00',
-              radOut0: null,
-              radOut1: 'rad01'
-            })
+            let path = com.s01.g
+              .selectAll('path.' + tagNow)
+              .data(dataVnow, function (d, i) {
+                return d.id
+              })
 
-          // operate on exiting elements only
-          path
-            .exit()
-            .transition('out')
-            .duration(timeD.animArc)
-            .call(com.arcTween, {
-              tagNow: tagNow,
-              arcPrev: arcPrev,
-              angStr0: null,
-              angStr1: 'ang00',
-              angEnd0: null,
-              angEnd1: 'ang00',
-              radInr0: null,
-              radInr1: 'rad00',
-              radOut0: null,
-              radOut1: 'rad01'
-            })
-            .remove()
+            // operate on new elements only
+            path
+              .enter()
+              .append('path')
+              .style('stroke-width', '0.05')
+              .style('pointer-events', 'none')
+              .attr('vector-effect', 'non-scaling-stroke')
+              .attr('id', function (d) {
+                return myUniqueId + d.id + tagNow
+              })
+              .attr('class', tagState + ' ' + tagNow)
+              // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
+              .style('opacity', function (d) {
+                return is0 ? '0.5' : '1'
+              })
+              .attr('transform', function (d) {
+                return (
+                  'translate(' +
+                  telData.xyr[d.id].x +
+                  ',' +
+                  telData.xyr[d.id].y +
+                  ')'
+                )
+              })
+              .each(function (d, i) {
+                // console.log(i,d,tagNow)
+                arcPrev[tagNow].ang[d.id] = [
+                  arcFunc[tagNow].ang00(d),
+                  arcFunc[tagNow].ang00(d)
+                ]
+                arcPrev[tagNow].rad[d.id] = [
+                  arcFunc[tagNow].rad00(d),
+                  arcFunc[tagNow].rad01(d)
+                ]
+              })
+              .merge(path)
+              .transition('in')
+              .duration(timeD.animArc) // .delay(timeD.animArc)
+              .attr('transform', function (d) {
+                return (
+                  'translate(' +
+                  telData.xyr[d.id].x +
+                  ',' +
+                  telData.xyr[d.id].y +
+                  ')'
+                )
+              })
+              .style('stroke', function (d) {
+                return is0 ? null : telHealthCol(d[porpNow])
+              })
+              .style('fill', function (d) {
+                return telHealthCol(d[porpNow])
+              }) // return is0 ? "#383b42" : telHealthCol(d[porpNow]); })
+              .call(com.arcTween, {
+                tagNow: tagNow,
+                arcPrev: arcPrev,
+                angStr0: null,
+                angStr1: null,
+                angEnd0: null,
+                angEnd1: 'ang01',
+                radInr0: null,
+                radInr1: null,
+                radOut0: null,
+                radOut1: null
+              })
+              // angStr0:"ang00", angStr1:"ang00", angEnd0:"ang00", angEnd1:"ang01",
+              // radInr0:"rad00", radInr1:"rad00", radOut0:"rad01", radOut1:"rad01"
+              .transition('update')
+              .duration(timeD.animArc)
+              .call(com.arcTween, {
+                tagNow: tagNow,
+                arcPrev: arcPrev,
+                incIdV: focusIdV,
+                angStr0: null,
+                angStr1: null,
+                angEnd0: null,
+                angEnd1: null,
+                radInr0: null,
+                radInr1: 'rad10',
+                radOut0: null,
+                radOut1: 'rad11'
+              })
+              .transition('update')
+              .duration(timeD.animArc)
+              .call(com.arcTween, {
+                tagNow: tagNow,
+                arcPrev: arcPrev,
+                excIdV: focusIdV,
+                angStr0: null,
+                angStr1: null,
+                angEnd0: null,
+                angEnd1: null,
+                radInr0: null,
+                radInr1: 'rad00',
+                radOut0: null,
+                radOut1: 'rad01'
+              })
+
+            // operate on exiting elements only
+            path
+              .exit()
+              .transition('out')
+              // .each(function (d, i) {console.log('qqq', i, d); })
+              .duration(timeD.animArc)
+              .call(com.arcTween, {
+                tagNow: tagNow,
+                arcPrev: arcPrev,
+                angStr0: null,
+                angStr1: 'ang00',
+                angEnd0: null,
+                angEnd1: 'ang00',
+                radInr0: null,
+                radInr1: 'rad00',
+                radOut0: null,
+                radOut1: 'rad01'
+              })
+              .remove()
+          })
         })
       })
 
@@ -3832,7 +4108,7 @@ let mainArrZoomer = function (optIn) {
     }
 
     // outer rings for the prop0 (equivalent of s00_D metric in s01_D)
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function s01outer (dataV, focusV) {
       let tagState = 'state01'
       let porpNow = prop0
@@ -3866,9 +4142,9 @@ let mainArrZoomer = function (optIn) {
         })
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       // innner arcs for the different properties
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       let focusIdV = []
       if (focusV !== undefined && focusV != null) {
         $.each(focusV, function (index, dataNow) {
@@ -4021,9 +4297,9 @@ let mainArrZoomer = function (optIn) {
     // }
     // this.hasS10main = hasS10main;
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function s10main (dataIn) {
       // console.log('s10main',zoomTarget,dataIn);
 
@@ -4033,7 +4309,7 @@ let mainArrZoomer = function (optIn) {
       if (childV) {
         let telId = dataIn.id
 
-        $.each(propD, function (index, porpNow) {
+        $.each(instProps[telId], function (index, porpNow) {
           telData.propDataS1[telId] = {}
           telData.propDataS1[telId][porpNow] = null
           telData.propParentS1[telId] = {}
@@ -4042,7 +4318,8 @@ let mainArrZoomer = function (optIn) {
           telData.propTitleS1[telId][porpNow] = ''
         })
 
-        // construct the dataBase object b hand, as some properties may not be included in propD
+        // construct the dataBase object b hand, as
+        // some properties may not be included in instProps[telId]
         telData.dataBaseS1[telId] = {}
         telData.dataBaseS1[telId].id = prop0
         telData.dataBaseS1[telId].val = dataIn[prop0]
@@ -4051,7 +4328,7 @@ let mainArrZoomer = function (optIn) {
 
         $.each(childV, function (indexData, childNow) {
           let porpNow = childNow.id
-          if (propD.indexOf(porpNow) >= 0) {
+          if (instProps[telId].indexOf(porpNow) >= 0) {
             // add a reference to each property
             telData.propDataS1[telId][porpNow] = childNow
             telData.propParentS1[telId][porpNow] = porpNow
@@ -4078,9 +4355,9 @@ let mainArrZoomer = function (optIn) {
         }
       }
 
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       //
-      // ---------------------------------------------------------------------------------------------------
+      // ------------------------------------------------------------------
       if (!childV) {
         $.each(s10V, function (index, eleNow) {
           // console.log('clean -',index,eleNow);
@@ -4106,12 +4383,15 @@ let mainArrZoomer = function (optIn) {
         if (eleNow.id === zoomTarget) s10 = eleNow.s10
       })
       if (!s10) {
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         //
-        // ---------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
         let S10obj = function (telId) {
           let thisS10 = this
           this.telId = telId
+          this.instProps = instProps[telId]
+          this.tauFrac = instTauFracs[telId]
+          this.instPropTitles = instPropTitles[telId]
 
           let myDate = Date.now()
           let gBase = null
@@ -4125,7 +4405,7 @@ let mainArrZoomer = function (optIn) {
           let hirchDataV = null
 
           this.hirchData = {}
-          $.each(propD, function (index, porpNow) {
+          $.each(thisS10.instProps, function (index, porpNow) {
             thisS10.hirchData[porpNow] = null
           })
 
@@ -4135,9 +4415,9 @@ let mainArrZoomer = function (optIn) {
 
           let wh = telData.xyr[telId].r * rScale[1].innerH1 * 1.6
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function init () {
             if (gBase) {
               myDate = Date.now()
@@ -4165,7 +4445,7 @@ let mainArrZoomer = function (optIn) {
               $.each(childV, function (indexData, dataBase) {
                 let porpNow = dataBase.id
 
-                if (propD.indexOf(porpNow) >= 0) {
+                if (thisS10.instProps.indexOf(porpNow) >= 0) {
                   gTrans[porpNow] = {}
                   gHirch[porpNow] = {}
                   gHirch[porpNow].hirch = gBase.append('g')
@@ -4186,9 +4466,9 @@ let mainArrZoomer = function (optIn) {
           }
           this.init = init
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function updatePosG (duration) {
             let gBaseTrans = [
               telData.xyr[telId].x - wh / 2,
@@ -4204,9 +4484,9 @@ let mainArrZoomer = function (optIn) {
           }
           this.updatePosG = updatePosG
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function cleanup () {
             gBase.remove()
 
@@ -4222,9 +4502,9 @@ let mainArrZoomer = function (optIn) {
           }
           this.cleanup = cleanup
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function setPropLbl (optIn) {
             // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
@@ -4236,7 +4516,7 @@ let mainArrZoomer = function (optIn) {
             let remove = hasVar(optIn.remove) ? optIn.remove : false
 
             if (propIn !== '') {
-              if (propD.indexOf(propIn) < 0) {
+              if (thisS10.instProps.indexOf(propIn) < 0) {
                 if (hasVar(telData.propParentS1[telId][propIn])) {
                   propIn = telData.propParentS1[telId][propIn]
                 }
@@ -4245,18 +4525,18 @@ let mainArrZoomer = function (optIn) {
 
             let textD = []
             if (getZoomS() === 1 && !remove) {
-              $.each(propD, function (index, porpNow) {
+              $.each(thisS10.instProps, function (index, porpNow) {
                 let state = 0
                 if (propIn !== '') {
                   state = propIn === porpNow ? 1 : 2
                 }
 
                 let txtR = telData.xyr[telId].r * rScale[1].innerH1 * 1.45
-                let xy = getPropPosShift('xy', txtR, index)
+                let xy = getPropPosShift('xy', txtR, index, thisS10.instProps.length)
 
                 textD.push({
                   id: tagLbl + porpNow,
-                  text: propTtlD[porpNow],
+                  text: thisS10.instPropTitles[porpNow],
                   h: 30 / zoomLen['1.3'],
                   xy: xy,
                   x: wh / 2 - xy[0],
@@ -4338,9 +4618,9 @@ let mainArrZoomer = function (optIn) {
               .remove()
           }
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function initBckArc () {
             // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
@@ -4353,7 +4633,7 @@ let mainArrZoomer = function (optIn) {
                 let tagNow = baseTag + porpNow
                 // let is0 = 1
 
-                let nProp = propD.indexOf(porpNow)
+                let nProp = thisS10.instProps.indexOf(porpNow)
                 if (nProp >= 0) {
                   if (!hasVar(arcs[tagNow])) {
                     arcs[tagNow] = {}
@@ -4377,10 +4657,10 @@ let mainArrZoomer = function (optIn) {
                       return telData.xyr[telId].r * rScale[1].innerH1 * 1.35
                     }
                     arcFunc[tagNow].ang00 = function (d) {
-                      return nProp * tauFrac + tauSpace
+                      return nProp * thisS10.tauFrac + tauSpace
                     }
                     arcFunc[tagNow].ang01 = function (d) {
-                      return (nProp + 1) * tauFrac - tauSpace
+                      return (nProp + 1) * thisS10.tauFrac - tauSpace
                     }
                     arcFunc[tagNow].ang10 = function (d) {
                       return 0
@@ -4389,10 +4669,10 @@ let mainArrZoomer = function (optIn) {
                       return tau
                     }
                     arcFunc[tagNow].ang20 = function (d) {
-                      return nProp * tauFrac
+                      return nProp * thisS10.tauFrac
                     }
                     arcFunc[tagNow].ang21 = function (d) {
-                      return (nProp + 1) * tauFrac
+                      return (nProp + 1) * thisS10.tauFrac
                     }
                   }
 
@@ -4496,9 +4776,9 @@ let mainArrZoomer = function (optIn) {
           }
           this.initBckArc = initBckArc
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           let prevFocusedProp = ''
           function isClickIn (propIn) {
             return prevFocusedProp !== propIn
@@ -4507,9 +4787,9 @@ let mainArrZoomer = function (optIn) {
             prevFocusedProp = propIn
           }
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function bckArcRemove () {
             // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
@@ -4521,7 +4801,7 @@ let mainArrZoomer = function (optIn) {
             hirchStyleClick({ propIn: '', id: '', isOpen: false })
 
             //
-            $.each(propD, function (index, porpNow) {
+            $.each(thisS10.instProps, function (index, porpNow) {
               let baseTag = 's10arc'
               let tagNow = baseTag + porpNow
               let path = gBckArc.selectAll('path.' + tagNow)
@@ -4554,9 +4834,9 @@ let mainArrZoomer = function (optIn) {
           }
           this.bckArcRemove = bckArcRemove
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function bckArcClick (optIn) {
             // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
@@ -4567,7 +4847,7 @@ let mainArrZoomer = function (optIn) {
             let onlyOpen = hasVar(optIn.onlyOpen) ? optIn.onlyOpen : false
             let canIgnore = hasVar(optIn.canIgnore) ? optIn.canIgnore : true
 
-            if (propD.indexOf(propIn) < 0 && propIn != '') return
+            if (thisS10.instProps.indexOf(propIn) < 0 && propIn != '') return
 
             if (
               !locker.isFreeV([
@@ -4597,10 +4877,10 @@ let mainArrZoomer = function (optIn) {
 
             setPrevProp(propIn)
 
-            // ---------------------------------------------------------------------------------------------------
+            // ------------------------------------------------------------------
             //
-            // ---------------------------------------------------------------------------------------------------
-            $.each(propD, function (index, porpNow) {
+            // ------------------------------------------------------------------
+            $.each(thisS10.instProps, function (index, porpNow) {
               let baseTag = 's10arc'
               let tagNow = baseTag + porpNow
               let path0 = gBckArc.selectAll('path.' + tagNow + '0')
@@ -4671,9 +4951,9 @@ let mainArrZoomer = function (optIn) {
           }
           this.bckArcClick = bckArcClick
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function fullArcs (path0, path1, tagNow, isOpen) {
             // console.log('fullArcs',tagNow,isOpen)
 
@@ -4733,9 +5013,9 @@ let mainArrZoomer = function (optIn) {
               })
           }
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function hideArcs (path, tagNow) {
             // console.log('hideArcs',tagNow)
             path
@@ -4756,9 +5036,9 @@ let mainArrZoomer = function (optIn) {
               })
           }
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function hirchHovTitleIn (dIn) {
             if (
               !locker.isFreeV([
@@ -4824,9 +5104,9 @@ let mainArrZoomer = function (optIn) {
               .remove()
           }
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function initHirch () {
             // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
@@ -4900,7 +5180,7 @@ let mainArrZoomer = function (optIn) {
                 }
               }
 
-              if (propD.indexOf(porpNow) >= 0) {
+              if (thisS10.instProps.indexOf(porpNow) >= 0) {
                 renameChildren(dataBase)
 
                 thisS10.hirchData[porpNow] = dataBase
@@ -5028,7 +5308,7 @@ let mainArrZoomer = function (optIn) {
 
                       // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                       // FIXME:
-                      // here we can set non propD names if needed.....
+                      // here we can set non thisS10.instProps names if needed.....
                       // console.log('_setPropLblInitHirch',d.data.id); setPropLbl({ propIn:d.data.id });
                       // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     }
@@ -5174,9 +5454,9 @@ let mainArrZoomer = function (optIn) {
           }
           thisMain.hirchStyleClick = hirchStyleClick
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           //
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function updateHirch (dataIn) {
             // due to delays from locker, this function could be called after the S10obj has
             // been removed - make a safety check using gBase...
@@ -5198,7 +5478,7 @@ let mainArrZoomer = function (optIn) {
             locker.add('updateHirch')
 
             //
-            $.each(propD, function (index, porpNow) {
+            $.each(thisS10.instProps, function (index, porpNow) {
               let baseTag = 's10arc'
               let tagNow = baseTag + porpNow
               let path = gBckArc.selectAll('path.' + tagNow)
@@ -5240,9 +5520,9 @@ let mainArrZoomer = function (optIn) {
           }
           this.updateHirch = updateHirch
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           // utility functions
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           function hirchStyleFill (d, dRef, depth) {
             return dRef.data.childDepth === depth && d.parent
               ? telHealthCol(d.data.val)
@@ -5333,9 +5613,9 @@ let mainArrZoomer = function (optIn) {
     }
     this.bckArcClick = bckArcClick
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function updateS1 (dataIn) {
       $.each(s10V, function (index, eleNow) {
         if (eleNow.id === dataIn.id) {
@@ -5345,9 +5625,9 @@ let mainArrZoomer = function (optIn) {
     }
     this.updateS1 = updateS1
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function setStateOnce () {
       // console.log('setState_main main',getScale())
       let scale = getScale()
@@ -5397,9 +5677,9 @@ let mainArrZoomer = function (optIn) {
           s01inner(arrPropVtarget, arrPropVtarget)
           s01outer(arrPropVon, arrPropVtarget)
 
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           // syncroniz changes with other panels
-          // ---------------------------------------------------------------------------------------------------
+          // ------------------------------------------------------------------
           syncStateSend({
             type: 'syncTelFocus',
             syncTime: Date.now(),
@@ -5519,23 +5799,31 @@ let mainArrZoomer = function (optIn) {
       zoomTargetProp: ''
     }
     let mainWidgetState = svgMain.getWidgetState()
-    let detailWidgetState = svgDetail.getWidgetState()
+    let detailWidgetState = {}
+    if (doSvgDetail) {
+       detailWidgetState = svgDetail.getWidgetState()
+    }
+    else {
+      function getWidgetState () {
+        return {
+          zoomTargetProp: '',
+        }
+      }
+      detailWidgetState['zoomTargetProp'] = getWidgetState()
+    }
     dataWidget['zoomState'] = mainWidgetState['zoomState']
     dataWidget['zoomTarget'] = mainWidgetState['zoomTarget']
     dataWidget['zoomTargetProp'] = detailWidgetState['zoomTargetProp']
+    
     sock.widgetV[widgetType].SockFunc.setWidgetState(dataWidget)
+    
     return dataWidget
   }
-
-  let svgMain = new SvgMain() // must come first
-  let svgDetail = new SvgDetail()
-  let svgQuick = new QuickMap({runLoop: runLoop, sgvTag: sgvTag, widgetId: widgetId, locker: locker, isSouth: isSouth})
-
-  // // ---------------------------------------------------------------------------------------------------
-  // // ---------------------------------------------------------------------------------------------------
-  // svgMain.zoomToTrgMain({ target:'M_9',  scale:zoomLen["1.2"], durFact:0.1 });
-  // svgMain.zoomToTrgMain({ target:'init', scale:zoomLen["0.0"], durFact:0.1 });
-  // svgMain.zoomToTrgMain({ target:'L_1',  scale:zoomLen["1.2"], durFact:2.0 });
-  // // ---------------------------------------------------------------------------------------------------
-  // // ---------------------------------------------------------------------------------------------------
 }
+
+
+
+
+
+
+

@@ -7,7 +7,7 @@ from math import sqrt, ceil, floor
 from datetime import datetime
 import random
 from random import Random
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, flatDictById
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, flatDictById
 from ctaGuiUtils.py.utils_redis import redisManager
 # from json import dumps, loads
 # rndGen = Random(111111)
@@ -46,9 +46,9 @@ from ctaGuiUtils.py.utils_redis import redisManager
 # mount == drive-system, structual monitoring, pointing monitoring
 
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 #  arrZoomer
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 class arrZoomer():
     # privat lock for this widget type
     lock = BoundedSemaphore(1)
@@ -59,9 +59,9 @@ class arrZoomer():
 
     sendV = {"s_0": {"sessId": [], "widgetId": []}, "s_1": dict()}
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def __init__(self, widgetId="", mySock=None, *args, **kwargs):
         self.log = myLog(title=__name__)
 
@@ -87,9 +87,13 @@ class arrZoomer():
 
         self.redis = redisManager(name=self.widgetName, log=self.log)
 
-    # -----------------------------------------------------------------------------------------------------------
+        self.telIds = self.mySock.arrayData.get_inst_ids()
+
+        return
+
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup(self, *args):
         with self.mySock.lock:
             wgt = self.redis.hGet(
@@ -106,15 +110,15 @@ class arrZoomer():
 
         self.initTelHealth()
 
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         # initial dataset and send to client
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         optIn = {'widget': self, 'dataFunc': self.getInitData}
         self.mySock.sendWidgetInit(optIn=optIn)
 
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         # start threads for updating data
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         with self.mySock.lock:
             if self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomerUpdateData") == -1:
                 if self.logSendPkt:
@@ -140,28 +144,40 @@ class arrZoomer():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def backFromOffline(self):
         # with arrZoomer.lock:
         #   #print '-- backFromOffline',self.widgetName, self.widgetId
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getInitData(self):
+        inst_info = self.mySock.arrayData.get_tel_pos()
+
+        inst_prop_types = dict()
+        inst_prop_types = dict()
+        inst_ids = self.mySock.arrayData.get_inst_ids()
+        for id_now in inst_ids:
+            inst_prop_types[id_now] = [
+                { 'id': v['id'], 'title': v['ttl'], }
+                for (k,v) in self.telSubHealth[id_now].items()
+            ]
+
         data = {
             "subArr": self.subArrGrp,
-            "arrInit": self.mySock.arrayData.getTelPosD(),
-            "arrProp": self.getTelHealthS0()
+            "arrInit": inst_info,
+            "arrProp": self.getTelHealthS0(),
+            'telPropTypes': inst_prop_types,
         }
         return data
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def arrZoomerSetWidgetState(self, *args):
         data = args[0]
 
@@ -171,9 +187,9 @@ class arrZoomer():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def initTelHealth(self):
         self.telHealth = dict()
         self.telSubHealthFlat = dict()
@@ -183,19 +199,15 @@ class arrZoomer():
 
         # a flat dict with references to each level of the original dict
         self.telSubHealthFlat = dict()
-        for idNow in telIds:
+        for idNow in self.telIds:
             self.telSubHealthFlat[idNow] = flatDictById(
                 self.telSubHealth[idNow])
 
-        for idNow in telIds:
+        for idNow in self.telIds:
             self.telHealth[idNow] = {
                 "id": idNow, "health": 0, "status": "",
                 "data": [
-                    self.telSubHealth[idNow]["camera"],
-                    self.telSubHealth[idNow]["mirror"],
-                    self.telSubHealth[idNow]["mount"],
-                    self.telSubHealth[idNow]["daq"],
-                    self.telSubHealth[idNow]["aux"]
+                    v for (k,v) in self.telSubHealth[idNow].items()
                 ]
             }
 
@@ -208,36 +220,40 @@ class arrZoomer():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # get info of telescope 0-100 for each fields
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getTelHealthS0(self, idIn=None):
         #print 'getTelHealthS0'
         data = dict()
 
-        fields = ["health", "status", "camera",
-                  "mirror", "mount", "daq", "aux"]
-        nFilelds = len(fields)
+        # fields = ["health", "status", "camera", "mirror", "mount", "daq", "aux"]
+        fields = dict()
+        for id_now in self.telIds:
+            fields[id_now] = [ "health", "status" ]
+            fields[id_now] += [
+                v['id'] for (k,v) in self.telSubHealth[id_now].items()
+            ]
 
-        idV = telIds if (idIn is None) else [idIn]
+        idV = self.telIds if (idIn is None) else [idIn]
 
         self.redis.pipe.reset()
-        for idNow in idV:
-            self.redis.pipe.hMget(name="telHealth;"+str(idNow), key=fields)
+        for id_now in idV:
+            self.redis.pipe.hMget(name="telHealth;"+str(id_now), key=fields[id_now])
         redData = self.redis.pipe.execute()
 
         for i in range(len(redData)):
-            idNow = idV[i]
-            data[idNow] = dict()
+            id_now = idV[i]
+            data[id_now] = dict()
 
-            for j in range(nFilelds):
-                data[idNow][fields[j]] = redData[i][j]
+            for j in range(len(fields[id_now])):
+                data[id_now][fields[id_now][j]] = redData[i][j]
 
-        return data if (idIn is None) else data[idNow]
+        return data if (idIn is None) else data[id_now]
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #   Load data relative to telescope on focus
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def updateTelHealthS1(self, idIn):
         #print 'updateTelHealthS1'
         redData = self.redis.hMget(
@@ -253,9 +269,9 @@ class arrZoomer():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # return data of zoomTarget in dict() form
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getFlatTelHealth(self, idIn):
         #print 'getFlatTelHealth'
         data = dict()
@@ -270,9 +286,9 @@ class arrZoomer():
 
         return data
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # uniqu methods for this socket
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     # data.zoomTarget = name of telescope focus on (ex: L_2)
     def arrZoomerAskDataS1(self, *args):
@@ -287,9 +303,9 @@ class arrZoomer():
         self.widgetState["zoomState"] = data["zoomState"]
         self.widgetState["zoomTarget"] = data["zoomTarget"]
 
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         # to avoid missmatch while waiting for the loop in arrZoomerUpdateData, send s0 too...
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         with arrZoomer.lock:
             self.updateTelHealthS1(idIn=data["zoomTarget"])
             propDs1 = self.telHealth[data["zoomTarget"]]
@@ -300,9 +316,9 @@ class arrZoomer():
                 "data": propDs1
             }
 
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         #
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         self.mySock.socketEvtWidgetV(
             evtName="arrZoomerGetDataS1",
             data=dataEmitS1,
@@ -314,9 +330,9 @@ class arrZoomer():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def arrZoomerUpdateDataOnce(self):
         #print 'arrZoomerUpdateDataOnce'
         # get the current set of widgest which need an update
@@ -347,18 +363,18 @@ class arrZoomer():
                         arrZoomer.sendV["s_1"][zoomTarget]["widgetId"].append(
                             widgetId)
 
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         #
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         propDs1 = dict()
         for zoomTarget in arrZoomer.sendV["s_1"]:
             self.updateTelHealthS1(idIn=zoomTarget)
 
             propDs1[zoomTarget] = self.getFlatTelHealth(zoomTarget)
 
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         # transmit the values
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         dataEmitS0 = {
             "widgetId": "",
             "type": "s00",
@@ -388,9 +404,9 @@ class arrZoomer():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def arrZoomerUpdateData(self, threadId):
         #print 'arrZoomerUpdateData'
         if not self.doDataUpdates:
@@ -404,9 +420,9 @@ class arrZoomer():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def getSubArrGrp(self):
         #print 'getSubArrGrp'
         with arrZoomer.lock:
@@ -415,9 +431,9 @@ class arrZoomer():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def arrZoomerUpdateSubArrs(self, threadId):
         #print 'arrZoomerUpdateSubArrs'
         sleep(1)
@@ -447,6 +463,8 @@ class arrZoomer():
                     widgetIdV=arrZoomer.sendV["s_0"]["widgetId"]
                 )
 
-            sleep(0.5)
+            # sleep(0.5)
+            return
+            sleep(5)
 
         return

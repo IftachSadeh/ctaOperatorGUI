@@ -35,7 +35,7 @@ function SocketManager () {
   let debugMode = true
   let gsIdV = []
   let viewInitV = {}
-  let isSouth = window.__nsType__ === 'S'
+  let isSouth = (window.__nsType__ === 'S')
   let serverName = null
   let debugServerName = true
   this.socket = null
@@ -54,8 +54,13 @@ function SocketManager () {
     //
     // ---------------------------------------------------------------------------------------------------
     topThis.socket.on('initialConnect', function (dataIn) {
-      console.log("initialConnect");
+      // console.log("initialConnect");
       // console.log('initialConnect',dataIn);
+
+      let telInfo = {}
+      telInfo.telIds = dataIn.telIds
+      telInfo.telIdToTypes = dataIn.telIdToTypes
+      window.__sockTelInfo__ = telInfo
 
       validateServer(dataIn.serverName)
 
@@ -607,6 +612,7 @@ function SocketManager () {
     let eleProps = optIn.eleProps
     let widgetDivId = optIn.widgetDivId
     let widgetTypes = Object.keys(optIn.eleProps)
+    let setupData = optIn.setupData
 
     let widgetEle = []
     $.each(widgetTypes, function (index, dataNow) {
@@ -653,7 +659,8 @@ function SocketManager () {
           widgetId: widgetId,
           iconDivV: iconDivV,
           sideId: sideId,
-          widgetEle: widgetEle
+          widgetEle: widgetEle,
+          setupData: setupData,
         })
       },
       msgFail: function () {

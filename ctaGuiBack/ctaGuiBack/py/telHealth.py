@@ -10,9 +10,9 @@ import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.utils import myLog, Assert, getTime, flatDictById
 from ctaGuiUtils.py.utils_redis import redisManager
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 #
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 class telHealth():
     def __init__(self, nsType, timeOfNight, arrayData):
         self.log = myLog(title=__name__)
@@ -24,6 +24,8 @@ class telHealth():
 
         self.className = self.__class__.__name__
         self.redis = redisManager(name=self.className, log=self.log)
+
+        self.telIds = self.arrayData.get_inst_ids()
 
         self.telHealth_s0 = dict()
         self.telHealth_s1 = dict()
@@ -40,16 +42,17 @@ class telHealth():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def init(self):
         self.log.info([['g', " - telHealth.init() ..."]])
 
-        # -----------------------------------------------------------------------------------------------------------
+
+        # ------------------------------------------------------------------
         #
-        # -----------------------------------------------------------------------------------------------------------
-        for idNow in utils.telIds:
+        # ------------------------------------------------------------------
+        for idNow in self.telIds:
             self.telHealth_s0[idNow] = {
                 "health": 100, "status": "run",  # "subArr": "0",
                 "camera": 100, "mirror": 100, "mount": 100, "daq": 100, "aux": 100
@@ -61,18 +64,18 @@ class telHealth():
 
             # self.redPipe.hmset("telHealth_s0"+str(idNow), self.telHealth_s0[idNow])
 
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         #
-        # -----------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------
         self.telSubHealth = self.arrayData.getTelHealthD()
 
         # a flat dict with references to each level of the original dict
         self.telSubHealthFlat = dict()
-        for idNow in utils.telIds:
+        for idNow in self.telIds:
             self.telSubHealthFlat[idNow] = flatDictById(
                 self.telSubHealth[idNow])
 
-        for idNow in utils.telIds:
+        for idNow in self.telIds:
             self.setTelHealth_s1(idNow)
 
             for key, val in self.telSubHealthFlat[idNow].iteritems():
@@ -86,35 +89,36 @@ class telHealth():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setTelHealth_s1(self, idNow):
         self.telHealth_s1[idNow] = {
             "id": idNow, "health": self.telHealth_s0[idNow]["health"], "status": "run",
             "data": [
-                self.telSubHealth[idNow]["camera"],
-                self.telSubHealth[idNow]["mirror"],
-                self.telSubHealth[idNow]["mount"],
-                self.telSubHealth[idNow]["daq"],
-                self.telSubHealth[idNow]["aux"]
+                v for (k,v) in self.telSubHealth[idNow].items()
+                # self.telSubHealth[idNow]["camera"],
+                # self.telSubHealth[idNow]["mirror"],
+                # self.telSubHealth[idNow]["mount"],
+                # self.telSubHealth[idNow]["daq"],
+                # self.telSubHealth[idNow]["aux"]
             ]
         }
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def rand_s01(self, rndSeed=-1):
         idV = self.rand_s0(rndSeed=rndSeed)
         self.rand_s1(telIdIn=idV, rndSeed=rndSeed)
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def rand_s0(self, rndSeed=-1):
         if rndSeed < 0:
@@ -124,10 +128,10 @@ class telHealth():
         updatePct = 0.4
         arrPropD_ = dict()
 
-        rndProps = ["camera", "mirror", "mount", "daq", "aux"]
+        rndProps = ["camera", "mirror", "mount", "daq", "aux", 'inst_0', 'inst_1']
         nRndProps = len(rndProps)
 
-        for idNow in utils.telIds:
+        for idNow in self.telIds:
             if(rndGen.random() > updatePct):
                 continue
 
@@ -152,7 +156,8 @@ class telHealth():
                 else:
                     bad -= rnd
 
-                arrPropD_[idNow][rndProps[nPropNow]] = 100 - rnd
+                if rndProps[nPropNow] in arrPropD_[idNow]:
+                    arrPropD_[idNow][rndProps[nPropNow]] = 100 - rnd
 
             self.telHealth_s0[idNow] = arrPropD_[idNow]
 
@@ -168,12 +173,12 @@ class telHealth():
 
         return idV
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def rand_s1(self, telIdIn=None, rndSeed=-1):
-        rndProps = ["camera", "mirror", "mount", "daq", "aux"]
+        rndProps = ["camera", "mirror", "mount", "daq", "aux", 'inst_0', 'inst_1']
 
         fracToUpd = 1
         if rndSeed < 0:
@@ -196,14 +201,17 @@ class telHealth():
 
             return
 
-        idV = utils.telIds if (telIdIn is None) else telIdIn
+        idV = self.telIds if (telIdIn is None) else telIdIn
 
-        for idNow in utils.telIds:
+        for idNow in self.telIds:
             random.shuffle(rndProps)
 
             # call the randomization function
             if idNow in idV:
                 for propName in rndProps:
+                    if propName not in self.telSubHealth[idNow]:
+                        continue
+                    
                     randProps(self.telSubHealth[idNow][propName])
                     # if idNow=='L_0': print self.telSubHealth[idNow][propName]
 
@@ -212,7 +220,7 @@ class telHealth():
                     self.telHealth_s0[idNow][propName] = propVal
                     self.redis.pipe.hSet(
                         name="telHealth;"+str(idNow), key=propName, data=propVal)
-                    # if idNow=='L_0':print idNow,propName,propVal
+                    # if idNow=='Ax00':print idNow,propName,propVal
 
                 self.redis.pipe.execute()
                 self.setTelHealth_s1(idNow)
@@ -242,7 +250,7 @@ class telHealth():
 
             self.redis.pipe.execute()
 
-        # for idNow in utils.telIds:
+        # for idNow in self.telIds:
         #     for key, val in self.telSubHealthFlat[idNow].iteritems():
         #         if "val" in val['data']:
         #             self.redis.pipe.zAdd(key=key,
@@ -255,9 +263,9 @@ class telHealth():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
 
     def loop(self):
         self.log.info([['g', " - starting telHealth.loop ..."]])
