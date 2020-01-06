@@ -148,7 +148,7 @@ let mainPlotsDash = function (optIn) {
           h: $(svg.svg.node()).height() * 0.5
         }
         svgUrgentPlots.adjustScrollBox()
-        svgUrgentPlots.adjustPlotDistribution()
+        svgUrgentPlots.updateData()
 
         box.pinnedPlots = {
           x: 0,
@@ -329,8 +329,10 @@ let mainPlotsDash = function (optIn) {
       shared.server[key] = dataIn.data[key]
     }
 
-    // svgPlotDisplay.updateData()
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
+    updateMeasures()
+    svgPinnedPlots.updateData()
+    svgUrgentPlots.updateData()
 
     locker.remove('updateData')
   }
@@ -383,6 +385,33 @@ let mainPlotsDash = function (optIn) {
     })
     return scrollBox
   }
+  function updateMeasures () {
+    let fillfun = function (index) {
+      let status = {current: '', previous: []}
+      status.current = deepCopy(shared.server.dataOut[Math.floor(index / 4)][index % 4].data[0])
+      status.current.x = new Date(shared.server.timeOfNight.date_now)
+      status.gradient = Math.floor((Math.random() * 20) - 10)
+      for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
+        if (shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2] === undefined ||
+          shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) break
+        status.previous.push(deepCopy(shared.server.dataOut[Math.floor(index / 4)][index % 4].data[i * 2]))
+        status.previous[i].x = new Date()
+        status.previous[i].x.setTime(status.current.x.getTime() - i * 3600 * 100)
+      }
+      return status
+    }
+    let index = 1
+    for (let z = 0; z < shared.server.measures.length; z++) {
+      for (let i = 0; i < shared.server.measures[z].length; i++) {
+        shared.server.measures[z][i].status = fillfun(index)
+        index += 1
+        for (let j = 0; j < shared.server.measures[z][i].subMeasures.length; j++) {
+          shared.server.measures[z][i].subMeasures[j].status = fillfun(index)
+          index += 1
+        }
+      }
+    }
+  }
   function loadMesures () {
     let fillfun = function (index) {
       let status = {current: '', previous: []}
@@ -398,36 +427,24 @@ let mainPlotsDash = function (optIn) {
       }
       return status
     }
+    let index = 0
+    let weather = [
+      {id: 'id0', type: 'weather', name: 'Measure1', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', type: 'weather', name: 'Measure2', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id2', type: 'weather', name: 'Measure3', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id3', type: 'weather', name: 'Measure4', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id4', name: 'subMeasure.14', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]},
+      {id: 'id5', type: 'weather', name: 'Measure5', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
+    ]
+    let telescopes = [
+    ]
+    let other = [
+    ]
     shared.server.measures = [
-      {id: 'id0', name: 'Measure1', status: fillfun(1), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id1', name: 'Measure2', status: fillfun(2), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id2', name: 'Measure3', status: fillfun(3), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id3', name: 'Measure4', status: fillfun(4), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id4', name: 'subMeasure.14', status: fillfun(5), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
-      ]},
-      {id: 'id5', name: 'Measure5', status: fillfun(6), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id6', name: 'Measure6', status: fillfun(7), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id7', name: 'subMeasure6.1', status: fillfun(8), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
-      ]},
-      {id: 'id8', name: 'Measure7', status: fillfun(9), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id9', name: 'subMeasure7.1', status: fillfun(10), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id10', name: 'subMeasure7.2', status: fillfun(11), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
-      ]},
-      {id: 'id11', name: 'Measure8', status: fillfun(12), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id12', name: 'subMeasure8.1', status: fillfun(13), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id13', name: 'subMeasure8.2', status: fillfun(14), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id14', name: 'subMeasure8.3', status: fillfun(15), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id15', name: 'subMeasure8.4', status: fillfun(16), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id16', name: 'subMeasure8.5', status: fillfun(17), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
-      ]},
-      {id: 'id17', name: 'Measure9', status: fillfun(18), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id18', name: 'subMeasure9.1', status: fillfun(19), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]},
-        {id: 'id19', name: 'subMeasure9.2', status: fillfun(20), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
-      ]},
-      {id: 'id20', name: 'Measure10', status: fillfun(21), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id21', name: 'Measure11', status: fillfun(22), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
-        {id: 'id22', name: 'subMeasure11.1', status: fillfun(23), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
-      ]}
+      weather,
+      telescopes,
+      other
     ]
   }
 
@@ -574,7 +591,7 @@ let mainPlotsDash = function (optIn) {
           //   }
           // }
         ],
-        content: {}
+        content: []
       })
       return plot
     }
@@ -706,27 +723,25 @@ let mainPlotsDash = function (optIn) {
   let SvgUrgentPlots = function () {
     let scrollbox
     let plotbox
-    let plotList = []
+    let allPlots
+    // let plotList = []
 
     function adjustScrollBox () {
       if (!scrollbox) return
       let nbperline = Math.floor(box.urgentPlots.w / (plotbox.w + 29))
       scrollbox.updateBox({x: 0, y: 0, w: box.urgentPlots.w, h: box.urgentPlots.h})
-      scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(plotList.length / nbperline))})
+      scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(shared.server.measures.length / nbperline))})
       // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
     }
     this.adjustScrollBox = adjustScrollBox
-    function adjustPlotDistribution () {
-      let nbperline = Math.floor(box.urgentPlots.w / (plotbox.w + 29))
-      console.log(d3.select(plotList[6].get('main').g.node().parentNode.parentNode.parentNode.parentNode).attr('transform'))
-      for (let i = 0; i < plotList.length; i++) {
-        d3.select(plotList[i].get('main').g.node().parentNode.parentNode.parentNode.parentNode)
-          .transition()
-          .duration(400)
-          .attr('transform', 'translate(' + (25 + (plotbox.w + 30) * (i % nbperline)) + ',' + (15 + plotbox.h * 0.15 + (plotbox.h + 20) * parseInt(i / nbperline)) + ')')
-      }
-    }
-    this.adjustPlotDistribution = adjustPlotDistribution
+    // function adjustPlotDistribution () {
+    //   // let nbperline = Math.floor(box.urgentPlots.w / (plotbox.w + 29))
+    //   // console.log(d3.select(plotList[6].get('main').g.node().parentNode.parentNode.parentNode.parentNode).attr('transform'))
+    //   for (let i = 0; i < shared.server.measures.length.length; i++) {
+    //
+    //   }
+    // }
+    // this.adjustPlotDistribution = adjustPlotDistribution
     function createPlot (optIn) {
       let plot = new PlotTimeSeries()
       plot.init({
@@ -842,7 +857,7 @@ let mainPlotsDash = function (optIn) {
           //   }
           // }
         ],
-        content: {}
+        content: []
       })
       return plot
     }
@@ -850,52 +865,21 @@ let mainPlotsDash = function (optIn) {
     function initData () {
       plotbox = {
         x: 0,
-        y: 10,
-        w: lenD.w[0] * 0.18,
-        h: lenD.h[0] * 0.16 * 0.5
+        y: 0,
+        w: 250,
+        h: 150
       }
 
       let plotlistg = svg.svg.append('g').attr('id', 'plotList')
         .style('pointer-events', 'auto')
       let gg = plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + box.urgentPlots.x + ',' + box.urgentPlots.y + ')')
       scrollbox = initScrollBox('urgentPlotsScrollbox', gg, box.urgentPlots, {}, true)
-      let pinnedPlot = scrollbox.get('innerG')
 
+      updateData()
       // let nbperline = Math.floor(box.urgentPlots.w / (plotbox.w + 29))
-      for (var i = 0; i < 12; i++) {
-        let plotb = {
-          x: plotbox.x,
-          y: plotbox.y,
-          w: plotbox.w,
-          h: plotbox.h * 0.9
-        }
-        let optIn = {g: pinnedPlot.append('g'),
-          box: plotb
-        }
-        // optIn.g.attr('transform', 'translate(' + (25 + (plotbox.w + 30) * (i % nbperline)) + ',' + (15 + plotbox.h * 0.15 + (plotbox.h + 20) * parseInt(i / nbperline)) + ')')
-        optIn.g = optIn.g.append('g')
-        let plot = createPlot(optIn)
-        plotList.push(plot)
-
-        let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-        let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
-        plot.updateAxis({
-          id: 'bottom',
-          domain: [startTime.date, endTime.date],
-          range: [0, optIn.box.w]
-        })
-        plot.updateAxis({
-          id: 'left',
-          domain: [0, 100],
-          range: [optIn.box.h, 0]
-        })
-
-        let data = shared.server.measures[Math.floor((Math.random() * 11))]
-        plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
-      }
 
       adjustScrollBox()
-      adjustPlotDistribution()
+      // adjustPlotDistribution()
 
       plotlistg.append('rect')
         .attr('x', box.urgentPlots.x)
@@ -916,6 +900,100 @@ let mainPlotsDash = function (optIn) {
     this.initData = initData
 
     function updateData () {
+      let offset = 5
+      let tot = 0
+      for (let i = 0; i < shared.server.measures.length; i++) {
+        tot += shared.server.measures[i].length
+      }
+      let nbperline = Math.floor(box.urgentPlots.w / (plotbox.w + offset))
+      let groupOffset = 0
+      let plotb = {
+        x: plotbox.x + 25,
+        y: plotbox.y + 25,
+        w: plotbox.w - 50,
+        h: plotbox.h - 50
+      }
+
+      let allGroup = scrollbox.get('innerG').selectAll('g.group')
+        .data(shared.server.measures)
+      let gEnterGroup = allGroup.enter()
+        .append('g')
+        .attr('class', 'group')
+      gEnterGroup.each(function (d, i) {
+        let xlim = Math.round((d.length * nbperline) / tot)
+        d3.select(this)
+          .transition()
+          .duration(400)
+          .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+        groupOffset += xlim * (offset + (plotbox.w))
+      })
+      let gMergeGroup = allGroup.merge(gEnterGroup)
+      gMergeGroup.each(function (d) {
+        allPlots = d3.select(this).selectAll('g.plot')
+          .data(d, function (dd, i) {
+            return dd.id
+          })
+        let gEnter = allPlots.enter()
+          .append('g')
+          .attr('class', 'plot')
+        gEnter.each(function (dd, i) {
+          d3.select(this).append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', plotbox.w - 0)
+            .attr('height', plotbox.h - 0)
+            .attr('stroke', (d) => {
+              if (d.type === 'weather') return '#4c11a2'
+              if (d.type === 'other') return '#0065be'
+              if (d.type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.1)
+            .attr('fill', (d) => {
+              if (d.type === 'weather') return '#4c11a2'
+              if (d.type === 'other') return '#0065be'
+              if (d.type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          let optIn = {g: d3.select(this),
+            box: plotb
+          }
+          optIn.g = optIn.g.append('g')
+          dd.plotObject = createPlot(optIn)
+        })
+        let gMerge = allPlots.merge(gEnter)
+        gMerge.each(function (dd, i) {
+          let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+          let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+
+          dd.plotObject.updateAxis({
+            id: 'bottom',
+            domain: [startTime.date, endTime.date],
+            range: [0, plotb.w]
+          })
+          dd.plotObject.updateAxis({
+            id: 'left',
+            domain: [0, 100],
+            range: [plotb.h, 0]
+          })
+          dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
+
+          let xlim = Math.round((d.length * nbperline) / tot)
+          d3.select(dd.plotObject.get('main').g.node().parentNode.parentNode.parentNode.parentNode)
+            .transition()
+            .duration(400)
+            .attr('transform', 'translate(' + (offset + (plotbox.w) * (i % xlim)) + ',' + (0 + plotbox.h * 0.15 + (plotbox.h + 0) * parseInt(i / xlim)) + ')')
+        })
+        allPlots
+          .exit()
+          .style('opacity', 0)
+          .remove()
+      })
+      allGroup
+        .exit()
+        .style('opacity', 0)
+        .remove()
     }
     this.updateData = updateData
 

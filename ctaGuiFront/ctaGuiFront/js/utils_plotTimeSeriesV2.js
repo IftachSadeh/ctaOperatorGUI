@@ -51,7 +51,7 @@ window.PlotTimeSeries = function () {
     interaction: {
 
     },
-    content: {}
+    content: []
   }
 
   this.set = function (optIn) {
@@ -78,48 +78,78 @@ window.PlotTimeSeries = function () {
     initAxis()
     initInteraction()
     initClipping()
+
+    reserved.main.g.append('g').attr('id', 'bindedData')
   }
   this.init = init
 
   function bindData (id, data, axisX, axisY) {
-    reserved.content[id] = {data: data, axisX: axisX, axisY: axisY}
+    let toBind = true
+    for (let i = 0; i < reserved.content.length; i++) {
+      if (reserved.content[i].id === id) {
+        reserved.content[i] = {id: id, data: data, axisX: axisX, axisY: axisY}
+        toBind = false
+        break
+      }
+    }
+    if (toBind) reserved.content.push({id: id, data: data, axisX: axisX, axisY: axisY})
 
-    axisX = getAxis(axisX)
-    axisY = getAxis(axisY)
-
-    let g = reserved.main.g.append('g')
-      .attr('class', 'binded')
-      .attr('id', id)
-    g.append('path')
-      .datum(data)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 1.5)
-      .attr('d', d3.line()
-        .x(function (d) { return axisX.scale(d.x) })
-        .y(function (d) { return axisY.scale(d.y) })
-      )
-
-    let current = g
-      .selectAll('g')
-      .data(data)
-    let enter = current
-      .enter()
+    let current = reserved.main.g.select('#bindedData')
+      .selectAll('g.binded')
+      .data(reserved.content, function (d, i) {
+        return d.id
+      })
+    let enter = current.enter()
       .append('g')
+      .attr('class', 'binded')
 
     enter.each(function (d, i) {
       let g = d3.select(this)
-      g.append('circle')
-        .attr('cx', axisX.scale(d.x))
-        .attr('cy', axisY.scale(d.y))
+      g.append('path')
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 1.5)
+      g.append('g').attr('id', 'innerCircles')
+      // g.append('circle')
+      //   .attr('r', 1.5)
+      //   .attr('fill', colorPalette.dark.stroke)
+      //   .attr('stroke', '#000000')
+      //   .attr('stroke-width', 0.2)
+    })
+    let merge = current.merge(enter)
+
+    merge.each(function (d, i) {
+      axisX = getAxis(d.axisX)
+      axisY = getAxis(d.axisY)
+
+      d3.select(this).select('path')
+        .datum(d.data)
+        .attr('d', d3.line()
+          .x(function (d) { return axisX.scale(d.x) })
+          .y(function (d) { return axisY.scale(d.y) })
+        )
+
+      let currentIC = d3.select(this).select('g#innerCircles')
+        .selectAll('circle.innerCircle')
+        .data(d.data)
+      let enterIC = currentIC.enter()
+        .append('circle')
+        .attr('class', 'innerCircle')
         .attr('r', 1.5)
         .attr('fill', colorPalette.dark.stroke)
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.2)
+      let mergeIC = currentIC.merge(enterIC)
+      mergeIC
+        .attr('cx', (d) => axisX.scale(d.x))
+        .attr('cy', (d) => axisY.scale(d.y))
+      currentIC
+        .exit()
+        .transition('inOut')
+        .duration(timeD.animArc)
+        .style('opacity', 0)
+        .remove()
     })
-    let merge = current.merge(enter)
-
-    merge.each(function (d, i) {})
     current
       .exit()
       .transition('inOut')
@@ -129,8 +159,13 @@ window.PlotTimeSeries = function () {
   }
   this.bindData = bindData
   function unbindData (id) {
-    delete reserved.content[id]
-    reserved.main.g.select('g#' + id).remove()
+    for (let i = 0; i < reserved.content.length; i++) {
+      if (reserved.content[i].id === id) {
+        reserved.content.splice(i, 1)
+        break
+      }
+    }
+    reserved.main.g.select('#bindedData').select('g#' + id).remove()
   }
   this.unbindData = unbindData
 

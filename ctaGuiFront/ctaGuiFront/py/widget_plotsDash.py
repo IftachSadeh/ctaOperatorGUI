@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import random
 from random import Random
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, telIds, getTimeOfNight
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, getTimeOfNight
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
@@ -49,6 +49,11 @@ class plotsDash():
         self.logSendPkt = False
         #
         self.nIcon = -1
+
+        # self.telIds = self.mySock.arrayData.get_inst_ids()
+        self.telIds = self.mySock.arrayData.get_inst_ids(
+            inst_types=['LST', 'MST', 'SST']
+        )
 
         self.PrimaryGroup = ['LSTS','MSTS','SSTS','AUX']
         self.PrimaryKey = ['mirror','camera','mount','aux']
@@ -107,7 +112,7 @@ class plotsDash():
         for index in range(indexRange):
             for k, v in keyV.items():
                 for key in v:
-                    self.redis.pipe.zGet('telHealth;'+telIds[index]+';'+key)
+                    self.redis.pipe.zGet('telHealth;'+self.telIds[index]+';'+key)
             data = self.redis.pipe.execute(packedScore=True)
             nEle = sum([len(v) for k, v in keyV.items()])
             if len(data) != nEle:
@@ -122,7 +127,7 @@ class plotsDash():
                     dataNow = data[nEleNow]
                     nEleNow += 1
                     dataOut[index].append(
-                        {'id': telIds[index]+';'+key, 'data': [{'y': x[0]['data'], 'x':x[1]} for x in dataNow]})
+                        {'id': self.telIds[index]+';'+key, 'data': [{'y': x[0]['data'], 'x':x[1]} for x in dataNow]})
 
         data = {
             "timeOfNight": timeOfNightDate,
