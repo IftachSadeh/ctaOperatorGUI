@@ -780,15 +780,27 @@ window.tog_keyboardArrow = function (optIn) {
 // ------------------------------------------------------------------
 // polymer-safe append function
 // ------------------------------------------------------------------
+// window.appendToDom = function (parentId, eleToApp) {
+//   if (typeof parentId === 'string' || parentId instanceof String) {
+//     if (!(parentId.indexOf('#') === 0)) parentId = '#' + parentId
+
+//     Polymer.dom(document.querySelector(parentId)).appendChild(eleToApp)
+//   } else {
+//     Polymer.dom(parentId).appendChild(eleToApp)
+//   }
+// }
 window.appendToDom = function (parentId, eleToApp) {
   if (typeof parentId === 'string' || parentId instanceof String) {
     if (!(parentId.indexOf('#') === 0)) parentId = '#' + parentId
 
-    Polymer.dom(document.querySelector(parentId)).appendChild(eleToApp)
+    (document.querySelector(parentId)).appendChild(eleToApp)
   } else {
-    Polymer.dom(parentId).appendChild(eleToApp)
+    (parentId).appendChild(eleToApp)
   }
 }
+
+
+
 window.createD3Node = function (g, type, attr, style) {
   let ret = g.append(type)
   for (let key in attr) {

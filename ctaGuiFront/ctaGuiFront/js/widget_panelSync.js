@@ -106,7 +106,6 @@ let mainPanelSync = function (optIn) {
   let tagpanelSyncSvg = optIn.baseName
   let widgetId = optIn.widgetId
   let widgetEle = optIn.widgetEle
-  let sideId = optIn.sideId
 
   // let thisPanelSync = this
   let isSouth = window.__nsType__ === 'S'
@@ -141,12 +140,8 @@ let mainPanelSync = function (optIn) {
   function initData (dataIn) {
     if (sock.multipleInit({ id: widgetId, data: dataIn })) return
 
-    window.sideDiv = sock.setSideDiv({
-      id: sideId,
-      nIcon: dataIn.nIcon,
-      iconDivV: null
-    })
-
+    sock.setBadgeIcon({ nIcon: dataIn.nIcon, iconDivV: null })
+    
     svgMain.initData(dataIn.data)
 
     svgMain.setAllowSyncState(dataIn.data)

@@ -33,16 +33,19 @@
 function SocketManager () {
   let topThis = this
   let debugMode = true
-  let gsIdV = []
+  // let gsIdV = []
   let viewInitV = {}
   let isSouth = (window.__nsType__ === 'S')
   let serverName = null
-  let debugServerName = true
+  let debugServerName = false
+  let baseApp = window.baseApp
+  let tabTableTitleId = 'table_title'
+  let tabTableMainId = 'table_content'
   this.socket = null
   this.conStat = null
   this.widgetV = {}
   this.widgetTable = {}
-
+  
   // -----------------------------------------------------------------------------------------------------------
   // the socket
   // -----------------------------------------------------------------------------------------------------------
@@ -163,18 +166,18 @@ function SocketManager () {
       })
     })
 
-    // ---------------------------------------------------------------------------------------------------
-    // ---------------------------------------------------------------------------------------------------
-    // for development...
-    // ---------------------------------------------------------------------------------------------------
-    topThis.socket.on('refreshAll', function (data) {
-      if (widgetName !== 'viewRefreshAll') {
-        debugMode = false // prevent double reloadding
-        window.location.reload()
-      }
-    })
-    // ---------------------------------------------------------------------------------------------------
-    // ---------------------------------------------------------------------------------------------------
+    // // ---------------------------------------------------------------------------------------------------
+    // // ---------------------------------------------------------------------------------------------------
+    // // for development...
+    // // ---------------------------------------------------------------------------------------------------
+    // topThis.socket.on('refreshAll', function (data) {
+    //   if (widgetName !== 'viewRefreshAll') {
+    //     debugMode = false // prevent double reloadding
+    //     window.location.reload()
+    //   }
+    // })
+    // // ---------------------------------------------------------------------------------------------------
+    // // ---------------------------------------------------------------------------------------------------
 
     // ---------------------------------------------------------------------------------------------------
     //
@@ -204,10 +207,12 @@ function SocketManager () {
     let txt = baseApp.connectStatusDiv('_txt')
     let tog = baseApp.connectStatusDiv('_btn')
 
-    baseApp.connectStatusDiv('').setAttribute('style', 'opacity:1;')
+    let connectStatusDiv = baseApp.connectStatusDiv('')
+    connectStatusDiv.style.opacity = '100%'
+    connectStatusDiv.style.pointerEvents = 'auto'
 
     tog.addEventListener('change', function (customEvent) {
-      user = tog.active
+      user = customEvent.target.checked
       isOn = user
 
       togTxt(user)
@@ -220,6 +225,7 @@ function SocketManager () {
       txt.innerHTML = isOnline ? 'Online' : 'Offline'
 
       topThis.socket.emit('setOnlineState', { isOnline: isOnline })
+      return
     }
 
     function setState (isConnect) {
@@ -235,12 +241,15 @@ function SocketManager () {
       }
 
       togTxt(isConnect)
+      return
     }
     this.setState = setState
 
     function setUserName (userIdIn) {
       window.userId = userIdIn
-      baseApp.userNameDiv().innerHTML = userIdIn
+      let userNameDiv = baseApp.userNameDiv()
+      userNameDiv.innerHTML = userIdIn
+      userNameDiv.style.opacity = '80%'
     }
     this.setUserName = setUserName
 
@@ -418,19 +427,16 @@ function SocketManager () {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  function setSideDiv (optIn) {
-    let sideDiv = document.querySelector('#baseApp').drawer()
-    if (hasVar(sideDiv)) sideDiv = sideDiv.getEle(optIn.id)
-
+  function setBadgeIcon (optIn) {
     if (hasVar(optIn.iconDivV)) {
       $.each(optIn.iconDivV, function (index, iconDivNow) {
         iconBadge.setWidgetIcon({ iconDiv: iconDivNow, nIcon: optIn.nIcon })
       })
     }
 
-    return sideDiv
+    return
   }
-  this.setSideDiv = setSideDiv
+  this.setBadgeIcon = setBadgeIcon
 
   // ---------------------------------------------------------------------------------------------------
   //
@@ -438,104 +444,88 @@ function SocketManager () {
   function addWidget (optIn) {
     let nameTag = optIn.nameTag
     let tableTitle = optIn.tableTitle
-    let hasDrawer = optIn.hasDrawer
+    // let hasDrawer = optIn.hasDrawer
     let hasIcon = optIn.hasIcon
 
     let mainScriptName = '/js/widget_' + nameTag + '.js'
 
-    let mainDiv = document
-      .querySelector('#baseApp')
-      .main()
-      .content()
-    let sideDiv = document.querySelector('#baseApp').drawer()
-
-    if (hasDrawer) {
-      if (!hasVar(sideDiv)) {
-        let drawerDiv = document
-          .querySelector('#baseApp')
-          .getEle('addRightSideMenu')
-        let drawerName = document.querySelector('#baseApp').getDrawerName()
-
-        let drawerEle = document.createElement(drawerName)
-        drawerEle.id = drawerName
-
-        appendToDom(drawerDiv, drawerEle)
-
-        runWhenReady({
-          pass: function () {
-            return hasVar(document.querySelector('#baseApp').drawer())
-          },
-          execute: function () {
-            addWidget(optIn)
-          },
-          msgFail: function () {
-            console.error(['cant initialize drawer in addWidget(): ', optIn])
-          }
-        })
-        return
-      } else {
-        sideDiv = sideDiv.content()
-      }
-    }
-
+    let mainDiv = document.querySelector('#baseAppNEW')
     let iconDivV = [null, null]
 
     // create the table element
     let tabTableId = unique()
     let widgetId = unique()
     let mainId = widgetId + 'main'
-    let sideId = widgetId + 'side'
     let gsName = tabTableId + 'tbl'
 
     if (hasIcon) iconDivV[0] = { id: mainId + 'iconDiv' }
-    if (hasDrawer) iconDivV[1] = { id: sideId + 'iconDiv' }
+    // if (hasDrawer) iconDivV[1] = { id: sideId + 'iconDiv' }
 
-    let tabTable = document.createElement('svg-tab-table')
-    tabTable.id = tabTableId
+    let tabTableH = '80px'
+    let tabTableW = '90%'
 
-    // ---------------------------------------------------------------------------------------------------
-    // create the table once the svg-tab-table is ready
-    // ---------------------------------------------------------------------------------------------------
-    tabTable.addEventListener('svg-tab-table-ready', function (e) {
-      tabTable._addTable({
-        tableId: gsName,
-        iconDivId: hasIcon ? iconDivV[0].id : null,
-        tableTitle: tableTitle + (window.debugWidgetTitle ? widgetId : '')
-      })
+    let tabTableNEWOuter = mainDiv.appendChild(document.createElement('div'))
+    tabTableNEWOuter.setAttribute("style", 'padding-bottom: 30px;')
+    
+    let tabTableNEW = tabTableNEWOuter.appendChild(document.createElement('div'))
+    tabTableNEW.id = tabTableId
+    tabTableNEW.setAttribute("style", 'width: ' + tabTableW + '; margin: 0 auto; padding-bottom: 10px; border: 12px solid #e8e8e8; background-color: #e8e8e8;')
 
-      if (hasIcon) iconDivV[0].ele = tabTable.getEle(iconDivV[0].id)
-    })
+    let tabTableTitle = tabTableNEW.appendChild(document.createElement('div'))
+    tabTableTitle.id = tabTableTitleId
+    tabTableTitle.setAttribute("style", 'width: 100%; display: flex; align-items: center')
+
+    // let tabTableTitle = tabTableNEW.createElement('div')
+    let tabTableTitleText = tabTableTitle.appendChild(document.createElement('div'))
+    let tabTableTitleIcon = tabTableTitle.appendChild(document.createElement('div'))
+
+    tabTableTitleIcon.setAttribute("style", 'width:' + tabTableH + '; height:' + tabTableH + ';')
+    if (hasIcon) {
+      let tabTableTitleIconInner = tabTableTitleIcon.appendChild(document.createElement('div'))
+      tabTableTitleIconInner.id = iconDivV[0].id
+      // tabTableTitleIconInner.innerHTML = '000000000'
+    }
+    tabTableTitleText.innerHTML = tableTitle
+    tabTableTitleText.setAttribute("style", 'width: 100%; text-align: left; margin-left: 1%; margin-right: 1%;')
+    // tabTableTitleText.setAttribute("style", 'width: 100%; text-align: center;')
+    tabTableTitleText.classList.add("tableTitle");
+
+    // let tabTable = document.createElement('svg-tab-table')
+    // tabTable.id = tabTableId
+    
+    let tabTableMain = tabTableNEW.appendChild(document.createElement('div'))
+    tabTableMain.id = tabTableMainId
+    tabTableMain.setAttribute("style", 'width: 100%;')
+    tabTableMain.classList.add("gridEleBodyDark");
+
+    // console.log(tabTableNEW)
 
     // ---------------------------------------------------------------------------------------------------
     // proceed once the table has been added (with possible recursive calls to loadScript())
     // ---------------------------------------------------------------------------------------------------
-    tabTable.addEventListener('_addTable' + gsName, function (e) {
-      window.loadScript({ source: nameTag, script: mainScriptName })
+    window.loadScript({ source: nameTag, script: mainScriptName })
 
-      runWhenReady({
-        pass: function () {
-          let intersect = loadedScripts.queued.filter(n =>
-            loadedScripts.loaded.includes(n)
-          )
-          return intersect.length === loadedScripts.queued.length
-        },
-        execute: setWidgit
-      })
+    runWhenReady({
+      pass: function () {
+        let intersect = loadedScripts.queued.filter(n =>
+          loadedScripts.loaded.includes(n)
+        )
+        return intersect.length === loadedScripts.queued.length
+      },
+      execute: setWidgit
     })
 
     // ---------------------------------------------------------------------------------------------------
     // create the side-menu and widget
     // ---------------------------------------------------------------------------------------------------
     function setWidgit () {
-      // console.log([' -- loaded',nameTag,' - queued: '+JSON.stringify(loadedScripts.queued),' - loaded: '+JSON.stringify(loadedScripts.loaded)]);
-
       let widgetOpt = {
         nameTag: nameTag,
         widgetId: widgetId,
         baseName: nameTag + widgetId,
         gsName: gsName,
-        tabTable: tabTable,
-        sideId: sideId,
+        tabTable: tabTableNEW,
+        // sideId: sideId,
         iconDivV: iconDivV,
         isSouth: isSouth,
         widget: null,
@@ -544,55 +534,20 @@ function SocketManager () {
         eleProps: null
       }
 
-      if (!hasVar(sideDiv)) {
-        topThis.widgetTable[nameTag](widgetOpt)
-        return
-      }
+      // console.log(nameTag) console.log(topThis.widgetTable[nameTag] === undefined)
 
-      let sideMenu = document.createElement(
-        String('widget-drawer').toLowerCase()
-      )
-      sideMenu.id = sideId
-      sideMenu.setWidgetId(widgetId)
-
-      sideMenu.addEventListener('widget-drawer-ready', function (e) {
-        if (hasVar(iconDivV[1])) {
-          sideMenu.setIconDivId(iconDivV[1].id)
-
-          iconDivV[1].ele = sideMenu.getEle(iconDivV[1].id)
-        }
-
-        topThis.widgetTable[nameTag](widgetOpt)
-
-        runWhenReady({
-          pass: function () {
-            return hasVar(widgetOpt.widget)
-          },
-          execute: function () {
-            sideMenu.setWidget(widgetOpt.widget)
-          },
-          msgFail: function () {
-            console.error([
-              'cant initialize widgit setWidgit() with: ',
-              nameTag,
-              widgetId,
-              widgetOpt
-            ])
-          }
-        })
-      })
-
-      appendToDom(sideDiv, sideMenu)
+      topThis.widgetTable[nameTag](widgetOpt)
+      
+      return
     }
 
-    // ---------------------------------------------------------------------------------------------------
-    // after setting up the event listners, can finally add the element
-    // ---------------------------------------------------------------------------------------------------
-    appendToDom(mainDiv, document.createElement('br'))
-    appendToDom(mainDiv, tabTable)
+    // // ---------------------------------------------------------------------------------------------------
+    // // after setting up the event listners, can finally add the element
+    // // ---------------------------------------------------------------------------------------------------
+    // gsIdV.push({ tabTable: tabTableNEW, gsName: gsName })
+    // winResize()
 
-    gsIdV.push({ tabTable: tabTable, gsName: gsName })
-    winResize()
+    return
   }
   this.addWidget = addWidget
 
@@ -608,7 +563,7 @@ function SocketManager () {
     let widgetId = optIn.widgetId
     let tabTable = optIn.tabTable
     let iconDivV = optIn.iconDivV
-    let sideId = optIn.sideId
+    // let sideId = optIn.sideId
     let eleProps = optIn.eleProps
     let widgetDivId = optIn.widgetDivId
     let widgetTypes = Object.keys(optIn.eleProps)
@@ -617,29 +572,52 @@ function SocketManager () {
     let widgetEle = []
     $.each(widgetTypes, function (index, dataNow) {
       widgetEle.push(null)
-      tabTable._addWidget(gsName, eleProps[dataNow])
-    })
+      let itemNow = tabTable.querySelector("#" + tabTableMainId).appendChild(document.createElement('div'))
+      itemNow.innerHTML = eleProps[dataNow]["content"]
 
-    // ---------------------------------------------------------------------------------------------------
-    tabTable.addEventListener('_addWidget', function (e) {
       let widgetIndex = 0
       let widgetTag = null
-      $.each(widgetTypes, function (index, dataNow) {
-        if (e.detail.id === widgetDivId + dataNow) {
+      $.each(widgetTypes, function (index, dataNow1) {
+        if (eleProps[dataNow]["gsId"] === widgetDivId + dataNow1) {
           widgetIndex = index
-          widgetTag = dataNow
+          widgetTag = dataNow1
         }
       })
+
       if (!hasVar(widgetTag)) return
 
-      let widget = e.detail.widget
+      let WidgetFunc = function() {
+        this.getEle = function (tag) { return itemNow.querySelector("#"+tag) }
+      }
+      let widgetFunc = new WidgetFunc()
+
       widgetEle[widgetIndex] = {
         id: widgetTag,
-        widget: widget,
+        widget: widgetFunc,
         w: eleProps[widgetTag].w,
         h: eleProps[widgetTag].h
       }
+
+      let gsW = eleProps[widgetTag].w
+      let gsH = eleProps[widgetTag].h
+
+      var ow     = itemNow.offsetWidth;
+      var h0     = ow * 0.08;
+      var wTot   = 12;
+      var w0     = gsW/wTot;
+      var width  = (100*w0 - .5)+"%";
+      var height = (h0*gsH)+"px";
+      var maxHeight = $(document).height() * 0.8
+      let itemNowStyle = (
+        "display: inline-block; position:relative;" +
+        "margin: 0.25%; border: 0px; width:" + width +
+        "; height:" + height + "; max-height:" + maxHeight + "px"
+        )
+      itemNow.setAttribute("style", itemNowStyle)
+
+      // tabTable._addWidget(gsName, eleProps[dataNow])
     })
+
 
     // ---------------------------------------------------------------------------------------------------
     runWhenReady({
@@ -658,7 +636,7 @@ function SocketManager () {
           baseName: baseName,
           widgetId: widgetId,
           iconDivV: iconDivV,
-          sideId: sideId,
+          // sideId: sideId,
           widgetEle: widgetEle,
           setupData: setupData,
         })
@@ -673,40 +651,41 @@ function SocketManager () {
   }
   this.addToTable = addToTable
 
-  let prevResize = null
-  function winResize () {
-    if (hasVar(prevResize)) return
-    prevResize = Date.now()
+  // let prevResize = null
+  // function winResize () {
+  //   console.log(' ..... winResize .........') ; return
+  //   if (hasVar(prevResize)) return
+  //   prevResize = Date.now()
 
-    runLoopCom.init({ tag: 'winResize', func: resizeNowOnce, nKeep: 1 })
-    function resizeNow () {
-      runLoopCom.push({ tag: 'winResize' })
-    }
+  //   runLoopCom.init({ tag: 'winResize', func: resizeNowOnce, nKeep: 1 })
+  //   function resizeNow () {
+  //     runLoopCom.push({ tag: 'winResize' })
+  //   }
 
-    function resizeNowOnce () {
-      if (Date.now() - prevResize < timeD.animArc) {
-        resizeNow()
-        return
-      }
+  //   function resizeNowOnce () {
+  //     if (Date.now() - prevResize < timeD.animArc) {
+  //       resizeNow()
+  //       return
+  //     }
 
-      prevResize = Date.now()
-      $.each(gsIdV, function (index, gsNow) {
-        gsNow.tabTable.setAllWidgetWH(gsNow.gsName)
-      })
-    }
+  //     prevResize = Date.now()
+  //     $.each(gsIdV, function (index, gsNow) {
+  //       gsNow.tabTable.setAllWidgetWH(gsNow.gsName)
+  //     })
+  //   }
 
-    $.each(gsIdV, function (index, gsNow) {
-      let tblNow = gsNow.tabTable.getEle(gsNow.gsName)
-      $(tblNow).on('resizestop', function (event, ui) {
-        resizeNow()
-      })
-    })
+  //   $.each(gsIdV, function (index, gsNow) {
+  //     let tblNow = gsNow.tabTable.getEle(gsNow.gsName)
+  //     $(tblNow).on('resizestop', function (event, ui) {
+  //       resizeNow()
+  //     })
+  //   })
 
-    window.addEventListener('resize', function (e) {
-      resizeNow()
-    })
-  }
-  // this.winResize = winResize;
+  //   window.addEventListener('resize', function (e) {
+  //     resizeNow()
+  //   })
+  // }
+  // // this.winResize = winResize;
 }
 
 // ---------------------------------------------------------------------------------------------------

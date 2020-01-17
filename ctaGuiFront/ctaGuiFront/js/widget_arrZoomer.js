@@ -123,6 +123,7 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
     }
   }
 
+  // console.log(optIn)
   sock.addToTable(optIn)
 }
 
@@ -532,11 +533,7 @@ let mainArrZoomer = function (optIn) {
 
       zoomTarget = telData.tel[0].id // arbitrary but safe initialization
 
-      window.sideDiv = sock.setSideDiv({
-        id: sideId,
-        nIcon: dataDictIn.nIcon,
-        iconDivV: iconDivV
-      })
+      sock.setBadgeIcon({ nIcon: dataDictIn.nIcon, iconDivV: iconDivV })
 
       // ------------------------------------------------------------------
       //
