@@ -89,8 +89,6 @@ body {
   transform: scale(.95);
 }
 
-
-
 .site-nav-btn-group {
   margin: 12px;
   padding: 12px;
@@ -275,6 +273,13 @@ button:focus, .form-btn:focus {
   -webkit-transition: .4s;
   transition: .4s;
 }
+
+/*
+#topMenu {
+  -webkit-transition: opacity .4s;
+  transition: opacity .4s;
+}
+*/
 
 input:checked + .slider {
   background-color: #009688;

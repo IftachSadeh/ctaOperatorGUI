@@ -51,6 +51,10 @@ function BaseApp() {
       addSiteNavMenu(siteNavMenuDiv)
     }
 
+    
+    // -------------------------------------------------------------------
+    // 
+    // -------------------------------------------------------------------
     if(widgetName == 'login') {
       let mainDiv = document.querySelector('#baseAppNEW')
       
@@ -110,6 +114,26 @@ function BaseApp() {
       isSocketView = false
       hasSideMenu = false
     }
+    
+    // -------------------------------------------------------------------
+    // 
+    // -------------------------------------------------------------------
+    let logoutBtnStyle
+    if(widgetName === 'login') 
+      logoutBtnStyle = 'opacity:0; pointer-events:none;'
+    else 
+      logoutBtnStyle = 'opacity:1; pointer-events:auto;'
+    
+    let logoutBtnDiv = document.querySelector("#logoutBtnDiv")
+    logoutBtnDiv.setAttribute("style", logoutBtnStyle)
+
+    let logoutBtn = document.querySelector("#logoutBtn")
+    logoutBtn.onclick = function() { window.location.href='logout'; }
+
+    if(widgetName !== 'login') {
+      connectStatusDiv('').setAttribute("style", 'opacity: 1;')
+      // document.querySelector("#topMenu").style.opacity = 1
+    }
 
     // -------------------------------------------------------------------
     // 
@@ -117,24 +141,18 @@ function BaseApp() {
     let topMenuDiv = document.querySelector("#topMenuLeft")
     let togMenuDiv  = appendEleAfter(document.createElement('a'), topMenuDiv)
     let siteNameDiv = appendEleAfter(document.createElement('div'), togMenuDiv)
-    
-    // togMenuDiv.innerHTML = 'CTA ......'
-    // togMenuDiv.setAttribute("style", 'opacity:0.8; pointer-events:none')
+
     let togMenu = togMenuDiv.appendChild(document.createElement('i'))
     let togMenuStyle = 'margin-right: 10px;'
     if(!hasSideMenu) {
-      togMenuStyle += 'pointer-events: none; opacity: 0.3;'
+      togMenuStyle += 'pointer-events: none; opacity: 0.7;'
     }
     togMenu.setAttribute("style", togMenuStyle)
     togMenu.classList.add('fa', 'fa-bars', 'sized-button', 'fa-circle-button-bright')
     
     siteNameDiv.innerHTML = 'CTA '+((window.__nsType__ == 'N') ? 'North' : 'South')
-    siteNameDiv.setAttribute("style", 'opacity:0.8; pointer-events:none')
+    siteNameDiv.setAttribute("style", 'opacity:0.8; pointer-events:none;')
     siteNameDiv.classList.add("menuHeader");
-
-
-    let logoutBtn = document.querySelector("#logoutBtn")
-    logoutBtn.onclick = function() { window.location.href='logout'; }
 
 
     // -------------------------------------------------------------------
@@ -144,6 +162,7 @@ function BaseApp() {
     let topPaddingStyle = 'width: 100%; padding-top: ' + (siteNameDiv.offsetHeight*3) + 'px;'
     topPaddingDiv.setAttribute("style", topPaddingStyle)
 
+    
     // -------------------------------------------------------------------
     // 
     // -------------------------------------------------------------------
@@ -231,10 +250,11 @@ function BaseApp() {
   }
   this.connectStatusDiv = connectStatusDiv
 
-  function userNameDiv() {
-    return document.querySelector("#"+"userNameDiv")
+  let userNameDiv = document.querySelector("#"+"userNameDiv")
+  if(window.__userId__ !== 'None') {
+    userNameDiv.innerHTML = window.__userId__
+    userNameDiv.style.opacity = '80%'
   }
-  this.userNameDiv = userNameDiv
 
   return
 

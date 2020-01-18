@@ -11,6 +11,7 @@
         window.__appPrefix__ = '{{app_prefix}}'
         window.__nsType__ = '{{ns_type}}'
         window.__widgetName__ = '{{widget_name}}'
+        window.__userId__ = '{{login}}'
     </script>
 
     <meta charset="UTF-8" />
@@ -59,7 +60,7 @@
     <div id="baseAppNEW"></div>
 
     <div id="sideMenu"></div>
-    <div id="topMenu" class="horizEle gridEleBodyDark" style="width: 100%; display: flex; align-items: center; position: fixed; top: 0;">
+    <div id="topMenu" class="horizEle gridEleBodyDark" style="width: 100%; display: flex; align-items: center; position: fixed; top: 0; opacity: 1;">
       <div class="horizEle " style="width: 100%; margin-top: 12px; margin-bottom: 12px; ">
         <div style="margin-left: 2%;"></div>
         
@@ -72,7 +73,9 @@
 
         <div class="switchTitled">
           <div id="connectStatusDiv" style="opacity: 0; pointer-events:none">
-            <div id="connectStatusDiv_txt" style=" margin-bottom: 0px; font-size: 10px;"></div>
+            <div id="connectStatusDiv_txt" style=" margin-bottom: 0px; font-size: 10px;">
+              Online
+            </div>
             
             <div id="connectStatusDiv_tog">
                 <label class="switch">
@@ -83,9 +86,11 @@
           </div>
         </div>
 
-        <div class="sized-button" style="margin-bottom: 4px;">
-          <div style="margin-bottom: 4px; font-size: 10px;">Logout</div>
-          <div id="logoutBtn" class="fa fa-bars fa-circle-button-bright"></div>
+        <div id="logoutBtnDiv" style="opacity:1; pointer-events:none;">
+          <div class="sized-button" style="margin-bottom: 4px;">
+            <div style="margin-bottom: 4px; font-size: 10px;">Logout</div>
+            <div id="logoutBtn" class="fa fa-sign-out-alt fa-circle-button-bright"></div>
+          </div>
         </div>
 
         <div style="margin-right: 2%;"></div>

@@ -37,7 +37,6 @@ function SocketManager () {
   let viewInitV = {}
   let isSouth = (window.__nsType__ === 'S')
   let serverName = null
-  let debugServerName = false
   let baseApp = window.baseApp
   let tabTableTitleId = 'table_title'
   let tabTableMainId = 'table_content'
@@ -69,9 +68,11 @@ function SocketManager () {
 
       let sockId = this.socket.sessionid
 
+      topThis.isReload = false
       topThis.socket.emit('joinSession', sockId)
 
       topThis.conStat = new ConnectionState()
+      topThis.conStat.setServerOn(true)
       topThis.conStat.setState(true)
 
       checkIsHidden()
@@ -83,6 +84,7 @@ function SocketManager () {
     // ---------------------------------------------------------------------------------------------------
     topThis.socket.on('reConnect', function (dataIn) {
       // console.log('reConnect',dataIn);
+      topThis.isReload = false
       validateServer(dataIn.serverName)
     })
 
@@ -133,8 +135,10 @@ function SocketManager () {
     // upon leaving the session or leaving the page
     // ---------------------------------------------------------------------------------------------------
     window.addEventListener('beforeunload', function (event, doReload) {
+      topThis.isReload = true
       // explicitly needed for firefox, but good in any case...
       if (topThis.socket) {
+        // topThis.conStat.setServerOn(false)
         topThis.socket.disconnect()
         topThis.socket = null
       }
@@ -145,8 +149,11 @@ function SocketManager () {
 
     // in case we disconnect (internet is off or server is down)
     topThis.socket.on('disconnect', function () {
-      // console.log('disconnect............');
-      topThis.conStat.setState(false)
+      // console.log('topThis.isReload',topThis.isReload)
+      if(!topThis.isReload) {
+        topThis.conStat.setServerOn(false)
+        topThis.conStat.setState(false)
+      }
     })
 
     // topThis.socket.on('error', function(obj) {
@@ -184,10 +191,6 @@ function SocketManager () {
     // ---------------------------------------------------------------------------------------------------
     let hasLoaded = false
     topThis.socket.on('joinSessionData', function (data) {
-      if (debugServerName) {
-        topThis.conStat.setUserName(data.sessProps.userId + '/' + serverName)
-      } else topThis.conStat.setUserName(data.sessProps.userId)
-
       if (!hasLoaded) {
         if (hasVar(setupView[widgetName])) {
           setupView[widgetName]()
@@ -206,17 +209,54 @@ function SocketManager () {
     let user = true
     let txt = baseApp.connectStatusDiv('_txt')
     let tog = baseApp.connectStatusDiv('_btn')
-
     let connectStatusDiv = baseApp.connectStatusDiv('')
-    connectStatusDiv.style.opacity = '100%'
-    connectStatusDiv.style.pointerEvents = 'auto'
+    let offOpacity = '40%'
+    
+    let isServerOn = null
+    function setServerOn(isServerOnIn) {
+      isServerOn = isServerOnIn
+      return
+    }
+    this.setServerOn = setServerOn
+
+    function setStatusDivState(stateIn) {
+      if (stateIn) {
+        connectStatusDiv.style.opacity = '100%'
+        connectStatusDiv.style.pointerEvents = 'auto'
+      }
+      else {
+        connectStatusDiv.style.opacity = offOpacity
+        connectStatusDiv.style.pointerEvents = 'none'
+      }
+      return
+    }
 
     tog.addEventListener('change', function (customEvent) {
       user = customEvent.target.checked
       isOn = user
 
       togTxt(user)
+      console.log(1, isOn, user, isServerOn)
     })
+
+    function setState (isConnect) {
+      if (isConnect) {
+        tog.setAttribute('style', 'opacity:1;')
+      } else {
+        tog.setAttribute('style', 'opacity: ' + offOpacity + '; pointer-events: none;')
+      }
+
+      if(user) {
+        tog.checked = isConnect
+        isOn = isConnect
+      }
+
+      togTxt(isConnect)
+      setStatusDivState(isServerOn)
+      return
+    }
+    this.setState = setState
+
 
     function togTxt (isOnline) {
       if (isOnline) txt.classList.remove('connectStatusDivTxtCol')
@@ -227,31 +267,6 @@ function SocketManager () {
       topThis.socket.emit('setOnlineState', { isOnline: isOnline })
       return
     }
-
-    function setState (isConnect) {
-      if (isConnect) {
-        tog.setAttribute('style', 'opacity:1;')
-      } else {
-        tog.setAttribute('style', 'opacity:0.4;pointer-events:none;')
-      }
-
-      if (user) {
-        tog.checked = isConnect
-        isOn = isConnect
-      }
-
-      togTxt(isConnect)
-      return
-    }
-    this.setState = setState
-
-    function setUserName (userIdIn) {
-      window.userId = userIdIn
-      let userNameDiv = baseApp.userNameDiv()
-      userNameDiv.innerHTML = userIdIn
-      userNameDiv.style.opacity = '80%'
-    }
-    this.setUserName = setUserName
 
     function isOffline () {
       return document.hidden || !isOn
