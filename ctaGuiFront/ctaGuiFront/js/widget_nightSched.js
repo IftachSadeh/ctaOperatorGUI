@@ -389,9 +389,9 @@ let mainNightSched = function (optIn) {
         telHealth[dataNow.id] = dataNow.val
       })
 
-      blockQueue.set({ tag: 'telIds', data: telIds })
-      blockQueue.set({ tag: 'time', data: dataIn.timeOfNight })
-      blockQueue.update(dataIn.blocks)
+      // blockQueue.set({ tag: 'telIds', data: telIds })
+      // blockQueue.set({ tag: 'time', data: dataIn.timeOfNight })
+      // blockQueue.update(dataIn.blocks)
 
       telTreeMap.set({ tag: 'telIds', data: telIds })
       telTreeMap.set({ tag: 'telHealth', data: telHealth })

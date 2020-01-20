@@ -1232,9 +1232,10 @@ window.EventDisplayer = function (optIn) {
       .style('stroke-width', 1)
       .attr('stroke-dasharray', [5, com.main.box.h, 5 + com.main.box.h])
 
+    let ntag = com.main.tag + 'Scroll'
     com.main.scroll.scrollBox = new ScrollBox()
     com.main.scroll.scrollBox.init({
-      tag: 'eventDisplayerScroll',
+      tag: ntag,
       gBox: com.main.scroll.scrollBoxG,
       boxData: {
         x: 0,

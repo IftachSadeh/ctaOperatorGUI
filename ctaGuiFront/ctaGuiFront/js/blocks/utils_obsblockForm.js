@@ -11,7 +11,7 @@
 /* global deepCopy */
 
 loadScript({ source: 'utils_scrollTable', script: '/js/blocks/utils_blockCommon.js' })
-loadScript({ source: 'utils_scrollTable', script: '/js/blocks/utils_telescopeCommon.js' })
+// loadScript({ source: 'utils_scrollTable', script: '/js/blocks/utils_telescopeCommon.js' })
 loadScript({ source: 'utils_scrollTable', script: '/js/utils_commonD3.js' })
 
 window.ObsblockForm = function (optIn) {

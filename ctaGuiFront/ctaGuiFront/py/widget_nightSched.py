@@ -148,7 +148,7 @@ class nightSched():
             blocks = self.redis.pipe.execute(packed=True)
             nightSched.blocks[key] = sorted(
                 blocks,
-                cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])
+                cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
             )
 
         return

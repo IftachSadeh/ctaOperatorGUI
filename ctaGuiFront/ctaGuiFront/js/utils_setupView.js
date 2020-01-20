@@ -55,6 +55,20 @@ setupView.view102 = function () {
   })
 
   sock.addWidget({
+    nameTag: 'schedBlocksInspector',
+    tableTitle: 'Scheduling Blocks Inspector',
+    hasIcon: true,
+    hasDrawer: false
+  })
+
+  sock.addWidget({
+    nameTag: 'plotsDash',
+    tableTitle: 'plots Dashboard',
+    hasIcon: true,
+    hasDrawer: false
+  })
+
+  sock.addWidget({
     nameTag: 'schedBlocks',
     tableTitle: 'Observing blocks',
     hasIcon: true,
@@ -67,7 +81,6 @@ setupView.view102 = function () {
     hasIcon: true,
     hasDrawer: false
   })
-
 }
 
 // -----------------------------------------------------------------------------------------------------------

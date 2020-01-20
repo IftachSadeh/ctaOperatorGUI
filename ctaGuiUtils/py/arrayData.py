@@ -34,17 +34,17 @@ class arrayData():
             ])
 
             arrayData.nsType = nsType
-            
+
             arrayData.tel_ids = self.initTelIds()
             self.initTelPos()
-            
+
             arrayData.aux_ids = self.init_aux_ids()
             self.init_aux_pos()
 
             arrayData.inst_Ids = copy.deepcopy(arrayData.tel_ids + arrayData.aux_ids)
 
             self.init_sub_array_tels()
-            
+
             self.initTelHealth()
             self.set_inst_id_to_types()
 
@@ -70,7 +70,7 @@ class arrayData():
             # ------------------------------------------------------------------
             # south
             # ------------------------------------------------------------------
-            if arrayData.nsType == 'S': 
+            if arrayData.nsType == 'S':
                 idNow = 'SA_0'
                 sub_array_tels[idNow] = [
                     'Lx00', 'Lx01', 'Lx02', 'Lx03', 'Mx04',
@@ -80,7 +80,7 @@ class arrayData():
                     'Lx00', 'Lx01', 'Lx02', 'Lx03', 'Mx04',
                     'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09',
                 ]
-            
+
             # ------------------------------------------------------------------
             # north
             # ------------------------------------------------------------------
@@ -105,7 +105,7 @@ class arrayData():
 
         arrayData.sub_array_tels = sub_array_tels
         self.set_tel_id_to_sub_array()
-        
+
         return
 
 
@@ -126,7 +126,7 @@ class arrayData():
             tel_id_to_sub_array[tel_id].sort()
 
         arrayData.tel_id_to_sub_array = tel_id_to_sub_array
-        
+
         return
 
 
@@ -138,7 +138,7 @@ class arrayData():
             # ------------------------------------------------------------------
             # south
             # ------------------------------------------------------------------
-            if arrayData.nsType == 'S': 
+            if arrayData.nsType == 'S':
                 tel_ids = [
                     'Lx00', 'Lx01', 'Lx02', 'Lx03', 'Mx04',
                     'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09',
@@ -158,7 +158,7 @@ class arrayData():
                     'Sx75', 'Sx76', 'Sx77', 'Sx78', 'Sx79',
                     'Sx80', 'Sx81', 'Sx82', 'Sx83', 'Sx84',
                     'Sx85', 'Sx86', 'Sx87', 'Sx88', 'Sx89',
-                    'Sx90', 'Sx91', 'Sx92', 'Sx93', 'Sx94', 
+                    'Sx90', 'Sx91', 'Sx92', 'Sx93', 'Sx94',
                     'Sx95', 'Sx96', 'Sx97', 'Sx98',
                 ]
 
@@ -167,7 +167,7 @@ class arrayData():
             # ------------------------------------------------------------------
             elif arrayData.nsType == 'N':
                 tel_ids = [
-                    'Lx00', 'Lx01', 'Lx02', 'Lx03', 'Mx04', 
+                    'Lx00', 'Lx01', 'Lx02', 'Lx03', 'Mx04',
                     'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09',
                     'Mx10', 'Mx11', 'Mx12', 'Mx13', 'Mx14',
                     'Mx15', 'Mx16', 'Mx17', 'Mx18',
@@ -188,7 +188,7 @@ class arrayData():
     def init_aux_ids(self):
         try:
             # south
-            if arrayData.nsType == 'S': 
+            if arrayData.nsType == 'S':
                 aux_ids = [
                     'Ax00', 'Ax01', 'Ax02', 'Ax03',
                 ]
@@ -205,7 +205,7 @@ class arrayData():
 
         return aux_ids
 
-    
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -346,7 +346,7 @@ class arrayData():
             idNow = "Sx47"
             add_dict_id(idNow, {
                 'x':  796.903, 'y':  220.844, 'type': 'SST'})
-            idNow = "Sx48"            
+            idNow = "Sx48"
             add_dict_id(idNow, {
                 'x': -796.903, 'y':  220.844, 'type': 'SST'})
             idNow = "Sx49"
@@ -578,7 +578,7 @@ class arrayData():
 
         return
 
-     
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -602,7 +602,7 @@ class arrayData():
         # ------------------------------------------------------------------
         if arrayData.nsType == 'S':
             # ------------------------------------------------------------------
-            # 
+            #
             # ------------------------------------------------------------------
             idNow = "Ax00"
             add_dict_id(idNow, {'x':  190, 'y':  320, 'type': 'AUX'})
@@ -635,7 +635,7 @@ class arrayData():
         # ------------------------------------------------------------------
         if arrayData.nsType == 'N':
             # ------------------------------------------------------------------
-            # 
+            #
             # ------------------------------------------------------------------
             idNow = "Ax00"
             add_dict_id(idNow, {'x':  30, 'y':  92, 'type': 'AUX'})
@@ -657,7 +657,7 @@ class arrayData():
 
         return
 
-    
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -667,7 +667,7 @@ class arrayData():
         aux_ids = arrayData.aux_ids
 
         # ------------------------------------------------------------------
-        # 
+        #
         # ------------------------------------------------------------------
         for idNow in tel_ids:
             inst_health[idNow] = dict()
@@ -803,9 +803,9 @@ class arrayData():
                     ]
                 }
 
-        
+
         # ------------------------------------------------------------------
-        # 
+        #
         # ------------------------------------------------------------------
         for idNow in aux_ids:
             inst_health[idNow] = dict()
@@ -845,7 +845,7 @@ class arrayData():
 
         return
 
-    
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -856,18 +856,18 @@ class arrayData():
 
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def get_tel_type(self, tel_id):
         try:
-            tel_type = arrayData.inst_info[tel_id]['type'] 
+            tel_type = arrayData.inst_info[tel_id]['type']
         except Exception:
             Assert(msg=(' - get_tel_type(' + str(tel_id) +
                 '): tel_id not defined?'), state=False)
 
         return tel_type
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def is_tel_type(self, tel_id, comp_type):
         is_type = (self.get_tel_type(tel_id) == comp_type)
@@ -884,7 +884,7 @@ class arrayData():
 
         return
 
-        
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -941,9 +941,3 @@ class arrayData():
         while arrayData.tel_id_to_sub_array is None:
             sleep(0.01)
         return copy.deepcopy(arrayData.tel_id_to_sub_array)
-
-
-
-
-
-

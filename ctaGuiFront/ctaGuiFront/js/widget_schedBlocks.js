@@ -125,6 +125,7 @@ function mainSchedBlocks (optIn) {
   // delay counters
   let locker = new Locker()
   locker.add('inInit')
+  console.log(' -- FIXME -- use TelInfo.getIds and TelInfo.telIdToTypes as in arrZoomer.js .... -- see optional filter option in the python file -- self.mySock.arrayData.get_inst_ids(inst_types=[....])')
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
@@ -183,9 +184,7 @@ function mainSchedBlocks (optIn) {
     return blocks
   }
   function getTelHealthById (id) {
-    console.log(' -- FIXME -- use TelInfo.getIds and TelInfo.telIdToTypes as in arrZoomer.js .... -- see optional filter option in the python file -- self.mySock.arrayData.get_inst_ids(inst_types=[....])')
-    let index = Number(id.split('_')[1])
-    return shared.data.server.telHealth[index]
+    return shared.data.server.telHealth.find(x => x.id === id).val
   }
   function groupBlocksBySchedule (blocks) {
     let res = {}
@@ -556,7 +555,7 @@ function mainSchedBlocks (optIn) {
 
       eventQueueServerPast = new EventDisplayer({
         main: {
-          tag: 'eventDisplayerMiddleTag',
+          tag: 'eventDisplayerPastSchedBlock',
           g: reserved.g,
           scroll: {},
           box: adjustedBox,
@@ -725,7 +724,7 @@ function mainSchedBlocks (optIn) {
 
       eventQueueServerFutur = new EventDisplayer({
         main: {
-          tag: 'eventDisplayerMiddleTag',
+          tag: 'eventDisplayerFuturSchedBlock',
           g: reserved.g,
           scroll: {},
           box: adjustedBox,
@@ -1254,7 +1253,7 @@ function mainSchedBlocks (optIn) {
 
       blockQueueServerPast = new BlockDisplayer({
         main: {
-          tag: 'blockQueueMiddleTag',
+          tag: 'blockQueuePastSchedBlock',
           g: reserved.g,
           scroll: {},
           box: adjustedBox,
@@ -1546,7 +1545,7 @@ function mainSchedBlocks (optIn) {
 
       blockQueueServerFutur = new BlockDisplayer({
         main: {
-          tag: 'blockQueueMiddleTag',
+          tag: 'blockQueueFuturSchedBlock',
           g: reserved.g,
           scroll: {},
           box: adjustedBox,
@@ -2270,10 +2269,9 @@ function mainSchedBlocks (optIn) {
         w: ww * 0.54,
         h: telsBox.h
       }
-
       telescopeRunning = new TelescopeDisplayer({
         main: {
-          tag: 'telescopeRootTag',
+          tag: 'telescopeDisplayerSchedBlock',
           g: reserved.g,
           scroll: {},
           box: telsBox,
@@ -2428,7 +2426,7 @@ function mainSchedBlocks (optIn) {
       let tels = []
       for (let i = 0; i < shared.data.server.telIds.length; i++) {
         let id = shared.data.server.telIds[i]
-        tels.push({id: id, health: getTelHealthById(id).val})
+        tels.push({id: id, health: getTelHealthById(id)})
       }
       telescopeRunning.updateData({
         data: {

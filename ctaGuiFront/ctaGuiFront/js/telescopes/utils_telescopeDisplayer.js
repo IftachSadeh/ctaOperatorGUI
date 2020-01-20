@@ -615,7 +615,7 @@ window.TelescopeDisplayer = function (optIn) {
           .attr('ry', size.h)
         g.select('text#name')
           .text(function (d) {
-            return d.id.split('_')[1]
+            return d.id
           })
           .attr('x', size.w * 0.5)
           .attr('y', size.h * 0.5 + fontsize * 0.33)
@@ -676,7 +676,7 @@ window.TelescopeDisplayer = function (optIn) {
       //     .attr('x', size.w * 0.5)
       //     .attr('y', size.h * 0.5 + fontsize * 0.33)
       //     .text(function (d) {
-      //       return d.id.split('_')[1]
+      //       return d.id.split
       //     })
       //     .style('fill', colorTheme.blocks.run.text)
       //     .style('stroke', colorTheme.blocks.run.text)
@@ -706,7 +706,7 @@ window.TelescopeDisplayer = function (optIn) {
       //     .attr('ry', size.h)
       //   d3.select(this).select('text')
       //     .text(function (d) {
-      //       return d.id.split('_')[1]
+      //       return d.id
       //     })
       //     .attr('x', size.w * 0.5)
       //     .attr('y', size.h * 0.5 + fontsize * 0.33)
@@ -1078,7 +1078,6 @@ window.TelescopeDisplayer = function (optIn) {
       scrollRecV: {w: 2}
     })
     com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
-    console.log(com.main.scroll.scrollG);
     com.main.background = com.main.scroll.scrollG.append('g')
     com.main.foreground = com.main.scroll.scrollG.append('g')
   }
