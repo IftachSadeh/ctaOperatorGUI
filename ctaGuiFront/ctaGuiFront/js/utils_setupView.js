@@ -61,12 +61,12 @@ setupView.view102 = function () {
     hasDrawer: false
   })
 
-  sock.addWidget({
-    nameTag: 'plotsDash',
-    tableTitle: 'plots Dashboard',
-    hasIcon: true,
-    hasDrawer: false
-  })
+  // sock.addWidget({
+  //   nameTag: 'plotsDash',
+  //   tableTitle: 'plots Dashboard',
+  //   hasIcon: true,
+  //   hasDrawer: false
+  // })
 
   sock.addWidget({
     nameTag: 'schedBlocks',
