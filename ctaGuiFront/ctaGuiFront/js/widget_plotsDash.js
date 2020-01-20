@@ -145,7 +145,7 @@ let mainPlotsDash = function (optIn) {
           x: 0,
           y: 0,
           w: $(svg.svg.node()).width(),
-          h: $(svg.svg.node()).height() * 0.5
+          h: middleSeparation - 20 // $(svg.svg.node()).height() * 0.5
         }
         svgUrgentPlots.adjustScrollBox()
         svgUrgentPlots.updateData()
@@ -153,7 +153,7 @@ let mainPlotsDash = function (optIn) {
         box.pinnedPlots = {
           x: 0,
           y: $(svg.svg.node()).height() * 0.5,
-          w: $(svg.svg.node()).width(),
+          w: $(svg.svg.node()).width() * 0.5,
           h: $(svg.svg.node()).height() * 0.5
         }
         svgPinnedPlots.adjustScrollBox()
@@ -235,7 +235,13 @@ let mainPlotsDash = function (optIn) {
       box.pinnedPlots = {
         x: 0,
         y: middleSeparation + 20,
-        w: $(svg.svg.node()).width(),
+        w: $(svg.svg.node()).width() * 0.5,
+        h: $(svg.svg.node()).height() - middleSeparation - 20
+      }
+      box.focusPlots = {
+        x: $(svg.svg.node()).width() * 0.5,
+        y: middleSeparation + 20,
+        w: $(svg.svg.node()).width() * 0.5,
         h: $(svg.svg.node()).height() - middleSeparation - 20
       }
     }
@@ -312,6 +318,7 @@ let mainPlotsDash = function (optIn) {
 
     svgUrgentPlots.initData()
     svgPinnedPlots.initData()
+    drawfakefocus()
   }
   this.initData = initData
   function updateDataOnce (dataIn) {
@@ -330,8 +337,8 @@ let mainPlotsDash = function (optIn) {
     }
 
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
-    updateMeasures()
-    svgPinnedPlots.updateData()
+    // updateMeasures()
+    // svgPinnedPlots.updateData()
     svgUrgentPlots.updateData()
 
     locker.remove('updateData')
@@ -401,8 +408,16 @@ let mainPlotsDash = function (optIn) {
       return status
     }
     let index = 1
-    for (let z = 0; z < shared.server.measures.length; z++) {
-      for (let i = 0; i < shared.server.measures[z].length; i++) {
+    for (let z = shared.server.measures.length - 1; z >= 0; z--) {
+      if (z === 2 || z === 4) index = 1
+      let type = shared.server.measures[z][0].type
+      for (let i = shared.server.measures[z].length - 1; i >= 0; i--) {
+        let todelete = Math.random() > 0.95
+        if (todelete && !shared.server.measures[z][i].ended) {
+          shared.server.measures[z][i].ended = shared.time.current
+          // shared.server.measures[z].splice(i, 1)
+          // continue
+        }
         shared.server.measures[z][i].status = fillfun(index)
         index += 1
         for (let j = 0; j < shared.server.measures[z][i].subMeasures.length; j++) {
@@ -410,7 +425,21 @@ let mainPlotsDash = function (optIn) {
           index += 1
         }
       }
+      for (let i = shared.server.measures[z].length - 1; i >= 0; i--) {
+        if (shared.server.measures[z][i].ended) {
+          if ((shared.time.current.getTime() - shared.server.measures[z][i].ended.getTime()) > 400000) shared.server.measures[z].splice(i, 1)
+        }
+      }
+      let toadd = Math.random() > 0.8
+      if (toadd) {
+        for (let i = 0; i < Math.floor(Math.random() * 2); i++) {
+          shared.server.measures[z].push(
+            {id: 'id' + Math.floor(Math.random() * 200), added: shared.time.current, type: type, name: 'NEW', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []})
+        }
+      }
+      if (shared.server.measures[z].length === 0) shared.server.measures.splice(z, 1)
     }
+    // console.log(shared.server.measures[0].length + shared.server.measures[1].length + shared.server.measures[2].length);
   }
   function loadMesures () {
     let fillfun = function (index) {
@@ -429,53 +458,104 @@ let mainPlotsDash = function (optIn) {
     }
     let index = 0
     let weather = [
-      {id: 'id0', type: 'weather', name: 'Measure1', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id1', type: 'weather', name: 'Measure2', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id2', type: 'weather', name: 'Measure3', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
-      {id: 'id3', type: 'weather', name: 'Measure4', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+      {id: 'id0', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure1', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure2', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id2', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure3', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id3', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure4', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
         {id: 'id4', name: 'subMeasure.14', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
       ]},
-      {id: 'id5', type: 'weather', name: 'Measure5', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
+      {id: 'id5', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure5', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id6', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure1', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id7', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure2', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id8', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure3', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id9', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure4', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+      //   {id: 'id10', name: 'subMeasure.14', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
+      // ]},
+      // {id: 'id11', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure5', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
     ]
     let telescopes = [
+      {id: 'id0', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure6', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure7', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
     ]
-    let other = [
+    index = 0
+    let other1 = [
+      {id: 'id0', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure8', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure9', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id2', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure10', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id3', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure11', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id4', name: 'subMeasure.14', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]}
+    ]
+    let other2 = [
+      {id: 'id0', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure8', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+    ]
+    let other3 = [
+      {id: 'id0', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure8', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure9', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id2', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure10', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id3', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure8', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id4', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure9', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id5', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure10', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id6', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure8', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id7', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure9', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      // {id: 'id8', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure10', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
     ]
     shared.server.measures = [
       weather,
       telescopes,
-      other
+      other1,
+      other2,
+      other3
+    ]
+
+    let weatherP = [
+      {id: 'id0', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure1', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure2', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id2', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure3', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id3', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure4', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id4', name: 'subMeasure.14', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]},
+      {id: 'id5', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure1', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id6', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure2', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id7', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure3', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id8', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure4', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: [
+        {id: 'id9', name: 'subMeasure.14', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))]}
+      ]},
+      {id: 'id10', added: shared.time.current, ended: undefined, type: 'weather', name: 'Measure5', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
+    ]
+    let telescopesP = [
+      {id: 'id0', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure6', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure7', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id2', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure6', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id3', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure7', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id4', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure6', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id5', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure6', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id6', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure7', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id7', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure6', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id8', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure7', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id9', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure6', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id10', added: shared.time.current, ended: undefined, type: 'telescopes', name: 'Measure7', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
+    ]
+    let otherP = [
+      {id: 'id0', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure8', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id1', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure9', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id2', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure8', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
+      {id: 'id3', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure9', status: fillfun(index), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
+    ]
+    shared.server.pinned = [
+      weatherP,
+      telescopesP,
+      otherP
     ]
   }
 
-  let SvgPinnedPlots = function () {
-    let scrollbox
-    let miniPlotbox
-    let lastPlotbox
-    let focusPlotbox
-    let plotList = []
+  function drawfakefocus () {
+    let plotlistg = svg.svg.append('g')
+      .attr('transform', 'translate(' + box.focusPlots.x + ',' + box.focusPlots.y + ')')
+      .style('pointer-events', 'auto')
+    let topg = plotlistg.append('g')
+    let bottomg = plotlistg.append('g').attr('transform', 'translate(' + 0 + ',' + box.focusPlots.h * 0.6 + ')')
 
-    function adjustScrollBox () {
-      return
-      if (!scrollbox) return
-      let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + 29))
-      scrollbox.updateBox({x: 0, y: 0, w: box.pinnedPlots.w, h: box.pinnedPlots.h})
-      scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(plotList.length / nbperline))})
-      // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
-    }
-    this.adjustScrollBox = adjustScrollBox
-    function adjustPlotDistribution () {
-      return
-      let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + 29))
-      console.log(d3.select(plotList[6].get('main').g.node().parentNode.parentNode.parentNode.parentNode).attr('transform'))
-      for (let i = 0; i < plotList.length; i++) {
-        d3.select(plotList[i].get('main').g.node().parentNode.parentNode.parentNode.parentNode)
-          .transition()
-          .duration(400)
-          .attr('transform', 'translate(' + (25 + (plotbox.w + 30) * (i % nbperline)) + ',' + (15 + plotbox.h * 0.15 + (plotbox.h + 20) * parseInt(i / nbperline)) + ')')
-      }
-    }
-    this.adjustPlotDistribution = adjustPlotDistribution
     function createPlot (optIn) {
       let plot = new PlotTimeSeries()
       plot.init({
@@ -490,7 +570,7 @@ let mainPlotsDash = function (optIn) {
             event: () => { console.log('pinned') }
           },
           remove: {
-            enabled: true,
+            enabled: false,
             event: () => { console.log('remove') }
           }
         },
@@ -536,7 +616,7 @@ let mainPlotsDash = function (optIn) {
               mode: 'linear',
               attr: {
                 text: {
-                  enabled: true,
+                  enabled: false,
                   size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
@@ -557,7 +637,192 @@ let mainPlotsDash = function (optIn) {
               zoom: true,
               brush: true
             }
+          }
+          // {
+          //   id: 'right',
+          //   showAxis: true,
+          //   main: {
+          //     g: undefined,
+          //     box: {x: plotbox.w, y: 0, w: 0, h: 0, marg: 0},
+          //     type: 'right',
+          //     mode: 'linear',
+          //     attr: {
+          //       text: {
+          //         enabled: true,
+          //         size: 11,
+          //         stroke: colorPalette.medium.stroke,
+          //         fill: colorPalette.medium.stroke
+          //       },
+          //       path: {
+          //         enabled: true,
+          //         stroke: colorPalette.medium.stroke,
+          //         fill: colorPalette.medium.stroke
+          //       },
+          //       tickSize: -plotbox.w
+          //     }
+          //   },
+          //   axis: undefined,
+          //   scale: undefined,
+          //   domain: [0, 1000],
+          //   range: [0, 0],
+          //   brush: {
+          //     zoom: true,
+          //     brush: true
+          //   }
+          // }
+        ],
+        content: []
+      })
+      return plot
+    }
+
+    let plotb = {
+      x: 0,
+      y: 0,
+      w: box.focusPlots.w * 0.9,
+      h: box.focusPlots.h * 0.6
+    }
+    let optIn = {g: topg,
+      box: plotb
+    }
+    optIn.g = optIn.g.append('g') // .style('opacity', 0.8)
+    let plotObject = createPlot(optIn)
+    let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+    let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+
+    plotObject.updateAxis({
+      id: 'bottom',
+      domain: [startTime.date, endTime.date],
+      range: [0, plotb.w]
+    })
+    plotObject.updateAxis({
+      id: 'left',
+      domain: [0, 100],
+      range: [plotb.h, 0]
+    })
+    plotObject.bindData(shared.server.measures[0][0].id, [shared.server.measures[0][0].status.current].concat(shared.server.measures[0][0].status.previous), 'bottom', 'left')
+  }
+
+  let SvgPinnedPlots = function () {
+    let topg
+    let topDim
+
+    let bottomg
+    let bottomDim
+
+    let middleg
+    let scrollbox
+
+    let plotbox = {
+      x: 0,
+      y: 0,
+      w: 100,
+      h: 80
+    }
+    let allPlots
+
+    function adjustScrollBox () {
+      if (!scrollbox) return
+      let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + 29))
+      let tot = 0
+      for (let i = 0; i < shared.server.measures.length; i++) {
+        tot += shared.server.measures[i].length
+      }
+      scrollbox.updateBox({x: 0, y: 40, w: box.pinnedPlots.w, h: box.pinnedPlots.h - 80})
+      scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(tot / nbperline))})
+      // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
+    }
+    this.adjustScrollBox = adjustScrollBox
+    // function adjustPlotDistribution () {
+    //   // let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + 29))
+    //   // console.log(d3.select(plotList[6].get('main').g.node().parentNode.parentNode.parentNode.parentNode).attr('transform'))
+    //   for (let i = 0; i < shared.server.measures.length.length; i++) {
+    //
+    //   }
+    // }
+    // this.adjustPlotDistribution = adjustPlotDistribution
+    function createPlot (optIn) {
+      let plot = new PlotTimeSeries()
+      plot.init({
+        main: {
+          g: optIn.g,
+          box: optIn.box,
+          clipping: true
+        },
+        interaction: {
+          pinned: {
+            enabled: false,
+            event: () => { console.log('pinned') }
           },
+          remove: {
+            enabled: false,
+            event: () => { console.log('remove') }
+          }
+        },
+        axis: [
+          {
+            id: 'bottom',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: 0, w: 0, h: optIn.box.h, marg: 0},
+              type: 'bottom',
+              attr: {
+                text: {
+                  enabled: false,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -optIn.box.h
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'left',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+              type: 'left',
+              mode: 'linear',
+              attr: {
+                text: {
+                  enabled: false,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -optIn.box.w
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          }
           // {
           //   id: 'right',
           //   showAxis: true,
@@ -597,123 +862,400 @@ let mainPlotsDash = function (optIn) {
     }
 
     function initData () {
-      miniPlotbox = {
-        x: lenD.w[0] * 0.21,
-        y: 10,
-        w: 180 * 0.72,
-        h: 125 * 0.72
-      }
-      lastPlotbox = {
-        x: 0,
-        y: 0,
-        w: 180,
-        h: 125
-      }
-      focusPlotbox = {
-        x: 0,
-        y: 0,
-        w: 180,
-        h: 125
-      }
+      topDim = {x: 0, y: 0, w: box.pinnedPlots.w, h: 40}
+      bottomDim = {x: 0, y: box.pinnedPlots.h - 40, w: box.pinnedPlots.w, h: 40}
 
       let plotlistg = svg.svg.append('g').attr('id', 'plotList')
+        .attr('transform', 'translate(' + box.pinnedPlots.x + ',' + box.pinnedPlots.y + ')')
         .style('pointer-events', 'auto')
-      let gg = plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + box.pinnedPlots.x + ',' + box.pinnedPlots.y + ')')
-      scrollbox = initScrollBox('pinnedPlotsScrollbox', gg, box.pinnedPlots, {}, true)
-      let pinnedPlot = scrollbox.get('innerG')
+      topg = plotlistg.append('g').attr('id', 'topurgent').attr('transform', 'translate(' + topDim.x + ',' + topDim.y + ')')
+      bottomg = plotlistg.append('g').attr('id', 'bottomurgent').attr('transform', 'translate(' + bottomDim.x + ',' + bottomDim.y + ')')
+      middleg = plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+      scrollbox = initScrollBox('pinnedPlotsScrollbox', middleg, box.pinnedPlots, {}, true)
 
-      let nbperline = Math.floor(box.pinnedPlots.w * 0.8 / (miniPlotbox.w + 29))
-      for (var i = 0; i < 16; i++) {
-        let optIn = {g: pinnedPlot.append('g'),
-          box: miniPlotbox
-        }
-        optIn.g.attr('transform', 'translate(' + (25 + (miniPlotbox.w + 30) * (i % nbperline)) + ',' + (15 + miniPlotbox.h * 0.15 + (miniPlotbox.h + 20) * parseInt(i / nbperline)) + ')')
-        optIn.g = optIn.g.append('g')
-        let plot = createPlot(optIn)
-        plotList.push(plot)
-
-        let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-        let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
-        plot.updateAxis({
-          id: 'bottom',
-          domain: [startTime.date, endTime.date],
-          range: [0, optIn.box.w]
-        })
-        plot.updateAxis({
-          id: 'left',
-          domain: [0, 100],
-          range: [optIn.box.h, 0]
-        })
-
-        let data = shared.server.measures[Math.floor((Math.random() * 11))]
-        plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
-      }
+      updateData()
 
       adjustScrollBox()
-      adjustPlotDistribution()
 
-      plotlistg.append('rect')
-        .attr('x', box.pinnedPlots.x + box.pinnedPlots.w * 0.26)
-        .attr('y', box.pinnedPlots.y)
-        .attr('width', '200px')
-        .attr('height', '20px')
-        .attr('fill', colorPalette.darkest.background) // colorPalette.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
-      plotlistg.append('text')
-        .text('Pinned Plots')
-        .style('fill', '#000000')
-        .style('font-weight', 'bold')
-        .style('font-size', '14px')
-        .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (box.pinnedPlots.x + box.pinnedPlots.w * 0.26 + 10) + ',' + (box.pinnedPlots.y + 16) + ')')
+      // plotlistg.append('rect')
+      //   .attr('x', box.pinnedPlots.x + box.pinnedPlots.w * 0.26)
+      //   .attr('y', box.pinnedPlots.y)
+      //   .attr('width', '200px')
+      //   .attr('height', '20px')
+      //   .attr('fill', colorPalette.darkest.background) // colorPalette.dark.background)
+      //   .attr('stroke', 'none')
+      //   .attr('rx', 0)
+      // plotlistg.append('text')
+      //   .text('Pinned Plots')
+      //   .style('fill', '#000000')
+      //   .style('font-weight', 'bold')
+      //   .style('font-size', '14px')
+      //   .attr('text-anchor', 'start')
+      //   .attr('transform', 'translate(' + (box.pinnedPlots.x + box.pinnedPlots.w * 0.26 + 10) + ',' + (box.pinnedPlots.y + 16) + ')')
 
-      function drawFakeTitle () {
-        function drawTitle (i) {
-          plotlistg.append('text')
-            .text('Title')
-            .style('fill', '#000000')
-            .style('font-weight', 'bold')
-            .style('font-size', '14px')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(' + (box.pinnedPlots.x + 10) + ',' + (box.pinnedPlots.y + 30 + i * 18) + ')')
-        }
-        function drawLine (i) {
-          plotlistg.append('text')
-            .text('Information Information')
-            .style('fill', '#000000')
-            .style('font-weight', '')
-            .style('font-size', '12px')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(' + (box.pinnedPlots.x + 16) + ',' + (box.pinnedPlots.y + 30 + i * 18) + ')')
-        }
-        drawTitle(0)
-        drawLine(1)
-        drawLine(2)
-        drawLine(3)
-        drawLine(4)
-        drawTitle(5)
-        drawLine(6)
-        drawLine(7)
-        drawTitle(8)
-        drawLine(9)
-        drawLine(10)
-        drawLine(11)
-        drawLine(12)
-        drawLine(13)
-        drawLine(14)
-        drawTitle(15)
-        drawLine(16)
-        drawLine(17)
-        drawLine(18)
-        drawLine(19)
-        drawLine(20)
-      }
-      drawFakeTitle()
+      // function drawFakeTitle () {
+      //   function drawTitle (i) {
+      //     plotlistg.append('text')
+      //       .text('Title')
+      //       .style('fill', '#000000')
+      //       .style('font-weight', 'bold')
+      //       .style('font-size', '14px')
+      //       .attr('text-anchor', 'start')
+      //       .attr('transform', 'translate(' + (box.pinnedPlots.x + 10) + ',' + (box.pinnedPlots.y + 30 + i * 18) + ')')
+      //   }
+      //   function drawLine (i) {
+      //     plotlistg.append('text')
+      //       .text('Information Information')
+      //       .style('fill', '#000000')
+      //       .style('font-weight', '')
+      //       .style('font-size', '12px')
+      //       .attr('text-anchor', 'start')
+      //       .attr('transform', 'translate(' + (box.pinnedPlots.x + 16) + ',' + (box.pinnedPlots.y + 30 + i * 18) + ')')
+      //   }
+      //   drawTitle(0)
+      //   drawLine(1)
+      //   drawLine(2)
+      //   drawLine(3)
+      //   drawLine(4)
+      //   drawTitle(5)
+      //   drawLine(6)
+      //   drawLine(7)
+      //   drawTitle(8)
+      //   drawLine(9)
+      //   drawLine(10)
+      //   drawLine(11)
+      //   drawLine(12)
+      //   drawLine(13)
+      //   drawLine(14)
+      //   drawTitle(15)
+      //   drawLine(16)
+      //   drawLine(17)
+      //   drawLine(18)
+      //   drawLine(19)
+      //   drawLine(20)
+      // }
+      // drawFakeTitle()
     }
     this.initData = initData
 
     function updateData () {
+      let offset = 5
+      let groupOffset = 0
+
+      let tot = 0
+      for (let i = 0; i < shared.server.measures.length; i++) {
+        tot += shared.server.measures[i].length
+      }
+      let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + offset))
+      let xlimArray = []
+      let limit = 0
+      for (let i = 0; i < shared.server.measures.length; i++) {
+        let inter = Math.round((shared.server.measures[i].length * nbperline) / tot)
+        if (inter < 1) inter = 1
+        xlimArray.push(inter)
+        limit += inter
+      }
+      while (limit > nbperline) {
+        xlimArray[xlimArray.indexOf(Math.max(...xlimArray))] -= 1
+        limit -= 1
+      }
+      let plotb = {
+        x: plotbox.x + plotbox.w * 0.05,
+        y: plotbox.y + plotbox.h * 0.35,
+        w: plotbox.w * 0.4,
+        h: plotbox.h * 0.4
+      }
+      console.log(nbperline, xlimArray);
+
+      function drawTopg () {
+        let allGroup = topg.selectAll('g.group')
+          .data(shared.server.measures)
+        let gEnterGroup = allGroup.enter()
+          .append('g')
+          .attr('class', 'group')
+        gEnterGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this).append('rect')
+            .attr('x', offset)
+            .attr('y', 0)
+            .attr('width', plotbox.w - offset)
+            .attr('height', '40px')
+            .attr('stroke', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.2)
+            .attr('fill', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          d3.select(this).append('rect')
+            .attr('x', offset)
+            .attr('y', 38)
+            .attr('width', (plotbox.w + offset) * xlim - offset)
+            .attr('height', '2px')
+            .attr('stroke', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.2)
+            .attr('fill', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          d3.select(this).append('text')
+            .text(d[0].type)
+            .style('fill', '#000000')
+            .style('font-weight', 'bold')
+            .style('font-size', '14px')
+            .attr('text-anchor', 'start')
+            .attr('transform', 'translate(' + (box.pinnedPlots.x + 10) + ',' + (16) + ')')
+          d3.select(this)
+            .transition()
+            .duration(400)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        groupOffset = 0
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this)
+            .transition()
+            .duration(800)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        allGroup
+          .exit()
+          .style('opacity', 0)
+          .remove()
+      }
+      function drawMiddleg () {
+        let allGroup = scrollbox.get('innerG').selectAll('g.group')
+          .data(shared.server.measures)
+        let gEnterGroup = allGroup.enter()
+          .append('g')
+          .attr('class', 'group')
+        gEnterGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this)
+            .transition()
+            .duration(400)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        groupOffset = 0
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          allPlots = d3.select(this).selectAll('g.plot')
+            .data(d, function (dd) {
+              return dd.id
+            })
+          let gEnter = allPlots.enter()
+            .append('g')
+            .attr('class', 'plot')
+          gEnter.each(function (dd, ii) {
+            d3.select(this).append('rect')
+              .attr('x', 0)
+              .attr('y', 0)
+              .attr('width', plotbox.w - offset)
+              .attr('height', plotbox.h - offset)
+              .attr('stroke', colorPalette.bright.stroke)
+              .attr('stroke-width', 0.2)
+              .style('fill-opacity', 1)
+              .attr('fill', colorPalette.bright.background)
+            d3.select(this).append('text')
+              .text(dd.name)
+              .style('fill', '#000000')
+              .style('font-weight', 'bold')
+              .style('font-size', '12px')
+              .attr('text-anchor', 'start')
+              .attr('transform', 'translate(' + (offset) + ',' + (12 + offset) + ')')
+            d3.select(this).append('text')
+              .text(dd.unit)
+              .style('fill', '#000000')
+              .style('font-weight', 'bold')
+              .style('font-size', '12px')
+              .attr('text-anchor', 'end')
+              .attr('transform', 'translate(' + (plotbox.w - offset * 3) + ',' + (12 + offset) + ')')
+            d3.select(this).append('text')
+              .text('80')
+              .style('fill', '#000000')
+              .style('font-weight', 'bold')
+              .style('font-size', '11px')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + (plotbox.w * 0.75) + ',' + (plotbox.h * 0.6 + 12) + ')')
+            d3.select(this).append('text')
+              .text(dd.status.current.y)
+              .style('fill', '#000000')
+              .style('font-weight', 'bold')
+              .style('font-size', '22px')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + (plotbox.w * 0.75) + ',' + (plotbox.h * 0.38 + 12) + ')')
+            d3.select(this).append('rect')
+              .attr('id', 'disapearingBar')
+              .attr('x', 0)
+              .attr('y', 0)
+              .attr('width', plotbox.w - offset)
+              .attr('height', plotbox.h - offset)
+              .style('fill-opacity', 0.4)
+              .attr('fill', (d) => {
+                if (d.type === 'weather') return '#4c11a2'
+                if (d.type === 'other') return '#0065be'
+                if (d.type === 'telescopes') return '#6b8998'
+                return 'none'
+              })
+              .transition()
+              .delay(4000)
+              .duration(2000)
+              .attr('y', plotbox.h - offset * 2)
+              .attr('height', offset * 1)
+            let optIn = {g: d3.select(this),
+              box: plotb
+            }
+            optIn.g = optIn.g.append('g') // .style('opacity', 0.8)
+            dd.plotObject = createPlot(optIn)
+
+            let xlim = xlimArray[i]
+            d3.select(this)
+              .attr('transform', 'translate(' + (offset + (plotbox.w) * (ii % xlim)) + ',' + (offset + (plotbox.h + offset) * parseInt(ii / xlim)) + ')')
+          })
+          let gMerge = allPlots.merge(gEnter)
+          gMerge.each(function (dd, ii) {
+            let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+            let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+
+            dd.plotObject.updateAxis({
+              id: 'bottom',
+              domain: [startTime.date, endTime.date],
+              range: [0, plotb.w]
+            })
+            dd.plotObject.updateAxis({
+              id: 'left',
+              domain: [0, 100],
+              range: [plotb.h, 0]
+            })
+            dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
+
+            if (dd.ended) {
+              let percent = (shared.time.current.getTime() - dd.ended.getTime()) / 400000
+              d3.select(this).style('opacity', 1 - percent)
+              d3.select(this).select('rect#disapearingBar')
+                .attr('width', (plotbox.w - offset) * ((1 - percent) < 0 ? 0 : (1 - percent)))
+            }
+
+            let xlim = xlimArray[i]
+            d3.select(this)
+              .transition()
+              .duration(800)
+              .attr('transform', 'translate(' + (offset + (plotbox.w) * (ii % xlim)) + ',' + (offset + (plotbox.h + offset) * parseInt(ii / xlim)) + ')')
+          })
+          allPlots
+            .exit()
+            .style('opacity', 0)
+            .remove()
+
+          let xlim = xlimArray[i]
+          d3.select(this)
+            .transition()
+            .duration(800)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        allGroup
+          .exit()
+          .style('opacity', 0)
+          .remove()
+      }
+      function drawBottomg () {
+        let allGroup = bottomg.selectAll('g.group')
+          .data(shared.server.measures)
+        let gEnterGroup = allGroup.enter()
+          .append('g')
+          .attr('class', 'group')
+        gEnterGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this).append('rect')
+            .attr('x', offset)
+            .attr('y', 0)
+            .attr('width', plotbox.w - offset)
+            .attr('height', '40px')
+            .attr('stroke', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.2)
+            .attr('fill', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          d3.select(this).append('rect')
+            .attr('x', offset)
+            .attr('y', 0)
+            .attr('width', (plotbox.w + offset) * xlim - offset)
+            .attr('height', '2px')
+            .attr('stroke', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.2)
+            .attr('fill', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          d3.select(this).append('text')
+            .text(d[0].type)
+            .style('fill', '#000000')
+            .style('font-weight', 'bold')
+            .style('font-size', '14px')
+            .attr('text-anchor', 'start')
+            .attr('transform', 'translate(' + (box.pinnedPlots.x + 10) + ',' + (box.pinnedPlots.y + 16) + ')')
+          d3.select(this)
+            .transition()
+            .duration(400)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        groupOffset = 0
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this)
+            .transition()
+            .duration(800)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        allGroup
+          .exit()
+          .style('opacity', 0)
+          .remove()
+      }
+
+      drawTopg()
+      drawMiddleg()
+      drawBottomg()
     }
     this.updateData = updateData
 
@@ -721,16 +1263,45 @@ let mainPlotsDash = function (optIn) {
     this.update = update
   }
   let SvgUrgentPlots = function () {
+    let leftg
+    let leftDim
+
+    let topg
+    let topDim
+
+    let bottomg
+    let bottomDim
+
+    let middleg
     let scrollbox
-    let plotbox
+
+    let plotbox = {
+      x: 0,
+      y: 0,
+      w: 80,
+      h: 50
+    }
     let allPlots
+
+    let xscale
+    let yscale
+    let xaxis
+    let yaxis
+    let xg
+    let yg
+    let showingplot
     // let plotList = []
 
     function adjustScrollBox () {
+      return
       if (!scrollbox) return
       let nbperline = Math.floor(box.urgentPlots.w / (plotbox.w + 29))
-      scrollbox.updateBox({x: 0, y: 0, w: box.urgentPlots.w, h: box.urgentPlots.h})
-      scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(shared.server.measures.length / nbperline))})
+      let tot = 0
+      for (let i = 0; i < shared.server.measures.length; i++) {
+        tot += shared.server.measures[i].length
+      }
+      scrollbox.updateBox({x: 0, y: 40, w: box.urgentPlots.w, h: box.urgentPlots.h - 80})
+      scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(tot / nbperline))})
       // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
     }
     this.adjustScrollBox = adjustScrollBox
@@ -752,7 +1323,7 @@ let mainPlotsDash = function (optIn) {
         },
         interaction: {
           pinned: {
-            enabled: true,
+            enabled: false,
             event: () => { console.log('pinned') }
           },
           remove: {
@@ -802,7 +1373,7 @@ let mainPlotsDash = function (optIn) {
               mode: 'linear',
               attr: {
                 text: {
-                  enabled: true,
+                  enabled: false,
                   size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
@@ -863,139 +1434,695 @@ let mainPlotsDash = function (optIn) {
     }
 
     function initData () {
-      plotbox = {
-        x: 0,
-        y: 0,
-        w: 250,
-        h: 150
-      }
+      leftDim = {x: 0, y: 0, w: box.urgentPlots.w * 0.35 - 41, h: box.urgentPlots.h}
+      topDim = {x: 0, y: 0, w: 100, h: box.urgentPlots.h}
+      bottomDim = {x: box.urgentPlots.w - 100, y: 0, w: 100, h: box.urgentPlots.h}
+
 
       let plotlistg = svg.svg.append('g').attr('id', 'plotList')
+        .attr('transform', 'translate(' + box.urgentPlots.x + ',' + box.urgentPlots.y + ')')
         .style('pointer-events', 'auto')
-      let gg = plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + box.urgentPlots.x + ',' + box.urgentPlots.y + ')')
-      scrollbox = initScrollBox('urgentPlotsScrollbox', gg, box.urgentPlots, {}, true)
+
+      xscale = d3.scaleTime()
+      yscale = d3.scaleLinear()
+
+      xscale.range([0, box.urgentPlots.w * 0.36]).domain([shared.time.from, shared.time.current])
+      yscale.range([0, box.urgentPlots.h - 40]).domain([100, 0])
+
+      xaxis = d3.axisBottom(xscale)
+      yaxis = d3.axisRight(yscale)
+
+      xaxis.tickFormat(d3.timeFormat('%H:%M'))
+
+      xg = plotlistg.append('g').attr('transform', 'translate(' + (box.urgentPlots.w * 0.35 - 41) + ',' + (box.urgentPlots.h - 20) + ')')
+      yg = plotlistg.append('g').attr('transform', 'translate(' + (box.urgentPlots.w * 0.71 - 40) + ',' + 20 + ')')
+      showingplot = plotlistg.append('g').attr('transform', 'translate(' + (box.urgentPlots.w * 0.35 - 41) + ',' + (20) + ')')
+      xg.attr('class', 'axis')
+        .call(xaxis)
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+      yg.attr('class', 'axis')
+        .call(yaxis)
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+
+      leftg = plotlistg.append('g').attr('id', 'topurgent').attr('transform', 'translate(' + leftDim.x + ',' + leftDim.y + ')')
+      topg = plotlistg.append('g').attr('id', 'topurgent').attr('transform', 'translate(' + topDim.x + ',' + topDim.y + ')')
+      bottomg = plotlistg.append('g').attr('id', 'bottomurgent').attr('transform', 'translate(' + bottomDim.x + ',' + bottomDim.y + ')')
+      middleg = plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + (box.urgentPlots.w * 0.71) + ',' + 0 + ')')
+      scrollbox = initScrollBox('urgentPlotsScrollbox', middleg, box.urgentPlots, {}, true)
 
       updateData()
-      // let nbperline = Math.floor(box.urgentPlots.w / (plotbox.w + 29))
-
       adjustScrollBox()
-      // adjustPlotDistribution()
-
-      plotlistg.append('rect')
-        .attr('x', box.urgentPlots.x)
-        .attr('y', box.urgentPlots.y)
-        .attr('width', '200px')
-        .attr('height', '20px')
-        .attr('fill', colorPalette.darkest.background) // colorPalette.dark.background)
-        .attr('stroke', 'none')
-        .attr('rx', 0)
-      plotlistg.append('text')
-        .text('Urgent Plots')
-        .style('fill', '#000000')
-        .style('font-weight', 'bold')
-        .style('font-size', '14px')
-        .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (box.urgentPlots.x + 10) + ',' + (box.urgentPlots.y + 16) + ')')
+      drawfakefinished()
     }
     this.initData = initData
 
+    function drawfakefinished () {
+      let first = showingplot.append('g').attr('class', 'finished')
+      first.attr('transform', 'translate(' + (box.urgentPlots.w * 0.3 - 41) + ',' + (box.urgentPlots.h - 40 - plotbox.h) + ')')
+        .transition()
+        .duration(690000)
+        .ease(d3.easeLinear)
+        .attr('transform', 'translate(' + (0) + ',' + (box.urgentPlots.h - 40 - plotbox.h) + ')')
+      first.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', plotbox.w)
+        .attr('height', plotbox.h)
+        .attr('stroke', colorPalette.bright.stroke)
+        .attr('stroke-width', 0.4)
+        .attr('fill', 'none')
+      first.append('text')
+        .text('Measure1')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '12px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + ((plotbox.w * 0.5)) + ',' + (16) + ')')
+      first.append('text')
+        .text(39 + '' + 'C°' + '')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (plotbox.w * 0.5) + ',' + (plotbox.h * 0.5 + 12) + ')')
+
+      let second = showingplot.append('g').attr('class', 'finished')
+      second.attr('transform', 'translate(' + (box.urgentPlots.w * 0.2 - 41) + ',' + (box.urgentPlots.h - 40 - plotbox.h) + ')')
+        .transition()
+        .duration(690000)
+        .ease(d3.easeLinear)
+        .attr('transform', 'translate(' + (0) + ',' + (box.urgentPlots.h - 40 - plotbox.h) + ')')
+      second.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', plotbox.w)
+        .attr('height', plotbox.h)
+        .attr('stroke', colorPalette.bright.stroke)
+        .attr('stroke-width', 0.4)
+        .attr('fill', 'none')
+      second.append('text')
+        .text('Measure2')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '12px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + ((plotbox.w * 0.5)) + ',' + (16) + ')')
+      second.append('text')
+        .text(12 + '' + 'C°' + '')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (plotbox.w * 0.5) + ',' + (plotbox.h * 0.5 + 12) + ')')
+
+      let third = showingplot.append('g').attr('class', 'finished')
+      third.attr('transform', 'translate(' + (box.urgentPlots.w * 0.32 - 41) + ',' + (box.urgentPlots.h - 40 - plotbox.h * 2) + ')')
+        .transition()
+        .duration(690000)
+        .ease(d3.easeLinear)
+        .attr('transform', 'translate(' + (0) + ',' + (box.urgentPlots.h - 40 - plotbox.h * 2) + ')')
+      third.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', plotbox.w)
+        .attr('height', plotbox.h)
+        .attr('stroke', colorPalette.bright.stroke)
+        .attr('stroke-width', 0.4)
+        .attr('fill', 'none')
+      third.append('text')
+        .text('Measure6')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '12px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + ((plotbox.w * 0.5)) + ',' + (16) + ')')
+      third.append('text')
+        .text(39 + '' + 'C°' + '')
+        .style('fill', '#000000')
+        .style('font-weight', 'bold')
+        .style('font-size', '16px')
+        .style('user-select', 'none')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + (plotbox.w * 0.5) + ',' + (plotbox.h * 0.5 + 12) + ')')
+    }
+
     function updateData () {
-      let offset = 5
+      drawRightPart()
+      drawLeftPart()
+    }
+    this.updateData = updateData
+
+    function drawLeftPart () {
+      let offset = 2
+
       let tot = 0
       for (let i = 0; i < shared.server.measures.length; i++) {
         tot += shared.server.measures[i].length
       }
-      let nbperline = Math.floor(box.urgentPlots.w / (plotbox.w + offset))
-      let groupOffset = 0
-      let plotb = {
-        x: plotbox.x + 25,
-        y: plotbox.y + 25,
-        w: plotbox.w - 50,
-        h: plotbox.h - 50
+      let nbperline = Math.floor((leftDim.w - plotbox.w) / (plotbox.w + offset))
+      let xlimArray = []
+      let limit = 0
+      for (let i = 0; i < shared.server.measures.length; i++) {
+        let inter = Math.round((shared.server.measures[i].length * nbperline) / tot)
+        if (inter < 1) inter = 1
+        xlimArray.push(inter)
+        limit += inter
+      }
+      while (limit > nbperline) {
+        xlimArray[xlimArray.indexOf(Math.max(...xlimArray))] -= 1
+        limit -= 1
       }
 
-      let allGroup = scrollbox.get('innerG').selectAll('g.group')
-        .data(shared.server.measures)
-      let gEnterGroup = allGroup.enter()
-        .append('g')
-        .attr('class', 'group')
-      gEnterGroup.each(function (d, i) {
-        let xlim = Math.round((d.length * nbperline) / tot)
-        d3.select(this)
-          .transition()
-          .duration(400)
-          .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
-        groupOffset += xlim * (offset + (plotbox.w))
-      })
-      let gMergeGroup = allGroup.merge(gEnterGroup)
-      gMergeGroup.each(function (d) {
-        allPlots = d3.select(this).selectAll('g.plot')
-          .data(d, function (dd, i) {
-            return dd.id
-          })
-        let gEnter = allPlots.enter()
+      function drawMiddleg () {
+        let allGroup = leftg.selectAll('g.group')
+          .data(shared.server.measures)
+        let gEnterGroup = allGroup.enter()
           .append('g')
-          .attr('class', 'plot')
-        gEnter.each(function (dd, i) {
+          .attr('class', 'group')
+        gEnterGroup.each(function (d, i) {
           d3.select(this).append('rect')
-            .attr('x', 0)
+            .attr('x', offset)
             .attr('y', 0)
-            .attr('width', plotbox.w - 0)
-            .attr('height', plotbox.h - 0)
+            .attr('width', plotbox.w - offset)
+            .attr('height', '40px')
             .attr('stroke', (d) => {
-              if (d.type === 'weather') return '#4c11a2'
-              if (d.type === 'other') return '#0065be'
-              if (d.type === 'telescopes') return '#6b8998'
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
               return 'none'
             })
             .attr('stroke-width', 0)
-            .style('fill-opacity', 0.1)
+            .style('fill-opacity', 0.2)
             .attr('fill', (d) => {
-              if (d.type === 'weather') return '#4c11a2'
-              if (d.type === 'other') return '#0065be'
-              if (d.type === 'telescopes') return '#6b8998'
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
               return 'none'
             })
-          let optIn = {g: d3.select(this),
-            box: plotb
-          }
-          optIn.g = optIn.g.append('g')
-          dd.plotObject = createPlot(optIn)
-        })
-        let gMerge = allPlots.merge(gEnter)
-        gMerge.each(function (dd, i) {
-          let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-          let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
-
-          dd.plotObject.updateAxis({
-            id: 'bottom',
-            domain: [startTime.date, endTime.date],
-            range: [0, plotb.w]
-          })
-          dd.plotObject.updateAxis({
-            id: 'left',
-            domain: [0, 100],
-            range: [plotb.h, 0]
-          })
-          dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
-
-          let xlim = Math.round((d.length * nbperline) / tot)
-          d3.select(dd.plotObject.get('main').g.node().parentNode.parentNode.parentNode.parentNode)
+          d3.select(this).append('text')
+            .text(d[0].type)
+            .style('fill', '#000000')
+            .style('font-weight', 'bold')
+            .style('font-size', '14px')
+            .style('user-select', 'none')
+            .attr('text-anchor', 'start')
+            .attr('transform', 'translate(' + (box.urgentPlots.x + 10) + ',' + (box.urgentPlots.y + 16) + ')')
+          d3.select(this)
             .transition()
             .duration(400)
-            .attr('transform', 'translate(' + (offset + (plotbox.w) * (i % xlim)) + ',' + (0 + plotbox.h * 0.15 + (plotbox.h + 0) * parseInt(i / xlim)) + ')')
+            .attr('transform', 'translate(' + (leftDim.w - plotbox.w) + ',' + (leftDim.h - ((i + 1) * (offset + (plotbox.h)))) + ')')
+          d3.select(this).on('mouseenter', function () {
+            let plotbox = {
+              x: 0,
+              y: 0,
+              w: 140,
+              h: 70
+            }
+            let plotb = {
+              x: 10,
+              y: 20,
+              w: 90,
+              h: 30
+            }
+            let nbperline = Math.floor((leftDim.w - plotbox.w) / (plotbox.w + offset))
+            allPlots = leftg.selectAll('g.plot')
+              .data(d, function (dd) {
+                return dd.id
+              })
+            let gEnter = allPlots.enter()
+              .append('g')
+              .attr('class', 'plot')
+            gEnter.each(function (dd, ii) {
+              d3.select(this).append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', plotbox.w - offset)
+                .attr('height', plotbox.h - offset)
+                .attr('stroke', colorPalette.bright.stroke)
+                .attr('stroke-width', 0.2)
+                .style('fill-opacity', 1)
+                .attr('fill', colorPalette.bright.background)
+              d3.select(this).append('text')
+                .text(dd.name)
+                .style('fill', '#000000')
+                .style('font-weight', 'bold')
+                .style('font-size', '12px')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'translate(' + ((plotbox.w * 0.5)) + ',' + (12 + offset) + ')')
+              d3.select(this).append('text')
+                .text('80')
+                .style('fill', '#000000')
+                .style('font-weight', 'bold')
+                .style('font-size', '11px')
+                .attr('text-anchor', 'start')
+                .attr('transform', 'translate(' + (plotb.x + plotb.w + offset) + ',' + (plotb.y + plotb.h) + ')')
+              d3.select(this).append('text')
+                .text(dd.status.current.y + '' + dd.unit + '')
+                .style('fill', '#000000')
+                .style('font-weight', 'bold')
+                .style('font-size', '11px')
+                .attr('text-anchor', 'start')
+                .attr('transform', 'translate(' + (plotb.x + plotb.w + offset) + ',' + (plotb.y + plotb.h * 0.2) + ')')
+              d3.select(this).append('text')
+                .text(d3.timeFormat('%H:%M')(new Date(shared.time.from)))
+                .style('fill', '#000000')
+                .style('font-weight', 'bold')
+                .style('font-size', '11px')
+                .attr('text-anchor', 'start')
+                .attr('transform', 'translate(' + (plotb.x) + ',' + (plotb.y + plotb.h + 12) + ')')
+              d3.select(this).append('text')
+                .text(d3.timeFormat('%H:%M')(new Date(shared.server.timeOfNight.date_now)))
+                .style('fill', '#000000')
+                .style('font-weight', 'bold')
+                .style('font-size', '11px')
+                .attr('text-anchor', 'end')
+                .attr('transform', 'translate(' + (plotb.x + plotb.w) + ',' + (plotb.y + plotb.h + 12) + ')')
+
+              let optIn = {g: d3.select(this),
+                box: plotb
+              }
+              optIn.g = optIn.g.append('g') // .style('opacity', 0.8)
+              dd.plotObject = createPlot(optIn)
+            })
+            let gMerge = allPlots.merge(gEnter)
+            let generalIndex = [0, 0]
+            gMerge.each(function (dd, ii) {
+              let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+              let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+
+              dd.plotObject.updateAxis({
+                id: 'bottom',
+                domain: [startTime.date, endTime.date],
+                range: [0, plotb.w]
+              })
+              dd.plotObject.updateAxis({
+                id: 'left',
+                domain: [0, 100],
+                range: [plotb.h, 0]
+              })
+              dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
+
+              // if (dd.ended) {
+              //   let percent = (shared.time.current.getTime() - dd.ended.getTime()) / 400000
+              //   d3.select(this).style('opacity', 1 - percent)
+              //   d3.select(this).select('rect#disapearingBar')
+              //     .attr('width', (plotbox.w - offset) * ((1 - percent) < 0 ? 0 : (1 - percent)))
+              // }
+
+              // let xlim = xlimArray[i]
+              d3.select(this)
+                // .transition()
+                // .duration(800)
+                .attr('transform', 'translate(' + (generalIndex[0] * (offset + (plotbox.w))) + ',' + ((generalIndex[1] * (offset + (plotbox.h)))) + ')')
+              generalIndex[0] = (generalIndex[0] + 1)
+              if (generalIndex[0] > nbperline) {
+                generalIndex[0] = 0
+                generalIndex[1] += 1
+              }
+            })
+            allPlots
+              .exit()
+              .style('opacity', 0)
+              .remove()
+          })
         })
-        allPlots
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          d3.select(this)
+            .transition()
+            .duration(800)
+            .attr('transform', 'translate(' + (leftDim.w - plotbox.w) + ',' + (leftDim.h - ((i + 1) * (offset + (plotbox.h)))) + ')')
+        })
+        allGroup
           .exit()
           .style('opacity', 0)
           .remove()
-      })
-      allGroup
-        .exit()
-        .style('opacity', 0)
-        .remove()
+      }
+      drawMiddleg()
     }
-    this.updateData = updateData
+    this.drawLeftPart = drawLeftPart
+
+    function drawRightPart () {
+      let offset = 2
+      let groupOffset = 0
+
+      let tot = 0
+      for (let i = 0; i < shared.server.measures.length; i++) {
+        tot += shared.server.measures[i].length
+      }
+      let nbperline = Math.floor(box.urgentPlots.w * 0.26 / (plotbox.w + offset))
+      let xlimArray = []
+      let limit = 0
+      for (let i = 0; i < shared.server.measures.length; i++) {
+        let inter = Math.round((shared.server.measures[i].length * nbperline) / tot)
+        if (inter < 1) inter = 1
+        xlimArray.push(inter)
+        limit += inter
+      }
+      while (limit > nbperline) {
+        xlimArray[xlimArray.indexOf(Math.max(...xlimArray))] -= 1
+        limit -= 1
+      }
+      // let plotb = {
+      //   x: plotbox.x + plotbox.w * 0.05,
+      //   y: plotbox.y + plotbox.h * 0.35,
+      //   w: plotbox.w * 0.4,
+      //   h: plotbox.h * 0.4
+      // }
+
+      let generalIndex = [0, 0]
+
+      function drawTopg () {
+        let allGroup = topg.selectAll('g.group')
+          .data(shared.server.measures)
+        let gEnterGroup = allGroup.enter()
+          .append('g')
+          .attr('class', 'group')
+        gEnterGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this).append('rect')
+            .attr('x', offset)
+            .attr('y', 0)
+            .attr('width', plotbox.w - offset)
+            .attr('height', '40px')
+            .attr('stroke', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.2)
+            .attr('fill', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          d3.select(this).append('rect')
+            .attr('x', offset)
+            .attr('y', 38)
+            .attr('width', (plotbox.w + offset) * xlim - offset)
+            .attr('height', '2px')
+            .attr('stroke', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.2)
+            .attr('fill', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          d3.select(this).append('text')
+            .text(d[0].type)
+            .style('fill', '#000000')
+            .style('font-weight', 'bold')
+            .style('font-size', '14px')
+            .attr('text-anchor', 'start')
+            .attr('transform', 'translate(' + (box.urgentPlots.x + 10) + ',' + (box.urgentPlots.y + 16) + ')')
+          d3.select(this)
+            .transition()
+            .duration(400)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        groupOffset = 0
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this)
+            .transition()
+            .duration(800)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        allGroup
+          .exit()
+          .style('opacity', 0)
+          .remove()
+      }
+      function drawMiddleg () {
+        let allGroup = scrollbox.get('innerG').selectAll('g.group')
+          .data(shared.server.measures)
+        let gEnterGroup = allGroup.enter()
+          .append('g')
+          .attr('class', 'group')
+        gEnterGroup.each(function (d, i) {
+          // let xlim = xlimArray[i]
+          // d3.select(this)
+          //   .transition()
+          //   .duration(400)
+          //   .attr('transform', 'translate(' + (generalIndex[0] * (offset + (plotbox.w))) + ',' + ((generalIndex[1] * (offset + (plotbox.h)))) + ')')
+          // groupOffset += xlim * (offset + (plotbox.w))
+        })
+        // groupOffset = 0
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          allPlots = d3.select(this).selectAll('g.plot')
+            .data(d, function (dd) {
+              return dd.id
+            })
+          let gEnter = allPlots.enter()
+            .append('g')
+            .attr('class', 'plot')
+          gEnter.each(function (dd, ii) {
+            d3.select(this).append('rect')
+              .attr('x', 0)
+              .attr('y', 0)
+              .attr('width', plotbox.w - offset)
+              .attr('height', plotbox.h - offset)
+              .attr('stroke', colorPalette.bright.stroke)
+              .attr('stroke-width', 6)
+              .style('fill-opacity', 1)
+              .attr('fill', colorPalette.bright.background)
+              .transition()
+              .delay(4000)
+              .duration(4000)
+              .attr('stroke-width', 0.4)
+            d3.select(this).append('text')
+              .text(dd.name)
+              .style('fill', '#000000')
+              .style('font-weight', 'bold')
+              .style('font-size', '12px')
+              .style('user-select', 'none')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + ((plotbox.w * 0.5)) + ',' + (12 + offset) + ')')
+            // d3.select(this).append('text')
+            //   .text(dd.unit)
+            //   .style('fill', '#000000')
+            //   .style('font-weight', 'bold')
+            //   .style('font-size', '12px')
+            //   .attr('text-anchor', 'end')
+            //   .attr('transform', 'translate(' + (plotbox.w - offset * 3) + ',' + (12 + offset) + ')')
+            // d3.select(this).append('text')
+            //   .text('80')
+            //   .style('fill', '#000000')
+            //   .style('font-weight', 'bold')
+            //   .style('font-size', '11px')
+            //   .attr('text-anchor', 'middle')
+            //   .attr('transform', 'translate(' + (plotbox.w * 0.75) + ',' + (plotbox.h * 0.6 + 12) + ')')
+            d3.select(this).append('text')
+              .text(dd.status.current.y + '' + dd.unit + '')
+              .style('fill', '#000000')
+              .style('font-weight', 'bold')
+              .style('font-size', '16px')
+              .style('user-select', 'none')
+              .attr('text-anchor', 'middle')
+              .attr('transform', 'translate(' + (plotbox.w * 0.5) + ',' + (plotbox.h * 0.5 + 12) + ')')
+            // d3.select(this).append('rect')
+            //   .attr('id', 'disapearingBar')
+            //   .attr('x', 0)
+            //   .attr('y', 0)
+            //   .attr('width', plotbox.w - offset)
+            //   .attr('height', plotbox.h - offset)
+            //   .style('fill-opacity', 0.4)
+            //   .attr('fill', (d) => {
+            //     if (d.type === 'weather') return '#4c11a2'
+            //     if (d.type === 'other') return '#0065be'
+            //     if (d.type === 'telescopes') return '#6b8998'
+            //     return 'none'
+            //   })
+            //   .transition()
+            //   .delay(4000)
+            //   .duration(2000)
+            //   .attr('y', plotbox.h - offset * 2)
+            //   .attr('height', offset * 1)
+            // let optIn = {g: d3.select(this),
+            //   box: plotb
+            // }
+            // optIn.g = optIn.g.append('g') // .style('opacity', 0.8)
+            // dd.plotObject = createPlot(optIn)
+            d3.select(this).on('mouseenter', function () {
+              let linefunction = d3.line()
+                .x(function (d) { return xscale(d.x) })
+                .y(function (d) { return yscale(d.y) })
+              showingplot.append('path')
+                .attr('d', linefunction([dd.status.current].concat(dd.status.previous)))
+                .attr('fill', 'none')
+                .attr('stroke-width', 2)
+                .attr('stroke', '#000000')
+              showingplot.selectAll('.finished')
+                .style('opacity', 0.1)
+            })
+            d3.select(this).on('mouseleave', function () {
+              showingplot.select('path').remove()
+              showingplot.selectAll('.finished')
+                .style('opacity', 1)
+            })
+
+            // let xlim = xlimArray[i]
+            // d3.select(this)
+            //   .attr('transform', 'translate(' + (generalIndex[0] * (offset + (plotbox.w))) + ',' + ((generalIndex[1] * (offset + (plotbox.h)))) + ')')
+            // generalIndex[0] = (generalIndex[0] + 1)
+            // if (generalIndex[0] > nbperline) {
+            //   generalIndex[0] = 0
+            //   generalIndex[1] += 1
+            // }
+          })
+          let gMerge = allPlots.merge(gEnter)
+          gMerge.each(function (dd, ii) {
+            // let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+            // let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+
+            // dd.plotObject.updateAxis({
+            //   id: 'bottom',
+            //   domain: [startTime.date, endTime.date],
+            //   range: [0, plotb.w]
+            // })
+            // dd.plotObject.updateAxis({
+            //   id: 'left',
+            //   domain: [0, 100],
+            //   range: [plotb.h, 0]
+            // })
+            // dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
+
+            // if (dd.ended) {
+            //   let percent = (shared.time.current.getTime() - dd.ended.getTime()) / 400000
+            //   d3.select(this).style('opacity', 1 - percent)
+            //   d3.select(this).select('rect#disapearingBar')
+            //     .attr('width', (plotbox.w - offset) * ((1 - percent) < 0 ? 0 : (1 - percent)))
+            // }
+
+            // let xlim = xlimArray[i]
+            d3.select(this)
+              .transition()
+              .duration(800)
+              .attr('transform', 'translate(' + (4 + generalIndex[0] * (offset + (plotbox.w))) + ',' + ((generalIndex[1] * (offset + (plotbox.h)))) + ')')
+            generalIndex[0] = (generalIndex[0] + 1)
+            if (generalIndex[0] > nbperline) {
+              generalIndex[0] = 0
+              generalIndex[1] += 1
+            }
+          })
+          allPlots
+            .exit()
+            .style('opacity', 0)
+            .remove()
+
+          // let xlim = xlimArray[i]
+          // d3.select(this)
+          //   .transition()
+          //   .duration(800)
+          //   .attr('transform', 'translate(' + (generalIndex[0] * (offset + (plotbox.w))) + ',' + ((generalIndex[1] * (offset + (plotbox.h)))) + ')')
+          // groupOffset += xlim * (offset + (plotbox.w))
+        })
+        allGroup
+          .exit()
+          .style('opacity', 0)
+          .remove()
+      }
+      function drawBottomg () {
+        let allGroup = bottomg.selectAll('g.group')
+          .data(shared.server.measures)
+        let gEnterGroup = allGroup.enter()
+          .append('g')
+          .attr('class', 'group')
+        gEnterGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this).append('rect')
+            .attr('x', offset)
+            .attr('y', 0)
+            .attr('width', plotbox.w - offset)
+            .attr('height', '40px')
+            .attr('stroke', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.2)
+            .attr('fill', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          d3.select(this).append('rect')
+            .attr('x', offset)
+            .attr('y', 0)
+            .attr('width', (plotbox.w + offset) * xlim - offset)
+            .attr('height', '2px')
+            .attr('stroke', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+            .attr('stroke-width', 0)
+            .style('fill-opacity', 0.2)
+            .attr('fill', (d) => {
+              if (d[0].type === 'weather') return '#4c11a2'
+              if (d[0].type === 'other') return '#0065be'
+              if (d[0].type === 'telescopes') return '#6b8998'
+              return 'none'
+            })
+          d3.select(this).append('text')
+            .text(d[0].type)
+            .style('fill', '#000000')
+            .style('font-weight', 'bold')
+            .style('font-size', '14px')
+            .attr('text-anchor', 'start')
+            .attr('transform', 'translate(' + (box.urgentPlots.x + 10) + ',' + (box.urgentPlots.y + 16) + ')')
+          d3.select(this)
+            .transition()
+            .duration(400)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        groupOffset = 0
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          let xlim = xlimArray[i]
+          d3.select(this)
+            .transition()
+            .duration(800)
+            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
+          groupOffset += xlim * (offset + (plotbox.w))
+        })
+        allGroup
+          .exit()
+          .style('opacity', 0)
+          .remove()
+      }
+
+      // drawTopg()
+      drawMiddleg()
+      // drawBottomg()
+    }
+    this.drawRightPart = drawRightPart
 
     function update () {}
     this.update = update
