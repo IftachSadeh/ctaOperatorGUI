@@ -26,12 +26,12 @@ setupView.view102 = function () {
     hasDrawer: true
   })
 
-  sock.addWidget({
-    nameTag: 'azPlots',
-    tableTitle: 'Telescope health plots',
-    hasIcon: true,
-    hasDrawer: false
-  })
+  // // sock.addWidget({
+  // //   nameTag: 'azPlots',
+  // //   tableTitle: 'Telescope health plots',
+  // //   hasIcon: true,
+  // //   hasDrawer: false
+  // // })
 
   sock.addWidget({
     nameTag: 'subArrGrp',
@@ -68,24 +68,6 @@ setupView.view102 = function () {
     hasDrawer: false
   })
 
-  // sock.addWidget({
-  //   nameTag:"arrZoomer", tableTitle:"Telescope health", hasIcon:true, hasDrawer:true
-  // })+"; overflow: hidden"
-  // sock.addWidget({
-  //   nameTag:"subArrGrp", tableTitle:"Sub-array pointings", hasIcon:true, hasDrawer:false
-  // });
-  // sock.addWidget({
-  //   nameTag:"subArrGrp", tableTitle:"Sub-array pointings", hasIcon:true, hasDrawer:false
-  // });
-  // sock.addWidget({
-  //   nameTag:"subArrGrp", tableTitle:"Sub-array pointings", hasIcon:true, hasDrawer:false
-  // });
-  // sock.addWidget({
-  //   nameTag:"subArrGrp", tableTitle:"Sub-array pointings", hasIcon:true, hasDrawer:false
-  // });
-  // sock.addWidget({
-  //   nameTag:"subArrGrp", tableTitle:"Sub-array pointings", hasIcon:true, hasDrawer:false
-  // });
 }
 
 // -----------------------------------------------------------------------------------------------------------
@@ -221,12 +203,12 @@ setupView.view207 = function () {
 // emptyExample
 // -----------------------------------------------------------------------------------------------------------
 setupView.view000 = function () {
-  sock.addWidget({
-    nameTag: 'myTestExample',
-    tableTitle: 'myTestExample',
-    hasIcon: true,
-    hasDrawer: false
-  })
+  // sock.addWidget({
+  //   nameTag: 'myTestExample',
+  //   tableTitle: 'myTestExample',
+  //   hasIcon: true,
+  //   hasDrawer: false
+  // })
 
   sock.addWidget({
     nameTag: 'emptyExample',

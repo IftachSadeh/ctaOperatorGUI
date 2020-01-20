@@ -100,7 +100,6 @@ let mainSubArrGrp = function (optIn) {
   let widgetId = optIn.widgetId
   let widgetEle = optIn.widgetEle
   let iconDivV = optIn.iconDivV
-  let sideId = optIn.sideId
 
   // let thisSubArrGrp = this
   let isSouth = window.__nsType__ === 'S'
@@ -262,11 +261,7 @@ let mainSubArrGrp = function (optIn) {
     let dataIn = dataInit.data
     let hasJoinedData = joinTelProps(dataIn, true)
 
-    window.sideDiv = sock.setSideDiv({
-      id: sideId,
-      nIcon: dataInit.nIcon,
-      iconDivV: iconDivV
-    })
+    sock.setBadgeIcon({ nIcon: dataInit.nIcon, iconDivV: iconDivV })
 
     // ---------------------------------------------------------------------------------------------------
     //

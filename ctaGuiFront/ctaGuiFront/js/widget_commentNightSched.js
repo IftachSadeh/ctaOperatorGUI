@@ -122,7 +122,6 @@ let mainCommentNightSched = function (optIn) {
   let widgetId = optIn.widgetId
   let widgetEle = optIn.widgetEle
   let iconDivV = optIn.iconDivV
-  let sideId = optIn.sideId
 
   let shared = {
     data: {
@@ -618,11 +617,9 @@ let mainCommentNightSched = function (optIn) {
     }
 
     if (sock.multipleInit({ id: widgetId, data: dataIn })) return
-    window.sideDiv = sock.setSideDiv({
-      id: sideId,
-      nIcon: dataIn.nIcon,
-      iconDivV: iconDivV
-    })
+
+    sock.setBadgeIcon({ nIcon: dataIn.nIcon, iconDivV: iconDivV })
+
     let svgDivId = sgvTag.main.id + 'svg'
     let svgDiv = sgvTag.main.widget.getEle(svgDivId)
     if (!hasVar(svgDiv)) {
