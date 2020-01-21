@@ -161,6 +161,7 @@ function BaseApp () {
       'fa',
       'fa-bars',
       'sized-button',
+      'fa-circle-button',
       'fa-circle-button-bright'
     )
 

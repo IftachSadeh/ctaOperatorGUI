@@ -207,13 +207,16 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
   /*outline-offset: 0.5px;*/
 }
 
-.fa-circle-button-bright {
+.fa-circle-button {
   display: inline-block;
   border-radius: 6px;
   width: 13px;
   height: 13px;
-  box-shadow: 0px 0px 2px #383B42;
   padding: 0.5em 0.6em;
+}
+
+.fa-circle-button-bright {
+  /*box-shadow: 0px 0px 2px #383B42;*/
   background-color: #ececec;
   color: #383B42;
 }
@@ -223,12 +226,7 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
 }
 
 .fa-circle-button-dark {
-  display: inline-block;
-  border-radius: 6px;
-  width: 13px;
-  height: 13px;
-  box-shadow: 0px 0px 2px #383B42;
-  padding: 0.5em 0.6em;
+  /*box-shadow: 0px 0px 2px #383B42;*/
   color: #ececec;
   background-color: #383B42;
 }
@@ -236,7 +234,6 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
 .fa-circle-button-dark:focus, .fa-circle-button-dark:active {
   box-shadow: 0px 0px 10px #383B42;
 }
-
 
 .status-indicator {
   border-radius: 30px;
