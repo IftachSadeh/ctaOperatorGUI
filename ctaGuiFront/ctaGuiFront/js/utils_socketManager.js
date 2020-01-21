@@ -72,9 +72,10 @@ function SocketManager () {
       topThis.socket.emit('joinSession', sockId)
 
       topThis.conStat = new ConnectionState()
-      topThis.conStat.setServerOn(true)
-      topThis.conStat.setState(true)
+      topThis.conStat.setServerConState(true)
+      topThis.conStat.setUserConStateOpts(true)
 
+      checkIsOffline()
       checkIsHidden()
       checkWasOffline()
     })
@@ -98,6 +99,11 @@ function SocketManager () {
       }
     }
 
+    function isSocketConnected() {
+      return topThis.socket.socket.connected
+    }
+    topThis.isSocketConnected = isSocketConnected
+
     // -------------------------------------------------------------------
     // if the window/tab is hidden (minimized or another tab is focused), then flush the time
     // function -> execute all zero-delay transitions at once. If this is not running on a loop forever
@@ -113,6 +119,19 @@ function SocketManager () {
     // -------------------------------------------------------------------
     // ask for wakeup data if returning from an offline state
     // -------------------------------------------------------------------
+    function checkIsOffline () {
+      setTimeout(function () {
+       isSocketConnected  = topThis.isSocketConnected()
+       topThis.conStat.setServerConState(isSocketConnected)
+        // if(!isSocketConnected) {
+        //   if (topThis.conStat.userBtn.checked) {
+        //     topThis.conStat.setUserConStateOpts(false)
+        //   }
+        // }
+        checkIsOffline()
+      }, 500)
+    }
+
     let socketWasOffline = false
     function checkWasOffline () {
       setTimeout(function () {
@@ -131,6 +150,7 @@ function SocketManager () {
       }, 500)
     }
 
+
     // -------------------------------------------------------------------
     // upon leaving the session or leaving the page
     // -------------------------------------------------------------------
@@ -138,7 +158,6 @@ function SocketManager () {
       topThis.isReload = true
       // explicitly needed for firefox, but good in any case...
       if (topThis.socket) {
-        // topThis.conStat.setServerOn(false)
         topThis.socket.disconnect()
         topThis.socket = null
       }
@@ -149,10 +168,10 @@ function SocketManager () {
 
     // in case we disconnect (internet is off or server is down)
     topThis.socket.on('disconnect', function () {
-      // console.log('topThis.isReload',topThis.isReload)
+      // console.log('disconnect',topThis.isReload)
       if (!topThis.isReload) {
-        topThis.conStat.setServerOn(false)
-        topThis.conStat.setState(false)
+        topThis.conStat.setServerConState(false)
+        topThis.conStat.setUserConStateOpts(false)
       }
     })
 
@@ -205,71 +224,64 @@ function SocketManager () {
   //
   // -------------------------------------------------------------------
   function ConnectionState (isConnect) {
-    let isOn = false
-    let user = true
-    let txt = baseApp.connectStatusDiv('_txt')
-    let tog = baseApp.connectStatusDiv('_btn')
-    let connectStatusDiv = baseApp.connectStatusDiv('')
+    let isServerOn_XXX = false
+    let isUserOn_XXX = true
     let offOpacity = '40%'
+    
+    let serverBtn = baseApp.getConStatDiv(true, '_btn')
+    let userBtn = baseApp.getConStatDiv(false, '_btn')
+    let userTog = baseApp.getConStatDiv(false, '_tog')
 
-    let isServerOn = null
-    function setServerOn (isServerOnIn) {
-      isServerOn = isServerOnIn
-    }
-    this.setServerOn = setServerOn
+    this.userBtn = userBtn
 
-    function setStatusDivState (stateIn) {
-      if (stateIn) {
-        connectStatusDiv.style.opacity = '100%'
-        connectStatusDiv.style.pointerEvents = 'auto'
-      } else {
-        connectStatusDiv.style.opacity = offOpacity
-        connectStatusDiv.style.pointerEvents = 'none'
+    function setServerConState (isCon) {
+      isServerOn_XXX = isCon
+      if(isCon) {
+        serverBtn.classList.add('status-indicator-on')
       }
+      else {
+        serverBtn.classList.remove('status-indicator-on')
+      }
+      return
     }
+    this.setServerConState = setServerConState
 
-    tog.addEventListener('change', function (customEvent) {
-      user = customEvent.target.checked
-      isOn = user
-
-      togTxt(user)
-    })
-
-    function setState (isConnect) {
-      if (isConnect) {
-        tog.setAttribute('style', 'opacity:1;')
+    function setUserConStateOpts(isCon) {
+      if (isCon) {
+        userTog.setAttribute('style', 'opacity:1;')
       } else {
-        tog.setAttribute(
+        userTog.setAttribute(
           'style',
           'opacity: ' + offOpacity + '; pointer-events: none;'
         )
       }
-
-      if (user) {
-        tog.checked = isConnect
-        isOn = isConnect
-      }
-
-      togTxt(isConnect)
-      setStatusDivState(isServerOn)
+      return
     }
-    this.setState = setState
+    this.setUserConStateOpts = setUserConStateOpts
 
-    function togTxt (isOnline) {
-      if (isOnline) txt.classList.remove('connectStatusDivTxtCol')
-      else txt.classList.add('connectStatusDivTxtCol')
-
-      txt.innerHTML = isOnline ? 'Online' : 'Offline'
-
-      topThis.socket.emit('setOnlineState', { isOnline: isOnline })
-    }
+    userBtn.addEventListener('change', function (customEvent) {
+      isUserOn_XXX = customEvent.target.checked
+      return
+    })
 
     function isOffline () {
-      return document.hidden || !isOn
+      let out = false
+      if(!topThis.isSocketConnected()) {
+        out = true
+      }
+      else if (document.hidden) {
+        out = true 
+      }
+      else if (!isServerOn_XXX || !isUserOn_XXX) {
+        out = true 
+      }
+      // console.log('-isOffline-',out, topThis.isSocketConnected())
+      return out
     }
     this.isOffline = isOffline
+
+    return
   }
-  // this.ConnectionState = ConnectionState;
 
   // -------------------------------------------------------------------
   //

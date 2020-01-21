@@ -133,8 +133,13 @@ function BaseApp () {
     }
 
     if (!isLogin) {
-      connectStatusDiv('').setAttribute('style', 'opacity: 1;')
-      // document.querySelector("#topMenu").style.opacity = 1
+      getConStatDiv(false, '').setAttribute('style', 'opacity: 1;')
+    }
+
+    if (!isLogin) {
+      let serverConStatDiv = document.querySelector('#serverConStatDiv')
+      let serverConStatStyle = 'opacity:1; pointer-events:auto;'
+      serverConStatDiv.setAttribute('style', serverConStatStyle)
     }
 
     // -------------------------------------------------------------------
@@ -260,10 +265,14 @@ function BaseApp () {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  function connectStatusDiv (tag) {
-    return document.querySelector('#' + 'connectStatusDiv' + tag)
+  function getConStatDiv (isServer, tag) {
+    if (isServer) {
+      return document.querySelector('#' + 'serverConStatDiv' + tag)
+    } else {
+      return document.querySelector('#' + 'userConStatDiv' + tag)
+    }
   }
-  this.connectStatusDiv = connectStatusDiv
+  this.getConStatDiv = getConStatDiv
 
   // let userNameDiv = document.querySelector("#"+"userNameDiv")
   // if(window.__userId__ !== 'None') {
