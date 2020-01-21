@@ -703,30 +703,30 @@ class mySock(BaseNamespace, BroadcastMixin):
 
         return
 
-    # ------------------------------------------------------------------
-    # for development - a refresh-all event
-    # ------------------------------------------------------------------
-    def on_refreshAll(self, hasLock=False):
-        def doRefresh():
-            sessIdV = self.redis.lGet('allSessIds')
-            sessIdV = [x for x in sessIdV if x in self.socket.server.sockets]
+    # # ------------------------------------------------------------------
+    # # for development - a refresh-all event
+    # # ------------------------------------------------------------------
+    # def on_refreshAll(self, hasLock=False):
+    #     def doRefresh():
+    #         sessIdV = self.redis.lGet('allSessIds')
+    #         sessIdV = [x for x in sessIdV if x in self.socket.server.sockets]
 
-            for sessId in sessIdV:
-                data = {"emitTime": getTime()}
+    #         for sessId in sessIdV:
+    #             data = {"emitTime": getTime()}
 
-                pkt = dict(type='event', name="refreshAll", args=data,
-                           endpoint=mySock.sessToEndpointD[sessId])
-                self.socket.server.sockets[sessId].send_packet(pkt)
+    #             pkt = dict(type='event', name="refreshAll", args=data,
+    #                        endpoint=mySock.sessToEndpointD[sessId])
+    #             self.socket.server.sockets[sessId].send_packet(pkt)
 
-            return
+    #         return
 
-        if hasLock:
-            doRefresh()
-        else:
-            with mySock.lock:
-                doRefresh()
+    #     if hasLock:
+    #         doRefresh()
+    #     else:
+    #         with mySock.lock:
+    #             doRefresh()
 
-        return
+    #     return
 
     # ------------------------------------------------------------------
     # disconnection may be received even if not explicitly emmitted by the user leaving the session

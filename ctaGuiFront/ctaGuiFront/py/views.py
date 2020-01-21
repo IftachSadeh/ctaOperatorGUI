@@ -32,6 +32,11 @@ def socketioService(request):
     return Response('')
 
 
+def get_display_userid(request):
+    userid = request.authenticated_userid
+    return ('' if userid is None else userid)
+
+
 def viewLogin(request):
     # -----------------------------------------------------------------------------------------------------------
     # login page with authentication - check the DB for the given userId/password
@@ -61,7 +66,8 @@ def viewLogin(request):
         login=request.authenticated_userid,
         app_prefix=utils.appPrefix,
         ns_type=utils.nsType,
-        widget_name=widget_name
+        widget_name=widget_name,
+        display_userid=get_display_userid(request),
     )
 
 
@@ -94,7 +100,8 @@ def viewIndex(request):
         widget_name=widget_name,
         app_prefix=utils.appPrefix,
         login=request.authenticated_userid,
-        came_from=request.route_url(widget_name)
+        came_from=request.route_url(widget_name),
+        display_userid=get_display_userid(request),
     )
 
 
@@ -110,7 +117,8 @@ def viewNotFound(request):
         widget_name=widget_name,
         app_prefix=utils.appPrefix,
         login=request.authenticated_userid,
-        location=request.route_url(widget_name)
+        location=request.route_url(widget_name),
+        display_userid=get_display_userid(request),
     )
 
 
@@ -125,5 +133,6 @@ def viewCommon(request):
         widget_name=widget_name,
         app_prefix=utils.appPrefix,
         login=request.authenticated_userid,
-        came_from=request.route_url(widget_name)
+        came_from=request.route_url(widget_name),
+        display_userid=get_display_userid(request),
     )

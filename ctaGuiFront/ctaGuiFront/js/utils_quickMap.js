@@ -286,13 +286,9 @@ window.QuickMap = function (optIn) {
     } else data = [{ id: 0 }]
 
     let w =
-      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) *
-      lenD.mini.w[0] /
-      scale
+      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) * lenD.mini.w[0] / scale
     let h =
-      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) *
-      lenD.mini.h[0] /
-      scale
+      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) * lenD.mini.h[0] / scale
     let x = (lenD.mini.w[0] / 2 - trans[0]) / scale - w / 2
     let y = (lenD.mini.h[0] / 2 - trans[1]) / scale - h / 2
 
@@ -374,7 +370,7 @@ window.QuickMap = function (optIn) {
         d.attr('d', vorPloyFunc)
       })
       .on('click', function (d) {
-        telData.vorDblclick({ source:"minizoomclick", d: d, isInOut: false })
+        telData.vorDblclick({ source: 'minizoomclick', d: d, isInOut: false })
       })
       // .on("click", function(d) {
       //   let scaleToZoom = telData.vorDblclick({d:d, isInOut:false });
@@ -453,7 +449,7 @@ window.QuickMap = function (optIn) {
       let nEleNowInRow = nEleRow
       let nEleNowInCol = 0
 
-      $.each(Array(nEleInRow.length), function(i, d) {
+      $.each(Array(nEleInRow.length), function (i, d) {
         if (nEleNowInRow >= nEleInRow[i]) {
           nEleNowInRow -= nEleInRow[i]
           nEleNowInCol++
@@ -464,7 +460,7 @@ window.QuickMap = function (optIn) {
       let x =
         eleR / eleShift[0] +
         eleR +
-        ((isSouth ? 0.3 : 0.15*6) + nEleNowInRow) * (eleSpace[0] * eleR)
+        ((isSouth ? 0.3 : 0.15 * 6) + nEleNowInRow) * (eleSpace[0] * eleR)
       let y = eleR / eleShift[1] + eleR + nEleNowInCol * (eleSpace[1] * eleR)
 
       com.gChes.xyr[idNow] = {
@@ -499,7 +495,7 @@ window.QuickMap = function (optIn) {
     let tagLbl = 'lbls00title'
     let tagState = 'state_00'
     // let tagTxt = tagState + tagLbl
-    
+
     let fontScale = isSouth ? 2.7 : 4
     let titleSize = (isSouth ? 16 : 17) * fontScale
 
@@ -563,11 +559,9 @@ window.QuickMap = function (optIn) {
     }
 
     // attach new data (select by id, and so will override existing data if has the same id)
-    let text = com.gChes.g
-      .selectAll('text.' + tagLbl)
-      .data(dataV, function (d) {
-        return d.id
-      })
+    let text = com.gChes.g.selectAll('text.' + tagLbl).data(dataV, function (d) {
+      return d.id
+    })
 
     // operate on new elements only
     text
@@ -774,7 +768,7 @@ window.QuickMap = function (optIn) {
         d.attr('d', vorPloyFunc)
       })
       .on('click', function (d) {
-        telData.vorDblclick({ source:"com.gches.g", d: d, isInOut: false })
+        telData.vorDblclick({ source: 'com.gches.g', d: d, isInOut: false })
       })
       // .on("dblclick",  function(d) { telData.vorDblclick({ d:d, isInOut:true }); }) // dousnt work well...
       .on('mouseover', function (d) {
@@ -867,7 +861,11 @@ window.QuickMap = function (optIn) {
     //   com:com, gNow:svg.gChes, gTag:"gChes", lenWH:[lenD.ches.w[0],lenD.ches.h[0]],
     //   opac:0.1, textureOrient:"5/8", textureSize:120
     // });
-    runLoop.init({ tag: 'miniZoomViewRec', func: miniZoomViewRecOnce, nKeep: 1 })
+    runLoop.init({
+      tag: 'miniZoomViewRec',
+      func: miniZoomViewRecOnce,
+      nKeep: 1
+    })
     miniZoomViewRec()
     miniZoomClick()
 

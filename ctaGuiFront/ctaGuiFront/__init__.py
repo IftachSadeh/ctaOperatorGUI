@@ -44,7 +44,7 @@ def main(global_config, **settings):
 
   # southern or northen CTA sites have different telescope configurations
   utils.nsType = 'N'
-  utils.nsType = 'S'
+  # utils.nsType = 'S'
   # utils.nsType = settings['ns_type']
 
   # define the prefix to all urls (must be non-empy string)

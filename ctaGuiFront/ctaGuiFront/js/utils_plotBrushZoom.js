@@ -1,4 +1,3 @@
-
 /* global $ */
 /* global d3 */
 /* global timeD */
@@ -11,7 +10,7 @@ window.PlotBrushZoom = function (optIn) {
   let reserved = {
     main: {
       g: undefined,
-      box: {x: 0, y: 0, w: 0, h: 0}
+      box: { x: 0, y: 0, w: 0, h: 0 }
     },
     axis: [
       {
@@ -19,7 +18,7 @@ window.PlotBrushZoom = function (optIn) {
         enabled: true,
         main: {
           g: undefined,
-          box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+          box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
           type: 'top',
           attr: {
             text: {
@@ -49,7 +48,7 @@ window.PlotBrushZoom = function (optIn) {
         enabled: true,
         main: {
           g: undefined,
-          box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+          box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
           type: 'bottom',
           attr: {
             text: {
@@ -78,26 +77,26 @@ window.PlotBrushZoom = function (optIn) {
     content: {
       main: {
         g: undefined,
-        box: {x: 0, y: 0, w: 0, h: 0, marg: 0}
+        box: { x: 0, y: 0, w: 0, h: 0, marg: 0 }
       }
     },
     focus: {
       enabled: true,
       main: {
         g: undefined,
-        box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+        box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
         attr: {
           fill: '#999999',
           stroke: '#000000'
-        },
+        }
       }
     },
     brush: {
-      position: {x: 0, y: 0},
+      position: { x: 0, y: 0 },
       callback: () => {}
     },
     zoom: {
-      coef: {x: 1, y: 1},
+      coef: { x: 1, y: 1 },
       callback: () => {}
     }
   }
@@ -108,7 +107,9 @@ window.PlotBrushZoom = function (optIn) {
 
     reserved.style = {}
 
-    reserved.style.hasOutline = hasVar(optIn.hasOutline) ? optIn.hasOutline : false
+    reserved.style.hasOutline = hasVar(optIn.hasOutline)
+      ? optIn.hasOutline
+      : false
   }
   this.setStyle = setStyle
   this.set = function (optIn) {
@@ -121,7 +122,10 @@ window.PlotBrushZoom = function (optIn) {
   }
 
   function init (optIn) {
-    reserved.main.g.attr('transform', 'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')')
+    reserved.main.g.attr(
+      'transform',
+      'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')'
+    )
 
     initClipping()
     initFocus()
@@ -136,7 +140,9 @@ window.PlotBrushZoom = function (optIn) {
   function initClipping () {
     if (!reserved.clipping.enabled) return
     reserved.clipping.g = reserved.main.g.append('g')
-    reserved.clipping.g.append('defs').append('svg:clipPath')
+    reserved.clipping.g
+      .append('defs')
+      .append('svg:clipPath')
       .attr('id', 'clip')
       .append('svg:rect')
       .attr('id', 'clip-rect')
@@ -144,7 +150,8 @@ window.PlotBrushZoom = function (optIn) {
       .attr('y', '0')
       .attr('width', reserved.main.box.w)
       .attr('height', reserved.main.box.h)
-    reserved.clipping.clipBody = reserved.clipping.g.append('g')
+    reserved.clipping.clipBody = reserved.clipping.g
+      .append('g')
       .attr('clip-path', 'url(#clip)')
     reserved.main.g = reserved.clipping.clipBody.append('g')
   }
@@ -152,17 +159,36 @@ window.PlotBrushZoom = function (optIn) {
     for (let i = 0; i < reserved.axis.length; i++) {
       if (!reserved.axis[i].enabled) return
 
-      reserved.axis[i].scale = d3.scaleTime()
+      reserved.axis[i].scale = d3
+        .scaleTime()
         .range(reserved.axis[i].range)
         .domain(reserved.axis[i].domain)
-      if (reserved.axis[i].main.type === 'top') reserved.axis[i].axis = d3.axisTop(reserved.axis[i].scale)
-      if (reserved.axis[i].main.type === 'bottom') reserved.axis[i].axis = d3.axisBottom(reserved.axis[i].scale)
+      if (reserved.axis[i].main.type === 'top') { reserved.axis[i].axis = d3.axisTop(reserved.axis[i].scale) }
+      if (reserved.axis[i].main.type === 'bottom') { reserved.axis[i].axis = d3.axisBottom(reserved.axis[i].scale) }
       // if (reserved.axis[i].main.type === 'left') d3.axisTop(reserved.axis[i].scale)
       // if (reserved.axis[i].main.type === 'right') d3.axisTop(reserved.axis[i].scale)
       reserved.axis[i].axis.tickFormat(d3.timeFormat('%H:%M'))
       reserved.axis[i].main.g = reserved.main.g.append('g')
-      if (reserved.axis[i].main.type === 'top') reserved.axis[i].main.g.attr('transform', 'translate(' + reserved.axis[i].main.box.x + ',' + (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h) + ')')
-      if (reserved.axis[i].main.type === 'bottom') reserved.axis[i].main.g.attr('transform', 'translate(' + reserved.axis[i].main.box.x + ',' + reserved.axis[i].main.box.y + ')')
+      if (reserved.axis[i].main.type === 'top') {
+        reserved.axis[i].main.g.attr(
+          'transform',
+          'translate(' +
+            reserved.axis[i].main.box.x +
+            ',' +
+            (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h) +
+            ')'
+        )
+      }
+      if (reserved.axis[i].main.type === 'bottom') {
+        reserved.axis[i].main.g.attr(
+          'transform',
+          'translate(' +
+            reserved.axis[i].main.box.x +
+            ',' +
+            reserved.axis[i].main.box.y +
+            ')'
+        )
+      }
       if (!reserved.axis[i].showAxis) continue
       reserved.axis[i].main.g
         .attr('class', 'axis')
@@ -176,23 +202,24 @@ window.PlotBrushZoom = function (optIn) {
     if (!axis.enabled) return
 
     reserved.axis.push(axis)
-    axis.scale = d3.scaleTime()
+    axis.scale = d3
+      .scaleTime()
       .range(axis.range)
       .domain(axis.domain)
     if (axis.main.type === 'top') axis.axis = d3.axisTop(axis.scale)
     if (axis.main.type === 'bottom') axis.axis = d3.axisBottom(axis.scale)
     axis.axis.tickFormat(d3.timeFormat('%H:%M'))
-    axis.g = main.g.append('g')
-      .attr('transform', 'translate(' + axis.main.box.x + ',' + axis.main.box.y + ')')
-    axis.g
-      .attr('class', 'axis')
-      .call(axis.axis)
+    axis.g = main.g
+      .append('g')
+      .attr(
+        'transform',
+        'translate(' + axis.main.box.x + ',' + axis.main.box.y + ')'
+      )
+    axis.g.attr('class', 'axis').call(axis.axis)
     axis.g.style('opacity', 1)
   }
   this.addAxis = addAxis
-  function removeAxis (axis) {
-
-  }
+  function removeAxis (axis) {}
   function getAxis (id) {
     for (let index = 0; index < reserved.axis.length; index++) {
       if (reserved.axis[index].id === id) {
@@ -214,22 +241,29 @@ window.PlotBrushZoom = function (optIn) {
     applyZoomBrush(reserved.axis[index])
 
     if (!reserved.axis[index].enabled) return
-    let minTxtSize = reserved.axis[index].main.attr.text.size ? reserved.axis[index].main.attr.text.size : reserved.main.box.w * 0.04
+    let minTxtSize = reserved.axis[index].main.attr.text.size
+      ? reserved.axis[index].main.attr.text.size
+      : reserved.main.box.w * 0.04
     // console.log(reserved.axis[index].domain, reserved.axis[index].range);
     reserved.axis[index].axis.scale(reserved.axis[index].scale)
     reserved.axis[index].axis.ticks(5)
     reserved.axis[index].axis.tickSize(4)
     if (!reserved.axis[index].showAxis) return
     reserved.axis[index].main.g.call(reserved.axis[index].axis)
-    reserved.axis[index].main.g.select('path')
+    reserved.axis[index].main.g
+      .select('path')
       .attr('stroke-width', 0.5)
       .attr('stroke', reserved.axis[index].main.attr.path.stroke)
       .attr('opacity', reserved.axis[index].main.attr.path.enabled ? 1 : 0)
-    reserved.axis[index].main.g.selectAll('g.tick').selectAll('line')
+    reserved.axis[index].main.g
+      .selectAll('g.tick')
+      .selectAll('line')
       .attr('stroke-width', 0.5)
       .attr('stroke', reserved.axis[index].main.attr.path.stroke)
       .attr('opacity', reserved.axis[index].main.attr.path.enabled ? 1 : 0)
-    reserved.axis[index].main.g.selectAll('g.tick').selectAll('text')
+    reserved.axis[index].main.g
+      .selectAll('g.tick')
+      .selectAll('text')
       .attr('stroke', reserved.axis[index].main.attr.text.stroke)
       .attr('stroke-width', 0.2)
       .attr('fill', reserved.axis[index].main.attr.text.fill)
@@ -243,13 +277,21 @@ window.PlotBrushZoom = function (optIn) {
     }
   }
 
-
   function initContent () {
     if (!reserved.content.enabled) return
-    reserved.content.main.g = reserved.main.g.append('g')
-      .attr('transform', 'translate(' + reserved.content.main.box.x + ',' + reserved.content.main.box.y + ')')
+    reserved.content.main.g = reserved.main.g
+      .append('g')
+      .attr(
+        'transform',
+        'translate(' +
+          reserved.content.main.box.x +
+          ',' +
+          reserved.content.main.box.y +
+          ')'
+      )
 
-    reserved.content.main.g.append('rect')
+    reserved.content.main.g
+      .append('rect')
       .attr('id', 'brush')
       .attr('transform', function () {
         let scale = {
@@ -260,7 +302,18 @@ window.PlotBrushZoom = function (optIn) {
           x: reserved.zoom.coef.x,
           y: reserved.zoom.coef.y
         }
-        return 'translate(' + trans.x + ',' + trans.y + ') ' + 'scale(' + scale.x + ',' + scale.y + ')'
+        return (
+          'translate(' +
+          trans.x +
+          ',' +
+          trans.y +
+          ') ' +
+          'scale(' +
+          scale.x +
+          ',' +
+          scale.y +
+          ')'
+        )
       })
       .attr('x', 0)
       .attr('y', -10)
@@ -274,8 +327,8 @@ window.PlotBrushZoom = function (optIn) {
       .on('mouseout', function (d) {
         d3.select(this).style('cursor', 'default')
       })
-      // .attr('stroke', reserved.focus.main.attr.stroke)
-      // .attr('stroke-width', 0.4)
+    // .attr('stroke', reserved.focus.main.attr.stroke)
+    // .attr('stroke-width', 0.4)
 
     reserved.content.main.g.on('wheel', function () {
       d3.event.preventDefault()
@@ -363,10 +416,19 @@ window.PlotBrushZoom = function (optIn) {
 
   function initFocus () {
     if (!reserved.focus.enabled) return
-    reserved.focus.main.g = reserved.main.g.append('g')
-      .attr('transform', 'translate(' + reserved.focus.main.box.x + ',' + reserved.focus.main.box.y + ')')
+    reserved.focus.main.g = reserved.main.g
+      .append('g')
+      .attr(
+        'transform',
+        'translate(' +
+          reserved.focus.main.box.x +
+          ',' +
+          reserved.focus.main.box.y +
+          ')'
+      )
 
-    reserved.focus.main.g.append('rect')
+    reserved.focus.main.g
+      .append('rect')
       .attr('id', 'brush')
       .attr('transform', function () {
         let scale = {
@@ -377,7 +439,18 @@ window.PlotBrushZoom = function (optIn) {
           x: reserved.zoom.coef.x,
           y: reserved.zoom.coef.y
         }
-        return 'translate(' + trans.x + ',' + trans.y + ') ' + 'scale(' + scale.x + ',' + scale.y + ')'
+        return (
+          'translate(' +
+          trans.x +
+          ',' +
+          trans.y +
+          ') ' +
+          'scale(' +
+          scale.x +
+          ',' +
+          scale.y +
+          ')'
+        )
       })
       .attr('x', 0)
       .attr('y', 0)
@@ -394,18 +467,28 @@ window.PlotBrushZoom = function (optIn) {
   }
   function updateFocus () {
     if (!reserved.focus.enabled) return
-    reserved.focus.main.g.select('rect#brush')
-      .attr('transform', function () {
-        let scale = {
-          x: reserved.zoom.coef.kx,
-          y: reserved.zoom.coef.ky
-        }
-        let trans = {
-          x: reserved.zoom.coef.x,
-          y: reserved.zoom.coef.y
-        }
-        return 'translate(' + trans.x + ',' + trans.y + ') ' + 'scale(' + scale.x + ',' + scale.y + ')'
-      })
+    reserved.focus.main.g.select('rect#brush').attr('transform', function () {
+      let scale = {
+        x: reserved.zoom.coef.kx,
+        y: reserved.zoom.coef.ky
+      }
+      let trans = {
+        x: reserved.zoom.coef.x,
+        y: reserved.zoom.coef.y
+      }
+      return (
+        'translate(' +
+        trans.x +
+        ',' +
+        trans.y +
+        ') ' +
+        'scale(' +
+        scale.x +
+        ',' +
+        scale.y +
+        ')'
+      )
+    })
   }
 
   function initZoom () {
@@ -444,37 +527,45 @@ window.PlotBrushZoom = function (optIn) {
 
       let ratio = [zoom.kx.point[0] / zoom.x.max, 0]
       let offset = {
-        x: ((zoom.x.max - (zoom.x.max * (1 / zoom.kx.now))) - (zoom.x.max - (zoom.x.max * (1 / zoom.kx.previous)))) * ratio[0]
+        x:
+          (zoom.x.max -
+            zoom.x.max * (1 / zoom.kx.now) -
+            (zoom.x.max - zoom.x.max * (1 / zoom.kx.previous))) *
+          ratio[0]
       }
 
       reserved.zoom.coef.x = reserved.zoom.coef.x + offset.x + drag.x
       if (reserved.zoom.coef.x < 0) reserved.zoom.coef.x = 0
-      let right = reserved.zoom.coef.x + (zoom.x.max * (1 / zoom.kx.now))
-      if (right > zoom.x.max) reserved.zoom.coef.x = reserved.zoom.coef.x - (right - zoom.x.max)
+      let right = reserved.zoom.coef.x + zoom.x.max * (1 / zoom.kx.now)
+      if (right > zoom.x.max) { reserved.zoom.coef.x = reserved.zoom.coef.x - (right - zoom.x.max) }
     }
     function computeZoomFactorky () {
       reserved.zoom.coef.ky = 1 / zoom.ky.now
 
       let ratio = [0, zoom.ky.point[1] / zoom.y.max]
       let offset = {
-        y: ((zoom.y.max - (zoom.y.max * (1 / zoom.ky.now))) - (zoom.y.max - (zoom.y.max * (1 / zoom.ky.previous)))) * ratio[1]
+        y:
+          (zoom.y.max -
+            zoom.y.max * (1 / zoom.ky.now) -
+            (zoom.y.max - zoom.y.max * (1 / zoom.ky.previous))) *
+          ratio[1]
       }
 
       reserved.zoom.coef.y = reserved.zoom.coef.y + offset.y + drag.y
       if (reserved.zoom.coef.y < 0) reserved.zoom.coef.y = 0
-      let bottom = reserved.zoom.coef.y + (zoom.y.max * (1 / zoom.ky.now))
-      if (bottom > zoom.y.max) reserved.zoom.coef.y = reserved.zoom.coef.y - (bottom - zoom.y.max)
+      let bottom = reserved.zoom.coef.y + zoom.y.max * (1 / zoom.ky.now)
+      if (bottom > zoom.y.max) { reserved.zoom.coef.y = reserved.zoom.coef.y - (bottom - zoom.y.max) }
     }
     function computeDragFactor () {
       reserved.zoom.coef.x = reserved.zoom.coef.x + drag.x
       if (reserved.zoom.coef.x < 0) reserved.zoom.coef.x = 0
-      let right = reserved.zoom.coef.x + (zoom.x.max * (1 / zoom.kx.now))
-      if (right > zoom.x.max) reserved.zoom.coef.x = reserved.zoom.coef.x - (right - zoom.x.max)
+      let right = reserved.zoom.coef.x + zoom.x.max * (1 / zoom.kx.now)
+      if (right > zoom.x.max) { reserved.zoom.coef.x = reserved.zoom.coef.x - (right - zoom.x.max) }
 
       reserved.zoom.coef.y = reserved.zoom.coef.y + drag.y
       if (reserved.zoom.coef.y < 0) reserved.zoom.coef.y = 0
-      let bottom = reserved.zoom.coef.y + (zoom.y.max * (1 / zoom.ky.now))
-      if (bottom > zoom.y.max) reserved.zoom.coef.y = reserved.zoom.coef.y - (bottom - zoom.y.max)
+      let bottom = reserved.zoom.coef.y + zoom.y.max * (1 / zoom.ky.now)
+      if (bottom > zoom.y.max) { reserved.zoom.coef.y = reserved.zoom.coef.y - (bottom - zoom.y.max) }
     }
     // let zoomStart = function (ele) {
     //   reserved.zoom.isInZoom = true
@@ -617,22 +708,25 @@ window.PlotBrushZoom = function (optIn) {
         updateAxes()
         reserved.zoom.callback()
       })
-      .call(d3.drag()
-        .on('start', function (d) {})
-        .on('drag', function (d) {
-          drag.x = d3.event.dx
-          drag.y = d3.event.dy
+      .call(
+        d3
+          .drag()
+          .on('start', function (d) {})
+          .on('drag', function (d) {
+            drag.x = d3.event.dx
+            drag.y = d3.event.dy
 
-          computeDragFactor()
-          updateFocus()
-          updateAxes()
-          reserved.zoom.callback()
-        })
-        .on('end', function (d) {
-          drag.x = 0
-          drag.y = 0
-        }))
-      // .call(reserved.zoom.fun)
+            computeDragFactor()
+            updateFocus()
+            updateAxes()
+            reserved.zoom.callback()
+          })
+          .on('end', function (d) {
+            drag.x = 0
+            drag.y = 0
+          })
+      )
+    // .call(reserved.zoom.fun)
   }
 
   function updateData (optIn) {
@@ -645,22 +739,22 @@ window.PlotBrushZoom = function (optIn) {
   }
   this.updateData = updateData
   function applyZoomBrush (axis) {
-    axis.scale
-      .domain(axis.domain)
-      .range(axis.range)
-      //.nice()
+    axis.scale.domain(axis.domain).range(axis.range)
+    // .nice()
 
     let newDomain = deepCopy(axis.domain)
     if (axis.main.type === 'top' || axis.main.type === 'bottom') {
       newDomain[0] = axis.scale.invert(reserved.zoom.coef.x)
-      newDomain[1] = axis.scale.invert(reserved.zoom.coef.x + (reserved.focus.main.box.w * reserved.zoom.coef.kx))
+      newDomain[1] = axis.scale.invert(
+        reserved.zoom.coef.x + reserved.focus.main.box.w * reserved.zoom.coef.kx
+      )
     } else if (axis.main.type === 'left' || axis.main.type === 'right') {
       newDomain[0] = axis.scale.invert(reserved.zoom.coef.y)
-      newDomain[1] = axis.scale.invert(reserved.zoom.coef.y + (reserved.focus.main.box.h * reserved.zoom.coef.ky))
+      newDomain[1] = axis.scale.invert(
+        reserved.zoom.coef.y + reserved.focus.main.box.h * reserved.zoom.coef.ky
+      )
     }
     if (axis.brush.zoom) axis.scale.domain(newDomain)
   }
-  function updateBrush () {
-
-  }
+  function updateBrush () {}
 }

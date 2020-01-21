@@ -55,12 +55,8 @@ window.BlockQueueOld = function () {
 
     let lockerV = {}
     lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
-    lockerV.zoomDuring = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.during])
-    lockerV.zoomEnd = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.end])
+    lockerV.zoomDuring = lockerV.lockerV.slice().concat([lockerZoom.during])
+    lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
     // console.log(lockerV.zoomDuring);
     com.lockerV = lockerV
 

@@ -197,12 +197,8 @@ window.ScrollBox = function () {
 
     let lockerV = {}
     lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
-    lockerV.zoomDuring = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.during])
-    lockerV.zoomEnd = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.end])
+    lockerV.zoomDuring = lockerV.lockerV.slice().concat([lockerZoom.during])
+    lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
     com.lockerV = lockerV
 
     com.sameInnerBoxMarg = hasVar(optIn.sameInnerBoxMarg)
@@ -402,7 +398,9 @@ window.ScrollBox = function () {
   this.setTitle = setTitle
 
   function initVerticalScroll (optIn) {
-    com.scrollVertical = hasVar(optIn.scrollVertical) ? optIn.scrollVertical : true
+    com.scrollVertical = hasVar(optIn.scrollVertical)
+      ? optIn.scrollVertical
+      : true
     com.scrollHeight = hasVar(optIn.scrollHeight) ? optIn.scrollHeight : 0
     com.scrollTransV = {
       now: 0,
@@ -652,7 +650,9 @@ window.ScrollBox = function () {
   }
   function setVerticalZoomStatus () {
     if (com.scrollTransV.active) {
-      com.innerBox.g.call(com[com.tagZoom + 'Vertical']).on('dblclick.zoom', null)
+      com.innerBox.g
+        .call(com[com.tagZoom + 'Vertical'])
+        .on('dblclick.zoom', null)
     } else com.innerBox.g.on('.zoom', null)
   }
   function setupVerticalScrollBar () {
@@ -839,7 +839,10 @@ window.ScrollBox = function () {
     })
 
     function recVerticalBckClick (dataIn) {
-      com.runLoop.push({ tag: com.mainTag + 'recVerticalBckClick', data: dataIn })
+      com.runLoop.push({
+        tag: com.mainTag + 'recVerticalBckClick',
+        data: dataIn
+      })
     }
     com.recVerticalBckClick = recVerticalBckClick
 
@@ -885,7 +888,7 @@ window.ScrollBox = function () {
   }
   function resetVerticalScroller (optIn) {
     if (!hasVar(optIn)) optIn = {}
-    let old = {frac: com.scrollTransV.frac, scrollHeight: com.scrollHeight}
+    let old = { frac: com.scrollTransV.frac, scrollHeight: com.scrollHeight }
     let duration = hasVar(optIn.duration) ? optIn.duration : timeD.animArc / 2
 
     if (hasVar(optIn.canScroll)) com.canScroll = optIn.canScroll
@@ -893,7 +896,9 @@ window.ScrollBox = function () {
     if (hasVar(optIn.scrollHeight)) com.scrollHeight = optIn.scrollHeight
 
     let prevActive = com.scrollTransV.active
-    setVerticalScrollState((optIn.keepFrac && old.scrollHeight > 0) ? old : undefined)
+    setVerticalScrollState(
+      optIn.keepFrac && old.scrollHeight > 0 ? old : undefined
+    )
 
     // if (optIn.keepFrac) {
     //   com.scrollTransV.frac = (old.frac * com.scrollHeight) / old.scrollHeight
@@ -945,8 +950,7 @@ window.ScrollBox = function () {
       : 0
     com.scrollTransV.max = 0
     if (old) {
-      if (old.frac < 1) com.scrollTransV.frac = com.scrollTransV.now / com.scrollTransV.min
-      else {
+      if (old.frac < 1) { com.scrollTransV.frac = com.scrollTransV.now / com.scrollTransV.min } else {
         com.scrollTransV.frac = 1
         com.scrollTransV.now = com.scrollTransV.min * com.scrollTransV.frac
       }
@@ -967,13 +971,14 @@ window.ScrollBox = function () {
       : 0
     com.scrollTransV.max = 0
     if (!keepFrac) com.scrollTransV.frac = 0
-    if (com.scrollTransV.now < com.scrollTransV.min) com.scrollTransV.now = com.scrollTransV.min
-    else if (com.scrollTransV.now > com.scrollTransV.max) com.scrollTransV.now = com.scrollTransV.max
+    if (com.scrollTransV.now < com.scrollTransV.min) { com.scrollTransV.now = com.scrollTransV.min } else if (com.scrollTransV.now > com.scrollTransV.max) { com.scrollTransV.now = com.scrollTransV.max }
     com.scrollRecV.h = boxH * boxH / Math.abs(com.scrollHeight)
   } // NO
 
   function initHorizontalScroll (optIn) {
-    com.scrollHorizontal = hasVar(optIn.scrollHorizontal) ? optIn.scrollHorizontal : true
+    com.scrollHorizontal = hasVar(optIn.scrollHorizontal)
+      ? optIn.scrollHorizontal
+      : true
     com.scrollWidth = hasVar(optIn.scrollWidth) ? optIn.scrollWidth : 0
     com.scrollTransH = {
       now: 0,
@@ -1215,7 +1220,9 @@ window.ScrollBox = function () {
   function setHorizontalZoomStatus () {
     if (com.scrollTransV.active) return
     if (com.scrollTransH.active) {
-      com.innerBox.g.call(com[com.tagZoom + 'Horizontal']).on('dblclick.zoom', null)
+      com.innerBox.g
+        .call(com[com.tagZoom + 'Horizontal'])
+        .on('dblclick.zoom', null)
     } else com.innerBox.g.on('.zoom', null)
   } // NO
   function setupHorizontalScrollBar () {
@@ -1223,7 +1230,7 @@ window.ScrollBox = function () {
     //
     // ---------------------------------------------------------------------------------------------------
     function zoomHorizontalScrollBarInit () {
-      if (!com.locker.isFree(com.mainTag + 'zoomHorizontalScrollBarInit')) return
+      if (!com.locker.isFree(com.mainTag + 'zoomHorizontalScrollBarInit')) { return }
 
       com.locker.add({
         id: com.mainTag + 'zoomHorizontalScrollBarInit',
@@ -1300,7 +1307,9 @@ window.ScrollBox = function () {
             com.scrollBarRecH = com.scrollBarHG.selectAll(
               'rect.' + com.tagScrollBar + 'scroll'
             )
-            com.locker.remove({ id: com.mainTag + 'zoomHorizontalScrollBarInit' })
+            com.locker.remove({
+              id: com.mainTag + 'zoomHorizontalScrollBarInit'
+            })
           }
           nTries += 1
         }, timeD.animArc / 5)
@@ -1400,7 +1409,10 @@ window.ScrollBox = function () {
     })
 
     function recHorizontalBckClick (dataIn) {
-      com.runLoop.push({ tag: com.mainTag + 'recHorizontalBckClick', data: dataIn })
+      com.runLoop.push({
+        tag: com.mainTag + 'recHorizontalBckClick',
+        data: dataIn
+      })
     }
     com.recHorizontalBckClick = recHorizontalBckClick
 
@@ -1446,15 +1458,17 @@ window.ScrollBox = function () {
   } // NO
   function resetHorizontalScroller (optIn) {
     if (!hasVar(optIn)) optIn = {}
-    let old = {frac: com.scrollTransH.frac, scrollWidth: com.scrollWidth}
+    let old = { frac: com.scrollTransH.frac, scrollWidth: com.scrollWidth }
     let duration = hasVar(optIn.duration) ? optIn.duration : timeD.animArc / 2
 
     if (hasVar(optIn.canScroll)) com.canScroll = optIn.canScroll
-    if (hasVar(optIn.scrollVertical)) com.scrollHorizontal = optIn.scrollHorizontal
+    if (hasVar(optIn.scrollVertical)) { com.scrollHorizontal = optIn.scrollHorizontal }
     if (hasVar(optIn.scrollWidth)) com.scrollWidth = optIn.scrollWidth
 
     let prevActive = com.scrollTransH.active
-    setHorizontalScrollState((optIn.keepFrac && old.scrollWidth > 0) ? old : undefined)
+    setHorizontalScrollState(
+      optIn.keepFrac && old.scrollWidth > 0 ? old : undefined
+    )
 
     if (prevActive !== com.scrollTransH.active) {
       setBox()
@@ -1496,8 +1510,7 @@ window.ScrollBox = function () {
       : 0
     com.scrollTransH.max = 0
     if (!keepFrac) com.scrollTransH.frac = 0
-    if (com.scrollTransH.now < com.scrollTransH.min) com.scrollTransH.now = com.scrollTransH.min
-    else if (com.scrollTransH.now > com.scrollTransH.max) com.scrollTransH.now = com.scrollTransH.max
+    if (com.scrollTransH.now < com.scrollTransH.min) { com.scrollTransH.now = com.scrollTransH.min } else if (com.scrollTransH.now > com.scrollTransH.max) { com.scrollTransH.now = com.scrollTransH.max }
     com.scrollRecH.w = boxW * boxW / Math.abs(com.scrollWidth)
   } // NO
 

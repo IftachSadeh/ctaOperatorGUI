@@ -14,7 +14,7 @@ window.PlotTimeSeries = function () {
   let reserved = {
     main: {
       g: undefined,
-      box: {x: 0, y: 0, w: 0, h: 0}
+      box: { x: 0, y: 0, w: 0, h: 0 }
     },
     axis: [
       {
@@ -22,7 +22,7 @@ window.PlotTimeSeries = function () {
         showAxis: true,
         main: {
           g: undefined,
-          box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+          box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
           type: 'top',
           attr: {
             text: {
@@ -48,9 +48,7 @@ window.PlotTimeSeries = function () {
         }
       }
     ],
-    interaction: {
-
-    },
+    interaction: {},
     content: []
   }
 
@@ -68,12 +66,17 @@ window.PlotTimeSeries = function () {
 
     reserved.style = {}
 
-    reserved.style.hasOutline = hasVar(optIn.hasOutline) ? optIn.hasOutline : false
+    reserved.style.hasOutline = hasVar(optIn.hasOutline)
+      ? optIn.hasOutline
+      : false
   }
   this.setStyle = setStyle
   function init (optIn) {
     reserved = optIn
-    reserved.main.g.attr('transform', 'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')')
+    reserved.main.g.attr(
+      'transform',
+      'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')'
+    )
 
     initAxis()
     initInteraction()
@@ -87,25 +90,28 @@ window.PlotTimeSeries = function () {
     let toBind = true
     for (let i = 0; i < reserved.content.length; i++) {
       if (reserved.content[i].id === id) {
-        reserved.content[i] = {id: id, data: data, axisX: axisX, axisY: axisY}
+        reserved.content[i] = { id: id, data: data, axisX: axisX, axisY: axisY }
         toBind = false
         break
       }
     }
-    if (toBind) reserved.content.push({id: id, data: data, axisX: axisX, axisY: axisY})
+    if (toBind) { reserved.content.push({ id: id, data: data, axisX: axisX, axisY: axisY }) }
 
-    let current = reserved.main.g.select('#bindedData')
+    let current = reserved.main.g
+      .select('#bindedData')
       .selectAll('g.binded')
       .data(reserved.content, function (d, i) {
         return d.id
       })
-    let enter = current.enter()
+    let enter = current
+      .enter()
       .append('g')
       .attr('class', 'binded')
 
     enter.each(function (d, i) {
       let g = d3.select(this)
-      g.append('path')
+      g
+        .append('path')
         .attr('fill', 'none')
         .attr('stroke', 'steelblue')
         .attr('stroke-width', 1.5)
@@ -122,17 +128,29 @@ window.PlotTimeSeries = function () {
       axisX = getAxis(d.axisX)
       axisY = getAxis(d.axisY)
 
-      d3.select(this).select('path')
+      d3
+        .select(this)
+        .select('path')
         .datum(d.data)
-        .attr('d', d3.line()
-          .x(function (d) { return axisX.scale(d.x) })
-          .y(function (d) { return axisY.scale(d.y) })
+        .attr(
+          'd',
+          d3
+            .line()
+            .x(function (d) {
+              return axisX.scale(d.x)
+            })
+            .y(function (d) {
+              return axisY.scale(d.y)
+            })
         )
 
-      let currentIC = d3.select(this).select('g#innerCircles')
+      let currentIC = d3
+        .select(this)
+        .select('g#innerCircles')
         .selectAll('circle.innerCircle')
         .data(d.data)
-      let enterIC = currentIC.enter()
+      let enterIC = currentIC
+        .enter()
         .append('circle')
         .attr('class', 'innerCircle')
         .attr('r', 1.5)
@@ -141,8 +159,8 @@ window.PlotTimeSeries = function () {
         .attr('stroke-width', 0.2)
       let mergeIC = currentIC.merge(enterIC)
       mergeIC
-        .attr('cx', (d) => axisX.scale(d.x))
-        .attr('cy', (d) => axisY.scale(d.y))
+        .attr('cx', d => axisX.scale(d.x))
+        .attr('cy', d => axisY.scale(d.y))
       currentIC
         .exit()
         .transition('inOut')
@@ -165,7 +183,10 @@ window.PlotTimeSeries = function () {
         break
       }
     }
-    reserved.main.g.select('#bindedData').select('g#' + id).remove()
+    reserved.main.g
+      .select('#bindedData')
+      .select('g#' + id)
+      .remove()
   }
   this.unbindData = unbindData
 
@@ -173,7 +194,9 @@ window.PlotTimeSeries = function () {
     if (!reserved.main.clipping) return
     reserved.clipping = {}
     reserved.clipping.g = reserved.main.g.append('g')
-    reserved.clipping.g.append('defs').append('svg:clipPath')
+    reserved.clipping.g
+      .append('defs')
+      .append('svg:clipPath')
       .attr('id', 'clip')
       .append('svg:rect')
       .attr('id', 'clip-rect')
@@ -181,29 +204,51 @@ window.PlotTimeSeries = function () {
       .attr('y', '0')
       .attr('width', reserved.main.box.w)
       .attr('height', reserved.main.box.h)
-    reserved.clipping.clipBody = reserved.clipping.g.append('g')
+    reserved.clipping.clipBody = reserved.clipping.g
+      .append('g')
       .attr('clip-path', 'url(#clip)')
     reserved.main.g = reserved.clipping.clipBody.append('g')
   }
   function initAxis () {
     for (let i = 0; i < reserved.axis.length; i++) {
-      if (reserved.axis[i].main.mode === 'time') reserved.axis[i].scale = d3.scaleTime()
-      else if (reserved.axis[i].main.mode === 'line') reserved.axis[i].scale = d3.scaleLinear()
-      else reserved.axis[i].scale = d3.scaleLinear()
-      reserved.axis[i].scale.range(reserved.axis[i].range)
+      if (reserved.axis[i].main.mode === 'time') { reserved.axis[i].scale = d3.scaleTime() } else if (reserved.axis[i].main.mode === 'line') { reserved.axis[i].scale = d3.scaleLinear() } else reserved.axis[i].scale = d3.scaleLinear()
+      reserved.axis[i].scale
+        .range(reserved.axis[i].range)
         .domain(reserved.axis[i].domain)
 
-      if (reserved.axis[i].main.type === 'top') reserved.axis[i].axis = d3.axisTop(reserved.axis[i].scale)
-      else if (reserved.axis[i].main.type === 'bottom') reserved.axis[i].axis = d3.axisBottom(reserved.axis[i].scale)
-      else if (reserved.axis[i].main.type === 'left') reserved.axis[i].axis = d3.axisLeft(reserved.axis[i].scale)
-      else if (reserved.axis[i].main.type === 'right') reserved.axis[i].axis = d3.axisRight(reserved.axis[i].scale)
+      if (reserved.axis[i].main.type === 'top') { reserved.axis[i].axis = d3.axisTop(reserved.axis[i].scale) } else if (reserved.axis[i].main.type === 'bottom') { reserved.axis[i].axis = d3.axisBottom(reserved.axis[i].scale) } else if (reserved.axis[i].main.type === 'left') { reserved.axis[i].axis = d3.axisLeft(reserved.axis[i].scale) } else if (reserved.axis[i].main.type === 'right') { reserved.axis[i].axis = d3.axisRight(reserved.axis[i].scale) }
 
-      if (reserved.axis[i].main.mode === 'time') reserved.axis[i].axis.tickFormat(d3.timeFormat('%H:%M'))
+      if (reserved.axis[i].main.mode === 'time') { reserved.axis[i].axis.tickFormat(d3.timeFormat('%H:%M')) }
 
       reserved.axis[i].main.g = reserved.main.g.append('g')
-      if (reserved.axis[i].main.type === 'bottom') reserved.axis[i].main.g.attr('transform', 'translate(' + reserved.axis[i].main.box.x + ',' + (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h) + ')')
-      else if (reserved.axis[i].main.type === 'top') reserved.axis[i].main.g.attr('transform', 'translate(' + reserved.axis[i].main.box.x + ',' + reserved.axis[i].main.box.y + ')')
-      else if (reserved.axis[i].main.type === 'right') reserved.axis[i].main.g.attr('transform', 'translate(' + (reserved.axis[i].main.box.x + reserved.axis[i].main.box.w) + ',' + reserved.axis[i].main.box.y + ')')
+      if (reserved.axis[i].main.type === 'bottom') {
+        reserved.axis[i].main.g.attr(
+          'transform',
+          'translate(' +
+            reserved.axis[i].main.box.x +
+            ',' +
+            (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h) +
+            ')'
+        )
+      } else if (reserved.axis[i].main.type === 'top') {
+        reserved.axis[i].main.g.attr(
+          'transform',
+          'translate(' +
+            reserved.axis[i].main.box.x +
+            ',' +
+            reserved.axis[i].main.box.y +
+            ')'
+        )
+      } else if (reserved.axis[i].main.type === 'right') {
+        reserved.axis[i].main.g.attr(
+          'transform',
+          'translate(' +
+            (reserved.axis[i].main.box.x + reserved.axis[i].main.box.w) +
+            ',' +
+            reserved.axis[i].main.box.y +
+            ')'
+        )
+      }
 
       if (!reserved.axis[i].showAxis) continue
       reserved.axis[i].main.g
@@ -216,9 +261,12 @@ window.PlotTimeSeries = function () {
   }
   function initInteraction () {
     function createDeleteButton () {
-      let remg = reserved.main.g.append('g').attr('id', 'removeGroup')
+      let remg = reserved.main.g
+        .append('g')
+        .attr('id', 'removeGroup')
         .style('cursor', 'pointer')
-      remg.append('rect')
+      remg
+        .append('rect')
         .attr('x', reserved.main.box.w - 15)
         .attr('y', -15)
         .attr('width', 15)
@@ -227,18 +275,22 @@ window.PlotTimeSeries = function () {
         .attr('stroke-width', 0.2)
         .attr('fill', colorPalette.blocks.run.background)
         .style('opacity', '0')
-      remg.append('svg:image')
+      remg
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/cross.svg')
-        .attr('x', (reserved.main.box.w - 12.5) + 'px')
+        .attr('x', reserved.main.box.w - 12.5 + 'px')
         .attr('y', -12.5 + 'px')
         .attr('width', 10 + 'px')
         .attr('height', 10 + 'px')
         .style('pointer-events', 'none')
     }
     function createPinnedButton () {
-      let remg = reserved.main.g.append('g').attr('id', 'removeGroup')
+      let remg = reserved.main.g
+        .append('g')
+        .attr('id', 'removeGroup')
         .style('cursor', 'pointer')
-      remg.append('rect')
+      remg
+        .append('rect')
         .attr('x', reserved.main.box.w - 36)
         .attr('y', -15)
         .attr('width', 15)
@@ -247,9 +299,10 @@ window.PlotTimeSeries = function () {
         .attr('stroke-width', 0.2)
         .attr('fill', colorPalette.blocks.run.background)
         .style('opacity', '0')
-      remg.append('svg:image')
+      remg
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/pin.svg')
-        .attr('x', (reserved.main.box.w - 33.5) + 'px')
+        .attr('x', reserved.main.box.w - 33.5 + 'px')
         .attr('y', -12.5 + 'px')
         .attr('width', 10 + 'px')
         .attr('height', 10 + 'px')
@@ -310,22 +363,29 @@ window.PlotTimeSeries = function () {
     // applyZoomBrush(reserved.axis[index])
 
     // if (!reserved.axis[index].enabled) return
-    let minTxtSize = reserved.axis[index].main.attr.text.size ? reserved.axis[index].main.attr.text.size : reserved.main.box.w * 0.04
+    let minTxtSize = reserved.axis[index].main.attr.text.size
+      ? reserved.axis[index].main.attr.text.size
+      : reserved.main.box.w * 0.04
     // console.log(reserved.axis[index].domain, reserved.axis[index].range);
     reserved.axis[index].axis.scale(reserved.axis[index].scale)
     reserved.axis[index].axis.ticks(5)
     reserved.axis[index].axis.tickSize(reserved.axis[index].main.attr.tickSize)
     if (!reserved.axis[index].showAxis) return
     reserved.axis[index].main.g.call(reserved.axis[index].axis)
-    reserved.axis[index].main.g.select('path')
+    reserved.axis[index].main.g
+      .select('path')
       .attr('stroke-width', 0.3)
       .attr('stroke', reserved.axis[index].main.attr.path.stroke)
       .attr('opacity', reserved.axis[index].main.attr.path.enabled ? 1 : 0)
-    reserved.axis[index].main.g.selectAll('g.tick').selectAll('line')
+    reserved.axis[index].main.g
+      .selectAll('g.tick')
+      .selectAll('line')
       .attr('stroke-width', 0.2)
       .attr('stroke', reserved.axis[index].main.attr.path.stroke)
       .attr('opacity', reserved.axis[index].main.attr.path.enabled ? 1 : 0)
-    reserved.axis[index].main.g.selectAll('g.tick').selectAll('text')
+    reserved.axis[index].main.g
+      .selectAll('g.tick')
+      .selectAll('text')
       .attr('stroke', reserved.axis[index].main.attr.text.stroke)
       .attr('stroke-width', 0.2)
       .attr('fill', reserved.axis[index].main.attr.text.fill)
@@ -356,16 +416,25 @@ window.PlotTimeSeries = function () {
   function updateData (optIn) {
     for (let id in reserved.content) {
       let binded = reserved.content[id]
-      reserved.main.g.select('g#' + id)
+      reserved.main.g
+        .select('g#' + id)
         .select('path')
-        .attr('d', d3.line()
-          .x(function (d) { return getAxis(binded.axisX).scale(d.x) })
-          .y(function (d) { return getAxis(binded.axisY).scale(d.y) })
+        .attr(
+          'd',
+          d3
+            .line()
+            .x(function (d) {
+              return getAxis(binded.axisX).scale(d.x)
+            })
+            .y(function (d) {
+              return getAxis(binded.axisY).scale(d.y)
+            })
         )
-      reserved.main.g.select('g#' + id)
+      reserved.main.g
+        .select('g#' + id)
         .selectAll('circle')
-        .attr('cx', (d) => getAxis(binded.axisX).scale(d.x))
-        .attr('cy', (d) => getAxis(binded.axisY).scale(d.y))
+        .attr('cx', d => getAxis(binded.axisX).scale(d.x))
+        .attr('cy', d => getAxis(binded.axisY).scale(d.y))
     }
   }
   this.updateData = updateData

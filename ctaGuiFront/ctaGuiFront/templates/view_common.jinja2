@@ -11,7 +11,7 @@
         window.__appPrefix__ = '{{app_prefix}}'
         window.__nsType__ = '{{ns_type}}'
         window.__widgetName__ = '{{widget_name}}'
-        window.__userId__ = '{{login}}'
+        window.__display_userid__ = '{{display_userid}}'
     </script>
 
     <meta charset="UTF-8" />
@@ -57,18 +57,21 @@
   <!-- ========================================================================= -->
   <body>
     <div id="topPaddingDiv"></div>
+    
+    <div id="titleDiv" class="menuHeader siteHeader"> CTA operator Interface </div>
+    
     <div id="baseAppNEW"></div>
 
     <div id="sideMenu"></div>
     <div id="topMenu" class="horizEle gridEleBodyDark" style="width: 100%; display: flex; align-items: center; position: fixed; top: 0; opacity: 1;">
-      <div class="horizEle " style="width: 100%; margin-top: 12px; margin-bottom: 12px; ">
+      <div id="topMenuInner" class="horizEle " style="width: 100%; margin-top: 12px; margin-bottom: 12px; ">
         <div style="margin-left: 2%;"></div>
         
         <div id="topMenuLeft"></div>
 
         <div class="flexEle"></div>
 
-        <div class="menuHeader" id="userNameDiv" style="opacity:0; pointer-events:none"></div>
+        <div class="menuHeader" id="userNameDiv" style="opacity:0.8; pointer-events:none">{{display_userid}}</div>
         <div style="margin-right: 1%;"></div>
 
         <div class="switchTitled">

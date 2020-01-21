@@ -13,19 +13,19 @@ window.PanelManager = function () {
   let template = {
     tag: 'tagDefaultPanelManager',
     g: undefined,
-    box: {x: 1, y: 1, w: 1, h: 1},
+    box: { x: 1, y: 1, w: 1, h: 1 },
     tab: {
       enabled: true,
       g: undefined,
-      box: {x: 1, y: 1, w: 1, h: 1},
-      dimension: {w: 0, h: 0},
+      box: { x: 1, y: 1, w: 1, h: 1 },
+      dimension: { w: 0, h: 0 },
       dragable: false,
       closable: false
     },
     content: {
       enabled: true,
       g: undefined,
-      box: {x: 1, y: 1, w: 1, h: 1}
+      box: { x: 1, y: 1, w: 1, h: 1 }
     },
     panels: {
       current: undefined,
@@ -53,7 +53,8 @@ window.PanelManager = function () {
   function createDefault () {
     if (com.debug) console.log('createDefault')
     function paintTab (g) {
-      g.append('rect')
+      g
+        .append('rect')
         .attr('x', com.tab.box.x)
         .attr('y', com.tab.box.y)
         .attr('width', com.tab.box.w)
@@ -62,7 +63,8 @@ window.PanelManager = function () {
         .attr('stroke', 'none')
     }
     function paintContent (g) {
-      g.append('rect')
+      g
+        .append('rect')
         .attr('x', com.content.box.x)
         .attr('y', com.content.box.y)
         .attr('width', com.content.box.w)
@@ -73,12 +75,15 @@ window.PanelManager = function () {
     }
 
     let defaultPanel = new CustomPanel()
-    defaultPanel.set({tag: 'id', def: 'default'})
-    defaultPanel.set({tag: 'opt', def: {
-      focusable: true,
-      focusOnCreation: true,
-      insert: 'after'
-    }})
+    defaultPanel.set({ tag: 'id', def: 'default' })
+    defaultPanel.set({
+      tag: 'opt',
+      def: {
+        focusable: true,
+        focusOnCreation: true,
+        insert: 'after'
+      }
+    })
     defaultPanel.setRepaintPanel(paintContent)
     defaultPanel.setRepaintTab(paintTab)
     addNewPanel(defaultPanel)
@@ -106,8 +111,14 @@ window.PanelManager = function () {
     // com.content.box.w = com.box.w * com.content.box.w
     // com.content.box.h = com.box.h * com.content.box.h
 
-    com.tab.g.attr('transform', 'translate(' + com.tab.box.x + ',' + com.tab.box.y + ')')
-    com.content.g.attr('transform', 'translate(' + com.content.box.x + ',' + com.content.box.y + ')')
+    com.tab.g.attr(
+      'transform',
+      'translate(' + com.tab.box.x + ',' + com.tab.box.y + ')'
+    )
+    com.content.g.attr(
+      'transform',
+      'translate(' + com.content.box.x + ',' + com.content.box.y + ')'
+    )
 
     if (com.tab.enabled) createDefault()
   }
@@ -140,26 +151,32 @@ window.PanelManager = function () {
     if (com.debug) console.log('resizeTab')
     let w = com.tab.box.w
     let h = com.tab.box.h + 2
-    com.tab.dimension = {w: w, h: h} // ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
+    com.tab.dimension = { w: w, h: h } // ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
   }
   function updateTab (data) {
     if (com.debug) console.log('updateTab', data)
 
-    let labels = com.tab.g.selectAll('g.label')
-      .data(com.panels.all)
+    let labels = com.tab.g.selectAll('g.label').data(com.panels.all)
     let enterLabels = labels
       .enter()
       .append('g')
       .attr('class', 'label')
-    let mergedLabels = labels.merge(enterLabels)
+    let mergedLabels = labels
+      .merge(enterLabels)
       .attr('transform', function (d, i) {
-        return 'translate(' + (com.tab.dimension.w * i) + ',' + 0 + ')'
+        return 'translate(' + com.tab.dimension.w * i + ',' + 0 + ')'
       })
 
     mergedLabels.each(function (d, i) {
       d.setTabProperties('g', d3.select(this))
-      d3.select(this).attr('width', com.tab.dimension.w).attr('height', com.tab.dimension.h)
-      d.setTabProperties('dimension', {width: com.tab.dimension.w, height: com.tab.dimension.h})
+      d3
+        .select(this)
+        .attr('width', com.tab.dimension.w)
+        .attr('height', com.tab.dimension.h)
+      d.setTabProperties('dimension', {
+        width: com.tab.dimension.w,
+        height: com.tab.dimension.h
+      })
       d.repaintTab()
       // d.translateTabTo((com.tab.dimension.w * i), 0)
 
@@ -170,7 +187,7 @@ window.PanelManager = function () {
       // if (com.tab.closable) d.setTabEvent('close', function () { removePanel(d, i) })
     })
     mergedLabels.on('click', function (d) {
-      console.log('clickGroupofTab');
+      console.log('clickGroupofTab')
       // mergedLabels.each(function (d1, i) { d1.unselectTab() })
       d.selectTab()
       setFocusOnPanel(d)
@@ -178,7 +195,8 @@ window.PanelManager = function () {
 
     labels.exit().remove()
   }
-  let drag = d3.drag()
+  let drag = d3
+    .drag()
     .on('start', function (d, i) {
       d3.event.sourceEvent.stopPropagation()
       com.manager.setFocusOnGroup(d.get('panelGroup'))
@@ -188,10 +206,17 @@ window.PanelManager = function () {
     .on('drag', function (d, i) {
       let offsetX = d.get('transX') + (d3.event.x - d.startDragX)
       let offsetY = d.get('transY') + (d3.event.y - d.startDragY)
-      d3.select(this).attr('transform', 'translate(' + offsetX + ',' + offsetY + ')')
+      d3
+        .select(this)
+        .attr('transform', 'translate(' + offsetX + ',' + offsetY + ')')
     })
     .on('end', function (d, i) {
-      if (Math.sqrt(Math.pow((d3.event.x - d.startDragX), 2) + Math.pow((d3.event.y - d.startDragY), 2)) > 40) {
+      if (
+        Math.sqrt(
+          Math.pow(d3.event.x - d.startDragX, 2) +
+            Math.pow(d3.event.y - d.startDragY, 2)
+        ) > 40
+      ) {
         removePanel(d, i)
         let optIn = {
           transX: d.transX + (d3.event.x - d.startDragX),

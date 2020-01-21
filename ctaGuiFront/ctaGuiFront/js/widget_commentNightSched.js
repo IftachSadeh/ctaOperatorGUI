@@ -1,15 +1,15 @@
 'use strict'
-// ---------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
 // stric mode for the following script or function (must come at the very begining!)
 // see: http://www.w3schools.com/js/js_strict.asp
-// ---------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
 // mainScriptTag used locally (will be overriden by other scripts...)
 // must be compatible with the name of this js file, according to:
 //    "/js/widget_"+mainScriptTag+".js"
 var mainScriptTag = 'commentNightSched'
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 
 /* global $ */
 /* global d3 */
@@ -46,19 +46,34 @@ var mainScriptTag = 'commentNightSched'
 
 // window.loadScript({ source: mainScriptTag, script: '/js/utils_blockQueueCreator.js' })
 // window.loadScript({ source: mainScriptTag, script: '/js/utils_blockList.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_blockFilters.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_blockDisplayer.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/events/utils_EventQueue.js' })
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/blocks/utils_blockFilters.js'
+})
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/blocks/utils_blockDisplayer.js'
+})
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/events/utils_EventQueue.js'
+})
 // window.loadScript({ source: mainScriptTag, script: '/js/utils_TelsArray.js' })
 
-window.loadScript({ source: mainScriptTag, script: '/js/utils_panelManager.js' })
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/utils_panelManager.js'
+})
 window.loadScript({ source: mainScriptTag, script: '/js/utils_buttonPanel.js' })
-window.loadScript({ source: mainScriptTag, script: '/js/events/utils_clockEvents.js' })
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/events/utils_clockEvents.js'
+})
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollTable.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_formManager.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
@@ -66,7 +81,10 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   let w0 = 12
   let divKey = 'main'
 
-  optIn.widgetFunc = { SockFunc: sockCommentNightSched, MainFunc: mainCommentNightSched }
+  optIn.widgetFunc = {
+    SockFunc: sockCommentNightSched,
+    MainFunc: mainCommentNightSched
+  }
   optIn.widgetDivId = optIn.widgetId + 'widgetDiv'
   optIn.eleProps = {}
   optIn.eleProps[divKey] = {
@@ -83,15 +101,15 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   sock.addToTable(optIn)
 }
 
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 // additional socket events for this particular widget type
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 let sockCommentNightSched = function (optIn) {
   // let widgetType   = optIn.widgetType;
   // let widgetSource = optIn.widgetSource;
-  // // ---------------------------------------------------------------------------------------------------
+  // // -------------------------------------------------------------------
   // // get data from the server for a given telescope
-  // // ---------------------------------------------------------------------------------------------------
+  // // -------------------------------------------------------------------
   // this.askTelData = function(optIn) {
   //   if(sock.conStat.isOffline()) return;
   //   let data         = {};
@@ -108,10 +126,10 @@ let sockCommentNightSched = function (optIn) {
   // }
 }
 
-// ---------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
 // here we go with the content of this particular widget
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 let mainCommentNightSched = function (optIn) {
   let colorTheme = getColorTheme('bright-Grey')
   // let myUniqueId = unique()
@@ -140,7 +158,7 @@ let mainCommentNightSched = function (optIn) {
 
   let com = {}
 
-  let filters = {states: [], errors: []}
+  let filters = { states: [], errors: [] }
   let tokens = { blockState: {}, blockError: {} }
   let filteredTokens = { blockState: {}, blockError: {} }
 
@@ -168,19 +186,29 @@ let mainCommentNightSched = function (optIn) {
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
 
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   function createDummyLog () {
     function shuffle (a) {
       for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]]
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[a[i], a[j]] = [a[j], a[i]]
       }
       return a
     }
     com.logs = []
-    let categories = ['cat1', 'cat2', 'cat3', 'cat4', 'cat5', 'cat6', 'cat7', 'cat8', 'cat9']
+    let categories = [
+      'cat1',
+      'cat2',
+      'cat3',
+      'cat4',
+      'cat5',
+      'cat6',
+      'cat7',
+      'cat8',
+      'cat9'
+    ]
     let linkto = ['block', 'tel', 'event']
     for (var i = 0; i < 100; i++) {
       shuffle(categories)
@@ -196,7 +224,8 @@ let mainCommentNightSched = function (optIn) {
       com.logs.push({
         id: 'log_' + i + Math.floor(Math.random() * 1000),
         name: 'log_' + i + Math.floor(Math.random() * 1000),
-        description: 'description description description description description description description description description description description description',
+        description:
+          'description description description description description description description description description description description description',
         categories: categ,
         info: [
           {
@@ -259,21 +288,24 @@ let mainCommentNightSched = function (optIn) {
       let defs = svg.svg.append('defs')
       // create filter with id #drop-shadow
       // height=130% so that the shadow is not clipped
-      let filter = defs.append('filter')
+      let filter = defs
+        .append('filter')
         .attr('id', 'drop-shadow')
         .attr('height', '120%')
 
       // SourceAlpha refers to opacity of graphic that this filter will be applied to
       // convolve that with a Gaussian with standard deviation 3 and store result
       // in blur
-      filter.append('feGaussianBlur')
+      filter
+        .append('feGaussianBlur')
         .attr('in', 'SourceAlpha')
         .attr('stdDeviation', 2.5)
         .attr('result', 'blur')
 
       // translate output of Gaussian blur to the right and downwards with 2px
       // store result in offsetBlur
-      filter.append('feOffset')
+      filter
+        .append('feOffset')
         .attr('in', 'blur')
         .attr('dx', -1)
         .attr('dy', 1)
@@ -282,14 +314,11 @@ let mainCommentNightSched = function (optIn) {
       // overlay original SourceGraphic over translated blurred opacity by using
       // feMerge filter. Order of specifying inputs is important!
       let feMerge = filter.append('feMerge')
-      feMerge.append('feMergeNode')
-        .attr('in', 'offsetBlur')
-      feMerge.append('feMergeNode')
-        .attr('in', 'SourceGraphic')
+      feMerge.append('feMergeNode').attr('in', 'offsetBlur')
+      feMerge.append('feMergeNode').attr('in', 'SourceGraphic')
     }
     function initBackground () {
-      svg.svg
-        .style('background', '#444444')// colorTheme.bright.background)
+      svg.svg.style('background', '#444444') // colorTheme.bright.background)
 
       // svg.back.append('rect')
       //   .attr('x', -lenD.w[0] * 0.1)
@@ -587,15 +616,13 @@ let mainCommentNightSched = function (optIn) {
       shared.style = {}
       shared.style.runRecCol = colsBlues[2]
       shared.style.blockCol = function (optIn) {
-        let endTime = hasVar(optIn.endTime)
-          ? optIn.endTime
-          : undefined
-        if (endTime < Number(shared.data.server.timeOfNight.now)) return colorTheme.blocks.shutdown
+        let endTime = hasVar(optIn.endTime) ? optIn.endTime : undefined
+        if (endTime < Number(shared.data.server.timeOfNight.now)) { return colorTheme.blocks.shutdown }
 
         let state = hasVar(optIn.exeState.state)
           ? optIn.exeState.state
           : undefined
-        console.log(state);
+        console.log(state)
         let canRun = hasVar(optIn.exeState.canRun)
           ? optIn.exeState.canRun
           : undefined
@@ -661,9 +688,9 @@ let mainCommentNightSched = function (optIn) {
   }
   this.initData = initData
 
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   function updateData (dataIn) {
     com.dataIn = dataIn
     shared.data.server = dataIn.data
@@ -686,20 +713,39 @@ let mainCommentNightSched = function (optIn) {
     tokens.blockError = {}
     for (var i = 0; i < dataIn.blocks.done.length; i++) {
       if (hasVar(tokens.blockState[dataIn.blocks.done[i].exeState.state])) {
-        if (!tokens.blockState[dataIn.blocks.done[i].exeState.state].includes(dataIn.blocks.done[i].obId)) {
-          tokens.blockState[dataIn.blocks.done[i].exeState.state].push(dataIn.blocks.done[i].obId)
+        if (
+          !tokens.blockState[dataIn.blocks.done[i].exeState.state].includes(
+            dataIn.blocks.done[i].obId
+          )
+        ) {
+          tokens.blockState[dataIn.blocks.done[i].exeState.state].push(
+            dataIn.blocks.done[i].obId
+          )
         }
       } else {
-        tokens.blockState[dataIn.blocks.done[i].exeState.state] = [dataIn.blocks.done[i].obId]
+        tokens.blockState[dataIn.blocks.done[i].exeState.state] = [
+          dataIn.blocks.done[i].obId
+        ]
       }
 
-      if (dataIn.blocks.done[i].exeState.state === 'cancel' || dataIn.blocks.done[i].exeState.state === 'fail') {
+      if (
+        dataIn.blocks.done[i].exeState.state === 'cancel' ||
+        dataIn.blocks.done[i].exeState.state === 'fail'
+      ) {
         if (hasVar(tokens.blockError[dataIn.blocks.done[i].exeState.error])) {
-          if (!tokens.blockError[dataIn.blocks.done[i].exeState.error].includes(dataIn.blocks.done[i].obId)) {
-            tokens.blockError[dataIn.blocks.done[i].exeState.error].push(dataIn.blocks.done[i].obId)
+          if (
+            !tokens.blockError[dataIn.blocks.done[i].exeState.error].includes(
+              dataIn.blocks.done[i].obId
+            )
+          ) {
+            tokens.blockError[dataIn.blocks.done[i].exeState.error].push(
+              dataIn.blocks.done[i].obId
+            )
           }
         } else {
-          tokens.blockError[dataIn.blocks.done[i].exeState.error] = [dataIn.blocks.done[i].obId]
+          tokens.blockError[dataIn.blocks.done[i].exeState.error] = [
+            dataIn.blocks.done[i].obId
+          ]
         }
       }
     }
@@ -723,23 +769,50 @@ let mainCommentNightSched = function (optIn) {
     filteredTokens.blockError = {}
     for (var i = 0; i < dataIn.blocks.done.length; i++) {
       if (checkWithErrorsFilters(dataIn.blocks.done[i].exeState)) {
-        if (hasVar(filteredTokens.blockState[dataIn.blocks.done[i].exeState.state])) {
-          if (!filteredTokens.blockState[dataIn.blocks.done[i].exeState.state].includes(dataIn.blocks.done[i].obId)) {
-            filteredTokens.blockState[dataIn.blocks.done[i].exeState.state].push(dataIn.blocks.done[i].obId)
+        if (
+          hasVar(
+            filteredTokens.blockState[dataIn.blocks.done[i].exeState.state]
+          )
+        ) {
+          if (
+            !filteredTokens.blockState[
+              dataIn.blocks.done[i].exeState.state
+            ].includes(dataIn.blocks.done[i].obId)
+          ) {
+            filteredTokens.blockState[
+              dataIn.blocks.done[i].exeState.state
+            ].push(dataIn.blocks.done[i].obId)
           }
         } else {
-          filteredTokens.blockState[dataIn.blocks.done[i].exeState.state] = [dataIn.blocks.done[i].obId]
+          filteredTokens.blockState[dataIn.blocks.done[i].exeState.state] = [
+            dataIn.blocks.done[i].obId
+          ]
         }
       }
 
       if (checkWithStatesFilters(dataIn.blocks.done[i].exeState)) {
-        if (dataIn.blocks.done[i].exeState.state === 'cancel' || dataIn.blocks.done[i].exeState.state === 'fail') {
-          if (hasVar(filteredTokens.blockError[dataIn.blocks.done[i].exeState.error])) {
-            if (!filteredTokens.blockError[dataIn.blocks.done[i].exeState.error].includes(dataIn.blocks.done[i].obId)) {
-              filteredTokens.blockError[dataIn.blocks.done[i].exeState.error].push(dataIn.blocks.done[i].obId)
+        if (
+          dataIn.blocks.done[i].exeState.state === 'cancel' ||
+          dataIn.blocks.done[i].exeState.state === 'fail'
+        ) {
+          if (
+            hasVar(
+              filteredTokens.blockError[dataIn.blocks.done[i].exeState.error]
+            )
+          ) {
+            if (
+              !filteredTokens.blockError[
+                dataIn.blocks.done[i].exeState.error
+              ].includes(dataIn.blocks.done[i].obId)
+            ) {
+              filteredTokens.blockError[
+                dataIn.blocks.done[i].exeState.error
+              ].push(dataIn.blocks.done[i].obId)
             }
           } else {
-            filteredTokens.blockError[dataIn.blocks.done[i].exeState.error] = [dataIn.blocks.done[i].obId]
+            filteredTokens.blockError[dataIn.blocks.done[i].exeState.error] = [
+              dataIn.blocks.done[i].obId
+            ]
           }
         }
       }
@@ -756,9 +829,9 @@ let mainCommentNightSched = function (optIn) {
     return t
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   function syncStateSend (dataIn) {
     if (sock.conStat.isOffline()) return
 
@@ -769,7 +842,7 @@ let mainCommentNightSched = function (optIn) {
     })
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   let SvgTextEditor = function () {
     let reserved = {
       main: {
@@ -1232,9 +1305,17 @@ let mainCommentNightSched = function (optIn) {
     //     .attr('stroke-width', 0.2)
     // }
     function initAssociatedElement () {
-      reserved.associatedElement.g.attr('transform', 'translate(' + reserved.associatedElement.box.x + ',' + reserved.associatedElement.box.y + ')')
+      reserved.associatedElement.g.attr(
+        'transform',
+        'translate(' +
+          reserved.associatedElement.box.x +
+          ',' +
+          reserved.associatedElement.box.y +
+          ')'
+      )
 
-      reserved.associatedElement.g.append('rect')
+      reserved.associatedElement.g
+        .append('rect')
         .attr('x', reserved.associatedElement.box.w * 0.0)
         .attr('y', reserved.associatedElement.box.h * 0.0)
         .attr('width', reserved.associatedElement.box.w * 1.0)
@@ -1250,7 +1331,8 @@ let mainCommentNightSched = function (optIn) {
           // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
         })
 
-      reserved.associatedElement.g.append('text')
+      reserved.associatedElement.g
+        .append('text')
         .text('Associated elements')
         .attr('x', reserved.associatedElement.box.w * 0.5)
         .attr('y', 10)
@@ -1259,9 +1341,18 @@ let mainCommentNightSched = function (optIn) {
         .style('font-size', '9px')
         .attr('text-anchor', 'middle')
 
-      reserved.associatedElement.blocks.icon = reserved.associatedElement.g.append('g')
-        .attr('transform', 'translate(' + (reserved.associatedElement.box.w * 0.8) + ',' + (reserved.associatedElement.box.h * 0.2) + ')')
-      reserved.associatedElement.blocks.icon.append('rect')
+      reserved.associatedElement.blocks.icon = reserved.associatedElement.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            reserved.associatedElement.box.w * 0.8 +
+            ',' +
+            reserved.associatedElement.box.h * 0.2 +
+            ')'
+        )
+      reserved.associatedElement.blocks.icon
+        .append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', reserved.associatedElement.box.w * 0.11)
@@ -1271,12 +1362,21 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('opacity', 0)
         .on('mouseover', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('opacity', 1)
         })
         .on('mouseout', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('opacity', 0)
         })
-      reserved.associatedElement.blocks.icon.append('svg:image')
+      reserved.associatedElement.blocks.icon
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/blocks.svg')
         .attr('width', reserved.associatedElement.box.w * 0.075)
         .attr('height', reserved.associatedElement.box.w * 0.075)
@@ -1291,9 +1391,18 @@ let mainCommentNightSched = function (optIn) {
       //   .style('pointer-events', 'none')
       //   .style('pointer-events', 'none')
 
-      reserved.associatedElement.events.icon = reserved.associatedElement.g.append('g')
-        .attr('transform', 'translate(' + (reserved.associatedElement.box.w * 0.8) + ',' + (reserved.associatedElement.box.h * 0.45) + ')')
-      reserved.associatedElement.events.icon.append('rect')
+      reserved.associatedElement.events.icon = reserved.associatedElement.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            reserved.associatedElement.box.w * 0.8 +
+            ',' +
+            reserved.associatedElement.box.h * 0.45 +
+            ')'
+        )
+      reserved.associatedElement.events.icon
+        .append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', reserved.associatedElement.box.w * 0.11)
@@ -1303,12 +1412,21 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('opacity', 0)
         .on('mouseover', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('opacity', 1)
         })
         .on('mouseout', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('opacity', 0)
         })
-      reserved.associatedElement.events.icon.append('svg:image')
+      reserved.associatedElement.events.icon
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/warning.svg')
         .attr('width', reserved.associatedElement.box.w * 0.08)
         .attr('height', reserved.associatedElement.box.w * 0.08)
@@ -1322,9 +1440,18 @@ let mainCommentNightSched = function (optIn) {
       //   .attr('y', reserved.associatedElement.box.h * 0.145)
       //   .style('pointer-events', 'none')
 
-      reserved.associatedElement.tels.icon = reserved.associatedElement.g.append('g')
-        .attr('transform', 'translate(' + (reserved.associatedElement.box.w * 0.8) + ',' + (reserved.associatedElement.box.h * 0.7) + ')')
-      reserved.associatedElement.tels.icon.append('rect')
+      reserved.associatedElement.tels.icon = reserved.associatedElement.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            reserved.associatedElement.box.w * 0.8 +
+            ',' +
+            reserved.associatedElement.box.h * 0.7 +
+            ')'
+        )
+      reserved.associatedElement.tels.icon
+        .append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', reserved.associatedElement.box.w * 0.11)
@@ -1334,16 +1461,25 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke-width', 0.2)
         .attr('opacity', 0)
         .on('mouseover', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('opacity', 1)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('opacity', 1)
         })
         .on('mouseout', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('opacity', 0)
         })
-      reserved.associatedElement.tels.icon.append('svg:image')
+      reserved.associatedElement.tels.icon
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/telescope.svg')
         .attr('width', reserved.associatedElement.box.w * 0.1)
         .attr('height', reserved.associatedElement.box.w * 0.09)
-        .attr('x', reserved.associatedElement.box.w * 0.00)
+        .attr('x', reserved.associatedElement.box.w * 0.0)
         .attr('y', reserved.associatedElement.box.h * 0.005)
         .style('pointer-events', 'none')
       // reserved.associatedElement.tels.icon.append('text')
@@ -1356,7 +1492,14 @@ let mainCommentNightSched = function (optIn) {
     }
 
     function initLogInfo () {
-      reserved.logInfo.g.attr('transform', 'translate(' + reserved.logInfo.box.x + ',' + reserved.logInfo.box.y + ')')
+      reserved.logInfo.g.attr(
+        'transform',
+        'translate(' +
+          reserved.logInfo.box.x +
+          ',' +
+          reserved.logInfo.box.y +
+          ')'
+      )
 
       function initScrollBox () {
         reserved.logInfo.scroll = {}
@@ -1368,14 +1511,20 @@ let mainCommentNightSched = function (optIn) {
           h: reserved.logInfo.box.h * 0.88
         }
 
-        reserved.logInfo.scroll.scrollBoxG.append('rect')
+        reserved.logInfo.scroll.scrollBoxG
+          .append('rect')
           .attr('x', box.x - 1)
           .attr('y', box.y - 1)
           .attr('width', box.w + 2)
           .attr('height', box.h + 2)
           .attr('fill', 'none')
           .attr('stroke', colorTheme.dark.stroke)
-          .attr('stroke-dasharray', [box.w + 2 + 2, box.h - 2, box.w + 2 + 2 + 2, box.h - 2])
+          .attr('stroke-dasharray', [
+            box.w + 2 + 2,
+            box.h - 2,
+            box.w + 2 + 2 + 2,
+            box.h - 2
+          ])
           .attr('stroke-width', 0.6)
 
         reserved.logInfo.scroll.scrollBox = new ScrollBox()
@@ -1397,17 +1546,19 @@ let mainCommentNightSched = function (optIn) {
             during: 'logInfoBox' + 'zoomDuring',
             end: 'logInfoBox' + 'zoomEnd'
           },
-          runLoop: new RunLoop({tag: 'logInfoScrollBox'}),
+          runLoop: new RunLoop({ tag: 'logInfoScrollBox' }),
           canScroll: true,
           scrollVertical: true,
           scrollHorizontal: false,
           scrollHeight: 0,
           scrollWidth: 0,
           background: 'transparent',
-          scrollRecH: {h: 0},
-          scrollRecV: {w: 0}
+          scrollRecH: { h: 0 },
+          scrollRecV: { w: 0 }
         })
-        reserved.logInfo.scroll.scrollG = reserved.logInfo.scroll.scrollBox.get('innerG')
+        reserved.logInfo.scroll.scrollG = reserved.logInfo.scroll.scrollBox.get(
+          'innerG'
+        )
       }
 
       // reserved.logInfo.g.append('rect')
@@ -1425,9 +1576,10 @@ let mainCommentNightSched = function (optIn) {
       //   .on('mouseout', function () {
       //     // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
       //   })
-      reserved.logInfo.g.append('text')
+      reserved.logInfo.g
+        .append('text')
         .text('Log information')
-        .attr('x', (reserved.logInfo.box.w * 0.5))
+        .attr('x', reserved.logInfo.box.w * 0.5)
         .attr('y', 10)
         .style('fill', colorTheme.medium.text)
         .style('font-weight', '')
@@ -1439,14 +1591,15 @@ let mainCommentNightSched = function (optIn) {
       function wrap (self, width) {
         let textLength = self.node().getComputedTextLength()
         let text = self.text()
-        while (textLength > (width) && text.length > 0) {
+        while (textLength > width && text.length > 0) {
           text = text.slice(0, -1)
           self.text(text)
           textLength = self.node().getComputedTextLength()
         }
       }
 
-      reserved.logInfo.g.select('text')
+      reserved.logInfo.g
+        .select('text')
         .text('Log information: ' + log.info.length)
 
       let ib = {
@@ -1470,7 +1623,8 @@ let mainCommentNightSched = function (optIn) {
           return 'translate(' + tx + ',' + ty + ')'
         })
 
-        g.append('rect')
+        g
+          .append('rect')
           .attr('x', 1)
           .attr('y', 1)
           .attr('width', ib.w - 2)
@@ -1478,7 +1632,8 @@ let mainCommentNightSched = function (optIn) {
           .attr('fill', colorTheme.medium.background)
           .attr('stroke', colorTheme.medium.stroke)
           .attr('stroke-width', 0.4)
-        g.append('text')
+        g
+          .append('text')
           .text('Action: ' + d.action)
           .attr('x', reserved.logInfo.box.w * 0.05)
           .attr('y', ib.h * 0.25)
@@ -1486,7 +1641,8 @@ let mainCommentNightSched = function (optIn) {
           .style('font-weight', '')
           .style('font-size', '8px')
           .attr('text-anchor', 'start')
-        g.append('text')
+        g
+          .append('text')
           .text('By: ' + d.author)
           .attr('x', reserved.logInfo.box.w * 0.12)
           .attr('y', ib.h * 0.5)
@@ -1494,7 +1650,8 @@ let mainCommentNightSched = function (optIn) {
           .style('font-weight', '')
           .style('font-size', '8px')
           .attr('text-anchor', 'start')
-        g.append('text')
+        g
+          .append('text')
           .text('On: ' + d.date)
           .attr('x', reserved.logInfo.box.w * 0.12)
           .attr('y', ib.h * 0.75)
@@ -1521,17 +1678,35 @@ let mainCommentNightSched = function (optIn) {
         .style('opacity', 0)
         .remove()
 
-      reserved.logInfo.scroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: log.info.length * reserved.logInfo.box.h * 0.31})
+      reserved.logInfo.scroll.scrollBox.resetVerticalScroller({
+        canScroll: true,
+        scrollHeight: log.info.length * reserved.logInfo.box.h * 0.31
+      })
     }
 
     function initLogFields () {
-      reserved.logFields.g.attr('transform', 'translate(' + reserved.logFields.box.x + ',' + reserved.logFields.box.y + ')')
+      reserved.logFields.g.attr(
+        'transform',
+        'translate(' +
+          reserved.logFields.box.x +
+          ',' +
+          reserved.logFields.box.y +
+          ')'
+      )
 
       function initTitle () {
         reserved.logFields.title.g = reserved.logFields.g.append('g')
-        reserved.logFields.title.g.attr('transform', 'translate(' + reserved.logFields.title.box.x + ',' + reserved.logFields.title.box.y + ')')
+        reserved.logFields.title.g.attr(
+          'transform',
+          'translate(' +
+            reserved.logFields.title.box.x +
+            ',' +
+            reserved.logFields.title.box.y +
+            ')'
+        )
 
-        reserved.logFields.title.g.append('rect')
+        reserved.logFields.title.g
+          .append('rect')
           .attr('x', reserved.logFields.title.box.w * 0.025)
           .attr('y', reserved.logFields.title.box.h * 0.25)
           .attr('width', reserved.logFields.title.box.w * 0.95)
@@ -1546,9 +1721,10 @@ let mainCommentNightSched = function (optIn) {
           .on('mouseout', function () {
             // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
           })
-        reserved.logFields.title.g.append('text')
+        reserved.logFields.title.g
+          .append('text')
           .text('Log ID')
-          .attr('x', (reserved.logFields.title.box.w * 0.5))
+          .attr('x', reserved.logFields.title.box.w * 0.5)
           .attr('y', reserved.logFields.title.box.h * 0.65)
           .style('fill', colorTheme.medium.text)
           .style('font-weight', '')
@@ -1583,9 +1759,17 @@ let mainCommentNightSched = function (optIn) {
 
       function initHeader () {
         reserved.logFields.header.g = reserved.logFields.g.append('g')
-        reserved.logFields.header.g.attr('transform', 'translate(' + reserved.logFields.header.box.x + ',' + reserved.logFields.header.box.y + ')')
+        reserved.logFields.header.g.attr(
+          'transform',
+          'translate(' +
+            reserved.logFields.header.box.x +
+            ',' +
+            reserved.logFields.header.box.y +
+            ')'
+        )
 
-        reserved.logFields.header.g.append('rect')
+        reserved.logFields.header.g
+          .append('rect')
           .attr('x', reserved.logFields.header.box.w * 0.1)
           .attr('y', 10)
           .attr('width', reserved.logFields.header.box.w * 0.8)
@@ -1600,7 +1784,8 @@ let mainCommentNightSched = function (optIn) {
           .on('mouseout', function () {
             // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
           })
-        reserved.logFields.header.g.append('text')
+        reserved.logFields.header.g
+          .append('text')
           .attr('id', 'title')
           .text('Title')
           .attr('x', reserved.logFields.header.box.w * 0.15)
@@ -1610,7 +1795,8 @@ let mainCommentNightSched = function (optIn) {
           .style('font-size', '9px')
           .attr('text-anchor', 'start')
 
-        reserved.logFields.header.g.append('rect')
+        reserved.logFields.header.g
+          .append('rect')
           .attr('x', reserved.logFields.header.box.w * 0.1)
           .attr('y', 10 + 20)
           .attr('width', reserved.logFields.header.box.w * 0.8)
@@ -1625,7 +1811,8 @@ let mainCommentNightSched = function (optIn) {
           .on('mouseout', function () {
             // d3.select(this).transition().duration(timeD.animArc).attr('opacity', 0)
           })
-        reserved.logFields.header.g.append('text')
+        reserved.logFields.header.g
+          .append('text')
           .attr('id', 'category')
           .text('Categories')
           .attr('x', reserved.logFields.header.box.w * 0.15)
@@ -1639,19 +1826,29 @@ let mainCommentNightSched = function (optIn) {
 
       function initText () {
         reserved.logFields.text.g = reserved.logFields.g.append('g')
-        reserved.logFields.text.g.attr('transform', 'translate(' + reserved.logFields.text.box.x + ',' + reserved.logFields.text.box.y + ')')
+        reserved.logFields.text.g.attr(
+          'transform',
+          'translate(' +
+            reserved.logFields.text.box.x +
+            ',' +
+            reserved.logFields.text.box.y +
+            ')'
+        )
 
-        let fo = reserved.logFields.text.g.append('foreignObject')
+        let fo = reserved.logFields.text.g
+          .append('foreignObject')
           .attr('x', reserved.logFields.text.box.w * 0.05)
           .attr('y', 10)
           .attr('width', reserved.logFields.text.box.w * 0.9)
           .attr('height', reserved.logFields.text.box.h - 15)
-        let rootDiv = fo.append('xhtml:div')
+        let rootDiv = fo
+          .append('xhtml:div')
           .style('display', 'block')
           .style('border', 'none')
           .style('width', '100%')
           .style('height', '100%')
-        rootDiv.append('textArea')
+        rootDiv
+          .append('textArea')
           .style('width', '100%')
           .style('height', '100%')
           .style('font-size', '9px')
@@ -1688,14 +1885,10 @@ let mainCommentNightSched = function (optIn) {
       initText()
     }
     function updateLogFields (log) {
-      reserved.logFields.title.g.select('text')
-        .text(log.id)
-      reserved.logFields.header.g.select('#title')
-        .text(log.name)
-      reserved.logFields.header.g.select('#category')
-        .text(log.categories[0])
-      reserved.logFields.text.g.select('textArea')
-        .text(log.description)
+      reserved.logFields.title.g.select('text').text(log.id)
+      reserved.logFields.header.g.select('#title').text(log.name)
+      reserved.logFields.header.g.select('#category').text(log.categories[0])
+      reserved.logFields.text.g.select('textArea').text(log.description)
     }
 
     function initLogHistory () {
@@ -1774,8 +1967,17 @@ let mainCommentNightSched = function (optIn) {
         let filtered = []
         for (let i = 0; i < shared.data.server.logs.length; i++) {
           let insert = true
-          for (let j = 0; j < reserved.logHistory.filtering.filters.length; j++) {
-            if (!checkFilter(reserved.logHistory.filtering.filters[j], shared.data.server.logs[i])) insert = false
+          for (
+            let j = 0;
+            j < reserved.logHistory.filtering.filters.length;
+            j++
+          ) {
+            if (
+              !checkFilter(
+                reserved.logHistory.filtering.filters[j],
+                shared.data.server.logs[i]
+              )
+            ) { insert = false }
           }
           if (insert) filtered.push(shared.data.server.logs[i])
         }
@@ -1798,7 +2000,8 @@ let mainCommentNightSched = function (optIn) {
             return 'translate(' + tx + ',' + ty + ')'
           })
 
-          g.append('rect')
+          g
+            .append('rect')
             .attr('x', function (d) {
               return ib.x + ib.w * 0.05
             })
@@ -1815,64 +2018,77 @@ let mainCommentNightSched = function (optIn) {
               return colorTheme.darker.background
             })
             .attr('stroke', 'none')
-          let back = g.append('rect')
-            .attr('width', (ib.w * 0.65) + 'px')
+          let back = g
+            .append('rect')
+            .attr('width', ib.w * 0.65 + 'px')
             .attr('height', ib.h + 'px')
-            .attr('x', (ib.x + ib.w * 0.15) + 'px')
+            .attr('x', ib.x + ib.w * 0.15 + 'px')
             .attr('y', ib.y + 'px')
             .attr('fill', 'none')
             .attr('stroke', colorTheme.dark.stroke)
             .attr('stroke-width', 0.2)
-          let buttonDel = g.append('rect')
+          let buttonDel = g
+            .append('rect')
             .attr('x', ib.x + ib.w * 0.8)
             .attr('y', ib.y)
             .attr('width', ib.w * 0.1)
             .attr('height', ib.h)
             .attr('fill', 'transparent')
             .attr('stroke', 'none')
-            .on('mouseover', function () { buttonDel.attr('fill', colorTheme.darker.background) })
-            .on('mouseout', function () { buttonDel.attr('fill', 'transparent') })
+            .on('mouseover', function () {
+              buttonDel.attr('fill', colorTheme.darker.background)
+            })
+            .on('mouseout', function () {
+              buttonDel.attr('fill', 'transparent')
+            })
             .on('click', function () {
               removeFilter(d)
               updateFilters()
               updateLogList()
             })
-          g.append('text')
+          g
+            .append('text')
             .text('x')
             .attr('x', ib.x + ib.w * 0.85)
             .attr('y', ib.y + ib.h * 0.7)
-            .style('font-size', (ib.h * 0.8) + 'px')
+            .style('font-size', ib.h * 0.8 + 'px')
             .style('font-weight', 'bold')
             .attr('text-anchor', 'middle')
             .style('pointer-events', 'none')
             .style('user-select', 'none')
 
           let str = d.split(':')
-          let textLeft = g.append('text').append('tspan')
+          let textLeft = g
+            .append('text')
+            .append('tspan')
             .text(str[0])
-            .attr('x', ((ib.x + ib.w * 0.15) + ib.w * 0.3) + 'px')
+            .attr('x', ib.x + ib.w * 0.15 + ib.w * 0.3 + 'px')
             .attr('y', ib.y + ib.h * 0.75)
-            .style('font-size', (ib.h * 0.8) + 'px')
+            .style('font-size', ib.h * 0.8 + 'px')
             .style('pointer-events', 'none')
             .attr('text-anchor', 'end')
             .each(function () {
               wrap(d3.select(this), ib.w * 0.3)
             })
-          let textMiddle = g.append('text').append('tspan')
+          let textMiddle = g
+            .append('text')
+            .append('tspan')
             .text(':')
-            .attr('x', ((ib.x + ib.w * 0.15) + ib.w * 0.325) + 'px')
+            .attr('x', ib.x + ib.w * 0.15 + ib.w * 0.325 + 'px')
             .attr('y', ib.y + ib.h * 0.75)
-            .style('font-size', (ib.h * 0.8) + 'px')
+            .style('font-size', ib.h * 0.8 + 'px')
             .style('pointer-events', 'none')
             .attr('text-anchor', 'middle')
             .each(function () {
               wrap(d3.select(this), ib.w * 0.05)
             })
-          let textRight = g.append('text').append('tspan')
+          let textRight = g
+            .append('text')
+            .append('tspan')
             .text(str[1])
-            .attr('x', ((ib.x + ib.w * 0.15) + ib.w * 0.35) + 'px')
+            .attr('x', ib.x + ib.w * 0.15 + ib.w * 0.35 + 'px')
             .attr('y', ib.y + ib.h * 0.75)
-            .style('font-size', (ib.h * 0.8) + 'px')
+            .style('font-size', ib.h * 0.8 + 'px')
             .style('pointer-events', 'none')
             .attr('text-anchor', 'start')
             .each(function () {
@@ -1882,7 +2098,7 @@ let mainCommentNightSched = function (optIn) {
           function wrap (self, width) {
             let textLength = self.node().getComputedTextLength()
             let text = self.text()
-            while (textLength > (width) && text.length > 0) {
+            while (textLength > width && text.length > 0) {
               text = text.slice(0, -1)
               self.text(text)
               textLength = self.node().getComputedTextLength()
@@ -1911,7 +2127,10 @@ let mainCommentNightSched = function (optIn) {
         reserved.logHistory.filtering.filters.push(f)
       }
       function removeFilter (f) {
-        reserved.logHistory.filtering.filters.splice(reserved.logHistory.filtering.filters.indexOf(f), 1)
+        reserved.logHistory.filtering.filters.splice(
+          reserved.logHistory.filtering.filters.indexOf(f),
+          1
+        )
       }
       function createLogFilter () {
         function createDataList (object) {
@@ -1919,18 +2138,22 @@ let mainCommentNightSched = function (optIn) {
           function rec (object, string) {
             for (var key in object) {
               let cpString = string + '.' + key
-              if (typeof object[key] === 'string' || object[key] instanceof String) dl.push({key: cpString, action: object[key]})
-              else {
-                dl.push({key: cpString, action: 'none'})
+              if (
+                typeof object[key] === 'string' ||
+                object[key] instanceof String
+              ) { dl.push({ key: cpString, action: object[key] }) } else {
+                dl.push({ key: cpString, action: 'none' })
                 rec(object[key], cpString)
               }
             }
           }
           for (var key in object) {
             let cpString = '' + key
-            if (typeof object[key] === 'string' || object[key] instanceof String) dl.push({key: cpString, action: object[key]})
-            else {
-              dl.push({key: cpString, action: 'none'})
+            if (
+              typeof object[key] === 'string' ||
+              object[key] instanceof String
+            ) { dl.push({ key: cpString, action: object[key] }) } else {
+              dl.push({ key: cpString, action: 'none' })
               rec(object[key], cpString)
             }
           }
@@ -1947,21 +2170,24 @@ let mainCommentNightSched = function (optIn) {
           let ty = 0
           return 'translate(' + tx + ',' + ty + ')'
         })
-        let back = g.append('rect')
-          .attr('width', (ib.w * 0.95) + 'px')
+        let back = g
+          .append('rect')
+          .attr('width', ib.w * 0.95 + 'px')
           .attr('height', ib.h + 'px')
-          .attr('x', (ib.x + ib.w * 0.05) + 'px')
+          .attr('x', ib.x + ib.w * 0.05 + 'px')
           .attr('y', ib.y + 'px')
           .attr('fill', 'none')
           .attr('stroke', colorTheme.dark.stroke)
           .attr('stroke-width', 0.2)
 
-        let fo = g.append('foreignObject')
-          .attr('width', (ib.w * 0.95) + 'px')
+        let fo = g
+          .append('foreignObject')
+          .attr('width', ib.w * 0.95 + 'px')
           .attr('height', ib.h + 'px')
-          .attr('x', (ib.x + ib.w * 0.05) + 'px')
+          .attr('x', ib.x + ib.w * 0.05 + 'px')
           .attr('y', ib.y + 'px')
-        let rootDiv = fo.append('xhtml:div')
+        let rootDiv = fo
+          .append('xhtml:div')
           .style('display', 'block')
           .style('border', 'none')
           .style('background-color', 'transparent')
@@ -1969,14 +2195,17 @@ let mainCommentNightSched = function (optIn) {
           .style('height', '100%')
 
         let dl = createDataList(filterTemplate)
-        let datalist = rootDiv.append('datalist')
-          .attr('id', 'datalist')
-        datalist.selectAll('option')
+        let datalist = rootDiv.append('datalist').attr('id', 'datalist')
+        datalist
+          .selectAll('option')
           .data(dl)
           .enter()
           .append('option')
-          .property('value', function (d) { return d.key })
-        let input = rootDiv.append('input')
+          .property('value', function (d) {
+            return d.key
+          })
+        let input = rootDiv
+          .append('input')
           .attr('list', 'datalist')
           .property('value', function (d) {
             return d
@@ -1989,20 +2218,18 @@ let mainCommentNightSched = function (optIn) {
           .style('border', 'none')
           .style('background', 'transparent')
           .style('color', colorTheme.dark.text)
-          .style('font-size', (ib.h * 0.8) + 'px')
+          .style('font-size', ib.h * 0.8 + 'px')
           .style('text-align', 'left')
           .attr('type', 'list')
 
         input.on('focus', function () {
-          back
-            .attr('fill', colorTheme.bright.background)
-            // .attr('stroke', 'none')
+          back.attr('fill', colorTheme.bright.background)
+          // .attr('stroke', 'none')
           input.style('outline', 'none')
         })
         input.on('blur', function () {
-          back
-            .attr('fill', 'none')
-            // .attr('stroke', colorTheme.dark.stroke)
+          back.attr('fill', 'none')
+          // .attr('stroke', colorTheme.dark.stroke)
           input.style('outline', 'none')
         })
         input.on('input', function () {
@@ -2030,26 +2257,34 @@ let mainCommentNightSched = function (optIn) {
           }
         })
 
-        let button = g.append('rect')
+        let button = g
+          .append('rect')
           .attr('x', ib.x + ib.w * 0.9)
           .attr('y', ib.y)
           .attr('width', ib.h)
           .attr('height', ib.h)
           .attr('fill', 'transparent')
-          .on('mouseover', function () { button.attr('fill', colorTheme.darker.background) })
-          .on('mouseout', function () { button.attr('fill', 'transparent') })
-        g.append('text')
+          .on('mouseover', function () {
+            button.attr('fill', colorTheme.darker.background)
+          })
+          .on('mouseout', function () {
+            button.attr('fill', 'transparent')
+          })
+        g
+          .append('text')
           .text('?')
           .attr('x', ib.x + ib.w - ib.h * 0.5)
           .attr('y', ib.y + ib.h * 0.8)
-          .style('font-size', (ib.h * 0.8) + 'px')
+          .style('font-size', ib.h * 0.8 + 'px')
           .attr('text-anchor', 'middle')
           .style('pointer-events', 'none')
           .style('user-select', 'none')
 
         function initScrollBox () {
           reserved.logHistory.filtering.scroll = {}
-          reserved.logHistory.filtering.scroll.scrollBoxG = reserved.logHistory.filtering.g.append('g')
+          reserved.logHistory.filtering.scroll.scrollBoxG = reserved.logHistory.filtering.g.append(
+            'g'
+          )
           let historyBox = {
             x: b.x,
             y: ob.h * 1.2,
@@ -2085,17 +2320,19 @@ let mainCommentNightSched = function (optIn) {
               during: 'ScrollFilteringBox' + 'zoomDuring',
               end: 'ScrollFilteringBox' + 'zoomEnd'
             },
-            runLoop: new RunLoop({tag: 'inputHistoryFilteringScrollBox'}),
+            runLoop: new RunLoop({ tag: 'inputHistoryFilteringScrollBox' }),
             canScroll: true,
             scrollVertical: true,
             scrollHorizontal: false,
             scrollHeight: ob.h * reserved.logHistory.filtering.filters.length,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 1},
-            scrollRecV: {w: 1}
+            scrollRecH: { h: 1 },
+            scrollRecV: { w: 1 }
           })
-          reserved.logHistory.filtering.scroll.scrollG = reserved.logHistory.filtering.scroll.scrollBox.get('innerG')
+          reserved.logHistory.filtering.scroll.scrollG = reserved.logHistory.filtering.scroll.scrollBox.get(
+            'innerG'
+          )
         }
         initScrollBox()
         updateFilters()
@@ -2107,7 +2344,9 @@ let mainCommentNightSched = function (optIn) {
         function initScrollBox () {
           reserved.logHistory.list.scroll = {}
           reserved.logHistory.list.g = reserved.logHistory.g.append('g')
-          reserved.logHistory.list.scroll.scrollBoxG = reserved.logHistory.list.g.append('g')
+          reserved.logHistory.list.scroll.scrollBoxG = reserved.logHistory.list.g.append(
+            'g'
+          )
           let historyBox = lb
           // reserved.logHistory.list.scroll.scrollBoxG.append('rect')
           //   .attr('x', historyBox.x)
@@ -2138,23 +2377,25 @@ let mainCommentNightSched = function (optIn) {
               during: 'ScrollBox' + 'zoomDuring',
               end: 'ScrollBox' + 'zoomEnd'
             },
-            runLoop: new RunLoop({tag: 'inputHistoryScrollBox'}),
+            runLoop: new RunLoop({ tag: 'inputHistoryScrollBox' }),
             canScroll: true,
             scrollVertical: true,
             scrollHorizontal: false,
             scrollHeight: 0.1 + historyBox.h,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 2},
-            scrollRecV: {w: 2}
+            scrollRecH: { h: 2 },
+            scrollRecV: { w: 2 }
           })
-          reserved.logHistory.list.scroll.scrollG = reserved.logHistory.list.scroll.scrollBox.get('innerG')
+          reserved.logHistory.list.scroll.scrollG = reserved.logHistory.list.scroll.scrollBox.get(
+            'innerG'
+          )
         }
         initScrollBox()
         function wrap (self, width) {
           let textLength = self.node().getComputedTextLength()
           let text = self.text()
-          while (textLength > (width) && text.length > 0) {
+          while (textLength > width && text.length > 0) {
             text = text.slice(0, -1)
             self.text(text)
             textLength = self.node().getComputedTextLength()
@@ -2179,27 +2420,50 @@ let mainCommentNightSched = function (optIn) {
             let ty = i * ob.h
             return 'translate(' + tx + ',' + ty + ')'
           })
-          g.append('rect')
+          g
+            .append('rect')
             .attr('width', ob.w + 'px')
             .attr('height', ob.h + 'px')
             .attr('x', 0 + 'px')
             .attr('y', 0 + 'px')
-            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+            .attr(
+              'fill',
+              i % 2 === 0
+                ? colorTheme.dark.background
+                : colorTheme.medium.background
+            )
             .attr('stroke', colorTheme.dark.stroke)
             .attr('stroke-width', 0.0)
             .on('mouseover', function () {
               d3.select(this).attr('fill', colorTheme.darker.background)
-              g.selectAll('tspan').style('fill', '#000000').style('font-size', '9px')
+              g
+                .selectAll('tspan')
+                .style('fill', '#000000')
+                .style('font-size', '9px')
             })
             .on('mouseout', function () {
-              d3.select(this).attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
-              g.selectAll('tspan').style('fill', colorTheme.medium.text).style('font-size', '8px')
+              d3
+                .select(this)
+                .attr(
+                  'fill',
+                  i % 2 === 0
+                    ? colorTheme.dark.background
+                    : colorTheme.medium.background
+                )
+              g
+                .selectAll('tspan')
+                .style('fill', colorTheme.medium.text)
+                .style('font-size', '8px')
             })
             .on('click', function () {
               updateLog(d)
             })
-          g.append('text').append('tspan')
-            .text(function (d) { return d.id })
+          g
+            .append('text')
+            .append('tspan')
+            .text(function (d) {
+              return d.id
+            })
             .attr('x', ib.w * 0.025)
             .attr('y', ib.h * 0.9)
             .style('fill', colorTheme.medium.text)
@@ -2210,8 +2474,12 @@ let mainCommentNightSched = function (optIn) {
             .each(function () {
               wrap(d3.select(this), ib.w * 0.45)
             })
-          g.append('text').append('tspan')
-            .text(function (d) { return d.info[0].date })
+          g
+            .append('text')
+            .append('tspan')
+            .text(function (d) {
+              return d.info[0].date
+            })
             .attr('x', ib.w * 0.9)
             .attr('y', ib.h * 0.9)
             .style('fill', colorTheme.medium.text)
@@ -2298,13 +2566,16 @@ let mainCommentNightSched = function (optIn) {
         //   .style('opacity', 0)
         //   .remove()
 
-        reserved.logHistory.list.scroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: fl.length * ob.h})
+        reserved.logHistory.list.scroll.scrollBox.resetVerticalScroller({
+          canScroll: true,
+          scrollHeight: fl.length * ob.h
+        })
       }
       function updateLogList () {
         function wrap (self, width) {
           let textLength = self.node().getComputedTextLength()
           let text = self.text()
-          while (textLength > (width) && text.length > 0) {
+          while (textLength > width && text.length > 0) {
             text = text.slice(0, -1)
             self.text(text)
             textLength = self.node().getComputedTextLength()
@@ -2328,24 +2599,47 @@ let mainCommentNightSched = function (optIn) {
             let ty = i * ob.h
             return 'translate(' + tx + ',' + ty + ')'
           })
-          g.append('rect')
+          g
+            .append('rect')
             .attr('width', ob.w + 'px')
             .attr('height', ob.h + 'px')
             .attr('x', 0 + 'px')
             .attr('y', 0 + 'px')
-            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+            .attr(
+              'fill',
+              i % 2 === 0
+                ? colorTheme.dark.background
+                : colorTheme.medium.background
+            )
             .attr('stroke', colorTheme.dark.stroke)
             .attr('stroke-width', 0.0)
             .on('mouseover', function () {
               d3.select(this).attr('fill', colorTheme.darker.background)
-              g.selectAll('tspan').style('fill', '#000000').style('font-size', '9px')
+              g
+                .selectAll('tspan')
+                .style('fill', '#000000')
+                .style('font-size', '9px')
             })
             .on('mouseout', function () {
-              d3.select(this).attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
-              g.selectAll('tspan').style('fill', colorTheme.medium.text).style('font-size', '8px')
+              d3
+                .select(this)
+                .attr(
+                  'fill',
+                  i % 2 === 0
+                    ? colorTheme.dark.background
+                    : colorTheme.medium.background
+                )
+              g
+                .selectAll('tspan')
+                .style('fill', colorTheme.medium.text)
+                .style('font-size', '8px')
             })
-          g.append('text').append('tspan')
-            .text(function (d) { return d.id })
+          g
+            .append('text')
+            .append('tspan')
+            .text(function (d) {
+              return d.id
+            })
             .attr('x', ib.w * 0.025)
             .attr('y', ib.h * 0.9)
             .style('fill', colorTheme.medium.text)
@@ -2356,8 +2650,12 @@ let mainCommentNightSched = function (optIn) {
             .each(function () {
               wrap(d3.select(this), ib.w * 0.45)
             })
-          g.append('text').append('tspan')
-            .text(function (d) { return d.info[0].date })
+          g
+            .append('text')
+            .append('tspan')
+            .text(function (d) {
+              return d.info[0].date
+            })
             .attr('x', ib.w * 0.9)
             .attr('y', ib.h * 0.9)
             .style('fill', colorTheme.medium.text)
@@ -2378,16 +2676,35 @@ let mainCommentNightSched = function (optIn) {
             let ty = i * ob.h
             return 'translate(' + tx + ',' + ty + ')'
           })
-          g.select('rect')
-            .attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
+          g
+            .select('rect')
+            .attr(
+              'fill',
+              i % 2 === 0
+                ? colorTheme.dark.background
+                : colorTheme.medium.background
+            )
             .attr('stroke', colorTheme.dark.stroke)
             .on('mouseover', function () {
               d3.select(this).attr('fill', colorTheme.darker.background)
-              g.selectAll('tspan').style('fill', '#000000').style('font-size', '9px')
+              g
+                .selectAll('tspan')
+                .style('fill', '#000000')
+                .style('font-size', '9px')
             })
             .on('mouseout', function () {
-              d3.select(this).attr('fill', i % 2 === 0 ? colorTheme.dark.background : colorTheme.medium.background)
-              g.selectAll('tspan').style('fill', colorTheme.medium.text).style('font-size', '8px')
+              d3
+                .select(this)
+                .attr(
+                  'fill',
+                  i % 2 === 0
+                    ? colorTheme.dark.background
+                    : colorTheme.medium.background
+                )
+              g
+                .selectAll('tspan')
+                .style('fill', colorTheme.medium.text)
+                .style('font-size', '8px')
             })
         })
 
@@ -2398,10 +2715,20 @@ let mainCommentNightSched = function (optIn) {
           .style('opacity', 0)
           .remove()
 
-        reserved.logHistory.list.scroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: fl.length * ob.h})
+        reserved.logHistory.list.scroll.scrollBox.resetVerticalScroller({
+          canScroll: true,
+          scrollHeight: fl.length * ob.h
+        })
       }
 
-      reserved.logHistory.g.attr('transform', 'translate(' + reserved.logHistory.box.x + ',' + reserved.logHistory.box.y + ')')
+      reserved.logHistory.g.attr(
+        'transform',
+        'translate(' +
+          reserved.logHistory.box.x +
+          ',' +
+          reserved.logHistory.box.y +
+          ')'
+      )
 
       createLogFilter()
       createLogList()
@@ -2444,31 +2771,42 @@ let mainCommentNightSched = function (optIn) {
         h: box.log.h,
         marg: box.log.marg
       }
-      reserved.main.g = svg.g.append('g')
-        .attr('transform', 'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')')
-      let lineGenerator = d3.line()
-        .x(function (d) { return d.x })
-        .y(function (d) { return d.y })
+      reserved.main.g = svg.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')'
+        )
+      let lineGenerator = d3
+        .line()
+        .x(function (d) {
+          return d.x
+        })
+        .y(function (d) {
+          return d.y
+        })
         .curve(d3.curveLinear)
       let depth = 3
       let dataPointFuturTop = [
-        {x: 0, y: 0},
-        {x: -depth, y: depth},
-        {x: -depth, y: reserved.main.box.h + depth},
-        {x: reserved.main.box.w - depth, y: reserved.main.box.h + depth},
-        {x: reserved.main.box.w + 0, y: reserved.main.box.h},
-        {x: 0, y: reserved.main.box.h},
-        {x: -depth, y: reserved.main.box.h + depth},
-        {x: 0, y: reserved.main.box.h},
-        {x: 0, y: 0}
+        { x: 0, y: 0 },
+        { x: -depth, y: depth },
+        { x: -depth, y: reserved.main.box.h + depth },
+        { x: reserved.main.box.w - depth, y: reserved.main.box.h + depth },
+        { x: reserved.main.box.w + 0, y: reserved.main.box.h },
+        { x: 0, y: reserved.main.box.h },
+        { x: -depth, y: reserved.main.box.h + depth },
+        { x: 0, y: reserved.main.box.h },
+        { x: 0, y: 0 }
       ]
-      reserved.main.g.append('path')
+      reserved.main.g
+        .append('path')
         .data([dataPointFuturTop])
         .attr('d', lineGenerator)
         .attr('fill', colorTheme.darker.background)
         .attr('stroke', colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
-      reserved.main.g.append('rect')
+      reserved.main.g
+        .append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', reserved.main.box.w)
@@ -2476,7 +2814,7 @@ let mainCommentNightSched = function (optIn) {
         .attr('fill', colorTheme.medium.background)
         .attr('stroke', colorTheme.medium.stroke)
         .attr('stroke-width', 0.2)
-        // .style('filter', 'url(#drop-shadow)')
+      // .style('filter', 'url(#drop-shadow)')
 
       // let gapUp = [
       //   {x: reserved.main.box.w * 0.256, y: reserved.main.box.h * 0.00},
@@ -2680,42 +3018,92 @@ let mainCommentNightSched = function (optIn) {
     }
 
     function initData () {
-      reserved.main.g = svg.g.append('g')
-        .attr('transform', 'translate(' + box.blockQueueServer.x + ',' + box.blockQueueServer.y + ')')
+      reserved.main.g = svg.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.blockQueueServer.x +
+            ',' +
+            box.blockQueueServer.y +
+            ')'
+        )
 
-      reserved.icon.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.blockQueueServerIcon.x + ',' + box.blockQueueServerIcon.y + ')')
+      reserved.icon.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.blockQueueServerIcon.x +
+            ',' +
+            box.blockQueueServerIcon.y +
+            ')'
+        )
         .attr('opacity', 1)
-      reserved.title.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.blockQueueServerTitle.x + ',' + box.blockQueueServerTitle.y + ')')
-      reserved.filter.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.blockQueueServerFilter.x + ',' + box.blockQueueServerFilter.y + ')')
-      reserved.content.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.blockQueueServerContent.x + ',' + box.blockQueueServerContent.y + ')')
+      reserved.title.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.blockQueueServerTitle.x +
+            ',' +
+            box.blockQueueServerTitle.y +
+            ')'
+        )
+      reserved.filter.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.blockQueueServerFilter.x +
+            ',' +
+            box.blockQueueServerFilter.y +
+            ')'
+        )
+      reserved.content.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.blockQueueServerContent.x +
+            ',' +
+            box.blockQueueServerContent.y +
+            ')'
+        )
 
-      let lineGenerator = d3.line()
-        .x(function (d) { return d.x })
-        .y(function (d) { return d.y })
+      let lineGenerator = d3
+        .line()
+        .x(function (d) {
+          return d.x
+        })
+        .y(function (d) {
+          return d.y
+        })
         .curve(d3.curveLinear)
       let depth = 2
       let dataPointFuturTop = [
-        {x: 0, y: 0},
-        {x: -depth, y: depth},
-        {x: -depth, y: box.blockQueueServerIcon.h + depth},
-        {x: box.blockQueueServerIcon.w - depth, y: box.blockQueueServerIcon.h + depth},
-        {x: box.blockQueueServerIcon.w + 0, y: box.blockQueueServerIcon.h},
-        {x: 0, y: box.blockQueueServerIcon.h},
-        {x: -depth, y: box.blockQueueServerIcon.h + depth},
-        {x: 0, y: box.blockQueueServerIcon.h},
-        {x: 0, y: 0}
+        { x: 0, y: 0 },
+        { x: -depth, y: depth },
+        { x: -depth, y: box.blockQueueServerIcon.h + depth },
+        {
+          x: box.blockQueueServerIcon.w - depth,
+          y: box.blockQueueServerIcon.h + depth
+        },
+        { x: box.blockQueueServerIcon.w + 0, y: box.blockQueueServerIcon.h },
+        { x: 0, y: box.blockQueueServerIcon.h },
+        { x: -depth, y: box.blockQueueServerIcon.h + depth },
+        { x: 0, y: box.blockQueueServerIcon.h },
+        { x: 0, y: 0 }
       ]
-      reserved.icon.g.append('path')
+      reserved.icon.g
+        .append('path')
         .data([dataPointFuturTop])
         .attr('d', lineGenerator)
         .attr('fill', colorTheme.darker.background)
         .attr('stroke', colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
-      reserved.icon.g.append('rect')
+      reserved.icon.g
+        .append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', box.blockQueueServerIcon.w)
@@ -2724,36 +3112,45 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke', colorTheme.bright.stroke)
         .attr('stroke-width', 0.2)
         .on('mouseover', function () {
-          if (reserved.main.mode === 'expand') d3.select(this).attr('fill', colorTheme.bright.background)
-          else d3.select(this).attr('fill', colorTheme.darker.background)
+          if (reserved.main.mode === 'expand') { d3.select(this).attr('fill', colorTheme.bright.background) } else d3.select(this).attr('fill', colorTheme.darker.background)
         })
         .on('mouseout', function () {
-          if (reserved.main.mode === 'expand') d3.select(this).attr('fill', colorTheme.darker.background)
-          else d3.select(this).attr('fill', colorTheme.bright.background)
+          if (reserved.main.mode === 'expand') { d3.select(this).attr('fill', colorTheme.darker.background) } else d3.select(this).attr('fill', colorTheme.bright.background)
         })
         .on('click', function () {
           let dataPointFuturTop = [
-            {x: -4, y: 4},
-            {x: -5, y: 5},
-            {x: -5, y: box.blockQueueServerIcon.h + 5},
-            {x: box.blockQueueServerIcon.w - 5, y: box.blockQueueServerIcon.h + 5},
-            {x: box.blockQueueServerIcon.w - 4, y: box.blockQueueServerIcon.h + 4},
-            {x: -4, y: box.blockQueueServerIcon.h + 4},
-            {x: -5, y: box.blockQueueServerIcon.h + 5},
-            {x: -4, y: box.blockQueueServerIcon.h + 4},
-            {x: -4, y: 4}
+            { x: -4, y: 4 },
+            { x: -5, y: 5 },
+            { x: -5, y: box.blockQueueServerIcon.h + 5 },
+            {
+              x: box.blockQueueServerIcon.w - 5,
+              y: box.blockQueueServerIcon.h + 5
+            },
+            {
+              x: box.blockQueueServerIcon.w - 4,
+              y: box.blockQueueServerIcon.h + 4
+            },
+            { x: -4, y: box.blockQueueServerIcon.h + 4 },
+            { x: -5, y: box.blockQueueServerIcon.h + 5 },
+            { x: -4, y: box.blockQueueServerIcon.h + 4 },
+            { x: -4, y: 4 }
           ]
-          reserved.icon.g.select('path')
+          reserved.icon.g
+            .select('path')
             .data([dataPointFuturTop])
             .transition()
             .duration(timeD.animArc)
             .attr('d', lineGenerator)
-          reserved.icon.g.select('image')
+          reserved.icon.g
+            .select('image')
             .transition()
             .duration(timeD.animArc)
             .attr('x', box.blockQueueServerIcon.w * 0.2 - 4)
             .attr('y', box.blockQueueServerIcon.h * 0.2 + 4)
-          d3.select(this).transition().duration(timeD.animArc)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
             .attr('x', -4)
             .attr('y', 4)
             .attr('fill', colorTheme.darker.background)
@@ -2762,7 +3159,8 @@ let mainCommentNightSched = function (optIn) {
               drawBlockQueueServer()
             })
         })
-      reserved.icon.g.append('svg:image')
+      reserved.icon.g
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/blocks.svg')
         .attr('width', box.blockQueueServerIcon.w * 0.6)
         .attr('height', box.blockQueueServerIcon.h * 0.6)
@@ -2774,26 +3172,32 @@ let mainCommentNightSched = function (optIn) {
 
     function drawBlockQueueServer () {
       function drawBack () {
-        let lineGenerator = d3.line()
-          .x(function (d) { return d.x })
-          .y(function (d) { return d.y })
+        let lineGenerator = d3
+          .line()
+          .x(function (d) {
+            return d.x
+          })
+          .y(function (d) {
+            return d.y
+          })
           .curve(d3.curveLinear)
         let b = {
           x: box.blockQueueServer.marg,
           y: box.blockQueueServer.marg,
-          w: box.blockQueueServer.w - (2 * box.blockQueueServer.marg),
-          h: box.blockQueueServer.h - (2 * box.blockQueueServer.marg)
+          w: box.blockQueueServer.w - 2 * box.blockQueueServer.marg,
+          h: box.blockQueueServer.h - 2 * box.blockQueueServer.marg
         }
         let dataPointBottom = [
-          {x: b.x + b.w * 0.1, y: b.y},
-          {x: b.x + b.w, y: b.y},
-          {x: b.x + b.w, y: b.y + b.h},
-          {x: b.x, y: b.y + b.h},
-          {x: b.x, y: b.y + b.h * 0.3},
-          {x: b.x + b.w * 0.1, y: b.y + b.h * 0.3},
-          {x: b.x + b.w * 0.1, y: b.y}
+          { x: b.x + b.w * 0.1, y: b.y },
+          { x: b.x + b.w, y: b.y },
+          { x: b.x + b.w, y: b.y + b.h },
+          { x: b.x, y: b.y + b.h },
+          { x: b.x, y: b.y + b.h * 0.3 },
+          { x: b.x + b.w * 0.1, y: b.y + b.h * 0.3 },
+          { x: b.x + b.w * 0.1, y: b.y }
         ]
-        reserved.back.g.append('path')
+        reserved.back.g
+          .append('path')
           .data([dataPointBottom])
           .attr('d', lineGenerator)
           .attr('fill', colorTheme.medium.background)
@@ -2802,21 +3206,22 @@ let mainCommentNightSched = function (optIn) {
 
         let depth = 3
         let dataPointFuturTop = [
-          {x: b.x + b.w * 0.1, y: b.y},
-          {x: b.x + b.w * 0.1 - depth, y: b.y + depth},
-          {x: b.x + b.w * 0.1 - depth, y: b.y + b.h * 0.3},
-          {x: b.x, y: b.y + b.h * 0.3},
-          {x: b.x - depth, y: b.y + b.h * 0.3 + depth},
-          {x: b.x - depth, y: b.y + b.h + depth},
-          {x: b.x + b.w - depth, y: b.y + b.h + depth},
-          {x: b.x + b.w, y: b.y + b.h},
-          {x: b.x, y: b.y + b.h},
-          {x: b.x - depth, y: b.y + b.h + depth},
-          {x: b.x, y: b.y + b.h},
-          {x: b.x, y: b.y + b.h * 0.3},
-          {x: b.x + b.w * 0.1, y: b.y + b.h * 0.3}
+          { x: b.x + b.w * 0.1, y: b.y },
+          { x: b.x + b.w * 0.1 - depth, y: b.y + depth },
+          { x: b.x + b.w * 0.1 - depth, y: b.y + b.h * 0.3 },
+          { x: b.x, y: b.y + b.h * 0.3 },
+          { x: b.x - depth, y: b.y + b.h * 0.3 + depth },
+          { x: b.x - depth, y: b.y + b.h + depth },
+          { x: b.x + b.w - depth, y: b.y + b.h + depth },
+          { x: b.x + b.w, y: b.y + b.h },
+          { x: b.x, y: b.y + b.h },
+          { x: b.x - depth, y: b.y + b.h + depth },
+          { x: b.x, y: b.y + b.h },
+          { x: b.x, y: b.y + b.h * 0.3 },
+          { x: b.x + b.w * 0.1, y: b.y + b.h * 0.3 }
         ]
-        reserved.back.g.append('path')
+        reserved.back.g
+          .append('path')
           .data([dataPointFuturTop])
           .attr('d', lineGenerator)
           .attr('fill', colorTheme.darker.background)
@@ -2824,14 +3229,24 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke-width', 0.2)
       }
       function drawTitle () {
-        reserved.title.g.append('svg:image')
+        reserved.title.g
+          .append('svg:image')
           .attr('xlink:href', '/static/icons/blocks.svg')
           .attr('width', box.blockQueueServerTitle.h * 0.6)
           .attr('height', box.blockQueueServerTitle.h * 0.6)
-          .attr('x', box.blockQueueServerTitle.w * 0.075 - (box.blockQueueServerTitle.h * 0.3))
-          .attr('y', box.blockQueueServerTitle.h * 0.6 - (box.blockQueueServerTitle.h * 0.3))
+          .attr(
+            'x',
+            box.blockQueueServerTitle.w * 0.075 -
+              box.blockQueueServerTitle.h * 0.3
+          )
+          .attr(
+            'y',
+            box.blockQueueServerTitle.h * 0.6 -
+              box.blockQueueServerTitle.h * 0.3
+          )
           .style('pointer-events', 'none')
-        reserved.title.g.append('text')
+        reserved.title.g
+          .append('text')
           .text('Scheduling blocks')
           .attr('x', box.blockQueueServerTitle.w * 0.125)
           .attr('y', box.blockQueueServerTitle.h * 0.7)
@@ -2839,24 +3254,50 @@ let mainCommentNightSched = function (optIn) {
           .style('font-weight', '')
           .style('font-size', '14px')
           .attr('text-anchor', 'start')
-          // .attr('transform', 'translate(' +
-          //   (box.blockQueueServerTitle.x + box.blockQueueServerTitle.w * 0.5) +
-          //   ',' + (box.blockQueueServerTitle.y + box.blockQueueServerTitle.h * 1.0) + ')')
+        // .attr('transform', 'translate(' +
+        //   (box.blockQueueServerTitle.x + box.blockQueueServerTitle.w * 0.5) +
+        //   ',' + (box.blockQueueServerTitle.y + box.blockQueueServerTitle.h * 1.0) + ')')
       }
 
-      reserved.back.g = reserved.main.g.append('g')
+      reserved.back.g = reserved.main.g
+        .append('g')
         .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-      reserved.title.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.blockQueueServerTitle.x + ',' + box.blockQueueServerTitle.y + ')')
-      reserved.filter.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.blockQueueServerFilter.x + ',' + box.blockQueueServerFilter.y + ')')
-      reserved.content.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.blockQueueServerContent.x + ',' + box.blockQueueServerContent.y + ')')
+      reserved.title.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.blockQueueServerTitle.x +
+            ',' +
+            box.blockQueueServerTitle.y +
+            ')'
+        )
+      reserved.filter.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.blockQueueServerFilter.x +
+            ',' +
+            box.blockQueueServerFilter.y +
+            ')'
+        )
+      reserved.content.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.blockQueueServerContent.x +
+            ',' +
+            box.blockQueueServerContent.y +
+            ')'
+        )
 
       drawBack()
       drawTitle()
 
-      reserved.content.g.append('rect')
+      reserved.content.g
+        .append('rect')
         .attr('x', 0 + 1)
         .attr('y', -16)
         .attr('width', 15)
@@ -2865,7 +3306,8 @@ let mainCommentNightSched = function (optIn) {
         .on('click', function () {
           blockQueueServer.changeDisplayer('blockQueue')
         })
-      reserved.content.g.append('svg:image')
+      reserved.content.g
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/blocks-vert-hori.svg')
         .attr('width', 12)
         .attr('height', 12)
@@ -2873,7 +3315,8 @@ let mainCommentNightSched = function (optIn) {
         .attr('y', -16 + 1.5)
         .style('pointer-events', 'none')
 
-      reserved.content.g.append('rect')
+      reserved.content.g
+        .append('rect')
         .attr('x', 20 + 1)
         .attr('y', -16)
         .attr('width', 15)
@@ -2882,7 +3325,8 @@ let mainCommentNightSched = function (optIn) {
         .on('click', function () {
           blockQueueServer.changeDisplayer('blockQueue2')
         })
-      reserved.content.g.append('svg:image')
+      reserved.content.g
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/blocks-diag.svg')
         .attr('width', 12)
         .attr('height', 12)
@@ -2890,7 +3334,8 @@ let mainCommentNightSched = function (optIn) {
         .attr('y', -16 + 1.5)
         .style('pointer-events', 'none')
 
-      reserved.content.g.append('rect')
+      reserved.content.g
+        .append('rect')
         .attr('x', 40 + 1)
         .attr('y', -16)
         .attr('width', 15)
@@ -2899,7 +3344,8 @@ let mainCommentNightSched = function (optIn) {
         .on('click', function () {
           blockQueueServer.changeDisplayer('blockList')
         })
-      reserved.content.g.append('svg:image')
+      reserved.content.g
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/blocks-4.svg')
         .attr('width', 12)
         .attr('height', 12)
@@ -2907,7 +3353,8 @@ let mainCommentNightSched = function (optIn) {
         .attr('y', -16 + 1.5)
         .style('pointer-events', 'none')
 
-      reserved.content.g.append('rect')
+      reserved.content.g
+        .append('rect')
         .attr('x', 60 + 1)
         .attr('y', -16)
         .attr('width', 15)
@@ -2916,7 +3363,8 @@ let mainCommentNightSched = function (optIn) {
         .on('click', function () {
           blockQueueServer.changeDisplayer('blockForm')
         })
-      reserved.content.g.append('svg:image')
+      reserved.content.g
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/list.svg')
         .attr('width', 12)
         .attr('height', 12)
@@ -3013,28 +3461,33 @@ let mainCommentNightSched = function (optIn) {
           tokenFocus: {},
           enabled: {
             g: reserved.filter.g.append('g'),
-            box: {x: 0, y: 0, w: fbox.w * 1, h: fbox.h * 0.15},
+            box: { x: 0, y: 0, w: fbox.w * 1, h: fbox.h * 0.15 },
             scroll: {
               direction: 'vertical'
             }
           },
           disabled: {
             g: reserved.filter.g.append('g'),
-            box: {x: 0, y: 0 + fbox.h * 0.85, w: fbox.w * 1, h: fbox.h * 0.15},
+            box: {
+              x: 0,
+              y: 0 + fbox.h * 0.85,
+              w: fbox.w * 1,
+              h: fbox.h * 0.15
+            },
             scroll: {
               direction: 'vertical'
             }
           },
           content: {
             g: reserved.filter.g.append('g'),
-            box: {x: 0, y: 0 + fbox.h * 0.15, w: fbox.w * 1, h: fbox.h * 0.7},
+            box: { x: 0, y: 0 + fbox.h * 0.15, w: fbox.w * 1, h: fbox.h * 0.7 },
             button: {
               g: undefined
             },
             panel: {
               g: undefined
             }
-          },
+          }
         },
         // title: {
         //   g: reserved.filter.g.append('g'),
@@ -3068,7 +3521,13 @@ let mainCommentNightSched = function (optIn) {
           axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: box.blockQueueServerContent.h, w: box.blockQueueServerContent.w, h: 0, marg: box.blockQueueServerContent.marg},
+            box: {
+              x: 0,
+              y: box.blockQueueServerContent.h,
+              w: box.blockQueueServerContent.w,
+              h: 0,
+              marg: box.blockQueueServerContent.marg
+            },
             axis: undefined,
             scale: undefined,
             domain: [0, 1000],
@@ -3092,7 +3551,13 @@ let mainCommentNightSched = function (optIn) {
             run: {
               enabled: true,
               g: undefined,
-              box: {x: 0, y: box.blockQueueServerContent.h * 0.32, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.68, marg: box.blockQueueServerContent.marg},
+              box: {
+                x: 0,
+                y: box.blockQueueServerContent.h * 0.32,
+                w: box.blockQueueServerContent.w,
+                h: box.blockQueueServerContent.h * 0.68,
+                marg: box.blockQueueServerContent.marg
+              },
               events: {
                 click: () => {},
                 mouseover: () => {},
@@ -3112,7 +3577,13 @@ let mainCommentNightSched = function (optIn) {
             cancel: {
               enabled: true,
               g: undefined,
-              box: {x: 0, y: box.blockQueueServerContent.h * 0.0, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.3, marg: box.blockQueueServerContent.marg},
+              box: {
+                x: 0,
+                y: box.blockQueueServerContent.h * 0.0,
+                w: box.blockQueueServerContent.w,
+                h: box.blockQueueServerContent.h * 0.3,
+                marg: box.blockQueueServerContent.marg
+              },
               events: {
                 click: () => {},
                 mouseover: () => {},
@@ -3132,7 +3603,13 @@ let mainCommentNightSched = function (optIn) {
             modification: {
               enabled: true,
               g: undefined,
-              box: {x: 0, y: box.blockQueueServerContent.h * 0.5, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.47, marg: box.blockQueueServerContent.marg},
+              box: {
+                x: 0,
+                y: box.blockQueueServerContent.h * 0.5,
+                w: box.blockQueueServerContent.w,
+                h: box.blockQueueServerContent.h * 0.47,
+                marg: box.blockQueueServerContent.marg
+              },
               events: {
                 click: () => {},
                 mouseover: () => {},
@@ -3154,7 +3631,13 @@ let mainCommentNightSched = function (optIn) {
           timeBars: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: box.blockQueueServerContent.h * 0.025, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.975, marg: box.blockQueueServerContent.marg}
+            box: {
+              x: 0,
+              y: box.blockQueueServerContent.h * 0.025,
+              w: box.blockQueueServerContent.w,
+              h: box.blockQueueServerContent.h * 0.975,
+              marg: box.blockQueueServerContent.marg
+            }
           }
         },
         blockQueue2: {
@@ -3162,7 +3645,13 @@ let mainCommentNightSched = function (optIn) {
           axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: box.blockQueueServerContent.h, w: box.blockQueueServerContent.w, h: 0, marg: box.blockQueueServerContent.marg},
+            box: {
+              x: 0,
+              y: box.blockQueueServerContent.h,
+              w: box.blockQueueServerContent.w,
+              h: 0,
+              marg: box.blockQueueServerContent.marg
+            },
             axis: undefined,
             scale: undefined,
             domain: [0, 1000],
@@ -3183,7 +3672,13 @@ let mainCommentNightSched = function (optIn) {
           timeBars: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: box.blockQueueServerContent.h * 0.025, w: box.blockQueueServerContent.w, h: box.blockQueueServerContent.h * 0.975, marg: box.blockQueueServerContent.marg}
+            box: {
+              x: 0,
+              y: box.blockQueueServerContent.h * 0.025,
+              w: box.blockQueueServerContent.w,
+              h: box.blockQueueServerContent.h * 0.975,
+              marg: box.blockQueueServerContent.marg
+            }
           }
         },
         blockTrackShrink: {
@@ -3197,7 +3692,13 @@ let mainCommentNightSched = function (optIn) {
           axis: {
             enabled: true,
             g: undefined,
-            box: {x: 0, y: box.blockQueueServerContent.h, w: box.blockQueueServerContent.w, h: 0, marg: box.blockQueueServerContent.marg},
+            box: {
+              x: 0,
+              y: box.blockQueueServerContent.h,
+              w: box.blockQueueServerContent.w,
+              h: 0,
+              marg: box.blockQueueServerContent.marg
+            },
             axis: undefined,
             scale: undefined,
             domain: [0, 1000],
@@ -3219,24 +3720,38 @@ let mainCommentNightSched = function (optIn) {
           timeBars: {
             enabled: false,
             g: undefined,
-            box: {x: 0, y: box.blockQueueServerContent.h, w: box.blockQueueServerContent.w, h: 0, marg: box.blockQueueServerContent.marg},
+            box: {
+              x: 0,
+              y: box.blockQueueServerContent.h,
+              w: box.blockQueueServerContent.w,
+              h: 0,
+              marg: box.blockQueueServerContent.marg
+            }
           }
         },
-        blockList: {
-
-        },
+        blockList: {},
         blockForm: {
           mosaic: {
-            box: {x: 0, y: 0, w: box.blockQueueServerContent.w * 0.2, h: box.blockQueueServerContent.h, marg: box.blockQueueServerContent.marg},
+            box: {
+              x: 0,
+              y: 0,
+              w: box.blockQueueServerContent.w * 0.2,
+              h: box.blockQueueServerContent.h,
+              marg: box.blockQueueServerContent.marg
+            },
             order: 'nSched'
           },
           forms: {
             g: undefined,
-            box: {x: box.blockQueueServerContent.w * 0.22,
+            box: {
+              x: box.blockQueueServerContent.w * 0.22,
               y: box.blockQueueServerContent.h * 0.02,
-              w: box.blockQueueServerContent.w * 0.78 - box.blockQueueServerContent.h * 0.02,
+              w:
+                box.blockQueueServerContent.w * 0.78 -
+                box.blockQueueServerContent.h * 0.02,
               h: box.blockQueueServerContent.h * 0.96,
-              marg: box.blockQueueServerContent.marg},
+              marg: box.blockQueueServerContent.marg
+            },
             display: 'list',
             scroll: {}
           }
@@ -3247,9 +3762,9 @@ let mainCommentNightSched = function (optIn) {
           filtering: []
         },
         time: {
-          currentTime: {time: 0, date: undefined},
-          startTime: {time: 0, date: undefined},
-          endTime: {time: 0, date: undefined}
+          currentTime: { time: 0, date: undefined },
+          startTime: { time: 0, date: undefined },
+          endTime: { time: 0, date: undefined }
         },
         data: {
           raw: undefined,
@@ -3262,9 +3777,15 @@ let mainCommentNightSched = function (optIn) {
         pattern: {},
         events: {
           block: {
-            click: (d) => { console.log(d) },
-            mouseover: (d) => { console.log(d) },
-            mouseout: (d) => { console.log(d) },
+            click: d => {
+              console.log(d)
+            },
+            mouseover: d => {
+              console.log(d)
+            },
+            mouseout: d => {
+              console.log(d)
+            },
             drag: {
               start: () => {},
               tick: () => {},
@@ -3272,14 +3793,20 @@ let mainCommentNightSched = function (optIn) {
             }
           },
           sched: {
-            click: (d) => { console.log(d) },
-            mouseover: (d) => { console.log(d) },
-            mouseout: (d) => { console.log(d) }
+            click: d => {
+              console.log(d)
+            },
+            mouseover: d => {
+              console.log(d)
+            },
+            mouseout: d => {
+              console.log(d)
+            }
           }
         },
         input: {
-          focus: {schedBlocks: undefined, block: undefined},
-          over: {schedBlocks: undefined, block: undefined},
+          focus: { schedBlocks: undefined, block: undefined },
+          over: { schedBlocks: undefined, block: undefined },
           selection: []
         }
       })
@@ -3296,15 +3823,30 @@ let mainCommentNightSched = function (optIn) {
       $.each(shared.data.server.telHealth, function (index, dataNow) {
         telIds.push(dataNow.id)
       })
-      console.log(shared.data.server.timeOfNight);
-      let startTime = {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)}
-      let endTime = {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
-      console.log(startTime);
+      console.log(shared.data.server.timeOfNight)
+      let startTime = {
+        date: new Date(shared.data.server.timeOfNight.date_start),
+        time: Number(shared.data.server.timeOfNight.start)
+      }
+      let endTime = {
+        date: new Date(shared.data.server.timeOfNight.date_end),
+        time: Number(shared.data.server.timeOfNight.end)
+      }
+      console.log(startTime)
       blockQueueServer.updateData({
         time: {
-          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
-          startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
-          endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+          currentTime: {
+            date: new Date(shared.data.server.timeOfNight.date_now),
+            time: Number(shared.data.server.timeOfNight.now)
+          },
+          startTime: {
+            date: new Date(shared.data.server.timeOfNight.date_start),
+            time: Number(shared.data.server.timeOfNight.start)
+          },
+          endTime: {
+            date: new Date(shared.data.server.timeOfNight.date_end),
+            time: Number(shared.data.server.timeOfNight.end)
+          }
         },
         data: {
           raw: {
@@ -3322,9 +3864,18 @@ let mainCommentNightSched = function (optIn) {
       if (reserved.main.mode === 'icon') return
       blockQueueServer.update({
         time: {
-          currentTime: {date: new Date(shared.data.server.timeOfNight.date_now), time: Number(shared.data.server.timeOfNight.now)},
-          startTime: {date: new Date(shared.data.server.timeOfNight.date_start), time: Number(shared.data.server.timeOfNight.start)},
-          endTime: {date: new Date(shared.data.server.timeOfNight.date_end), time: Number(shared.data.server.timeOfNight.end)}
+          currentTime: {
+            date: new Date(shared.data.server.timeOfNight.date_now),
+            time: Number(shared.data.server.timeOfNight.now)
+          },
+          startTime: {
+            date: new Date(shared.data.server.timeOfNight.date_start),
+            time: Number(shared.data.server.timeOfNight.start)
+          },
+          endTime: {
+            date: new Date(shared.data.server.timeOfNight.date_end),
+            time: Number(shared.data.server.timeOfNight.end)
+          }
         }
       })
     }
@@ -3352,46 +3903,96 @@ let mainCommentNightSched = function (optIn) {
         g: undefined
       }
     }
-    // ---------------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------
     function initData () {
-      reserved.main.g = svg.g.append('g')
-        .attr('transform', 'translate(' + box.eventQueueServer.x + ',' + box.eventQueueServer.y + ')')
+      reserved.main.g = svg.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.eventQueueServer.x +
+            ',' +
+            box.eventQueueServer.y +
+            ')'
+        )
 
-      reserved.icon.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.eventQueueServerIcon.x + ',' + box.eventQueueServerIcon.y + ')')
+      reserved.icon.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.eventQueueServerIcon.x +
+            ',' +
+            box.eventQueueServerIcon.y +
+            ')'
+        )
         .attr('opacity', 1)
-      reserved.title.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.eventQueueServerTitle.x + ',' + box.eventQueueServerTitle.y + ')')
-      reserved.filter.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.eventQueueServerFilter.x + ',' + box.eventQueueServerFilter.y + ')')
-      reserved.content.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.eventQueueServerContent.x + ',' + box.eventQueueServerContent.y + ')')
+      reserved.title.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.eventQueueServerTitle.x +
+            ',' +
+            box.eventQueueServerTitle.y +
+            ')'
+        )
+      reserved.filter.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.eventQueueServerFilter.x +
+            ',' +
+            box.eventQueueServerFilter.y +
+            ')'
+        )
+      reserved.content.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.eventQueueServerContent.x +
+            ',' +
+            box.eventQueueServerContent.y +
+            ')'
+        )
 
-      let lineGenerator = d3.line()
-        .x(function (d) { return d.x })
-        .y(function (d) { return d.y })
+      let lineGenerator = d3
+        .line()
+        .x(function (d) {
+          return d.x
+        })
+        .y(function (d) {
+          return d.y
+        })
         .curve(d3.curveLinear)
       let depth = 2
       let dataPointFuturTop = [
-        {x: 0, y: 0},
-        {x: -depth, y: depth},
-        {x: -depth, y: box.eventQueueServerIcon.h + depth},
-        {x: box.eventQueueServerIcon.w - depth, y: box.eventQueueServerIcon.h + depth},
-        {x: box.eventQueueServerIcon.w + 0, y: box.eventQueueServerIcon.h},
-        {x: 0, y: box.eventQueueServerIcon.h},
-        {x: -depth, y: box.eventQueueServerIcon.h + depth},
-        {x: 0, y: box.eventQueueServerIcon.h},
-        {x: 0, y: 0}
+        { x: 0, y: 0 },
+        { x: -depth, y: depth },
+        { x: -depth, y: box.eventQueueServerIcon.h + depth },
+        {
+          x: box.eventQueueServerIcon.w - depth,
+          y: box.eventQueueServerIcon.h + depth
+        },
+        { x: box.eventQueueServerIcon.w + 0, y: box.eventQueueServerIcon.h },
+        { x: 0, y: box.eventQueueServerIcon.h },
+        { x: -depth, y: box.eventQueueServerIcon.h + depth },
+        { x: 0, y: box.eventQueueServerIcon.h },
+        { x: 0, y: 0 }
       ]
-      reserved.icon.g.append('path')
+      reserved.icon.g
+        .append('path')
         .data([dataPointFuturTop])
         .attr('d', lineGenerator)
         .attr('fill', colorTheme.darker.background)
         .attr('stroke', colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
-      reserved.icon.g.append('rect')
+      reserved.icon.g
+        .append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', box.eventQueueServerIcon.w)
@@ -3400,19 +4001,37 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke', colorTheme.bright.stroke)
         .attr('stroke-width', 0.2)
         .on('mouseover', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.dark.background)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('fill', colorTheme.dark.background)
         })
         .on('mouseout', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.bright.background)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('fill', colorTheme.bright.background)
         })
         .on('click', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('x', -5).attr('y', 5)
-          reserved.icon.g.transition().duration(timeD.animArc).attr('opacity', 0).on('end', function () {
-            reserved.main.mode = 'expand'
-            drawEvents()
-          })
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('x', -5)
+            .attr('y', 5)
+          reserved.icon.g
+            .transition()
+            .duration(timeD.animArc)
+            .attr('opacity', 0)
+            .on('end', function () {
+              reserved.main.mode = 'expand'
+              drawEvents()
+            })
         })
-      reserved.icon.g.append('svg:image')
+      reserved.icon.g
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/warning.svg')
         .attr('width', box.eventQueueServerIcon.w * 0.6)
         .attr('height', box.eventQueueServerIcon.h * 0.6)
@@ -3424,26 +4043,32 @@ let mainCommentNightSched = function (optIn) {
 
     function drawEvents () {
       function drawBack () {
-        let lineGenerator = d3.line()
-          .x(function (d) { return d.x })
-          .y(function (d) { return d.y })
+        let lineGenerator = d3
+          .line()
+          .x(function (d) {
+            return d.x
+          })
+          .y(function (d) {
+            return d.y
+          })
           .curve(d3.curveLinear)
         let b = {
           x: box.eventQueueServer.marg,
           y: box.eventQueueServer.marg,
-          w: box.eventQueueServer.w - (2 * box.eventQueueServer.marg),
-          h: box.eventQueueServer.h - (2 * box.eventQueueServer.marg)
+          w: box.eventQueueServer.w - 2 * box.eventQueueServer.marg,
+          h: box.eventQueueServer.h - 2 * box.eventQueueServer.marg
         }
         let dataPointBottom = [
-          {x: b.x, y: b.y},
-          {x: b.x + b.w * 0.9, y: b.y},
-          {x: b.x + b.w * 0.9, y: b.y + b.h * 0.3},
-          {x: b.x + b.w, y: b.y + b.h * 0.3},
-          {x: b.x + b.w, y: b.y + b.h},
-          {x: b.x, y: b.y + b.h},
-          {x: b.x, y: b.y}
+          { x: b.x, y: b.y },
+          { x: b.x + b.w * 0.9, y: b.y },
+          { x: b.x + b.w * 0.9, y: b.y + b.h * 0.3 },
+          { x: b.x + b.w, y: b.y + b.h * 0.3 },
+          { x: b.x + b.w, y: b.y + b.h },
+          { x: b.x, y: b.y + b.h },
+          { x: b.x, y: b.y }
         ]
-        reserved.back.g.append('path')
+        reserved.back.g
+          .append('path')
           .data([dataPointBottom])
           .attr('d', lineGenerator)
           .attr('fill', colorTheme.medium.background)
@@ -3451,17 +4076,18 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke-width', 0.2)
 
         let dataPointFuturTop = [
-          {x: b.x, y: b.y},
-          {x: b.x - 5, y: b.y + 5},
-          {x: b.x - 5, y: b.y + b.h + 5},
-          {x: b.x + b.w - 5, y: b.y + b.h + 5},
-          {x: b.x + b.w, y: b.y + b.h},
-          {x: b.x, y: b.y + b.h},
-          {x: b.x - 5, y: b.y + b.h + 5},
-          {x: b.x, y: b.y + b.h},
-          {x: b.x, y: b.y}
+          { x: b.x, y: b.y },
+          { x: b.x - 5, y: b.y + 5 },
+          { x: b.x - 5, y: b.y + b.h + 5 },
+          { x: b.x + b.w - 5, y: b.y + b.h + 5 },
+          { x: b.x + b.w, y: b.y + b.h },
+          { x: b.x, y: b.y + b.h },
+          { x: b.x - 5, y: b.y + b.h + 5 },
+          { x: b.x, y: b.y + b.h },
+          { x: b.x, y: b.y }
         ]
-        reserved.back.g.append('path')
+        reserved.back.g
+          .append('path')
           .data([dataPointFuturTop])
           .attr('d', lineGenerator)
           .attr('fill', colorTheme.darker.background)
@@ -3469,14 +4095,24 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke-width', 0.2)
       }
       function drawTitle () {
-        reserved.title.g.append('svg:image')
+        reserved.title.g
+          .append('svg:image')
           .attr('xlink:href', '/static/icons/warning.svg')
           .attr('width', box.eventQueueServerTitle.h * 0.6)
           .attr('height', box.eventQueueServerTitle.h * 0.6)
-          .attr('x', box.eventQueueServerTitle.w * 0.075 - (box.eventQueueServerTitle.h * 0.3))
-          .attr('y', box.eventQueueServerTitle.h * 0.6 - (box.eventQueueServerTitle.h * 0.3))
+          .attr(
+            'x',
+            box.eventQueueServerTitle.w * 0.075 -
+              box.eventQueueServerTitle.h * 0.3
+          )
+          .attr(
+            'y',
+            box.eventQueueServerTitle.h * 0.6 -
+              box.eventQueueServerTitle.h * 0.3
+          )
           .style('pointer-events', 'none')
-        reserved.title.g.append('text')
+        reserved.title.g
+          .append('text')
           .text('Events')
           .attr('x', box.eventQueueServerTitle.w * 0.125)
           .attr('y', box.eventQueueServerTitle.h * 0.7)
@@ -3484,19 +4120,44 @@ let mainCommentNightSched = function (optIn) {
           .style('font-weight', '')
           .style('font-size', '14px')
           .attr('text-anchor', 'start')
-          // .attr('transform', 'translate(' +
-          //   (box.eventQueueServerTitle.x + box.eventQueueServerTitle.w * 0.5) +
-          //   ',' + (box.eventQueueServerTitle.y + box.eventQueueServerTitle.h * 1.0) + ')')
+        // .attr('transform', 'translate(' +
+        //   (box.eventQueueServerTitle.x + box.eventQueueServerTitle.w * 0.5) +
+        //   ',' + (box.eventQueueServerTitle.y + box.eventQueueServerTitle.h * 1.0) + ')')
       }
 
-      reserved.back.g = reserved.main.g.append('g')
+      reserved.back.g = reserved.main.g
+        .append('g')
         .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-      reserved.title.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.eventQueueServerTitle.x + ',' + box.eventQueueServerTitle.y + ')')
-      reserved.filter.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.eventQueueServerFilter.x + ',' + box.eventQueueServerFilter.y + ')')
-      reserved.content.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.eventQueueServerContent.x + ',' + box.eventQueueServerContent.y + ')')
+      reserved.title.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.eventQueueServerTitle.x +
+            ',' +
+            box.eventQueueServerTitle.y +
+            ')'
+        )
+      reserved.filter.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.eventQueueServerFilter.x +
+            ',' +
+            box.eventQueueServerFilter.y +
+            ')'
+        )
+      reserved.content.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.eventQueueServerContent.x +
+            ',' +
+            box.eventQueueServerContent.y +
+            ')'
+        )
 
       drawBack()
       drawTitle()
@@ -3591,9 +4252,18 @@ let mainCommentNightSched = function (optIn) {
     function updateData (dataIn) {
       if (reserved.main.mode === 'icon') return
       eventQueue.update({
-        currentTime: {date: new Date(dataIn.timeOfNight.date_now), time: Number(dataIn.timeOfNight.now)},
-        startTime: {date: new Date(dataIn.timeOfNight.date_start), time: Number(dataIn.timeOfNight.start)},
-        endTime: {date: new Date(dataIn.timeOfNight.date_end), time: Number(dataIn.timeOfNight.end)},
+        currentTime: {
+          date: new Date(dataIn.timeOfNight.date_now),
+          time: Number(dataIn.timeOfNight.now)
+        },
+        startTime: {
+          date: new Date(dataIn.timeOfNight.date_start),
+          time: Number(dataIn.timeOfNight.start)
+        },
+        endTime: {
+          date: new Date(dataIn.timeOfNight.date_end),
+          time: Number(dataIn.timeOfNight.end)
+        },
         data: dataIn.external_events[0]
       })
     }
@@ -3623,7 +4293,8 @@ let mainCommentNightSched = function (optIn) {
     }
 
     function dummy () {
-      reserved.plot.main.g.append('rect')
+      reserved.plot.main.g
+        .append('rect')
         .attr('x', reserved.plot.main.box.x)
         .attr('y', reserved.plot.main.box.y)
         .attr('width', reserved.plot.main.box.w)
@@ -3635,14 +4306,23 @@ let mainCommentNightSched = function (optIn) {
 
     function initFilters () {
       function createSystemsHealthFilter (key, box) {
-        reserved.filters.g.append('text')
+        reserved.filters.g
+          .append('text')
           .text(key)
           .style('fill', colorTheme.medium.text)
           .style('font-weight', '')
           .style('font-size', '7px')
           .attr('text-anchor', 'middle')
-          .attr('transform', 'translate(' + (box.x + box.w * 0.5) + ',' + (box.y + box.h - box.w * 0.6) + ')')
-        reserved.filters.g.append('rect')
+          .attr(
+            'transform',
+            'translate(' +
+              (box.x + box.w * 0.5) +
+              ',' +
+              (box.y + box.h - box.w * 0.6) +
+              ')'
+          )
+        reserved.filters.g
+          .append('rect')
           .attr('x', box.x + box.w * 0.325)
           .attr('y', box.y + box.h - box.w * 0.5)
           .attr('width', box.w * 0.35)
@@ -3651,8 +4331,8 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
 
-
-        reserved.filters.g.append('rect')
+        reserved.filters.g
+          .append('rect')
           .attr('x', box.x + box.w * 0.35)
           .attr('y', box.y - box.w * 0.1)
           .attr('width', box.w * 0.3)
@@ -3660,14 +4340,16 @@ let mainCommentNightSched = function (optIn) {
           .attr('fill', colorTheme.dark.background)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
-        reserved.filters.g.append('line')
+        reserved.filters.g
+          .append('line')
           .attr('x1', box.x + box.w * 0.5)
           .attr('y1', box.y)
           .attr('x2', box.x + box.w * 0.5)
           .attr('y2', box.y + box.h - box.w * 1.25)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
-        reserved.filters.g.append('rect')
+        reserved.filters.g
+          .append('rect')
           .attr('x', box.x + box.w * 0.35)
           .attr('y', box.y + box.h - box.w * 1.25)
           .attr('width', box.w * 0.3)
@@ -3676,18 +4358,20 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
 
-        let height = (box.h - box.w * 1.25)
-        reserved.filters.g.append('rect')
+        let height = box.h - box.w * 1.25
+        reserved.filters.g
+          .append('rect')
           .attr('x', box.x + box.w * 0.5 + box.w * 0.1)
-          .attr('y', box.y + height - (height * 0.75) - box.w * 0.125)
+          .attr('y', box.y + height - height * 0.75 - box.w * 0.125)
           .attr('width', box.w * 0.25)
           .attr('height', box.w * 0.25)
           .attr('fill', colorTheme.medium.background)
           .attr('stroke', colorTheme.darker.stroke)
           .attr('stroke-width', 0.2)
-        reserved.filters.g.append('rect')
+        reserved.filters.g
+          .append('rect')
           .attr('x', box.x + box.w * 0.5 + box.w * 0.1)
-          .attr('y', box.y + height - (height * 0.5) - box.w * 0.125)
+          .attr('y', box.y + height - height * 0.5 - box.w * 0.125)
           .attr('width', box.w * 0.25)
           .attr('height', box.w * 0.25)
           .attr('fill', colorTheme.medium.background)
@@ -3704,7 +4388,14 @@ let mainCommentNightSched = function (optIn) {
           marg: box.telescopes.marg
         }
       }
-      reserved.filters.g.attr('transform', 'translate(' + reserved.filters.box.x + ',' + reserved.filters.box.y + ')')
+      reserved.filters.g.attr(
+        'transform',
+        'translate(' +
+          reserved.filters.box.x +
+          ',' +
+          reserved.filters.box.y +
+          ')'
+      )
       // reserved.filters.g.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
@@ -3714,15 +4405,24 @@ let mainCommentNightSched = function (optIn) {
       //   .attr('stroke', colorTheme.darker.stroke)
       //   .attr('stroke-width', 0.2)
 
-      reserved.filters.g.append('text')
+      reserved.filters.g
+        .append('text')
         .text('Tels types:')
         .style('fill', colorTheme.medium.text)
         .style('font-weight', '')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.5) + ',' + (reserved.filters.box.h * 0.06) + ')')
+        .attr(
+          'transform',
+          'translate(' +
+            reserved.filters.box.w * 0.5 +
+            ',' +
+            reserved.filters.box.h * 0.06 +
+            ')'
+        )
 
-      reserved.filters.g.append('text')
+      reserved.filters.g
+        .append('text')
         .text('LTs:')
         .style('fill', colorTheme.medium.text)
         // .style('stroke', colorTheme.medium.text)
@@ -3730,8 +4430,16 @@ let mainCommentNightSched = function (optIn) {
         .style('font-weight', '')
         .style('font-size', '7px')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.09) + ',' + (reserved.filters.box.h * 0.16) + ')')
-      reserved.filters.g.append('rect')
+        .attr(
+          'transform',
+          'translate(' +
+            reserved.filters.box.w * 0.09 +
+            ',' +
+            reserved.filters.box.h * 0.16 +
+            ')'
+        )
+      reserved.filters.g
+        .append('rect')
         .attr('x', reserved.filters.box.w * (0.03 + 0.18))
         .attr('y', reserved.filters.box.h * 0.1)
         .attr('width', reserved.filters.box.h * 0.07)
@@ -3740,7 +4448,8 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke', colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
 
-      reserved.filters.g.append('text')
+      reserved.filters.g
+        .append('text')
         .text('MTs:')
         .style('fill', colorTheme.medium.text)
         // .style('stroke', colorTheme.medium.text)
@@ -3748,8 +4457,16 @@ let mainCommentNightSched = function (optIn) {
         .style('font-weight', '')
         .style('font-size', '7px')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.36) + ',' + (reserved.filters.box.h * 0.16) + ')')
-      reserved.filters.g.append('rect')
+        .attr(
+          'transform',
+          'translate(' +
+            reserved.filters.box.w * 0.36 +
+            ',' +
+            reserved.filters.box.h * 0.16 +
+            ')'
+        )
+      reserved.filters.g
+        .append('rect')
         .attr('x', reserved.filters.box.w * (0.36 + 0.15))
         .attr('y', reserved.filters.box.h * 0.1)
         .attr('width', reserved.filters.box.h * 0.07)
@@ -3758,7 +4475,8 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke', colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
 
-      reserved.filters.g.append('text')
+      reserved.filters.g
+        .append('text')
         .text('STs:')
         .style('fill', colorTheme.medium.text)
         // .style('stroke', colorTheme.medium.text)
@@ -3766,8 +4484,16 @@ let mainCommentNightSched = function (optIn) {
         .style('font-weight', '')
         .style('font-size', '7px')
         .attr('text-anchor', 'start')
-        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.66) + ',' + (reserved.filters.box.h * 0.16) + ')')
-      reserved.filters.g.append('rect')
+        .attr(
+          'transform',
+          'translate(' +
+            reserved.filters.box.w * 0.66 +
+            ',' +
+            reserved.filters.box.h * 0.16 +
+            ')'
+        )
+      reserved.filters.g
+        .append('rect')
         .attr('x', reserved.filters.box.w * (0.66 + 0.13))
         .attr('y', reserved.filters.box.h * 0.1)
         .attr('width', reserved.filters.box.h * 0.07)
@@ -3776,23 +4502,55 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke', colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
 
-      reserved.filters.g.append('text')
+      reserved.filters.g
+        .append('text')
         .text('Systems & health:')
         .style('fill', colorTheme.medium.text)
         .style('font-weight', '')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (reserved.filters.box.w * 0.5) + ',' + (reserved.filters.box.h * 0.3) + ')')
+        .attr(
+          'transform',
+          'translate(' +
+            reserved.filters.box.w * 0.5 +
+            ',' +
+            reserved.filters.box.h * 0.3 +
+            ')'
+        )
 
-      createSystemsHealthFilter('Cam', {x: 0, y: reserved.filters.box.h * 0.4, w: reserved.filters.box.w * 0.25, h: reserved.filters.box.h * 0.6})
-      createSystemsHealthFilter('Mir', {x: reserved.filters.box.w * 0.25, y: reserved.filters.box.h * 0.4, w: reserved.filters.box.w * 0.25, h: reserved.filters.box.h * 0.6})
-      createSystemsHealthFilter('Mou', {x: reserved.filters.box.w * 0.5, y: reserved.filters.box.h * 0.4, w: reserved.filters.box.w * 0.25, h: reserved.filters.box.h * 0.6})
-      createSystemsHealthFilter('Aux', {x: reserved.filters.box.w * 0.75, y: reserved.filters.box.h * 0.4, w: reserved.filters.box.w * 0.25, h: reserved.filters.box.h * 0.6})
+      createSystemsHealthFilter('Cam', {
+        x: 0,
+        y: reserved.filters.box.h * 0.4,
+        w: reserved.filters.box.w * 0.25,
+        h: reserved.filters.box.h * 0.6
+      })
+      createSystemsHealthFilter('Mir', {
+        x: reserved.filters.box.w * 0.25,
+        y: reserved.filters.box.h * 0.4,
+        w: reserved.filters.box.w * 0.25,
+        h: reserved.filters.box.h * 0.6
+      })
+      createSystemsHealthFilter('Mou', {
+        x: reserved.filters.box.w * 0.5,
+        y: reserved.filters.box.h * 0.4,
+        w: reserved.filters.box.w * 0.25,
+        h: reserved.filters.box.h * 0.6
+      })
+      createSystemsHealthFilter('Aux', {
+        x: reserved.filters.box.w * 0.75,
+        y: reserved.filters.box.h * 0.4,
+        w: reserved.filters.box.w * 0.25,
+        h: reserved.filters.box.h * 0.6
+      })
     }
     function initView () {
       function createArrZoomerButton () {
-        reserved.view.main.g.append('rect')
-          .attr('x', reserved.view.main.box.x + reserved.view.main.box.marg * 1.2)
+        reserved.view.main.g
+          .append('rect')
+          .attr(
+            'x',
+            reserved.view.main.box.x + reserved.view.main.box.marg * 1.2
+          )
           .attr('y', reserved.view.main.box.y)
           .attr('width', 1.8 * reserved.view.main.box.marg)
           .attr('height', 1.8 * reserved.view.main.box.marg)
@@ -3801,9 +4559,16 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke-width', 0.2)
       }
       function createListButton () {
-        reserved.view.main.g.append('rect')
-          .attr('x', reserved.view.main.box.x + reserved.view.main.box.marg * 1.2)
-          .attr('y', reserved.view.main.box.y + 1.8 * reserved.view.main.box.marg)
+        reserved.view.main.g
+          .append('rect')
+          .attr(
+            'x',
+            reserved.view.main.box.x + reserved.view.main.box.marg * 1.2
+          )
+          .attr(
+            'y',
+            reserved.view.main.box.y + 1.8 * reserved.view.main.box.marg
+          )
           .attr('width', 1.8 * reserved.view.main.box.marg)
           .attr('height', 1.8 * reserved.view.main.box.marg)
           .attr('fill', colorTheme.darker.background)
@@ -3841,8 +4606,22 @@ let mainCommentNightSched = function (optIn) {
         projection: 'arrZoomer' // 'list'
       }
 
-      reserved.view.main.g.attr('transform', 'translate(' + reserved.view.main.box.x + ',' + reserved.view.main.box.y + ')')
-      reserved.view.telsList.g.attr('transform', 'translate(' + reserved.view.telsList.box.x + ',' + reserved.view.telsList.box.y + ')')
+      reserved.view.main.g.attr(
+        'transform',
+        'translate(' +
+          reserved.view.main.box.x +
+          ',' +
+          reserved.view.main.box.y +
+          ')'
+      )
+      reserved.view.telsList.g.attr(
+        'transform',
+        'translate(' +
+          reserved.view.telsList.box.x +
+          ',' +
+          reserved.view.telsList.box.y +
+          ')'
+      )
 
       // reserved.view.telsList.g.append('rect')
       //   .attr('x', 0)
@@ -3910,46 +4689,96 @@ let mainCommentNightSched = function (optIn) {
       // telsArray.init()
       updateTelsList()
     }
-    // ---------------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------
     function initData () {
-      reserved.main.g = svg.g.append('g')
-        .attr('transform', 'translate(' + box.telsQueueServer.x + ',' + box.telsQueueServer.y + ')')
+      reserved.main.g = svg.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.telsQueueServer.x +
+            ',' +
+            box.telsQueueServer.y +
+            ')'
+        )
 
-      reserved.icon.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.telsQueueServerIcon.x + ',' + box.telsQueueServerIcon.y + ')')
+      reserved.icon.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.telsQueueServerIcon.x +
+            ',' +
+            box.telsQueueServerIcon.y +
+            ')'
+        )
         .attr('opacity', 1)
-      reserved.title.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.telsQueueServerTitle.x + ',' + box.telsQueueServerTitle.y + ')')
-      reserved.filter.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.telsQueueServerFilter.x + ',' + box.telsQueueServerFilter.y + ')')
-      reserved.content.g = reserved.main.g.append('g')
-        .attr('transform', 'translate(' + box.telsQueueServerContent.x + ',' + box.telsQueueServerContent.y + ')')
+      reserved.title.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.telsQueueServerTitle.x +
+            ',' +
+            box.telsQueueServerTitle.y +
+            ')'
+        )
+      reserved.filter.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.telsQueueServerFilter.x +
+            ',' +
+            box.telsQueueServerFilter.y +
+            ')'
+        )
+      reserved.content.g = reserved.main.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' +
+            box.telsQueueServerContent.x +
+            ',' +
+            box.telsQueueServerContent.y +
+            ')'
+        )
 
-      let lineGenerator = d3.line()
-        .x(function (d) { return d.x })
-        .y(function (d) { return d.y })
+      let lineGenerator = d3
+        .line()
+        .x(function (d) {
+          return d.x
+        })
+        .y(function (d) {
+          return d.y
+        })
         .curve(d3.curveLinear)
       let depth = 2
       let dataPointFuturTop = [
-        {x: 0, y: 0},
-        {x: -depth, y: depth},
-        {x: -depth, y: box.telsQueueServerIcon.h + depth},
-        {x: box.telsQueueServerIcon.w - depth, y: box.telsQueueServerIcon.h + depth},
-        {x: box.telsQueueServerIcon.w + 0, y: box.telsQueueServerIcon.h},
-        {x: 0, y: box.telsQueueServerIcon.h},
-        {x: -depth, y: box.telsQueueServerIcon.h + depth},
-        {x: 0, y: box.telsQueueServerIcon.h},
-        {x: 0, y: 0}
+        { x: 0, y: 0 },
+        { x: -depth, y: depth },
+        { x: -depth, y: box.telsQueueServerIcon.h + depth },
+        {
+          x: box.telsQueueServerIcon.w - depth,
+          y: box.telsQueueServerIcon.h + depth
+        },
+        { x: box.telsQueueServerIcon.w + 0, y: box.telsQueueServerIcon.h },
+        { x: 0, y: box.telsQueueServerIcon.h },
+        { x: -depth, y: box.telsQueueServerIcon.h + depth },
+        { x: 0, y: box.telsQueueServerIcon.h },
+        { x: 0, y: 0 }
       ]
-      reserved.icon.g.append('path')
+      reserved.icon.g
+        .append('path')
         .data([dataPointFuturTop])
         .attr('d', lineGenerator)
         .attr('fill', colorTheme.darker.background)
         .attr('stroke', colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
-      reserved.icon.g.append('rect')
+      reserved.icon.g
+        .append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', box.telsQueueServerIcon.w)
@@ -3958,19 +4787,37 @@ let mainCommentNightSched = function (optIn) {
         .attr('stroke', colorTheme.bright.stroke)
         .attr('stroke-width', 0.2)
         .on('mouseover', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.dark.background)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('fill', colorTheme.dark.background)
         })
         .on('mouseout', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('fill', colorTheme.bright.background)
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('fill', colorTheme.bright.background)
         })
         .on('click', function () {
-          d3.select(this).transition().duration(timeD.animArc).attr('x', -5).attr('y', 5)
-          reserved.icon.g.transition().duration(timeD.animArc).attr('opacity', 0).on('end', function () {
-            reserved.main.mode = 'expand'
-            drawTels()
-          })
+          d3
+            .select(this)
+            .transition()
+            .duration(timeD.animArc)
+            .attr('x', -5)
+            .attr('y', 5)
+          reserved.icon.g
+            .transition()
+            .duration(timeD.animArc)
+            .attr('opacity', 0)
+            .on('end', function () {
+              reserved.main.mode = 'expand'
+              drawTels()
+            })
         })
-      reserved.icon.g.append('svg:image')
+      reserved.icon.g
+        .append('svg:image')
         .attr('xlink:href', '/static/icons/telescope.svg')
         .attr('width', box.telsQueueServerIcon.w * 0.6)
         .attr('height', box.telsQueueServerIcon.h * 0.6)
@@ -3988,8 +4835,12 @@ let mainCommentNightSched = function (optIn) {
         h: box.telescopes.h - 2 * box.telescopes.marg,
         marg: box.telescopes.marg
       }
-      reserved.gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + box.telescopes.x + ',' + box.telescopes.y + ')')
+      reserved.gBlockBox = svg.g
+        .append('g')
+        .attr(
+          'transform',
+          'translate(' + box.telescopes.x + ',' + box.telescopes.y + ')'
+        )
       // reserved.gBlockBox.append('rect')
       //   .attr('x', reserved.adjustedBox.x)
       //   .attr('y', reserved.adjustedBox.y)
@@ -4057,8 +4908,8 @@ let mainCommentNightSched = function (optIn) {
       }
       let offset = {
         x: telsBox.w / telsPerRow,
-        ty: (ratio * offsetTelsType * sizeTelsRow * defaultHeightView),
-        y: (ratio * sizeTelsRow * defaultHeightView)
+        ty: ratio * offsetTelsType * sizeTelsRow * defaultHeightView,
+        y: ratio * sizeTelsRow * defaultHeightView
       }
 
       let currentTels = reserved.view.telsList.g
@@ -4076,19 +4927,25 @@ let mainCommentNightSched = function (optIn) {
         if (d.id.split('_')[0] === 'S') toff += 2
 
         d3.select(this).attr('transform', function (d) {
-          let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
-            (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
-            (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+          let tx =
+            -(parseInt((i + toff) / telsPerRow) % 2) === 0
+              ? offset.x * (0.5 + (i + toff) % telsPerRow)
+              : offset.x * (0.0 + telsPerRow) -
+                offset.x * (0.5 + (i + toff) % telsPerRow)
           if (toff % 2 === 1) tx += offset.x
-          let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
+          let ty =
+            offset.y * (0.5 + parseInt((i + toff) / telsPerRow)) +
+            toff * offset.ty
           return 'translate(' + tx + ',' + ty + ')'
         })
-        d3.select(this).append('rect')
+        d3
+          .select(this)
+          .append('rect')
           .attr('x', function (d) {
-            return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+            return -offset.x * 0.5 + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
           })
           .attr('y', function (d) {
-            return (-offset.y * 0.5) + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+            return -offset.y * 0.5 + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
           })
           .attr('width', function (d) {
             return offset.x - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
@@ -4111,7 +4968,9 @@ let mainCommentNightSched = function (optIn) {
           .attr('stroke-opacity', function (d) {
             return 1
           })
-        d3.select(this).append('text')
+        d3
+          .select(this)
+          .append('text')
           .attr('x', 0)
           .attr('y', offset.y * 0.2)
           .attr('dy', 0)
@@ -4132,27 +4991,34 @@ let mainCommentNightSched = function (optIn) {
         if (d.id.split('_')[0] === 'M') toff += 1
         if (d.id.split('_')[0] === 'S') toff += 2
 
-        d3.select(this)
+        d3
+          .select(this)
           .attr('transform', function (d) {
-            let tx = -(parseInt((i + toff) / telsPerRow) % 2) === 0 ?
-              (offset.x * (0.5 + ((i + toff) % telsPerRow))) :
-              (offset.x * (0.0 + (telsPerRow))) - (offset.x * (0.5 + ((i + toff) % telsPerRow)))
+            let tx =
+              -(parseInt((i + toff) / telsPerRow) % 2) === 0
+                ? offset.x * (0.5 + (i + toff) % telsPerRow)
+                : offset.x * (0.0 + telsPerRow) -
+                  offset.x * (0.5 + (i + toff) % telsPerRow)
             // if (toff % 2 === 1) tx += 2 * offset.x
-            let ty = (offset.y * (0.5 + parseInt((i + toff) / telsPerRow))) + (toff * offset.ty)
+            let ty =
+              offset.y * (0.5 + parseInt((i + toff) / telsPerRow)) +
+              toff * offset.ty
             return 'translate(' + tx + ',' + ty + ')'
           })
           .style('opacity', function () {
             if (!d.running) return 1
             return 0.4
           })
-        d3.select(this).select('rect')
+        d3
+          .select(this)
+          .select('rect')
           .transition()
           .duration(timeD.animArc)
           .attr('x', function (d) {
-            return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+            return -offset.x * 0.5 + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
           })
           .attr('y', function (d) {
-            return (-offset.y * 0.5) + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
+            return -offset.y * 0.5 + strokeSize(d.val) * 0.5 // (-offset.y * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
           })
           .attr('width', function (d) {
             return offset.x - strokeSize(d.val) // (offset.x * (1 - (0.3 * (d.val / 100)))) - (4 - (3 * (d.val / 100)))
@@ -4174,11 +5040,13 @@ let mainCommentNightSched = function (optIn) {
             // if (!d.running) return telHealthCol(d.val)
             return colorTheme.dark.stroke
           })
-          // .attr('stroke-opacity', function (d) {
-          //   if (!d.running) return 1
-          //   return 1
-          // })
-        d3.select(this).select('text')
+        // .attr('stroke-opacity', function (d) {
+        //   if (!d.running) return 1
+        //   return 1
+        // })
+        d3
+          .select(this)
+          .select('text')
           .attr('x', 0)
           .attr('y', offset.y * 0.2)
           .attr('dy', 0)
@@ -4201,14 +5069,11 @@ let mainCommentNightSched = function (optIn) {
         .remove()
     }
     this.updateTelsList = updateTelsList
-    function updateData (dataIn) {
-    }
+    function updateData (dataIn) {}
     this.updateData = updateData
   }
   let SvgDAQ = function () {
-    function init () {
-
-    }
+    function init () {}
     this.init = init
   }
   // let SvgBottomInfo = function () {
