@@ -101,6 +101,7 @@ function BaseApp () {
       entry = form.appendChild(document.createElement('input'))
       entry.type = 'submit'
       entry.value = 'Login'
+      entry.focus()
       entry.classList.add('form-btn')
 
       let msgDiv = mainDiv.appendChild(document.createElement('div'))
