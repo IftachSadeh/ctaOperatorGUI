@@ -575,7 +575,7 @@ window.TelescopeDisplayer = function (optIn) {
       if (opt.max && size.w > opt.max) size.w = opt.max
       if (opt.max && size.h > opt.max) size.h = opt.max
 
-      let fontsize = opt.size * 0.4
+      let fontsize = opt.size * 0.3
       let offset = {
         x: (box.w - (opt.telsPerRow * size.w * 2)) * 0.5,
         y: com.gridBib.telescope.centering ? (box.h - (nbline * size.h * 2)) * 0.5 : 0

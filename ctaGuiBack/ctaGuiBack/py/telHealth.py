@@ -211,7 +211,7 @@ class telHealth():
                 for propName in rndProps:
                     if propName not in self.telSubHealth[idNow]:
                         continue
-                    
+
                     randProps(self.telSubHealth[idNow][propName])
                     # if idNow=='L_0': print self.telSubHealth[idNow][propName]
 

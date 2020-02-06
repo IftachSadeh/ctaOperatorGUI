@@ -40,16 +40,16 @@ setupView.view102 = function () {
     hasDrawer: false
   })
 
-  sock.addWidget({
-    nameTag: 'nightSched',
-    tableTitle: 'Nightly Schedule',
-    hasIcon: true,
-    hasDrawer: false
-  })
+  // sock.addWidget({
+  //   nameTag: 'nightSched',
+  //   tableTitle: 'Nightly Schedule',
+  //   hasIcon: true,
+  //   hasDrawer: false
+  // })
 
   sock.addWidget({
     nameTag: 'schedBlocksController',
-    tableTitle: 'Scheduling Blocks Controller',
+    tableTitle: 'Scheduling blocks inspector',
     hasIcon: true,
     hasDrawer: false
   })
@@ -189,12 +189,12 @@ setupView.view2051 = function () {
 // obsBlockControl
 // -----------------------------------------------------------------------------------------------------------
 setupView.view206 = function () {
-  // sock.addWidget({
-  //   nameTag: 'schedBlocksController',
-  //   tableTitle: 'Scheduling blocks inspector',
-  //   hasIcon: true,
-  //   hasDrawer: false
-  // })
+  sock.addWidget({
+    nameTag: 'schedBlocksController',
+    tableTitle: 'Scheduling blocks inspector',
+    hasIcon: true,
+    hasDrawer: false
+  })
   sock.addWidget({
     nameTag: 'schedBlocksInspector',
     tableTitle: 'Scheduling blocks controller',

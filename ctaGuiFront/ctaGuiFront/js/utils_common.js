@@ -472,7 +472,7 @@ faD.phi = '\u03C6'
 faD.Delta = '\u0394'
 faD.delta = '\u03B4'
 faD.space = '\u00A0'
-faD.sec = '\u00A7'   // for observing bloc prefix?????
+faD.sec = '\u00A7' // for observing bloc prefix?????
 window.faD = faD
 // ------------------------------------------------------------------
 

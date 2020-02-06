@@ -52,7 +52,6 @@ window.loadScript({
   script: '/js/utils_quickMap.js'
 })
 
-
 // ------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let doSvgDetail = true
@@ -68,9 +67,9 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   optIn.setupData = {
     doSvgDetail: doSvgDetail,
     svgDetailOnRight: svgDetailOnRight,
-    doSvgQuick: doSvgQuick,
+    doSvgQuick: doSvgQuick
   }
-  
+
   optIn.widgetFunc = { SockFunc: sockArrZoomer, MainFunc: mainArrZoomer }
   optIn.widgetDivId = optIn.widgetId + 'widgetDiv'
   optIn.eleProps = {}
@@ -211,7 +210,7 @@ let sockArrZoomer = function (optIn) {
 }
 
 // ------------------------------------------------------------------
-// 
+//
 // ------------------------------------------------------------------
 let mainArrZoomer = function (optIn) {
   let myUniqueId = unique()
@@ -251,7 +250,7 @@ let mainArrZoomer = function (optIn) {
   let svgMain = null
   let svgDetail = null
   let svgQuick = null
-  
+
   // ------------------------------------------------------------------
   // main initialisation, after first data come in
   // ------------------------------------------------------------------
@@ -326,7 +325,7 @@ let mainArrZoomer = function (optIn) {
   let telFocus = {}
 
   // ------------------------------------------------------------------
-  // 
+  //
   // ------------------------------------------------------------------
   let telTypeV = telInfo.getIds()
 
@@ -637,7 +636,7 @@ let mainArrZoomer = function (optIn) {
     locker.add('dataChange')
 
     // ------------------------------------------------------------------
-    // fill the updated properties (accumilate all updates in order, 
+    // fill the updated properties (accumilate all updates in order,
     // so that if some id was updated multiple times,
     // the latest value will be kept
     // ------------------------------------------------------------------
@@ -1069,7 +1068,7 @@ let mainArrZoomer = function (optIn) {
         .style('left', '0px')
         // .attr("viewBox", "0 0 "+lenD.w[0]+" "+lenD.h[0] * whRatio)
         // .classed("svgInGridStack_inner", true)
-        .style('background', '#383B42') 
+        .style('background', '#383B42')
         // .style("background", "red").style("border","2px solid red")
         .on('dblclick.zoom', null)
         .on('wheel', function () {
@@ -1231,7 +1230,7 @@ let mainArrZoomer = function (optIn) {
       //   .style('height', svgS1H)
       //   .style('top', svgS1T)
       //   .style('left', svgS1L)
-      //   .style('background', 'transparent') 
+      //   .style('background', 'transparent')
       //   // .style("background", "red").style("border","2px solid red")
       //   .call(com.svgS1zoom)
       //   .on('dblclick.zoom', null)
@@ -1276,7 +1275,7 @@ let mainArrZoomer = function (optIn) {
 
       svg.gS1 = svg.svgS0.append('g')
 
-      let s1Trans = 
+      let s1Trans =
         'translate(' + (0.05 * lenD.w[1]) + ',' +
         (0.2 * lenD.h[1]) +  ')scale(' + 0.9 + ')'
       svg.gS1.attr('transform', s1Trans)
@@ -1375,18 +1374,18 @@ let mainArrZoomer = function (optIn) {
       }
 
       if (scale <= zoomLen['0.1']) {
-        let propsIn = { 
+        let propsIn = {
           'telId': 'avg',
           'propD': instProps[''],
           'propDv': instProps0[''],
           'propTtlD': instPropTitles[''],
         }
-        
+
         telArcs([telData.avg], propsIn, 0)
         setSubProp({ telId: 'avg', propIn: '' })
       } else {
         let targetIndex = telData.idToIndex[zoomTarget]
-        let propsIn = { 
+        let propsIn = {
           'telId': zoomTarget,
           'propD': instProps[zoomTarget],
           'propDv': instProps0[zoomTarget],
@@ -1463,7 +1462,7 @@ let mainArrZoomer = function (optIn) {
       let pos = {}
       let angState = {}
       let radState = {}
-      
+
       $.each(allInstProps0, function (_, porpNow) {
         if (state === 0) {
           pos[porpNow] = { x: avgTelD[state].x, y: avgTelD[state].y }
@@ -1735,7 +1734,7 @@ let mainArrZoomer = function (optIn) {
       // ------------------------------------------------------------------
       let tagTitle = tagState + '_title'
       let tagRect = tagState + 'rect'
-      
+
       let textD = []
       let recD = []
 
@@ -1747,7 +1746,7 @@ let mainArrZoomer = function (optIn) {
         let xy = getPropPosShift('xy', txtR, propIndex, propDin.length)
         let opac = (state === 0) ? 0.7 : 0.9
         if (state === 1 && propDin.indexOf(porpNow) === -1) opac *= 0.5
-        
+
         if (allInstProps.indexOf(porpNow) >= 0) {
           textD.push({
             id: tagTitle + porpNow,
@@ -1769,7 +1768,7 @@ let mainArrZoomer = function (optIn) {
 
         let recH = avgTelD[1].h
         let recW = Math.abs(
-          avgTelD[1][allInstProps[0] + 'x'] - 
+          avgTelD[1][allInstProps[0] + 'x'] -
           avgTelD[1][allInstProps[1] + 'x']
         )
         let recX = avgTelD[1][porpNow + 'x'] - recH / 2 - (recW - recH) / 2
@@ -3931,7 +3930,7 @@ let mainArrZoomer = function (optIn) {
                 return (
                   index * instTauFracs[key] +
                   tauSpace +
-                  (instTauFracs[key] - tauSpace * 2) * 
+                  (instTauFracs[key] - tauSpace * 2) *
                   (is0 ? 1 : telHealthFrac(d[porpNow]))
                 )
               }
@@ -3952,7 +3951,7 @@ let mainArrZoomer = function (optIn) {
       // let telId = dataV.id
       // let telId = zoomTarget
       // DDFF
-      
+
       // console.log('FIXME -- validate ... for instProps[""]/zoomTarget ....', focusIdV, telId, dataV)
 
       $.each(allInstIds, function (n_ele, telId) {
@@ -5811,16 +5810,9 @@ let mainArrZoomer = function (optIn) {
     dataWidget['zoomState'] = mainWidgetState['zoomState']
     dataWidget['zoomTarget'] = mainWidgetState['zoomTarget']
     dataWidget['zoomTargetProp'] = detailWidgetState['zoomTargetProp']
-    
+
     sock.widgetV[widgetType].SockFunc.setWidgetState(dataWidget)
-    
+
     return dataWidget
   }
 }
-
-
-
-
-
-
-

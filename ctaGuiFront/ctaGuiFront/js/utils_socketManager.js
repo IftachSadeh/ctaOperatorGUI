@@ -44,7 +44,7 @@ function SocketManager () {
   this.conStat = null
   this.widgetV = {}
   this.widgetTable = {}
-  
+
   // -----------------------------------------------------------------------------------------------------------
   // the socket
   // -----------------------------------------------------------------------------------------------------------
@@ -211,7 +211,7 @@ function SocketManager () {
     let tog = baseApp.connectStatusDiv('_btn')
     let connectStatusDiv = baseApp.connectStatusDiv('')
     let offOpacity = '40%'
-    
+
     let isServerOn = null
     function setServerOn(isServerOnIn) {
       isServerOn = isServerOnIn
@@ -481,7 +481,7 @@ function SocketManager () {
 
     let tabTableNEWOuter = mainDiv.appendChild(document.createElement('div'))
     tabTableNEWOuter.setAttribute("style", 'padding-bottom: 30px;')
-    
+
     let tabTableNEW = tabTableNEWOuter.appendChild(document.createElement('div'))
     tabTableNEW.id = tabTableId
     tabTableNEW.setAttribute("style", 'width: ' + tabTableW + '; margin: 0 auto; padding-bottom: 10px; border: 12px solid #e8e8e8; background-color: #e8e8e8;')
@@ -507,11 +507,11 @@ function SocketManager () {
 
     // let tabTable = document.createElement('svg-tab-table')
     // tabTable.id = tabTableId
-    
+
     let tabTableMain = tabTableNEW.appendChild(document.createElement('div'))
     tabTableMain.id = tabTableMainId
     tabTableMain.setAttribute("style", 'width: 100%;')
-    tabTableMain.classList.add("gridEleBodyDark");
+    // tabTableMain.classList.add("gridEleBodyDark");
 
     // console.log(tabTableNEW)
 
@@ -552,7 +552,7 @@ function SocketManager () {
       // console.log(nameTag) console.log(topThis.widgetTable[nameTag] === undefined)
 
       topThis.widgetTable[nameTag](widgetOpt)
-      
+
       return
     }
 
@@ -587,6 +587,10 @@ function SocketManager () {
     let widgetEle = []
     $.each(widgetTypes, function (index, dataNow) {
       widgetEle.push(null)
+      let tabTableMain = tabTable.querySelector("#" + tabTableMainId)
+      // let tabTableMainStyle = tabTableMain.getAttribute('style')
+      // tabTableMainStyle += eleProps[dataNow].isDarkEle ? ' class: gridEleBodyDark' : ' class: gridEleBody'
+      tabTableMain.setAttribute('class', eleProps[dataNow].isDarkEle ? ' class: gridEleBodyDark' : ' class: gridEleBody')
       let itemNow = tabTable.querySelector("#" + tabTableMainId).appendChild(document.createElement('div'))
       itemNow.innerHTML = eleProps[dataNow]["content"]
 

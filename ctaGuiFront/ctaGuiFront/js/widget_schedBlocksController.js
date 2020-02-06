@@ -212,8 +212,8 @@ let mainSchedBlocksController = function (optIn) {
       svg.g = svg.svg.append('g')
     }
     function initBackground () {
-      svg.svg
-        .style('background', colorTheme.medium.background)
+      // svg.svg
+      //   .style('background', colorTheme.medium.background)
       svg.back = svg.svg.append('g')
       // svg.back.append('rect')
       //   .attr('x', 0)
@@ -391,7 +391,7 @@ let mainSchedBlocksController = function (optIn) {
     if (sock.multipleInit({ id: widgetId, data: dataIn })) return
 
     sock.setBadgeIcon({ nIcon: dataIn.nIcon, iconDivV: iconDivV })
-  
+
     let svgDivId = sgvTag.main.id + 'svg'
     let svgDiv = sgvTag.main.widget.getEle(svgDivId)
     if (!hasVar(svgDiv)) {

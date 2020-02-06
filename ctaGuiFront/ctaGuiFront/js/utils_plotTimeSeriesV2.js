@@ -102,6 +102,7 @@ window.PlotTimeSeries = function () {
     let enter = current.enter()
       .append('g')
       .attr('class', 'binded')
+      .attr('id', id)
 
     enter.each(function (d, i) {
       let g = d3.select(this)
@@ -183,14 +184,15 @@ window.PlotTimeSeries = function () {
       .attr('height', reserved.main.box.h)
     reserved.clipping.clipBody = reserved.clipping.g.append('g')
       .attr('clip-path', 'url(#clip)')
-    reserved.main.g = reserved.clipping.clipBody.append('g')
+    reserved.clipping.maing = reserved.clipping.clipBody.append('g')
   }
   function initAxis () {
     for (let i = 0; i < reserved.axis.length; i++) {
       if (reserved.axis[i].main.mode === 'time') reserved.axis[i].scale = d3.scaleTime()
       else if (reserved.axis[i].main.mode === 'line') reserved.axis[i].scale = d3.scaleLinear()
       else reserved.axis[i].scale = d3.scaleLinear()
-      reserved.axis[i].scale.range(reserved.axis[i].range)
+      reserved.axis[i].scale
+        .range(reserved.axis[i].range)
         .domain(reserved.axis[i].domain)
 
       if (reserved.axis[i].main.type === 'top') reserved.axis[i].axis = d3.axisTop(reserved.axis[i].scale)
@@ -204,6 +206,7 @@ window.PlotTimeSeries = function () {
       if (reserved.axis[i].main.type === 'bottom') reserved.axis[i].main.g.attr('transform', 'translate(' + reserved.axis[i].main.box.x + ',' + (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h) + ')')
       else if (reserved.axis[i].main.type === 'top') reserved.axis[i].main.g.attr('transform', 'translate(' + reserved.axis[i].main.box.x + ',' + reserved.axis[i].main.box.y + ')')
       else if (reserved.axis[i].main.type === 'right') reserved.axis[i].main.g.attr('transform', 'translate(' + (reserved.axis[i].main.box.x + reserved.axis[i].main.box.w) + ',' + reserved.axis[i].main.box.y + ')')
+      else if (reserved.axis[i].main.type === 'left') reserved.axis[i].main.g.attr('transform', 'translate(' + (reserved.axis[i].main.box.x) + ',' + reserved.axis[i].main.box.y + ')')
 
       if (!reserved.axis[i].showAxis) continue
       reserved.axis[i].main.g
@@ -295,18 +298,29 @@ window.PlotTimeSeries = function () {
     }
   }
   this.getAxis = getAxis
+  function getClipping () {
+    return reserved.clipping.maing
+  }
+  this.getClipping = getClipping
   function updateAxis (axis) {
     let index = 0
     for (index; index < reserved.axis.length; index++) {
       if (reserved.axis[index].id === axis.id) {
         if (axis.range) reserved.axis[index].range = axis.range
         if (axis.domain) reserved.axis[index].domain = axis.domain
+        if (axis.box) reserved.axis[index].main.box = axis.box
+        if (axis.tickSize) reserved.axis[index].main.attr.tickSize = axis.tickSize
         break
       }
     }
     reserved.axis[index].scale
       .domain(reserved.axis[index].domain)
       .range(reserved.axis[index].range)
+
+    if (reserved.axis[index].main.type === 'bottom') reserved.axis[index].main.g.attr('transform', 'translate(' + reserved.axis[index].main.box.x + ',' + (reserved.axis[index].main.box.y + reserved.axis[index].main.box.h) + ')')
+    else if (reserved.axis[index].main.type === 'top') reserved.axis[index].main.g.attr('transform', 'translate(' + reserved.axis[index].main.box.x + ',' + reserved.axis[index].main.box.y + ')')
+    else if (reserved.axis[index].main.type === 'right') reserved.axis[index].main.g.attr('transform', 'translate(' + (reserved.axis[index].main.box.x + reserved.axis[index].main.box.w) + ',' + reserved.axis[index].main.box.y + ')')
+    else if (reserved.axis[index].main.type === 'left') reserved.axis[index].main.g.attr('transform', 'translate(' + (reserved.axis[index].main.box.x) + ',' + reserved.axis[index].main.box.y + ')')
     // applyZoomBrush(reserved.axis[index])
 
     // if (!reserved.axis[index].enabled) return
@@ -353,6 +367,14 @@ window.PlotTimeSeries = function () {
   //   }
   //   if (axis.brush.zoom) axis.scale.domain(newDomain)
   // }
+  function updateBox (box) {
+    reserved.main.box = box
+    reserved.main.g.attr('transform', 'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')')
+    reserved.clipping.g.select('#clip-rect')
+      .attr('width', reserved.main.box.w)
+      .attr('height', reserved.main.box.h)
+  }
+  this.updateBox = updateBox
   function updateData (optIn) {
     for (let id in reserved.content) {
       let binded = reserved.content[id]
