@@ -20,7 +20,7 @@ window.BlockQueue = function (optIn) {
     main: {
       tag: 'blockQueueRootTag',
       g: undefined,
-      box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+      box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 },
       background: {
         fill: colorTheme.brighter.background,
         stroke: colorTheme.brighter.stroke,
@@ -30,7 +30,7 @@ window.BlockQueue = function (optIn) {
     axis: {
       enabled: true,
       g: undefined,
-      box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+      box: { x: 0, y: 300, w: 1000, h: 0, marg: 0 },
       axis: undefined,
       scale: undefined,
       domain: [0, 1000],
@@ -53,7 +53,7 @@ window.BlockQueue = function (optIn) {
       run: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0},
+        box: { x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -73,7 +73,7 @@ window.BlockQueue = function (optIn) {
       cancel: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0},
+        box: { x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -93,7 +93,7 @@ window.BlockQueue = function (optIn) {
       modification: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0},
+        box: { x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -115,18 +115,18 @@ window.BlockQueue = function (optIn) {
     filters: {
       enabled: false,
       g: undefined,
-      box: {x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0},
+      box: { x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0 },
       filters: []
     },
     timeBars: {
       enabled: true,
       g: undefined,
-      box: {x: 0, y: 0, w: 1000, h: 300, marg: 0}
+      box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 }
     },
     time: {
-      currentTime: {date: new Date(), time: 0},
-      startTime: {date: new Date(), time: 0},
-      endTime: {date: new Date(), time: 1000}
+      currentTime: { date: new Date(), time: 0 },
+      startTime: { date: new Date(), time: 0 },
+      endTime: { date: new Date(), time: 1000 }
     },
     data: {
       raw: {
@@ -140,8 +140,7 @@ window.BlockQueue = function (optIn) {
       enabled: false
     },
     pattern: {},
-    event: {
-    },
+    event: {},
     input: {
       selection: []
     }
@@ -168,7 +167,9 @@ window.BlockQueue = function (optIn) {
       let canRun = hasVar(optIn.canRun)
         ? optIn.canRun
         : optIn.d.data.exeState.canRun
-      let modified = optIn.d.data.modifications ? optIn.d.data.modifications.userModifications.length > 0 : false
+      let modified = optIn.d.data.modifications
+        ? optIn.d.data.modifications.userModifications.length > 0
+        : false
 
       if (state === 'wait') {
         if (modified) return com.blocks.colorPalette.wait
@@ -193,7 +194,9 @@ window.BlockQueue = function (optIn) {
       let canRun = hasVar(optIn.canRun)
         ? optIn.canRun
         : optIn.d.data.exeState.canRun
-      let modified = optIn.d.data.modifications ? optIn.d.data.modifications.userModifications.length > 0 : false
+      let modified = optIn.d.data.modifications
+        ? optIn.d.data.modifications.userModifications.length > 0
+        : false
 
       if (state === 'wait') {
         if (modified) return 0.2
@@ -235,7 +238,8 @@ window.BlockQueue = function (optIn) {
     //   .attr('stroke-width', 0.8)
     //   .attr('stroke-opacity', 0.4)
 
-    com.pattern.select.patternSelect = com.pattern.select.defs.append('pattern')
+    com.pattern.select.patternSelect = com.pattern.select.defs
+      .append('pattern')
       .attr('id', 'patternSelect')
       .attr('x', 0)
       .attr('y', 0)
@@ -243,7 +247,8 @@ window.BlockQueue = function (optIn) {
       .attr('height', 3)
       .attr('fill', '#ffffff')
       .attr('patternUnits', 'userSpaceOnUse')
-    com.pattern.select.patternSelect.append('line')
+    com.pattern.select.patternSelect
+      .append('line')
       .attr('x1', 0)
       .attr('y1', 0)
       .attr('x2', 3)
@@ -251,7 +256,8 @@ window.BlockQueue = function (optIn) {
       .attr('stroke', '#000000')
       .attr('stroke-width', 0.4)
       .attr('stroke-opacity', 0.6)
-    com.pattern.select.patternSelect.append('line')
+    com.pattern.select.patternSelect
+      .append('line')
       .attr('x1', 3)
       .attr('y1', 0)
       .attr('x2', 0)
@@ -271,7 +277,8 @@ window.BlockQueue = function (optIn) {
   }
   this.init = init
   function initBackground () {
-    com.main.g.append('rect')
+    com.main.g
+      .append('rect')
       .attr('class', 'background')
       .attr('x', 0)
       .attr('y', 0)
@@ -288,18 +295,22 @@ window.BlockQueue = function (optIn) {
   }
   this.initBackground = initBackground
   function initAxis () {
-    com.axis.scale = d3.scaleTime()
+    com.axis.scale = d3
+      .scaleTime()
       .range(com.axis.range)
       .domain(com.axis.domain)
-    com.axis.main = d3.axisBottom(com.axis.scale)
+    com.axis.main = d3
+      .axisBottom(com.axis.scale)
       .tickFormat(d3.timeFormat('%H:%M'))
 
     if (!com.axis.enabled) return
-    com.axis.g = com.main.g.append('g')
-      .attr('transform', 'translate(' + com.axis.box.x + ',' + com.axis.box.y + ')')
-    com.axis.g
-      .attr('class', 'axis')
-      .call(com.axis.main)
+    com.axis.g = com.main.g
+      .append('g')
+      .attr(
+        'transform',
+        'translate(' + com.axis.box.x + ',' + com.axis.box.y + ')'
+      )
+    com.axis.g.attr('class', 'axis').call(com.axis.main)
 
     com.axis.g.style('opacity', 1)
   }
@@ -308,7 +319,9 @@ window.BlockQueue = function (optIn) {
 
     com.blocks.clipping = {}
     com.blocks.clipping.g = com.main.g.append('g')
-    com.blocks.clipping.g.append('defs').append('svg:clipPath')
+    com.blocks.clipping.g
+      .append('defs')
+      .append('svg:clipPath')
       .attr('id', 'clip')
       .append('svg:rect')
       .attr('id', 'clip-rect')
@@ -316,11 +329,16 @@ window.BlockQueue = function (optIn) {
       .attr('y', '0')
       .attr('width', com.main.box.w)
       .attr('height', com.main.box.h)
-    com.blocks.clipping.clipBody = com.blocks.clipping.g.append('g')
+    com.blocks.clipping.clipBody = com.blocks.clipping.g
+      .append('g')
       .attr('clip-path', 'url(#clip)')
     if (com.blocks.run.enabled) {
       com.blocks.run.g = com.blocks.clipping.clipBody.append('g')
-      com.blocks.run.g.attr('transform', 'translate(' + com.blocks.run.box.x + ',' + com.blocks.run.box.y + ')')
+      com.blocks.run.g
+        .attr(
+          'transform',
+          'translate(' + com.blocks.run.box.x + ',' + com.blocks.run.box.y + ')'
+        )
         .style('opacity', 0)
         .transition()
         .duration(1000)
@@ -329,7 +347,15 @@ window.BlockQueue = function (optIn) {
     }
     if (com.blocks.cancel.enabled) {
       com.blocks.cancel.g = com.blocks.clipping.clipBody.append('g')
-      com.blocks.cancel.g.attr('transform', 'translate(' + com.blocks.cancel.box.x + ',' + com.blocks.cancel.box.y + ')')
+      com.blocks.cancel.g
+        .attr(
+          'transform',
+          'translate(' +
+            com.blocks.cancel.box.x +
+            ',' +
+            com.blocks.cancel.box.y +
+            ')'
+        )
         .style('opacity', 0)
         .transition()
         .duration(1000)
@@ -338,7 +364,15 @@ window.BlockQueue = function (optIn) {
     }
     if (com.blocks.modification.enabled) {
       com.blocks.modification.g = com.blocks.clipping.clipBody.append('g')
-      com.blocks.modification.g.attr('transform', 'translate(' + com.blocks.modification.box.x + ',' + com.blocks.modification.box.y + ')')
+      com.blocks.modification.g
+        .attr(
+          'transform',
+          'translate(' +
+            com.blocks.modification.box.x +
+            ',' +
+            com.blocks.modification.box.y +
+            ')'
+        )
         .style('opacity', 0)
         .transition()
         .duration(1000)
@@ -392,7 +426,8 @@ window.BlockQueue = function (optIn) {
       //   .attr('stroke', com.main.colorTheme.dark.stroke)
       //   .attr('stroke-width', 0.2)
 
-      com.filters.top.g.append('rect')
+      com.filters.top.g
+        .append('rect')
         .attr('x', 0)
         .attr('y', com.filters.top.box.y)
         .attr('width', com.filters.top.box.w * 0.32)
@@ -400,7 +435,8 @@ window.BlockQueue = function (optIn) {
         .attr('fill', com.main.colorTheme.darker.background)
         .attr('stroke', com.main.colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
-      com.filters.top.g.append('rect')
+      com.filters.top.g
+        .append('rect')
         .attr('x', com.filters.top.box.w * 0.34)
         .attr('y', com.filters.top.box.y)
         .attr('width', com.filters.top.box.w * 0.32)
@@ -408,7 +444,8 @@ window.BlockQueue = function (optIn) {
         .attr('fill', com.main.colorTheme.darker.background)
         .attr('stroke', com.main.colorTheme.darker.stroke)
         .attr('stroke-width', 0.2)
-      com.filters.top.g.append('rect')
+      com.filters.top.g
+        .append('rect')
         .attr('x', com.filters.top.box.w * 0.68)
         .attr('y', com.filters.top.box.y)
         .attr('width', com.filters.top.box.w * 0.32)
@@ -426,7 +463,8 @@ window.BlockQueue = function (optIn) {
         targets: {}
       }
       com.filters.middle.box.x = 0
-      com.filters.middle.box.y = com.filters.middle.box.y + com.filters.middle.box.h * 0.15
+      com.filters.middle.box.y =
+        com.filters.middle.box.y + com.filters.middle.box.h * 0.15
       com.filters.middle.box.h *= 0.67
 
       // com.filters.middle.g.append('rect')
@@ -444,10 +482,12 @@ window.BlockQueue = function (optIn) {
         box: deepCopy(com.filters.box),
         childs: {}
       }
-      com.filters.bottom.box.y = com.filters.bottom.box.y + com.filters.bottom.box.h * 0.85
+      com.filters.bottom.box.y =
+        com.filters.bottom.box.y + com.filters.bottom.box.h * 0.85
       com.filters.bottom.box.h *= 0.15
 
-      com.filters.bottom.g.append('rect')
+      com.filters.bottom.g
+        .append('rect')
         .attr('x', 0)
         .attr('y', com.filters.bottom.box.y)
         .attr('width', com.filters.bottom.box.w * 0.2)
@@ -465,7 +505,8 @@ window.BlockQueue = function (optIn) {
         targets: {}
       }
       com.filters.general.box.x = 0
-      com.filters.general.box.y = com.filters.general.box.y + com.filters.general.box.h * 0.15
+      com.filters.general.box.y =
+        com.filters.general.box.y + com.filters.general.box.h * 0.15
       com.filters.general.box.h *= 0.67
 
       // com.filters.general.g.append('rect')
@@ -477,7 +518,8 @@ window.BlockQueue = function (optIn) {
       //   .attr('stroke', com.main.colorTheme.medium.stroke)
       //   .attr('stroke-width', 0.2)
       //   .attr('stroke-dasharray', [com.filters.general.box.w * 0.45, com.filters.general.box.w * 0.47, com.filters.general.box.w * 0.92])
-      com.filters.general.g.append('rect')
+      com.filters.general.g
+        .append('rect')
         .attr('x', com.filters.general.box.w * 0.65)
         .attr('y', com.filters.general.box.w * 0.45)
         .attr('width', com.filters.general.box.w * 0.3)
@@ -485,7 +527,8 @@ window.BlockQueue = function (optIn) {
         .attr('fill', com.main.colorTheme.medium.background)
         .attr('stroke', com.main.colorTheme.medium.stroke)
         .attr('stroke-width', 0.2)
-      com.filters.general.g.append('rect')
+      com.filters.general.g
+        .append('rect')
         .attr('x', com.filters.general.box.w * 0.65)
         .attr('y', com.filters.general.box.w * 0.45)
         .attr('width', com.filters.general.box.w * 0.3)
@@ -494,7 +537,8 @@ window.BlockQueue = function (optIn) {
         .attr('stroke', com.main.colorTheme.medium.stroke)
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', []) // [0, com.filters.middle.box.w * 0.15, com.filters.middle.box.w * 0.4, com.filters.middle.box.w * 0.65])
-      com.filters.general.g.append('text')
+      com.filters.general.g
+        .append('text')
         .text('20/20')
         .attr('x', com.filters.general.box.w * 0.8)
         .attr('y', com.filters.general.box.w * 0.6)
@@ -507,7 +551,8 @@ window.BlockQueue = function (optIn) {
         .style('font-size', '7px')
         .style('pointer-events', 'none')
         .style('user-select', 'none')
-      com.filters.general.g.append('text')
+      com.filters.general.g
+        .append('text')
         .text('100%')
         .attr('x', com.filters.middle.box.w * 0.8)
         .attr('y', com.filters.middle.box.w * 0.6)
@@ -530,25 +575,28 @@ window.BlockQueue = function (optIn) {
         let clickFunction = function (rect, filter) {
           if (newButton.attr('status') === 'enabled') {
             newButton.attr('status', 'disabled')
-            rect.attr('stroke', function (d, i) {
-              return '#000000'
-            })
+            rect
+              .attr('stroke', function (d, i) {
+                return '#000000'
+              })
               .attr('stroke-width', 1.5)
-            newButton.append('line')
+            newButton
+              .append('line')
               .attr('class', 'checkboxBar')
               .attr('x1', 0)
               .attr('y1', 0)
-              .attr('x2', (Number(newButton.attr('width'))))
-              .attr('y2', (Number(newButton.attr('height'))))
+              .attr('x2', Number(newButton.attr('width')))
+              .attr('y2', Number(newButton.attr('height')))
               .attr('stroke', '#000000')
               .style('stroke-opacity', 0.9)
               .attr('stroke-width', 2)
               .style('pointer-events', 'none')
-            newButton.append('line')
+            newButton
+              .append('line')
               .attr('class', 'checkboxBar')
               .attr('x1', 0)
-              .attr('y1', (Number(newButton.attr('height'))))
-              .attr('x2', (Number(newButton.attr('width'))))
+              .attr('y1', Number(newButton.attr('height')))
+              .attr('x2', Number(newButton.attr('width')))
               .attr('y2', 0)
               .attr('stroke', '#000000')
               .style('stroke-opacity', 0.9)
@@ -561,9 +609,10 @@ window.BlockQueue = function (optIn) {
           } else {
             newButton.attr('status', 'enabled')
             newButton.selectAll('line.checkboxBar').remove()
-            rect.attr('stroke', function (d, i) {
-              return '#000000'
-            })
+            rect
+              .attr('stroke', function (d, i) {
+                return '#000000'
+              })
               .attr('stroke-width', 0.2)
               .style('stroke-opacity', 1)
             // if (filter !== undefined) {
@@ -574,14 +623,25 @@ window.BlockQueue = function (optIn) {
           }
         }
 
-        let newRect = newButton.append('rect')
-          .attr('x', (Number(newButton.attr('width')) - ((Number(newButton.attr('width'))) * (3) / 3)) / 2)
-          .attr('y', (Number(newButton.attr('height')) - ((Number(newButton.attr('height'))) * (3) / 3)) / 2)
+        let newRect = newButton
+          .append('rect')
+          .attr(
+            'x',
+            (Number(newButton.attr('width')) -
+              Number(newButton.attr('width')) * 3 / 3) /
+              2
+          )
+          .attr(
+            'y',
+            (Number(newButton.attr('height')) -
+              Number(newButton.attr('height')) * 3 / 3) /
+              2
+          )
           .attr('width', function (d, i) {
-            return ((Number(newButton.attr('width'))) * (3) / 3)
+            return Number(newButton.attr('width')) * 3 / 3
           })
           .attr('height', function (d, i) {
-            return ((Number(newButton.attr('height'))) * (3) / 3)
+            return Number(newButton.attr('height')) * 3 / 3
           })
           .attr('rx', 0)
           .attr('ry', 0)
@@ -599,10 +659,12 @@ window.BlockQueue = function (optIn) {
             clickFunction(d3.select(this), filter)
           })
           .on('mouseover', function () {
-            let ginfo = com.filters.g.append('g')
+            let ginfo = com.filters.g
+              .append('g')
               .attr('class', 'info')
               .attr('transform', newButton.attr('transform'))
-            ginfo.append('rect')
+            ginfo
+              .append('rect')
               .attr('x', -Number(newButton.attr('width')) * 0.5)
               .attr('y', -20)
               .attr('width', Number(newButton.attr('width')) * 2)
@@ -611,7 +673,8 @@ window.BlockQueue = function (optIn) {
               .attr('ry', 3)
               .attr('fill', '#eeeeee')
               .style('fill-opacity', 0.82)
-            ginfo.append('text')
+            ginfo
+              .append('text')
               .text(type)
               .attr('x', Number(newButton.attr('width')) * 0.5)
               .attr('y', -5)
@@ -639,7 +702,7 @@ window.BlockQueue = function (optIn) {
           .on('mouseout', function () {
             com.filters.g.select('g.info').remove()
             if (newButton.attr('status') !== newButton.attr('status-over')) {
-              return
+
             } else if (newButton.attr('status') === 'disabled') {
               if (filter !== undefined) {
                 com.filters.filters.push(filter)
@@ -673,7 +736,8 @@ window.BlockQueue = function (optIn) {
         stroke: 'transparent'
       })
 
-      com.filters.middle.g.append('text')
+      com.filters.middle.g
+        .append('text')
         .text('States filters')
         .attr('x', com.filters.middle.box.w * 0.5)
         .attr('y', com.filters.middle.box.h * 0.05)
@@ -714,12 +778,26 @@ window.BlockQueue = function (optIn) {
       // }
 
       com.filters.middle.button = {
-        Fail: createButton({row: 1, col: 3}, 'Fail', [{keys: ['exeState', 'state'], value: 'fail'}]),
-        Done: createButton({row: 2, col: 3}, 'Done', [{keys: ['exeState', 'state'], value: 'done'}]),
-        Run: createButton({row: 3, col: 3}, 'Run', [{keys: ['exeState', 'state'], value: 'run'}]),
-        'Cancel.canrun': createButton({row: 4, col: 3}, 'Cancel.canrun', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: true}]),
-        Cancel: createButton({row: 5, col: 3}, 'Cancel', [{keys: ['exeState', 'state'], value: 'cancel'}, {keys: ['exeState', 'canRun'], value: false}]),
-        Wait: createButton({row: 6, col: 3}, 'Wait', [{keys: ['exeState', 'state'], value: 'wait'}])
+        Fail: createButton({ row: 1, col: 3 }, 'Fail', [
+          { keys: ['exeState', 'state'], value: 'fail' }
+        ]),
+        Done: createButton({ row: 2, col: 3 }, 'Done', [
+          { keys: ['exeState', 'state'], value: 'done' }
+        ]),
+        Run: createButton({ row: 3, col: 3 }, 'Run', [
+          { keys: ['exeState', 'state'], value: 'run' }
+        ]),
+        'Cancel.canrun': createButton({ row: 4, col: 3 }, 'Cancel.canrun', [
+          { keys: ['exeState', 'state'], value: 'cancel' },
+          { keys: ['exeState', 'canRun'], value: true }
+        ]),
+        Cancel: createButton({ row: 5, col: 3 }, 'Cancel', [
+          { keys: ['exeState', 'state'], value: 'cancel' },
+          { keys: ['exeState', 'canRun'], value: false }
+        ]),
+        Wait: createButton({ row: 6, col: 3 }, 'Wait', [
+          { keys: ['exeState', 'state'], value: 'wait' }
+        ])
       }
 
       updateStatesFilters()
@@ -730,10 +808,11 @@ window.BlockQueue = function (optIn) {
         let box = {
           x: 0,
           y: 0,
-          w: (Math.random() * 3) * Number(button.attr('width')),
+          w: Math.random() * 3 * Number(button.attr('width')),
           h: Number(button.attr('height'))
         }
-        button.append('rect')
+        button
+          .append('rect')
           .attr('x', -box.w)
           .attr('y', box.y + box.h * 0.1)
           .attr('width', box.w)
@@ -743,16 +822,15 @@ window.BlockQueue = function (optIn) {
           .attr('stroke-width', 0.2)
       }
     }
-    function createTelsFilters () {
+    function createTelsFilters () {}
+    function createTargetsFilsters () {}
 
-    }
-    function createTargetsFilsters () {
-
-    }
-
-
-    com.filters.g = com.main.g.append('g')
-      .attr('transform', 'translate(' + com.filters.box.x + ',' + com.filters.box.y + ')')
+    com.filters.g = com.main.g
+      .append('g')
+      .attr(
+        'transform',
+        'translate(' + com.filters.box.x + ',' + com.filters.box.y + ')'
+      )
 
     createTop()
     createMiddle()
@@ -763,8 +841,12 @@ window.BlockQueue = function (optIn) {
   }
   function initTimeBars () {
     if (!com.timeBars.enabled) return
-    com.timeBars.g = com.main.g.append('g')
-      .attr('transform', 'translate(' + com.timeBars.box.x + ',' + com.timeBars.box.y + ')')
+    com.timeBars.g = com.main.g
+      .append('g')
+      .attr(
+        'transform',
+        'translate(' + com.timeBars.box.x + ',' + com.timeBars.box.y + ')'
+      )
     com.timeBars.g
       .style('opacity', 0)
       .transition()
@@ -782,7 +864,7 @@ window.BlockQueue = function (optIn) {
       if (target === value) return true
       return false
     }
-    let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
+    let filtered = { done: [], run: [], cancel: [], wait: [], fail: [] }
     for (var z = 0; z < com.data.raw.blocks.done.length; z++) {
       let dataNow = com.data.raw.blocks.done[z]
       if (com.filters.filters.length === 0) {
@@ -795,7 +877,13 @@ window.BlockQueue = function (optIn) {
           let filterNow = com.filters.filters[i]
           let allPropValidate = true
           for (var j = 0; j < filterNow.length; j++) {
-            if (!checkPropertiesValue(dataNow, filterNow[j].keys, filterNow[j].value)) allPropValidate = false
+            if (
+              !checkPropertiesValue(
+                dataNow,
+                filterNow[j].keys,
+                filterNow[j].value
+              )
+            ) { allPropValidate = false }
           }
           if (allPropValidate) insert = false
         }
@@ -812,7 +900,7 @@ window.BlockQueue = function (optIn) {
         let filterNow = com.filters.filters[i]
         let ok = true
         for (var j = 0; j < filterNow.length; j++) {
-          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) ok = false
+          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) { ok = false }
         }
         if (ok) return false
       }
@@ -825,7 +913,7 @@ window.BlockQueue = function (optIn) {
         let filterNow = com.filters.filters[i]
         let ok = true
         for (var j = 0; j < filterNow.length; j++) {
-          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) ok = false
+          if (!checkPropertiesValue(d, filterNow[j].keys, filterNow[j].value)) { ok = false }
         }
         if (ok) return false
       }
@@ -839,9 +927,7 @@ window.BlockQueue = function (optIn) {
     com.axis.domain = [com.time.startTime.date, com.time.endTime.date]
     com.axis.range = [0, com.axis.box.w]
 
-    com.axis.scale
-      .domain(com.axis.domain)
-      .range(com.axis.range)
+    com.axis.scale.domain(com.axis.domain).range(com.axis.range)
 
     if (!com.axis.enabled) return
     let minTxtSize = com.main.box.w * 0.02
@@ -849,9 +935,18 @@ window.BlockQueue = function (optIn) {
     com.axis.main.scale(com.axis.scale)
     com.axis.main.tickSize(4)
     com.axis.g.call(com.axis.main)
-    com.axis.g.select('path').attr('stroke-width', 1.5).attr('stroke', com.axis.attr.path.stroke)
-    com.axis.g.selectAll('g.tick').selectAll('line').attr('stroke-width', 1.5).attr('stroke', com.axis.attr.path.stroke)
-    com.axis.g.selectAll('g.tick').selectAll('text')
+    com.axis.g
+      .select('path')
+      .attr('stroke-width', 1.5)
+      .attr('stroke', com.axis.attr.path.stroke)
+    com.axis.g
+      .selectAll('g.tick')
+      .selectAll('line')
+      .attr('stroke-width', 1.5)
+      .attr('stroke', com.axis.attr.path.stroke)
+    com.axis.g
+      .selectAll('g.tick')
+      .selectAll('text')
       .attr('stroke', com.axis.attr.text.stroke)
       .attr('stroke-width', 0.5)
       .attr('fill', com.axis.attr.text.fill)
@@ -871,25 +966,56 @@ window.BlockQueue = function (optIn) {
         start: com.time.startTime.time,
         end: com.time.endTime.time,
         data: dataBottom,
-        box: {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg},
+        box: {
+          x: 0,
+          y: 0,
+          w: com.blocks.run.box.w,
+          h: com.blocks.run.box.h,
+          marg: com.blocks.run.box.marg
+        },
         yScale: true
       })
-      bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg}, 'toTop')
+      bottomRow = adjustBlockRow(
+        bottomRow,
+        {
+          x: 0,
+          y: 0,
+          w: com.blocks.run.box.w,
+          h: com.blocks.run.box.h,
+          marg: com.blocks.run.box.marg
+        },
+        'toTop'
+      )
       bottomRow = setDefaultStyleForBlocks(bottomRow)
       setBlockRect(bottomRow, com.blocks.run)
     }
     if (com.blocks.cancel.enabled) {
-      let dataTop = []
-        .concat(com.data.filtered.cancel)
+      let dataTop = [].concat(com.data.filtered.cancel)
       let topRow = calcBlockRow({
         typeNow: 'top',
         start: com.time.startTime.time,
         end: com.time.endTime.time,
         data: dataTop,
-        box: {x: 0, y: 0, w: com.blocks.cancel.box.w, h: com.blocks.cancel.box.h, marg: com.blocks.cancel.box.marg},
+        box: {
+          x: 0,
+          y: 0,
+          w: com.blocks.cancel.box.w,
+          h: com.blocks.cancel.box.h,
+          marg: com.blocks.cancel.box.marg
+        },
         yScale: false
       })
-      topRow = adjustBlockRow(topRow, {x: 0, y: 0, w: com.blocks.cancel.box.w, h: com.blocks.cancel.box.h, marg: com.blocks.cancel.box.marg}, 'toTop')
+      topRow = adjustBlockRow(
+        topRow,
+        {
+          x: 0,
+          y: 0,
+          w: com.blocks.cancel.box.w,
+          h: com.blocks.cancel.box.h,
+          marg: com.blocks.cancel.box.marg
+        },
+        'toTop'
+      )
       topRow = setDefaultStyleForBlocks(topRow)
       setBlockRect(topRow, com.blocks.cancel)
     }
@@ -899,17 +1025,34 @@ window.BlockQueue = function (optIn) {
         start: com.time.startTime.time,
         end: com.time.endTime.time,
         data: com.data.modified,
-        box: {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg},
+        box: {
+          x: 0,
+          y: 0,
+          w: com.blocks.run.box.w,
+          h: com.blocks.run.box.h,
+          marg: com.blocks.run.box.marg
+        },
         yScale: true
       })
-      middleRow = adjustBlockRow(middleRow, {x: 0, y: 0, w: com.blocks.modification.box.w, h: com.blocks.modification.box.h, marg: com.blocks.modification.box.marg}, 'toBottom')
+      middleRow = adjustBlockRow(
+        middleRow,
+        {
+          x: 0,
+          y: 0,
+          w: com.blocks.modification.box.w,
+          h: com.blocks.modification.box.h,
+          marg: com.blocks.modification.box.marg
+        },
+        'toBottom'
+      )
       middleRow = setDefaultStyleForBlocks(middleRow)
       setBlockRect(middleRow, com.blocks.modification)
     }
   }
   this.updateBlocks = updateBlocks
   function updateData (dataIn) {
-    com.main.g.select('text.name')
+    com.main.g
+      .select('text.name')
       .transition()
       .duration(400)
       .style('opacity', 0)
@@ -942,7 +1085,15 @@ window.BlockQueue = function (optIn) {
     for (var i = 0; i < blocks.length; i++) {
       let newGroup = [blocks[i]]
       for (var j = 0; j < blocks.length; j++) {
-        if (i !== j && isSameTimeBeginAfter(blocks[i].x, blocks[i].x + blocks[i].w, blocks[j].x, blocks[j].x + blocks[j].w)) newGroup.push(blocks[j])
+        if (
+          i !== j &&
+          isSameTimeBeginAfter(
+            blocks[i].x,
+            blocks[i].x + blocks[i].w,
+            blocks[j].x,
+            blocks[j].x + blocks[j].w
+          )
+        ) { newGroup.push(blocks[j]) }
       }
       groups.push(newGroup)
     }
@@ -973,7 +1124,10 @@ window.BlockQueue = function (optIn) {
     }
     for (let i = 0; i < length; i++) {
       for (let j = 0; j < length; j++) {
-        if (i !== j && useSameTels(group[i].data.telIds, group[j].data.telIds)) {
+        if (
+          i !== j &&
+          useSameTels(group[i].data.telIds, group[j].data.telIds)
+        ) {
           return true
         }
       }
@@ -1039,10 +1193,10 @@ window.BlockQueue = function (optIn) {
           let o01 = Math.max(dataNow0.o, dataNow1.o)
 
           let hasOverlap =
-                            x1 < minMax.maxX - o01 &&
-                            x1 + w1 > minMax.minX + o01 &&
-                            y1 < minMax.maxY &&
-                            y1 + h1 > minMax.minY
+            x1 < minMax.maxX - o01 &&
+            x1 + w1 > minMax.minX + o01 &&
+            y1 < minMax.maxY &&
+            y1 + h1 > minMax.minY
           // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,dataNow0.data.metaData.blockName],[index1,dataNow1.data.metaData.blockName]);
 
           // XXXXXXXXXXXXXXXXXX
@@ -1114,7 +1268,8 @@ window.BlockQueue = function (optIn) {
         // XXXXXXXXXXXXXXXXXX
         // let hasOverlap = ((x1 < x0+w0+margX/2) && (x1+w1 > x0) && (y1 < y0+h0) && (y1+h1 > y0));
         // XXXXXXXXXXXXXXXXXX
-        let hasOverlap = x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
+        let hasOverlap =
+          x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
         if (hasOverlap) {
           dataNow1.y = y0 + h0 + margY / 2
           // dataNow1.y += h0 + margY/2;
@@ -1124,7 +1279,7 @@ window.BlockQueue = function (optIn) {
     })
     if (direction === 'toTop') {
       $.each(blocks, function (index0, dataNow0) {
-        dataNow0.y = (2 * box.y + box.h) - dataNow0.y - dataNow0.h
+        dataNow0.y = 2 * box.y + box.h - dataNow0.y - dataNow0.h
       })
     }
     return blocks
@@ -1152,7 +1307,7 @@ window.BlockQueue = function (optIn) {
       let overlap = (dataNow.endTime - dataNow.startTime) * xScale * 0.2 // allow small overlap in x between blocks
       let x0 = box.x + start
       let w0 = end - start
-      let h0 = optIn.yScale ? (nTels * yScale) : (box.h * 0.3)
+      let h0 = optIn.yScale ? nTels * yScale : box.h * 0.3
       let y0 = box.y
 
       if (!hasVar(nBlocksType[state])) nBlocksType[state] = 0
@@ -1178,20 +1333,27 @@ window.BlockQueue = function (optIn) {
       $.each(group, function (index, dataNow) {
         tot += dataNow.h
       })
-      //console.log(isGeneratingTelsConflict(group), tot > box.h);
+      // console.log(isGeneratingTelsConflict(group), tot > box.h);
       if (isGeneratingTelsConflict(group)) {
-        let coef = (box.h * 1) / tot
+        let coef = box.h * 1 / tot
         let x = group[0].x
         let x2 = x + group[0].w
         $.each(group, function (index, dataNow) {
-          dataNow.newH = ((dataNow.h * coef) < dataNow.newH ? (dataNow.h * coef) : dataNow.newH)
+          dataNow.newH =
+            dataNow.h * coef < dataNow.newH ? dataNow.h * coef : dataNow.newH
           if (dataNow.x < x) x = dataNow.x
           if (dataNow.x + dataNow.w > x2) x2 = dataNow.x + dataNow.w
         })
-        com.background.child.runOverflow.back.append('rect')
+        com.background.child.runOverflow.back
+          .append('rect')
           .attr('class', 'conflictRect')
           .attr('x', x)
-          .attr('y', com.blocks.run.box.y - com.blocks.run.box.h * 0.25 - com.blocks.run.box.marg)
+          .attr(
+            'y',
+            com.blocks.run.box.y -
+              com.blocks.run.box.h * 0.25 -
+              com.blocks.run.box.marg
+          )
           .attr('width', x2 - x)
           .attr('height', com.blocks.run.box.h * 0.12)
           .attr('fill', com.background.child.runOverflow.fill)
@@ -1199,7 +1361,8 @@ window.BlockQueue = function (optIn) {
       } else if (tot > box.h) {
         let coef = box.h / tot
         $.each(group, function (index, dataNow) {
-          dataNow.newH = ((dataNow.h * coef) > dataNow.newH ? (dataNow.h * coef) : dataNow.newH)
+          dataNow.newH =
+            dataNow.h * coef > dataNow.newH ? dataNow.h * coef : dataNow.newH
         })
       }
     })
@@ -1212,7 +1375,8 @@ window.BlockQueue = function (optIn) {
   }
   this.calcBlockRow = calcBlockRow
   function setDefaultStyleForBlocks (blocks) {
-    let timeScale = d3.scaleLinear()
+    let timeScale = d3
+      .scaleLinear()
       .range(com.axis.range)
       .domain([com.time.startTime.time, com.time.endTime.time])
     for (let index in blocks) {
@@ -1231,7 +1395,13 @@ window.BlockQueue = function (optIn) {
       b.patternFill = ''
       b.patternOpacity = 0
       if (b.data.sbId === com.input.focus.schedBlocks) {
-        if (!(com.input.over.schedBlocks !== undefined && com.input.over.schedBlocks !== com.input.focus.schedBlocks)) { // b.stroke = colorTheme.blocks.critical.background
+        if (
+          !(
+            com.input.over.schedBlocks !== undefined &&
+            com.input.over.schedBlocks !== com.input.focus.schedBlocks
+          )
+        ) {
+          // b.stroke = colorTheme.blocks.critical.background
           // b.patternFill = 'url(#patternHover)'
           b.patternFill = 'url(#patternSelect)'
           b.patternOpacity = 1
@@ -1248,7 +1418,10 @@ window.BlockQueue = function (optIn) {
         b.patternOpacity = 1
       }
       if (b.data.obId === com.input.focus.block) {
-        if (com.input.over.block !== undefined && com.input.over.block !== com.input.focus.block) b.strokeDasharray = [8, 4]
+        if (
+          com.input.over.block !== undefined &&
+          com.input.over.block !== com.input.focus.block
+        ) { b.strokeDasharray = [8, 4] }
         b.strokeWidth = 6
         b.strokeOpacity = 1
       }
@@ -1272,10 +1445,26 @@ window.BlockQueue = function (optIn) {
         start: com.time.startTime.time,
         end: com.time.endTime.time,
         data: dataBottom,
-        box: {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg},
+        box: {
+          x: 0,
+          y: 0,
+          w: com.blocks.run.box.w,
+          h: com.blocks.run.box.h,
+          marg: com.blocks.run.box.marg
+        },
         yScale: true
       })
-      bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blocks.run.box.w, h: com.blocks.run.box.h, marg: com.blocks.run.box.marg}, 'toTop')
+      bottomRow = adjustBlockRow(
+        bottomRow,
+        {
+          x: 0,
+          y: 0,
+          w: com.blocks.run.box.w,
+          h: com.blocks.run.box.h,
+          marg: com.blocks.run.box.marg
+        },
+        'toTop'
+      )
       bottomRow = setDefaultStyleForBlocks(bottomRow)
       return bottomRow
     }
@@ -1360,7 +1549,8 @@ window.BlockQueue = function (optIn) {
     let box = group.box
     let g = group.g
     let minTxtSize = box.w * 0.016
-    let timeScale = d3.scaleLinear()
+    let timeScale = d3
+      .scaleLinear()
       .range(com.axis.range)
       .domain([com.time.startTime.time, com.time.endTime.time])
 
@@ -1375,7 +1565,9 @@ window.BlockQueue = function (optIn) {
       .attr('class', com.mainTag + 'blocks')
     rectEnter.each(function (d, i) {
       let parent = d3.select(this)
-      d3.select(this).append('rect')
+      d3
+        .select(this)
+        .append('rect')
         .attr('class', 'back')
         .attr('x', function (d, i) {
           return timeScale(d.data.startTime)
@@ -1417,7 +1609,7 @@ window.BlockQueue = function (optIn) {
 
           setTimeout(function () {
             if (node.attr('clicked') === '2') return
-            console.log('click');
+            console.log('click')
             if (event.ctrlKey) {
               com.input.selection.push(that)
             } else {
@@ -1429,7 +1621,7 @@ window.BlockQueue = function (optIn) {
         .on('dblclick', function (d) {
           let node = d3.select(this)
           node.attr('clicked', 2)
-          console.log('dbclick');
+          console.log('dbclick')
         })
         .on('mouseover', function (d) {
           // blocksMouseOver(d)
@@ -1445,19 +1637,24 @@ window.BlockQueue = function (optIn) {
           // })
           group.events.mouseout(d.data)
         })
-        .call(d3.drag()
-          .on('start', function (d) {
-            com.interaction = {}
-            com.interaction.oldG = parent
-            group.events.drag.start(d)
-          })
-          .on('drag', function (d) {
-            group.events.drag.tick(d)
-          })
-          .on('end', function (d) {
-            group.events.drag.end(d)
-          }))
-      d3.select(this).append('rect')
+        .call(
+          d3
+            .drag()
+            .on('start', function (d) {
+              com.interaction = {}
+              com.interaction.oldG = parent
+              group.events.drag.start(d)
+            })
+            .on('drag', function (d) {
+              group.events.drag.tick(d)
+            })
+            .on('end', function (d) {
+              group.events.drag.end(d)
+            })
+        )
+      d3
+        .select(this)
+        .append('rect')
         .attr('class', 'pattern')
         .attr('x', function (d, i) {
           return timeScale(d.data.startTime)
@@ -1478,7 +1675,9 @@ window.BlockQueue = function (optIn) {
         .style('stroke-opacity', 0)
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
-      d3.select(this).append('text')
+      d3
+        .select(this)
+        .append('text')
         .attr('class', 'name')
         .text(function (d, i) {
           return d.data.metaData.blockName
@@ -1507,7 +1706,9 @@ window.BlockQueue = function (optIn) {
     })
 
     rect.merge(rectEnter).each(function (d, i) {
-      d3.select(this).select('rect.back')
+      d3
+        .select(this)
+        .select('rect.back')
         .transition('inOut')
         .duration(timeD.animArc)
         .attr('stroke', function (d, i) {
@@ -1540,7 +1741,9 @@ window.BlockQueue = function (optIn) {
         .style('stroke-dasharray', function (d, i) {
           return d.strokeDasharray
         })
-      d3.select(this).select('rect.pattern')
+      d3
+        .select(this)
+        .select('rect.pattern')
         .attr('x', function (d, i) {
           return timeScale(d.data.startTime)
         })
@@ -1559,11 +1762,19 @@ window.BlockQueue = function (optIn) {
         .style('fill-opacity', function (d, i) {
           return d.patternOpacity
         })
-      d3.select(this).select('text')
+      d3
+        .select(this)
+        .select('text')
         .style('font-size', function (d) {
           d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
           if (!hasVar(d.size)) {
-            console.error('_blockQueue_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
+            console.error(
+              '_blockQueue_ERROR:',
+              com.mainTag,
+              minTxtSize,
+              d.w,
+              d.h
+            )
           } // should not happen....
           if (!hasVar(d.size)) d.size = 0
           // d.size = d.w/3;
@@ -1633,8 +1844,7 @@ window.BlockQueue = function (optIn) {
         .attr('class', com.mainTag + 'extra')
         .style('opacity', 1)
         .attr('x', function (d, i) {
-          if (d > com.axis.scale.domain()[1]) return com.axis.scale(com.axis.scale.domain()[1])
-          else if (d < com.axis.scale.domain()[0]) return com.axis.scale(com.axis.scale.domain()[0])
+          if (d > com.axis.scale.domain()[1]) { return com.axis.scale(com.axis.scale.domain()[1]) } else if (d < com.axis.scale.domain()[0]) { return com.axis.scale(com.axis.scale.domain()[0]) }
           return com.axis.scale(d)
         })
         .attr('y', function (d, i) {
@@ -1655,8 +1865,7 @@ window.BlockQueue = function (optIn) {
         .transition('inOut')
         .duration(50)
         .attr('x', function (d, i) {
-          if (d > com.axis.scale.domain()[1]) return com.axis.scale(com.axis.scale.domain()[1])
-          else if (d < com.axis.scale.domain()[0]) return com.axis.scale(com.axis.scale.domain()[0])
+          if (d > com.axis.scale.domain()[1]) { return com.axis.scale(com.axis.scale.domain()[1]) } else if (d < com.axis.scale.domain()[0]) { return com.axis.scale(com.axis.scale.domain()[0]) }
           return com.axis.scale(d)
         })
         // .attr("y", function(d,i) { return d.y; })

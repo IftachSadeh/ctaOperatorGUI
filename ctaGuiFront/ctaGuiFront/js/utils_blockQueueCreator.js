@@ -14,7 +14,10 @@
 /* global BlockQueue */
 /* global getColorTheme */
 
-window.loadScript({ source: 'BlockQueueCreator', script: '/js/utils_blockQueue.js' })
+window.loadScript({
+  source: 'BlockQueueCreator',
+  script: '/js/utils_blockQueue.js'
+})
 
 window.BlockQueueCreator = function (optIn) {
   let colorTheme = getColorTheme('bright-Grey')
@@ -22,7 +25,7 @@ window.BlockQueueCreator = function (optIn) {
     main: {
       tag: 'blockQueueRootTag',
       g: undefined,
-      box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+      box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 },
       background: {
         fill: colorTheme.brighter.background,
         stroke: colorTheme.brighter.stroke,
@@ -32,7 +35,7 @@ window.BlockQueueCreator = function (optIn) {
     axis: {
       enabled: true,
       g: undefined,
-      box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+      box: { x: 0, y: 300, w: 1000, h: 0, marg: 0 },
       axis: undefined,
       scale: undefined,
       domain: [0, 1000],
@@ -55,7 +58,7 @@ window.BlockQueueCreator = function (optIn) {
       run: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0},
+        box: { x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -75,7 +78,7 @@ window.BlockQueueCreator = function (optIn) {
       cancel: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0},
+        box: { x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -95,7 +98,7 @@ window.BlockQueueCreator = function (optIn) {
       modification: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0},
+        box: { x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -117,18 +120,18 @@ window.BlockQueueCreator = function (optIn) {
     filters: {
       enabled: false,
       g: undefined,
-      box: {x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0},
+      box: { x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0 },
       filters: []
     },
     timeBars: {
       enabled: true,
       g: undefined,
-      box: {x: 0, y: 0, w: 1000, h: 300, marg: 0}
+      box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 }
     },
     time: {
-      currentTime: {date: new Date(), time: 0},
-      startTime: {date: new Date(), time: 0},
-      endTime: {date: new Date(), time: 1000}
+      currentTime: { date: new Date(), time: 0 },
+      startTime: { date: new Date(), time: 0 },
+      endTime: { date: new Date(), time: 1000 }
     },
     data: {
       raw: {
@@ -142,8 +145,7 @@ window.BlockQueueCreator = function (optIn) {
       enabled: false
     },
     pattern: {},
-    event: {
-    },
+    event: {},
     input: {
       selection: []
     }
@@ -151,21 +153,24 @@ window.BlockQueueCreator = function (optIn) {
   let com = {}
   com = optIn
 
-
   function setDefaultStyle () {
     com.style = {}
     com.style.runRecCol = colsBlues[2]
     com.style.blockCol = function (optIn) {
-      if (optIn.d.data.endTime < com.time.currentTime.time) return com.blocks.colorPalette.shutdown
+      if (optIn.d.data.endTime < com.time.currentTime.time) { return com.blocks.colorPalette.shutdown }
       let state = hasVar(optIn.state)
         ? optIn.state
         : optIn.d.data.exeState.state
       let canRun = hasVar(optIn.canRun)
         ? optIn.canRun
         : optIn.d.data.exeState.canRun
-      let modified = optIn.d.data.modifications ?
-        !(Object.keys(optIn.d.data.modifications.userModifications).length === 0 && optIn.d.data.modifications.userModifications.constructor === Object) :
-        false
+      let modified = optIn.d.data.modifications
+        ? !(
+          Object.keys(optIn.d.data.modifications.userModifications).length ===
+              0 &&
+            optIn.d.data.modifications.userModifications.constructor === Object
+        )
+        : false
 
       if (state === 'wait') {
         if (modified) return com.blocks.colorPalette.critical
@@ -184,7 +189,7 @@ window.BlockQueueCreator = function (optIn) {
       } else return com.blocks.colorPalette.shutdown
     }
     com.style.blockOpac = function (optIn) {
-      if (optIn.d.data.endTime < com.time.currentTime.time) return com.blocks.colorPalette.shutdown
+      if (optIn.d.data.endTime < com.time.currentTime.time) { return com.blocks.colorPalette.shutdown }
       let state = hasVar(optIn.state)
         ? optIn.state
         : optIn.d.data.exeState.state
@@ -209,24 +214,47 @@ window.BlockQueueCreator = function (optIn) {
   }
   let blockQueue = new BlockQueue(com)
   blockQueue.initBackground = function () {
-    com.main.g.append('rect')
+    com.main.g
+      .append('rect')
       .attr('class', 'background')
       .attr('x', com.main.background.box ? com.main.background.box.x : 0)
       .attr('y', com.main.background.box ? com.main.background.box.y : 0)
-      .attr('width', com.main.background.box ? com.main.background.box.w : com.main.box.w)
-      .attr('height', com.main.background.box ? com.main.background.box.h : com.main.box.h)
+      .attr(
+        'width',
+        com.main.background.box ? com.main.background.box.w : com.main.box.w
+      )
+      .attr(
+        'height',
+        com.main.background.box ? com.main.background.box.h : com.main.box.h
+      )
       .style('fill', com.main.background.fill)
       .style('stroke', com.main.background.stroke)
       .style('stroke-width', com.main.background.strokeWidth)
-    com.main.g.append('text')
+    com.main.g
+      .append('text')
       .attr('class', 'name')
       .text('SERVER SCHEDULE')
       .style('text-anchor', 'middle')
-      .attr('x', com.main.background.box ? com.main.background.box.x + com.main.background.box.w * 0.5 : com.main.box.w * 0.5)
-      .attr('y', com.main.background.box ? com.main.background.box.y + com.main.background.box.h * 0.46 * 0.5 : com.main.box.h * 0.46 * 0.5)
+      .attr(
+        'x',
+        com.main.background.box
+          ? com.main.background.box.x + com.main.background.box.w * 0.5
+          : com.main.box.w * 0.5
+      )
+      .attr(
+        'y',
+        com.main.background.box
+          ? com.main.background.box.y + com.main.background.box.h * 0.46 * 0.5
+          : com.main.box.h * 0.46 * 0.5
+      )
       .attr('dy', com.main.box.h * 0.1)
       .style('font-weight', 'bold')
-      .style('font-size', com.main.background.box ? com.main.background.box.x : com.main.box.h * 0.2)
+      .style(
+        'font-size',
+        com.main.background.box
+          ? com.main.background.box.x
+          : com.main.box.h * 0.2
+      )
       .style('pointer-events', 'none')
       .style('user-select', 'none')
       .style('fill', com.main.colorTheme.medium.background)

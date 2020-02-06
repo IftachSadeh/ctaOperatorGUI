@@ -16,15 +16,13 @@ For additional information, see:
 - The package is based on several open source projects:
   - [Pyramid](http://docs.pylonsproject.org/projects/pyramid/en/latest/index.html) is used as a python web server.
   - Asynchronous communication between server and client is performed using [socket.io](http://socket.io/).
-  - The design of the front end is based on the [Polymer](https://www.polymer-project.org/1.0/) web component framework (see also the [element catalogue](https://elements.polymer-project.org/browse?package=paper-elements)).
   - Visualizations are performed using the [d3.js](https://d3js.org/) JavaScript library.
   - JavaScript dependencies are handles by the [`bower` package manager](https://bower.io/).
   - The package uses the [`redis`](https://redis.io/) database.
 
   Additionally, `ctaGuiBack` implements an interface to the ALMA Common Software (ACS). However, ACS is not required in order to run the package.
 
-- Development is being done using the following: `python v2.7`, `Polymer v2.0.x`, and `d3.js v4.1`.
-Best performance is likely to be achieved using the Chrome browser.
+- Development is being done using `python v2.7` and `d3.js v4.1`.
 
 ### First-time setup
 
@@ -110,7 +108,7 @@ The following details the minimal procedure to add a new widget, `myTestExample`
 - Make the following modifications:
   1. In `ctaGuiUtils/py/utils.py`: add the new widget (`myTestExample`) to `allowedWidgetTypeV`. This `dict` is used in `ctaGuiFront/ctaGuiFront/py/mySock.py` to make sure that a dynamically added widget-class (i.e., `ctaGuiFront/ctaGuiFront/py/widget_myTestExample.py`) is valid.
   2. In `ctaGuiFront/ctaGuiFront/js/utils_setupView.js`: add the new view and the new widget to `setupView`. Here the widgets which are loaded in a given view are defined. The new widget may also be added to an existing view.
-  3. In `ctaGuiFront/ctaGuiFront/templates/utils_webComp.html`: add the new view (`myNewView`) to the `main-site-nav` element. This just adds an entry to the new view in the main navigation menu in the index page and in side-menu.
+  3. In `ctaGuiFront/ctaGuiFront/js/utils_baseApp.js`: add the new view (`myNewView`) to the `addSiteNavMenu` function. (This will add an entry to the new view in the main navigation menu in the index page and in side-menu.)
   4. In `ctaGuiFront/ctaGuiFront/__init__.py`: add the new view (`myNewView`) to `utils.allWidgets`. This lets the server know that the new URL (`http://localhost:8090/cta/myNewView`) is valid.
 
 

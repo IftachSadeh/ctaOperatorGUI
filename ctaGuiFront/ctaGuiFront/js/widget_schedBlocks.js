@@ -1,15 +1,15 @@
 'use strict'
-// ---------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
 // stric mode for the following script or function (must come at the very begining!)
 // see: http://www.w3schools.com/js/js_strict.asp
-// ---------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
 // mainScriptTag used locally (will be overriden by other scripts...)
 // must be compatible with the name of this js file, according to:
 //    "/js/widget_"+mainScriptTag+".js"
 var mainScriptTag = 'schedBlocks'
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 
 /* global $ */
 /* global d3 */
@@ -41,7 +41,7 @@ window.loadScript({ source: mainScriptTag, script: '/js/blocks/utils_blockDispla
 window.loadScript({ source: mainScriptTag, script: '/js/events/utils_eventDisplayer.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_scrollBox.js' })
 window.loadScript({ source: mainScriptTag, script: '/js/utils_plotBrushZoom.js' })
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
   let y0 = 0
@@ -66,9 +66,9 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   sock.addToTable(optIn)
 }
 
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 // additional socket events for this particular widget type
-// ---------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------
 function sockSchedBlocks (optIn) {}
 
 function mainSchedBlocks (optIn) {
@@ -130,9 +130,9 @@ function mainSchedBlocks (optIn) {
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
 
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   function syncStateSend (dataIn) {
     if (sock.conStat.isOffline()) return
 
@@ -143,9 +143,9 @@ function mainSchedBlocks (optIn) {
     })
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   let prevSync = {}
   function syncStateGet (dataIn) {
     if (document.hidden) return
@@ -224,9 +224,9 @@ function mainSchedBlocks (optIn) {
       return colorTheme.blocks.cancelSys
     } else return colorTheme.blocks.shutdown
   }
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   function initData (dataIn) {
     function initSvg () {
       lenD.w = {}
@@ -512,9 +512,9 @@ function mainSchedBlocks (optIn) {
     let currentTime = {date: new Date(shared.data.server.timeOfNight.date_now)}
     svg.foreground.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
   }
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   function updateData (dataIn) {
     shared.data.server = dataIn.data
 
@@ -2449,9 +2449,9 @@ function mainSchedBlocks (optIn) {
   let svgBlocksQueueServerFutur = new SvgBlocksQueueServerFutur()
   let svgRunningPhase = new SvgRunningPhase()
   let svgFreeTels = new SvgFreeTels()
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------
   function getFocusBlock (optIn) {
     let focusBlock = null
     let blocks = optIn.blocks

@@ -81,9 +81,7 @@ window.ScrollGrid = function (optIn) {
 
   let lockerV = {}
   lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
-  lockerV.zoomDuring = lockerV.lockerV
-    .slice()
-    .concat([lockerZoom.during])
+  lockerV.zoomDuring = lockerV.lockerV.slice().concat([lockerZoom.during])
   lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
 
   let vorShowLines = hasVar(vorOpt.vorShowLines) ? vorOpt.vorShowLines : false
@@ -858,7 +856,11 @@ window.ScrollGrid = function (optIn) {
   }
 
   // ---------------------------------------------------------------------------------------------------
-  runLoop.init({ tag: mainTag + 'recBckClick', func: recBckClickOnce, nKeep: 1 })
+  runLoop.init({
+    tag: mainTag + 'recBckClick',
+    func: recBckClickOnce,
+    nKeep: 1
+  })
 
   function recBckClick (dataIn) {
     runLoop.push({ tag: mainTag + 'recBckClick', data: dataIn })

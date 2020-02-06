@@ -150,7 +150,11 @@ window.FormManager = function () {
           if (preventDefault) d3.event.preventDefault()
           if (formSubFunc) formSubFunc(optIn)
         }
-      }).style('background', optIn.background ? optIn.background.input : '#f0f0f0')
+      })
+      .style(
+        'background',
+        optIn.background ? optIn.background.input : '#f0f0f0'
+      )
     // .style("width", window.svgWidthScale[tagForm]())
 
     com.input[id] = form
@@ -168,7 +172,10 @@ window.FormManager = function () {
       .append('div')
       .attr('class', 'formMngrTitle')
       .style('font-size', fontSize)
-      .style('background', optIn.background ? optIn.background.title : '#f0f0f0')
+      .style(
+        'background',
+        optIn.background ? optIn.background.title : '#f0f0f0'
+      )
   }
 
   // ---------------------------------------------------------------------------------------------------

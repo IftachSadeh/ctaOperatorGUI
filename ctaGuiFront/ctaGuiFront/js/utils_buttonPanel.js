@@ -29,7 +29,8 @@ window.ButtonPanel = function () {
     com.cols = optIn.cols
 
     com.g.attr('transform', 'translate(' + com.box.x + ',' + com.box.y + ')')
-    com.g.append('rect')
+    com.g
+      .append('rect')
       .attr('x', 0)
       .attr('y', 0)
       .attr('rx', 0)
@@ -51,11 +52,24 @@ window.ButtonPanel = function () {
       com.buttonPositions.push([])
       com.button.push([])
       for (var j = 0; j < com.cols; j++) {
-        let x = (((com.box.w - (2 * com.margin.extern)) / com.cols) * j) + com.margin.inner + com.margin.extern
-        let y = (((com.box.h - (2 * com.margin.extern)) / com.rows) * i) + com.margin.inner + com.margin.extern
-        let width = ((com.box.w - (2 * com.margin.extern)) / com.cols) - (com.margin.inner * 2)
-        let height = ((com.box.h - (2 * com.margin.extern)) / com.rows) - (com.margin.inner * 2)
-        com.buttonPositions[i].push({x: x, y: y, width: width, height: height})
+        let x =
+          (com.box.w - 2 * com.margin.extern) / com.cols * j +
+          com.margin.inner +
+          com.margin.extern
+        let y =
+          (com.box.h - 2 * com.margin.extern) / com.rows * i +
+          com.margin.inner +
+          com.margin.extern
+        let width =
+          (com.box.w - 2 * com.margin.extern) / com.cols - com.margin.inner * 2
+        let height =
+          (com.box.h - 2 * com.margin.extern) / com.rows - com.margin.inner * 2
+        com.buttonPositions[i].push({
+          x: x,
+          y: y,
+          width: width,
+          height: height
+        })
         com.button.push(null)
       }
     }
@@ -64,8 +78,16 @@ window.ButtonPanel = function () {
   function addButton (optIn) {
     // if (com.button[optIn.row] && com.button[optIn.row][optIn.col]) removeButton(optIn)
 
-    let gButton = com.g.append('g')
-      .attr('transform', 'translate(' + com.buttonPositions[optIn.row][optIn.col].x + ',' + com.buttonPositions[optIn.row][optIn.col].y + ')')
+    let gButton = com.g
+      .append('g')
+      .attr(
+        'transform',
+        'translate(' +
+          com.buttonPositions[optIn.row][optIn.col].x +
+          ',' +
+          com.buttonPositions[optIn.row][optIn.col].y +
+          ')'
+      )
       .attr('width', com.buttonPositions[optIn.row][optIn.col].width)
       .attr('height', com.buttonPositions[optIn.row][optIn.col].height)
 
@@ -74,17 +96,11 @@ window.ButtonPanel = function () {
   }
   this.addButton = addButton
 
-  function removeButton (optIn) {
-
-  }
+  function removeButton (optIn) {}
   this.removeButton = removeButton
 
-  function checkButton () {
-
-  }
+  function checkButton () {}
   this.checkButton = checkButton
-  function uncheckButton () {
-
-  }
+  function uncheckButton () {}
   this.uncheckButton = uncheckButton
 }

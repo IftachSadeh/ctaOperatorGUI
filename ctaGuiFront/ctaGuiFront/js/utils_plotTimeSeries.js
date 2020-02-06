@@ -51,12 +51,8 @@ window.PlotTimeSeries = function () {
 
     let lockerV = {}
     lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
-    lockerV.zoomDuring = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.during])
-    lockerV.zoomEnd = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.end])
+    lockerV.zoomDuring = lockerV.lockerV.slice().concat([lockerZoom.during])
+    lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
     com.lockerV = lockerV
 
     com.yAxisMarginFrac = hasVar(optIn.yAxisMarginFrac)
@@ -92,25 +88,21 @@ window.PlotTimeSeries = function () {
         x: com.innerBox.x,
         y: com.innerBox.y,
         w: com.innerBox.w,
-        h: (com.innerBox.h * 0.6) + (com.innerBox.h * 0.4 * 0.2)
+        h: com.innerBox.h * 0.6 + com.innerBox.h * 0.4 * 0.2
       }
       com.bot.box = {
         x: com.innerBox.x,
-        y: com.innerBox.y + (com.innerBox.h * 0.6),
+        y: com.innerBox.y + com.innerBox.h * 0.6,
         w: com.innerBox.w,
         h: com.innerBox.h * 0.4
       }
     }
-    console.log(com.top);
+    console.log(com.top)
 
     com.top.axis.transX =
-      'translate(' +
-      com.top.box.x +
-      ',' +
-      (com.top.box.y + com.top.box.h) +
-      ')'
+      'translate(' + com.top.box.x + ',' + (com.top.box.y + com.top.box.h) + ')'
     com.top.axis.transY =
-      'translate(' + (com.top.box.x) + ',' + (com.top.box.y) + ')'
+      'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
 
     com.top.g = {}
     com.top.g.axis = com.gBox.append('g')
@@ -286,7 +278,7 @@ window.PlotTimeSeries = function () {
     for (var i = 0; i < com.timeBar.length; i++) {
       // probably need to modify
       com.timeBar[i].updateBottomAxisDomain(com.data)
-      if (com.overviewLine) com.timeBar[i].updateLine({data: com.data, tag: com.mainTag})
+      if (com.overviewLine) { com.timeBar[i].updateLine({ data: com.data, tag: com.mainTag }) }
     }
   }
   this.update = update

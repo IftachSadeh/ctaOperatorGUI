@@ -11,8 +11,8 @@
 
 window.GridBagLayout = function () {
   let com = {
-    size: {r: 3, c: 2},
-    merge: [{s: {r: 0, c: 0}, e: {r: 1, c: 1}}],
+    size: { r: 3, c: 2 },
+    merge: [{ s: { r: 0, c: 0 }, e: { r: 1, c: 1 } }],
     // weight: [{c: {r: 2, c: 0}, x: 2}],
     grid: []
   }
@@ -45,7 +45,7 @@ window.GridBagLayout = function () {
     for (let i = 0; i < com.size.r; i++) {
       com.grid.push([])
       for (let j = 0; j < com.size.c; j++) {
-        com.grid[i].push({s: {r: i, c: j}, e: {r: i, c: j}, w: 1})
+        com.grid[i].push({ s: { r: i, c: j }, e: { r: i, c: j }, w: 1 })
       }
     }
   }

@@ -11,7 +11,7 @@
         window.__appPrefix__ = '{{app_prefix}}'
         window.__nsType__ = '{{ns_type}}'
         window.__widgetName__ = '{{widget_name}}'
-        window.__userId__ = '{{login}}'
+        window.__display_userid__ = '{{display_userid}}'
     </script>
 
     <meta charset="UTF-8" />
@@ -57,39 +57,47 @@
   <!-- ========================================================================= -->
   <body>
     <div id="topPaddingDiv"></div>
+
+    <div id="titleDiv" class="menuHeader siteHeader"> CTA operator Interface </div>
+
     <div id="baseAppNEW"></div>
 
     <div id="sideMenu"></div>
     <div id="topMenu" class="horizEle gridEleBodyDark" style="width: 100%; display: flex; align-items: center; position: fixed; top: 0; opacity: 1;">
-      <div class="horizEle " style="width: 100%; margin-top: 12px; margin-bottom: 12px; ">
+      <div id="topMenuInner" class="horizEle " style="width: 100%; margin-top: 12px; margin-bottom: 12px; ">
         <div style="margin-left: 2%;"></div>
 
         <div id="topMenuLeft"></div>
 
         <div class="flexEle"></div>
 
-        <div class="menuHeader" id="userNameDiv" style="opacity:0; pointer-events:none"></div>
-        <div style="margin-right: 1%;"></div>
+        <div class="menuHeader" id="userNameDiv" style="opacity:0.8; pointer-events:none">{{display_userid}}</div>
+        <div style="margin-right: 3px;"></div>
 
-        <div class="switchTitled">
-          <div id="connectStatusDiv" style="opacity: 0; pointer-events:none">
-            <div id="connectStatusDiv_txt" style=" margin-bottom: 0px; font-size: 10px;">
-              Online
-            </div>
 
-            <div id="connectStatusDiv_tog">
-                <label class="switch">
-                  <input type="checkbox" checked id="connectStatusDiv_btn">
-                  <span class="slider round"></span>
-                </label>
-            </div>
+        <div id="logoutBtnDiv" style="opacity:1; pointer-events:none;">
+          <div class="tooltip">
+            <div id="logoutBtn" class="fa fa-sign-out-alt fa-circle-button fa-circle-button-dark"></div>
+            <span class="tooltiptext">Log out</span>
           </div>
         </div>
 
-        <div id="logoutBtnDiv" style="opacity:1; pointer-events:none;">
-          <div class="sized-button" style="margin-bottom: 4px;">
-            <div style="margin-bottom: 4px; font-size: 10px;">Logout</div>
-            <div id="logoutBtn" class="fa fa-sign-out-alt fa-circle-button-bright"></div>
+        <div id="userConStatDiv" style="opacity: 0; pointer-events:none">
+          <div class="tooltip">
+            <div id="userConStatDiv_tog">
+                <label class="switch">
+                  <input type="checkbox" checked id="userConStatDiv_btn">
+                  <span class="slider round"></span>
+                </label>
+            </div>
+            <span class="tooltiptext">Connection status</span>
+          </div>
+        </div>
+
+        <div id="serverConStatDiv" style="opacity: 0; pointer-events:none">
+          <div class="tooltip">
+            <div id="serverConStatDiv_btn" style="opacity: 1; pointer-events:none" class="status-indicator status-indicator-on"></div>
+            <span class="tooltiptext">Server status</span>
           </div>
         </div>
 

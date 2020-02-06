@@ -36,8 +36,8 @@ def main(global_config, **settings):
   # ------------------------------------------------------------------
   # run it
   # ------------------------------------------------------------------
-  utils.nsType = "S"
   utils.nsType = "N"
+  # utils.nsType = "S"
 
   myTimeOfNight = utils.timeOfNight(nsType=utils.nsType)
   # myTimeOfNight = utils.timeOfNight(nsType=utils.nsType, timeScale = 0.001)

@@ -14,7 +14,10 @@
 /* global BlockQueue */
 /* global getColorTheme */
 
-window.loadScript({ source: 'BlockQueueOptimizer', script: '/js/utils_blockQueue.js' })
+window.loadScript({
+  source: 'BlockQueueOptimizer',
+  script: '/js/utils_blockQueue.js'
+})
 
 window.BlockQueueOptimizer = function (optIn) {
   let colorTheme = getColorTheme('bright-Grey')
@@ -22,7 +25,7 @@ window.BlockQueueOptimizer = function (optIn) {
     main: {
       tag: 'blockQueueRootTag',
       g: undefined,
-      box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+      box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 },
       background: {
         fill: colorTheme.brighter.background,
         stroke: colorTheme.brighter.stroke,
@@ -32,7 +35,7 @@ window.BlockQueueOptimizer = function (optIn) {
     axis: {
       enabled: true,
       g: undefined,
-      box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+      box: { x: 0, y: 300, w: 1000, h: 0, marg: 0 },
       axis: undefined,
       scale: undefined,
       domain: [0, 1000],
@@ -55,7 +58,7 @@ window.BlockQueueOptimizer = function (optIn) {
       run: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0},
+        box: { x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -75,7 +78,7 @@ window.BlockQueueOptimizer = function (optIn) {
       cancel: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0},
+        box: { x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -95,7 +98,7 @@ window.BlockQueueOptimizer = function (optIn) {
       modification: {
         enabled: true,
         g: undefined,
-        box: {x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0},
+        box: { x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0 },
         events: {
           click: () => {},
           mouseover: () => {},
@@ -117,18 +120,18 @@ window.BlockQueueOptimizer = function (optIn) {
     filters: {
       enabled: false,
       g: undefined,
-      box: {x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0},
+      box: { x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0 },
       filters: []
     },
     timeBars: {
       enabled: true,
       g: undefined,
-      box: {x: 0, y: 0, w: 1000, h: 300, marg: 0}
+      box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 }
     },
     time: {
-      currentTime: {date: new Date(), time: 0},
-      startTime: {date: new Date(), time: 0},
-      endTime: {date: new Date(), time: 1000}
+      currentTime: { date: new Date(), time: 0 },
+      startTime: { date: new Date(), time: 0 },
+      endTime: { date: new Date(), time: 1000 }
     },
     data: {
       raw: {
@@ -142,8 +145,7 @@ window.BlockQueueOptimizer = function (optIn) {
       enabled: false
     },
     pattern: {},
-    event: {
-    },
+    event: {},
     input: {
       selection: []
     }
@@ -151,27 +153,35 @@ window.BlockQueueOptimizer = function (optIn) {
   let com = {}
   com = optIn
 
-
   function setDefaultStyle () {
     com.style = {}
     com.style.runRecCol = colsBlues[2]
     com.style.blockCol = function (optIn) {
-      if (optIn.d.data.endTime < com.time.currentTime.time) return com.blocks.colorPalette.shutdown
+      if (optIn.d.data.endTime < com.time.currentTime.time) { return com.blocks.colorPalette.shutdown }
       let state = hasVar(optIn.state)
         ? optIn.state
         : optIn.d.data.exeState.state
       let canRun = hasVar(optIn.canRun)
         ? optIn.canRun
         : optIn.d.data.exeState.canRun
-      let modifiedUser = optIn.d.data.modifications ?
-        !(Object.keys(optIn.d.data.modifications.userModifications).length === 0 && optIn.d.data.modifications.userModifications.constructor === Object) :
-        false
-      let modifiedOptimizer = optIn.d.data.modifications ?
-        !(Object.keys(optIn.d.data.modifications.optimizerModifications).length === 0 && optIn.d.data.modifications.optimizerModifications.constructor === Object) :
-        false
-      let created = optIn.d.data.modifications ?
-        optIn.d.data.modifications.created :
-        false
+      let modifiedUser = optIn.d.data.modifications
+        ? !(
+          Object.keys(optIn.d.data.modifications.userModifications).length ===
+              0 &&
+            optIn.d.data.modifications.userModifications.constructor === Object
+        )
+        : false
+      let modifiedOptimizer = optIn.d.data.modifications
+        ? !(
+          Object.keys(optIn.d.data.modifications.optimizerModifications)
+            .length === 0 &&
+            optIn.d.data.modifications.optimizerModifications.constructor ===
+              Object
+        )
+        : false
+      let created = optIn.d.data.modifications
+        ? optIn.d.data.modifications.created
+        : false
       if (modifiedUser || created) {
         return com.blocks.colorPalette.critical
       } else if (modifiedOptimizer) {
@@ -192,7 +202,7 @@ window.BlockQueueOptimizer = function (optIn) {
       } else return com.blocks.colorPalette.shutdown
     }
     com.style.blockOpac = function (optIn) {
-      if (optIn.d.data.endTime < com.time.currentTime.time) return com.blocks.colorPalette.shutdown
+      if (optIn.d.data.endTime < com.time.currentTime.time) { return com.blocks.colorPalette.shutdown }
       let state = hasVar(optIn.state)
         ? optIn.state
         : optIn.d.data.exeState.state
@@ -216,7 +226,8 @@ window.BlockQueueOptimizer = function (optIn) {
 
   let blockQueue = new BlockQueue(com)
   blockQueue.initBackground = function () {
-    com.main.g.append('rect')
+    com.main.g
+      .append('rect')
       .attr('class', 'background')
       .attr('x', 0)
       .attr('y', 0)
@@ -225,7 +236,8 @@ window.BlockQueueOptimizer = function (optIn) {
       .style('fill', com.main.background.fill)
       .style('stroke', com.main.background.stroke)
       .style('stroke-width', com.main.background.strokeWidth)
-    com.main.g.append('text')
+    com.main.g
+      .append('text')
       .attr('class', 'name')
       .text('OPTIMIZED SCHEDULE')
       .style('text-anchor', 'middle')

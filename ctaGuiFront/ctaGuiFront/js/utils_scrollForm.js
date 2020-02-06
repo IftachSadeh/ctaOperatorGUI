@@ -23,41 +23,46 @@ window.ScrollForm = function (optIn) {
   }
 
   com.component = {}
-  com.component.fo = com.main.g.append('foreignObject')
+  com.component.fo = com.main.g
+    .append('foreignObject')
     .attr('width', com.main.box.w + 'px')
     .attr('height', com.main.box.h + 'px')
     .attr('x', com.main.box.x + 'px')
     .attr('y', com.main.box.y + 'px')
 
   let rootDivWidth = '100%'
-  if (com.quickScroll.enabled) rootDivWidth = 'calc(100% - ' + com.quickScroll.width + ')'
-  com.component.rootDiv = com.component.fo.append('xhtml:div')
+  if (com.quickScroll.enabled) { rootDivWidth = 'calc(100% - ' + com.quickScroll.width + ')' }
+  com.component.rootDiv = com.component.fo
+    .append('xhtml:div')
     .style('display', 'inline-block')
     .style('border', 0 + 'px solid #78909C')
     .style('background-color', 'transparent')
     .style('width', rootDivWidth)
     .style('height', function () {
-      if (com.titles.data.length > 0) return 'calc(100% - ' + com.titles.height + ')'
+      if (com.titles.data.length > 0) { return 'calc(100% - ' + com.titles.height + ')' }
       return '100%'
     })
   if (com.quickScroll.enabled) {
-    com.component.quickDiv = com.component.fo.append('xhtml:div')
+    com.component.quickDiv = com.component.fo
+      .append('xhtml:div')
       .style('display', 'inline-block')
       .style('background-color', '#333333')
       .style('width', com.quickScroll.width)
       .style('height', function () {
-        if (com.titles.data.length > 0) return 'calc(100% - ' + com.titles.height + ')'
+        if (com.titles.data.length > 0) { return 'calc(100% - ' + com.titles.height + ')' }
         return '100%'
       })
   }
   if (com.titles.data.length > 0) {
-    com.component.titleDiv = com.component.rootDiv.append('div')
+    com.component.titleDiv = com.component.rootDiv
+      .append('div')
       .style('height', com.titles.height)
       .style('border', 0 + 'px solid #78909C')
       .style('background-color', 'transparent')
       .style('border-radius', '0px 0px 0px 0px')
   }
-  com.scrollBoxG = com.component.rootDiv.append('svg')
+  com.scrollBoxG = com.component.rootDiv
+    .append('svg')
     .attr('width', com.main.box.w + 'px')
     .attr('height', com.main.box.h + 'px')
     .attr('x', 0 + 'px')
@@ -66,7 +71,7 @@ window.ScrollForm = function (optIn) {
   com.scrollBox.init({
     tag: com.main.tag,
     gBox: com.scrollBoxG,
-    boxData: {x: 0, y: 0, w: com.main.box.w, h: com.main.box.h, marg: 0},
+    boxData: { x: 0, y: 0, w: com.main.box.w, h: com.main.box.h, marg: 0 },
     useRelativeCoords: true,
     locker: new Locker(),
     lockerV: [com.main.tag + 'updateData'],
@@ -75,23 +80,25 @@ window.ScrollForm = function (optIn) {
       during: com.main.tag + 'zoomDuring',
       end: com.main.tag + 'zoomEnd'
     },
-    runLoop: new RunLoop({tag: 'scrollForm'}),
+    runLoop: new RunLoop({ tag: 'scrollForm' }),
     canScroll: true,
     scrollVertical: true,
     scrollHorizontal: false,
     scrollHeight: com.main.box.h,
     background: colorTheme.dark.background,
-    scrollRecV: {w: 6}
+    scrollRecV: { w: 6 }
   })
   com.scrollBoxInner = com.scrollBox.get('innerG')
   com.scrollBoxG.select('g.clipping').attr('clip-path', '')
 
-  let foScroll = com.scrollBoxInner.append('foreignObject')
+  let foScroll = com.scrollBoxInner
+    .append('foreignObject')
     .attr('width', com.main.box.w + 'px')
     .attr('height', com.main.box.h + 'px')
     .attr('x', 0 + 'px')
     .attr('y', 0 + 'px')
-  com.component.contentDiv = foScroll.append('xhtml:div')
+  com.component.contentDiv = foScroll
+    .append('xhtml:div')
     .attr('width', com.main.box.w + 'px')
     .attr('height', com.main.box.h + 'px')
     .style('border', 0 + 'px solid #78909C')
@@ -102,14 +109,16 @@ window.ScrollForm = function (optIn) {
     let offsetScroll = 8 / com.titles.data.length
     for (var i = 0; i < com.titles.data.length; i++) {
       let t = com.titles.data[i]
-      let comp = com.component.titleDiv.append('div')
+      let comp = com.component.titleDiv
+        .append('div')
         .style('display', 'inline-block')
         .style('width', 'calc(' + t.width + ' - ' + offsetScroll + 'px)')
         .style('height', com.titles.height)
         .style('background', 'transparent')
         .style('text-align', t.anchor)
         .style('border-radius', '0px 0px 0px 0px')
-      comp.append('label')
+      comp
+        .append('label')
         .html(t.title)
         .attr('class', 'title')
         .style('display', 'inline-block')
@@ -258,8 +267,11 @@ window.ScrollForm = function (optIn) {
     //   .style('background', colorTheme.brighter.background)
     div.attr('class', 'divForm titleDiv')
 
-    div.append('label')
-      .html(function (d) { return d.key })
+    div
+      .append('label')
+      .html(function (d) {
+        return d.key
+      })
       .attr('class', 'title')
       .style('color', colorTheme.dark.text)
       .style('background', 'transparent')
@@ -286,38 +298,49 @@ window.ScrollForm = function (optIn) {
 
     div.attr('class', 'divForm modificationDiv')
 
-    div.append('label')
+    div
+      .append('label')
       .attr('class', 'key')
-      .html(function (d) { return d.key })
+      .html(function (d) {
+        return d.key
+      })
       .style('display', 'inline-block')
       .style('color', '#000000')
       .style('font-size', 8 + 'px')
       .style('background', 'transparent')
       .style('margin-left', '6px')
-    div.append('label')
+    div
+      .append('label')
       .attr('class', 'dot')
       .html(' : ')
       .style('display', 'inline-block')
       .style('color', '#000000')
       .style('font-size', 8 + 'px')
       .style('background', 'transparent')
-    div.append('label')
+    div
+      .append('label')
       .attr('class', 'old')
-      .html(function (d) { return d.value.old })
+      .html(function (d) {
+        return d.value.old
+      })
       .style('display', 'inline-block')
       .style('color', '#000000')
       .style('font-size', 8 + 'px')
       .style('background', 'transparent')
-    div.append('label')
+    div
+      .append('label')
       .attr('class', 'arrow')
       .html('-> ')
       .style('display', 'inline-block')
       .style('color', '#000000')
       .style('font-size', 8 + 'px')
       .style('background', 'transparent')
-    div.append('label')
+    div
+      .append('label')
       .attr('class', 'new')
-      .html(function (d) { return d.value.new })
+      .html(function (d) {
+        return d.value.new
+      })
       .style('display', 'inline-block')
       .style('color', '#000000')
       .style('font-size', 8 + 'px')
@@ -345,15 +368,19 @@ window.ScrollForm = function (optIn) {
 
     div.attr('class', 'divForm infoDiv')
 
-    div.append('label')
-      .html(function (d) { return d.key })
+    div
+      .append('label')
+      .html(function (d) {
+        return d.key
+      })
       .attr('class', 'key')
       .attr('id', 'key')
       .style('display', 'inline-block')
       .style('color', '#000000')
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
-    div.append('label')
+    div
+      .append('label')
       .attr('id', 'dot')
       .attr('class', 'dot')
       .html(' : ')
@@ -361,10 +388,13 @@ window.ScrollForm = function (optIn) {
       .style('color', '#000000')
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
-    div.append('label')
+    div
+      .append('label')
       .attr('class', 'new')
       .attr('id', 'new')
-      .html(function (d) { return d.value })
+      .html(function (d) {
+        return d.value
+      })
       .style('display', 'inline-block')
       .style('color', '#000000')
       // .style('font-size', 10 + 'px')
@@ -391,16 +421,20 @@ window.ScrollForm = function (optIn) {
     })
 
     div.attr('class', 'divForm inputNumber')
-    console.log(div);
-    div.append('label')
-      .html(function (d) { return d.key })
+    console.log(div)
+    div
+      .append('label')
+      .html(function (d) {
+        return d.key
+      })
       .attr('class', 'key')
       .attr('id', 'key')
       .style('display', 'inline-block')
       .style('color', '#000000')
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
-    div.append('label')
+    div
+      .append('label')
       .attr('id', 'dot')
       .attr('class', 'dot')
       .html(' : ')
@@ -408,15 +442,20 @@ window.ScrollForm = function (optIn) {
       .style('color', '#000000')
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
-    let input = div.append('input')
+    let input = div
+      .append('input')
       .attr('class', 'new')
       .attr('id', 'new')
       .style('display', 'inline-block')
       .style('color', '#000000')
       .style('background', 'transparent')
       .attr('type', 'number')
-      .attr('min', function (d) { return d.range[0] })
-      .attr('max', function (d) { return d.range[1] })
+      .attr('min', function (d) {
+        return d.range[0]
+      })
+      .attr('max', function (d) {
+        return d.range[1]
+      })
     input.property('value', function (d) {
       return d.value
     })
@@ -429,7 +468,9 @@ window.ScrollForm = function (optIn) {
     div.on('mouseover', function (d) {
       if (d.event.mouseover) {
         div.style('background', function (d) {
-          return (d.style && d.style.color) ? d3.color(d.style.color).darker(0.4) : d3.color(colorTheme.brighter.background).darker(0.4)
+          return d.style && d.style.color
+            ? d3.color(d.style.color).darker(0.4)
+            : d3.color(colorTheme.brighter.background).darker(0.4)
         })
         d.event.mouseover(d)
       }
@@ -437,7 +478,9 @@ window.ScrollForm = function (optIn) {
     div.on('mouseout', function (d) {
       if (d.event.mouseout) {
         div.style('background', function (d) {
-          return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
+          return d.style && d.style.color
+            ? d.style.color
+            : colorTheme.brighter.background
         })
         d.event.mouseout(d)
       }
@@ -445,16 +488,20 @@ window.ScrollForm = function (optIn) {
 
     div.attr('class', 'divForm dropDownDiv')
     let d = div.data()[0]
-    div.append('label')
+    div
+      .append('label')
       .attr('class', 'key')
-      .html(function (d) { return d.key })
+      .html(function (d) {
+        return d.key
+      })
       .attr('id', 'key')
       .style('display', 'inline-block')
       .style('color', '#000000')
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
-      // .style('margin-left', '6px')
-    div.append('label')
+    // .style('margin-left', '6px')
+    div
+      .append('label')
       .attr('class', 'dot')
       .attr('id', 'dot')
       .html(' : ')
@@ -462,7 +509,8 @@ window.ScrollForm = function (optIn) {
       .style('color', '#000000')
       // .style('font-size', 10 + 'px')
       .style('background', 'transparent')
-    let selector = div.append('select')
+    let selector = div
+      .append('select')
       .style('width', 'auto')
       .style('font-size', '9px')
       .style('height', div.style('height'))
@@ -472,11 +520,16 @@ window.ScrollForm = function (optIn) {
         let selectValue = div.select('select').property('value')
         d.event.click(selectValue, d)
       })
-    selector.selectAll('option')
-      .data(function (d) { return d.value.select })
+    selector
+      .selectAll('option')
+      .data(function (d) {
+        return d.value.select
+      })
       .enter()
       .append('option')
-      .text(function (d) { return d })
+      .text(function (d) {
+        return d
+      })
     selector.property('value', function () {
       return d.value.current
     })
@@ -484,13 +537,16 @@ window.ScrollForm = function (optIn) {
   }
 
   function divideDiv (div, data) {
-    div.selectAll('div.divideChilds')
+    div
+      .selectAll('div.divideChilds')
       .data(data)
       .enter()
       .append('div')
       .attr('class', 'divideChilds')
-      .attr('id', function (d) { return 'id_' + d.key })
-      .style('width', ((100 / data.length) - (2 * data.length - 1)) + '%')
+      .attr('id', function (d) {
+        return 'id_' + d.key
+      })
+      .style('width', 100 / data.length - (2 * data.length - 1) + '%')
       .style('margin-left', '2%')
       .style('display', 'inline-block')
       .style('vertical-align', 'top')
@@ -499,14 +555,19 @@ window.ScrollForm = function (optIn) {
       })
   }
   function createSubForm (div, data) {
-    div.selectAll('div.divForm')
+    div
+      .selectAll('div.divForm')
       .data(data)
       .enter()
       .append('div')
       .attr('class', 'divForm')
-      .attr('id', function (d) { return 'id_' + d.key })
+      .attr('id', function (d) {
+        return 'id_' + d.key
+      })
       .style('background', function (d) {
-        return (d.style && d.style.color) ? d.style.color : colorTheme.brighter.background
+        return d.style && d.style.color
+          ? d.style.color
+          : colorTheme.brighter.background
       })
       .style('border-radius', '0.5px 0.5px 0.5px 0.5px')
       .each(function (d) {
@@ -529,7 +590,10 @@ window.ScrollForm = function (optIn) {
 
     createSubForm(com.component.contentDiv, com.data.data.childs)
 
-    com.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: com.component.contentDiv._groups[0][0].scrollHeight})
+    com.scrollBox.resetVerticalScroller({
+      canScroll: true,
+      scrollHeight: com.component.contentDiv._groups[0][0].scrollHeight
+    })
 
     // for (let key in com.data.data) {
     //   let group = com.data.data[key]

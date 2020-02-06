@@ -30,7 +30,7 @@ window.PlotTimeBar = function () {
     if (!hasVar(optIn.showTopAxis)) optIn.showTopAxis = true
     if (!hasVar(optIn.showBottomAxis)) optIn.showTopAxis = true
     if (!hasVar(optIn.topAxisOrientation)) optIn.topAxisOrientation = 'top'
-    if (!hasVar(optIn.bottomAxisOrientation)) optIn.bottomAxisOrientation = 'bottom'
+    if (!hasVar(optIn.bottomAxisOrientation)) { optIn.bottomAxisOrientation = 'bottom' }
 
     com.top = {}
     com.top.axis = {}
@@ -63,17 +63,9 @@ window.PlotTimeBar = function () {
     }
 
     com.top.axis.transX =
-      'translate(' +
-      com.top.box.x +
-      ',' +
-      (com.top.box.y) +
-      ')'
+      'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
     com.bot.axis.transX =
-      'translate(' +
-      com.bot.box.x +
-      ',' +
-      (com.bot.box.y) +
-      ')'
+      'translate(' + com.bot.box.x + ',' + com.bot.box.y + ')'
 
     com.top.scale.x = d3.scaleTime().range([0, com.top.box.w])
     com.top.scale.y = d3.scaleLinear().range([com.bot.box.h, 0])
@@ -84,7 +76,7 @@ window.PlotTimeBar = function () {
     com.bot.scale.y.domain([105, 0])
 
     com.top.axis.x = d3.axisTop(com.top.scale.x)
-    if (optIn.topAxisOrientation === 'bottom') com.top.axis.x = d3.axisBottom(com.top.scale.x)
+    if (optIn.topAxisOrientation === 'bottom') { com.top.axis.x = d3.axisBottom(com.top.scale.x) }
     com.bot.axis.x = d3.axisBottom(com.bot.scale.x)
     // com.bot.axis.y = d3.axisLeft(com.top.scale.y)
     if (optIn.showTopAxis) {
@@ -191,12 +183,8 @@ window.PlotTimeBar = function () {
 
     let lockerV = {}
     lockerV.lockerV = hasVar(optIn.lockerV) ? optIn.lockerV : []
-    lockerV.zoomDuring = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.during])
-    lockerV.zoomEnd = lockerV.lockerV
-      .slice()
-      .concat([lockerZoom.end])
+    lockerV.zoomDuring = lockerV.lockerV.slice().concat([lockerZoom.during])
+    lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
     com.lockerV = lockerV
 
     com.yAxisMarginFrac = hasVar(optIn.yAxisMarginFrac)
@@ -238,9 +226,7 @@ window.PlotTimeBar = function () {
     com.plotTimeSeries.push(plotTimeSeries)
   }
   this.plugPlotTimeSeries = plugPlotTimeSeries
-  function unplugPlotTimeSeries () {
-
-  }
+  function unplugPlotTimeSeries () {}
   this.unplugPlotTimeSeries = unplugPlotTimeSeries
   // ---------------------------------------------------------------------------------------------------
   // styling

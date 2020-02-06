@@ -488,7 +488,6 @@ prefixD.sched.pointing = 'P'
 window.prefixD = prefixD
 // ------------------------------------------------------------------
 
-
 var blockTemplate = {
   time: {
     start: null,
@@ -511,9 +510,9 @@ var blockTemplate = {
   target: [],
   telIds: [],
   telescopes: {
-    large: {min: 0, max: 0, ids: []},
-    medium: {min: 0, max: 0, ids: []},
-    small: {min: 0, max: 0, ids: []}
+    large: { min: 0, max: 0, ids: [] },
+    medium: { min: 0, max: 0, ids: [] },
+    small: { min: 0, max: 0, ids: [] }
   },
   timeStamp: null
 }
@@ -613,9 +612,11 @@ window.TelInfo = function () {
   }
 }
 
-function runTelInfo() {
+function runTelInfo () {
   if (window.__sockTelInfo__ === undefined) {
-    setTimeout(function () { runTelInfo() }, 10)
+    setTimeout(function () {
+      runTelInfo()
+    }, 10)
     return
   }
   window.telInfo = new window.TelInfo()
@@ -791,15 +792,14 @@ window.tog_keyboardArrow = function (optIn) {
 // }
 window.appendToDom = function (parentId, eleToApp) {
   if (typeof parentId === 'string' || parentId instanceof String) {
-    if (!(parentId.indexOf('#') === 0)) parentId = '#' + parentId
-
-    (document.querySelector(parentId)).appendChild(eleToApp)
+    if (!(parentId.indexOf('#') === 0)) {
+      parentId =
+        '#' + parentId(document.querySelector(parentId)).appendChild(eleToApp)
+    }
   } else {
-    (parentId).appendChild(eleToApp)
+    parentId.appendChild(eleToApp)
   }
 }
-
-
 
 window.createD3Node = function (g, type, attr, style) {
   let ret = g.append(type)
