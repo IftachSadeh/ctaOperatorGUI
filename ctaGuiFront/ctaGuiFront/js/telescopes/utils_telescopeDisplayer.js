@@ -854,7 +854,7 @@ window.TelescopeDisplayer = function (optIn) {
               .attr('x', com.main.box.w * 0.04)
               .attr('y', sizeRow * 0.5 + 0.5 * fontSize)
               .text(function (d) {
-                return d.metaData ? d.metaData.blockName : 'P' + d.name.split('-')[1]
+                return d.metaData ? d.metaData.blockName : 'P' + getPointingNumber(d)
               })
               .style('fill', colorTheme.blocks.run.text)
               .style('font-weight', 'bold')
@@ -875,7 +875,7 @@ window.TelescopeDisplayer = function (optIn) {
               .attr('stroke', colorTheme.dark.stroke)
             d3.select(this).append('text')
               .attr('id', 'target')
-              .text(d.pointings[0].name.split('/')[0])
+              .text(getPointingTarget(d.pointings[0]))
               .attr('x', com.main.box.w - com.main.box.w * 0.04)
               .attr('y', sizeRow * 0.5 + 0.5 * fontSize)
               .style('fill', colorTheme.blocks.run.text)

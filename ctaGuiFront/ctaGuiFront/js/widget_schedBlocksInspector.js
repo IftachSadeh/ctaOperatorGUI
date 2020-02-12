@@ -797,7 +797,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('stroke-width', 0.1)
           .attr('rx', 48)
           .on('click', function () {
-            pushNewSchedule()
+            // callOptimizer()
           })
           .on('mouseover', function (d) {
             d3.select(this).attr('fill', colorTheme.darkest.background)
@@ -1006,9 +1006,7 @@ let mainSchedBlocksInspector = function (optIn) {
       ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
       ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.timeOfNight.date_start)) / 1000
     }
-    console.log([].concat(shared.data.copy.blocks['wait']).concat(shared.data.copy.blocks['run']).concat(shared.data.copy.blocks['done']).length);
     updateRuntoDoneBlocks()
-    console.log([].concat(shared.data.copy.blocks['wait']).concat(shared.data.copy.blocks['run']).concat(shared.data.copy.blocks['done']).length);
 
     svgBlocksQueueServer.updateData()
     svgEventsQueueServer.updateData()
@@ -1767,10 +1765,19 @@ let mainSchedBlocksInspector = function (optIn) {
     svgRightInfo.updateOverview()
   }
 
+  function createSchedName (blocks) {
+    let max = 0
+    for (let key in blocks) {
+      for (let i = 0; i < blocks[key].length; i++) {
+        if (blocks[key][i].metaData.nSched > max) max = blocks[key][i].metaData.nSched
+      }
+    }
+    return max + 1
+  }
   function createDummyBlock () {
     let newBlock = deepCopy(blockTemplate)
 
-    let nSched = 80 + Math.floor(Math.random() * 20)
+    let nSched = createSchedName(shared.data.copy.blocks)
 
     newBlock.time = {
       start: 0,
@@ -3184,7 +3191,7 @@ let mainSchedBlocksInspector = function (optIn) {
         let tig = ig.append('g')
           .attr('id', 'targetIcon')
           .attr('transform', 'translate(' + (scaleX((d.observability.minimal + d.observability.maximal) * 0.5) - 10) + ',' + (reserved.box.h - 20) + ')')
-        targetIcon(tig, {w: 15, h: 15}, d.id.split('_')[1], {
+        targetIcon(tig, {w: 15, h: 15}, getTargetShort(d), {
           click: function () { focusManager.focusOn('target', d.id) },
           over: function () { ig.style('opacity', 1) },
           out: function () { ig.style('opacity', 0.4) }
@@ -3321,6 +3328,7 @@ let mainSchedBlocksInspector = function (optIn) {
     }
     this.showPercentTarget = showPercentTarget
     function highlightTarget (block) {
+      if (!block) return
       let tarG = reserved.clipping.clipBody.selectAll('g.target')
         .filter(function (d) {
           for (let i = 0; i < block.targets.length; i++) {
@@ -4297,6 +4305,7 @@ let mainSchedBlocksInspector = function (optIn) {
     }
 
     function hideBlockInfo (d) {
+      if (!d) return
       if (!reserved.drag.g) return
       if (reserved.drag.locked) return
 
@@ -4305,6 +4314,7 @@ let mainSchedBlocksInspector = function (optIn) {
       svgTargets.unhighlightTarget(d)
     }
     function showBlockInfo (d) {
+      if (!d) return
       if (reserved.drag.g) return
       hideBlockInfo()
       // if (!reserved.hasData) return
@@ -5111,7 +5121,7 @@ let mainSchedBlocksInspector = function (optIn) {
             .style('opacity', 0.5)
             .style('pointer-events', 'none')
           g.append('text')
-            .text('T' + d.name.split('_')[1])
+            .text('T' + getTargetShort(d))
             .attr('x', height * 0.5)
             .attr('y', height * 0.5 + txtSize * 0.3)
             .style('font-weight', '')

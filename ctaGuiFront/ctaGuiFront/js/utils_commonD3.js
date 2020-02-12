@@ -40,8 +40,11 @@ window.inputDateD3 = function (g, box, id, optIn, events) {
       return optIn.step
     })
     .style('font-size', (optIn.fontSize ? optIn.fontSize : 11) + 'px')
-    // .style('display', 'inline-block')
     // .style('color', '#000000')
+    .style('border-top-style', 'groove')
+    .style('border-right-style', 'hidden')
+    .style('border-left-style', 'hidden')
+    .style('border-bottom-style', 'groove')
     .style('background', 'transparent')
   input.property('value', function () {
     return optIn.value
@@ -137,6 +140,10 @@ window.inputNumberD3 = function (g, box, id, optIn, events) {
       return optIn.step
     })
     .style('font-size', 11 + 'px')
+    .style('border-top-style', 'groove')
+    .style('border-right-style', 'hidden')
+    .style('border-left-style', 'hidden')
+    .style('border-bottom-style', 'groove')
     .style('background', 'transparent')
   linker.input.property('value', function () {
     return optIn.value

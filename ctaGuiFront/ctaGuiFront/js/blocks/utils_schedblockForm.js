@@ -178,14 +178,14 @@ window.SchedblockForm = function (optIn) {
     updateSchedulingObservingBlocksTree()
     updateTimeInformation()
   }
-  function changeTarget (newTarget) {
-    let save = com.data.block.pointingName.split('/')[1]
-    com.data.block.pointingName = newTarget + '/' + save
-  }
-  function changePointing (newPointing) {
-    let save = com.data.block.pointingName.split('/')[0]
-    com.data.block.pointingName = save + '/' + newPointing
-  }
+  // function changeTarget (newTarget) {
+  //   let save = getPointingName(com.data.block.pointingName)
+  //   com.data.block.pointingName = newTarget + '/' + save
+  // }
+  // function changePointing (newPointing) {
+  //   let save = getPointingTarget(com.data.block.pointingName)
+  //   com.data.block.pointingName = save + '/' + newPointing
+  // }
 
   function initScrollBox (tag, g, box, background) {
     if (background.enabled) {
@@ -479,7 +479,7 @@ window.SchedblockForm = function (optIn) {
     }
 
     let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (headerSize + 3) + ')')
-    com.schedule.scrollBox = initScrollBox('targetRessourceScroll', blockg, box, {enabled: false})
+    com.schedule.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {enabled: false})
     let innerg = com.schedule.scrollBox.get('innerG')
     let current = innerg
       .selectAll('g.block')
@@ -544,7 +544,7 @@ window.SchedblockForm = function (optIn) {
             main: {
               id: type + 'MinusButton',
               g: g,
-              box: {x: innerbox.x - 3, y: innerbox.y + 12, width: 9, height: 9},
+              box: {x: innerbox.x - 3, y: innerbox.y + 18, width: 9, height: 9},
               background: {
                 common: {
                   style: {
@@ -580,7 +580,7 @@ window.SchedblockForm = function (optIn) {
                 },
                 attr: {
                   x: innerbox.x - 3 + 3,
-                  y: innerbox.y + 12 + 7
+                  y: innerbox.y + 18 + 7
                 }
               },
               hovered: {
@@ -615,7 +615,7 @@ window.SchedblockForm = function (optIn) {
             main: {
               id: type + 'PlusButton',
               g: g,
-              box: {x: innerbox.x + 6, y: innerbox.y + 12, width: 9, height: 9},
+              box: {x: innerbox.x + 6, y: innerbox.y + 18, width: 9, height: 9},
               background: {
                 common: {
                   style: {
@@ -651,7 +651,7 @@ window.SchedblockForm = function (optIn) {
                 },
                 attr: {
                   x: innerbox.x + 6 + 2,
-                  y: innerbox.y + 12 + 7
+                  y: innerbox.y + 18 + 7
                 }
               },
               hovered: {
@@ -686,23 +686,23 @@ window.SchedblockForm = function (optIn) {
         let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
         let hbox = {
           x: x - 2,
-          y: y + (com.schedule.editabled ? headerSize * 0.3 : headerSize * 0.35),
+          y: y + (com.schedule.editabled ? headerSize * 0.05 : headerSize * 0.35),
           w: 14,
-          h: headerSize * 1
+          h: headerSize * 2
         }
         let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
         let mbox = {
           x: x + 20,
-          y: y + (com.schedule.editabled ? headerSize * 0.3 : headerSize * 0.35),
+          y: y + (com.schedule.editabled ? headerSize * 0.05 : headerSize * 0.35),
           w: 14,
-          h: headerSize * 1
+          h: headerSize * 2
         }
         let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
         let sbox = {
           x: x + 42,
-          y: y + (com.schedule.editabled ? headerSize * 0.3 : headerSize * 0.35),
+          y: y + (com.schedule.editabled ? headerSize * 0.05 : headerSize * 0.35),
           w: 14,
-          h: headerSize * 1
+          h: headerSize * 2
         }
 
         let ig = g.append('g').attr('id', id)
@@ -1087,11 +1087,11 @@ window.SchedblockForm = function (optIn) {
     for (let j = 0; j < schedB.blocks.length; j++) {
       let data = schedB.blocks[j]
       for (let i = 0; i < data.pointings.length; i++) {
-        let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+        let tar = trgtPnt.find(t => t.name === getPointingTarget(data.pointings[i]))
         if (tar) {
           tar.pointings.push(data.pointings[i])
         } else {
-          tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+          tar = data.targets.find(t => t.name === getPointingTarget(data.pointings[i]))
           allTar.push(tar)
           tar.pointings = [data.pointings[i]]
           trgtPnt.push(tar)
@@ -1184,19 +1184,19 @@ window.SchedblockForm = function (optIn) {
 
     let tbox = {x: 40, y: headerSize + line * 1.6, w: box.w - 40, h: line * 1.5}
     let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
-    let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, back)
+    let scrollBoxt = initScrollBox(com.main.tag + 'targetListScroll', blocktg, tbox, back)
     let innertg = scrollBoxt.get('innerG')
 
     trgtPnt = []
     for (let j = 0; j < schedB.blocks.length; j++) {
       let data = schedB.blocks[j]
       for (let i = 0; i < data.pointings.length; i++) {
-        let tar = trgtPnt.find(t => t.name === data.pointings[i].name.split('/')[0])
+        let tar = trgtPnt.find(t => t.name === getPointingTarget(data.pointings[i]))
         if (tar) {
           if (!(data.obId in tar.pointings)) tar.pointings[data.obId] = []
           tar.pointings[data.obId].push(data.pointings[i])
         } else {
-          tar = data.targets.find(t => t.name === data.pointings[i].name.split('/')[0])
+          tar = data.targets.find(t => t.name === getPointingTarget(data.pointings[i]))
           tar.pointings = {}
           tar.pointings[data.obId] = [data.pointings[i]]
           trgtPnt.push(tar)
@@ -1226,7 +1226,7 @@ window.SchedblockForm = function (optIn) {
             g.style('opacity', 0.5)
           }
         }
-        targetIcon(g, {w: line * 1, h: line * 1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+        targetIcon(g, {w: line * 1, h: line * 1}, 'T' + getTargetShort(d), tevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -1373,7 +1373,7 @@ window.SchedblockForm = function (optIn) {
 
     let pbox = {x: 0, y: headerSize * 2 + line + 5, w: 40, h: box.h - (headerSize * 2 + 10 + line)}
     let blockpg = g.append('g').attr('transform', 'translate(' + 0 + ',' + pbox.y + ')')
-    let scrollBoxp = initScrollBox('pointingListScroll', blockpg, pbox, back)
+    let scrollBoxp = initScrollBox(com.main.tag + 'pointingListScroll', blockpg, pbox, back)
     let innerpg = scrollBoxp.get('innerG')
 
     let marg = 2
@@ -1408,7 +1408,7 @@ window.SchedblockForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        pointingIcon(g, {w: line * 1.2, h: line * 0.8}, 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
+        pointingIcon(g, {w: line * 1.2, h: line * 0.8}, 'P' + getPointingNumber(d), pevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {

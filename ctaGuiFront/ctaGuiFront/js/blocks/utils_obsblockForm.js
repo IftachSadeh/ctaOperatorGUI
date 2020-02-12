@@ -441,8 +441,8 @@ window.ObsblockForm = function (optIn) {
     let label = [
       {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.2, text: 'State', anchor: 'middle'},
       {x: box.w * 0.2, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.266, text: 'Start', anchor: 'middle'},
-      {x: box.w * 0.466, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.266, text: 'Duration', anchor: 'middle'},
-      {x: box.w * 0.732, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.266, text: 'End', anchor: 'middle'}
+      {x: box.w * 0.466, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.266, text: 'End', anchor: 'middle'},
+      {x: box.w * 0.732, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.266, text: 'Duration', anchor: 'middle'}
       // {x: box.w * 0.69, y: 3 + headerSize * 0.5 + txtSize * 0.3, w: box.w * 0.31, text: 'Target & pointing', anchor: 'middle'}
     ]
     for (let i = 0; i < label.length; i++) {
@@ -472,7 +472,7 @@ window.ObsblockForm = function (optIn) {
           main: {
             id: type + 'MinusButton',
             g: g,
-            box: {x: innerbox.x - 3, y: innerbox.y + 12, width: 9, height: 9},
+            box: {x: innerbox.x - 3, y: innerbox.y + 18, width: 9, height: 9},
             background: {
               common: {
                 style: {
@@ -508,7 +508,7 @@ window.ObsblockForm = function (optIn) {
               },
               attr: {
                 x: innerbox.x - 3 + 3,
-                y: innerbox.y + 12 + 7
+                y: innerbox.y + 18 + 7
               }
             },
             hovered: {
@@ -543,7 +543,7 @@ window.ObsblockForm = function (optIn) {
           main: {
             id: type + 'PlusButton',
             g: g,
-            box: {x: innerbox.x + 6, y: innerbox.y + 12, width: 9, height: 9},
+            box: {x: innerbox.x + 6, y: innerbox.y + 18, width: 9, height: 9},
             background: {
               common: {
                 style: {
@@ -579,7 +579,7 @@ window.ObsblockForm = function (optIn) {
               },
               attr: {
                 x: innerbox.x + 6 + 2,
-                y: innerbox.y + 12 + 7
+                y: innerbox.y + 18 + 7
               }
             },
             hovered: {
@@ -618,6 +618,7 @@ window.ObsblockForm = function (optIn) {
         w: 14,
         h: headerSize * 2
       }
+
       let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
       let mbox = {
         x: x + 16,
@@ -635,6 +636,7 @@ window.ObsblockForm = function (optIn) {
 
       let ig = g.append('g').attr('id', id)
         .attr('transform', 'translate(' + ((w - (14 * 3)) * 0.33) + ',0)')
+
       stock.hourOpts = {disabled: !com.schedule.editabled, value: hour, min: 0, max: 23, step: 1}
       stock.hour = inputDateD3(ig,
         hbox,
@@ -648,6 +650,7 @@ window.ObsblockForm = function (optIn) {
         .style('font-size', headerSize + 'px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
+
       stock.minuteOpts = {disabled: !com.schedule.editabled, value: min, min: 0, max: 60, step: 1}
       stock.minute = inputDateD3(ig,
         mbox,
@@ -661,6 +664,7 @@ window.ObsblockForm = function (optIn) {
         .style('font-size', headerSize + 'px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
+
       stock.secondOpts = {disabled: !com.schedule.editabled, value: sec, min: 0, max: 60, step: 1}
       stock.second = inputDateD3(ig,
         sbox,
@@ -795,8 +799,8 @@ window.ObsblockForm = function (optIn) {
     })
 
     drawTime('startTime', label[1].x + txtSize * 0.5, label[1].w, 2 + headerSize * 1.5, startTime)
-    drawTime('duration', label[2].x + txtSize * 0.5, label[2].w, 2 + headerSize * 1.5, duration)
-    drawTime('endTime', label[3].x + txtSize * 0.5, label[3].w, 2 + headerSize * 1.5, endTime)
+    drawTime('endTime', label[2].x + txtSize * 0.5, label[2].w, 2 + headerSize * 1.5, duration)
+    drawTime('duration', label[3].x + txtSize * 0.5, label[3].w, 2 + headerSize * 1.5, endTime)
 
     // let tbox = {
     //   x: label[4].x,
@@ -975,7 +979,7 @@ window.ObsblockForm = function (optIn) {
               for (let i = 0; i < com.data.target.length; i++) {
                 if (com.data.target[i].name === d) {
                   target = com.data.target[i]
-                  targetIcon(chooseTarget, {w: sizeNewPointing * 1.2, h: sizeNewPointing * 1.2}, target.name.split('_')[1], tevents, colorPalette)
+                  targetIcon(chooseTarget, {w: sizeNewPointing * 1.2, h: sizeNewPointing * 1.2}, getTargetName(target), tevents, colorPalette)
                   return
                 }
               }
@@ -1161,7 +1165,7 @@ window.ObsblockForm = function (optIn) {
 
     let tbox = {x: label[0].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[0].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
     let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
-    let scrollBoxt = initScrollBox('targetListScroll', blocktg, tbox, {enabled: false})
+    let scrollBoxt = initScrollBox(com.main.tag + 'targetListScroll', blocktg, tbox, {enabled: false})
     let innertg = scrollBoxt.get('innerG')
     com.target.target = {
       scroll: scrollBoxt,
@@ -1210,7 +1214,7 @@ window.ObsblockForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+        targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + getTargetShort(d), tevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -1232,7 +1236,7 @@ window.ObsblockForm = function (optIn) {
 
     let pbox = {x: label[1].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[1].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
     let blockpg = g.append('g').attr('transform', 'translate(' + pbox.x + ',' + pbox.y + ')')
-    let scrollBoxp = initScrollBox('pointingListScroll', blockpg, pbox, {enabled: false})
+    let scrollBoxp = initScrollBox(com.main.tag + 'pointingListScroll', blockpg, pbox, {enabled: false})
     let innerpg = scrollBoxp.get('innerG')
     com.target.pointing = {
       scroll: scrollBoxp,
@@ -1281,7 +1285,7 @@ window.ObsblockForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        pointingIcon(g, {w: box.w * 0.07, h: line}, 'P' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
+        pointingIcon(g, {w: box.w * 0.07, h: line}, 'P' + getPointingNumber(d), pevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -1780,7 +1784,7 @@ window.ObsblockForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+        targetIcon(g, {w: line * 1.1, h: line * 1.1}, 'T' + getTargetShort(d), tevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -1821,7 +1825,7 @@ window.ObsblockForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        pointingIcon(g, {w: box.w * 0.07, h: line}, 'P' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
+        pointingIcon(g, {w: box.w * 0.07, h: line}, 'P' + getPointingNumber(d), pevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -2084,7 +2088,7 @@ window.ObsblockForm = function (optIn) {
                 .attr('stroke-dasharray', [])
                 .attr('fill', telHealthCol(choosenTel.val))
               g.select('text#choosenTelName')
-                .text(choosenTel.id.split('_')[1])
+                .text(getTelescopeNumber(choosenTel))
             }
           },
           mouseover: (d) => {},
@@ -2146,7 +2150,7 @@ window.ObsblockForm = function (optIn) {
       .attr('stroke', colorPalette.dark.stroke)
       .attr('stroke-width', 0.4)
     g.append('text')
-      .text(tel.id.split('_')[1])
+      .text(getTelescopeNumber(tel))
       .attr('x', box.w * 0.9)
       .attr('y', box.h * 0.4 + txtSize * 0.33)
       .style('fill', colorPalette.dark.stroke)
@@ -2304,7 +2308,7 @@ window.ObsblockForm = function (optIn) {
       .delay(200)
       .duration(600)
       .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-    let scroll = initScrollBox('focusedConflictListScroll', otherg, box, {enabled: false}, true)
+    let scroll = initScrollBox(com.main.tag + 'focusedConflictListScroll', otherg, box, {enabled: false}, true)
     function initTelescopeInformation (block, box) {
       innerOtherBlock[block.obId] = {}
       let g = scroll.get('innerG').append('g')
@@ -2945,7 +2949,7 @@ window.ObsblockForm = function (optIn) {
       .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
     com.telescopeRunningBlock = new TelescopeDisplayer({
       main: {
-        tag: 'telescopeRootTag',
+        tag: com.main.tag + 'telescopeRootTag',
         g: gt,
         scroll: {},
         box: box,
@@ -3138,7 +3142,7 @@ window.ObsblockForm = function (optIn) {
     function createInput (telType, g, innerbox) {
       com.telescope.tels[telType + 'Opts'] = {disabled: !com.schedule.editabled, value: com.data.block.telescopes[telType].min, min: 0, max: com.data.block.telescopes[telType].max, step: 1}
       com.telescope.tels[telType] = inputNumberD3(g,
-        {x: (innerbox.x + innerbox.w * 0.5 - 6), y: (box.y + box.h + headerSize * 2), w: 50, h: 15},
+        {x: (innerbox.x + innerbox.w * 0.5 - 6), y: (box.y + box.h + headerSize * 2), w: 12, h: 15},
         telType,
         com.telescope.tels[telType + 'Opts'],
         {change: (d) => { changeTelescopeNumber(telType, d) }, enter: (d) => { changeTelescopeNumber(telType, d) }})

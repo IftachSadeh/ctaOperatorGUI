@@ -251,7 +251,7 @@ window.TargetDisplayer = function (optIn) {
       }
       for (let i = 0; i < com.data.filtered.pointings.length; i++) {
         data.nodes.push({type: 'pointing', id: com.data.filtered.pointings[i].name, data: com.data.filtered.pointings[i], x: com.linkMap.map.box.w * 0.5, y: com.linkMap.map.box.h * 0.5})
-        data.links.push({type: 'link', source: com.data.filtered.pointings[i].name, target: com.data.filtered.pointings[i].name.split('/')[0]})
+        data.links.push({type: 'link', source: com.data.filtered.pointings[i].name, target: getPointingTarget(com.data.filtered.pointings[i])})
       }
 
       let simulation = d3.forceSimulation()
@@ -290,8 +290,8 @@ window.TargetDisplayer = function (optIn) {
         .attr('id', function (d) { return d.id })
         .each(function (d) {
           let g = d3.select(this)
-          if (d.type === 'target') targetIcon(g, {w: sizeTarget, h: sizeTarget}, d.data.name.split('_')[1], {}, colorPalette)
-          else if (d.type === 'pointing') pointingIcon(g, {w: sizePointing, h: sizePointing * 0.8}, d.data.name.split('-')[1], {}, colorPalette)
+          if (d.type === 'target') targetIcon(g, {w: sizeTarget, h: sizeTarget}, getTargetShort(d.data), {}, colorPalette)
+          else if (d.type === 'pointing') pointingIcon(g, {w: sizePointing, h: sizePointing * 0.8}, getPointingNumber(d.data), {}, colorPalette)
         })
         .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
 

@@ -185,7 +185,7 @@ window.TargetForm = function (optIn) {
       .style('opacity', 0.5)
       .style('pointer-events', 'none')
     g.append('text')
-      .text('T' + tar.name.split('_')[1])
+      .text('T' + getTargetShort(tar))
       .attr('x', height * 0.5)
       .attr('y', height * 0.5 + txtSize * 0.3)
       .style('font-weight', '')
@@ -257,7 +257,7 @@ window.TargetForm = function (optIn) {
     // }
 
     let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (3 + 0) + ')')
-    com.ressource.scrollBox = initScrollBox('targetRessourceScroll', blockg, box, {enabled: false})
+    com.ressource.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {enabled: false})
     let innerg = com.ressource.scrollBox.get('innerG')
 
     let squareTemplate = {
@@ -304,7 +304,7 @@ window.TargetForm = function (optIn) {
           over: function () {},
           out: function () {}
         }
-        pointingIcon(g, {w: psize.w, h: psize.h}, 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
+        pointingIcon(g, {w: psize.w, h: psize.h}, 'P' + getPointingNumber(d), pevents, colorPalette)
       })
       let merge = current.merge(enter)
       merge.each(function (d, i) {
@@ -591,7 +591,7 @@ window.TargetForm = function (optIn) {
 
     let tbox = {x: 0, y: headerSize * 6 + headerSize, w: box.w * 0.14, h: box.h - headerSize * 7.5}
     let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + tbox.y + ')')
-    let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
+    let scrollBox = initScrollBox(com.main.tag + 'targetListScroll', blockg, tbox, {enabled: false})
     let innerg = scrollBox.get('innerG')
 
     let allPoint = []
@@ -635,7 +635,7 @@ window.TargetForm = function (optIn) {
           },
           out: function () {}
         }
-        pointingIcon(g, {w: line * 1.4, h: line * 0.9}, d.name.split('/')[1].split('-')[0].split('_')[1] + 'P' + d.name.split('/')[1].split('-')[1], pevents, colorPalette)
+        pointingIcon(g, {w: line * 1.4, h: line * 0.9}, getPointingShort(d) + 'P' + getPointingNumber(d), pevents, colorPalette)
         scrollHeight += (marg + line * 0.9)
       })
       let merge = current.merge(enter)

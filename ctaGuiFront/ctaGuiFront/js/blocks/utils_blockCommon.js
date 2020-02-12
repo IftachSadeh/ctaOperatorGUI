@@ -1,6 +1,35 @@
 /* global d3 */
 /* global hasVar */
 /* global colorPalette */
+var blockTemplate = {
+  sbId: undefined,
+  obId: undefined,
+  timeStamp: undefined,
+  time: {
+    start: undefined,
+    duration: undefined,
+    end: undefined
+  },
+  exeState: {
+    state: undefined,
+    canRun: undefined
+  },
+  metaData: {
+    blockName: undefined,
+    nObs: undefined,
+    nSched: undefined
+  },
+  pointings: [], // {id:"", telIds:[], name:"", pos:[]}
+  runphase: [],
+  target: [], // {id:"", observability:{maximal,optimal,minimal}, name:"", pos:[]}
+  telIds: [],
+  telescopes: {
+    large: { min: 0, max: 0, ids: [] },
+    medium: { min: 0, max: 0, ids: [] },
+    small: { min: 0, max: 0, ids: [] }
+  } // TO REPLACE WITH SUB-ARRAY
+}
+window.blockTemplate = blockTemplate
 
 window.blockStyle = function (optIn) {
   let state = hasVar(optIn.state)

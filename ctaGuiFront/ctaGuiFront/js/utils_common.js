@@ -488,35 +488,24 @@ prefixD.sched.pointing = 'P'
 window.prefixD = prefixD
 // ------------------------------------------------------------------
 
-var blockTemplate = {
-  time: {
-    start: null,
-    duration: null,
-    end: null
-  },
-  exeState: {
-    state: null,
-    canRun: null
-  },
-  metaData: {
-    blockName: null,
-    nObs: null,
-    nSched: null
-  },
-  obId: null,
-  pointings: [],
-  runphase: null,
-  sbId: null,
-  target: [],
-  telIds: [],
-  telescopes: {
-    large: { min: 0, max: 0, ids: [] },
-    medium: { min: 0, max: 0, ids: [] },
-    small: { min: 0, max: 0, ids: [] }
-  },
-  timeStamp: null
+window.getTargetName = function (target) {
+  return target.name
 }
-window.blockTemplate = blockTemplate
+window.getTargetShort = function (target) {
+  return target.name.split('_')[1]
+}
+window.getPointingName = function (pointing) {
+  return pointing.name.split('/')[1]
+}
+window.getPointingTarget = function (pointing) {
+  return pointing.name.split('/')[0]
+}
+window.getPointingShort = function (pointing) {
+  return pointing.name.split('/')[1].split('_')[1]
+}
+window.getPointingNumber = function (pointing) {
+  return pointing.name.split('/')[1].split('_')[1].split('-')[1]
+}
 // ------------------------------------------------------------------
 // common telescope properties
 // ------------------------------------------------------------------
@@ -623,6 +612,9 @@ function runTelInfo () {
 }
 runTelInfo()
 
+window.getTelescopeNumber = function (tel) {
+  return tel.id.split('_')[1]
+}
 // var x = ['L_0','M_11','M_21']
 // telInfo.sortIds({
 //   data: x, //func: function(d,i){console.log(d); return d; },

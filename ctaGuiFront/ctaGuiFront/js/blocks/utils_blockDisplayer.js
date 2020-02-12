@@ -1888,6 +1888,7 @@ window.BlockDisplayer = function (optIn) {
             })
           d3.select(this).select('text.schedId')
             .attr('y', (height * d.nLine) * 0.5 + (height * 0.25))
+            .style('font-size', (height * 0.6) + 'px')
           mainOffset += d.nLine
         })
       allScheds.exit().remove()
@@ -2398,6 +2399,7 @@ window.BlockDisplayer = function (optIn) {
             .transition()
             .duration(timeD.animArc)
             .ease(d3.easeLinear)
+            .style('font-size', Math.max(6, Math.min(18, height * 0.5)) + 'px')
             .attr('x', function () {
               if (com.blockTrackShrink.schedBlocks.label.position === 'left') return (timeScale(d.startT)) - 5
               else if (com.blockTrackShrink.schedBlocks.label.position === 'right') return (timeScale(d.endT)) + 5
