@@ -1377,6 +1377,8 @@ let mainSchedBlocksInspector = function (optIn) {
         delete cleanBlock.display
         delete cleanBlock.filtered
         delete cleanBlock.nLine
+        delete cleanBlock.runphase
+        delete cleanBlock.target
         cleanSchedule.push(cleanBlock)
       }
     }
@@ -1399,6 +1401,7 @@ let mainSchedBlocksInspector = function (optIn) {
       .style('opacity', 0.8)
       .on('end', function () {
         let cleanQueue = cleanBlocks()
+        console.log(cleanQueue);
         sock.widgetV[widgetType].SockFunc.pushNewSchedule({
           widgetId: widgetId,
           newSchedule: cleanQueue
@@ -1791,8 +1794,8 @@ let mainSchedBlocksInspector = function (optIn) {
     newBlock.timeStamp = 101010209020
     newBlock.runPhase = []
     newBlock.created = true
-    newBlock.targets = []
-    newBlock.pointings = []
+    newBlock.targets = shared.data.copy.blocks['wait'][0].targets// []
+    newBlock.pointings = shared.data.copy.blocks['wait'][0].pointings// []
     newBlock.telescopes = {
       large: { min: 0, max: 4, ids: [] },
       medium: { min: 0, max: 25, ids: [] },

@@ -1084,14 +1084,30 @@ class obsBlocks_noACS():
 
     def external_addNewBlocksFromRedis(self):
         if self.redis.exists('blockUpdate'):
+            # for key in self.allBlocks[0]:
+            #     self.log.info([['g', key, self.allBlocks[0][key]]])
             self.redis.pipe.get('blockUpdate')
             blockUpdate = self.redis.pipe.execute(packed=True)[0]
-            self.log.info([['g', blockUpdate]])
+            # self.log.info([['g', blockUpdate]])
+            self.log.info([['g', len(blockUpdate), len(self.allBlocks)]])
+            total = 0
             for i in range(len(blockUpdate)):
                 if self.redis.exists(blockUpdate[i]["obId"]):
-                    current = [x for x in self.allBlocks if x['obId'] == blockUpdate[i]['obId']][0]
+                    # for x in self.allBlocks:
+                    #     if x['obId'] == blockUpdate[i]['obId']:
+                    #         current = [x][0]
+
+                    current = [x for x in self.allBlocks if x['obId'] == blockUpdate[i]['obId']]
+                    if len(current) == 0:
+                        current = blockUpdate[i]
+                        self.allBlocks.append(current)
+                        # for key in blockUpdate[i]:
+                        #     self.log.info([['g', key, blockUpdate[i][key]]])
+                    else:
+                        current = current[0]
                     if current['exeState']['state'] not in ['wait', 'run']:
                         continue
+                    total += 1
                     self.redis.pipe.set(
                         name=blockUpdate[i]["obId"], data=blockUpdate[i], expire=self.expire, packed=True)
                     current = blockUpdate[i]
@@ -1104,10 +1120,12 @@ class obsBlocks_noACS():
             for block in self.allBlocks:
                 exeState = block['exeState']['state']
 
-                self.log.info([['g', block['metaData']['blockName'] + ' ' + exeState]])
+                # self.log.info([['g', block['metaData']['blockName'] + ' ' + exeState]])
 
             self.redis.pipe.delete('blockUpdate')
             self.redis.pipe.execute(packed=True)
+
+            self.log.info([['g', total, len(blockUpdate), len(self.allBlocks)]])
 
     # ------------------------------------------------------------------
     #
