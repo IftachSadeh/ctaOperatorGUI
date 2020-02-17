@@ -489,21 +489,27 @@ window.prefixD = prefixD
 // ------------------------------------------------------------------
 
 window.getTargetName = function (target) {
+  if (!target) return
   return target.name
 }
 window.getTargetShort = function (target) {
+  if (!target) return
   return target.name.split('_')[1]
 }
 window.getPointingName = function (pointing) {
+  if (!pointing) return
   return pointing.name.split('/')[1]
 }
 window.getPointingTarget = function (pointing) {
+  if (!pointing) return
   return pointing.name.split('/')[0]
 }
 window.getPointingShort = function (pointing) {
+  if (!pointing) return
   return pointing.name.split('/')[1].split('_')[1]
 }
 window.getPointingNumber = function (pointing) {
+  if (!pointing) return
   return pointing.name.split('/')[1].split('_')[1].split('-')[1]
 }
 // ------------------------------------------------------------------

@@ -70,8 +70,8 @@ class telPos():
 
         telPntPos = dict()
         for nBlock in range(len(blocks)):
-            # if len(blocks[nBlock]["pointings"]) == 0:
-            #     continue
+            if len(blocks[nBlock]["pointings"]) == 0:
+                continue
             telIds = blocks[nBlock]["telescopes"]["large"]["ids"] + blocks[nBlock]["telescopes"]["medium"]["ids"] + blocks[nBlock]["telescopes"]["small"]["ids"]
             pntPos = blocks[nBlock]["pointings"][0]["pos"]
 
