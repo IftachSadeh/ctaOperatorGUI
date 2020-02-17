@@ -1778,29 +1778,38 @@ let mainSchedBlocksInspector = function (optIn) {
     return max + 1
   }
   function createDummyBlock () {
-    let newBlock = deepCopy(blockTemplate)
+    // let newBlock = deepCopy(blockTemplate)
+    let newBlock = shared.data.copy.blocks.wait.length > 0 ? deepCopy(shared.data.copy.blocks.wait[0]) : deepCopy(blockTemplate)
 
     let nSched = createSchedName(shared.data.copy.blocks)
+    let nObs = 0
 
+    newBlock.sbId = 'schBlock_' + (Math.floor(Math.random() * 300000)) +
+    '_' + (Math.floor(Math.random() * 9)) +
+    '_' + (Math.floor(Math.random() * 9)) +
+    '_' + (Math.floor(Math.random() * 9))
+    newBlock.obId = newBlock.sbId + '_' + nObs
+    newBlock.timeStamp = new Date().getTime()
+    newBlock.runPhase = []
     newBlock.time = {
       start: 0,
       duration: 2000,
       end: 2000
     }
+    newBlock.metaData = {blockName: nSched + ' (' + nObs + ')', nObs: nObs, nSched: nSched}
     newBlock.exeState = {state: 'wait', canRun: true}
-    newBlock.metaData = {blockName: nSched + ' (0)', nObs: 0, nSched: nSched}
-    newBlock.obId = 'newBlockObID_' + nSched + '_0'
-    newBlock.sbId = 'newBlockSbID_' + nSched
-    newBlock.timeStamp = 101010209020
-    newBlock.runPhase = []
     newBlock.created = true
-    newBlock.targets = shared.data.copy.blocks['wait'][0].targets// []
-    newBlock.pointings = shared.data.copy.blocks['wait'][0].pointings// []
-    newBlock.telescopes = {
-      large: { min: 0, max: 4, ids: [] },
-      medium: { min: 0, max: 25, ids: [] },
-      small: { min: 0, max: 70, ids: [] }
+
+    if (shared.data.copy.blocks.wait.length <= 0) {
+      newBlock.targets = shared.data.copy.blocks['wait'][0].targets
+      newBlock.pointings = shared.data.copy.blocks['wait'][0].pointings
+      newBlock.telescopes = {
+        large: { min: 0, max: 4, ids: [] },
+        medium: { min: 0, max: 25, ids: [] },
+        small: { min: 0, max: 70, ids: [] }
+      }
     }
+
     shared.data.copy.blocks.wait.push(newBlock)
     shared.data.copy.schedBlocks = createSchedBlocks(shared.data.copy.blocks)
 
@@ -1808,28 +1817,22 @@ let mainSchedBlocksInspector = function (optIn) {
     // console.log(getSchedBlocksData()['newBlockSbID'])
   }
   function createNewBlockInSchedule (schedB) {
-    let newBlock = deepCopy(blockTemplate)
+    // let newBlock = deepCopy(blockTemplate)
+    let newBlock = deepCopy(schedB.blocks[0])
 
-    let nSched = schedB.blocks[0].metaData.nSched
-    newBlock.time = {
-      start: schedB.blocks[schedB.blocks.length - 1].time.end + (60 * 1),
-      duration: schedB.blocks[schedB.blocks.length - 1].time.duration,
-      end: schedB.blocks[schedB.blocks.length - 1].time.end + (60 * 1) + schedB.blocks[schedB.blocks.length - 1].time.duration
-    }
-    newBlock.exeState = {state: 'wait', canRun: true}
-    newBlock.metaData = {blockName: nSched + ' (' + schedB.blocks.length + ')', nObs: schedB.blocks.length, nSched: nSched}
-    newBlock.obId = 'newBlockObID_' + nSched + '_' + schedB.blocks.length
-    newBlock.sbId = schedB.blocks[0].sbId
-    newBlock.timeStamp = 101010209020
+    let nObs = schedB.blocks.length
+    newBlock.obId = newBlock.sbId + '_' + nObs
+    newBlock.timeStamp = new Date().getTime()
     newBlock.runPhase = []
-    newBlock.created = true
-    newBlock.targets = []
-    newBlock.pointings = []
-    newBlock.telescopes = {
-      large: { min: 0, max: 4, ids: [] },
-      medium: { min: 0, max: 25, ids: [] },
-      small: { min: 0, max: 70, ids: [] }
+    newBlock.time = {
+      start: schedB.blocks[0].time.end + 5,
+      duration: schedB.blocks[0].time.duration,
+      end: schedB.blocks[0].time.end + 5 + schedB.blocks[0].time.duration
     }
+    newBlock.metaData = {blockName: newBlock.metaData.nSched + ' (' + nObs + ')', nObs: nObs, nSched: newBlock.metaData.nSched}
+    newBlock.exeState = {state: 'wait', canRun: true}
+    newBlock.created = true
+
     shared.data.copy.blocks.wait.push(newBlock)
     shared.data.copy.schedBlocks = createSchedBlocks(shared.data.copy.blocks)
 

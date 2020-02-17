@@ -20,7 +20,7 @@ var blockTemplate = {
     nSched: undefined
   },
   pointings: [], // {id:"", telIds:[], name:"", pos:[]}
-  runphase: [],
+  runPhase: [],
   target: [], // {id:"", observability:{maximal,optimal,minimal}, name:"", pos:[]}
   telIds: [],
   telescopes: {

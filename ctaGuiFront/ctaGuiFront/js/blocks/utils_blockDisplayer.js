@@ -1777,14 +1777,13 @@ window.BlockDisplayer = function (optIn) {
       let scheds = groupBlocksBySchedule(com.data.filtered)
       let nLine = 0
       if (com.blockQueue2.schedBlocks.layout) {
-        scheds.forEach(function (d) {
-          let shcedLayout = com.blockQueue2.schedBlocks.layout.filter(dd => dd.id === d.id)[0]
-          // com.blockQueue2.schedBlocks.layout.forEach(dd => console.log(shcedLayout, (dd.id === d.id), dd.id))
-          d.nLine = shcedLayout.nLine
-          nLine += shcedLayout.nLine
-          // console.log(d.blocks.length, shcedLayout.blocks.length);
-          d.blocks.forEach(function (dd) {
-            dd.nLine = shcedLayout.blocks.filter(ddd => dd.obId === ddd.obId)[0].nLine
+        com.blockQueue2.schedBlocks.layout.forEach(function (layout) {
+          let sched = scheds.filter(d => d.id === layout.id)[0]
+          nLine += layout.nLine
+          if (!sched) return
+          sched.nLine = layout.nLine
+          sched.blocks.forEach(function (dd) {
+            dd.nLine = layout.blocks.filter(ddd => dd.obId === ddd.obId)[0].nLine
           })
         })
       } else nLine = lineCount(scheds)

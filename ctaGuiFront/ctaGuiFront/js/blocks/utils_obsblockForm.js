@@ -799,8 +799,8 @@ window.ObsblockForm = function (optIn) {
     })
 
     drawTime('startTime', label[1].x + txtSize * 0.5, label[1].w, 2 + headerSize * 1.5, startTime)
-    drawTime('endTime', label[2].x + txtSize * 0.5, label[2].w, 2 + headerSize * 1.5, duration)
-    drawTime('duration', label[3].x + txtSize * 0.5, label[3].w, 2 + headerSize * 1.5, endTime)
+    drawTime('endTime', label[2].x + txtSize * 0.5, label[2].w, 2 + headerSize * 1.5, endTime)
+    drawTime('duration', label[3].x + txtSize * 0.5, label[3].w, 2 + headerSize * 1.5, duration)
 
     // let tbox = {
     //   x: label[4].x,
