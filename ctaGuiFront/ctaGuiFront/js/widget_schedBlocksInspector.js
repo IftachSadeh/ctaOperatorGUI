@@ -1386,7 +1386,6 @@ let mainSchedBlocksInspector = function (optIn) {
     return cleanSchedule
   }
   function pushNewSchedule () {
-    console.log(shared.data.copy);
     locker.add('pushNewSchedule')
     let pushingG = svg.g.append('g')
       .attr('class', 'pushingNewSchedule')
@@ -1402,7 +1401,6 @@ let mainSchedBlocksInspector = function (optIn) {
       .style('opacity', 0.8)
       .on('end', function () {
         let cleanQueue = cleanBlocks()
-        console.log(cleanQueue);
         sock.widgetV[widgetType].SockFunc.pushNewSchedule({
           widgetId: widgetId,
           newSchedule: cleanQueue
@@ -1683,7 +1681,6 @@ let mainSchedBlocksInspector = function (optIn) {
         }
       }
     }
-    console.log(shared.data.copy.modifications);
   }
   function checkBlocksDifference (reference, changed) {
     let diff = []
@@ -1883,6 +1880,7 @@ let mainSchedBlocksInspector = function (optIn) {
   }
   function updateView () {
     svgBlocksQueueServer.updateData()
+    svgTelsConflict.update()
   }
 
 
@@ -3079,15 +3077,7 @@ let mainSchedBlocksInspector = function (optIn) {
   let SvgTargets = function () {
     let reserved = {}
     reserved.drag = {}
-    function initData () {
-      reserved.box = {
-        x: box.tools.x,
-        y: box.tools.y + box.tools.h * 0.0,
-        w: box.tools.w,
-        h: box.tools.h * 0.5,
-        marg: lenD.w[0] * 0.01
-      }
-
+    function initClipping () {
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
       reserved.g = gBlockBox
@@ -3119,6 +3109,16 @@ let mainSchedBlocksInspector = function (optIn) {
         .attr('height', reserved.box.h)
       reserved.clipping.clipBody = reserved.clipping.g.append('g')
         .attr('clip-path', 'url(#clipTarget)')
+    }
+    function initData () {
+      reserved.box = {
+        x: box.tools.x,
+        y: box.tools.y + box.tools.h * 0.0,
+        w: box.tools.w,
+        h: box.tools.h * 0.5,
+        marg: lenD.w[0] * 0.01
+      }
+      initClipping()
     }
     this.initData = initData
     function updateData () {
@@ -3604,6 +3604,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('fill', coloru)
         reserved.clipping.g.select('g#innerg' + d.id).remove()
       }
+
       let curve = computeTelsCurve(block)
       conflictSquare = []
 
@@ -3647,35 +3648,35 @@ let mainSchedBlocksInspector = function (optIn) {
 
       let gMerge = allg.merge(gEnter)
 
-      gMerge.select('rect#hoversmall')
-        .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', range * 2)
-        .attr('fill', colorPalette.darker.stroke)
-        .style('opacity', 0)
-        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
-        .attr('height', range)
-        .on('mouseover', function (d) {
-          mouseHover(d3.select(this), d, 'small')
-        })
-        .on('mouseout', function (d) {
-          mouseOut(d3.select(this), d, 'small')
-        })
+      // gMerge.select('rect#hoversmall')
+      //   .attr('x', function (d) { return scaleX(d.start) })
+      //   .attr('y', range * 2)
+      //   .attr('fill', colorPalette.darker.stroke)
+      //   .style('opacity', 0)
+      //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+      //   .attr('height', range)
+      //   .on('mouseover', function (d) {
+      //     mouseHover(d3.select(this), d, 'small')
+      //   })
+      //   .on('mouseout', function (d) {
+      //     mouseOut(d3.select(this), d, 'small')
+      //   })
       gMerge.select('rect#smallused')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYSmall(d.smallTels.used))
-          if (d.smallTels.used >= scaleYSmall.domain()[1]) y = range
-          if (d.smallTels.used <= scaleYSmall.domain()[0]) y = 0
-          return range * 2 + y
+          let height = Math.abs(scaleYSmall(d.smallTels.used))
+          if (d.smallTels.used >= scaleYSmall.domain()[1]) height = range
+          if (d.smallTels.used <= scaleYSmall.domain()[0]) height = 0
+          return range * 3 - height
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('fill', function (d, i) {
           return '#43A047'
         })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYSmall(d.smallTels.used))
-          if (d.smallTels.used >= scaleYSmall.domain()[1]) height = 0
-          if (d.smallTels.used <= scaleYSmall.domain()[0]) height = range
+          let height = Math.abs(scaleYSmall(d.smallTels.used))
+          if (d.smallTels.used >= scaleYSmall.domain()[1]) height = range
+          if (d.smallTels.used <= scaleYSmall.domain()[0]) height = 0
           return height
         })
         .attr('stroke', function (d) {
@@ -3697,22 +3698,22 @@ let mainSchedBlocksInspector = function (optIn) {
       gMerge.select('rect#smallmin')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYSmall(d.smallTels.min))
-          if (d.smallTels.min >= scaleYSmall.domain()[1]) y = range
-          if (d.smallTels.min <= scaleYSmall.domain()[0]) y = 0
-          return range * 2 + y
+          let height = Math.abs(scaleYSmall(d.smallTels.min))
+          if (d.smallTels.min >= scaleYSmall.domain()[1]) height = range
+          if (d.smallTels.min <= scaleYSmall.domain()[0]) height = 0
+          return range * 3 - height
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('fill', function (d, i) {
-          if (d.smallTels.min < scaleYSmall.domain()[0] || d.smallTels.used > d.smallTels.min) {
+          if (d.smallTels.min > scaleYSmall.domain()[1] || d.smallTels.used < d.smallTels.min) {
             return '#FF5722'
           }
           return '#444444'
         })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYSmall(d.smallTels.min))
-          if (d.smallTels.min >= scaleYSmall.domain()[1]) height = 0
-          if (d.smallTels.min <= scaleYSmall.domain()[0]) height = range
+          let height = Math.abs(scaleYSmall(d.smallTels.min))
+          if (d.smallTels.min >= scaleYSmall.domain()[1]) height = range
+          if (d.smallTels.min <= scaleYSmall.domain()[0]) height = 0
           return height
         })
         .attr('stroke', function (d) {
@@ -3735,35 +3736,35 @@ let mainSchedBlocksInspector = function (optIn) {
           if (d.smallTels.min < scaleYSmall.domain()[0] || d.smallTels.used > d.smallTels.min) conflictSquare.push({d3: d3.select(this), d: d})
         })
 
-      gMerge.select('rect#hovermedium')
-        .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', range)
-        .attr('fill', colorPalette.darker.stroke)
-        .style('opacity', 0)
-        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
-        .attr('height', range)
-        .on('mouseover', function (d) {
-          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
-        })
-        .on('mouseout', function (d) {
-          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
-        })
+      // gMerge.select('rect#hovermedium')
+      //   .attr('x', function (d) { return scaleX(d.start) })
+      //   .attr('y', range)
+      //   .attr('fill', colorPalette.darker.stroke)
+      //   .style('opacity', 0)
+      //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+      //   .attr('height', range)
+      //   .on('mouseover', function (d) {
+      //     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
+      //   })
+      //   .on('mouseout', function (d) {
+      //     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
+      //   })
       gMerge.select('rect#mediumused')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYMedium(d.mediumTels.used))
-          if (d.mediumTels.used >= scaleYMedium.domain()[1]) y = range
-          if (d.mediumTels.used <= scaleYMedium.domain()[0]) y = 0
-          return range + y
+          let height = Math.abs(scaleYMedium(d.mediumTels.used))
+          if (d.mediumTels.used >= scaleYMedium.domain()[1]) height = range
+          if (d.mediumTels.used <= scaleYMedium.domain()[0]) height = 0
+          return range * 2 - height
         })
         .attr('fill', function (d, i) {
           return '#43A047'
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYMedium(d.mediumTels.used))
-          if (d.mediumTels.used >= scaleYMedium.domain()[1]) height = 0
-          if (d.mediumTels.used <= scaleYMedium.domain()[0]) height = range
+          let height = Math.abs(scaleYMedium(d.mediumTels.used))
+          if (d.mediumTels.used >= scaleYMedium.domain()[1]) height = range
+          if (d.mediumTels.used <= scaleYMedium.domain()[0]) height = 0
           return height
         })
         .attr('stroke', function (d) {
@@ -3785,22 +3786,22 @@ let mainSchedBlocksInspector = function (optIn) {
       gMerge.select('rect#mediummin')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYMedium(d.mediumTels.min))
-          if (d.mediumTels.min >= scaleYMedium.domain()[1]) y = range
-          if (d.mediumTels.min <= scaleYMedium.domain()[0]) y = 0
-          return range + y
+          let height = Math.abs(scaleYMedium(d.mediumTels.min))
+          if (d.mediumTels.min >= scaleYMedium.domain()[1]) height = range
+          if (d.mediumTels.min <= scaleYMedium.domain()[0]) height = 0
+          return range * 2 - height
         })
         .attr('fill', function (d, i) {
-          if (d.mediumTels.min < scaleYMedium.domain()[0] || d.mediumTels.used > d.mediumTels.min) {
+          if (d.mediumTels.min > scaleYMedium.domain()[1] || d.mediumTels.used < d.mediumTels.min) {
             return '#FF5722'
           }
           return '#444444'
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYMedium(d.mediumTels.min))
-          if (d.mediumTels.min >= scaleYMedium.domain()[1]) height = 0
-          if (d.mediumTels.min <= scaleYMedium.domain()[0]) height = range
+          let height = Math.abs(scaleYMedium(d.mediumTels.min))
+          if (d.mediumTels.min >= scaleYMedium.domain()[1]) height = range
+          if (d.mediumTels.min <= scaleYMedium.domain()[0]) height = 0
           return height
         })
         .attr('stroke', function (d) {
@@ -3823,35 +3824,35 @@ let mainSchedBlocksInspector = function (optIn) {
           if (d.mediumTels.min < scaleYMedium.domain()[0] || d.mediumTels.used > d.mediumTels.min) conflictSquare.push({d3: d3.select(this), d: d})
         })
 
-      gMerge.select('rect#hoverlarge')
-        .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', 0)
-        .attr('fill', colorPalette.darker.stroke)
-        .style('opacity', 0)
-        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
-        .attr('height', range)
-        .on('mouseover', function (d) {
-          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
-        })
-        .on('mouseout', function (d) {
-          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
-        })
+      // gMerge.select('rect#hoverlarge')
+      //   .attr('x', function (d) { return scaleX(d.start) })
+      //   .attr('y', 0)
+      //   .attr('fill', colorPalette.darker.stroke)
+      //   .style('opacity', 0)
+      //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+      //   .attr('height', range)
+      //   .on('mouseover', function (d) {
+      //     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
+      //   })
+      //   .on('mouseout', function (d) {
+      //     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
+      //   })
       gMerge.select('rect#largeused')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYLarge(d.largeTels.used))
-          if (d.largeTels.used >= scaleYLarge.domain()[1]) y = range
-          if (d.largeTels.used <= scaleYLarge.domain()[0]) y = 0
-          return range * 0 + y
+          let height = Math.abs(scaleYLarge(d.largeTels.used))
+          if (d.largeTels.used >= scaleYLarge.domain()[1]) height = range
+          if (d.largeTels.used <= scaleYLarge.domain()[0]) height = 0
+          return range - height
         })
         .attr('fill', function (d, i) {
           return '#43A047'
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYLarge(d.largeTels.used))
-          if (d.largeTels.used >= scaleYLarge.domain()[1]) height = 0
-          if (d.largeTels.used <= scaleYLarge.domain()[0]) height = range
+          let height = Math.abs(scaleYLarge(d.largeTels.used))
+          if (d.largeTels.used >= scaleYLarge.domain()[1]) height = range
+          if (d.largeTels.used <= scaleYLarge.domain()[0]) height = 0
           return height
         })
         .attr('stroke', function (d) {
@@ -3873,22 +3874,22 @@ let mainSchedBlocksInspector = function (optIn) {
       gMerge.select('rect#largemin')
         .attr('x', function (d) { return scaleX(d.start) })
         .attr('y', function (d) {
-          let y = Math.abs(scaleYLarge(d.largeTels.min))
-          if (d.largeTels.min >= scaleYLarge.domain()[1]) y = range
-          if (d.largeTels.min <= scaleYLarge.domain()[0]) y = 0
-          return range * 0 + y
+          let height = Math.abs(scaleYLarge(d.largeTels.min))
+          if (d.largeTels.min >= scaleYLarge.domain()[1]) height = range
+          if (d.largeTels.min <= scaleYLarge.domain()[0]) height = 0
+          return range - height
         })
         .attr('fill', function (d, i) {
-          if (d.largeTels.min < scaleYLarge.domain()[0] || d.largeTels.used > d.largeTels.min) {
+          if (d.largeTels.min > scaleYLarge.domain()[1] || d.largeTels.used < d.largeTels.min) {
             return '#FF5722'
           }
           return '#444444'
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', function (d) {
-          let height = range - Math.abs(scaleYLarge(d.largeTels.min))
-          if (d.largeTels.min >= scaleYLarge.domain()[1]) height = 0
-          if (d.largeTels.min <= scaleYLarge.domain()[0]) height = range
+          let height = Math.abs(scaleYLarge(d.largeTels.min))
+          if (d.largeTels.min >= scaleYLarge.domain()[1]) height = range
+          if (d.largeTels.min <= scaleYLarge.domain()[0]) height = 0
           return height
         })
         .attr('stroke', function (d) {
@@ -3984,9 +3985,9 @@ let mainSchedBlocksInspector = function (optIn) {
             id: 'LMS' + timeMarker[i] + Number(shared.data.server.timeOfNight.start),
             start: Number(shared.data.server.timeOfNight.start),
             end: timeMarker[i + 1],
-            smallTels: {min: 70, used: 70},
-            mediumTels: {min: 25, used: 25},
-            largeTels: {min: 4, used: 4},
+            smallTels: {min: 0, used: 0},
+            mediumTels: {min: 0, used: 0},
+            largeTels: {min: 0, used: 0},
             blocks: []
           })
         } else if (i === timeMarker.length - 1) {
@@ -3994,9 +3995,9 @@ let mainSchedBlocksInspector = function (optIn) {
             id: 'LMS' + timeMarker[i] + Number(shared.data.server.timeOfNight.end),
             start: timeMarker[i],
             end: Number(shared.data.server.timeOfNight.end),
-            smallTels: {min: 70, used: 70},
-            mediumTels: {min: 25, used: 25},
-            largeTels: {min: 4, used: 4},
+            smallTels: {min: 0, used: 0},
+            mediumTels: {min: 0, used: 0},
+            largeTels: {min: 0, used: 0},
             blocks: []
           })
         } else {
@@ -4005,9 +4006,9 @@ let mainSchedBlocksInspector = function (optIn) {
           } else {
             currentBlockIds = currentBlockIds.concat(bIds[timeMarker[i]].ids.filter(d => currentBlockIds.indexOf(d) < 0))
           }
-          let s = {min: telsFree[i].smallTels.min - smallTels[timeMarker[i]].min, used: telsFree[i].smallTels.used - smallTels[timeMarker[i]].used}
-          let m = {min: telsFree[i].mediumTels.min - mediumTels[timeMarker[i]].min, used: telsFree[i].mediumTels.used - mediumTels[timeMarker[i]].used}
-          let l = {min: telsFree[i].largeTels.min - largeTels[timeMarker[i]].min, used: telsFree[i].largeTels.used - largeTels[timeMarker[i]].used}
+          let s = {min: telsFree[i].smallTels.min + smallTels[timeMarker[i]].min, used: telsFree[i].smallTels.used + smallTels[timeMarker[i]].used}
+          let m = {min: telsFree[i].mediumTels.min + mediumTels[timeMarker[i]].min, used: telsFree[i].mediumTels.used + mediumTels[timeMarker[i]].used}
+          let l = {min: telsFree[i].largeTels.min + largeTels[timeMarker[i]].min, used: telsFree[i].largeTels.used + largeTels[timeMarker[i]].used}
           telsFree.push({
             id: 'LMS' + timeMarker[i] + timeMarker[i + 1],
             start: timeMarker[i],
@@ -4311,30 +4312,26 @@ let mainSchedBlocksInspector = function (optIn) {
     }
 
     function hideBlockInfo (d) {
+      // console.log('hideBlockInfo');
       if (!d) return
-      if (!reserved.drag.g) return
       if (reserved.drag.locked) return
+      // console.log('showBlockInfoPass');
 
-      reserved.drag.g.remove()
-      reserved.drag = {}
+      if (reserved.drag.g) reserved.drag.g.remove()
+      if (reserved.drag) reserved.drag = {}
       svgTargets.unhighlightTarget(d)
     }
     function showBlockInfo (d) {
+      // console.log('showBlockInfo');
       if (!d) return
+      // hideBlockInfo()
       if (reserved.drag.g) return
-      hideBlockInfo()
+      // console.log('showBlockInfoPass');
       // if (!reserved.hasData) return
       // if (reserved.drag.g) return
       svgTargets.highlightTarget(d)
 
       reserved.drag.g = reserved.main.g.append('g')
-      // reserved.drag.g.append('rect')
-      //   .attr('x', 0)
-      //   .attr('y', 0)
-      //   .attr('width', reserved.drag.box.w)
-      //   .attr('height', reserved.drag.box.h)
-      //   .attr('fill', 'transparent')
-      //   .style('pointer-events', 'none')
       reserved.drag.box = {
         x: box.focusOverlay.x,
         y: box.focusOverlay.y,
@@ -4355,7 +4352,6 @@ let mainSchedBlocksInspector = function (optIn) {
         right: reserved.drag.timeScale(d.time.end)
       }
       createDragColumn(d)
-      // createDragBlock(d)
       createDragTimer(d)
     }
 
@@ -4386,12 +4382,12 @@ let mainSchedBlocksInspector = function (optIn) {
       if (d.created) return true
       if (d.exeState.state === 'wait' || d.exeState.state === 'cancel') return true
       return false
-      // if (d.time.end > Number(shared.data.server.timeOfNight.now) && d.time.start < Number(shared.data.server.timeOfNight.now)) return
-      // if (d.time.end < Number(shared.data.server.timeOfNight.now)) return
     }
     function dragStart (d) {
       if (!canDrag(d)) return
-      // reserved.drag.atLeastOneTick = false
+
+      if (!reserved.drag) focusManager.focusOn('block', d.obId)
+
       reserved.drag.mousecursor = d3.mouse(reserved.drag.g._groups[0][0])
       reserved.drag.offset = reserved.drag.mousecursor[0] - reserved.drag.position.left
 
@@ -4566,6 +4562,7 @@ let mainSchedBlocksInspector = function (optIn) {
   }
 
   function balanceBlocks (block) {
+    return
     let idle
     function checkAndReplace (block1, block2, type) {
       let inter = block1.telescopes[type].ids.filter(value => block2.telescopes[type].ids.includes(value))

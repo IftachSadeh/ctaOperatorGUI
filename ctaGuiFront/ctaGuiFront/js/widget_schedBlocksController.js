@@ -1388,6 +1388,7 @@ let mainSchedBlocksController = function (optIn) {
         events: {
           block: {
             click: function (id) { focusManager.focusOn('block', id.obId) },
+            dbclick: function (d) {},
             mouseover: focusManager.over,
             mouseout: focusManager.out
           },
@@ -1829,15 +1830,8 @@ let mainSchedBlocksController = function (optIn) {
   let SvgTargets = function () {
     let reserved = {}
     reserved.drag = {}
-    function initData () {
-      reserved.box = {
-        x: box.tools.x,
-        y: box.tools.y + box.tools.h * 0.0,
-        w: box.tools.w,
-        h: box.tools.h * 0.5,
-        marg: lenD.w[0] * 0.01
-      }
 
+    function initClipping () {
       let gBlockBox = svg.g.append('g')
         .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
       reserved.g = gBlockBox
@@ -1870,6 +1864,16 @@ let mainSchedBlocksController = function (optIn) {
       reserved.clipping.clipBody = reserved.clipping.g.append('g')
         .attr('clip-path', 'url(#clipTarget)')
     }
+    function initData () {
+      reserved.box = {
+        x: box.tools.x,
+        y: box.tools.y + box.tools.h * 0.0,
+        w: box.tools.w,
+        h: box.tools.h * 0.5,
+        marg: lenD.w[0] * 0.01
+      }
+      initClipping()
+    }
     this.initData = initData
     function updateData () {
       drawTargets()
@@ -1888,9 +1892,12 @@ let mainSchedBlocksController = function (optIn) {
     this.focus = focus
 
     function drawTargets () {
+      let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+      let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
+      let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
       let scaleX = d3.scaleLinear()
         .range([0, reserved.box.w])
-        .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
+        .domain([startTime.time, endTime.time])
       let scaleY = d3.scaleLinear()
         .range([reserved.box.h, reserved.box.h * 0.2])
         .domain([0, 1])
@@ -1906,8 +1913,76 @@ let mainSchedBlocksController = function (optIn) {
       let gEnter = allg.enter()
         .append('g')
         .attr('class', 'target')
-      gEnter.append('path')
-        .attr('d', function (d) {
+      gEnter.each(function (d) {
+        let ig = d3.select(this)
+          .style('opacity', function (d) {
+            return 0.4
+          })
+        ig.append('path')
+          .attr('d', function () {
+            let targetPoints = [
+              {x: scaleX(d.observability.minimal), y: scaleY(0)},
+              {x: scaleX(d.observability.optimal), y: scaleY(1)},
+              {x: scaleX(d.observability.maximal), y: scaleY(0)}
+            ]
+            return lineGenerator(targetPoints)
+          })
+          .attr('fill', function (d) {
+            // if (block.targetId === d.id) return colorTheme.dark.background
+            return 'none'
+          })
+          .attr('stroke', function (d) {
+            // if (block.targetId === d.id) return colorTheme.dark.stroke
+            return colorTheme.dark.stroke
+          })
+          .attr('stroke-width', function (d) {
+            // if (block.targetId === d.id) return 0.2
+            return 0.4
+          })
+          .attr('stroke-opacity', function (d) {
+            // if (block.targetId === d.id) return 1
+            return 0.4
+          })
+          .attr('fill-opacity', 0.15)
+          .attr('stroke-dasharray', function (d) {
+            // if (block.targetId === d.id) return []
+            return [4, 6]
+          })
+        let tig = ig.append('g')
+          .attr('id', 'targetIcon')
+          .attr('transform', 'translate(' + (scaleX((d.observability.minimal + d.observability.maximal) * 0.5) - 10) + ',' + (reserved.box.h - 20) + ')')
+        targetIcon(tig, {w: 15, h: 15}, getTargetShort(d), {
+          click: function () { focusManager.focusOn('target', d.id) },
+          over: function () { ig.style('opacity', 1) },
+          out: function () { ig.style('opacity', 0.4) }
+        }, colorPalette)
+      })
+      // gEnter.append('text')
+      //   .text(function (d) {
+      //     return d.id
+      //   })
+      //   .attr('x', function (d) {
+      //     let xx = scaleX(d.observability.minimal) + 10
+      //     return xx
+      //     // return (xx < 0) ? 10 : xx
+      //   })
+      //   .attr('y', reserved.box.h - 3)
+      //   .attr('text-anchor', 'start')
+      //   .attr('font-size', 10)
+      //   .attr('dy', 0)
+      //   .style('pointer-events', 'none')
+      //   .style('fill', function (d) {
+      //     // if (block.targetId === d.id) return colorTheme.dark.stroke
+      //     return colorTheme.dark.stroke
+      //   })
+      //   .style('fill-opacity', function (d) {
+      //     // if (block.targetId === d.id) return 1
+      //     return 0.6
+      //   })
+      let gMerge = allg.merge(gEnter)
+      gMerge.each(function (d) {
+        let ig = d3.select(this)
+        ig.select('path').attr('d', function (d) {
           let targetPoints = [
             {x: scaleX(d.observability.minimal), y: scaleY(0)},
             {x: scaleX(d.observability.optimal), y: scaleY(1)},
@@ -1915,63 +1990,15 @@ let mainSchedBlocksController = function (optIn) {
           ]
           return lineGenerator(targetPoints)
         })
-        .attr('fill', function (d) {
-          // if (block.targetId === d.id) return colorTheme.dark.background
-          return 'none'
-        })
-        .attr('stroke', function (d) {
-          // if (block.targetId === d.id) return colorTheme.dark.stroke
-          return colorTheme.dark.stroke
-        })
-        .attr('stroke-width', function (d) {
-          // if (block.targetId === d.id) return 0.2
-          return 0.4
-        })
-        .attr('stroke-opacity', function (d) {
-          // if (block.targetId === d.id) return 1
-          return 0.4
-        })
-        .attr('fill-opacity', 0.15)
-        .attr('stroke-dasharray', function (d) {
-          // if (block.targetId === d.id) return []
-          return [4, 6]
-        })
-      // gEnter.append('rect')
-      //   .attr('x', function (d) { return scaleX(d.observability.minimal) })
-      //   .attr('y', reserved.box.h * 0.65)
-      //   .attr('width', function (d) { return scaleX(d.observability.maximal) - scaleX(d.observability.minimal) })
-      //   .attr('height', reserved.box.h * 0.1)
-      //   .attr('fill', colorTheme.darker.background)
-      //   .attr('fill-opacity', 0.3)
-      //   .attr('stroke', colorTheme.darker.stroke)
-      //   .attr('stroke-width', 0.1)
-      gEnter.append('text')
-        .text(function (d) {
-          return d.id
-        })
-        .attr('x', function (d) {
-          let xx = scaleX(d.observability.minimal) + 10
-          return (xx < 0) ? 10 : xx
-        })
-        .attr('y', reserved.box.h - 3)
-        .attr('text-anchor', 'start')
-        .attr('font-size', 10)
-        .attr('dy', 0)
-        .style('pointer-events', 'none')
-        .style('fill', function (d) {
-          // if (block.targetId === d.id) return colorTheme.dark.stroke
-          return colorTheme.dark.stroke
-        })
-        .style('fill-opacity', function (d) {
-          // if (block.targetId === d.id) return 1
-          return 0.6
-        })
+        ig.select('g#targetIcon')
+          .attr('transform', 'translate(' + (scaleX((d.observability.minimal + d.observability.maximal) * 0.5) - 10) + ',' + (reserved.box.h - 14) + ')')
+      })
     }
     function showPercentTarget (block) {
       reserved.clipping.clipBody.select('text.percentStart').remove()
       reserved.clipping.clipBody.select('text.percentEnd').remove()
 
-      if (!block || !block.targetId) return
+      if (!block.targetId) return
       let target = reserved.clipping.clipBody.selectAll('g.target')
         .filter(function (d) { return (block.targetId === d.id) }).select('path')._groups[0][0]
       let scaleX = d3.scaleLinear()
@@ -2061,24 +2088,23 @@ let mainSchedBlocksController = function (optIn) {
     }
     this.showPercentTarget = showPercentTarget
     function highlightTarget (block) {
+      if (!block) return
       let tarG = reserved.clipping.clipBody.selectAll('g.target')
         .filter(function (d) {
-          if (!block) return
           for (let i = 0; i < block.targets.length; i++) {
             if (block.targets[i].id === d.id) return true
           }
           return false
         })
+      tarG.style('opacity', function (d) {
+        return 1
+      })
       tarG.select('path')
         .attr('fill', colorTheme.dark.background)
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.8)
         .attr('stroke-opacity', 1)
-        .attr('fill-opacity', 0.55)
         .attr('stroke-dasharray', [])
-      tarG.select('text')
-        .style('fill', colorTheme.dark.stroke)
-        .style('fill-opacity', 1)
       showPercentTarget(block)
     }
     this.highlightTarget = highlightTarget
@@ -2093,6 +2119,7 @@ let mainSchedBlocksController = function (optIn) {
           }
           return false
         })
+      tarG.style('opacity', 0.4)
       tarG.select('path')
         .attr('fill', 'none')
         .attr('stroke', colorTheme.dark.stroke)
@@ -2100,9 +2127,9 @@ let mainSchedBlocksController = function (optIn) {
         .attr('stroke-opacity', 0.4)
         .attr('fill-opacity', 0.15)
         .attr('stroke-dasharray', [4, 6])
-      tarG.select('text')
-        .style('fill', colorTheme.dark.stroke)
-        .style('fill-opacity', 0.3)
+      // tarG.select('text')
+      //   .style('fill', colorTheme.dark.stroke)
+      //   .style('fill-opacity', 0.3)
     }
     this.unhighlightTarget = unhighlightTarget
   }
@@ -2112,6 +2139,21 @@ let mainSchedBlocksController = function (optIn) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
+    function initClipping () {
+      reserved.clipping = {}
+      reserved.clipping.g = svg.g.append('g')
+        .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
+      reserved.clipping.g.append('defs').append('svg:clipPath')
+        .attr('id', 'clip')
+        .append('svg:rect')
+        .attr('id', 'clip-rect')
+        .attr('x', '0')
+        .attr('y', '0')
+        .attr('width', reserved.box.w)
+        .attr('height', reserved.box.h)
+      reserved.clipping.clipBody = reserved.clipping.g.append('g')
+        .attr('clip-path', 'url(#clip)')
+    }
     function initData () {
       reserved.box = {
         x: box.tools.x,
@@ -2121,8 +2163,10 @@ let mainSchedBlocksController = function (optIn) {
         marg: lenD.w[0] * 0.01
       }
 
-      let gBlockBox = svg.g.append('g')
-        .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
+      initClipping()
+      // let gBlockBox = svg.g.append('g')
+      //   .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
+
       // gBlockBox.append('text')
       //   .text('MODIFICATIONS')
       //   .style('fill', colorTheme.medium.text)
@@ -2131,35 +2175,35 @@ let mainSchedBlocksController = function (optIn) {
       //   .attr('text-anchor', 'middle')
       //   .attr('transform', 'translate(-5,' + (reserved.box.h * 0.5) + ') rotate(270)')
 
-      reserved.gTargets = gBlockBox.append('g')
-      reserved.gTargets.append('defs').append('svg:clipPath')
-        .attr('id', 'clip')
-        .append('svg:rect')
-        .attr('id', 'clip-rect')
-        .attr('x', '0')
-        .attr('y', '0')
-        .attr('width', reserved.box.w)
-        .attr('height', reserved.box.h)
-      reserved.clipBody = reserved.gTargets.append('g')
-        .attr('clip-path', '') // 'url(#clip)')
+      reserved.gTargets = reserved.clipping.clipBody.append('g')
+      // reserved.gTargets.append('defs').append('svg:clipPath')
+      //   .attr('id', 'clip')
+      //   .append('svg:rect')
+      //   .attr('id', 'clip-rect')
+      //   .attr('x', '0')
+      //   .attr('y', '0')
+      //   .attr('width', reserved.box.w)
+      //   .attr('height', reserved.box.h)
+      // reserved.clipBody = reserved.gTargets.append('g')
+      //   .attr('clip-path', '') // 'url(#clip)')
 
       let range = reserved.box.h * 0.33333
 
-      reserved.clipBody.append('text')
+      reserved.clipping.g.append('text')
         .text('L')
         .style('fill', colorTheme.dark.stroke)
         .style('font-weight', 'bold')
         .style('font-size', '16px')
         .attr('text-anchor', 'start')
         .attr('transform', 'translate(' + (reserved.box.w + 4) + ',' + (range * 0.5 + 5) + ')')
-      reserved.clipBody.append('text')
+      reserved.clipping.g.append('text')
         .text('M')
         .style('fill', colorTheme.dark.stroke)
         .style('font-weight', 'bold')
         .style('font-size', '16px')
         .attr('text-anchor', 'start')
         .attr('transform', 'translate(' + (reserved.box.w + 4) + ',' + (range * 1.5 + 5) + ')')
-      reserved.clipBody.append('text')
+      reserved.clipping.g.append('text')
         .text('S')
         .style('fill', colorTheme.dark.stroke)
         .style('font-weight', 'bold')
@@ -2167,31 +2211,28 @@ let mainSchedBlocksController = function (optIn) {
         .attr('text-anchor', 'start')
         .attr('transform', 'translate(' + (reserved.box.w + 4) + ',' + (range * 2.5 + 5) + ')')
 
-      reserved.clipBody.append('rect')
+      reserved.clipping.g.append('rect')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', reserved.box.w)
         .attr('height', range)
-        .attr('fill', colorTheme.dark.background)
-        .attr('fill-opacity', 0.55)
+        .attr('fill', 'none')
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.5)
-      reserved.clipBody.append('rect')
+      reserved.clipping.g.append('rect')
         .attr('x', 0)
         .attr('y', range * 1)
         .attr('width', reserved.box.w)
         .attr('height', range)
-        .attr('fill', colorTheme.medium.background)
-        .attr('fill-opacity', 0.55)
+        .attr('fill', 'none')
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.5)
-      reserved.clipBody.append('rect')
+      reserved.clipping.g.append('rect')
         .attr('x', 0)
         .attr('y', range * 2)
         .attr('width', reserved.box.w)
         .attr('height', range)
-        .attr('fill', colorTheme.dark.background)
-        .attr('fill-opacity', 0.55)
+        .attr('fill', 'none')
         .attr('stroke', colorTheme.dark.stroke)
         .attr('stroke-width', 0.5)
     }
@@ -2204,45 +2245,190 @@ let mainSchedBlocksController = function (optIn) {
     this.update = update
 
     function drawTelsAvailabilityCurve (block) {
+      function mouseHover (g, d, type) {
+        // let nb = {x: Number(g.select('rect#' + type + 'min').attr('x')),
+        //   y: Number(g.select('rect#' + type + 'min').attr('y')),
+        //   w: Number(g.select('rect#' + type + 'min').attr('width')),
+        //   h: Number(g.select('rect#' + type + 'min').attr('height'))
+        // }
+        let color = d3.color(g.select('rect#' + type + 'min').attr('fill')).darker(1).darker(1)
+        g.select('rect#' + type + 'min')
+          .attr('fill', color)
+          // .attr('x', nb.x + 2)
+          // .attr('y', nb.y + 2)
+          // .attr('width', nb.w - 4)
+          // .attr('height', nb.h - 4)
+          // .attr('stroke', '#000000')
+          // .attr('stroke-width', 4)
+
+        let coloru = d3.color(g.select('rect#' + type + 'used').attr('fill')).darker(1).darker(1)
+        g.select('rect#' + type + 'used')
+          .attr('fill', coloru)
+
+        let dim = {
+          w: 30,
+          h: 30,
+          marg: 1
+        }
+        let middleoffset = scaleX(d.end) + scaleX(d.start)
+        let finaloffset = ((middleoffset - ((dim.w + dim.marg) * d.blocks.length) + dim.marg) * 0.5)
+        if (finaloffset < 0) finaloffset = 10
+        if ((finaloffset + ((dim.w + dim.marg) * d.blocks.length) - dim.marg) > reserved.box.w) finaloffset = -10 + reserved.box.w - (((dim.w + dim.marg) * d.blocks.length) - dim.marg)
+        let inngerg = reserved.clipping.g.append('g')
+          .attr('id', 'innerg' + d.id)
+          .attr('transform', 'translate(' + finaloffset + ',0)')
+        for (let i = 0; i < d.blocks.length; i++) {
+          let b = getBlockById(getBlocksData(), d.blocks[i]).data
+          let bcolor = blockStyle(b)
+          let txtSize = 8
+          inngerg.append('rect')
+            .attr('x', i * (dim.w + dim.marg))
+            .attr('y', -dim.h)
+            .attr('width', dim.w)
+            .attr('height', dim.h)
+            .attr('fill', bcolor.color.background)
+            .attr('stroke', bcolor.color.stroke)
+            .attr('stroke-width', 0.2)
+          inngerg.append('text')
+            .text(function () {
+              return b.metaData.blockName
+            })
+            .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
+            .attr('y', -dim.h + txtSize * 1.2) // - Number(reserved.drag.oldRect.attr('height')))
+            .style('font-weight', '')
+            .style('fill', '#000000')
+            .style('stroke-width', 0.3)
+            .attr('vector-effect', 'non-scaling-stroke')
+            .style('pointer-events', 'none')
+            .style('stroke', 'none')
+            .attr('text-anchor', 'middle')
+            .style('font-size', txtSize + 'px')
+          inngerg.append('text')
+            .text(function () {
+              return b.telescopes[type].ids.length + '/' + b.telescopes[type].min
+            })
+            .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
+            .attr('y', -dim.h + txtSize * 2.8) // - Number(reserved.drag.oldRect.attr('height')))
+            .style('font-weight', '')
+            .style('fill', '#000000')
+            .style('stroke-width', 0.3)
+            .attr('vector-effect', 'non-scaling-stroke')
+            .style('pointer-events', 'none')
+            .style('stroke', 'none')
+            .attr('text-anchor', 'middle')
+            .style('font-size', txtSize + 'px')
+          // inngerg.append('text')
+          //   .text(function () {
+          //     return b.telescopes.medium.ids.length + '/' + b.telescopes.medium.min
+          //   })
+          //   .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
+          //   .attr('y', -dim.h + txtSize * 3.6) // - Number(reserved.drag.oldRect.attr('height')))
+          //   .style('font-weight', '')
+          //   .style('fill', '#000000')
+          //   .style('stroke-width', 0.3)
+          //   .attr('vector-effect', 'non-scaling-stroke')
+          //   .style('pointer-events', 'none')
+          //   .style('stroke', 'none')
+          //   .attr('text-anchor', 'middle')
+          //   .style('font-size', txtSize + 'px')
+          // inngerg.append('text')
+          //   .text(function () {
+          //     return b.telescopes.small.ids.length + '/' + b.telescopes.small.min
+          //   })
+          //   .attr('x', i * (dim.w + dim.marg) + dim.w * 0.5)
+          //   .attr('y', -dim.h + txtSize * 4.8) // - Number(reserved.drag.oldRect.attr('height')))
+          //   .style('font-weight', '')
+          //   .style('fill', '#000000')
+          //   .style('stroke-width', 0.3)
+          //   .attr('vector-effect', 'non-scaling-stroke')
+          //   .style('pointer-events', 'none')
+          //   .style('stroke', 'none')
+          //   .attr('text-anchor', 'middle')
+          //   .style('font-size', txtSize + 'px')
+        }
+      }
+      function mouseOut (g, d, type) {
+        let color = d3.color(g.select('rect#' + type + 'min').attr('fill')).brighter(1).brighter(1)
+        g.select('rect#' + type + 'min')
+          .attr('fill', color)
+        let coloru = d3.color(g.select('rect#' + type + 'used').attr('fill')).brighter(1).brighter(1)
+        g.select('rect#' + type + 'used')
+          .attr('fill', coloru)
+        reserved.clipping.g.select('g#innerg' + d.id).remove()
+      }
+
       let curve = computeTelsCurve(block)
 
+      let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+      let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[0].getTime()) / -1000}
+      let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.timeOfNight.date_start).getTime() - axisTop[1].getTime()) / -1000}
       let scaleX = d3.scaleLinear()
         .range([0, reserved.box.w])
-        .domain([Number(shared.data.server.timeOfNight.start), Number(shared.data.server.timeOfNight.end)])
-      // console.log(blockQueue.get('axis').range, blockQueue.get('axis').domain);
+        .domain([startTime.time, endTime.time])
       let range = reserved.box.h * 0.33333
       let scaleYSmall = d3.scaleLinear()
-        .range([0, range * 0.5])
-        .domain([0, 69])
+        .range([0, range])
+        .domain([0, 70])
       let scaleYMedium = d3.scaleLinear()
-        .range([0, range * 0.5])
+        .range([0, range])
         .domain([0, 25])
       let scaleYLarge = d3.scaleLinear()
-        .range([0, range * 0.5])
+        .range([0, range])
         .domain([0, 4])
-      let allg = reserved.clipBody.selectAll('g.telsCurve')
+      let allg = reserved.gTargets.selectAll('g.telsCurve')
         .data(curve, function (d, i) {
-          return i
+          return d.id
         })
       let gEnter = allg.enter()
         .append('g')
+        .attr('id', d => d.id)
         .attr('class', 'telsCurve')
-      gEnter.append('rect').attr('class', 'small')
-      gEnter.append('rect').attr('class', 'medium')
-      gEnter.append('rect').attr('class', 'high')
+      // gEnter.append('rect').attr('class', 'hover')
+
+      // gEnter.append('rect').attr('id', 'hoversmall')
+      gEnter.append('rect').attr('id', 'smallused')
+      gEnter.append('rect').attr('id', 'smallmin')
+
+      // gEnter.append('rect').attr('id', 'hovermedium')
+      gEnter.append('rect').attr('id', 'mediumused')
+      gEnter.append('rect').attr('id', 'mediummin')
+
+      // gEnter.append('rect').attr('id', 'hoverlarge')
+      gEnter.append('rect').attr('id', 'largeused')
+      gEnter.append('rect').attr('id', 'largemin')
+
       let gMerge = allg.merge(gEnter)
 
-      gMerge.select('rect.small')
+      // gMerge.select('rect#hoversmall')
+      //   .attr('x', function (d) { return scaleX(d.start) })
+      //   .attr('y', range * 2)
+      //   .attr('fill', colorPalette.darker.stroke)
+      //   .style('opacity', 0)
+      //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+      //   .attr('height', range)
+      //   .on('mouseover', function (d) {
+      //     mouseHover(d3.select(this), d, 'small')
+      //   })
+      //   .on('mouseout', function (d) {
+      //     mouseOut(d3.select(this), d, 'small')
+      //   })
+      gMerge.select('rect#smallused')
         .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', function (d) { return (range * 1) - 2 * Math.abs(scaleYSmall(d.smallTels)) })
+        .attr('y', function (d) {
+          let height = Math.abs(scaleYSmall(d.smallTels.used))
+          if (d.smallTels.used >= scaleYSmall.domain()[1]) height = range
+          if (d.smallTels.used <= scaleYSmall.domain()[0]) height = 0
+          return range * 3 - height
+        })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('fill', function (d, i) {
           return '#43A047'
         })
         .attr('height', function (d) {
-          let height = scaleYSmall(d.smallTels) * 2
-          if (height < 0) d3.select(this).attr('fill', '#FF5722')
-          return Math.abs(height)
+          let height = Math.abs(scaleYSmall(d.smallTels.used))
+          if (d.smallTels.used >= scaleYSmall.domain()[1]) height = range
+          if (d.smallTels.used <= scaleYSmall.domain()[0]) height = 0
+          return height
         })
         .attr('stroke', function (d) {
           return colorTheme.dark.stroke
@@ -2254,18 +2440,80 @@ let mainSchedBlocksController = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'small')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'small')
+        })
+      gMerge.select('rect#smallmin')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) {
+          let height = Math.abs(scaleYSmall(d.smallTels.min))
+          if (d.smallTels.min >= scaleYSmall.domain()[1]) height = range
+          if (d.smallTels.min <= scaleYSmall.domain()[0]) height = 0
+          return range * 3 - height
+        })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('fill', function (d, i) {
+          if (d.smallTels.min > scaleYSmall.domain()[1] || d.smallTels.used < d.smallTels.min) {
+            return '#FF5722'
+          }
+          return '#444444'
+        })
+        .attr('height', function (d) {
+          let height = Math.abs(scaleYSmall(d.smallTels.min))
+          if (d.smallTels.min >= scaleYSmall.domain()[1]) height = range
+          if (d.smallTels.min <= scaleYSmall.domain()[0]) height = 0
+          return height
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'small')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'small')
+        })
 
-      gMerge.select('rect.medium')
+      // gMerge.select('rect#hovermedium')
+      //   .attr('x', function (d) { return scaleX(d.start) })
+      //   .attr('y', range)
+      //   .attr('fill', colorPalette.darker.stroke)
+      //   .style('opacity', 0)
+      //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+      //   .attr('height', range)
+      //   .on('mouseover', function (d) {
+      //     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
+      //   })
+      //   .on('mouseout', function (d) {
+      //     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
+      //   })
+      gMerge.select('rect#mediumused')
         .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', function (d) { return (range * 2) - 2 * Math.abs(scaleYMedium(d.mediumTels)) })
+        .attr('y', function (d) {
+          let height = Math.abs(scaleYMedium(d.mediumTels.used))
+          if (d.mediumTels.used >= scaleYMedium.domain()[1]) height = range
+          if (d.mediumTels.used <= scaleYMedium.domain()[0]) height = 0
+          return range * 2 - height
+        })
         .attr('fill', function (d, i) {
           return '#43A047'
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', function (d) {
-          let height = scaleYMedium(d.mediumTels) * 2
-          if (height < 0) d3.select(this).attr('fill', '#FF5722')
-          return Math.abs(height)
+          let height = Math.abs(scaleYMedium(d.mediumTels.used))
+          if (d.mediumTels.used >= scaleYMedium.domain()[1]) height = range
+          if (d.mediumTels.used <= scaleYMedium.domain()[0]) height = 0
+          return height
         })
         .attr('stroke', function (d) {
           return colorTheme.dark.stroke
@@ -2277,18 +2525,80 @@ let mainSchedBlocksController = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
+        })
+      gMerge.select('rect#mediummin')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) {
+          let height = Math.abs(scaleYMedium(d.mediumTels.min))
+          if (d.mediumTels.min >= scaleYMedium.domain()[1]) height = range
+          if (d.mediumTels.min <= scaleYMedium.domain()[0]) height = 0
+          return range * 2 - height
+        })
+        .attr('fill', function (d, i) {
+          if (d.mediumTels.min > scaleYMedium.domain()[1] || d.mediumTels.used < d.mediumTels.min) {
+            return '#FF5722'
+          }
+          return '#444444'
+        })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', function (d) {
+          let height = Math.abs(scaleYMedium(d.mediumTels.min))
+          if (d.mediumTels.min >= scaleYMedium.domain()[1]) height = range
+          if (d.mediumTels.min <= scaleYMedium.domain()[0]) height = 0
+          return height
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'medium')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'medium')
+        })
 
-      gMerge.select('rect.high')
+      // gMerge.select('rect#hoverlarge')
+      //   .attr('x', function (d) { return scaleX(d.start) })
+      //   .attr('y', 0)
+      //   .attr('fill', colorPalette.darker.stroke)
+      //   .style('opacity', 0)
+      //   .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+      //   .attr('height', range)
+      //   .on('mouseover', function (d) {
+      //     mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
+      //   })
+      //   .on('mouseout', function (d) {
+      //     mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
+      //   })
+      gMerge.select('rect#largeused')
         .attr('x', function (d) { return scaleX(d.start) })
-        .attr('y', function (d) { return (range * 3) - 2 * Math.abs(scaleYLarge(d.largeTels)) })
+        .attr('y', function (d) {
+          let height = Math.abs(scaleYLarge(d.largeTels.used))
+          if (d.largeTels.used >= scaleYLarge.domain()[1]) height = range
+          if (d.largeTels.used <= scaleYLarge.domain()[0]) height = 0
+          return range - height
+        })
         .attr('fill', function (d, i) {
           return '#43A047'
         })
         .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
         .attr('height', function (d) {
-          let height = scaleYLarge(d.largeTels) * 2
-          if (height < 0) d3.select(this).attr('fill', '#FF5722')
-          return Math.abs(height)
+          let height = Math.abs(scaleYLarge(d.largeTels.used))
+          if (d.largeTels.used >= scaleYLarge.domain()[1]) height = range
+          if (d.largeTels.used <= scaleYLarge.domain()[0]) height = 0
+          return height
         })
         .attr('stroke', function (d) {
           return colorTheme.dark.stroke
@@ -2300,12 +2610,90 @@ let mainSchedBlocksController = function (optIn) {
           return 1
         })
         .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
+        })
+      gMerge.select('rect#largemin')
+        .attr('x', function (d) { return scaleX(d.start) })
+        .attr('y', function (d) {
+          let height = Math.abs(scaleYLarge(d.largeTels.min))
+          if (d.largeTels.min >= scaleYLarge.domain()[1]) height = range
+          if (d.largeTels.min <= scaleYLarge.domain()[0]) height = 0
+          return range - height
+        })
+        .attr('fill', function (d, i) {
+          if (d.largeTels.min > scaleYLarge.domain()[1] || d.largeTels.used < d.largeTels.min) {
+            return '#FF5722'
+          }
+          return '#444444'
+        })
+        .attr('width', function (d) { return scaleX(d.end) - scaleX(d.start) })
+        .attr('height', function (d) {
+          let height = Math.abs(scaleYLarge(d.largeTels.min))
+          if (d.largeTels.min >= scaleYLarge.domain()[1]) height = range
+          if (d.largeTels.min <= scaleYLarge.domain()[0]) height = 0
+          return height
+        })
+        .attr('stroke', function (d) {
+          return colorTheme.dark.stroke
+        })
+        .attr('stroke-width', function (d) {
+          return 0
+        })
+        .attr('stroke-opacity', function (d) {
+          return 1
+        })
+        .attr('fill-opacity', 0.6)
+        .on('mouseover', function (d) {
+          mouseHover(d3.select(d3.select(this).node().parentNode), d, 'large')
+        })
+        .on('mouseout', function (d) {
+          mouseOut(d3.select(d3.select(this).node().parentNode), d, 'large')
+        })
+
+      allg
+        .exit()
+        .style('opacity', 0)
+        .remove()
     }
     this.drawTelsAvailabilityCurve = drawTelsAvailabilityCurve
     function computeTelsCurve (block) {
+      function core (b) {
+        if (!largeTels[b.time.start]) largeTels[b.time.start] = {min: 0, used: 0}// 4
+        if (!mediumTels[b.time.start]) mediumTels[b.time.start] = {min: 0, used: 0}// 24
+        if (!smallTels[b.time.start]) smallTels[b.time.start] = {min: 0, used: 0}// 70
+        if (!largeTels[b.time.end]) largeTels[b.time.end] = {min: 0, used: 0}// 4
+        if (!mediumTels[b.time.end]) mediumTels[b.time.end] = {min: 0, used: 0}// 24
+        if (!smallTels[b.time.end]) smallTels[b.time.end] = {min: 0, used: 0}// 70
+
+        smallTels[b.time.start].min += b.telescopes.small.min
+        smallTels[b.time.end].min -= b.telescopes.small.min
+        smallTels[b.time.start].used += b.telescopes.small.ids.length // min
+        smallTels[b.time.end].used -= b.telescopes.small.ids.length // min
+
+        mediumTels[b.time.start].min += b.telescopes.medium.min
+        mediumTels[b.time.end].min -= b.telescopes.medium.min
+        mediumTels[b.time.start].used += b.telescopes.medium.ids.length // min
+        mediumTels[b.time.end].used -= b.telescopes.medium.ids.length // min
+
+        largeTels[b.time.start].min += b.telescopes.large.min
+        largeTels[b.time.end].min -= b.telescopes.large.min
+        largeTels[b.time.start].used += b.telescopes.large.ids.length // min
+        largeTels[b.time.end].used -= b.telescopes.large.ids.length // min
+
+
+        if (!bIds[b.time.start]) bIds[b.time.start] = {type: 'add', ids: []}
+        if (!bIds[b.time.end]) bIds[b.time.end] = {type: 'rem', ids: []}
+        bIds[b.time.start].ids.push(b.obId)
+        bIds[b.time.end].ids.push(b.obId)
+      }
       let largeTels = {}
       let mediumTels = {}
       let smallTels = {}
+      let bIds = {}
       // smallTels[shared.data.server.timeOfNight.start] = 0
       // mediumTels[shared.data.server.timeOfNight.start] = 0
       // largeTels[shared.data.server.timeOfNight.start] = 0
@@ -2316,95 +2704,59 @@ let mainSchedBlocksController = function (optIn) {
           if (b.exeState.state === 'cancel') continue
           if (block && b.obId === block.obId) continue
 
-          if (!largeTels[b.time.start]) largeTels[b.time.start] = 0// 4
-          if (!mediumTels[b.time.start]) mediumTels[b.time.start] = 0// 24
-          if (!smallTels[b.time.start]) smallTels[b.time.start] = 0// 70
-          if (!largeTels[b.time.end]) largeTels[b.time.end] = 0// 4
-          if (!mediumTels[b.time.end]) mediumTels[b.time.end] = 0// 24
-          if (!smallTels[b.time.end]) smallTels[b.time.end] = 0// 70
-
-          smallTels[b.time.start] -= b.telescopes.small.ids.length
-          smallTels[b.time.end] += b.telescopes.small.ids.length
-          mediumTels[b.time.start] -= b.telescopes.medium.ids.length
-          mediumTels[b.time.end] += b.telescopes.medium.ids.length
-          largeTels[b.time.start] -= b.telescopes.large.ids.length
-          largeTels[b.time.end] += b.telescopes.large.ids.length
-          // for (let j = 0; j < b.telIds.length; j++) {
-          //   let tid = b.telIds[j]
-          //   if (tid[0] === 'S') {
-          //     smallTels[b.startTime] -= 1
-          //     smallTels[b.endTime] += 1
-          //   } else if (tid[0] === 'M') {
-          //     mediumTels[b.startTime] -= 1
-          //     mediumTels[b.endTime] += 1
-          //   } else if (tid[0] === 'L') {
-          //     largeTels[b.startTime] -= 1
-          //     largeTels[b.endTime] += 1
-          //   }
-          // }
+          core(b)
         }
       }
       if (block) {
-        if (!largeTels[block.time.start]) largeTels[block.time.start] = 0// 4
-        if (!mediumTels[block.time.start]) mediumTels[block.time.start] = 0// 24
-        if (!smallTels[block.time.start]) smallTels[block.time.start] = 0// 70
-        if (!largeTels[block.time.end]) largeTels[block.time.end] = 0// 4
-        if (!mediumTels[block.time.end]) mediumTels[block.time.end] = 0// 24
-        if (!smallTels[block.time.end]) smallTels[block.time.end] = 0// 70
-
-        smallTels[block.time.start] -= block.telescopes.small.ids.length
-        smallTels[block.time.end] += block.telescopes.small.ids.length
-        mediumTels[block.time.start] -= block.telescopes.medium.ids.length
-        mediumTels[block.time.end] += block.telescopes.medium.ids.length
-        largeTels[block.time.start] -= block.telescopes.large.ids.length
-        largeTels[block.time.end] += block.telescopes.large.ids.length
-        // for (let j = 0; j < block.telIds.length; j++) {
-        //   let tid = block.telIds[j]
-        //   if (tid[0] === 'S') {
-        //     smallTels[block.startTime] -= 1
-        //     smallTels[block.endTime] += 1
-        //   } else if (tid[0] === 'M') {
-        //     mediumTels[block.startTime] -= 1
-        //     mediumTels[block.endTime] += 1
-        //   } else if (tid[0] === 'L') {
-        //     largeTels[block.startTime] -= 1
-        //     largeTels[block.endTime] += 1
-        //   }
-        // }
-      // smallTels[shared.data.server.timeOfNight.end] = 0
-      // mediumTels[shared.data.server.timeOfNight.end] = 0
-      // largeTels[shared.data.server.timeOfNight.end] = 0
+        core(block)
       }
+
       let timeMarker = []
       for (var key in smallTels) {
         timeMarker.push(Number(key))
       }
       timeMarker.sort((a, b) => a - b)
+
       let telsFree = []
+      let currentBlockIds = []
       for (let i = -1; i < timeMarker.length; i++) {
         if (i === -1) {
           telsFree.push({
+            id: 'LMS' + timeMarker[i] + Number(shared.data.server.timeOfNight.start),
             start: Number(shared.data.server.timeOfNight.start),
             end: timeMarker[i + 1],
-            smallTels: 69,
-            mediumTels: 25,
-            largeTels: 4
+            smallTels: {min: 0, used: 0},
+            mediumTels: {min: 0, used: 0},
+            largeTels: {min: 0, used: 0},
+            blocks: []
           })
         } else if (i === timeMarker.length - 1) {
           telsFree.push({
+            id: 'LMS' + timeMarker[i] + Number(shared.data.server.timeOfNight.end),
             start: timeMarker[i],
             end: Number(shared.data.server.timeOfNight.end),
-            smallTels: 69,
-            mediumTels: 25,
-            largeTels: 4
+            smallTels: {min: 0, used: 0},
+            mediumTels: {min: 0, used: 0},
+            largeTels: {min: 0, used: 0},
+            blocks: []
           })
         } else {
+          if (bIds[timeMarker[i]].type === 'rem') {
+            currentBlockIds = currentBlockIds.filter(d => bIds[timeMarker[i]].ids.indexOf(d) < 0)
+          } else {
+            currentBlockIds = currentBlockIds.concat(bIds[timeMarker[i]].ids.filter(d => currentBlockIds.indexOf(d) < 0))
+          }
+          let s = {min: telsFree[i].smallTels.min + smallTels[timeMarker[i]].min, used: telsFree[i].smallTels.used + smallTels[timeMarker[i]].used}
+          let m = {min: telsFree[i].mediumTels.min + mediumTels[timeMarker[i]].min, used: telsFree[i].mediumTels.used + mediumTels[timeMarker[i]].used}
+          let l = {min: telsFree[i].largeTels.min + largeTels[timeMarker[i]].min, used: telsFree[i].largeTels.used + largeTels[timeMarker[i]].used}
           telsFree.push({
+            id: 'LMS' + timeMarker[i] + timeMarker[i + 1],
             start: timeMarker[i],
             end: timeMarker[i + 1],
-            smallTels: telsFree[i].smallTels + smallTels[timeMarker[i]],
-            mediumTels: telsFree[i].mediumTels + mediumTels[timeMarker[i]],
-            largeTels: telsFree[i].largeTels + largeTels[timeMarker[i]]
+            smallTels: s,
+            mediumTels: m,
+            largeTels: l,
+            blocks: deepCopy(currentBlockIds)
           })
         }
       }
@@ -3745,8 +4097,8 @@ let mainSchedBlocksController = function (optIn) {
           events: {
             block: {
               click: (d) => { focusManager.focusOn('block', d.obId) },
-              mouseover: (d) => { console.log(d) },
-              mouseout: (d) => { console.log(d) },
+              mouseover: (d) => {},
+              mouseout: (d) => {},
               drag: {
                 start: () => {},
                 tick: () => {},
