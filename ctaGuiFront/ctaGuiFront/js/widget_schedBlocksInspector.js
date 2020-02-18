@@ -2677,8 +2677,8 @@ let mainSchedBlocksInspector = function (optIn) {
           block: {
             click: d => focusManager.focusOn('block', d.obId),
             dbclick: function (d) {
-              d.exeState.state = 'cancel'
-              changeBlockProperties(d, false, 'state')
+              // d.exeState.state = 'cancel'
+              // changeBlockProperties(d, false, 'state')
             },
             mouseover: focusManager.over,
             mouseout: focusManager.out,
@@ -7900,8 +7900,8 @@ let mainSchedBlocksInspector = function (optIn) {
           block: {
             click: d => focusManager.focusOn('block', d.obId),
             dbclick: function (d) {
-              d.exeState.state = 'cancel'
-              changeBlockProperties(d, false, 'state')
+              // d.exeState.state = 'cancel'
+              // changeBlockProperties(d, false, 'state')
             },
             mouseover: focusManager.over,
             mouseout: focusManager.out,
