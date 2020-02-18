@@ -1168,7 +1168,7 @@ let mainSchedBlocksController = function (optIn) {
 
       blockQueue = new BlockDisplayer({
         main: {
-          tag: 'blockQueueMiddleTag',
+          tag: 'blockQueueInspectorTag',
           g: reserved.g,
           scroll: {},
           box: adjustedBox,

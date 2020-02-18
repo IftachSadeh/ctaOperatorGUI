@@ -99,7 +99,8 @@ window.ObsblockForm = function (optIn) {
     initTelescopeInformation()
   }
   this.init = init
-  function update () {
+  function update (data) {
+    updateTimeInformation()
     // initSchedulingObservingBlocksTree()
     // initTimeInformation()
     // initPointingInformation()
@@ -337,6 +338,17 @@ window.ObsblockForm = function (optIn) {
     }
   }
 
+  function updateTime (id, time) {
+    let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
+    let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
+    let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
+
+    let g = com.main.g.select('g#' + id)
+
+    g.select('#hour').select('input').property('value', hour)
+    g.select('#minute').select('input').property('value', min)
+    g.select('#second').select('input').property('value', sec)
+  }
   function changeBlockTime (type, hour, min, sec) {
     let startTime = new Date(com.data.timeOfNight.date_start)
     let endTime = new Date(com.data.timeOfNight.date_end)
@@ -375,17 +387,6 @@ window.ObsblockForm = function (optIn) {
         break
       default:
         return
-    }
-    function updateTime (id, time) {
-      let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
-      let min = ('0' + d3.timeFormat('%M')(time)).slice(-2)
-      let sec = ('0' + d3.timeFormat('%S')(time)).slice(-2)
-
-      let g = com.main.g.select('g#' + id)
-
-      g.select('#hour').select('input').property('value', hour)
-      g.select('#minute').select('input').property('value', min)
-      g.select('#second').select('input').property('value', sec)
     }
 
     startTime = new Date(com.data.timeOfNight.date_start)
@@ -824,6 +825,19 @@ window.ObsblockForm = function (optIn) {
     //   'pointing',
     //   {disabled: !com.schedule.editabled, value: data.pointingName.split('/')[1], options: ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5', 'p_6', 'p_7']},
     //   {change: (d) => { changePointing(d) }, enter: (d) => { changePointing(d) }})
+  }
+  function updateTimeInformation () {
+    let startTime = new Date(com.data.timeOfNight.date_start)
+    startTime.setSeconds(startTime.getSeconds() + com.data.block.time.start)
+    let endTime = new Date(com.data.timeOfNight.date_start)
+    endTime.setSeconds(endTime.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
+    let duration = new Date(endTime)
+    duration.setHours(duration.getHours() - startTime.getHours())
+    duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
+    duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
+    updateTime('startTime', startTime)
+    updateTime('duration', duration)
+    updateTime('endTime', endTime)
   }
 
   function addNewTarget (trgName) {

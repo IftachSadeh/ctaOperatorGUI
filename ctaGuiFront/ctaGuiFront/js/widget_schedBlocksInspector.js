@@ -798,6 +798,7 @@ let mainSchedBlocksInspector = function (optIn) {
           .attr('rx', 48)
           .on('click', function () {
             // callOptimizer()
+            svgSummaryMetrics.updateDataBQ()
           })
           .on('mouseover', function (d) {
             d3.select(this).attr('fill', colorTheme.darkest.background)
@@ -1752,7 +1753,6 @@ let mainSchedBlocksInspector = function (optIn) {
   }
   let globalcounth = 0
   function changeBlockProperties (block, nohistory, type) {
-    console.log(nohistory, type);
     createModificationsList()
     if (!nohistory) {
       shared.history.list.splice(shared.history.index + 1, shared.history.list.length)
@@ -2282,7 +2282,7 @@ let mainSchedBlocksInspector = function (optIn) {
 
       blockQueueOverlay = new BlockDisplayer({
         main: {
-          tag: 'blockQueueOverlayMiddleTag',
+          tag: 'blockQueueOverlayControllerTag',
           g: overlay,
           scroll: {},
           box: adjustedBox,
@@ -2456,7 +2456,7 @@ let mainSchedBlocksInspector = function (optIn) {
 
       blockQueue = new BlockDisplayer({
         main: {
-          tag: 'blockQueueMiddleTag',
+          tag: 'blockQueueControllerTag',
           g: reserved.g,
           scroll: {},
           box: adjustedBox,
@@ -4409,10 +4409,11 @@ let mainSchedBlocksInspector = function (optIn) {
       reserved.drag.atLeastOneTick = true
 
       if (d3.event.dx < 0 &&
-        Math.floor(reserved.drag.timeScale.invert(reserved.drag.position.left)) < Number(shared.data.server.timeOfNight.now)) return
+        Math.floor(reserved.drag.timeScale.invert(reserved.drag.position.left + d3.event.dx)) < Number(shared.data.server.timeOfNight.now)) return
       reserved.drag.position.left += d3.event.dx
+
       if (reserved.drag.position.left < 0) reserved.drag.position.left = 0
-      if (reserved.drag.position.left + reserved.drag.position.width > reserved.drag.box.x + reserved.drag.box.w) {
+      if (reserved.drag.position.left + reserved.drag.position.width > reserved.drag.box.w) {
         reserved.drag.position.left = reserved.drag.box.w - reserved.drag.position.width
       }
 
@@ -4472,6 +4473,9 @@ let mainSchedBlocksInspector = function (optIn) {
 
       d.time.start = Math.floor(reserved.drag.timeScale.invert(reserved.drag.position.left))
       d.time.end = d.time.start + d.time.duration
+
+      if (!shared.focus || shared.focus.id !== d.obId) focusManager.focusOn('block', d.obId)
+      svgRightInfo.updateBlock()
       svgBlocksQueueServer.update()
     }
     this.dragTick = dragTick
@@ -7442,6 +7446,16 @@ let mainSchedBlocksInspector = function (optIn) {
       createBlocksInfoPanel(bId)
     }
     this.focusOnBlock = focusOnBlock
+    function updateBlock (bId) {
+      if (!bId) {
+        if (shared.focus && shared.focus.type === 'block') bId = shared.focus.id
+        else return
+      }
+      let data = getBlockById(getBlocksData(), bId).data
+      let schedB = getSchedBlocksData()[data.sbId]
+      reserved.obsblockForm.update({block: data, schedB: schedB})
+    }
+    this.updateBlock = updateBlock
 
     function createTargetInfoPanel (id) {
       let tar = getTargetById(id)
@@ -7653,6 +7667,7 @@ let mainSchedBlocksInspector = function (optIn) {
   let SvgSummaryMetrics = function () {
     let reserved = {}
     let blockQueue
+
     function initDataBQ () {
       let adjustedBox = {
         x: box.summaryMetrics.w * 0.48,
@@ -8020,6 +8035,8 @@ let mainSchedBlocksInspector = function (optIn) {
         }
       })
     }
+    this.updateDataBQ = updateDataBQ
+
     function initData () {
       let adjustedBox = {
         x: box.summaryMetrics.x,
@@ -8240,7 +8257,6 @@ let mainSchedBlocksInspector = function (optIn) {
     this.updateData = updateData
 
     function update () {
-
     }
     this.update = update
   }
