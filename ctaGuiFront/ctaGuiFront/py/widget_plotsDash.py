@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import random
 from random import Random
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, getTimeOfNight, flatDictById, getTime
+from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, getTimeOfNight, flatDictById, getTime, telIdToTelType
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
@@ -50,13 +50,103 @@ class plotsDash():
         #
         self.nIcon = -1
 
-        # self.telIds = self.mySock.arrayData.get_inst_ids()
-        self.telIds = self.mySock.arrayData.get_inst_ids(
-            inst_types=['LST', 'MST', 'SST']
-        )
+        # INIT TELESCOPES PROPS
+        self.telCategory = 'Telescope'
+        self.telType = ['LST','MST','SST','AUX']
+        self.telKey = ['mirror','camera','mount','daq','aux']
+        self.telIds = self.mySock.arrayData.get_inst_ids(inst_types=self.telType)
 
-        self.PrimaryGroup = ['LSTS','MSTS','SSTS','AUX']
-        self.PrimaryKey = ['mirror','camera','mount','aux']
+        self.weatherCategory = 'Weather'
+        self.weatherType = ['WS1', 'WS2', 'WS3', 'WS4']
+        self.weatherKey = ['Temp', 'Wind', 'Rain', 'Cloud']
+        # self.hierarchy = [[self.telCategory, self.weatherCategory], self.telType, self.telKey, self.telIds]
+        # self.depthHierarchy = 0
+
+        # self.hierarchy = {'id': 'root', 'keys': [self.telCategory], 'children': [
+        #     {'id': 'telType', 'keys': self.telType, 'children': [
+        #         {'id': 'telKey', 'keys': self.telKey, 'children': [
+        #             {'id': 'telIds', 'keys': self.telIds, 'children': []}
+        #         ]},
+        #         # {'id': 'telIdsFirst', 'keys': self.telIds, 'children': [
+        #         #     {'id': 'telKeySecond', 'keys': self.telKey, 'children': []}
+        #         # ]}
+        #     ]},
+        #     # {'id': 'weatherType', 'keys': self.weatherType, 'children': [
+        #     #     {'id': 'weatherKey', 'keys': self.weatherKey, 'children': []}
+        #     # ]}
+        # ]}
+
+        self.relationship = {
+            # 'root': {'name': 'Root', 'children': ['global']},
+            'global': {'name': 'All Data', 'children': [self.telCategory,self.weatherCategory]},
+            'telType': {'name': 'Size', 'children': self.telType},
+            'telKey': {'name': 'Property', 'children': self.telKey},
+            'telIds': {'name': 'Name', 'children': self.telIds},
+            'weatherType': {'name': 'Weath. Stat.', 'children': self.weatherType},
+            'weatherKey': {'name': 'Measure', 'children': self.weatherKey}
+        }
+        self.relationship[self.telCategory] = {'name': 'Telescopes', 'children': ['telType', 'telKey', 'telIds']}
+        self.relationship[self.weatherCategory] = {'name': 'Weather', 'children': ['weatherType', 'weatherKey']}
+        for value in self.telType:
+            self.relationship[value] = {'name': value, 'children': ['telKey', 'telIds']}
+        for value in self.telKey:
+            self.relationship[value] = {'name': value, 'children': ['telType', 'telIds']}
+        for value in self.telIds:
+            self.relationship[value] = {'name': value, 'children': ['telKey']}
+        for value in self.weatherType:
+            self.relationship[value] = {'name': value, 'children': ['weatherKey']}
+        for value in self.weatherKey:
+            self.relationship[value] = {'name': value, 'children': ['weatherType']}
+
+        self.categories = {
+            # 'root': 'group',
+            'global': 'group',
+            'telType': 'group',
+            'telKey': 'group',
+            'telIds': 'group',
+            'weatherType': 'group',
+            'weatherKey': 'group'
+        }
+        self.categories[self.telCategory] = 'group'
+        self.categories[self.weatherCategory] = 'group'
+        for value in self.telType:
+            self.categories[value] = 'item'
+        for value in self.telKey:
+            self.categories[value] = 'item'
+        for value in self.telIds:
+            self.categories[value] = 'item'
+        for value in self.weatherType:
+            self.categories[value] = 'item'
+        for value in self.weatherKey:
+            self.categories[value] = 'item'
+
+        # self.relationship = {
+        #     'root': [self.telCategory,self.weatherCategory],
+        #     'telType': self.telType,
+        #     'telKey': self.telKey,
+        #     'telIds': self.telIds,
+        #     'weatherType': self.weatherType,
+        #     'weatherKey': self.weatherKey,
+        # }
+
+
+        # self.relationship = {'root': {'parent': [], 'children': [self.telCategory, self.weatherCategory]}}
+        # self.relationship[self.telCategory] = {'parent': ['root'], 'children': self.telType}
+        # for value in self.telType:
+        #     self.relationship[value] = {'parent': [self.telCategory, self.weatherCategory], 'children': self.telKey}
+        # for value in self.telKey:
+        #     self.relationship[value] = {'parent': self.telType, 'children': self.telIds}
+        # for value in self.telIds:
+        #     self.relationship[value] = {'parent': self.telKey, 'children': []}
+        # self.relationship[self.weatherCategory] = {'parent': ['root'], 'children': self.weatherType}
+        # for value in self.weatherType:
+        #     self.relationship[value] = {'parent': [self.telCategory, self.weatherCategory], 'children': self.weatherKey}
+        # for value in self.weatherKey:
+        #     self.relationship[value] = {'parent': self.weatherType, 'children': []}
+
+        self.selectedKeys = ['global']
+
+        self.agregate = self.telIds
 
     # -----------------------------------------------------------------------------------------------------------
     #
@@ -67,7 +157,7 @@ class plotsDash():
                 name='widgetV', key=self.widgetId, packed=True)
             self.nIcon = wgt["nIcon"]
 
-        # override the global logging variable with a name corresponding to the current session id
+        # override the root logging variable with a name corresponding to the current session id
         self.log = myLog(title=str(self.mySock.userId)+"/" +
                          str(self.mySock.sessId)+"/"+__name__+"/"+self.widgetId)
 
@@ -86,7 +176,6 @@ class plotsDash():
         self.mySock.addWidgetTread(optIn=optIn)
 
         return
-
     def initTelHealth(self):
         self.telHealth = dict()
         self.telSubHealthFlat = dict()
@@ -125,9 +214,46 @@ class plotsDash():
         #   print '-- backFromOffline',self.widgetName, self.widgetId
         return
 
-    # -----------------------------------------------------------------------------------------------------------
-    #
-    # -----------------------------------------------------------------------------------------------------------
+    # # -----------------------------------------------------------------------------------------------------------
+    # #
+    # # -----------------------------------------------------------------------------------------------------------
+    # def getHierarchy(self):
+    #     telProp = [
+    #         {'key': 'mount', 'name': 'Mount', 'children': []},
+    #         {'key': 'mirror', 'name': 'Mirror', 'children': []},
+    #         {'key': 'daq', 'name': 'DAQ', 'children': []},
+    #         {'key': 'camera', 'name': 'Camera', 'children': []},
+    #         {'key': 'auxiliary', 'name': 'Auxiliary', 'children': []},
+    #         {'key': 'other', 'name': 'Other', 'children': []}]
+    #     telType = [{'key': 'large', 'name': 'Large', 'children': [telProp]},
+    #         {'key': 'medium', 'name': 'Medium', 'children': [telProp]},
+    #         {'key': 'small', 'name': 'Small', 'children': [telProp]}]
+    #     tels = {'key': 'telescopes', 'name': 'Telescopes', 'children': [telType]}
+    #     weath = {'key': 'Weather', 'children': []}
+    #     return [tels, weath]
+
+    # def createTree(self) :
+    #     tree = {}
+    #     for n in range(len(self.selectedKeys) -1, -1, -1):
+    #         if n == len(self.selectedKeys) -1:
+    #             tree = [self.selectedKeys[n]] = {'selected': [], 'unselected': [], 'waiting': self.relationship[self.selectedKeys[n]]}
+    #         else:
+    #             tree = {'selected': [], 'unselected': [], 'waiting': self.relationship[self.selectedKeys[n]]}
+    #     # hierarchy = {'id': 'root', 'keys': [self.telCategory], 'children': [
+    #     #     {'id': 'telType', 'keys': self.telType, 'children': [
+    #     #         {'id': 'telKey', 'keys': self.telKey, 'children': [
+    #     #             {'id': 'telIds', 'keys': self.telIds, 'children': []}
+    #     #         ]},
+    #     #         # {'id': 'telIdsFirst', 'keys': self.telIds, 'children': [
+    #     #         #     {'id': 'telKeySecond', 'keys': self.telKey, 'children': []}
+    #     #         # ]}
+    #     #     ]},
+    #     #     # {'id': 'weatherType', 'keys': self.weatherType, 'children': [
+    #     #     #     {'id': 'weatherKey', 'keys': self.weatherKey, 'children': []}
+    #     #     # ]}
+    #     # ]}
+    #     return tree
+
     def getData(self):
         timeOfNightDate = {
             "date_now": datetime.fromtimestamp(getTime()/1000.0).strftime('%Y-%m-%d %H:%M:%S'),
@@ -138,14 +264,16 @@ class plotsDash():
 
         self.updateUrgentCurrent()
         self.updateUrgentPast()
-        orderedPast = self.orderUrgentPastByKey([['auxiliary', 'mount', 'mirror', 'daq', 'camera', 'high', 'low']])
-        orderedTimestamp = self.orderUrgentPastByKeyTime([['auxiliary', 'mount', 'mirror', 'daq', 'camera', 'high', 'low']])
-        orderedCurrent = self.orderUrgentCurrentByKey([['auxiliary', 'mount', 'mirror', 'daq', 'camera', 'high', 'low']])
-
+        orderedPast = self.orderUrgentPastByKey()
+        orderedTimestamp = self.orderUrgentPastByKeyTime()
+        orderedCurrent = self.orderUrgentCurrentByKey()
+        # print 'getData', self.widgetId
         data = {
             "timeOfNight": timeOfNightDate,
-            "dataOut":dataOut,
-            "urgentKey": ['auxiliary', 'mount', 'mirror', 'daq', 'camera', 'high', 'low'],
+            "dataOut":self.telIds,
+            "hierarchy": {'relationship': self.relationship, 'categories': self.categories, 'keys':self.selectedKeys, 'root': 'global', 'depth': 4},
+            "urgentKey": self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children'],
+            "agregate": self.agregate,
             "urgentCurrent":orderedCurrent,
             "urgentTimestamp":orderedTimestamp,
             "urgentPast": orderedPast
@@ -153,6 +281,17 @@ class plotsDash():
         }
 
         return data
+    def plotDashpushNewHierachyKeys(self, *args):
+        print 'push', self.widgetId
+        self.selectedKeys = args[0]['newKeys']
+        # self.mySock.socketEvtWidgetV(
+        #     evtName="newSchedulePushed",
+        #     data={},
+        #     sessIdV=[self.mySock.sessId],
+        #     widgetIdV=[self.widgetId]
+        # )
+
+        return
 
     def retrieveData(self, id, keyV):
         res = {"id": id}
@@ -279,21 +418,24 @@ class plotsDash():
         if key == 'aux':
             return {"name": "Health", "key": "health", "short": "hlt", "unit": "%", "treshold": self.getTelsTresholdType("health")}
         return {}
+
+    # CURRENT TELESCOPES
     def initUrgentCurrent(self):
         self.urgentCurrent = []
         telHealth = self.getTelHealth()
         for idTel, vect in telHealth.items():
             for key, value in vect.items():
                 if (key != "status" and value != None and self.getTelState(int(value)) == "ERROR"):
-                    self.urgentCurrent.append({"id": idTel+key, "keys": [idTel, key], "name": idTel, "data": {"measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
+                    self.urgentCurrent.append({"id": idTel+key, "keys": [idTel, key, telIdToTelType(idTel), self.telCategory], "name": idTel, "data": {"measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
     def updateUrgentCurrent(self):
         self.urgentCurrent = []
         telHealth = self.getTelHealth()
         for idTel, vect in telHealth.items():
             for key, value in vect.items():
                 if (key != "status" and value != None and self.getTelState(int(value)) == "ERROR"):
-                    self.urgentCurrent.append({"id": idTel+key, "keys": [idTel, key], "name": idTel, "data": {"measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
-    def orderUrgentCurrentByKey(self, vKeys):
+                    self.urgentCurrent.append({"id": idTel+key, "keys": [idTel, key, telIdToTelType(idTel), self.telCategory], "name": idTel, "data": {"measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
+    def orderUrgentCurrentByKey(self):
+        vKeys = [self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children']]
         def interOrdering(vector, index):
             if index >= len(vKeys): return vector
             interOrder = []
@@ -307,6 +449,7 @@ class plotsDash():
             return interOrder
         return interOrdering(self.urgentCurrent, 0)
 
+    # PAST TELESCOPES
     def initUrgentPast(self):
         self.urgentPast = []
     def updateUrgentPast(self):
@@ -319,6 +462,7 @@ class plotsDash():
                     break
             if insert:
                 self.urgentPast.append(curr)
+
     def orderByTimestamp(self, vector):
         orderedV = []
         timestampList = []
@@ -338,7 +482,8 @@ class plotsDash():
                 orderedV.append(order)
                 prevOrder = order
         return orderedV
-    def orderUrgentPastByKeyTime(self, vKeys):
+    def orderUrgentPastByKeyTime(self):
+        vKeys = [self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children']]
         def interOrdering(vector, index):
             if index >= len(vKeys): return self.orderByTimestamp(vector)
             interOrder = []
@@ -351,7 +496,8 @@ class plotsDash():
                 interOrder.append(ordered)
             return interOrder
         return interOrdering(self.urgentPast, 0)
-    def orderUrgentPastByKey(self, vKeys):
+    def orderUrgentPastByKey(self):
+        vKeys = [self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children']]
         def interOrdering(vector, index):
             if index >= len(vKeys): return vector
             interOrder = []
@@ -366,7 +512,7 @@ class plotsDash():
         return interOrdering(self.urgentPast, 0)
 
     def getTelState(self, health):
-      if (health < 80): return "ERROR"
+      if (health < 60): return "ERROR"
       elif (health < 55): return "WARNING"
       else: return "NOMINAL"
 

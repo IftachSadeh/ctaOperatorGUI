@@ -51,7 +51,7 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   optIn.eleProps = {}
   optIn.eleProps[divKey] = {
     autoPos: true,
-    isDarkEle: true,
+    isDarkEle: false,
     gsId: optIn.widgetDivId + divKey,
     x: x0,
     y: y0,
@@ -66,7 +66,29 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
 // -------------------------------------------------------------------
 // additional socket events for this particular widget type
 // -------------------------------------------------------------------
-let sockPlotsDash = function (optIn) {}
+let sockPlotsDash = function (optIn) {
+  // let widgetId = optIn.widgetId
+  let widgetType = optIn.widgetType
+  let widgetSource = optIn.widgetSource
+
+  // FUNCTION TO SEND DATA TO THE REDIS DATABASE (need eqivalent function in .py)
+  this.pushNewHierachyKeys = function (optIn) {
+    if (sock.conStat.isOffline()) return
+
+    let data = {}
+    data.widgetId = optIn.widgetId
+    data.newKeys = optIn.newKeys
+
+    let dataEmit = {
+      widgetSource: widgetSource,
+      widgetName: widgetType,
+      widgetId: data.widgetId,
+      methodName: 'plotDashpushNewHierachyKeys',
+      methodArgs: data
+    }
+    sock.socket.emit('widget', dataEmit)
+  }
+}
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -114,6 +136,15 @@ let mainPlotsDash = function (optIn) {
   // locker.add('inInit')
   let runLoop = new RunLoop({ tag: widgetId })
   let middleSeparation = 0
+
+  function pushNewHierachyKeys () {
+    // locker.add('pushNewHierachyKeys')
+    sock.widgetV[widgetType].SockFunc.pushNewHierachyKeys({
+      widgetId: widgetId,
+      newKeys: shared.server.hierarchy.keys
+    })
+  }
+  this.pushNewHierachyKeys = pushNewHierachyKeys
 
   function initData (dataIn) {
     function initSvg () {
@@ -175,14 +206,13 @@ let mainPlotsDash = function (optIn) {
       middleSeparation = $(svg.svg.node()).height() * 0.365
     }
     function initBackground () {
-      svg.svg.style('background', colorPalette.medium.background)
+      // svg.svg.style('background', colorPalette.medium.background)
       let middleBarPos = {
         x: 0,
         y: middleSeparation
       }
       function dragstarted (d) {}
       function dragged (d) {
-        console.log(middleBarPos.y, d3.event.dy)
         middleBarPos.y = middleBarPos.y + d3.event.dy
         gmiddle.attr('transform', 'translate(' + middleBarPos.x + ',' + middleBarPos.y + ')')
       }
@@ -306,7 +336,12 @@ let mainPlotsDash = function (optIn) {
     initBackground()
     initBox()
 
-    shared.server = dataIn.data
+    for (let key in dataIn.data) {
+      shared.server[key] = dataIn.data[key]
+    }
+    // shared.server.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
+    console.log(shared.server);
+
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     shared.time.range = 1000 * (3600 * parseInt(3) + 60 * parseInt(0))
     shared.time.from = new Date()
@@ -316,22 +351,24 @@ let mainPlotsDash = function (optIn) {
 
     svgUrgentPlots.initData()
     // svgPinnedPlots.initData()
-    drawfakefocus()
+    // drawfakefocus()
   }
   this.initData = initData
   function updateDataOnce (dataIn) {
-    if (shared.mode === 'standby') return
-    if (!locker.isFreeV(['pushNewSchedule'])) {
+    if (!locker.isFreeV(['pushNewHierachyKeys'])) {
       setTimeout(function () {
         updateDataOnce(dataIn)
       }, 10)
       return
     }
-
+    console.log(dataIn.sessWidgetIds);
     locker.add('updateData')
+    // let tempsavehierarchy =  shared.server.hierarchy
     for (let key in dataIn.data) {
       shared.server[key] = dataIn.data[key]
     }
+    // shared.server.hierarchy.keys = tempsavehierarchy.keys
+    // shared.server.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     // updateMeasures()
     // svgPinnedPlots.updateData()
@@ -388,7 +425,8 @@ let mainPlotsDash = function (optIn) {
     })
     return scrollBox
   }
-  let colorCategory = ['#440154FF', '#482677FF', '#404788FF', '#33638DFF', '#287D8EFF', '#1F968BFF', '#29AF7FFF', '#55C667FF', '#95D840FF', '#DCE319FF']
+  let colorCategory = ['#dddddd']
+  // let colorCategory = ['#440154FF', '#482677FF', '#404788FF', '#33638DFF', '#287D8EFF', '#1F968BFF', '#29AF7FFF', '#55C667FF', '#95D840FF', '#DCE319FF']
   // let colorCategory = ['#543005','#8c510a','#bf812d','#dfc27d','#f6e8c3','#dedede','#c7eae5','#80cdc1','#35978f','#01665e','#003c30']
   function updateMeasures () {
     function addPlot () {
@@ -633,7 +671,6 @@ let mainPlotsDash = function (optIn) {
   }
 
   function drawfakefocus () {
-    return
     let plotlistg = svg.svg.append('g')
       .attr('transform', 'translate(' + box.focusPlots.x + ',' + box.focusPlots.y + ')')
       .style('pointer-events', 'auto')
@@ -1028,13 +1065,13 @@ let mainPlotsDash = function (optIn) {
 
       let tot = 0
       for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-        tot += shared.server.urgentCurrent[i].length
+        tot += shared.server.urgentCurrent[i].data.length
       }
       let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + offset))
       let xlimArray = []
       let limit = 0
       for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-        let inter = Math.round((shared.server.urgentCurrent[i].length * nbperline) / tot)
+        let inter = Math.round((shared.server.urgentCurrent[i].data.length * nbperline) / tot)
         if (inter < 1) inter = 1
         xlimArray.push(inter)
         limit += inter
@@ -1065,17 +1102,17 @@ let mainPlotsDash = function (optIn) {
             .attr('width', plotbox.w - offset)
             .attr('height', '40px')
             .attr('stroke', (d) => {
-              if (d[0].type === 'weather') return '#4c11a2'
-              if (d[0].type === 'other') return '#0065be'
-              if (d[0].type === 'telescopes') return '#6b8998'
+              if (d.key === 'weather') return '#4c11a2'
+              if (d.key === 'other') return '#0065be'
+              if (d.key === 'telescopes') return '#6b8998'
               return 'none'
             })
             .attr('stroke-width', 0)
             .style('fill-opacity', 0.2)
             .attr('fill', (d) => {
-              if (d[0].type === 'weather') return '#4c11a2'
-              if (d[0].type === 'other') return '#0065be'
-              if (d[0].type === 'telescopes') return '#6b8998'
+              if (d.key === 'weather') return '#4c11a2'
+              if (d.key === 'other') return '#0065be'
+              if (d.key === 'telescopes') return '#6b8998'
               return 'none'
             })
           d3.select(this).append('rect')
@@ -1084,21 +1121,21 @@ let mainPlotsDash = function (optIn) {
             .attr('width', (plotbox.w + offset) * xlim - offset)
             .attr('height', '2px')
             .attr('stroke', (d) => {
-              if (d[0].type === 'weather') return '#4c11a2'
-              if (d[0].type === 'other') return '#0065be'
-              if (d[0].type === 'telescopes') return '#6b8998'
+              if (d.key === 'weather') return '#4c11a2'
+              if (d.key === 'other') return '#0065be'
+              if (d.key === 'telescopes') return '#6b8998'
               return 'none'
             })
             .attr('stroke-width', 0)
             .style('fill-opacity', 0.2)
             .attr('fill', (d) => {
-              if (d[0].type === 'weather') return '#4c11a2'
-              if (d[0].type === 'other') return '#0065be'
-              if (d[0].type === 'telescopes') return '#6b8998'
+              if (d.key === 'weather') return '#4c11a2'
+              if (d.key === 'other') return '#0065be'
+              if (d.key === 'telescopes') return '#6b8998'
               return 'none'
             })
           d3.select(this).append('text')
-            .text(d[0].type)
+            .text(d.key)
             .style('fill', '#000000')
             .style('font-weight', 'bold')
             .style('font-size', '14px')
@@ -1338,8 +1375,8 @@ let mainPlotsDash = function (optIn) {
       }
 
       drawTopg()
-      drawMiddleg()
-      drawBottomg()
+      // drawMiddleg()
+      // drawBottomg()
     }
     this.updateData = updateData
 
@@ -1363,6 +1400,9 @@ let mainPlotsDash = function (optIn) {
     let scrollbox
     let rightDim
     let rightBox
+
+    let topBox
+    let topg
 
     let plotbox = {
       x: 0,
@@ -1641,7 +1681,7 @@ let mainPlotsDash = function (optIn) {
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
                 },
-                tickSize: 4
+                tickSize: -6
               }
             },
             axis: undefined,
@@ -1660,8 +1700,9 @@ let mainPlotsDash = function (optIn) {
     }
 
     function initBox () {
-      leftDim = {x: 4, y: 10, w: 100, h: box.urgentPlots.h - 20}
+      leftDim = {x: 4, y: 10, w: 200, h: box.urgentPlots.h - 20}
       middleDim = {x: (leftDim.x + leftDim.w) + 5, y: 10, w: (box.urgentPlots.w * 0.5) - (leftDim.x + leftDim.w) + 5, h: box.urgentPlots.h - 20}
+      topBox = {x: leftDim.x, y: 10, w: leftDim.w + 5 + middleDim.w, h: 40}
       rightDim = {x: box.urgentPlots.w * 0.5 + 10, y: 10, w: box.urgentPlots.w * 0.5 - 20, h: box.urgentPlots.h - 20}
     }
     function initLeftPart (g) {
@@ -1678,13 +1719,16 @@ let mainPlotsDash = function (optIn) {
       middleg = g.append('g').attr('id', 'middleurgent').attr('transform', 'translate(' + middleDim.x + ',' + middleDim.y + ')')
       createMiddlePlot({g: middleg, box: middleDim})
     }
+    function initTopPart (g) {
+      topg = g.append('g').attr('id', 'topurgent').attr('transform', 'translate(' + topBox.x + ',' + topBox.y + ')')
+    }
     function initRightPart (g) {
       // rightDim = {x: (middleDim.x + middleDim.w) + 5, y: 20, w: (box.urgentPlots.w - leftDim.w) * 0.4, h: box.urgentPlots.h - 10}
       // rightBox = {x: spaceline, y: rightDim.y, w: rightDim.w - spaceline, h: rightDim.h}
-      rightBox = {x: spaceline, y: 0, w: rightDim.w - spaceline, h: rightDim.h}
+      rightBox = {x: spaceline * 1.5, y: 0, w: rightDim.w - spaceline * 1.5, h: rightDim.h}
       rightg = g.append('g').attr('id', 'righturgent').attr('transform', 'translate(' + rightDim.x + ',' + rightDim.y + ')')
-      rightCats = rightg.append('g').attr('id', 'rightCats').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
       rightItems = rightg.append('g').attr('id', 'rightItems').attr('transform', 'translate(' + rightBox.x + ',' + rightBox.y + ')')
+      rightCats = rightg.append('g').attr('id', 'rightCats').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
       // rightItems.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
@@ -1711,19 +1755,70 @@ let mainPlotsDash = function (optIn) {
       initBox()
       initMiddlePart(plotlistg)
       initLeftPart(plotlistg)
+      initTopPart(plotlistg)
       initRightPart(plotlistg)
 
       updateData()
+      drawLeftPart()
       // adjustScrollBox()
     }
     this.initData = initData
 
     function updateData () {
-      drawMiddlePart()
+      // drawTopPart()
+      // drawMiddlePart()
       drawRightPart()
       drawLeftPart()
     }
     this.updateData = updateData
+
+    function drawTopPart () {
+      function drawBlock (g, key, tree, depth, dim) {
+        if (tree.length === 0) return
+
+        let allGroup = g.selectAll('g.' + key)
+          .data(tree)
+        let gEnterGroup = allGroup.enter()
+          .append('g')
+          .attr('class', key)
+        gEnterGroup.each(function (d, i) {
+          let g = d3.select(this)
+          g.append('rect')
+            .attr('x', dim.w * 0.2)
+            .attr('y', dim.h * 0.2)
+            .attr('width', dim.w * 0.6)
+            .attr('height', dim.h * 0.6)
+            .attr('stroke-width', 0.2)
+            .attr('stroke', '#000000')
+            .attr('fill', colorCategory[i % colorCategory.length])
+            .on('click', function () {
+              console.log(d.keys);
+            })
+          g.append('text')
+            .text(d.id)
+            .style('fill', '#000000')
+            .style('font-weight', 'bold')
+            .style('font-size', '11px')
+            .style('user-select', 'none')
+            .style('pointer-events', 'none')
+            .attr('text-anchor', 'middle')
+            .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + (dim.h * 0.5 + 4) + ')')
+        })
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          drawBlock(d3.select(this), d.id, d.children, depth + 1, {x: dim.w, y: 0, w: dim.w, h: dim.h / d.children.length})
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('transform', 'translate(' + dim.x + ',' + (dim.y + i * dim.h) + ')')
+        })
+        allGroup
+          .exit()
+          .style('opacity', 0)
+          .remove()
+      }
+      drawBlock(topg, 'rootroot', [shared.server.hierarchy.tree], 1, {x: 0, y: 0, w: topBox.w / shared.server.hierarchy.depth, h: topBox.h})
+    }
 
     function drawMiddlePart () {
       let currentDate = new Date(shared.server.timeOfNight.date_now)
@@ -1739,6 +1834,7 @@ let mainPlotsDash = function (optIn) {
           if (max < shared.server.urgentTimestamp[i].data[j].data.length) max = shared.server.urgentTimestamp[i].data[j].data.length
         }
       }
+      // max = 100 / shared.server.urgentKey.length
       for (let i = 0; i < shared.server.urgentKey.length; i++) {
         middleplot.updateAxis({
           id: 'right' + shared.server.urgentKey[i],
@@ -1777,7 +1873,7 @@ let mainPlotsDash = function (optIn) {
               // .attr('y', middleDim.h - offset - height)
               // .attr('width', width + 1)
               // .attr('height', height)
-              .attr('fill', colorCategory[shared.server.urgentKey.indexOf(d.key)])
+              .attr('fill', '#000000')
               // if (d[key].remove.length > 0) {
               //   g.append('circle')
               //     .attr('id', key)
@@ -1883,175 +1979,418 @@ let mainPlotsDash = function (optIn) {
       // drawMiddleg()
     }
 
+    function addFilterKey (key) {
+      if (shared.server.hierarchy.keys.indexOf(key) === -1) shared.server.hierarchy.keys.push(key)
+      pushNewHierachyKeys()
+      // drawLeftPart()
+      updateData()
+    }
+    function removeFilterKey (key) {
+      let index = shared.server.hierarchy.keys.indexOf(key)
+      if (index > 0) shared.server.hierarchy.keys.splice(index)
+      pushNewHierachyKeys()
+      // drawLeftPart()
+      updateData()
+    }
     function drawLeftPart () {
-      function drawItem () {
-        let nbperline = Math.floor((itemBox.w) / (itemDim.w + itemDim.offsetL))
-        allPlots = focusScrollbox.get('innerG').selectAll('g.plot')
-          .data(categoryfocus, function (d) {
-            return d.id
-          })
-        let gEnter = allPlots.enter()
-          .append('g')
-          .attr('class', 'plot')
-        gEnter.each(function (d, i) {
-          d3.select(this).append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', itemDim.w)
-            .attr('height', itemDim.h)
-            .attr('stroke', colorPalette.bright.stroke)
-            .attr('stroke-width', 0.2)
-            .style('fill-opacity', 1)
-            .attr('fill', colorPalette.bright.background)
-          d3.select(this).append('text')
-            .text(d.id)
-            .style('fill', '#000000')
-            .style('font-weight', 'bold')
-            .style('font-size', '12px')
-            .attr('text-anchor', 'middle')
-            .attr('transform', 'translate(' + (itemDim.w * 0.5) + ',' + (12) + ')')
-          // d3.select(this).append('text')
-          //   .text('80')
-          //   .style('fill', '#000000')
-          //   .style('font-weight', 'bold')
-          //   .style('font-size', '11px')
-          //   .attr('text-anchor', 'start')
-          //   .attr('transform', 'translate(' + (itemDim.x + itemDim.w) + ',' + (itemDim.y + itemDim.h) + ')')
-          // d3.select(this).append('text')
-          //   .text(d.status.current.y + '' + d.unit + '')
-          //   .style('fill', '#000000')
-          //   .style('font-weight', 'bold')
-          //   .style('font-size', '11px')
-          //   .attr('text-anchor', 'start')
-          //   .attr('transform', 'translate(' + (itemDim.x + itemDim.w) + ',' + (itemDim.y + itemDim.h * 0.2) + ')')
-          // d3.select(this).append('text')
-          //   .text(d3.timeFormat('%H:%M')(new Date(shared.time.from)))
-          //   .style('fill', '#000000')
-          //   .style('font-weight', 'bold')
-          //   .style('font-size', '11px')
-          //   .attr('text-anchor', 'start')
-          //   .attr('transform', 'translate(' + (2) + ',' + (itemDim.h - 22) + ')')
-          // d3.select(this).append('text')
-          //   .text(d3.timeFormat('%H:%M')(new Date(shared.server.timeOfNight.date_now)))
-          //   .style('fill', '#000000')
-          //   .style('font-weight', 'bold')
-          //   .style('font-size', '11px')
-          //   .attr('text-anchor', 'start')
-          //   .attr('transform', 'translate(' + (2) + ',' + (itemDim.h - 12) + ')')
-
-          // let optIn = {g: d3.select(this),
-          //   box: plotb
-          // }
-          // optIn.g = optIn.g.append('g') // .style('opacity', 0.8)
-          // dd.plotObject = createPlot(optIn)
-        })
-
-        let gMerge = allPlots.merge(gEnter)
-        let generalIndex = [0, 0]
-        gMerge.each(function (d, i) {
-          // let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-          // let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
-          //
-          // dd.plotObject.updateAxis({
-          //   id: 'bottom',
-          //   domain: [startTime.date, endTime.date],
-          //   range: [0, plotb.w]
-          // })
-          // dd.plotObject.updateAxis({
-          //   id: 'left',
-          //   domain: [0, 100],
-          //   range: [plotb.h, 0]
-          // })
-          // dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
-
-          // if (dd.ended) {
-          //   let percent = (shared.time.current.getTime() - dd.ended.getTime()) / 400000
-          //   d3.select(this).style('opacity', 1 - percent)
-          //   d3.select(this).select('rect#disapearingBar')
-          //     .attr('width', (plotbox.w - offset) * ((1 - percent) < 0 ? 0 : (1 - percent)))
-          // }
-
-          // let xlim = xlimArray[i]
-          d3.select(this)
-            // .transition()
-            // .duration(800)
-            // .attr('transform', 'translate(' + (itemDim.offsetL) + ',' + (itemDim.offsetT + i * (itemDim.offsetT + itemDim.h)) + ')')
-            .attr('transform', 'translate(' + (itemDim.offsetL + generalIndex[0] * (itemDim.offsetL + itemDim.w)) + ',' + (itemDim.offsetT + (generalIndex[1] * (itemDim.offsetT + itemDim.h))) + ')')
-          generalIndex[0] = (generalIndex[0] + 1)
-          if (generalIndex[0] >= nbperline) {
-            generalIndex[0] = 0
-            generalIndex[1] += 1
-          }
-        })
-
-        allPlots
-          .exit()
-          .style('opacity', 0)
-          .remove()
-      }
-      function drawCategory () {
-        let allGroup = leftg.selectAll('g.group')
-          .data(shared.server.urgentPast)
+      // function drawBlock (g, tree, depth, dim) {
+      //   if (depth === 1 || depth === 2) depth += 1
+      //   if (shared.server.hierarchy.key === tree.id) depth += 1
+      //
+      //   let allGroup = g.selectAll('g.' + tree.id)
+      //     .data(tree.keys)
+      //   let gEnterGroup = allGroup.enter()
+      //     .append('g')
+      //     .attr('class', tree.id)
+      //   gEnterGroup.each(function (d, i) {
+      //     let g = d3.select(this)
+      //     g.append('rect')
+      //       .attr('id', d)
+      //       .attr('x', 0)
+      //       .attr('y', i * (dim.h / tree.keys.length))
+      //       .attr('width', dim.w)
+      //       .attr('height', dim.h / tree.keys.length)
+      //       .attr('stroke-width', 0.2)
+      //       .attr('stroke', '#000000')
+      //       .attr('fill', colorCategory[i % colorCategory.length])
+      //       .on('click', function () {
+      //         console.log(d.keys);
+      //       })
+      //     g.append('text')
+      //       .attr('id', tree.id + i)
+      //       .text(d)
+      //       .style('fill', '#000000')
+      //       .style('font-size', '11px')
+      //       .style('user-select', 'none')
+      //       .style('pointer-events', 'none')
+      //       .attr('text-anchor', 'middle')
+      //       .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + ((i + 0.5) * (dim.h / tree.keys.length) + 4) + ')')
+      //     for (let j = 0; j < tree.children.length; j++) {
+      //       drawBlock(g, tree.children[j], depth, {x: dim.w, y: (dim.h / tree.children.length) * j, w: dim.w, h: dim.h / tree.children.length})
+      //     }
+      //   })
+      //   let gMergeGroup = allGroup.merge(gEnterGroup)
+      //   gMergeGroup.each(function (d, i) {
+      //     let g = d3.select(this)
+      //     // g.select('rect#' + key + i)
+      //     //   .attr('x', depth === 0 ? dim.w * 0 : (depth === 1 ? dim.w * 0.1 : (depth === 2 ? dim.w * 0.9 : dim.w * 1)))
+      //     //   .attr('width', depth === 0 ? dim.w * 1 : (depth === 1 ? dim.w * 0.8 : (depth === 2 ? dim.w * 0.1 : dim.w * 0)))
+      //     // if (depth === 0) {
+      //     //   g.select('text#' + key + i)
+      //     //     .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + (dim.h * 0.5 + 4) + ')')
+      //     //     .style('visibility', 'visible')
+      //     // } else if (depth === 1) {
+      //     //   g.select('text#' + key + i)
+      //     //     .attr('transform', 'translate(' + (dim.w * 0.45) + ',' + (dim.h * 0.5 + 4) + ')')
+      //     //     .style('visibility', 'visible')
+      //     // } else if (depth === 2) {
+      //     //   g.select('text#' + key + i)
+      //     //     .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + (dim.h * 0.5 + 4) + ')')
+      //     //     .style('visibility', 'visible')
+      //     // } else if (depth === 3) {
+      //     //   g.select('text#' + key + i)
+      //     //     .style('visibility', 'hidden')
+      //     // }
+      //     // g.select('text')
+      //     //   .style('visibility', (depth === 0 || depth ) ? 'visible' : 'hidden')
+      //     // drawBlock(g, d.id, d.children, depth, {x: 0, y: 0, w: dim.w, h: dim.h / d.children.length})
+      //
+      //     d3.select(this)
+      //       .transition()
+      //       .duration(200)
+      //       .attr('transform', 'translate(' + dim.x + ',' + (dim.y) + ')')
+      //   })
+      //   allGroup
+      //     .exit()
+      //     .style('opacity', 0)
+      //     .remove()
+      // }
+      // drawBlock(leftg, shared.server.hierarchy.tree, 0, {x: 0, y: 0, w: leftDim.w, h: leftDim.h})
+      function drawBlock (g, key, tree, dim, mode) {
+        let allGroup = g.selectAll('g.' + key)
+          .data(tree)
         let gEnterGroup = allGroup.enter()
           .append('g')
-          .attr('class', 'group')
+          .attr('class', key)
         gEnterGroup.each(function (d, i) {
           let g = d3.select(this)
-          // g.append('rect')
-          //   .attr('id', 'extendBack')
-          //   .attr('x', 0)
-          //   .attr('y', 0)
-          //   .attr('width', categoryDim.w)
-          //   .attr('height', categoryDim.h - 2)
-          //   .attr('stroke-width', 0.4)
-          //   .attr('stroke', '#000000')
-          //   .attr('fill', 'none')
+          // let cat = shared.server.hierarchy.categories[d]
           g.append('rect')
-            .attr('id', 'front')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', categoryDim.w)
-            .attr('height', categoryDim.h - 2)
+            .attr('x', dim.x)
+            .attr('y', dim.y + i * (dim.h / tree.length))
+            .attr('width', dim.w)
+            .attr('height', dim.h / tree.length)
             .attr('stroke-width', 0.2)
             .attr('stroke', '#000000')
-            .style('opacity', d.data.length > 0 ? 1 : 0.1)
-            .attr('fill', colorCategory[i])
+            .attr('fill', colorCategory[i % colorCategory.length])
+            // .attr('rx', cat === 'group' ? dim.w * 0.4 : 0)
+            .on('click', function () {
+              addFilterKey(d)
+            })
           g.append('text')
-            .text(d.key)
+            .text(d)
             .style('fill', '#000000')
-            .style('font-weight', 'bold')
-            .style('font-size', '14px')
+            .style('font-size', '11px')
             .style('user-select', 'none')
+            .style('pointer-events', 'none')
             .attr('text-anchor', 'middle')
-            .attr('transform', 'translate(' + (categoryDim.w * 0.5) + ',' + (categoryDim.h * 0.5 + 4) + ')')
-          g.transition()
-            .duration(400)
-            .attr('transform', 'translate(' + (categoryDim.offsetL) + ',' + (i * (categoryDim.offsetT + categoryDim.h)) + ')')
-          g.on('mouseenter', function () {
-            categoryfocus = d.data
-            leftg.selectAll('rect#extendBack').attr('width', categoryDim.w)
-            g.select('rect#extendBack')
-              .attr('width', categoryDim.w + middleDim.w + 40)
-            drawItem()
-          })
+            .attr('transform', 'translate(' + (dim.x + dim.w * 0.5) + ',' + (dim.y + (i + 0.5) * (dim.h / tree.length) + 4) + ')')
         })
         let gMergeGroup = allGroup.merge(gEnterGroup)
         gMergeGroup.each(function (d, i) {
-          d3.select(this).select('rect#front')
-            .style('opacity', d.data.length > 0 ? 1 : 0.1)
-          // .attr('fill', d.data.length > 0 ? colorCategory[i] : '#dddddd')
-          d3.select(this)
-            .transition()
-            .duration(800)
-            .attr('transform', 'translate(' + (categoryBox.x + categoryDim.offsetL) + ',' + (i * (categoryDim.offsetT + categoryDim.h) + 2) + ')')
+          let g = d3.select(this)
+          // let cat = shared.server.hierarchy.categories[d]
+
+          g.select('rect')
+            .attr('x', dim.x)
+            .attr('y', dim.y + i * (dim.h / tree.length))
+            .attr('width', dim.w)
+            .attr('height', dim.h / tree.length)
+            .attr('stroke-width', 0.2)
+            // .attr('rx', cat === 'group' ? dim.w * 0.4 : 0)
+            .on('click', function () {
+              addFilterKey(d)
+            })
+          g.select('text')
+            .text(d)
+            .attr('transform', 'translate(' + (dim.x + dim.w * 0.5) + ',' + (dim.y + (i + 0.5) * (dim.h / tree.length) + 4) + ')')
+          // g.select('rect#' + key + i)
+          //   .attr('x', depth === 0 ? dim.w * 0 : (depth === 1 ? dim.w * 0.1 : (depth === 2 ? dim.w * 0.9 : dim.w * 1)))
+          //   .attr('width', depth === 0 ? dim.w * 1 : (depth === 1 ? dim.w * 0.8 : (depth === 2 ? dim.w * 0.1 : dim.w * 0)))
+          // if (depth === 0) {
+          //   g.select('text#' + key + i)
+          //     .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + (dim.h * 0.5 + 4) + ')')
+          //     .style('visibility', 'visible')
+          // } else if (depth === 1) {
+          //   g.select('text#' + key + i)
+          //     .attr('transform', 'translate(' + (dim.w * 0.45) + ',' + (dim.h * 0.5 + 4) + ')')
+          //     .style('visibility', 'visible')
+          // } else if (depth === 2) {
+          //   g.select('text#' + key + i)
+          //     .attr('transform', 'translate(' + (dim.w * 0.5) + ',' + (dim.h * 0.5 + 4) + ')')
+          //     .style('visibility', 'visible')
+          // } else if (depth === 3) {
+          //   g.select('text#' + key + i)
+          //     .style('visibility', 'hidden')
+          // }
+          // g.select('text')
+          //   .style('visibility', (depth === 0 || depth ) ? 'visible' : 'hidden')
+          // drawBlock(g, d.id, d.children, depth, {x: 0, y: 0, w: dim.w, h: dim.h / d.children.length})
+
+          // d3.select(this)
+          //   .transition()
+          //   .duration(200)
+          //   .attr('transform', 'translate(' + dim.x + ',' + (dim.y) + ')')
         })
         allGroup
           .exit()
           .style('opacity', 0)
           .remove()
       }
-      drawCategory()
-      drawItem()
+
+      // let dimParent = {x: leftDim.w * 0.8, y: 0, w: leftDim.w * 0.2, h: leftDim.h}
+      // let dimChildren = {x: leftDim.w * 0, y: 0, w: leftDim.w * 0.78, h: leftDim.h}
+
+      let allGroup = leftg.selectAll('g.hierarchy')
+        .data(shared.server.hierarchy.keys)
+      let gEnterGroup = allGroup.enter()
+        .append('g')
+        .attr('class', 'hierarchy')
+      gEnterGroup.each(function (d, i) {
+        let data = shared.server.hierarchy.relationship[d]
+        let g = d3.select(this)
+        let gdim = {x: (20 * i), y: 0, w: leftDim.w - (20 * i), h: leftDim.h - (20 * i)}
+        let dim = {x: gdim.x, y: gdim.y, w: 20, h: gdim.h}
+        g.append('rect')
+          .attr('id', d)
+          .attr('x', dim.x)
+          .attr('y', dim.y)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+          .attr('stroke-width', 0.2)
+          .attr('stroke', '#000000')
+          .attr('fill', colorCategory[i % colorCategory.length])
+          .on('click', function () {
+            removeFilterKey(d)
+          })
+        g.append('text')
+          .attr('id', d)
+          .style('fill', '#000000')
+          .style('font-size', '11px')
+          .style('user-select', 'none')
+          .style('pointer-events', 'none')
+          .attr('text-anchor', 'middle')
+          .attr('transform', 'translate(' + (dim.x + dim.w * 0.5) + ',' + (4) + ')')
+          .selectAll('tspan')
+          .data(data.name.toUpperCase().split(''))
+          .enter()
+          .append('tspan')
+          .style('font-size', '11px')
+          .attr('x', 0)
+          .attr('dy', '0.9em')
+          .text(function (d) { return d })
+      })
+      let gMergeGroup = allGroup.merge(gEnterGroup)
+      gMergeGroup.each(function (d, i) {
+        let g = d3.select(this)
+        let data = shared.server.hierarchy.relationship[d]
+        let gdim = {x: (20 * i), y: 0, w: leftDim.w - (20 * i), h: leftDim.h - (20 * i)}
+
+        if (i < shared.server.hierarchy.keys.length - 1) {
+          let dim = {x: gdim.x + 20, y: gdim.y + gdim.h - 20, w: gdim.w - 20, h: 20}
+          let tree = ''
+          for (let j = 0; j < data.children.length; j++) {
+            tree += shared.server.hierarchy.keys[i + 1] === data.children[j] ? '' : (j < data.children.length - 1 ? data.children[j] + '-' : data.children[j])
+          }
+          drawBlock(g, d, [tree], dim, 1)
+          // g.style('visibility', 'hidden')
+        } else {
+          let dim = {x: gdim.x + 20, y: gdim.y, w: gdim.w - 20, h: gdim.h}
+          let tree = []
+          for (let j = 0; j < data.children.length; j++) {
+            let index = shared.server.hierarchy.keys.indexOf(data.children[j])
+            if (index === -1 || index > i) tree.push(data.children[j])
+          }
+          drawBlock(g, d, tree, dim, 2)
+          // g.style('visibility', 'visible')
+        }
+        // g.transition()
+        //   .duration(200)
+        //   .attr('transform', 'translate(' + dimParent.x + ',' + dimParent.y + ')')
+      })
+      allGroup
+        .exit()
+        .style('opacity', 0)
+        .remove()
+
+      // function drawItem () {
+      //   let nbperline = Math.floor((itemBox.w) / (itemDim.w + itemDim.offsetL))
+      //   allPlots = focusScrollbox.get('innerG').selectAll('g.plot')
+      //     .data(categoryfocus, function (d) {
+      //       return d.id
+      //     })
+      //   let gEnter = allPlots.enter()
+      //     .append('g')
+      //     .attr('class', 'plot')
+      //   gEnter.each(function (d, i) {
+      //     d3.select(this).append('rect')
+      //       .attr('x', 0)
+      //       .attr('y', 0)
+      //       .attr('width', itemDim.w)
+      //       .attr('height', itemDim.h)
+      //       .attr('stroke', colorPalette.bright.stroke)
+      //       .attr('stroke-width', 0.2)
+      //       .style('fill-opacity', 1)
+      //       .attr('fill', colorPalette.bright.background)
+      //     d3.select(this).append('text')
+      //       .text(d.id)
+      //       .style('fill', '#000000')
+      //       .style('font-weight', 'bold')
+      //       .style('font-size', '12px')
+      //       .attr('text-anchor', 'middle')
+      //       .attr('transform', 'translate(' + (itemDim.w * 0.5) + ',' + (12) + ')')
+      //     // d3.select(this).append('text')
+      //     //   .text('80')
+      //     //   .style('fill', '#000000')
+      //     //   .style('font-weight', 'bold')
+      //     //   .style('font-size', '11px')
+      //     //   .attr('text-anchor', 'start')
+      //     //   .attr('transform', 'translate(' + (itemDim.x + itemDim.w) + ',' + (itemDim.y + itemDim.h) + ')')
+      //     // d3.select(this).append('text')
+      //     //   .text(d.status.current.y + '' + d.unit + '')
+      //     //   .style('fill', '#000000')
+      //     //   .style('font-weight', 'bold')
+      //     //   .style('font-size', '11px')
+      //     //   .attr('text-anchor', 'start')
+      //     //   .attr('transform', 'translate(' + (itemDim.x + itemDim.w) + ',' + (itemDim.y + itemDim.h * 0.2) + ')')
+      //     // d3.select(this).append('text')
+      //     //   .text(d3.timeFormat('%H:%M')(new Date(shared.time.from)))
+      //     //   .style('fill', '#000000')
+      //     //   .style('font-weight', 'bold')
+      //     //   .style('font-size', '11px')
+      //     //   .attr('text-anchor', 'start')
+      //     //   .attr('transform', 'translate(' + (2) + ',' + (itemDim.h - 22) + ')')
+      //     // d3.select(this).append('text')
+      //     //   .text(d3.timeFormat('%H:%M')(new Date(shared.server.timeOfNight.date_now)))
+      //     //   .style('fill', '#000000')
+      //     //   .style('font-weight', 'bold')
+      //     //   .style('font-size', '11px')
+      //     //   .attr('text-anchor', 'start')
+      //     //   .attr('transform', 'translate(' + (2) + ',' + (itemDim.h - 12) + ')')
+      //
+      //     // let optIn = {g: d3.select(this),
+      //     //   box: plotb
+      //     // }
+      //     // optIn.g = optIn.g.append('g') // .style('opacity', 0.8)
+      //     // dd.plotObject = createPlot(optIn)
+      //   })
+      //
+      //   let gMerge = allPlots.merge(gEnter)
+      //   let generalIndex = [0, 0]
+      //   gMerge.each(function (d, i) {
+      //     // let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+      //     // let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
+      //     //
+      //     // dd.plotObject.updateAxis({
+      //     //   id: 'bottom',
+      //     //   domain: [startTime.date, endTime.date],
+      //     //   range: [0, plotb.w]
+      //     // })
+      //     // dd.plotObject.updateAxis({
+      //     //   id: 'left',
+      //     //   domain: [0, 100],
+      //     //   range: [plotb.h, 0]
+      //     // })
+      //     // dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
+      //
+      //     // if (dd.ended) {
+      //     //   let percent = (shared.time.current.getTime() - dd.ended.getTime()) / 400000
+      //     //   d3.select(this).style('opacity', 1 - percent)
+      //     //   d3.select(this).select('rect#disapearingBar')
+      //     //     .attr('width', (plotbox.w - offset) * ((1 - percent) < 0 ? 0 : (1 - percent)))
+      //     // }
+      //
+      //     // let xlim = xlimArray[i]
+      //     d3.select(this)
+      //       // .transition()
+      //       // .duration(800)
+      //       // .attr('transform', 'translate(' + (itemDim.offsetL) + ',' + (itemDim.offsetT + i * (itemDim.offsetT + itemDim.h)) + ')')
+      //       .attr('transform', 'translate(' + (itemDim.offsetL + generalIndex[0] * (itemDim.offsetL + itemDim.w)) + ',' + (itemDim.offsetT + (generalIndex[1] * (itemDim.offsetT + itemDim.h))) + ')')
+      //     generalIndex[0] = (generalIndex[0] + 1)
+      //     if (generalIndex[0] >= nbperline) {
+      //       generalIndex[0] = 0
+      //       generalIndex[1] += 1
+      //     }
+      //   })
+      //
+      //   allPlots
+      //     .exit()
+      //     .style('opacity', 0)
+      //     .remove()
+      // }
+      // function drawCategory () {
+      //   let allGroup = leftg.selectAll('g.group')
+      //     .data(shared.server.urgentPast)
+      //   let gEnterGroup = allGroup.enter()
+      //     .append('g')
+      //     .attr('class', 'group')
+      //   gEnterGroup.each(function (d, i) {
+      //     let g = d3.select(this)
+      //     // g.append('rect')
+      //     //   .attr('id', 'extendBack')
+      //     //   .attr('x', 0)
+      //     //   .attr('y', 0)
+      //     //   .attr('width', categoryDim.w)
+      //     //   .attr('height', categoryDim.h - 2)
+      //     //   .attr('stroke-width', 0.4)
+      //     //   .attr('stroke', '#000000')
+      //     //   .attr('fill', 'none')
+      //     g.append('rect')
+      //       .attr('id', 'front')
+      //       .attr('x', 0)
+      //       .attr('y', 0)
+      //       .attr('width', categoryDim.w)
+      //       .attr('height', categoryDim.h - 2)
+      //       .attr('stroke-width', 0.2)
+      //       .attr('stroke', '#000000')
+      //       .style('opacity', d.data.length > 0 ? 1 : 0.1)
+      //       .attr('fill', colorCategory[i % colorCategory.length])
+      //     g.append('text')
+      //       .text(d.key)
+      //       .style('fill', '#000000')
+      //       .style('font-weight', 'bold')
+      //       .style('font-size', '14px')
+      //       .style('user-select', 'none')
+      //       .attr('text-anchor', 'middle')
+      //       .attr('transform', 'translate(' + (categoryDim.w * 0.5) + ',' + (categoryDim.h * 0.5 + 4) + ')')
+      //     g.transition()
+      //       .duration(400)
+      //       .attr('transform', 'translate(' + (categoryDim.offsetL) + ',' + (i * (categoryDim.offsetT + categoryDim.h)) + ')')
+      //     g.on('mouseenter', function () {
+      //       categoryfocus = d.data
+      //       leftg.selectAll('rect#extendBack').attr('width', categoryDim.w)
+      //       g.select('rect#extendBack')
+      //         .attr('width', categoryDim.w + middleDim.w + 40)
+      //       drawItem()
+      //     })
+      //   })
+      //   let gMergeGroup = allGroup.merge(gEnterGroup)
+      //   gMergeGroup.each(function (d, i) {
+      //     d3.select(this).select('rect#front')
+      //       .style('opacity', d.data.length > 0 ? 1 : 0.1)
+      //     // .attr('fill', d.data.length > 0 ? colorCategory[i] : '#dddddd')
+      //     d3.select(this)
+      //       .transition()
+      //       .duration(800)
+      //       .attr('transform', 'translate(' + (categoryBox.x + categoryDim.offsetL) + ',' + (i * (categoryDim.offsetT + categoryDim.h) + 2) + ')')
+      //   })
+      //   allGroup
+      //     .exit()
+      //     .style('opacity', 0)
+      //     .remove()
+      // }
+      // drawCategory()
+      // drawItem()
     }
     this.drawLeftPart = drawLeftPart
 
@@ -2071,8 +2410,9 @@ let mainPlotsDash = function (optIn) {
       for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
         line.push(shared.server.urgentCurrent[i].data.length)
       }
-      let maxiter = 15
-      function bestFit (index) {
+      let glob = line.reduce((acc, cur) => acc + cur, 0)
+      let maxiter = 100
+      function bestFitPerLine (index) {
         if (maxiter < 0) return {w: 0, h: 0}
         let max = rightBox.w * rightBox.h
         let dim = {w: rightBox.w / index, h: rightBox.h / index}
@@ -2081,69 +2421,137 @@ let mainPlotsDash = function (optIn) {
           tot += Math.ceil(line[i] / index) * index * (dim.w * dim.h)
         }
         maxiter -= 1
-        if ((max - tot) < 0) return bestFit(index += 1)
+        if ((max - tot) < 0) return bestFitPerLine(index += 1)
         else return index
       }
-      return bestFit(1)
+      function bestFitGlobal (index) {
+        if (maxiter < 0) return {w: 0, h: 0}
+        let dim = {w: rightBox.w / index, h: rightBox.h / (glob / index)}
+        maxiter -= 1
+        if (dim.h < dim.w) return bestFitGlobal(index += 1)
+        else return index
+      }
+
+      let bestF = bestFitPerLine(1)
+      let dim = {w: (rightBox.w / bestF), h: (rightBox.h / bestF)}
+      if (dim.h < 6 || dim.w < 6) {
+        maxiter = 100
+        bestF = bestFitGlobal(1)
+      }
+      return bestF
     }
     function drawRightPart () {
-      let mode = 1
-      let offset = 4
-      // let surface = Math.sqrt((rightBox.h * rightBox.w) / tot) - (offset * offset * 2)
-      // let dim = {w: surface, h: surface}
-      let nbperline = findnbperline()
-      let factor = {x: 0.8, y: 0.8}
-      let basicDim = {w: 200 * factor.x, h: 200 * factor.y}
+      function chooseDrawingMode () {
+        function bestFitPerLine (index) {
+          if (maxiter < 0) return {w: 0, h: 0}
+          let dim = {w: rightBox.w / index, h: rightBox.h / index}
+          let tot = 0
+          for (let i = 0; i < line.length; i++) {
+            tot += Math.ceil(line[i] / index) * index * (dim.w * dim.h)
+          }
+          maxiter -= 1
+          if ((max - tot) < 0) return bestFitPerLine(index += 1)
+          else return index
+        }
+        function bestFitGlobal (index) {
+          if (maxiter < 0) return {w: 0, h: 0}
+
+          let sqrtGlob = Math.floor(Math.sqrt(glob)) + 1
+          // dim = {w: rightBox.w / sqrtGlob, h: rightBox.h / sqrtGlob}
+          maxiter -= 1
+          // if (dim.h < dim.w) return bestFitGlobal(index += 1)
+          return sqrtGlob
+        }
+
+        let line = []
+        for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
+          line.push(shared.server.urgentCurrent[i].data.length)
+        }
+        let max = rightBox.w * rightBox.h
+        let maxiter = 100
+        let glob = line.reduce((acc, cur) => acc + cur, 0)
+
+        nbperline = bestFitPerLine(1)
+        dim = {w: (rightBox.w / nbperline), h: (rightBox.h / nbperline)}
+        return
+        if ((dim.w * dim.h * glob) / max < 0.8) {
+          nbperline = bestFitGlobal(1)
+          dim = {w: (rightBox.w / nbperline), h: (rightBox.h / nbperline)}
+          mode = 2
+        } else {
+          mode = 1
+        }
+      }
       function adjustTemplate (dim, temp) {
         return {
           x: (temp.x * dim.w) / basicDim.w,
           y: (temp.y * dim.h) / basicDim.h,
           w: (temp.w * dim.w) / basicDim.w,
-          h: (temp.h * dim.h) / basicDim.h
+          h: (temp.h * dim.h) / basicDim.h,
+          display: temp.display
         }
       }
-      let dim = {w: (rightBox.w / nbperline) - offset, h: (rightBox.h / nbperline) - offset}
-      dim.w = dim.w > basicDim.w ? basicDim.w : dim.w
-      dim.h = dim.h > basicDim.h ? basicDim.h : dim.h
-      dim.w -= offset
-      dim.h -= offset
-
-      function chooseTemplate (dim) {
-        console.log(dim);
+      function chooseTemplateDim (dim) {
         let basicTemplate = {
           title1: {display: true, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
           title2: {display: true, x: 4 * factor.x, y: 50 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
           plot: {display: true, x: 4 * factor.x, y: 104 * factor.y, w: 92 * factor.x, h: 92 * factor.y},
           value1: {display: true, x: 104 * factor.x, y: 104 * factor.y, w: 92 * factor.x, h: 46 * factor.y},
-          value2: {display: true, x: 104 * factor.x, y: 150 * factor.y, w: 92 * factor.x, h: 46 * factor.y}
+          value2: {display: true, x: 104 * factor.x, y: 150 * factor.y, w: 92 * factor.x, h: 46 * factor.y},
+          dim: {w: 140, h: 140}
         }
         let mediumTemplate = {
           title1: {display: true, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
           title2: {display: true, x: 4 * factor.x, y: 50 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
           plot: {display: true, x: 4 * factor.x, y: 104 * factor.y, w: 22 * factor.x, h: 92 * factor.y},
           value1: {display: true, x: 34 * factor.x, y: 104 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-          value2: {display: true, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y}
+          value2: {display: true, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
+          dim: {w: dim.w > 100 ? 100 : dim.w, h: dim.h}
         }
         let smallTemplate = {
           title1: {display: true, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 96 * factor.y},
           title2: {display: true, x: 4 * factor.x, y: 104 * factor.y, w: 192 * factor.x, h: 96 * factor.y},
           plot: {display: false, x: 4 * factor.x, y: 104 * factor.y, w: 22 * factor.x, h: 92 * factor.y},
           value1: {display: false, x: 34 * factor.x, y: 104 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-          value2: {display: false, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y}
+          value2: {display: false, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
+          dim: {w: dim.w, h: dim.h}
         }
         let miniTemplate = {
           title1: {display: true, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 192 * factor.y},
           title2: {display: false, x: 4 * factor.x, y: 50 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
           plot: {display: false, x: 4 * factor.x, y: 104 * factor.y, w: 22 * factor.x, h: 92 * factor.y},
           value1: {display: false, x: 34 * factor.x, y: 104 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-          value2: {display: false, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y}
+          value2: {display: false, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
+          dim: {w: dim.w, h: dim.h}
         }
-        if (dim.h < 20) return miniTemplate
-        if (dim.h < 60) return smallTemplate
-        if (dim.w < 100) return mediumTemplate
-        return basicTemplate
+        let microTemplate = {
+          title1: {display: false, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 192 * factor.y},
+          title2: {display: false, x: 4 * factor.x, y: 50 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
+          plot: {display: false, x: 4 * factor.x, y: 104 * factor.y, w: 22 * factor.x, h: 92 * factor.y},
+          value1: {display: false, x: 34 * factor.x, y: 104 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
+          value2: {display: false, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
+          dim: {w: dim.w, h: dim.h}
+        }
+        if (dim.h > 140) return basicTemplate
+        if (dim.h > 90) return mediumTemplate
+        if (dim.h > 40) return smallTemplate
+        if (dim.h > 25) return miniTemplate
+        return microTemplate
       }
-      let choosenTemplate = chooseTemplate(dim)
+
+      let mode = 1
+      let offset = 0
+      let factor = {x: 1, y: 1}
+      let basicDim = {w: 200 * factor.x, h: 200 * factor.y}
+      let dim = {w: 0, h:0}
+      let nbperline = 0
+
+      chooseDrawingMode()
+
+      dim.w -= offset
+      dim.h -= offset
+      let choosenTemplateDim = chooseTemplateDim(dim)
+      dim = choosenTemplateDim.dim
 
       let offsetLine = 0
       let tot = 0
@@ -2152,16 +2560,6 @@ let mainPlotsDash = function (optIn) {
         offsetLine += Math.ceil(shared.server.urgentCurrent[i].data.length / nbperline)
       }
       offsetLine = (rightBox.h - (offsetLine * (dim.h + offset))) / (shared.server.urgentCurrent.length)
-      // if ((rightBox.h * rightBox.w) - (((dim.w + offset) * (dim.h + offset)) * tot) < 0) {
-      //   dim = {w: 60, h: 20}
-      //   if ((rightBox.h * rightBox.w) - (((dim.w + offset) * (dim.h + offset)) * tot) < 0) {
-      //     dim = {w: 10, h: 10}
-      //     if ((rightBox.h * rightBox.w) - (((dim.w + offset) * (dim.h + offset)) * tot) < 0) {
-      //       mode = 2
-      //     }
-      //   }
-      // }
-      // let nbperline = Math.floor((rightBox.w + offset) / (dim.w + offset))
 
       let xlimArray = []
       let limit = 0
@@ -2177,6 +2575,7 @@ let mainPlotsDash = function (optIn) {
       }
 
       let generalIndex = [0, 0]
+      let fontSize = '16px'
 
       function drawCategory () {
         let allGroup = rightCats.selectAll('g.labelCategory')
@@ -2197,8 +2596,8 @@ let mainPlotsDash = function (optIn) {
             .attr('height', spaceline - 2)
             .attr('stroke-width', 0.2)
             .attr('stroke', '#000000')
-            .attr('fill', colorCategory[i])
-            .style('fill-opacity', 0.7)
+            .attr('fill', colorCategory[i % colorCategory.length])
+            .style('fill-opacity', 1)
           g.append('text')
             .text('0')
             .attr('x', spaceline * 0.5)
@@ -2254,7 +2653,13 @@ let mainPlotsDash = function (optIn) {
           .append('g')
           .attr('class', 'category')
           .attr('id', d => d.key)
-        gEnterGroup.each(function (d, i) {})
+        gEnterGroup.each(function (d, i) {
+          d3.select(this).append('path')
+            .attr('id', 'visualLinker')
+            .attr('fill', 'none')
+            .attr('stroke-width', 6)
+            .attr('stroke', '#000000')
+        })
         let gMergeGroup = allGroup.merge(gEnterGroup)
 
         gMergeGroup.each(function (d, i) {
@@ -2262,6 +2667,10 @@ let mainPlotsDash = function (optIn) {
           labelCat.style('opacity', d.data.length > 0 ? 1 : 0.2)
           labelCat.select('text').text(d.data.length)
 
+          let points = [
+            {x: -spaceline, y: spaceline * 0.5 + (shared.server.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1))},
+            {x: 0, y: spaceline * 0.5 + (shared.server.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1))}
+          ]
           // if (d.data.length > nbperline) {
           //   if (mode === 1) labelCat.select('g#extension').style('opacity', 0)
           //   else if (mode === 2) labelCat.select('g#extension').style('opacity', 1)
@@ -2279,47 +2688,47 @@ let mainPlotsDash = function (optIn) {
               .attr('id', 'back')
               .attr('x', 0)
               .attr('y', 0)
-              .attr('stroke-width', 0)
-              .attr('fill', colorCategory[i])
-            d3.select(this).append('rect')
-              .attr('id', 'front')
-              .attr('x', 0)
-              .attr('y', 0)
-              .attr('stroke', colorPalette.bright.stroke)
+              .attr('stroke', '#000000')
               .attr('stroke-width', 0.4)
-              .attr('fill', colorPalette.medium.background)
+              .attr('fill', colorPalette.dark.background)
+              // .attr('rx', 4)
+              // .attr('ry', 4)
 
             d3.select(this).append('text')
               .attr('id', 'name1')
               .text(dd.name)
               .style('fill', '#000000')
-              .style('font-weight', 'bold')
+              .style('font-size', fontSize)
+              .style('font-weight', '')
               .style('user-select', 'none')
               .attr('text-anchor', 'middle')
             d3.select(this).append('text')
               .attr('id', 'name2')
               .text(dd.data.type.name)
               .style('fill', '#000000')
-              .style('font-weight', 'bold')
+              .style('font-size', fontSize)
+              .style('font-weight', '')
               .style('user-select', 'none')
               .attr('text-anchor', 'middle')
             d3.select(this).append('text')
               .attr('id', 'currentvalue')
               .text(dd.data.measures[0].value + '' + (dd.unit ? dd.unit : '%') + '+3')
               .style('fill', '#000000')
-              .style('font-weight', 'bold')
+              .style('font-size', fontSize)
+              .style('font-weight', '')
               .style('user-select', 'none')
               .attr('text-anchor', 'middle')
             d3.select(this).append('text')
               .attr('id', 'treshold')
               .text('30')
+              .style('font-size', fontSize)
               .style('fill', '#000000')
-              .style('font-weight', 'bold')
+              .style('font-weight', '')
               .style('user-select', 'none')
               .attr('text-anchor', 'middle')
 
             let optIn = {g: d3.select(this).append('g'),
-              box: choosenTemplate.plot
+              box: choosenTemplateDim.plot
             }
             miniPlotsVect[dd.id] = createPlot(optIn)
 
@@ -2382,51 +2791,45 @@ let mainPlotsDash = function (optIn) {
           })
           let gMerge = allPlots.merge(gEnter)
           gMerge.each(function (dd, ii) {
-            if (mode === 1) {
-              d3.select(this).select('g#treshold').style('opacity', 1)
-              if (generalIndex[0] >= nbperline) {
-                generalIndex[0] = 0
-                generalIndex[1] += 1
-              }
-
-              d3.select(this).select('rect#front')
-                .attr('width', dim.w - offset)
-                .attr('height', dim.h - offset)
-              d3.select(this).select('rect#back')
+            let g = d3.select(this)
+            function drawBody () {
+              g.select('g#treshold').style('opacity', 1)
+              g.select('rect#back')
                 .attr('width', dim.w)
                 .attr('height', dim.h)
 
-              let newtitle1box = adjustTemplate(dim, choosenTemplate.title1)
-              d3.select(this).select('text#name1')
+              let newtitle1box = adjustTemplate(dim, choosenTemplateDim.title1)
+              g.select('text#name1')
                 .attr('transform', 'translate(' + (newtitle1box.x + newtitle1box.w * 0.5) + ',' + (newtitle1box.y + newtitle1box.h * 0.5) + ')')
-                .style('font-size', (newtitle1box.h * 0.75) + 'px')
-                .attr('dy', newtitle1box.h * 0.75 * 0.5)
+                .attr('dy', newtitle1box.h * 0.5 * 0.33)
+                .style('visibility', newtitle1box.display ? 'visible' : 'hidden')
 
-              let newtitle2box = adjustTemplate(dim, choosenTemplate.title2)
-              d3.select(this).select('text#name2')
+              let newtitle2box = adjustTemplate(dim, choosenTemplateDim.title2)
+              g.select('text#name2')
                 .attr('transform', 'translate(' + (newtitle2box.x + newtitle2box.w * 0.5) + ',' + (newtitle2box.y + newtitle2box.h * 0.5) + ')')
-                .style('font-size', (newtitle2box.h * 0.75) + 'px')
-                .attr('dy', newtitle1box.h * 0.75 * 0.5)
+                .attr('dy', newtitle1box.h * 0.5 * 0.33)
+                .style('visibility', newtitle2box.display ? 'visible' : 'hidden')
 
-              let newvalue1box = adjustTemplate(dim, choosenTemplate.value1)
-              d3.select(this).select('text#currentvalue')
+              let newvalue1box = adjustTemplate(dim, choosenTemplateDim.value1)
+              g.select('text#currentvalue')
                 .text(dd.data.measures[0].value + '' + (dd.unit ? dd.unit : '%') + '+3')
                 .attr('transform', 'translate(' + (newvalue1box.x + newvalue1box.w * 0.5) + ',' + (newvalue1box.y + newvalue1box.h * 0.5) + ')')
-                .style('font-size', (newvalue1box.h * 0.75) + 'px')
-                .attr('dy', newtitle1box.h * 0.75 * 0.5)
+                .attr('dy', newtitle1box.h * 0.5 * 0.33)
+                .style('visibility', newvalue1box.display ? 'visible' : 'hidden')
 
-              let newvalue2box = adjustTemplate(dim, choosenTemplate.value2)
-              d3.select(this).select('text#treshold')
+              let newvalue2box = adjustTemplate(dim, choosenTemplateDim.value2)
+              g.select('text#treshold')
                 .text('30')
                 .attr('transform', 'translate(' + (newvalue2box.x + newvalue2box.w * 0.5) + ',' + (newvalue2box.y + newvalue2box.h * 0.5) + ')')
-                .style('font-size', (newvalue2box.h * 0.75) + 'px')
-                .attr('dy', newtitle2box.h * 0.75 * 0.5)
+                .attr('dy', newtitle2box.h * 0.5 * 0.33)
+                .style('visibility', newvalue2box.display ? 'visible' : 'hidden')
 
+              let newplotbox = adjustTemplate(dim, choosenTemplateDim.plot)
+              miniPlotsVect[dd.id].get('main').g.style('visibility', newplotbox.display ? 'visible' : 'hidden')
               let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
               let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
 
-              let newplotbox = adjustTemplate(dim, choosenTemplate.plot)
-              newplotbox.h -= offset
+              // newplotbox.h -= offset
               miniPlotsVect[dd.id].updateBox(newplotbox)
               miniPlotsVect[dd.id].updateAxis({
                 id: 'bottom',
@@ -2442,8 +2845,14 @@ let mainPlotsDash = function (optIn) {
                 box: {x: 0, y: 0, w: newplotbox.w, h: newplotbox.h},
                 tickSize: -newplotbox.w
               })
-              // dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
+            }
+            drawBody()
 
+            if (mode === 1) {
+              if (generalIndex[0] >= nbperline) {
+                generalIndex[0] = 0
+                generalIndex[1] += 1
+              }
               let cap = d.data.length % nbperline
               let offleft = (ii >= (d.data.length - cap))
                 ? (rightBox.w - (offset * (cap - 1) + dim.w * cap)) * 0.5
@@ -2452,45 +2861,55 @@ let mainPlotsDash = function (optIn) {
                 .transition()
                 .duration(200)
                 .attr('transform', 'translate(' + (offleft + generalIndex[0] * (offset + (dim.w))) + ',' + ((generalIndex[1] * (offset + (dim.h)))) + ')')
+              points.push({x: (offleft + generalIndex[0] * (offset + (dim.w))) - dim.w * 0.1, y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5})
+              points.push({x: (offleft + generalIndex[0] * (offset + (dim.w))) + dim.w * 1.1, y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5})
               generalIndex[0] = (generalIndex[0] + 1)
             } else if (mode === 2) {
-              // d3.select(this).select('g#treshold').style('opacity', 0)
-              // d3.select(this).select('rect#background')
-              //   .attr('width', plotbox.w * 0.75 - offset)
-              //   .attr('height', spaceline - 2)
-              //   // .attr('fill', colorCategory[d.data.length])
-              // d3.select(this).select('text#name1')
-              //   .attr('transform', 'translate(' + ((plotbox.w * 0.75 * 0.5)) + ',' + (spaceline * 0.5 + offset) + ')')
-              // d3.select(this).select('text#name2')
-              //   .attr('transform', 'translate(' + ((plotbox.w * 0.75 * 0.5)) + ',' + (spaceline * 0.5 + offset) + ')')
-              // d3.select(this).select('text#currentvalue')
-              //   .style('opacity', 0)
-              // d3.select(this)
-              //   .style('opacity', 1 - Math.log10(ii))
-              //   .transition()
-              //   .duration(200)
-              //   .attr('transform', 'translate(' + ((plotbox.w * 0.75) * ii) + ',' + (0) + ')')
+              if (generalIndex[0] >= nbperline) {
+                generalIndex[0] = 0
+                generalIndex[1] += 1
+              }
+              d3.select(this)
+                .transition()
+                .duration(200)
+                .attr('transform', 'translate(' + (generalIndex[0] * (offset + (dim.w))) + ',' + ((generalIndex[1] * (offset + (dim.h)))) + ')')
+              points.push({x: (generalIndex[0] * (offset + (dim.w))) - dim.w * 0.1, y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5})
+              points.push({x: (generalIndex[0] * (offset + (dim.w))) + dim.w * 1.1, y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5})
+              generalIndex[0] = (generalIndex[0] + 1)
             }
           })
           allPlots
             .exit()
             .style('opacity', 0)
             .remove()
-          if (d.data.length > 0) {
-            generalIndex[0] = 0
-            generalIndex[1] += 1
-          }
           if (mode === 1) {
-            d3.select(this)
-              .transition()
-              .duration(200)
-              .attr('transform', 'translate(' + (0) + ',' + (offsetLine * (i + 1)) + ')')
-          } else if (mode === 2) {
-            d3.select(this)
-              .transition()
-              .duration(200)
-              .attr('transform', 'translate(' + (0) + ',' + (shared.server.urgentKey.indexOf(d.key) * (spaceline) + 2) + ')')
+            if (d.data.length > 0) {
+              generalIndex[0] = 0
+              generalIndex[1] += 1
+            }
+            let linefunction = d3.line()
+              .x(function (d) { return d.x })
+              .y(function (d) { return d.y })
+              .curve(d3.curveStepBefore)
+            d3.select(this).select('path#visualLinker')
+              .attr('d', linefunction(points))
+              .style('opacity', d.data.length > 0 ? 0.7 : 0)
+          } else {
+            d3.select(this).select('path#visualLinker')
+              .style('opacity', 0)
           }
+          // if (mode === 1) {
+          //   d3.select(this)
+          //     .transition()
+          //     .duration(200)
+          //     .attr('transform', 'translate(' + (0) + ',' + (offsetLine * (i + 1)) + ')')
+          // } else if (mode === 2) {
+          //   d3.select(this)
+          //     .transition()
+          //     .duration(200)
+          //     .attr('transform', 'translate(' + (0) + ',' + (shared.server.urgentKey.indexOf(d.key) * (spaceline) + 2) + ')')
+          // }
+
         })
         allGroup
           .exit()
@@ -2498,8 +2917,8 @@ let mainPlotsDash = function (optIn) {
           .remove()
       }
 
-      drawCategory()
       drawItem()
+      drawCategory()
 
       // adjustScrollBox()
     }
