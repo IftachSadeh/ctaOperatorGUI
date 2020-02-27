@@ -12,9 +12,9 @@ from ctaGuiUtils.py.utils import myLog, Assert, deltaSec, getTimeOfNight, flatDi
 from ctaGuiUtils.py.utils_redis import redisManager
 
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 #  plotsDash
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 class plotsDash():
     # privat lock for this widget type
     lock = BoundedSemaphore(1)
@@ -24,9 +24,9 @@ class plotsDash():
 
     timeOfNight = {}
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def __init__(self, widgetId="", mySock=None, *args, **kwargs):
         self.log = myLog(title=__name__)
 
@@ -35,7 +35,8 @@ class plotsDash():
         # the parent of this widget
         self.mySock = mySock
         Assert(log=self.log, msg=[
-               " - no mySock handed to", self.__class__.__name__], state=(self.mySock is not None))
+               " - no mySock handed to", self.__class__.__name__], 
+               state=(self.mySock is not None))
 
         # widget-class and widget group names
         self.widgetName = self.__class__.__name__
@@ -52,9 +53,10 @@ class plotsDash():
 
         # INIT TELESCOPES PROPS
         self.telCategory = 'Telescope'
-        self.telType = ['LST','MST','SST','AUX']
-        self.telKey = ['mirror','camera','mount','daq','aux']
-        self.telIds = self.mySock.arrayData.get_inst_ids(inst_types=self.telType)
+        self.telType = ['LST', 'MST', 'SST', 'AUX']
+        self.telKey = ['mirror', 'camera', 'mount', 'daq', 'aux']
+        self.telIds = self.mySock.arrayData.get_inst_ids(
+            inst_types=self.telType)
 
         self.weatherCategory = 'Weather'
         self.weatherType = ['WS1', 'WS2', 'WS3', 'WS4']
@@ -78,25 +80,31 @@ class plotsDash():
 
         self.relationship = {
             # 'root': {'name': 'Root', 'children': ['global']},
-            'global': {'name': 'All Data', 'children': [self.telCategory,self.weatherCategory]},
+            'global': {'name': 'All Data', 'children': [self.telCategory, self.weatherCategory]},
             'telType': {'name': 'Size', 'children': self.telType},
             'telKey': {'name': 'Property', 'children': self.telKey},
             'telIds': {'name': 'Name', 'children': self.telIds},
             'weatherType': {'name': 'Weath. Stat.', 'children': self.weatherType},
             'weatherKey': {'name': 'Measure', 'children': self.weatherKey}
         }
-        self.relationship[self.telCategory] = {'name': 'Telescopes', 'children': ['telType', 'telKey', 'telIds']}
-        self.relationship[self.weatherCategory] = {'name': 'Weather', 'children': ['weatherType', 'weatherKey']}
+        self.relationship[self.telCategory] = {
+            'name': 'Telescopes', 'children': ['telType', 'telKey', 'telIds']}
+        self.relationship[self.weatherCategory] = {
+            'name': 'Weather', 'children': ['weatherType', 'weatherKey']}
         for value in self.telType:
-            self.relationship[value] = {'name': value, 'children': ['telKey', 'telIds']}
+            self.relationship[value] = {
+                'name': value, 'children': ['telKey', 'telIds']}
         for value in self.telKey:
-            self.relationship[value] = {'name': value, 'children': ['telType', 'telIds']}
+            self.relationship[value] = {
+                'name': value, 'children': ['telType', 'telIds']}
         for value in self.telIds:
             self.relationship[value] = {'name': value, 'children': ['telKey']}
         for value in self.weatherType:
-            self.relationship[value] = {'name': value, 'children': ['weatherKey']}
+            self.relationship[value] = {
+                'name': value, 'children': ['weatherKey']}
         for value in self.weatherKey:
-            self.relationship[value] = {'name': value, 'children': ['weatherType']}
+            self.relationship[value] = {
+                'name': value, 'children': ['weatherType']}
 
         self.categories = {
             # 'root': 'group',
@@ -129,7 +137,6 @@ class plotsDash():
         #     'weatherKey': self.weatherKey,
         # }
 
-
         # self.relationship = {'root': {'parent': [], 'children': [self.telCategory, self.weatherCategory]}}
         # self.relationship[self.telCategory] = {'parent': ['root'], 'children': self.telType}
         # for value in self.telType:
@@ -148,9 +155,9 @@ class plotsDash():
 
         self.agregate = self.telIds
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def setup(self, *args):
         with self.mySock.lock:
             wgt = self.redis.hGet(
@@ -165,17 +172,25 @@ class plotsDash():
         self.initUrgentCurrent()
         self.initUrgentPast()
 
-
         # initial dataset and send to client
-        optIn = {'widget': self, 'dataFunc': self.getData}
+        optIn = {
+            'widget': self, 'dataFunc': self.getData,
+        }
         self.mySock.sendWidgetInit(optIn=optIn)
 
         # start a thread which will call updateData() and send 1Hz data updates to
         # all sessions in the group
-        optIn = {'widget': self, 'dataFunc': self.getData}
+        optIn = {
+            'widget': self, 'is_group_thread': False,
+            'dataFunc': self.getData,
+        }
         self.mySock.addWidgetTread(optIn=optIn)
 
         return
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def initTelHealth(self):
         self.telHealth = dict()
         self.telSubHealthFlat = dict()
@@ -193,7 +208,7 @@ class plotsDash():
             self.telHealth[idNow] = {
                 "id": idNow, "health": 0, "status": "",
                 "data": [
-                    v for (k,v) in self.telSubHealth[idNow].items()
+                    v for (k, v) in self.telSubHealth[idNow].items()
                 ]
             }
 
@@ -206,17 +221,17 @@ class plotsDash():
 
         return
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def backFromOffline(self):
         # with plotsDash.lock:
         #   print '-- backFromOffline',self.widgetName, self.widgetId
         return
 
-    # # -----------------------------------------------------------------------------------------------------------
+    # # ------------------------------------------------------------------
     # #
-    # # -----------------------------------------------------------------------------------------------------------
+    # # ------------------------------------------------------------------
     # def getHierarchy(self):
     #     telProp = [
     #         {'key': 'mount', 'name': 'Mount', 'children': []},
@@ -254,13 +269,16 @@ class plotsDash():
     #     # ]}
     #     return tree
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def getData(self):
         timeOfNightDate = {
             "date_now": datetime.fromtimestamp(getTime()/1000.0).strftime('%Y-%m-%d %H:%M:%S'),
             "now": getTime()
-            }
+        }
 
-        dataOut = self.retrieveData('Mx10', ['camera','mount'])
+        dataOut = self.retrieveData('Mx10', ['camera', 'mount'])
 
         self.updateUrgentCurrent()
         self.updateUrgentPast()
@@ -270,17 +288,21 @@ class plotsDash():
         # print 'getData', self.widgetId
         data = {
             "timeOfNight": timeOfNightDate,
-            "dataOut":self.telIds,
-            "hierarchy": {'relationship': self.relationship, 'categories': self.categories, 'keys':self.selectedKeys, 'root': 'global', 'depth': 4},
+            "dataOut": self.telIds,
+            "hierarchy": {'relationship': self.relationship, 'categories': self.categories, 'keys': self.selectedKeys, 'root': 'global', 'depth': 4},
             "urgentKey": self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children'],
             "agregate": self.agregate,
-            "urgentCurrent":orderedCurrent,
-            "urgentTimestamp":orderedTimestamp,
+            "urgentCurrent": orderedCurrent,
+            "urgentTimestamp": orderedTimestamp,
             "urgentPast": orderedPast
             # "telHealthAggregate":self.agregateTelHealth(telHealth)
         }
 
         return data
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def plotDashpushNewHierachyKeys(self, *args):
         print 'push', self.widgetId
         self.selectedKeys = args[0]['newKeys']
@@ -293,6 +315,9 @@ class plotsDash():
 
         return
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def retrieveData(self, id, keyV):
         res = {"id": id}
         data = {}
@@ -310,9 +335,9 @@ class plotsDash():
             # res[key].append({'id': id+';'+key, 'data': [{'y': x[0]['data'], 'x':x[1]} for x in data[key]]})
         return res
 
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #
-    # -----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def sendRndomMessage(self, data):
         # self.log.info([
         #     ['y', ' - got event: sendRndomMessage('],
@@ -332,7 +357,9 @@ class plotsDash():
 
         return
 
-
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def checkSytemHealth(self, agregate, key, row):
         if float(row["mirror"]) < 30:
             agregate["critical"]["mirror"].append(key)
@@ -354,24 +381,27 @@ class plotsDash():
         elif float(row["mount"]) < 55:
             agregate["warning"]["mount"].append(key)
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def agregateTelHealth(self, telHealth):
         agregate = {
-            "LST":{"health":0, "number":0,
-                "warning":{"camera":[], "mirror":[], "mount":[], "aux":[]},
-                "critical":{"camera":[], "mirror":[], "mount":[], "aux":[]},
-                "unknow":{"camera":[], "mirror":[], "mount":[], "aux":[]}},
-            "MST":{"health":0, "number":0,
-                "warning":{"camera":[], "mirror":[], "mount":[], "aux":[]},
-                "critical":{"camera":[], "mirror":[], "mount":[], "aux":[]},
-                "unknow":{"camera":[], "mirror":[], "mount":[], "aux":[]}},
-            "SST":{"health":0, "number":0,
-                "warning":{"camera":[], "mirror":[], "mount":[], "aux":[]},
-                "critical":{"camera":[], "mirror":[], "mount":[], "aux":[]},
-                "unknow":{"camera":[], "mirror":[], "mount":[], "aux":[]}},
-            "AUX":{"health":0, "number":0,
-                "warning":{"camera":[], "mirror":[], "mount":[], "aux":[]},
-                "critical":{"camera":[], "mirror":[], "mount":[], "aux":[]},
-                "unknow":{"camera":[], "mirror":[], "mount":[], "aux":[]}}
+            "LST": {"health": 0, "number": 0,
+                    "warning": {"camera": [], "mirror": [], "mount": [], "aux": []},
+                    "critical": {"camera": [], "mirror": [], "mount": [], "aux": []},
+                    "unknow": {"camera": [], "mirror": [], "mount": [], "aux": []}},
+            "MST": {"health": 0, "number": 0,
+                    "warning": {"camera": [], "mirror": [], "mount": [], "aux": []},
+                    "critical": {"camera": [], "mirror": [], "mount": [], "aux": []},
+                    "unknow": {"camera": [], "mirror": [], "mount": [], "aux": []}},
+            "SST": {"health": 0, "number": 0,
+                    "warning": {"camera": [], "mirror": [], "mount": [], "aux": []},
+                    "critical": {"camera": [], "mirror": [], "mount": [], "aux": []},
+                    "unknow": {"camera": [], "mirror": [], "mount": [], "aux": []}},
+            "AUX": {"health": 0, "number": 0,
+                    "warning": {"camera": [], "mirror": [], "mount": [], "aux": []},
+                    "critical": {"camera": [], "mirror": [], "mount": [], "aux": []},
+                    "unknow": {"camera": [], "mirror": [], "mount": [], "aux": []}}
         }
 
         for key in telHealth:
@@ -393,19 +423,29 @@ class plotsDash():
                 self.checkSytemHealth(agregate["SST"], key, telHealth[key])
 
         if agregate["LST"]["number"] > 0:
-            agregate["LST"]["health"] = agregate["LST"]["health"] / agregate["LST"]["number"]
+            agregate["LST"]["health"] = agregate["LST"]["health"] / \
+                agregate["LST"]["number"]
         if agregate["MST"]["number"] > 0:
-            agregate["MST"]["health"] = agregate["MST"]["health"] / agregate["MST"]["number"]
+            agregate["MST"]["health"] = agregate["MST"]["health"] / \
+                agregate["MST"]["number"]
         if agregate["SST"]["number"] > 0:
-            agregate["SST"]["health"] = agregate["SST"]["health"] / agregate["SST"]["number"]
+            agregate["SST"]["health"] = agregate["SST"]["health"] / \
+                agregate["SST"]["number"]
         return agregate
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def getTelsTresholdType(self, key):
         if key == 'health':
             return [{"name": "ERROR", "value": "30", "func": "<="},
-        {"name": "WARNING", "value": "55", "func": "<="},
-        {"name": "NOMINAL", "value": "100", "func": "<="}]
+                    {"name": "WARNING", "value": "55", "func": "<="},
+                    {"name": "NOMINAL", "value": "100", "func": "<="}]
         return {}
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def getTelsMeasureType(self, key):
         if key == 'mount':
             return {"name": "Health", "key": "health", "short": "hlt", "unit": "%", "treshold": self.getTelsTresholdType("health")}
@@ -419,25 +459,40 @@ class plotsDash():
             return {"name": "Health", "key": "health", "short": "hlt", "unit": "%", "treshold": self.getTelsTresholdType("health")}
         return {}
 
+    # ------------------------------------------------------------------
     # CURRENT TELESCOPES
+    # ------------------------------------------------------------------
     def initUrgentCurrent(self):
         self.urgentCurrent = []
         telHealth = self.getTelHealth()
         for idTel, vect in telHealth.items():
             for key, value in vect.items():
                 if (key != "status" and value != None and self.getTelState(int(value)) == "ERROR"):
-                    self.urgentCurrent.append({"id": idTel+key, "keys": [idTel, key, telIdToTelType(idTel), self.telCategory], "name": idTel, "data": {"measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
+                    self.urgentCurrent.append({"id": idTel+key, "keys": [idTel, key, telIdToTelType(idTel), self.telCategory], "name": idTel, "data": {
+                                              "measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def updateUrgentCurrent(self):
         self.urgentCurrent = []
         telHealth = self.getTelHealth()
         for idTel, vect in telHealth.items():
             for key, value in vect.items():
                 if (key != "status" and value != None and self.getTelState(int(value)) == "ERROR"):
-                    self.urgentCurrent.append({"id": idTel+key, "keys": [idTel, key, telIdToTelType(idTel), self.telCategory], "name": idTel, "data": {"measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
+                    self.urgentCurrent.append({"id": idTel+key, "keys": [idTel, key, telIdToTelType(idTel), self.telCategory], "name": idTel, "data": {
+                                              "measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def orderUrgentCurrentByKey(self):
-        vKeys = [self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children']]
+        vKeys = [self.relationship[self.selectedKeys[len(
+            self.selectedKeys) - 1]]['children']]
+
         def interOrdering(vector, index):
-            if index >= len(vKeys): return vector
+            if index >= len(vKeys):
+                return vector
             interOrder = []
             for key in vKeys[index]:
                 ordered = {"key": key, "data": []}
@@ -449,20 +504,30 @@ class plotsDash():
             return interOrder
         return interOrdering(self.urgentCurrent, 0)
 
+    # ------------------------------------------------------------------
     # PAST TELESCOPES
+    # ------------------------------------------------------------------
     def initUrgentPast(self):
         self.urgentPast = []
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def updateUrgentPast(self):
         for curr in self.urgentCurrent:
             insert = True
             for past in self.urgentPast:
                 if curr["id"] == past["id"]:
-                    past["data"]["measures"].append(curr["data"]["measures"][0])
+                    past["data"]["measures"].append(
+                        curr["data"]["measures"][0])
                     insert = False
                     break
             if insert:
                 self.urgentPast.append(curr)
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def orderByTimestamp(self, vector):
         orderedV = []
         timestampList = []
@@ -482,10 +547,17 @@ class plotsDash():
                 orderedV.append(order)
                 prevOrder = order
         return orderedV
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def orderUrgentPastByKeyTime(self):
-        vKeys = [self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children']]
+        vKeys = [self.relationship[self.selectedKeys[len(
+            self.selectedKeys) - 1]]['children']]
+
         def interOrdering(vector, index):
-            if index >= len(vKeys): return self.orderByTimestamp(vector)
+            if index >= len(vKeys):
+                return self.orderByTimestamp(vector)
             interOrder = []
             for key in vKeys[index]:
                 ordered = {"key": key, "data": []}
@@ -496,10 +568,17 @@ class plotsDash():
                 interOrder.append(ordered)
             return interOrder
         return interOrdering(self.urgentPast, 0)
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def orderUrgentPastByKey(self):
-        vKeys = [self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children']]
+        vKeys = [self.relationship[self.selectedKeys[len(
+            self.selectedKeys) - 1]]['children']]
+
         def interOrdering(vector, index):
-            if index >= len(vKeys): return vector
+            if index >= len(vKeys):
+                return vector
             interOrder = []
             for key in vKeys[index]:
                 ordered = {"key": key, "data": []}
@@ -511,25 +590,35 @@ class plotsDash():
             return interOrder
         return interOrdering(self.urgentPast, 0)
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def getTelState(self, health):
-      if (health < 60): return "ERROR"
-      elif (health < 55): return "WARNING"
-      else: return "NOMINAL"
+        if (health < 60):
+            return "ERROR"
+        elif (health < 55):
+            return "WARNING"
+        else:
+            return "NOMINAL"
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def getTelHealth(self, idIn=None):
         data = dict()
         fields = dict()
         for id_now in self.telIds:
-            fields[id_now] = [ "health", "status" ]
+            fields[id_now] = ["health", "status"]
             fields[id_now] += [
-                v['id'] for (k,v) in self.telSubHealth[id_now].items()
+                v['id'] for (k, v) in self.telSubHealth[id_now].items()
             ]
 
         idV = self.telIds if (idIn is None) else [idIn]
 
         self.redis.pipe.reset()
         for id_now in idV:
-            self.redis.pipe.hMget(name="telHealth;"+str(id_now), key=fields[id_now])
+            self.redis.pipe.hMget(
+                name="telHealth;"+str(id_now), key=fields[id_now])
         redData = self.redis.pipe.execute()
 
         for i in range(len(redData)):

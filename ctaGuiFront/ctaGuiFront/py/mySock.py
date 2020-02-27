@@ -485,6 +485,9 @@ class mySock(BaseNamespace, BroadcastMixin):
     #
     # ------------------------------------------------------------------
     def addWidgetTread(self, optIn=None):
+        if 'is_group_thread' not in optIn:
+            optIn['is_group_thread'] = True
+        
         widget = optIn['widget']
 
         threadType = optIn['threadType'] if 'threadType' in optIn else 'updateData'
@@ -493,20 +496,30 @@ class mySock(BaseNamespace, BroadcastMixin):
         threadFunc = optIn['threadFunc'] if 'threadFunc' in optIn else None
         if threadFunc is None and threadType == 'updateData':
             threadFunc = self.widgetThreadFunc
+        
+        is_group_thread = optIn['is_group_thread']
 
         with widget.lock:
-            if widget.widgetGroup not in widget.wgtGrpToSessV:
-                widget.wgtGrpToSessV[widget.widgetGroup] = []
+            if is_group_thread:
+                if widget.widgetGroup not in widget.wgtGrpToSessV:
+                    widget.wgtGrpToSessV[widget.widgetGroup] = []
 
-            widget.wgtGrpToSessV[widget.widgetGroup].append(
-                widget.mySock.sessId)
+                widget.wgtGrpToSessV[widget.widgetGroup].append(
+                    widget.mySock.sessId)
 
-            if self.getThreadId(widget.widgetGroup, threadType) == -1:
-                with mySock.lock:
-                    optIn['threadId'] = self.setThreadState(
-                        widget.widgetGroup, threadType, True)
+                if self.getThreadId(widget.widgetGroup, threadType) == -1:
+                    with mySock.lock:
+                        optIn['threadId'] = self.setThreadState(
+                            widget.widgetGroup, threadType, True)
 
-                    gevent.spawn(threadFunc, optIn=optIn)
+                        gevent.spawn(threadFunc, optIn=optIn)
+            else:
+                if self.getThreadId(widget.widgetId, threadType) == -1:
+                    with mySock.lock:
+                        optIn['threadId'] = self.setThreadState(
+                            widget.widgetId, threadType, True)
+
+                        gevent.spawn(threadFunc, optIn=optIn)
 
         return
 
@@ -519,6 +532,7 @@ class mySock(BaseNamespace, BroadcastMixin):
         threadType = optIn['threadType']
         dataFunc = optIn['dataFunc']
         sleepTime = optIn['sleepTime'] if 'sleepTime' in optIn else 5
+        is_group_thread = optIn['is_group_thread']
 
         dataEmit = {
             "widgetType": widget.widgetName, 'evtName': threadType
@@ -526,21 +540,33 @@ class mySock(BaseNamespace, BroadcastMixin):
 
         sleep(sleepTime)
 
-        while (threadId == self.getThreadId(widget.widgetGroup, threadType)):
-            with widget.lock:
-                sessIdV = widget.wgtGrpToSessV[widget.widgetGroup]
-                dataEmit['data'] = dataFunc()
+        if is_group_thread:
+            while (threadId == self.getThreadId(widget.widgetGroup, threadType)):
+                with widget.lock:
+                    sessIdV = widget.wgtGrpToSessV[widget.widgetGroup]
+                    dataEmit['data'] = dataFunc()
 
-                self.socketEvtWidgetV(evtName=threadType,
-                                      data=dataEmit, sessIdV=sessIdV)
+                    self.socketEvtWidgetV(evtName=threadType,
+                                          data=dataEmit, sessIdV=sessIdV)
 
-                if len(widget.wgtGrpToSessV[widget.widgetGroup]) == 0:
-                    with self.lock:
-                        self.clearThreadsByType(widget.widgetGroup)
-                        widget.wgtGrpToSessV.pop(widget.widgetGroup, None)
-                        break
+                    if len(widget.wgtGrpToSessV[widget.widgetGroup]) == 0:
+                        with self.lock:
+                            self.clearThreadsByType(widget.widgetGroup)
+                            widget.wgtGrpToSessV.pop(widget.widgetGroup, None)
+                            break
 
-            sleep(sleepTime)
+                sleep(sleepTime)
+        
+        else:
+            while (threadId == self.getThreadId(widget.widgetId, threadType)):
+                with widget.lock:
+                    sessIdV = [ widget.mySock.sessId ]
+                    dataEmit['data'] = dataFunc()
+                    
+                    self.socketEvtWidgetV(evtName=threadType,
+                                          data=dataEmit, sessIdV=sessIdV)
+
+                sleep(sleepTime)
 
         return
 
@@ -561,7 +587,10 @@ class mySock(BaseNamespace, BroadcastMixin):
             ])
             sleep(0.1)
 
-        while (threadId == self.getThreadId("commonThread", "pubSubSocketEvtWidgetV")):
+        while (
+            threadId == self.getThreadId(
+                "commonThread", "pubSubSocketEvtWidgetV")
+        ):
             sleep(0.1)
 
             msg = self.redis.getPubSub("socketEvtWidgetV", packed=True)
@@ -773,6 +802,8 @@ class mySock(BaseNamespace, BroadcastMixin):
                                 rmEleV.append(syncTypeNow)
                         for rmEle in rmEleV:
                             syncStateV.remove(rmEle)
+                
+                self.clearThreadsByType(widgetId)
 
             self.redis.hSet(name='syncGroups', key=self.userId,
                             data=syncGroupV, packed=True)
