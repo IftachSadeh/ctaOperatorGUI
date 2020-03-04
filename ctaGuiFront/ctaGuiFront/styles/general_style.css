@@ -16,6 +16,18 @@ body {
   overflow-y: scroll;
 }
 
+/* -------------------------------------------------------- */
+/* see https://stackoverflow.com/questions/22337292/spurious-margin-on-svg-element */
+/* -------------------------------------------------------- */
+svg {
+  vertical-align: top;
+  /*vertical-align: bottom;*/
+  /*margin-inline: 0px;*/
+  /*display: block;*/
+  /*display: inline-flex;*/
+}
+/* -------------------------------------------------------- */
+
 .gridEleBodyDark {
   color: #F2F2F2;
   background-color: #383B42;
@@ -89,7 +101,7 @@ body {
 .tableItem {
   display: inline-block; 
   position: relative;
-  margin: 0.25%; 
+  margin: 0px; 
   border: 0px; 
 }
 

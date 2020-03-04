@@ -1,6 +1,6 @@
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------
 //
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------
 // window.loadScript({ source:'utils_scrollTable', script:"/js/utils_scrollBox.js"});
 
 /* global $ */
@@ -18,32 +18,79 @@
 /* global telInfo */
 /* global moveNodeUp */
 /* global vorPloyFunc */
-/* global  */
-/* global  */
-/* global  */
-/* global  */
-/* global  */
 
-window.QuickMap = function (optIn) {
-  let thisQuick = this
+// ------------------------------------------------------------------
+//
+// ------------------------------------------------------------------
+window.QuickMap = function (optIn0) {
+  let thisQuickMap = this
+  let runLoop = optIn0.runLoop
+  let sgvTag = optIn0.sgvTag
+  let widgetId = optIn0.widgetId
+  let locker = optIn0.locker
+  let isSouth = optIn0.isSouth
+
+  let baseH = 500
+  let aspectRatioChes = 10
+  
+  let addChesOutline = false
+  let showVor = false
+
+  // let svg = {}
+  let svgMainArrZoomer = optIn0.svgMainArrZoomer
+  let gQuickD = svgMainArrZoomer.quick
+  gQuickD.g = svgMainArrZoomer.gSvg.append('g')
+  gQuickD.gMini = gQuickD.g.append('g')
+  gQuickD.gChes = gQuickD.g.append('g')
+
+  gQuickD.gBaseMini = gQuickD.gMini.append('g')
+  gQuickD.gBaseChes = gQuickD.gChes.append('g')
+
+  // ------------------------------------------------------------------
+  // scale to 100x100 px (executed after createChessMap())
+  // ------------------------------------------------------------------
+  function gTrans() {
+    let scaleMini = 100 / baseH
+    gQuickD.gBaseMini.attr('transform', function (d) {
+      return 'translate(0,0)scale(' + scaleMini + ')'
+    })
+    
+    let transChes = [-1*com.chesXY.x.min, -1*com.chesXY.y.min]
+    gQuickD.svgChes.attr('transform', function (d) {
+      return 'translate(' + transChes[0] + ', ' + transChes[1] + ')'
+    })
+    
+    let scaleChes = 100 / (com.chesXY.x.max - com.chesXY.x.min)
+    gQuickD.gBaseChes.attr('transform', function (d) {
+      return 'scale(' + scaleChes + ')'
+    })
+
+    return
+  }
+
+  // ------------------------------------------------------------------
+  // to avoid bugs, this is the g which should be used
+  // for translations and sacling of this element
+  // ------------------------------------------------------------------
+  function getG (tag) {
+    // make sure we start with upper case
+    tag = tag.charAt(0).toUpperCase() + tag.slice(1)
+    return gQuickD['g' + tag]
+  }
+  thisQuickMap.getG = getG
+
+
+
+  console.log('222222222222222')
+  thisQuickMap.getG('ches').attr('transform', function (d) {
+    return 'translate(100,0)scale(4)'
+  })
+
+
+
 
   let com = {}
-  let svg = {}
-
-  let lenD = {}
-  lenD.mini = {}
-  lenD.ches = {}
-  lenD.mini.w = {}
-  lenD.ches.w = {}
-  lenD.mini.h = {}
-  lenD.ches.h = {}
-
-  let baseW = 500
-  lenD.mini.w[0] = baseW // isSouth ? 900 : 400;
-  lenD.mini.h[0] = baseW
-
-  lenD.ches.w[0] = baseW * 5
-  lenD.ches.h[0] = baseW
+  com.chesXY = { x: {}, y: {} }
 
   let rScale = {}
   rScale[0] = {}
@@ -72,12 +119,6 @@ window.QuickMap = function (optIn) {
   let miniMapCol = {}
   miniMapCol.b = ['#64B5F6']
   miniMapCol.p = ['#9575CD']
-
-  let runLoop = optIn.runLoop
-  let sgvTag = optIn.sgvTag
-  let widgetId = optIn.widgetId
-  let locker = optIn.locker
-  let isSouth = optIn.isSouth
 
   locker.add('inInitQuick')
 
@@ -110,25 +151,18 @@ window.QuickMap = function (optIn) {
     ches: 'zoomToTargetChes'
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //  MiniMap function
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   function createMiniMap (optIn) {
     com.svgMiniZoom = d3.zoom().scaleExtent([zoomLen['0.0'], zoomLen['1.3']])
     // com.svgMiniZoom.on('start', com.svgZoomStart)
     // com.svgMiniZoom.on('zoom', com.svgZoomDuringMini)
     // com.svgMiniZoom.on('end', com.svgZoomEnd)
 
-    svg.svgMini = d3
-      .select(com['svgDiv'])
-      // svg.svgMini = d3.select("#"+(com['svgDiv'].id))
-      // .classed("svgInGridStack_outer", true)
-      .append('svg')
-      .attr('viewBox', '0 0 ' + lenD.mini.w[0] + ' ' + lenD.mini.h[0])
-      .style('position', 'relative')
-      .style('width', com['svgMiniW']) // .style('height',svgMiniH).style('top',svgMiniT).style('left',svgMiniL)
-      // .style("background", "transparent")
-      .style('background', '#383B42') // .style('opacity',0.92)//.style("border","1px solid red")
+    gQuickD.svgMini = gQuickD.gBaseMini.append('g')
+
+    gQuickD.gBaseMini
       // .call(com.svgMiniZoom)
       .on('dblclick.zoom', null)
       .on('wheel', function () {
@@ -136,26 +170,27 @@ window.QuickMap = function (optIn) {
       })
 
     // save the svg node to use for d3.zoomTransform() later
-    svg.svgMiniZoomNode = svg.svgMini.nodes()[0]
+    gQuickD.svgMiniZoomNode = gQuickD.gBaseMini.nodes()[0]
+    gQuickD.gMiniZoomed = gQuickD.svgMini.append('g')
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     getScale = function () {
-      return d3.zoomTransform(svg.svgMiniZoomNode).k
+      return d3.zoomTransform(gQuickD.svgMiniZoomNode).k
     }
     getTrans = function () {
       return [
-        d3.zoomTransform(svg.svgMiniZoomNode).x,
-        d3.zoomTransform(svg.svgMiniZoomNode).y
+        d3.zoomTransform(gQuickD.svgMiniZoomNode).x,
+        d3.zoomTransform(gQuickD.svgMiniZoomNode).y
       ]
     }
-    thisQuick.getScale = getScale
-    thisQuick.getTrans = getTrans
+    thisQuickMap.getScale = getScale
+    thisQuickMap.getTrans = getTrans
 
     // add one rectangle as background
-    // ---------------------------------------------------------------------------------------------------
-    svg.svgMini
+    // ------------------------------------------------------------------
+    gQuickD.svgMini
       .append('g')
       .selectAll('rect')
       .data([0])
@@ -163,48 +198,49 @@ window.QuickMap = function (optIn) {
       .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', lenD.mini.w[0])
-      .attr('height', lenD.mini.h[0])
+      .attr('width', baseH)
+      .attr('height', baseH)
       .attr('stroke', '#383B42')
       .attr('stroke-width', 2)
       .attr('fill', '#383B42')
 
-    svg.gMiniZoomed = svg.svgMini.append('g')
-    svg.gMini = svg.svgMini.append('g')
-    // svg.gMiniZoomed = svg.gMini // to actually see the zoom...
+    // gQuickD.gMiniZoomed = gQuickD.svgMini.append('g')
+    gQuickD.gMini = gQuickD.svgMini.append('g')
+    // gQuickD.gMiniZoomed = gQuickD.gMini // to actually see the zoom...
 
     // add one circle as background
-    // ---------------------------------------------------------------------------------------------------
-    svg.gMini
+    // ------------------------------------------------------------------
+    gQuickD.gMini
       .append('g')
       .selectAll('circle')
       .data([0])
       .enter()
       .append('circle')
       .attr('r', 0)
-      .attr('cx', lenD.mini.w[0] / 2)
-      .attr('cy', lenD.mini.h[0] / 2)
+      .attr('cx', baseH / 2)
+      .attr('cy', baseH / 2)
       .attr('fill', '#F2F2F2')
       .transition('inOut')
       .duration(timeD.animArc / 3)
-      .attr('r', lenD.mini.w[0] / 2.1)
+      .attr('r', baseH / 2.1)
 
     // the background grid
     bckPattern({
       com: com,
-      gNow: svg.gMini,
+      gNow: gQuickD.gMini,
       gTag: 'svgMini',
-      lenWH: [lenD.mini.w[0], lenD.mini.h[0]],
+      lenWH: [baseH, baseH],
       opac: 0.2,
       hexR: 50
     })
 
     com.gMini = {}
-    com.gMini.circ = svg.gMini.append('g')
-    com.gMini.rect = svg.gMini.append('g')
-    com.gMini.vor = svg.gMini.append('g')
+    com.gMini.circ = gQuickD.gMini.append('g')
+    com.gMini.rect = gQuickD.gMini.append('g')
+    com.gMini.vor = gQuickD.gMini.append('g')
   }
   this.createMiniMap = createMiniMap
+ 
   function updateMiniMap (optIn) {
     let dataV = telData.tel
     let gNow = com.gMini.circ
@@ -257,6 +293,7 @@ window.QuickMap = function (optIn) {
       })
   }
   this.updateMiniMap = updateMiniMap
+  
   // ---------------------------------------------------------------------------
   //  Blue square on miniMap
   // ---------------------------------------------------------------------------
@@ -264,6 +301,7 @@ window.QuickMap = function (optIn) {
     runLoop.push({ tag: 'miniZoomViewRec' })
   }
   this.miniZoomViewRec = miniZoomViewRec
+  
   function miniZoomViewRecOnce () {
     if (
       !locker.isFreeV([
@@ -286,11 +324,11 @@ window.QuickMap = function (optIn) {
     } else data = [{ id: 0 }]
 
     let w =
-      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) * lenD.mini.w[0] / scale
+      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) * baseH / scale
     let h =
-      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) * lenD.mini.h[0] / scale
-    let x = (lenD.mini.w[0] / 2 - trans[0]) / scale - w / 2
-    let y = (lenD.mini.h[0] / 2 - trans[1]) / scale - h / 2
+      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) * baseH / scale
+    let x = (baseH / 2 - trans[0]) / scale - w / 2
+    let y = (baseH / 2 - trans[1]) / scale - h / 2
 
     let strkW = 1 + 0.1 * scale / (zoomLen['1.3'] - zoomLen['0.0'])
     let opac = 0.95 * Math.sqrt(scale / (zoomLen['1.3'] - zoomLen['0.0']))
@@ -339,6 +377,7 @@ window.QuickMap = function (optIn) {
       .attr('height', h)
       .remove()
   }
+  
   // ---------------------------------------------------------------------------
   //  Zoom to target when click on miniMap
   // ---------------------------------------------------------------------------
@@ -353,7 +392,7 @@ window.QuickMap = function (optIn) {
       .y(function (d) {
         return d.y
       })
-      .extent([[0, 0], [lenD.mini.w[0], lenD.mini.h[0]]])
+      .extent([[0, 0], [baseH, baseH]])
 
     com.gMini.vor
       .selectAll('path')
@@ -374,77 +413,57 @@ window.QuickMap = function (optIn) {
       })
       // .on("click", function(d) {
       //   let scaleToZoom = telData.vorDblclick({d:d, isInOut:false });
-      //   thisQuick.zoomToTrgQuick({ target:d.data.id, scale:scaleToZoom, durFact:-1 });
+      //   thisQuickMap.zoomToTrgQuick({ target:d.data.id, scale:scaleToZoom, durFact:-1 });
       // })
       // .on("dblclick", function(d) {  // dousnt work well...
       //   let scaleToZoom = telData.vorDblclick({d:d, isInOut:true });
-      //   thisQuick.zoomToTrgQuick({ target:d.data.id, scale:scaleToZoom, durFact:-1 });
+      //   thisQuickMap.zoomToTrgQuick({ target:d.data.id, scale:scaleToZoom, durFact:-1 });
       // })
       .on('mouseover', function (d) {
-        thisQuick.target = d.data.id
+        thisQuickMap.target = d.data.id
       })
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //  Chess function
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   function createChessMap (optIn) {
     com.svgChesZoom = d3.zoom().scaleExtent([zoomLen['0.0'], zoomLen['1.3']])
     // com.svgChesZoom.on('start', com.svgZoomStart)
     // com.svgChesZoom.on('zoom', com.svgZoomDuringChes)
     // com.svgChesZoom.on('end', com.svgZoomEnd)
 
-    svg.svgChes = d3
-      .select(com['svgDiv'])
-      // svg.svgChes = d3.select("#"+(com['svgDiv'].id))
-      // .classed("svgInGridStack_outer", true)
-      .append('svg')
-      .attr('viewBox', '0 0 ' + lenD.ches.w[0] + ' ' + lenD.ches.h[0])
-      .style('position', 'relative')
-      .style('width', com['svgChesW']) // .style('height',svgChesH).style('top',svgChesT).style('left',svgChesL)
-      .style('background', 'transparent') // .style("background", "red").style('opacity',0.2)//.style("border","1px solid red")
-      // .call(com.svgChesZoom)
+    gQuickD.svgChes = gQuickD.gBaseChes.append('g')
+
+    gQuickD.gBaseChes
+      .call(com.svgChesZoom)
       .on('dblclick.zoom', null)
       .on('wheel', function () {
         d3.event.preventDefault()
       })
 
     // save the svg node to use for d3.zoomTransform() later
-    svg.svgChesZoomNode = svg.svgChes.nodes()[0]
-
-    svg.gChesZoomed = svg.svgChes.append('g')
-    svg.gChes = svg.svgChes.append('g')
+    gQuickD.svgChesZoomNode = gQuickD.gBaseChes.nodes()[0]
+    gQuickD.gChesZoomed = gQuickD.svgChes.append('g')
 
     // add one rectangle as background, and to allow click to zoom
-    // ---------------------------------------------------------------------------------------------------
-    svg.gChes
-      .append('g')
-      .selectAll('rect')
-      .data([0])
-      .enter()
-      .append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', lenD.ches.w[0])
-      .attr('height', lenD.ches.h[0])
-      .attr('stroke-width', '0')
-      // .attr("fill", "#F2F2F2")//.attr("fill", "red")
-      .attr('fill', '#383b42')
+    // ------------------------------------------------------------------
+
+    let gChesRec = gQuickD.svgChes.append('g')
 
     com.gChes = {}
-    com.gChes.g = svg.gChes.append('g')
+    com.gChes.g = gQuickD.svgChes.append('g')
     com.gChes.xyr = {}
 
     // let nRows     = isSouth ? 5 : 2;
     // let nEle = isSouth ? 99 : 19
     let nEleInRow = isSouth ? [18, 18, 18, 18, 18] : [8, 8, 8]
-    let eleR = isSouth ? lenD.ches.h[0] / 16 : lenD.ches.h[0] / 6
+    let eleR = isSouth ? baseH / 16 : baseH / 6
     let eleSpace = isSouth ? [3.9, 2.5] : [3.1, 1.5]
     let eleShift = isSouth ? [2, 2] : [2, 3]
 
     let vorData = []
     let nEleRow = 0
-    let maxX = 0
     $.each(telTypeV, function (index, idNow) {
       let nEleNowInRow = nEleRow
       let nEleNowInCol = 0
@@ -471,11 +490,46 @@ window.QuickMap = function (optIn) {
         r: eleR * 1.5
       }
       vorData.push({ id: idNow, x: x, y: y })
-
-      if (x + eleR * eleShift[0] > maxX) maxX = x + eleR * eleShift[0]
-      // console.log(nEleInRow,nEleRow,nEleNowInRow,nEleNowInCol,com.gChes.xyr[idNow])
     })
     // console.log(Object.keys(telData.mini).length, telData.mini)
+
+    let xyrFlat = Object.values(com.gChes.xyr)
+    com.chesXY.x.min = minMaxObj({
+      minMax: 'min', data: xyrFlat, func: (x => x.x - 1.1 * x.r)
+    })
+    com.chesXY.x.max = minMaxObj({
+      minMax: 'max', data: xyrFlat, func: (x => x.x + 1.1 * x.r)
+    })
+    com.chesXY.y.min = minMaxObj({
+      minMax: 'min', data: xyrFlat, func: (x => x.y - 1.1 * x.r)
+    })
+    com.chesXY.y.max = minMaxObj({
+      minMax: 'max', data: xyrFlat, func: (x => x.y + 1.1 * x.r)
+    })
+
+    gChesRec
+      // .selectAll('rect').data([0]).enter()
+      // .attr('class', 'sssss')
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', (com.chesXY.x.max - com.chesXY.x.min))
+      .attr('height', (com.chesXY.y.max - com.chesXY.y.min))
+      .attr('stroke-width', '0')
+      .attr('transform', function (d) {
+        return 'translate(' + com.chesXY.x.min + ', '+ com.chesXY.y.min +')'
+      })
+      .attr('fill', '#383b42')
+      // .attr("fill", "#d698bc")// .attr("fill", "#F2F2F2")
+
+    if(addChesOutline) {
+      gChesRec
+        .selectAll('rect')
+        .attr('stroke', '#F2F2F2')
+        .attr('stroke-width', 1)
+        .style('stroke-opacity', 1)
+        .attr('vector-effect', 'non-scaling-stroke')
+    }
 
     let vorFunc = d3
       .voronoi()
@@ -485,11 +539,12 @@ window.QuickMap = function (optIn) {
       .y(function (d) {
         return d.y
       })
-      .extent([[0, 0], [maxX, lenD.ches.h[0]]])
+      .extent([[com.chesXY.x.min, com.chesXY.y.min], [com.chesXY.x.max, com.chesXY.y.max]])
 
     com.gChes.vor = vorFunc.polygons(vorData)
   }
   this.createChessMap = createChessMap
+  
   function updateChessMap (dataV, shiftY) {
     let tagCirc = prop0
     let tagLbl = 'lbls00title'
@@ -609,9 +664,9 @@ window.QuickMap = function (optIn) {
       .style('opacity', 0)
       .remove()
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // the highlight function
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function focusTel (dIn, isOn) {
       locker.add('svgQuickFocusTel')
 
@@ -689,9 +744,9 @@ window.QuickMap = function (optIn) {
       miniHoverViewCirc(hovData)
     }
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     //
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     function miniHoverViewCirc (dataV) {
       let tagNow = 'miniHoverViewCirc'
 
@@ -750,9 +805,9 @@ window.QuickMap = function (optIn) {
         .remove()
     }
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // vor cels for selection
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     com.gChes.g
       .selectAll('path')
       .data(com.gChes.vor)
@@ -777,26 +832,34 @@ window.QuickMap = function (optIn) {
       .on('mouseout', function (d) {
         focusTel(d, false)
       })
+
+    if (showVor) {
+      com.gChes.g
+        .selectAll('path')
+        .style('opacity', '0.5')
+        .style('stroke-width', '1.5')
+        .style('stroke', '#E91E63')
+    }
   }
 
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   //  Global function
-  // ---------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------
   // let rScale = svgMain.rScale
   function initData (dataIn) {
-    if (hasVar(svg.svgMini)) return
+    if (hasVar(gQuickD.svgMini)) return
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // create the main svg element
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     com['svgDivId'] = sgvTag.quick.id + '_svg'
     com['svgDiv'] = sgvTag.quick.widget.getEle(com['svgDivId'])
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // Initialize svg if it don't exist
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     if (!hasVar(com['svgDiv'])) {
       let parent = sgvTag.quick.widget.getEle(sgvTag.quick.id)
-      com['svgDiv'] = document.createElement('div')
+      com['svgDiv'] = document.createElement('span')
       com['svgDiv'].id = com['svgDivId']
 
       appendToDom(parent, com['svgDiv'])
@@ -814,9 +877,9 @@ window.QuickMap = function (optIn) {
     }
     sock.emitMouseMove({ eleIn: com['svgDiv'], data: { widgetId: widgetId } })
 
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // background container
-    // ---------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------
     let whRatio = sgvTag.quick.whRatio
     let whFracMini = 1
     let whFracChes = whRatio - whFracMini
@@ -829,14 +892,15 @@ window.QuickMap = function (optIn) {
     // let svgChesT  = "0px";
     // let svgChesL  = (100*whFracMini/whRatio)+"%";
 
-    telData = dataIn.telData
+    telData = dataIn.instrumentData
     telTypeV = dataIn.telTypeV
 
     createMiniMap()
     createChessMap()
+    gTrans()
 
     // initialize the target name for hovering->zoom
-    thisQuick.target = zoomTarget
+    thisQuickMap.target = zoomTarget
     // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
     runLoop.init({
       tag: zoomToTargetTag.mini,
@@ -854,11 +918,11 @@ window.QuickMap = function (optIn) {
       zoomToTargetNow(optIn, 'mini')
       zoomToTargetNow(optIn, 'ches')
     }
-    thisQuick.zoomToTrgQuick = zoomToTrgQuick
+    thisQuickMap.zoomToTrgQuick = zoomToTrgQuick
 
     // // the background grid
     // bckPattern({
-    //   com:com, gNow:svg.gChes, gTag:"gChes", lenWH:[lenD.ches.w[0],lenD.ches.h[0]],
+    //   com:com, gNow:gQuickD.svgChes, gTag:"gChes", lenWH:[baseH,baseH],
     //   opac:0.1, textureOrient:"5/8", textureSize:120
     // });
     runLoop.init({
@@ -873,6 +937,7 @@ window.QuickMap = function (optIn) {
     locker.remove('inInitQuick')
   }
   this.initData = initData
+  
   function setStateOnce (dataIn) {
     updateMiniMap({
       dataV: telData.tel,
@@ -892,12 +957,14 @@ window.QuickMap = function (optIn) {
       }, timeD.waitLoop)
     }
   }
-  thisQuick.zoomToTrgQuick = zoomToTrgQuick
+  thisQuickMap.zoomToTrgQuick = zoomToTrgQuick
   // initialize a couple of functions to be overriden below
+  
   let getScale = function () {
     return zoomLen['0.0']
   }
   this.getScale = getScale
+  
   let getTrans = function () {
     return [0, 0]
   }
@@ -935,8 +1002,8 @@ window.QuickMap = function (optIn) {
     if (targetName === '' || !hasVar(telData.mini[targetName])) {
       let scale = getScale()
       let trans = getTrans()
-      let x = (lenD.mini.w[0] / 2 - trans[0]) / scale
-      let y = (lenD.mini.h[0] / 2 - trans[1]) / scale
+      let x = (baseH / 2 - trans[0]) / scale
+      let y = (baseH / 2 - trans[1]) / scale
       transTo = [x, y]
     } else {
       transTo = [telData.mini[targetName].x, telData.mini[targetName].y]
@@ -956,15 +1023,15 @@ window.QuickMap = function (optIn) {
       durFact: durFact,
       baseTime: 300,
       transTo: transTo,
-      wh: [lenD.mini.w[0], lenD.mini.h[0]],
+      wh: [baseH, baseH],
       cent: null,
       funcStart: funcStart,
       funcEnd: funcEnd,
       funcDuring: funcDuring,
-      svg: svg['svg' + tagNowUp],
+      svg: gQuickD['svg' + tagNowUp],
       svgZoom: com['svg' + tagNowUp + 'Zoom'],
-      svgBox: svg['g' + tagNowUp + 'Zoomed'],
-      svgZoomNode: svg['svg' + tagNowUp + 'ZoomNode']
+      svgBox: gQuickD['g' + tagNowUp + 'Zoomed'],
+      svgZoomNode: gQuickD['svg' + tagNowUp + 'ZoomNode']
     }
 
     if (durFact < 0) {
@@ -974,53 +1041,6 @@ window.QuickMap = function (optIn) {
       runLoop.push({ tag: zoomToTargetTag[tagNow], data: outD })
     }
   }
-  // com.svgZoomStart = function () {
-  //   locker.add({ id: 'zoom', override: true })
-  // }
-  // com.svgZoomDuringMini = function () {
-  //   // console.log('svgZoomDuring',d3.event.transform)
-  //   svg.gMiniZoomed.attr('transform', d3.event.transform)
-  //
-  //   if (
-  //     locker.isFreeV([
-  //       'autoZoomTarget',
-  //       'zoomToTargetMini',
-  //       'zoomToTargetChes'
-  //     ])
-  //   ) {
-  //     zoomToTargetNow(
-  //       { target: '', scale: d3.event.transform.k, durFact: -1 },
-  //       'ches'
-  //     )
-  //     // svgMain.zoomToTrgMain({
-  //     //   target: '',
-  //     //   scale: d3.event.transform.k,
-  //     //   durFact: -1
-  //     // })
-  //   }
-  // }
-  // com.svgZoomDuringChes = function () {
-  //   svg.gChesZoomed.attr('transform', d3.event.transform)
-  //
-  //   if (
-  //     locker.isFreeV([
-  //       'autoZoomTarget',
-  //       'zoomToTargetMini',
-  //       'zoomToTargetChes'
-  //     ])
-  //   ) {
-  //     zoomToTargetNow(
-  //       { target: '', scale: d3.event.transform.k, durFact: -1 },
-  //       'mini'
-  //     )
-  //     // svgMain.zoomToTrgMain({
-  //     //   target: '',
-  //     //   scale: d3.event.transform.k,
-  //     //   durFact: -1
-  //     // })
-  //   }
-  // }
-  // com.svgZoomEnd = function () {
-  //   locker.remove('zoom')
-  // }
+
+  return
 }
