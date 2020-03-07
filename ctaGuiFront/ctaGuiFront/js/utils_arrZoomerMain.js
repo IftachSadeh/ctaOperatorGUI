@@ -34,6 +34,7 @@ window.ArrZoomerMain = function (optIn0) {
   let svgMainArrZoomer = optIn0.svgMainArrZoomer
   let instruments = optIn0.instruments
   let zoomD = optIn0.zoomD
+  let rScale = instruments.rScale
 
   let arrZoomerBase = optIn0.arrZoomerBase
   let getPropPosShift = arrZoomerBase.getPropPosShift
@@ -44,20 +45,58 @@ window.ArrZoomerMain = function (optIn0) {
   let isStateUp = arrZoomerBase.isStateUp
   let isStateDown = arrZoomerBase.isStateDown
   let isStateChange = arrZoomerBase.isStateChange
-  let svgZoomEnd = arrZoomerBase.svgZoomEnd
   let syncStateSend = arrZoomerBase.syncStateSend
+  
+  // need to use access function, as these may not yet
+  // be defined when this function is first initialised
+  function getSvgMini() {
+    return arrZoomerBase.svgMini
+  }
+  function getSvgChes() {
+    return arrZoomerBase.svgChes
+  }
 
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
   thisArrZoomerMain.hasInit = false
-  thisArrZoomerMain.svgQuick = null
+  // thisArrZoomerMain.svgQuick = null
 
   let com = {}
+  thisArrZoomerMain.com = com
   let s10V = []
   let syncD = {}
   thisArrZoomerMain.syncD = syncD
-
+  com.vor = {}
+  com.s00 = {}
+  com.s01 = {}
+  com.s10 = {}
+  instruments.data.vor = {}
+  
+  let dblclickZoomInOut = true
   let lenWH = 500
 
-  // let svg = {}
+  let s1LblXY = {}
+  let arcFunc = {}
+
+  let links2V = {}
+
+  let arcPrev = {}
+  arcPrev.ang = {}
+  arcPrev.rad = {}
+
+  let siteScale = isSouth ? 4 / 9 : 1
+
+  let lenD = { w: [lenWH], h: [lenWH] }
+  thisArrZoomerMain.lenD = lenD
+  
+  lenD.r = {}
+  lenD.r.s00 = [12, 13, 14]
+  if (isSouth) lenD.r.s00 = [12 * siteScale, 13 * siteScale, 14 * siteScale]
+
+  // ------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------
   let gMainD = svgMainArrZoomer.main
   gMainD.g = svgMainArrZoomer.gSvg.append('g')
   gMainD.gOuter = gMainD.g.append('g')
@@ -77,7 +116,6 @@ window.ArrZoomerMain = function (optIn0) {
   gMainD.gClipped.attr('class', 'gClipped')
     .attr('clip-path', 'url(#'+uniqueClipId+')');
 
-  gMainD.gBase = gMainD.gClipped.append('g')
 
   // ------------------------------------------------------------------
   // scale to 100x100 px
@@ -101,167 +139,165 @@ window.ArrZoomerMain = function (optIn0) {
     return 'translate(0,250)scale(2.5)'
   })
 
+  gMainD.gBase = gMainD.gClipped.append('g')
+  gMainD.gBack = gMainD.gBase.append('g')
+  com.vor.g = gMainD.gBase.append('g')
+  com.s00.g = gMainD.gBase.append('g')
+  com.s01.g = gMainD.gBase.append('g')
 
-
-  let dblclickZoomInOut = true
-
-  let rScale = {}
-  rScale[0] = {}
-  rScale[1] = {}
-
-  rScale[0].health0 = 1.1
-  rScale[0].health1 = 1.2
-  rScale[0].health2 = 1.35
-  rScale[0].line0 = 1.2
-  rScale[0].line1 = 1.8
-  rScale[0].percent = 0.6
-  rScale[0].label = 1.95
-  rScale[0].title = 2.05
-
-  rScale[1].health0 = 1.5
-  rScale[1].health1 = 1.65
-  rScale[1].innerH0 = 1.25
-  rScale[1].innerH1 = 1.3
-
-  thisArrZoomerMain.rScale = rScale
-
-  let s1LblXY = {}
-  let arcFunc = {}
-
-  let links2V = {}
-
-  let arcPrev = {}
-  arcPrev.ang = {}
-  arcPrev.rad = {}
-
-  let siteScale = isSouth ? 4 / 9 : 1
-
-  let lenD = {}
-  lenD.w = {}
-  lenD.h = {}
-
-  lenD.w[0] = lenWH
-  lenD.h[0] = lenWH
-
-  lenD.r = {}
-  lenD.r.s00 = [12, 13, 14]
-  if (isSouth) lenD.r.s00 = [12 * siteScale, 13 * siteScale, 14 * siteScale]
-
-  // initialize a global function (to be overriden below)
-  let zoomToTrgMain = function (optIn) {
-    if (!locker.isFree('inInit')) {
-      setTimeout(function () {
-        zoomToTrgMain(optIn)
-      }, timeD.waitLoop)
-    }
-  }
-  thisArrZoomerMain.zoomToTrgMain = zoomToTrgMain
-
-  // initialize a couple of functions to be overriden below
-  let getScale = function () {
-    return zoomD.len['0.0']
-  }
-  let getTrans = function () {
-    return [0, 0]
-  }
-  let getZoomS = function () {
-    return 0
-  }
-  thisArrZoomerMain.getScale = getScale
-  thisArrZoomerMain.getTrans = getTrans
-  thisArrZoomerMain.getZoomS = getZoomS
-
+  
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
   function initData (dataIn) {
     let arrInit = dataIn.arrInit
-    // let arrProp = dataIn.arrProp
     let subArr = dataIn.subArr
 
     if (thisArrZoomerMain.hasInit) return
     thisArrZoomerMain.hasInit = true
 
+    initZoom()
+    initVor()
+
     // ------------------------------------------------------------------
-    // zoom start/on/end functions, attachd to com.svgZoom
+    // add one circle as background
     // ------------------------------------------------------------------
+    gMainD.gBack
+      .selectAll('circle')
+      .data([0])
+      .enter()
+      .append('circle')
+      .attr('r', 0)
+      .attr('cx', lenD.w[0] / 2)
+      .attr('cy', lenD.h[0] / 2)
+      .attr('fill', '#F2F2F2')
+      .transition('inOut')
+      .duration(timeD.animArc / 3)
+      .attr('r', lenD.w[0] / 2.1)
+
+    // the background grid
+    bckPattern({
+      com: com,
+      gNow: gMainD.gBack,
+      gTag: 'hex',
+      lenWH: [lenD.w[0], lenD.h[0]],
+      opac: getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
+      hexR: 18
+    })
+
+
+    // run all variations, just to initialize all the variables
+    // (but only the last one will take affect - this will be the default value)
+    // ------------------------------------------------------------------
+    instruments.data.layout = 'physical' // set the physical layout as the default
+    // instruments.data.layout = "subArr";  // set the sub-array layout as the default value
+
+    thisArrZoomerMain.setLayoutSubArr(subArr)
+    thisArrZoomerMain.setLayoutPhysical(arrInit)
+
+    // // ------------------------------------------------------------------------
+    // // ------------------------------------------------------------------------
+    // // not working for now ..... commented out from com.jinja2
+    // // ------------------------------------------------------------------------
+    // if (hasVar(window.sideDiv)) {
+    //   let arrayLayout = window.sideDiv.getEle('arrayLayout')
+    //   if (hasVar(arrayLayout)) arrayLayout.select(instruments.data.layout)
+    // }
+    // // ------------------------------------------------------------------------
+    // // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    setState()
+
+    locker.remove('inInitMain')
+  }
+  thisArrZoomerMain.initData = initData
+
+
+
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function setupZoom () {
+    // initialize a global function (to be overriden below)
+    zoomToTrgMain = function (optIn) {
+      if (!locker.isFree('inInit')) {
+        setTimeout(function () {
+          zoomToTrgMain(optIn)
+        }, timeD.waitLoop)
+      }
+    }
+    thisArrZoomerMain.zoomToTrgMain = zoomToTrgMain
+
+    // initialize a couple of functions to be overriden below
+    getScale = function () { return zoomD.len['0.0'] }
+    thisArrZoomerMain.getScale = getScale
+    
+    getTrans = function () { return [0, 0] }
+    thisArrZoomerMain.getTrans = getTrans
+    
+    getZoomS = function () { return 0 }
+    thisArrZoomerMain.getZoomS = getZoomS
+
+    return
+  }
+
+  let zoomToTrgMain, getScale, getTrans, getZoomS
+  setupZoom()
+
+
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function initZoom () {
     let scaleStart = 0
-    com.svgZoomStart = function () {
+    function svgZoomStart () {
+      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
+
       scaleStart = d3.event.transform.k
       locker.add({ id: 'zoom', override: true })
+      locker.add({ id: 'inZoomMain', override: true })
     }
 
-    com.svgZoomDuring = function () {
-      // zoomD.len.start = Date.now();
-      // console.log('svgZoomDuring',d3.event.transform)
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
+    function svgZoomDuring () {
+      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
       gMainD.gBase.attr('transform', d3.event.transform)
 
-      if (
-        locker.isFreeV([
-          'autoZoomTarget',
-          'zoomToTargetMini',
-          'zoomToTargetChes'
-        ])
-      ) {
-        if (hasVar(thisArrZoomerMain.svgQuick)) {
-          thisArrZoomerMain.svgQuick.zoomToTrgQuick({
-            target: zoomD.target,
-            scale: d3.event.transform.k,
-            durFact: -1
-          })
-        }
-      }
+      svgMainArrZoomer.mini.gBase.attr('transform', d3.event.transform)
 
       svgZoomUpdState()
     }
 
-    function svgZoomUpdState () {
-      // common actions
-      // svgZoomDuring();
-
-      let scale = getScale()
-      let zoomS = getZoomS()
-
-      let change01 = isStateChange(scale, '0.1')
-      let change10 = isStateChange(scale, '1.0')
-
-      if (zoomS === 0) syncD.zoomTarget = ''
-
-      // console.log('svgZoomEnd',changeState,scale)
-      if (change01 || change10) {
-        setState()
-
-        // update the opacity of the background grid
-        if (change10) {
-          bckPattern({
-            com: com,
-            gNow: gMainD.gBase,
-            gTag: 'hex',
-            lenWH: [lenD.w[0], lenD.h[0]],
-            opac: getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
-            hexR: 18
-          })
-        }
-        if (isStateUp(scale, '1.0')) askDataS1()
-
-        zoomD.len.prev = scale
-      }
-    }
-
-    com.svgZoomEnd = function () {
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
+    function svgZoomEnd () {
+      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
+      
       svgZoomUpdState()
       setZoomState()
 
       instruments.focus.target = zoomD.target
       instruments.focus.scale = d3.event.transform.k
 
-      // must come last here !
-      locker.remove('zoom')
-
       // common actions (after releasing locker)
-      svgZoomEnd(d3.event.transform.k, zoomD.target)
+      let svgMini = getSvgMini()
+      if(svgMini) {
+        svgMini.miniZoomViewRec()
+        svgMini.zoomSyncMini(d3.event.transform)
+      }
 
+      locker.remove('zoom')
+      locker.remove('inZoomMain')
+
+      // ------------------------------------------------------------------
       // if on minimal zoom, center
+      // ------------------------------------------------------------------
       if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
         if (Math.abs(d3.event.transform.k - zoomD.len['0.0']) < 0.00001) {
           if (locker.isFreeV(['autoZoomTarget'])) {
@@ -273,7 +309,6 @@ window.ArrZoomerMain = function (optIn0) {
           }
 
           // syncroniz changes with other panels
-          // ------------------------------------------------------------------
           syncStateSend({
             type: 'syncTelFocus',
             syncTime: Date.now(),
@@ -282,19 +317,65 @@ window.ArrZoomerMain = function (optIn0) {
           })
         }
       }
+
+      return
     }
 
-    // com.svgZoom = d3.behavior.zoom().translate([0, 0]).scale(1).scaleExtent([zoomD.len["0.0"],zoomD.len["1.2"]]);
-    // function filt() { return  !event.button;}
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
+    function zoomSyncMain(trans) {
+      locker.add({ id: 'zoomSyncMain', override: true })
+      function funcEnd() {
+        locker.remove('zoomSyncMain')
+      }
 
-    // com.svgZoom = d3.zoom().scaleExtent([zoomD.len["0.0"],zoomD.len["0.2"]])//.filter([filt]);
-    com.svgZoom = d3.zoom().scaleExtent([zoomD.len['0.0'], zoomD.len['1.3']]) // .filter([filt]);
-    com.svgZoom.on('zoom', com.svgZoomDuring)
-    com.svgZoom.on('end', com.svgZoomEnd)
-    com.svgZoom.on('start', com.svgZoomStart)
+      let x = (lenD.w[0] / 2 - trans.x) / trans.k
+      let y = (lenD.h[0] / 2 - trans.y) / trans.k
+      let transTo = [x, y]
+
+      let outD = {
+        trgScale: trans.k,
+        durFact: 0,
+        baseTime: 300,
+        transTo: transTo,
+        wh: [lenD.w[0], lenD.h[0]],
+        cent: null,
+        // funcStart: funcStart,
+        funcEnd: funcEnd,
+        // funcDuring: funcDuring,
+        svg:          gMainD.gOuter,
+        svgZoom:      com.svgZoom,
+        svgBox:       gMainD.gBase,
+        svgZoomNode:  gMainD.zoomNode
+      }
+
+      doZoomToTarget(outD)
+    }
+    thisArrZoomerMain.zoomSyncMain = zoomSyncMain
 
     // ------------------------------------------------------------------
-    // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
+    // 
+    // ------------------------------------------------------------------
+    com.svgZoom = d3.zoom()
+    com.svgZoom.scaleExtent(zoomD.scaleExtent)
+    com.svgZoom.on('start', svgZoomStart)
+    com.svgZoom.on('zoom', svgZoomDuring)
+    com.svgZoom.on('end', svgZoomEnd)
+
+    gMainD.gOuter.call(com.svgZoom)
+      .on('dblclick.zoom', null)
+      .on('wheel', function () {
+        d3.event.preventDefault()
+      })
+
+    // save the svg node to use for d3.zoomTransform() later
+    gMainD.zoomNode = gMainD.gOuter.nodes()[0]
+
+
+    // ------------------------------------------------------------------
+    // programatic zoom to some target and scale - only use the
+    // last of any set of ovelapping zoom requests
     // ------------------------------------------------------------------
     runLoop.init({
       tag: 'zoomToTargetMain',
@@ -302,7 +383,10 @@ window.ArrZoomerMain = function (optIn0) {
       nKeep: -1
     })
 
-    // the actual function to be called when a zoom needs to be put in the queue
+    // ------------------------------------------------------------------
+    // the actual function to be called when a
+    // zoom needs to be put in the queue
+    // ------------------------------------------------------------------
     zoomToTrgMain = function (optIn) {
       if (!locker.isFree('inInit')) {
         setTimeout(function () {
@@ -311,7 +395,7 @@ window.ArrZoomerMain = function (optIn0) {
         return
       }
       if (!locker.isFreeV(['autoZoomTarget'])) return
-
+      
       let targetName = optIn.target
       let targetScale = optIn.scale
       let durFact = optIn.durFact
@@ -319,10 +403,14 @@ window.ArrZoomerMain = function (optIn0) {
 
       if (targetScale < zoomD.len['0.0']) targetScale = getScale()
 
-      let transTo
+      let transTo = null
       if (targetName === 'init') {
         transTo = [lenD.w[0] / 2, lenD.h[0] / 2]
-      } else if (targetName === '' || !hasVar(instruments.data.mini[targetName])) {
+      } 
+      else if (
+        targetName === '' || 
+        !hasVar(instruments.data.mini[targetName])) 
+      {
         let scale = getScale()
         let trans = getTrans()
         let x = (lenD.w[0] / 2 - trans[0]) / scale
@@ -342,24 +430,21 @@ window.ArrZoomerMain = function (optIn0) {
           }
         })
       } else {
-        transTo = [instruments.data.xyr[targetName].x, instruments.data.xyr[targetName].y]
+        transTo = [
+          instruments.data.xyr[targetName].x,
+          instruments.data.xyr[targetName].y
+        ]
       }
 
       let funcStart = function () {
-        if (hasVar(thisArrZoomerMain.svgQuick)) {
-          thisArrZoomerMain.svgQuick.zoomToTrgQuick({
-            target: targetName,
-            scale: targetScale,
-            durFact: -1
-          })
-        }
-
         locker.add({ id: 'autoZoomTarget', override: true })
         if (targetName !== '' && targetName !== 'init') {
           zoomD.target = targetName
         }
       }
+      
       let funcDuring = function () {}
+      
       let funcEnd = function () {
         locker.remove('autoZoomTarget')
 
@@ -405,15 +490,6 @@ window.ArrZoomerMain = function (optIn0) {
     }
     thisArrZoomerMain.zoomToTrgMain = zoomToTrgMain
 
-    gMainD.gOuter.call(com.svgZoom)
-      .on('dblclick.zoom', null)
-      .on('wheel', function () {
-        d3.event.preventDefault()
-      })
-
-    // save the svg node to use for d3.zoomTransform() later
-    gMainD.zoomNode = gMainD.gOuter.nodes()[0]
-
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -434,34 +510,13 @@ window.ArrZoomerMain = function (optIn0) {
     thisArrZoomerMain.getTrans = getTrans
     thisArrZoomerMain.getZoomS = getZoomS
 
+    return
+  }
 
-    // ------------------------------------------------------------------
-    // add one circle as background
-    // ------------------------------------------------------------------
-    gMainD.gBase
-      .append('g')
-      .selectAll('circle')
-      .data([0])
-      .enter()
-      .append('circle')
-      .attr('r', 0)
-      .attr('cx', lenD.w[0] / 2)
-      .attr('cy', lenD.h[0] / 2)
-      .attr('fill', '#F2F2F2')
-      .transition('inOut')
-      .duration(timeD.animArc / 3)
-      .attr('r', lenD.w[0] / 2.1)
-
-    // the background grid
-    bckPattern({
-      com: com,
-      gNow: gMainD.gBase,
-      gTag: 'hex',
-      lenWH: [lenD.w[0], lenD.h[0]],
-      opac: getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
-      hexR: 18
-    })
-
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function initVor() {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -817,10 +872,14 @@ window.ArrZoomerMain = function (optIn0) {
           }
           // thisArrZoomer.setState();
         }
+
       }
     }
     thisArrZoomerMain.setLayoutPhysical = setLayoutPhysical
 
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
     function setLayoutSubArr (dataIn) {
       if (hasVar(dataIn)) setTelDataSubArr(dataIn)
 
@@ -850,131 +909,112 @@ window.ArrZoomerMain = function (optIn0) {
             }
           }
         }
+
       }
     }
     thisArrZoomerMain.setLayoutSubArr = setLayoutSubArr
 
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    if (!hasVar(com.vor)) {
-      // add a voronoi-cell forground joining group members, to facilitate hover selection and area shading
-      // ------------------------------------------------------------------
-      com.vor = {}
-      com.vor.g = gMainD.gBase.append('g')
-      instruments.data.vor = {}
+    return
+  }
 
-      // run all variations, just to initialize all the variables
-      // (but only the last one will take affect - this will be the default value)
-      // ------------------------------------------------------------------
-      instruments.data.layout = 'physical' // set the physical layout as the default
-      // instruments.data.layout = "subArr";  // set the sub-array layout as the default value
 
-      setLayoutSubArr(subArr)
-      setLayoutPhysical(arrInit)
+  // ------------------------------------------------------------------
+  // see: http://bl.ocks.org/mbostock/5100636
+  // ------------------------------------------------------------------
+  com.arcTween = function (transition, optIn) {
+    // if(optIn.skip != undefined && optIn.skip) return null;
+    transition.attrTween('d', function (d) {
+      if (hasVar(optIn.incIdV)) {
+        if (optIn.incIdV.indexOf(d.id) === -1) return null
+      }
+      if (hasVar(optIn.excIdV)) {
+        if (optIn.excIdV.indexOf(d.id) >= 0) return null
+      }
 
-      // // ------------------------------------------------------------------------
-      // // ------------------------------------------------------------------------
-      // // not working for now ..... commented out from com.jinja2
-      // // ------------------------------------------------------------------------
-      // if (hasVar(window.sideDiv)) {
-      //   let arrayLayout = window.sideDiv.getEle('arrayLayout')
-      //   if (hasVar(arrayLayout)) arrayLayout.select(instruments.data.layout)
-      // }
-      // // ------------------------------------------------------------------------
-      // // ------------------------------------------------------------------------
-    }
+      let tagNow = optIn.tagNow
+      let angStr0 = optIn.angStr0
+        ? arcFunc[tagNow][optIn.angStr0](d)
+        : optIn.arcPrev[tagNow].ang[d.id][0]
+      let angStr1 = optIn.angStr1
+        ? arcFunc[tagNow][optIn.angStr1](d)
+        : optIn.arcPrev[tagNow].ang[d.id][0]
+      let angEnd0 = optIn.angEnd0
+        ? arcFunc[tagNow][optIn.angEnd0](d)
+        : optIn.arcPrev[tagNow].ang[d.id][1]
+      let angEnd1 = optIn.angEnd1
+        ? arcFunc[tagNow][optIn.angEnd1](d)
+        : optIn.arcPrev[tagNow].ang[d.id][1]
+      let radInr0 = optIn.radInr0
+        ? arcFunc[tagNow][optIn.radInr0](d)
+        : optIn.arcPrev[tagNow].rad[d.id][0]
+      let radInr1 = optIn.radInr1
+        ? arcFunc[tagNow][optIn.radInr1](d)
+        : optIn.arcPrev[tagNow].rad[d.id][0]
+      let radOut0 = optIn.radOut0
+        ? arcFunc[tagNow][optIn.radOut0](d)
+        : optIn.arcPrev[tagNow].rad[d.id][1]
+      let radOut1 = optIn.radOut1
+        ? arcFunc[tagNow][optIn.radOut1](d)
+        : optIn.arcPrev[tagNow].rad[d.id][1]
+      // console.log(tagNow,[angStr0,angStr1],[angEnd0,angEnd1],[radInr0,radInr1],[radOut0,radOut1])
 
-    // ------------------------------------------------------------------
-    // some initialization
-    // ------------------------------------------------------------------
-    if (!hasVar(com.arcTween)) {
-      // see: http://bl.ocks.org/mbostock/5100636
-      com.arcTween = function (transition, optIn) {
-        // if(optIn.skip != undefined && optIn.skip) return null;
-        transition.attrTween('d', function (d) {
-          if (hasVar(optIn.incIdV)) {
-            if (optIn.incIdV.indexOf(d.id) === -1) return null
-          }
-          if (hasVar(optIn.excIdV)) {
-            if (optIn.excIdV.indexOf(d.id) >= 0) return null
-          }
+      let needUpd = 0
+      if (Math.abs(angStr0 - angStr1) / angStr0 > 1e-5) needUpd++
+      if (Math.abs(angEnd0 - angEnd1) / angEnd0 > 1e-5) needUpd++
+      if (Math.abs(radInr0 - radInr1) / radInr0 > 1e-5) needUpd++
+      if (Math.abs(radOut0 - radOut1) / radOut0 > 1e-5) needUpd++
+      if (needUpd === 0) return null
 
-          let tagNow = optIn.tagNow
-          let angStr0 = optIn.angStr0
-            ? arcFunc[tagNow][optIn.angStr0](d)
-            : optIn.arcPrev[tagNow].ang[d.id][0]
-          let angStr1 = optIn.angStr1
-            ? arcFunc[tagNow][optIn.angStr1](d)
-            : optIn.arcPrev[tagNow].ang[d.id][0]
-          let angEnd0 = optIn.angEnd0
-            ? arcFunc[tagNow][optIn.angEnd0](d)
-            : optIn.arcPrev[tagNow].ang[d.id][1]
-          let angEnd1 = optIn.angEnd1
-            ? arcFunc[tagNow][optIn.angEnd1](d)
-            : optIn.arcPrev[tagNow].ang[d.id][1]
-          let radInr0 = optIn.radInr0
-            ? arcFunc[tagNow][optIn.radInr0](d)
-            : optIn.arcPrev[tagNow].rad[d.id][0]
-          let radInr1 = optIn.radInr1
-            ? arcFunc[tagNow][optIn.radInr1](d)
-            : optIn.arcPrev[tagNow].rad[d.id][0]
-          let radOut0 = optIn.radOut0
-            ? arcFunc[tagNow][optIn.radOut0](d)
-            : optIn.arcPrev[tagNow].rad[d.id][1]
-          let radOut1 = optIn.radOut1
-            ? arcFunc[tagNow][optIn.radOut1](d)
-            : optIn.arcPrev[tagNow].rad[d.id][1]
-          // console.log(tagNow,[angStr0,angStr1],[angEnd0,angEnd1],[radInr0,radInr1],[radOut0,radOut1])
+      let arc = d3.arc()
+      return function (t) {
+        let intrNow = interpolate01(t)
+        d.startAngle = angStr0 + (angStr1 - angStr0) * intrNow
+        d.endAngle = angEnd0 + (angEnd1 - angEnd0) * intrNow
+        d.innerRadius = radInr0 + (radInr1 - radInr0) * intrNow
+        d.outerRadius = radOut0 + (radOut1 - radOut0) * intrNow
 
-          let needUpd = 0
-          if (Math.abs(angStr0 - angStr1) / angStr0 > 1e-5) needUpd++
-          if (Math.abs(angEnd0 - angEnd1) / angEnd0 > 1e-5) needUpd++
-          if (Math.abs(radInr0 - radInr1) / radInr0 > 1e-5) needUpd++
-          if (Math.abs(radOut0 - radOut1) / radOut0 > 1e-5) needUpd++
-          if (needUpd === 0) return null
+        optIn.arcPrev[tagNow].ang[d.id][0] = d.startAngle
+        optIn.arcPrev[tagNow].ang[d.id][1] = d.endAngle
+        optIn.arcPrev[tagNow].rad[d.id][0] = d.innerRadius
+        optIn.arcPrev[tagNow].rad[d.id][1] = d.outerRadius
 
-          let arc = d3.arc()
-          return function (t) {
-            let intrNow = interpolate01(t)
-            d.startAngle = angStr0 + (angStr1 - angStr0) * intrNow
-            d.endAngle = angEnd0 + (angEnd1 - angEnd0) * intrNow
-            d.innerRadius = radInr0 + (radInr1 - radInr0) * intrNow
-            d.outerRadius = radOut0 + (radOut1 - radOut0) * intrNow
+        return arc(d)
+      }
+    })
+  }
 
-            optIn.arcPrev[tagNow].ang[d.id][0] = d.startAngle
-            optIn.arcPrev[tagNow].ang[d.id][1] = d.endAngle
-            optIn.arcPrev[tagNow].rad[d.id][0] = d.innerRadius
-            optIn.arcPrev[tagNow].rad[d.id][1] = d.outerRadius
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function svgZoomUpdState () {
+    let scale = getScale()
+    let zoomS = getZoomS()
 
-            return arc(d)
-          }
+    let change01 = isStateChange(scale, '0.1')
+    let change10 = isStateChange(scale, '1.0')
+
+    if (zoomS === 0) syncD.zoomTarget = ''
+
+    if (change01 || change10) {
+      setState()
+
+      // update the opacity of the background grid
+      if (change10) {
+        bckPattern({
+          com: com,
+          gNow: gMainD.gBase,
+          gTag: 'hex',
+          lenWH: [lenD.w[0], lenD.h[0]],
+          opac: getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
+          hexR: 18
         })
       }
-    }
-    // state-01 initialization (needed before s01inner(), s01outer())
+      if (isStateUp(scale, '1.0')) askDataS1()
 
-    if (!hasVar(com.s00)) {
-      com.s00 = {}
-      com.s00.g = gMainD.gBase.append('g')
+      zoomD.len.prev = scale
     }
-    if (!hasVar(com.s01)) {
-      com.s01 = {}
-      com.s01.g = gMainD.gBase.append('g')
-    }
-    // state-1 initialization (needed before updateLiveDataS1())
-    if (!hasVar(com.s10)) {
-      com.s10 = {}
-    }
-
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    setState()
-
-    locker.remove('inInitMain')
   }
-  thisArrZoomerMain.initData = initData
+
 
   // ------------------------------------------------------------------
   //
@@ -1287,8 +1327,6 @@ window.ArrZoomerMain = function (optIn0) {
     // let telId = zoomD.target
     // DDFF
 
-    // console.log('FIXME -- validate ... for instruments.props[""]/zoomD.target ....', focusIdV, telId, dataV)
-
     $.each(instruments.allIds, function (n_ele, telId) {
       $.each(instruments.props[telId], function (index, porpNow) {
         $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
@@ -1416,7 +1454,7 @@ window.ArrZoomerMain = function (optIn0) {
           path
             .exit()
             .transition('out')
-            // .each(function (d, i) {console.log('qqq', i, d); })
+            // .each(function (d, i) {console.log('qquq', i, d); })
             .duration(timeD.animArc)
             .call(com.arcTween, {
               tagNow: tagNow,

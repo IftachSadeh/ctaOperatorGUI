@@ -33,7 +33,8 @@ var mainScriptTag = 'arrZoomer'
 /* global telHealthFrac */
 /* global ArrZoomerMain */
 /* global ArrZoomerDetail */
-/* global QuickMap */
+/* global ArrZoomerMini */
+/* global ArrZoomerChes */
 
 // double check formatting.........
 // double check formatting.........
@@ -54,7 +55,7 @@ window.loadScript({
 })
 window.loadScript({
   source: mainScriptTag,
-  script: '/js/utils_quickMap.js'
+  script: '/js/utils_arrZoomerQuickMap.js'
 })
 
 // ------------------------------------------------------------------
@@ -98,53 +99,53 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
 
 
 
-  if (doSvgQuick) {
-    divKey = 'quick'
-    optIn.eleProps[divKey] = {
-      autoPos: true,
-      isDarkEle: true,
-      gsId: optIn.widgetDivId + divKey,
-      x: x0,
-      y: y0,
-      w: w0,
-      h: h0,
-      content: "<div id='" + optIn.baseName + divKey + "'></div>"
-    }
-  }
+  // if (doSvgQuick) {
+  //   divKey = 'quick'
+  //   optIn.eleProps[divKey] = {
+  //     autoPos: true,
+  //     isDarkEle: true,
+  //     gsId: optIn.widgetDivId + divKey,
+  //     x: x0,
+  //     y: y0,
+  //     w: w0,
+  //     h: h0,
+  //     content: "<div id='" + optIn.baseName + divKey + "'></div>"
+  //   }
+  // }
 
-  if (doSvgDetail) {
-    if (svgDetailOnRight) {
-      w0 = 6
-      h0 = 6
-    }
-  }
-  y0 += 2
+  // if (doSvgDetail) {
+  //   if (svgDetailOnRight) {
+  //     w0 = 6
+  //     h0 = 6
+  //   }
+  // }
+  // y0 += 2
 
-  divKey = 'main'
-  optIn.eleProps[divKey] = {
-    autoPos: true,
-    isDarkEle: true,
-    gsId: optIn.widgetDivId + divKey,
-    x: x0,
-    y: y0,
-    w: w0,
-    h: h0,
-    content: "<div id='" + optIn.baseName + divKey + "'></div>"
-  }
+  // divKey = 'main'
+  // optIn.eleProps[divKey] = {
+  //   autoPos: true,
+  //   isDarkEle: true,
+  //   gsId: optIn.widgetDivId + divKey,
+  //   x: x0,
+  //   y: y0,
+  //   w: w0,
+  //   h: h0,
+  //   content: "<div id='" + optIn.baseName + divKey + "'></div>"
+  // }
 
-  if (doSvgDetail) {
-    divKey = 'detail'
-    optIn.eleProps[divKey] = {
-      autoPos: true,
-      isDarkEle: true,
-      gsId: optIn.widgetDivId + divKey,
-      x: x0,
-      y: y0,
-      w: w0,
-      h: h0,
-      content: "<div id='" + optIn.baseName + divKey + "'></div>"
-    }
-  }
+  // if (doSvgDetail) {
+  //   divKey = 'detail'
+  //   optIn.eleProps[divKey] = {
+  //     autoPos: true,
+  //     isDarkEle: true,
+  //     gsId: optIn.widgetDivId + divKey,
+  //     x: x0,
+  //     y: y0,
+  //     w: w0,
+  //     h: h0,
+  //     content: "<div id='" + optIn.baseName + divKey + "'></div>"
+  //   }
+  // }
 
   // console.log(optIn)
   sock.addToTable(optIn)
@@ -264,7 +265,8 @@ let mainArrZoomer = function (optIn) {
   let svgMainArrZoomer = {}
   svgMainArrZoomer.main = {}
   svgMainArrZoomer.detail = {}
-  svgMainArrZoomer.quick = {}
+  svgMainArrZoomer.mini = {}
+  svgMainArrZoomer.ches = {}
 
   // svgMainArrZoomer.detail.g.attr('transform', function (d) {
   //   return 'translate(20,20)scale(0.8)'
@@ -310,6 +312,25 @@ let mainArrZoomer = function (optIn) {
 
   instruments.focus = {}
 
+  instruments.rScale = {}
+  instruments.rScale[0] = {}
+  instruments.rScale[1] = {}
+
+  instruments.rScale[0].health0 = 1.1
+  instruments.rScale[0].health1 = 1.2
+  instruments.rScale[0].health2 = 1.35
+  instruments.rScale[0].line0 = 1.2
+  instruments.rScale[0].line1 = 1.8
+  instruments.rScale[0].percent = 0.6
+  instruments.rScale[0].label = 1.95
+  instruments.rScale[0].title = 2.05
+
+  instruments.rScale[1].health0 = 1.5
+  instruments.rScale[1].health1 = 1.65
+  instruments.rScale[1].innerH0 = 1.25
+  instruments.rScale[1].innerH1 = 1.3
+
+
   // ------------------------------------------------------------------
   // delay counters
   // ------------------------------------------------------------------
@@ -322,7 +343,8 @@ let mainArrZoomer = function (optIn) {
 
   let svgMain = null
   let svgDetail = null
-  let svgQuick = null
+  let svgMini = null
+  let svgChes = null
 
   // ------------------------------------------------------------------
   // main initialisation, after first data come in
@@ -335,20 +357,14 @@ let mainArrZoomer = function (optIn) {
       widgetId: widgetId,
       locker: locker,
       isSouth: isSouth,
-
-
       myUniqueId: myUniqueId,
       widgetType: widgetType,
-
       arrZoomerBase: thisArrZoomer,
-      // svgMain: svgMain,
       svgMainArrZoomer: svgMainArrZoomer,
       instruments: instruments,
       zoomD: zoomD,
-
-
     })
-    // svgMain = new SvgMain() // must come first
+    thisArrZoomer.svgMain = svgMain
     
     if (doSvgDetail) {
       svgDetail = new ArrZoomerDetail({
@@ -357,37 +373,56 @@ let mainArrZoomer = function (optIn) {
         widgetId: widgetId,
         locker: locker,
         isSouth: isSouth,
-
-
-
         aspectRatio: 1,
         arrZoomerBase: thisArrZoomer,
         svgMain: svgMain,
         svgMainArrZoomer: svgMainArrZoomer,
         instruments: instruments,
         zoomD: zoomD,
-
-
-
       })
-      // svgDetail = new SvgDetail()
+      thisArrZoomer.svgDetail = svgDetail
     } else {
       locker.remove('inInitDetail')
     }
     
     if (doSvgQuick) {
-      svgQuick = new QuickMap({
+      svgChes = new ArrZoomerChes({
         runLoop: runLoop,
         sgvTag: sgvTag,
         widgetId: widgetId,
         locker: locker,
         isSouth: isSouth,
-
+        arrZoomerBase: thisArrZoomer,
         svgMainArrZoomer: svgMainArrZoomer,
+        instruments: instruments,
+      })
+      thisArrZoomer.svgChes = svgChes
 
+      console.log('44444444444444')
+      svgChes.getG().attr('transform', function (d) {
+        return 'translate(100,0)scale(4)'
+      })
+     
+
+      svgMini = new ArrZoomerMini({
+        runLoop: runLoop,
+        sgvTag: sgvTag,
+        widgetId: widgetId,
+        locker: locker,
+        isSouth: isSouth,
+        myUniqueId: myUniqueId,
+        arrZoomerBase: thisArrZoomer,
+        svgMainArrZoomer: svgMainArrZoomer,
+        instruments: instruments,
+        zoomD: zoomD,
+      })
+      thisArrZoomer.svgMini = svgMini
+
+      console.log('222222222222222')
+      svgMini.getG().attr('transform', function (d) {
+        return 'translate(100,0)scale(1.5)'
       })
 
-      svgMain.svgQuick = svgQuick
     }
 
     locker.remove('inNewSvgInit')
@@ -532,6 +567,8 @@ let mainArrZoomer = function (optIn) {
     zoomD.len['1.3'] = 9
   }
   zoomD.len.prev = zoomD.len['0.0']
+
+  zoomD.scaleExtent = [zoomD.len['0.0'], zoomD.len['1.3']]
 
   function isStateUp (scale, scaleTag) {
     return zoomD.len.prev < zoomD.len[scaleTag] && scale >= zoomD.len[scaleTag]
@@ -694,8 +731,20 @@ let mainArrZoomer = function (optIn) {
       if (svgDetail) {
         svgDetail.initData(dataIn)
       }
-      if (svgQuick) {
-        svgQuick.initData({
+      if (svgMini) {
+        svgMini.initData({
+          instrumentData: {
+            tel: instruments.data.tel,
+            vor: { data: instruments.data.vor.data },
+            mini: instruments.data.mini,
+            xyr: instruments.data.xyr,
+            vorDblclick: instruments.data.vorDblclick
+          },
+          telTypeV: telTypeV
+        })
+      }
+      if (svgChes) {
+        svgChes.initData({
           instrumentData: {
             tel: instruments.data.tel,
             vor: { data: instruments.data.vor.data },
@@ -916,19 +965,15 @@ let mainArrZoomer = function (optIn) {
     if (svgDetail) {
       svgDetail.setStateOnce()
     }
-    if (svgQuick) {
-      svgQuick.setStateOnce()
+    if (svgMini) {
+      svgMini.setStateOnce()
+    }
+    if (svgChes) {
+      svgChes.setStateOnce()
     }
 
     locker.remove({ id: 'setStateLock', delay: timeD.animArc * 2 })
   }
-
-  function svgZoomEnd (scale, target) {
-    if (svgQuick) {
-      svgQuick.miniZoomViewRec()
-    }
-  }
-  thisArrZoomer.svgZoomEnd = svgZoomEnd
 
   // ------------------------------------------------------------------
   //
@@ -1040,15 +1085,22 @@ let mainArrZoomer = function (optIn) {
       let scale = zoomD.len['0.0']
       if (zoomState === 1) scale = zoomD.len['1.0']
 
-      svgMain.zoomToTrgMain({
-        target: target,
-        scale: scale,
-        durFact: 1,
-        endFunc: function () {
-          // locker.remove("syncStateGet");
-          svgMain.askDataS1()
-        }
-      })
+      console.log('FIXME - syncTelFocus - uncomment zoomToTrgMain')
+      // svgMain.zoomToTrgMain({
+      //   target: target,
+      //   scale: scale,
+      //   durFact: 1,
+      //   endFunc: function () {
+      //     // locker.remove("syncStateGet");
+      //     svgMain.askDataS1()
+      //   }
+      // })
+
+
+
+
+
+
     }
   }
   this.syncStateGet = syncStateGet

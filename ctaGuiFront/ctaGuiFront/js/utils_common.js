@@ -2012,7 +2012,10 @@ window.doZoomToTarget = function (dataIn) {
     (center[1] - node.y) / node.k,
     scale0 / node.k
   ]
-  var end = [dataIn.transTo[0], dataIn.transTo[1], scale0 / dataIn.trgScale]
+  var end = [
+    dataIn.transTo[0], dataIn.transTo[1],
+    scale0 / dataIn.trgScale
+  ]
   var intprZoom = d3.interpolateZoom(start, end)
 
   if (hasVar(dataIn.funcStart)) dataIn.funcStart()
@@ -2036,9 +2039,13 @@ window.doZoomToTarget = function (dataIn) {
     if (!hasVar(intpr[0])) return ''
 
     var scale = scale0 / intpr[2]
-    var trans = [center[0] - intpr[0] * scale, center[1] - intpr[1] * scale]
+    var trans = [
+      center[0] - intpr[0] * scale,
+      center[1] - intpr[1] * scale
+    ]
 
-    return 'translate(' + trans[0] + ',' + trans[1] + ')scale(' + scale + ')'
+    return ('translate(' + trans[0] + ',' + trans[1] +
+      ')scale(' + scale + ')')
   }
 }
 
