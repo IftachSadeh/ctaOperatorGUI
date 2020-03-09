@@ -31,10 +31,11 @@ var mainScriptTag = 'arrZoomer'
 /* global getNodeWidthById */
 /* global getNodeHeightById */
 /* global telHealthFrac */
+/* global ArrZoomerBase */
 /* global ArrZoomerMain */
-/* global ArrZoomerDetail */
 /* global ArrZoomerMini */
 /* global ArrZoomerChes */
+/* global ArrZoomerDetail */
 
 // double check formatting.........
 // double check formatting.........
@@ -45,24 +46,34 @@ var mainScriptTag = 'arrZoomer'
 // double check formatting.........
 // double check formatting.........
 // double check formatting.........
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/utils_arrZoomerBase.js'
+})
 window.loadScript({
   source: mainScriptTag,
   script: '/js/utils_arrZoomerMain.js'
 })
 window.loadScript({
   source: mainScriptTag,
-  script: '/js/utils_arrZoomerDetail.js'
+  script: '/js/utils_arrZoomerMini.js'
 })
 window.loadScript({
   source: mainScriptTag,
-  script: '/js/utils_arrZoomerQuickMap.js'
+  script: '/js/utils_arrZoomerChes.js'
+})
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/utils_arrZoomerDetail.js'
 })
 
 // ------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
-  let doSvgDetail = true
   let svgDetailOnRight = true
-  let doSvgQuick = true
+  let doSvgMain = true
+  let doSvgChes = true
+  let doSvgMini = true
+  let doSvgDetail = true
 
   let x0 = 0
   let y0 = 0
@@ -71,18 +82,17 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
   let divKey
 
   optIn.setupData = {
-    doSvgDetail: doSvgDetail,
     svgDetailOnRight: svgDetailOnRight,
-    doSvgQuick: doSvgQuick
+    doSvgMain: doSvgMain,
+    doSvgChes: doSvgChes,
+    doSvgMini: doSvgMini,
+    doSvgDetail: doSvgDetail,
   }
 
   optIn.widgetFunc = { SockFunc: sockArrZoomer, MainFunc: mainArrZoomer }
   optIn.widgetDivId = optIn.widgetId + 'widgetDiv'
   optIn.eleProps = {}
 
-
-
-  w0 = 12
   divKey = 'mainNEW'
   optIn.eleProps[divKey] = {
     autoPos: true,
@@ -94,58 +104,6 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
     h: h0,
     content: "<div id='" + optIn.baseName + divKey + "'></div>"
   }
-  y0 += 2
-  w0 = 12
-
-
-
-  // if (doSvgQuick) {
-  //   divKey = 'quick'
-  //   optIn.eleProps[divKey] = {
-  //     autoPos: true,
-  //     isDarkEle: true,
-  //     gsId: optIn.widgetDivId + divKey,
-  //     x: x0,
-  //     y: y0,
-  //     w: w0,
-  //     h: h0,
-  //     content: "<div id='" + optIn.baseName + divKey + "'></div>"
-  //   }
-  // }
-
-  // if (doSvgDetail) {
-  //   if (svgDetailOnRight) {
-  //     w0 = 6
-  //     h0 = 6
-  //   }
-  // }
-  // y0 += 2
-
-  // divKey = 'main'
-  // optIn.eleProps[divKey] = {
-  //   autoPos: true,
-  //   isDarkEle: true,
-  //   gsId: optIn.widgetDivId + divKey,
-  //   x: x0,
-  //   y: y0,
-  //   w: w0,
-  //   h: h0,
-  //   content: "<div id='" + optIn.baseName + divKey + "'></div>"
-  // }
-
-  // if (doSvgDetail) {
-  //   divKey = 'detail'
-  //   optIn.eleProps[divKey] = {
-  //     autoPos: true,
-  //     isDarkEle: true,
-  //     gsId: optIn.widgetDivId + divKey,
-  //     x: x0,
-  //     y: y0,
-  //     w: w0,
-  //     h: h0,
-  //     content: "<div id='" + optIn.baseName + divKey + "'></div>"
-  //   }
-  // }
 
   // console.log(optIn)
   sock.addToTable(optIn)
@@ -238,6 +196,7 @@ let sockArrZoomer = function (optIn) {
 //
 // ------------------------------------------------------------------
 let mainArrZoomer = function (optIn) {
+  let thisTop = this
   let myUniqueId = unique()
   let widgetType = optIn.widgetType
   let tagArrZoomerSvg = optIn.baseName
@@ -246,12 +205,13 @@ let mainArrZoomer = function (optIn) {
   let iconDivV = optIn.iconDivV
   let sideId = optIn.sideId
 
-  let thisArrZoomer = this
   let isSouth = window.__nsType__ === 'S'
 
-  let doSvgDetail = optIn.setupData.doSvgDetail
   let svgDetailOnRight = optIn.setupData.svgDetailOnRight
-  let doSvgQuick = optIn.setupData.doSvgQuick
+  let doSvgMain = optIn.setupData.doSvgMain
+  let doSvgChes = optIn.setupData.doSvgChes
+  let doSvgMini = optIn.setupData.doSvgMini
+  let doSvgDetail = optIn.setupData.doSvgDetail
 
   let sgvTag = {}
   $.each(widgetEle, function (index, eleNow) {
@@ -264,21 +224,16 @@ let mainArrZoomer = function (optIn) {
 
   let svgMainArrZoomer = {}
   svgMainArrZoomer.main = {}
-  svgMainArrZoomer.detail = {}
   svgMainArrZoomer.mini = {}
   svgMainArrZoomer.ches = {}
+  svgMainArrZoomer.detail = {}
 
   // svgMainArrZoomer.detail.g.attr('transform', function (d) {
   //   return 'translate(20,20)scale(0.8)'
   // })
 
-  let lenD = {}
-  lenD.w = {}
-  lenD.h = {}
-
-  lenD.w[0] = 500
-  lenD.h[0] = 500
-  
+  let baseH = 500
+  let lenD = { w: [baseH], h: [baseH] }
 
   // ------------------------------------------------------------------
   //
@@ -287,7 +242,6 @@ let mainArrZoomer = function (optIn) {
 
   let zoomD = {}
   zoomD.target = ''
-
 
   let instruments = {}
   instruments.props = {}
@@ -340,7 +294,10 @@ let mainArrZoomer = function (optIn) {
   locker.add('inNewSvgInit')
   locker.add('inInitMain')
   locker.add('inInitDetail')
+  locker.add('inInitMini')
+  locker.add('inInitChes')
 
+  // let svgBase = null
   let svgMain = null
   let svgDetail = null
   let svgMini = null
@@ -350,21 +307,47 @@ let mainArrZoomer = function (optIn) {
   // main initialisation, after first data come in
   // ------------------------------------------------------------------
   function svgNewInit () {
-    // console.log(' == svgNewInit ==')
-    svgMain = new ArrZoomerMain({
-      runLoop: runLoop,
-      sgvTag: sgvTag,
-      widgetId: widgetId,
-      locker: locker,
-      isSouth: isSouth,
-      myUniqueId: myUniqueId,
-      widgetType: widgetType,
-      arrZoomerBase: thisArrZoomer,
-      svgMainArrZoomer: svgMainArrZoomer,
-      instruments: instruments,
-      zoomD: zoomD,
-    })
-    thisArrZoomer.svgMain = svgMain
+    // svgBase = new ArrZoomerBase({
+    //   runLoop: runLoop,
+    //   // sgvTag: sgvTag,
+    //   widgetId: widgetId,
+    //   locker: locker,
+    //   isSouth: isSouth,
+    //   // myUniqueId: myUniqueId,
+    //   // widgetType: widgetType,
+    //   // arrZoomerXXXXXXXXXXXXXXXXX: thisTop,
+    //   // svgMainArrZoomer: svgMainArrZoomer,
+    //   // instruments: instruments,
+    //   // zoomD: zoomD,
+    // })
+    // console.log(svgBase)
+
+
+
+    if (doSvgMain) {
+      svgMain = new ArrZoomerMain({
+        runLoop: runLoop,
+        sgvTag: sgvTag,
+        widgetId: widgetId,
+        locker: locker,
+        isSouth: isSouth,
+        myUniqueId: myUniqueId,
+        widgetType: widgetType,
+        arrZoomerXXXXXXXXXXXXXXXXX: thisTop,
+        svgMainArrZoomer: svgMainArrZoomer,
+        instruments: instruments,
+        zoomD: zoomD,
+      })
+
+      console.log('333333333333333')
+      svgMain.getG().attr('transform', function (d) {
+        return 'translate(0,250)scale(2.5)'
+      })
+
+    } else {
+      locker.remove('inInitMain')
+    }
+    thisTop.svgMain = svgMain
     
     if (doSvgDetail) {
       svgDetail = new ArrZoomerDetail({
@@ -374,36 +357,46 @@ let mainArrZoomer = function (optIn) {
         locker: locker,
         isSouth: isSouth,
         aspectRatio: 1,
-        arrZoomerBase: thisArrZoomer,
+        arrZoomerXXXXXXXXXXXXXXXXX: thisTop,
         svgMain: svgMain,
         svgMainArrZoomer: svgMainArrZoomer,
         instruments: instruments,
         zoomD: zoomD,
       })
-      thisArrZoomer.svgDetail = svgDetail
+
+      console.log('111111111111111')
+      svgDetail.getG().attr('transform', function (d) {
+        return 'translate(250,250)scale(2.5)'
+      })
+
     } else {
       locker.remove('inInitDetail')
     }
+    thisTop.svgDetail = svgDetail
     
-    if (doSvgQuick) {
+    if (doSvgChes) {
       svgChes = new ArrZoomerChes({
         runLoop: runLoop,
         sgvTag: sgvTag,
         widgetId: widgetId,
         locker: locker,
         isSouth: isSouth,
-        arrZoomerBase: thisArrZoomer,
+        arrZoomerXXXXXXXXXXXXXXXXX: thisTop,
         svgMainArrZoomer: svgMainArrZoomer,
         instruments: instruments,
       })
-      thisArrZoomer.svgChes = svgChes
 
       console.log('44444444444444')
       svgChes.getG().attr('transform', function (d) {
         return 'translate(100,0)scale(4)'
       })
-     
 
+    } else {
+      locker.remove('inInitChes')
+    }
+    thisTop.svgChes = svgChes
+
+    if (doSvgMini) {
       svgMini = new ArrZoomerMini({
         runLoop: runLoop,
         sgvTag: sgvTag,
@@ -411,19 +404,22 @@ let mainArrZoomer = function (optIn) {
         locker: locker,
         isSouth: isSouth,
         myUniqueId: myUniqueId,
-        arrZoomerBase: thisArrZoomer,
+        arrZoomerXXXXXXXXXXXXXXXXX: thisTop,
         svgMainArrZoomer: svgMainArrZoomer,
         instruments: instruments,
         zoomD: zoomD,
       })
-      thisArrZoomer.svgMini = svgMini
 
       console.log('222222222222222')
       svgMini.getG().attr('transform', function (d) {
         return 'translate(100,0)scale(1.5)'
       })
 
+    } else {
+      locker.remove('inInitMini')
     }
+    thisTop.svgMini = svgMini
+
 
     locker.remove('inNewSvgInit')
 
@@ -431,7 +427,6 @@ let mainArrZoomer = function (optIn) {
     // // ------------------------------------------------------------------
     // svgMain.zoomToTrgMain({ target:'M_9',  scale:zoomD.len["1.2"], durFact:0.1 });
     // svgMain.zoomToTrgMain({ target:'init', scale:zoomD.len["0.0"], durFact:0.1 });
-    // svgMain.zoomToTrgMain({ target:'Lx00',  scale:zoomD.len["1.2"], durFact:2.0 }); console.log('FAKE-START')
     // // ------------------------------------------------------------------
     // // ------------------------------------------------------------------
   }
@@ -446,7 +441,7 @@ let mainArrZoomer = function (optIn) {
   let runLoop = new RunLoop({ tag: widgetId })
 
   let interpolate01 = d3.interpolate(0, 1)
-  thisArrZoomer.interpolate01 = interpolate01
+  thisTop.interpolate01 = interpolate01
 
 
 
@@ -512,19 +507,19 @@ let mainArrZoomer = function (optIn) {
     instruments.props0['avg'] = instruments.props0[''] // .slice()
     instruments.tauFracs['avg'] = instruments.tauFracs['']
   }
-  thisArrZoomer.initInstProps = initInstProps
+  thisTop.initInstProps = initInstProps
 
   function getTelProps (keys, telId) {
     return keys.filter(function (k) {
       return instruments.props[telId].indexOf(k) !== -1
     })
   }
-  thisArrZoomer.getTelProps = getTelProps
+  thisTop.getTelProps = getTelProps
   
   function getTauFrac (nProps) {
     return tau / nProps
   }
-  thisArrZoomer.getTauFrac = getTauFrac
+  thisTop.getTauFrac = getTauFrac
 
   function getPropPosShift (xy, r, nPropNow, nProps) {
     let angle = (nPropNow + 0.5) * getTauFrac(nProps) + tau / 4
@@ -536,7 +531,7 @@ let mainArrZoomer = function (optIn) {
     else if (xy === 'xy') return [labelX, labelY]
     else return null
   }
-  thisArrZoomer.getPropPosShift = getPropPosShift
+  thisTop.getPropPosShift = getPropPosShift
 
 
   // function interpolatePct (origVal, newVal) {
@@ -573,17 +568,17 @@ let mainArrZoomer = function (optIn) {
   function isStateUp (scale, scaleTag) {
     return zoomD.len.prev < zoomD.len[scaleTag] && scale >= zoomD.len[scaleTag]
   }
-  thisArrZoomer.isStateUp = isStateUp
+  thisTop.isStateUp = isStateUp
 
   function isStateDown (scale, scaleTag) {
     return zoomD.len.prev >= zoomD.len[scaleTag] && scale < zoomD.len[scaleTag]
   }
-  thisArrZoomer.isStateDown = isStateDown
+  thisTop.isStateDown = isStateDown
 
   function isStateChange (scale, scaleTag) {
     return isStateUp(scale, scaleTag) || isStateDown(scale, scaleTag)
   }
-  thisArrZoomer.isStateChange = isStateChange
+  thisTop.isStateChange = isStateChange
 
   // zoomD.len.start = Date.now();
 
@@ -640,8 +635,9 @@ let mainArrZoomer = function (optIn) {
   //
   // ------------------------------------------------------------------
   function initData (dataDictIn) {
-    if (sock.multipleInit({ id: widgetId, data: dataDictIn }))
+    if (sock.multipleInit({ id: widgetId, data: dataDictIn })) {
       return
+    }
 
     // ------------------------------------------------------------------
     // create the main svg element
@@ -728,9 +724,11 @@ let mainArrZoomer = function (optIn) {
       //
       // ------------------------------------------------------------------
       svgMain.initData(dataIn)
+      
       if (svgDetail) {
         svgDetail.initData(dataIn)
       }
+      
       if (svgMini) {
         svgMini.initData({
           instrumentData: {
@@ -743,6 +741,7 @@ let mainArrZoomer = function (optIn) {
           telTypeV: telTypeV
         })
       }
+      
       if (svgChes) {
         svgChes.initData({
           instrumentData: {
@@ -764,11 +763,12 @@ let mainArrZoomer = function (optIn) {
       runWhenReady({
         pass: function () {
           return locker.isFreeV([
-            'inInitMain',
             'inPropInit',
             'inNewSvgInit',
+            'inInitMain',
+            'inInitChes',
+            'inInitMini',
             'inInitDetail',
-            'inInitQuick',
             'dataChange',
             'setStateLock'
           ])
@@ -785,41 +785,54 @@ let mainArrZoomer = function (optIn) {
       execute: svgDataInit
     })
   }
-  thisArrZoomer.initData = initData
+  thisTop.initData = initData
 
   // ------------------------------------------------------------------
   //
+  // for s0 we acculumate all updates (each one is a 
+  // subset of all elements which had some change)
+  // for s1 we take ony the latest update (each one 
+  // is a full update of all the data)
   // ------------------------------------------------------------------
-  // for s0 we acculumate all updates (each one is a subset of all elements which had some change)
-  // for s1 we take ony the latest update (each one is a full update of all the data)
-  runLoop.init({ tag: '_s00update_', func: updateS0, nKeep: -1, wait: 500 })
-  // runLoop.init({ tag:"_s10update_",    func:updateS0,     nKeep:-1, wait:500 });
-  runLoop.init({ tag: '_s11update_', func: updateS1, nKeep: 1, wait: 500 })
+  runLoop.init({
+    tag: '_s00update_', 
+    func: updateS0, 
+    nKeep: -1, 
+    wait: 500,
+  })
+  runLoop.init({
+    tag: '_s11update_', 
+    func: updateS1, 
+    nKeep: 1, 
+    wait: 500,
+  })
   runLoop.init({
     tag: 'subArrUpdate',
     func: subArrUpdate,
     nKeep: 1,
-    wait: 500
+    wait: 500,
   })
 
   function updateData (dataIn) {
     if (!locker.isFree('inInit')) return
 
-    // if     (dataIn.type == "s10") { console.log('ask...',dataIn.emitTime); }
     if (dataIn.type === 's00') {
       runLoop.push({ tag: '_s00update_', data: dataIn })
-    } else if (dataIn.type === 's11') {
+    } 
+    else if (dataIn.type === 's11') {
       //, time:dataIn.emitTime
       // else if(dataIn.type == "s10") { runLoop.push({ tag:"_s10update_", data:dataIn, time:dataIn.emitTime }); }
       runLoop.push({ tag: '_s11update_', data: dataIn })
-    } else if (dataIn.type === 'subArr') {
+    } 
+    else if (dataIn.type === 'subArr') {
       //, time:dataIn.emitTime
-      runLoop.push({ tag: 'subArrUpdate', data: dataIn }) //, time:dataIn.emitTime
-    } else {
+      runLoop.push({ tag: 'subArrUpdate', data: dataIn })
+    } 
+    else {
       console.error('undefined tag for dataIn = ', dataIn, ' !!!!!! ')
     }
   }
-  thisArrZoomer.updateData = updateData
+  thisTop.updateData = updateData
 
   // ------------------------------------------------------------------
   // update the data for s0
@@ -870,9 +883,8 @@ let mainArrZoomer = function (optIn) {
     let telId = dataIn.id
     let telIndex = instruments.data.idToIndex[telId]
 
-    // console.log('updateS1',dataIn);
-
-    // if by the time the update has arrived, were already gone from this element...
+    // if by the time the update has arrived, 
+    // were already gone from this element...
     if (!hasVar(instruments.data.propDataS1[telId])) {
       // console.log('-+-> updateS1: could not find',telId,'in instruments.data.propDataS1')
       return
@@ -884,7 +896,9 @@ let mainArrZoomer = function (optIn) {
     // ------------------------------------------------------------------
     // update the underlying data
     // ------------------------------------------------------------------
-    let propsNow = getTelProps(Object.keys(instruments.data.propDataS1[telId]), telId)
+    let propsNow = getTelProps(
+      Object.keys(instruments.data.propDataS1[telId]), telId)
+    
     $.each(propsNow, function (index, porpNow) {
       // update the data container with the s0 updated health
       instruments.data.propDataS1[telId][porpNow].val = instruments.data.tel[telIndex][porpNow]
@@ -936,7 +950,7 @@ let mainArrZoomer = function (optIn) {
   function setTelLayout (idNow) {
     svgMain.setTelLayout({ id: idNow, data: null, updtId: true })
   }
-  thisArrZoomer.setTelLayout = setTelLayout
+  thisTop.setTelLayout = setTelLayout
 
   // ------------------------------------------------------------------
   //
@@ -946,7 +960,7 @@ let mainArrZoomer = function (optIn) {
   function setState () {
     runLoop.push({ tag: 'setState' })
   }
-  thisArrZoomer.setState = setState
+  thisTop.setState = setState
 
   function setStateOnce () {
     // create delay if currently in data update or a previous call of setStateOnce
@@ -985,7 +999,7 @@ let mainArrZoomer = function (optIn) {
     runLoop.push({ tag: '_s1props_', data: optIn })
   }
   // this.propsS1 = propsS1;
-  thisArrZoomer.propsS1 = propsS1
+  thisTop.propsS1 = propsS1
 
   function propsS1Once (optIn) {
     // not sure i need "dataChange" or others here .... FIXME
@@ -1003,8 +1017,6 @@ let mainArrZoomer = function (optIn) {
       : true
     let doTelHirch = hasVar(doFunc) ? doFunc.indexOf('telHirch') >= 0 : true
 
-    // console.log('propsS1 '+optIn.debug+" :",optIn,doBckArcClick,doTelHirch)
-
     if (svgDetail) {
       if (doTelHirch) svgDetail.telHirch(optIn)
     }
@@ -1018,8 +1030,10 @@ let mainArrZoomer = function (optIn) {
   }
 
   // ------------------------------------------------------------------
-  // activate a listener for getting the s1 data - this is needed in case the same data are sent more
-  // then once (can happen if one element is requested, but by the time the transitions to open it
+  // activate a listener for getting the s1 data - this is needed 
+  // in case the same data are sent more
+  // then once (can happen if one element is requested, but 
+  // by the time the transitions to open it
   // has ended, another was already requested too).
   // ------------------------------------------------------------------
   runLoop.init({ tag: '_getDataS1_', func: getDataS1Once, nKeep: 1 })
@@ -1033,7 +1047,7 @@ let mainArrZoomer = function (optIn) {
     // console.log('-client- getDataS1',dataIn)
 
     if (svgMain.getZoomS() === 1) {
-      runLoop.push({ tag: '_getDataS1_', data: dataIn }) //, time:dataIn.emitTime
+      runLoop.push({ tag: '_getDataS1_', data: dataIn })
     }
   }
   this.getDataS1 = getDataS1
@@ -1085,21 +1099,15 @@ let mainArrZoomer = function (optIn) {
       let scale = zoomD.len['0.0']
       if (zoomState === 1) scale = zoomD.len['1.0']
 
-      console.log('FIXME - syncTelFocus - uncomment zoomToTrgMain')
-      // svgMain.zoomToTrgMain({
-      //   target: target,
-      //   scale: scale,
-      //   durFact: 1,
-      //   endFunc: function () {
-      //     // locker.remove("syncStateGet");
-      //     svgMain.askDataS1()
-      //   }
-      // })
-
-
-
-
-
+      svgMain.zoomToTrgMain({
+        target: target,
+        scale: scale,
+        durFact: 1,
+        endFunc: function () {
+          // locker.remove("syncStateGet");
+          svgMain.askDataS1()
+        }
+      })
 
     }
   }
@@ -1118,7 +1126,7 @@ let mainArrZoomer = function (optIn) {
   function syncStateSend (dataIn) {
     runLoop.push({ tag: 'syncStateSend', data: dataIn })
   }
-  thisArrZoomer.syncStateSend = syncStateSend
+  thisTop.syncStateSend = syncStateSend
 
   function _syncStateSend (dataIn) {
     if (sock.conStat.isOffline()) return
@@ -1158,14 +1166,17 @@ let mainArrZoomer = function (optIn) {
       zoomTarget: '',
       zoomTargetProp: ''
     }
+    
     let mainWidgetState = svgMain.getWidgetState()
+    
     let detailWidgetState = {}
     if (doSvgDetail) {
       detailWidgetState = svgDetail.getWidgetState()
-    } else {
+    } 
+    else {
       function getWidgetState () {
         return {
-          zoomTargetProp: ''
+          zoomTargetProp: '',
         }
       }
       detailWidgetState['zoomTargetProp'] = getWidgetState()
@@ -1178,7 +1189,7 @@ let mainArrZoomer = function (optIn) {
 
     return dataWidget
   }
-  thisArrZoomer.setZoomState = setZoomState
+  thisTop.setZoomState = setZoomState
 
 
   return

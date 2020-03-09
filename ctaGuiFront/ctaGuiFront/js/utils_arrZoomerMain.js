@@ -19,14 +19,12 @@
 //
 // ------------------------------------------------------------------
 window.ArrZoomerMain = function (optIn0) {
-  let thisArrZoomerMain = this
+  let thisTop = this
   let runLoop = optIn0.runLoop
   let sgvTag = optIn0.sgvTag
   let widgetId = optIn0.widgetId
   let locker = optIn0.locker
   let isSouth = optIn0.isSouth
-
-
   let myUniqueId = optIn0.myUniqueId
   let widgetType = optIn0.widgetType
 
@@ -36,43 +34,46 @@ window.ArrZoomerMain = function (optIn0) {
   let zoomD = optIn0.zoomD
   let rScale = instruments.rScale
 
-  let arrZoomerBase = optIn0.arrZoomerBase
-  let getPropPosShift = arrZoomerBase.getPropPosShift
-  let interpolate01 = arrZoomerBase.interpolate01
-  let setZoomState = arrZoomerBase.setZoomState
-  let propsS1 = arrZoomerBase.propsS1
-  let setState = arrZoomerBase.setState
-  let isStateUp = arrZoomerBase.isStateUp
-  let isStateDown = arrZoomerBase.isStateDown
-  let isStateChange = arrZoomerBase.isStateChange
-  let syncStateSend = arrZoomerBase.syncStateSend
+  let arrZoomerXXXXXXXXXXXXXXXXX = optIn0.arrZoomerXXXXXXXXXXXXXXXXX
+  let getPropPosShift = arrZoomerXXXXXXXXXXXXXXXXX.getPropPosShift
+  let interpolate01 = arrZoomerXXXXXXXXXXXXXXXXX.interpolate01
+  let setZoomState = arrZoomerXXXXXXXXXXXXXXXXX.setZoomState
+  let propsS1 = arrZoomerXXXXXXXXXXXXXXXXX.propsS1
+  let setState = arrZoomerXXXXXXXXXXXXXXXXX.setState
+  let isStateUp = arrZoomerXXXXXXXXXXXXXXXXX.isStateUp
+  let isStateDown = arrZoomerXXXXXXXXXXXXXXXXX.isStateDown
+  let isStateChange = arrZoomerXXXXXXXXXXXXXXXXX.isStateChange
+  let syncStateSend = arrZoomerXXXXXXXXXXXXXXXXX.syncStateSend
+
+
+  let noRender = false
   
   // need to use access function, as these may not yet
   // be defined when this function is first initialised
   function getSvgMini() {
-    return arrZoomerBase.svgMini
+    return arrZoomerXXXXXXXXXXXXXXXXX.svgMini
   }
   function getSvgChes() {
-    return arrZoomerBase.svgChes
+    return arrZoomerXXXXXXXXXXXXXXXXX.svgChes
   }
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  thisArrZoomerMain.hasInit = false
-  // thisArrZoomerMain.svgQuick = null
+  thisTop.hasInit = false
+  // thisTop.svgQuick = null
 
   let com = {}
-  thisArrZoomerMain.com = com
+  thisTop.com = com
   let s10V = []
   let syncD = {}
-  thisArrZoomerMain.syncD = syncD
+  thisTop.syncD = syncD
   com.vor = {}
   com.s00 = {}
   com.s01 = {}
   com.s10 = {}
   instruments.data.vor = {}
-  
+
   let dblclickZoomInOut = true
   let lenWH = 500
 
@@ -88,7 +89,7 @@ window.ArrZoomerMain = function (optIn0) {
   let siteScale = isSouth ? 4 / 9 : 1
 
   let lenD = { w: [lenWH], h: [lenWH] }
-  thisArrZoomerMain.lenD = lenD
+  thisTop.lenD = lenD
   
   lenD.r = {}
   lenD.r.s00 = [12, 13, 14]
@@ -116,9 +117,8 @@ window.ArrZoomerMain = function (optIn0) {
   gMainD.gClipped.attr('class', 'gClipped')
     .attr('clip-path', 'url(#'+uniqueClipId+')');
 
-
   // ------------------------------------------------------------------
-  // scale to 100x100 px
+  // initial scale to 100x100 px
   // ------------------------------------------------------------------
   gMainD.gOuter.attr('transform', function (d) {
     return 'translate(0,0)scale('+ (100 / lenWH) +')'
@@ -128,16 +128,9 @@ window.ArrZoomerMain = function (optIn0) {
   // to avoid bugs, this is the g which should be used
   // for translations and sacling of this element
   // ------------------------------------------------------------------
-  function getG () {
+  thisTop.getG = function () {
     return gMainD.g
   }
-  thisArrZoomerMain.getG = getG
-
-
-  console.log('333333333333333')
-  thisArrZoomerMain.getG().attr('transform', function (d) {
-    return 'translate(0,250)scale(2.5)'
-  })
 
   gMainD.gBase = gMainD.gClipped.append('g')
   gMainD.gBack = gMainD.gBase.append('g')
@@ -145,7 +138,12 @@ window.ArrZoomerMain = function (optIn0) {
   com.s00.g = gMainD.gBase.append('g')
   com.s01.g = gMainD.gBase.append('g')
 
-  
+  if (noRender) {
+    gMainD.g
+      .style('opacity', 0)
+      .style('pointer-events', 'none')
+  }
+
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
@@ -153,58 +151,49 @@ window.ArrZoomerMain = function (optIn0) {
     let arrInit = dataIn.arrInit
     let subArr = dataIn.subArr
 
-    if (thisArrZoomerMain.hasInit) return
-    thisArrZoomerMain.hasInit = true
+    if (thisTop.hasInit) return
+    thisTop.hasInit = true
 
-    initZoom()
     initVor()
 
     // ------------------------------------------------------------------
     // add one circle as background
     // ------------------------------------------------------------------
-    gMainD.gBack
-      .selectAll('circle')
-      .data([0])
-      .enter()
-      .append('circle')
-      .attr('r', 0)
-      .attr('cx', lenD.w[0] / 2)
-      .attr('cy', lenD.h[0] / 2)
-      .attr('fill', '#F2F2F2')
-      .transition('inOut')
-      .duration(timeD.animArc / 3)
-      .attr('r', lenD.w[0] / 2.1)
+    if (!noRender) {
+      gMainD.gBack
+        .selectAll('circle')
+        .data([0])
+        .enter()
+        .append('circle')
+        .attr('r', 0)
+        .attr('cx', lenD.w[0] / 2)
+        .attr('cy', lenD.h[0] / 2)
+        .attr('fill', '#F2F2F2')
+        .transition('inOut')
+        .duration(timeD.animArc / 3)
+        .attr('r', lenD.w[0] / 2.1)
 
-    // the background grid
-    bckPattern({
-      com: com,
-      gNow: gMainD.gBack,
-      gTag: 'hex',
-      lenWH: [lenD.w[0], lenD.h[0]],
-      opac: getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
-      hexR: 18
-    })
+      // the background grid
+      bckPattern({
+        com: com,
+        gNow: gMainD.gBack,
+        gTag: 'hex',
+        lenWH: [lenD.w[0], lenD.h[0]],
+        opac: thisTop.getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
+        hexR: 18
+      })
+    }
 
 
+    // ------------------------------------------------------------------
     // run all variations, just to initialize all the variables
     // (but only the last one will take affect - this will be the default value)
     // ------------------------------------------------------------------
-    instruments.data.layout = 'physical' // set the physical layout as the default
-    // instruments.data.layout = "subArr";  // set the sub-array layout as the default value
+    instruments.data.layout = 'physical' // physical layout as default
+    // instruments.data.layout = "subArr";  // sub-array layout as default
 
-    thisArrZoomerMain.setLayoutSubArr(subArr)
-    thisArrZoomerMain.setLayoutPhysical(arrInit)
-
-    // // ------------------------------------------------------------------------
-    // // ------------------------------------------------------------------------
-    // // not working for now ..... commented out from com.jinja2
-    // // ------------------------------------------------------------------------
-    // if (hasVar(window.sideDiv)) {
-    //   let arrayLayout = window.sideDiv.getEle('arrayLayout')
-    //   if (hasVar(arrayLayout)) arrayLayout.select(instruments.data.layout)
-    // }
-    // // ------------------------------------------------------------------------
-    // // ------------------------------------------------------------------------
+    thisTop.setLayoutSubArr(subArr)
+    thisTop.setLayoutPhysical(arrInit)
 
     // ------------------------------------------------------------------
     //
@@ -213,39 +202,30 @@ window.ArrZoomerMain = function (optIn0) {
 
     locker.remove('inInitMain')
   }
-  thisArrZoomerMain.initData = initData
+  thisTop.initData = initData
 
 
+  // // ------------------------------------------------------------------
+  // // 
+  // // ------------------------------------------------------------------
+  // function setupZoom () {
+  //   // initialize a global function (to be overriden below)
+  //   thisTop.zoomToTrgMain = function (optIn) {
+  //     if (!locker.isFree('inInit')) {
+  //       setTimeout(function () {
+  //         thisTop.zoomToTrgMain(optIn)
+  //       }, timeD.waitLoop)
+  //     }
+  //   }
 
-  // ------------------------------------------------------------------
-  // 
-  // ------------------------------------------------------------------
-  function setupZoom () {
-    // initialize a global function (to be overriden below)
-    zoomToTrgMain = function (optIn) {
-      if (!locker.isFree('inInit')) {
-        setTimeout(function () {
-          zoomToTrgMain(optIn)
-        }, timeD.waitLoop)
-      }
-    }
-    thisArrZoomerMain.zoomToTrgMain = zoomToTrgMain
+  //   // initialize a couple of functions to be overriden below
+  //   thisTop.getScale = function () { return zoomD.len['0.0'] }
+  //   thisTop.getTrans = function () { return [0, 0] }
+  //   thisTop.getZoomS = function () { return 0 }
 
-    // initialize a couple of functions to be overriden below
-    getScale = function () { return zoomD.len['0.0'] }
-    thisArrZoomerMain.getScale = getScale
-    
-    getTrans = function () { return [0, 0] }
-    thisArrZoomerMain.getTrans = getTrans
-    
-    getZoomS = function () { return 0 }
-    thisArrZoomerMain.getZoomS = getZoomS
-
-    return
-  }
-
-  let zoomToTrgMain, getScale, getTrans, getZoomS
-  setupZoom()
+  //   return
+  // }
+  // setupZoom()
 
 
   // ------------------------------------------------------------------
@@ -268,7 +248,12 @@ window.ArrZoomerMain = function (optIn0) {
       if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
       gMainD.gBase.attr('transform', d3.event.transform)
 
-      svgMainArrZoomer.mini.gBase.attr('transform', d3.event.transform)
+      let svgMini = getSvgMini()
+      if (svgMini) {
+        if(!svgMini.staticZoom) {
+          svgMainArrZoomer.mini.gBase.attr('transform', d3.event.transform)
+        }
+      }
 
       svgZoomUpdState()
     }
@@ -301,7 +286,7 @@ window.ArrZoomerMain = function (optIn0) {
       if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
         if (Math.abs(d3.event.transform.k - zoomD.len['0.0']) < 0.00001) {
           if (locker.isFreeV(['autoZoomTarget'])) {
-            thisArrZoomerMain.zoomToTrgMain({
+            thisTop.zoomToTrgMain({
               target: 'init',
               scale: d3.event.transform.k,
               durFact: 0.5
@@ -344,15 +329,15 @@ window.ArrZoomerMain = function (optIn0) {
         // funcStart: funcStart,
         funcEnd: funcEnd,
         // funcDuring: funcDuring,
-        svg:          gMainD.gOuter,
-        svgZoom:      com.svgZoom,
-        svgBox:       gMainD.gBase,
-        svgZoomNode:  gMainD.zoomNode
+        svg: gMainD.gOuter,
+        svgZoom: com.svgZoom,
+        svgBox: gMainD.gBase,
+        svgZoomNode: gMainD.zoomNode
       }
 
       doZoomToTarget(outD)
     }
-    thisArrZoomerMain.zoomSyncMain = zoomSyncMain
+    thisTop.zoomSyncMain = zoomSyncMain
 
     // ------------------------------------------------------------------
     // 
@@ -387,10 +372,10 @@ window.ArrZoomerMain = function (optIn0) {
     // the actual function to be called when a
     // zoom needs to be put in the queue
     // ------------------------------------------------------------------
-    zoomToTrgMain = function (optIn) {
+    thisTop.zoomToTrgMain = function (optIn) {
       if (!locker.isFree('inInit')) {
         setTimeout(function () {
-          zoomToTrgMain(optIn)
+          thisTop.zoomToTrgMain(optIn)
         }, timeD.waitLoop)
         return
       }
@@ -401,7 +386,7 @@ window.ArrZoomerMain = function (optIn0) {
       let durFact = optIn.durFact
       let endFunc = optIn.endFunc
 
-      if (targetScale < zoomD.len['0.0']) targetScale = getScale()
+      if (targetScale < zoomD.len['0.0']) targetScale = thisTop.getScale()
 
       let transTo = null
       if (targetName === 'init') {
@@ -411,8 +396,8 @@ window.ArrZoomerMain = function (optIn0) {
         targetName === '' || 
         !hasVar(instruments.data.mini[targetName])) 
       {
-        let scale = getScale()
-        let trans = getTrans()
+        let scale = thisTop.getScale()
+        let trans = thisTop.getTrans()
         let x = (lenD.w[0] / 2 - trans[0]) / scale
         let y = (lenD.h[0] / 2 - trans[1]) / scale
         transTo = [x, y]
@@ -449,11 +434,11 @@ window.ArrZoomerMain = function (optIn0) {
         locker.remove('autoZoomTarget')
 
         let isDone = true
-        if (Math.abs(getScale() - zoomD.len['0.0']) < 0.00001) {
-          let trans = getTrans()
+        if (Math.abs(thisTop.getScale() - zoomD.len['0.0']) < 0.00001) {
+          let trans = thisTop.getTrans()
           if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
             isDone = false
-            thisArrZoomerMain.zoomToTrgMain({
+            thisTop.zoomToTrgMain({
               target: 'init',
               scale: zoomD.len['0.0'],
               durFact: 1
@@ -488,30 +473,26 @@ window.ArrZoomerMain = function (optIn0) {
         runLoop.push({ tag: 'zoomToTargetMain', data: outD })
       }
     }
-    thisArrZoomerMain.zoomToTrgMain = zoomToTrgMain
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    getScale = function () {
+    thisTop.getScale = function () {
       return d3.zoomTransform(gMainD.zoomNode).k
     }
-    getTrans = function () {
+    thisTop.getTrans = function () {
       return [
         d3.zoomTransform(gMainD.zoomNode).x,
         d3.zoomTransform(gMainD.zoomNode).y
       ]
     }
-    getZoomS = function () {
-      return getScale() < zoomD.len['1.0'] ? 0 : 1
+    thisTop.getZoomS = function () {
+      return thisTop.getScale() < zoomD.len['1.0'] ? 0 : 1
     }
-
-    thisArrZoomerMain.getScale = getScale
-    thisArrZoomerMain.getTrans = getTrans
-    thisArrZoomerMain.getZoomS = getZoomS
 
     return
   }
+  initZoom()
 
   // ------------------------------------------------------------------
   // 
@@ -696,7 +677,7 @@ window.ArrZoomerMain = function (optIn0) {
       if (zoomD.target === d.data.id) return
       if (!locker.isFreeV(['zoom', 'autoZoomTarget'])) return
 
-      let scale = getScale()
+      let scale = thisTop.getScale()
       if (scale >= zoomD.len['1.0']) return
 
       zoomD.target = d.data.id
@@ -723,7 +704,7 @@ window.ArrZoomerMain = function (optIn0) {
       }
       locker.add({ id: 'vorZoomClick', override: true })
 
-      let scale = getScale()
+      let scale = thisTop.getScale()
       // console.log((scale >= zoomD.len["1.0"]),(zoomD.target == d.data.id))
 
       if (scale < zoomD.len['1.0']) {
@@ -761,7 +742,7 @@ window.ArrZoomerMain = function (optIn0) {
 
       let d = optIn.d
       let zoomInOut = optIn.isInOut
-      let scale = getScale()
+      let scale = thisTop.getScale()
       let isOnTarget = zoomD.target === d.data.id
       // console.log('vorClick',d.data.id,(scale >= zoomD.len["1.0"]),!isOnTarget)
 
@@ -777,7 +758,7 @@ window.ArrZoomerMain = function (optIn0) {
         else scaleToZoom = zoomD.len['1.2']
       }
 
-      thisArrZoomerMain.zoomToTrgMain({
+      thisTop.zoomToTrgMain({
         target: zoomD.target,
         scale: scaleToZoom,
         durFact: 1.25
@@ -858,12 +839,12 @@ window.ArrZoomerMain = function (optIn0) {
         links2V.xyz = links2V.physical
 
         setVor()
-        thisArrZoomerMain.subArrGrpCirc([])
+        thisTop.subArrGrpCirc([])
 
         if (locker.isFree('inInit')) {
           if (hasVar(instruments.focus.target)) {
             if (hasVar(instruments.data.xyr[instruments.focus.target])) {
-              thisArrZoomerMain.zoomToTrgMain({
+              thisTop.zoomToTrgMain({
                 target: instruments.focus.target,
                 scale: instruments.focus.scale,
                 durFact: 1
@@ -875,7 +856,7 @@ window.ArrZoomerMain = function (optIn0) {
 
       }
     }
-    thisArrZoomerMain.setLayoutPhysical = setLayoutPhysical
+    thisTop.setLayoutPhysical = setLayoutPhysical
 
     // ------------------------------------------------------------------
     // 
@@ -890,16 +871,16 @@ window.ArrZoomerMain = function (optIn0) {
 
         setVor()
 
-        thisArrZoomerMain.subArrGrpCirc(instruments.data.xyrSubArrGrp)
+        thisTop.subArrGrpCirc(instruments.data.xyrSubArrGrp)
 
         if (locker.isFree('inInit')) {
           if (hasVar(instruments.focus.target)) {
             if (hasVar(instruments.data.xyr[instruments.focus.target])) {
               // console.log('222222222222');
-              if (Math.abs(getScale() - zoomD.len['0.0']) > 0.00001) {
-                let trans = getTrans()
+              if (Math.abs(thisTop.getScale() - zoomD.len['0.0']) > 0.00001) {
+                let trans = thisTop.getTrans()
                 if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
-                  thisArrZoomerMain.zoomToTrgMain({
+                  thisTop.zoomToTrgMain({
                     target: instruments.focus.target,
                     scale: instruments.focus.scale,
                     durFact: 1
@@ -912,11 +893,10 @@ window.ArrZoomerMain = function (optIn0) {
 
       }
     }
-    thisArrZoomerMain.setLayoutSubArr = setLayoutSubArr
+    thisTop.setLayoutSubArr = setLayoutSubArr
 
     return
   }
-
 
   // ------------------------------------------------------------------
   // see: http://bl.ocks.org/mbostock/5100636
@@ -987,8 +967,8 @@ window.ArrZoomerMain = function (optIn0) {
   // 
   // ------------------------------------------------------------------
   function svgZoomUpdState () {
-    let scale = getScale()
-    let zoomS = getZoomS()
+    let scale = thisTop.getScale()
+    let zoomS = thisTop.getZoomS()
 
     let change01 = isStateChange(scale, '0.1')
     let change10 = isStateChange(scale, '1.0')
@@ -1005,7 +985,7 @@ window.ArrZoomerMain = function (optIn0) {
           gNow: gMainD.gBase,
           gTag: 'hex',
           lenWH: [lenD.w[0], lenD.h[0]],
-          opac: getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
+          opac: thisTop.getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
           hexR: 18
         })
       }
@@ -1048,10 +1028,10 @@ window.ArrZoomerMain = function (optIn0) {
 
     if (id === 'physical') {
       if (updtId) instruments.data.layout = id
-      thisArrZoomerMain.setLayoutPhysical(data)
+      thisTop.setLayoutPhysical(data)
     } else if (id === 'subArr') {
       if (updtId) instruments.data.layout = id
-      thisArrZoomerMain.setLayoutSubArr(data)
+      thisTop.setLayoutSubArr(data)
     } else {
       console.error(' - trying to set undefined layout', id)
       return
@@ -1060,16 +1040,21 @@ window.ArrZoomerMain = function (optIn0) {
     if ((updtId && isChange) || hasVar(data)) {
       setState()
 
-      if (getZoomS() === 1) {
+      if (thisTop.getZoomS() === 1) {
         $.each(s10V, function (index, eleNow) {
           eleNow.s10.updatePosG(timeD.animArc)
         })
       }
     }
   }
-  thisArrZoomerMain.setTelLayout = setTelLayout
+  thisTop.setTelLayout = setTelLayout
 
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
   function subArrGrpCirc (dataV) {
+    if (noRender) return
+
     if (!locker.isFree('inInit')) {
       setTimeout(function () {
         subArrGrpCirc(dataV)
@@ -1164,12 +1149,14 @@ window.ArrZoomerMain = function (optIn0) {
       return 'translate(' + d.x + ',' + (d.y - d.r) + ')'
     }
   }
-  thisArrZoomerMain.subArrGrpCirc = subArrGrpCirc
+  thisTop.subArrGrpCirc = subArrGrpCirc
 
   // ------------------------------------------------------------------
   // add a lable with the
   // ------------------------------------------------------------------
   function s00title (focusV0, focusV1) {
+    if (noRender) return
+    
     let focusIdV = [
       focusV0.map(function (d) {
         return d.id
@@ -1266,6 +1253,8 @@ window.ArrZoomerMain = function (optIn0) {
   // innner arcs for the different properties
   // ------------------------------------------------------------------
   function s01inner (dataV, focusV) {
+    if (noRender) return
+
     let tagState = 'state01'
 
     if (!hasVar(com.s01.inner)) {
@@ -1476,9 +1465,13 @@ window.ArrZoomerMain = function (optIn0) {
     focusIdV = null
   }
 
+  
+  // ------------------------------------------------------------------
   // outer rings for the instruments.prop0 (equivalent of s00_D metric in s01_D)
   // ------------------------------------------------------------------
   function s01outer (dataV, focusV) {
+    if (noRender) return
+
     let tagState = 'state01'
     let porpNow = instruments.prop0
 
@@ -1664,7 +1657,7 @@ window.ArrZoomerMain = function (optIn0) {
   //   })
   //   return hasId;
   // }
-  // thisArrZoomerMain.hasS10main = hasS10main;
+  // thisTop.hasS10main = hasS10main;
 
   // ------------------------------------------------------------------
   //
@@ -1876,6 +1869,8 @@ window.ArrZoomerMain = function (optIn0) {
         //
         // ------------------------------------------------------------------
         function setPropLbl (optIn) {
+          if (noRender) return
+
           // due to delays from locker, this function could be called after the S10obj has
           // been removed - make a safety check using gBase...
           if (!hasVar(gBase)) return
@@ -1894,7 +1889,7 @@ window.ArrZoomerMain = function (optIn0) {
           }
 
           let textD = []
-          if (getZoomS() === 1 && !remove) {
+          if (thisTop.getZoomS() === 1 && !remove) {
             $.each(thisS10.instruments.props, function (index, porpNow) {
               let state = 0
               if (propIn !== '') {
@@ -1997,12 +1992,15 @@ window.ArrZoomerMain = function (optIn0) {
         //
         // ------------------------------------------------------------------
         function initBckArc () {
+          if (noRender) return
+
           // due to delays from locker, this function could be called after the S10obj has
           // been removed - make a safety check using gBase...
           if (!hasVar(gBase)) return
 
           // console.log('initBckArc')
-          $.each(instruments.data.propDataS1[telId], function (porpNow, dataNow) {
+          let propsNow = instruments.data.propDataS1[telId]
+          $.each(propsNow, function (porpNow, dataNow) {
             if (dataNow) {
               let baseTag = 's10arc'
               let tagNow = baseTag + porpNow
@@ -2167,8 +2165,11 @@ window.ArrZoomerMain = function (optIn0) {
         //
         // ------------------------------------------------------------------
         function bckArcRemove () {
-          // due to delays from locker, this function could be called after the S10obj has
-          // been removed - make a safety check using gBase...
+          if (noRender) return
+
+          // due to delays from locker, this function could 
+          // be called after the S10obj has been removed
+           // - make a safety check using gBase...
           if (!hasVar(gBase)) return
 
           locker.add('s10bckArcChange')
@@ -2214,8 +2215,9 @@ window.ArrZoomerMain = function (optIn0) {
         //
         // ------------------------------------------------------------------
         function bckArcClick (optIn) {
-          // due to delays from locker, this function could be called after the S10obj has
-          // been removed - make a safety check using gBase...
+          // due to delays from locker, this function could be 
+          // called after the S10obj has been removed 
+          // - make a safety check using gBase...
           if (!hasVar(gBase)) return
 
           let clickIn = optIn.clickIn
@@ -2284,6 +2286,7 @@ window.ArrZoomerMain = function (optIn0) {
             })
 
             hirchStyleClick({ propIn: propIn, id: parentName, isOpen: true })
+            
             propsS1({
               telId: telId,
               clickIn: true,
@@ -2293,11 +2296,14 @@ window.ArrZoomerMain = function (optIn0) {
             })
 
             freeMe(true)
+            
             return
-          } else {
+          } 
+          else {
             // console.log('openCloseHirch',propIn,'--',depthClick[propIn],clickIn)
 
             hirchStyleClick({ propIn: propIn, id: propIn, isOpen: clickIn })
+
             propsS1({
               telId: telId,
               clickIn: clickIn,
@@ -2316,7 +2322,7 @@ window.ArrZoomerMain = function (optIn0) {
 
           //
           if (clickIn) {
-            thisArrZoomerMain.zoomToTrgMain({
+            thisTop.zoomToTrgMain({
               target: telId,
               scale: zoomD.len['1.2'],
               durFact: 1
@@ -2331,7 +2337,7 @@ window.ArrZoomerMain = function (optIn0) {
         //
         // ------------------------------------------------------------------
         function fullArcs (path0, path1, tagNow, isOpen) {
-          // console.log('fullArcs',tagNow,isOpen)
+          if (noRender) return
 
           path0
             .transition('inOut')
@@ -2393,7 +2399,8 @@ window.ArrZoomerMain = function (optIn0) {
         //
         // ------------------------------------------------------------------
         function hideArcs (path, tagNow) {
-          // console.log('hideArcs',tagNow)
+          if (noRender) return
+
           path
             .transition('inOut')
             .duration(timeD.animArc / 2)
@@ -2416,6 +2423,8 @@ window.ArrZoomerMain = function (optIn0) {
         //
         // ------------------------------------------------------------------
         function hirchHovTitleIn (dIn) {
+          if (noRender) return
+
           if (
             !locker.isFreeV([
               's10bckArcChange',
@@ -2468,7 +2477,12 @@ window.ArrZoomerMain = function (optIn0) {
             .style('opacity', 1)
         }
 
+        // ------------------------------------------------------------------
+        // 
+        // ------------------------------------------------------------------
         function hirchHovTitleOut (dIn) {
+          if (noRender) return
+
           gBase
             .selectAll('text.' + 'hovTitle')
             .filter(function (d) {
@@ -2478,14 +2492,19 @@ window.ArrZoomerMain = function (optIn0) {
             .duration(timeD.animArc)
             .style('opacity', '0')
             .remove()
+
+          return
         }
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
         function initHirch () {
-          // due to delays from locker, this function could be called after the S10obj has
-          // been removed - make a safety check using gBase...
+          if (noRender) return
+
+          // due to delays from locker, this function could be 
+          // called after the S10obj has been removed 
+          // - make a safety check using gBase...
           if (!hasVar(gBase)) return
 
           $.each(childV, function (indexData, dataBase) {
@@ -2675,6 +2694,7 @@ window.ArrZoomerMain = function (optIn0) {
                       id: d.data.id,
                       isOpen: true
                     })
+                    
                     propsS1({
                       telId: telId,
                       clickIn: true,
@@ -2704,10 +2724,11 @@ window.ArrZoomerMain = function (optIn0) {
 
         // }, 4000);
 
+        // ------------------------------------------------------------------
         //
+        // ------------------------------------------------------------------
         function hirchStyleClick (optIn) {
-          // due to delays from locker, this function could be called after the S10obj has
-          // been removed - make a safety check using gBase...
+          if (noRender) return
           if (!hasVar(gBase)) return
 
           if (!locker.isFreeV(['dataChange', 's10clickHirch'])) {
@@ -2732,7 +2753,7 @@ window.ArrZoomerMain = function (optIn0) {
           let syncProp = hasVar(optIn.syncProp) ? optIn.syncProp : optIn.id
           // console.log('clk',id,'==',propIn,'--', hirchDataV[propIn])
 
-          if (getZoomS() === 1) {
+          if (thisTop.getZoomS() === 1) {
             let arrZoomerProp = isOpen ? syncProp : ''
             syncStateSend({
               type: 'syncArrZoomerProp',
@@ -2828,7 +2849,7 @@ window.ArrZoomerMain = function (optIn0) {
 
           freeMe(true)
         }
-        thisArrZoomerMain.hirchStyleClick = hirchStyleClick
+        thisTop.hirchStyleClick = hirchStyleClick
 
         // ------------------------------------------------------------------
         //
@@ -2864,7 +2885,8 @@ window.ArrZoomerMain = function (optIn0) {
               .duration(timeD.animArc)
               .each(function (d) {
                 if (d.nArc === 0) {
-                  d.col = telHealthCol(instruments.data.propDataS1[telId][porpNow].val)
+                  d.col = telHealthCol(
+                    instruments.data.propDataS1[telId][porpNow].val)
                 }
               })
               .style('fill', function (d) {
@@ -2982,8 +3004,11 @@ window.ArrZoomerMain = function (optIn0) {
 
     s10.init()
   }
-  thisArrZoomerMain.s10main = s10main
+  thisTop.s10main = s10main
 
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
   function bckArcClick (optIn) {
     $.each(s10V, function (index, eleNow) {
       if (eleNow.id === zoomD.target) {
@@ -2991,7 +3016,7 @@ window.ArrZoomerMain = function (optIn0) {
       }
     })
   }
-  thisArrZoomerMain.bckArcClick = bckArcClick
+  thisTop.bckArcClick = bckArcClick
 
   // ------------------------------------------------------------------
   //
@@ -3003,15 +3028,15 @@ window.ArrZoomerMain = function (optIn0) {
       }
     })
   }
-  thisArrZoomerMain.updateS1 = updateS1
+  thisTop.updateS1 = updateS1
 
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
   function setStateOnce () {
-    // console.log('setState_main main',getScale())
-    let scale = getScale()
-    let zoomS = getZoomS()
+    // console.log('setState_main main',thisTop.getScale())
+    let scale = thisTop.getScale()
+    let zoomS = thisTop.getZoomS()
 
     if (zoomS === 0) {
       s10main(null)
@@ -3063,7 +3088,7 @@ window.ArrZoomerMain = function (optIn0) {
         syncStateSend({
           type: 'syncTelFocus',
           syncTime: Date.now(),
-          zoomState: getZoomS(),
+          zoomState: thisTop.getZoomS(),
           target: zoomD.target
         })
       }
@@ -3071,8 +3096,11 @@ window.ArrZoomerMain = function (optIn0) {
       arrPropVtarget = null
     }
   }
-  thisArrZoomerMain.setStateOnce = setStateOnce
+  thisTop.setStateOnce = setStateOnce
 
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
   function updateMap (optIn) {
     let dataV = instruments.data.tel
     let gNow = com.s00.g
@@ -3093,11 +3121,14 @@ window.ArrZoomerMain = function (optIn0) {
       return focusIdV[nFocus].indexOf(d.id) >= 0
     }
 
-    // operate on new elements only
+    if (noRender) return
 
-    let circ = gNow.selectAll('circle.' + tagNow).data(dataV, function (d) {
-      return d.id
-    })
+    // operate on new elements only
+    let circ = gNow
+        .selectAll('circle.' + tagNow)
+        .data(dataV, function (d) {
+          return d.id
+        })
 
     circ
       .enter()
@@ -3148,10 +3179,15 @@ window.ArrZoomerMain = function (optIn0) {
         else if (isFocused(d, 0)) return r * 1.1
         else return r
       })
+    
+    return
   }
 
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
   function askDataS1 () {
-    let zoomS = getZoomS()
+    let zoomS = thisTop.getZoomS()
     if (zoomS === 0) return
 
     sock.widgetV[widgetType].SockFunc.askDataS1({
@@ -3160,15 +3196,18 @@ window.ArrZoomerMain = function (optIn0) {
       zoomTarget: zoomD.target
     })
   }
-  thisArrZoomerMain.askDataS1 = askDataS1
+  thisTop.askDataS1 = askDataS1
 
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
   function getWidgetState () {
     return {
-      zoomState: getZoomS(),
+      zoomState: thisTop.getZoomS(),
       zoomTarget: zoomD.target
     }
   }
-  thisArrZoomerMain.getWidgetState = getWidgetState
+  thisTop.getWidgetState = getWidgetState
 
   return
 }
