@@ -25,25 +25,27 @@ window.ArrZoomerMain = function (optIn0) {
   let widgetId = optIn0.widgetId
   let locker = optIn0.locker
   let isSouth = optIn0.isSouth
-  let myUniqueId = optIn0.myUniqueId
+  let myUniqueId = unique()
+  let parentUniqueId = optIn0.myUniqueId
   let widgetType = optIn0.widgetType
 
-  // let svgMain = optIn0.svgMain
-  let svgMainArrZoomer = optIn0.svgMainArrZoomer
-  let instruments = optIn0.instruments
-  let zoomD = optIn0.zoomD
+  let svgBase = optIn0.svgBase
+  svgBase.elements.main = thisTop
+  
+  let instruments = svgBase.instruments
+  let zoomD = svgBase.zoomD
+  
   let rScale = instruments.rScale
 
-  let arrZoomerXXXXXXXXXXXXXXXXX = optIn0.arrZoomerXXXXXXXXXXXXXXXXX
-  let getPropPosShift = arrZoomerXXXXXXXXXXXXXXXXX.getPropPosShift
-  let interpolate01 = arrZoomerXXXXXXXXXXXXXXXXX.interpolate01
-  let setZoomState = arrZoomerXXXXXXXXXXXXXXXXX.setZoomState
-  let propsS1 = arrZoomerXXXXXXXXXXXXXXXXX.propsS1
-  let setState = arrZoomerXXXXXXXXXXXXXXXXX.setState
-  let isStateUp = arrZoomerXXXXXXXXXXXXXXXXX.isStateUp
-  let isStateDown = arrZoomerXXXXXXXXXXXXXXXXX.isStateDown
-  let isStateChange = arrZoomerXXXXXXXXXXXXXXXXX.isStateChange
-  let syncStateSend = arrZoomerXXXXXXXXXXXXXXXXX.syncStateSend
+  let getPropPosShift = svgBase.getPropPosShift
+  let interpolate01 = svgBase.interpolate01
+  let setZoomState = svgBase.setZoomState
+  let propsS1 = svgBase.propsS1
+  let setState = svgBase.setState
+  let isStateUp = svgBase.isStateUp
+  let isStateDown = svgBase.isStateDown
+  let isStateChange = svgBase.isStateChange
+  let syncStateSend = svgBase.syncStateSend
 
 
   let noRender = false
@@ -51,11 +53,12 @@ window.ArrZoomerMain = function (optIn0) {
   // need to use access function, as these may not yet
   // be defined when this function is first initialised
   function getSvgMini() {
-    return arrZoomerXXXXXXXXXXXXXXXXX.svgMini
+    return svgBase.elements.mini
   }
   function getSvgChes() {
-    return arrZoomerXXXXXXXXXXXXXXXXX.svgChes
+    return svgBase.elements.ches
   }
+
 
   // ------------------------------------------------------------------
   // 
@@ -76,6 +79,8 @@ window.ArrZoomerMain = function (optIn0) {
 
   let dblclickZoomInOut = true
   let lenWH = 500
+  
+  let focusD = {}
 
   let s1LblXY = {}
   let arcFunc = {}
@@ -98,8 +103,8 @@ window.ArrZoomerMain = function (optIn0) {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  let gMainD = svgMainArrZoomer.main
-  gMainD.g = svgMainArrZoomer.gSvg.append('g')
+  let gMainD = svgBase.svgD.main
+  gMainD.g = svgBase.svgD.gSvg.append('g')
   gMainD.gOuter = gMainD.g.append('g')
 
   let uniqueClipId = 'clip' + myUniqueId
@@ -111,7 +116,7 @@ window.ArrZoomerMain = function (optIn0) {
       .attr('x', 0)
       .attr('y', 0)
       .attr('width',lenWH)
-      .attr('height',lenWH);
+      .attr('height',lenWH)
 
   gMainD.gClipped = gMainD.gOuter.append('g')
   gMainD.gClipped.attr('class', 'gClipped')
@@ -128,7 +133,8 @@ window.ArrZoomerMain = function (optIn0) {
   // to avoid bugs, this is the g which should be used
   // for translations and sacling of this element
   // ------------------------------------------------------------------
-  thisTop.getG = function () {
+  thisTop.setTransform = function (trans) {
+    if (hasVar(trans)) gMainD.g.attr('transform', trans)
     return gMainD.g
   }
 
@@ -160,10 +166,21 @@ window.ArrZoomerMain = function (optIn0) {
     // add one circle as background
     // ------------------------------------------------------------------
     if (!noRender) {
+      gMainD.gOuter
+        .append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width',lenD.w[0])
+          .attr('height',lenD.h[0])
+          .style("fill",'transparent' )
+          .style("stroke",'#383B42' )
+          // .style("stroke",'#F2F2F2' )
+          // .style("stroke",'#2196F3' )
+          .style("stroke-width", 1)
+          .attr("pointer-events",'none')
+          .attr("opacity",1)
+
       gMainD.gBack
-        .selectAll('circle')
-        .data([0])
-        .enter()
         .append('circle')
         .attr('r', 0)
         .attr('cx', lenD.w[0] / 2)
@@ -251,7 +268,7 @@ window.ArrZoomerMain = function (optIn0) {
       let svgMini = getSvgMini()
       if (svgMini) {
         if(!svgMini.staticZoom) {
-          svgMainArrZoomer.mini.gBase.attr('transform', d3.event.transform)
+          svgBase.svgD.mini.gBase.attr('transform', d3.event.transform)
         }
       }
 
@@ -267,8 +284,8 @@ window.ArrZoomerMain = function (optIn0) {
       svgZoomUpdState()
       setZoomState()
 
-      instruments.focus.target = zoomD.target
-      instruments.focus.scale = d3.event.transform.k
+      focusD.target = zoomD.target
+      focusD.scale = d3.event.transform.k
 
       // common actions (after releasing locker)
       let svgMini = getSvgMini()
@@ -842,11 +859,11 @@ window.ArrZoomerMain = function (optIn0) {
         thisTop.subArrGrpCirc([])
 
         if (locker.isFree('inInit')) {
-          if (hasVar(instruments.focus.target)) {
-            if (hasVar(instruments.data.xyr[instruments.focus.target])) {
+          if (hasVar(focusD.target)) {
+            if (hasVar(instruments.data.xyr[focusD.target])) {
               thisTop.zoomToTrgMain({
-                target: instruments.focus.target,
-                scale: instruments.focus.scale,
+                target: focusD.target,
+                scale: focusD.scale,
                 durFact: 1
               })
             }
@@ -874,15 +891,15 @@ window.ArrZoomerMain = function (optIn0) {
         thisTop.subArrGrpCirc(instruments.data.xyrSubArrGrp)
 
         if (locker.isFree('inInit')) {
-          if (hasVar(instruments.focus.target)) {
-            if (hasVar(instruments.data.xyr[instruments.focus.target])) {
+          if (hasVar(focusD.target)) {
+            if (hasVar(instruments.data.xyr[focusD.target])) {
               // console.log('222222222222');
               if (Math.abs(thisTop.getScale() - zoomD.len['0.0']) > 0.00001) {
                 let trans = thisTop.getTrans()
                 if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
                   thisTop.zoomToTrgMain({
-                    target: instruments.focus.target,
-                    scale: instruments.focus.scale,
+                    target: focusD.target,
+                    scale: focusD.scale,
                     durFact: 1
                   })
                 }
@@ -1029,10 +1046,12 @@ window.ArrZoomerMain = function (optIn0) {
     if (id === 'physical') {
       if (updtId) instruments.data.layout = id
       thisTop.setLayoutPhysical(data)
-    } else if (id === 'subArr') {
+    } 
+    else if (id === 'subArr') {
       if (updtId) instruments.data.layout = id
       thisTop.setLayoutSubArr(data)
-    } else {
+    } 
+    else {
       console.error(' - trying to set undefined layout', id)
       return
     }

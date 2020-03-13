@@ -29,10 +29,15 @@ window.ArrZoomerMini = function (optIn0) {
   let widgetId = optIn0.widgetId
   let locker = optIn0.locker
   let isSouth = optIn0.isSouth
-  let myUniqueId = optIn0.myUniqueId
-  let zoomD = optIn0.zoomD
+  let myUniqueId = unique()
+  let parentUniqueId = optIn0.myUniqueId
+  
+  let svgBase = optIn0.svgBase
+  svgBase.elements.mini = thisTop
 
-  let instruments = optIn0.instruments
+  let instruments = svgBase.instruments
+  let zoomD = svgBase.zoomD
+
   let rScale = instruments.rScale
 
   let baseH = 500
@@ -42,15 +47,14 @@ window.ArrZoomerMini = function (optIn0) {
   thisTop.hasInit = false
   thisTop.staticZoom = true
 
-  let arrZoomerXXXXXXXXXXXXXXXXX = optIn0.arrZoomerXXXXXXXXXXXXXXXXX
-
   // need to use access function, as these may not yet
   // be defined when this function is first initialised
-  let svgMain = arrZoomerXXXXXXXXXXXXXXXXX.svgMain
+  function getSvgMain() {
+    return svgBase.elements.main
+  }
 
-  let svgMainArrZoomer = optIn0.svgMainArrZoomer
-  let gMiniD = svgMainArrZoomer.mini
-  gMiniD.g = svgMainArrZoomer.gSvg.append('g')
+  let gMiniD = svgBase.svgD.mini
+  gMiniD.g = svgBase.svgD.gSvg.append('g')
   gMiniD.gMini = gMiniD.g.append('g')
   // gMiniD.gBase = gMiniD.gMini.append('g')
 
@@ -91,7 +95,8 @@ window.ArrZoomerMini = function (optIn0) {
   // to avoid bugs, this is the g which should be used
   // for translations and sacling of this element
   // ------------------------------------------------------------------
-  thisTop.getG = function (tag) {
+  thisTop.setTransform = function (trans) {
+    if (hasVar(trans)) gMiniD.g.attr('transform', trans)
     return gMiniD.g
   }
 
@@ -160,7 +165,7 @@ window.ArrZoomerMini = function (optIn0) {
         gMiniD.gBase.attr('transform', d3.event.transform)
       }
 
-      svgMainArrZoomer.main.gBase.attr('transform', d3.event.transform)
+      svgBase.svgD.main.gBase.attr('transform', d3.event.transform)
 
       return
     }
@@ -173,17 +178,16 @@ window.ArrZoomerMini = function (optIn0) {
 
       miniZoomViewRec()
 
-      svgMain.zoomSyncMain(d3.event.transform)
+      getSvgMain().zoomSyncMain(d3.event.transform)
 
       // remove the lock before possible zoomToTrgMain()
       locker.remove('inZoomMini')
 
-      if (thisTop.staticZoom) return
 
       if (Math.abs(thisTop.getScale() - zoomD.len['0.0']) < 0.00001) {
         let trans = thisTop.getTrans()
         if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
-          svgMain.zoomToTrgMain({
+          getSvgMain().zoomToTrgMain({
             target: 'init',
             scale: zoomD.len['0.0'],
             durFact: 1

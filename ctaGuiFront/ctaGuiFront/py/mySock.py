@@ -81,6 +81,9 @@ class mySock(BaseNamespace, BroadcastMixin):
     # upon reconnection to an existing session
     # ------------------------------------------------------------------
     def on_backFromOffline(self):
+        if self.sessId is None:
+            return
+
         # print 'on_backFromOffline.................'
         # first validate that eg the server hasnt been restarted while this session has been offline
         sessIdV = self.redis.lGet('allSessIds')
@@ -217,13 +220,13 @@ class mySock(BaseNamespace, BroadcastMixin):
         nSessTry = 0
         while self.sessId is None:
             nSessTry += 1
-            if nSessTry >= 10:
+            if nSessTry >= 20:
                 self.log.warning([
                     ['rb', " - ignoring zombie session - on_widget("],
                     ['yb', data], ['rb', ") !!!!!!!!"]
                 ])
                 return
-            sleep(1)
+            sleep(0.5)
 
         # basic widget info
         # ------------------------------------------------------------------
@@ -578,7 +581,6 @@ class mySock(BaseNamespace, BroadcastMixin):
             ['y', " - starting commonThread("],
             ['g', "pubSubSocketEvtWidgetV"], ['y', ")"]
         ])
-        sleep(3)
 
         while self.redis.setPubSub("socketEvtWidgetV") is None:
             self.log.info([
@@ -875,7 +877,7 @@ class mySock(BaseNamespace, BroadcastMixin):
             ['y', " - starting commonThread("],
             ['g', "sessHeartbeat"], ['y', ") - ", mySock.serverName]
         ])
-        sleep(3)
+        # sleep(3)
 
         sleepTime = max(ceil(mySock.sessExpire*0.1), 10)
         sessExpire = int(max(mySock.sessExpire, sleepTime*2))
@@ -943,6 +945,7 @@ class mySock(BaseNamespace, BroadcastMixin):
 
                 if not self.redis.exists('userIds'):
                     break
+                    
 
             sleep(mySock.cleanupSleep)
 

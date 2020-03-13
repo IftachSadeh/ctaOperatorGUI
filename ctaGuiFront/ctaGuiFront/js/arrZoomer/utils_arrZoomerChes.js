@@ -22,17 +22,19 @@ window.ArrZoomerChes = function (optIn0) {
   let locker = optIn0.locker
   let isSouth = optIn0.isSouth
 
-  let instruments = optIn0.instruments
+  let svgBase = optIn0.svgBase
+  svgBase.elements.ches = thisTop
+
+  let instruments = svgBase.instruments
   let rScale = instruments.rScale
 
   let baseH = 500
   let addChesOutline = false
   let showVor = false
 
-  let svgMainArrZoomer = optIn0.svgMainArrZoomer
-  let gChesD = svgMainArrZoomer.ches
+  let gChesD = svgBase.svgD.ches
 
-  gChesD.g = svgMainArrZoomer.gSvg.append('g')
+  gChesD.g = svgBase.svgD.gSvg.append('g')
   gChesD.gChes = gChesD.g.append('g')
   gChesD.gBaseChes = gChesD.gChes.append('g')
 
@@ -57,7 +59,8 @@ window.ArrZoomerChes = function (optIn0) {
   // to avoid bugs, this is the g which should be used
   // for translations and sacling of this element
   // ------------------------------------------------------------------
-  thisTop.getG = function (tag) {
+  thisTop.setTransform = function (trans) {
+    if (hasVar(trans)) gChesD.gChes.attr('transform', trans)
     return gChesD.gChes
   }
 
@@ -172,21 +175,19 @@ window.ArrZoomerChes = function (optIn0) {
 
     let xyrFlat = Object.values(com.gChes.xyr)
     com.chesXY.x.min = minMaxObj({
-      minMax: 'min', data: xyrFlat, func: (x => x.x - 1.1 * x.r)
+      minMax: 'min', data: xyrFlat, func: (x => x.x - 1. * x.r)
     })
     com.chesXY.x.max = minMaxObj({
-      minMax: 'max', data: xyrFlat, func: (x => x.x + 1.1 * x.r)
+      minMax: 'max', data: xyrFlat, func: (x => x.x + 1. * x.r)
     })
     com.chesXY.y.min = minMaxObj({
-      minMax: 'min', data: xyrFlat, func: (x => x.y - 1.1 * x.r)
+      minMax: 'min', data: xyrFlat, func: (x => x.y - 1. * x.r)
     })
     com.chesXY.y.max = minMaxObj({
-      minMax: 'max', data: xyrFlat, func: (x => x.y + 1.1 * x.r)
+      minMax: 'max', data: xyrFlat, func: (x => x.y + 1. * x.r)
     })
 
     gChesRec
-      // .selectAll('rect').data([0]).enter()
-      // .attr('class', 'sssss')
       .append('rect')
       .attr('x', 0)
       .attr('y', 0)
@@ -474,11 +475,11 @@ window.ArrZoomerChes = function (optIn0) {
       nKeep: -1
     })
 
-    // the actual function to be called when a zoom needs to be put in the queue
-    zoomToTrgQuick = function (optIn) {
-      zoomToTargetNow(optIn, 'ches')
-    }
-    thisTop.zoomToTrgQuick = zoomToTrgQuick
+    // // the actual function to be called when a zoom needs to be put in the queue
+    // zoomToTrgQuick = function (optIn) {
+    //   zoomToTargetNow(optIn, 'ches')
+    // }
+    // thisTop.zoomToTrgQuick = zoomToTrgQuick
 
     setStateOnce(dataIn)
 
@@ -495,18 +496,18 @@ window.ArrZoomerChes = function (optIn0) {
   }
   this.setStateOnce = setStateOnce
 
-  // ------------------------------------------------------------------
-  // initialize a global function (to be overriden below)
-  // ------------------------------------------------------------------
-  let zoomToTrgQuick = function (optIn) {
-    if (!locker.isFree('inInit')) {
-      setTimeout(function () {
-        zoomToTrgQuick(optIn)
-      }, timeD.waitLoop)
-    }
-  }
-  thisTop.zoomToTrgQuick = zoomToTrgQuick
-  // initialize a couple of functions to be overriden below
+  // // ------------------------------------------------------------------
+  // // initialize a global function (to be overriden below)
+  // // ------------------------------------------------------------------
+  // let zoomToTrgQuick = function (optIn) {
+  //   if (!locker.isFree('inInit')) {
+  //     setTimeout(function () {
+  //       zoomToTrgQuick(optIn)
+  //     }, timeD.waitLoop)
+  //   }
+  // }
+  // thisTop.zoomToTrgQuick = zoomToTrgQuick
+  // // initialize a couple of functions to be overriden below
   
   // ------------------------------------------------------------------
   // 
@@ -521,77 +522,77 @@ window.ArrZoomerChes = function (optIn0) {
   }
   this.getTrans = getTrans
 
-  // ------------------------------------------------------------------
-  // 
-  // ------------------------------------------------------------------
-  function zoomToTargetNow (optIn, tagNow) {
-    console.log('zoomToTargetNow')
-    let tagNowUp = tagNow
-    if (tagNowUp === 'ches') {
-      tagNowUp = 'Ches'
-    }
+  // // ------------------------------------------------------------------
+  // // 
+  // // ------------------------------------------------------------------
+  // function zoomToTargetNow (optIn, tagNow) {
+  //   console.log(' X??X zoomToTargetNow')
+  //   let tagNowUp = tagNow
+  //   if (tagNowUp === 'ches') {
+  //     tagNowUp = 'Ches'
+  //   }
 
-    if (!locker.isFree('inInit')) {
-      setTimeout(function () {
-        zoomToTargetNow(optIn, tagNow)
-      }, timeD.waitLoop)
-      return
-    }
-    if (!locker.isFreeV(['autoZoomTarget', 'zoomToTarget' + tagNowUp])) {
-      return
-    }
+  //   if (!locker.isFree('inInit')) {
+  //     setTimeout(function () {
+  //       zoomToTargetNow(optIn, tagNow)
+  //     }, timeD.waitLoop)
+  //     return
+  //   }
+  //   if (!locker.isFreeV(['autoZoomTarget', 'zoomToTarget' + tagNowUp])) {
+  //     return
+  //   }
 
-    let targetName = optIn.target
-    let targetScale = optIn.scale
-    let durFact = optIn.durFact
+  //   let targetName = optIn.target
+  //   let targetScale = optIn.scale
+  //   let durFact = optIn.durFact
 
-    console.log('dddddd',telData.mini)
+  //   // console.log('dddddd',telData.mini)
 
-    if (targetScale < zoomLen['0.0']) targetScale = getScale()
+  //   if (targetScale < zoomLen['0.0']) targetScale = getScale()
 
-    let transTo
-    if (targetName === '' || !hasVar(telData.mini[targetName])) {
-      let scale = getScale()
-      let trans = getTrans()
-      let x = (baseH / 2 - trans[0]) / scale
-      let y = (baseH / 2 - trans[1]) / scale
-      transTo = [x, y]
-    } else {
-      transTo = [telData.mini[targetName].x, telData.mini[targetName].y]
-    }
+  //   let transTo
+  //   if (targetName === '' || !hasVar(telData.mini[targetName])) {
+  //     let scale = getScale()
+  //     let trans = getTrans()
+  //     let x = (baseH / 2 - trans[0]) / scale
+  //     let y = (baseH / 2 - trans[1]) / scale
+  //     transTo = [x, y]
+  //   } else {
+  //     transTo = [telData.mini[targetName].x, telData.mini[targetName].y]
+  //   }
 
-    let funcStart = function () {
-      locker.add({ id: 'zoomToTarget' + tagNowUp, override: true })
-      // console.log('xxx',targetName);
-    }
-    let funcDuring = function () {}
-    let funcEnd = function () {
-      locker.remove('zoomToTarget' + tagNowUp)
-    }
+  //   let funcStart = function () {
+  //     locker.add({ id: 'zoomToTarget' + tagNowUp, override: true })
+  //     // console.log('xxx',targetName);
+  //   }
+  //   let funcDuring = function () {}
+  //   let funcEnd = function () {
+  //     locker.remove('zoomToTarget' + tagNowUp)
+  //   }
 
-    let outD = {
-      trgScale: targetScale,
-      durFact: durFact,
-      baseTime: 300,
-      transTo: transTo,
-      wh: [baseH, baseH],
-      cent: null,
-      funcStart: funcStart,
-      funcEnd: funcEnd,
-      funcDuring: funcDuring,
-      svg: gChesD['svg' + tagNowUp],
-      svgZoom: com['svg' + tagNowUp + 'Zoom'],
-      svgBox: gChesD['g' + tagNowUp + 'Zoomed'],
-      svgZoomNode: gChesD['svg' + tagNowUp + 'ZoomNode']
-    }
+  //   let outD = {
+  //     trgScale: targetScale,
+  //     durFact: durFact,
+  //     baseTime: 300,
+  //     transTo: transTo,
+  //     wh: [baseH, baseH],
+  //     cent: null,
+  //     funcStart: funcStart,
+  //     funcEnd: funcEnd,
+  //     funcDuring: funcDuring,
+  //     svg: gChesD['svg' + tagNowUp],
+  //     svgZoom: com['svg' + tagNowUp + 'Zoom'],
+  //     svgBox: gChesD['g' + tagNowUp + 'Zoomed'],
+  //     svgZoomNode: gChesD['svg' + tagNowUp + 'ZoomNode']
+  //   }
 
-    if (durFact < 0) {
-      outD.durFact = 0
-      doZoomToTarget(outD)
-    } else {
-      runLoop.push({ tag: zoomToTargetTag[tagNow], data: outD })
-    }
-  }
+  //   if (durFact < 0) {
+  //     outD.durFact = 0
+  //     doZoomToTarget(outD)
+  //   } else {
+  //     runLoop.push({ tag: zoomToTargetTag[tagNow], data: outD })
+  //   }
+  // }
 
   return
 }

@@ -168,10 +168,12 @@ class arrZoomer():
             ]
 
         data = {
-            "subArr": self.subArrGrp,
-            "arrInit": inst_info,
-            "arrProp": self.getTelHealthS0(),
-            'telPropTypes': inst_prop_types,
+            'arrZoomer': {
+                "subArr": self.subArrGrp,
+                "arrInit": inst_info,
+                "arrProp": self.getTelHealthS0(),
+                'telPropTypes': inst_prop_types,
+            }
         }
         return data
 
@@ -289,10 +291,7 @@ class arrZoomer():
     # ------------------------------------------------------------------
     # uniqu methods for this socket
     # ------------------------------------------------------------------
-
-    # data.zoomTarget = name of telescope focus on (ex: L_2)
     def arrZoomerAskDataS1(self, *args):
-        #print 'arrZoomerAskDataS1'
         data = args[0]
         if self.mySock.logSendPkt:
             self.log.info([
@@ -304,7 +303,8 @@ class arrZoomer():
         self.widgetState["zoomTarget"] = data["zoomTarget"]
 
         # ------------------------------------------------------------------
-        # to avoid missmatch while waiting for the loop in arrZoomerUpdateData, send s0 too...
+        # to avoid missmatch while waiting for the loop in 
+        # arrZoomerUpdateData, send s0 too...
         # ------------------------------------------------------------------
         with arrZoomer.lock:
             self.updateTelHealthS1(idIn=data["zoomTarget"])
