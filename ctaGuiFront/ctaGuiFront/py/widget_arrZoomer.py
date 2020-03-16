@@ -74,7 +74,7 @@ class arrZoomer():
 
         # widget-class and widget group names
         self.widgetName = self.__class__.__name__
-        self.widgetGroup = self.mySock.usrGrpId+''+self.widgetName
+        self.widgetGroup = self.mySock.usrGrpId + '' + self.widgetName
 
         # turn on periodic data updates
         self.doDataUpdates = True
@@ -87,7 +87,9 @@ class arrZoomer():
 
         self.redis = redisManager(name=self.widgetName, log=self.log)
 
-        self.telIds = self.mySock.arrayData.get_inst_ids()
+        self.inst_ids = self.mySock.arrayData.get_inst_ids()
+        self.proc_ids = self.mySock.arrayData.get_proc_ids()
+        self.inst_types = self.mySock.arrayData.get_inst_id_to_types()
 
         return
 
@@ -108,7 +110,7 @@ class arrZoomer():
         self.widgetState["zoomState"] = 0
         self.widgetState["zoomTarget"] = ""
 
-        self.initTelHealth()
+        self.init_tel_health()
 
         # ------------------------------------------------------------------
         # initial dataset and send to client
@@ -164,17 +166,19 @@ class arrZoomer():
         for id_now in inst_ids:
             inst_prop_types[id_now] = [
                 { 'id': v['id'], 'title': v['ttl'], }
-                for (k,v) in self.telSubHealth[id_now].items()
+                for (k,v) in self.tel_sub_health[id_now].items()
             ]
 
         data = {
             'arrZoomer': {
                 "subArr": self.subArrGrp,
                 "arrInit": inst_info,
-                "arrProp": self.getTelHealthS0(),
+                "arrProp": self.get_tel_health_s0(),
                 'telPropTypes': inst_prop_types,
+                'telTypes': self.inst_types,
             }
         }
+
         return data
 
     # ------------------------------------------------------------------
@@ -192,31 +196,31 @@ class arrZoomer():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def initTelHealth(self):
-        self.telHealth = dict()
-        self.telSubHealthFlat = dict()
-        self.telSubHealthFields = dict()
+    def init_tel_health(self):
+        self.tel_health = dict()
+        self.tel_sub_health_flat = dict()
+        self.tel_sub_health_fields = dict()
 
-        self.telSubHealth = self.mySock.arrayData.getTelHealthD()
+        self.tel_sub_health = self.mySock.arrayData.getTelHealthD()
 
         # a flat dict with references to each level of the original dict
-        self.telSubHealthFlat = dict()
-        for idNow in self.telIds:
-            self.telSubHealthFlat[idNow] = flatDictById(
-                self.telSubHealth[idNow])
+        self.tel_sub_health_flat = dict()
+        for id_now in self.inst_ids:
+            self.tel_sub_health_flat[id_now] = flatDictById(
+                self.tel_sub_health[id_now])
 
-        for idNow in self.telIds:
-            self.telHealth[idNow] = {
-                "id": idNow, "health": 0, "status": "",
+        for id_now in self.inst_ids:
+            self.tel_health[id_now] = {
+                "id": id_now, "health": 0, "status": "",
                 "data": [
-                    v for (k,v) in self.telSubHealth[idNow].items()
+                    v for (k,v) in self.tel_sub_health[id_now].items()
                 ]
             }
 
-            self.telSubHealthFields[idNow] = []
-            for key, val in self.telSubHealthFlat[idNow].iteritems():
+            self.tel_sub_health_fields[id_now] = []
+            for key, val in self.tel_sub_health_flat[id_now].iteritems():
                 if 'val' in val['data']:
-                    self.telSubHealthFields[idNow] += [key]
+                    self.tel_sub_health_fields[id_now] += [key]
 
         self.getSubArrGrp()
 
@@ -225,19 +229,18 @@ class arrZoomer():
     # ------------------------------------------------------------------
     # get info of telescope 0-100 for each fields
     # ------------------------------------------------------------------
-    def getTelHealthS0(self, idIn=None):
-        #print 'getTelHealthS0'
+    def get_tel_health_s0(self, idIn=None):
         data = dict()
 
         # fields = ["health", "status", "camera", "mirror", "mount", "daq", "aux"]
         fields = dict()
-        for id_now in self.telIds:
+        for id_now in self.inst_ids:
             fields[id_now] = [ "health", "status" ]
             fields[id_now] += [
-                v['id'] for (k,v) in self.telSubHealth[id_now].items()
+                v['id'] for (k,v) in self.tel_sub_health[id_now].items()
             ]
 
-        idV = self.telIds if (idIn is None) else [idIn]
+        idV = self.inst_ids if (idIn is None) else [idIn]
 
         self.redis.pipe.reset()
         for id_now in idV:
@@ -256,35 +259,33 @@ class arrZoomer():
     # ------------------------------------------------------------------
     #   Load data relative to telescope on focus
     # ------------------------------------------------------------------
-    def updateTelHealthS1(self, idIn):
-        #print 'updateTelHealthS1'
+    def update_tel_health_s1(self, idIn):
         redData = self.redis.hMget(
-            name="telHealth;"+str(idIn), key=self.telSubHealthFields[idIn])
+            name="telHealth;"+str(idIn), key=self.tel_sub_health_fields[idIn])
 
         for i in range(len(redData)):
-            key = self.telSubHealthFields[idIn][i]
-            self.telSubHealthFlat[idIn][key]['data']['val'] = redData[i]
+            key = self.tel_sub_health_fields[idIn][i]
+            self.tel_sub_health_flat[idIn][key]['data']['val'] = redData[i]
 
-        dataS0 = self.getTelHealthS0(idIn=idIn)
-        self.telHealth[idIn]["health"] = dataS0["health"]
-        self.telHealth[idIn]["status"] = dataS0["status"]
+        dataS0 = self.get_tel_health_s0(idIn=idIn)
+        self.tel_health[idIn]["health"] = dataS0["health"]
+        self.tel_health[idIn]["status"] = dataS0["status"]
 
         return
 
     # ------------------------------------------------------------------
     # return data of zoomTarget in dict() form
     # ------------------------------------------------------------------
-    def getFlatTelHealth(self, idIn):
-        #print 'getFlatTelHealth'
+    def get_flat_tel_health(self, idIn):
         data = dict()
 
         data["id"] = idIn
-        data["health"] = self.telHealth[idIn]["health"]
-        data["status"] = self.telHealth[idIn]["status"]
+        data["health"] = self.tel_health[idIn]["health"]
+        data["status"] = self.tel_health[idIn]["status"]
 
         data["data"] = dict()
-        for key in self.telSubHealthFields[idIn]:
-            data["data"][key] = self.telSubHealthFlat[idIn][key]['data']['val']
+        for key in self.tel_sub_health_fields[idIn]:
+            data["data"][key] = self.tel_sub_health_flat[idIn][key]['data']['val']
 
         return data
 
@@ -307,8 +308,8 @@ class arrZoomer():
         # arrZoomerUpdateData, send s0 too...
         # ------------------------------------------------------------------
         with arrZoomer.lock:
-            self.updateTelHealthS1(idIn=data["zoomTarget"])
-            propDs1 = self.telHealth[data["zoomTarget"]]
+            self.update_tel_health_s1(idIn=data["zoomTarget"])
+            propDs1 = self.tel_health[data["zoomTarget"]]
 
             dataEmitS1 = {
                 "widgetId": data["widgetId"],
@@ -368,9 +369,9 @@ class arrZoomer():
         # ------------------------------------------------------------------
         propDs1 = dict()
         for zoomTarget in arrZoomer.sendV["s_1"]:
-            self.updateTelHealthS1(idIn=zoomTarget)
+            self.update_tel_health_s1(idIn=zoomTarget)
 
-            propDs1[zoomTarget] = self.getFlatTelHealth(zoomTarget)
+            propDs1[zoomTarget] = self.get_flat_tel_health(zoomTarget)
 
         # ------------------------------------------------------------------
         # transmit the values
@@ -378,7 +379,7 @@ class arrZoomer():
         dataEmitS0 = {
             "widgetId": "",
             "type": "s00",
-            "data": self.getTelHealthS0()
+            "data": self.get_tel_health_s0()
         }
 
         self.mySock.socketEvtWidgetV(

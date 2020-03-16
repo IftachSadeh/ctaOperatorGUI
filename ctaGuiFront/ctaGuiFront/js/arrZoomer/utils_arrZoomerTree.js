@@ -15,7 +15,7 @@
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-window.ArrZoomerDetail = function (optIn0) {
+window.ArrZoomerTree = function (optIn0) {
   let thisTop = this
   let runLoop = optIn0.runLoop
   let sgvTag = optIn0.sgvTag
@@ -25,61 +25,58 @@ window.ArrZoomerDetail = function (optIn0) {
   let myUniqueId = unique()
   let parentUniqueId = optIn0.myUniqueId
 
-  let svgBase = optIn0.svgBase
-  svgBase.elements.detail = thisTop
+  let eleBase = optIn0.eleBase
 
-  let instruments = svgBase.instruments
-  let zoomD = svgBase.zoomD
+  let instruments = eleBase.instruments
+  let zoomD = eleBase.zoomD
+  let lockInitKey = eleBase.lockInitKeys.tree
 
   let rScale = instruments.rScale
-  let aspectRatio = optIn0.aspectRatio
-  let getPropPosShift = svgBase.getPropPosShift
-  let interpolate01 = svgBase.interpolate01
-  let setZoomState = svgBase.setZoomState
-  let propsS1 = svgBase.propsS1
+  let aspectRatio = hasVar(optIn0.aspectRatio) ? optIn0.aspectRatio : 1
+  let getPropPosShift = eleBase.getPropPosShift
+  let interpolate01 = eleBase.interpolate01
+  let setZoomState = eleBase.setZoomState
+  let propsS1 = eleBase.propsS1
 
   thisTop.hasInit = false
 
-  function getSvgMain() {
-    return svgBase.elements.main
+  eleBase.setEle(thisTop, 'tree')
+  let getEle = eleBase.getEle
+
+  let lenBase = 500
+  let lenD = {
+    w: [lenBase], h: [lenBase * aspectRatio],
   }
 
-  let lenD = {}
-  lenD.w = {}
-  lenD.h = {}
-
-  lenD.w[0] = 500
-  lenD.h[0] = lenD.w[0] * aspectRatio
-
   // let svg = {}
-  let gDetailD = svgBase.svgD.detail
-  gDetailD.g = svgBase.svgD.gSvg.append('g')
-  gDetailD.gOuter = gDetailD.g.append('g')
+  let gTreeD = eleBase.svgD.tree
+  gTreeD.g = eleBase.svgD.gSvg.append('g')
+  gTreeD.gOuter = gTreeD.g.append('g')
 
 
   let uniqueClipId = 'clip' + myUniqueId
   
-  gDetailD.gOuter.append('defs')
+  gTreeD.gOuter.append('defs')
     .append('clipPath')
     .attr('id', uniqueClipId)
     .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width',lenD.w[0])
-      .attr('height',lenD.h[0])
+      .attr('width', lenD.w[0])
+      .attr('height', lenD.h[0])
 
-  gDetailD.gClipped = gDetailD.gOuter.append('g')
-  gDetailD.gClipped.attr('class', 'gClipped')
+  gTreeD.gClipped = gTreeD.gOuter.append('g')
+  gTreeD.gClipped.attr('class', 'gClipped')
     .attr('clip-path', 'url(#'+uniqueClipId+')');
 
-  gDetailD.gBase = gDetailD.gClipped.append('g')
-  gDetailD.gS0 = gDetailD.gBase.append('g')
-  gDetailD.gS1 = gDetailD.gBase.append('g')
+  gTreeD.gBase = gTreeD.gClipped.append('g')
+  gTreeD.gS0 = gTreeD.gBase.append('g')
+  gTreeD.gS1 = gTreeD.gBase.append('g')
 
   // ------------------------------------------------------------------
   // scale to 100x100 px
   // ------------------------------------------------------------------
-  gDetailD.gOuter.attr('transform', function (d) {
+  gTreeD.gOuter.attr('transform', function (d) {
     return 'translate(0,0)scale('+ (100 / lenD.w[0]) +')'
   })
 
@@ -88,8 +85,8 @@ window.ArrZoomerDetail = function (optIn0) {
   // for translations and sacling of this element
   // ------------------------------------------------------------------
   thisTop.setTransform = function (trans) {
-    if (hasVar(trans)) gDetailD.g.attr('transform', trans)
-    return gDetailD.g
+    if (hasVar(trans)) gTreeD.g.attr('transform', trans)
+    return gTreeD.g
   }
 
   // ------------------------------------------------------------------
@@ -146,7 +143,7 @@ window.ArrZoomerDetail = function (optIn0) {
     // ------------------------------------------------------------------
     // add one rectangle as background, and to allow click to zoom
     // ------------------------------------------------------------------
-    gDetailD.gS0
+    gTreeD.gS0
       // .append('g')
       // .selectAll('rect')
       // .data([0])
@@ -164,11 +161,11 @@ window.ArrZoomerDetail = function (optIn0) {
       // .style("stroke",'#2196F3' )
       .style("stroke-width", 1)
       .on('click', function () {
-        let scale = getSvgMain().getScale()
+        let scale = getEle('main').getScale()
         if (scale >= zoomD.len['0.1'] && scale < zoomD.len['1.0']) {
 
-          // console.log('FIXME - detail-0 - uncomment zoomToTrgMain')
-          getSvgMain().zoomToTrgMain({
+          // console.log('FIXME - tree-0 - uncomment zoomToTrgMain')
+          getEle('main').zoomToTrgMain({
             target: zoomD.target,
             scale: zoomD.len['1.2'],
             durFact: 1
@@ -179,7 +176,7 @@ window.ArrZoomerDetail = function (optIn0) {
     // the background grid
     bckPattern({
       com: com,
-      gNow: gDetailD.gS0,
+      gNow: gTreeD.gS0,
       gTag: 'gS0',
       lenWH: [lenD.w[0], lenD.h[0]],
       opac: 0.05,
@@ -194,7 +191,7 @@ window.ArrZoomerDetail = function (optIn0) {
       ')scale(' +
       0.9 +
       ')'
-    gDetailD.gS1.attr('transform', s1Trans)
+    gTreeD.gS1.attr('transform', s1Trans)
 
     // ------------------------------------------------------------------
     // some initialization
@@ -267,14 +264,15 @@ window.ArrZoomerDetail = function (optIn0) {
 
     // state-01 initialization (needed before s01inner(), s01outer())
     com.s01 = {}
-    com.s01.g = gDetailD.gS0.append('g')
-    com.s01.gText = gDetailD.gS0.append('g')
+    com.s01.g = gTreeD.gS0.append('g')
+    com.s01.gText = gTreeD.gS0.append('g')
 
     // state-1 initialization (needed before updateLiveDataS1())
     com.s10 = {}
-    com.s10.g = gDetailD.gS1.append('g')
+    com.s10.g = gTreeD.gS1.append('g')
 
-    locker.remove('inInitDetail')
+    locker.remove(lockInitKey)
+    return
   }
   this.initData = initData
 
@@ -282,8 +280,8 @@ window.ArrZoomerDetail = function (optIn0) {
   //
   // ------------------------------------------------------------------
   function setStateOnce () {
-    // console.log('setStateDetail ----',getScale(),optIn)
-    let scale = getSvgMain().getScale()
+    // console.log('setStateTree ----',getScale(),optIn)
+    let scale = getEle('main').getScale()
 
     if (scale < zoomD.len['1.0']) {
       telHirch({ telId: '', clickIn: false, remove: true })
@@ -831,8 +829,8 @@ window.ArrZoomerDetail = function (optIn0) {
 
       // propsS1({ telId:zoomD.target, clickIn:clickIn, propIn:propIn, debug:"telArcs" }); // before 29/9
 
-      // console.log('FIXME - detail-1 - uncomment zoomToTrgMain')
-      getSvgMain().zoomToTrgMain({
+      // console.log('FIXME - tree-1 - uncomment zoomToTrgMain')
+      getEle('main').zoomToTrgMain({
         target: zoomD.target,
         scale: zoomD.len['1.2'],
         durFact: 1
@@ -858,7 +856,7 @@ window.ArrZoomerDetail = function (optIn0) {
   function telHirch (optIn) {
     function mayUpdate () {
       return locker.isFree([
-        'updateTelHirchDetail',
+        'updateTelHirchTree',
         'dataChange',
         's10bckArcChange',
         's10clickHirch',
@@ -929,7 +927,7 @@ window.ArrZoomerDetail = function (optIn0) {
       }
     }
 
-    locker.add({ id: 'updateTelHirchDetail', override: true })
+    locker.add({ id: 'updateTelHirchTree', override: true })
 
     // ------------------------------------------------------------------
     // define the containing g with small margins on the sides
@@ -1251,13 +1249,13 @@ window.ArrZoomerDetail = function (optIn0) {
 
       setZoomState()
 
-      getSvgMain().bckArcClick({
+      getEle('main').bckArcClick({
         clickIn: clickIn,
         propIn: parentName,
         onlyOpen: true
       })
 
-      getSvgMain().hirchStyleClick({
+      getEle('main').hirchStyleClick({
         propIn: parentName,
         id: idNow,
         isOpen: true,
@@ -1328,7 +1326,7 @@ window.ArrZoomerDetail = function (optIn0) {
       }
     }
 
-    locker.remove({ id: 'updateTelHirchDetail', delay: timeD.animArc })
+    locker.remove({ id: 'updateTelHirchTree', delay: timeD.animArc })
   }
   this.telHirch = telHirch
 
@@ -1507,7 +1505,7 @@ window.ArrZoomerDetail = function (optIn0) {
     let recX = avgTelD[1][porpX] - recH / 2 - (recW - recH) / 2
     let recY = lenD.h[0] - recH
 
-    let dataV = getSvgMain().getScale() >= zoomD.len['1.0'] ? [{ id: porpX }] : []
+    let dataV = getEle('main').getScale() >= zoomD.len['1.0'] ? [{ id: porpX }] : []
     let rect = com.s01.g
       .selectAll('rect.' + tagRect)
       .data(dataV, function (d, i) {

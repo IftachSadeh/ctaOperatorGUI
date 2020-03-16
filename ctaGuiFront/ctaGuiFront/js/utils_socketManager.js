@@ -667,9 +667,8 @@ function SocketManager () {
           baseName: baseName,
           widgetId: widgetId,
           iconDivV: iconDivV,
-          // sideId: sideId,
           widgetEle: widgetEle,
-          setupData: setupData
+          setupData: setupData,
         })
       },
       msgFail: function () {

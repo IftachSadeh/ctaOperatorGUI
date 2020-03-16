@@ -1,7 +1,6 @@
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-
 /* global $ */
 /* global d3 */
 /* global sock */
@@ -29,35 +28,29 @@ window.ArrZoomerMain = function (optIn0) {
   let parentUniqueId = optIn0.myUniqueId
   let widgetType = optIn0.widgetType
 
-  let svgBase = optIn0.svgBase
-  svgBase.elements.main = thisTop
-  
-  let instruments = svgBase.instruments
-  let zoomD = svgBase.zoomD
+  let noRender = optIn0.noRender
+  let dblclickZoomInOut = hasVar(optIn0.dblclickZoomInOut) ? optIn0.dblclickZoomInOut : true
+
+  let eleBase = optIn0.eleBase
+
+  let instruments = eleBase.instruments
+  let zoomD = eleBase.zoomD
+  let lockInitKey = eleBase.lockInitKeys.main
   
   let rScale = instruments.rScale
 
-  let getPropPosShift = svgBase.getPropPosShift
-  let interpolate01 = svgBase.interpolate01
-  let setZoomState = svgBase.setZoomState
-  let propsS1 = svgBase.propsS1
-  let setState = svgBase.setState
-  let isStateUp = svgBase.isStateUp
-  let isStateDown = svgBase.isStateDown
-  let isStateChange = svgBase.isStateChange
-  let syncStateSend = svgBase.syncStateSend
-
-
-  let noRender = false
+  let getPropPosShift = eleBase.getPropPosShift
+  let interpolate01 = eleBase.interpolate01
+  let setZoomState = eleBase.setZoomState
+  let propsS1 = eleBase.propsS1
+  let setState = eleBase.setState
+  let isStateUp = eleBase.isStateUp
+  let isStateDown = eleBase.isStateDown
+  let isStateChange = eleBase.isStateChange
+  let syncStateSend = eleBase.syncStateSend
   
-  // need to use access function, as these may not yet
-  // be defined when this function is first initialised
-  function getSvgMini() {
-    return svgBase.elements.mini
-  }
-  function getSvgChes() {
-    return svgBase.elements.ches
-  }
+  eleBase.setEle(thisTop, 'main')
+  let getEle = eleBase.getEle
 
 
   // ------------------------------------------------------------------
@@ -77,7 +70,6 @@ window.ArrZoomerMain = function (optIn0) {
   com.s10 = {}
   instruments.data.vor = {}
 
-  let dblclickZoomInOut = true
   let lenWH = 500
   
   let focusD = {}
@@ -103,8 +95,8 @@ window.ArrZoomerMain = function (optIn0) {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  let gMainD = svgBase.svgD.main
-  gMainD.g = svgBase.svgD.gSvg.append('g')
+  let gMainD = eleBase.svgD.main
+  gMainD.g = eleBase.svgD.gSvg.append('g')
   gMainD.gOuter = gMainD.g.append('g')
 
   let uniqueClipId = 'clip' + myUniqueId
@@ -115,8 +107,8 @@ window.ArrZoomerMain = function (optIn0) {
     .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width',lenWH)
-      .attr('height',lenWH)
+      .attr('width', lenWH)
+      .attr('height', lenWH)
 
   gMainD.gClipped = gMainD.gOuter.append('g')
   gMainD.gClipped.attr('class', 'gClipped')
@@ -209,15 +201,17 @@ window.ArrZoomerMain = function (optIn0) {
     instruments.data.layout = 'physical' // physical layout as default
     // instruments.data.layout = "subArr";  // sub-array layout as default
 
-    thisTop.setLayoutSubArr(subArr)
+    // thisTop.setLayoutSubArr(subArr)
     thisTop.setLayoutPhysical(arrInit)
+
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
     setState()
 
-    locker.remove('inInitMain')
+    locker.remove(lockInitKey)
+    return
   }
   thisTop.initData = initData
 
@@ -265,10 +259,10 @@ window.ArrZoomerMain = function (optIn0) {
       if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
       gMainD.gBase.attr('transform', d3.event.transform)
 
-      let svgMini = getSvgMini()
+      let svgMini = getEle('mini')
       if (svgMini) {
         if(!svgMini.staticZoom) {
-          svgBase.svgD.mini.gBase.attr('transform', d3.event.transform)
+          eleBase.svgD.mini.gBase.attr('transform', d3.event.transform)
         }
       }
 
@@ -288,7 +282,7 @@ window.ArrZoomerMain = function (optIn0) {
       focusD.scale = d3.event.transform.k
 
       // common actions (after releasing locker)
-      let svgMini = getSvgMini()
+      let svgMini = getEle('mini')
       if(svgMini) {
         svgMini.miniZoomViewRec()
         svgMini.zoomSyncMini(d3.event.transform)
@@ -380,7 +374,7 @@ window.ArrZoomerMain = function (optIn0) {
     // last of any set of ovelapping zoom requests
     // ------------------------------------------------------------------
     runLoop.init({
-      tag: 'zoomToTargetMain',
+      tag: 'zoomToTargetMain'+myUniqueId,
       func: doZoomToTarget,
       nKeep: -1
     })
@@ -487,7 +481,7 @@ window.ArrZoomerMain = function (optIn0) {
         outD.durFact = 0
         doZoomToTarget(outD)
       } else {
-        runLoop.push({ tag: 'zoomToTargetMain', data: outD })
+        runLoop.push({ tag: 'zoomToTargetMain'+myUniqueId, data: outD })
       }
     }
 
@@ -528,169 +522,12 @@ window.ArrZoomerMain = function (optIn0) {
       })
       .extent([[0, 0], [lenD.w[0], lenD.h[0]]])
 
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    function setTelDataPhysical (dataIn) {
-      // console.log("dataphyzoom", dataIn);
-      instruments.data.xyrPhysical = {}
-      instruments.data.vor.dataPhysical = []
-
-      // ------------------------------------------------------------------
-      // get the width of the initial data (should be most inclusive)
-      // ------------------------------------------------------------------
-      let keys = Object.keys(dataIn)
-      let minDataX = dataIn[keys[0]].x
-      let maxDataX = dataIn[keys[0]].x
-      let minDataY = dataIn[keys[0]].y
-      let maxDataY = dataIn[keys[0]].y
-
-      $.each(dataIn, function (id, dataNow) {
-        minDataX = Math.min(minDataX, dataNow.x)
-        maxDataX = Math.max(maxDataX, dataNow.x)
-        minDataY = Math.min(minDataY, dataNow.y)
-        maxDataY = Math.max(maxDataY, dataNow.y)
-      })
-
-      let dataInWH = [maxDataX - minDataX, maxDataY - minDataY]
-      if (!isSouth) {
-        dataInWH[0] *= 1.1
-        dataInWH[1] *= 1.1
-      }
-
-      $.each(dataIn, function (id, dataNow) {
-        let eleR
-        if (dataNow.t === 'LST') eleR = lenD.r.s00[2]
-        else if (dataNow.t === 'MST') eleR = lenD.r.s00[1]
-        else eleR = lenD.r.s00[0]
-
-        // coordinate transform on the original values (which are also used elsewhere)
-        let x =
-          1 * dataNow.x * lenD.w[0] / (1.2 * dataInWH[0]) + lenD.w[0] / 2
-        let y =
-          -1 * dataNow.y * lenD.h[0] / (1.2 * dataInWH[1]) + lenD.h[0] / 2
-
-        // translate to the center of the respective hex-cell
-        // let xy = com.svgBck.trans([x,y]);  x = xy[0]; y = xy[1];
-
-        instruments.data.xyrPhysical[id] = { x: x, y: y, r: eleR, isTel: true }
-        instruments.data.vor.dataPhysical.push({ id: id, x: x, y: y, r: eleR })
-      })
-
-      // ------------------------------------------------------------------
-      // use delaunay links to get the closest neighbours of each data-point
-      // see: http://christophermanning.org/projects/voronoi-diagram-with-force-directed-nodes-and-delaunay-links/
-      // ------------------------------------------------------------------
-      let linksV = {}
-      $.each(vorFunc.links(instruments.data.vor.dataPhysical), function (
-        index,
-        linkNow
-      ) {
-        let idS = linkNow.source.id
-        let idT = linkNow.target.id
-
-        if (!linksV[idS]) linksV[idS] = [idT]
-        else linksV[idS].push(idT)
-        if (!linksV[idT]) linksV[idT] = [idS]
-        else linksV[idT].push(idS)
-      })
-
-      links2V.physical = deepCopy(linksV) // deep copy
-      $.each(linksV, function (idS, linkNow0) {
-        $.each(linkNow0, function (index0, idT0) {
-          $.each(linksV[idT0], function (index1, idT1) {
-            if (links2V.physical[idS].indexOf(idT1) === -1) {
-              links2V.physical[idS].push(idT1)
-            }
-            // console.log(index1,links2V.physical[idS],idT0,idT1)
-          })
-        })
-      })
-
-      instruments.data.mini = instruments.data.xyrPhysical
-    }
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    function setTelDataSubArr (dataIn) {
-      instruments.data.xyrSubArr = {}
-      instruments.data.vor.dataSubArr = []
-      instruments.data.xyrSubArrGrp = []
-      let hirchScale = 0.9
-      let hirch = d3.hierarchy(dataIn).sum(function (d) {
-        return 1
-      })
-      let packNode = d3
-        .pack()
-        .size([lenD.w[0] * hirchScale, lenD.h[0] * hirchScale])
-        .padding(10)
-      packNode(hirch)
-
-      $.each(hirch.descendants(), function (index, dataNow) {
-        let isTel = dataNow.height === 0
-        if (dataNow.height < 2) {
-          let id = dataNow.data.id
-          // if(!isTel) {
-          //   if(id == -1) id = telInfo.noSubArrName();
-          //   else         id = telInfo.subArrayPrefix()+id;
-          //   console.log('-------',id);
-          // }
-
-          let x = dataNow.x + lenD.w[0] * (1 - hirchScale) / 2
-          let y = dataNow.y + lenD.h[0] * (1 - hirchScale) / 2
-
-          let eleR = dataNow.r
-          if (isTel) {
-            if (dataNow.t === 'LST') eleR = lenD.r.s00[2]
-            else if (dataNow.t === 'MST') eleR = lenD.r.s00[1]
-            else eleR = lenD.r.s00[0]
-          }
-
-          instruments.data.xyrSubArr[id] = { x: x, y: y, r: eleR, isTel: isTel }
-
-          if (isTel) {
-            instruments.data.vor.dataSubArr.push({ id: id, x: x, y: y, r: eleR })
-          } else {
-            let ttl = hasVar(dataNow.data.N)
-              ? dataNow.data.N
-              : telInfo.noSubArrTitle()
-            instruments.data.xyrSubArrGrp.push({
-              id: id,
-              N: ttl,
-              x: x,
-              y: y,
-              r: eleR
-            })
-          }
-        } else if (dataNow.height === 1) {
-          console.log(index, dataNow)
-        }
-      })
-
-      links2V.subArr = {}
-      $.each(hirch.descendants(), function (index0, dataNow0) {
-        if (dataNow0.height === 1) {
-          $.each(dataNow0.children, function (index1, dataNow1) {
-            if (dataNow1.height === 0) {
-              let allIds = dataNow0.children.map(function (d) {
-                return d.data.id
-              })
-              links2V.subArr[dataNow1.data.id] = []
-              $.each(allIds, function (index2, dataNow2) {
-                if (dataNow2 !== dataNow1.data.id) {
-                  links2V.subArr[dataNow1.data.id].push(dataNow2)
-                }
-              })
-            }
-          })
-        }
-      })
-    }
 
     // ------------------------------------------------------------------
-    // create voronoi cells for the dataset. see: https://bl.ocks.org/mbostock/4060366
+    // create voronoi cells for the dataset. 
+    // see: https://bl.ocks.org/mbostock/4060366
     // ------------------------------------------------------------------
-    instruments.data.vorHov = function (d) {
+    instruments.data.hover = function (d) {
       if (zoomD.target === d.data.id) return
       if (!locker.isFreeV(['zoom', 'autoZoomTarget'])) return
 
@@ -699,23 +536,27 @@ window.ArrZoomerMain = function (optIn0) {
 
       zoomD.target = d.data.id
       setState()
+      return
     }
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    runLoop.init({ tag: 'vorClickOnce', func: vorClickOnce, nKeep: 1 })
+    runLoop.init({
+      tag: 'clickOnce'+myUniqueId, func: clickOnce, nKeep: 1,
+    })
 
-    instruments.data.vorClick = function (optIn) {
+    instruments.data.click = function (optIn) {
       if (locker.isFreeV(['zoom', 'autoZoomTarget'])) {
-        runLoop.push({ tag: 'vorClickOnce', data: optIn })
+        runLoop.push({ tag: 'clickOnce'+myUniqueId, data: optIn })
       }
+      return
     }
 
-    function vorClickOnce (d) {
+    function clickOnce (d) {
       if (!locker.isFree('vorZoomClick')) {
         setTimeout(function () {
-          instruments.data.vorClick(d)
+          instruments.data.click(d)
         }, timeD.waitLoop / 2)
         return
       }
@@ -725,33 +566,38 @@ window.ArrZoomerMain = function (optIn0) {
       // console.log((scale >= zoomD.len["1.0"]),(zoomD.target == d.data.id))
 
       if (scale < zoomD.len['1.0']) {
-        instruments.data.vorDblclick({ d: d, isInOut: dblclickZoomInOut })
+        instruments.data.dblclick({ d: d, isInOut: dblclickZoomInOut })
       } else if (scale >= zoomD.len['1.0'] && zoomD.target !== d.data.id) {
-        instruments.data.vorDblclick({ d: d, isInOut: false })
+        instruments.data.dblclick({ d: d, isInOut: false })
       } else {
         zoomD.target = d.data.id
         setState()
       }
 
       locker.remove({ id: 'vorZoomClick', delay: timeD.animArc })
+
+      return
     }
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    runLoop.init({ tag: 'vorDblclickOnce', func: vorDblclickOnce, nKeep: 1 })
+    runLoop.init({
+      tag: 'dblclickOnce'+myUniqueId, func: dblclickOnce, nKeep: 1,
+    })
 
-    instruments.data.vorDblclick = function (optIn) {
+    instruments.data.dblclick = function (optIn) {
       // console.log( optIn.source);
       if (locker.isFreeV(['zoom', 'autoZoomTarget'])) {
-        runLoop.push({ tag: 'vorDblclickOnce', data: optIn })
+        runLoop.push({ tag: 'dblclickOnce'+myUniqueId, data: optIn })
       }
+      return
     }
 
-    function vorDblclickOnce (optIn) {
+    function dblclickOnce (optIn) {
       if (!locker.isFree('vorZoomDblclick')) {
         setTimeout(function () {
-          instruments.data.vorDblclick(optIn)
+          instruments.data.dblclick(optIn)
         }, timeD.waitLoop / 2)
         return
       }
@@ -791,6 +637,9 @@ window.ArrZoomerMain = function (optIn0) {
       locker.remove({ id: 'vorZoomDblclick', delay: timeD.animArc })
     }
 
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
     function setVor () {
       let tagVor = 'vor'
       let vorShowLines = false
@@ -814,10 +663,10 @@ window.ArrZoomerMain = function (optIn0) {
         .style('stroke-width', '1')
         .style('opacity', vorShowLines ? 1 : 0)
         .style('stroke', '#4F94CD')
-        .on('mouseover', instruments.data.vorHov)
-        .on('click', instruments.data.vorClick)
+        .on('mouseover', instruments.data.hover)
+        .on('click', instruments.data.click)
         .on('dblclick', function (d) {
-          instruments.data.vorDblclick({ d: d, isInOut: dblclickZoomInOut })
+          instruments.data.dblclick({ d: d, isInOut: dblclickZoomInOut })
         })
         // .on("mouseover", function(d) { console.log(d.data.id);  }) // debugging
         .merge(vor)
@@ -842,75 +691,258 @@ window.ArrZoomerMain = function (optIn0) {
           s1LblXY[porpNow][dataNow.id] = [labelX, labelY]
         })
       })
+
+      return
     }
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
     function setLayoutPhysical (dataIn) {
-      if (hasVar(dataIn)) setTelDataPhysical(dataIn)
-
-      if (instruments.data.layout === 'physical') {
-        instruments.data.xyr = instruments.data.xyrPhysical
-        instruments.data.vor.data = instruments.data.vor.dataPhysical
-        links2V.xyz = links2V.physical
-
-        setVor()
-        thisTop.subArrGrpCirc([])
-
-        if (locker.isFree('inInit')) {
-          if (hasVar(focusD.target)) {
-            if (hasVar(instruments.data.xyr[focusD.target])) {
-              thisTop.zoomToTrgMain({
-                target: focusD.target,
-                scale: focusD.scale,
-                durFact: 1
-              })
-            }
-          }
-          // thisArrZoomer.setState();
-        }
-
+      if (hasVar(dataIn)) {
+        setTelDataPhysical(dataIn)
       }
+
+      if (instruments.data.layout !== 'physical') return
+
+      instruments.data.xyr = instruments.data.xyrPhysical
+      instruments.data.vor.data = instruments.data.vor.dataPhysical
+      links2V.xyz = links2V.physical
+
+      setVor()
+      thisTop.subArrGrpCirc([])
+
+      if (locker.isFree('inInit')) {
+        if (hasVar(focusD.target)) {
+          if (hasVar(instruments.data.xyr[focusD.target])) {
+            thisTop.zoomToTrgMain({
+              target: focusD.target,
+              scale: focusD.scale,
+              durFact: 1
+            })
+          }
+        }
+        // thisArrZoomer.setState();
+      }
+
+      return
     }
     thisTop.setLayoutPhysical = setLayoutPhysical
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
-    function setLayoutSubArr (dataIn) {
-      if (hasVar(dataIn)) setTelDataSubArr(dataIn)
+    function setTelDataPhysical (dataIn) {
+      // console.log("dataphyzoom", dataIn);
+      instruments.data.xyrPhysical = {}
+      instruments.data.vor.dataPhysical = []
 
-      if (instruments.data.layout === 'subArr') {
-        instruments.data.xyr = instruments.data.xyrSubArr
-        instruments.data.vor.data = instruments.data.vor.dataSubArr
-        links2V.xyz = links2V.subArr
+      // ------------------------------------------------------------------
+      // get the width of the initial data (should be most inclusive)
+      // ------------------------------------------------------------------
+      let keys = Object.keys(dataIn)
+      let minDataX = dataIn[keys[0]].x
+      let maxDataX = dataIn[keys[0]].x
+      let minDataY = dataIn[keys[0]].y
+      let maxDataY = dataIn[keys[0]].y
 
-        setVor()
+      $.each(dataIn, function (id, dataNow) {
+        minDataX = Math.min(minDataX, dataNow.x)
+        maxDataX = Math.max(maxDataX, dataNow.x)
+        minDataY = Math.min(minDataY, dataNow.y)
+        maxDataY = Math.max(maxDataY, dataNow.y)
+      })
 
-        thisTop.subArrGrpCirc(instruments.data.xyrSubArrGrp)
-
-        if (locker.isFree('inInit')) {
-          if (hasVar(focusD.target)) {
-            if (hasVar(instruments.data.xyr[focusD.target])) {
-              // console.log('222222222222');
-              if (Math.abs(thisTop.getScale() - zoomD.len['0.0']) > 0.00001) {
-                let trans = thisTop.getTrans()
-                if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
-                  thisTop.zoomToTrgMain({
-                    target: focusD.target,
-                    scale: focusD.scale,
-                    durFact: 1
-                  })
-                }
-              }
-            }
-          }
-        }
-
+      let dataInWH = [maxDataX - minDataX, maxDataY - minDataY]
+      if (!isSouth) {
+        dataInWH[0] *= 1.1
+        dataInWH[1] *= 1.1
       }
+
+      $.each(dataIn, function (id, dataNow) {
+        // console.log(id, dataNow)
+        let eleR = null
+        if (dataNow.t === 'LST') eleR = lenD.r.s00[2]
+        else if (dataNow.t === 'MST') eleR = lenD.r.s00[1]
+        else eleR = lenD.r.s00[0]
+
+        // coordinate transform on the original values (which are also used elsewhere)
+        let x =
+          1 * dataNow.x * lenD.w[0] / (1.2 * dataInWH[0]) + lenD.w[0] / 2
+        let y =
+          -1 * dataNow.y * lenD.h[0] / (1.2 * dataInWH[1]) + lenD.h[0] / 2
+
+        // translate to the center of the respective hex-cell
+        // let xy = com.svgBck.trans([x,y]);  x = xy[0]; y = xy[1];
+
+        instruments.data.xyrPhysical[id] = { 
+          x: x, y: y, r: eleR, //isTel: true 
+        }
+        instruments.data.vor.dataPhysical.push({ 
+          id: id, x: x, y: y, r: eleR 
+        })
+        // console.log(id, instruments.data.xyrPhysical[id])
+      })
+
+      // ------------------------------------------------------------------
+      // use delaunay links to get the closest neighbours of each data-point
+      // see: http://christophermanning.org/projects/voronoi-diagram-with-force-directed-nodes-and-delaunay-links/
+      // ------------------------------------------------------------------
+      let linksV = {}
+      $.each(vorFunc.links(instruments.data.vor.dataPhysical), function (
+        index,
+        linkNow
+      ) {
+        let idS = linkNow.source.id
+        let idT = linkNow.target.id
+
+        if (!linksV[idS]) linksV[idS] = [idT]
+        else linksV[idS].push(idT)
+        if (!linksV[idT]) linksV[idT] = [idS]
+        else linksV[idT].push(idS)
+      })
+
+      links2V.physical = deepCopy(linksV) // deep copy
+      $.each(linksV, function (idS, linkNow0) {
+        $.each(linkNow0, function (index0, idT0) {
+          $.each(linksV[idT0], function (index1, idT1) {
+            if (links2V.physical[idS].indexOf(idT1) === -1) {
+              links2V.physical[idS].push(idT1)
+            }
+            // console.log(index1,links2V.physical[idS],idT0,idT1)
+          })
+        })
+      })
+
+      instruments.data.mini = instruments.data.xyrPhysical
+
+      return
     }
-    thisTop.setLayoutSubArr = setLayoutSubArr
+
+
+    // // ------------------------------------------------------------------
+    // // 
+    // // ------------------------------------------------------------------
+    // function setLayoutSubArr (dataIn) {
+    //   if (hasVar(dataIn)) {
+    //     setTelDataSubArr(dataIn)
+    //   }
+
+    //   if (instruments.data.layout !== 'subArr') return
+      
+    //   instruments.data.xyr = instruments.data.xyrSubArr
+    //   instruments.data.vor.data = instruments.data.vor.dataSubArr
+    //   links2V.xyz = links2V.subArr
+
+    //   setVor()
+
+    //   thisTop.subArrGrpCirc(instruments.data.xyrSubArrGrp)
+
+    //   if (locker.isFree('inInit')) {
+    //     if (hasVar(focusD.target)) {
+    //       if (hasVar(instruments.data.xyr[focusD.target])) {
+    //         // console.log('222222222222');
+    //         if (Math.abs(thisTop.getScale() - zoomD.len['0.0']) > 0.00001) {
+    //           let trans = thisTop.getTrans()
+    //           if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
+    //             thisTop.zoomToTrgMain({
+    //               target: focusD.target,
+    //               scale: focusD.scale,
+    //               durFact: 1
+    //             })
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+
+    //   return
+    // }
+    // thisTop.setLayoutSubArr = setLayoutSubArr
+
+    // // ------------------------------------------------------------------
+    // //
+    // // ------------------------------------------------------------------
+    // function setTelDataSubArr (dataIn) {
+    //   instruments.data.xyrSubArr = {}
+    //   instruments.data.vor.dataSubArr = []
+    //   instruments.data.xyrSubArrGrp = []
+    //   let hirchScale = 0.9
+    //   let hirch = d3.hierarchy(dataIn).sum(function (d) {
+    //     return 1
+    //   })
+    //   let packNode = d3
+    //     .pack()
+    //     .size([lenD.w[0] * hirchScale, lenD.h[0] * hirchScale])
+    //     .padding(10)
+    //   packNode(hirch)
+
+    //   $.each(hirch.descendants(), function (index, dataNow) {
+    //     let isTel = dataNow.height === 0
+    //     if (dataNow.height < 2) {
+    //       let id = dataNow.data.id
+    //       // if(!isTel) {
+    //       //   if(id == -1) id = telInfo.noSubArrName();
+    //       //   else         id = telInfo.subArrayPrefix()+id;
+    //       //   console.log('-------',id);
+    //       // }
+
+    //       let x = dataNow.x + lenD.w[0] * (1 - hirchScale) / 2
+    //       let y = dataNow.y + lenD.h[0] * (1 - hirchScale) / 2
+
+    //       let eleR = dataNow.r
+    //       if (isTel) {
+    //         if (dataNow.t === 'LST') eleR = lenD.r.s00[2]
+    //         else if (dataNow.t === 'MST') eleR = lenD.r.s00[1]
+    //         else eleR = lenD.r.s00[0]
+    //       }
+
+    //       instruments.data.xyrSubArr[id] = { 
+    //         x: x, y: y, r: eleR, // isTel: isTel,
+    //       }
+
+    //       if (isTel) {
+    //         instruments.data.vor.dataSubArr.push({ 
+    //           id: id, x: x, y: y, r: eleR,
+    //         })
+    //       } else {
+    //         let ttl = hasVar(dataNow.data.N)
+    //           ? dataNow.data.N
+    //           : telInfo.noSubArrTitle()
+    //         instruments.data.xyrSubArrGrp.push({
+    //           id: id,
+    //           N: ttl,
+    //           x: x,
+    //           y: y,
+    //           r: eleR
+    //         })
+    //       }
+    //     } else if (dataNow.height === 1) {
+    //       console.log(index, dataNow)
+    //     }
+    //   })
+
+    //   links2V.subArr = {}
+    //   $.each(hirch.descendants(), function (index0, dataNow0) {
+    //     if (dataNow0.height === 1) {
+    //       $.each(dataNow0.children, function (index1, dataNow1) {
+    //         if (dataNow1.height === 0) {
+    //           let allIds = dataNow0.children.map(function (d) {
+    //             return d.data.id
+    //           })
+    //           links2V.subArr[dataNow1.data.id] = []
+    //           $.each(allIds, function (index2, dataNow2) {
+    //             if (dataNow2 !== dataNow1.data.id) {
+    //               links2V.subArr[dataNow1.data.id].push(dataNow2)
+    //             }
+    //           })
+    //         }
+    //       })
+    //     }
+    //   })
+
+    //   return
+    // }
 
     return
   }
@@ -1047,10 +1079,10 @@ window.ArrZoomerMain = function (optIn0) {
       if (updtId) instruments.data.layout = id
       thisTop.setLayoutPhysical(data)
     } 
-    else if (id === 'subArr') {
-      if (updtId) instruments.data.layout = id
-      thisTop.setLayoutSubArr(data)
-    } 
+    // else if (id === 'subArr') {
+    //   if (updtId) instruments.data.layout = id
+    //   thisTop.setLayoutSubArr(data)
+    // } 
     else {
       console.error(' - trying to set undefined layout', id)
       return
@@ -3209,8 +3241,7 @@ window.ArrZoomerMain = function (optIn0) {
     let zoomS = thisTop.getZoomS()
     if (zoomS === 0) return
 
-    sock.widgetV[widgetType].SockFunc.askDataS1({
-      widgetId: widgetId,
+    eleBase.sockAskDataS1({
       zoomState: zoomS,
       zoomTarget: zoomD.target
     })

@@ -26,45 +26,15 @@ var mainScriptTag = 'arrZoomer'
 /* global doZoomToTarget */
 /* global telHealthCol */
 /* global bckPattern */
-/* global telInfo */
 /* global vorPloyFunc */
 /* global getNodeWidthById */
 /* global getNodeHeightById */
 /* global telHealthFrac */
 /* global ArrZoomerBase */
-/* global ArrZoomerMain */
-/* global ArrZoomerMini */
-/* global ArrZoomerChes */
-/* global ArrZoomerDetail */
 
-// double check formatting.........
-// double check formatting.........
-// double check formatting.........
-// double check formatting.........
-// double check formatting.........
-// double check formatting.........
-// double check formatting.........
-// double check formatting.........
-// double check formatting.........
 window.loadScript({
   source: mainScriptTag,
   script: '/js/arrZoomer/utils_arrZoomerBase.js'
-})
-window.loadScript({
-  source: mainScriptTag,
-  script: '/js/arrZoomer/utils_arrZoomerMain.js'
-})
-window.loadScript({
-  source: mainScriptTag,
-  script: '/js/arrZoomer/utils_arrZoomerMini.js'
-})
-window.loadScript({
-  source: mainScriptTag,
-  script: '/js/arrZoomer/utils_arrZoomerChes.js'
-})
-window.loadScript({
-  source: mainScriptTag,
-  script: '/js/arrZoomer/utils_arrZoomerDetail.js'
 })
 
 // ------------------------------------------------------------------
@@ -91,77 +61,17 @@ sock.widgetTable[mainScriptTag] = function (optIn) {
     content: "<div id='" + optIn.baseName + divKey + "'></div>"
   }
 
-  // console.log(optIn)
   sock.addToTable(optIn)
+
+  return
 }
 
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
 let sockArrZoomer = function (optIn) {
-  let widgetType = optIn.widgetType
-  let widgetSource = optIn.widgetSource
-
-  // ------------------------------------------------------------------
-  // update the state of this widget in the server
-  // ------------------------------------------------------------------
-  this.setWidgetZoomState = function (optIn) {
-    if (sock.conStat.isOffline()) return
-
-    let data = {}
-    data.widgetId = optIn.widgetId
-    data.zoomState = optIn.zoomState
-    data.zoomTarget = optIn.zoomTarget
-    data.zoomTargetProp = optIn.zoomTargetProp
-
-    let dataEmit = {
-      widgetSource: widgetSource,
-      widgetName: widgetType,
-      widgetId: data.widgetId,
-      methodName: 'arrZoomerSetWidgetState',
-      methodArgs: data
-    }
-
-    sock.socket.emit('widget', dataEmit)
-  }
-
-  // ------------------------------------------------------------------
-  // ask for update for state1 data for a given module
-  // ------------------------------------------------------------------
-  this.askDataS1 = function (optIn) {
-    if (sock.conStat.isOffline()) return
-
-    let data = {}
-    data.widgetId = optIn.widgetId
-    data.zoomState = optIn.zoomState
-    data.zoomTarget = optIn.zoomTarget
-
-    let dataEmit = {
-      widgetSource: widgetSource,
-      widgetName: widgetType,
-      widgetId: data.widgetId,
-      methodName: 'arrZoomerAskDataS1',
-      methodArgs: data
-    }
-
-    sock.socket.emit('widget', dataEmit)
-  }
-
-
   return
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ------------------------------------------------------------------
 //
@@ -170,6 +80,7 @@ let mainArrZoomer = function (optIn) {
   let thisTop = this
   let myUniqueId = unique()
   let widgetType = optIn.widgetType
+  let widgetSource = optIn.widgetSource
   let tagArrZoomerSvg = optIn.baseName
   let widgetId = optIn.widgetId
   let widgetEle = optIn.widgetEle
@@ -188,49 +99,54 @@ let mainArrZoomer = function (optIn) {
   })
 
   let lenD = { w: [500], h: [400] }
+  let arrZoomerLockInitKey = 'inInitArrZoomer' + myUniqueId
+
 
   // ------------------------------------------------------------------
-  //
+  // 
   // ------------------------------------------------------------------
-  let telTypeV = telInfo.getIds()
-
-
+  let arrZoomerEleOpts = {
+    doEle: {
+      main: true,
+      ches: true,
+      mini: true,
+      tree: true,
+      proc: true,
+    },
+    trans: {
+      main: 'translate(0,100)scale(2.5)',
+      ches: 'translate(100,0)scale(4)',
+      mini: 'translate(0,0)scale(1)',
+      tree: 'translate(250,100)scale(2.5)',
+      proc: 'translate(100,90)scale(1)',
+    },
+    main:{
+      // dblclickZoomInOut: false,
+    },
+    ches:{
+      // myOpt: 0,
+    },
+    mini:{
+      // myOpt: 0,
+    },
+    tree: {
+      aspectRatio: 6/5,
+    },
+    proc: {
+      aspectRatio: 4,
+      // aspectRatio: 1/5,
+    },
+  }
 
   // ------------------------------------------------------------------
   // delay counters
   // ------------------------------------------------------------------
   let locker = new Locker()
   locker.add('inInit')
-  locker.add('inInitMain')
-  locker.add('inInitDetail')
-  locker.add('inInitMini')
-  locker.add('inInitChes')
-
-  let svgBase = null
-  let svgMain = null
-  let svgDetail = null
-  let svgMini = null
-  let svgChes = null
+  locker.add(arrZoomerLockInitKey)
 
   // function loop
   let runLoop = new RunLoop({ tag: widgetId })
-
-
-
-  // ------------------------------------------------------------------
-  // main initialisation, after first data come in
-  // ------------------------------------------------------------------
-  // runWhenReady({
-  //   pass: function () {
-  //     return locker.isFreeV(['initData'])
-  //   },
-  //   execute: svgNewInit
-  // })
-
-
-
-
-
 
   // ------------------------------------------------------------------
   //
@@ -292,131 +208,29 @@ let mainArrZoomer = function (optIn) {
 
 
     // ------------------------------------------------------------------
-    // background container & zoom behaviour
+    // 
     // ------------------------------------------------------------------
-    let dataIn = dataDictIn.data.arrZoomer
-
-    let doSvgMain = true
-    let doSvgChes = true
-    let doSvgMini = true
-    let doSvgDetail = true
-
-    svgBase = new ArrZoomerBase({
+    let arrZoomerBase = new ArrZoomerBase({
       runLoop: runLoop,
+      sgvTag: sgvTag,
       widgetId: widgetId,
+      widgetSource: widgetSource,
       locker: locker,
       isSouth: isSouth,
       widgetType: widgetType,
       sock: sock,
+      eleOpts: arrZoomerEleOpts,
+      lockInitKey: arrZoomerLockInitKey,
       svg: svg,
     })
-    svgBase.initData(dataIn)
-
-    // ------------------------------------------------------------------
-    // 
-    // ------------------------------------------------------------------
-    if (doSvgMain) {
-      svgMain = new ArrZoomerMain({
-        runLoop: runLoop,
-        sgvTag: sgvTag,
-        widgetId: widgetId,
-        locker: locker,
-        isSouth: isSouth,
-        myUniqueId: myUniqueId,
-        widgetType: widgetType,
-        svgBase: svgBase,
-      })
-      svgMain.initData(dataIn)
-
-      svgMain.setTransform('translate(0,100)scale(2.5)')
-    } else {
-      locker.remove('inInitMain')
-    }
-    
-    // ------------------------------------------------------------------
-    // 
-    // ------------------------------------------------------------------
-    if (doSvgDetail) {
-      svgDetail = new ArrZoomerDetail({
-        runLoop: runLoop,
-        sgvTag: sgvTag,
-        widgetId: widgetId,
-        locker: locker,
-        isSouth: isSouth,
-        myUniqueId: myUniqueId,
-        aspectRatio: 600/500,
-        svgBase: svgBase,
-      })
-      svgDetail.initData(dataIn)
-
-      svgDetail.setTransform('translate(250,100)scale(2.5)')
-    } else {
-      locker.remove('inInitDetail')
-    }
-    
-    // ------------------------------------------------------------------
-    // 
-    // ------------------------------------------------------------------
-    if (doSvgChes) {
-      svgChes = new ArrZoomerChes({
-        runLoop: runLoop,
-        sgvTag: sgvTag,
-        widgetId: widgetId,
-        locker: locker,
-        isSouth: isSouth,
-        svgBase: svgBase,
-      })
-      svgChes.initData({
-        instrumentData: {
-          tel: svgBase.instruments.data.tel,
-          // vor: { data: svgBase.instruments.data.vor.data },
-          mini: svgBase.instruments.data.mini,
-          xyr: svgBase.instruments.data.xyr,
-          vorDblclick: svgBase.instruments.data.vorDblclick
-        },
-        telTypeV: telTypeV
-      })
-
-      svgChes.setTransform('translate(100,0)scale(4)')
-    } else {
-      locker.remove('inInitChes')
-    }
-
-    // ------------------------------------------------------------------
-    // 
-    // ------------------------------------------------------------------
-    if (doSvgMini) {
-      svgMini = new ArrZoomerMini({
-        runLoop: runLoop,
-        sgvTag: sgvTag,
-        widgetId: widgetId,
-        locker: locker,
-        isSouth: isSouth,
-        myUniqueId: myUniqueId,
-        svgBase: svgBase,
-      })
-      svgMini.initData({
-        instrumentData: {
-          tel: svgBase.instruments.data.tel,
-          vor: { data: svgBase.instruments.data.vor.data },
-          mini: svgBase.instruments.data.mini,
-          xyr: svgBase.instruments.data.xyr,
-          vorDblclick: svgBase.instruments.data.vorDblclick
-        },
-        telTypeV: telTypeV
-      })
-
-      svgMini.setTransform('translate(0,0)scale(1)')
-    } else {
-      locker.remove('inInitMini')
-    }
+    arrZoomerBase.initData(dataDictIn.data.arrZoomer)
 
 
     // ------------------------------------------------------------------
     // expose the sync function
     // ------------------------------------------------------------------
     function syncStateGet (dataIn) {
-      svgBase.syncStateGet(dataIn)
+      arrZoomerBase.syncStateGet(dataIn)
       return
     }
     thisTop.syncStateGet = syncStateGet
@@ -424,21 +238,10 @@ let mainArrZoomer = function (optIn) {
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    // if (locker.isFree('inInit') && hasVar(dataIn.arrProp.type)) {
-    //   console.error('double init ?!?!', dataIn)
-    //   updateData(dataIn.arrProp)
-    // }
-
-    // ------------------------------------------------------------------
-    // 
-    // ------------------------------------------------------------------
     runWhenReady({
       pass: function () {
         return locker.isFreeV([
-          'inInitMain',
-          'inInitChes',
-          'inInitMini',
-          'inInitDetail',
+          arrZoomerLockInitKey,
           'dataChange',
           'setStateLock'
         ])
@@ -451,9 +254,9 @@ let mainArrZoomer = function (optIn) {
     // // ------------------------------------------------------------------
     // // ------------------------------------------------------------------
     // console.log('XXzoomToTrgMainXX')
-    // svgMain.zoomToTrgMain({ target:'M_9',  scale:zoomD.len["1.2"], durFact:0.1 });
-    // svgMain.zoomToTrgMain({ target:'Lx00',  scale:svgBase.zoomD.len["1.2"], durFact:0.61 });
-    // svgMain.zoomToTrgMain({ target:'init', scale:zoomD.len["0.0"], durFact:0.1 });
+    // arrZoomerBase.getEle('main').zoomToTrgMain({ target:'M_9',  scale:arrZoomerBase.zoomD.len["1.2"], durFact:0.1 });
+    arrZoomerBase.getEle('main').zoomToTrgMain({ target:'Lx00',  scale:arrZoomerBase.zoomD.len["1.2"], durFact:1.5 });
+    // arrZoomerBase.getEle('main').zoomToTrgMain({ target:'init', scale:arrZoomerBase.zoomD.len["0.0"], durFact:0.1 });
     // // ------------------------------------------------------------------
     // // ------------------------------------------------------------------
     

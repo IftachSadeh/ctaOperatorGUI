@@ -128,7 +128,10 @@ class telHealth():
         updatePct = 0.4
         arrPropD_ = dict()
 
-        rndProps = ["camera", "mirror", "mount", "daq", "aux", 'inst_0', 'inst_1']
+        rndProps = [
+            'camera', 'mirror', 'mount', 'daq', 'aux',
+            'inst_0', 'inst_1', 'prc_0', 'prc_1',
+        ]
         nRndProps = len(rndProps)
 
         for idNow in self.telIds:

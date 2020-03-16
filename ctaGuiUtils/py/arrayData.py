@@ -30,22 +30,26 @@ class arrayData():
         def init():
             self.log.debug([
                 ['y', " - initializing arrayData - "],
-                ['g', 'initTelPos()'], ['y', " ..."]
+                ['g', 'init_tel_pos()'], ['y', " ..."]
             ])
 
             arrayData.nsType = nsType
 
-            arrayData.tel_ids = self.initTelIds()
-            self.initTelPos()
+            arrayData.tel_ids = self.init_tel_ids()
+            self.init_tel_pos()
 
             arrayData.aux_ids = self.init_aux_ids()
             self.init_aux_pos()
+            
+            arrayData.proc_ids = self.init_proc_ids()
+            self.init_proc_pos()
 
-            arrayData.inst_Ids = copy.deepcopy(arrayData.tel_ids + arrayData.aux_ids)
+            arrayData.inst_Ids = copy.deepcopy(
+                arrayData.tel_ids + arrayData.aux_ids + 
+                arrayData.proc_ids)
 
             self.init_sub_array_tels()
-
-            self.initTelHealth()
+            self.init_tel_health()
             self.set_inst_id_to_types()
 
         if arrayData.inst_info is None:
@@ -133,7 +137,7 @@ class arrayData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def initTelIds(self):
+    def init_tel_ids(self):
         try:
             # ------------------------------------------------------------------
             # south
@@ -176,7 +180,7 @@ class arrayData():
             else:
                 raise
         except Exception:
-            Assert(msg=' - trying to do initTelIds() with nsType = ' +
+            Assert(msg=' - trying to do init_tel_ids() with nsType = ' +
                    str(arrayData.nsType), state=False)
 
         return tel_ids
@@ -195,7 +199,8 @@ class arrayData():
             # north
             elif arrayData.nsType == 'N':
                 aux_ids = [
-                    'Ax00', 'Ax01', 'Ax02',
+                    'Ax00', 'Ax01', 
+                    # 'Ax02',
                 ]
             else:
                 raise
@@ -207,21 +212,43 @@ class arrayData():
 
 
     # ------------------------------------------------------------------
-    #
+    # 
     # ------------------------------------------------------------------
-    def initTelPos(self):
-        if arrayData.inst_info is None:
-            arrayData.inst_info = dict()
+    def init_proc_ids(self):
+        try:
+            proc_ids = [
+                'Px00', 'Px01', 'Px02',
+            ]
+        except Exception:
+            Assert(msg=' - trying to do init_proc_ids() with nsType = ' +
+                   str(arrayData.nsType), state=False)
 
+        return proc_ids
+
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
+    def add_inst_info_id(self, ids):
         def add_dict_id(idNow, entry):
             try:
                 arrayData.inst_info[idNow] = entry
-                if idNow not in arrayData.tel_ids:
+                if idNow not in ids:
                     raise
             except Exception:
-                Assert(msg=' - idNow not in self.tel_ids for idNow= ' +
+                Assert(msg=' - idNow not in arrayData for idNow= ' +
                        str(idNow), state=False)
             return
+        return add_dict_id
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
+    def init_tel_pos(self):
+        if arrayData.inst_info is None:
+            arrayData.inst_info = dict()
+
+        add_dict_id = self.add_inst_info_id(arrayData.tel_ids)
 
         # ------------------------------------------------------------------
         # south
@@ -586,16 +613,7 @@ class arrayData():
         if arrayData.inst_info is None:
             arrayData.inst_info = dict()
 
-        def add_dict_id(idNow, entry):
-            try:
-                arrayData.inst_info[idNow] = entry
-                if idNow not in arrayData.aux_ids:
-                    raise
-            except Exception:
-                Assert(msg=' - idNow not in self.aux_ids for idNow= ' +
-                       str(idNow), state=False)
-            return
-
+        add_dict_id = self.add_inst_info_id(arrayData.aux_ids)
 
         # ------------------------------------------------------------------
         # south
@@ -641,8 +659,8 @@ class arrayData():
             add_dict_id(idNow, {'x':  30, 'y':  92, 'type': 'AUX'})
             idNow = "Ax01"
             add_dict_id(idNow, {'x':  45, 'y': -35, 'type': 'AUX'})
-            idNow = "Ax02"
-            add_dict_id(idNow, {'x': -50, 'y':  -70, 'type': 'AUX'})
+            # idNow = "Ax02"
+            # add_dict_id(idNow, {'x': -50, 'y':  -70, 'type': 'AUX'})
 
             for idNow, eleNow in arrayData.inst_info.iteritems():
                 ref = sqrt(eleNow['x']*eleNow['x']+eleNow['y']*eleNow['y'])
@@ -661,10 +679,33 @@ class arrayData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def initTelHealth(self):
+    def init_proc_pos(self):
+        if arrayData.inst_info is None:
+            arrayData.inst_info = dict()
+
+        add_dict_id = self.add_inst_info_id(arrayData.proc_ids)
+
+        # ------------------------------------------------------------------
+        #
+        # ------------------------------------------------------------------
+        idNow = "Px00"
+        add_dict_id(idNow, {'x':  5, 'y':  0, 'type': 'PROC'})
+        idNow = "Px01"
+        add_dict_id(idNow, {'x':  0, 'y':  5, 'type': 'PROC'})
+        idNow = "Px02"
+        add_dict_id(idNow, {'x':  0, 'y':  -5, 'type': 'PROC'})
+
+        return
+
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
+    def init_tel_health(self):
         inst_health = dict()
         tel_ids = arrayData.tel_ids
         aux_ids = arrayData.aux_ids
+        proc_ids = arrayData.proc_ids
 
         # ------------------------------------------------------------------
         #
@@ -840,7 +881,57 @@ class arrayData():
             }
 
 
+        # ------------------------------------------------------------------
+        #
+        # ------------------------------------------------------------------
+        for idNow in proc_ids:
+            inst_health[idNow] = dict()
 
+            inst_health[idNow]["prc_0"] = {
+                "id": "prc_0", "ttl": "Prc_0", "val": 20,
+                "children": [
+                    {"id": "prc_00", "ttl": "Prc_00", "val": 100},
+                    {"id": "prc_01", "ttl": "Prc_01", "val": 10,
+                     "children": [
+                           {"id": "prc_01_0", "ttl": "Prc_01_0", "val": 3},
+                           {"id": "prc_01_1", "ttl": "Prc_01_1", "val": 78},
+                           {"id": "prc_01_2", "ttl": "Prc_01_1", "val": 78},
+                     ]
+                     },
+                     {"id": "prc_02", "ttl": "Prc_02", "val": 10,
+                      "children": [
+                            {"id": "prc_02_0", "ttl": "Prc_02_0", "val": 3},
+                            {"id": "prc_02_1", "ttl": "Prc_02_1", "val": 78},
+                      ]
+                      },
+                    {"id": "prc_03", "ttl": "Prc_03", "val": 80},
+                    {"id": "prc_04", "ttl": "Prc_04", "val": 80},
+                    {"id": "prc_05", "ttl": "Prc_05", "val": 80},
+                ]
+            }
+            inst_health[idNow]["prc_1"] = {
+                "id": "prc_1", "ttl": "Prc_1", "val": 20,
+                "children": [
+                    {"id": "prc_11", "ttl": "Prc_11", "val": 10,
+                     "children": [
+                           {"id": "prc_11_1", "ttl": "Prc_11_1", "val": 78},
+                           {"id": "prc_11_2", "ttl": "Prc_11_2", "val": 78},
+                     ]
+                     },
+                    {"id": "prc_15", "ttl": "Prc_15", "val": 80},
+                    {"id": "prc_16", "ttl": "Prc_16", "val": 10,
+                     "children": [
+                           {"id": "prc_16_1", "ttl": "Prc_16_1", "val": 78},
+                           {"id": "prc_16_2", "ttl": "Prc_16_2", "val": 78},
+                           {"id": "prc_16_4", "ttl": "Prc_16_4", "val": 78},
+                     ]
+                     },
+                ]
+            }
+
+        # ------------------------------------------------------------------
+        # 
+        # ------------------------------------------------------------------
         arrayData.inst_health = inst_health
 
         return
@@ -898,7 +989,11 @@ class arrayData():
     #
     # ------------------------------------------------------------------
     def get_inst_ids(self, inst_types=None):
+        n_tries, max_n_tries = 0, 1e3
         while arrayData.inst_Ids is None:
+            n_tries += 1
+            Assert(msg=' - cant init arrayData ?!?', 
+                state=(n_tries < max_n_tries))
             sleep(0.01)
 
         if inst_types is None:
@@ -912,9 +1007,27 @@ class arrayData():
 
             inst_Ids = [
                 i for i in arrayData.inst_Ids
-                if any(self.is_tel_type(i, inst_type) for inst_type in inst_types)
+                if any(
+                    self.is_tel_type(i, inst_type) 
+                    for inst_type in inst_types
+                )
             ]
         return inst_Ids
+
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
+    def get_proc_ids(self, inst_types=None):
+        n_tries, max_n_tries = 0, 1e3
+        while arrayData.proc_ids is None:
+            n_tries += 1
+            Assert(msg=' - cant init arrayData ?!?', 
+                state=(n_tries < max_n_tries))
+            sleep(0.01)
+
+        return copy.deepcopy(arrayData.proc_ids)
+
 
     # ------------------------------------------------------------------
     #

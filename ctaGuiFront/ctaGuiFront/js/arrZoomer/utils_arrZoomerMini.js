@@ -32,11 +32,13 @@ window.ArrZoomerMini = function (optIn0) {
   let myUniqueId = unique()
   let parentUniqueId = optIn0.myUniqueId
   
-  let svgBase = optIn0.svgBase
-  svgBase.elements.mini = thisTop
+  let dblclickZoomInOut = hasVar(optIn0.dblclickZoomInOut) ? optIn0.dblclickZoomInOut : true
+  
+  let eleBase = optIn0.eleBase
 
-  let instruments = svgBase.instruments
-  let zoomD = svgBase.zoomD
+  let instruments = eleBase.instruments
+  let zoomD = eleBase.zoomD
+  let lockInitKey = eleBase.lockInitKeys.mini
 
   let rScale = instruments.rScale
 
@@ -47,14 +49,11 @@ window.ArrZoomerMini = function (optIn0) {
   thisTop.hasInit = false
   thisTop.staticZoom = true
 
-  // need to use access function, as these may not yet
-  // be defined when this function is first initialised
-  function getSvgMain() {
-    return svgBase.elements.main
-  }
+  eleBase.setEle(thisTop, 'mini')
+  let getEle = eleBase.getEle
 
-  let gMiniD = svgBase.svgD.mini
-  gMiniD.g = svgBase.svgD.gSvg.append('g')
+  let gMiniD = eleBase.svgD.mini
+  gMiniD.g = eleBase.svgD.gSvg.append('g')
   gMiniD.gMini = gMiniD.g.append('g')
   // gMiniD.gBase = gMiniD.gMini.append('g')
 
@@ -68,8 +67,8 @@ window.ArrZoomerMini = function (optIn0) {
     .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width',baseH)
-      .attr('height',baseH);
+      .attr('width', lenD.w[0])
+      .attr('height', lenD.h[0])
 
   gMiniD.gClipped = gMiniD.gOuter.append('g')
   gMiniD.gClipped.attr('class', 'gClipped')
@@ -104,7 +103,6 @@ window.ArrZoomerMini = function (optIn0) {
   let com = {}
   thisTop.com = com
   let zoomTarget = null
-  let zoomLen = {}
   let telData = null
   let telTypeV = null
   let prop0 = 'health'
@@ -112,31 +110,6 @@ window.ArrZoomerMini = function (optIn0) {
   let miniMapCol = {}
   miniMapCol.b = ['#64B5F6']
   miniMapCol.p = ['#9575CD']
-
-
-  zoomLen['0.0'] = 1
-  if (isSouth) {
-    zoomLen['0.1'] = 2 // - 0.4
-    zoomLen['0.2'] = 12 // - 4
-    zoomLen['1.0'] = 15 // - 6
-    zoomLen['1.1'] = zoomLen['1.0'] + 0.1
-    zoomLen['1.2'] = zoomLen['1.0'] + 2
-    zoomLen['1.3'] = 20
-    // zoomLen["0.1"]  = 4  //- 4
-    // zoomLen["0.2"]  = 10 //- 15.5
-    // zoomLen["1.0"]  = 12 //- 16.5
-    // zoomLen["1.1"]  = zoomLen["1.0"] + 0.1
-    // zoomLen["1.2"]  = zoomLen["1.0"] + 2
-    // zoomLen["1.3"]  = 90
-  } else {
-    zoomLen['0.1'] = 2 // - 0.4
-    zoomLen['0.2'] = 5 // - 4
-    zoomLen['1.0'] = 6.5 // - 6
-    zoomLen['1.1'] = zoomLen['1.0'] + 0.1
-    zoomLen['1.2'] = zoomLen['1.0'] + 1
-    zoomLen['1.3'] = 9
-  }
-  zoomLen.prev = zoomLen['0.0']
 
   let zoomToTargetTag = {
     mini: 'zoomToTargetMini',
@@ -164,8 +137,9 @@ window.ArrZoomerMini = function (optIn0) {
       if (!thisTop.staticZoom) {
         gMiniD.gBase.attr('transform', d3.event.transform)
       }
+      // miniZoomViewRecOnce({ animT: 0 })
 
-      svgBase.svgD.main.gBase.attr('transform', d3.event.transform)
+      eleBase.svgD.main.gBase.attr('transform', d3.event.transform)
 
       return
     }
@@ -176,9 +150,10 @@ window.ArrZoomerMini = function (optIn0) {
     function svgZoomEnd() {
       if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMain'])) return
 
-      miniZoomViewRec()
+      miniZoomViewRec({})
+      // console.log('-svgZoomEnd-svgZoomEnd-', d3.event)
 
-      getSvgMain().zoomSyncMain(d3.event.transform)
+      getEle('main').zoomSyncMain(d3.event.transform)
 
       // remove the lock before possible zoomToTrgMain()
       locker.remove('inZoomMini')
@@ -187,7 +162,7 @@ window.ArrZoomerMini = function (optIn0) {
       if (Math.abs(thisTop.getScale() - zoomD.len['0.0']) < 0.00001) {
         let trans = thisTop.getTrans()
         if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
-          getSvgMain().zoomToTrgMain({
+          getEle('main').zoomToTrgMain({
             target: 'init',
             scale: zoomD.len['0.0'],
             durFact: 1
@@ -246,6 +221,22 @@ window.ArrZoomerMini = function (optIn0) {
     com.svgZoom.on('start', svgZoomStart)
     com.svgZoom.on('zoom', svgZoomDuring)
     com.svgZoom.on('end', svgZoomEnd)
+
+    // function filter() {
+    //   let scale = getScale()
+    //   let isIn = (d3.event.wheelDelta > 0) && (scale < zoomD.len['1.3'])
+    //   let isOut = (d3.event.wheelDelta < 0) && (scale > zoomD.len['0.0'])
+    //   console.log(d3.event.wheelDelta, isIn, isOut)
+
+    //   if(!(isIn || isOut)) {
+    //     console.log('qqqqqqqqqq',d3.event)
+    //     // d3.event.sourceEvent.stopImmediatePropagation()
+    //   }
+
+    //   return 1
+    //   return isIn || isOut
+    // }
+    // com.svgZoom.filter(filter)
 
     gMiniD.gMini
       .call(com.svgZoom)
@@ -388,43 +379,51 @@ window.ArrZoomerMini = function (optIn0) {
   // ------------------------------------------------------------------
   //  Blue square on miniMap
   // ------------------------------------------------------------------
-  function miniZoomViewRec () {
-    runLoop.push({ tag: 'miniZoomViewRec' })
+  function miniZoomViewRec (optIn) {
+    runLoop.push({ tag: 'miniZoomViewRec'+myUniqueId, data:optIn })
   }
   thisTop.miniZoomViewRec = miniZoomViewRec
   
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function miniZoomViewRecOnce () {
+  function miniZoomViewRecOnce (optIn) {
     if (
       !locker.isFreeV([
         'autoZoomTarget',
         'zoomToTargetMini',
       ])
     ) {
-      miniZoomViewRec()
+      miniZoomViewRec(optIn)
       return
     }
+
     let tagNow = 'miniZoomViewRec'
     let scale = getScale()
     let trans = getTrans()
     let data = []
 
+    if(!hasVar(optIn)) optIn = {}
+    let animT = hasVar(optIn.animT) ? optIn.animT : timeD.animArc
+    // console.log('QQQ animT',animT,scale,Date.now())
+
     if (scale < (isSouth ? 2 : 1.5)) {
       scale = 1
       trans = [0, 0]
-    } else data = [{ id: 0 }]
+    } 
+    else {
+      data = [{ id: 0 }]
+    }
 
     let w =
-      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) * baseH / scale
+      (1 + (isSouth ? 2 * scale / zoomD.len['1.3'] : 0)) * baseH / scale
     let h =
-      (1 + (isSouth ? 2 * scale / zoomLen['1.3'] : 0)) * baseH / scale
+      (1 + (isSouth ? 2 * scale / zoomD.len['1.3'] : 0)) * baseH / scale
     let x = (baseH / 2 - trans[0]) / scale - w / 2
     let y = (baseH / 2 - trans[1]) / scale - h / 2
 
-    let strkW = 1 + 0.1 * scale / (zoomLen['1.3'] - zoomLen['0.0'])
-    let opac = 0.95 * Math.sqrt(scale / (zoomLen['1.3'] - zoomLen['0.0']))
+    let strkW = 1 + 0.1 * scale / (zoomD.len['1.3'] - zoomD.len['0.0'])
+    let opac = 0.95 * Math.sqrt(scale / (zoomD.len['1.3'] - zoomD.len['0.0']))
 
     // operate on new elements only
     let rect = com.gBaseMini.rect
@@ -449,7 +448,7 @@ window.ArrZoomerMini = function (optIn0) {
       .attr('vector-effect', 'non-scaling-stroke')
       .merge(rect)
       .transition('inOut')
-      .duration(timeD.animArc)
+      .duration(animT)
       .attr('x', x)
       .attr('y', y)
       .attr('width', w)
@@ -469,6 +468,8 @@ window.ArrZoomerMini = function (optIn0) {
       .attr('width', w)
       .attr('height', h)
       .remove()
+
+    return
   }
   
   // ------------------------------------------------------------------
@@ -515,8 +516,16 @@ window.ArrZoomerMini = function (optIn0) {
       //   let scaleToZoom = telData.vorDblclick({d:d, isInOut:true });
       //   thisTop.zoomToTrgQuick({ target:d.data.id, scale:scaleToZoom, durFact:-1 });
       // })
-      .on('mouseover', function (d) {
-        thisTop.target = d.data.id
+      
+
+      // .on('mouseover', function (d) {
+      //   thisTop.target = d.data.id
+      // })
+
+      .on('mouseover', instruments.data.hover)
+      .on('click', instruments.data.click)
+      .on('dblclick', function (d) {
+        instruments.data.dblclick({ d: d, isInOut: dblclickZoomInOut })
       })
   }
 
@@ -536,11 +545,11 @@ window.ArrZoomerMini = function (optIn0) {
     // initialize the target name for hovering->zoom
     thisTop.target = zoomTarget
     // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
-    runLoop.init({
-      tag: zoomToTargetTag.mini,
-      func: doZoomToTarget,
-      nKeep: -1
-    })
+    // runLoop.init({
+    //   tag: zoomToTargetTag.mini+myUniqueId,
+    //   func: doZoomToTarget,
+    //   nKeep: -1
+    // })
 
     // // the actual function to be called when a zoom needs to be put in the queue
     // zoomToTrgQuick = function (optIn) {
@@ -555,16 +564,17 @@ window.ArrZoomerMini = function (optIn0) {
     //   opac:0.1, textureOrient:"5/8", textureSize:120
     // });
     runLoop.init({
-      tag: 'miniZoomViewRec',
+      tag: 'miniZoomViewRec'+myUniqueId,
       func: miniZoomViewRecOnce,
       nKeep: 1
     })
-    miniZoomViewRec()
+    miniZoomViewRec({})
     miniZoomClick()
 
     setStateOnce(dataIn)
     
-    locker.remove('inInitMini')
+    locker.remove(lockInitKey)
+    return
   }
   thisTop.initData = initData
   
@@ -598,7 +608,7 @@ window.ArrZoomerMini = function (optIn0) {
   // ------------------------------------------------------------------
   // initialize a couple of functions to be overriden below
   let getScale = function () {
-    return zoomLen['0.0']
+    return zoomD.len['0.0']
   }
   thisTop.getScale = getScale
   

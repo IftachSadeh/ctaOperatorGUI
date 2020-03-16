@@ -22,19 +22,22 @@ window.ArrZoomerChes = function (optIn0) {
   let locker = optIn0.locker
   let isSouth = optIn0.isSouth
 
-  let svgBase = optIn0.svgBase
-  svgBase.elements.ches = thisTop
+  let eleBase = optIn0.eleBase
 
-  let instruments = svgBase.instruments
+  eleBase.setEle(thisTop, 'ches')
+
+
+  let instruments = eleBase.instruments
   let rScale = instruments.rScale
+  let lockInitKey = eleBase.lockInitKeys.ches
 
   let baseH = 500
   let addChesOutline = false
   let showVor = false
 
-  let gChesD = svgBase.svgD.ches
+  let gChesD = eleBase.svgD.ches
 
-  gChesD.g = svgBase.svgD.gSvg.append('g')
+  gChesD.g = eleBase.svgD.gSvg.append('g')
   gChesD.gChes = gChesD.g.append('g')
   gChesD.gBaseChes = gChesD.gChes.append('g')
 
@@ -100,9 +103,9 @@ window.ArrZoomerChes = function (optIn0) {
   }
   zoomLen.prev = zoomLen['0.0']
 
-  let zoomToTargetTag = {
-    ches: 'zoomToTargetChes'
-  }
+  // let zoomToTargetTag = {
+  //   ches: 'zoomToTargetChes'
+  // }
 
 
   // ------------------------------------------------------------------
@@ -469,11 +472,11 @@ window.ArrZoomerChes = function (optIn0) {
     // initialize the target name for hovering->zoom
     thisTop.target = zoomTarget
     // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
-    runLoop.init({
-      tag: zoomToTargetTag.ches,
-      func: doZoomToTarget,
-      nKeep: -1
-    })
+    // runLoop.init({
+    //   tag: zoomToTargetTag.ches,
+    //   func: doZoomToTarget,
+    //   nKeep: -1
+    // })
 
     // // the actual function to be called when a zoom needs to be put in the queue
     // zoomToTrgQuick = function (optIn) {
@@ -483,7 +486,8 @@ window.ArrZoomerChes = function (optIn0) {
 
     setStateOnce(dataIn)
 
-    locker.remove('inInitChes')
+    locker.remove(lockInitKey)
+    return
   }
   this.initData = initData
   
