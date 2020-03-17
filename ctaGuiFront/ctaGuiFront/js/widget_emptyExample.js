@@ -28,6 +28,12 @@ var mainScriptTag = 'emptyExample'
 // // load additional js files:
 // window.loadScript({ source:mainScriptTag, script:"/js/utils_scrollGrid.js"});
 
+window.loadScript({
+  source: mainScriptTag,
+  script: '/js/arrZoomer/utils_arrZoomerBase.js'
+})
+
+
 // -------------------------------------------------------------------
 sock.widgetTable[mainScriptTag] = function (optIn) {
   let x0 = 0
@@ -209,6 +215,110 @@ let mainEmptyExample = function (optIn) {
         opac: 0.1,
         hexR: 15
       })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      // // ------------------------------------------------------------------
+      // // ------------------------------------------------------------------
+      // // ------------------------------------------------------------------
+      // // 
+      // // ------------------------------------------------------------------
+      // let myUniqueId = unique()
+      // let arrZoomerLockInitKey = 'inInitArrZoomer' + myUniqueId
+      // let isSouth = window.__nsType__ === 'S'
+      // let svgG = svg.g
+
+      // locker.add(arrZoomerLockInitKey)
+
+      // let arrZoomerEleOpts = {
+      //   doEle: {
+      //     main: true,
+      //     ches: true,
+      //     mini: true,
+      //     tree: true,
+      //     lens: !true,
+      //   },
+      //   trans: {
+      //     main: 'translate(0,100)scale(2.5)',
+      //     ches: 'translate(110,0)scale(3.8)',
+      //     tree: 'translate(250,100)scale(2.5)',
+      //     mini: 'translate(5,0)scale(1)',
+      //     lens: 'translate(10,5)scale(0.18)',
+      //     // mini: 'translate(240,0)scale(2.7)',
+      //     // lens: 'translate(245,5)scale(0.60)',
+      //   },
+      //   main:{
+      //     // dblclickZoomInOut: false,
+      //   },
+      //   ches:{
+      //     // myOpt: 0,
+      //   },
+      //   mini:{
+      //     // staticZoom: false,
+      //   },
+      //   tree: {
+      //     // aspectRatio: 6/5,
+      //   },
+      //   lens: {
+      //     aspectRatio: 4,
+      //     hasTitles: true,
+      //     // pointerEvents: true,
+      //   },
+      // }
+
+      // // ------------------------------------------------------------------
+      // // 
+      // // ------------------------------------------------------------------
+      // console.log(dataIn.data)
+
+
+      // let arrZoomerBase = new ArrZoomerBase({
+      //   runLoop: runLoop,
+      //   sgvTag: sgvTag,
+      //   widgetId: widgetId,
+      //   widgetSource: widgetSource,
+      //   locker: locker,
+      //   isSouth: isSouth,
+      //   widgetType: widgetType,
+      //   sock: sock,
+      //   eleOpts: arrZoomerEleOpts,
+      //   lockInitKey: arrZoomerLockInitKey,
+      //   svg: svgG,
+      // })
+      // arrZoomerBase.initData(dataIn.data.arrZoomer)
+      // // ------------------------------------------------------------------
+      // // ------------------------------------------------------------------
+      // // ------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       // -------------------------------------------------------------------
       //

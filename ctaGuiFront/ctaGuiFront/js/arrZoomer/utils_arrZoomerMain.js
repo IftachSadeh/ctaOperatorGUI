@@ -70,7 +70,6 @@ window.ArrZoomerMain = function (optIn0) {
   com.s10 = {}
   instruments.data.vor = {}
 
-  let lenWH = 500
   
   let focusD = {}
 
@@ -83,14 +82,16 @@ window.ArrZoomerMain = function (optIn0) {
   arcPrev.ang = {}
   arcPrev.rad = {}
 
-  let siteScale = isSouth ? 4 / 9 : 1
+  let teleR = eleBase.teleR
+  let siteScale = eleBase.siteScale
 
-  let lenD = { w: [lenWH], h: [lenWH] }
+  let lenD = { 
+    // w: 500, h: 500, fracCircWH: 1,
+    w: 600, h: 600, fracCircWH: 0.85,
+  }
   thisTop.lenD = lenD
   
-  lenD.r = {}
-  lenD.r.s00 = [12, 13, 14]
-  if (isSouth) lenD.r.s00 = [12 * siteScale, 13 * siteScale, 14 * siteScale]
+
 
   // ------------------------------------------------------------------
   //
@@ -107,8 +108,8 @@ window.ArrZoomerMain = function (optIn0) {
     .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', lenWH)
-      .attr('height', lenWH)
+      .attr('width', lenD.w)
+      .attr('height', lenD.h)
 
   gMainD.gClipped = gMainD.gOuter.append('g')
   gMainD.gClipped.attr('class', 'gClipped')
@@ -118,7 +119,7 @@ window.ArrZoomerMain = function (optIn0) {
   // initial scale to 100x100 px
   // ------------------------------------------------------------------
   gMainD.gOuter.attr('transform', function (d) {
-    return 'translate(0,0)scale('+ (100 / lenWH) +')'
+    return 'translate(0,0)scale('+ (100 / lenD.w) +')'
   })
 
   // ------------------------------------------------------------------
@@ -143,6 +144,95 @@ window.ArrZoomerMain = function (optIn0) {
   }
 
   // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function catElePos(nEleNow, nEles) {
+    let yMargTop = lenD.h * 0.3
+    let yMargBot = 0
+    let yMarg = teleR.s00[2] + lenD.h * 0.2
+    let yTot = lenD.h - 2 * yMarg - yMargTop - yMargBot
+    let yWidth = yTot / (nEles - 1)
+    let x = (lenD.w * (1-lenD.fracCircWH)) / 2
+    let y = yMargTop + yMarg + yWidth * nEleNow
+    let r = teleR.s00[3]
+
+    return { x: x, y: y, r: r, }
+  }
+  thisTop.catElePos = catElePos
+
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function isCategoricalId(id) {
+    let catIds = ['PROC']
+
+    let telIndex = catIds.indexOf(eleBase.telTypes[id])
+    return (telIndex !== -1)
+  }
+
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function addBackShapes(gIn, lenWH, telData) {
+    gIn
+      .append('circle')
+      .attr('r', (lenWH.w - lenWH.w * (1-lenWH.fracCircWH)) / 2.1)
+      .attr('cx', (lenWH.w + lenWH.w * (1-lenWH.fracCircWH)) / 2)
+      .attr('cy', lenWH.h / 2)
+      // .attr('r', lenWH.w / 2.1)
+      // .attr('cx', lenWH.w / 2)
+      // .attr('cy', (lenWH.h - lenWH.h * (1-lenWH.fracCircWH)) / 2)
+      .attr('fill', '#F2F2F2')
+
+    // let tagNow = 'bckCirc'
+    // let rCirc = [ lenWH.w / 12, lenWH.w / 2.1]
+    // let dataV = [
+    //   {cx: lenWH.w / 10, cy: lenWH.h / 10, r: rCirc[0]},
+    //   {cx: lenWH.w / 2, cy: lenWH.h / 2, r: rCirc[1]},
+    // ]
+    // let circ = gMainD.gBack
+    //   .selectAll('circle.' + tagNow)
+    //   .data(dataV)
+
+    // circ
+    //   .enter()
+    //   .append('circle')
+    //   .attr('r', 0)
+    //   .style('r', function (d) { return d.r })
+    //   .style('cx', function (d) { return d.cx })
+    //   .style('cy', function (d) { return d.cy })
+    //   .attr('fill', '#F2F2F2')
+    //   .style("stroke",'#383B42' )
+    //   .style("stroke-width", 1)
+
+    let yEle = []
+    let dataCat = Object.entries(telData).filter(function(d) {
+      return isCategoricalId(d[0])
+    })
+    $.each(dataCat, function(i, d) {
+      let id = d[0]
+      // let dataNow = d[1]
+      yEle.push(thisTop.catElePos(i, dataCat.length).y)
+    })
+    let yMin = Math.min(...yEle) - teleR.s00[3]*3
+    let yMax = Math.max(...yEle) + teleR.s00[3]*3
+    let xShift = lenWH.w * (1-lenWH.fracCircWH) * 0.1
+
+    gIn
+      .append('rect')
+      .attr('x', xShift)
+      .attr('y', yMin)
+      .attr('width', (lenWH.w * (1-lenWH.fracCircWH)) - 1.5*xShift)
+      .attr('height', yMax - yMin)
+      .attr("rx", lenWH.h * 0.02)
+      .attr("ry", lenWH.h * 0.02)
+      .attr('fill', '#F2F2F2')
+    return
+  }
+  thisTop.addBackShapes = addBackShapes
+
+
+  // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
   function initData (dataIn) {
@@ -162,8 +252,8 @@ window.ArrZoomerMain = function (optIn0) {
         .append('rect')
           .attr('x', 0)
           .attr('y', 0)
-          .attr('width',lenD.w[0])
-          .attr('height',lenD.h[0])
+          .attr('width',lenD.w)
+          .attr('height',lenD.h)
           .style("fill",'transparent' )
           .style("stroke",'#383B42' )
           // .style("stroke",'#F2F2F2' )
@@ -172,22 +262,14 @@ window.ArrZoomerMain = function (optIn0) {
           .attr("pointer-events",'none')
           .attr("opacity",1)
 
-      gMainD.gBack
-        .append('circle')
-        .attr('r', 0)
-        .attr('cx', lenD.w[0] / 2)
-        .attr('cy', lenD.h[0] / 2)
-        .attr('fill', '#F2F2F2')
-        .transition('inOut')
-        .duration(timeD.animArc / 3)
-        .attr('r', lenD.w[0] / 2.1)
+      addBackShapes(gMainD.gBack, lenD, arrInit)
 
       // the background grid
       bckPattern({
         com: com,
         gNow: gMainD.gBack,
         gTag: 'hex',
-        lenWH: [lenD.w[0], lenD.h[0]],
+        lenWH: [lenD.w, lenD.h],
         opac: thisTop.getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
         hexR: 18
       })
@@ -244,8 +326,12 @@ window.ArrZoomerMain = function (optIn0) {
   // ------------------------------------------------------------------
   function initZoom () {
     let scaleStart = 0
+    let zoomSyncMiniLockers = [
+      'zoomSyncMain', 'zoomSyncMini', 'zoomSyncLens', 'inZoomMini',
+    ]
+    
     function svgZoomStart () {
-      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
+      if (!locker.isFreeV(zoomSyncMiniLockers)) return
 
       scaleStart = d3.event.transform.k
       locker.add({ id: 'zoom', override: true })
@@ -256,15 +342,19 @@ window.ArrZoomerMain = function (optIn0) {
     // 
     // ------------------------------------------------------------------
     function svgZoomDuring () {
-      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
+      if (!locker.isFreeV(zoomSyncMiniLockers)) {
+        return
+      }
+      
       gMainD.gBase.attr('transform', d3.event.transform)
 
-      let svgMini = getEle('mini')
-      if (svgMini) {
-        if(!svgMini.staticZoom) {
-          eleBase.svgD.mini.gBase.attr('transform', d3.event.transform)
-        }
-      }
+      $.each(['mini', 'lens'], function(i, d) {
+        let svgMini = getEle(d)
+        if (!svgMini) return
+        if(svgMini.staticZoom) return
+        
+        eleBase.svgD[d].gBase.attr('transform', d3.event.transform)
+      })
 
       svgZoomUpdState()
     }
@@ -273,7 +363,7 @@ window.ArrZoomerMain = function (optIn0) {
     // 
     // ------------------------------------------------------------------
     function svgZoomEnd () {
-      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
+      if (!locker.isFreeV(zoomSyncMiniLockers)) return
       
       svgZoomUpdState()
       setZoomState()
@@ -281,12 +371,14 @@ window.ArrZoomerMain = function (optIn0) {
       focusD.target = zoomD.target
       focusD.scale = d3.event.transform.k
 
-      // common actions (after releasing locker)
-      let svgMini = getEle('mini')
-      if(svgMini) {
+      $.each(['mini', 'lens'], function(i, d) {
+        let svgMini = getEle(d)
+        if (!svgMini) return
+        // if(svgMini.staticZoom) return
+
         svgMini.miniZoomViewRec()
-        svgMini.zoomSyncMini(d3.event.transform)
-      }
+        svgMini.zoomSync(d3.event.transform)
+      })
 
       locker.remove('zoom')
       locker.remove('inZoomMain')
@@ -320,14 +412,14 @@ window.ArrZoomerMain = function (optIn0) {
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    function zoomSyncMain(trans) {
+    function zoomSync(trans) {
       locker.add({ id: 'zoomSyncMain', override: true })
       function funcEnd() {
         locker.remove('zoomSyncMain')
       }
 
-      let x = (lenD.w[0] / 2 - trans.x) / trans.k
-      let y = (lenD.h[0] / 2 - trans.y) / trans.k
+      let x = (lenD.w / 2 - trans.x) / trans.k
+      let y = (lenD.h / 2 - trans.y) / trans.k
       let transTo = [x, y]
 
       let outD = {
@@ -335,7 +427,7 @@ window.ArrZoomerMain = function (optIn0) {
         durFact: 0,
         baseTime: 300,
         transTo: transTo,
-        wh: [lenD.w[0], lenD.h[0]],
+        wh: [lenD.w, lenD.h],
         cent: null,
         // funcStart: funcStart,
         funcEnd: funcEnd,
@@ -348,7 +440,7 @@ window.ArrZoomerMain = function (optIn0) {
 
       doZoomToTarget(outD)
     }
-    thisTop.zoomSyncMain = zoomSyncMain
+    thisTop.zoomSync = zoomSync
 
     // ------------------------------------------------------------------
     // 
@@ -401,7 +493,7 @@ window.ArrZoomerMain = function (optIn0) {
 
       let transTo = null
       if (targetName === 'init') {
-        transTo = [lenD.w[0] / 2, lenD.h[0] / 2]
+        transTo = [lenD.w / 2, lenD.h / 2]
       } 
       else if (
         targetName === '' || 
@@ -409,8 +501,8 @@ window.ArrZoomerMain = function (optIn0) {
       {
         let scale = thisTop.getScale()
         let trans = thisTop.getTrans()
-        let x = (lenD.w[0] / 2 - trans[0]) / scale
-        let y = (lenD.h[0] / 2 - trans[1]) / scale
+        let x = (lenD.w / 2 - trans[0]) / scale
+        let y = (lenD.h / 2 - trans[1]) / scale
         transTo = [x, y]
 
         let diffMin = -1
@@ -466,7 +558,7 @@ window.ArrZoomerMain = function (optIn0) {
         durFact: durFact,
         baseTime: 300,
         transTo: transTo,
-        wh: [lenD.w[0], lenD.h[0]],
+        wh: [lenD.w, lenD.h],
         cent: null,
         funcStart: funcStart,
         funcEnd: funcEnd,
@@ -520,7 +612,7 @@ window.ArrZoomerMain = function (optIn0) {
       .y(function (d) {
         return d.y
       })
-      .extent([[0, 0], [lenD.w[0], lenD.h[0]]])
+      .extent([[0, 0], [lenD.w, lenD.h]])
 
 
     // ------------------------------------------------------------------
@@ -644,9 +736,10 @@ window.ArrZoomerMain = function (optIn0) {
       let tagVor = 'vor'
       let vorShowLines = false
 
+      let polygons = vorFunc.polygons(instruments.data.vor.data)
       let vor = com.vor.g
         .selectAll('path.' + tagVor)
-        .data(vorFunc.polygons(instruments.data.vor.data), function (d) {
+        .data(polygons, function (d) {
           return d.data.id
         })
 
@@ -759,30 +852,56 @@ window.ArrZoomerMain = function (optIn0) {
         dataInWH[1] *= 1.1
       }
 
-      $.each(dataIn, function (id, dataNow) {
-        // console.log(id, dataNow)
-        let eleR = null
-        if (dataNow.t === 'LST') eleR = lenD.r.s00[2]
-        else if (dataNow.t === 'MST') eleR = lenD.r.s00[1]
-        else eleR = lenD.r.s00[0]
+      // ------------------------------------------------------------------
+      // 
+      // ------------------------------------------------------------------
+      let xyCat = {}
+      let dataCat = Object.entries(dataIn).filter(function(d) {
+        return isCategoricalId(d[0])
+      })
 
-        // coordinate transform on the original values (which are also used elsewhere)
-        let x =
-          1 * dataNow.x * lenD.w[0] / (1.2 * dataInWH[0]) + lenD.w[0] / 2
-        let y =
-          -1 * dataNow.y * lenD.h[0] / (1.2 * dataInWH[1]) + lenD.h[0] / 2
+      $.each(dataCat, function(i, d) {
+        let id = d[0]
+        // let dataNow = d[1]
+        xyCat[id] = thisTop.catElePos(i, dataCat.length)
+      })
+
+      $.each(dataIn, function (id, dataNow) {
+        let x, y, r
+        if(hasVar(xyCat[id])) {
+          x = xyCat[id].x
+          y = xyCat[id].y
+          r = xyCat[id].r
+        }
+        else {
+          if (dataNow.t === 'LST') r = teleR.s00[2]
+          else if (dataNow.t === 'MST') r = teleR.s00[1]
+          else r = teleR.s00[0]
+
+          let shiftMainX = lenD.w * (1 - lenD.fracCircWH)
+          let shiftMainY = lenD.h * (1 - lenD.fracCircWH) / 2
+          // let shiftMainY = 0
+          
+          let lenW = lenD.w * lenD.fracCircWH
+          let lenH = lenD.h * lenD.fracCircWH
+          x = shiftMainX + (1 * dataNow.x * lenW
+                  / (1.2 * dataInWH[0]) + lenW / 2)
+          y = shiftMainY + (-1 * dataNow.y * lenH
+                  / (1.2 * dataInWH[1]) + lenH / 2)
+
+        }
 
         // translate to the center of the respective hex-cell
         // let xy = com.svgBck.trans([x,y]);  x = xy[0]; y = xy[1];
-
         instruments.data.xyrPhysical[id] = { 
-          x: x, y: y, r: eleR, //isTel: true 
+          x: x, y: y, r: r, //isTel: true 
         }
         instruments.data.vor.dataPhysical.push({ 
-          id: id, x: x, y: y, r: eleR 
+          id: id, x: x, y: y, r: r 
         })
-        // console.log(id, instruments.data.xyrPhysical[id])
+        // console.log(id, instruments.data.xyrPhysical[id], eleBase.telTypes[id], isCategoricalId(id))
       })
+
 
       // ------------------------------------------------------------------
       // use delaunay links to get the closest neighbours of each data-point
@@ -815,6 +934,7 @@ window.ArrZoomerMain = function (optIn0) {
       })
 
       instruments.data.mini = instruments.data.xyrPhysical
+      instruments.data.lens = instruments.data.xyrPhysical
 
       return
     }
@@ -873,7 +993,7 @@ window.ArrZoomerMain = function (optIn0) {
     //   })
     //   let packNode = d3
     //     .pack()
-    //     .size([lenD.w[0] * hirchScale, lenD.h[0] * hirchScale])
+    //     .size([lenD.w * hirchScale, lenD.h * hirchScale])
     //     .padding(10)
     //   packNode(hirch)
 
@@ -887,14 +1007,14 @@ window.ArrZoomerMain = function (optIn0) {
     //       //   console.log('-------',id);
     //       // }
 
-    //       let x = dataNow.x + lenD.w[0] * (1 - hirchScale) / 2
-    //       let y = dataNow.y + lenD.h[0] * (1 - hirchScale) / 2
+    //       let x = dataNow.x + lenD.w * (1 - hirchScale) / 2
+    //       let y = dataNow.y + lenD.h * (1 - hirchScale) / 2
 
     //       let eleR = dataNow.r
     //       if (isTel) {
-    //         if (dataNow.t === 'LST') eleR = lenD.r.s00[2]
-    //         else if (dataNow.t === 'MST') eleR = lenD.r.s00[1]
-    //         else eleR = lenD.r.s00[0]
+    //         if (dataNow.t === 'LST') eleR = teleR.s00[2]
+    //         else if (dataNow.t === 'MST') eleR = teleR.s00[1]
+    //         else eleR = teleR.s00[0]
     //       }
 
     //       instruments.data.xyrSubArr[id] = { 
@@ -1033,7 +1153,7 @@ window.ArrZoomerMain = function (optIn0) {
           com: com,
           gNow: gMainD.gBase,
           gTag: 'hex',
-          lenWH: [lenD.w[0], lenD.h[0]],
+          lenWH: [lenD.w, lenD.h],
           opac: thisTop.getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
           hexR: 18
         })
@@ -1159,9 +1279,11 @@ window.ArrZoomerMain = function (optIn0) {
       .attr('r', 0)
       .remove()
 
-    let text = com.s00.g.selectAll('text.' + tagNow).data(dataV, function (d) {
-      return d.id
-    })
+    let text = com.s00.g
+      .selectAll('text.' + tagNow)
+      .data(dataV, function (d) {
+        return d.id
+      })
 
     text
       .enter()
@@ -1298,6 +1420,8 @@ window.ArrZoomerMain = function (optIn0) {
       .duration(timeD.animArc)
       .style('opacity', 0)
       .remove()
+  
+    return
   }
 
   // ------------------------------------------------------------------
@@ -1514,6 +1638,8 @@ window.ArrZoomerMain = function (optIn0) {
     })
 
     focusIdV = null
+  
+    return
   }
 
   
@@ -1699,6 +1825,8 @@ window.ArrZoomerMain = function (optIn0) {
     })
 
     focusIdV = null
+  
+    return
   }
 
   // function hasS10main(targetId) {
@@ -2488,9 +2616,9 @@ window.ArrZoomerMain = function (optIn0) {
 
           hirchHovTitleOut(null)
 
-          let r = lenD.r.s00[2] * rScale[1].innerH1 / 3.5
+          let r = teleR.s00[2] * rScale[1].innerH1 / 3.5
           let dx = wh / 2
-          let dy = wh + 2 * r * instruments.data.xyr[telId].r / lenD.r.s00[2]
+          let dy = wh + 2 * r * instruments.data.xyr[telId].r / teleR.s00[2]
 
           gBase
             .selectAll('text.' + 'hovTitle')
@@ -3054,6 +3182,8 @@ window.ArrZoomerMain = function (optIn0) {
     }
 
     s10.init()
+  
+    return
   }
   thisTop.s10main = s10main
 
@@ -3066,6 +3196,7 @@ window.ArrZoomerMain = function (optIn0) {
         eleNow.s10.bckArcClick(optIn)
       }
     })
+    return
   }
   thisTop.bckArcClick = bckArcClick
 
@@ -3078,6 +3209,7 @@ window.ArrZoomerMain = function (optIn0) {
         eleNow.s10.updateHirch(dataIn.data)
       }
     })
+    return
   }
   thisTop.updateS1 = updateS1
 
@@ -3146,6 +3278,8 @@ window.ArrZoomerMain = function (optIn0) {
 
       arrPropVtarget = null
     }
+  
+    return
   }
   thisTop.setStateOnce = setStateOnce
 
@@ -3245,6 +3379,7 @@ window.ArrZoomerMain = function (optIn0) {
       zoomState: zoomS,
       zoomTarget: zoomD.target
     })
+    return
   }
   thisTop.askDataS1 = askDataS1
 
@@ -3256,6 +3391,7 @@ window.ArrZoomerMain = function (optIn0) {
       zoomState: thisTop.getZoomS(),
       zoomTarget: zoomD.target
     }
+    return
   }
   thisTop.getWidgetState = getWidgetState
 

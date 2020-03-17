@@ -35,10 +35,10 @@ window.loadScript({
   source: mainScriptTag,
   script: '/js/arrZoomer/utils_arrZoomerTree.js'
 })
-window.loadScript({
-  source: mainScriptTag,
-  script: '/js/arrZoomer/utils_arrZoomerProc.js'
-})
+// window.loadScript({
+//   source: mainScriptTag,
+//   script: '/js/arrZoomer/utils_arrZoomerLens.js'
+// })
 
 // ------------------------------------------------------------------
 //
@@ -88,7 +88,7 @@ window.ArrZoomerBase = function (optIn0) {
   svgD.mini = {}
   svgD.ches = {}
   svgD.tree = {}
-  svgD.proc = {}
+  svgD.lens = {}
   svgD.gSvg = svg.append('g')
 
   let interpolate01 = d3.interpolate(0, 1)
@@ -139,6 +139,13 @@ window.ArrZoomerBase = function (optIn0) {
   instruments.rScale[1].innerH0 = 1.25
   instruments.rScale[1].innerH1 = 1.3
 
+  thisTop.siteScale = isSouth ? 4 / 9 : 1
+  
+  thisTop.teleR = { s00: [12, 13, 14, 14] }
+  thisTop.teleR.s00 = thisTop.teleR.s00.map(
+    function(x) { return x * thisTop.siteScale }
+  )
+
   let telTypeV = telInfo.getIds()
 
   // ------------------------------------------------------------------
@@ -149,6 +156,7 @@ window.ArrZoomerBase = function (optIn0) {
     ches: 'inArrZoomerInitChes' + myUniqueId,
     mini: 'inArrZoomerInitMini' + myUniqueId,
     tree: 'inArrZoomerInitTree' + myUniqueId,
+    lens: 'inArrZoomerInitLens' + myUniqueId,
   }
   thisTop.lockInitKeys = lockInitKeys
 
@@ -170,17 +178,18 @@ window.ArrZoomerBase = function (optIn0) {
   })
 
 
-  // ------------------------------------------------------------------
-  // 
-  // ------------------------------------------------------------------
-  function isTelTypeIn(tag, telId) {
-    let telTypesEle = {
-      main: ['LST'],
-    }
+  // // ------------------------------------------------------------------
+  // // 
+  // // ------------------------------------------------------------------
+  // function isTelTypeIn(tag, telId) {
+  //   let telTypesEle = {
+  //     main: ['LST'],
+  //   }
 
-    return (telTypesEle[tag].indexOf(thisTop.telTypes[telId]) !== -1)
-  }
-  thisTop.isTelTypeIn = isTelTypeIn
+  //   let telIndex = telTypesEle[tag].indexOf(thisTop.telTypes[telId])
+  //   return (telIndex !== -1)
+  // }
+  // thisTop.isTelTypeIn = isTelTypeIn
 
 
   // ------------------------------------------------------------------
@@ -211,6 +220,7 @@ window.ArrZoomerBase = function (optIn0) {
 
     $.each(telPropTypes, function (idNow, typeV) {
       // if (!isTelTypeIn('main', idNow)) return
+      // console.log(isTelTypeIn('main', idNow),idNow, typeV)
 
       instruments.props[idNow] = []
       instruments.props0[idNow] = [instruments.prop0]
@@ -475,8 +485,8 @@ window.ArrZoomerBase = function (optIn0) {
       eleChes.initData({
         instrumentData: {
           tel: instruments.data.tel,
-          mini: instruments.data.mini,
-          xyr: instruments.data.xyr,
+          // mini: instruments.data.mini,
+          // xyr: instruments.data.xyr,
           vorDblclick: instruments.data.dblclick
         },
         telTypeV: telTypeV
@@ -507,8 +517,8 @@ window.ArrZoomerBase = function (optIn0) {
         instrumentData: {
           tel: instruments.data.tel,
           vor: { data: instruments.data.vor.data },
-          mini: instruments.data.mini,
-          xyr: instruments.data.xyr,
+          xyrPhysical: instruments.data.mini,
+          // xyr: instruments.data.xyr,
           vorDblclick: instruments.data.dblclick
         },
         telTypeV: telTypeV
@@ -522,8 +532,8 @@ window.ArrZoomerBase = function (optIn0) {
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    if (doEle.proc) {
-      let eleOptsProc = {
+    if (doEle.lens) {
+      let eleOptsLens = {
         runLoop: runLoop,
         sgvTag: sgvTag,
         widgetId: widgetId,
@@ -531,15 +541,45 @@ window.ArrZoomerBase = function (optIn0) {
         isSouth: isSouth,
         myUniqueId: myUniqueId,
         eleBase: thisTop,
-      }      
-      addUserOpts(eleOptsProc, 'proc')
-      
-      let eleProc = new ArrZoomerProc(eleOptsProc)
-      eleProc.initData(dataIn)
-
-      if(hasVar(eleOpts.trans.proc)) {
-        eleProc.setTransform(eleOpts.trans.proc)
+        isLens: 1,
+        staticZoom: false,
       }
+      addUserOpts(eleOptsLens, 'lens')
+      
+      let eleLens = new ArrZoomerMini(eleOptsLens)
+      eleLens.initData({
+        instrumentData: {
+          tel: instruments.data.tel,
+          vor: { data: instruments.data.vor.data },
+          xyrPhysical: instruments.data.lens,
+          // xyr: instruments.data.xyr,
+          vorDblclick: instruments.data.dblclick
+        },
+        telTypeV: telTypeV
+      })
+
+      if(hasVar(eleOpts.trans.lens)) {
+        eleLens.setTransform(eleOpts.trans.lens)
+      }
+
+
+      // let eleOptsLens = {
+      //   runLoop: runLoop,
+      //   sgvTag: sgvTag,
+      //   widgetId: widgetId,
+      //   locker: locker,
+      //   isSouth: isSouth,
+      //   myUniqueId: myUniqueId,
+      //   eleBase: thisTop,
+      // }      
+      // addUserOpts(eleOptsLens, 'lens')
+      
+      // let eleLens = new ArrZoomerLens(eleOptsLens)
+      // eleLens.initData(dataIn)
+
+      // if(hasVar(eleOpts.trans.lens)) {
+      //   eleLens.setTransform(eleOpts.trans.lens)
+      // }
     }
 
     return
@@ -744,6 +784,9 @@ window.ArrZoomerBase = function (optIn0) {
     }
     if (getEle('mini')) {
       getEle('mini').setStateOnce()
+    }
+    if (getEle('lens')) {
+      getEle('lens').setStateOnce()
     }
     if (getEle('ches')) {
       getEle('ches').setStateOnce()

@@ -47,6 +47,30 @@ window.ArrZoomerTree = function (optIn0) {
   let lenD = {
     w: [lenBase], h: [lenBase * aspectRatio],
   }
+  let avgTelD = []
+  $.each([0, 1], function (nState_, nState) {
+    if (nState === 0) {
+      avgTelD.push({ 
+        r: lenD.w[0] / 4, x: lenD.w[0] / 2, y: lenD.h[0] / 2,
+      })
+    }
+    if (nState === 1) {
+      let propW = lenD.w[0] / instruments.allProps0.length
+      let propR = Math.min(propW * 0.4, lenD.w[0] / 15)
+      let propY = propR * 1.25
+
+      avgTelD.push({ r: propR, h: propY * 2 })
+      $.each(instruments.allProps0, function (index, porpNow) {
+        avgTelD[1][porpNow + 'x'] = propW * (0.5 + index)
+        avgTelD[1][porpNow + 'y'] = lenD.h[0] - propY
+      })
+    }
+  })
+  // console.log('avgTelD',avgTelD)
+
+  lenD.w[1] = lenD.w[0] // - avgTelD[1].h;
+  lenD.h[1] = lenD.h[0] - avgTelD[1].h * 2
+
 
   // let svg = {}
   let gTreeD = eleBase.svgD.tree
@@ -99,28 +123,6 @@ window.ArrZoomerTree = function (optIn0) {
   arcPrev.rad = {}
 
   let zoomTargetProp = ''
-
-  let avgTelD = []
-  $.each([0, 1], function (nState_, nState) {
-    if (nState === 0) {
-      avgTelD.push({ r: lenD.w[0] / 4, x: lenD.w[0] / 2, y: lenD.h[0] / 2 })
-    }
-    if (nState === 1) {
-      let propW = lenD.w[0] / instruments.allProps0.length
-      let propR = Math.min(propW * 0.4, lenD.w[0] / 15)
-      let propY = propR * 1.25
-
-      avgTelD.push({ r: propR, h: propY * 2 })
-      $.each(instruments.allProps0, function (index, porpNow) {
-        avgTelD[1][porpNow + 'x'] = propW * (0.5 + index)
-        avgTelD[1][porpNow + 'y'] = lenD.h[0] - propY
-      })
-    }
-  })
-  // console.log('avgTelD',avgTelD)
-
-  lenD.w[1] = lenD.w[0] // - avgTelD[1].h;
-  lenD.h[1] = lenD.h[0] - avgTelD[1].h * 2
 
   // initialize a global function (to be overriden below)
   let zoomToPos = function (optIn) {

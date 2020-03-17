@@ -29,34 +29,41 @@ window.ArrZoomerMini = function (optIn0) {
   let widgetId = optIn0.widgetId
   let locker = optIn0.locker
   let isSouth = optIn0.isSouth
+  let isLens = optIn0.isLens
   let myUniqueId = unique()
   let parentUniqueId = optIn0.myUniqueId
   
   let dblclickZoomInOut = hasVar(optIn0.dblclickZoomInOut) ? optIn0.dblclickZoomInOut : true
+  let hasTitles = hasVar(optIn0.hasTitles) ? optIn0.hasTitles : false
+  let pointerEvents = hasVar(optIn0.pointerEvents) ? optIn0.pointerEvents : !isLens
+  thisTop.staticZoom = hasVar(optIn0.staticZoom) ? optIn0.staticZoom : true
+
+  let miniLensTag = isLens ? 'Lens' : 'Mini'
   
   let eleBase = optIn0.eleBase
-
   let instruments = eleBase.instruments
   let zoomD = eleBase.zoomD
-  let lockInitKey = eleBase.lockInitKeys.mini
+  let lockInitKey = eleBase.lockInitKeys[miniLensTag.toLowerCase()]
 
   let rScale = instruments.rScale
 
-  let baseH = 500
-  let lenD = { w: [baseH], h: [baseH] }
+  let lenD = { 
+    // w: 500, h: 500, fracCircWH: 1,
+    w: 600, h: 600, fracCircWH: 0.85,
+  }
+
+  let siteScale = eleBase.siteScale
 
   let showVor = false
   thisTop.hasInit = false
-  thisTop.staticZoom = true
 
-  eleBase.setEle(thisTop, 'mini')
+  eleBase.setEle(thisTop, miniLensTag.toLowerCase())
   let getEle = eleBase.getEle
 
-  let gMiniD = eleBase.svgD.mini
+  let gMiniD = eleBase.svgD[miniLensTag.toLowerCase()]
   gMiniD.g = eleBase.svgD.gSvg.append('g')
   gMiniD.gMini = gMiniD.g.append('g')
   // gMiniD.gBase = gMiniD.gMini.append('g')
-
 
   let uniqueClipId = 'clip' + myUniqueId
 
@@ -67,23 +74,21 @@ window.ArrZoomerMini = function (optIn0) {
     .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', lenD.w[0])
-      .attr('height', lenD.h[0])
+      .attr('width', lenD.w)
+      .attr('height', lenD.h)
 
   gMiniD.gClipped = gMiniD.gOuter.append('g')
   gMiniD.gClipped.attr('class', 'gClipped')
     .attr('clip-path', 'url(#'+uniqueClipId+')');
 
   gMiniD.gBase = gMiniD.gClipped.append('g')
-
-
-
+  gMiniD.gBack = gMiniD.gBase.append('g')
 
   // ------------------------------------------------------------------
   // scale to 100x100 px (executed after createChessMap())
   // ------------------------------------------------------------------
   function gTrans() {
-    let scaleMini = 100 / baseH
+    let scaleMini = 100 / lenD.w
     gMiniD.gMini.attr('transform', function (d) {
       return 'translate(0,0)scale(' + scaleMini + ')'
     })
@@ -111,20 +116,92 @@ window.ArrZoomerMini = function (optIn0) {
   miniMapCol.b = ['#64B5F6']
   miniMapCol.p = ['#9575CD']
 
-  let zoomToTargetTag = {
-    mini: 'zoomToTargetMini',
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function createMiniMap () {
+
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
+    gMiniD.gOuter
+      .append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width',lenD.w)
+        .attr('height',lenD.h)
+        .style("fill",'transparent' )
+        .style("stroke",'#F2F2F2' )
+        .style("stroke-width", isLens?2:0)
+        .attr("pointer-events",'none')
+        .attr("opacity",1)
+
+    gMiniD.gBack
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', lenD.w)
+      .attr('height', lenD.h)
+      // .attr('fill', isLens?'transparent':'#383B42')
+      .attr('fill', '#383B42')
+      // .attr('fill', '#F2F2F2')
+      // .style('opacity', isLens?0.1:1)
+
+
+    // gMiniD.gBack
+    //   .append('rect')
+    //   .attr('x', 0)
+    //   .attr('y', 0)
+    //   .attr('width', lenD.w)
+    //   .attr('height', lenD.h)
+    //   // .attr('fill', isLens?'transparent':'#383B42')
+    //   // .attr('fill', '#383B42')
+    //   .attr('fill', '#F2F2F2')
+    //   .style('opacity', isLens?0.05:0)
+
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------    
+    getEle('main').addBackShapes(gMiniD.gBack, lenD, eleBase.telTypes)
+
+    // the background grid
+    bckPattern({
+      com: com,
+      gNow: gMiniD.gBack,
+      gTag: 'gBaseMini',
+      lenWH: [lenD.w, lenD.h],
+      opac: 0.2,
+      hexR: 40
+    })
+
+    com.gBaseMini = {}
+    com.gBaseMini.circ = gMiniD.gBase.append('g')
+    com.gBaseMini.text = gMiniD.gBase.append('g')
+    com.gBaseMini.rect = gMiniD.gBase.append('g')
+    com.gBaseMini.vor = gMiniD.gBase.append('g')
+
+    if(!pointerEvents) {
+      com.gBaseMini.vor.style('pointer-events', 'none')
+    }
+
+
+    return
   }
+  
 
   // ------------------------------------------------------------------
   //  MiniMap function
   // ------------------------------------------------------------------
-  function createMiniMap (optIn) {
+  function setupZoom () {
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
     function svgZoomStart() {
-      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMain'])) return
-      locker.add({ id: 'inZoomMini', override: true })
+      if (!locker.isFreeV([
+          'zoomSyncMain', ('zoomSync'+miniLensTag), 'inZoomMain',
+        ])) return
+      
+      locker.add({ id: ('inZoom'+miniLensTag), override: true })
       return
     }
 
@@ -132,14 +209,24 @@ window.ArrZoomerMini = function (optIn0) {
     // 
     // ------------------------------------------------------------------
     function svgZoomDuring() {
-      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMain'])) return
+      if (!locker.isFreeV([
+          'zoomSyncMain', ('zoomSync'+miniLensTag), 'inZoomMain',
+        ])) return
 
       if (!thisTop.staticZoom) {
         gMiniD.gBase.attr('transform', d3.event.transform)
       }
       // miniZoomViewRecOnce({ animT: 0 })
 
-      eleBase.svgD.main.gBase.attr('transform', d3.event.transform)
+      $.each(['main', 'mini', 'lens'], function(i, d) {
+        if (d == miniLensTag) return
+
+        if (!getEle(d)) return
+        if(getEle(d).staticZoom) return
+        
+        eleBase.svgD[d].gBase.attr('transform', d3.event.transform)
+        // eleBase.svgD.main.gBase.attr('transform', d3.event.transform)
+      })
 
       return
     }
@@ -148,15 +235,24 @@ window.ArrZoomerMini = function (optIn0) {
     // 
     // ------------------------------------------------------------------
     function svgZoomEnd() {
-      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMain'])) return
+      if (!locker.isFreeV([
+          'zoomSyncMain', ('zoomSync'+miniLensTag), 'inZoomMain',
+        ])) return
 
       miniZoomViewRec({})
       // console.log('-svgZoomEnd-svgZoomEnd-', d3.event)
 
-      getEle('main').zoomSyncMain(d3.event.transform)
+      $.each(['main', 'mini', 'lens'], function(i, d) {
+        if (d == miniLensTag) return
+
+        if (!getEle(d)) return
+        getEle(d).zoomSync(d3.event.transform)
+        // getEle('main').zoomSync(d3.event.transform)
+      })
+
 
       // remove the lock before possible zoomToTrgMain()
-      locker.remove('inZoomMini')
+      locker.remove(('inZoom'+miniLensTag))
 
 
       if (Math.abs(thisTop.getScale() - zoomD.len['0.0']) < 0.00001) {
@@ -176,24 +272,34 @@ window.ArrZoomerMini = function (optIn0) {
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    function zoomSyncMini(trans) {
-      if (!locker.isFreeV(['zoomSyncMain', 'zoomSyncMini', 'inZoomMini'])) return
+    function zoomSync(trans) {
+      if (!locker.isFreeV([
+          ('zoomSync'+miniLensTag), ('inZoom'+miniLensTag),
+        ])) return
 
-      locker.add({ id: 'zoomSyncMini', override: true })
+      locker.add({ id: ('zoomSync'+miniLensTag), override: true })
       function funcEnd() {
-        locker.remove('zoomSyncMini')
+        locker.remove(('zoomSync'+miniLensTag))
       }
 
-      let x = (lenD.w[0] / 2 - trans.x) / trans.k
-      let y = (lenD.h[0] / 2 - trans.y) / trans.k
+      let x = (lenD.w / 2 - trans.x) / trans.k
+      let y = (lenD.h / 2 - trans.y) / trans.k
       let transTo = [x, y]
+
+      let durFact = 0
+      if (!thisTop.staticZoom) {
+        if(!locker.isFreeV(['autoZoomTarget'])) {
+          durFact = 0.5
+          durFact = 1
+        }
+      }
 
       let outD = {
         trgScale: trans.k,
-        durFact: 0,
+        durFact: durFact,
         baseTime: 300,
         transTo: transTo,
-        wh: [lenD.w[0], lenD.h[0]],
+        wh: [lenD.w, lenD.h],
         cent: null,
         // funcStart: funcStart,
         funcEnd: funcEnd,
@@ -209,7 +315,7 @@ window.ArrZoomerMini = function (optIn0) {
       
       return
     }
-    thisTop.zoomSyncMini = zoomSyncMini
+    thisTop.zoomSync = zoomSync
 
 
 
@@ -223,7 +329,7 @@ window.ArrZoomerMini = function (optIn0) {
     com.svgZoom.on('end', svgZoomEnd)
 
     // function filter() {
-    //   let scale = getScale()
+    //   let scale = thisTop.getScale()
     //   let isIn = (d3.event.wheelDelta > 0) && (scale < zoomD.len['1.3'])
     //   let isOut = (d3.event.wheelDelta < 0) && (scale > zoomD.len['0.0'])
     //   console.log(d3.event.wheelDelta, isIn, isOut)
@@ -238,13 +344,15 @@ window.ArrZoomerMini = function (optIn0) {
     // }
     // com.svgZoom.filter(filter)
 
-    gMiniD.gMini
-      .call(com.svgZoom)
-      .on('dblclick.zoom', null)
-      .on('wheel', function () {
-        d3.event.preventDefault()
-      })
-      .on("mousedown.zoom", null)
+    if(pointerEvents) {
+      gMiniD.gMini
+        .call(com.svgZoom)
+        .on('dblclick.zoom', null)
+        .on('wheel', function () {
+          d3.event.preventDefault()
+        })
+        .on("mousedown.zoom", null)
+    }
 
 
     // ------------------------------------------------------------------
@@ -255,77 +363,107 @@ window.ArrZoomerMini = function (optIn0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    getScale = function () {
+    thisTop.getScale = function () {
       return d3.zoomTransform(gMiniD.zoomNode).k
     }
-    getTrans = function () {
+    thisTop.getTrans = function () {
       return [
         d3.zoomTransform(gMiniD.zoomNode).x,
         d3.zoomTransform(gMiniD.zoomNode).y
       ]
     }
 
-    thisTop.getScale = getScale
-    thisTop.getTrans = getTrans
-
-    // add one rectangle as background
-    // ------------------------------------------------------------------
-    gMiniD.gBase
-      .append('g')
-      .selectAll('rect')
-      .data([0])
-      .enter()
-      .append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', baseH)
-      .attr('height', baseH)
-      .attr('stroke', '#383B42')
-      .attr('stroke-width', 2)
-      .attr('fill', '#383B42')
-
-
-    // ------------------------------------------------------------------
-    // add one circle as background
-    // ------------------------------------------------------------------
-    gMiniD.gBase
-      .append('g')
-      .selectAll('circle')
-      .data([0])
-      .enter()
-      .append('circle')
-      .attr('r', 0)
-      .attr('cx', baseH / 2)
-      .attr('cy', baseH / 2)
-      .attr('fill', '#F2F2F2')
-      .transition('inOut')
-      .duration(timeD.animArc / 3)
-      .attr('r', baseH / 2.1)
-
-    // the background grid
-    bckPattern({
-      com: com,
-      gNow: gMiniD.gBase,
-      gTag: 'gBaseMini',
-      lenWH: [baseH, baseH],
-      opac: 0.2,
-      hexR: 50
-    })
-
-    com.gBaseMini = {}
-    com.gBaseMini.circ = gMiniD.gBase.append('g')
-    com.gBaseMini.rect = gMiniD.gBase.append('g')
-    com.gBaseMini.vor = gMiniD.gBase.append('g')
+    return
   }
-  // this.createMiniMap = createMiniMap
+
  
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function telTitles () {
+    if(!hasTitles) return
+    
+    let dataV = telData.tel
+    let gNow = com.gBaseMini.text
+    let tagNow = prop0
+
+    let fontSize0 = 12 * siteScale
+    // let fontSize0 = 11 * siteScale
+
+    let text = gNow
+      .selectAll('text.' + tagNow)
+      .data(dataV, function (d) {
+        return d.id
+      })
+
+    text
+      .enter()
+      .append('text')
+      .text(function (d) {
+        return telInfo.getTitle(d.id)
+      })
+      .attr('class', tagNow)
+      .style('font-weight', 'bold')
+      .style('opacity', 0)
+      .style('fill', '#383b42')
+      .style('stroke-width', '0.3')
+      .attr('vector-effect', 'non-scaling-stroke')
+      .style('pointer-events', 'none')
+      .style('stroke', '#383b42')
+      .style('font-size', function (d) {
+        return fontSize0 + 'px'
+      })
+      .attr('dy', function (d) {
+        return fontSize0 / 3 + 'px'
+      })
+      .attr('transform', function (d, i) {
+        return (
+          'translate(' + instruments.data.xyr[d.id].x + ',' + instruments.data.xyr[d.id].y + ')'
+        )
+      })
+      .attr('text-anchor', 'middle')
+      .merge(text)
+      .transition('inOut')
+      .duration(timeD.animArc)
+      .attr('transform', function (d, i) {
+        let shiftVal = 0
+        // let shiftVal = eleBase.teleR.s00[3]*2
+        // if (isFocused(d, 1)) {
+        //   shiftVal = instruments.data.xyr[d.id].r * (rScale[1].health1 + 0.5)
+        // }
+        return (
+          'translate(' +
+          instruments.data.xyr[d.id].x +
+          ',' +
+          (instruments.data.xyr[d.id].y - shiftVal) +
+          ')'
+        )
+      })
+      .style('font-size', function (d) {
+        return fontSize0 + 'px'
+      })
+      .attr('dy', function (d) {
+        return fontSize0 / 3 + 'px'
+      })
+      .style('opacity', 1)
+
+    text
+      .exit()
+      .transition('exit')
+      .duration(timeD.animArc)
+      .style('opacity', 0)
+      .remove()
+    
+    return
+  }
+
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
   function updateMiniMap (optIn) {
     let dataV = telData.tel
     let gNow = com.gBaseMini.circ
-    let posTag = 'mini'
+    let posTag = 'xyrPhysical'
     let tagNow = prop0
 
     // operate on new elements only
@@ -373,6 +511,8 @@ window.ArrZoomerMini = function (optIn0) {
       .style('stroke', function (d) {
         return telHealthCol(d[tagNow], 0.5)
       })
+  
+    return
   }
   thisTop.updateMiniMap = updateMiniMap
   
@@ -388,6 +528,7 @@ window.ArrZoomerMini = function (optIn0) {
   // 
   // ------------------------------------------------------------------
   function miniZoomViewRecOnce (optIn) {
+    if (!thisTop.staticZoom) return
     if (
       !locker.isFreeV([
         'autoZoomTarget',
@@ -397,10 +538,10 @@ window.ArrZoomerMini = function (optIn0) {
       miniZoomViewRec(optIn)
       return
     }
-
+    
     let tagNow = 'miniZoomViewRec'
-    let scale = getScale()
-    let trans = getTrans()
+    let scale = thisTop.getScale()
+    let trans = thisTop.getTrans()
     let data = []
 
     if(!hasVar(optIn)) optIn = {}
@@ -414,6 +555,8 @@ window.ArrZoomerMini = function (optIn0) {
     else {
       data = [{ id: 0 }]
     }
+
+    let baseH = lenD.w
 
     let w =
       (1 + (isSouth ? 2 * scale / zoomD.len['1.3'] : 0)) * baseH / scale
@@ -486,7 +629,7 @@ window.ArrZoomerMini = function (optIn0) {
       .y(function (d) {
         return d.y
       })
-      .extent([[0, 0], [baseH, baseH]])
+      .extent([[0, 0], [lenD.w, lenD.h]])
 
     com.gBaseMini.vor
       .selectAll('path')
@@ -539,8 +682,10 @@ window.ArrZoomerMini = function (optIn0) {
     telData = dataIn.instrumentData
     telTypeV = dataIn.telTypeV
 
+    setupZoom()
     createMiniMap()
     gTrans()
+    telTitles()
 
     // initialize the target name for hovering->zoom
     thisTop.target = zoomTarget
@@ -572,7 +717,7 @@ window.ArrZoomerMini = function (optIn0) {
     miniZoomClick()
 
     setStateOnce(dataIn)
-    
+
     locker.remove(lockInitKey)
     return
   }
@@ -585,7 +730,7 @@ window.ArrZoomerMini = function (optIn0) {
     updateMiniMap({
       dataV: telData.tel,
       gNow: com.gBaseMini.circ,
-      posTag: 'mini'
+      posTag: miniLensTag.toLowerCase(),
     })
   }
   thisTop.setStateOnce = setStateOnce
@@ -607,15 +752,13 @@ window.ArrZoomerMini = function (optIn0) {
   // 
   // ------------------------------------------------------------------
   // initialize a couple of functions to be overriden below
-  let getScale = function () {
+  thisTop.getScale = function () {
     return zoomD.len['0.0']
   }
-  thisTop.getScale = getScale
   
-  let getTrans = function () {
+  thisTop.getTrans = function () {
     return [0, 0]
   }
-  thisTop.getTrans = getTrans
 
   return
 }
