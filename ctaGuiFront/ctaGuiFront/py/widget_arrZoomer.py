@@ -69,8 +69,9 @@ class arrZoomer():
         self.widgetId = widgetId
         # the parent of this widget
         self.mySock = mySock
-        Assert(log=self.log, msg=[
-               " - no mySock handed to", self.__class__.__name__], state=(self.mySock is not None))
+        Assert(log=self.log, 
+            msg=[" - no mySock handed to", self.__class__.__name__], 
+            state=(self.mySock is not None))
 
         # widget-class and widget group names
         self.widgetName = self.__class__.__name__
@@ -115,34 +116,34 @@ class arrZoomer():
         # ------------------------------------------------------------------
         # initial dataset and send to client
         # ------------------------------------------------------------------
-        optIn = {'widget': self, 'dataFunc': self.getInitData}
+        optIn = {'widget': self, 'dataFunc': self.get_init_data}
         self.mySock.sendWidgetInit(optIn=optIn)
 
         # ------------------------------------------------------------------
         # start threads for updating data
         # ------------------------------------------------------------------
         with self.mySock.lock:
-            if self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomerUpdateData") == -1:
+            if self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomer_update_data") == -1:
                 if self.logSendPkt:
                     self.log.info([
-                      ['y', " - starting arrZoomerUpdateData("],
+                      ['y', " - starting arrZoomer_update_data("],
                       ['g', self.mySock.usrGrpId], ['y', ")"]
                     ])
 
                 threadId = self.mySock.setThreadState(
-                    self.mySock.usrGrpId, "arrZoomerUpdateData", True)
-                aThread = gevent.spawn(self.arrZoomerUpdateData, threadId)
+                    self.mySock.usrGrpId, "arrZoomer_update_data", True)
+                aThread = gevent.spawn(self.arrZoomer_update_data, threadId)
 
-            if self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomerUpdateSubArrs") == -1:
+            if self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomer_update_subArr") == -1:
                 if self.logSendPkt:
                     self.log.info([
-                      ['y', " - starting arrZoomerUpdateSubArrs("],
+                      ['y', " - starting arrZoomer_update_subArr("],
                       ['g', self.mySock.usrGrpId], ['y', ")"]
                     ])
 
                 threadId = self.mySock.setThreadState(
-                    self.mySock.usrGrpId, "arrZoomerUpdateSubArrs", True)
-                aThread = gevent.spawn(self.arrZoomerUpdateSubArrs, threadId)
+                    self.mySock.usrGrpId, "arrZoomer_update_subArr", True)
+                aThread = gevent.spawn(self.arrZoomer_update_subArr, threadId)
 
         return
 
@@ -157,7 +158,7 @@ class arrZoomer():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def getInitData(self):
+    def get_init_data(self):
         inst_info = self.mySock.arrayData.get_tel_pos()
 
         inst_prop_types = dict()
@@ -184,7 +185,7 @@ class arrZoomer():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def arrZoomerSetWidgetState(self, *args):
+    def arrZoomer_set_widget_state(self, *args):
         data = args[0]
 
         self.widgetState["zoomState"] = data["zoomState"]
@@ -222,7 +223,7 @@ class arrZoomer():
                 if 'val' in val['data']:
                     self.tel_sub_health_fields[id_now] += [key]
 
-        self.getSubArrGrp()
+        self.get_subArr_grp()
 
         return
 
@@ -292,7 +293,7 @@ class arrZoomer():
     # ------------------------------------------------------------------
     # uniqu methods for this socket
     # ------------------------------------------------------------------
-    def arrZoomerAskDataS1(self, *args):
+    def arrZoomer_ask_data_s1(self, *args):
         data = args[0]
         if self.mySock.logSendPkt:
             self.log.info([
@@ -305,7 +306,7 @@ class arrZoomer():
 
         # ------------------------------------------------------------------
         # to avoid missmatch while waiting for the loop in 
-        # arrZoomerUpdateData, send s0 too...
+        # arrZoomer_update_data, send s0 too...
         # ------------------------------------------------------------------
         with arrZoomer.lock:
             self.update_tel_health_s1(idIn=data["zoomTarget"])
@@ -321,21 +322,21 @@ class arrZoomer():
         #
         # ------------------------------------------------------------------
         self.mySock.socketEvtWidgetV(
-            evtName="arrZoomerGetDataS1",
+            evtName="arrZoomer_get_data_s1",
             data=dataEmitS1,
             sessIdV=[self.mySock.sessId],
             widgetIdV=[self.widgetId]
         )
 
-        self.arrZoomerUpdateDataOnce()
+        self.arrZoomer_update_data_once()
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def arrZoomerUpdateDataOnce(self):
-        #print 'arrZoomerUpdateDataOnce'
+    def arrZoomer_update_data_once(self):
+        #print 'arrZoomer_update_data_once'
         # get the current set of widgest which need an update
         with self.mySock.lock:
             with arrZoomer.lock:
@@ -383,7 +384,7 @@ class arrZoomer():
         }
 
         self.mySock.socketEvtWidgetV(
-            evtName="arrZoomerUpdateData",
+            evtName="arrZoomer_update_data",
             data=dataEmitS0,
             sessIdV=arrZoomer.sendV["s_0"]["sessId"],
             widgetIdV=arrZoomer.sendV["s_0"]["widgetId"]
@@ -397,7 +398,7 @@ class arrZoomer():
             }
 
             self.mySock.socketEvtWidgetV(
-                evtName="arrZoomerUpdateData",
+                evtName="arrZoomer_update_data",
                 data=dataEmitS1,
                 sessIdV=arrZoomer.sendV["s_1"][zoomTarget]["sessId"],
                 widgetIdV=arrZoomer.sendV["s_1"][zoomTarget]["widgetId"]
@@ -408,15 +409,15 @@ class arrZoomer():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def arrZoomerUpdateData(self, threadId):
-        #print 'arrZoomerUpdateData'
+    def arrZoomer_update_data(self, threadId):
+        #print 'arrZoomer_update_data'
         if not self.doDataUpdates:
             return
 
         sleep(3)
 
-        while (threadId == self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomerUpdateData")):
-            self.arrZoomerUpdateDataOnce()
+        while (threadId == self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomer_update_data")):
+            self.arrZoomer_update_data_once()
             sleep(10)
 
         return
@@ -424,8 +425,8 @@ class arrZoomer():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def getSubArrGrp(self):
-        #print 'getSubArrGrp'
+    def get_subArr_grp(self):
+        #print 'get_subArr_grp'
         with arrZoomer.lock:
             subArrs = self.redis.get(name="subArrs", packed=True, defVal=[])
             self.subArrGrp = {"id": "subArr", "children": subArrs}
@@ -435,13 +436,13 @@ class arrZoomer():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def arrZoomerUpdateSubArrs(self, threadId):
-        #print 'arrZoomerUpdateSubArrs'
+    def arrZoomer_update_subArr(self, threadId):
+        #print 'arrZoomer_update_subArr'
         sleep(1)
 
         redSub = None
         while (
-          threadId == self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomerUpdateSubArrs")
+          threadId == self.mySock.getThreadId(self.mySock.usrGrpId, "arrZoomer_update_subArr")
         ):
             while redSub is None:
                 redSub = self.redis.setPubSub("subArrs")
@@ -449,7 +450,7 @@ class arrZoomer():
 
             msg = self.redis.getPubSub("subArrs")
             if msg is not None:
-                self.getSubArrGrp()
+                self.get_subArr_grp()
 
                 data = {
                     "widgetId": "",
@@ -458,7 +459,7 @@ class arrZoomer():
                 }
 
                 self.mySock.socketEvtWidgetV(
-                    evtName="arrZoomerUpdateData",
+                    evtName="arrZoomer_update_data",
                     data=data,
                     sessIdV=arrZoomer.sendV["s_0"]["sessId"],
                     widgetIdV=arrZoomer.sendV["s_0"]["widgetId"]

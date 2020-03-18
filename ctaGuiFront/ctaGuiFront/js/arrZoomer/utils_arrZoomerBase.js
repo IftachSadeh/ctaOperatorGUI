@@ -996,7 +996,7 @@ window.ArrZoomerBase = function (optIn0) {
       widgetSource: widgetSource,
       widgetName: widgetType,
       widgetId: widgetId,
-      methodName: 'arrZoomerAskDataS1',
+      methodName: 'arrZoomer_ask_data_s1',
       methodArgs: data,
     }
 
@@ -1038,7 +1038,7 @@ window.ArrZoomerBase = function (optIn0) {
       widgetSource: widgetSource,
       widgetName: widgetType,
       widgetId: widgetId,
-      methodName: 'arrZoomerSetWidgetState',
+      methodName: 'arrZoomer_set_widget_state',
       methodArgs: dataWidget
     }
 
@@ -1051,7 +1051,7 @@ window.ArrZoomerBase = function (optIn0) {
   // ------------------------------------------------------------------
   // get update for state1 data which was explicitly asked for by a given module
   // ------------------------------------------------------------------
-  sock.socket.on('arrZoomerGetDataS1', function (data) {
+  sock.socket.on('arrZoomer_get_data_s1', function (data) {
     if (sock.conStat.isOffline()) return
 
     if (data.id !== '' && data.type === 's11') {
@@ -1065,7 +1065,7 @@ window.ArrZoomerBase = function (optIn0) {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  sock.socket.on('arrZoomerUpdateData', function (data) {
+  sock.socket.on('arrZoomer_update_data', function (data) {
     if (sock.conStat.isOffline()) return
 
     $.each(sock.widgetV[widgetType].widgets, function (widgetIdNow, modNow) {
