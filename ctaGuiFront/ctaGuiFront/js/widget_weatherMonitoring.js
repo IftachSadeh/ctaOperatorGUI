@@ -473,7 +473,7 @@ let mainWeatherMonitoring = function (optIn) {
     for (let key in dataIn.data) {
       shared.server[key] = dataIn.data[key]
     }
-
+    console.log(dataIn.data);
     // svgPlotDisplay.updateData()
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     updateMesures()

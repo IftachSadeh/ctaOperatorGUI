@@ -177,7 +177,7 @@ let mainPlotsDash = function (optIn) {
           w: $(svg.svg.node()).width(),
           h: middleSeparation - 20 // $(svg.svg.node()).height() * 0.5
         }
-        svgUrgentPlots.adjustScrollBox()
+        // svgUrgentPlots.adjustScrollBox()
         svgUrgentPlots.updateData()
 
         box.pinnedPlots = {
@@ -186,8 +186,8 @@ let mainPlotsDash = function (optIn) {
           w: $(svg.svg.node()).width() * 0.5,
           h: $(svg.svg.node()).height() * 0.5
         }
-        svgPinnedPlots.adjustScrollBox()
-        svgPinnedPlots.adjustPlotDistribution()
+        // svgPinnedPlots.adjustScrollBox()
+        // svgPinnedPlots.adjustPlotDistribution()
       }
 
       $(window).resize(
@@ -237,7 +237,7 @@ let mainPlotsDash = function (optIn) {
         .attr('x2', $(svg.svg.node()).width())
         .attr('y2', 0)
         .attr('stroke', '#000000')
-        .attr('stroke-width', 4)
+        .attr('stroke-width', 0.4)
         .attr('stroke-opacity', 0.6)
         .style('pointer-events', 'none')
       gmiddle.append('svg:image')
@@ -265,7 +265,7 @@ let mainPlotsDash = function (optIn) {
       box.pinnedPlots = {
         x: 0,
         y: middleSeparation + 20,
-        w: $(svg.svg.node()).width() * 0.5,
+        w: $(svg.svg.node()).width() * 1,
         h: $(svg.svg.node()).height() - middleSeparation - 20
       }
       box.focusPlots = {
@@ -339,7 +339,7 @@ let mainPlotsDash = function (optIn) {
     for (let key in dataIn.data) {
       shared.server[key] = dataIn.data[key]
     }
-    // shared.server.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
+    // shared.server.urgent.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
     console.log(shared.server);
 
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
@@ -350,7 +350,7 @@ let mainPlotsDash = function (optIn) {
     // loadMesures()
 
     svgUrgentPlots.initData()
-    // svgPinnedPlots.initData()
+    svgPinnedPlots.initData()
     // drawfakefocus()
   }
   this.initData = initData
@@ -361,18 +361,18 @@ let mainPlotsDash = function (optIn) {
       }, 10)
       return
     }
-    console.log(dataIn.sessWidgetIds);
     locker.add('updateData')
     // let tempsavehierarchy =  shared.server.hierarchy
     for (let key in dataIn.data) {
       shared.server[key] = dataIn.data[key]
     }
+
     // shared.server.hierarchy.keys = tempsavehierarchy.keys
-    // shared.server.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
+    // shared.server.urgent.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     // updateMeasures()
-    // svgPinnedPlots.updateData()
-    svgUrgentPlots.updateData()
+    svgPinnedPlots.updateData()
+    // svgUrgentPlots.updateData()
 
     locker.remove('updateData')
   }
@@ -430,16 +430,16 @@ let mainPlotsDash = function (optIn) {
   // let colorCategory = ['#543005','#8c510a','#bf812d','#dfc27d','#f6e8c3','#dedede','#c7eae5','#80cdc1','#35978f','#01665e','#003c30']
   function updateMeasures () {
     function addPlot () {
-      for (let z = 0; z < shared.server.urgentKey.length; z++) {
+      for (let z = 0; z < shared.server.urgent.urgentKey.length; z++) {
         if (Math.random() > 0.85) {
           // let insert = true
-          let toadd = {id: 'id' + Math.floor(Math.random() * 200), added: shared.time.current, type: shared.server.urgentKey[z], name: shared.server.urgentKey[z], status: fillfun(0), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
+          let toadd = {id: 'id' + Math.floor(Math.random() * 200), added: shared.time.current, type: shared.server.urgent.urgentKey[z], name: shared.server.urgent.urgentKey[z], status: fillfun(0), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []}
           shared.server.fullList.push(toadd)
-          shared.server.urgentCurrent[z].data.push(toadd)
+          shared.server.urgent.urgentCurrent[z].data.push(toadd)
           shared.server.category[z].data.push(toadd)
           // insert = false
           // if (insert) {
-          //   shared.server.urgentCurrent.push({key: shared.server.urgentKey[z], data: [toadd]})
+          //   shared.server.urgent.urgentCurrent.push({key: shared.server.urgent.urgentKey[z], data: [toadd]})
           // }
 
           if (shared.server.history.timeStamp.length === 0) {
@@ -473,34 +473,34 @@ let mainPlotsDash = function (optIn) {
       }
     }
     function update () {
-      // for (let z = shared.server.urgentCurrent.length - 1; z >= 0; z--) {
-      //   let type = shared.server.urgentCurrent[z][0].type
-      //   for (let i = shared.server.urgentCurrent[z].length - 1; i >= 0; i--) {
+      // for (let z = shared.server.urgent.urgentCurrent.length - 1; z >= 0; z--) {
+      //   let type = shared.server.urgent.urgentCurrent[z][0].type
+      //   for (let i = shared.server.urgent.urgentCurrent[z].length - 1; i >= 0; i--) {
       //     let todelete = Math.random() > 0.95
-      //     if (todelete && !shared.server.urgentCurrent[z][i].ended) {
-      //       shared.server.urgentCurrent[z][i].ended = shared.time.current
-      //       // shared.server.urgentCurrent[z].splice(i, 1)
+      //     if (todelete && !shared.server.urgent.urgentCurrent[z][i].ended) {
+      //       shared.server.urgent.urgentCurrent[z][i].ended = shared.time.current
+      //       // shared.server.urgent.urgentCurrent[z].splice(i, 1)
       //       // continue
       //     }
-      //     shared.server.urgentCurrent[z][i].status = fillfun(index)
+      //     shared.server.urgent.urgentCurrent[z][i].status = fillfun(index)
       //     index += 1
-      //     for (let j = 0; j < shared.server.urgentCurrent[z][i].subMeasures.length; j++) {
-      //       shared.server.urgentCurrent[z][i].subMeasures[j].status = fillfun(index)
+      //     for (let j = 0; j < shared.server.urgent.urgentCurrent[z][i].subMeasures.length; j++) {
+      //       shared.server.urgent.urgentCurrent[z][i].subMeasures[j].status = fillfun(index)
       //       index += 1
       //     }
       //   }
-      //   for (let i = shared.server.urgentCurrent[z].length - 1; i >= 0; i--) {
-      //     if (shared.server.urgentCurrent[z][i].ended) {
-      //       if ((shared.time.current.getTime() - shared.server.urgentCurrent[z][i].ended.getTime()) > 400000) shared.server.urgentCurrent[z].splice(i, 1)
+      //   for (let i = shared.server.urgent.urgentCurrent[z].length - 1; i >= 0; i--) {
+      //     if (shared.server.urgent.urgentCurrent[z][i].ended) {
+      //       if ((shared.time.current.getTime() - shared.server.urgent.urgentCurrent[z][i].ended.getTime()) > 400000) shared.server.urgent.urgentCurrent[z].splice(i, 1)
       //     }
       //   }
       // }
     }
     function removePlot () {
-      for (let z = 0; z < shared.server.urgentKey.length; z++) {
-        for (let i = shared.server.urgentCurrent[z].data.length - 1; i >= 0; i--) {
+      for (let z = 0; z < shared.server.urgent.urgentKey.length; z++) {
+        for (let i = shared.server.urgent.urgentCurrent[z].data.length - 1; i >= 0; i--) {
           if (Math.random() > 0.95) {
-            let rem = shared.server.urgentCurrent[z].data.splice(i, 1)[0]
+            let rem = shared.server.urgent.urgentCurrent[z].data.splice(i, 1)[0]
             rem.ended = shared.time.current
 
             // let insert = true
@@ -515,7 +515,7 @@ let mainPlotsDash = function (optIn) {
             //   shared.server.fullList.push({key: rem.type,
             //     data: [rem]})
             // }
-            // if (shared.server.urgentCurrent[z].data.length === 0) shared.server.urgentCurrent.splice(z, 1)
+            // if (shared.server.urgent.urgentCurrent[z].data.length === 0) shared.server.urgent.urgentCurrent.splice(z, 1)
 
             if (shared.server.history.timeStamp.length > 0 && shared.server.history.timeStamp[shared.server.history.timeStamp.length - 1].key === shared.time.current) {
               let index = shared.server.history.timeStamp[shared.server.history.timeStamp.length - 1][rem.type].data.indexOf(rem.id)
@@ -571,11 +571,11 @@ let mainPlotsDash = function (optIn) {
       }
       return status
     }
-    shared.server.urgentCurrent = []
+    shared.server.urgent.urgentCurrent = []
     shared.server.category = []
-    for (let z = 0; z < shared.server.urgentKey.length; z++) {
-      shared.server.urgentCurrent.push({key: shared.server.urgentKey[z], data: []})
-      shared.server.category.push({key: shared.server.urgentKey[z], data: []})
+    for (let z = 0; z < shared.server.urgent.urgentKey.length; z++) {
+      shared.server.urgent.urgentCurrent.push({key: shared.server.urgent.urgentKey[z], data: []})
+      shared.server.category.push({key: shared.server.urgent.urgentKey[z], data: []})
     }
     shared.server.fullList = []
 
@@ -617,7 +617,7 @@ let mainPlotsDash = function (optIn) {
     // //   {id: 'id0', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure8', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
     // //   {id: 'id1', added: shared.time.current, ended: undefined, type: 'other', name: 'Measure9', status: fillfun(index++), unit: ['C°', '%', 'µg', 'km/h'][Math.floor((Math.random() * 3))], subMeasures: []},
     // // ]
-    // // shared.server.urgentCurrent = [
+    // // shared.server.urgent.urgentCurrent = [
     // //   A,
     // //   B,
     // //   C,
@@ -821,50 +821,57 @@ let mainPlotsDash = function (optIn) {
       domain: [0, 100],
       range: [plotb.h, 0]
     })
-    plotObject.bindData(shared.server.urgentCurrent[0][0].id, [shared.server.urgentCurrent[0][0].status.current].concat(shared.server.urgentCurrent[0][0].status.previous), 'bottom', 'left')
+    plotObject.bindData(shared.server.urgent.urgentCurrent[0][0].id, [shared.server.urgent.urgentCurrent[0][0].status.current].concat(shared.server.urgent.urgentCurrent[0][0].status.previous), 'bottom', 'left')
   }
 
   let SvgPinnedPlots = function () {
-    let topg
-    let topDim
+    let svgPinnedPlotsg
+    let scrollPinnedList
+    let scrollBoxList
+    let scrollBoxBoard
 
-    let bottomg
-    let bottomDim
+    let displayMode = 'mosaic'
+    let isFocused = false
 
-    let middleg
-    let scrollbox
-
-    let plotbox = {
-      x: 0,
-      y: 0,
-      w: 100,
-      h: 80
-    }
-    let allPlots
+    let focusedPlot
 
     function adjustScrollBox () {
+      return
       if (!scrollbox) return
       let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + 29))
       let tot = 0
-      for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-        tot += shared.server.urgentCurrent[i].length
+      for (let i = 0; i < shared.server.urgent.urgentCurrent.length; i++) {
+        tot += shared.server.urgent.urgentCurrent[i].length
       }
       scrollbox.updateBox({x: 0, y: 40, w: box.pinnedPlots.w, h: box.pinnedPlots.h - 80})
       scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(tot / nbperline))})
       // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
     }
     this.adjustScrollBox = adjustScrollBox
-    // function adjustPlotDistribution () {
-    //   // let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + 29))
-    //   // console.log(d3.select(plotList[6].get('main').g.node().parentNode.parentNode.parentNode.parentNode).attr('transform'))
-    //   for (let i = 0; i < shared.server.urgentCurrent.length.length; i++) {
-    //
-    //   }
-    // }
-    // this.adjustPlotDistribution = adjustPlotDistribution
-    function createPlot (optIn) {
-      let plot = new PlotTimeSeries()
-      plot.init({
+
+    function unfocusOnPlot () {
+      svgPinnedPlotsg.select('g#pinnedBoard').selectAll('*').remove()
+      focusedPlot = null
+    }
+    function focusOnPlot (plotData) {
+      let scrollBoxPlot = {
+        x: scrollBoxBoard.x + scrollBoxBoard.w * 0.1,
+        y: scrollBoxBoard.y,
+        w: scrollBoxBoard.w * 0.8,
+        h: scrollBoxBoard.h * 0.5
+      }
+      svgPinnedPlotsg.select('g#pinnedBoard')
+        .style('opacity', 0)
+        .transition()
+        .delay(200)
+        .duration(400)
+        .style('opacity', 1)
+      let optIn = {
+        g: svgPinnedPlotsg.select('g#pinnedBoard'),
+        box: scrollBoxPlot
+      }
+      focusedPlot = new PlotTimeSeries()
+      focusedPlot.init({
         main: {
           g: optIn.g,
           box: optIn.box,
@@ -922,7 +929,7 @@ let mainPlotsDash = function (optIn) {
               mode: 'linear',
               attr: {
                 text: {
-                  enabled: false,
+                  enabled: true,
                   size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
@@ -943,440 +950,502 @@ let mainPlotsDash = function (optIn) {
               zoom: true,
               brush: true
             }
+          },
+          {
+            id: 'right',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: scrollBoxPlot.w, y: 0, w: 0, h: 0, marg: 0},
+              type: 'right',
+              mode: 'linear',
+              attr: {
+                text: {
+                  enabled: true,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -scrollBoxPlot.w
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
           }
-          // {
-          //   id: 'right',
-          //   showAxis: true,
-          //   main: {
-          //     g: undefined,
-          //     box: {x: plotbox.w, y: 0, w: 0, h: 0, marg: 0},
-          //     type: 'right',
-          //     mode: 'linear',
-          //     attr: {
-          //       text: {
-          //         enabled: true,
-          //         size: 11,
-          //         stroke: colorPalette.medium.stroke,
-          //         fill: colorPalette.medium.stroke
-          //       },
-          //       path: {
-          //         enabled: true,
-          //         stroke: colorPalette.medium.stroke,
-          //         fill: colorPalette.medium.stroke
-          //       },
-          //       tickSize: -plotbox.w
-          //     }
-          //   },
-          //   axis: undefined,
-          //   scale: undefined,
-          //   domain: [0, 1000],
-          //   range: [0, 0],
-          //   brush: {
-          //     zoom: true,
-          //     brush: true
-          //   }
-          // }
         ],
         content: []
       })
-      return plot
+
+      let currentDate = new Date(shared.server.timeOfNight.date_now)
+      let previousDate = new Date(shared.server.timeOfNight.date_now).setHours(currentDate.getHours() - 1)
+      focusedPlot.updateAxis({
+        id: 'bottom',
+        domain: [previousDate, currentDate],
+        range: [0, scrollBoxPlot.w]
+      })
+      focusedPlot.updateAxis({
+        id: 'right',
+        domain: [0, 100],
+        range: [scrollBoxPlot.h, 0]
+      })
+      focusedPlot.updateAxis({
+        id: 'left',
+        domain: [0, 100],
+        range: [scrollBoxPlot.h, 0]
+      })
     }
 
-    function initData () {
-      topDim = {x: 0, y: 0, w: box.pinnedPlots.w, h: 40}
-      bottomDim = {x: 0, y: box.pinnedPlots.h - 40, w: box.pinnedPlots.w, h: 40}
+    function initOptions () {
+      // Left Button
+      svgPinnedPlotsg.append('circle')
+        .attr('id', 'personalPinned')
+        .attr('cx', 20)
+        .attr('cy', 60)
+        .attr('r', 20)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+        .attr('fill', 'none')
+      svgPinnedPlotsg.append('circle')
+        .attr('id', 'sharePinned')
+        .attr('cx', 20)
+        .attr('cy', 110)
+        .attr('r', 20)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+        .attr('fill', 'none')
+      svgPinnedPlotsg.append('circle')
+        .attr('id', 'globalPinned')
+        .attr('cx', 20)
+        .attr('cy', 160)
+        .attr('r', 20)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+        .attr('fill', 'none')
 
-      let plotlistg = svg.svg.append('g').attr('id', 'plotList')
+      // Left Button
+      svgPinnedPlotsg.append('rect')
+        .attr('id', 'mosaic')
+        .attr('x', scrollBoxList.w - 200)
+        .attr('y', 0)
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+        .attr('fill', colorPalette.medium.background)
+        .on('click', setMosaicDisplay)
+      svgPinnedPlotsg.append('rect')
+        .attr('id', 'list')
+        .attr('x', scrollBoxList.w - 150)
+        .attr('y', 0)
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+        .attr('fill', colorPalette.medium.background)
+        .on('click', setListDisplay)
+      svgPinnedPlotsg.append('rect')
+        .attr('id', 'full')
+        .attr('x', scrollBoxList.w - 100)
+        .attr('y', 0)
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.5)
+        .attr('fill', colorPalette.medium.background)
+        .on('click', setFullDisplay)
+    }
+    function setMosaicDisplay () {
+      displayMode = 'mosaic'
+      updatePinnedList()
+    }
+    function setListDisplay () {
+      displayMode = 'list'
+      updatePinnedList()
+    }
+    function setFullDisplay () {
+      displayMode = 'full'
+    }
+    function initPinnedList () {
+      scrollBoxList = {
+        x: 10 + 40,
+        y: 40,
+        w: box.pinnedPlots.w - 20 - 40,
+        h: box.pinnedPlots.h - 50
+      }
+      let g = svgPinnedPlotsg.append('g')
+        .attr('id', 'pinnedList')
+        .attr('transform', 'translate(' + scrollBoxList.x + ',' + scrollBoxList.y + ')')
+      scrollPinnedList = initScrollBox('pinnedListScrollbox', g, scrollBoxList, {}, true)
+      g.append('line')
+        .attr('id', 'toplimit')
+        .attr('x1', 0)
+        .attr('y1', 0)
+        .attr('x2', scrollBoxList.w)
+        .attr('y2', 0)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.4)
+        .style('pointer-events', 'none')
+      g.append('line')
+        .attr('id', 'bottomlimit')
+        .attr('x1', 0)
+        .attr('y1', scrollBoxList.h)
+        .attr('x2', scrollBoxList.w)
+        .attr('y2', scrollBoxList.h)
+        .attr('stroke', '#000000')
+        .attr('stroke-width', 0.4)
+        .style('pointer-events', 'none')
+    }
+    function initPinnedBoard () {
+      scrollBoxBoard = {
+        x: 10 + 40 + (box.pinnedPlots.w - 20 - 40) * 0.3 + 20,
+        y: 40,
+        w: (box.pinnedPlots.w - 20 - 40) * 0.7 - 40,
+        h: box.pinnedPlots.h - 50
+      }
+      let g = svgPinnedPlotsg.append('g')
+        .attr('id', 'pinnedBoard')
+        .attr('transform', 'translate(' + scrollBoxBoard.x + ',' + scrollBoxBoard.y + ')')
+    }
+    function initData () {
+      svgPinnedPlotsg = svg.svg.append('g')
+        .attr('id', 'svgPinnedPlots')
         .attr('transform', 'translate(' + box.pinnedPlots.x + ',' + box.pinnedPlots.y + ')')
         .style('pointer-events', 'auto')
-      topg = plotlistg.append('g').attr('id', 'topurgent').attr('transform', 'translate(' + topDim.x + ',' + topDim.y + ')')
-      bottomg = plotlistg.append('g').attr('id', 'bottomurgent').attr('transform', 'translate(' + bottomDim.x + ',' + bottomDim.y + ')')
-      middleg = plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-      scrollbox = initScrollBox('pinnedPlotsScrollbox', middleg, box.pinnedPlots, {}, true)
+
+      initPinnedList()
+      initPinnedBoard()
+      initOptions()
 
       updateData()
-
-      adjustScrollBox()
-
-      // plotlistg.append('rect')
-      //   .attr('x', box.pinnedPlots.x + box.pinnedPlots.w * 0.26)
-      //   .attr('y', box.pinnedPlots.y)
-      //   .attr('width', '200px')
-      //   .attr('height', '20px')
-      //   .attr('fill', colorPalette.darkest.background) // colorPalette.dark.background)
-      //   .attr('stroke', 'none')
-      //   .attr('rx', 0)
-      // plotlistg.append('text')
-      //   .text('Pinned Plots')
-      //   .style('fill', '#000000')
-      //   .style('font-weight', 'bold')
-      //   .style('font-size', '14px')
-      //   .attr('text-anchor', 'start')
-      //   .attr('transform', 'translate(' + (box.pinnedPlots.x + box.pinnedPlots.w * 0.26 + 10) + ',' + (box.pinnedPlots.y + 16) + ')')
-
-      // function drawFakeTitle () {
-      //   function drawTitle (i) {
-      //     plotlistg.append('text')
-      //       .text('Title')
-      //       .style('fill', '#000000')
-      //       .style('font-weight', 'bold')
-      //       .style('font-size', '14px')
-      //       .attr('text-anchor', 'start')
-      //       .attr('transform', 'translate(' + (box.pinnedPlots.x + 10) + ',' + (box.pinnedPlots.y + 30 + i * 18) + ')')
-      //   }
-      //   function drawLine (i) {
-      //     plotlistg.append('text')
-      //       .text('Information Information')
-      //       .style('fill', '#000000')
-      //       .style('font-weight', '')
-      //       .style('font-size', '12px')
-      //       .attr('text-anchor', 'start')
-      //       .attr('transform', 'translate(' + (box.pinnedPlots.x + 16) + ',' + (box.pinnedPlots.y + 30 + i * 18) + ')')
-      //   }
-      //   drawTitle(0)
-      //   drawLine(1)
-      //   drawLine(2)
-      //   drawLine(3)
-      //   drawLine(4)
-      //   drawTitle(5)
-      //   drawLine(6)
-      //   drawLine(7)
-      //   drawTitle(8)
-      //   drawLine(9)
-      //   drawLine(10)
-      //   drawLine(11)
-      //   drawLine(12)
-      //   drawLine(13)
-      //   drawLine(14)
-      //   drawTitle(15)
-      //   drawLine(16)
-      //   drawLine(17)
-      //   drawLine(18)
-      //   drawLine(19)
-      //   drawLine(20)
-      // }
-      // drawFakeTitle()
+      // adjustScrollBox()
     }
     this.initData = initData
 
+    function getTransformation (transform) {
+      // Create a dummy g for calculation purposes only. This will never
+      // be appended to the DOM and will be discarded once this function
+      // returns.
+      var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+      // Set the transform attribute to the provided string value.
+      g.setAttributeNS(null, "transform", transform);
+
+      // consolidate the SVGTransformList containing all transformations
+      // to a single SVGTransform of type SVG_TRANSFORM_MATRIX and get
+      // its SVGMatrix.
+      var matrix = g.transform.baseVal.consolidate().matrix;
+
+      // Below calculations are taken and adapted from the private function
+      // transform/decompose.js of D3's module d3-interpolate.
+      var {a, b, c, d, e, f} = matrix; // ES6, if this doesn't work, use below assignment
+      // var a=matrix.a, b=matrix.b, c=matrix.c, d=matrix.d, e=matrix.e, f=matrix.f; // ES5
+      var scaleX, scaleY, skewX;
+      if (scaleX = Math.sqrt(a * a + b * b)) a /= scaleX, b /= scaleX;
+      if (skewX = a * c + b * d) c -= a * skewX, d -= b * skewX;
+      if (scaleY = Math.sqrt(c * c + d * d)) c /= scaleY, d /= scaleY, skewX /= scaleY;
+      if (a * d < b * c) a = -a, b = -b, skewX = -skewX, scaleX = -scaleX;
+      return {
+        translateX: e,
+        translateY: f,
+        rotate: Math.atan2(b, a) * 180 / Math.PI,
+        skewX: Math.atan(skewX) * 180 / Math.PI,
+        scaleX: scaleX,
+        scaleY: scaleY
+      }
+    }
+
+    function dragstarted (d) {
+      d3.select(this).raise()
+    }
+    function dragged (d) {
+      let transform = getTransformation(d3.select(this).attr("transform"))
+
+      d3.select(this)
+        .attr('transform', 'translate(' + (transform.translateX + d3.event.dx) + ',' + (transform.translateY + d3.event.dy) + ')')
+    }
+    function dragended (d) {}
+    function createPinnedItem () {
+
+    }
+
+    function clickcancel () {
+      // we want to a distinguish single/double click
+      // details http://bl.ocks.org/couchand/6394506
+      var dispatcher = d3.dispatch('click', 'dblclick');
+      function cc(selection) {
+          var down, tolerance = 5, last, wait = null, args;
+          // euclidean distance
+          function dist(a, b) {
+              return Math.sqrt(Math.pow(a[0] - b[0], 2), Math.pow(a[1] - b[1], 2));
+          }
+          selection.on('mousedown', function() {
+            d3.event.stopPropagation()
+              down = d3.mouse(document.body);
+              last = +new Date();
+              args = arguments;
+          })
+          selection.on('mouseup', function() {
+              if (dist(down, d3.mouse(document.body)) > tolerance) {
+                  return;
+              } else {
+                  if (wait) {
+                      window.clearTimeout(wait);
+                      wait = null;
+                      dispatcher.apply("dblclick", this, args);
+                  } else {
+                      wait = window.setTimeout((function() {
+                          return function() {
+                              dispatcher.apply("click", this, args);
+                              wait = null;
+                          };
+                      })(), 300);
+                  }
+              }
+          });
+      };
+      // Copies a variable number of methods from source to target.
+      var d3rebind = function(target, source) {
+        var i = 1, n = arguments.length, method;
+        while (++i < n) target[method = arguments[i]] = d3_rebind(target, source, source[method]);
+        return target;
+      };
+
+      // Method is assumed to be a standard D3 getter-setter:
+      // If passed with no arguments, gets the value.
+      // If passed with arguments, sets the value and returns the target.
+      function d3_rebind(target, source, method) {
+        return function() {
+          var value = method.apply(source, arguments);
+          return value === source ? target : value;
+        };
+      }
+      return d3rebind(cc, dispatcher, 'on');
+    }
+
+    function shrinkAndFocus (focus) {
+      let shrinkFrac = 0.3
+      // let trans = getTransformation(svgPinnedPlotsg.select('g#pinnedList').attr('transform'))
+      // svgPinnedPlotsg.select('g#pinnedList')
+      //   .transition()
+      //   .duration(400)
+      //   .attr('transform', 'translate(' + trans.translateX + ',' + trans.translateY + ') scale(' + (trans.scaleX < 1 ? 1 : shrinkFrac) + ',' + (trans.scaleY < 1 ? 1 : 1) + ')')
+      // scrollPinnedList.updateBox({x: 0, y: 0, w: scrollBoxList.w * (1 / shrinkFrac), h: scrollBoxList.h})
+      // scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (trans.scaleY < 1 ? 1 : shrinkFrac) * (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
+      isFocused = !isFocused
+      if (isFocused) {
+        scrollBoxList.w = scrollBoxList.w * shrinkFrac
+        scrollPinnedList.updateBox({x: 0, y: 0, w: scrollBoxList.w, h: scrollBoxList.h}, 600)
+        let gg = svgPinnedPlotsg.select('g#pinnedList')
+        gg.select('line#toplimit')
+          .transition()
+          .duration(600)
+          .attr('x2', scrollBoxList.w)
+        gg.select('line#bottomlimit')
+          .transition()
+          .duration(600)
+          .attr('x2', scrollBoxList.w)
+        if (focus) focusOnPlot(focus)
+      } else {
+        unfocusOnPlot()
+        scrollBoxList.w = scrollBoxList.w * (1 / shrinkFrac)
+        scrollPinnedList.updateBox({x: 0, y: 0, w: scrollBoxList.w, h: scrollBoxList.h}, 600)
+        let gg = svgPinnedPlotsg.select('g#pinnedList')
+        gg.select('line#toplimit').transition().duration(600).attr('x2', scrollBoxList.w)
+        gg.select('line#bottomlimit').transition().duration(600).attr('x2', scrollBoxList.w)
+      }
+      updatePinnedList()
+    }
+    function mosaicBib (g, d, i, caller) {
+      let dim = {
+        w: 40,
+        h: 40,
+        marg: 4
+      }
+      let max = shared.server.pinned.length
+      let delay = 10
+      let transition = 400
+      let shrinkFrac = 0.3
+      let perline = Math.floor(scrollBoxList.w / (dim.w + dim.marg))
+      let offset = (scrollBoxList.w - (perline * (dim.w + dim.marg))) * 0.5
+      if (caller === 'enter') {
+        g.append('rect')
+          .attr('id', 'back')
+          .attr('x', 4)
+          .attr('y', 4)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+          .attr('stroke-width', 0)
+          .style('fill-opacity', 0.4)
+          .attr('fill', colorPalette.darkest.background)
+        g.append('rect')
+          .attr('id', 'front')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+          .attr('stroke', colorPalette.bright.stroke)
+          .attr('stroke-width', 0.2)
+          .style('fill-opacity', 1)
+          .attr('fill', colorPalette.bright.background)
+        g.append('svg:image')
+          .attr('id', 'chart')
+          .attr('xlink:href', '/static/icons/line-chart.svg')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+          .style('pointer-events', 'none')
+          .style('opacity', 0.5)
+        g.style('opacity', 0)
+      } else if (caller === 'merge') {
+        g.select('rect#back')
+          .transition()
+          .delay(delay * i)
+          .duration(transition)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+        g.select('rect#front')
+          .transition()
+          .delay(delay * i)
+          .duration(transition)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+        g.select('image#chart')
+          .transition()
+          .delay(delay * i)
+          .duration(transition)
+          .attr('width', dim.w * 0.75)
+          .attr('height', dim.h * 0.75)
+        g.transition()
+          .delay(delay * i)
+          .duration(transition)
+          .attr('transform', 'translate(' + (offset + (i % perline) * (dim.w + dim.marg)) + ',' + (dim.marg + parseInt(i / perline) * (dim.h + dim.marg)) + ')')
+          .style('opacity', 1)
+      }
+
+      // let trans = getTransformation(svgPinnedPlotsg.select('g#pinnedList').attr('transform'))
+      scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
+    }
+    function listBib (g, d, i, caller) {
+      let dim = {
+        w: 200,
+        h: 200,
+        marg: 4
+      }
+      let max = shared.server.pinned.length
+      let delay = 10
+      let transition = 400
+      let shrinkFrac = 0.3
+      let perline = Math.floor(scrollBoxList.w / dim.w)
+      let offset = (scrollBoxList.w - (perline * dim.w)) * 0.5
+      if (caller === 'enter') {
+        g.append('rect')
+          .attr('id', 'back')
+          .attr('x', 4)
+          .attr('y', 4)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+          .attr('stroke-width', 0)
+          .style('fill-opacity', 0.4)
+          .attr('fill', colorPalette.darkest.background)
+        g.append('rect')
+          .attr('id', 'front')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+          .attr('stroke', colorPalette.bright.stroke)
+          .attr('stroke-width', 0.2)
+          .style('fill-opacity', 1)
+          .attr('fill', colorPalette.bright.background)
+        g.style('opacity', 0)
+      } else if (caller === 'merge') {
+        g.select('rect#back')
+          .transition()
+          .delay(max * delay - delay * (i - 1))
+          .duration(transition)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+        g.select('rect#front')
+          .transition()
+          .delay(max * delay - delay * (i - 1))
+          .duration(transition)
+          .attr('width', dim.w)
+          .attr('height', dim.h)
+        g.transition()
+          .delay(max * delay - delay * (i - 1))
+          .duration(transition)
+          .attr('transform', 'translate(' + (offset + (i % perline) * (dim.w + dim.marg)) + ',' + (dim.marg + parseInt(i / perline) * (dim.h + dim.marg)) + ')')
+          .style('opacity', 1)
+      }
+
+      // let trans = getTransformation(svgPinnedPlotsg.select('g#pinnedList').attr('transform'))
+      scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
+    }
+    function updatePinnedList () {
+      let dim = {
+        w: 200,
+        h: 200,
+        marg: 4
+      }
+      let shrinkFrac = 0.3
+      let perline = Math.floor(scrollBoxList.w / dim.w)
+      let allPinned = scrollPinnedList.get('innerG').selectAll('g.pinned')
+        .data(shared.server.pinned, function (d) {
+          return d.id
+        })
+      let enterPinned = allPinned.enter()
+        .append('g')
+        .attr('class', 'pinned')
+        // .call(d3.drag()
+        //   .on('start', dragstarted)
+        //   .on('drag', dragged)
+        //   .on('end', dragended))
+      enterPinned.each(function (d, i) {
+        var cc = clickcancel()
+        d3.select(this).call(cc)
+        cc.on('click', d => {
+          console.log(d);
+        })
+        cc.on('dblclick', d => {
+          shrinkAndFocus(d)
+        })
+
+        if (displayMode === 'mosaic') {
+          mosaicBib(d3.select(this), d, i, 'enter')
+        } else if (displayMode === 'list') {
+          listBib(d3.select(this), d, i, 'enter')
+        }
+      })
+
+      let mergePinned = allPinned.merge(enterPinned)
+      mergePinned.each(function (d, i) {
+        if (displayMode === 'mosaic') {
+          mosaicBib(d3.select(this), d, i, 'merge')
+        } else if (displayMode === 'list') {
+          listBib(d3.select(this), d, i, 'merge')
+        }
+      })
+      allPinned
+        .exit()
+        .style('opacity', 0)
+        .remove()
+
+      // scrollbox.updateBox({x: 0, y: 0, w: rightDim.w, h: rightDim.h})
+    }
     function updateData () {
-      let offset = 5
-      let groupOffset = 0
-
-      let tot = 0
-      for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-        tot += shared.server.urgentCurrent[i].data.length
-      }
-      let nbperline = Math.floor(box.pinnedPlots.w / (plotbox.w + offset))
-      let xlimArray = []
-      let limit = 0
-      for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-        let inter = Math.round((shared.server.urgentCurrent[i].data.length * nbperline) / tot)
-        if (inter < 1) inter = 1
-        xlimArray.push(inter)
-        limit += inter
-      }
-      while (limit > nbperline) {
-        xlimArray[xlimArray.indexOf(Math.max(...xlimArray))] -= 1
-        limit -= 1
-      }
-      let plotb = {
-        x: plotbox.x + plotbox.w * 0.05,
-        y: plotbox.y + plotbox.h * 0.35,
-        w: plotbox.w * 0.4,
-        h: plotbox.h * 0.4
-      }
-      console.log(nbperline, xlimArray);
-
-      function drawTopg () {
-        let allGroup = topg.selectAll('g.group')
-          .data(shared.server.urgentCurrent)
-        let gEnterGroup = allGroup.enter()
-          .append('g')
-          .attr('class', 'group')
-        gEnterGroup.each(function (d, i) {
-          let xlim = xlimArray[i]
-          d3.select(this).append('rect')
-            .attr('x', offset)
-            .attr('y', 0)
-            .attr('width', plotbox.w - offset)
-            .attr('height', '40px')
-            .attr('stroke', (d) => {
-              if (d.key === 'weather') return '#4c11a2'
-              if (d.key === 'other') return '#0065be'
-              if (d.key === 'telescopes') return '#6b8998'
-              return 'none'
-            })
-            .attr('stroke-width', 0)
-            .style('fill-opacity', 0.2)
-            .attr('fill', (d) => {
-              if (d.key === 'weather') return '#4c11a2'
-              if (d.key === 'other') return '#0065be'
-              if (d.key === 'telescopes') return '#6b8998'
-              return 'none'
-            })
-          d3.select(this).append('rect')
-            .attr('x', offset)
-            .attr('y', 38)
-            .attr('width', (plotbox.w + offset) * xlim - offset)
-            .attr('height', '2px')
-            .attr('stroke', (d) => {
-              if (d.key === 'weather') return '#4c11a2'
-              if (d.key === 'other') return '#0065be'
-              if (d.key === 'telescopes') return '#6b8998'
-              return 'none'
-            })
-            .attr('stroke-width', 0)
-            .style('fill-opacity', 0.2)
-            .attr('fill', (d) => {
-              if (d.key === 'weather') return '#4c11a2'
-              if (d.key === 'other') return '#0065be'
-              if (d.key === 'telescopes') return '#6b8998'
-              return 'none'
-            })
-          d3.select(this).append('text')
-            .text(d.key)
-            .style('fill', '#000000')
-            .style('font-weight', 'bold')
-            .style('font-size', '14px')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(' + (box.pinnedPlots.x + 10) + ',' + (16) + ')')
-          d3.select(this)
-            .transition()
-            .duration(400)
-            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
-          groupOffset += xlim * (offset + (plotbox.w))
-        })
-        groupOffset = 0
-        let gMergeGroup = allGroup.merge(gEnterGroup)
-        gMergeGroup.each(function (d, i) {
-          let xlim = xlimArray[i]
-          d3.select(this)
-            .transition()
-            .duration(800)
-            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
-          groupOffset += xlim * (offset + (plotbox.w))
-        })
-        allGroup
-          .exit()
-          .style('opacity', 0)
-          .remove()
-      }
-      function drawMiddleg () {
-        let allGroup = scrollbox.get('innerG').selectAll('g.group')
-          .data(shared.server.urgentCurrent)
-        let gEnterGroup = allGroup.enter()
-          .append('g')
-          .attr('class', 'group')
-        gEnterGroup.each(function (d, i) {
-          let xlim = xlimArray[i]
-          d3.select(this)
-            .transition()
-            .duration(400)
-            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
-          groupOffset += xlim * (offset + (plotbox.w))
-        })
-        groupOffset = 0
-        let gMergeGroup = allGroup.merge(gEnterGroup)
-        gMergeGroup.each(function (d, i) {
-          allPlots = d3.select(this).selectAll('g.plot')
-            .data(d, function (dd) {
-              return dd.id
-            })
-          let gEnter = allPlots.enter()
-            .append('g')
-            .attr('class', 'plot')
-          gEnter.each(function (dd, ii) {
-            d3.select(this).append('rect')
-              .attr('x', 0)
-              .attr('y', 0)
-              .attr('width', plotbox.w - offset)
-              .attr('height', plotbox.h - offset)
-              .attr('stroke', colorPalette.bright.stroke)
-              .attr('stroke-width', 0.2)
-              .style('fill-opacity', 1)
-              .attr('fill', colorPalette.bright.background)
-            d3.select(this).append('text')
-              .text(dd.name)
-              .style('fill', '#000000')
-              .style('font-weight', 'bold')
-              .style('font-size', '12px')
-              .attr('text-anchor', 'start')
-              .attr('transform', 'translate(' + (offset) + ',' + (12 + offset) + ')')
-            d3.select(this).append('text')
-              .text(dd.unit)
-              .style('fill', '#000000')
-              .style('font-weight', 'bold')
-              .style('font-size', '12px')
-              .attr('text-anchor', 'end')
-              .attr('transform', 'translate(' + (plotbox.w - offset * 3) + ',' + (12 + offset) + ')')
-            d3.select(this).append('text')
-              .text('80')
-              .style('fill', '#000000')
-              .style('font-weight', 'bold')
-              .style('font-size', '11px')
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (plotbox.w * 0.75) + ',' + (plotbox.h * 0.6 + 12) + ')')
-            d3.select(this).append('text')
-              .text(dd.status.current.y)
-              .style('fill', '#000000')
-              .style('font-weight', 'bold')
-              .style('font-size', '22px')
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (plotbox.w * 0.75) + ',' + (plotbox.h * 0.38 + 12) + ')')
-            d3.select(this).append('rect')
-              .attr('id', 'disapearingBar')
-              .attr('x', 0)
-              .attr('y', 0)
-              .attr('width', plotbox.w - offset)
-              .attr('height', plotbox.h - offset)
-              .style('fill-opacity', 0.4)
-              .attr('fill', (d) => {
-                if (d.type === 'weather') return '#4c11a2'
-                if (d.type === 'other') return '#0065be'
-                if (d.type === 'telescopes') return '#6b8998'
-                return 'none'
-              })
-              .transition()
-              .delay(4000)
-              .duration(2000)
-              .attr('y', plotbox.h - offset * 2)
-              .attr('height', offset * 1)
-            let optIn = {g: d3.select(this),
-              box: plotb
-            }
-            optIn.g = optIn.g.append('g') // .style('opacity', 0.8)
-            dd.plotObject = createPlot(optIn)
-
-            let xlim = xlimArray[i]
-            d3.select(this)
-              .attr('transform', 'translate(' + (offset + (plotbox.w) * (ii % xlim)) + ',' + (offset + (plotbox.h + offset) * parseInt(ii / xlim)) + ')')
-          })
-          let gMerge = allPlots.merge(gEnter)
-          gMerge.each(function (dd, ii) {
-            let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-            let endTime = {date: new Date(shared.server.timeOfNight.date_now), time: Number(shared.server.timeOfNight.now)}
-
-            dd.plotObject.updateAxis({
-              id: 'bottom',
-              domain: [startTime.date, endTime.date],
-              range: [0, plotb.w]
-            })
-            dd.plotObject.updateAxis({
-              id: 'left',
-              domain: [0, 100],
-              range: [plotb.h, 0]
-            })
-            dd.plotObject.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'left')
-
-            if (dd.ended) {
-              let percent = (shared.time.current.getTime() - dd.ended.getTime()) / 400000
-              d3.select(this).style('opacity', 1 - percent)
-              d3.select(this).select('rect#disapearingBar')
-                .attr('width', (plotbox.w - offset) * ((1 - percent) < 0 ? 0 : (1 - percent)))
-            }
-
-            let xlim = xlimArray[i]
-            d3.select(this)
-              .transition()
-              .duration(800)
-              .attr('transform', 'translate(' + (offset + (plotbox.w) * (ii % xlim)) + ',' + (offset + (plotbox.h + offset) * parseInt(ii / xlim)) + ')')
-          })
-          allPlots
-            .exit()
-            .style('opacity', 0)
-            .remove()
-
-          let xlim = xlimArray[i]
-          d3.select(this)
-            .transition()
-            .duration(800)
-            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
-          groupOffset += xlim * (offset + (plotbox.w))
-        })
-        allGroup
-          .exit()
-          .style('opacity', 0)
-          .remove()
-      }
-      function drawBottomg () {
-        let allGroup = bottomg.selectAll('g.group')
-          .data(shared.server.urgentCurrent)
-        let gEnterGroup = allGroup.enter()
-          .append('g')
-          .attr('class', 'group')
-        gEnterGroup.each(function (d, i) {
-          let xlim = xlimArray[i]
-          d3.select(this).append('rect')
-            .attr('x', offset)
-            .attr('y', 0)
-            .attr('width', plotbox.w - offset)
-            .attr('height', '40px')
-            .attr('stroke', (d) => {
-              if (d[0].type === 'weather') return '#4c11a2'
-              if (d[0].type === 'other') return '#0065be'
-              if (d[0].type === 'telescopes') return '#6b8998'
-              return 'none'
-            })
-            .attr('stroke-width', 0)
-            .style('fill-opacity', 0.2)
-            .attr('fill', (d) => {
-              if (d[0].type === 'weather') return '#4c11a2'
-              if (d[0].type === 'other') return '#0065be'
-              if (d[0].type === 'telescopes') return '#6b8998'
-              return 'none'
-            })
-          d3.select(this).append('rect')
-            .attr('x', offset)
-            .attr('y', 0)
-            .attr('width', (plotbox.w + offset) * xlim - offset)
-            .attr('height', '2px')
-            .attr('stroke', (d) => {
-              if (d[0].type === 'weather') return '#4c11a2'
-              if (d[0].type === 'other') return '#0065be'
-              if (d[0].type === 'telescopes') return '#6b8998'
-              return 'none'
-            })
-            .attr('stroke-width', 0)
-            .style('fill-opacity', 0.2)
-            .attr('fill', (d) => {
-              if (d[0].type === 'weather') return '#4c11a2'
-              if (d[0].type === 'other') return '#0065be'
-              if (d[0].type === 'telescopes') return '#6b8998'
-              return 'none'
-            })
-          d3.select(this).append('text')
-            .text(d[0].type)
-            .style('fill', '#000000')
-            .style('font-weight', 'bold')
-            .style('font-size', '14px')
-            .attr('text-anchor', 'start')
-            .attr('transform', 'translate(' + (box.pinnedPlots.x + 10) + ',' + (box.pinnedPlots.y + 16) + ')')
-          d3.select(this)
-            .transition()
-            .duration(400)
-            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
-          groupOffset += xlim * (offset + (plotbox.w))
-        })
-        groupOffset = 0
-        let gMergeGroup = allGroup.merge(gEnterGroup)
-        gMergeGroup.each(function (d, i) {
-          let xlim = xlimArray[i]
-          d3.select(this)
-            .transition()
-            .duration(800)
-            .attr('transform', 'translate(' + (groupOffset) + ',' + (0) + ')')
-          groupOffset += xlim * (offset + (plotbox.w))
-        })
-        allGroup
-          .exit()
-          .style('opacity', 0)
-          .remove()
-      }
-
-      drawTopg()
-      // drawMiddleg()
-      // drawBottomg()
+      updatePinnedList()
     }
     this.updateData = updateData
 
@@ -1421,10 +1490,15 @@ let mainPlotsDash = function (optIn) {
     let categoryfocus = []
     let focusScrollbox
 
+    // let telg
+    // let telbox
+    // let telplot
+
     function createPlot (optIn) {
       let plot = new PlotTimeSeries()
       plot.init({
         main: {
+          tag: optIn.tag,
           g: optIn.g,
           box: optIn.box,
           clipping: true
@@ -1447,9 +1521,10 @@ let mainPlotsDash = function (optIn) {
               g: undefined,
               box: {x: 0, y: 0, w: 0, h: optIn.box.h, marg: 0},
               type: 'bottom',
+              mode: 'time',
               attr: {
                 text: {
-                  enabled: false,
+                  enabled: true,
                   size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
@@ -1459,7 +1534,7 @@ let mainPlotsDash = function (optIn) {
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
                 },
-                tickSize: -optIn.box.h
+                tickSize: 10
               }
             },
             axis: undefined,
@@ -1481,7 +1556,39 @@ let mainPlotsDash = function (optIn) {
               mode: 'linear',
               attr: {
                 text: {
-                  enabled: false,
+                  enabled: true,
+                  size: 11,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                path: {
+                  enabled: true,
+                  stroke: colorPalette.medium.stroke,
+                  fill: colorPalette.medium.stroke
+                },
+                tickSize: -optIn.box.w
+              }
+            },
+            axis: undefined,
+            scale: undefined,
+            domain: [0, 1000],
+            range: [0, 0],
+            brush: {
+              zoom: true,
+              brush: true
+            }
+          },
+          {
+            id: 'right',
+            showAxis: true,
+            main: {
+              g: undefined,
+              box: {x: optIn.box.w, y: 0, w: 0, h: 0, marg: 0},
+              type: 'right',
+              mode: 'linear',
+              attr: {
+                text: {
+                  enabled: true,
                   size: 11,
                   stroke: colorPalette.medium.stroke,
                   fill: colorPalette.medium.stroke
@@ -1503,38 +1610,6 @@ let mainPlotsDash = function (optIn) {
               brush: true
             }
           }
-          // {
-          //   id: 'right',
-          //   showAxis: true,
-          //   main: {
-          //     g: undefined,
-          //     box: {x: plotbox.w, y: 0, w: 0, h: 0, marg: 0},
-          //     type: 'right',
-          //     mode: 'linear',
-          //     attr: {
-          //       text: {
-          //         enabled: true,
-          //         size: 11,
-          //         stroke: colorPalette.medium.stroke,
-          //         fill: colorPalette.medium.stroke
-          //       },
-          //       path: {
-          //         enabled: true,
-          //         stroke: colorPalette.medium.stroke,
-          //         fill: colorPalette.medium.stroke
-          //       },
-          //       tickSize: -plotbox.w
-          //     }
-          //   },
-          //   axis: undefined,
-          //   scale: undefined,
-          //   domain: [0, 1000],
-          //   range: [0, 0],
-          //   brush: {
-          //     zoom: true,
-          //     brush: true
-          //   }
-          // }
         ],
         content: []
       })
@@ -1542,7 +1617,7 @@ let mainPlotsDash = function (optIn) {
     }
     function createMiddlePlot (optIn) {
       let allGroup = optIn.g.selectAll('g.group')
-        .data(shared.server.urgentCurrent)
+        .data(shared.server.urgent.urgentCurrent)
       let gEnterGroup = allGroup.enter()
         .append('g')
         .attr('class', 'group')
@@ -1623,10 +1698,10 @@ let mainPlotsDash = function (optIn) {
         ],
         content: []
       }
-      for (let i = 0; i < shared.server.urgentKey.length; i++) {
+      for (let i = 0; i < shared.server.urgent.urgentKey.length; i++) {
         optIn2.axis.push(
           {
-            id: 'left' + shared.server.urgentKey[i],
+            id: 'left' + shared.server.urgent.urgentKey[i],
             showAxis: true,
             main: {
               g: undefined,
@@ -1659,10 +1734,10 @@ let mainPlotsDash = function (optIn) {
           }
         )
       }
-      for (let i = 0; i < shared.server.urgentKey.length; i++) {
+      for (let i = 0; i < shared.server.urgent.urgentKey.length; i++) {
         optIn2.axis.push(
           {
-            id: 'right' + shared.server.urgentKey[i],
+            id: 'right' + shared.server.urgent.urgentKey[i],
             showAxis: true,
             main: {
               g: undefined,
@@ -1704,17 +1779,18 @@ let mainPlotsDash = function (optIn) {
       middleDim = {x: (leftDim.x + leftDim.w) + 5, y: 10, w: (box.urgentPlots.w * 0.5) - (leftDim.x + leftDim.w) + 5, h: box.urgentPlots.h - 20}
       topBox = {x: leftDim.x, y: 10, w: leftDim.w + 5 + middleDim.w, h: 40}
       rightDim = {x: box.urgentPlots.w * 0.5 + 10, y: 10, w: box.urgentPlots.w * 0.5 - 20, h: box.urgentPlots.h - 20}
+      // telbox = {x: box.urgentPlots.w * 0.66, y: 30, w: box.urgentPlots.w * 0.3, h: box.urgentPlots.h - 60}
     }
     function initLeftPart (g) {
       itemBox = {x: 100, y: leftDim.y, w: 200, h: leftDim.h}
       itemDim = {offsetL: 2, offsetR: 0, offsetT: 2, offsetB: 0, w: 60, h: 60}
       categoryBox = {x: 0, y: leftDim.y, w: 100, h: leftDim.h}
-      categoryDim = {offsetL: 0, offsetR: 0, offsetT: 0, offsetB: 0, w: categoryBox.w - 0, h: (categoryBox.h - 0 * shared.server.urgentCurrent.length) / shared.server.urgentCurrent.length}
+      categoryDim = {offsetL: 0, offsetR: 0, offsetT: 0, offsetB: 0, w: categoryBox.w - 0, h: (categoryBox.h - 0 * shared.server.urgent.urgentCurrent.length) / shared.server.urgent.urgentCurrent.length}
       leftg = g.append('g').attr('id', 'lefturgent').attr('transform', 'translate(' + leftDim.x + ',' + leftDim.y + ')')
       focusScrollbox = initScrollBox('focusScrollbox', leftg.append('g').attr('transform', 'translate(' + itemBox.x + ',' + 0 + ')'), itemBox, {}, true)
     }
     function initMiddlePart (g) {
-      line = shared.server.urgentKey.length
+      line = shared.server.urgent.urgentKey.length
       spaceline = middleDim.h / line
       middleg = g.append('g').attr('id', 'middleurgent').attr('transform', 'translate(' + middleDim.x + ',' + middleDim.y + ')')
       createMiddlePlot({g: middleg, box: middleDim})
@@ -1738,6 +1814,11 @@ let mainPlotsDash = function (optIn) {
       //   .attr('fill', 'black')
       scrollbox = initScrollBox('urgentPlotsScrollbox', rightg.append('g').attr('transform', 'translate(' + rightBox.x + ',' + 0 + ')'), rightBox, {}, true)
     }
+
+    function initTelPart (g) {
+      telg = g.append('g').attr('id', 'telurgent').attr('transform', 'translate(' + telbox.x + ',' + telbox.y + ')')
+      telplot = createPlot({g: telg, box: telbox, tag: 'telUrgentPlot'})
+    }
     function initData () {
       let plotlistg = svg.svg.append('g').attr('id', 'plotList')
         .attr('transform', 'translate(' + box.urgentPlots.x + ',' + box.urgentPlots.y + ')')
@@ -1745,7 +1826,7 @@ let mainPlotsDash = function (optIn) {
 
       // middleplot = createMiddlePlot({g: plotlistg.append('g'), box: {x: (box.urgentPlots.w * 0.35 - 41), y: 20, w: box.urgentPlots.w * 0.36, h: box.urgentPlots.h - 40}})
       //
-      overlaymiddleplot = plotlistg.append('g').attr('transform', 'translate(' + (box.urgentPlots.w * 0.35 - 41) + ',' + (20) + ')')
+      // overlaymiddleplot = plotlistg.append('g').attr('transform', 'translate(' + (box.urgentPlots.w * 0.35 - 41) + ',' + (20) + ')')
       // leftg.on('mouseleave', function () {
       //   categoryfocus = []
       //   leftg.selectAll('rect#extendBack').attr('width', categoryDim.w)
@@ -1753,6 +1834,7 @@ let mainPlotsDash = function (optIn) {
       // })
 
       initBox()
+      // initTelPart(plotlistg)
       initMiddlePart(plotlistg)
       initLeftPart(plotlistg)
       initTopPart(plotlistg)
@@ -1765,12 +1847,93 @@ let mainPlotsDash = function (optIn) {
     this.initData = initData
 
     function updateData () {
+      // drawTelPart()
       // drawTopPart()
-      // drawMiddlePart()
+      drawMiddlePart()
       drawRightPart()
       drawLeftPart()
     }
     this.updateData = updateData
+
+    function drawTelPart () {
+      let currentDate = new Date(shared.server.timeOfNight.date_now)
+      let previousDate = new Date(shared.server.timeOfNight.date_now).setHours(currentDate.getHours() - 1)
+      telplot.updateAxis({
+        id: 'bottom',
+        domain: [previousDate, currentDate],
+        range: [0, telbox.w]
+      })
+      let max = 100
+      telplot.updateAxis({
+        id: 'right',
+        domain: [0, max],
+        range: [telbox.h, 0]
+      })
+      telplot.updateAxis({
+        id: 'left',
+        domain: [0, max],
+        range: [telbox.h, 0]
+      })
+
+      function drawCurve () {
+        let allGroup = telplot.getClipping().selectAll('g.telescopes')
+          .data(shared.server.urgent.telescopes, function (d) {
+            return d.id
+          })
+        let gEnterGroup = allGroup.enter()
+          .append('g')
+          .attr('class', 'telescopes')
+        gEnterGroup.each(function (d, i) {
+          // d3.select(this).append('path')
+          //   .attr('fill', 'none')
+          //   .attr('stroke-width', 1)
+          //   .attr('stroke', '#000000')
+        })
+        let gMergeGroup = allGroup.merge(gEnterGroup)
+        gMergeGroup.each(function (d, i) {
+          // let linefunction = d3.line()
+          //   .x(function (d, i) { return telplot.getAxis('bottom').scale(new Date(d.x - 100000 * i)) })
+          //   .y(function (d, i) { return telplot.getAxis('right').scale(d.y) })
+          //   .curve(d3.curveLinear)
+          // d3.select(this).select('path')
+          //   .attr('d', linefunction(d.data))
+
+          let allTimestamp = d3.select(this).selectAll('circle.timeStamp')
+            .data(d.data, function (dd, ii) {
+              return dd.x
+            })
+          let gEnterTimestamp = allTimestamp.enter()
+            .append('circle')
+            .attr('class', 'timeStamp')
+          gEnterTimestamp
+            .attr('fill', '#000000')
+            .attr('r', 2)
+            .on('mouseenter', function (dd) {
+              console.log(dd.y);
+            })
+          let gMergeTimestamp = allTimestamp.merge(gEnterTimestamp)
+          gMergeTimestamp
+            .attr('cx', function (dd, ii) {
+              return (d.data.length > 2 && ii < d.data.length - 1) ?
+                telplot.getAxis('bottom').scale(new Date(dd.x - 100000 * i)) :
+                4
+            })
+            .attr('cy', function (dd, ii) {
+              return telplot.getAxis('right').scale(dd.y)
+            })
+          allTimestamp
+            .exit()
+            .style('opacity', 0)
+            .remove()
+        })
+        allGroup
+          .exit()
+          .style('opacity', 0)
+          .remove()
+        console.log(allGroup);
+      }
+      drawCurve()
+    }
 
     function drawTopPart () {
       function drawBlock (g, key, tree, depth, dim) {
@@ -1829,22 +1992,22 @@ let mainPlotsDash = function (optIn) {
         range: [0, middleDim.w]
       })
       let max = 0
-      for (let i = 0; i < shared.server.urgentTimestamp.length; i++) {
-        for (let j = 0; j < shared.server.urgentTimestamp[i].data.length; j++) {
-          if (max < shared.server.urgentTimestamp[i].data[j].data.length) max = shared.server.urgentTimestamp[i].data[j].data.length
+      for (let i = 0; i < shared.server.urgent.urgentTimestamp.length; i++) {
+        for (let j = 0; j < shared.server.urgent.urgentTimestamp[i].data.length; j++) {
+          if (max < shared.server.urgent.urgentTimestamp[i].data[j].data.length) max = shared.server.urgent.urgentTimestamp[i].data[j].data.length
         }
       }
-      // max = 100 / shared.server.urgentKey.length
-      for (let i = 0; i < shared.server.urgentKey.length; i++) {
+      // max = 100 / shared.server.urgent.urgentKey.length
+      for (let i = 0; i < shared.server.urgent.urgentKey.length; i++) {
         middleplot.updateAxis({
-          id: 'right' + shared.server.urgentKey[i],
+          id: 'right' + shared.server.urgent.urgentKey[i],
           domain: [0, max],
           range: [spaceline - 4, 0]
         })
       }
-      for (let i = 0; i < shared.server.urgentKey.length; i++) {
+      for (let i = 0; i < shared.server.urgent.urgentKey.length; i++) {
         middleplot.updateAxis({
-          id: 'left' + shared.server.urgentKey[i],
+          id: 'left' + shared.server.urgent.urgentKey[i],
           domain: [0, max],
           range: [spaceline - 4, 0]
         })
@@ -1852,7 +2015,7 @@ let mainPlotsDash = function (optIn) {
 
       function drawCurve () {
         let allGroup = middleplot.getClipping().select('g#timestampOverlay').selectAll('g.group')
-          .data(shared.server.urgentTimestamp)
+          .data(shared.server.urgent.urgentTimestamp)
         let gEnterGroup = allGroup.enter()
           .append('g')
           .attr('class', 'group')
@@ -2398,8 +2561,8 @@ let mainPlotsDash = function (optIn) {
     //   if (!scrollbox) return
     //   let tot = 0
     //   let offset = 2
-    //   for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-    //     tot += shared.server.urgentCurrent[i].data.length
+    //   for (let i = 0; i < shared.server.urgent.urgentCurrent.length; i++) {
+    //     tot += shared.server.urgent.urgentCurrent[i].data.length
     //   }
     //   let nbperline = Math.floor(rightDim.w / (plotbox.w + offset))
     //   scrollbox.updateBox({x: 0, y: 0, w: rightDim.w, h: rightDim.h})
@@ -2407,8 +2570,8 @@ let mainPlotsDash = function (optIn) {
     // }
     function findnbperline () {
       let line = []
-      for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-        line.push(shared.server.urgentCurrent[i].data.length)
+      for (let i = 0; i < shared.server.urgent.urgentCurrent.length; i++) {
+        line.push(shared.server.urgent.urgentCurrent[i].data.length)
       }
       let glob = line.reduce((acc, cur) => acc + cur, 0)
       let maxiter = 100
@@ -2464,8 +2627,8 @@ let mainPlotsDash = function (optIn) {
         }
 
         let line = []
-        for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-          line.push(shared.server.urgentCurrent[i].data.length)
+        for (let i = 0; i < shared.server.urgent.urgentCurrent.length; i++) {
+          line.push(shared.server.urgent.urgentCurrent[i].data.length)
         }
         let max = rightBox.w * rightBox.h
         let maxiter = 100
@@ -2555,16 +2718,16 @@ let mainPlotsDash = function (optIn) {
 
       let offsetLine = 0
       let tot = 0
-      for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-        tot += shared.server.urgentCurrent[i].data.length
-        offsetLine += Math.ceil(shared.server.urgentCurrent[i].data.length / nbperline)
+      for (let i = 0; i < shared.server.urgent.urgentCurrent.length; i++) {
+        tot += shared.server.urgent.urgentCurrent[i].data.length
+        offsetLine += Math.ceil(shared.server.urgent.urgentCurrent[i].data.length / nbperline)
       }
-      offsetLine = (rightBox.h - (offsetLine * (dim.h + offset))) / (shared.server.urgentCurrent.length)
+      offsetLine = (rightBox.h - (offsetLine * (dim.h + offset))) / (shared.server.urgent.urgentCurrent.length)
 
       let xlimArray = []
       let limit = 0
-      for (let i = 0; i < shared.server.urgentCurrent.length; i++) {
-        let inter = Math.round((shared.server.urgentCurrent[i].data.length * nbperline) / tot)
+      for (let i = 0; i < shared.server.urgent.urgentCurrent.length; i++) {
+        let inter = Math.round((shared.server.urgent.urgentCurrent[i].data.length * nbperline) / tot)
         if (inter < 1) inter = 1
         xlimArray.push(inter)
         limit += inter
@@ -2579,7 +2742,7 @@ let mainPlotsDash = function (optIn) {
 
       function drawCategory () {
         let allGroup = rightCats.selectAll('g.labelCategory')
-          .data(shared.server.urgentKey)
+          .data(shared.server.urgent.urgentKey)
         let gEnterGroup = allGroup.enter()
           .append('g')
           .attr('class', 'labelCategory')
@@ -2648,7 +2811,7 @@ let mainPlotsDash = function (optIn) {
       }
       function drawItem () {
         let allGroup = rightItems.selectAll('g.category') // scrollbox.get('innerG').selectAll('g.category')
-          .data(shared.server.urgentCurrent)
+          .data(shared.server.urgent.urgentCurrent)
         let gEnterGroup = allGroup.enter()
           .append('g')
           .attr('class', 'category')
@@ -2668,8 +2831,8 @@ let mainPlotsDash = function (optIn) {
           labelCat.select('text').text(d.data.length)
 
           let points = [
-            {x: -spaceline, y: spaceline * 0.5 + (shared.server.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1))},
-            {x: 0, y: spaceline * 0.5 + (shared.server.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1))}
+            {x: -spaceline, y: spaceline * 0.5 + (shared.server.urgent.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1))},
+            {x: 0, y: spaceline * 0.5 + (shared.server.urgent.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1))}
           ]
           // if (d.data.length > nbperline) {
           //   if (mode === 1) labelCat.select('g#extension').style('opacity', 0)
@@ -2770,7 +2933,7 @@ let mainPlotsDash = function (optIn) {
             //   .attr('transform', 'translate(' + (plotbox.w * 0.9) + ',' + (plotbox.h * 0.8 + 11) + ')')
 
             d3.select(this).on('mouseenter', function () {
-              middleplot.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'right')
+              // middleplot.bindData(dd.id, [dd.status.current].concat(dd.status.previous), 'bottom', 'right')
               // let linefunction = d3.line()
               //   .x(function (d) { return xscale(d.x) })
               //   .y(function (d) { return yscale(d.y) })
@@ -2783,7 +2946,7 @@ let mainPlotsDash = function (optIn) {
                 .style('opacity', 0.1)
             })
             d3.select(this).on('mouseleave', function () {
-              middleplot.unbindData(dd.id)
+              // middleplot.unbindData(dd.id)
               // overlaymiddleplot.select('path').remove()
               overlaymiddleplot.selectAll('.finished')
                 .style('opacity', 1)
@@ -2907,7 +3070,7 @@ let mainPlotsDash = function (optIn) {
           //   d3.select(this)
           //     .transition()
           //     .duration(200)
-          //     .attr('transform', 'translate(' + (0) + ',' + (shared.server.urgentKey.indexOf(d.key) * (spaceline) + 2) + ')')
+          //     .attr('transform', 'translate(' + (0) + ',' + (shared.server.urgent.urgentKey.indexOf(d.key) * (spaceline) + 2) + ')')
           // }
 
         })

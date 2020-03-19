@@ -35,7 +35,7 @@ class plotsDash():
         # the parent of this widget
         self.mySock = mySock
         Assert(log=self.log, msg=[
-               " - no mySock handed to", self.__class__.__name__], 
+               " - no mySock handed to", self.__class__.__name__],
                state=(self.mySock is not None))
 
         # widget-class and widget group names
@@ -171,6 +171,7 @@ class plotsDash():
         self.initTelHealth()
         self.initUrgentCurrent()
         self.initUrgentPast()
+        self.getPinnedList()
 
         # initial dataset and send to client
         optIn = {
@@ -189,7 +190,7 @@ class plotsDash():
         return
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def initTelHealth(self):
         self.telHealth = dict()
@@ -269,8 +270,19 @@ class plotsDash():
     #     # ]}
     #     return tree
 
+    def getPinnedList(self):
+        nbP = random.randint(20, 40)
+        self.pinnedList = []
+        for i in range(nbP):
+            data = []
+            for j in range(random.randint(1, 12)):
+                rndKey = self.telKey[random.randint(0, len(self.telKey) - 1)]
+                rndId = self.telIds[random.randint(0, len( self.telIds) - 1)]
+                data.append({'data': self.retrieveTelData(rndId, [rndKey]), 'keys': [self.telCategory, rndKey, rndId]})
+            self.pinnedList.append({"id": "pinned" + str(i), "timestamp": getTime(), 'data': data, 'context': {}})
+
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def getData(self):
         timeOfNightDate = {
@@ -278,7 +290,7 @@ class plotsDash():
             "now": getTime()
         }
 
-        dataOut = self.retrieveData('Mx10', ['camera', 'mount'])
+        dataOut = self.retrieveTelData('Mx10', ['camera', 'mount'])
 
         self.updateUrgentCurrent()
         self.updateUrgentPast()
@@ -290,18 +302,35 @@ class plotsDash():
             "timeOfNight": timeOfNightDate,
             "dataOut": self.telIds,
             "hierarchy": {'relationship': self.relationship, 'categories': self.categories, 'keys': self.selectedKeys, 'root': 'global', 'depth': 4},
-            "urgentKey": self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children'],
-            "agregate": self.agregate,
-            "urgentCurrent": orderedCurrent,
-            "urgentTimestamp": orderedTimestamp,
-            "urgentPast": orderedPast
+            # "agregate": self.agregate,
+            'pinned': self.pinnedList,
+            "urgent": {
+                'telescopes': self.getTelescopesHealth(),
+                "urgentKey": self.relationship[self.selectedKeys[len(self.selectedKeys) - 1]]['children'],
+                "urgentCurrent": orderedCurrent,
+                "urgentTimestamp": orderedTimestamp,
+                "urgentPast": orderedPast,
+            }
             # "telHealthAggregate":self.agregateTelHealth(telHealth)
         }
 
         return data
 
+    def getTelescopesHealth(self):
+        telHealth = []
+        for index in range(len(self.telIds)):
+            for key in self.telKey:
+                self.redis.pipe.zGet('telHealth;'+self.telIds[index]+';'+key)
+            data = self.redis.pipe.execute(packedScore=True)
+            nEleNow = 0
+            for key in self.telKey:
+                dataNow = data[nEleNow]
+                telHealth.append({'id': self.telIds[index]+'-'+key, 'keys': [self.telIds[index], key], 'data': [{'y': x[0]['data'], 'x':x[1]} for x in dataNow]})
+                nEleNow += 1
+        return telHealth
+
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def plotDashpushNewHierachyKeys(self, *args):
         print 'push', self.widgetId
@@ -316,9 +345,9 @@ class plotsDash():
         return
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
-    def retrieveData(self, id, keyV):
+    def retrieveTelData(self, id, keyV):
         res = {"id": id}
         data = {}
         for key in keyV:
@@ -358,7 +387,7 @@ class plotsDash():
         return
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def checkSytemHealth(self, agregate, key, row):
         if float(row["mirror"]) < 30:
@@ -382,7 +411,7 @@ class plotsDash():
             agregate["warning"]["mount"].append(key)
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def agregateTelHealth(self, telHealth):
         agregate = {
@@ -434,7 +463,7 @@ class plotsDash():
         return agregate
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def getTelsTresholdType(self, key):
         if key == 'health':
@@ -444,7 +473,7 @@ class plotsDash():
         return {}
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def getTelsMeasureType(self, key):
         if key == 'mount':
@@ -472,7 +501,7 @@ class plotsDash():
                                               "measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def updateUrgentCurrent(self):
         self.urgentCurrent = []
@@ -484,7 +513,7 @@ class plotsDash():
                                               "measures": [{"value": value, "timestamp": getTime()}], "type": self.getTelsMeasureType(key)}})
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def orderUrgentCurrentByKey(self):
         vKeys = [self.relationship[self.selectedKeys[len(
@@ -511,7 +540,7 @@ class plotsDash():
         self.urgentPast = []
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def updateUrgentPast(self):
         for curr in self.urgentCurrent:
@@ -526,7 +555,7 @@ class plotsDash():
                 self.urgentPast.append(curr)
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def orderByTimestamp(self, vector):
         orderedV = []
@@ -549,7 +578,7 @@ class plotsDash():
         return orderedV
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def orderUrgentPastByKeyTime(self):
         vKeys = [self.relationship[self.selectedKeys[len(
@@ -570,7 +599,7 @@ class plotsDash():
         return interOrdering(self.urgentPast, 0)
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def orderUrgentPastByKey(self):
         vKeys = [self.relationship[self.selectedKeys[len(
@@ -591,7 +620,7 @@ class plotsDash():
         return interOrdering(self.urgentPast, 0)
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def getTelState(self, health):
         if (health < 60):
@@ -602,7 +631,7 @@ class plotsDash():
             return "NOMINAL"
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def getTelHealth(self, idIn=None):
         data = dict()

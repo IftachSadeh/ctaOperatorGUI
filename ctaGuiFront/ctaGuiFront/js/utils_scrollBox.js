@@ -22,14 +22,18 @@ window.ScrollBox = function () {
   // ---------------------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------------------
-  function updateClipping (box) {
+  function updateClipping (box, duration = 0) {
     com.outerBox = deepCopy(box)
     com.clipRecInner
+      .transition()
+      .duration(duration)
       .attr('x', com.outerBox.x)
       .attr('y', com.outerBox.y)
       .attr('width', com.outerBox.w)
       .attr('height', com.outerBox.h)
     com.clipRecOuter
+      .transition()
+      .duration(duration)
       .attr('x', com.outerBox.x)
       .attr('y', com.outerBox.y)
       .attr('width', com.outerBox.w)
@@ -40,6 +44,8 @@ window.ScrollBox = function () {
       .data([com.outerBox], function (d) {
         return d.id
       })
+      .transition()
+      .duration(duration)
       .attr('x', function (d, i) {
         return d.x
       })
@@ -57,6 +63,8 @@ window.ScrollBox = function () {
       .data([com.outerBox], function (d) {
         return d.id
       })
+      .transition()
+      .duration(duration)
       .attr('x', function (d, i) {
         return d.x
       })
@@ -1514,8 +1522,8 @@ window.ScrollBox = function () {
     com.scrollRecH.w = boxW * boxW / Math.abs(com.scrollWidth)
   } // NO
 
-  function updateBox (box) {
-    updateClipping(box)
+  function updateBox (box, duration) {
+    updateClipping(box, duration)
   }
   this.updateBox = updateBox
 
