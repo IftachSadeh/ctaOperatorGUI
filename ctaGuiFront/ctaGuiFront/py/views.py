@@ -41,7 +41,7 @@ def viewLogin(request):
     # -----------------------------------------------------------------------------------------------------------
     # login page with authentication - check the DB for the given userId/password
     # -----------------------------------------------------------------------------------------------------------
-    widget_name = "login"
+    view_name = "login"
 
     # if already logged in, go to the index
     if request.authenticated_userid is not None:
@@ -62,11 +62,11 @@ def viewLogin(request):
                 return HTTPFound(location=request.route_url("index"), headers=headers)
 
     return dict(
-        location=request.route_url(widget_name),
+        location=request.route_url(view_name),
         login=request.authenticated_userid,
         app_prefix=utils.appPrefix,
         ns_type=utils.nsType,
-        widget_name=widget_name,
+        widget_name=view_name,
         display_userid=get_display_userid(request),
     )
 
@@ -93,14 +93,14 @@ def viewIndex(request):
     # -----------------------------------------------------------------------------------------------------------
     # index, empty, not-found
     # -----------------------------------------------------------------------------------------------------------
-    widget_name = "index"
+    view_name = "index"
 
     return dict(
         ns_type=utils.nsType,
-        widget_name=widget_name,
+        widget_name=view_name,
         app_prefix=utils.appPrefix,
         login=request.authenticated_userid,
-        came_from=request.route_url(widget_name),
+        came_from=request.route_url(view_name),
         display_userid=get_display_userid(request),
     )
 
@@ -110,14 +110,14 @@ def viewEmpty(request):
 
 
 def viewNotFound(request):
-    widget_name = "notFound"
+    view_name = "notFound"
 
     return dict(
         ns_type=utils.nsType,
-        widget_name=widget_name,
+        widget_name=view_name,
         app_prefix=utils.appPrefix,
         login=request.authenticated_userid,
-        location=request.route_url(widget_name),
+        location=request.route_url(view_name),
         display_userid=get_display_userid(request),
     )
 
@@ -126,13 +126,13 @@ def viewCommon(request):
     # -----------------------------------------------------------------------------------------------------------
     # now for the widgets
     # -----------------------------------------------------------------------------------------------------------
-    widget_name = request.matched_route.name
+    view_name = request.matched_route.name
 
     return dict(
         ns_type=utils.nsType,
-        widget_name=widget_name,
+        widget_name=view_name,
         app_prefix=utils.appPrefix,
         login=request.authenticated_userid,
-        came_from=request.route_url(widget_name),
+        came_from=request.route_url(view_name),
         display_userid=get_display_userid(request),
     )

@@ -509,14 +509,14 @@ class obsBlocks_noACS():
                 obsBlockStartTime = totBlockDuration
 
                 nbTarget = max(1, int(self.rndGen.random() * 3))
-                targetIds = []
+                targetIdsNow = []
                 targets = []
                 for z in range(nbTarget):
                     idIndex = (obsBlockStartTime / (self.durationNight / len(targetsIds))) + 0.75
                     idIndex = int(idIndex + ((self.rndGen.random() - 0.5) * 3))
                     idIndex = min(max(0, idIndex), len(targetsIds) - 1)
-                    if not (targetsIds[idIndex] in targetIds):
-                        targetIds.append(targetsIds[idIndex])
+                    if not (targetsIds[idIndex] in targetIdsNow):
+                        targetIdsNow.append(targetsIds[idIndex])
                         targets.append(self.redis.get(name=targetsIds[idIndex], packed=True, defVal={}))
 
                 for nObsNow in range(nObsBlocks):
