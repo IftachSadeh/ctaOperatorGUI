@@ -327,7 +327,8 @@ function SocketManager () {
   this.isOldSync = isOldSync
 
   // -------------------------------------------------------------------
-  // the server keeps the id of the current active widget, to avoid sending spurious sync events
+  // the server keeps the id of the current active widget, 
+  // to avoid sending spurious sync events
   // -------------------------------------------------------------------
   let waitMouseMove = 250
   let prevMouseMove = Date.now()
@@ -587,9 +588,17 @@ function SocketManager () {
     let widgetEle = []
     $.each(widgetTypes, function (index, dataNow) {
       widgetEle.push(null)
+      
       let tabTableMain = tabTable.querySelector("#" + tabTableMainId)
-      tabTableMain.setAttribute('class', eleProps[dataNow].isDarkEle ? ' class: gridEleBodyDark' : ' class: gridEleBody')
-      let itemNow = tabTable.querySelector("#" + tabTableMainId).appendChild(document.createElement('div'))
+      tabTableMain.setAttribute(
+        'class', 
+        (eleProps[dataNow].isDarkEle 
+          ? ' class: gridEleBodyDark' : ' class: gridEleBody')
+      )
+      
+      let itemNow = tabTable.
+        querySelector("#" + tabTableMainId).
+        appendChild(document.createElement('div'))
       itemNow.innerHTML = eleProps[dataNow]["content"]
 
       let widgetIndex = 0
@@ -603,16 +612,16 @@ function SocketManager () {
 
       if (!hasVar(widgetTag)) return
 
-      let WidgetFunc = function () {
+      let WidgetFuncNow = function () {
         this.getEle = function (tag) {
           return itemNow.querySelector('#' + tag)
         }
       }
-      let widgetFunc = new WidgetFunc()
+      let widgetFuncNow = new WidgetFuncNow()
 
       widgetEle[widgetIndex] = {
         id: widgetTag,
-        widget: widgetFunc,
+        widget: widgetFuncNow,
         w: eleProps[widgetTag].w,
         h: eleProps[widgetTag].h
       }
@@ -621,20 +630,21 @@ function SocketManager () {
       let gsH = eleProps[widgetTag].h
 
       var ow = itemNow.offsetWidth
-      var h0 = ow * 0.08
+      // var h0 = ow * 0.08
       var wTot = 12
       var w0 = gsW / wTot
-      var width = 100 * w0 - 0.5 + '%'
-      var height = h0 * gsH + 'px'
-      var maxHeight = $(document).height() * 0.8
+      var width = (100 * w0) + '%'
+      // var width = 100 * w0 - 0.5 + '%'
+      // var height = h0 * gsH + 'px'
+      // var maxHeight = $(document).height() * 0.8
       let itemNowStyle =
-        'width:' +
-        width +
-        '; height:' +
-        height +
-        '; max-height:' +
-        maxHeight +
-        'px'
+        'width:'
+        + width
+        // + '; height:'
+        // + height
+        // + '; max-height:'
+        // + maxHeight
+        // + 'px'
       itemNow.setAttribute('style', itemNowStyle)
       itemNow.classList.add('tableItem')
       // tabTable._addWidget(gsName, eleProps[dataNow])
@@ -657,9 +667,8 @@ function SocketManager () {
           baseName: baseName,
           widgetId: widgetId,
           iconDivV: iconDivV,
-          // sideId: sideId,
           widgetEle: widgetEle,
-          setupData: setupData
+          setupData: setupData,
         })
       },
       msgFail: function () {

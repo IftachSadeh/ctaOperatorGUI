@@ -1986,59 +1986,68 @@ window.bckPattern = function (optIn) {
 // programatic zoom function
 // ------------------------------------------------------------------
 
-window.doZoomToTarget = function (dataIn) {
-  if (!hasVar(dataIn.cent)) {
-    dataIn.cent = [dataIn.wh[0] / 2, dataIn.wh[1] / 2]
+window.doZoomToTarget = function (optIn) {
+  if (!hasVar(optIn.cent)) {
+    optIn.cent = [optIn.wh[0] / 2, optIn.wh[1] / 2]
   }
 
-  var duration = dataIn.durFact * timeD.baseZoom
+  var duration = optIn.durFact * timeD.baseZoom
   var transTarget = d3.zoomIdentity
-    .translate(dataIn.cent[0], dataIn.cent[1])
-    .scale(dataIn.trgScale)
-    .translate(-dataIn.transTo[0], -dataIn.transTo[1])
+    .translate(optIn.cent[0], optIn.cent[1])
+    .scale(optIn.trgScale)
+    .translate(-optIn.transTo[0], -optIn.transTo[1])
 
   // // for chrome the following is enough, but for firefox we need to define attrTween explicitly...
-  // dataIn.svg.transition("doZoomToTarget").duration(duration*5)
-  //   .call(dataIn.svgZoom.transform, transTarget)
-  //   .on("start", dataIn.funcStart)
-  //   .on("end", dataIn.funcEnd)
+  // optIn.svg.transition("doZoomToTarget").duration(duration*5)
+  //   .call(optIn.svgZoom.transform, transTarget)
+  //   .on("start", optIn.funcStart)
+  //   .on("end", optIn.funcEnd)
   // return;
 
-  var scale0 = Math.sqrt(dataIn.wh[0] * dataIn.wh[1])
-  var node = d3.zoomTransform(dataIn.svgZoomNode)
-  var center = [dataIn.cent[0], dataIn.cent[1]]
+  var scale0 = Math.sqrt(optIn.wh[0] * optIn.wh[1])
+  var node = d3.zoomTransform(optIn.svgZoomNode)
+  var center = [optIn.cent[0], optIn.cent[1]]
   var start = [
     (center[0] - node.x) / node.k,
     (center[1] - node.y) / node.k,
     scale0 / node.k
   ]
-  var end = [dataIn.transTo[0], dataIn.transTo[1], scale0 / dataIn.trgScale]
+  var end = [
+    optIn.transTo[0], optIn.transTo[1],
+    scale0 / optIn.trgScale
+  ]
   var intprZoom = d3.interpolateZoom(start, end)
 
-  if (hasVar(dataIn.funcStart)) dataIn.funcStart()
+  if (hasVar(optIn.funcStart)) optIn.funcStart()
 
-  dataIn.svgBox
+  optIn.svgBox
     .transition('zoomToTarget')
     .duration(duration)
     .attrTween('transform', function () {
       return transStep
     })
     .on('end', function () {
-      dataIn.svg.call(dataIn.svgZoom.transform, transTarget)
+      optIn.svg.call(optIn.svgZoom.transform, transTarget)
 
-      if (hasVar(dataIn.funcEnd)) dataIn.funcEnd()
+      if (hasVar(optIn.funcEnd)) optIn.funcEnd()
     })
 
   function transStep (t) {
-    if (hasVar(dataIn.funcDuring)) dataIn.funcDuring()
+    if(optIn.isStatic) return ''
+    
+    if (hasVar(optIn.funcDuring)) optIn.funcDuring()
 
     var intpr = intprZoom(t)
     if (!hasVar(intpr[0])) return ''
 
     var scale = scale0 / intpr[2]
-    var trans = [center[0] - intpr[0] * scale, center[1] - intpr[1] * scale]
+    var trans = [
+      center[0] - intpr[0] * scale,
+      center[1] - intpr[1] * scale
+    ]
 
-    return 'translate(' + trans[0] + ',' + trans[1] + ')scale(' + scale + ')'
+    return ('translate(' + trans[0] + ',' + trans[1] +
+      ')scale(' + scale + ')')
   }
 }
 
