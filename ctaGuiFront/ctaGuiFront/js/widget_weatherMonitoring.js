@@ -473,7 +473,6 @@ let mainWeatherMonitoring = function (optIn) {
     for (let key in dataIn.data) {
       shared.server[key] = dataIn.data[key]
     }
-    console.log(dataIn.data);
     // svgPlotDisplay.updateData()
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     updateMesures()
@@ -2647,7 +2646,6 @@ let mainWeatherMonitoring = function (optIn) {
 
     function adjustPlotDistribution () {
       let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
-      console.log(d3.select(plotList[6].get('main').g.node().parentNode.parentNode.parentNode.parentNode).attr('transform'))
       for (let i = 0; i < plotList.length; i++) {
         d3.select(plotList[i].get('main').g.node().parentNode.parentNode.parentNode.parentNode)
           .transition()

@@ -264,7 +264,6 @@ let mainPlotsDash = function (optIn) {
         w: lenD.w[0] * 1,
         h: lenD.h[0] - middleSeparation - 20
       }
-      console.log(lenD.h[0]);
       box.focusPlots = {
         x: lenD.w[0] * 0.5,
         y: middleSeparation + 20,
@@ -337,7 +336,6 @@ let mainPlotsDash = function (optIn) {
       shared.server[key] = dataIn.data[key]
     }
     // shared.server.urgent.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
-    console.log(shared.server);
 
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     shared.time.range = 1000 * (3600 * parseInt(3) + 60 * parseInt(0))
@@ -1824,7 +1822,6 @@ let mainPlotsDash = function (optIn) {
       let plotlistg = svg.svg.append('g').attr('id', 'plotList')
         .attr('transform', 'translate(' + box.urgentPlots.x + ',' + box.urgentPlots.y + ')')
         .style('pointer-events', 'auto')
-      console.log(plotlistg);
 
       // middleplot = createMiddlePlot({g: plotlistg.append('g'), box: {x: (box.urgentPlots.w * 0.35 - 41), y: 20, w: box.urgentPlots.w * 0.36, h: box.urgentPlots.h - 40}})
       //
