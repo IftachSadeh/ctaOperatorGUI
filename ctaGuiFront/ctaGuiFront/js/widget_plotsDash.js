@@ -151,40 +151,41 @@ let mainPlotsDash = function (optIn) {
       lenD.w = {}
       lenD.h = {}
       lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0] * 1.33 // / sgvTag.main.whRatio
+      lenD.h[0] = lenD.w[0] / sgvTag.main.whRatio
 
-      d3.select(svgDiv)
-        .style('position', 'absolute')
+      svg.svg = d3
+        .select(svgDiv)
+        .append('svg')
+        .attr('preserveAspectRatio', 'xMidYMid meet')
+        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
         .style('top', '0px')
         .style('left', '0px')
-        // .style('max-height', ($(document).height() * 0.8) + 'px')
-      svg.svg = d3
-        .select(svgDiv)
-        .append('svg')
-        // .attr('preserveAspectRatio', 'xMidYMid meet')
-        // .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
-        .style('width', '100%')
-        .style('height', '100%')
-        .style('top', '0%')
-        .style('left', '0%')
+        .on('dblclick.zoom', null)
+
+      if (disableScrollSVG) {
+        svg.svg.on('wheel', function () {
+          d3.event.preventDefault()
+        })
+      }
 
       function adjustDim () {
         box.urgentPlots = {
           x: 0,
           y: 0,
-          w: $(svg.svg.node()).width(),
-          h: middleSeparation - 20 // $(svg.svg.node()).height() * 0.5
+          w: lenD.w[0],
+          h: middleSeparation - 20 // lenD.h[0] * 0.5
         }
         // svgUrgentPlots.adjustScrollBox()
         svgUrgentPlots.updateData()
 
         box.pinnedPlots = {
           x: 0,
-          y: $(svg.svg.node()).height() * 0.5,
-          w: $(svg.svg.node()).width() * 0.5,
-          h: $(svg.svg.node()).height() * 0.5
+          y: lenD.h[0] * 0.5,
+          w: lenD.w[0] * 0.5,
+          h: lenD.h[0] * 0.5
         }
         // svgPinnedPlots.adjustScrollBox()
         // svgPinnedPlots.adjustPlotDistribution()
@@ -195,15 +196,10 @@ let mainPlotsDash = function (optIn) {
           adjustDim()
         })
 
-      if (disableScrollSVG) {
-        svg.svg.on('wheel', function () {
-          d3.event.preventDefault()
-        })
-      }
       svg.back = svg.svg.append('g')
       svg.g = svg.svg.append('g')
 
-      middleSeparation = $(svg.svg.node()).height() * 0.365
+      middleSeparation = lenD.h[0] * 0.365
     }
     function initBackground () {
       // svg.svg.style('background', colorPalette.medium.background)
@@ -227,14 +223,14 @@ let mainPlotsDash = function (optIn) {
       gmiddle.append('rect')
         .attr('x', 0)
         .attr('y', -10)
-        .attr('width', $(svg.svg.node()).width())
+        .attr('width', lenD.w[0])
         .attr('height', 20)
         .style('opacity', 0)
         .style('cursor', 'pointer')
       gmiddle.append('line')
         .attr('x1', 0)
         .attr('y1', 0)
-        .attr('x2', $(svg.svg.node()).width())
+        .attr('x2', lenD.w[0])
         .attr('y2', 0)
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.4)
@@ -242,14 +238,14 @@ let mainPlotsDash = function (optIn) {
         .style('pointer-events', 'none')
       gmiddle.append('svg:image')
         .attr('xlink:href', '/static/icons/up-triangle.svg')
-        .attr('x', ($(svg.svg.node()).width() - 18) + 'px')
+        .attr('x', (lenD.w[0] - 18) + 'px')
         .attr('y', -14 + 'px')
         .attr('width', '12px')
         .attr('height', '12px')
         .style('pointer-events', 'none')
       gmiddle.append('svg:image')
         .attr('xlink:href', '/static/icons/down-triangle.svg')
-        .attr('x', ($(svg.svg.node()).width() - 18) + 'px')
+        .attr('x', (lenD.w[0] - 18) + 'px')
         .attr('y', 2 + 'px')
         .attr('width', '12px')
         .attr('height', '12px')
@@ -259,20 +255,21 @@ let mainPlotsDash = function (optIn) {
       box.urgentPlots = {
         x: 0,
         y: 0,
-        w: $(svg.svg.node()).width(),
+        w: lenD.w[0],
         h: middleSeparation - 20
       }
       box.pinnedPlots = {
         x: 0,
         y: middleSeparation + 20,
-        w: $(svg.svg.node()).width() * 1,
-        h: $(svg.svg.node()).height() - middleSeparation - 20
+        w: lenD.w[0] * 1,
+        h: lenD.h[0] - middleSeparation - 20
       }
+      console.log(lenD.h[0]);
       box.focusPlots = {
-        x: $(svg.svg.node()).width() * 0.5,
+        x: lenD.w[0] * 0.5,
         y: middleSeparation + 20,
-        w: $(svg.svg.node()).width() * 0.5,
-        h: $(svg.svg.node()).height() - middleSeparation - 20
+        w: lenD.w[0] * 0.5,
+        h: lenD.h[0] - middleSeparation - 20
       }
     }
     function initDefaultStyle () {
@@ -350,7 +347,9 @@ let mainPlotsDash = function (optIn) {
     // loadMesures()
 
     svgUrgentPlots.initData()
+
     svgPinnedPlots.initData()
+
     // drawfakefocus()
   }
   this.initData = initData
@@ -371,7 +370,9 @@ let mainPlotsDash = function (optIn) {
     // shared.server.urgent.urgentKey = shared.server.hierarchy.relationship[shared.server.hierarchy.key].children
     shared.time.current = new Date(shared.server.timeOfNight.date_now)
     // updateMeasures()
+
     svgPinnedPlots.updateData()
+
     // svgUrgentPlots.updateData()
 
     locker.remove('updateData')
@@ -1823,6 +1824,7 @@ let mainPlotsDash = function (optIn) {
       let plotlistg = svg.svg.append('g').attr('id', 'plotList')
         .attr('transform', 'translate(' + box.urgentPlots.x + ',' + box.urgentPlots.y + ')')
         .style('pointer-events', 'auto')
+      console.log(plotlistg);
 
       // middleplot = createMiddlePlot({g: plotlistg.append('g'), box: {x: (box.urgentPlots.w * 0.35 - 41), y: 20, w: box.urgentPlots.w * 0.36, h: box.urgentPlots.h - 40}})
       //
