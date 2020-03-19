@@ -61,16 +61,23 @@ setupView.view102 = function () {
     hasDrawer: false
   })
 
-  // sock.addWidget({
-  //   nameTag: 'plotsDash',
-  //   tableTitle: 'plots Dashboard',
-  //   hasIcon: true,
-  //   hasDrawer: false
-  // })
-
   sock.addWidget({
     nameTag: 'schedBlocks',
     tableTitle: 'Observing blocks',
+    hasIcon: true,
+    hasDrawer: false
+  })
+
+  sock.addWidget({
+    nameTag: 'plotsDash',
+    tableTitle: 'plots Dashboard',
+    hasIcon: true,
+    hasDrawer: false
+  })
+
+  sock.addWidget({
+    nameTag: 'weatherMonitoring',
+    tableTitle: 'Weather Monitoring',
     hasIcon: true,
     hasDrawer: false
   })

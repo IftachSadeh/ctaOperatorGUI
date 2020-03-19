@@ -2803,7 +2803,7 @@ let mainWeatherMonitoring = function (optIn) {
         })
 
         let data = shared.server.measures[Math.floor((Math.random() * 11))]
-        plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
+        // plot.bindData(data.id, [data.status.current].concat(data.status.previous), 'bottom', 'left')
       }
 
       adjustScrollBox()
