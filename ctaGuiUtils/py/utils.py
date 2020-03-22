@@ -40,18 +40,23 @@ has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == "dawn.ifh.de")
 # e.g., expect a module file named "AAA.py", containing a class AAA
 all_widgets = []
 allowed_widget_types = {
-    "synced": [
-        "ArrZoomer", "PlotsDash", 
-        "SubArrGrp", "telPntSky",
-        "SchedBlocks", "NightSched", 
-        "inst_pos_0", 
-        "ObsBlockControl", "EmptyExample",
-        "myTestExample", "CommentSched", 
-        "SchedBlockController", 'SchedBlockInspector',
-        "WeatherMonitoring"
+    'synced': [
+        'ArrZoomer',
+        'PlotsDash',
+        'SubArrGrp',
+        'telPntSky',
+        'SchedBlocks', 
+        'NightSched',
+        'inst_pos_0',
+        'ObsBlockControl',
+        'EmptyExample',
+        'CommentSched',
+        'SchedBlockController', 
+        'SchedBlockInspector',
+        'WeatherMonitoring',
     ],
-    "not_synced": [
-        "PanelSync"
+    'not_synced': [
+        'PanelSync',
     ]
 }
 # sync_types = [ "syncTelFocus" ]

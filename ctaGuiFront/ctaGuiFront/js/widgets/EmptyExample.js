@@ -43,8 +43,8 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let divKey = 'main'
 
   opt_in.widget_func = {
-    sock_func: sockEmptyExample,
-    main_func: mainEmptyExample
+    sock_func: sock_empty_example,
+    main_func: main_empty_example
   }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
@@ -65,13 +65,13 @@ sock.widget_table[main_script_tag] = function (opt_in) {
 // -------------------------------------------------------------------
 // additional socket events for this particular widget type
 // -------------------------------------------------------------------
-let sockEmptyExample = function (opt_in) {}
+let sock_empty_example = function (opt_in) {}
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 // here we go with the content of this particular widget
 // -------------------------------------------------------------------
-let mainEmptyExample = function (opt_in) {
+let main_empty_example = function (opt_in) {
   // let my_unique_id = unique()
   let widget_type = opt_in.widget_type
   let widget_source = opt_in.widget_source
@@ -133,7 +133,7 @@ let mainEmptyExample = function (opt_in) {
     lenD.w[0] = 1000
     lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
 
-    let tagEmptyExample = 'empty_example'
+    let tag_empty_example = 'empty_example'
 
     // -------------------------------------------------------------------
     //
@@ -327,7 +327,7 @@ let mainEmptyExample = function (opt_in) {
 
       run_when_ready({
         pass: function () {
-          return locker.is_free(tagEmptyExample + 'update_data')
+          return locker.is_free(tag_empty_example + 'update_data')
         },
         execute: function () {
           locker.remove('inInit')
@@ -356,14 +356,14 @@ let mainEmptyExample = function (opt_in) {
     // some random stuff for illustration
     // -------------------------------------------------------------------
     function update_dataOnce (data_in) {
-      if (!locker.are_free([tagEmptyExample + 'update_data'])) {
+      if (!locker.are_free([tag_empty_example + 'update_data'])) {
         // console.log('will delay update_data');
         setTimeout(function () {
           update_data(data_in)
         }, 10)
         return
       }
-      locker.add(tagEmptyExample + 'update_data')
+      locker.add(tag_empty_example + 'update_data')
 
       // -------------------------------------------------------------------
       // send some random message to the server ...
@@ -438,7 +438,7 @@ let mainEmptyExample = function (opt_in) {
         .remove()
       // -------------------------------------------------------------------
 
-      locker.remove(tagEmptyExample + 'update_data')
+      locker.remove(tag_empty_example + 'update_data')
     }
     this.update_data = update_data
   }

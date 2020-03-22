@@ -7,7 +7,7 @@
 // ------------------------------------------------------------------
 // main_script_tag used locally (will be overriden by other scripts...)
 // must be compatible with the name of this js file, according to:
-//    "/js/widget_"+main_script_tag+".js"
+//    "/js/widgets/"+main_script_tag+".js"
 var main_script_tag = 'ArrZoomer'
 // ------------------------------------------------------------------
 

@@ -92,24 +92,22 @@ For additional information, see:
 
 ## Adding a new widget in a new view
 
-The following details the minimal procedure to add a new widget, `myTestExample`, bootstrapped from the `emptyExample` widget. In this example, the new widget will be added to a new view, called `myNewView`. In general, any widget may be added to an existing view (i.e., skip steps 3-4 below, to avoid creating a dedicated view).
+The following details the minimal procedure to add a new widget, `TestExample`, bootstrapped from the `EmptyExample` widget. In this example, the new widget will be added to a new view, called `TestView`. In general, any widget may be added to an existing view (i.e., skip steps 3-4 below, to avoid creating a dedicated view).
 
-- Create a copy of the `emptyExample` JavaScript/python files with the new widget name. Notice that we need to replace the three listed permutations of capitalisation in different places...
+- Create a copy of the `EmptyExample` JavaScript/python files with the new widget name. Notice that we need to replace the the listed permutations of capitalisation in different places:
 ```bash
-  tag0="myTestExample"
-  tag1="mytestexample"
-  tag2="MyTestExample"
 
   cd ctaGuiFront/ctaGuiFront
-  sed "s/emptyExample/${tag0}/g" js/widget_emptyExample.js | sed "s/emptyexample/${tag1}/g" | sed "s/EmptyExample/${tag2}/g" > js/widget_${tag0}.js
-  sed "s/emptyExample/${tag0}/g" py/widget_emptyExample.py | sed "s/emptyexample/${tag1}/g" | sed "s/EmptyExample/${tag2}/g" > py/widget_${tag0}.py
+  sed "s/EmptyExample/TestExample/g" js/widgets/EmptyExample.js | sed "s/empty_example/test_example/g" > js/widgets/TestExample.js
+  sed "s/EmptyExample/TestExample/g" py/widgets/EmptyExample.py | sed "s/empty_example/test_example/g" > py/widgets/TestExample.py
   ```
+  It is imperative to follow keep the naming scheme consistent (including capitalisation), and to make sure that the `main_script_tag` variable in `js/widgets/TestExample.js` is set to the exact widget name.
 
 - Make the following modifications:
-  1. In `ctaGuiUtils/py/utils.py`: add the new widget (`myTestExample`) to `allowedWidgetTypeV`. This `dict` is used in `ctaGuiFront/ctaGuiFront/py/mySock.py` to make sure that a dynamically added widget-class (i.e., `ctaGuiFront/ctaGuiFront/py/widget_myTestExample.py`) is valid.
-  2. In `ctaGuiFront/ctaGuiFront/js/utils_setupView.js`: add the new view and the new widget to `setupView`. Here the widgets which are loaded in a given view are defined. The new widget may also be added to an existing view.
-  3. In `ctaGuiFront/ctaGuiFront/js/utils_baseApp.js`: add the new view (`myNewView`) to the `addSiteNavMenu` function. (This will add an entry to the new view in the main navigation menu in the index page and in side-menu.)
-  4. In `ctaGuiFront/ctaGuiFront/__init__.py`: add the new view (`myNewView`) to `utils.allWidgets`. This lets the server know that the new URL (`http://localhost:8090/cta/myNewView`) is valid.
+  1. In `ctaGuiUtils/py/utils.py`: add the new widget (`TestExample`) to `allowed_widget_types`. This `dict` is used in `ctaGuiFront/ctaGuiFront/py/utils/SockManager.py` to make sure that a dynamically added widget-class (i.e., `ctaGuiFront/ctaGuiFront/py/widgets/TestExample.py`) is valid.
+  2. In `ctaGuiFront/ctaGuiFront/js/utils/setup_view.js`: add the new view and the new widget to `setup_view`. Here the widgets which are loaded in a given view are defined. The new widget may also be added to an existing view.
+  3. In `ctaGuiFront/ctaGuiFront/js/utils/BaseApp.js`: add the new view (`myNewView`) to the `add_site_nav_menu` function. (This will add an entry to the new view in the main navigation menu in the index page and in side-menu.)
+  4. In `ctaGuiFront/ctaGuiFront/__init__.py`: add the new view (`myNewView`) to `utils.all_widgets`. This lets the server know that the new URL (`http://localhost:8090/cta/myNewView`) is valid.
 
 
 ## Comments

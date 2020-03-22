@@ -44,7 +44,7 @@ function BaseApp () {
       let siteNavMenu_div = main_div.appendChild(document.createElement('div'))
       siteNavMenu_div.setAttribute('style', 'width: 60%')
 
-      addSiteNavMenu(siteNavMenu_div)
+      add_site_nav_menu(siteNavMenu_div)
     }
 
     // -------------------------------------------------------------------
@@ -255,7 +255,7 @@ function BaseApp () {
       let side_menuFrontInnerStyle = 'width: 95%' // ' padding-left: 2%; '
       side_menuFrontInner_div.setAttribute('style', side_menuFrontInnerStyle)
 
-      addSiteNavMenu(side_menuFrontInner_div)
+      add_site_nav_menu(side_menuFrontInner_div)
     }
 
     if (is_socket_view) {
@@ -303,7 +303,7 @@ function append_ele_after (new_ele, target_ele) {
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-function addSiteNavMenu (parent_ele) {
+function add_site_nav_menu (parent_ele) {
   let side_menu_btn_grb_div = parent_ele.appendChild(document.createElement('div'))
   // side_menu_btn_grb_div.innerHTML = 'lllllllllllllllllllllllllllllll'
   side_menu_btn_grb_div.classList.add('site-nav-btn-group')
