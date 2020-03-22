@@ -1,8 +1,8 @@
 # ------------------------------------------------------------------
 # imports
 # ------------------------------------------------------------------
-from utils import myLog
-from utils import telIds, redisPort
+from utils import my_log
+from utils import tel_ids, redis_port
 import threading
 import time
 from collections import Counter
@@ -17,7 +17,7 @@ from ACS import CBDescIn
 from Acspy.Clients.SimpleClient import PySimpleClient
 from Acspy.Common.Callbacks import CBvoid
 from Acspy.Common.Callbacks import CBdouble
-from telescopeStruct import props, GLOBAL_FREQ, QUEUE_FREQ
+from TelescopeStruct import props, GLOBAL_FREQ, QUEUE_FREQ
 
 
 desc = CBDescIn(5L, 0L, 0L)
@@ -46,7 +46,7 @@ class MonitorCB(ACS__POA.CBdouble):
     """
 
     def __init__(self, key):
-        self.log = myLog(title=__name__)
+        self.log = my_log(title=__name__)
         self.key = key
         self.r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
@@ -54,7 +54,7 @@ class MonitorCB(ACS__POA.CBdouble):
         """
         this method is called when monitoring ends and it writes to redis
         """
-        # sets the values into redis; ttl 10
+        # sets the values into redis; title 10
         self.r.setex(self.key, 10, json.dumps(
             {'status': 'done', 'value': completion}))
         self.log.info(
@@ -108,19 +108,19 @@ dict_of_components[TEST_JAVA_T2.name] = TEST_JAVA_T2
 
 
 # ------------------------------------------------------------------
-# propertyMonitor classes
+# PropertyMonitor classes
 # ------------------------------------------------------------------
 class PropertyMonitorQueue:
-    def __init__(self, nsType):
+    def __init__(self, site_type):
 
-        self.log = myLog(title=__name__)
-        self.log.info([['y', " - PropertyMonitor Queue - "], ['g', nsType]])
+        self.log = my_log(title=__name__)
+        self.log.info([['y', " - PropertyMonitor Queue - "], ['g', site_type]])
 
-        self.nsType = nsType
-        self.telIds = telIds[nsType]
+        self.site_type = site_type
+        self.tel_ids = tel_ids[site_type]
 
         self.r = redis.StrictRedis(
-            host='localhost', port=redisPort[nsType], db=0)
+            host='localhost', port=redis_port[site_type], db=0)
 
         # to be on a safe side, clean the counter
         self.r.delete(DICT_SET_NAME)
@@ -212,16 +212,16 @@ class PropertyMonitorQueue:
 
 
 class PropertyMonitorGlobal:
-    def __init__(self, nsType):
+    def __init__(self, site_type):
 
-        self.log = myLog(title=__name__)
-        self.log.info([['y', " - PropertyMonitor Global - "], ['g', nsType]])
+        self.log = my_log(title=__name__)
+        self.log.info([['y', " - PropertyMonitor Global - "], ['g', site_type]])
 
-        self.nsType = nsType
-        self.telIds = telIds[nsType]
+        self.site_type = site_type
+        self.tel_ids = tel_ids[site_type]
 
         self.r = redis.StrictRedis(
-            host='localhost', port=redisPort[nsType], db=0)
+            host='localhost', port=redis_port[site_type], db=0)
         t = threading.Thread(target=self.tel_global_loop)
         # set the thread to daemon for quicker termination
         t.daemon = True
@@ -269,15 +269,15 @@ class PropertyMonitorGlobal:
 
 
 class PropertyMonitorLocal:
-    def __init__(self, nsType):
+    def __init__(self, site_type):
 
-        self.log = myLog(title=__name__)
-        self.log.info([['y', " - PropertyMonitor Local - "], ['g', nsType]])
+        self.log = my_log(title=__name__)
+        self.log.info([['y', " - PropertyMonitor Local - "], ['g', site_type]])
 
-        self.nsType = nsType
-        self.telIds = telIds[nsType]
+        self.site_type = site_type
+        self.tel_ids = tel_ids[site_type]
         self.r = redis.StrictRedis(
-            host='localhost', port=redisPort[nsType], db=0)
+            host='localhost', port=redis_port[site_type], db=0)
 
         t = threading.Thread(target=self.tel_local_loop)
         # set the thread to daemon for quicker termination

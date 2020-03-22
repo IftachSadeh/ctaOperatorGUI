@@ -1,4 +1,4 @@
-# ctaOperatorGUI v0.0.0
+# ctaOperatorGUI v0.2.0
 
 ## Overview
 

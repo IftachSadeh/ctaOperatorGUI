@@ -1,5 +1,5 @@
 # import ctaGuiUtils
-# from ctaGuiUtils.py.utils import myLog
+# from ctaGuiUtils.py.utils import my_log
 
 
 # make sure we have the local acs modules of the gui
@@ -9,75 +9,75 @@ if not baseGuiAcsDir in sys.path:
   sys.path.append(baseGuiAcsDir)
 
 # my specialized logging interface - important to init the logger vefore importing any ACS ....
-from ctaGuiUtils.py.utils import myLog
-log = myLog(title=__name__)
+from ctaGuiUtils.py.utils import my_log
+log = my_log(title=__name__)
 
-# import the utils module to allow access to utils.appPrefix
+# import the utils module to allow access to utils.app_prefix
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.arrayData import arrayData
+from ctaGuiUtils.py.InstData import InstData
 
-from ctaGuiBack.py.mockTarget import mockTarget
-from ctaGuiBack.py.telHealth import telHealth
-from ctaGuiBack.py.telPos import telPos
-from ctaGuiBack.py.obsBlocks import obsBlocks, obsBlocks_noACS
-from ctaGuiBack.py.pubSubTest import pubSubTest
-# from ctaGuiBack.py.propertyMonitor import PropertyMonitorQueue, PropertyMonitorGlobal, PropertyMonitorLocal
-# from ctaGuiBack.py.simComp import SimComp
+from ctaGuiBack.py.MockTarget import MockTarget
+from ctaGuiBack.py.InstHealth import InstHealth
+from ctaGuiBack.py.InstPos import InstPos
+from ctaGuiBack.py.ObsBlocks import ObsBlocks, ObsBlocksNoACS
+from ctaGuiBack.py.PubsubTest import PubsubTest
+# from ctaGuiBack.py.PropertyMonitor import PropertyMonitorQueue, PropertyMonitorGlobal, PropertyMonitorLocal
+# from ctaGuiBack.py.SimComponent import SimComp
 
-# if utils.hasACS:
-#   from ctaGuiBack.py.tmpTest import tmpTest
+# if utils.has_acs:
+#   from ctaGuiBack.py.TmpTest import TmpTest
 
-# from ctaGuiUtils.py.utils import redisPort
+# from ctaGuiUtils.py.utils import redis_port
 
 def main(global_config, **settings):
   log.info([['wg'," - Starting redis-filler - ctaGuiBack ..."]])
-  log.info([['p'," - hasACS = "],[('g' if utils.hasACS else 'r'),utils.hasACS]])
+  log.info([['p'," - has_acs = "],[('g' if utils.has_acs else 'r'),utils.has_acs]])
 
   # ------------------------------------------------------------------
   # run it
   # ------------------------------------------------------------------
-  utils.nsType = "N"
-  # utils.nsType = "S"
+  utils.site_type = "N"
+  # utils.site_type = "S"
 
-  myTimeOfNight = utils.timeOfNight(nsType=utils.nsType)
-  # myTimeOfNight = utils.timeOfNight(nsType=utils.nsType, timeScale = 0.001)
+  my_time_of_night = utils.time_of_night(site_type=utils.site_type)
+  # my_time_of_night = utils.time_of_night(site_type=utils.site_type, timescale = 0.001)
 
   # set the list of telescopes for this particular site
-  myArrayData = arrayData(nsType=utils.nsType)
-  # utils.telIds = myArrayData.telIds
+  inst_data = InstData(site_type=utils.site_type)
+  # utils.tel_ids = inst_data.tel_ids
 
   # ------------------------------------------------------------------
   # ------------------------------------------------------------------
   # for debugging....
-  flushRedisOnStart = 0
-  if flushRedisOnStart:
-    from ctaGuiBack.py.utils_redis import redisManager
-    redis_ = redisManager(name='__init__')
+  flush_redis_on_start = 0
+  if flush_redis_on_start:
+    from ctaGuiBack.py.RedisManager import RedisManager
+    redis_ = RedisManager(name='__init__')
     redis_.redis.flushall()
   # ------------------------------------------------------------------
   # ------------------------------------------------------------------
 
   # ------------------------------------------------------------------
   # ------------------------------------------------------------------
-  # if utils.hasACS:
-  #   tmpTest(nsType=nsType)
+  # if utils.has_acs:
+  #   TmpTest(site_type=site_type)
 
-  telHealth(nsType=utils.nsType, timeOfNight=myTimeOfNight, arrayData=myArrayData)
-  telPos(nsType=utils.nsType, arrayData=myArrayData)
-  mockTarget(nsType=utils.nsType)
+  InstHealth(site_type=utils.site_type, time_of_night=my_time_of_night, InstData=inst_data)
+  InstPos(site_type=utils.site_type, InstData=inst_data)
+  MockTarget(site_type=utils.site_type)
 
-  if utils.hasACS:
-    obsBlocks(nsType=utils.nsType, timeOfNight=myTimeOfNight, arrayData=myArrayData)
+  if utils.has_acs:
+    ObsBlocks(site_type=utils.site_type, time_of_night=my_time_of_night, InstData=inst_data)
   else:
-    obsBlocks_noACS(nsType=utils.nsType, timeOfNight=myTimeOfNight, arrayData=myArrayData)
+    ObsBlocksNoACS(site_type=utils.site_type, time_of_night=my_time_of_night, InstData=inst_data)
 
 
 
 
-  # # pubSubTest(nsType=utils.nsType)
-  # # SimComp(nsType=utils.nsType)
-  # # PropertyMonitorQueue(nsType=utils.nsType)
-  # # PropertyMonitorGlobal(nsType=utils.nsType)
-  # # PropertyMonitorLocal(nsType=utils.nsType)
+  # # PubsubTest(site_type=utils.site_type)
+  # # SimComp(site_type=utils.site_type)
+  # # PropertyMonitorQueue(site_type=utils.site_type)
+  # # PropertyMonitorGlobal(site_type=utils.site_type)
+  # # PropertyMonitorLocal(site_type=utils.site_type)
 
   return

@@ -13,44 +13,44 @@ from Acspy.Clients.SimpleClient import PySimpleClient
 import sb
 import jsonAcs
 
-class mockSched():
-  # -----------------------------------------------------------------------------------------------------------
+class MockSched():
+  # ------------------------------------------------------------------
   # 
-  # -----------------------------------------------------------------------------------------------------------
-  def __init__(self, nsType):
-    self.log = myLog(title=__name__)
-    self.log.info([['y'," - mockSched - "],['g',nsType]])
+  # ------------------------------------------------------------------
+  def __init__(self, site_type):
+    self.log = my_log(title=__name__)
+    self.log.info([['y'," - MockSched - "],['g',site_type]])
 
-    self.nsType = nsType
-    self.telIds = telIds[nsType]
+    self.site_type = site_type
+    self.tel_ids = tel_ids[site_type]
 
     self.debug =  False
     self.expire = 86400 # one day
 
-    self.cycleBlocks = []
+    self.cycle_blocks = []
     self.acs_blocks = dict()
-    self.acs_blocks['schedBlock'] = dict()
-    self.acs_blocks['metaData'] = dict()
+    self.acs_blocks['sched_block'] = dict()
+    self.acs_blocks['metadata'] = dict()
 
-    self.activeSchedBlock = 0
+    self.active_sched_block = 0
 
     self.client = PySimpleClient()
     self.supervisor = self.client.getComponent("ArraySupervisor")
     # print 'got ArraySupervisor ............'
     
-    self.nSchedBlock = [5, 15]
-    self.maxNobsBlock = 7 if self.nsType == "N" else 32
-    self.maxNobsBlock = min(self.maxNobsBlock, len(self.telIds))
-    # self.maxNobsBlock = len(self.telIds)
-    self.loopSleep = 4
+    self.n_sched_block = [5, 15]
+    self.max_n_obs_block = 7 if self.site_type == "N" else 32
+    self.max_n_obs_block = min(self.max_n_obs_block, len(self.tel_ids))
+    # self.max_n_obs_block = len(self.tel_ids)
+    self.loop_sleep = 4
 
-    self.azMinMax = [0, 360]
-    self.zenMinMaxTel = [0, 70]
-    self.zenMinMaxPnt = [0, 20]
+    self.az_min_max = [0, 360]
+    self.zen_min_max_tel = [0, 70]
+    self.zen_min_max_pnt = [0, 20]
 
-    rndSeed = getTime()
-    rndSeed = 10987268332
-    self.rndGen = Random(rndSeed)
+    rnd_seed = getTime()
+    rnd_seed = 10987268332
+    self.rnd_gen = Random(rnd_seed)
 
 
     
@@ -58,7 +58,7 @@ class mockSched():
     active = self.supervisor.listSchedulingBlocks()
     print '-----',active
 
-    self.cancelSchedBlocks(active[0])
+    self.cancel_sched_blocks(active[0])
     print 'sleep...'
     sleep(10)
     print 'check...'
@@ -87,248 +87,248 @@ class mockSched():
 
     return
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # 
-  # -----------------------------------------------------------------------------------------------------------
-  def cancelSchedBlocks(self, schedBlkId):
+  # ------------------------------------------------------------------
+  def cancel_sched_blocks(self, sched_blk_id):
     class MyVoid(ACS__POA.CBvoid):
       def working (self, completion, desc):
-        # print "bbbbbbbbbb Callback working",schedBlkId
+        # print "bbbbbbbbbb Callback working",sched_blk_id
         return
 
       def done(self, completion, desc):
-        # print "bbbbbbbbbbbbb Callback done",schedBlkId
+        # print "bbbbbbbbbbbbb Callback done",sched_blk_id
         return
 
     desc = CBDescIn(0L, 0L, 0L)
     cb = MyVoid() 
 
-    self.log.info([['r'," ---- mockSched.cancelSchedBlocks() ... "],['g',schedBlkId]])
-    self.supervisor.cancelSchedulingBlock(schedBlkId, self.client.activateOffShoot(cb), desc)
-    self.log.info([['r'," ++++ mockSched.cancelSchedBlocks() ... "],['g',schedBlkId]])
+    self.log.info([['r'," ---- MockSched.cancel_sched_blocks() ... "],['g',sched_blk_id]])
+    self.supervisor.cancelSchedulingBlock(sched_blk_id, self.client.activateOffShoot(cb), desc)
+    self.log.info([['r'," ++++ MockSched.cancel_sched_blocks() ... "],['g',sched_blk_id]])
  
     return
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # 
-  # -----------------------------------------------------------------------------------------------------------
-  def cancelZombieSchedBlocks(self, schedBlkIds=None):
-    if schedBlkIds is None:
+  # ------------------------------------------------------------------
+  def cancel_zombie_sched_blocks(self, sched_block_ids=None):
+    if sched_block_ids is None:
       try:
         active = self.supervisor.listSchedulingBlocks()
       except Exception as e:
-        self.log.debug([['b',"- Exception - mockSched.listSchedulingBlocks: "],['r',e]])
+        self.log.debug([['b',"- Exception - MockSched.listSchedulingBlocks: "],['r',e]])
         active = []
-      schedBlkIds = [ x for x in active if x not in self.acs_blocks['schedBlock'] ]
+      sched_block_ids = [ x for x in active if x not in self.acs_blocks['sched_block'] ]
 
 
-    schedBlkIds = active
+    sched_block_ids = active
 
-    if len(schedBlkIds) == 0:
+    if len(sched_block_ids) == 0:
       return
 
-    self.log.info([['r'," - mockSched.cancelZombieSchedBlocks() ..."],['y',schedBlkIds]])
-    for schedBlkIdNow in schedBlkIds:
-      self.cancelSchedBlocks(schedBlkIdNow)
-      # t = threading.Thread(target=self.cancelSchedBlocks,args=(schedBlkIdNow,))
+    self.log.info([['r'," - MockSched.cancel_zombie_sched_blocks() ..."],['y',sched_block_ids]])
+    for sched_block_id_now in sched_block_ids:
+      self.cancel_sched_blocks(sched_block_id_now)
+      # t = threading.Thread(target=self.cancel_sched_blocks,args=(sched_block_id_now,))
       # t.start()
       # t.join()
       # self.threads.append(t)
 
     return
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # 
-  # -----------------------------------------------------------------------------------------------------------
-  def initBlockCycle(self):
-    self.log.info([['p'," - mockSched.initBlockCycle() ..."]])
+  # ------------------------------------------------------------------
+  def init_block_cycle(self):
+    self.log.info([['p'," - MockSched.init_block_cycle() ..."]])
 
-    scriptName = "guiACS_schedBlocks_script0"
+    script_name = "guiACS_sched_blocks_script0"
     self.nCycles = [1,5]
-    self.nSchedBlock = 40
-    self.maxNobsBlock = 1
-    self.obsBlockDuration = 20
+    self.n_sched_block = 40
+    self.max_n_obs_block = 1
+    self.obs_block_seconds = 20
 
-    # cancel schedBlocks which should have expired
-    # self.cancelZombieSchedBlocks()
+    # cancel sched_blocks which should have expired
+    # self.cancel_zombie_sched_blocks()
 
     # init local bookkeeping objects
-    self.cycleBlocks = []
+    self.cycle_blocks = []
     self.acs_blocks = dict()
-    self.acs_blocks['schedBlock'] = dict()
-    self.acs_blocks['metaData'] = dict()
+    self.acs_blocks['sched_block'] = dict()
+    self.acs_blocks['metadata'] = dict()
 
-    nCycles = self.rndGen.randint(self.nCycles[0], self.nCycles[1])
-    for nCycleNow in range(nCycles):
-      baseName = str(getTime())+"_"
+    nCycles = self.rnd_gen.randint(self.nCycles[0], self.nCycles[1])
+    for n_cycle_now in range(nCycles):
+      base_name = str(getTime())+"_"
 
-      telIds = copy.deepcopy(self.telIds)
-      nTels = len(telIds)
-      # nSchedBlks = self.rndGen.randint(1, min(nTels, self.nSchedBlock))
-      nSchedBlks = self.nSchedBlock
+      tel_ids = copy.deepcopy(self.tel_ids)
+      n_tels = len(tel_ids)
+      # n_sched_blocks = self.rnd_gen.randint(1, min(n_tels, self.n_sched_block))
+      n_sched_blocks = self.n_sched_block
 
       # generate random target/pointing ids
-      trgPos = dict()
+      target_pos = dict()
       blockTrgs = dict()
       blockTrgPnt = dict()
-      nTrgs = self.rndGen.randint(1, nSchedBlks)
-      for nTrgTry in range(nSchedBlks):
-        nTrgNow = self.rndGen.randint(0, nTrgs-1)
-        if nTrgNow not in blockTrgs:
-          blockTrgs[nTrgNow] = [ nTrgTry ]
+      n_trgs = self.rnd_gen.randint(1, n_sched_blocks)
+      for n_trg_try in range(n_sched_blocks):
+        n_trg_now = self.rnd_gen.randint(0, n_trgs-1)
+        if n_trg_now not in blockTrgs:
+          blockTrgs[n_trg_now] = [ n_trg_try ]
         else:
-          blockTrgs[nTrgNow].append(nTrgTry)
+          blockTrgs[n_trg_now].append(n_trg_try)
         
-        blockTrgPnt[nTrgTry] = { "nTrg":nTrgNow, "nPnt":len(blockTrgs[nTrgNow])-1 }
+        blockTrgPnt[n_trg_try] = { "n_trg":n_trg_now, "n_pnt":len(blockTrgs[n_trg_now])-1 }
 
-      cycleBlocks = []
-      for nSchedNow in range(nSchedBlks):
-        schedBlockId = "schBlock_"+baseName+str(nSchedNow)
+      cycle_blocks = []
+      for n_sched_block_now in range(n_sched_blocks):
+        sched_block_id = "schBlock_"+base_name+str(n_sched_block_now)
 
-        nTelNow = self.rndGen.randint(1, max(1, len(telIds) - nSchedBlks))
+        n_tel_now = self.rnd_gen.randint(1, max(1, len(tel_ids) - n_sched_blocks))
 
-        # schedTelIds = random.sample(telIds, nTelNow)
-        # telIds = [x for x in telIds if x not in schedTelIds]
+        # sched_tel_ids = random.sample(tel_ids, n_tel_now)
+        # tel_ids = [x for x in tel_ids if x not in sched_tel_ids]
 
         subArr = []
-        # for schedTelIdNow in schedTelIds:        
-        #   telType = sb.SST if schedTelIdNow[0] == 'S' else sb.MST if schedTelIdNow[0] == 'M' else sb.LST
-        #   subArr += [ sb.Telescope(schedTelIdNow, telType) ]
+        # for sched_tel_id_now in sched_tel_ids:        
+        #   tel_type = sb.SST if sched_tel_id_now[0] == 'S' else sb.MST if sched_tel_id_now[0] == 'M' else sb.LST
+        #   subArr += [ sb.Telescope(sched_tel_id_now, tel_type) ]
 
-        schedConf = sb.Configuration(
+        sched_conf = sb.Configuration(
           sb.InstrumentConfiguration(
-            sb.PointingMode(2,sb.Divergent(2)),
+            sb.PointingMode(2,sb._divergent(2)),
             sb.Subarray([], subArr)
           ),
           "camera",
           "rta"
         )
 
-        nObsBlocks = self.rndGen.randint(1, self.maxNobsBlock)
+        n_obs_blocks = self.rnd_gen.randint(1, self.max_n_obs_block)
         
-        nTrg = blockTrgPnt[nSchedNow]["nTrg"]
-        nPnt = blockTrgPnt[nSchedNow]["nPnt"]
+        n_trg = blockTrgPnt[n_sched_block_now]["n_trg"]
+        n_pnt = blockTrgPnt[n_sched_block_now]["n_pnt"]
 
-        if not nTrg in trgPos:
-          trgPos[nTrg] = [
-            (self.rndGen.random() * (self.azMinMax[1] - self.azMinMax[0])) + self.azMinMax[0] ,
-            (self.rndGen.random() * (self.zenMinMaxTel[1] - self.zenMinMaxTel[0])) + self.zenMinMaxTel[0]
+        if not n_trg in target_pos:
+          target_pos[n_trg] = [
+            (self.rnd_gen.random() * (self.az_min_max[1] - self.az_min_max[0])) + self.az_min_max[0] ,
+            (self.rnd_gen.random() * (self.zen_min_max_tel[1] - self.zen_min_max_tel[0])) + self.zen_min_max_tel[0]
           ]
 
-        targetId = "trg_"+str(nTrg)
+        target_id = "target_"+str(n_trg)
 
-        obsBlockV = []
-        for nBlockNow in range(nObsBlocks):
-          obsBlockId = "obsBlock_"+str(getTime())
+        obs_blocks = []
+        for n_blockNow in range(n_obs_blocks):
+          obs_block_id = "obs_block_"+str(getTime())
 
-          pntPos = copy.deepcopy(trgPos[nTrg])
-          pntPos[0] += (self.rndGen.random() - 0.5) * 10
-          pntPos[1] += (self.rndGen.random() - 0.5) * 10
+          point_pos = copy.deepcopy(target_pos[n_trg])
+          point_pos[0] += (self.rnd_gen.random() - 0.5) * 10
+          point_pos[1] += (self.rnd_gen.random() - 0.5) * 10
 
-          if pntPos[0] > self.azMinMax[1]:
-            pntPos[0] -= 360
-          elif pntPos[0] < self.azMinMax[0]:
-            pntPos[0] += 360
+          if point_pos[0] > self.az_min_max[1]:
+            point_pos[0] -= 360
+          elif point_pos[0] < self.az_min_max[0]:
+            point_pos[0] += 360
 
-          obsCords = sb.Coordinates(2,sb.HorizontalCoordinates(trgPos[nTrg][1],trgPos[nTrg][0]))
-          # obsCords = sb.Coordinates(3,sb.GalacticCoordinates(trgPos[nTrg][1],trgPos[nTrg][0]))
-          obsMode = sb.ObservingMode(sb.Slewing(1), sb.ObservingType(2,sb.GridSurvey(1,1,1)))
-          obsSrc = sb.Source(targetId, sb.placeholder, sb.High, sb.RegionOfInterest(100), obsMode, obsCords)
-          obsCond = sb.ObservingConditions(sb.DateTime(1), self.obsBlockDuration, 1, sb.Quality(1, 1, 1), sb.Weather(1, 1, 1, 1))
-          obsBlock = sb.ObservationBlock(obsBlockId, obsSrc, obsCond, scriptName, 0)
+          obs_coords = sb.Coordinates(2,sb.HorizontalCoordinates(target_pos[n_trg][1],target_pos[n_trg][0]))
+          # obs_coords = sb.Coordinates(3,sb.GalacticCoordinates(target_pos[n_trg][1],target_pos[n_trg][0]))
+          obs_mode = sb.ObservingMode(sb.Slewing(1), sb.ObservingType(2,sb.GridSurvey(1,1,1)))
+          obs_source = sb.Source(target_id, sb.placeholder, sb.High, sb.RegionOfInterest(100), obs_mode, obs_coords)
+          obs_conds = sb.ObservingConditions(sb.DateTime(1), self.obs_block_seconds, 1, sb.Quality(1, 1, 1), sb.Weather(1, 1, 1, 1))
+          obs_block = sb.ObservationBlock(obs_block_id, obs_source, obs_conds, script_name, 0)
 
-          obsBlockV += [ obsBlock ]
+          obs_blocks += [ obs_block ]
 
           # temporary way to store meta-data
           # should be replaced by global coordinate access function
-          self.acs_blocks['metaData'][obsBlockId+"_"+"pntPos"] = pntPos
+          self.acs_blocks['metadata'][obs_block_id+"_"+"point_pos"] = point_pos
 
-        schedBlk = sb.SchedulingBlock(schedBlockId, sb.Proposal("proposalId"), schedConf, obsBlockV)
+        sched_block = sb.SchedulingBlock(sched_block_id, sb.Proposal("proposalId"), sched_conf, obs_blocks)
 
-        cycleBlocks.append(schedBlk)
+        cycle_blocks.append(sched_block)
 
-        self.acs_blocks['schedBlock'][schedBlockId] = schedBlk
+        self.acs_blocks['sched_block'][sched_block_id] = sched_block
 
-      self.cycleBlocks.append(cycleBlocks)
+      self.cycle_blocks.append(cycle_blocks)
 
 
     return
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # move one from wait to run
-  # -----------------------------------------------------------------------------------------------------------
-  def submitBlockCycle(self):
-    self.log.info([['g'," - starting mockSched.submitBlockCycle ..."]])
+  # ------------------------------------------------------------------
+  def submit_block_cycle(self):
+    self.log.info([['g'," - starting MockSched.submit_block_cycle ..."]])
 
-    if len(self.cycleBlocks) >= self.activeSchedBlock:
-      self.activeSchedBlock = 0
-      self.initBlockCycle()
+    if len(self.cycle_blocks) >= self.active_sched_block:
+      self.active_sched_block = 0
+      self.init_block_cycle()
 
-    # grab the current schedBlock from the queue
-    blockCycle = self.cycleBlocks[self.activeSchedBlock]
-    self.activeSchedBlock += 1
+    # grab the current sched_block from the queue
+    blockCycle = self.cycle_blocks[self.active_sched_block]
+    self.active_sched_block += 1
 
     # submit the scheduling blocks
     self.log.info([['g'," - submitting ..."]])
-    for schedBlk in blockCycle:
+    for sched_block in blockCycle:
       try:
-        self.log.info([['y'," --- try putSchedulingBlock ",schedBlk.id]])
-        complt = self.supervisor.putSchedulingBlock(schedBlk)
+        self.log.info([['y'," --- try putSchedulingBlock ",sched_block.id]])
+        complt = self.supervisor.putSchedulingBlock(sched_block)
       except Exception as e:
-        self.log.debug([['b',"- Exception - mockSched.putSchedulingBlock: "],['r',e]])
+        self.log.debug([['b',"- Exception - MockSched.putSchedulingBlock: "],['r',e]])
 
     self.log.info([['y'," ----- try putSchedulingBlock done !"]])
     return
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # move one from wait to run
-  # -----------------------------------------------------------------------------------------------------------
-  def checkSchedBlocks(self):
-    self.log.debug([['b'," - starting mockSched.checkSchedBlocks ..."]])
+  # ------------------------------------------------------------------
+  def check_sched_blocks(self):
+    self.log.debug([['b'," - starting MockSched.check_sched_blocks ..."]])
 
     try:
       active = self.supervisor.listSchedulingBlocks()
     except Exception as e:
-      self.log.debug([['b',"- Exception - mockSched.listSchedulingBlocks: "],['r',e]])
+      self.log.debug([['b',"- Exception - MockSched.listSchedulingBlocks: "],['r',e]])
       active = []
 
-    active = [ x for x in active if x in self.acs_blocks['schedBlock'] ]
+    active = [ x for x in active if x in self.acs_blocks['sched_block'] ]
     
     self.log.debug([['b'," --- got ",len(active)," active blocks"]])
     
-    # for sbName in active:
-    #   status = self.supervisor.getSchedulingBlockStatus(sbName)
-    #   opstatus = self.supervisor.getSbOperationStatus(sbName)
+    # for block_name in active:
+    #   status = self.supervisor.getSchedulingBlockStatus(block_name)
+    #   opstatus = self.supervisor.getSbOperationStatus(block_name)
     #   self.log.info([['y'," - active_scheduling_blocks - "],['g',active,'-> '],['y',status,' ']])
       
     #   for nob in range(len(opstatus.ob_statuses)):
     #     phases = opstatus.ob_statuses[nob].phases
     #     # for p in phases:
-    #     #   self.log.info([['y'," -- phases - ",sbName,' ',opstatus.ob_statuses[nob].id,' ',opstatus.ob_statuses[nob].status,' '],['g',p.heartbeat_counter,' ',p.name,' ',p.status,' ',p.progress_message]])
+    #     #   self.log.info([['y'," -- phases - ",block_name,' ',opstatus.ob_statuses[nob].id,' ',opstatus.ob_statuses[nob].status,' '],['g',p.heartbeat_counter,' ',p.name,' ',p.status,' ',p.progress_message]])
     #     #   break
 
     return len(active)
 
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   def loop(self, run_event):
-    self.log.info([['g'," - starting mockSched.loop ..."]])
+    self.log.info([['g'," - starting MockSched.loop ..."]])
     
-    self.submitBlockCycle()
+    self.submit_block_cycle()
 
     while run_event.is_set():
-      nSchedBlocks = self.checkSchedBlocks()
+      n_sched_blocks = self.check_sched_blocks()
       self.log.info([['g'," - will now wait for 5 sec ..."]])
       sleep(5)
       self.log.info([['g'," - will now try to cancel all ..."]])
-      self.cancelZombieSchedBlocks()
+      self.cancel_zombie_sched_blocks()
 
-      if nSchedBlocks == 0:
-        self.submitBlockCycle()
+      if n_sched_blocks == 0:
+        self.submit_block_cycle()
 
-      sleep(self.loopSleep)
+      sleep(self.loop_sleep)
     
     return
 
@@ -352,161 +352,161 @@ class mockSched():
 
 
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 # ignore everything below .....
 # ignore everything below .....
 # ignore everything below .....
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 
 import logging
 import numbers
 import numpy as np
 import time
 useCol = 1 #; useCol = 0
-useLogTitle = False
-addMsgEleSpace = False
-noSubArrName = "emptySA"
-telPos0 = [0, 90]
-hasACS = True
+use_log_title = False
+add_msg_ele_space = False
+no_subArr_name = "empty_sub_array"
+inst_pos_0 = [0, 90]
+has_acs = True
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 # different databases/configurations for north or south
-# -----------------------------------------------------------------------------------------------------------
-def initTelIds(nsType):
-  telIds = []
-  # -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
+def initTelIds(site_type):
+  tel_ids = []
+  # ------------------------------------------------------------------
   # south
-  # -----------------------------------------------------------------------------------------------------------
-  if nsType == "S":
-    telIds += ["L_0" ]
-    telIds += ["L_1" ]
-    telIds += ["L_2" ]
-    telIds += ["L_3" ]
-    telIds += ["M_0" ]
-    telIds += ["M_1" ]
-    telIds += ["M_2" ]
-    telIds += ["M_3" ]
-    telIds += ["M_4" ]
-    telIds += ["M_5" ]
-    telIds += ["M_6" ]
-    telIds += ["M_7" ]
-    telIds += ["M_8" ]
-    telIds += ["M_9" ]
-    telIds += ["M_10"]
-    telIds += ["M_11"]
-    telIds += ["M_12"]
-    telIds += ["M_13"]
-    telIds += ["M_14"]
-    telIds += ["M_15"]
-    telIds += ["M_16"]
-    telIds += ["M_17"]
-    telIds += ["M_18"]
-    telIds += ["M_19"]
-    telIds += ["M_20"]
-    telIds += ["M_21"]
-    telIds += ["M_22"]
-    telIds += ["M_23"]
-    telIds += ["M_24"]
-    telIds += ["S_0" ]
-    telIds += ["S_1" ]
-    telIds += ["S_2" ]
-    telIds += ["S_3" ]
-    telIds += ["S_4" ]
-    telIds += ["S_5" ]
-    telIds += ["S_6" ]
-    telIds += ["S_7" ]
-    telIds += ["S_8" ]
-    telIds += ["S_9" ]
-    telIds += ["S_10"]
-    telIds += ["S_11"]
-    telIds += ["S_12"]
-    telIds += ["S_13"]
-    telIds += ["S_14"]
-    telIds += ["S_15"]
-    telIds += ["S_16"]
-    telIds += ["S_17"]
-    telIds += ["S_18"]
-    telIds += ["S_19"]
-    telIds += ["S_20"]
-    telIds += ["S_21"]
-    telIds += ["S_22"]
-    telIds += ["S_23"]
-    telIds += ["S_24"]
-    telIds += ["S_25"]
-    telIds += ["S_26"]
-    telIds += ["S_27"]
-    telIds += ["S_28"]
-    telIds += ["S_29"]
-    telIds += ["S_30"]
-    telIds += ["S_31"]
-    telIds += ["S_32"]
-    telIds += ["S_33"]
-    telIds += ["S_34"]
-    telIds += ["S_35"]
-    telIds += ["S_36"]
-    telIds += ["S_37"]
-    telIds += ["S_38"]
-    telIds += ["S_39"]
-    telIds += ["S_40"]
-    telIds += ["S_41"]
-    telIds += ["S_42"]
-    telIds += ["S_43"]
-    telIds += ["S_44"]
-    telIds += ["S_45"]
-    telIds += ["S_46"]
-    telIds += ["S_47"]
-    telIds += ["S_48"]
-    telIds += ["S_49"]
-    telIds += ["S_50"]
-    telIds += ["S_51"]
-    telIds += ["S_52"]
-    telIds += ["S_53"]
-    telIds += ["S_54"]
-    telIds += ["S_55"]
-    telIds += ["S_56"]
-    telIds += ["S_57"]
-    telIds += ["S_58"]
-    telIds += ["S_59"]
-    telIds += ["S_60"]
-    telIds += ["S_61"]
-    telIds += ["S_62"]
-    telIds += ["S_63"]
-    telIds += ["S_64"]
-    telIds += ["S_65"]
-    telIds += ["S_66"]
-    telIds += ["S_67"]
-    telIds += ["S_68"]
-    telIds += ["S_69"]
+  # ------------------------------------------------------------------
+  if site_type == "S":
+    tel_ids += ["L_0" ]
+    tel_ids += ["L_1" ]
+    tel_ids += ["L_2" ]
+    tel_ids += ["L_3" ]
+    tel_ids += ["M_0" ]
+    tel_ids += ["M_1" ]
+    tel_ids += ["M_2" ]
+    tel_ids += ["M_3" ]
+    tel_ids += ["M_4" ]
+    tel_ids += ["M_5" ]
+    tel_ids += ["M_6" ]
+    tel_ids += ["M_7" ]
+    tel_ids += ["M_8" ]
+    tel_ids += ["M_9" ]
+    tel_ids += ["M_10"]
+    tel_ids += ["M_11"]
+    tel_ids += ["M_12"]
+    tel_ids += ["M_13"]
+    tel_ids += ["M_14"]
+    tel_ids += ["M_15"]
+    tel_ids += ["M_16"]
+    tel_ids += ["M_17"]
+    tel_ids += ["M_18"]
+    tel_ids += ["M_19"]
+    tel_ids += ["M_20"]
+    tel_ids += ["M_21"]
+    tel_ids += ["M_22"]
+    tel_ids += ["M_23"]
+    tel_ids += ["M_24"]
+    tel_ids += ["S_0" ]
+    tel_ids += ["S_1" ]
+    tel_ids += ["S_2" ]
+    tel_ids += ["S_3" ]
+    tel_ids += ["S_4" ]
+    tel_ids += ["S_5" ]
+    tel_ids += ["S_6" ]
+    tel_ids += ["S_7" ]
+    tel_ids += ["S_8" ]
+    tel_ids += ["S_9" ]
+    tel_ids += ["S_10"]
+    tel_ids += ["S_11"]
+    tel_ids += ["S_12"]
+    tel_ids += ["S_13"]
+    tel_ids += ["S_14"]
+    tel_ids += ["S_15"]
+    tel_ids += ["S_16"]
+    tel_ids += ["S_17"]
+    tel_ids += ["S_18"]
+    tel_ids += ["S_19"]
+    tel_ids += ["S_20"]
+    tel_ids += ["S_21"]
+    tel_ids += ["S_22"]
+    tel_ids += ["S_23"]
+    tel_ids += ["S_24"]
+    tel_ids += ["S_25"]
+    tel_ids += ["S_26"]
+    tel_ids += ["S_27"]
+    tel_ids += ["S_28"]
+    tel_ids += ["S_29"]
+    tel_ids += ["S_30"]
+    tel_ids += ["S_31"]
+    tel_ids += ["S_32"]
+    tel_ids += ["S_33"]
+    tel_ids += ["S_34"]
+    tel_ids += ["S_35"]
+    tel_ids += ["S_36"]
+    tel_ids += ["S_37"]
+    tel_ids += ["S_38"]
+    tel_ids += ["S_39"]
+    tel_ids += ["S_40"]
+    tel_ids += ["S_41"]
+    tel_ids += ["S_42"]
+    tel_ids += ["S_43"]
+    tel_ids += ["S_44"]
+    tel_ids += ["S_45"]
+    tel_ids += ["S_46"]
+    tel_ids += ["S_47"]
+    tel_ids += ["S_48"]
+    tel_ids += ["S_49"]
+    tel_ids += ["S_50"]
+    tel_ids += ["S_51"]
+    tel_ids += ["S_52"]
+    tel_ids += ["S_53"]
+    tel_ids += ["S_54"]
+    tel_ids += ["S_55"]
+    tel_ids += ["S_56"]
+    tel_ids += ["S_57"]
+    tel_ids += ["S_58"]
+    tel_ids += ["S_59"]
+    tel_ids += ["S_60"]
+    tel_ids += ["S_61"]
+    tel_ids += ["S_62"]
+    tel_ids += ["S_63"]
+    tel_ids += ["S_64"]
+    tel_ids += ["S_65"]
+    tel_ids += ["S_66"]
+    tel_ids += ["S_67"]
+    tel_ids += ["S_68"]
+    tel_ids += ["S_69"]
 
-  # -----------------------------------------------------------------------------------------------------------
+  # ------------------------------------------------------------------
   # north
-  # -----------------------------------------------------------------------------------------------------------
-  if nsType == "N":
-    telIds += ["L_0" ]
-    telIds += ["L_1" ]
-    telIds += ["L_2" ]
-    telIds += ["L_3" ]
-    telIds += ["M_0" ]
-    telIds += ["M_1" ]
-    telIds += ["M_2" ]
-    telIds += ["M_3" ]
-    telIds += ["M_4" ]
-    telIds += ["M_5" ]
-    telIds += ["M_6" ]
-    telIds += ["M_7" ]
-    telIds += ["M_8" ]
-    telIds += ["M_9" ]
-    telIds += ["M_10"]
-    telIds += ["M_11"]
-    telIds += ["M_12"]
-    telIds += ["M_13"]
-    telIds += ["M_14"]
+  # ------------------------------------------------------------------
+  if site_type == "N":
+    tel_ids += ["L_0" ]
+    tel_ids += ["L_1" ]
+    tel_ids += ["L_2" ]
+    tel_ids += ["L_3" ]
+    tel_ids += ["M_0" ]
+    tel_ids += ["M_1" ]
+    tel_ids += ["M_2" ]
+    tel_ids += ["M_3" ]
+    tel_ids += ["M_4" ]
+    tel_ids += ["M_5" ]
+    tel_ids += ["M_6" ]
+    tel_ids += ["M_7" ]
+    tel_ids += ["M_8" ]
+    tel_ids += ["M_9" ]
+    tel_ids += ["M_10"]
+    tel_ids += ["M_11"]
+    tel_ids += ["M_12"]
+    tel_ids += ["M_13"]
+    tel_ids += ["M_14"]
   
-  return telIds
+  return tel_ids
 
-telIds = dict()
-telIds["N"] = initTelIds("N")
-telIds["S"] = initTelIds("S")
+tel_ids = dict()
+tel_ids["N"] = initTelIds("N")
+tel_ids["S"] = initTelIds("S")
 
 def getTime():
   return int(time.time()*1e6)
@@ -515,162 +515,162 @@ def getTime():
 # color output
 # --------------------------------------------------------------------------------------------------
 def setColDict():
-  ColBlue="\033[34m"        ; ColRed="\033[31m"         ; ColGreen="\033[32m"       ; ColDef="\033[0m"
-  ColLightBlue="\033[94m"     ; ColYellow="\033[33m"      ; ColPurple="\033[35m"      ; ColCyan="\033[36m"
+  col_blue="\033[34m"        ; col_red="\033[31m"         ; ColGreen="\033[32m"       ; ColDef="\033[0m"
+  ColLightBlue="\033[94m"     ; col_yellow="\033[33m"      ; ColPurple="\033[35m"      ; ColCyan="\033[36m"
   ColUnderLine="\033[4;30m"     ; ColWhiteOnBlack="\33[40;37;1m"  ; ColWhiteOnRed="\33[41;37;1m"
   ColWhiteOnGreen="\33[42;37;1m"  ; ColWhiteOnYellow="\33[43;37;1m"
 
-  def noCol    (msg): return '' if (str(msg) is '') else str(msg)
-  def blue     (msg): return '' if (str(msg) is '') else ColBlue          +str(msg)+ColDef
-  def red    (msg): return '' if (str(msg) is '') else ColRed           +str(msg)+ColDef
+  def no_color    (msg): return '' if (str(msg) is '') else str(msg)
+  def blue     (msg): return '' if (str(msg) is '') else col_blue          +str(msg)+ColDef
+  def red    (msg): return '' if (str(msg) is '') else col_red           +str(msg)+ColDef
   def green    (msg): return '' if (str(msg) is '') else ColGreen         +str(msg)+ColDef
-  def lBlue    (msg): return '' if (str(msg) is '') else ColLightBlue       +str(msg)+ColDef
-  def yellow   (msg): return '' if (str(msg) is '') else ColYellow        +str(msg)+ColDef
+  def light_blue    (msg): return '' if (str(msg) is '') else ColLightBlue       +str(msg)+ColDef
+  def yellow   (msg): return '' if (str(msg) is '') else col_yellow        +str(msg)+ColDef
   def purple   (msg): return '' if (str(msg) is '') else ColPurple        +str(msg)+ColDef
   def cyan     (msg): return '' if (str(msg) is '') else ColCyan          +str(msg)+ColDef
-  def whtOnBlck  (msg): return '' if (str(msg) is '') else ColWhiteOnBlack      +str(msg)+ColDef
-  def redOnBlck  (msg): return '' if (str(msg) is '') else ColWhiteOnBlack+ColRed   +str(msg)+ColDef
-  def bluOnBlck  (msg): return '' if (str(msg) is '') else ColWhiteOnBlack+ColBlue  +str(msg)+ColDef
-  def yellOnBlck (msg): return '' if (str(msg) is '') else ColWhiteOnBlack+ColYellow+str(msg)+ColDef
-  def whtOnRed   (msg): return '' if (str(msg) is '') else ColWhiteOnRed      +str(msg)+ColDef
-  def yellowOnRed(msg): return '' if (str(msg) is '') else ColWhiteOnRed+ColYellow  +str(msg)+ColDef
-  def whtOnYellow(msg): return '' if (str(msg) is '') else ColWhiteOnYellow     +str(msg)+ColDef
-  def whtOnGreen (msg): return '' if (str(msg) is '') else ColWhiteOnGreen      +str(msg)+ColDef
+  def white_on_black  (msg): return '' if (str(msg) is '') else ColWhiteOnBlack      +str(msg)+ColDef
+  def red_on_black  (msg): return '' if (str(msg) is '') else ColWhiteOnBlack+col_red   +str(msg)+ColDef
+  def blue_on_black  (msg): return '' if (str(msg) is '') else ColWhiteOnBlack+col_blue  +str(msg)+ColDef
+  def yellow_on_black (msg): return '' if (str(msg) is '') else ColWhiteOnBlack+col_yellow+str(msg)+ColDef
+  def white_on_red   (msg): return '' if (str(msg) is '') else ColWhiteOnRed      +str(msg)+ColDef
+  def yellow_on_red(msg): return '' if (str(msg) is '') else ColWhiteOnRed+col_yellow  +str(msg)+ColDef
+  def white_on_yellow(msg): return '' if (str(msg) is '') else ColWhiteOnYellow     +str(msg)+ColDef
+  def white_on_green (msg): return '' if (str(msg) is '') else ColWhiteOnGreen      +str(msg)+ColDef
 
   colD = [dict(),dict()]
 
-  colD[0][''  ] = noCol ; colD[1][''  ] = noCol    
-  colD[0]['r' ] = noCol ; colD[1]['r' ] = red    
-  colD[0]['g' ] = noCol ; colD[1]['g' ] = green    
-  colD[0]['b' ] = noCol ; colD[1]['b' ] = blue     
-  colD[0]['y' ] = noCol ; colD[1]['y' ] = yellow   
-  colD[0]['p' ] = noCol ; colD[1]['p' ] = purple   
-  colD[0]['c' ] = noCol ; colD[1]['c' ] = cyan     
-  colD[0]['lb'] = noCol ; colD[1]['lb'] = lBlue    
-  colD[0]['wb'] = noCol ; colD[1]['wb'] = whtOnBlck  
-  colD[0]['rb'] = noCol ; colD[1]['rb'] = redOnBlck  
-  colD[0]['bb'] = noCol ; colD[1]['bb'] = bluOnBlck  
-  colD[0]['yb'] = noCol ; colD[1]['yb'] = yellOnBlck 
-  colD[0]['wr'] = noCol ; colD[1]['wr'] = whtOnRed   
-  colD[0]['yr'] = noCol ; colD[1]['yr'] = yellowOnRed
-  colD[0]['wy'] = noCol ; colD[1]['wy'] = whtOnYellow
-  colD[0]['wg'] = noCol ; colD[1]['wg'] = whtOnGreen 
+  colD[0][''  ] = no_color ; colD[1][''  ] = no_color    
+  colD[0]['r' ] = no_color ; colD[1]['r' ] = red    
+  colD[0]['g' ] = no_color ; colD[1]['g' ] = green    
+  colD[0]['b' ] = no_color ; colD[1]['b' ] = blue     
+  colD[0]['y' ] = no_color ; colD[1]['y' ] = yellow   
+  colD[0]['p' ] = no_color ; colD[1]['p' ] = purple   
+  colD[0]['c' ] = no_color ; colD[1]['c' ] = cyan     
+  colD[0]['lb'] = no_color ; colD[1]['lb'] = light_blue    
+  colD[0]['wb'] = no_color ; colD[1]['wb'] = white_on_black  
+  colD[0]['rb'] = no_color ; colD[1]['rb'] = red_on_black  
+  colD[0]['bb'] = no_color ; colD[1]['bb'] = blue_on_black  
+  colD[0]['yb'] = no_color ; colD[1]['yb'] = yellow_on_black 
+  colD[0]['wr'] = no_color ; colD[1]['wr'] = white_on_red   
+  colD[0]['yr'] = no_color ; colD[1]['yr'] = yellow_on_red
+  colD[0]['wy'] = no_color ; colD[1]['wy'] = white_on_yellow
+  colD[0]['wg'] = no_color ; colD[1]['wg'] = white_on_green 
 
   return colD
 
 colD = setColDict()
 
-class myLog():
-  def __init__(self, name = '', title = '', doParseMsg = True, *args, **kwargs):
-    self.doParseMsg = doParseMsg
+class my_log():
+  def __init__(self, name = '', title = '', do_parse_msg = True, *args, **kwargs):
+    self.do_parse_msg = do_parse_msg
     self.name = "root" if name is "" else name
-    self.title = colD[useCol]['c']("" if title is "" else (" ["+title+"]" if useLogTitle else ""))
+    self.title = colD[useCol]['c']("" if title is "" else (" ["+title+"]" if use_log_title else ""))
     self.log = logging.getLogger(self.name)
 
     # common lock for all loggers
-    self.lock = myLock("myLog")
+    self.lock = my_lock("my_log")
 
-  def parseMsg(self, msgIn):
-    if not self.doParseMsg:
-      return msgIn
+  def parse_msg(self, msg_in):
+    if not self.do_parse_msg:
+      return msg_in
 
     # --------------------------------------------------------------------------------------------------
     # if the input is a list
     # --------------------------------------------------------------------------------------------------
-    if isinstance(msgIn, list):
+    if isinstance(msg_in, list):
       msg = ""
-      for msgNow in msgIn:
+      for msg_now in msg_in:
         # --------------------------------------------------------------------------------------------------
         #  if there is a list of messages
         # --------------------------------------------------------------------------------------------------
-        if isinstance(msgNow, list):
+        if isinstance(msg_now, list):
           # list with one element
-          if len(msgNow) == 1:
-            if addMsgEleSpace and msg is not "": msg += " "
-            msg += str(msgNow[0])
+          if len(msg_now) == 1:
+            if add_msg_ele_space and msg is not "": msg += " "
+            msg += str(msg_now[0])
           # list with multiple elements
-          elif len(msgNow) >= 2:
+          elif len(msg_now) >= 2:
             # first element is a color indicator
-            if msgNow[0] in colD[useCol]:
-              colFunc = colD[useCol][msgNow[0]]
+            if msg_now[0] in colD[useCol]:
+              color_func = colD[useCol][msg_now[0]]
               # either can be one or more messages after the color indicator
-              if len(msgNow) == 2: msgStr = str(msgNow[1])
-              else:        msgStr  = (" ").join([ str(eleNow) for eleNow in msgNow[1:] ])
+              if len(msg_now) == 2: msg_str = str(msg_now[1])
+              else:        msg_str  = (" ").join([ str(ele_now) for ele_now in msg_now[1:] ])
             # there is no color indicator, just a list of messages
             else:
-              colFunc = colD[useCol]['']
-              msgStr  = (" ").join([ str(eleNow) for eleNow in msgNow ])
+              color_func = colD[useCol]['']
+              msg_str  = (" ").join([ str(ele_now) for ele_now in msg_now ])
 
             # compose the colored output from the (joined list of) messages(s)
-            if addMsgEleSpace and msg is not "": msg += colFunc(" ")
-            msg += colFunc(msgStr)
+            if add_msg_ele_space and msg is not "": msg += color_func(" ")
+            msg += color_func(msg_str)
         
         # --------------------------------------------------------------------------------------------------
         # if there is a single message (non-list)
         # --------------------------------------------------------------------------------------------------
         else:
-          if addMsgEleSpace and msg is not "": msg += " "
-          msg += str(msgNow)
+          if add_msg_ele_space and msg is not "": msg += " "
+          msg += str(msg_now)
 
     # --------------------------------------------------------------------------------------------------
     # if the input is a simple element (non-list)
     # --------------------------------------------------------------------------------------------------
     else:
-      msg = str(msgIn)
+      msg = str(msg_in)
     
     # finally, send the output, with the optional title added
     # --------------------------------------------------------------------------------------------------
     return (msg + self.title)
 
-  def debug(self, msgIn, *args, **kwargs):
+  def debug(self, msg_in, *args, **kwargs):
     with self.lock:
-      self.log.debug(self.parseMsg(msgIn), *args, **kwargs)
+      self.log.debug(self.parse_msg(msg_in), *args, **kwargs)
 
-  def info(self, msgIn, *args, **kwargs):
+  def info(self, msg_in, *args, **kwargs):
     with self.lock:
-      self.log.info(self.parseMsg(msgIn), *args, **kwargs)
+      self.log.info(self.parse_msg(msg_in), *args, **kwargs)
   
-  def warning(self, msgIn, *args, **kwargs):
+  def warning(self, msg_in, *args, **kwargs):
     with self.lock:
-      self.log.warning(self.parseMsg(msgIn), *args, **kwargs)
+      self.log.warning(self.parse_msg(msg_in), *args, **kwargs)
   
-  def warn(self, msgIn, *args, **kwargs):
+  def warn(self, msg_in, *args, **kwargs):
     with self.lock:
-      self.log.warn(self.parseMsg(msgIn), *args, **kwargs)
+      self.log.warn(self.parse_msg(msg_in), *args, **kwargs)
   
-  def error(self, msgIn, *args, **kwargs):
+  def error(self, msg_in, *args, **kwargs):
     with self.lock:
-      self.log.error(self.parseMsg(msgIn), *args, **kwargs)
+      self.log.error(self.parse_msg(msg_in), *args, **kwargs)
   
-  def critical(self, msgIn, *args, **kwargs):
+  def critical(self, msg_in, *args, **kwargs):
     with self.lock:
-      self.log.critical(self.parseMsg(msgIn), *args, **kwargs)
+      self.log.critical(self.parse_msg(msg_in), *args, **kwargs)
 
 # locker class by name
-class myLock():
+class my_lock():
   locks = {}
   
-  def __init__(self, name = '', checkEvery = None):
+  def __init__(self, name = '', seconds_to_check = None):
     self.name = "generic" if name is "" else name
     
-    self.checkEvery = max(0.0001, min(0.5, (checkEvery if isinstance(checkEvery, numbers.Number) else 0.05)))
-    self.maxChecks = max(5/self.checkEvery, 2)
+    self.seconds_to_check = max(0.0001, min(0.5, (seconds_to_check if isinstance(seconds_to_check, numbers.Number) else 0.05)))
+    self.n_max_checks = max(5/self.seconds_to_check, 2)
 
-    if not self.name in myLock.locks:
-      myLock.locks[self.name] = False
+    if not self.name in my_lock.locks:
+      my_lock.locks[self.name] = False
   
   def __enter__(self):
-    nChecked = 0
-    while myLock.locks[self.name]:
-      nChecked += 1
-      if nChecked > self.maxChecks:
+    n_checked = 0
+    while my_lock.locks[self.name]:
+      n_checked += 1
+      if n_checked > self.n_max_checks:
         raise Warning(" - could not get lock for "+self.name+" ...")
-      sleep(self.checkEvery)
+      sleep(self.seconds_to_check)
 
-    myLock.locks[self.name] = True
+    my_lock.locks[self.name] = True
 
   def __exit__(self, type, value, traceback):
-    myLock.locks[self.name] = False
+    my_lock.locks[self.name] = False
 
 
-mockSched('N')
+MockSched('N')

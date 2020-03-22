@@ -7,8 +7,8 @@ from random import Random
 import time
 import copy
 
-from utils import myLog, Assert, getTime, noSubArrName
-from utils import telIds, redisPort, flatDictById
+from utils import my_log, my_assert, getTime, no_subArr_name
+from utils import tel_ids, redis_port, flatten_dict
 
 import redis
 from msgpack import packb as pack
@@ -19,36 +19,36 @@ import sb
 import jsonAcs
 
 # install scripts by eg:
-#   ln -s $PWD/ctaOperatorGUI/py/guiACS_schedBlocks_script0.py $INTROOT/config/scripts/.
+#   ln -s $PWD/ctaOperatorGUI/py/guiACS_sched_blocks_script0.py $INTROOT/config/scripts/.
 
 
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class tmpTest():
-    def __init__(self, nsType):
-        self.log = myLog(title=__name__)
-        self.log.info([['y', " - tmpTest - "], ['g', nsType]])
+class TmpTest():
+    def __init__(self, site_type):
+        self.log = my_log(title=__name__)
+        self.log.info([['y', " - TmpTest - "], ['g', site_type]])
 
-        self.nsType = nsType
-        self.telIds = telIds[nsType]
+        self.site_type = site_type
+        self.tel_ids = tel_ids[site_type]
 
         self.redis = redis.StrictRedis(
-            host='localhost', port=redisPort[nsType], db=0)
+            host='localhost', port=redis_port[site_type], db=0)
         self.redPipe = self.redis.pipeline()
 
-        self.loopSleep = 4
+        self.loop_sleep = 4
 
-        # rndSeed = 10987268332
-        rndSeed = getTime()
-        self.rndGen = Random(rndSeed)
+        # rnd_seed = 10987268332
+        rnd_seed = getTime()
+        self.rnd_gen = Random(rnd_seed)
 
         # Create a client and the ArraySupervisor component
         client = PySimpleClient()
         supervisor = client.getComponent("ArraySupervisor")
 
         config = sb.Configuration(sb.InstrumentConfiguration(
-            sb.PointingMode(2, sb.Divergent(2)), sb.Subarray([], [])), "camera", "rta")
+            sb.PointingMode(2, sb._divergent(2)), sb.Subarray([], [])), "camera", "rta")
         coords = sb.Coordinates(3, sb.GalacticCoordinates(10, 10))
         observing_mode = sb.ObservingMode(sb.Slewing(
             1), sb.ObservingType(2, sb.GridSurvey(1, 1, 1)))
@@ -58,7 +58,7 @@ class tmpTest():
             1), 60, 1, sb.Quality(1, 1, 1), sb.Weather(1, 1, 1, 1))
 
         ob = sb.ObservationBlock(
-            "ob", src, obs, "guiACS_schedBlocks_script0", 0)
+            "ob", src, obs, "guiACS_sched_blocks_script0", 0)
         # ob.observing_conditions.duration = 20
         print 'xxxxxxxx', obs, '------', ob.observing_conditions.duration
         schedulingBlock = sb.SchedulingBlock(
@@ -77,12 +77,12 @@ class tmpTest():
         active = supervisor.listSchedulingBlocks()
         while True:
             active = supervisor.listSchedulingBlocks()
-            for sbName in active:
-                status = supervisor.getSchedulingBlockStatus(sbName)
-                opstatus = supervisor.getSbOperationStatus(sbName)
+            for block_name in active:
+                status = supervisor.getSchedulingBlockStatus(block_name)
+                opstatus = supervisor.getSbOperationStatus(block_name)
                 phases = opstatus.ob_statuses[0].phases
                 for p in phases:
-                    print 'xxx', sbName, p
+                    print 'xxx', block_name, p
                 self.log.info([['y', " - active_scheduling_blocks - "],
                                ['g', active, '-> '], ['y', status, ' '], ['p', opstatus]])
             if len(active) == 0:
@@ -139,7 +139,7 @@ class tmpTest():
     #
     # ------------------------------------------------------------------
     def init(self):
-        self.log.info([['p', " - tmpTest.init() ..."]])
+        self.log.info([['p', " - TmpTest.init() ..."]])
 
         return
 
@@ -147,11 +147,11 @@ class tmpTest():
     #
     # ------------------------------------------------------------------
     def loop(self):
-        self.log.info([['g', " - starting tmpTest.loop ..."]])
+        self.log.info([['g', " - starting TmpTest.loop ..."]])
         sleep(2)
 
         while True:
 
-            sleep(self.loopSleep)
+            sleep(self.loop_sleep)
 
         return

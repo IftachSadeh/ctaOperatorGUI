@@ -28,29 +28,29 @@ svg {
 }
 /* -------------------------------------------------------- */
 
-.gridEleBodyDark {
+.grid_ele_dark {
   color: #F2F2F2;
   background-color: #383B42;
   border: 1px solid #F2F2F2;
 }
 
-.vertEle {
+.vertical_ele {
   display: block;
   text-align: center;
 }
 
-.horizEle {
+.horizontal_ele {
   display: flex;
   align-items: center;
   text-align: center;
 }
 
-.flexEle {
+.flex_ele {
   flex: 1;
   flex-shrink: 0;
 }
 
-.menuHeader {
+.menu_header {
   padding-left: 4px;
   font-size: 20px;
   font-weight: 500;
@@ -59,13 +59,13 @@ svg {
   font-style: italic;
 }
 
-.siteHeader {
+.site_header {
   font-size: 30px;
   padding: 15px;
   text-align: center;
 }
 
-.tableCard {
+.table_card {
   width: 90%;
   padding-top: 5px;
   padding-bottom: 15px;
@@ -77,13 +77,13 @@ svg {
   border: 0.5px solid #d4d2d2;
 }
 
-.tableTitle {
+.table_title {
   width: 100%;
   display: flex; 
   align-items: center;
 }
 
-.tableTitleText {
+.table_title_text {
   width: 100%; 
   text-align: left; 
   margin-left: 1%; 
@@ -93,26 +93,26 @@ svg {
   line-height: 28px;
 }
 
-.tableTitleIcon {
+.table_title_icon {
   width: 80px;
   height: 80px;
 }
 
-.tableItem {
+.table_item {
   display: inline-block; 
   position: relative;
   margin: 0px; 
   border: 0px; 
 }
 
-.switchTitled {
+.switch_titled {
   text-align: center;
   margin-left: 1px;
   margin-right: 1px;
   padding: 0px;
 }
 
-#userConStatDiv_tog, #serverConStatDiv_tog {
+#user_con_stat_div_tog, #server_con_stat_div_tog {
   -moz-transform: scale(.75);
   -webkit-transform: scale(.75);
   transform: scale(.75);

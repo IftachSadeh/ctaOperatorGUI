@@ -1,17 +1,17 @@
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 from random import Random
-rndGen = Random(10987268332)
+rnd_gen = Random(10987268332)
 waitTime = dict()
-waitTime['config_daq'] = rndGen.randint(1,3)
-waitTime['config_camera'] = rndGen.randint(1,5)
-waitTime['config_mount'] = rndGen.randint(2,7)
-waitTime['finish_daq'] = rndGen.randint(1,6)
-waitTime['finish_camera'] = rndGen.randint(1,3)
-waitTime['finish_mount'] = rndGen.randint(1,2)
+waitTime['config_daq'] = rnd_gen.randint(1,3)
+waitTime['config_camera'] = rnd_gen.randint(1,5)
+waitTime['config_mount'] = rnd_gen.randint(2,7)
+waitTime['finish_daq'] = rnd_gen.randint(1,6)
+waitTime['finish_camera'] = rnd_gen.randint(1,3)
+waitTime['finish_mount'] = rnd_gen.randint(1,2)
 def getWait(duration, waitType):
   return waitTime[waitType] if blockDuration > 1 else 1
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 
 import tcs
 import daqctrl, inspect
@@ -24,11 +24,11 @@ __phases__ = [
 
 # install the script by:
 #   cd $INTROOT/config/scripts
-#   ln -s $guiInstalDir/ctaOperatorGUI/ctaGuiBack/ctaGuiBack/acs/guiACS_schedBlocks_script0.py
+#   ln -s $guiInstalDir/ctaOperatorGUI/ctaGuiBack/ctaGuiBack/acs/guiACS_sched_blocks_script0.py
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def configuring():
-  coords = observationBlock.src.coords
+  coords = observation_block.src.coords
   p = None
   try:
     p = (coords.equatorial.ra, coords.equatorial.dec)
@@ -51,7 +51,7 @@ def configuring():
   
   try:
     divergence = schedulingBlock.config.instrument.pointing_mode.divergent_.divergence
-    print "Divergence used: " + str(divergence)
+    print "_divergence used: " + str(divergence)
   except:
     print "Pointing mode is not divergent"
     pass
@@ -64,7 +64,7 @@ def configuring():
 
   return
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def config_daq():
   updatePhase("config_daq", "config_daq has began ...", 0)
 
@@ -89,7 +89,7 @@ def config_daq():
   
   return
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def config_camera():
   updatePhase("config_camera", "config_camera has began ...", 0)
   
@@ -106,7 +106,7 @@ def config_camera():
   
   return
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def config_mount():
   updatePhase("config_mount", "config_mount has began ...", 0)
 
@@ -120,7 +120,7 @@ def config_mount():
 
   return
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def takeData():
   updatePhase("takeData", "takeData has began ...", 0)
 
@@ -141,7 +141,7 @@ def takeData():
 
   return
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def closing():
   allowPhaseStart("finish_daq")
   allowPhaseStart("finish_camera")
@@ -149,7 +149,7 @@ def closing():
 
   return
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def finish_daq():
   updatePhase("finish_daq", "finish_daq has began ...", 0)
 
@@ -164,7 +164,7 @@ def finish_daq():
   
   return
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def finish_camera():
   updatePhase("finish_camera", "finish_camera has began ...", 0)
   
@@ -178,7 +178,7 @@ def finish_camera():
 
   return
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def finish_mount():
   updatePhase("finish_mount", "finish_mount has began ...", 0)
   
@@ -191,7 +191,7 @@ def finish_mount():
   return
 
 
-# -----------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 def cleanUp():
   pass
 

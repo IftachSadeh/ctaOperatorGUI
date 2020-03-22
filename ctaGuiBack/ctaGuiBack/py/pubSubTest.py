@@ -7,8 +7,8 @@ from random import Random
 import time
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import myLog, Assert, getTime
-from ctaGuiUtils.py.utils_redis import redisManager
+from ctaGuiUtils.py.utils import my_log, my_assert, getTime
+from ctaGuiUtils.py.RedisManager import RedisManager
 
 from msgpack import packb
 from msgpack import unpackb
@@ -16,57 +16,57 @@ from msgpack import unpackb
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class pubSubTest():
-    def __init__(self, nsType):
-        self.log = myLog(title=__name__)
-        self.log.info([['y', " - pubSubTest - "], ['g', nsType]])
+class PubsubTest():
+    def __init__(self, site_type):
+        self.log = my_log(title=__name__)
+        self.log.info([['y', " - PubsubTest - "], ['g', site_type]])
 
-        self.className = self.__class__.__name__
-        self.redis = redisManager(name=self.className, log=self.log)
+        self.class_name = self.__class__.__name__
+        self.redis = RedisManager(name=self.class_name, log=self.log)
 
         gevent.spawn(self.loop)
-        gevent.spawn(self.exeFuncLoop)
+        gevent.spawn(self.exe_func_loop)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def askData(self, rndSeed=-1):
+    def ask_data(self, rnd_seed=-1):
         self.log.info([['y', " --------------------------------------------"]])
-        self.log.info([['g', " - pubSubTest.askData -  "], ['p', rndSeed]])
+        self.log.info([['g', " - PubsubTest.ask_data -  "], ['p', rnd_seed]])
 
         args = {
-            "funcName": "testFunc",
-            "arg0": rndSeed
+            "func_name": "test_func",
+            "arg0": rnd_seed
         }
-        self.redis.publish(channel="exeFuncLoop", message=packb(args))
+        self.redis.publish(channel="exe_func_loop", message=packb(args))
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def exeFuncLoop(self):
-        self.log.info([['g', " - starting pubSubTest.exeFuncLoop ..."]])
+    def exe_func_loop(self):
+        self.log.info([['g', " - starting PubsubTest.exe_func_loop ..."]])
 
-        redSub = None
+        redis_pubsub = None
         while True:
-            while redSub is None:
-                redSub = self.redis.setPubSub("exeFuncLoop")
+            while redis_pubsub is None:
+                redis_pubsub = self.redis.set_pubsub("exe_func_loop")
                 sleep(0.5)
 
-            msg = self.redis.getPubSub("exeFuncLoop")
+            msg = self.redis.get_pubsub("exe_func_loop")
             if msg:
                 args = unpackb(msg["data"])
 
                 # call as blocking
-                getattr(self, args["funcName"])(args)
+                getattr(self, args["func_name"])(args)
 
                 # call as non-blocking
-                def exeFuncAsunc(args):
-                    getattr(self, args["funcName"])(args)
-                gevent.spawn(exeFuncAsunc, args)
+                def exe_async_func(args):
+                    getattr(self, args["func_name"])(args)
+                gevent.spawn(exe_async_func, args)
 
             sleep(0.01)
 
@@ -75,9 +75,9 @@ class pubSubTest():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def testFunc(self, args=None):
+    def test_func(self, args=None):
         self.log.info([
-            ['g', " - pubSubTest.testFunc - "], ['p', args["arg0"]]
+            ['g', " - PubsubTest.test_func - "], ['p', args["arg0"]]
         ])
         return
 
@@ -85,14 +85,14 @@ class pubSubTest():
     #
     # ------------------------------------------------------------------
     def loop(self):
-        self.log.info([['g', " - starting pubSubTest.loop ..."]])
+        self.log.info([['g', " - starting PubsubTest.loop ..."]])
         sleep(2)
 
-        rndSeed = 9823987423
+        rnd_seed = 9823987423
         while True:
-            self.askData(rndSeed=rndSeed)
+            self.ask_data(rnd_seed=rnd_seed)
 
-            rndSeed += 1
+            rnd_seed += 1
             sleep(2)
 
         return
