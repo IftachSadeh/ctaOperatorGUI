@@ -835,7 +835,7 @@ window.move_node_up = function (node, n_levels_up, stop_name) {
     if (parent.nodeName === stop_name) return
 
     n_levels_up--
-    d3.select(parent).move_node_up()
+    d3.select(parent).moveNodeUp()
     parent = parent.parentNode
   }
 }
