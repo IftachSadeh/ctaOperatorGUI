@@ -17,6 +17,7 @@ class InstData():
     site_type = None
     tel_ids = None
     inst_Ids = None
+    categorical_types = None
     tel_id_to_types = None
     sub_array_tels = None
     tel_id_to_sub_array = None
@@ -695,8 +696,13 @@ class InstData():
         id_now = "Px02"
         add_dict_id(id_now, {'x':  0, 'y':  -5, 'type': 'PROC'})
 
-        return
 
+        # ------------------------------------------------------------------
+        # 
+        # ------------------------------------------------------------------
+        InstData.categorical_types = ['PROC']
+
+        return
 
     # ------------------------------------------------------------------
     #
@@ -985,6 +991,15 @@ class InstData():
         return copy.deepcopy(InstData.tel_id_to_types)
 
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
+    def get_categorical_types(self):
+        while InstData.categorical_types is None:
+            sleep(0.01)
+        return copy.deepcopy(InstData.categorical_types)
+
+    
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------

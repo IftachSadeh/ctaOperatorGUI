@@ -75,6 +75,7 @@ class SockManager(BaseNamespace, BroadcastMixin):
             'server_name': SockManager.server_name,
             'tel_ids': SockManager.InstData.get_inst_ids(),
             'tel_id_to_types': SockManager.InstData.get_inst_id_to_types(),
+            'categorical_types': SockManager.InstData.get_categorical_types(),
         })
         return
 

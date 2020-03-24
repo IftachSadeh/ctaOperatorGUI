@@ -160,15 +160,6 @@ window.ArrZoomerMain = function (opt_in0) {
   }
   this_top.cat_ele_pos = cat_ele_pos
 
-  // ------------------------------------------------------------------
-  // 
-  // ------------------------------------------------------------------
-  function is_categorical_id(id) {
-    let cat_ids = ['PROC']
-
-    let tel_index = cat_ids.indexOf(ele_base.tel_types[id])
-    return (tel_index !== -1)
-  }
 
   // ------------------------------------------------------------------
   // 
@@ -186,7 +177,7 @@ window.ArrZoomerMain = function (opt_in0) {
 
     let y_ele = []
     let data_cat = Object.entries(tel_data).filter(function(d) {
-      return is_categorical_id(d[0])
+      return tel_info.is_categorical_id(ele_base.tel_types[d[0]])
     })
     $.each(data_cat, function(i, d) {
       let id = d[0]
@@ -872,7 +863,7 @@ window.ArrZoomerMain = function (opt_in0) {
       // ------------------------------------------------------------------
       let xy_cat = {}
       let data_cat = Object.entries(data_in).filter(function(d) {
-        return is_categorical_id(d[0])
+        return tel_info.is_categorical_id(ele_base.tel_types[d[0]])
       })
 
       $.each(data_cat, function(i, d) {
@@ -914,7 +905,7 @@ window.ArrZoomerMain = function (opt_in0) {
         instruments.data.vor.data_physical.push({ 
           id: id, x: x, y: y, r: r 
         })
-        // console.log(id, instruments.data.xyr_physical[id], ele_base.tel_types[id], is_categorical_id(id))
+        // console.log(id, instruments.data.xyr_physical[id], ele_base.tel_types[id], tel_info.is_categorical_id(ele_base.tel_types[id]))
       })
 
 

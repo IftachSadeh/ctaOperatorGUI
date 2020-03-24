@@ -62,6 +62,7 @@ function SocketManager () {
       let tel_info = {}
       tel_info.tel_ids = data_in.tel_ids
       tel_info.tel_id_to_types = data_in.tel_id_to_types
+      tel_info.categorical_types = data_in.categorical_types
       window.__socktel_info__ = tel_info
 
       validate_server(data_in.server_name)

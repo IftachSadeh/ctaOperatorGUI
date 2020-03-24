@@ -544,6 +544,18 @@ window.tel_info = function () {
     return deep_copy(tel_id_to_types)
   }
 
+  var categorical_types = window.__socktel_info__.categorical_types
+  this.get_categorical_types = function () {
+    return deep_copy(categorical_types)
+  }
+
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  this.is_categorical_id = function (tel_id) {
+    return (categorical_types.indexOf(tel_id) !== -1)
+  }
+
   // ------------------------------------------------------------------
   // consistent telescope id ordering
   // ------------------------------------------------------------------
