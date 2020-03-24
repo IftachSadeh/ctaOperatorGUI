@@ -1,6 +1,6 @@
 from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
-from pyramid.view import view_config, forbidden_view_config
+from pyramid.view import forbidden_view_config
 from pyramid.security import remember, forget
 from Models import DBSession, MyModel
 
@@ -11,7 +11,7 @@ from socketio import socketio_manage
 import ctaGuiUtils.py.utils as utils
 
 # base-class for all widgets which use sockets
-from SockManager import SockManager
+from SocketManager import SocketManager
 
 
 # ------------------------------------------------------------------
@@ -19,13 +19,13 @@ from SockManager import SockManager
 # ------------------------------------------------------------------
 def socketio_service(request):
     socks = dict()
-    socks["/"+"index"] = SockManager
-    socks["/"+"view_refresh_all"] = SockManager
-    # socks["/"+"view100"] = SockManager_view100
+    socks["/" + "index"] = SocketManager
+    socks["/" + "view_refresh_all"] = SocketManager
+    # socks["/"+"view100"] = socket_manager_view100
 
     for widget_name in utils.all_widgets:
         if not ('/'+widget_name) in socks:
-            socks['/'+widget_name] = SockManager
+            socks['/'+widget_name] = SocketManager
 
     socketio_manage(request.environ, socks, request=request)
 
@@ -37,10 +37,11 @@ def get_display_userid(request):
     return ('' if userid is None else userid)
 
 
+# ------------------------------------------------------------------
+# login page with authentication - check the DB for 
+# the given user_id/password
+# ------------------------------------------------------------------
 def view_login(request):
-    # ------------------------------------------------------------------
-    # login page with authentication - check the DB for the given user_id/password
-    # ------------------------------------------------------------------
     view_name = "login"
 
     # if already logged in, go to the index
@@ -56,9 +57,10 @@ def view_login(request):
 
         # check if succesfull login
         if db_lookup is not None:
-            if str(db_lookup.userId) == login and str(db_lookup.passwd) == password:
+            is_login = (str(db_lookup.userId) == login)
+            is_pass = (str(db_lookup.passwd) == password)
+            if is_login and is_pass:
                 headers = remember(request, login)
-
                 return HTTPFound(location=request.route_url("index"), headers=headers)
 
     return dict(
@@ -71,28 +73,28 @@ def view_login(request):
     )
 
 
+# ------------------------------------------------------------------
+# logout page with a redirect to the login
+# ------------------------------------------------------------------
 def view_logout(request):
-    # ------------------------------------------------------------------
-    # logout page with a redirect to the login
-    # ------------------------------------------------------------------
     # forget the current loged-in user
     headers = forget(request)
     # redirect to the login page
     return HTTPFound(location=request.route_url("index"), headers=headers)
 
 
+# ------------------------------------------------------------------
+# forbidden view redirects to the login
+# ------------------------------------------------------------------
 @forbidden_view_config()
 def view_forbidden(request):
-    # ------------------------------------------------------------------
-    # forbidden view redirects to the login
-    # ------------------------------------------------------------------
     return HTTPFound(location=request.route_url("login"))
 
 
+# ------------------------------------------------------------------
+# index, empty, not-found
+# ------------------------------------------------------------------
 def view_index(request):
-    # ------------------------------------------------------------------
-    # index, empty, not-found
-    # ------------------------------------------------------------------
     view_name = "index"
 
     return dict(
@@ -105,6 +107,9 @@ def view_index(request):
     )
 
 
+# ------------------------------------------------------------------
+# redirects
+# ------------------------------------------------------------------
 def view_empty(request):
     return HTTPFound(location=request.route_url("index"))
 
@@ -122,10 +127,10 @@ def view_not_found(request):
     )
 
 
+# ------------------------------------------------------------------
+# now for the widgets
+# ------------------------------------------------------------------
 def view_common(request):
-    # ------------------------------------------------------------------
-    # now for the widgets
-    # ------------------------------------------------------------------
     view_name = request.matched_route.name
 
     return dict(

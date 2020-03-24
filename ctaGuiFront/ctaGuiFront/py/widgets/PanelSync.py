@@ -25,19 +25,19 @@ class PanelSync():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, widget_id="", SockManager=None, *args, **kwargs):
+    def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
         self.log = my_log(title=__name__)
 
         # the id of this instance
         self.widget_id = widget_id
         # the parent of this widget
-        self.SockManager = SockManager
+        self.socket_manager = socket_manager
         my_assert(log=self.log, msg=[
-               " - no SockManager handed to", self.__class__.__name__], state=(self.SockManager is not None))
+               " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
-        self.widget_group = self.SockManager.user_group_id+''+self.widget_name
+        self.widget_group = self.socket_manager.user_group_id+''+self.widget_name
 
         self.redis = RedisManager(name=self.widget_name, log=self.log)
 
@@ -52,24 +52,24 @@ class PanelSync():
     #
     # ------------------------------------------------------------------
     def setup(self, *args):
-        with self.SockManager.lock:
+        with self.socket_manager.lock:
             wgt = self.redis.hGet(
                 name='all_widgets', key=self.widget_id, packed=True)
             self.n_icon = wgt["n_icon"]
 
         # override the global logging variable with a name corresponding to the current session id
-        self.log = my_log(title=str(self.SockManager.user_id)+"/" +
-                         str(self.SockManager.sess_id)+"/"+__name__+"/"+self.widget_id)
+        self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
+                         str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_init_data}
-        self.SockManager.send_init_widget(opt_in=opt_in)
+        self.socket_manager.send_init_widget(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data
         # updates to all sessions in the group
         opt_in = {'widget': self,
                  'data_func': self.panel_sync_get_groups, 'sleep_seconds': 5}
-        self.SockManager.add_widget_tread(opt_in=opt_in)
+        self.socket_manager.add_widget_tread(opt_in=opt_in)
 
         return
 
@@ -87,7 +87,7 @@ class PanelSync():
     def get_init_data(self):
         return {
             'groups': self.panel_sync_get_groups(),
-            "allow_panel_sync": self.SockManager.allow_panel_sync()
+            "allow_panel_sync": self.socket_manager.allow_panel_sync()
         }
 
     # ------------------------------------------------------------------
@@ -101,10 +101,10 @@ class PanelSync():
             'data': self.panel_sync_get_groups()
         }
 
-        self.SockManager.socket_event_widgets(
+        self.socket_manager.socket_event_widgets(
             event_name=emit_data['event_name'],
             data=emit_data,
-            sess_ids=[self.SockManager.sess_id],
+            sess_ids=[self.socket_manager.sess_id],
             widget_ids=[self.widget_id]
         )
 
@@ -117,8 +117,8 @@ class PanelSync():
     def setSyncGroups(self, *args):
         data = args[0]
 
-        with self.SockManager.lock:
-            widget_ids = self.redis.lGet('user_widgets;'+self.SockManager.user_id)
+        with self.socket_manager.lock:
+            widget_ids = self.redis.lGet('user_widgets;'+self.socket_manager.user_id)
 
             sync_groups = []
             for child_0 in data["data"]["children"]:
@@ -135,7 +135,7 @@ class PanelSync():
                 sync_groups.append(sync_group)
 
             self.redis.hSet(
-                name='sync_groups', key=self.SockManager.user_id, data=sync_groups, packed=True)
+                name='sync_groups', key=self.socket_manager.user_id, data=sync_groups, packed=True)
 
         self.update_sync_groups(ignore_id=self.widget_id)
 
@@ -150,8 +150,8 @@ class PanelSync():
         # get the current set of widgest which need an update
         # ------------------------------------------------------------------
         sess_widgets = [[], []]
-        with self.SockManager.lock:
-            widget_ids = self.redis.lGet('user_widgets;'+self.SockManager.user_id)
+        with self.socket_manager.lock:
+            widget_ids = self.redis.lGet('user_widgets;'+self.socket_manager.user_id)
             all_widgets = self.redis.hMget(
                 name='all_widgets', key=widget_ids, packed=True)
 
@@ -177,7 +177,7 @@ class PanelSync():
             'data': self.panel_sync_get_groups()
         }
 
-        self.SockManager.socket_event_widgets(
+        self.socket_manager.socket_event_widgets(
             event_name=emit_data['event_name'],
             data=emit_data,
             sess_ids=sess_widgets[0],
@@ -191,8 +191,8 @@ class PanelSync():
     # ------------------------------------------------------------------
 
     def panel_sync_get_groups(self):
-        with self.SockManager.lock:
-            widget_ids = self.redis.lGet('user_widgets;'+self.SockManager.user_id)
+        with self.socket_manager.lock:
+            widget_ids = self.redis.lGet('user_widgets;'+self.socket_manager.user_id)
             all_widgets = self.redis.hMget(
                 name='all_widgets', key=widget_ids, packed=True)
 
@@ -213,7 +213,7 @@ class PanelSync():
             children_0 = []
 
             sync_groups = self.redis.hGet(
-                name='sync_groups', key=self.SockManager.user_id, packed=True, default_val=[])
+                name='sync_groups', key=self.socket_manager.user_id, packed=True, default_val=[])
 
             for sync_group in sync_groups:
                 sync_states = sync_group["sync_states"]
@@ -261,7 +261,7 @@ class PanelSync():
                     sync_groups.remove(rm_element)
 
                 self.redis.hSet(
-                    name='sync_groups', key=self.SockManager.user_id, data=sync_groups, packed=True)
+                    name='sync_groups', key=self.socket_manager.user_id, data=sync_groups, packed=True)
 
         all_groups = {
             "date": date_to_string(datetime.utcnow(), '%H:%M:%S:%f'),

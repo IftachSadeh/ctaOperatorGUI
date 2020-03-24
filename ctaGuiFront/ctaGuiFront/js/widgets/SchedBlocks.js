@@ -128,7 +128,7 @@ function main_sched_blocks (opt_in) {
   // delay counters
   let locker = new Locker()
   locker.add('in_init')
-  console.log(' -- FIXME -- use tel_info.get_ids and tel_info.tel_id_to_types as in arr_zoomer.js .... -- see optional filter option in the python file -- self.SockManager.InstData.get_inst_ids(inst_types=[....])')
+  console.log(' -- FIXME -- use tel_info.get_ids and tel_info.tel_id_to_types as in arr_zoomer.js .... -- see optional filter option in the python file -- self.socket_manager.InstData.get_inst_ids(inst_types=[....])')
 
   // function loop
   let run_loop = new RunLoop({ tag: widget_id })

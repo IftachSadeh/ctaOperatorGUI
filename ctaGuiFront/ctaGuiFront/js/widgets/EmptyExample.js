@@ -25,14 +25,6 @@ var main_script_tag = 'EmptyExample'
 /* global cols_mix */
 /* global unique */
 
-// // load additional js files:
-// window.load_script({ source:main_script_tag, script:"/js/utils_scrollGrid.js"});
-
-// window.load_script({
-//   source: main_script_tag,
-//   script: '/js/arr_zoomer/utils_arr_zoomer_base.js'
-// })
-
 
 // -------------------------------------------------------------------
 sock.widget_table[main_script_tag] = function (opt_in) {
@@ -215,110 +207,6 @@ let main_empty_example = function (opt_in) {
         opac: 0.1,
         hex_r: 15
       })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      // // ------------------------------------------------------------------
-      // // ------------------------------------------------------------------
-      // // ------------------------------------------------------------------
-      // // 
-      // // ------------------------------------------------------------------
-      // let my_unique_id = unique()
-      // let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id
-      // let is_south = window.__site_type__ === 'S'
-      // let svgG = svg.g
-
-      // locker.add(arr_zoomer_lock_init_key)
-
-      // let arr_zoomer_ele_opts = {
-      //   do_ele: {
-      //     main: true,
-      //     ches: true,
-      //     mini: true,
-      //     tree: true,
-      //     lens: !true,
-      //   },
-      //   trans: {
-      //     main: 'translate(0,100)scale(2.5)',
-      //     ches: 'translate(110,0)scale(3.8)',
-      //     tree: 'translate(250,100)scale(2.5)',
-      //     mini: 'translate(5,0)scale(1)',
-      //     lens: 'translate(10,5)scale(0.18)',
-      //     // mini: 'translate(240,0)scale(2.7)',
-      //     // lens: 'translate(245,5)scale(0.60)',
-      //   },
-      //   main:{
-      //     // dblclick_zoom_in_out: false,
-      //   },
-      //   ches:{
-      //     // myOpt: 0,
-      //   },
-      //   mini:{
-      //     // static_zoom: false,
-      //   },
-      //   tree: {
-      //     // aspect_ratio: 6/5,
-      //   },
-      //   lens: {
-      //     aspect_ratio: 4,
-      //     has_titles: true,
-      //     // pointerEvents: true,
-      //   },
-      // }
-
-      // // ------------------------------------------------------------------
-      // // 
-      // // ------------------------------------------------------------------
-      // console.log(data_in.data)
-
-
-      // let arr_zoomer_base = new arr_zoomer_base({
-      //   run_loop: run_loop,
-      //   sgv_tag: sgv_tag,
-      //   widget_id: widget_id,
-      //   widget_source: widget_source,
-      //   locker: locker,
-      //   is_south: is_south,
-      //   widget_type: widget_type,
-      //   sock: sock,
-      //   ele_opts: arr_zoomer_ele_opts,
-      //   lock_init_key: arr_zoomer_lock_init_key,
-      //   svg: svgG,
-      // })
-      // arr_zoomer_base.init_data(data_in.data.arr_zoomer)
-      // // ------------------------------------------------------------------
-      // // ------------------------------------------------------------------
-      // // ------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       // -------------------------------------------------------------------
       //

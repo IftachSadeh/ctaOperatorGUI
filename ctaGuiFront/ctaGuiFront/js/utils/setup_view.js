@@ -20,7 +20,7 @@ setup_view.view102 = function () {
   })
 
   sock.add_widget({
-    name_tag: 'ArrZoomer',
+    name_tag: 'ArrZoomerView',
     table_title: 'Telescope health',
     has_icon: true,
     has_drawer: true
@@ -91,11 +91,11 @@ setup_view.view102 = function () {
 }
 
 // -------------------------------------------------------------------
-// ArrZoomer
+// ArrZoomerView
 // -------------------------------------------------------------------
 setup_view.view200 = function () {
   sock.add_widget({
-    name_tag: 'ArrZoomer',
+    name_tag: 'ArrZoomerView',
     table_title: 'Telescope health',
     has_icon: true,
     has_drawer: true

@@ -41,7 +41,7 @@ has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == "dawn.ifh.de")
 all_widgets = []
 allowed_widget_types = {
     'synced': [
-        'ArrZoomer',
+        'ArrZoomerView',
         'PlotsDash',
         'SubArrGrp',
         'telPntSky',
@@ -76,6 +76,7 @@ class my_log():
         self.log = logging.getLogger(self.name)
 
         self.set_colors(use_colors)
+        self.base_title = title
         self.title = self.colors['c']("" if title is "" else (
             " ["+title+"]" if use_log_title else ""))
 
@@ -83,7 +84,7 @@ class my_log():
         self.lock = my_lock("my_log")
 
         return
-
+    
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -259,6 +260,13 @@ class my_log():
     def set_colors(self, use_colors):
         self.colors = self.get_col_dict(use_colors)
         return
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
+    def get_title(self):
+        return self.base_title
+
 
 # ------------------------------------------------------------------
 # locker class by name

@@ -35,19 +35,19 @@ class ObsBlockControl():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, widget_id="", SockManager=None, *args, **kwargs):
+    def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
         self.log = my_log(title=__name__)
 
         # the id of this instance
         self.widget_id = widget_id
         # the parent of this widget
-        self.SockManager = SockManager
+        self.socket_manager = socket_manager
         my_assert(log=self.log, msg=[
-               " - no SockManager handed to", self.__class__.__name__], state=(self.SockManager is not None))
+               " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
-        self.widget_group = self.SockManager.user_group_id+''+self.widget_name
+        self.widget_group = self.socket_manager.user_group_id+''+self.widget_name
 
         self.redis = RedisManager(name=self.widget_name, log=self.log)
 
@@ -59,8 +59,8 @@ class ObsBlockControl():
         self.n_icon = -1
         # self.tel_Id = ""
 
-        # self.tel_ids = self.SockManager.InstData.get_inst_ids()
-        self.tel_ids = self.SockManager.InstData.get_inst_ids(
+        # self.tel_ids = self.socket_manager.InstData.get_inst_ids()
+        self.tel_ids = self.socket_manager.InstData.get_inst_ids(
             inst_types=['LST', 'MST', 'SST']
         )
 
@@ -79,26 +79,26 @@ class ObsBlockControl():
     # ------------------------------------------------------------------
 
     def setup(self, *args):
-        with self.SockManager.lock:
+        with self.socket_manager.lock:
             wgt = self.redis.hGet(
                 name='all_widgets', key=self.widget_id, packed=True)
             self.n_icon = wgt["n_icon"]
 
         # override the global logging variable with a name corresponding to the current session id
-        self.log = my_log(title=str(self.SockManager.user_id)+"/" +
-                         str(self.SockManager.sess_id)+"/"+__name__+"/"+self.widget_id)
+        self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
+                         str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
 
         self.widget_state = wgt["widget_state"]
         self.widget_state["focus_id"] = ""
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.SockManager.send_init_widget(opt_in=opt_in)
+        self.socket_manager.send_init_widget(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates
         # to all sessions in the group
         opt_in = {'widget': self, 'data_func': self.get_data}
-        self.SockManager.add_widget_tread(opt_in=opt_in)
+        self.socket_manager.add_widget_tread(opt_in=opt_in)
 
         return
 
