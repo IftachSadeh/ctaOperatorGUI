@@ -47,7 +47,7 @@ window.ArrZoomerMini = function(opt_in0) {
 
     let scale_r = instruments.scale_r
 
-    let svg_dims = { 
+    let svg_dims = {
     // w: 500, h: 500, frac_circ_wh: 1,
         w: 600, h: 600, frac_circ_wh: 0.85,
     }
@@ -79,7 +79,7 @@ window.ArrZoomerMini = function(opt_in0) {
 
     mini_gs.clipped_g = mini_gs.g_outer.append('g')
     mini_gs.clipped_g.attr('class', 'clipped_g')
-        .attr('clip-path', 'url(#'+unique_clip_id+')')
+        .attr('clip-path', 'url(#' + unique_clip_id + ')')
 
     mini_gs.g_base = mini_gs.clipped_g.append('g')
     mini_gs.gBack = mini_gs.g_base.append('g')
@@ -100,7 +100,9 @@ window.ArrZoomerMini = function(opt_in0) {
     // for translations and sacling of this element
     // ------------------------------------------------------------------
     this_top.set_transform = function(trans) {
-        if (is_def(trans)) mini_gs.g.attr('transform', trans)
+        if (is_def(trans)) {
+            mini_gs.g.attr('transform', trans)
+        }
         return mini_gs.g
     }
 
@@ -117,12 +119,12 @@ window.ArrZoomerMini = function(opt_in0) {
     miniMapCol.p = [ '#9575CD' ]
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function createMiniMap() {
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
         mini_gs.g_outer
             .append('rect')
@@ -132,7 +134,7 @@ window.ArrZoomerMini = function(opt_in0) {
             .attr('height', svg_dims.h)
             .style('fill', 'transparent' )
             .style('stroke', '#F2F2F2' )
-            .style('stroke-width', isLens?2:0)
+            .style('stroke-width', isLens ? 2 : 0)
             .attr('pointer-events', 'none')
             .attr('opacity', 1)
 
@@ -160,8 +162,8 @@ window.ArrZoomerMini = function(opt_in0) {
         //   .style('opacity', isLens?0.05:0)
 
         // ------------------------------------------------------------------
-        // 
-        // ------------------------------------------------------------------    
+        //
+        // ------------------------------------------------------------------
         get_ele('main').add_back_shapes(mini_gs.gBack, svg_dims, ele_base.tel_types)
 
         // the background grid
@@ -180,7 +182,7 @@ window.ArrZoomerMini = function(opt_in0) {
         com.g_base_mini.rect = mini_gs.g_base.append('g')
         com.g_base_mini.vor = mini_gs.g_base.append('g')
 
-        if(!pointerEvents) {
+        if (!pointerEvents) {
             com.g_base_mini.vor.style('pointer-events', 'none')
         }
 
@@ -194,24 +196,28 @@ window.ArrZoomerMini = function(opt_in0) {
     // ------------------------------------------------------------------
     function setupZoom() {
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
         function svg_zoom_start() {
             if (!locker.are_free([
-                'zoom_sync_main', ('zoom_sync'+miniLensTag), 'in_zoom_main',
-            ])) return
+                'zoom_sync_main', ('zoom_sync' + miniLensTag), 'in_zoom_main',
+            ])) {
+                return
+            }
       
-            locker.add({ id: ('inZoom'+miniLensTag), override: true })
+            locker.add({ id: ('inZoom' + miniLensTag), override: true })
             return
         }
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         function svg_zoom_during() {
             if (!locker.are_free([
-                'zoom_sync_main', ('zoom_sync'+miniLensTag), 'in_zoom_main',
-            ])) return
+                'zoom_sync_main', ('zoom_sync' + miniLensTag), 'in_zoom_main',
+            ])) {
+                return
+            }
 
             if (!this_top.static_zoom) {
                 mini_gs.g_base.attr('transform', d3.event.transform)
@@ -219,10 +225,16 @@ window.ArrZoomerMini = function(opt_in0) {
             // mini_zoom_view_recOnce({ animT: 0 })
 
             $.each([ 'main', 'mini', 'lens' ], function(i, d) {
-                if (d == miniLensTag) return
+                if (d == miniLensTag) {
+                    return
+                }
 
-                if (!get_ele(d)) return
-                if(get_ele(d).static_zoom) return
+                if (!get_ele(d)) {
+                    return
+                }
+                if (get_ele(d).static_zoom) {
+                    return
+                }
         
                 ele_base.svgs[d].g_base.attr('transform', d3.event.transform)
                 // ele_base.svgs.main.g_base.attr('transform', d3.event.transform)
@@ -232,27 +244,33 @@ window.ArrZoomerMini = function(opt_in0) {
         }
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         function svg_zoom_end() {
             if (!locker.are_free([
-                'zoom_sync_main', ('zoom_sync'+miniLensTag), 'in_zoom_main',
-            ])) return
+                'zoom_sync_main', ('zoom_sync' + miniLensTag), 'in_zoom_main',
+            ])) {
+                return
+            }
 
             mini_zoom_view_rec({})
             // console.log('-svg_zoom_end-svg_zoom_end-', d3.event)
 
             $.each([ 'main', 'mini', 'lens' ], function(i, d) {
-                if (d == miniLensTag) return
+                if (d == miniLensTag) {
+                    return
+                }
 
-                if (!get_ele(d)) return
+                if (!get_ele(d)) {
+                    return
+                }
                 get_ele(d).zoom_sync(d3.event.transform)
                 // get_ele('main').zoom_sync(d3.event.transform)
             })
 
 
             // remove the lock before possible zoom_to_target_main()
-            locker.remove(('inZoom'+miniLensTag))
+            locker.remove(('inZoom' + miniLensTag))
 
 
             if (Math.abs(this_top.get_scale() - zooms.len['0.0']) < 0.00001) {
@@ -270,16 +288,18 @@ window.ArrZoomerMini = function(opt_in0) {
         }
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         function zoom_sync(trans) {
             if (!locker.are_free([
-                ('zoom_sync'+miniLensTag), ('inZoom'+miniLensTag),
-            ])) return
+                ('zoom_sync' + miniLensTag), ('inZoom' + miniLensTag),
+            ])) {
+                return
+            }
 
-            locker.add({ id: ('zoom_sync'+miniLensTag), override: true })
+            locker.add({ id: ('zoom_sync' + miniLensTag), override: true })
             function func_end() {
-                locker.remove(('zoom_sync'+miniLensTag))
+                locker.remove(('zoom_sync' + miniLensTag))
             }
 
             let x = (svg_dims.w / 2 - trans.x) / trans.k
@@ -288,7 +308,7 @@ window.ArrZoomerMini = function(opt_in0) {
 
             let duration_scale = 0
             if (!this_top.static_zoom) {
-                if(!locker.are_free([ 'auto_zoom_target' ])) {
+                if (!locker.are_free([ 'auto_zoom_target' ])) {
                     duration_scale = 0.5
                     duration_scale = 1
                 }
@@ -320,7 +340,7 @@ window.ArrZoomerMini = function(opt_in0) {
 
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         com.svg_zoom = d3.zoom()
         com.svg_zoom.scaleExtent(zooms.scale_extent)
@@ -344,7 +364,7 @@ window.ArrZoomerMini = function(opt_in0) {
         // }
         // com.svg_zoom.filter(filter)
 
-        if(pointerEvents) {
+        if (pointerEvents) {
             mini_gs.g_mini
                 .call(com.svg_zoom)
                 .on('dblclick.zoom', null)
@@ -378,10 +398,12 @@ window.ArrZoomerMini = function(opt_in0) {
 
  
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function telTitles() {
-        if(!has_titles) return
+        if (!has_titles) {
+            return
+        }
     
         let data_now = tel_data.tel
         let g_now = com.g_base_mini.text
@@ -458,7 +480,7 @@ window.ArrZoomerMini = function(opt_in0) {
     }
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function updateMiniMap() {
         let data_now = tel_data.tel
@@ -520,15 +542,17 @@ window.ArrZoomerMini = function(opt_in0) {
     //  Blue square on miniMap
     // ------------------------------------------------------------------
     function mini_zoom_view_rec(opt_in) {
-        run_loop.push({ tag: 'mini_zoom_view_rec'+my_unique_id, data: opt_in })
+        run_loop.push({ tag: 'mini_zoom_view_rec' + my_unique_id, data: opt_in })
     }
     this_top.mini_zoom_view_rec = mini_zoom_view_rec
   
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function mini_zoom_view_recOnce(opt_in) {
-        if (!this_top.static_zoom) return
+        if (!this_top.static_zoom) {
+            return
+        }
         if (
             !locker.are_free([
                 'auto_zoom_target',
@@ -544,14 +568,16 @@ window.ArrZoomerMini = function(opt_in0) {
         let trans = this_top.get_trans()
         let data = []
 
-        if(!is_def(opt_in)) opt_in = {}
+        if (!is_def(opt_in)) {
+            opt_in = {}
+        }
         let animT = is_def(opt_in.animT) ? opt_in.animT : times.anim_arc
         // console.log('QQQ animT',animT,scale,Date.now())
 
         if (scale < (is_south ? 2 : 1.5)) {
             scale = 1
             trans = [ 0, 0 ]
-        } 
+        }
         else {
             data = [{ id: 0 }]
         }
@@ -646,7 +672,7 @@ window.ArrZoomerMini = function(opt_in0) {
                 d.attr('d', vor_ploy_func)
             })
             .on('click', function(d) {
-                tel_data.vor_dblclick({ 
+                tel_data.vor_dblclick({
                     source: 'minizoomclick', d: d, is_in_out: false,
                 })
                 return
@@ -676,7 +702,9 @@ window.ArrZoomerMini = function(opt_in0) {
     //  Global function
     // ------------------------------------------------------------------
     function init_data(data_in) {
-        if (this_top.has_init) return
+        if (this_top.has_init) {
+            return
+        }
         this_top.has_init = true
 
         tel_data = data_in.instrument_data
@@ -704,7 +732,7 @@ window.ArrZoomerMini = function(opt_in0) {
         // this_top.zoomToTrgQuick = zoomToTrgQuick
 
         run_loop.init({
-            tag: 'mini_zoom_view_rec'+my_unique_id,
+            tag: 'mini_zoom_view_rec' + my_unique_id,
             func: mini_zoom_view_recOnce,
             n_keep: 1,
         })
@@ -719,7 +747,7 @@ window.ArrZoomerMini = function(opt_in0) {
     this_top.init_data = init_data
   
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function set_state_once(data_in) {
         updateMiniMap ()
@@ -745,7 +773,7 @@ window.ArrZoomerMini = function(opt_in0) {
   
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     // initialize a couple of functions to be overriden below
     this_top.get_scale = function() {

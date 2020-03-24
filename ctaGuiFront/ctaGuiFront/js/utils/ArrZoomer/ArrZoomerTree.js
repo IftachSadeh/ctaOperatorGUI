@@ -50,7 +50,7 @@ window.ArrZoomerTree = function(opt_in0) {
     let avgTelD = []
     $.each([ 0, 1 ], function(nState_, nState) {
         if (nState === 0) {
-            avgTelD.push({ 
+            avgTelD.push({
                 r: svg_dims.w[0] / 4, x: svg_dims.w[0] / 2, y: svg_dims.h[0] / 2,
             })
         }
@@ -91,7 +91,7 @@ window.ArrZoomerTree = function(opt_in0) {
 
     tree_gs.clipped_g = tree_gs.g_outer.append('g')
     tree_gs.clipped_g.attr('class', 'clipped_g')
-        .attr('clip-path', 'url(#'+unique_clip_id+')')
+        .attr('clip-path', 'url(#' + unique_clip_id + ')')
 
     tree_gs.g_base = tree_gs.clipped_g.append('g')
     tree_gs.gS0 = tree_gs.g_base.append('g')
@@ -101,7 +101,7 @@ window.ArrZoomerTree = function(opt_in0) {
     // scale to 100x100 px
     // ------------------------------------------------------------------
     tree_gs.g_outer.attr('transform', function(d) {
-        return 'translate(0,0)scale('+ (100 / svg_dims.w[0]) +')'
+        return 'translate(0,0)scale(' + (100 / svg_dims.w[0]) + ')'
     })
 
     // ------------------------------------------------------------------
@@ -109,12 +109,14 @@ window.ArrZoomerTree = function(opt_in0) {
     // for translations and sacling of this element
     // ------------------------------------------------------------------
     this_top.set_transform = function(trans) {
-        if (is_def(trans)) tree_gs.g.attr('transform', trans)
+        if (is_def(trans)) {
+            tree_gs.g.attr('transform', trans)
+        }
         return tree_gs.g
     }
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     let com = {}
     let arc_func = {}
@@ -138,7 +140,9 @@ window.ArrZoomerTree = function(opt_in0) {
     //
     // ------------------------------------------------------------------
     function init_data(data_in) {
-        if(this_top.has_init) return
+        if (this_top.has_init) {
+            return
+        }
         this_top.has_init = true
 
 
@@ -156,7 +160,7 @@ window.ArrZoomerTree = function(opt_in0) {
             .attr('width', svg_dims.w[0])
             .attr('height', svg_dims.h[0])
             .attr('stroke-width', '0')
-            .attr('fill', '#F2F2F2') 
+            .attr('fill', '#F2F2F2')
         // .attr("fill", "red")
             .style('stroke', '#383B42' )
         // .style("stroke",'#F2F2F2' )
@@ -203,13 +207,19 @@ window.ArrZoomerTree = function(opt_in0) {
             // if(opt_in.skip != undefined && opt_in.skip) return null;
             transition.attrTween('d', function(d, i) {
                 let id = d.id
-                if (is_def(opt_in.index_id)) id = opt_in.index_id ? d.id : i
+                if (is_def(opt_in.index_id)) {
+                    id = opt_in.index_id ? d.id : i
+                }
 
                 if (is_def(opt_in.incIdV)) {
-                    if (opt_in.incIdV.indexOf(id) === -1) return null
+                    if (opt_in.incIdV.indexOf(id) === -1) {
+                        return null
+                    }
                 }
                 if (is_def(opt_in.excIdV)) {
-                    if (opt_in.excIdV.indexOf(id) >= 0) return null
+                    if (opt_in.excIdV.indexOf(id) >= 0) {
+                        return null
+                    }
                 }
 
                 let tag_now = opt_in.tag_now
@@ -240,11 +250,21 @@ window.ArrZoomerTree = function(opt_in0) {
                 // console.log(tag_now,[ang_str_0,ang_str_1],[ang_end_0,ang_end_1],[r_in_0,r_in_1],[r_out_0,r_out_1])
 
                 let needUpd = 0
-                if (Math.abs(ang_str_0 - ang_str_1) / ang_str_0 > 1e-5) needUpd++
-                if (Math.abs(ang_end_0 - ang_end_1) / ang_end_0 > 1e-5) needUpd++
-                if (Math.abs(r_in_0 - r_in_1) / r_in_0 > 1e-5) needUpd++
-                if (Math.abs(r_out_0 - r_out_1) / r_out_0 > 1e-5) needUpd++
-                if (needUpd === 0) return null
+                if (Math.abs(ang_str_0 - ang_str_1) / ang_str_0 > 1e-5) {
+                    needUpd++
+                }
+                if (Math.abs(ang_end_0 - ang_end_1) / ang_end_0 > 1e-5) {
+                    needUpd++
+                }
+                if (Math.abs(r_in_0 - r_in_1) / r_in_0 > 1e-5) {
+                    needUpd++
+                }
+                if (Math.abs(r_out_0 - r_out_1) / r_out_0 > 1e-5) {
+                    needUpd++
+                }
+                if (needUpd === 0) {
+                    return null
+                }
 
                 let arc = d3.arc()
                 return function(t) {
@@ -299,7 +319,8 @@ window.ArrZoomerTree = function(opt_in0) {
 
             telArcs([ instruments.data.avg ], props_in, 0)
             setSubProp({ tel_Id: 'avg', prop_in: '' })
-        } else {
+        }
+        else {
             let targetIndex = instruments.data.id_indices[zooms.target]
             let props_in = {
                 tel_Id: zooms.target,
@@ -311,7 +332,8 @@ window.ArrZoomerTree = function(opt_in0) {
             if (scale < zooms.len['1.0']) {
                 telArcs([ instruments.data.tel[targetIndex] ], props_in, 0)
                 setSubProp({ tel_Id: zooms.target, prop_in: '' })
-            } else {
+            }
+            else {
                 telArcs([ instruments.data.tel[targetIndex] ], props_in, 1)
             }
         }
@@ -349,11 +371,15 @@ window.ArrZoomerTree = function(opt_in0) {
                         return avgTelD[d.state].r * (is0 ? 0.95 : 0.99)
                     }
                     arc_func[tag_now].ang00 = function(d) {
-                        if (d[porp_now] === undefined) return 0
+                        if (d[porp_now] === undefined) {
+                            return 0
+                        }
                         return getPropIndex(d.id, porp_now) * instruments.tau_fracs[d.id] + instruments.tau_space
                     }
                     arc_func[tag_now].ang01 = function(d) {
-                        if (d[porp_now] === undefined) return 0
+                        if (d[porp_now] === undefined) {
+                            return 0
+                        }
                         return (
                             getPropIndex(d.id, porp_now) * instruments.tau_fracs[d.id] +
               instruments.tau_space +
@@ -362,11 +388,15 @@ window.ArrZoomerTree = function(opt_in0) {
                         )
                     }
                     arc_func[tag_now].ang10 = function(d) {
-                        if (d[porp_now] === undefined) return 0
+                        if (d[porp_now] === undefined) {
+                            return 0
+                        }
                         return 0.1
                     }
                     arc_func[tag_now].ang11 = function(d) {
-                        if (d[porp_now] === undefined) return 0
+                        if (d[porp_now] === undefined) {
+                            return 0
+                        }
                         return is0 ? tau : tau * inst_health_frac(d[porp_now])
                     }
                 })
@@ -385,7 +415,8 @@ window.ArrZoomerTree = function(opt_in0) {
                 pos[porp_now] = { x: avgTelD[state].x, y: avgTelD[state].y }
                 angState = { ang_str_1: 'ang00', ang_end_1: 'ang01' }
                 radState = { r_in_1: 'rad00', r_out_1: 'rad01' }
-            } else {
+            }
+            else {
                 pos[porp_now] = {
                     x: avgTelD[state][porp_now + 'x'],
                     y: avgTelD[state][porp_now + 'y'],
@@ -662,7 +693,9 @@ window.ArrZoomerTree = function(opt_in0) {
             let txtR = avgTelD[state].r * scale_r[state].health1 * 1.2
             let xy = get_prop_pos_shift('xy', txtR, prop_index, propDin.length)
             let opac = state === 0 ? 0.7 : 0.9
-            if (state === 1 && propDin.indexOf(porp_now) === -1) opac *= 0.5
+            if (state === 1 && propDin.indexOf(porp_now) === -1) {
+                opac *= 0.5
+            }
 
             if (instruments.all_props.indexOf(porp_now) >= 0) {
                 textD.push({
@@ -685,7 +718,7 @@ window.ArrZoomerTree = function(opt_in0) {
 
             let recH = avgTelD[1].h
             let recW = Math.abs(
-                avgTelD[1][instruments.all_props[0] + 'x'] - 
+                avgTelD[1][instruments.all_props[0] + 'x'] -
         avgTelD[1][instruments.all_props[1] + 'x']
             )
             let recX = avgTelD[1][porp_now + 'x'] - recH / 2 - (recW - recH) / 2
@@ -898,11 +931,20 @@ window.ArrZoomerTree = function(opt_in0) {
         let prop_in = ''
         let remove = false
         if (is_def(opt_in)) {
-            if (is_def(opt_in.tel_Id)) tel_Id = opt_in.tel_Id
-            if (is_def(opt_in.click_in)) click_in = opt_in.click_in
-            if (is_def(opt_in.remove)) remove = opt_in.remove
-            if (is_def(opt_in.prop_in)) prop_in = opt_in.prop_in
-        } else {
+            if (is_def(opt_in.tel_Id)) {
+                tel_Id = opt_in.tel_Id
+            }
+            if (is_def(opt_in.click_in)) {
+                click_in = opt_in.click_in
+            }
+            if (is_def(opt_in.remove)) {
+                remove = opt_in.remove
+            }
+            if (is_def(opt_in.prop_in)) {
+                prop_in = opt_in.prop_in
+            }
+        }
+        else {
             // if(!is_def(opt_in) || is_update)
             prop_in = prev_tel_hierarchy_prop
             click_in = prop_in !== ''
@@ -911,7 +953,8 @@ window.ArrZoomerTree = function(opt_in0) {
         if (zooms.target !== tel_Id || !is_def(instruments.data.prop_data_s1[tel_Id])) {
             click_in = false
             remove = true
-        } else if (prop_in === '') {
+        }
+        else if (prop_in === '') {
             click_in = false
         }
 
@@ -943,8 +986,8 @@ window.ArrZoomerTree = function(opt_in0) {
         }
 
         let hasDataBase = (
-            !click_in && 
-      !remove && 
+            !click_in &&
+      !remove &&
       is_def(instruments.data.data_base_s1[tel_Id])
         )
 
@@ -995,18 +1038,22 @@ window.ArrZoomerTree = function(opt_in0) {
                 $.each(xV, function(index, xNow) {
                     if (index > 0) {
                         let diff_now = xV[index] - xV[index - 1]
-                        if (diff_now < min_diff) min_diff = diff_now
+                        if (diff_now < min_diff) {
+                            min_diff = diff_now
+                        }
                     }
                 })
 
                 nodeR = Math.min(min_diff / 2.3, nodeR)
-            } else {
+            }
+            else {
                 nodeR = 5
             }
             // console.log('---',xV,min_diff,nodeR)
 
             prev_tel_hierarchy_prop = prop_in
-        } else {
+        }
+        else {
             prev_tel_hierarchy_prop = ''
         }
 
@@ -1271,7 +1318,9 @@ window.ArrZoomerTree = function(opt_in0) {
             let dInId = dIn.data.data.id
 
             if (is_on) {
-                if (!mayUpdate()) return
+                if (!mayUpdate()) {
+                    return
+                }
 
                 com.s10.g_hierarchy
                     .selectAll('circle.' + tagNodes)
@@ -1296,7 +1345,8 @@ window.ArrZoomerTree = function(opt_in0) {
                     .style('font-weight', function(d) {
                         return d.data.id === dInId ? 'bold' : 'normal'
                     })
-            } else {
+            }
+            else {
                 if (!mayUpdate()) {
                     setTimeout(function() {
                         reset_r()
@@ -1355,7 +1405,9 @@ window.ArrZoomerTree = function(opt_in0) {
         let prop_in = opt_in.prop_in
         let parent_name = opt_in.parent_name
 
-        if (prop_in !== '' && !is_def(parent_name)) return
+        if (prop_in !== '' && !is_def(parent_name)) {
+            return
+        }
         // console.log('telPropTitle',opt_in)
 
         // ------------------------------------------------------------------
@@ -1422,7 +1474,8 @@ window.ArrZoomerTree = function(opt_in0) {
                     }
                 })
                 return x
-            } else {
+            }
+            else {
                 if (!is_def(eleWH[1]) || eleWH[1] === 0) {
                     eleWH[1] = get_node_height_by_id({
                         selction: com.s01.gText.selectAll('text.' + tag_now),
@@ -1574,7 +1627,8 @@ window.ArrZoomerTree = function(opt_in0) {
                 if (d.data.id === instruments.prop0) {
                     // console.log('updt',d.data.id,d.data.val,is_def(data_in[instruments.prop0]));
                     d.data.val = data_in[instruments.prop0]
-                } else if (is_def(data_in.data[d.data.id])) {
+                }
+                else if (is_def(data_in.data[d.data.id])) {
                     // console.log('updt',d.data.id,data_in.data[d.data.id]);
                     d.data.val = data_in.data[d.data.id]
                 }

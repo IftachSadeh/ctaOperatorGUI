@@ -1,3 +1,3 @@
 /* global d3 */
 
-window.foo = function () {}
+window.foo = function() {}

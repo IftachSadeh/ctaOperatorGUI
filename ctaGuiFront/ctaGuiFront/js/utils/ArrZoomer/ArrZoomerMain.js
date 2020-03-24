@@ -54,7 +54,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     this_top.has_init = false
     // this_top.svgQuick = null
@@ -85,7 +85,7 @@ window.ArrZoomerMain = function(opt_in0) {
     let tel_rs = ele_base.tel_rs
     let site_scale = ele_base.site_scale
 
-    let svg_dims = { 
+    let svg_dims = {
     // w: 500, h: 500, frac_circ_wh: 1,
         w: 600, h: 600, frac_circ_wh: 0.85,
     }
@@ -113,13 +113,13 @@ window.ArrZoomerMain = function(opt_in0) {
 
     main_gs.clipped_g = main_gs.g_outer.append('g')
     main_gs.clipped_g.attr('class', 'clipped_g')
-        .attr('clip-path', 'url(#'+unique_clip_id+')')
+        .attr('clip-path', 'url(#' + unique_clip_id + ')')
 
     // ------------------------------------------------------------------
     // initial scale to 100x100 px
     // ------------------------------------------------------------------
     main_gs.g_outer.attr('transform', function(d) {
-        return 'translate(0,0)scale('+ (100 / svg_dims.w) +')'
+        return 'translate(0,0)scale(' + (100 / svg_dims.w) + ')'
     })
 
     // ------------------------------------------------------------------
@@ -127,7 +127,9 @@ window.ArrZoomerMain = function(opt_in0) {
     // for translations and sacling of this element
     // ------------------------------------------------------------------
     this_top.set_transform = function(trans) {
-        if (is_def(trans)) main_gs.g.attr('transform', trans)
+        if (is_def(trans)) {
+            main_gs.g.attr('transform', trans)
+        }
         return main_gs.g
     }
 
@@ -144,7 +146,7 @@ window.ArrZoomerMain = function(opt_in0) {
     }
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function cat_ele_pos(n_ele_now, n_elements) {
         let y_marg_top = svg_dims.h * 0.3
@@ -152,7 +154,7 @@ window.ArrZoomerMain = function(opt_in0) {
         let y_marg = tel_rs.s00[2] + svg_dims.h * 0.2
         let y_tot = svg_dims.h - 2 * y_marg - y_marg_top - y_marg_bot
         let y_width = y_tot / (n_elements - 1)
-        let x = (svg_dims.w * (1-svg_dims.frac_circ_wh)) / 2
+        let x = (svg_dims.w * (1 - svg_dims.frac_circ_wh)) / 2
         let y = y_marg_top + y_marg + y_width * n_ele_now
         let r = tel_rs.s00[3]
 
@@ -162,13 +164,13 @@ window.ArrZoomerMain = function(opt_in0) {
 
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function add_back_shapes(g_in, len_wh, tel_data) {
         g_in
             .append('circle')
-            .attr('r', (len_wh.w - len_wh.w * (1-len_wh.frac_circ_wh)) / 2.1)
-            .attr('cx', (len_wh.w + len_wh.w * (1-len_wh.frac_circ_wh)) / 2)
+            .attr('r', (len_wh.w - len_wh.w * (1 - len_wh.frac_circ_wh)) / 2.1)
+            .attr('cx', (len_wh.w + len_wh.w * (1 - len_wh.frac_circ_wh)) / 2)
             .attr('cy', len_wh.h / 2)
         // .attr('r', len_wh.w / 2.1)
         // .attr('cx', len_wh.w / 2)
@@ -184,15 +186,15 @@ window.ArrZoomerMain = function(opt_in0) {
             // let data_now = d[1]
             y_ele.push(this_top.cat_ele_pos(i, data_cat.length).y)
         })
-        let y_min = Math.min(...y_ele) - tel_rs.s00[3]*3
-        let y_max = Math.max(...y_ele) + tel_rs.s00[3]*3
-        let x_shift = len_wh.w * (1-len_wh.frac_circ_wh) * 0.1
+        let y_min = Math.min(...y_ele) - tel_rs.s00[3] * 3
+        let y_max = Math.max(...y_ele) + tel_rs.s00[3] * 3
+        let x_shift = len_wh.w * (1 - len_wh.frac_circ_wh) * 0.1
 
         g_in
             .append('rect')
             .attr('x', x_shift)
             .attr('y', y_min)
-            .attr('width', (len_wh.w * (1-len_wh.frac_circ_wh)) - 1.5*x_shift)
+            .attr('width', (len_wh.w * (1 - len_wh.frac_circ_wh)) - 1.5 * x_shift)
             .attr('height', y_max - y_min)
             .attr('rx', len_wh.h * 0.02)
             .attr('ry', len_wh.h * 0.02)
@@ -209,7 +211,9 @@ window.ArrZoomerMain = function(opt_in0) {
         let arr_init = data_in.arr_init
         let sub_arr = data_in.sub_arr
 
-        if (this_top.has_init) return
+        if (this_top.has_init) {
+            return
+        }
         this_top.has_init = true
 
         init_vor()
@@ -269,7 +273,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
 
     // // ------------------------------------------------------------------
-    // // 
+    // //
     // // ------------------------------------------------------------------
     // function setup_zoom () {
     //   // initialize a global function (to be overriden below)
@@ -292,7 +296,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function init_zoom() {
         let scale_start = 0
@@ -302,7 +306,9 @@ window.ArrZoomerMain = function(opt_in0) {
         ]
     
         function svg_zoom_start() {
-            if (!locker.are_free(zoom_sync_mini_lockers)) return
+            if (!locker.are_free(zoom_sync_mini_lockers)) {
+                return
+            }
 
             scale_start = d3.event.transform.k
             locker.add({ id: 'zoom', override: true })
@@ -310,7 +316,7 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         function svg_zoom_during() {
             if (!locker.are_free(zoom_sync_mini_lockers)) {
@@ -321,8 +327,12 @@ window.ArrZoomerMain = function(opt_in0) {
 
             $.each([ 'mini', 'lens' ], function(i, d) {
                 let svg_mini = get_ele(d)
-                if (!svg_mini) return
-                if(svg_mini.static_zoom) return
+                if (!svg_mini) {
+                    return
+                }
+                if (svg_mini.static_zoom) {
+                    return
+                }
         
                 ele_base.svgs[d].g_base.attr('transform', d3.event.transform)
             })
@@ -331,10 +341,12 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         function svg_zoom_end() {
-            if (!locker.are_free(zoom_sync_mini_lockers)) return
+            if (!locker.are_free(zoom_sync_mini_lockers)) {
+                return
+            }
       
             svg_zoom_update_state()
             set_zoom_state()
@@ -344,7 +356,9 @@ window.ArrZoomerMain = function(opt_in0) {
 
             $.each([ 'mini', 'lens' ], function(i, d) {
                 let svg_mini = get_ele(d)
-                if (!svg_mini) return
+                if (!svg_mini) {
+                    return
+                }
                 // if(svg_mini.static_zoom) return
 
                 svg_mini.mini_zoom_view_rec()
@@ -381,7 +395,7 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         function zoom_sync(trans) {
             locker.add({ id: 'zoom_sync_main', override: true })
@@ -414,7 +428,7 @@ window.ArrZoomerMain = function(opt_in0) {
         this_top.zoom_sync = zoom_sync
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         com.svg_zoom = d3.zoom()
         com.svg_zoom.scaleExtent(zooms.scale_extent)
@@ -453,23 +467,26 @@ window.ArrZoomerMain = function(opt_in0) {
                 }, times.wait_loop)
                 return
             }
-            if (!locker.are_free([ 'auto_zoom_target' ])) return
+            if (!locker.are_free([ 'auto_zoom_target' ])) {
+                return
+            }
       
             let target_name = opt_in.target
             let target_scale = opt_in.scale
             let duration_scale = opt_in.duration_scale
             let end_func = opt_in.end_func
 
-            if (target_scale < zooms.len['0.0']) target_scale = this_top.get_scale()
+            if (target_scale < zooms.len['0.0']) {
+                target_scale = this_top.get_scale()
+            }
 
             let trans_to = null
             if (target_name === 'init') {
                 trans_to = [ svg_dims.w / 2, svg_dims.h / 2 ]
-            } 
+            }
             else if (
-                target_name === '' || 
-        !is_def(instruments.data.mini[target_name])) 
-            {
+                target_name === '' ||
+        !is_def(instruments.data.mini[target_name])) {
                 let scale = this_top.get_scale()
                 let trans = this_top.get_trans()
                 let x = (svg_dims.w / 2 - trans[0]) / scale
@@ -488,7 +505,8 @@ window.ArrZoomerMain = function(opt_in0) {
                         }
                     }
                 })
-            } else {
+            }
+            else {
                 trans_to = [
                     instruments.data.xyr[target_name].x,
                     instruments.data.xyr[target_name].y,
@@ -519,9 +537,13 @@ window.ArrZoomerMain = function(opt_in0) {
                         })
                     }
                 }
-                if (duration_scale > 0 && is_done) set_state()
+                if (duration_scale > 0 && is_done) {
+                    set_state()
+                }
 
-                if (is_def(end_func)) end_func(opt_in)
+                if (is_def(end_func)) {
+                    end_func(opt_in)
+                }
             }
 
             let data_out = {
@@ -543,9 +565,10 @@ window.ArrZoomerMain = function(opt_in0) {
             if (duration_scale < 0) {
                 data_out.duration_scale = 0
                 do_zoom_to_target(data_out)
-            } else {
+            }
+            else {
                 run_loop.push({
-                    tag: 'zoom_to_target_main' + my_unique_id, 
+                    tag: 'zoom_to_target_main' + my_unique_id,
                     data: data_out,
                 })
             }
@@ -572,7 +595,7 @@ window.ArrZoomerMain = function(opt_in0) {
     init_zoom()
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function init_vor() {
     // ------------------------------------------------------------------
@@ -590,15 +613,21 @@ window.ArrZoomerMain = function(opt_in0) {
 
 
         // ------------------------------------------------------------------
-        // create voronoi cells for the dataset. 
+        // create voronoi cells for the dataset.
         // see: https://bl.ocks.org/mbostock/4060366
         // ------------------------------------------------------------------
         instruments.data.hover = function(d) {
-            if (zooms.target === d.data.id) return
-            if (!locker.are_free([ 'zoom', 'auto_zoom_target' ])) return
+            if (zooms.target === d.data.id) {
+                return
+            }
+            if (!locker.are_free([ 'zoom', 'auto_zoom_target' ])) {
+                return
+            }
 
             let scale = this_top.get_scale()
-            if (scale >= zooms.len['1.0']) return
+            if (scale >= zooms.len['1.0']) {
+                return
+            }
 
             zooms.target = d.data.id
             set_state()
@@ -637,9 +666,11 @@ window.ArrZoomerMain = function(opt_in0) {
                 instruments.data.dblclick({
                     d: d, is_in_out: dblclick_zoom_in_out,
                 })
-            } else if (scale >= zooms.len['1.0'] && zooms.target !== d.data.id) {
+            }
+            else if (scale >= zooms.len['1.0'] && zooms.target !== d.data.id) {
                 instruments.data.dblclick({ d: d, is_in_out: false })
-            } else {
+            }
+            else {
                 zooms.target = d.data.id
                 set_state()
             }
@@ -726,7 +757,7 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         // ------------------------------------------------------------------
-        // 
+        //
         // ------------------------------------------------------------------
         function setVor() {
             let tag_vor = 'vor'
@@ -755,7 +786,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 .on('mouseover', instruments.data.hover)
                 .on('click', instruments.data.click)
                 .on('dblclick', function(d) {
-                    instruments.data.dblclick({ 
+                    instruments.data.dblclick({
                         d: d, is_in_out: dblclick_zoom_in_out,
                     })
                 })
@@ -775,8 +806,8 @@ window.ArrZoomerMain = function(opt_in0) {
             $.each(instruments.data.vor.data, function(index_, data_now) {
                 $.each(instruments.props[data_now.id], function(index, porp_now) {
                     let angle = (
-                        (index + 0.5) 
-            * instruments.tau_fracs[data_now.id] 
+                        (index + 0.5)
+            * instruments.tau_fracs[data_now.id]
             + tau / 4
                     )
                     let label_x = data_now.r * Math.cos(angle)
@@ -800,7 +831,9 @@ window.ArrZoomerMain = function(opt_in0) {
                 set_tel_data_physical(data_in)
             }
 
-            if (instruments.data.layout !== 'physical') return
+            if (instruments.data.layout !== 'physical') {
+                return
+            }
 
             instruments.data.xyr = instruments.data.xyr_physical
             instruments.data.vor.data = instruments.data.vor.data_physical
@@ -859,7 +892,7 @@ window.ArrZoomerMain = function(opt_in0) {
             }
 
             // ------------------------------------------------------------------
-            // 
+            //
             // ------------------------------------------------------------------
             let xy_cat = {}
             let data_cat = Object.entries(data_in).filter(function(d) {
@@ -874,15 +907,21 @@ window.ArrZoomerMain = function(opt_in0) {
 
             $.each(data_in, function(id, data_now) {
                 let x, y, r
-                if(is_def(xy_cat[id])) {
+                if (is_def(xy_cat[id])) {
                     x = xy_cat[id].x
                     y = xy_cat[id].y
                     r = xy_cat[id].r
                 }
                 else {
-                    if (data_now.t === 'LST') r = tel_rs.s00[2]
-                    else if (data_now.t === 'MST') r = tel_rs.s00[1]
-                    else r = tel_rs.s00[0]
+                    if (data_now.t === 'LST') {
+                        r = tel_rs.s00[2]
+                    }
+                    else if (data_now.t === 'MST') {
+                        r = tel_rs.s00[1]
+                    }
+                    else {
+                        r = tel_rs.s00[0]
+                    }
 
                     let shift_main_x = svg_dims.w * (1 - svg_dims.frac_circ_wh)
                     let shift_main_y = svg_dims.h * (1 - svg_dims.frac_circ_wh) / 2
@@ -899,11 +938,11 @@ window.ArrZoomerMain = function(opt_in0) {
 
                 // translate to the center of the respective hex-cell
                 // let xy = com.svgBck.trans([x,y]);  x = xy[0]; y = xy[1];
-                instruments.data.xyr_physical[id] = { 
-                    x: x, y: y, r: r, //isTel: true 
+                instruments.data.xyr_physical[id] = {
+                    x: x, y: y, r: r, //isTel: true
                 }
-                instruments.data.vor.data_physical.push({ 
-                    id: id, x: x, y: y, r: r, 
+                instruments.data.vor.data_physical.push({
+                    id: id, x: x, y: y, r: r,
                 })
                 // console.log(id, instruments.data.xyr_physical[id], ele_base.tel_types[id], tel_info.is_categorical_id(ele_base.tel_types[id]))
             })
@@ -921,11 +960,19 @@ window.ArrZoomerMain = function(opt_in0) {
                 let id_s = link_now.source.id
                 let id_t = link_now.target.id
 
-                if (!links_1[id_s]) links_1[id_s] = [ id_t ]
-                else links_1[id_s].push(id_t)
+                if (!links_1[id_s]) {
+                    links_1[id_s] = [ id_t ]
+                }
+                else {
+                    links_1[id_s].push(id_t)
+                }
         
-                if (!links_1[id_t]) links_1[id_t] = [ id_s ]
-                else links_1[id_t].push(id_s)
+                if (!links_1[id_t]) {
+                    links_1[id_t] = [ id_s ]
+                }
+                else {
+                    links_1[id_t].push(id_s)
+                }
             })
 
             links_2.physical = deep_copy(links_1) // deep copy
@@ -948,7 +995,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
 
         // // ------------------------------------------------------------------
-        // // 
+        // //
         // // ------------------------------------------------------------------
         // function set_layout_sub_arr (data_in) {
         //   if (is_def(data_in)) {
@@ -1024,12 +1071,12 @@ window.ArrZoomerMain = function(opt_in0) {
         //         else eleR = tel_rs.s00[0]
         //       }
 
-        //       instruments.data.xyr_sub_arr[id] = { 
+        //       instruments.data.xyr_sub_arr[id] = {
         //         x: x, y: y, r: eleR, // isTel: isTel,
         //       }
 
         //       if (isTel) {
-        //         instruments.data.vor.data_sub_arr.push({ 
+        //         instruments.data.vor.data_sub_arr.push({
         //           id: id, x: x, y: y, r: eleR,
         //         })
         //       } else {
@@ -1081,10 +1128,14 @@ window.ArrZoomerMain = function(opt_in0) {
     // if(opt_in.skip != undefined && opt_in.skip) return null;
         function tween_func(d) {
             if (is_def(opt_in.incIdV)) {
-                if (opt_in.incIdV.indexOf(d.id) === -1) return null
+                if (opt_in.incIdV.indexOf(d.id) === -1) {
+                    return null
+                }
             }
             if (is_def(opt_in.excIdV)) {
-                if (opt_in.excIdV.indexOf(d.id) >= 0) return null
+                if (opt_in.excIdV.indexOf(d.id) >= 0) {
+                    return null
+                }
             }
 
             let tag_now = opt_in.tag_now
@@ -1115,17 +1166,22 @@ window.ArrZoomerMain = function(opt_in0) {
             // console.log(tag_now,[ang_str_0,ang_str_1],[ang_end_0,ang_end_1],[r_in_0,r_in_1],[r_out_0,r_out_1])
 
             let need_update = 0
-            if (Math.abs(ang_str_0 - ang_str_1) / ang_str_0 > 1e-5) 
+            if (Math.abs(ang_str_0 - ang_str_1) / ang_str_0 > 1e-5) {
                 need_update++
-            if (Math.abs(ang_end_0 - ang_end_1) / ang_end_0 > 1e-5) 
+            }
+            if (Math.abs(ang_end_0 - ang_end_1) / ang_end_0 > 1e-5) {
                 need_update++
-            if (Math.abs(r_in_0 - r_in_1) / r_in_0 > 1e-5) 
+            }
+            if (Math.abs(r_in_0 - r_in_1) / r_in_0 > 1e-5) {
                 need_update++
-            if (Math.abs(r_out_0 - r_out_1) / r_out_0 > 1e-5) 
+            }
+            if (Math.abs(r_out_0 - r_out_1) / r_out_0 > 1e-5) {
                 need_update++
+            }
       
-            if (need_update === 0) 
+            if (need_update === 0) {
                 return null
+            }
 
             let arc = d3.arc()
       
@@ -1150,7 +1206,7 @@ window.ArrZoomerMain = function(opt_in0) {
     }
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function svg_zoom_update_state() {
         let scale = this_top.get_scale()
@@ -1159,7 +1215,9 @@ window.ArrZoomerMain = function(opt_in0) {
         let change_01 = is_state_change(scale, '0.1')
         let change_10 = is_state_change(scale, '1.0')
 
-        if (zoom_state === 0) syncs.zoom_target = ''
+        if (zoom_state === 0) {
+            syncs.zoom_target = ''
+        }
 
         if (change_01 || change_10) {
             set_state()
@@ -1175,7 +1233,9 @@ window.ArrZoomerMain = function(opt_in0) {
                     hex_r: 18,
                 })
             }
-            if (is_state_up(scale, '1.0')) ask_data_s1()
+            if (is_state_up(scale, '1.0')) {
+                ask_data_s1()
+            }
 
             zooms.len.prev = scale
         }
@@ -1215,13 +1275,15 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         if (id === 'physical') {
-            if (update_id) instruments.data.layout = id
+            if (update_id) {
+                instruments.data.layout = id
+            }
             this_top.set_layout_physical(data)
-        } 
+        }
         // else if (id === 'sub_arr') {
         //   if (update_id) instruments.data.layout = id
         //   this_top.set_layout_sub_arr(data)
-        // } 
+        // }
         else {
             console.error(' - trying to set undefined layout', id)
             return
@@ -1240,10 +1302,12 @@ window.ArrZoomerMain = function(opt_in0) {
     this_top.set_tel_layout = set_tel_layout
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function _sub_arr_grp_circ(data_in) {
-        if (no_render) return
+        if (no_render) {
+            return
+        }
 
         if (!locker.is_free('in_init')) {
             setTimeout(function() {
@@ -1347,7 +1411,9 @@ window.ArrZoomerMain = function(opt_in0) {
     // add a lable with the
     // ------------------------------------------------------------------
     function s00_title(focus_0, focus_1) {
-        if (no_render) return
+        if (no_render) {
+            return
+        }
     
         let focus_ids = [
             focus_0.map(function(d) {
@@ -1367,12 +1433,15 @@ window.ArrZoomerMain = function(opt_in0) {
         let font_size0 = 11 * site_scale
 
         function font_size(d) {
-            if (is_focused(d, 1)) 
+            if (is_focused(d, 1)) {
                 return font_size0 * 0.5
-            else if (is_focused(d, 0)) 
+            }
+            else if (is_focused(d, 0)) {
                 return font_size0 * 0.6
-            else 
+            }
+            else {
                 return font_size0 * 1.0
+            }
         }
 
         if (!is_def(com[tag_lbl])) {
@@ -1419,7 +1488,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 let shiftVal = 0
                 if (is_focused(d, 1)) {
                     shiftVal = (
-                        instruments.data.xyr[d.id].r 
+                        instruments.data.xyr[d.id].r
             * (scale_r[1].health1 + 0.5)
                     )
                 }
@@ -1453,7 +1522,9 @@ window.ArrZoomerMain = function(opt_in0) {
     // innner arcs for the different properties
     // ------------------------------------------------------------------
     function s01_inner(data_in, focuses) {
-        if (no_render) return
+        if (no_render) {
+            return
+        }
 
         let tag_state = 'state01'
 
@@ -1494,7 +1565,7 @@ window.ArrZoomerMain = function(opt_in0) {
                             return (
                                 index * instruments.tau_fracs[key] +
                 instruments.tau_space +
-                (instruments.tau_fracs[key] 
+                (instruments.tau_fracs[key]
                   - instruments.tau_space * 2)
                 * (is0 ? 1 : inst_health_frac(d[porp_now]))
                             )
@@ -1673,7 +1744,9 @@ window.ArrZoomerMain = function(opt_in0) {
     // outer rings for the instruments.prop0 (equivalent of s00_D metric in s01_D)
     // ------------------------------------------------------------------
     function s01_outer(data_in, focuses) {
-        if (no_render) return
+        if (no_render) {
+            return
+        }
 
         let tag_state = 'state01'
         let porp_now = instruments.prop0
@@ -1933,7 +2006,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 s10.bck_arc_remove() // console.log('click_bck_arc s10 000')
             })
             return
-        } 
+        }
         else {
             $.each(s10_eles, function(index, ele_now) {
                 let id = ele_now.id
@@ -1948,7 +2021,9 @@ window.ArrZoomerMain = function(opt_in0) {
 
         let s10 = null
         $.each(s10_eles, function(index, ele_now) {
-            if (ele_now.id === zooms.target) s10 = ele_now.s10
+            if (ele_now.id === zooms.target) {
+                s10 = ele_now.s10
+            }
         })
         if (!s10) {
             // ------------------------------------------------------------------
@@ -1962,7 +2037,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 this_S10.tau_frac = instruments.tau_fracs[tel_Id]
                 this_S10.instruments.prop_titles = instruments.prop_titles[tel_Id]
 
-                let my_date = Date.now() 
+                let my_date = Date.now()
                 let g_base = null
                 let g_bck_arc = null
                 let g_hierarchy = null
@@ -1983,7 +2058,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 }
 
                 let wh = (
-                    instruments.data.xyr[tel_Id].r 
+                    instruments.data.xyr[tel_Id].r
           * scale_r[1].inner_h1 * 1.6
                 )
 
@@ -1993,7 +2068,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 function init() {
                     if (g_base) {
                         my_date = Date.now()
-                    } 
+                    }
                     else {
                         g_base = main_gs.g_base.append('g')
 
@@ -2079,11 +2154,15 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function set_prop_lbl(opt_in) {
-                    if (no_render) return
+                    if (no_render) {
+                        return
+                    }
 
                     // due to delays from locker, this function could be called after the S10 has
                     // been removed - make a safety check using g_base...
-                    if (!is_def(g_base)) return
+                    if (!is_def(g_base)) {
+                        return
+                    }
 
                     let base_tag = 's10_arc'
                     let tag_lbl = base_tag + '_prop_lbl'
@@ -2107,7 +2186,7 @@ window.ArrZoomerMain = function(opt_in0) {
                             }
 
                             let txt_r = (
-                                instruments.data.xyr[tel_Id].r 
+                                instruments.data.xyr[tel_Id].r
                 * scale_r[1].inner_h1 * 1.45
                             )
                             let xy = get_prop_pos_shift(
@@ -2205,11 +2284,15 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function init_bck_arc() {
-                    if (no_render) return
+                    if (no_render) {
+                        return
+                    }
 
                     // due to delays from locker, this function could be called after the S10 has
                     // been removed - make a safety check using g_base...
-                    if (!is_def(g_base)) return
+                    if (!is_def(g_base)) {
+                        return
+                    }
 
                     // console.log('init_bck_arc')
                     let props_now = instruments.data.prop_data_s1[tel_Id]
@@ -2379,12 +2462,16 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function bck_arc_remove() {
-                    if (no_render) return
+                    if (no_render) {
+                        return
+                    }
 
-                    // due to delays from locker, this function could 
+                    // due to delays from locker, this function could
                     // be called after the S10 has been removed
                     // - make a safety check using g_base...
-                    if (!is_def(g_base)) return
+                    if (!is_def(g_base)) {
+                        return
+                    }
 
                     locker.add('s10_bck_arc_change')
 
@@ -2429,17 +2516,21 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function bck_arc_click(opt_in) {
-                    // due to delays from locker, this function could be 
-                    // called after the S10 has been removed 
+                    // due to delays from locker, this function could be
+                    // called after the S10 has been removed
                     // - make a safety check using g_base...
-                    if (!is_def(g_base)) return
+                    if (!is_def(g_base)) {
+                        return
+                    }
 
                     let click_in = opt_in.click_in
                     let prop_in = opt_in.prop_in
                     let only_open = is_def(opt_in.only_open) ? opt_in.only_open : false
                     let can_ignore = is_def(opt_in.can_ignore) ? opt_in.can_ignore : true
 
-                    if (this_S10.instruments.props.indexOf(prop_in) < 0 && prop_in != '') return
+                    if (this_S10.instruments.props.indexOf(prop_in) < 0 && prop_in != '') {
+                        return
+                    }
 
                     if (
                         !locker.are_free([
@@ -2480,7 +2571,8 @@ window.ArrZoomerMain = function(opt_in0) {
 
                         if (prop_in === porp_now) {
                             full_arcs(path0, path1, tag_now, click_in)
-                        } else {
+                        }
+                        else {
                             hide_arcs(path0, tag_now)
                             hide_arcs(path1, tag_now)
                         }
@@ -2514,7 +2606,7 @@ window.ArrZoomerMain = function(opt_in0) {
                         free_me(true)
             
                         return
-                    } 
+                    }
                     else {
                         // console.log('tog_hierarchy',prop_in,'--',depth_click[prop_in],click_in)
 
@@ -2555,7 +2647,9 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function full_arcs(path0, path1, tag_now, is_open) {
-                    if (no_render) return
+                    if (no_render) {
+                        return
+                    }
 
                     path0
                         .transition('in_out')
@@ -2617,7 +2711,9 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function hide_arcs(path, tag_now) {
-                    if (no_render) return
+                    if (no_render) {
+                        return
+                    }
 
                     path
                         .transition('in_out')
@@ -2641,7 +2737,9 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function hierarchy_hov_title_in(dIn) {
-                    if (no_render) return
+                    if (no_render) {
+                        return
+                    }
 
                     if (
                         !locker.are_free([
@@ -2658,8 +2756,8 @@ window.ArrZoomerMain = function(opt_in0) {
                     let r = tel_rs.s00[2] * scale_r[1].inner_h1 / 3.5
                     let dx = wh / 2
                     let dy = (
-                        wh + 2 * r 
-            * instruments.data.xyr[tel_Id].r 
+                        wh + 2 * r
+            * instruments.data.xyr[tel_Id].r
             / tel_rs.s00[2]
                     )
 
@@ -2700,10 +2798,12 @@ window.ArrZoomerMain = function(opt_in0) {
                 }
 
                 // ------------------------------------------------------------------
-                // 
+                //
                 // ------------------------------------------------------------------
                 function hierarchy_hov_title_out(dIn) {
-                    if (no_render) return
+                    if (no_render) {
+                        return
+                    }
 
                     g_base
                         .selectAll('text.' + 'hov_title')
@@ -2722,12 +2822,16 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function init_hierarchy() {
-                    if (no_render) return
+                    if (no_render) {
+                        return
+                    }
 
-                    // due to delays from locker, this function could be 
-                    // called after the S10 has been removed 
+                    // due to delays from locker, this function could be
+                    // called after the S10 has been removed
                     // - make a safety check using g_base...
-                    if (!is_def(g_base)) return
+                    if (!is_def(g_base)) {
+                        return
+                    }
 
                     $.each(base_node, function(index_data, data_base) {
                         let porp_now = data_base.id
@@ -2741,8 +2845,12 @@ window.ArrZoomerMain = function(opt_in0) {
                         }
 
                         function rename_children(data_now, depth_in, parent_name) {
-                            if (!is_def(depth_in)) depth_in = -1
-                            if (!is_def(parent_name)) parent_name = null
+                            if (!is_def(depth_in)) {
+                                depth_in = -1
+                            }
+                            if (!is_def(parent_name)) {
+                                parent_name = null
+                            }
 
                             let depth_now = depth_in
                             depth_now++
@@ -2841,7 +2949,9 @@ window.ArrZoomerMain = function(opt_in0) {
 
                             for (let depth_now = 0; depth_now < max_depth; depth_now++) {
                                 $.each(hierarchy_by_id, function(hierarchy_name, hierarchy_now) {
-                                    if (hierarchy_now.data.child_depth !== depth_now) return
+                                    if (hierarchy_now.data.child_depth !== depth_now) {
+                                        return
+                                    }
                                     // console.log(hierarchy_name,hierarchy_now.data.child_depth,hierarchy_now)
 
                                     let parent_name = hierarchy_now.data.parent_name
@@ -2959,8 +3069,12 @@ window.ArrZoomerMain = function(opt_in0) {
                 //
                 // ------------------------------------------------------------------
                 function hierarchy_style_click(opt_in) {
-                    if (no_render) return
-                    if (!is_def(g_base)) return
+                    if (no_render) {
+                        return
+                    }
+                    if (!is_def(g_base)) {
+                        return
+                    }
 
                     if (!locker.are_free([
                         'data_change', 's10_click_hierarchy',
@@ -3011,7 +3125,7 @@ window.ArrZoomerMain = function(opt_in0) {
                                 g_now
                                     .transition('in_out')
                                     .duration(times.anim_arc)
-                                    .attr('transform', 
+                                    .attr('transform',
                                         g_trans[porp_all_now][hierarchy_name])
                             })
                         })
@@ -3039,8 +3153,8 @@ window.ArrZoomerMain = function(opt_in0) {
                                 parents[porp_all_now][d.data.id].indexOf(id) >= 0
                             )
                             return (
-                                is_open 
-                && in_parents 
+                                is_open
+                && in_parents
                 && (d.data.child_depth > depth_now)
                             )
                         }
@@ -3101,7 +3215,9 @@ window.ArrZoomerMain = function(opt_in0) {
                 function update_hierarchy(data_in) {
                     // due to delays from locker, this function could be called after the S10 has
                     // been removed - make a safety check using g_base...
-                    if (!is_def(g_base)) return
+                    if (!is_def(g_base)) {
+                        return
+                    }
 
                     if (
                         !locker.are_free([
@@ -3171,8 +3287,12 @@ window.ArrZoomerMain = function(opt_in0) {
                 }
         
                 function hierarchy_strk_w(d, d_ref, depth) {
-                    if (!d.parent) return 0
-                    else return d_ref.data.child_depth === depth ? 0 : 1
+                    if (!d.parent) {
+                        return 0
+                    }
+                    else {
+                        return d_ref.data.child_depth === depth ? 0 : 1
+                    }
                 }
         
                 function hierarchy_style_stroke(d, d_ref, depth) {
@@ -3192,7 +3312,9 @@ window.ArrZoomerMain = function(opt_in0) {
             s10_eles.push({ id: zooms.target, s10: s10 })
       
             ;(function() {
-                if (s10_eles.length <= max_ele_keep) return
+                if (s10_eles.length <= max_ele_keep) {
+                    return
+                }
 
                 let debug = false
                 let s10_in = []
@@ -3217,15 +3339,22 @@ window.ArrZoomerMain = function(opt_in0) {
                 }
 
                 $.each(s10_index_date, function(index, ele_now) {
-                    if (index < max_ele_keep) s10_in.push(s10_eles[ele_now[0]])
-                    else s10_out.push(s10_eles[ele_now[0]])
+                    if (index < max_ele_keep) {
+                        s10_in.push(s10_eles[ele_now[0]])
+                    }
+                    else {
+                        s10_out.push(s10_eles[ele_now[0]])
+                    }
 
                     if (debug) {
-                        if (index >= max_ele_keep) 
+                        if (index >= max_ele_keep) {
                             dbg_txt += s10_eles[ele_now[0]].id + ' '
+                        }
                     }
                 })
-                if (debug) console.log('- Sorted:', dbg_txt)
+                if (debug) {
+                    console.log('- Sorted:', dbg_txt)
+                }
 
                 s10_eles = s10_in
 
@@ -3255,7 +3384,7 @@ window.ArrZoomerMain = function(opt_in0) {
     this_top.s10_main = s10_main
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function bck_arc_click(opt_in) {
         $.each(s10_eles, function(index, ele_now) {
@@ -3297,7 +3426,8 @@ window.ArrZoomerMain = function(opt_in0) {
             s00_title([], [])
             s01_inner([])
             s01_outer([])
-        } else {
+        }
+        else {
             // let zoom_targetIndex = instruments.data.id_indices[zooms.target];
             // let arr_props_target = [ instruments.data.tel[zoom_targetIndex] ];
 
@@ -3309,11 +3439,13 @@ window.ArrZoomerMain = function(opt_in0) {
                     zooms.target = data_now.id
                     arr_props_on.push(data_now)
                     arr_props_target.push(data_now)
-                } else {
+                }
+                else {
                     // arr_props_off.push(data_now)
                     if (links_2.xyz[zooms.target].indexOf(data_now.id) < 0) {
                         arr_props_off.push(data_now)
-                    } else {
+                    }
+                    else {
                         arr_props_on.push(data_now)
                     }
                 }
@@ -3328,7 +3460,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 s01_outer(arr_props_on)
 
                 s00_title(arr_props_on, [])
-            } 
+            }
             else {
                 s00_title(arr_props_on, arr_props_target)
 
@@ -3354,7 +3486,7 @@ window.ArrZoomerMain = function(opt_in0) {
     this_top.set_state_once = set_state_once
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function update_map(opt_in) {
         let data_in = instruments.data.tel
@@ -3376,7 +3508,9 @@ window.ArrZoomerMain = function(opt_in0) {
             return focus_ids[n_focus].indexOf(d.id) >= 0
         }
 
-        if (no_render) return
+        if (no_render) {
+            return
+        }
 
         // operate on new elements only
         let circ = g_now
@@ -3424,26 +3558,40 @@ window.ArrZoomerMain = function(opt_in0) {
                 return inst_health_col(d[tag_now], 0.5)
             })
             .style('opacity', function(d) {
-                if (is_focused(d, 1)) return 0.01
-                else if (is_focused(d, 0)) return 0.07
-                else return 1
+                if (is_focused(d, 1)) {
+                    return 0.01
+                }
+                else if (is_focused(d, 0)) {
+                    return 0.07
+                }
+                else {
+                    return 1
+                }
             })
             .attr('r', function(d) {
                 let r = instruments.data[pos_tag][d.id].r * scale_r[0].health2
-                if (is_focused(d, 1)) return r * 2
-                else if (is_focused(d, 0)) return r * 1.1
-                else return r
+                if (is_focused(d, 1)) {
+                    return r * 2
+                }
+                else if (is_focused(d, 0)) {
+                    return r * 1.1
+                }
+                else {
+                    return r
+                }
             })
     
         return
     }
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function ask_data_s1() {
         let zoom_state = this_top.get_zoom_state()
-        if (zoom_state === 0) return
+        if (zoom_state === 0) {
+            return
+        }
 
         ele_base.sock_ask_data_s1({
             zoom_state: zoom_state,
@@ -3454,7 +3602,7 @@ window.ArrZoomerMain = function(opt_in0) {
     this_top.ask_data_s1 = ask_data_s1
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function get_widget_state() {
         return {

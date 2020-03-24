@@ -12,7 +12,7 @@
 /* global vor_ploy_func */
 
 // ------------------------------------------------------------------
-// 
+//
 // ------------------------------------------------------------------
 window.ArrZoomerChes = function(opt_in_top) {
     let this_top = this
@@ -45,7 +45,7 @@ window.ArrZoomerChes = function(opt_in_top) {
     // scale to 100x100 px (executed after create_ches_map())
     // ------------------------------------------------------------------
     function g_trans() {
-        let transChes = [ -1*com.ches_xy.x.min, -1*com.ches_xy.y.min ]
+        let transChes = [ -1 * com.ches_xy.x.min, -1 * com.ches_xy.y.min ]
         ches_gs.g_outer.attr('transform', function(d) {
             return 'translate(' + transChes[0] + ', ' + transChes[1] + ')'
         })
@@ -63,7 +63,9 @@ window.ArrZoomerChes = function(opt_in_top) {
     // for translations and sacling of this element
     // ------------------------------------------------------------------
     this_top.set_transform = function(trans) {
-        if (is_def(trans)) ches_gs.ches_g.attr('transform', trans)
+        if (is_def(trans)) {
+            ches_gs.ches_g.attr('transform', trans)
+        }
         return ches_gs.ches_g
     }
 
@@ -93,7 +95,8 @@ window.ArrZoomerChes = function(opt_in_top) {
     // zoomLen["1.1"]  = zoomLen["1.0"] + 0.1
     // zoomLen["1.2"]  = zoomLen["1.0"] + 2
     // zoomLen["1.3"]  = 90
-    } else {
+    }
+    else {
         zoomLen['0.1'] = 2 // - 0.4
         zoomLen['0.2'] = 5 // - 4
         zoomLen['1.0'] = 6.5 // - 6
@@ -200,12 +203,12 @@ window.ArrZoomerChes = function(opt_in_top) {
             .attr('height', (com.ches_xy.y.max - com.ches_xy.y.min))
             .attr('stroke-width', '0')
             .attr('transform', function(d) {
-                return 'translate(' + com.ches_xy.x.min + ', '+ com.ches_xy.y.min +')'
+                return 'translate(' + com.ches_xy.x.min + ', ' + com.ches_xy.y.min + ')'
             })
             .attr('fill', '#383b42')
         // .attr("fill", "#d698bc")// .attr("fill", "#F2F2F2")
 
-        if(add_ches_outline) {
+        if (add_ches_outline) {
             g_ches_rec
                 .selectAll('rect')
                 .attr('stroke', '#F2F2F2')
@@ -223,7 +226,7 @@ window.ArrZoomerChes = function(opt_in_top) {
                 return d.y
             })
             .extent([
-                [ com.ches_xy.x.min, com.ches_xy.y.min ], 
+                [ com.ches_xy.x.min, com.ches_xy.y.min ],
                 [ com.ches_xy.x.max, com.ches_xy.y.max ],
             ])
 
@@ -232,7 +235,7 @@ window.ArrZoomerChes = function(opt_in_top) {
   
   
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function update_chess_map(data_in, shift_y) {
         let tag_circ = prop0
@@ -381,7 +384,8 @@ window.ArrZoomerChes = function(opt_in_top) {
                 is_ele_on = function(d) {
                     return d.id === data_in_id
                 }
-            } else {
+            }
+            else {
                 is_ele_on = function() {
                     return false
                 }
@@ -392,10 +396,14 @@ window.ArrZoomerChes = function(opt_in_top) {
             let text = com.ches_g.g.selectAll('text.' + tag_lbl)
 
             circ.each(function(d) {
-                if (is_ele_on(d)) move_node_up(this, 2)
+                if (is_ele_on(d)) {
+                    move_node_up(this, 2)
+                }
             })
             text.each(function(d) {
-                if (is_ele_on(d)) move_node_up(this, 2)
+                if (is_ele_on(d)) {
+                    move_node_up(this, 2)
+                }
             })
 
             //
@@ -475,7 +483,9 @@ window.ArrZoomerChes = function(opt_in_top) {
     //  Global function
     // ------------------------------------------------------------------
     function init_data(data_in) {
-        if (is_def(ches_gs.g_outer)) return
+        if (is_def(ches_gs.g_outer)) {
+            return
+        }
 
         tel_data = data_in.instrument_data
         tel_id_types = data_in.tel_id_types
@@ -506,7 +516,7 @@ window.ArrZoomerChes = function(opt_in_top) {
     this.init_data = init_data
   
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function set_state_once(data_in) {
         update_chess_map(tel_data.tel, false)
@@ -528,7 +538,7 @@ window.ArrZoomerChes = function(opt_in_top) {
     // // initialize a couple of functions to be overriden below
   
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     let get_scale = function() {
         return zoomLen['0.0']
