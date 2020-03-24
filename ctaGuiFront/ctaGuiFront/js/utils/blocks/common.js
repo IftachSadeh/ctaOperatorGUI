@@ -245,7 +245,7 @@ window.clusterBlocksByTime = function (blocks) {
   return clusters
 }
 
-let titleSize = 11
+let title_size = 11
 let headerSize = 10
 let txt_size = 9
 window.inputDate = function (g, box, id, opt_in, events) {

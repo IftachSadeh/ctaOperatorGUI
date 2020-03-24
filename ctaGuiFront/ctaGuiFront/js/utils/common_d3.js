@@ -39,7 +39,7 @@ window.input_date_d3 = function (g, box, id, opt_in, events) {
     .attr('step', function (d) {
       return opt_in.step
     })
-    .style('font-size', (opt_in.fontSize ? opt_in.fontSize : 11) + 'px')
+    .style('font-size', (opt_in.font_size ? opt_in.font_size : 11) + 'px')
     // .style('color', '#000000')
     .style('border-top-style', 'groove')
     .style('border-right-style', 'hidden')
@@ -428,14 +428,14 @@ window.dropdown_d3 = function () {
     let scrollBox = new ScrollBox()
     scrollBox.init({
       tag: tag,
-      gBox: g,
+      g_box: g,
       boxData: box,
       useRelativeCoords: true,
       locker: new Locker(),
       lockerV: [tag + 'update_data'],
       lockerZoom: {
         all: tag + 'zoom',
-        during: tag + 'zoomDuring',
+        during: tag + 'zoomsuring',
         end: tag + 'zoomEnd'
       },
       run_loop: new RunLoop({ tag: tag }),
@@ -560,7 +560,7 @@ window.dropdown_d3 = function () {
     })
     current
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()

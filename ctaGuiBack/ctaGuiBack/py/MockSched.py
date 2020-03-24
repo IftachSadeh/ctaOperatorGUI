@@ -8,7 +8,7 @@ import time
 import copy
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_subArr_name, has_acs
+from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_sub_arr_name, has_acs
 
 if has_acs:
     import ACS__POA
@@ -298,21 +298,21 @@ class MockSched():
                     sched_tel_ids = random.sample(tel_ids, n_tel_now)
                     tel_ids = [x for x in tel_ids if x not in sched_tel_ids]
 
-                    subArr = []
+                    sub_arr = []
                     for sched_tel_id_now in sched_tel_ids:
                         tel_type = sb.SST if sched_tel_id_now[0] == 'S' else sb.MST if sched_tel_id_now[0] == 'M' else sb.LST
 
-                        subArr += [sb.Telescope(sched_tel_id_now, tel_type)]
-                    # subArr = [sb.Telescope("L_0", sb.LST), sb.Telescope(
+                        sub_arr += [sb.Telescope(sched_tel_id_now, tel_type)]
+                    # sub_arr = [sb.Telescope("L_0", sb.LST), sb.Telescope(
                     #     "L0", sb.LST), sb.Telescope("T0", sb.LST)]
-                    # subArr = [sb.Telescope("T1", sb.LST), sb.Telescope(
+                    # sub_arr = [sb.Telescope("T1", sb.LST), sb.Telescope(
                     #     "T1", sb.MST), sb.Telescope("T1", sb.SST)]
-                    # print subArr
+                    # print sub_arr
 
                     sched_conf = sb.Configuration(
                         sb.InstrumentConfiguration(
                             sb.PointingMode(2, sb._divergent(2)),
-                            sb.Subarray([], subArr)
+                            sb.Subarray([], sub_arr)
                         ),
                         "camera",
                         "rta"

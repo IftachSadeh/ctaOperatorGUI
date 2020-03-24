@@ -7,7 +7,7 @@ from random import Random
 import time
 import copy
 
-from utils import my_log, my_assert, getTime, no_subArr_name
+from utils import my_log, my_assert, getTime, no_sub_arr_name
 from utils import tel_ids, redis_port, flatten_dict
 
 import redis

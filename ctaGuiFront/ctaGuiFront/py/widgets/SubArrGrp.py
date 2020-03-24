@@ -6,7 +6,7 @@ from gevent.coros import BoundedSemaphore
 from math import ceil
 import random
 from random import Random
-from ctaGuiUtils.py.utils import my_log, my_assert, no_subArr_name
+from ctaGuiUtils.py.utils import my_log, my_assert, no_sub_arr_name
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
@@ -17,7 +17,7 @@ class SubArrGrp():
     # privat lock for this widget type
     lock = BoundedSemaphore(1)
 
-    # subArr = dict()
+    # sub_arr = dict()
 
     # all session ids for this user/widget
     widget_group_sess = dict()
@@ -104,8 +104,8 @@ class SubArrGrp():
                 n_tries += 1
                 sleep(0.5)
 
-        subArrs = self.redis.get(
-            name="subArrs", packed=True, default_val=[]
+        sub_arrs = self.redis.get(
+            name="sub_arrs", packed=True, default_val=[]
         )
         obs_block_ids = self.redis.get(
             name=('obs_block_ids_'+'run'), packed=True, default_val=[]
@@ -116,7 +116,7 @@ class SubArrGrp():
             "tel": [],
             "trg": [],
             "pnt": [],
-            "subArr": {"id": "subArr", "children": subArrs}
+            "sub_arr": {"id": "sub_arr", "children": sub_arrs}
         }
 
         self.redis.pipe.reset()
@@ -145,7 +145,8 @@ class SubArrGrp():
                 inst_pos_now = inst_pos[id_now] if id_now in inst_pos else self.pos0
 
                 data["tel"].append({
-                    "id": id_now, "trgId": trgId, "pntId": pntId, "pos": inst_pos_now
+                    "id": id_now, "trgId": trgId, 
+                    "pntId": pntId, "pos": inst_pos_now,
                 })
 
                 telV.append({"id": id_now})
@@ -163,7 +164,8 @@ class SubArrGrp():
 
             # add the pointing for this block
             data["pnt"].append({
-                "id": pntId, "N": pointing_name, "pos": point_pos, "tel_ids": block_tel_ids
+                "id": pntId, "N": pointing_name, 
+                "pos": point_pos, "tel_ids": block_tel_ids,
             })
 
         # ------------------------------------------------------------------
@@ -174,7 +176,8 @@ class SubArrGrp():
             inst_pos_now = inst_pos[id_now] if id_now in inst_pos else self.pos0
 
             data["tel"].append({
-                "id": id_now, "trgId": no_subArr_name, "pntId": no_subArr_name, "pos": inst_pos_now
+                "id": id_now, "trgId": no_sub_arr_name, 
+                "pntId": no_sub_arr_name, "pos": inst_pos_now,
             })
 
             telV.append({"id": id_now})

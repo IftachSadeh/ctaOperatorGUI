@@ -39,8 +39,8 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 12
   let w0 = 12
-  let divKey = 'main'
-  let content = "<div id='" + opt_in.base_name + divKey + "'>" +
+  let div_key = 'main'
+  let content = "<div id='" + opt_in.base_name + div_key + "'>" +
   '</div>'
 
   opt_in.widget_func = {
@@ -49,10 +49,10 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: false,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
@@ -117,7 +117,7 @@ let main_plots_dash = function (opt_in) {
   }
   let svg = {}
   let box = {}
-  let lenD = {}
+  let svg_dims = {}
 
   // let this_sched_block_inspector = this
   // let is_south = window.__site_type__ === 'S'
@@ -133,7 +133,7 @@ let main_plots_dash = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  // locker.add('inInit')
+  // locker.add('in_init')
   let run_loop = new RunLoop({ tag: widget_id })
   let middleSeparation = 0
 
@@ -148,16 +148,16 @@ let main_plots_dash = function (opt_in) {
 
   function init_data (data_in) {
     function initSvg () {
-      lenD.w = {}
-      lenD.h = {}
-      lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
+      svg_dims.w = {}
+      svg_dims.h = {}
+      svg_dims.w[0] = 1000
+      svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
       svg.svg = d3
         .select(svg_div)
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
@@ -175,17 +175,17 @@ let main_plots_dash = function (opt_in) {
         box.urgentPlots = {
           x: 0,
           y: 0,
-          w: lenD.w[0],
-          h: middleSeparation - 20 // lenD.h[0] * 0.5
+          w: svg_dims.w[0],
+          h: middleSeparation - 20 // svg_dims.h[0] * 0.5
         }
         // svgUrgentPlots.adjustScrollBox()
         svgUrgentPlots.update_data()
 
         box.pinnedPlots = {
           x: 0,
-          y: lenD.h[0] * 0.5,
-          w: lenD.w[0] * 0.5,
-          h: lenD.h[0] * 0.5
+          y: svg_dims.h[0] * 0.5,
+          w: svg_dims.w[0] * 0.5,
+          h: svg_dims.h[0] * 0.5
         }
         // svgPinnedPlots.adjustScrollBox()
         // svgPinnedPlots.adjustPlotDistribution()
@@ -199,7 +199,7 @@ let main_plots_dash = function (opt_in) {
       svg.back = svg.svg.append('g')
       svg.g = svg.svg.append('g')
 
-      middleSeparation = lenD.h[0] * 0.365
+      middleSeparation = svg_dims.h[0] * 0.365
     }
     function initBackground () {
       // svg.svg.style('background', colorPalette.medium.background)
@@ -223,14 +223,14 @@ let main_plots_dash = function (opt_in) {
       gmiddle.append('rect')
         .attr('x', 0)
         .attr('y', -10)
-        .attr('width', lenD.w[0])
+        .attr('width', svg_dims.w[0])
         .attr('height', 20)
         .style('opacity', 0)
         .style('cursor', 'pointer')
       gmiddle.append('line')
         .attr('x1', 0)
         .attr('y1', 0)
-        .attr('x2', lenD.w[0])
+        .attr('x2', svg_dims.w[0])
         .attr('y2', 0)
         .attr('stroke', '#000000')
         .attr('stroke-width', 0.4)
@@ -238,14 +238,14 @@ let main_plots_dash = function (opt_in) {
         .style('pointer-events', 'none')
       gmiddle.append('svg:image')
         .attr('xlink:href', '/static/icons/up-triangle.svg')
-        .attr('x', (lenD.w[0] - 18) + 'px')
+        .attr('x', (svg_dims.w[0] - 18) + 'px')
         .attr('y', -14 + 'px')
         .attr('width', '12px')
         .attr('height', '12px')
         .style('pointer-events', 'none')
       gmiddle.append('svg:image')
         .attr('xlink:href', '/static/icons/down-triangle.svg')
-        .attr('x', (lenD.w[0] - 18) + 'px')
+        .attr('x', (svg_dims.w[0] - 18) + 'px')
         .attr('y', 2 + 'px')
         .attr('width', '12px')
         .attr('height', '12px')
@@ -255,20 +255,20 @@ let main_plots_dash = function (opt_in) {
       box.urgentPlots = {
         x: 0,
         y: 0,
-        w: lenD.w[0],
+        w: svg_dims.w[0],
         h: middleSeparation - 20
       }
       box.pinnedPlots = {
         x: 0,
         y: middleSeparation + 20,
-        w: lenD.w[0] * 1,
-        h: lenD.h[0] - middleSeparation - 20
+        w: svg_dims.w[0] * 1,
+        h: svg_dims.h[0] - middleSeparation - 20
       }
       box.focusPlots = {
-        x: lenD.w[0] * 0.5,
+        x: svg_dims.w[0] * 0.5,
         y: middleSeparation + 20,
-        w: lenD.w[0] * 0.5,
-        h: lenD.h[0] - middleSeparation - 20
+        w: svg_dims.w[0] * 0.5,
+        h: svg_dims.h[0] - middleSeparation - 20
       }
     }
     function initDefaultStyle () {
@@ -397,7 +397,7 @@ let main_plots_dash = function (opt_in) {
     let scrollBox = new ScrollBox()
     scrollBox.init({
       tag: tag,
-      gBox: g,
+      g_box: g,
       boxData: {
         x: 0,
         y: 0,
@@ -409,7 +409,7 @@ let main_plots_dash = function (opt_in) {
       lockerV: [tag + 'update_data'],
       lockerZoom: {
         all: tag + 'zoom',
-        during: tag + 'zoomDuring',
+        during: tag + 'zoomsuring',
         end: tag + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: tag}),
@@ -830,7 +830,7 @@ let main_plots_dash = function (opt_in) {
     let scrollBoxBoard
 
     let displayMode = 'mosaic'
-    let isFocused = false
+    let is_focused = false
 
     let focusedPlot
 
@@ -1131,7 +1131,7 @@ let main_plots_dash = function (opt_in) {
     }
     this.init_data = init_data
 
-    function getTransformation (transform) {
+    function get_transformation (transform) {
       // Create a dummy g for calculation purposes only. This will never
       // be appended to the DOM and will be discarded once this function
       // returns.
@@ -1168,7 +1168,7 @@ let main_plots_dash = function (opt_in) {
       d3.select(this).raise()
     }
     function dragged (d) {
-      let transform = getTransformation(d3.select(this).attr("transform"))
+      let transform = get_transformation(d3.select(this).attr("transform"))
 
       d3.select(this)
         .attr('transform', 'translate(' + (transform.translateX + d3.event.dx) + ',' + (transform.translateY + d3.event.dy) + ')')
@@ -1234,15 +1234,15 @@ let main_plots_dash = function (opt_in) {
 
     function shrinkAndFocus (focus) {
       let shrinkFrac = 0.3
-      // let trans = getTransformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
+      // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
       // svgPinnedPlotsg.select('g#pinned_eles')
       //   .transition()
       //   .duration(400)
       //   .attr('transform', 'translate(' + trans.translateX + ',' + trans.translateY + ') scale(' + (trans.scaleX < 1 ? 1 : shrinkFrac) + ',' + (trans.scaleY < 1 ? 1 : 1) + ')')
       // scrollPinnedList.updateBox({x: 0, y: 0, w: scrollBoxList.w * (1 / shrinkFrac), h: scrollBoxList.h})
       // scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (trans.scaleY < 1 ? 1 : shrinkFrac) * (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
-      isFocused = !isFocused
-      if (isFocused) {
+      is_focused = !is_focused
+      if (is_focused) {
         scrollBoxList.w = scrollBoxList.w * shrinkFrac
         scrollPinnedList.updateBox({x: 0, y: 0, w: scrollBoxList.w, h: scrollBoxList.h}, 600)
         let gg = svgPinnedPlotsg.select('g#pinned_eles')
@@ -1333,7 +1333,7 @@ let main_plots_dash = function (opt_in) {
           .style('opacity', 1)
       }
 
-      // let trans = getTransformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
+      // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
       scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
     }
     function listBib (g, d, i, caller) {
@@ -1389,7 +1389,7 @@ let main_plots_dash = function (opt_in) {
           .style('opacity', 1)
       }
 
-      // let trans = getTransformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
+      // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
       scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
     }
     function updatePinnedList () {
@@ -2737,7 +2737,7 @@ let main_plots_dash = function (opt_in) {
       }
 
       let generalIndex = [0, 0]
-      let fontSize = '16px'
+      let font_size = '16px'
 
       function drawCategory () {
         let allGroup = rightCats.selectAll('g.labelCategory')
@@ -2860,7 +2860,7 @@ let main_plots_dash = function (opt_in) {
               .attr('id', 'name1')
               .text(dd.name)
               .style('fill', '#000000')
-              .style('font-size', fontSize)
+              .style('font-size', font_size)
               .style('font-weight', '')
               .style('user-select', 'none')
               .attr('text-anchor', 'middle')
@@ -2868,7 +2868,7 @@ let main_plots_dash = function (opt_in) {
               .attr('id', 'name2')
               .text(dd.data.type.name)
               .style('fill', '#000000')
-              .style('font-size', fontSize)
+              .style('font-size', font_size)
               .style('font-weight', '')
               .style('user-select', 'none')
               .attr('text-anchor', 'middle')
@@ -2876,14 +2876,14 @@ let main_plots_dash = function (opt_in) {
               .attr('id', 'currentvalue')
               .text(dd.data.measures[0].value + '' + (dd.unit ? dd.unit : '%') + '+3')
               .style('fill', '#000000')
-              .style('font-size', fontSize)
+              .style('font-size', font_size)
               .style('font-weight', '')
               .style('user-select', 'none')
               .attr('text-anchor', 'middle')
             d3.select(this).append('text')
               .attr('id', 'treshold')
               .text('30')
-              .style('font-size', fontSize)
+              .style('font-size', font_size)
               .style('fill', '#000000')
               .style('font-weight', '')
               .style('user-select', 'none')

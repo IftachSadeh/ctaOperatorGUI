@@ -19,7 +19,7 @@ from RedisManager import RedisManager
 use_log_title = False
 add_msg_ele_space = False
 
-no_subArr_name = "empty_sub_array"
+no_sub_arr_name = "empty_sub_array"
 inst_pos_0 = [0, 90]
 
 # ------------------------------------------------------------------
@@ -59,7 +59,7 @@ allowed_widget_types = {
         'PanelSync',
     ]
 }
-# sync_types = [ "syncTelFocus" ]
+# sync_types = [ "sync_tel_focus" ]
 
 
 # ------------------------------------------------------------------

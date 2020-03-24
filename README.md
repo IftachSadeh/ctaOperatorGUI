@@ -101,7 +101,7 @@ The following details the minimal procedure to add a new widget, `TestExample`, 
   sed "s/EmptyExample/TestExample/g" js/widgets/EmptyExample.js | sed "s/empty_example/test_example/g" > js/widgets/TestExample.js
   sed "s/EmptyExample/TestExample/g" py/widgets/EmptyExample.py | sed "s/empty_example/test_example/g" > py/widgets/TestExample.py
   ```
-  It is imperative to follow keep the naming scheme consistent (including capitalisation), and to make sure that the `main_script_tag` variable in `js/widgets/TestExample.js` is set to the exact widget name.
+    It is imperative to follow keep the naming scheme consistent (including capitalisation), and to make sure that the `main_script_tag` variable in `js/widgets/TestExample.js` is set to the exact widget name.
 
 - Make the following modifications:
   1. In `ctaGuiUtils/py/utils.py`: add the new widget (`TestExample`) to `allowed_widget_types`. This `dict` is used in `ctaGuiFront/ctaGuiFront/py/utils/SockManager.py` to make sure that a dynamically added widget-class (i.e., `ctaGuiFront/ctaGuiFront/py/widgets/TestExample.py`) is valid.

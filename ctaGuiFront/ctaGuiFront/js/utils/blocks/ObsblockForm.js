@@ -79,7 +79,7 @@ window.ObsblockForm = function (opt_in) {
   }
   com = opt_in
 
-  let titleSize = 11
+  let title_size = 11
   let headerSize = 10
   let txt_size = 9
 
@@ -124,7 +124,7 @@ window.ObsblockForm = function (opt_in) {
     let scrollBox = new ScrollBox()
     scrollBox.init({
       tag: tag,
-      gBox: g,
+      g_box: g,
       boxData: {
         x: 0,
         y: 0,
@@ -136,7 +136,7 @@ window.ObsblockForm = function (opt_in) {
       lockerV: [tag + 'update_data'],
       lockerZoom: {
         all: tag + 'zoom',
-        during: tag + 'zoomDuring',
+        during: tag + 'zoomsuring',
         end: tag + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: tag}),
@@ -174,9 +174,9 @@ window.ObsblockForm = function (opt_in) {
       .text(data.metadata.block_name)
       .style('fill', palette.color.text)
       .style('font-weight', '')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .attr('text-anchor', 'middle')
-      .attr('transform', 'translate(' + (box.h * 0.7) + ',' + (box.h * 0.7 + titleSize * 0.3) + ')')
+      .attr('transform', 'translate(' + (box.h * 0.7) + ',' + (box.h * 0.7 + title_size * 0.3) + ')')
       .style('pointer-events', 'none')
     g.append('circle')
       .attr('cx', box.h * 0.7)
@@ -421,7 +421,7 @@ window.ObsblockForm = function (opt_in) {
     //   .text('Schedule')
     //   .style('fill', colorPalette.dark.stroke)
     //   .style('font-weight', 'bold')
-    //   .style('font-size', titleSize + 'px')
+    //   .style('font-size', title_size + 'px')
     //   .attr('text-anchor', 'start')
     //   .attr('transform', 'translate(' + (0) + ',' + (0) + ')')
     // g.append('line')
@@ -749,7 +749,7 @@ window.ObsblockForm = function (opt_in) {
         blocked: false,
         keepDropOpen: false,
         list: options,
-        dim: {w: label[0].w, h: titleSize * 1.5},
+        dim: {w: label[0].w, h: title_size * 1.5},
         nb: 1,
         background: {
           common: {
@@ -1140,7 +1140,7 @@ window.ObsblockForm = function (opt_in) {
     //   .text('Targets & pointings')
     //   .style('fill', colorPalette.dark.stroke)
     //   .style('font-weight', 'bold')
-    //   .style('font-size', titleSize + 'px')
+    //   .style('font-size', title_size + 'px')
     //   .attr('text-anchor', 'start')
     //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     // g.append('line')
@@ -1240,7 +1240,7 @@ window.ObsblockForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -1311,7 +1311,7 @@ window.ObsblockForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -1378,7 +1378,7 @@ window.ObsblockForm = function (opt_in) {
     //   })
     //   current
     //     .exit()
-    //     .transition('inOut')
+    //     .transition('in_out')
     //     .duration(times.anim_arc)
     //     .style('opacity', 0)
     //     .remove()
@@ -1462,7 +1462,7 @@ window.ObsblockForm = function (opt_in) {
     //   })
     //   current
     //     .exit()
-    //     .transition('inOut')
+    //     .transition('in_out')
     //     .duration(times.anim_arc)
     //     .style('opacity', 0)
     //     .remove()
@@ -1511,7 +1511,7 @@ window.ObsblockForm = function (opt_in) {
     //   })
     //   current
     //     .exit()
-    //     .transition('inOut')
+    //     .transition('in_out')
     //     .duration(times.anim_arc)
     //     .style('opacity', 0)
     //     .remove()
@@ -1707,7 +1707,7 @@ window.ObsblockForm = function (opt_in) {
           blocked: true,
           keepDropOpen: false,
           list: ['coordinates', 'divergentes'],
-          dim: {w: (label[0].w + label[1].w) * 1.2, h: titleSize * 1.5},
+          dim: {w: (label[0].w + label[1].w) * 1.2, h: title_size * 1.5},
           nb: 2,
           background: {
             common: {
@@ -1810,7 +1810,7 @@ window.ObsblockForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -1851,7 +1851,7 @@ window.ObsblockForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -2370,7 +2370,7 @@ window.ObsblockForm = function (opt_in) {
         w: box.w * 0.54,
         h: box.h
       }
-      box.h -= titleSize * 2
+      box.h -= title_size * 2
       let gt = g.append('g')
         .attr('id', 'telsDisplayer')
         .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
@@ -2683,7 +2683,7 @@ window.ObsblockForm = function (opt_in) {
       .attr('y', box.h + 20)
       .style('font-weight', 'bold')
       .attr('text-anchor', 'end')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
@@ -2693,7 +2693,7 @@ window.ObsblockForm = function (opt_in) {
       .attr('y', box.h + 20)
       .style('font-weight', 'bold')
       .attr('text-anchor', 'end')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
@@ -2703,7 +2703,7 @@ window.ObsblockForm = function (opt_in) {
       .attr('y', box.h + 20)
       .style('font-weight', 'bold')
       .attr('text-anchor', 'end')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
@@ -2884,11 +2884,11 @@ window.ObsblockForm = function (opt_in) {
     //   .attr('y', box.y + box.h)
     //   .style('font-weight', 'bold')
     //   .attr('text-anchor', 'start')
-    //   .style('font-size', titleSize + 'px')
+    //   .style('font-size', title_size + 'px')
     //   .style('pointer-events', 'none')
     //   .attr('fill', colorPalette.dark.text)
     //   .attr('stroke', 'none')
-    box.y -= 2 + titleSize
+    box.y -= 2 + title_size
     g.append('line')
       .attr('x1', 0)
       .attr('y1', box.y + box.h)
@@ -2922,7 +2922,7 @@ window.ObsblockForm = function (opt_in) {
     // box.h -= 21
     let xx = box.w * 0.11
     let ww = box.w * 0.86
-    box.h -= titleSize * 1.5
+    box.h -= title_size * 1.5
     let largeBox = {
       x: xx,
       y: 0,
@@ -3126,7 +3126,7 @@ window.ObsblockForm = function (opt_in) {
       .attr('y', box.y + box.h + 1 + headerSize)
       .style('font-weight', 'bold')
       .attr('text-anchor', 'middle')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
@@ -3137,7 +3137,7 @@ window.ObsblockForm = function (opt_in) {
       .attr('y', box.y + box.h + 1 + headerSize)
       .style('font-weight', 'bold')
       .attr('text-anchor', 'middle')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')
@@ -3148,7 +3148,7 @@ window.ObsblockForm = function (opt_in) {
       .attr('y', box.y + box.h + 1 + headerSize)
       .style('font-weight', 'bold')
       .attr('text-anchor', 'middle')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .style('pointer-events', 'none')
       .attr('fill', colorPalette.dark.text)
       .attr('stroke', 'none')

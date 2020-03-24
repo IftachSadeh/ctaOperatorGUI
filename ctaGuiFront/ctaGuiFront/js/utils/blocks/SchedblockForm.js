@@ -77,7 +77,7 @@ window.SchedblockForm = function (opt_in) {
   }
   com = opt_in
 
-  let titleSize = 11
+  let title_size = 11
   let headerSize = 10
   let txt_size = 9
 
@@ -203,7 +203,7 @@ window.SchedblockForm = function (opt_in) {
     let scrollBox = new ScrollBox()
     scrollBox.init({
       tag: tag,
-      gBox: g,
+      g_box: g,
       boxData: {
         x: 0,
         y: 0,
@@ -215,7 +215,7 @@ window.SchedblockForm = function (opt_in) {
       lockerV: [tag + 'update_data'],
       lockerZoom: {
         all: tag + 'zoom',
-        during: tag + 'zoomDuring',
+        during: tag + 'zoomsuring',
         end: tag + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: tag}),
@@ -269,9 +269,9 @@ window.SchedblockForm = function (opt_in) {
       .text('S' + schedB.blocks[0].metadata.n_sched)
       .style('fill', colorPalette.medium.stroke)
       .style('font-weight', '')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .attr('text-anchor', 'middle')
-      .attr('transform', 'translate(' + (box.h * 0.7) + ',' + (box.h * 0.7 + titleSize * 0.3) + ')')
+      .attr('transform', 'translate(' + (box.h * 0.7) + ',' + (box.h * 0.7 + title_size * 0.3) + ')')
       .style('pointer-events', 'none')
     g.append('circle')
       .attr('cx', box.h * 0.7)
@@ -429,7 +429,7 @@ window.SchedblockForm = function (opt_in) {
     //   .text('Schedule:')
     //   .style('fill', colorPalette.dark.stroke)
     //   .style('font-weight', 'bold')
-    //   .style('font-size', titleSize + 'px')
+    //   .style('font-size', title_size + 'px')
     //   .attr('text-anchor', 'start')
     //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     // g.append('line')
@@ -448,16 +448,16 @@ window.SchedblockForm = function (opt_in) {
     //   .attr('height', headerSize)
     //   .attr('fill', colorPalette.dark.stroke)
     let label = [
-      {x: box.w * 0.0, y: -2 + headerSize * 0.5 + titleSize * 0.6, w: box.w * 0.1, text: 'Blocks', anchor: 'middle'},
-      {x: box.w * 0.1, y: -2 + headerSize * 0.5 + titleSize * 0.6, w: box.w * 0.2, text: 'State', anchor: 'middle'},
-      {x: box.w * 0.3, y: -2 + headerSize * 0.5 + titleSize * 0.6, w: box.w * 0.233, text: 'Start', anchor: 'middle'},
-      {x: box.w * 0.533, y: -2 + headerSize * 0.5 + titleSize * 0.6, w: box.w * 0.233, text: 'Duration', anchor: 'middle'},
-      {x: box.w * 0.766, y: -2 + headerSize * 0.5 + titleSize * 0.6, w: box.w * 0.233, text: 'End', anchor: 'middle'}
+      {x: box.w * 0.0, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.1, text: 'Blocks', anchor: 'middle'},
+      {x: box.w * 0.1, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.2, text: 'State', anchor: 'middle'},
+      {x: box.w * 0.3, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.233, text: 'Start', anchor: 'middle'},
+      {x: box.w * 0.533, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.233, text: 'Duration', anchor: 'middle'},
+      {x: box.w * 0.766, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.233, text: 'End', anchor: 'middle'}
       // {x: box.w * 0.63, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.36, text: 'Pointing', anchor: 'middle'}
     ]
 
     box.h -= headerSize + 3
-    let line = titleSize * 2.5
+    let line = title_size * 2.5
     for (let i = 0; i < label.length; i++) {
       let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
       g.append('text')
@@ -1000,7 +1000,7 @@ window.SchedblockForm = function (opt_in) {
     })
     current
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()
@@ -1041,7 +1041,7 @@ window.SchedblockForm = function (opt_in) {
     //   .text('Targets and pointings')
     //   .style('fill', colorPalette.dark.stroke)
     //   .style('font-weight', 'bold')
-    //   .style('font-size', titleSize + 'px')
+    //   .style('font-size', title_size + 'px')
     //   .attr('text-anchor', 'start')
     //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     // g.append('line')
@@ -1237,7 +1237,7 @@ window.SchedblockForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -1309,7 +1309,7 @@ window.SchedblockForm = function (opt_in) {
     //   })
     //   current
     //     .exit()
-    //     .transition('inOut')
+    //     .transition('in_out')
     //     .duration(times.anim_arc)
     //     .style('opacity', 0)
     //     .remove()
@@ -1350,7 +1350,7 @@ window.SchedblockForm = function (opt_in) {
     //   })
     //   current
     //     .exit()
-    //     .transition('inOut')
+    //     .transition('in_out')
     //     .duration(times.anim_arc)
     //     .style('opacity', 0)
     //     .remove()
@@ -1419,7 +1419,7 @@ window.SchedblockForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -1503,7 +1503,7 @@ window.SchedblockForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()

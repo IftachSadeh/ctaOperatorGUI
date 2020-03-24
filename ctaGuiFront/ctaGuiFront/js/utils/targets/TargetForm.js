@@ -75,7 +75,7 @@ window.TargetForm = function (opt_in) {
   }
   com = opt_in
 
-  let titleSize = 11
+  let title_size = 11
   let headerSize = 10
   let txt_size = 9
 
@@ -119,7 +119,7 @@ window.TargetForm = function (opt_in) {
     let scrollBox = new ScrollBox()
     scrollBox.init({
       tag: tag,
-      gBox: g,
+      g_box: g,
       boxData: {
         x: 0,
         y: 0,
@@ -131,7 +131,7 @@ window.TargetForm = function (opt_in) {
       lockerV: [tag + 'update_data'],
       lockerZoom: {
         all: tag + 'zoom',
-        during: tag + 'zoomDuring',
+        during: tag + 'zoomsuring',
         end: tag + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: tag}),
@@ -215,7 +215,7 @@ window.TargetForm = function (opt_in) {
       .text('Associated ressources:')
       .style('fill', colorPalette.dark.stroke)
       .style('font-weight', 'bold')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .attr('text-anchor', 'start')
       .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     g.append('line')
@@ -314,7 +314,7 @@ window.TargetForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -376,7 +376,7 @@ window.TargetForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -446,7 +446,7 @@ window.TargetForm = function (opt_in) {
           .text('S' + d.blocks[0].metadata.n_sched)
           .style('fill', colorPalette.dark.text)
           .style('font-weight', 'bold')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' + (label[0].w * 0.5) + ',' + (line * 0.5 + txt_size * 0.3) + ')')
           .style('pointer-events', 'none')
@@ -460,7 +460,7 @@ window.TargetForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -646,7 +646,7 @@ window.TargetForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -706,7 +706,7 @@ window.TargetForm = function (opt_in) {
           .text('S' + d.blocks[0].metadata.n_sched)
           .style('fill', colorPalette.dark.text)
           .style('font-weight', 'bold')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .attr('text-anchor', 'middle')
           .attr('transform', 'translate(' + (dimPoly * 0.5) + ',' + (dimPoly * 0.5 + txt_size * 0.3) + ')')
           .style('pointer-events', 'none')
@@ -720,7 +720,7 @@ window.TargetForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()

@@ -8,7 +8,7 @@ import time
 import copy
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_subArr_name, inst_pos_0
+from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_sub_arr_name, inst_pos_0
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 class InstPos():

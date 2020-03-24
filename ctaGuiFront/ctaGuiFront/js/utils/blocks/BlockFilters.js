@@ -56,7 +56,7 @@ window.BlockFilters = function (opt_in) {
       box: {x: 0, y: 0, w: 0, h: 0}
     },
     filters: [], // [{key: [], value: ''}]
-    tokenFocus: {},
+    token_focus: {},
     blockQueue: []
   }
 
@@ -697,7 +697,7 @@ window.BlockFilters = function (opt_in) {
       localScroll.scrollBox = new ScrollBox()
       localScroll.scrollBox.init({
         tag: 'telsFiltersScroll',
-        gBox: localScroll.scrollBoxG,
+        g_box: localScroll.scrollBoxG,
         boxData: {
           x: com.beginner.tels.box.w * 0.05,
           y: com.beginner.tels.box.h * 0.175,
@@ -710,7 +710,7 @@ window.BlockFilters = function (opt_in) {
         lockerV: ['telsFiltersScroll' + 'update_data'],
         lockerZoom: {
           all: 'ScrollBox' + 'zoom',
-          during: 'ScrollBox' + 'zoomDuring',
+          during: 'ScrollBox' + 'zoomsuring',
           end: 'ScrollBox' + 'zoomEnd'
         },
         run_loop: new RunLoop({tag: 'telsFiltersScroll'}),
@@ -1107,7 +1107,7 @@ window.BlockFilters = function (opt_in) {
       localScroll.scrollBox = new ScrollBox()
       localScroll.scrollBox.init({
         tag: 'targetsFiltersScroll',
-        gBox: localScroll.scrollBoxG,
+        g_box: localScroll.scrollBoxG,
         boxData: {
           x: com.beginner.targets.box.w * 0.05,
           y: com.beginner.targets.box.h * 0.175,
@@ -1120,7 +1120,7 @@ window.BlockFilters = function (opt_in) {
         lockerV: ['targetsFiltersScroll' + 'update_data'],
         lockerZoom: {
           all: 'ScrollBox' + 'zoom',
-          during: 'ScrollBox' + 'zoomDuring',
+          during: 'ScrollBox' + 'zoomsuring',
           end: 'ScrollBox' + 'zoomEnd'
         },
         run_loop: new RunLoop({tag: 'targetsFiltersScroll'}),
@@ -1464,7 +1464,7 @@ window.BlockFilters = function (opt_in) {
   //     com.enabled.scroll.scrollBox = new ScrollBox()
   //     com.enabled.scroll.scrollBox.init({
   //       tag: 'blocksFiltersScroll',
-  //       gBox: com.enabled.scroll.scrollBoxG,
+  //       g_box: com.enabled.scroll.scrollBoxG,
   //       boxData: {
   //         x: scrollBox.x,
   //         y: scrollBox.y,
@@ -1477,7 +1477,7 @@ window.BlockFilters = function (opt_in) {
   //       lockerV: ['blocksFiltersScroll' + 'update_data'],
   //       lockerZoom: {
   //         all: 'ScrollBox' + 'zoom',
-  //         during: 'ScrollBox' + 'zoomDuring',
+  //         during: 'ScrollBox' + 'zoomsuring',
   //         end: 'ScrollBox' + 'zoomEnd'
   //       },
   //       run_loop: new RunLoop({tag: 'blocksFiltersScroll'}),
@@ -1530,7 +1530,7 @@ window.BlockFilters = function (opt_in) {
   //       .attr('stroke', color_theme.darker.stroke)
   //       .attr('stroke-width', 0.4)
   //       .on('click', function () {
-  //         com.tokenFocus = d
+  //         com.token_focus = d
   //         if (d.type === 'states') createStatesFilters({token: d})
   //         else if (d.type === 'tels') createTelsFilters({token: d})
   //         else if (d.type === 'targets') create_targetsFilter({token: d})
@@ -1601,7 +1601,7 @@ window.BlockFilters = function (opt_in) {
   //     com.disabled.scroll.scrollBox = new ScrollBox()
   //     com.disabled.scroll.scrollBox.init({
   //       tag: 'blocksFiltersScroll',
-  //       gBox: com.disabled.scroll.scrollBoxG,
+  //       g_box: com.disabled.scroll.scrollBoxG,
   //       boxData: {
   //         x: scrollBox.x,
   //         y: scrollBox.y,
@@ -1614,7 +1614,7 @@ window.BlockFilters = function (opt_in) {
   //       lockerV: ['blocksFiltersScroll' + 'update_data'],
   //       lockerZoom: {
   //         all: 'ScrollBox' + 'zoom',
-  //         during: 'ScrollBox' + 'zoomDuring',
+  //         during: 'ScrollBox' + 'zoomsuring',
   //         end: 'ScrollBox' + 'zoomEnd'
   //       },
   //       run_loop: new RunLoop({tag: 'blocksFiltersScroll'}),
@@ -1666,7 +1666,7 @@ window.BlockFilters = function (opt_in) {
   //       .attr('stroke', color_theme.dark.stroke)
   //       .attr('stroke-width', 0.2)
   //       .on('click', function () {
-  //         com.tokenFocus = d
+  //         com.token_focus = d
   //         if (d.type === 'states') createStatesFilters({token: d})
   //         else if (d.type === 'tels') createTelsFilters({token: d})
   //         else if (d.type === 'targets') create_targetsFilter({token: d})
@@ -1777,7 +1777,7 @@ window.BlockFilters = function (opt_in) {
         filtering: []
       }
       com.filters.unshift(filterToken)
-      com.tokenFocus = filterToken
+      com.token_focus = filterToken
       updateEnabled()
     }
     com.content.panel.g.selectAll('*').remove()
@@ -2212,7 +2212,7 @@ window.BlockFilters = function (opt_in) {
       localScroll.scrollBox = new ScrollBox()
       localScroll.scrollBox.init({
         tag: 'telsFiltersScroll',
-        gBox: localScroll.scrollBoxG,
+        g_box: localScroll.scrollBoxG,
         boxData: {
           x: com.content.box.w * 0.05,
           y: com.content.box.h * 0.175,
@@ -2225,7 +2225,7 @@ window.BlockFilters = function (opt_in) {
         lockerV: ['telsFiltersScroll' + 'update_data'],
         lockerZoom: {
           all: 'ScrollBox' + 'zoom',
-          during: 'ScrollBox' + 'zoomDuring',
+          during: 'ScrollBox' + 'zoomsuring',
           end: 'ScrollBox' + 'zoomEnd'
         },
         run_loop: new RunLoop({tag: 'telsFiltersScroll'}),
@@ -2428,11 +2428,11 @@ window.BlockFilters = function (opt_in) {
   }
 
   // function addFiltering (filter) {
-  //   com.tokenFocus.filtering.push(filter)
+  //   com.token_focus.filtering.push(filter)
   // }
   // function removeFiltering (filter) {
-  //   let index = com.tokenFocus.filtering.indexOf(filter)
-  //   com.tokenFocus.filtering.splice(index, 1)
+  //   let index = com.token_focus.filtering.indexOf(filter)
+  //   com.token_focus.filtering.splice(index, 1)
   // }
   function getFilters () {
     let allFilters = []
@@ -2462,12 +2462,12 @@ window.BlockFilters = function (opt_in) {
       com.blockQueue[i].update()
     }
   }
-  function updateStats () {
+  function update_stats () {
     addStatesMiddle_info()
     addTargetsMiddle_info()
     addTelsMiddle_info()
   }
-  this.updateStats = updateStats
+  this.update_stats = update_stats
 
   function plugBlockQueue (blockQueue, propagate) {
     com.blockQueue.push(blockQueue)

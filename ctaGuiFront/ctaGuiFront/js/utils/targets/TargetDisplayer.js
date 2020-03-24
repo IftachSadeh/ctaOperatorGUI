@@ -367,7 +367,7 @@ window.TargetDisplayer = function (opt_in) {
     let ntag = com.main.tag + 'Scroll'
     com.main.scroll.scrollBox.init({
       tag: ntag,
-      gBox: com.main.scroll.scrollBoxG,
+      g_box: com.main.scroll.scrollBoxG,
       boxData: {
         x: 0,
         y: 0,
@@ -379,7 +379,7 @@ window.TargetDisplayer = function (opt_in) {
       lockerV: [ntag + 'update_data'],
       lockerZoom: {
         all: ntag + 'zoom',
-        during: ntag + 'zoomDuring',
+        during: ntag + 'zoomsuring',
         end: ntag + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: ntag}),

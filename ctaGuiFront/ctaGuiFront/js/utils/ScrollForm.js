@@ -70,14 +70,14 @@ window.ScrollForm = function (opt_in) {
   com.scrollBox = new ScrollBox()
   com.scrollBox.init({
     tag: com.main.tag,
-    gBox: com.scrollBoxG,
+    g_box: com.scrollBoxG,
     boxData: { x: 0, y: 0, w: com.main.box.w, h: com.main.box.h, marg: 0 },
     useRelativeCoords: true,
     locker: new Locker(),
     lockerV: [com.main.tag + 'update_data'],
     lockerZoom: {
       all: com.main.tag + 'zoom',
-      during: com.main.tag + 'zoomDuring',
+      during: com.main.tag + 'zoomsuring',
       end: com.main.tag + 'zoomEnd'
     },
     run_loop: new RunLoop({ tag: 'scrollForm' }),

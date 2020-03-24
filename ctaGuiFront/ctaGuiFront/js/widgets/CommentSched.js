@@ -79,7 +79,7 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 6
   let w0 = 12
-  let divKey = 'main'
+  let div_key = 'main'
 
   opt_in.widget_func = {
     sock_func: sock_comment_sched,
@@ -87,15 +87,15 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: true,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   sock.add_to_table(opt_in)
@@ -154,7 +154,7 @@ let main_comment_sched = function (opt_in) {
   }
   let svg = {}
   let box = {}
-  let lenD = {}
+  let svg_dims = {}
 
   let com = {}
 
@@ -181,7 +181,7 @@ let main_comment_sched = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  locker.add('inInit')
+  locker.add('in_init')
 
   // function loop
   let run_loop = new RunLoop({ tag: widget_id })
@@ -258,16 +258,16 @@ let main_comment_sched = function (opt_in) {
   }
   function init_data (data_in) {
     function initSvg () {
-      lenD.w = {}
-      lenD.h = {}
-      lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
+      svg_dims.w = {}
+      svg_dims.h = {}
+      svg_dims.w[0] = 1000
+      svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
       svg.svg = d3
         .select(svg_div)
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
@@ -321,10 +321,10 @@ let main_comment_sched = function (opt_in) {
       svg.svg.style('background', '#444444') // color_theme.bright.background)
 
       // svg.back.append('rect')
-      //   .attr('x', -lenD.w[0] * 0.1)
-      //   .attr('y', lenD.h[0] * 0.005)
-      //   .attr('width', lenD.w[0] * 0.59)
-      //   .attr('height', lenD.h[0] * 0.475 + lenD.h[0] * 0.0)
+      //   .attr('x', -svg_dims.w[0] * 0.1)
+      //   .attr('y', svg_dims.h[0] * 0.005)
+      //   .attr('width', svg_dims.w[0] * 0.59)
+      //   .attr('height', svg_dims.h[0] * 0.475 + svg_dims.h[0] * 0.0)
       //   .attr('fill', color_theme.medium.background)
       //   .attr('stroke', '#000000')
       //   .attr('stroke-width', 0.2)
@@ -337,21 +337,21 @@ let main_comment_sched = function (opt_in) {
       //   .style('font-weight', '')
       //   .style('font-size', '10px')
       //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + ((-lenD.w[0] * 0.15 + lenD.w[0] * 0.59) * 0.5) + ',' + (lenD.h[0] * 0.03) + ')')
+      //   .attr('transform', 'translate(' + ((-svg_dims.w[0] * 0.15 + svg_dims.w[0] * 0.59) * 0.5) + ',' + (svg_dims.h[0] * 0.03) + ')')
       // // svg.back.append('rect')
-      // //   .attr('x', lenD.w[0] * 0.54 * 0.5 - lenD.w[0] * 0.05)
-      // //   .attr('y', lenD.h[0] * 0.025 - lenD.h[0] * 0.015)
-      // //   .attr('width', lenD.w[0] * 0.1)
-      // //   .attr('height', lenD.h[0] * 0.03)
+      // //   .attr('x', svg_dims.w[0] * 0.54 * 0.5 - svg_dims.w[0] * 0.05)
+      // //   .attr('y', svg_dims.h[0] * 0.025 - svg_dims.h[0] * 0.015)
+      // //   .attr('width', svg_dims.w[0] * 0.1)
+      // //   .attr('height', svg_dims.h[0] * 0.03)
       // //   .attr('fill', color_theme.medium.background)
       // //   .attr('stroke', '#000000')
       // //   .attr('stroke-width', 0.6)
       // //   .attr('rx', 2)
       // svg.back.append('rect')
-      //   .attr('x', -lenD.w[0] * 0.1)
-      //   .attr('y', lenD.h[0] * 0.487)
-      //   .attr('width', lenD.w[0] * 0.59)
-      //   .attr('height', lenD.h[0] * 0.405)
+      //   .attr('x', -svg_dims.w[0] * 0.1)
+      //   .attr('y', svg_dims.h[0] * 0.487)
+      //   .attr('width', svg_dims.w[0] * 0.59)
+      //   .attr('height', svg_dims.h[0] * 0.405)
       //   .attr('fill', color_theme.medium.background)
       //   .attr('stroke', '#000000')
       //   .attr('stroke-width', 0.2)
@@ -362,41 +362,41 @@ let main_comment_sched = function (opt_in) {
       //   .style('font-weight', '')
       //   .style('font-size', '10px')
       //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + ((-lenD.w[0] * 0.15 + lenD.w[0] * 0.59) * 0.5) + ',' + (lenD.h[0] * 0.51) + ')')
+      //   .attr('transform', 'translate(' + ((-svg_dims.w[0] * 0.15 + svg_dims.w[0] * 0.59) * 0.5) + ',' + (svg_dims.h[0] * 0.51) + ')')
       // // svg.back.append('rect')
-      // //   .attr('x', lenD.w[0] * 0.54 * 0.5 - lenD.w[0] * 0.05)
-      // //   .attr('y', lenD.h[0] * 0.5 - lenD.h[0] * 0.0125)
-      // //   .attr('width', lenD.w[0] * 0.1)
-      // //   .attr('height', lenD.h[0] * 0.025)
+      // //   .attr('x', svg_dims.w[0] * 0.54 * 0.5 - svg_dims.w[0] * 0.05)
+      // //   .attr('y', svg_dims.h[0] * 0.5 - svg_dims.h[0] * 0.0125)
+      // //   .attr('width', svg_dims.w[0] * 0.1)
+      // //   .attr('height', svg_dims.h[0] * 0.025)
       // //   .attr('fill', color_theme.medium.background)
       // //   .attr('stroke', color_theme.medium.stroke)
       // //   .attr('stroke-width', 0.4)
       // svg.back.append('rect')
-      //   .attr('x', -lenD.w[0] * 0.1)
-      //   .attr('y', lenD.h[0] * 0.9)
-      //   .attr('width', lenD.w[0] * 0.59)
-      //   .attr('height', lenD.h[0] * 0.1)
+      //   .attr('x', -svg_dims.w[0] * 0.1)
+      //   .attr('y', svg_dims.h[0] * 0.9)
+      //   .attr('width', svg_dims.w[0] * 0.59)
+      //   .attr('height', svg_dims.h[0] * 0.1)
       //   .attr('fill', color_theme.medium.background)
       //   .attr('stroke', '#000000')
       //   .attr('stroke-width', 0.2)
       //   .attr('rx', 0)
       //
       // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.493)
-      //   .attr('y', lenD.h[0] * 0)
-      //   .attr('width', lenD.w[0] * 0.507)
-      //   .attr('height', lenD.h[0] * 1)
+      //   .attr('x', svg_dims.w[0] * 0.493)
+      //   .attr('y', svg_dims.h[0] * 0)
+      //   .attr('width', svg_dims.w[0] * 0.507)
+      //   .attr('height', svg_dims.h[0] * 1)
       //   .attr('fill', color_theme.medium.background)
       //   .attr('stroke', '#000000')
       //   .attr('stroke-width', 0.2)
     }
     function initBox () {
-      let marg = lenD.w[0] * 0.01
+      let marg = svg_dims.w[0] * 0.01
       box.log = {
-        x: lenD.w[0] * 0 + marg,
-        y: lenD.h[0] * 0.0 + marg,
-        w: lenD.w[0] * 0.5 - 2 * marg,
-        h: lenD.h[0] * 1 - 2 * marg,
+        x: svg_dims.w[0] * 0 + marg,
+        y: svg_dims.h[0] * 0.0 + marg,
+        w: svg_dims.w[0] * 0.5 - 2 * marg,
+        h: svg_dims.h[0] * 1 - 2 * marg,
         marg: marg
       }
       box.logFields = {
@@ -443,11 +443,11 @@ let main_comment_sched = function (opt_in) {
       }
 
       box.rightPanel = {
-        x: lenD.w[0] * 0.5,
-        y: lenD.h[0] * 0.0,
-        w: lenD.w[0] * 0.5,
-        h: lenD.h[0] * 1.0,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.5,
+        y: svg_dims.h[0] * 0.0,
+        w: svg_dims.w[0] * 0.5,
+        h: svg_dims.h[0] * 1.0,
+        marg: svg_dims.w[0] * 0.01
       }
       box.block_queue_server = box.rightPanel
       box.block_queue_server_icon = {
@@ -598,18 +598,18 @@ let main_comment_sched = function (opt_in) {
       }
 
       box.telescopes = {
-        x: lenD.w[0] * 0.5,
-        y: lenD.h[0] * 0.56,
-        w: lenD.w[0] * 0.48,
-        h: lenD.h[0] * 0.5,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.5,
+        y: svg_dims.h[0] * 0.56,
+        w: svg_dims.w[0] * 0.48,
+        h: svg_dims.h[0] * 0.5,
+        marg: svg_dims.w[0] * 0.01
       }
       box.clock = {
-        x: lenD.w[0] * 0.002,
-        y: lenD.h[0] * 0.92,
-        w: lenD.w[0] * 0.485,
-        h: lenD.h[0] * 0.05,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.002,
+        y: svg_dims.h[0] * 0.92,
+        w: svg_dims.w[0] * 0.485,
+        h: svg_dims.h[0] * 0.05,
+        marg: svg_dims.w[0] * 0.01
       }
     }
     function initDefaultStyle () {
@@ -683,7 +683,7 @@ let main_comment_sched = function (opt_in) {
     svg_blocks_queue_server.init_data(data_in.data)
     svgEvents.init_data(data_in.data)
     svgTelescopes.init_data(data_in.data)
-    // svgDAQ.init_data()
+    // svgsAQ.init_data()
     // svgBottom_info.init_data(data_in.data)
   }
   this.init_data = init_data
@@ -867,7 +867,7 @@ let main_comment_sched = function (opt_in) {
     //     reserved.inputHistory.local.scroll.scrollBox = new ScrollBox()
     //     reserved.inputHistory.local.scroll.scrollBox.init({
     //       tag: 'inputHistoryScrollBox',
-    //       gBox: reserved.inputHistory.local.scroll.scrollBoxG,
+    //       g_box: reserved.inputHistory.local.scroll.scrollBoxG,
     //       boxData: {
     //         x: historyBox.x,
     //         y: historyBox.y,
@@ -880,7 +880,7 @@ let main_comment_sched = function (opt_in) {
     //       lockerV: [widget_id + 'update_data'],
     //       lockerZoom: {
     //         all: 'ScrollBox' + 'zoom',
-    //         during: 'ScrollBox' + 'zoomDuring',
+    //         during: 'ScrollBox' + 'zoomsuring',
     //         end: 'ScrollBox' + 'zoomEnd'
     //       },
     //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
@@ -910,7 +910,7 @@ let main_comment_sched = function (opt_in) {
     //     reserved.inputHistory.general.scroll.scrollBox = new ScrollBox()
     //     reserved.inputHistory.general.scroll.scrollBox.init({
     //       tag: 'inputHistoryScrollBox',
-    //       gBox: reserved.inputHistory.general.scroll.scrollBoxG,
+    //       g_box: reserved.inputHistory.general.scroll.scrollBoxG,
     //       boxData: {
     //         x: historyBox.x,
     //         y: historyBox.y,
@@ -923,7 +923,7 @@ let main_comment_sched = function (opt_in) {
     //       lockerV: [widget_id + 'update_data'],
     //       lockerZoom: {
     //         all: 'ScrollBox' + 'zoom',
-    //         during: 'ScrollBox' + 'zoomDuring',
+    //         during: 'ScrollBox' + 'zoomsuring',
     //         end: 'ScrollBox' + 'zoomEnd'
     //       },
     //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
@@ -1145,7 +1145,7 @@ let main_comment_sched = function (opt_in) {
     //     reserved.focusedItem_info.fields.scroll.scrollBox = new ScrollBox()
     //     reserved.focusedItem_info.fields.scroll.scrollBox.init({
     //       tag: 'inputHistoryScrollBox',
-    //       gBox: reserved.focusedItem_info.fields.scroll.scrollBoxG,
+    //       g_box: reserved.focusedItem_info.fields.scroll.scrollBoxG,
     //       boxData: {
     //         x: historyBox.x,
     //         y: historyBox.y,
@@ -1158,7 +1158,7 @@ let main_comment_sched = function (opt_in) {
     //       lockerV: [widget_id + 'update_data'],
     //       lockerZoom: {
     //         all: 'ScrollBox' + 'zoom',
-    //         during: 'ScrollBox' + 'zoomDuring',
+    //         during: 'ScrollBox' + 'zoomsuring',
     //         end: 'ScrollBox' + 'zoomEnd'
     //       },
     //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
@@ -1232,7 +1232,7 @@ let main_comment_sched = function (opt_in) {
     //     reserved.focusedItem_info.info.scroll.scrollBox = new ScrollBox()
     //     reserved.focusedItem_info.info.scroll.scrollBox.init({
     //       tag: 'inputHistoryScrollBox',
-    //       gBox: reserved.focusedItem_info.info.scroll.scrollBoxG,
+    //       g_box: reserved.focusedItem_info.info.scroll.scrollBoxG,
     //       boxData: {
     //         x: historyBox.x,
     //         y: historyBox.y,
@@ -1245,7 +1245,7 @@ let main_comment_sched = function (opt_in) {
     //       lockerV: [widget_id + 'update_data'],
     //       lockerZoom: {
     //         all: 'ScrollBox' + 'zoom',
-    //         during: 'ScrollBox' + 'zoomDuring',
+    //         during: 'ScrollBox' + 'zoomsuring',
     //         end: 'ScrollBox' + 'zoomEnd'
     //       },
     //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
@@ -1530,7 +1530,7 @@ let main_comment_sched = function (opt_in) {
         reserved.log_info.scroll.scrollBox = new ScrollBox()
         reserved.log_info.scroll.scrollBox.init({
           tag: 'log_infoScrollBox',
-          gBox: reserved.log_info.scroll.scrollBoxG,
+          g_box: reserved.log_info.scroll.scrollBoxG,
           boxData: {
             x: box.x,
             y: box.y,
@@ -1543,7 +1543,7 @@ let main_comment_sched = function (opt_in) {
           lockerV: [widget_id + 'update_data'],
           lockerZoom: {
             all: 'log_infoBox' + 'zoom',
-            during: 'log_infoBox' + 'zoomDuring',
+            during: 'log_infoBox' + 'zoomsuring',
             end: 'log_infoBox' + 'zoomEnd'
           },
           run_loop: new RunLoop({ tag: 'log_infoScrollBox' }),
@@ -1673,7 +1673,7 @@ let main_comment_sched = function (opt_in) {
 
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -2118,7 +2118,7 @@ let main_comment_sched = function (opt_in) {
 
         current
           .exit()
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .style('opacity', 0)
           .remove()
@@ -2304,7 +2304,7 @@ let main_comment_sched = function (opt_in) {
           reserved.logHistory.filtering.scroll.scrollBox = new ScrollBox()
           reserved.logHistory.filtering.scroll.scrollBox.init({
             tag: 'inputHistoryFilteringScrollBox',
-            gBox: reserved.logHistory.filtering.scroll.scrollBoxG,
+            g_box: reserved.logHistory.filtering.scroll.scrollBoxG,
             boxData: {
               x: historyBox.x,
               y: historyBox.y,
@@ -2316,9 +2316,9 @@ let main_comment_sched = function (opt_in) {
             locker: new Locker(),
             lockerV: [widget_id + 'update_data'],
             lockerZoom: {
-              all: 'ScrollFilteringBox' + 'zoom',
-              during: 'ScrollFilteringBox' + 'zoomDuring',
-              end: 'ScrollFilteringBox' + 'zoomEnd'
+              all: 'ScrollFiltering_box' + 'zoom',
+              during: 'ScrollFiltering_box' + 'zoomsuring',
+              end: 'ScrollFiltering_box' + 'zoomEnd'
             },
             run_loop: new RunLoop({ tag: 'inputHistoryFilteringScrollBox' }),
             canScroll: true,
@@ -2361,7 +2361,7 @@ let main_comment_sched = function (opt_in) {
           reserved.logHistory.list.scroll.scrollBox = new ScrollBox()
           reserved.logHistory.list.scroll.scrollBox.init({
             tag: 'inputHistoryScrollBox',
-            gBox: reserved.logHistory.list.scroll.scrollBoxG,
+            g_box: reserved.logHistory.list.scroll.scrollBoxG,
             boxData: {
               x: historyBox.x,
               y: historyBox.y,
@@ -2374,7 +2374,7 @@ let main_comment_sched = function (opt_in) {
             lockerV: [widget_id + 'update_data'],
             lockerZoom: {
               all: 'ScrollBox' + 'zoom',
-              during: 'ScrollBox' + 'zoomDuring',
+              during: 'ScrollBox' + 'zoomsuring',
               end: 'ScrollBox' + 'zoomEnd'
             },
             run_loop: new RunLoop({ tag: 'inputHistoryScrollBox' }),
@@ -2531,7 +2531,7 @@ let main_comment_sched = function (opt_in) {
         //       return color_theme.dark.background
         //     })
         //     // .attr('fill-opacity', function (d) {
-        //     //   return fillOpacity(d.val)
+        //     //   return fill_opacity(d.val)
         //     // })
         //     .attr('stroke-width', function (d) {
         //       return strokeSize(d.val)
@@ -2561,7 +2561,7 @@ let main_comment_sched = function (opt_in) {
         //
         // currentTels
         //   .exit()
-        //   .transition('inOut')
+        //   .transition('in_out')
         //   .duration(times.anim_arc)
         //   .style('opacity', 0)
         //   .remove()
@@ -2710,7 +2710,7 @@ let main_comment_sched = function (opt_in) {
 
         current
           .exit()
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .style('opacity', 0)
           .remove()
@@ -3458,7 +3458,7 @@ let main_comment_sched = function (opt_in) {
           }
         },
         expert: {
-          tokenFocus: {},
+          token_focus: {},
           enabled: {
             g: reserved.filter.g.append('g'),
             box: { x: 0, y: 0, w: fbox.w * 1, h: fbox.h * 0.15 },
@@ -3856,7 +3856,7 @@ let main_comment_sched = function (opt_in) {
           modified: []
         }
       })
-      blockFilters.updateStats()
+      blockFilters.update_stats()
     }
     this.update_data = update_data
 
@@ -4166,7 +4166,7 @@ let main_comment_sched = function (opt_in) {
       //   y: box.event_queue_server.y + box.event_queue_server.h * 0.05,
       //   w: box.event_queue_server.w * 0.94,
       //   h: box.event_queue_server.h * 0.8,
-      //   marg: lenD.w[0] * 0.01
+      //   marg: svg_dims.w[0] * 0.01
       // }
       //
       // gBlockBox = svg.g.append('g')
@@ -4881,7 +4881,7 @@ let main_comment_sched = function (opt_in) {
       function strokeSize (val) {
         return 0.4 // (2 - (2 * (val / 100)))
       }
-      function fillOpacity (val) {
+      function fill_opacity (val) {
         return 1 // (0.9 - (0.5 * (val / 100)))
       }
 
@@ -4957,7 +4957,7 @@ let main_comment_sched = function (opt_in) {
             return inst_health_col(d.val)
           })
           .attr('fill-opacity', function (d) {
-            return fillOpacity(d.val)
+            return fill_opacity(d.val)
           })
           .attr('stroke-width', function (d) {
             return strokeSize(d.val)
@@ -5031,7 +5031,7 @@ let main_comment_sched = function (opt_in) {
             return color_theme.dark.background
           })
           // .attr('fill-opacity', function (d) {
-          //   return fillOpacity(d.val)
+          //   return fill_opacity(d.val)
           // })
           .attr('stroke-width', function (d) {
             return strokeSize(d.val)
@@ -5063,7 +5063,7 @@ let main_comment_sched = function (opt_in) {
 
       currentTels
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -5090,7 +5090,7 @@ let main_comment_sched = function (opt_in) {
   //       color_theme: color_theme.medium
   //     })
   //     clockEvents.setHour(new Date(com.data_in.data.time_of_night.date_now))
-  //     clockEvents.setSendFunction(function (date) {
+  //     clockEvents.setSend_function(function (date) {
   //       block_queue_server.addExtraBar(date)
   //       eventQueue.addExtraBar(date)
   //     })
@@ -5118,7 +5118,7 @@ let main_comment_sched = function (opt_in) {
   let svg_blocks_queue_server = new Svg_blocks_queue_server()
   let svgEvents = new SvgEvents()
   let svgTelescopes = new SvgTelescopes()
-  let svgDAQ = new SvgDAQ()
+  let svgsAQ = new SvgDAQ()
   let svgTextEditor = new SvgTextEditor()
   // let svgTels = new SvgTels()
   // let svgFilterBlocks = new SvgFilterBlocks()

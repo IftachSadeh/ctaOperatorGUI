@@ -54,7 +54,7 @@ class InstHealth():
         # ------------------------------------------------------------------
         for id_now in self.tel_ids:
             self.inst_health_s0[id_now] = {
-                "health": 100, "status": "run",  # "subArr": "0",
+                "health": 100, "status": "run",  # "sub_arr": "0",
                 "camera": 100, "mirror": 100, "mount": 100, "daq": 100, "aux": 100
             }
 

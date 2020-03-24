@@ -82,7 +82,7 @@ window.FormManager = function () {
 
     let divH, divY
     if (alignVert) {
-      divH = get_selection_box(com.body[id]).height * opt_in.getScaleWH().h
+      divH = get_selection_box(com.body[id]).height * opt_in.get_scaleWH().h
       divY = data.y + (data.h - divH) / 2 + 'px'
     } else {
       divY = data.y + data.marg + 'px'
@@ -92,7 +92,7 @@ window.FormManager = function () {
       .attr('height', data.h - 2 * data.marg + 'px')
       .attr('x', data.x + data.marg + 'px')
       .attr('y', divY)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('opacity', 1)
   }
@@ -138,9 +138,9 @@ window.FormManager = function () {
     let preventDefault = is_def(opt_in.preventDefault)
       ? opt_in.preventDefault
       : true
-    let fontSize =
-      +opt_in.getScaleWH().w * (is_def(opt_in.fontScale) ? opt_in.fontScale : 1)
-    fontSize = fontSize * 100 + '%'
+    let font_size =
+      +opt_in.get_scaleWH().w * (is_def(opt_in.font_scale) ? opt_in.font_scale : 1)
+    font_size = font_size * 100 + '%'
 
     let form = com.main_div[id]
       .append('form')
@@ -164,14 +164,14 @@ window.FormManager = function () {
       .attr('value', opt_in.data.data.text ? opt_in.data.data.text : '')
       .attr('required', 'true')
       // .attr("maxlength", 10).attr("type", 'radio')
-      .style('font-size', fontSize)
+      .style('font-size', font_size)
 
     form.append('div').attr('class', 'formMngrBar')
 
     com.title[id] = form
       .append('div')
       .attr('class', 'formMngrTitle')
-      .style('font-size', fontSize)
+      .style('font-size', font_size)
       .style(
         'background',
         opt_in.background ? opt_in.background.title : '#f0f0f0'
@@ -214,7 +214,7 @@ window.FormManager = function () {
 // if(!is_def(window.svgWidthScale[tagForm])) {
 //   window.svgWidthScale[tagForm] = function() {
 //     return '100%';
-//     // let scale = (+(svg.svg.node().getBoundingClientRect().width)) / lenD.w[0];
+//     // let scale = (+(svg.svg.node().getBoundingClientRect().width)) / svg_dims.w[0];
 //     // return (scale*100)+'%';
 //   }
 

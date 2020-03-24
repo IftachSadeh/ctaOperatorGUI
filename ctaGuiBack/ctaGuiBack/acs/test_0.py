@@ -190,15 +190,15 @@ class MockSched():
         # sched_tel_ids = random.sample(tel_ids, n_tel_now)
         # tel_ids = [x for x in tel_ids if x not in sched_tel_ids]
 
-        subArr = []
+        sub_arr = []
         # for sched_tel_id_now in sched_tel_ids:        
         #   tel_type = sb.SST if sched_tel_id_now[0] == 'S' else sb.MST if sched_tel_id_now[0] == 'M' else sb.LST
-        #   subArr += [ sb.Telescope(sched_tel_id_now, tel_type) ]
+        #   sub_arr += [ sb.Telescope(sched_tel_id_now, tel_type) ]
 
         sched_conf = sb.Configuration(
           sb.InstrumentConfiguration(
             sb.PointingMode(2,sb._divergent(2)),
-            sb.Subarray([], subArr)
+            sb.Subarray([], sub_arr)
           ),
           "camera",
           "rta"
@@ -365,7 +365,7 @@ import time
 useCol = 1 #; useCol = 0
 use_log_title = False
 add_msg_ele_space = False
-no_subArr_name = "empty_sub_array"
+no_sub_arr_name = "empty_sub_array"
 inst_pos_0 = [0, 90]
 has_acs = True
 

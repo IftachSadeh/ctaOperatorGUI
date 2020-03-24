@@ -14,44 +14,44 @@
 // ------------------------------------------------------------------
 // 
 // ------------------------------------------------------------------
-window.ArrZoomerChes = function (opt_in0) {
+window.ArrZoomerChes = function (opt_in_top) {
   let this_top = this
-  let run_loop = opt_in0.run_loop
-  let sgv_tag = opt_in0.sgv_tag
-  let widget_id = opt_in0.widget_id
-  let locker = opt_in0.locker
-  let is_south = opt_in0.is_south
+  let run_loop = opt_in_top.run_loop
+  let sgv_tag = opt_in_top.sgv_tag
+  let widget_id = opt_in_top.widget_id
+  let locker = opt_in_top.locker
+  let is_south = opt_in_top.is_south
 
-  let eleBase = opt_in0.eleBase
+  let ele_base = opt_in_top.ele_base
 
-  eleBase.set_ele(this_top, 'ches')
+  ele_base.set_ele(this_top, 'ches')
 
 
-  let instruments = eleBase.instruments
-  let rScale = instruments.rScale
-  let lock_init_key = eleBase.lock_init_keys.ches
+  let instruments = ele_base.instruments
+  let scale_r = instruments.scale_r
+  let lock_init_key = ele_base.lock_init_keys.ches
 
-  let baseH = 500
-  let addChesOutline = false
-  let showVor = false
+  let base_h = 500
+  let add_ches_outline = false
+  let show_vor = false
 
-  let gChesD = eleBase.svgD.ches
+  let ches_gs = ele_base.svgs.ches
 
-  gChesD.g = eleBase.svgD.g_svg.append('g')
-  gChesD.gChes = gChesD.g.append('g')
-  gChesD.gBaseChes = gChesD.gChes.append('g')
+  ches_gs.g = ele_base.svgs.g_svg.append('g')
+  ches_gs.ches_g = ches_gs.g.append('g')
+  ches_gs.ches_g_base = ches_gs.ches_g.append('g')
 
   // ------------------------------------------------------------------
-  // scale to 100x100 px (executed after createChessMap())
+  // scale to 100x100 px (executed after create_ches_map())
   // ------------------------------------------------------------------
-  function gTrans() {
-    let transChes = [-1*com.chesXY.x.min, -1*com.chesXY.y.min]
-    gChesD.svgChes.attr('transform', function (d) {
+  function g_trans() {
+    let transChes = [-1*com.ches_xy.x.min, -1*com.ches_xy.y.min]
+    ches_gs.g_outer.attr('transform', function (d) {
       return 'translate(' + transChes[0] + ', ' + transChes[1] + ')'
     })
     
-    let scaleChes = 100 / (com.chesXY.x.max - com.chesXY.x.min)
-    gChesD.gBaseChes.attr('transform', function (d) {
+    let scaleChes = 100 / (com.ches_xy.x.max - com.ches_xy.x.min)
+    ches_gs.ches_g_base.attr('transform', function (d) {
       return 'scale(' + scaleChes + ')'
     })
 
@@ -62,21 +62,21 @@ window.ArrZoomerChes = function (opt_in0) {
   // to avoid bugs, this is the g which should be used
   // for translations and sacling of this element
   // ------------------------------------------------------------------
-  this_top.setTransform = function (trans) {
-    if (is_def(trans)) gChesD.gChes.attr('transform', trans)
-    return gChesD.gChes
+  this_top.set_transform = function (trans) {
+    if (is_def(trans)) ches_gs.ches_g.attr('transform', trans)
+    return ches_gs.ches_g
   }
 
 
 
 
   let com = {}
-  com.chesXY = { x: {}, y: {} }
+  com.ches_xy = { x: {}, y: {} }
 
   let zoom_target = null
   let zoomLen = {}
-  let telData = null
-  let tel_typeV = null
+  let tel_data = null
+  let tel_id_types = null
   let prop0 = 'health'
 
   zoomLen['0.0'] = 1
@@ -111,44 +111,46 @@ window.ArrZoomerChes = function (opt_in0) {
   // ------------------------------------------------------------------
   //  Chess function
   // ------------------------------------------------------------------
-  function createChessMap (opt_in) {
-    com.svgChesZoom = d3.zoom().scaleExtent([zoomLen['0.0'], zoomLen['1.3']])
-    // com.svgChesZoom.on('start', com.svgZoomStart)
-    // com.svgChesZoom.on('zoom', com.svgZoomDuringChes)
-    // com.svgChesZoom.on('end', com.svgZoomEnd)
+  function create_ches_map (opt_in) {
+    com.ches_zoom = d3.zoom().scaleExtent([
+      zoomLen['0.0'], zoomLen['1.3']
+    ])
+    // com.ches_zoom.on('start', com.svg_zoom_start)
+    // com.ches_zoom.on('zoom', com.svg_zoom_duringChes)
+    // com.ches_zoom.on('end', com.svg_zoom_end)
 
-    gChesD.svgChes = gChesD.gBaseChes.append('g')
+    ches_gs.g_outer = ches_gs.ches_g_base.append('g')
 
-    gChesD.gBaseChes
-      .call(com.svgChesZoom)
+    ches_gs.ches_g_base
+      .call(com.ches_zoom)
       .on('dblclick.zoom', null)
       .on('wheel', function () {
         d3.event.preventDefault()
       })
 
     // save the svg node to use for d3.zoomTransform() later
-    gChesD.svgChes_zoom_node = gChesD.gBaseChes.nodes()[0]
-    gChesD.gChesZoomed = gChesD.svgChes.append('g')
+    ches_gs.svgChes_zoom_node = ches_gs.ches_g_base.nodes()[0]
+    // ches_gs.g_ghes_zoomed = ches_gs.g_outer.append('g')
 
     // add one rectangle as background, and to allow click to zoom
     // ------------------------------------------------------------------
 
-    let gChesRec = gChesD.svgChes.append('g')
+    let g_ches_rec = ches_gs.g_outer.append('g')
 
-    com.gChes = {}
-    com.gChes.g = gChesD.svgChes.append('g')
-    com.gChes.xyr = {}
+    com.ches_g = {}
+    com.ches_g.g = ches_gs.g_outer.append('g')
+    com.ches_g.xyr = {}
 
     // let nRows     = is_south ? 5 : 2;
     // let n_ele = is_south ? 99 : 19
     let n_ele_in_row = is_south ? [18, 18, 18, 18, 18] : [8, 8, 8]
-    let eleR = is_south ? baseH / 16 : baseH / 6
-    let eleSpace = is_south ? [3.9, 2.5] : [3.1, 1.5]
-    let eleShift = is_south ? [2, 2] : [2, 3]
+    let ele_r = is_south ? base_h / 16 : base_h / 6
+    let ele_space = is_south ? [3.9, 2.5] : [3.1, 1.5]
+    let ele_shift = is_south ? [2, 2] : [2, 3]
 
-    let vorData = []
+    let vor_data = []
     let n_ele_row = 0
-    $.each(tel_typeV, function (index, id_now) {
+    $.each(tel_id_types, function (index, id_now) {
       let n_ele_now_row = n_ele_row
       let n_ele_now_col = 0
 
@@ -161,50 +163,50 @@ window.ArrZoomerChes = function (opt_in0) {
       n_ele_row++
 
       let x =
-        eleR / eleShift[0] +
-        eleR +
-        ((is_south ? 0.3 : 0.15 * 6) + n_ele_now_row) * (eleSpace[0] * eleR)
-      let y = eleR / eleShift[1] + eleR + n_ele_now_col * (eleSpace[1] * eleR)
+        ele_r / ele_shift[0] +
+        ele_r +
+        ((is_south ? 0.3 : 0.15 * 6) + n_ele_now_row) * (ele_space[0] * ele_r)
+      let y = ele_r / ele_shift[1] + ele_r + n_ele_now_col * (ele_space[1] * ele_r)
 
-      com.gChes.xyr[id_now] = {
+      com.ches_g.xyr[id_now] = {
         id: id_now,
         rc: [n_ele_now_row, n_ele_now_col],
         x: x,
         y: y,
-        r: eleR * 1.5
+        r: ele_r * 1.5
       }
-      vorData.push({ id: id_now, x: x, y: y })
+      vor_data.push({ id: id_now, x: x, y: y })
     })
 
-    let xyrFlat = Object.values(com.gChes.xyr)
-    com.chesXY.x.min = min_max_obj({
-      minMax: 'min', data: xyrFlat, func: (x => x.x - 1. * x.r)
+    let xyr_flat = Object.values(com.ches_g.xyr)
+    com.ches_xy.x.min = min_max_obj({
+      min_max: 'min', data: xyr_flat, func: (x => x.x - 1. * x.r)
     })
-    com.chesXY.x.max = min_max_obj({
-      minMax: 'max', data: xyrFlat, func: (x => x.x + 1. * x.r)
+    com.ches_xy.x.max = min_max_obj({
+      min_max: 'max', data: xyr_flat, func: (x => x.x + 1. * x.r)
     })
-    com.chesXY.y.min = min_max_obj({
-      minMax: 'min', data: xyrFlat, func: (x => x.y - 1. * x.r)
+    com.ches_xy.y.min = min_max_obj({
+      min_max: 'min', data: xyr_flat, func: (x => x.y - 1. * x.r)
     })
-    com.chesXY.y.max = min_max_obj({
-      minMax: 'max', data: xyrFlat, func: (x => x.y + 1. * x.r)
+    com.ches_xy.y.max = min_max_obj({
+      min_max: 'max', data: xyr_flat, func: (x => x.y + 1. * x.r)
     })
 
-    gChesRec
+    g_ches_rec
       .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', (com.chesXY.x.max - com.chesXY.x.min))
-      .attr('height', (com.chesXY.y.max - com.chesXY.y.min))
+      .attr('width', (com.ches_xy.x.max - com.ches_xy.x.min))
+      .attr('height', (com.ches_xy.y.max - com.ches_xy.y.min))
       .attr('stroke-width', '0')
       .attr('transform', function (d) {
-        return 'translate(' + com.chesXY.x.min + ', '+ com.chesXY.y.min +')'
+        return 'translate(' + com.ches_xy.x.min + ', '+ com.ches_xy.y.min +')'
       })
       .attr('fill', '#383b42')
       // .attr("fill", "#d698bc")// .attr("fill", "#F2F2F2")
 
-    if(addChesOutline) {
-      gChesRec
+    if(add_ches_outline) {
+      g_ches_rec
         .selectAll('rect')
         .attr('stroke', '#F2F2F2')
         .attr('stroke-width', 1)
@@ -212,7 +214,7 @@ window.ArrZoomerChes = function (opt_in0) {
         .attr('vector-effect', 'non-scaling-stroke')
     }
 
-    let vorFunc = d3
+    let vor_func = d3
       .voronoi()
       .x(function (d) {
         return d.x
@@ -220,56 +222,63 @@ window.ArrZoomerChes = function (opt_in0) {
       .y(function (d) {
         return d.y
       })
-      .extent([[com.chesXY.x.min, com.chesXY.y.min], [com.chesXY.x.max, com.chesXY.y.max]])
+      .extent([
+        [com.ches_xy.x.min, com.ches_xy.y.min], 
+        [com.ches_xy.x.max, com.ches_xy.y.max]
+      ])
 
-    com.gChes.vor = vorFunc.polygons(vorData)
+    com.ches_g.vor = vor_func.polygons(vor_data)
   }
-  this.createChessMap = createChessMap
   
-  function updateChessMap (dataV, shiftY) {
+  
+  // ------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------
+  function update_chess_map (data_in, shift_y) {
     let tag_circ = prop0
-    let tagLbl = 'lbls00title'
-    let tagState = 'state_00'
-    // let tag_txt = tagState + tagLbl
+    let tag_lbl = 'lbls00title'
+    let tag_state = 'state_00'
+    // let tag_txt = tag_state + tag_lbl
 
-    let fontScale = is_south ? 2.7 : 4
-    let titleSize = (is_south ? 16 : 17) * fontScale
+    let font_scale = is_south ? 2.7 : 4
+    let title_size = (is_south ? 16 : 17) * font_scale
 
-    let circStrk = 0
-    let textStrk = is_south ? 0.3 : 0.8
-    let fillOpac = 1
+    let circ_strk = 0
+    let text_strk = is_south ? 0.3 : 0.8
+    let fill_opac = 1
 
     //
-    let circ = com.gChes.g
+    let circ = com.ches_g.g
       .selectAll('circle.' + tag_circ)
-      .data(dataV, function (d) {
+      .data(data_in, function (d) {
         return d.id
       })
+    
     circ
       .enter()
       .append('circle')
       .attr('class', tag_circ)
-      .attr('stroke-width', circStrk)
+      .attr('stroke-width', circ_strk)
       .style('stroke-opacity', 1)
       .attr('vector-effect', 'non-scaling-stroke')
       .style('pointer-events', 'none')
       .attr('transform', function (d) {
         return (
           'translate(' +
-          com.gChes.xyr[d.id].x +
+          com.ches_g.xyr[d.id].x +
           ',' +
-          com.gChes.xyr[d.id].y +
+          com.ches_g.xyr[d.id].y +
           ')'
         )
       })
-      .style('fill-opacity', fillOpac)
+      .style('fill-opacity', fill_opac)
       .attr('r', function (d) {
-        return com.gChes.xyr[d.id].r
+        return com.ches_g.xyr[d.id].r
       })
       .style('opacity', 1)
       .style('fill', '#383b42')
       .merge(circ)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       // .style("fill", function(d) { return inst_health_col(d[tag_circ],0.5); } )
       .style('stroke', function (d) {
@@ -278,24 +287,27 @@ window.ArrZoomerChes = function (opt_in0) {
 
     circ
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('r', 0)
       .remove()
 
-    function txtColRC (d) {
-      let index = com.gChes.xyr[d.id].rc[0] + com.gChes.xyr[d.id].rc[1]
+    function txt_col_rc (d) {
+      let index = (
+        com.ches_g.xyr[d.id].rc[0]
+        + com.ches_g.xyr[d.id].rc[1]
+      )
       return index % 2 === 0
         ? d3.rgb(cols_purples[4]).brighter(0.5)
         : d3.rgb(cols_blues[3]).brighter(0.1)
       // return (index%2 == 0) ? d3.rgb(cols_yellows[1]).brighter(0.5) : d3.rgb(cols_greens[4]).brighter(0.1);
     }
-    function txtColRCb (d) {
-      return d3.rgb(txtColRC(d)).brighter(0.2)
+    function txt_col_rcb (d) {
+      return d3.rgb(txt_col_rc(d)).brighter(0.2)
     }
 
     // attach new data (select by id, and so will override existing data if has the same id)
-    let text = com.gChes.g.selectAll('text.' + tagLbl).data(dataV, function (d) {
+    let text = com.ches_g.g.selectAll('text.' + tag_lbl).data(data_in, function (d) {
       return d.id
     })
 
@@ -307,40 +319,40 @@ window.ArrZoomerChes = function (opt_in0) {
         return tel_info.get_title(d.id)
       })
       // .attr("id",      function(d) { return my_unique_id+d.id+tag_txt; })
-      .attr('class', tagState + ' ' + tagLbl)
+      .attr('class', tag_state + ' ' + tag_lbl)
       .style('font-weight', 'normal')
-      .attr('stroke-width', textStrk)
+      .attr('stroke-width', text_strk)
       .attr('vector-effect', 'non-scaling-stroke')
       .style('pointer-events', 'none')
       .each(function (d, i) {
-        d.fontScale = String(fontScale)
-        d.shiftY = shiftY
+        d.font_scale = String(font_scale)
+        d.shift_y = shift_y
       })
       // .style("stroke",    function(d) { return "#F2F2F2";  return "#383b42"; })
       // .style("stroke",   function(d) { return inst_health_col(d[tag_circ]); } )
-      .style('stroke', txtColRCb)
-      .style('fill', txtColRC)
-      .style('font-size', titleSize + 'px')
+      .style('stroke', txt_col_rcb)
+      .style('fill', txt_col_rc)
+      .style('font-size', title_size + 'px')
       .attr('transform', function (d, i) {
         return (
           'translate(' +
-          com.gChes.xyr[d.id].x +
+          com.ches_g.xyr[d.id].x +
           ',' +
-          com.gChes.xyr[d.id].y +
+          com.ches_g.xyr[d.id].y +
           ')'
         )
       })
-      .attr('dy', titleSize / 3 + 'px')
+      .attr('dy', title_size / 3 + 'px')
       .attr('text-anchor', 'middle')
-      .style('font-size', titleSize + 'px')
-      .transition('inOut')
+      .style('font-size', title_size + 'px')
+      .transition('in_out')
       .duration(times.anim_arc)
       .delay(100)
       .style('opacity', '1')
 
     text
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()
@@ -348,26 +360,26 @@ window.ArrZoomerChes = function (opt_in0) {
     // ------------------------------------------------------------------
     // the highlight function
     // ------------------------------------------------------------------
-    function focusTel (dIn, isOn) {
-      locker.add('svgQuickFocusTel')
+    function focus_tel (data_in, is_on) {
+      locker.add('svg_quick_focus_tel')
 
       let delay = 250
       setTimeout(function () {
-        if (locker.n_active('svgQuickFocusTel') === 1) {
-          _focusTel(dIn, isOn)
+        if (locker.n_active('svg_quick_focus_tel') === 1) {
+          _focus_tel(data_in, is_on)
         }
-        locker.remove('svgQuickFocusTel')
+        locker.remove('svg_quick_focus_tel')
       }, delay)
     }
 
-    function _focusTel (dIn, isOn) {
-      let rScale = is_south ? 2.0 : 1.1
+    function _focus_tel (data_in, is_on) {
+      let scale_r = is_south ? 2.0 : 1.1
 
       let is_ele_on
-      let dInId = is_def(dIn.data) ? dIn.data.id : ''
-      if (isOn) {
+      let data_in_id = is_def(data_in.data) ? data_in.data.id : ''
+      if (is_on) {
         is_ele_on = function (d) {
-          return d.id === dInId
+          return d.id === data_in_id
         }
       } else {
         is_ele_on = function () {
@@ -376,8 +388,8 @@ window.ArrZoomerChes = function (opt_in0) {
       }
 
       //
-      let circ = com.gChes.g.selectAll('circle.' + tag_circ)
-      let text = com.gChes.g.selectAll('text.' + tagLbl)
+      let circ = com.ches_g.g.selectAll('circle.' + tag_circ)
+      let text = com.ches_g.g.selectAll('text.' + tag_lbl)
 
       circ.each(function (d) {
         if (is_ele_on(d)) move_node_up(this, 2)
@@ -389,30 +401,30 @@ window.ArrZoomerChes = function (opt_in0) {
       //
       circ
         .transition('update')
-        .duration(times.anim_arc * (isOn ? 0.5 : 0.1))
-        // .style("opacity", function(d) { return is_ele_on(d) ? 1 : (isOn?0.5:1);  })
+        .duration(times.anim_arc * (is_on ? 0.5 : 0.1))
+        // .style("opacity", function(d) { return is_ele_on(d) ? 1 : (is_on?0.5:1);  })
         .style('fill-opacity', function (d) {
           return is_ele_on(d) ? 1 : 0
         })
         .attr('r', function (d) {
-          return com.gChes.xyr[d.id].r * (is_ele_on(d) ? rScale : 1)
+          return com.ches_g.xyr[d.id].r * (is_ele_on(d) ? scale_r : 1)
         })
         .attr('stroke-width', function (d) {
-          return is_ele_on(d) ? circStrk + 1.5 : 0
+          return is_ele_on(d) ? circ_strk + 1.5 : 0
         })
 
       //
       text
         .transition('update')
-        .duration(times.anim_arc * (isOn ? 1 : 0.1))
+        .duration(times.anim_arc * (is_on ? 1 : 0.1))
         .style('font-size', function (d) {
-          return (is_ele_on(d) ? titleSize * rScale : titleSize) + 'px'
+          return (is_ele_on(d) ? title_size * scale_r : title_size) + 'px'
         })
         .attr('dy', function (d) {
-          return (is_ele_on(d) ? titleSize * rScale : titleSize) / 3 + 'px'
+          return (is_ele_on(d) ? title_size * scale_r : title_size) / 3 + 'px'
         })
         .attr('stroke-width', function (d) {
-          return is_ele_on(d) ? textStrk + 0.7 : textStrk
+          return is_ele_on(d) ? text_strk + 0.7 : text_strk
         })
         .style('font-weight', function (d) {
           return is_ele_on(d) ? 'bold' : 'normal'
@@ -423,9 +435,9 @@ window.ArrZoomerChes = function (opt_in0) {
     // ------------------------------------------------------------------
     // vor cels for selection
     // ------------------------------------------------------------------
-    com.gChes.g
+    com.ches_g.g
       .selectAll('path')
-      .data(com.gChes.vor)
+      .data(com.ches_g.vor)
       .enter()
       .append('path')
       .style('fill', 'transparent')
@@ -438,18 +450,20 @@ window.ArrZoomerChes = function (opt_in0) {
         d.attr('d', vor_ploy_func)
       })
       .on('click', function (d) {
-        telData.vorDblclick({ source: 'com.gches.g', d: d, isInOut: false })
+        tel_data.vor_dblclick({
+          source: 'com.ches_g.g', d: d, is_in_out: false,
+        })
       })
-      // .on("dblclick",  function(d) { telData.vorDblclick({ d:d, isInOut:true }); }) // dousnt work well...
+      // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:true }); }) // dousnt work well...
       .on('mouseover', function (d) {
-        focusTel(d, true)
+        focus_tel(d, true)
       })
       .on('mouseout', function (d) {
-        focusTel(d, false)
+        focus_tel(d, false)
       })
 
-    if (showVor) {
-      com.gChes.g
+    if (show_vor) {
+      com.ches_g.g
         .selectAll('path')
         .style('opacity', '0.5')
         .style('stroke-width', '1.5')
@@ -461,13 +475,13 @@ window.ArrZoomerChes = function (opt_in0) {
   //  Global function
   // ------------------------------------------------------------------
   function init_data (data_in) {
-    if (is_def(gChesD.svgChes)) return
+    if (is_def(ches_gs.g_outer)) return
 
-    telData = data_in.instrumentData
-    tel_typeV = data_in.tel_typeV
+    tel_data = data_in.instrument_data
+    tel_id_types = data_in.tel_id_types
 
-    createChessMap()
-    gTrans()
+    create_ches_map()
+    g_trans()
 
     // initialize the target name for hovering->zoom
     this_top.target = zoom_target
@@ -484,7 +498,7 @@ window.ArrZoomerChes = function (opt_in0) {
     // }
     // this_top.zoomToTrgQuick = zoomToTrgQuick
 
-    setStateOnce(data_in)
+    set_state_once(data_in)
 
     locker.remove(lock_init_key)
     return
@@ -494,17 +508,17 @@ window.ArrZoomerChes = function (opt_in0) {
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function setStateOnce (data_in) {
-    updateChessMap(telData.tel, false)
-    // updateChessMap(telData.tel, is_south ? 2.7 : 5, false)
+  function set_state_once (data_in) {
+    update_chess_map(tel_data.tel, false)
+    // update_chess_map(tel_data.tel, is_south ? 2.7 : 5, false)
   }
-  this.setStateOnce = setStateOnce
+  this.set_state_once = set_state_once
 
   // // ------------------------------------------------------------------
   // // initialize a global function (to be overriden below)
   // // ------------------------------------------------------------------
   // let zoomToTrgQuick = function (opt_in) {
-  //   if (!locker.is_free('inInit')) {
+  //   if (!locker.is_free('in_init')) {
   //     setTimeout(function () {
   //       zoomToTrgQuick(opt_in)
   //     }, times.wait_loop)
@@ -516,87 +530,15 @@ window.ArrZoomerChes = function (opt_in0) {
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  let getScale = function () {
+  let get_scale = function () {
     return zoomLen['0.0']
   }
-  this.getScale = getScale
+  this.get_scale = get_scale
   
-  let getTrans = function () {
+  let get_trans = function () {
     return [0, 0]
   }
-  this.getTrans = getTrans
-
-  // // ------------------------------------------------------------------
-  // // 
-  // // ------------------------------------------------------------------
-  // function zoom_to_target_now (opt_in, tag_now) {
-  //   console.log(' X??X zoom_to_target_now')
-  //   let tag_nowUp = tag_now
-  //   if (tag_nowUp === 'ches') {
-  //     tag_nowUp = 'Ches'
-  //   }
-
-  //   if (!locker.is_free('inInit')) {
-  //     setTimeout(function () {
-  //       zoom_to_target_now(opt_in, tag_now)
-  //     }, times.wait_loop)
-  //     return
-  //   }
-  //   if (!locker.are_free(['autoZoomTarget', 'zoom_to_target' + tag_nowUp])) {
-  //     return
-  //   }
-
-  //   let target_name = opt_in.target
-  //   let targetScale = opt_in.scale
-  //   let duration_scale = opt_in.duration_scale
-
-  //   // console.log('dddddd',telData.mini)
-
-  //   if (targetScale < zoomLen['0.0']) targetScale = getScale()
-
-  //   let trans_to
-  //   if (target_name === '' || !is_def(telData.mini[target_name])) {
-  //     let scale = getScale()
-  //     let trans = getTrans()
-  //     let x = (baseH / 2 - trans[0]) / scale
-  //     let y = (baseH / 2 - trans[1]) / scale
-  //     trans_to = [x, y]
-  //   } else {
-  //     trans_to = [telData.mini[target_name].x, telData.mini[target_name].y]
-  //   }
-
-  //   let func_start = function () {
-  //     locker.add({ id: 'zoom_to_target' + tag_nowUp, override: true })
-  //     // console.log('xxx',target_name);
-  //   }
-  //   let func_during = function () {}
-  //   let func_end = function () {
-  //     locker.remove('zoom_to_target' + tag_nowUp)
-  //   }
-
-  //   let data_out = {
-  //     target_scale: targetScale,
-  //     duration_scale: duration_scale,
-  //     baseTime: 300,
-  //     trans_to: trans_to,
-  //     wh: [baseH, baseH],
-  //     cent: null,
-  //     func_start: func_start,
-  //     func_end: func_end,
-  //     func_during: func_during,
-  //     svg: gChesD['svg' + tag_nowUp],
-  //     svgZoom: com['svg' + tag_nowUp + 'Zoom'],
-  //     zoom_callable: gChesD['g' + tag_nowUp + 'Zoomed'],
-  //     svg_zoom_node: gChesD['svg' + tag_nowUp + '_zoom_node']
-  //   }
-
-  //   if (duration_scale < 0) {
-  //     data_out.duration_scale = 0
-  //     do_zoom_to_target(data_out)
-  //   } else {
-  //     run_loop.push({ tag: zoom_to_target_tag[tag_now], data: data_out })
-  //   }
-  // }
+  this.get_trans = get_trans
 
   return
 }

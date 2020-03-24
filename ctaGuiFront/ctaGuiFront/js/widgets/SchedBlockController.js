@@ -54,20 +54,20 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 6
   let w0 = 12
-  let divKey = 'main'
+  let div_key = 'main'
 
   opt_in.widget_func = { sock_func: sock_sched_block_controller, main_func: main_sched_blockController }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: false,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   sock.add_to_table(opt_in)
@@ -162,7 +162,7 @@ let main_sched_blockController = function (opt_in) {
   }
   let svg = {}
   let box = {}
-  let lenD = {}
+  let svg_dims = {}
 
   let blockQueue = null
   let event_queue_server = null
@@ -182,21 +182,21 @@ let main_sched_blockController = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  // locker.add('inInit')
+  // locker.add('in_init')
   let run_loop = new RunLoop({ tag: widget_id })
 
   function init_data (data_in) {
     function initSvg () {
-      lenD.w = {}
-      lenD.h = {}
-      lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
+      svg_dims.w = {}
+      svg_dims.h = {}
+      svg_dims.w[0] = 1000
+      svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
       svg.svg = d3
         .select(svg_div)
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
@@ -218,8 +218,8 @@ let main_sched_blockController = function (opt_in) {
       // svg.back.append('rect')
       //   .attr('x', 0)
       //   .attr('y', 0)
-      //   .attr('width', lenD.w[0] * 0.12)
-      //   .attr('height', lenD.h[0] * 0.02)
+      //   .attr('width', svg_dims.w[0] * 0.12)
+      //   .attr('height', svg_dims.h[0] * 0.02)
       //   .attr('fill', color_theme.darker.stroke) // color_theme.dark.background)
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
@@ -229,13 +229,13 @@ let main_sched_blockController = function (opt_in) {
       //   .style('font-weight', 'bold')
       //   .style('font-size', '8px')
       //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + (lenD.w[0] * 0.06) + ',' + (lenD.h[0] * 0.015) + ')')
+      //   .attr('transform', 'translate(' + (svg_dims.w[0] * 0.06) + ',' + (svg_dims.h[0] * 0.015) + ')')
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.0)
+        .attr('x', svg_dims.w[0] * 0.0)
         .attr('y', 0)
-        .attr('width', lenD.w[0] * 0.66)
-        .attr('height', lenD.h[0] * 0.02)
+        .attr('width', svg_dims.w[0] * 0.66)
+        .attr('height', svg_dims.h[0] * 0.02)
         .attr('fill', color_theme.darker.stroke) // color_theme.dark.background)
         .attr('stroke', 'none')
         .attr('rx', 0)
@@ -245,13 +245,13 @@ let main_sched_blockController = function (opt_in) {
         .style('font-weight', 'bold')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.33) + ',' + (lenD.h[0] * 0.015) + ')')
+        .attr('transform', 'translate(' + (svg_dims.w[0] * 0.33) + ',' + (svg_dims.h[0] * 0.015) + ')')
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.0)
-        .attr('y', lenD.h[0] * 0.98)
-        .attr('width', lenD.w[0] * 0.66)
-        .attr('height', lenD.h[0] * 0.02)
+        .attr('x', svg_dims.w[0] * 0.0)
+        .attr('y', svg_dims.h[0] * 0.98)
+        .attr('width', svg_dims.w[0] * 0.66)
+        .attr('height', svg_dims.h[0] * 0.02)
         .attr('fill', color_theme.darker.stroke) // color_theme.dark.background)
         .attr('stroke', 'none')
         .attr('rx', 0)
@@ -261,13 +261,13 @@ let main_sched_blockController = function (opt_in) {
         .style('font-weight', 'bold')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.33) + ',' + (lenD.h[0] * 0.995) + ')')
+        .attr('transform', 'translate(' + (svg_dims.w[0] * 0.33) + ',' + (svg_dims.h[0] * 0.995) + ')')
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.68)
+        .attr('x', svg_dims.w[0] * 0.68)
         .attr('y', 0)
-        .attr('width', lenD.w[0] * 0.32)
-        .attr('height', lenD.h[0] * 0.02)
+        .attr('width', svg_dims.w[0] * 0.32)
+        .attr('height', svg_dims.h[0] * 0.02)
         .attr('fill', color_theme.darker.stroke) // color_theme.dark.background)
         .attr('stroke', 'none')
         .attr('rx', 0)
@@ -277,72 +277,72 @@ let main_sched_blockController = function (opt_in) {
         .style('font-weight', 'bold')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.84) + ',' + (lenD.h[0] * 0.015) + ')')
+        .attr('transform', 'translate(' + (svg_dims.w[0] * 0.84) + ',' + (svg_dims.h[0] * 0.015) + ')')
     }
     function initBox () {
       box.block_queue_server = {
-        x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.175,
-        w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.45,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.004,
+        y: svg_dims.h[0] * 0.175,
+        w: svg_dims.w[0] * 0.62,
+        h: svg_dims.h[0] * 0.45,
+        marg: svg_dims.w[0] * 0.01
       }
       box.event_queue_server = {
-        x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.025,
-        w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.14,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.004,
+        y: svg_dims.h[0] * 0.025,
+        w: svg_dims.w[0] * 0.62,
+        h: svg_dims.h[0] * 0.14,
+        marg: svg_dims.w[0] * 0.01
       }
       box.brushZoom = {
-        x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.65,
-        w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.05,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.004,
+        y: svg_dims.h[0] * 0.65,
+        w: svg_dims.w[0] * 0.62,
+        h: svg_dims.h[0] * 0.05,
+        marg: svg_dims.w[0] * 0.01
       }
       box.tools = {
-        x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.707,
-        w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.268,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.004,
+        y: svg_dims.h[0] * 0.707,
+        w: svg_dims.w[0] * 0.62,
+        h: svg_dims.h[0] * 0.268,
+        marg: svg_dims.w[0] * 0.01
       }
       box.focusOverlay = {
-        x: lenD.w[0] * 0.004,
-        y: lenD.h[0] * 0.025,
-        w: lenD.w[0] * 0.62,
-        h: lenD.h[0] * 0.955,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.004,
+        y: svg_dims.h[0] * 0.025,
+        w: svg_dims.w[0] * 0.62,
+        h: svg_dims.h[0] * 0.955,
+        marg: svg_dims.w[0] * 0.01
       }
 
       box.pushPull = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.03,
-        w: lenD.w[0] * 0.12,
-        h: lenD.h[0] * 0.6,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.0,
+        y: svg_dims.h[0] * 0.03,
+        w: svg_dims.w[0] * 0.12,
+        h: svg_dims.h[0] * 0.6,
+        marg: svg_dims.w[0] * 0.01
       }
       box.blockQueueOptimized = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.35,
-        w: lenD.w[0] * 0.625,
-        h: lenD.h[0] * 0.3,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.0,
+        y: svg_dims.h[0] * 0.35,
+        w: svg_dims.w[0] * 0.625,
+        h: svg_dims.h[0] * 0.3,
+        marg: svg_dims.w[0] * 0.01
       }
       box.blockQueueModif = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.65,
-        w: lenD.w[0] * 0.625,
-        h: lenD.h[0] * 0.35,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.0,
+        y: svg_dims.h[0] * 0.65,
+        w: svg_dims.w[0] * 0.625,
+        h: svg_dims.h[0] * 0.35,
+        marg: svg_dims.w[0] * 0.01
       }
       box.right_info = {
-        x: lenD.w[0] * 0.68,
-        y: lenD.h[0] * 0.025,
-        w: lenD.w[0] * 0.315,
-        h: lenD.h[0] * 0.97,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.68,
+        y: svg_dims.h[0] * 0.025,
+        w: svg_dims.w[0] * 0.315,
+        h: svg_dims.h[0] * 0.97,
+        marg: svg_dims.w[0] * 0.01
       }
       // box.tab = {
       //   x: 0,
@@ -568,7 +568,7 @@ let main_sched_blockController = function (opt_in) {
         //   mainUnfocusOn_block()
         // }
         // mainUnfocusOn_sched_blocks()
-        // mainFocusOn_sched_blocks(block.sched_block_id)
+        // main_focusOn_sched_blocks(block.sched_block_id)
         // shared.focus.block = block.obs_block_id
         // // svg_sched_blocks_icons.focusOn_sched_blocks(block)
         // svg_information.focusOn_block(block.obs_block_id)
@@ -824,10 +824,10 @@ let main_sched_blockController = function (opt_in) {
   //   // -------------------------------------------------------------------
   //   function init_data () {
   //     let x0, y0, w0, h0, marg
-  //     w0 = lenD.w[0] * 0.45 // 0.6
-  //     h0 = lenD.h[0] * 0.14 // 0.18
-  //     x0 = (lenD.w[0] * 0.02)
-  //     y0 = (lenD.h[0] * 0.04)
+  //     w0 = svg_dims.w[0] * 0.45 // 0.6
+  //     h0 = svg_dims.h[0] * 0.14 // 0.18
+  //     x0 = (svg_dims.w[0] * 0.02)
+  //     y0 = (svg_dims.h[0] * 0.04)
   //     marg = w0 * 0.01
   //     let blockBoxData = {
   //       x: x0,
@@ -957,7 +957,7 @@ let main_sched_blockController = function (opt_in) {
   //       filters: {
   //         enabled: false,
   //         g: undefined,
-  //         box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0},
+  //         box: {x: 0, y: blockBoxData.h * 0.15, w: svg_dims.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0},
   //         filters: []
   //       },
   //       timeBars: {
@@ -1022,7 +1022,7 @@ let main_sched_blockController = function (opt_in) {
         y: box.event_queue_server.y,
         w: box.event_queue_server.w,
         h: box.event_queue_server.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       reserved.g = svg.g.append('g')
@@ -1161,7 +1161,7 @@ let main_sched_blockController = function (opt_in) {
         y: box.block_queue_server.y,
         w: box.block_queue_server.w,
         h: box.block_queue_server.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')')
@@ -1280,7 +1280,7 @@ let main_sched_blockController = function (opt_in) {
               enabled: true,
               position: 'right',
               clickable: true,
-              size: (lenD.w[0] * 0.65 - adjustedBox.w)
+              size: (svg_dims.w[0] * 0.65 - adjustedBox.w)
             }
           },
           axis: {
@@ -1489,7 +1489,7 @@ let main_sched_blockController = function (opt_in) {
         .attr('x', 0)
         .attr('y', -adjustedBox.y)
         .attr('width', 0)
-        .attr('height', lenD.h[0])
+        .attr('height', svg_dims.h[0])
         .attr('fill', color_theme.darker.stroke)
         .attr('stroke', 'none')
         .style('opacity', 0.2)
@@ -1637,7 +1637,7 @@ let main_sched_blockController = function (opt_in) {
         y: box.brushZoom.y,
         w: box.brushZoom.w,
         h: box.brushZoom.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + brushBox.x + ',' + brushBox.y + ')')
@@ -1870,7 +1870,7 @@ let main_sched_blockController = function (opt_in) {
         y: box.tools.y + box.tools.h * 0.0,
         w: box.tools.w,
         h: box.tools.h * 0.5,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       initClipping()
     }
@@ -2160,7 +2160,7 @@ let main_sched_blockController = function (opt_in) {
         y: box.tools.y + box.tools.h * 0.5,
         w: box.tools.w,
         h: box.tools.h * 0.5,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       initClipping()
@@ -3094,7 +3094,7 @@ let main_sched_blockController = function (opt_in) {
         y: box.focusOverlay.y,
         w: box.focusOverlay.w,
         h: box.focusOverlay.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       reserved.drag.g = svg.g.append('g')
         .attr('transform', 'translate(' + reserved.drag.box.x + ',' + reserved.drag.box.y + ')')
@@ -3155,7 +3155,7 @@ let main_sched_blockController = function (opt_in) {
     }
     let reserved = template
 
-    let titleSize = 11
+    let title_size = 11
     let headerSize = 10
     let txt_size = 9
 
@@ -3190,7 +3190,7 @@ let main_sched_blockController = function (opt_in) {
       let scrollBox = new ScrollBox()
       scrollBox.init({
         tag: tag,
-        gBox: g,
+        g_box: g,
         boxData: {
           x: 0,
           y: 0,
@@ -3202,7 +3202,7 @@ let main_sched_blockController = function (opt_in) {
         lockerV: [tag + 'update_data'],
         lockerZoom: {
           all: tag + 'zoom',
-          during: tag + 'zoomDuring',
+          during: tag + 'zoomsuring',
           end: tag + 'zoomEnd'
         },
         run_loop: new RunLoop({tag: tag}),
@@ -3316,7 +3316,7 @@ let main_sched_blockController = function (opt_in) {
           })
           current
             .exit()
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 0)
             .remove()
@@ -3387,7 +3387,7 @@ let main_sched_blockController = function (opt_in) {
               .text('S' + d.blocks[0].metadata.n_sched)
               .style('fill', color_theme.dark.text)
               .style('font-weight', 'bold')
-              .style('font-size', titleSize + 'px')
+              .style('font-size', title_size + 'px')
               .attr('text-anchor', 'middle')
               .attr('transform', 'translate(' + (dimPoly * 0.5) + ',' + (dimPoly * 0.5 + txt_size * 0.33) + ')')
               .style('pointer-events', 'none')
@@ -3403,7 +3403,7 @@ let main_sched_blockController = function (opt_in) {
           })
           current
             .exit()
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 0)
             .remove()
@@ -3486,7 +3486,7 @@ let main_sched_blockController = function (opt_in) {
         })
         targets
           .exit()
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .style('opacity', 0)
           .remove()
@@ -3793,14 +3793,14 @@ let main_sched_blockController = function (opt_in) {
         let box = allBox.blocks
         let g = reserved.g.append('g').attr('id', 'blocks_information')
           .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-        box.y += titleSize
+        box.y += title_size
         g.append('text')
           .text('Execution states')
           .attr('x', 0)
           .attr('y', box.y)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', color_theme.dark.text)
           .attr('stroke', 'none')
@@ -3884,7 +3884,7 @@ let main_sched_blockController = function (opt_in) {
           .attr('y', box.y)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', color_theme.dark.text)
           .attr('stroke', 'none')
@@ -3944,7 +3944,7 @@ let main_sched_blockController = function (opt_in) {
           .attr('y', box.y)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', color_theme.dark.text)
           .attr('stroke', 'none')
@@ -4140,7 +4140,7 @@ let main_sched_blockController = function (opt_in) {
           .attr('y', box.y)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', color_theme.dark.text)
           .attr('stroke', 'none')
@@ -4165,7 +4165,7 @@ let main_sched_blockController = function (opt_in) {
           .attr('y', box.y)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', color_theme.dark.text)
           .attr('stroke', 'none')
@@ -4475,14 +4475,14 @@ let main_sched_blockController = function (opt_in) {
           })
           current
             .exit()
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 0)
             .remove()
         })
         targets
           .exit()
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .style('opacity', 0)
           .remove()

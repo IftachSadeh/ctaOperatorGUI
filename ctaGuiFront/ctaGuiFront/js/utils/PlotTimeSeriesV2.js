@@ -163,14 +163,14 @@ window.PlotTimeSeries = function () {
         .attr('cy', d => axisY.scale(d.y))
       currentIC
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
     })
     current
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()

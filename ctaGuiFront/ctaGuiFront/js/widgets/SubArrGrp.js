@@ -42,36 +42,36 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 6
   let w0 = 6
-  let divKey = ''
+  let div_key = ''
 
   opt_in.widget_func = { sock_func: sock_sub_arr_grp, main_func: main_sub_arr_grp }
   opt_in.widget_div_id = opt_in.widget_id + 'Widget_div'
   opt_in.ele_props = {}
 
-  divKey = 'skyPos'
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  div_key = 'sky_pos'
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: true,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   y0 += w0
 
-  divKey = 'subArr'
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  div_key = 'sub_arr'
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: true,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   sock.add_to_table(opt_in)
@@ -104,10 +104,6 @@ let main_sub_arr_grp = function (opt_in) {
   // let this_sub_arr_grp = this
   let is_south = window.__site_type__ === 'S'
 
-  // let sgv_tag = {};
-  // $.each(widget_ele, function(index,ele_now) {
-  //   sgv_tag[ele_now.id] = { id:tag_arr_zoomerSvg+"_"+ele_now.id, whRatio:(ele_now.w/ele_now.h) };
-  // })
   let sgv_tag = {}
   $.each(widget_ele, function (index, ele_now) {
     sgv_tag[ele_now.id] = {
@@ -119,9 +115,9 @@ let main_sub_arr_grp = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  locker.add('inInit')
-  locker.add('inInitSubArr')
-  locker.add('inInitSkyPos')
+  locker.add('in_init')
+  locker.add('in_init_sub_arr')
+  locker.add('in_init_sky_pos')
 
   // function loop
   let run_loop = new RunLoop({ tag: widget_id })
@@ -129,19 +125,19 @@ let main_sub_arr_grp = function (opt_in) {
   let interpolate01 = d3.interpolate(0, 1)
 
   let zoom_state = 0
-  let telData = {}
+  let tel_data = {}
 
-  let lenD = {}
-  lenD.w = {}
-  lenD.h = {}
+  let svg_dims = {}
+  svg_dims.w = {}
+  svg_dims.h = {}
 
-  lenD.w[0] = 400 // is_south ? 900 : 400;
-  lenD.h[0] = lenD.w[0]
-  lenD.w[1] = lenD.w[0] * 1.2
-  lenD.h[1] = lenD.h[0] * 1.2
+  svg_dims.w[0] = 400 // is_south ? 900 : 400;
+  svg_dims.h[0] = svg_dims.w[0]
+  svg_dims.w[1] = svg_dims.w[0] * 1.2
+  svg_dims.h[1] = svg_dims.h[0] * 1.2
 
   let whFrac = 0.05
-  let wh = [lenD.w[1], lenD.h[1]] // wh[0] *= 0.9; wh[1] *= 0.9;
+  let wh = [svg_dims.w[1], svg_dims.h[1]] // wh[0] *= 0.9; wh[1] *= 0.9;
   let whPack = [wh[0] * (1 - whFrac * 2), wh[1] * (1 - whFrac * 2)]
 
   let isRaDec = false
@@ -241,7 +237,7 @@ let main_sub_arr_grp = function (opt_in) {
   // }
   // function _askInitData(opt_in) {
   //   // create delay if currently in data update or a previous call of _askInitData
-  //   if(!locker.is_free("dataChange")) {
+  //   if(!locker.is_free("data_change")) {
   //     // console.log('delay askInitData')
   //     setTimeout(function () { askInitData(opt_in); }, times.anim_arc*2);
   //     return;
@@ -256,7 +252,7 @@ let main_sub_arr_grp = function (opt_in) {
   function init_data (data_init) {
     if (sock.multiple_inits({ id: widget_id, data: data_init })) return
 
-    locker.add('dataChange')
+    locker.add('data_change')
 
     let data_in = data_init.data
     let hasJoinedData = joinTelProps(data_in, true)
@@ -266,25 +262,25 @@ let main_sub_arr_grp = function (opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    svgSubArr.init_data(hasJoinedData)
-    svgSkyPos.init_data(hasJoinedData)
+    svg_sub_arr.init_data(hasJoinedData)
+    svg_sky_pos.init_data(hasJoinedData)
 
-    locker.remove('dataChange')
+    locker.remove('data_change')
 
-    setState({ type: 'init_data', data: null })
+    set_state({ type: 'init_data', data: null })
 
     run_when_ready({
       pass: function () {
         return locker.are_free([
-          'inInitSubArr',
-          'inInitSkyPos',
-          'dataChange',
-          'setState',
+          'in_init_sub_arr',
+          'in_init_sky_pos',
+          'data_change',
+          'set_state',
           'setFocused'
         ])
       },
       execute: function () {
-        locker.remove('inInit')
+        locker.remove('in_init')
       }
     })
   }
@@ -304,8 +300,8 @@ let main_sub_arr_grp = function (opt_in) {
       !locker.are_free([
         'zoom',
         'zoom_to_target',
-        'dataChange',
-        'setState',
+        'data_change',
+        'set_state',
         'setFocused'
       ])
     ) {
@@ -315,74 +311,74 @@ let main_sub_arr_grp = function (opt_in) {
       return
     }
     // console.log('update_data')
-    locker.add('dataChange')
+    locker.add('data_change')
 
     let hasJoinedData = joinTelProps(data_in, false)
 
     if (hasJoinedData) {
-      svgSubArr.update_data(data_in)
-      svgSkyPos.update_data(data_in)
+      svg_sub_arr.update_data(data_in)
+      svg_sky_pos.update_data(data_in)
     }
 
-    locker.remove({ id: 'dataChange' })
+    locker.remove({ id: 'data_change' })
 
-    setState({ type: 'dataChange', data: null })
+    set_state({ type: 'data_change', data: null })
   }
   this.update_data = update_data
 
   // -------------------------------------------------------------------
   //
   // -------------------------------------------------------------------
-  run_loop.init({ tag: 'setState', func: setStateOnce, n_keep: 1 })
+  run_loop.init({ tag: 'set_state', func: set_state_once, n_keep: 1 })
 
-  function setState (data_in) {
-    run_loop.push({ tag: 'setState', data: data_in })
+  function set_state (data_in) {
+    run_loop.push({ tag: 'set_state', data: data_in })
   }
 
-  function setStateOnce (opt_in) {
+  function set_state_once (opt_in) {
     // console.log('SetState');
-    // console.log(telData)
+    // console.log(tel_data)
 
-    svgSubArr.setStateOnce(opt_in)
-    svgSkyPos.setFocused()
+    svg_sub_arr.set_state_once(opt_in)
+    svg_sky_pos.setFocused()
   }
 
   // -------------------------------------------------------------------
   //
   // -------------------------------------------------------------------
   function joinTelProps (data_in, isInit) {
-    locker.add('dataChange')
+    locker.add('data_change')
 
     if (isInit) {
-      telData = data_in
+      tel_data = data_in
       // console.log('xxxxxxxx',data_in);
-      // telData = deep_copy(data_in); // deep copy
+      // tel_data = deep_copy(data_in); // deep copy
 
-      telData.idToCol = {}
-      telData.idToFocus = {}
-      telData.trgPntFocus = { trg: {}, pnt: {} }
+      tel_data.idToCol = {}
+      tel_data.idToFocus = {}
+      tel_data.trgPntFocus = { trg: {}, pnt: {} }
 
-      if (!is_def(telData.prevState)) telData.prevState = 0
-      if (!is_def(telData.telHover)) telData.telHover = null
+      if (!is_def(tel_data.prevState)) tel_data.prevState = 0
+      if (!is_def(tel_data.telHover)) tel_data.telHover = null
     } else {
-      if (is_def(data_in.subArr)) {
-        telData.subArr = data_in.subArr
-        // telData.subArr = deep_copy(data_in.subArr); // deep copy
+      if (is_def(data_in.sub_arr)) {
+        tel_data.sub_arr = data_in.sub_arr
+        // tel_data.sub_arr = deep_copy(data_in.sub_arr); // deep copy
       }
-      // console.log('subArr',telData.subArr)
+      // console.log('sub_arr',tel_data.sub_arr)
 
       $.each(data_in, function (key, data_now0) {
-        if (key !== 'subArr') {
-          // console. log(key,telData[key])
+        if (key !== 'sub_arr') {
+          // console. log(key,tel_data[key])
           $.each(data_now0, function (index, data_now1) {
-            let eleV = find_dict_ele_in_obj(telData[key], 'id', data_now1.id, false)
+            let eleV = find_dict_ele_in_obj(tel_data[key], 'id', data_now1.id, false)
 
             // console.log('qqqqqqqqq',eleV);
             if (eleV[0] === -1) {
               // console.log("found no original element in update_inst_posPntProps()",data_now1);
-              telData[key].push(data_now1)
+              tel_data[key].push(data_now1)
             } else {
-              telData[key][eleV[0]] = data_now1
+              tel_data[key][eleV[0]] = data_now1
             }
           })
         }
@@ -391,10 +387,10 @@ let main_sub_arr_grp = function (opt_in) {
       // check if there are any trg,pnt elements which are not used by any telescope, and remove them
       $.each(['trg', 'pnt'], function (trgTelIndex, trgTel) {
         let rmV = []
-        $.each(telData[trgTel], function (i, d) {
+        $.each(tel_data[trgTel], function (i, d) {
           let target_point_id = d.id
           let eleV = find_dict_ele_in_obj(
-            telData.tel,
+            tel_data.tel,
             trgTel + 'Id',
             target_point_id,
             false
@@ -406,63 +402,63 @@ let main_sub_arr_grp = function (opt_in) {
 
         // remove all unused elements
         $.each(rmV, function (i, d) {
-          telData[trgTel].splice(d, 1)
+          tel_data[trgTel].splice(d, 1)
         })
-        // console.log('rmV',rmV,telData[trgTel])
+        // console.log('rmV',rmV,tel_data[trgTel])
       })
     }
 
     // -------------------------------------------------------------------
     // quick access for each child by the corresponding id
     // -------------------------------------------------------------------
-    telData.subArrIds = {}
-    telData.telSubArrId = {}
-    $.each(telData.subArr.children, function (index0, subArrNow) {
-      telData.subArrIds[subArrNow.id] = subArrNow
+    tel_data.sub_arrIds = {}
+    tel_data.tel_sub_arrId = {}
+    $.each(tel_data.sub_arr.children, function (index0, sub_arrNow) {
+      tel_data.sub_arrIds[sub_arrNow.id] = sub_arrNow
 
-      telData.telSubArrId[subArrNow.id] = subArrNow.id
-      $.each(subArrNow.children, function (index1, telNow) {
-        telData.telSubArrId[telNow.id] = subArrNow.id
-        // console.log('set :',subArrNow.id,telNow.id)
+      tel_data.tel_sub_arrId[sub_arrNow.id] = sub_arrNow.id
+      $.each(sub_arrNow.children, function (index1, telNow) {
+        tel_data.tel_sub_arrId[telNow.id] = sub_arrNow.id
+        // console.log('set :',sub_arrNow.id,telNow.id)
       })
     })
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    if (!is_def(telData.telHover)) {
-      telData.telHover = {}
-      telData.telHover.subArr = ''
+    if (!is_def(tel_data.telHover)) {
+      tel_data.telHover = {}
+      tel_data.telHover.sub_arr = ''
     }
-    if (!is_def(telData.subArrIds[telData.telHover.subArr])) {
-      telData.telHover.id = telData.subArr.children[0].children[0].id
-      telData.telHover.focusedSubArr = ''
-      telData.telHover.clickedSubArr = ''
-      // console.log('set telData.telHover:',subArrNow,tel_IdNow)
+    if (!is_def(tel_data.sub_arrIds[tel_data.telHover.sub_arr])) {
+      tel_data.telHover.id = tel_data.sub_arr.children[0].children[0].id
+      tel_data.telHover.focused_sub_arr = ''
+      tel_data.telHover.clicked_sub_arr = ''
+      // console.log('set tel_data.telHover:',sub_arrNow,tel_IdNow)
     }
-    telData.telHover.subArr = telData.telSubArrId[telData.telHover.id]
+    tel_data.telHover.sub_arr = tel_data.tel_sub_arrId[tel_data.telHover.id]
 
     // -------------------------------------------------------------------
     // fill the "trg" and "pnt" elements according to the corresponding data_now.trg, data_now.pnt
     // -------------------------------------------------------------------
     // let needInitData = false;
     $.each(['trg', 'pnt'], function (index0, key) {
-      $.each(telData.tel, function (index1, ele_now) {
-        telData.tel[index1][key] = [0, 0]
+      $.each(tel_data.tel, function (index1, ele_now) {
+        tel_data.tel[index1][key] = [0, 0]
 
         let target_point_id = ele_now[key + 'Id']
         let trgPntD =
-          target_point_id !== tel_info.no_subArr_name()
-            ? find_dict_ele_in_obj(telData[key], 'id', target_point_id, true)[1]
+          target_point_id !== tel_info.no_sub_arr_name()
+            ? find_dict_ele_in_obj(tel_data[key], 'id', target_point_id, true)[1]
             : undefined
 
         if (is_def(trgPntD)) {
-          if (target_point_id !== tel_info.no_subArr_name()) {
-            telData.tel[index1][key] = trgPntD.pos
+          if (target_point_id !== tel_info.no_sub_arr_name()) {
+            tel_data.tel[index1][key] = trgPntD.pos
           }
         }
 
-        if (target_point_id !== tel_info.no_subArr_name() && !is_def(trgPntD)) {
+        if (target_point_id !== tel_info.no_sub_arr_name() && !is_def(trgPntD)) {
           // needInitData = true;
           console.error(
             'pqpqp:',
@@ -471,10 +467,10 @@ let main_sub_arr_grp = function (opt_in) {
             ele_now.id,
             ele_now,
             target_point_id,
-            target_point_id !== tel_info.no_subArr_name()
-              ? find_dict_ele_in_obj(telData[key], 'id', target_point_id, true)[1]
+            target_point_id !== tel_info.no_sub_arr_name()
+              ? find_dict_ele_in_obj(tel_data[key], 'id', target_point_id, true)[1]
               : '-------',
-            telData
+            tel_data
           )
         }
       })
@@ -485,7 +481,7 @@ let main_sub_arr_grp = function (opt_in) {
     // // if there is some inconsistency with the unpdated data, ask for a complete initialization
     // // -------------------------------------------------------------------
     // if(needInitData) {
-    //   locker.remove("dataChange");
+    //   locker.remove("data_change");
     //   console.log('askInitData',widget_id);
     //   askInitData({widget_id:widget_id});
     //   return false;
@@ -495,8 +491,8 @@ let main_sub_arr_grp = function (opt_in) {
     // colors
     // -------------------------------------------------------------------
     let colNow
-    $.each(telData.tel, function (index, ele_now) {
-      if (ele_now.pntId === tel_info.no_subArr_name()) {
+    $.each(tel_data.tel, function (index, ele_now) {
+      if (ele_now.pntId === tel_info.no_sub_arr_name()) {
         colNow = getColStop()
       } else {
         let posDiff0 = Math.abs(ele_now.pos[0] - ele_now.pnt[0])
@@ -512,11 +508,11 @@ let main_sub_arr_grp = function (opt_in) {
             : getColSlew(posDiff)
       }
 
-      telData.idToCol[ele_now.id] = colNow
-      telData.tel[index].col = colNow
+      tel_data.idToCol[ele_now.id] = colNow
+      tel_data.tel[index].col = colNow
     })
 
-    locker.remove('dataChange')
+    locker.remove('data_change')
 
     return true
   }
@@ -525,7 +521,7 @@ let main_sub_arr_grp = function (opt_in) {
   //
   // -------------------------------------------------------------------
   // function get_sync_state(data_in) {
-  //   svgSubArr.zoom_to_target({ target:telData.telHover.id, scale:getScale(), duration_scale:2 });
+  //   svg_sub_arr.zoom_to_target({ target:tel_data.telHover.id, scale:get_scale(), duration_scale:2 });
   // }
   // this.get_sync_state = get_sync_state;
 
@@ -546,20 +542,20 @@ let main_sub_arr_grp = function (opt_in) {
     prev_sync[data_in.type] = data_in.data
 
     let type = data_in.type
-    if (type === 'syncTelFocus') {
+    if (type === 'sync_tel_focus') {
       // locker.add("get_sync_state");
 
       let target = data_in.data.target
       let zoom_state = data_in.data.zoom_state
 
-      let scale = svgSubArr.com.z['0.0']
-      if (zoom_state === 1) scale = svgSubArr.com.z['2.0']
+      let scale = svg_sub_arr.com.z['0.0']
+      if (zoom_state === 1) scale = svg_sub_arr.com.z['2.0']
 
-      svgSubArr.zoom_to_target({
+      svg_sub_arr.zoom_to_target({
         target: target,
         scale: scale,
         duration_scale: 1,
-        endFunc: function () {}
+        end_func: function () {}
       })
     }
   }
@@ -584,12 +580,12 @@ let main_sub_arr_grp = function (opt_in) {
 
     if (
       !locker.are_free([
-        'inInit',
+        'in_init',
         'zoom',
-        'autoZoomTarget',
-        'setState',
-        'setHirch',
-        'dataChange'
+        'auto_zoom_target',
+        'set_state',
+        'set_hierarchy',
+        'data_change'
       ])
     ) {
       setTimeout(function () {
@@ -613,45 +609,45 @@ let main_sub_arr_grp = function (opt_in) {
   // -------------------------------------------------------------------
   //
   // -------------------------------------------------------------------
-  function SvgSkyPos () {
-    let thisSkyPos = this
+  function Svg_sky_pos () {
+    let this_sky_pos = this
 
     let com = {}
 
     // initialize a couple of functions to be overriden below
-    let getScale = function () {
-      return lenSkyPos.z['0.0']
+    let get_scale = function () {
+      return len_sky_pos.z['0.0']
     }
-    let getTrans = function () {
+    let get_trans = function () {
       return [0, 0]
     }
-    this.getScale = getScale
-    this.getTrans = getTrans
+    this.get_scale = get_scale
+    this.get_trans = get_trans
 
     let funcD = {}
     funcD.zoomFuncDuring = {}
     funcD.zoomFuncEnd = {}
     funcD.updtFocused = {}
 
-    let lenSkyPos = {}
-    lenSkyPos.z = {}
-    lenSkyPos.z['0.0'] = 1
-    lenSkyPos.z['1.0'] = 100
-    lenSkyPos.z.scaleFactor = lenSkyPos.z['0.0']
-    lenSkyPos.z.gratRatio = 25
+    let len_sky_pos = {}
+    len_sky_pos.z = {}
+    len_sky_pos.z['0.0'] = 1
+    len_sky_pos.z['1.0'] = 100
+    len_sky_pos.z.scaleFactor = len_sky_pos.z['0.0']
+    len_sky_pos.z.gratRatio = 25
 
     // font sizes, scaled to the different zoom levels
-    lenSkyPos.f = {}
-    lenSkyPos.f['0.0'] = 9 / lenSkyPos.z['0.0']
+    len_sky_pos.f = {}
+    len_sky_pos.f['0.0'] = 9 / len_sky_pos.z['0.0']
 
     //
-    lenSkyPos.r = {}
-    lenSkyPos.r.trg = is_south ? 4 : 6
-    lenSkyPos.r.tel = is_south ? 10 : 18 // {"L":14,"M":14,"S":14};//{"L":14,"M":12,"S":10};
+    len_sky_pos.r = {}
+    len_sky_pos.r.trg = is_south ? 4 : 6
+    len_sky_pos.r.tel = is_south ? 10 : 18 // {"L":14,"M":14,"S":14};//{"L":14,"M":12,"S":10};
 
     // initialize a global function (to be overriden below)
     let zoom_to_target = function (opt_in) {
-      if (!locker.is_free('inInit')) {
+      if (!locker.is_free('in_init')) {
         setTimeout(function () {
           zoom_to_target(opt_in)
         }, times.wait_loop)
@@ -668,11 +664,11 @@ let main_sub_arr_grp = function (opt_in) {
       // -------------------------------------------------------------------
       // attach the div which will host the main svg element
       // -------------------------------------------------------------------
-      let svg_div_id = sgv_tag.skyPos.id + 'Svg'
-      let svg_div = sgv_tag.skyPos.widget.get_ele(svg_div_id)
+      let svg_div_id = sgv_tag.sky_pos.id + 'Svg'
+      let svg_div = sgv_tag.sky_pos.widget.get_ele(svg_div_id)
 
       if (!is_def(svg_div)) {
-        let parent = sgv_tag.skyPos.widget.get_ele(sgv_tag.skyPos.id)
+        let parent = sgv_tag.sky_pos.widget.get_ele(sgv_tag.sky_pos.id)
         svg_div = document.createElement('div')
         svg_div.id = svg_div_id
 
@@ -680,7 +676,7 @@ let main_sub_arr_grp = function (opt_in) {
 
         run_when_ready({
           pass: function () {
-            return is_def(sgv_tag.skyPos.widget.get_ele(svg_div_id))
+            return is_def(sgv_tag.sky_pos.widget.get_ele(svg_div_id))
           },
           execute: function () {
             init_data(hasJoinedData)
@@ -692,23 +688,23 @@ let main_sub_arr_grp = function (opt_in) {
       sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
 
       // -------------------------------------------------------------------
-      // zoom start/on/end functions, attachd to com.svgZoom
+      // zoom start/on/end functions, attachd to com.svg_zoom
       // -------------------------------------------------------------------
       let scaleStart = 0
-      com.svgZoomStart = function () {
+      com.svg_zoom_start = function () {
         scaleStart = d3.event.transform.k
         locker.add({ id: 'zoom', override: true })
         locker.add({ id: 'zoomEndFunc', override: true })
       }
 
-      com.svgZoomDuring = function () {
+      com.svg_zoom_during = function () {
         com.zoom_callable.attr('transform', d3.event.transform)
-        com.svgZoomUpdState()
+        com.svg_zoom_update_state()
       }
 
-      com.svgZoomUpdState = function () {}
+      com.svg_zoom_update_state = function () {}
 
-      com.svgZoomEnd = function () {
+      com.svg_zoom_end = function () {
         locker.remove('zoom')
         locker.remove({
           id: 'zoomEndFunc',
@@ -716,15 +712,15 @@ let main_sub_arr_grp = function (opt_in) {
           override: true
         })
 
-        com.svgZoomUpdState()
+        com.svg_zoom_update_state()
 
         // only do this once for each zooming sequence
         doZoomFuncEnd()
 
         // if on minimal zoom, center
         if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
-          if (Math.abs(d3.event.transform.k - lenSkyPos.z['0.0']) < 0.00001) {
-            if (locker.are_free(['autoZoomTarget'])) {
+          if (Math.abs(d3.event.transform.k - len_sky_pos.z['0.0']) < 0.00001) {
+            if (locker.are_free(['auto_zoom_target'])) {
               zoom_to_target({
                 target: 'init',
                 scale: d3.event.transform.k,
@@ -748,10 +744,10 @@ let main_sub_arr_grp = function (opt_in) {
         if (
           locker.are_free([
             'zoomEndFunc',
-            'setState',
+            'set_state',
             'zoom',
             'zoom_to_target',
-            'dataChange',
+            'data_change',
             'setFocused'
           ])
         ) {
@@ -765,16 +761,16 @@ let main_sub_arr_grp = function (opt_in) {
         }
       }
 
-      com.svgZoom = d3
+      com.svg_zoom = d3
         .zoom()
-        .scaleExtent([lenSkyPos.z['0.0'], lenSkyPos.z['1.0']])
-      com.svgZoom.on('start', com.svgZoomStart)
-      com.svgZoom.on('zoom', com.svgZoomDuring)
-      com.svgZoom.on('end', com.svgZoomEnd)
+        .scaleExtent([len_sky_pos.z['0.0'], len_sky_pos.z['1.0']])
+      com.svg_zoom.on('start', com.svg_zoom_start)
+      com.svg_zoom.on('zoom', com.svg_zoom_during)
+      com.svg_zoom.on('end', com.svg_zoom_end)
 
       // -------------------------------------------------------------------
       // programatic zoom to some target and scale - only use the last of any set of ovelapping
-      // zoom requests, where zooming is only possible after lenSkyPos.zoomLock becomes free
+      // zoom requests, where zooming is only possible after len_sky_pos.zoomLock becomes free
       // -------------------------------------------------------------------
       run_loop.init({
         tag: 'zoom_to_target_sky_pos',
@@ -784,19 +780,19 @@ let main_sub_arr_grp = function (opt_in) {
 
       // the actual function to be called when a zoom needs to be put in the queue
       zoom_to_target = function (opt_in) {
-        if (!locker.is_free('inInit')) {
+        if (!locker.is_free('in_init')) {
           setTimeout(function () {
             zoom_to_target(opt_in)
           }, times.wait_loop)
           return
         }
-        if (!locker.are_free(['autoZoomTarget'])) return
+        if (!locker.are_free(['auto_zoom_target'])) return
 
         let target_name = opt_in.target
-        let targetScale = opt_in.scale
+        let target_scale = opt_in.scale
         let duration_scale = opt_in.duration_scale
 
-        if (targetScale < lenSkyPos['0.0']) targetScale = getScale()
+        if (target_scale < len_sky_pos['0.0']) target_scale = get_scale()
 
         let trans_to = [0, 0]
         if (target_name !== 'init') {
@@ -809,25 +805,25 @@ let main_sub_arr_grp = function (opt_in) {
         }
 
         let func_start = function () {
-          locker.add({ id: 'autoZoomTarget', override: true })
+          locker.add({ id: 'auto_zoom_target', override: true })
         }
         let func_during = function () {}
         let func_end = function () {
-          locker.remove('autoZoomTarget')
+          locker.remove('auto_zoom_target')
         }
 
         let data_out = {
-          target_scale: targetScale,
+          target_scale: target_scale,
           duration_scale: duration_scale,
-          baseTime: 300,
+          base_time: 300,
           trans_to: trans_to,
-          wh: [lenD.w[1], lenD.h[1]],
+          wh: [svg_dims.w[1], svg_dims.h[1]],
           cent: [0, 0],
           func_start: func_start,
           func_end: func_end,
           func_during: func_during,
           svg: com.svg,
-          svgZoom: com.svgZoom,
+          svg_zoom: com.svg_zoom,
           zoom_callable: com.zoom_callable,
           svg_zoom_node: com.svg_zoom_node
         }
@@ -839,7 +835,7 @@ let main_sub_arr_grp = function (opt_in) {
           run_loop.push({ tag: 'zoom_to_target_sky_pos', data: data_out })
         }
       }
-      thisSkyPos.zoom_to_target = zoom_to_target
+      this_sky_pos.zoom_to_target = zoom_to_target
 
       // -------------------------------------------------------------------
       // create the main svg element
@@ -852,13 +848,13 @@ let main_sub_arr_grp = function (opt_in) {
         .attr('preserveAspectRatio', 'xMidYMid meet')
         .attr(
           'viewBox',
-          -lenD.w[1] / 2 +
+          -svg_dims.w[1] / 2 +
             ' ' +
-            -lenD.h[1] / 2 +
+            -svg_dims.h[1] / 2 +
             ' ' +
-            lenD.w[1] +
+            svg_dims.w[1] +
             ' ' +
-            lenD.h[1]
+            svg_dims.h[1]
         )
         .style('position', 'relative')
         .style('width', '100%')
@@ -867,7 +863,7 @@ let main_sub_arr_grp = function (opt_in) {
         .style('left', '0px')
         // .classed("svgInGridStack_inner", true)
         .style('background', '#383B42') // .style("background", "blue")// .style("border","1px solid red")
-        .call(com.svgZoom)
+        .call(com.svg_zoom)
         .on('wheel', function () {
           d3.event.preventDefault()
         })
@@ -879,17 +875,17 @@ let main_sub_arr_grp = function (opt_in) {
       // save the svg node to use for d3.zoomTransform() later
       com.svg_zoom_node = com.svg.nodes()[0]
 
-      getScale = function () {
+      get_scale = function () {
         return d3.zoomTransform(com.svg_zoom_node).k
       }
-      getTrans = function () {
+      get_trans = function () {
         return [
           d3.zoomTransform(com.svg_zoom_node).x,
           d3.zoomTransform(com.svg_zoom_node).y
         ]
       }
-      thisSkyPos.getScale = getScale
-      thisSkyPos.getTrans = getTrans
+      this_sky_pos.get_scale = get_scale
+      this_sky_pos.get_trans = get_trans
 
       // add one circle as background
       // -------------------------------------------------------------------
@@ -900,19 +896,19 @@ let main_sub_arr_grp = function (opt_in) {
         .enter()
         .append('circle')
         .attr('r', 0)
-        // .attr("cx", lenD.w[1]/2)
-        // .attr("cy", lenD.h[1]/2)
+        // .attr("cx", svg_dims.w[1]/2)
+        // .attr("cy", svg_dims.h[1]/2)
         .attr('cx', 0)
         .attr('cy', 0)
         // .attr("fill", "#F2F2F2")
         .attr('fill', function (d, i) {
           return i === 0 ? d3.rgb('#F2F2F2').darker(0.05) : '#F2F2F2'
         })
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc / 3)
-        // .attr("r", function(d,i) { return lenD.w[1]/2; });
+        // .attr("r", function(d,i) { return svg_dims.w[1]/2; });
         .attr('r', function (d, i) {
-          return lenD.w[1] * (i === 0 ? 1 / 2 : 1 / 2.2)
+          return svg_dims.w[1] * (i === 0 ? 1 / 2 : 1 / 2.2)
         })
 
       com.zoom_callable.on('mousemove', function () {
@@ -935,7 +931,7 @@ let main_sub_arr_grp = function (opt_in) {
       // initi overlay coordinate text
       setOverText()
 
-      locker.remove('inInitSkyPos')
+      locker.remove('in_init_sky_pos')
     }
     this.init_data = init_data
 
@@ -945,10 +941,10 @@ let main_sub_arr_grp = function (opt_in) {
     function setOverText () {
       if (!is_def(com.overRect)) {
         com.overRect = {}
-        com.overRect.w = lenD.w[1]
-        com.overRect.h = lenD.h[1] * 0.06
+        com.overRect.w = svg_dims.w[1]
+        com.overRect.h = svg_dims.h[1] * 0.06
         com.overRect.x = -com.overRect.w / 2
-        com.overRect.y = lenD.h[1] / 2 - com.overRect.h
+        com.overRect.y = svg_dims.h[1] / 2 - com.overRect.h
 
         com.overRect.data = [
           {
@@ -1041,7 +1037,7 @@ let main_sub_arr_grp = function (opt_in) {
           return 'translate(' + d.x + ',' + d.y + ')'
         })
         .merge(txt)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .text(function (d) {
           return d.txt
@@ -1051,7 +1047,7 @@ let main_sub_arr_grp = function (opt_in) {
 
       txt
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('fill-opacity', 0)
         .style('stroke-opacity', 0)
@@ -1064,9 +1060,9 @@ let main_sub_arr_grp = function (opt_in) {
     function updateOverText (mousePos) {
       let transProj = com.proj.invert(mousePos)
 
-      let isOut = false
-      if (com.isPolar) isOut = transProj[1] >= 0
-      if (isOut) transProj = []
+      let is_out = false
+      if (com.isPolar) is_out = transProj[1] >= 0
+      if (is_out) transProj = []
       else transProj[1] *= -1
 
       com.overRect.data[0].txt = parsePosTxt(transProj)
@@ -1080,21 +1076,21 @@ let main_sub_arr_grp = function (opt_in) {
     function update_data (data_in) {
       projTelos()
     }
-    thisSkyPos.update_data = update_data
+    this_sky_pos.update_data = update_data
 
     // -------------------------------------------------------------------
     // translate coordinates to the skymap
     // -------------------------------------------------------------------
     function setProjPos () {
       $.each(['trg', 'pnt', 'tel'], function (trgTelIndex, trgTel) {
-        $.each(['pos', 'pnt', 'trg'], function (index0, posTag) {
-          if (posTag === 'pos' || trgTel === 'tel') {
-            let tag_now = trgTel + posTag
+        $.each(['pos', 'pnt', 'trg'], function (index0, pos_tag) {
+          if (pos_tag === 'pos' || trgTel === 'tel') {
+            let tag_now = trgTel + pos_tag
 
-            $.each(telData[trgTel], function (index1, data_now) {
-              // console.log(tag_now,posTag,data_now[posTag],telData[trgTel][index1]);
+            $.each(tel_data[trgTel], function (index1, data_now) {
+              // console.log(tag_now,pos_tag,data_now[pos_tag],tel_data[trgTel][index1]);
 
-              telData[trgTel][index1][tag_now] = projXY(data_now[posTag])
+              tel_data[trgTel][index1][tag_now] = projXY(data_now[pos_tag])
             })
           }
         })
@@ -1139,16 +1135,16 @@ let main_sub_arr_grp = function (opt_in) {
         colLblV[2]
       ]
 
-      let fontSize = 0.9 * lenSkyPos.r.tel
+      let font_size = 0.9 * len_sky_pos.r.tel
       function getFontSize () {
-        return fontSize * Math.pow(getScale(), -0.3)
+        return font_size * Math.pow(get_scale(), -0.3)
       }
 
-      let scaleFact = 1 / Math.sqrt(getScale())
+      let scaleFact = 1 / Math.sqrt(get_scale())
       let scaledR = {
-        trg: scaleFact * lenSkyPos.r.trg,
-        tel: scaleFact * lenSkyPos.r.tel,
-        pnt: scaleFact * lenSkyPos.r.tel / 2
+        trg: scaleFact * len_sky_pos.r.trg,
+        tel: scaleFact * len_sky_pos.r.tel,
+        pnt: scaleFact * len_sky_pos.r.tel / 2
       }
 
       // translate coordinates to the skymap
@@ -1162,12 +1158,12 @@ let main_sub_arr_grp = function (opt_in) {
       let forceNodes = []
       $.each(['trg', 'pnt', 'tel'], function (trgTelIndex, trgTel) {
         let tag_now = trgTel + 'pos'
-        let data_now = telData[trgTel].filter(function (d) {
+        let data_now = tel_data[trgTel].filter(function (d) {
           return filtFunc(trgTel, 'pos', d)
         })
 
         $.each(data_now, function (indexNode, nodeNow) {
-          let isHov = telData.telHover.id === nodeNow.id
+          let isHov = tel_data.telHover.id === nodeNow.id
           // if(trgTelIndex<2)console.log('nodeNow',nodeNow);
           if (!isHov && trgTel === 'tel') return
 
@@ -1194,8 +1190,8 @@ let main_sub_arr_grp = function (opt_in) {
       // combinations are: trgpos (target), telpos (telescope), telpnt (pointing)
       // -------------------------------------------------------------------
       function filtFunc (trgTel, posPnt, d) {
-        if (d.id === tel_info.no_subArr_name() && trgTel === 'trg') return false
-        else if (d.pntId === tel_info.no_subArr_name() && posPnt === 'pnt') {
+        if (d.id === tel_info.no_sub_arr_name() && trgTel === 'trg') return false
+        else if (d.pntId === tel_info.no_sub_arr_name() && posPnt === 'pnt') {
           return false
         } else return true
       }
@@ -1217,14 +1213,14 @@ let main_sub_arr_grp = function (opt_in) {
         ]
       }
 
-      let posTagV = ['pos', 'pnt', 'trg']
+      let pos_tags = ['pos', 'pnt', 'trg']
       $.each(com.inst_pos.lineTags, function (index, ele_now) {
         let trgTel = ele_now.telTag
         let pairNow = ele_now.pair
         let tag_now = ele_now.tag
         let dash = ele_now.dash
 
-        let data_now = telData[trgTel].filter(function (d) {
+        let data_now = tel_data[trgTel].filter(function (d) {
           return filtFuncLines(d)
         })
         let line = com.inst_pos.g
@@ -1234,11 +1230,11 @@ let main_sub_arr_grp = function (opt_in) {
           })
 
         function filtFuncLines (d) {
-          let isHov = telData.telHover.id === d.id
+          let isHov = tel_data.telHover.id === d.id
           if (!isHov) return false
 
-          if (d.pntId === tel_info.no_subArr_name() && index !== 2) return false
-          else if (d.trgId === tel_info.no_subArr_name() && index === 1) {
+          if (d.pntId === tel_info.no_sub_arr_name() && index !== 2) return false
+          else if (d.trgId === tel_info.no_sub_arr_name() && index === 1) {
             return false
           } else return true
         }
@@ -1249,19 +1245,19 @@ let main_sub_arr_grp = function (opt_in) {
           .append('line')
           .attr('class', tag_now)
           // .each(  function(d,i) { // xxxxxxxxxxxxx
-          //   if(index < 2) console.log(d,trgTel,pairNow[1], posTagV[pairNow[1]],  d[ trgTel+ posTagV[ pairNow[1] ]][0]);
+          //   if(index < 2) console.log(d,trgTel,pairNow[1], pos_tags[pairNow[1]],  d[ trgTel+ pos_tags[ pairNow[1] ]][0]);
           // })
           .attr('x1', function (d, i) {
-            return d[trgTel + posTagV[pairNow[0]]][0]
+            return d[trgTel + pos_tags[pairNow[0]]][0]
           })
           .attr('x2', function (d, i) {
-            return d[trgTel + posTagV[pairNow[1]]][0]
+            return d[trgTel + pos_tags[pairNow[1]]][0]
           })
           .attr('y1', function (d, i) {
-            return d[trgTel + posTagV[pairNow[0]]][1]
+            return d[trgTel + pos_tags[pairNow[0]]][1]
           })
           .attr('y2', function (d, i) {
-            return d[trgTel + posTagV[pairNow[1]]][1]
+            return d[trgTel + pos_tags[pairNow[1]]][1]
           })
           .style('stroke-opacity', 0)
           .style('stroke-width', index < 2 ? 1 : 1)
@@ -1272,15 +1268,15 @@ let main_sub_arr_grp = function (opt_in) {
             return colLineV[index]
           })
           .merge(line)
-          .transition('inOut1')
+          .transition('in_out1')
           .duration(times.anim_arc)
-          // .attr("x1",  function(d,i) { return d[ trgTel+ posTagV[ pairNow[0] ]][0]; })
-          // .attr("y1",  function(d,i) { return d[ trgTel+ posTagV[ pairNow[0] ]][1]; })
+          // .attr("x1",  function(d,i) { return d[ trgTel+ pos_tags[ pairNow[0] ]][0]; })
+          // .attr("y1",  function(d,i) { return d[ trgTel+ pos_tags[ pairNow[0] ]][1]; })
           .attr('x2', function (d, i) {
-            return d[trgTel + posTagV[pairNow[1]]][0]
+            return d[trgTel + pos_tags[pairNow[1]]][0]
           })
           .attr('y2', function (d, i) {
-            return d[trgTel + posTagV[pairNow[1]]][1]
+            return d[trgTel + pos_tags[pairNow[1]]][1]
           })
           .style('stroke-opacity', function (d, i) {
             if (index === 0) return 0.6
@@ -1294,13 +1290,13 @@ let main_sub_arr_grp = function (opt_in) {
             n_ele_in--
             if (n_ele_in === 0) {
               line
-                .transition('inOut2')
+                .transition('in_out2')
                 .duration(times.anim_arc)
                 .attr('x1', function (d, i) {
-                  return d[trgTel + posTagV[pairNow[0]]][0]
+                  return d[trgTel + pos_tags[pairNow[0]]][0]
                 })
                 .attr('y1', function (d, i) {
-                  return d[trgTel + posTagV[pairNow[0]]][1]
+                  return d[trgTel + pos_tags[pairNow[0]]][1]
                 })
             }
           }
@@ -1308,7 +1304,7 @@ let main_sub_arr_grp = function (opt_in) {
 
         line
           .exit()
-          // .transition("inOut").duration(times.anim_arc)
+          // .transition("in_out").duration(times.anim_arc)
           // .attr("stroke-opacity", "0")
           .remove()
       })
@@ -1321,7 +1317,7 @@ let main_sub_arr_grp = function (opt_in) {
         let tag_now = trgTel + posPnt
 
         function selCirc (tagIn) {
-          let data_now = telData[trgTel].filter(function (d) {
+          let data_now = tel_data[trgTel].filter(function (d) {
             return filtFunc(trgTel, posPnt, d)
           })
           return com.inst_pos.g
@@ -1355,9 +1351,9 @@ let main_sub_arr_grp = function (opt_in) {
           })
           .on('click', function (d) {
             if (trgTel === 'tel') {
-              svgSubArr.zoom_to_target({
+              svg_sub_arr.zoom_to_target({
                 target: d.id,
-                scale: svgSubArr.com.z['1.0'],
+                scale: svg_sub_arr.com.z['1.0'],
                 duration_scale: 1
               })
             }
@@ -1387,7 +1383,7 @@ let main_sub_arr_grp = function (opt_in) {
 
         circ
           .exit()
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc / 2)
           .attr('r', 0)
           .remove()
@@ -1454,7 +1450,7 @@ let main_sub_arr_grp = function (opt_in) {
           return 'translate(' + d.x + ',' + d.y + ')'
         })
         .merge(trgLbl)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('font-size', function (d) {
           return getFontSize() + 'px'
@@ -1465,7 +1461,7 @@ let main_sub_arr_grp = function (opt_in) {
 
       trgLbl
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('fill-opacity', 0)
         .style('stroke-opacity', 0)
@@ -1505,7 +1501,7 @@ let main_sub_arr_grp = function (opt_in) {
           return 'translate(' + d.x + ',' + d.y + ')'
         })
         .merge(telLbl)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('font-size', function (d) {
           return getFontSize() + 'px'
@@ -1516,7 +1512,7 @@ let main_sub_arr_grp = function (opt_in) {
 
       telLbl
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('fill-opacity', 0)
         .style('stroke-opacity', 0)
@@ -1554,7 +1550,7 @@ let main_sub_arr_grp = function (opt_in) {
 
               com.inst_pos.g
                 .selectAll('line.' + tag_now)
-                .transition('inOut')
+                .transition('in_out')
                 .duration(times.anim_arc * animFrac)
                 .attr('x1', function (d, i) {
                   return com.inst_pos.lblXY[trgTel + d.id].x
@@ -1615,8 +1611,8 @@ let main_sub_arr_grp = function (opt_in) {
       function getForchCharge () {
         return d3
           .forceManyBody()
-          .distanceMin(lenSkyPos.r.tel * 1 / Math.sqrt(getScale()))
-          .distanceMax(lenSkyPos.r.tel * 5 / Math.sqrt(getScale()))
+          .distanceMin(len_sky_pos.r.tel * 1 / Math.sqrt(get_scale()))
+          .distanceMax(len_sky_pos.r.tel * 5 / Math.sqrt(get_scale()))
           .strength(lblForceStrength)
       }
 
@@ -1652,7 +1648,7 @@ let main_sub_arr_grp = function (opt_in) {
     function setFocusedOnce () {
       // create delay if currently in data update or a previous call of setFocused
       if (
-        !locker.are_free(['setState', 'zoom', 'zoom_to_target', 'dataChange'])
+        !locker.are_free(['set_state', 'zoom', 'zoom_to_target', 'data_change'])
       ) {
         setTimeout(function () {
           setFocused(opt_in)
@@ -1666,9 +1662,9 @@ let main_sub_arr_grp = function (opt_in) {
       let fadeOpac = 0.05
       let animTime = times.anim_arc / 2
 
-      function isFocused (id_in) {
-        if (!is_def(telData.idToFocus[id_in])) return true
-        return telData.idToFocus[id_in]
+      function is_focused (id_in) {
+        if (!is_def(tel_data.idToFocus[id_in])) return true
+        return tel_data.idToFocus[id_in]
       }
 
       $.each(['tel', 'pnt', 'trg'], function (trgTelIndex, trgTel) {
@@ -1680,7 +1676,7 @@ let main_sub_arr_grp = function (opt_in) {
           .transition('fadeInOut')
           .duration(animTime)
           .style('opacity', function (d) {
-            return isFocused(trgTel + d.id) ? 1 : fadeOpac
+            return is_focused(trgTel + d.id) ? 1 : fadeOpac
           })
       })
 
@@ -1690,10 +1686,10 @@ let main_sub_arr_grp = function (opt_in) {
 
         com.inst_pos.g
           .selectAll('line.' + tag_now)
-          .transition('inOut')
+          .transition('in_out')
           .duration(animTime)
           .style('opacity', function (d) {
-            return isFocused(trgTel + d.id) ? 1 : fadeOpac
+            return is_focused(trgTel + d.id) ? 1 : fadeOpac
           })
       })
 
@@ -1702,7 +1698,7 @@ let main_sub_arr_grp = function (opt_in) {
         .transition('fadeInOut')
         .duration(animTime)
         .style('opacity', function (d) {
-          return isFocused(d.id) ? 1 : fadeOpac
+          return is_focused(d.id) ? 1 : fadeOpac
         })
 
       com.inst_pos.g
@@ -1710,7 +1706,7 @@ let main_sub_arr_grp = function (opt_in) {
         .transition('fadeInOut')
         .duration(animTime)
         .style('opacity', function (d) {
-          return isFocused(d.id) ? 1 : fadeOpac
+          return is_focused(d.id) ? 1 : fadeOpac
         })
 
       locker.remove({ id: 'setFocused', delay: times.anim_arc })
@@ -1723,7 +1719,7 @@ let main_sub_arr_grp = function (opt_in) {
       com.isPolar = true
       com.followGratLbls = false
 
-      com.gratScale = 1.8 * lenD.w[1] / tau
+      com.gratScale = 1.8 * svg_dims.w[1] / tau
       com.gratStep = [10, 10]
       com.maxLat = 80
       com.maxLng = 180
@@ -1737,12 +1733,12 @@ let main_sub_arr_grp = function (opt_in) {
         .step(com.gratStep)
 
       com.gGrat = com.zoom_callable.append('g')
-      // com.gGrat.attr("transform", function(d) { return "translate("+lenD.w[1]/2+","+lenD.h[1]/2+")"; });
+      // com.gGrat.attr("transform", function(d) { return "translate("+svg_dims.w[1]/2+","+svg_dims.h[1]/2+")"; });
     }
 
     function getGradPrev () {
-      let scale0 = getScale() - lenSkyPos.z['0.0']
-      let dScal = lenSkyPos.z['1.0'] - lenSkyPos.z['0.0']
+      let scale0 = get_scale() - len_sky_pos.z['0.0']
+      let dScal = len_sky_pos.z['1.0'] - len_sky_pos.z['0.0']
       if (scale0 < dScal * 0.2) return 1
       else return 2
       // if     (scale0 < dScal * 0.1) return 1;
@@ -1768,25 +1764,25 @@ let main_sub_arr_grp = function (opt_in) {
         .style('pointer-events', 'none')
         .style('opacity', opac)
         .merge(com.grdL)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc / 2)
         .attr('stroke-width', 0)
-        .transition('inOut')
+        .transition('in_out')
         .duration(0)
         .attr('d', com.path)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc / 2)
         .attr('stroke-width', strkW)
 
       com.grdL
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc / 2)
         .attr('stroke-width', 0)
         .remove()
 
       // com.gGrat.selectAll("path."+"grat").filter(function(d,i){ return i%2==1;})
-      //   .transition("inOut").duration(times.anim_arc/2)
+      //   .transition("in_out").duration(times.anim_arc/2)
       //   .attr("stroke-width", 0)
       //   .remove()
 
@@ -1810,7 +1806,7 @@ let main_sub_arr_grp = function (opt_in) {
           .geoMercator()
           .scale(com.gratScale / 2)
           .precision(0.1)
-          .translate([0, -1 * lenD.h[1] * sgv_tag.skyPos.whRatio / 4])
+          .translate([0, -1 * svg_dims.h[1] * sgv_tag.sky_pos.whRatio / 4])
       }
 
       com.path = d3.geoPath().projection(com.proj)
@@ -1822,13 +1818,13 @@ let main_sub_arr_grp = function (opt_in) {
       let nZen = 3
       let lblPerc = 1
 
-      let scale = getScale()
+      let scale = get_scale()
       let interStep = scaleFactor < 2 ? 5 : 3
       let colLblV = [
         d3.rgb(cols_purples[4]).darker(0.3),
         d3.rgb(cols_purples[2]).darker(0.3)
       ]
-      let gratFont = lenSkyPos.f['0.0']
+      let gratFont = len_sky_pos.f['0.0']
 
       let center = [0, 0]
       let trnsScaled = [
@@ -2004,7 +2000,7 @@ let main_sub_arr_grp = function (opt_in) {
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
         .style('font-size', function (d) {
-          return gratFont / fontScale(d.V) + 'px'
+          return gratFont / font_scale(d.V) + 'px'
         })
         .style('fill', function (d) {
           return colLblV[d.type === 0 ? 0 : 1]
@@ -2028,7 +2024,7 @@ let main_sub_arr_grp = function (opt_in) {
           return lblTrans(d.V)
         })
         .style('font-size', function (d) {
-          d.txt_size = gratFont / fontScale(d.V)
+          d.txt_size = gratFont / font_scale(d.V)
           return d.txt_size + 'px'
         })
         .attr('dy', function (d) {
@@ -2037,7 +2033,7 @@ let main_sub_arr_grp = function (opt_in) {
 
       com.lbl
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('fill-opacity', 0)
         .style('stroke-opacity', 0)
@@ -2045,7 +2041,7 @@ let main_sub_arr_grp = function (opt_in) {
 
       function lblTrans (d, i) {
         return 'translate(' + d[0][0] + ',' + d[0][1] + ')'
-        // let xy = [d[0][0]-center[0] , d[0][1]-center[1]] //[d[0][0]-lenD.w[1]/2 , d[0][1]-lenD.h[1]/2]
+        // let xy = [d[0][0]-center[0] , d[0][1]-center[1]] //[d[0][0]-svg_dims.w[1]/2 , d[0][1]-svg_dims.h[1]/2]
         // let angle = (Math.atan2(xy[0],-xy[1]) * 360/tau);
         // if(xy[1] > 0)                angle += 180;
         // if(!com.isPolar) angle = 0;
@@ -2053,7 +2049,7 @@ let main_sub_arr_grp = function (opt_in) {
         // return "translate("+d[0][0]+","+d[0][1]+")rotate("+angle+")";
       }
 
-      function fontScale (d) {
+      function font_scale (d) {
         let scaleRatio = com.followGratLbls ? Math.abs(d[2]) / maxExtn1 : 0.3
         let scaleByRad = 1
         if (com.isPolar) {
@@ -2062,10 +2058,10 @@ let main_sub_arr_grp = function (opt_in) {
           else if (scaleRatio > 0.3) scaleByRad = 1.5
         } else scaleByRad = 2
 
-        let scale = getScale()
+        let scale = get_scale()
         let zoomFrac = Math.max(
           0.25,
-          1 - Math.pow((scale - lenSkyPos.z['0.0']) / lenSkyPos.z['1.0'], 0.8)
+          1 - Math.pow((scale - len_sky_pos.z['0.0']) / len_sky_pos.z['1.0'], 0.8)
         )
         scaleByRad /= zoomFrac
 
@@ -2075,18 +2071,18 @@ let main_sub_arr_grp = function (opt_in) {
     }
 
     function gratFontOpac () {
-      let scale = getScale()
+      let scale = get_scale()
       let zoomFrac = Math.max(
         0.25,
-        1 - Math.pow((scale - lenSkyPos.z['0.0']) / lenSkyPos.z['1.0'], 0.2)
+        1 - Math.pow((scale - len_sky_pos.z['0.0']) / len_sky_pos.z['1.0'], 0.2)
       )
       let opac = 0.3 * zoomFrac
       return opac
     }
 
     function updateGratScale () {
-      let scale = getScale()
-      let scaleFactor = Math.ceil(scale / lenSkyPos.z.gratRatio)
+      let scale = get_scale()
+      let scaleFactor = Math.ceil(scale / len_sky_pos.z.gratRatio)
 
       // if(Math.abs( com.grat.step()[0] * scaleFactor - com.gratStep[0] )  > 0.01) {
       if (com.gratPrev !== getGradPrev()) {
@@ -2104,7 +2100,7 @@ let main_sub_arr_grp = function (opt_in) {
       }
 
       if (com.followGratLbls) {
-        gratLbls(getTrans(), scaleFactor)
+        gratLbls(get_trans(), scaleFactor)
       } else {
         let opac = gratFontOpac()
 
@@ -2122,21 +2118,21 @@ let main_sub_arr_grp = function (opt_in) {
   // -------------------------------------------------------------------
   //
   // -------------------------------------------------------------------
-  function SvgSubArr () {
-    let thisSvgSubArr = this
+  function Svg_sub_arr () {
+    let thisSvg_sub_arr = this
 
     let com = {}
     this.com = com
 
     // initialize a couple of functions to be overriden below
-    let getScale = function () {
+    let get_scale = function () {
       return com.z['0.0']
     }
-    let getTrans = function () {
+    let get_trans = function () {
       return [0, 0]
     }
-    this.getScale = getScale
-    this.getTrans = getTrans
+    this.get_scale = get_scale
+    this.get_trans = get_trans
 
     com.z = {}
     com.z['0.0'] = 1
@@ -2161,7 +2157,7 @@ let main_sub_arr_grp = function (opt_in) {
 
     // initialize a global function (to be overriden below)
     let zoom_to_target = function (opt_in) {
-      if (!locker.is_free('inInit')) {
+      if (!locker.is_free('in_init')) {
         setTimeout(function () {
           zoom_to_target(opt_in)
         }, times.wait_loop)
@@ -2182,11 +2178,11 @@ let main_sub_arr_grp = function (opt_in) {
         // -------------------------------------------------------------------
         // attach the div which will host the main svg element
         // -------------------------------------------------------------------
-        let svg_div_id = sgv_tag.subArr.id + 'Svg'
-        let svg_div = sgv_tag.subArr.widget.get_ele(svg_div_id)
+        let svg_div_id = sgv_tag.sub_arr.id + 'Svg'
+        let svg_div = sgv_tag.sub_arr.widget.get_ele(svg_div_id)
 
         if (!is_def(svg_div)) {
-          let parent = sgv_tag.subArr.widget.get_ele(sgv_tag.subArr.id)
+          let parent = sgv_tag.sub_arr.widget.get_ele(sgv_tag.sub_arr.id)
           svg_div = document.createElement('div')
           svg_div.id = svg_div_id
 
@@ -2194,7 +2190,7 @@ let main_sub_arr_grp = function (opt_in) {
 
           run_when_ready({
             pass: function () {
-              return is_def(sgv_tag.subArr.widget.get_ele(svg_div_id))
+              return is_def(sgv_tag.sub_arr.widget.get_ele(svg_div_id))
             },
             execute: function () {
               init_data(hasJoinedData)
@@ -2206,21 +2202,21 @@ let main_sub_arr_grp = function (opt_in) {
         sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
 
         // -------------------------------------------------------------------
-        // zoom start/on/end functions, attachd to com.svgZoom
+        // zoom start/on/end functions, attachd to com.svg_zoom
         // -------------------------------------------------------------------
         let scaleStart = 0
-        com.svgZoomStart = function () {
+        com.svg_zoom_start = function () {
           scaleStart = d3.event.transform.k
           locker.add({ id: 'zoom', override: true })
         }
 
-        com.svgZoomDuring = function () {
+        com.svg_zoom_during = function () {
           com.zoom_callable.attr('transform', d3.event.transform)
-          com.svgZoomUpdState()
+          com.svg_zoom_update_state()
         }
 
-        com.svgZoomUpdState = function () {
-          let scale = getScale()
+        com.svg_zoom_update_state = function () {
+          let scale = get_scale()
 
           let changeState =
             (com.z.prev < com.z['1.0'] && scale >= com.z['1.0']) ||
@@ -2231,26 +2227,26 @@ let main_sub_arr_grp = function (opt_in) {
             (com.z.prev >= com.z['2.0'] && scale < com.z['2.0'])
 
           if (changeState) {
-            // console.log('svgZoomUpdState',zoom_state,scale)
+            // console.log('svg_zoom_update_state',zoom_state,scale)
 
             com.z.prev = scale
             if (scale < com.z['1.0']) zoom_state = 0
             else if (scale < com.z['2.0']) zoom_state = 1
             else zoom_state = 2
 
-            setState({ type: 'zoom', data: null })
+            set_state({ type: 'zoom', data: null })
             hex00()
           }
         }
 
-        com.svgZoomEnd = function () {
+        com.svg_zoom_end = function () {
           locker.remove('zoom')
-          com.svgZoomUpdState()
+          com.svg_zoom_update_state()
 
           // if on minimal zoom, center
           if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
             if (Math.abs(d3.event.transform.k - com.z['0.0']) < 0.00001) {
-              if (locker.are_free(['autoZoomTarget'])) {
+              if (locker.are_free(['auto_zoom_target'])) {
                 zoom_to_target({
                   target: 'init',
                   scale: d3.event.transform.k,
@@ -2261,8 +2257,8 @@ let main_sub_arr_grp = function (opt_in) {
               // syncroniz changes with other panels
               // -------------------------------------------------------------------
               sync_state_send({
-                type: 'syncTelFocus',
-                syncTime: Date.now(),
+                type: 'sync_tel_focus',
+                sync_time: Date.now(),
                 zoom_state: 0,
                 target: 'init'
               })
@@ -2270,14 +2266,14 @@ let main_sub_arr_grp = function (opt_in) {
           }
         }
 
-        com.svgZoom = d3.zoom().scaleExtent([com.z['0.0'], com.z['2.2']])
-        com.svgZoom.on('start', com.svgZoomStart)
-        com.svgZoom.on('zoom', com.svgZoomDuring)
-        com.svgZoom.on('end', com.svgZoomEnd)
+        com.svg_zoom = d3.zoom().scaleExtent([com.z['0.0'], com.z['2.2']])
+        com.svg_zoom.on('start', com.svg_zoom_start)
+        com.svg_zoom.on('zoom', com.svg_zoom_during)
+        com.svg_zoom.on('end', com.svg_zoom_end)
 
         // -------------------------------------------------------------------
         // programatic zoom to some target and scale - only use the last of any set of ovelapping
-        // zoom requests, where zooming is only possible after lenD.zoomLock becomes free
+        // zoom requests, where zooming is only possible after svg_dims.zoomLock becomes free
         // -------------------------------------------------------------------
         run_loop.init({
           tag: 'zoom_to_target_sub_arr',
@@ -2287,62 +2283,62 @@ let main_sub_arr_grp = function (opt_in) {
 
         // the actual function to be called when a zoom needs to be put in the queue
         zoom_to_target = function (opt_in) {
-          if (!locker.is_free('inInit')) {
+          if (!locker.is_free('in_init')) {
             setTimeout(function () {
               zoom_to_target(opt_in)
             }, times.wait_loop)
             return
           }
-          if (!locker.are_free(['autoZoomTarget'])) return
+          if (!locker.are_free(['auto_zoom_target'])) return
 
           let target_name = opt_in.target
-          let targetScale = opt_in.scale
+          let target_scale = opt_in.scale
           let duration_scale = opt_in.duration_scale
 
-          if (targetScale < com.z['0.0']) targetScale = getScale()
+          if (target_scale < com.z['0.0']) target_scale = get_scale()
 
-          let trans_to // = (com.telXY[target_name] == undefined) ? [lenD.w[1]/2, lenD.h[1]/2] : com.telXY[target_name];
+          let trans_to // = (com.telXY[target_name] == undefined) ? [svg_dims.w[1]/2, svg_dims.h[1]/2] : com.telXY[target_name];
           if (target_name === 'init') {
-            trans_to = [lenD.w[1] / 2, lenD.h[1] / 2]
+            trans_to = [svg_dims.w[1] / 2, svg_dims.h[1] / 2]
           } else {
             if (target_name === '' || !is_def(com.telXY[target_name])) {
-              let scale = getScale()
-              let trans = getTrans()
+              let scale = get_scale()
+              let trans = get_trans()
 
-              let x = (lenD.w[1] / 2 - trans[0]) / scale
-              let y = (lenD.h[1] / 2 - trans[1]) / scale
-              target_name = telData.telHover.id
-              let diffMin = -1
+              let x = (svg_dims.w[1] / 2 - trans[0]) / scale
+              let y = (svg_dims.h[1] / 2 - trans[1]) / scale
+              target_name = tel_data.telHover.id
+              let min_diff = -1
               $.each(com.telXY, function (id_now, data_now) {
                 if (data_now.isTel) {
-                  let diffNow =
+                  let diff_now =
                     Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
-                  if (diffNow < diffMin || diffMin < 0) {
-                    diffMin = diffNow
+                  if (diff_now < min_diff || min_diff < 0) {
+                    min_diff = diff_now
                     target_name = id_now
                   }
                 }
               })
             }
 
-            telData.telHover.id = target_name
-            telData.telHover.subArr = telData.telSubArrId[target_name]
+            tel_data.telHover.id = target_name
+            tel_data.telHover.sub_arr = tel_data.tel_sub_arrId[target_name]
             trans_to = [com.telXY[target_name].x, com.telXY[target_name].y]
           }
 
           let func_start = function () {
-            locker.add({ id: 'autoZoomTarget', override: true })
+            locker.add({ id: 'auto_zoom_target', override: true })
             // if(target_name != "") zoom_target = target_name;
           }
           let func_during = function () {}
           let func_end = function () {
-            locker.remove('autoZoomTarget')
+            locker.remove('auto_zoom_target')
 
-            let isDone = true
-            if (Math.abs(getScale() - com.z['0.0']) < 0.00001) {
-              let trans = getTrans()
+            let is_done = true
+            if (Math.abs(get_scale() - com.z['0.0']) < 0.00001) {
+              let trans = get_trans()
               if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
-                isDone = false
+                is_done = false
                 zoom_to_target({
                   target: 'init',
                   scale: com.z['0.0'],
@@ -2350,21 +2346,21 @@ let main_sub_arr_grp = function (opt_in) {
                 })
               }
             }
-            if (duration_scale > 0 && isDone) setState({ type: 'zoom', data: null })
+            if (duration_scale > 0 && is_done) set_state({ type: 'zoom', data: null })
           }
 
           let data_out = {
-            target_scale: targetScale,
+            target_scale: target_scale,
             duration_scale: duration_scale,
-            baseTime: 300,
+            base_time: 300,
             trans_to: trans_to,
-            wh: [lenD.w[1], lenD.h[1]],
+            wh: [svg_dims.w[1], svg_dims.h[1]],
             cent: null,
             func_start: func_start,
             func_end: func_end,
             func_during: func_during,
             svg: com.svg,
-            svgZoom: com.svgZoom,
+            svg_zoom: com.svg_zoom,
             zoom_callable: com.zoom_callable,
             svg_zoom_node: com.svg_zoom_node
           }
@@ -2376,7 +2372,7 @@ let main_sub_arr_grp = function (opt_in) {
             run_loop.push({ tag: 'zoom_to_target_sub_arr', data: data_out })
           }
         }
-        thisSvgSubArr.zoom_to_target = zoom_to_target
+        thisSvg_sub_arr.zoom_to_target = zoom_to_target
 
         // -------------------------------------------------------------------
         // create the main svg element
@@ -2387,16 +2383,16 @@ let main_sub_arr_grp = function (opt_in) {
           .style('background', '#383B42')
           .append('svg')
           .attr('preserveAspectRatio', 'xMidYMid meet')
-          .attr('viewBox', '0 0 ' + lenD.w[1] + ' ' + lenD.h[1])
+          .attr('viewBox', '0 0 ' + svg_dims.w[1] + ' ' + svg_dims.h[1])
           .style('position', 'relative')
           .style('width', '100%')
           .style('height', '100%')
           .style('top', '0px')
           .style('left', '0px')
-          // .attr("viewBox", "0 0 "+lenD.w[1]+" "+lenD.h[1] * whRatio)
+          // .attr("viewBox", "0 0 "+svg_dims.w[1]+" "+svg_dims.h[1] * whRatio)
           // .classed("svgInGridStack_inner", true)
           .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
-          .call(com.svgZoom)
+          .call(com.svg_zoom)
           .on('dblclick.zoom', null)
           .on('wheel', function () {
             d3.event.preventDefault()
@@ -2412,8 +2408,8 @@ let main_sub_arr_grp = function (opt_in) {
         //   .enter()
         //   .append("rect")
         //     .attr("x", 0).attr("y", 0)
-        //     .attr("width", lenD.w[1])
-        //     .attr("height", lenD.h[1])
+        //     .attr("width", svg_dims.w[1])
+        //     .attr("height", svg_dims.h[1])
         //     .attr("stroke","#383B42") //.attr("stroke","red")
         //     .attr("stroke-width","3")
         //     .attr("fill", "transparent")
@@ -2422,17 +2418,17 @@ let main_sub_arr_grp = function (opt_in) {
         // save the svg node to use for d3.zoomTransform() later
         com.svg_zoom_node = com.svg.nodes()[0]
 
-        getScale = function () {
+        get_scale = function () {
           return d3.zoomTransform(com.svg_zoom_node).k
         }
-        getTrans = function () {
+        get_trans = function () {
           return [
             d3.zoomTransform(com.svg_zoom_node).x,
             d3.zoomTransform(com.svg_zoom_node).y
           ]
         }
-        thisSvgSubArr.getScale = getScale
-        thisSvgSubArr.getTrans = getTrans
+        thisSvg_sub_arr.get_scale = get_scale
+        thisSvg_sub_arr.get_trans = get_trans
 
         // add one circle as background
         // -------------------------------------------------------------------
@@ -2443,12 +2439,12 @@ let main_sub_arr_grp = function (opt_in) {
           .enter()
           .append('circle')
           .attr('r', 0)
-          .attr('cx', lenD.w[1] / 2)
-          .attr('cy', lenD.h[1] / 2)
+          .attr('cx', svg_dims.w[1] / 2)
+          .attr('cy', svg_dims.h[1] / 2)
           .attr('fill', '#F2F2F2')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc / 3)
-          .attr('r', lenD.w[1] / 2.1)
+          .attr('r', svg_dims.w[1] / 2.1)
 
         // initialize the hexagonal background grid
         hex00()
@@ -2461,7 +2457,7 @@ let main_sub_arr_grp = function (opt_in) {
       //
       // -------------------------------------------------------------------
       if (hasJoinedData) {
-        setHirch(true)
+        set_hierarchy(true)
         initState01(true)
       }
 
@@ -2471,9 +2467,9 @@ let main_sub_arr_grp = function (opt_in) {
       //   // zoom_to_target({ target:'init', scale:com.z["0.0"], duration_scale:1.5 } )
       // }, 2000);
 
-      locker.remove('inInitSubArr')
+      locker.remove('in_init_sub_arr')
     }
-    thisSvgSubArr.init_data = init_data
+    thisSvg_sub_arr.init_data = init_data
 
     // -------------------------------------------------------------------
     //
@@ -2481,10 +2477,10 @@ let main_sub_arr_grp = function (opt_in) {
     function setOverText () {
       if (!is_def(com.overRect)) {
         com.overRect = {}
-        com.overRect.w = lenD.w[1]
-        com.overRect.h = lenD.h[1] * 0.06
+        com.overRect.w = svg_dims.w[1]
+        com.overRect.h = svg_dims.h[1] * 0.06
         com.overRect.x = 0
-        com.overRect.y = lenD.h[1] - com.overRect.h
+        com.overRect.y = svg_dims.h[1] - com.overRect.h
 
         com.overRect.data = [
           {
@@ -2584,7 +2580,7 @@ let main_sub_arr_grp = function (opt_in) {
           return 'translate(' + d.x + ',' + d.y + ')'
         })
         .merge(txt)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .text(function (d) {
           return d.txt
@@ -2594,7 +2590,7 @@ let main_sub_arr_grp = function (opt_in) {
 
       txt
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('fill-opacity', 0)
         .style('stroke-opacity', 0)
@@ -2615,30 +2611,30 @@ let main_sub_arr_grp = function (opt_in) {
     //
     // -------------------------------------------------------------------
     function update_data (data_in) {
-      let isNewSubArr = is_def(data_in.subArr)
-      setHirch(isNewSubArr)
+      let isNew_sub_arr = is_def(data_in.sub_arr)
+      set_hierarchy(isNew_sub_arr)
 
-      initState01(isNewSubArr)
+      initState01(isNew_sub_arr)
 
-      // if(isNewSubArr && getScale() > com.z["0.1"]) {
-      //   zoom_to_target({ target:telData.telHover.id, scale:getScale(), duration_scale:2 });
+      // if(isNew_sub_arr && get_scale() > com.z["0.1"]) {
+      //   zoom_to_target({ target:tel_data.telHover.id, scale:get_scale(), duration_scale:2 });
       // }
     }
-    thisSvgSubArr.update_data = update_data
+    thisSvg_sub_arr.update_data = update_data
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function setHirch (isInit) {
-      // create delay if currently in data update or a previous call of setHirch
-      if (!(locker.is_free('setState') && locker.is_free('setHirch'))) {
+    function set_hierarchy (isInit) {
+      // create delay if currently in data update or a previous call of set_hierarchy
+      if (!(locker.is_free('set_state') && locker.is_free('set_hierarchy'))) {
         setTimeout(function () {
-          setHirch(isInit)
+          set_hierarchy(isInit)
         }, times.anim_arc)
         return
       }
 
-      locker.add('setHirch')
+      locker.add('set_hierarchy')
 
       let tag_now
 
@@ -2655,12 +2651,12 @@ let main_sub_arr_grp = function (opt_in) {
             return hirchStyleFill(d)
           })
 
-        locker.remove({ id: 'setHirch', delay: times.anim_arc })
+        locker.remove({ id: 'set_hierarchy', delay: times.anim_arc })
 
         return
       }
 
-      let shiftXY = [(lenD.w[1] - whPack[0]) / 2, (lenD.h[1] - whPack[1]) / 2]
+      let shiftXY = [(svg_dims.w[1] - whPack[0]) / 2, (svg_dims.h[1] - whPack[1]) / 2]
 
       if (!is_def(com.hirchG)) {
         com.hirchG = com.zoom_callable.append('g')
@@ -2672,13 +2668,13 @@ let main_sub_arr_grp = function (opt_in) {
 
       com.telXY = {}
 
-      let subArr = { id: telData.subArr.id, children: [] }
-      $.each(telData.subArr.children, function (index, subArrNow) {
-        if (subArrNow.children.length > 0) {
-          subArr.children.push(subArrNow)
-          // subArrNow.children =
+      let sub_arr = { id: tel_data.sub_arr.id, children: [] }
+      $.each(tel_data.sub_arr.children, function (index, sub_arrNow) {
+        if (sub_arrNow.children.length > 0) {
+          sub_arr.children.push(sub_arrNow)
+          // sub_arrNow.children =
           tel_info.sort_ids({
-            data: subArrNow.children,
+            data: sub_arrNow.children,
             func: function (d) {
               return d.id
             }
@@ -2686,7 +2682,7 @@ let main_sub_arr_grp = function (opt_in) {
         }
       })
 
-      com.hirch = d3.hierarchy(subArr).sum(function (d) {
+      com.hirch = d3.hierarchy(sub_arr).sum(function (d) {
         return 1
       })
       let packNode = d3
@@ -2697,16 +2693,16 @@ let main_sub_arr_grp = function (opt_in) {
 
       setCircTxt(com.hirch.descendants())
 
-      locker.remove({ id: 'setHirch', delay: times.anim_arc * 2 })
+      locker.remove({ id: 'set_hierarchy', delay: times.anim_arc * 2 })
     }
 
     function setCircTxt (data_in) {
       let tag_circ = 'telCirc'
       let tagText = 'telTitle'
 
-      let shiftXY = [(lenD.w[1] - whPack[0]) / 2, (lenD.h[1] - whPack[1]) / 2]
+      let shiftXY = [(svg_dims.w[1] - whPack[0]) / 2, (svg_dims.h[1] - whPack[1]) / 2]
       function focused (d, scale) {
-        return telData.telHover.subArr === getSubArrId(d) && zoom_state >= scale
+        return tel_data.telHover.sub_arr === get_sub_arrId(d) && zoom_state >= scale
       }
 
       let circ = com.hirchG.selectAll('circle.' + tag_circ)
@@ -2749,7 +2745,7 @@ let main_sub_arr_grp = function (opt_in) {
           return hirchStyleOpac(d, 0)
         })
         .on('mouseover', hirchStyleHover)
-        .on('click', hirchStyleClick)
+        .on('click', hierarchy_style_click)
         .on('dblclick', hirchStyleDblclick)
         .merge(circ)
         .each(function (d, i) {
@@ -2797,7 +2793,7 @@ let main_sub_arr_grp = function (opt_in) {
       // -------------------------------------------------------------------
       //
       // -------------------------------------------------------------------
-      let fontSize = null
+      let font_size = null
 
       text
         .enter()
@@ -2805,8 +2801,8 @@ let main_sub_arr_grp = function (opt_in) {
         .text(function (d) {
           // console.log(tel_info.get_title(d.children ? d.data.N : d.data.id),is_def(d.children) , d.data.N , d.data.id);
           if (!d.parent) return ''
-          else if (d.data.id === tel_info.no_subArr_name()) {
-            return tel_info.no_subArr_title()
+          else if (d.data.id === tel_info.no_sub_arr_name()) {
+            return tel_info.no_sub_arr_title()
           } else return tel_info.get_title(d.children ? d.data.N : d.data.id)
         })
         .attr('class', tagText)
@@ -2828,20 +2824,20 @@ let main_sub_arr_grp = function (opt_in) {
         .style('stroke', '#383b42')
         .merge(text)
         .each(function (d) {
-          if (!d.children && !is_def(fontSize)) {
-            fontSize = [hirchStyleTitleSize(d, 0), hirchStyleTitleSize(d, 1)]
+          if (!d.children && !is_def(font_size)) {
+            font_size = [hirchStyleTitleSize(d, 0), hirchStyleTitleSize(d, 1)]
           }
         })
         .each(function (d) {
           let scale = d.children ? 1.5 : 1
-          d.fontSize = [fontSize[0] * scale, fontSize[1] * scale]
+          d.font_size = [font_size[0] * scale, font_size[1] * scale]
         })
         .transition('in')
         .duration(times.anim_arc)
         .attr('dy', function (d, i) {
           if (d.children) {
             return 0
-          } else return d.fontSize[0] / 3 + 'px' // (-d.fontSize[0]/3)+"px";
+          } else return d.font_size[0] / 3 + 'px' // (-d.font_size[0]/3)+"px";
         })
         .attr('transform', txtTrans)
         .style('opacity', function (d, i) {
@@ -2850,10 +2846,10 @@ let main_sub_arr_grp = function (opt_in) {
         .attr('font-size', function (d, i) {
           if (!d.children) {
             return (
-              d.fontSize[zoom_state === 0 ? 0 : focused(d, 1) ? 1 : 0] + 'px'
+              d.font_size[zoom_state === 0 ? 0 : focused(d, 1) ? 1 : 0] + 'px'
             )
           } else {
-            return d.fontSize[0] + 'px'
+            return d.font_size[0] + 'px'
           }
         })
 
@@ -2877,10 +2873,10 @@ let main_sub_arr_grp = function (opt_in) {
 
     function hirchStyleStroke (d) {
       return '#383b42'
-      // return d.children ? "#383b42" : telData.idToCol[d.data.id];
+      // return d.children ? "#383b42" : tel_data.idToCol[d.data.id];
     }
     function hirchStyleFill (d) {
-      return d.children ? '#383b42' : telData.idToCol[d.data.id]
+      return d.children ? '#383b42' : tel_data.idToCol[d.data.id]
     }
     function hirchStyleOpac (d, scale) {
       if (!d.parent) return 0
@@ -2895,7 +2891,7 @@ let main_sub_arr_grp = function (opt_in) {
       if (!d.parent) return d.r * 10
 
       let r = d.r
-      if (d.parent.data.id === 'subArr') r *= 1.05
+      if (d.parent.data.id === 'sub_arr') r *= 1.05
       if (scale > 0 && !d.children) r *= 1.1
 
       return r
@@ -2906,22 +2902,22 @@ let main_sub_arr_grp = function (opt_in) {
 
     function hirchStyleHover (d) {
       if (d.height > 0) return
-      if (getScale() >= com.z['1.0']) return
+      if (get_scale() >= com.z['1.0']) return
 
-      hirchStyleClick(d)
+      hierarchy_style_click(d)
     }
 
-    function hirchStyleClick (d) {
+    function hierarchy_style_click (d) {
       // console.log('wwwwwww',d);
       function setOnTelIdTry () {
-        if (locker.is_free('dataChange')) {
+        if (locker.is_free('data_change')) {
           // console.log('hov... ',d.data.id)
           setOnTelId(d)
 
-          svgSkyPos.update_data()
+          svg_sky_pos.update_data()
 
           if (locker.is_free('zoom') && locker.is_free('zoom_to_target')) {
-            setState({ type: 'hover', data: d })
+            set_state({ type: 'hover', data: d })
           }
         } else {
           setTimeout(function () {
@@ -2931,7 +2927,7 @@ let main_sub_arr_grp = function (opt_in) {
       }
       setOnTelIdTry()
     }
-    thisSvgSubArr.hirchStyleClick = hirchStyleClick
+    thisSvg_sub_arr.hierarchy_style_click = hierarchy_style_click
 
     // FIXME !!!!!!!!!!!!!!!!!!!
     // FIXME !!!!!!!!!!!!!!!!!!!
@@ -2942,7 +2938,7 @@ let main_sub_arr_grp = function (opt_in) {
     // FIXME !!!!!!!!!!!!!!!!!!!
     // FIXME !!!!!!!!!!!!!!!!!!!
     function hirchStyleDblclick (d) {
-      let scale = getScale()
+      let scale = get_scale()
 
       if (scale < com.z['1.1'] * 0.999) {
         zoom_to_target({
@@ -2951,7 +2947,7 @@ let main_sub_arr_grp = function (opt_in) {
           duration_scale: 1.5
         })
       } else if (scale < com.z['2.0'] * 0.999) {
-        if (telData.telHover.subArr === telData.telHover.clickedSubArr) {
+        if (tel_data.telHover.sub_arr === tel_data.telHover.clicked_sub_arr) {
           zoom_to_target({
             target: d.data.id,
             scale: Math.max(com.z['2.0'], scale),
@@ -2972,69 +2968,69 @@ let main_sub_arr_grp = function (opt_in) {
         })
       }
 
-      telData.telHover.clickedSubArr = telData.telHover.subArr
+      tel_data.telHover.clicked_sub_arr = tel_data.telHover.sub_arr
     }
 
-    function getSubArrId (d) {
-      return d.parent ? telData.telSubArrId[d.data.id] : ''
-      // let subArrId = "";
+    function get_sub_arrId (d) {
+      return d.parent ? tel_data.tel_sub_arrId[d.data.id] : ''
+      // let sub_arrId = "";
       // if(d.parent) {
-      //   if(d.parent.data.id  == "subArr") subArrId = d.data.id;
-      //   else                              subArrId = d.parent.data.id;
+      //   if(d.parent.data.id  == "sub_arr") sub_arrId = d.data.id;
+      //   else                              sub_arrId = d.parent.data.id;
       // }
-      // // console.log(d.data.id,subArrId);
-      // return subArrId;
+      // // console.log(d.data.id,sub_arrId);
+      // return sub_arrId;
     }
 
     function setOnTelId (data_in) {
       if (data_in.depth === 0) return
-      locker.add('dataChange')
+      locker.add('data_change')
 
-      let subArrId = getSubArrId(data_in)
+      let sub_arrId = get_sub_arrId(data_in)
 
       // if not the root node
       if (data_in.height === 0) {
-        telData.telHover.subArr = subArrId
+        tel_data.telHover.sub_arr = sub_arrId
 
         // if hovering over a spesific telescope
         if (!data_in.children) {
-          telData.telHover.id = data_in.data.id
+          tel_data.telHover.id = data_in.data.id
         } else {
-          // if hovering over a subArr but not on a telescope, select the first element in the group
-          if (telData.subArrIds[subArrId].children.length > 0) {
-            telData.telHover.id = telData.subArrIds[subArrId].children[0].id
+          // if hovering over a sub_arr but not on a telescope, select the first element in the group
+          if (tel_data.sub_arrIds[sub_arrId].children.length > 0) {
+            tel_data.telHover.id = tel_data.sub_arrIds[sub_arrId].children[0].id
           }
         }
       }
 
-      locker.remove('dataChange')
+      locker.remove('data_change')
     }
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function setStateOnce (opt_in) {
+    function set_state_once (opt_in) {
       let type = opt_in.type
       // let data_in = opt_in.data
 
-      // create delay if currently in data update or a previous call of setState
-      if (!locker.are_free(['setState', 'setHirch', 'dataChange'])) {
-        // console.log('delay setState')
+      // create delay if currently in data update or a previous call of set_state
+      if (!locker.are_free(['set_state', 'set_hierarchy', 'data_change'])) {
+        // console.log('delay set_state')
         setTimeout(function () {
-          setState(opt_in)
+          set_state(opt_in)
         }, times.anim_arc)
         return
       }
-      // console.log('setState',opt_in)
-      locker.add('dataChange')
-      locker.add('setState')
+      // console.log('set_state',opt_in)
+      locker.add('data_change')
+      locker.add('set_state')
 
-      let scale = getScale()
-      let isChangeFocus =
-        telData.telHover.subArr !== telData.telHover.focusedSubArr
+      let scale = get_scale()
+      let is_change_focus =
+        tel_data.telHover.sub_arr !== tel_data.telHover.focused_sub_arr
 
-      if (isChangeFocus || type === 'zoom' || type === 'dataChange') {
-        telData.telHover.focusedSubArr = telData.telHover.subArr
+      if (is_change_focus || type === 'zoom' || type === 'data_change') {
+        tel_data.telHover.focused_sub_arr = tel_data.telHover.sub_arr
 
         setCircTxt()
       }
@@ -3044,22 +3040,22 @@ let main_sub_arr_grp = function (opt_in) {
       // -------------------------------------------------------------------
       let overTxt = []
       $.each(['trg', 'pnt'], function (trgTelIndex, trgTel) {
-        $.each(telData[trgTel], function (index, ele_now) {
+        $.each(tel_data[trgTel], function (index, ele_now) {
           let target_point_id = ele_now.id
-          telData.trgPntFocus[trgTel][target_point_id] = false
+          tel_data.trgPntFocus[trgTel][target_point_id] = false
         })
       })
 
-      $.each(telData.tel, function (index, ele_now) {
+      $.each(tel_data.tel, function (index, ele_now) {
         let tel_Id = ele_now.id
-        let isHov = telData.telHover.id === tel_Id
+        let isHov = tel_data.telHover.id === tel_Id
 
-        let isFocused = true
+        let is_focused = true
         if (zoom_state > 0) {
           if (scale < com.z['1.1']) {
-            isFocused = telData.telHover.subArr === telData.telSubArrId[tel_Id]
+            is_focused = tel_data.telHover.sub_arr === tel_data.tel_sub_arrId[tel_Id]
           } else {
-            isFocused = isHov
+            is_focused = isHov
           }
         }
 
@@ -3067,22 +3063,22 @@ let main_sub_arr_grp = function (opt_in) {
           overTxt = [tel_info.get_title(tel_Id), parsePosTxt(ele_now.pos)]
         }
 
-        telData.idToFocus['tel' + tel_Id] = isFocused
+        tel_data.idToFocus['tel' + tel_Id] = is_focused
 
-        if (isFocused) {
+        if (is_focused) {
           $.each(['trg', 'pnt'], function (trgTelIndex, trgTel) {
             let target_point_id = ele_now[trgTel + 'Id']
-            telData.trgPntFocus[trgTel][target_point_id] = true
+            tel_data.trgPntFocus[trgTel][target_point_id] = true
           })
         }
       })
 
       $.each(['trg', 'pnt'], function (trgTelIndex, trgTel) {
-        $.each(telData[trgTel], function (index, ele_now) {
+        $.each(tel_data[trgTel], function (index, ele_now) {
           let target_point_id = ele_now.id
-          let isFocused = telData.trgPntFocus[trgTel][target_point_id]
+          let is_focused = tel_data.trgPntFocus[trgTel][target_point_id]
 
-          telData.idToFocus[trgTel + target_point_id] = isFocused
+          tel_data.idToFocus[trgTel + target_point_id] = is_focused
         })
       })
 
@@ -3091,44 +3087,44 @@ let main_sub_arr_grp = function (opt_in) {
 
       // set the main display according to the focused tel/sub-array by zoom state
       if (scale < com.z['1.0']) {
-        if (type !== 'dataChange' || telData.prevState !== 0) {
-          telData.prevState = 0
-          telData.telHover.focusedSubArr = ''
+        if (type !== 'data_change' || tel_data.prevState !== 0) {
+          tel_data.prevState = 0
+          tel_data.telHover.focused_sub_arr = ''
 
-          setState01(false, '')
-          setState10(false, '')
+          set_state_01(false, '')
+          set_state_10(false, '')
         }
       } else if (scale < com.z['2.0']) {
-        setState01(true, '')
+        set_state_01(true, '')
 
-        if (type !== 'dataChange' || telData.prevState !== 1 || isChangeFocus) {
-          telData.prevState = 1
-          setState10(false, '')
+        if (type !== 'data_change' || tel_data.prevState !== 1 || is_change_focus) {
+          tel_data.prevState = 1
+          set_state_10(false, '')
         }
       } else {
-        telData.prevState = 2
-        setState10(true, '')
+        tel_data.prevState = 2
+        set_state_10(true, '')
 
         // syncroniz changes with other panels
         // -------------------------------------------------------------------
         sync_state_send({
-          type: 'syncTelFocus',
-          syncTime: Date.now(),
+          type: 'sync_tel_focus',
+          sync_time: Date.now(),
           zoom_state: 1,
-          target: telData.telHover.id
+          target: tel_data.telHover.id
         })
       }
 
-      locker.remove('dataChange')
-      locker.remove({ id: 'setState', delay: times.anim_arc })
+      locker.remove('data_change')
+      locker.remove({ id: 'set_state', delay: times.anim_arc })
     }
-    this.setStateOnce = setStateOnce
+    this.set_state_once = set_state_once
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
     function initState01 (needInit) {
-      let tagBck = 'subArr'
+      let tagBck = 'sub_arr'
       let tagG = tagBck + 'telG'
       let tagTel = tagG + 'ele'
 
@@ -3140,18 +3136,18 @@ let main_sub_arr_grp = function (opt_in) {
       //
       // -------------------------------------------------------------------
       com[tagTel] = {}
-      $.each(telData.subArr.children, function (index0, grpNow) {
+      $.each(tel_data.sub_arr.children, function (index0, grpNow) {
         $.each(grpNow.children, function (index1, ele_now) {
           let tel_Id = ele_now.id
-          let telD = find_dict_ele_in_obj(telData.tel, 'id', tel_Id, true)[1] // if(telD == undefined) return;
-          let pntD =
-            telD.pntId === tel_info.no_subArr_name()
-              ? telD
-              : find_dict_ele_in_obj(telData.pnt, 'id', telD.pntId, true)[1]
+          let tel_data_now = find_dict_ele_in_obj(tel_data.tel, 'id', tel_Id, true)[1] // if(tel_data_now == undefined) return;
+          let pnts_now =
+            tel_data_now.pntId === tel_info.no_sub_arr_name()
+              ? tel_data_now
+              : find_dict_ele_in_obj(tel_data.pnt, 'id', tel_data_now.pntId, true)[1]
 
           com[tagTel][tel_Id] = {}
-          com[tagTel][tel_Id].telD = telD
-          com[tagTel][tel_Id].pntD = pntD
+          com[tagTel][tel_Id].tels = tel_data_now
+          com[tagTel][tel_Id].pnts = pnts_now
         })
       })
       // console.log(com[tagTel]);return;
@@ -3161,7 +3157,7 @@ let main_sub_arr_grp = function (opt_in) {
       // -------------------------------------------------------------------
       //
       // -------------------------------------------------------------------
-      let tagState = 's01'
+      let tag_state = 's01'
 
       let width = com.packNodeR * 1.7
       let lblSize = width / 22
@@ -3202,30 +3198,30 @@ let main_sub_arr_grp = function (opt_in) {
       ]
       let centreLabel2 = [centre1[0], centre1[1] - scaleStroke0 * 1.5]
 
-      com[tagState] = {}
-      com[tagState].tagBck = tagBck
-      com[tagState].tagG = tagG
-      com[tagState].lblProps = lblProps
-      com[tagState].scaleRad0 = scaleRad0
-      com[tagState].scaleRad1 = scaleRad1
-      com[tagState].scaleStroke0 = scaleStroke0
-      com[tagState].scaleRad2 = scaleRad2
-      com[tagState].scaleWidth0 = scaleWidth0
-      com[tagState].scaleWidth1 = scaleWidth1
-      com[tagState].scaleWidth2 = scaleWidth2
-      com[tagState].scaleDeltaTrans0 = scaleDeltaTrans0
-      com[tagState].tblFont = tblFont
-      com[tagState].centre0 = centre0
-      com[tagState].centre1 = centre1
-      com[tagState].centre2 = centre2
-      com[tagState].centreLabel0 = centreLabel0
-      com[tagState].centreLabel1 = centreLabel1
-      com[tagState].centreLabel2 = centreLabel2
+      com[tag_state] = {}
+      com[tag_state].tagBck = tagBck
+      com[tag_state].tagG = tagG
+      com[tag_state].lblProps = lblProps
+      com[tag_state].scaleRad0 = scaleRad0
+      com[tag_state].scaleRad1 = scaleRad1
+      com[tag_state].scaleStroke0 = scaleStroke0
+      com[tag_state].scaleRad2 = scaleRad2
+      com[tag_state].scaleWidth0 = scaleWidth0
+      com[tag_state].scaleWidth1 = scaleWidth1
+      com[tag_state].scaleWidth2 = scaleWidth2
+      com[tag_state].scaleDeltaTrans0 = scaleDeltaTrans0
+      com[tag_state].tblFont = tblFont
+      com[tag_state].centre0 = centre0
+      com[tag_state].centre1 = centre1
+      com[tag_state].centre2 = centre2
+      com[tag_state].centreLabel0 = centreLabel0
+      com[tag_state].centreLabel1 = centreLabel1
+      com[tag_state].centreLabel2 = centreLabel2
 
       // -------------------------------------------------------------------
       //
       // -------------------------------------------------------------------
-      tagState = 's10'
+      tag_state = 's10'
 
       width = com.packNodeR * 1.5
       lblSize = width / 30
@@ -3286,84 +3282,84 @@ let main_sub_arr_grp = function (opt_in) {
         h: tableHeight
       }
 
-      com[tagState] = {}
-      com[tagState].tagBck = tagBck
-      com[tagState].tagG = tagG
-      com[tagState].lblProps = lblProps
-      // com[tagState].scaleRad0    = scaleRad0;
-      // com[tagState].scaleRad1    = scaleRad1;
-      // com[tagState].scaleStroke0 = scaleStroke0;
-      // com[tagState].scaleRad2    = scaleRad2;
-      com[tagState].scaleWidth0 = scaleWidth0
-      com[tagState].scaleWidth1 = scaleWidth1
-      com[tagState].scaleWidth2 = scaleWidth2
-      com[tagState].scaleDeltaTrans0 = scaleDeltaTrans0
-      com[tagState].tblFont = tblFont
-      com[tagState].centre0 = centre0
-      // com[tagState].centre1     = centre1;
-      com[tagState].centre2 = centre2
-      com[tagState].centre3 = centre3
-      com[tagState].centreLabel0 = centreLabel0
-      com[tagState].centreLabel1 = centreLabel1
-      com[tagState].centreLabel2 = centreLabel2
-      com[tagState].scaleRad = scaleRad
-      com[tagState].tablePos10 = tablePos10
+      com[tag_state] = {}
+      com[tag_state].tagBck = tagBck
+      com[tag_state].tagG = tagG
+      com[tag_state].lblProps = lblProps
+      // com[tag_state].scaleRad0    = scaleRad0;
+      // com[tag_state].scaleRad1    = scaleRad1;
+      // com[tag_state].scaleStroke0 = scaleStroke0;
+      // com[tag_state].scaleRad2    = scaleRad2;
+      com[tag_state].scaleWidth0 = scaleWidth0
+      com[tag_state].scaleWidth1 = scaleWidth1
+      com[tag_state].scaleWidth2 = scaleWidth2
+      com[tag_state].scaleDeltaTrans0 = scaleDeltaTrans0
+      com[tag_state].tblFont = tblFont
+      com[tag_state].centre0 = centre0
+      // com[tag_state].centre1     = centre1;
+      com[tag_state].centre2 = centre2
+      com[tag_state].centre3 = centre3
+      com[tag_state].centreLabel0 = centreLabel0
+      com[tag_state].centreLabel1 = centreLabel1
+      com[tag_state].centreLabel2 = centreLabel2
+      com[tag_state].scaleRad = scaleRad
+      com[tag_state].tablePos10 = tablePos10
 
       $.each(scaleRad, function (index, scaleRadNow) {
-        com[tagState]['scaleRad0' + index] = scaleRad0 * scaleRadNow
-        com[tagState]['scaleRad1' + index] = scaleRad1 * scaleRadNow
-        com[tagState]['scaleRad2' + index] = scaleRad2 * scaleRadNow
-        com[tagState]['sclR3' + index] =
+        com[tag_state]['scaleRad0' + index] = scaleRad0 * scaleRadNow
+        com[tag_state]['scaleRad1' + index] = scaleRad1 * scaleRadNow
+        com[tag_state]['scaleRad2' + index] = scaleRad2 * scaleRadNow
+        com[tag_state]['sclR3' + index] =
           scaleRad1 *
           (index === 2 ? (scaleRad[0] + scaleRad[1]) / 2 : scaleRad[1])
-        com[tagState]['scaleStroke0' + index] = scaleStroke0 * scaleRadNow
+        com[tag_state]['scaleStroke0' + index] = scaleStroke0 * scaleRadNow
 
-        com[tagState]['centre1' + index] = centre1[index]
-        com[tagState]['wh1' + index] = wh1[index]
-        com[tagState]['centreLabel3' + index] = centLblV[index]
+        com[tag_state]['centre1' + index] = centre1[index]
+        com[tag_state]['wh1' + index] = wh1[index]
+        com[tag_state]['centreLabel3' + index] = centLblV[index]
       })
     }
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function setState01 (isOn, tel_IdOn) {
-      // console.log('__setStateS01')
-      let tagBck = 'subArr'
+    function set_state_01 (is_on, tel_Id_on) {
+      // console.log('__set_stateS01')
+      let tagBck = 'sub_arr'
       let tagG = tagBck + 'telG'
       let tagTel = tagG + 'ele'
-      // let tagState = 's01'
+      // let tag_state = 's01'
 
       let data_in = {}
       data_in.azm = []
       data_in.zen = []
-      if (isOn) {
-        let scale = getScale()
-        $.each(telData.subArrIds[telData.telHover.subArr].children, function (
+      if (is_on) {
+        let scale = get_scale()
+        $.each(tel_data.sub_arrIds[tel_data.telHover.sub_arr].children, function (
           index,
           ele_now
         ) {
           let tel_Id = ele_now.id
 
-          if (tel_IdOn === '' || tel_IdOn === tel_Id) {
-            let telD = com[tagTel][tel_Id].telD
-            let pntD = com[tagTel][tel_Id].pntD
-            let isHov = telData.telHover.id === tel_Id && scale >= com.z['1.1']
+          if (tel_Id_on === '' || tel_Id_on === tel_Id) {
+            let tel_data_now = com[tagTel][tel_Id].tels
+            let pnts_now = com[tagTel][tel_Id].pnts
+            let isHov = tel_data.telHover.id === tel_Id && scale >= com.z['1.1']
 
-            // if(tel_Id == 'M_2') console.log('+++',pntD.pos)
+            // if(tel_Id == 'M_2') console.log('+++',pnts_now.pos)
             data_in.azm.push({
               id: tel_Id,
-              pos: telD.pos[0],
-              pnt: pntD.pos[0],
-              col: telD.col,
+              pos: tel_data_now.pos[0],
+              pnt: pnts_now.pos[0],
+              col: tel_data_now.col,
               hasLbls: isHov,
               hasCentLbl: isHov
             })
             data_in.zen.push({
               id: tel_Id,
-              pos: telD.pos[1],
-              pnt: pntD.pos[1],
-              col: telD.col,
+              pos: tel_data_now.pos[1],
+              pnt: pnts_now.pos[1],
+              col: tel_data_now.col,
               hasLbls: isHov,
               hasCentLbl: isHov
             })
@@ -3375,7 +3371,7 @@ let main_sub_arr_grp = function (opt_in) {
       let opt = {}
       opt.index = 0
       opt.isArc = false
-      opt.tagState = 's01'
+      opt.tag_state = 's01'
       opt.tagType = '0'
       opt.scaleRad0 = 'scaleRad0'
       opt.scaleRad1 = 'scaleRad1'
@@ -3390,7 +3386,7 @@ let main_sub_arr_grp = function (opt_in) {
       opt = {}
       opt.index = 0
       opt.isArc = true
-      opt.tagState = 's01'
+      opt.tag_state = 's01'
       opt.tagType = '1'
       opt.scaleRad0 = 'scaleRad2'
       opt.scaleRad1 = 'scaleRad1'
@@ -3405,12 +3401,12 @@ let main_sub_arr_grp = function (opt_in) {
       data_in = null
     }
 
-    function setState10 (isOn, tel_IdOn) {
-      // console.log('__setStateS10')
-      let tagBck = 'subArr'
+    function set_state_10 (is_on, tel_Id_on) {
+      // console.log('__set_stateS10')
+      let tagBck = 'sub_arr'
       let tagG = tagBck + 'telG'
       let tagTel = tagG + 'ele'
-      // let tagState = 's10'
+      // let tag_state = 's10'
 
       let showByPercision = true
 
@@ -3419,20 +3415,20 @@ let main_sub_arr_grp = function (opt_in) {
       data_in.zen = [[], [], []]
       data_in.posDiff = [] // data_in.tabel = []; data_in.remove = [];
 
-      let hov = telData.telHover.subArr
+      let hov = tel_data.telHover.sub_arr
       if (is_def(hov)) {
-        if (is_def(telData.subArrIds[hov])) {
-          $.each(telData.subArrIds[hov].children, function (index, ele_now) {
+        if (is_def(tel_data.sub_arrIds[hov])) {
+          $.each(tel_data.sub_arrIds[hov].children, function (index, ele_now) {
             let tel_Id = ele_now.id
 
-            if (isOn && (tel_IdOn === '' || tel_IdOn === tel_Id)) {
-              let telD = com[tagTel][tel_Id].telD
-              let pntD = com[tagTel][tel_Id].pntD
-              let isHov = telData.telHover.id === tel_Id
-              // if(tel_Id=='M_10') console.log(telD,pntD)
+            if (is_on && (tel_Id_on === '' || tel_Id_on === tel_Id)) {
+              let tel_data_now = com[tagTel][tel_Id].tels
+              let pnts_now = com[tagTel][tel_Id].pnts
+              let isHov = tel_data.telHover.id === tel_Id
+              // if(tel_Id=='M_10') console.log(tel_data_now,pnts_now)
 
-              let posDiff0 = telD.pos[0] - pntD.pos[0]
-              let posDiff1 = telD.pos[1] - pntD.pos[1]
+              let posDiff0 = tel_data_now.pos[0] - pnts_now.pos[0]
+              let posDiff1 = tel_data_now.pos[1] - pnts_now.pos[1]
               let posDiff2 = Math.sqrt(
                 Math.pow(posDiff0, 2) + Math.pow(posDiff1, 2)
               )
@@ -3458,17 +3454,17 @@ let main_sub_arr_grp = function (opt_in) {
 
               let azm = {
                 id: tel_Id,
-                pos: telD.pos[0],
-                pnt: pntD.pos[0],
-                col: telD.col,
+                pos: tel_data_now.pos[0],
+                pnt: pnts_now.pos[0],
+                col: tel_data_now.col,
                 hasLbls: isHov,
                 hasCentLbl: isHov
               }
               let zen = {
                 id: tel_Id,
-                pos: telD.pos[1],
-                pnt: pntD.pos[1],
-                col: telD.col,
+                pos: tel_data_now.pos[1],
+                pnt: pnts_now.pos[1],
+                col: tel_data_now.col,
                 hasLbls: isHov,
                 hasCentLbl: isHov
               }
@@ -3495,7 +3491,7 @@ let main_sub_arr_grp = function (opt_in) {
                 data_in.posDiff.push({
                   id: tel_Id,
                   posDiff: posDiffV,
-                  col: telD.col,
+                  col: tel_data_now.col,
                   hasLbls: isHov,
                   hasCentLbl: isHov
                 })
@@ -3513,7 +3509,7 @@ let main_sub_arr_grp = function (opt_in) {
         let opt = {}
         opt.index = index
         opt.isArc = false
-        opt.tagState = 's10'
+        opt.tag_state = 's10'
         opt.tagType = '0'
         opt.scaleRad0 = 'scaleRad0' + index
         opt.scaleRad1 = 'scaleRad1' + index
@@ -3523,7 +3519,7 @@ let main_sub_arr_grp = function (opt_in) {
         opt.centLbl = 'centreLabel0'
         opt.data = data_in.azm[index]
 
-        if (isOn || (!isOn && index > 0)) addRing(opt)
+        if (is_on || (!is_on && index > 0)) addRing(opt)
       })
 
       // -------------------------------------------------------------------
@@ -3532,7 +3528,7 @@ let main_sub_arr_grp = function (opt_in) {
       $.each([0, 1, 2], function (index_, index) {
         let opt = {}
         opt.index = index
-        opt.tagState = 's10'
+        opt.tag_state = 's10'
         opt.tagType = '1'
         opt.scaleRad0 = (index === 0 ? 'scaleRad2' : 'scaleRad0') + index
         opt.scaleRad1 = 'scaleRad1' + index
@@ -3543,7 +3539,7 @@ let main_sub_arr_grp = function (opt_in) {
         // opt.onlyMove   = (index == 0)
         opt.data = data_in.zen[index]
 
-        if (isOn || (!isOn && index > 0)) {
+        if (is_on || (!is_on && index > 0)) {
           opt.isArc = index === 0
           addRing(opt)
         }
@@ -3555,7 +3551,7 @@ let main_sub_arr_grp = function (opt_in) {
       $.each([0, 1, 2], function (index_, index) {
         let opt = {}
         opt.index = index
-        opt.tagState = 's10'
+        opt.tag_state = 's10'
         opt.scaleRad1 = 'sclR3' + index
         opt.scaleStroke0 = 'scaleStroke0' + index
         opt.lblProps = 'lblProps'
@@ -3574,22 +3570,22 @@ let main_sub_arr_grp = function (opt_in) {
       // // -------------------------------------------------------------------
       // $.each(data_in.tabel, function(index_,data_now) {
       //   let tel_Id = data_now.id
-      //   let telD  = data_now.telD
-      //   let pntD  = data_now.pntD
+      //   let tel_data_now  = data_now.tels
+      //   let pnts_now  = data_now.pnts
 
-      //   let tblFont   = com[tagState][opt_in.tblFont];
-      //   let tablePos10 = { "x":(com[tagState].tablePos10.x+com.telXY[tel_Id].x), "y":(com[tagState].tablePos10.y+com.telXY[tel_Id].y),
-      //                     "w":com[tagState].tablePos10.w, "h":com[tagState].tablePos10.h }
+      //   let tblFont   = com[tag_state][opt_in.tblFont];
+      //   let tablePos10 = { "x":(com[tag_state].tablePos10.x+com.telXY[tel_Id].x), "y":(com[tag_state].tablePos10.y+com.telXY[tel_Id].y),
+      //                     "w":com[tag_state].tablePos10.w, "h":com[tag_state].tablePos10.h }
 
       //   // -------------------------------------------------------------------
       //   // add a table with the positions
       //   // -------------------------------------------------------------------
-      //   let deg_dms_pos0 = deg_dms(telD.pos[0]), deg_dms_pos1 = deg_dms(telD.pos[1]),
-      //       deg_dms_pnt0 = deg_dms(pntD.pos[0]), deg_dms_pnt1 = deg_dms(pntD.pos[1])
+      //   let deg_dms_pos0 = deg_dms(tel_data_now.pos[0]), deg_dms_pos1 = deg_dms(tel_data_now.pos[1]),
+      //       deg_dms_pnt0 = deg_dms(pnts_now.pos[0]), deg_dms_pnt1 = deg_dms(pnts_now.pos[1])
 
       //   let tblCol  = ['',symbols.phi+unit_deg,symbols.phi+unit_arcmin,symbols.phi+unit_arcsec,symbols.delta+unit_deg,symbols.delta+unit_arcmin,symbols.delta+unit_arcsec]
 
-      //   let tel_deg_dms = deg_dms(telD.pos[0]), pnt_deg_dms = deg_dms(pntD.pos[0]);
+      //   let tel_deg_dms = deg_dms(tel_data_now.pos[0]), pnt_deg_dms = deg_dms(pnts_now.pos[0]);
 
       //   let rowTitle = [ "pos","pnt",symbols.Delta ]
 
@@ -3597,23 +3593,23 @@ let main_sub_arr_grp = function (opt_in) {
       //                        symbols.space+symbols.delta+unit_deg , symbols.space+symbols.delta+unit_arcmin , symbols.space+symbols.delta+unit_arcsec ]
 
       //   let tblData = []
-      //   tblData.push({ 0:rowTitle[0], 1:telD.pos[0], 2:deg_dms_pos0[1], 3:deg_dms_pos0[2],
-      //                                 4:telD.pos[1], 5:deg_dms_pos1[1], 6:deg_dms_pos1[2]  })
+      //   tblData.push({ 0:rowTitle[0], 1:tel_data_now.pos[0], 2:deg_dms_pos0[1], 3:deg_dms_pos0[2],
+      //                                 4:tel_data_now.pos[1], 5:deg_dms_pos1[1], 6:deg_dms_pos1[2]  })
 
-      //   tblData.push({ 0:rowTitle[1], 1:pntD.pos[0], 2:deg_dms_pnt0[1], 3:deg_dms_pnt0[2],
-      //                                 4:pntD.pos[1], 5:deg_dms_pnt1[1], 6:deg_dms_pnt1[2]  })
+      //   tblData.push({ 0:rowTitle[1], 1:pnts_now.pos[0], 2:deg_dms_pnt0[1], 3:deg_dms_pnt0[2],
+      //                                 4:pnts_now.pos[1], 5:deg_dms_pnt1[1], 6:deg_dms_pnt1[2]  })
 
-      //   tblData.push({ 0:rowTitle[2], 1:pntD.pos[0]-telD.pos[0], 2:(deg_dms_pnt0[1]-deg_dms_pos0[1]), 3:(deg_dms_pnt0[2]-deg_dms_pos0[2]),
-      //                                 4:pntD.pos[1]-telD.pos[1], 5:(deg_dms_pnt1[1]-deg_dms_pos1[1]), 6:(deg_dms_pnt1[2]-deg_dms_pos1[2])  })
+      //   tblData.push({ 0:rowTitle[2], 1:pnts_now.pos[0]-tel_data_now.pos[0], 2:(deg_dms_pnt0[1]-deg_dms_pos0[1]), 3:(deg_dms_pnt0[2]-deg_dms_pos0[2]),
+      //                                 4:pnts_now.pos[1]-tel_data_now.pos[1], 5:(deg_dms_pnt1[1]-deg_dms_pos1[1]), 6:(deg_dms_pnt1[2]-deg_dms_pos1[2])  })
 
-      //   let tblColProps = { 0:{"title":"",          "type":"s", "width":1,  "format":null,            "fontSize":tblFont, "anch":"right","fontWgt":"bold"  } ,
-      //                       1:{"title":colTitle[1], "type":"d", "width":1.4,"format":d3.format(".3f"),"fontSize":tblFont, "anch":"left", "fontWgt":"normal"} ,
-      //                       2:{"title":colTitle[2], "type":"i", "width":1,  "format":d3.format("d"),  "fontSize":tblFont, "anch":"left", "fontWgt":"normal"} ,
-      //                       3:{"title":colTitle[3], "type":"i", "width":1,  "format":d3.format("d"),  "fontSize":tblFont, "anch":"left", "fontWgt":"normal"} ,
-      //                       4:{"title":colTitle[4], "type":"d", "width":1.4,"format":d3.format(".3f"),"fontSize":tblFont, "anch":"left", "fontWgt":"normal"} ,
-      //                       5:{"title":colTitle[5], "type":"i", "width":1,  "format":d3.format("d"),  "fontSize":tblFont, "anch":"left", "fontWgt":"normal"} ,
-      //                       6:{"title":colTitle[6], "type":"i", "width":1,  "format":d3.format("d"),  "fontSize":tblFont, "anch":"left", "fontWgt":"normal"} ,
-      //                       "-":{"title":"",        "type":"i", "width":0.4,"format":d3.format("d"),  "fontSize":tblFont, "anch":"left", "fontWgt":"normal"}
+      //   let tblColProps = { 0:{"title":"",          "type":"s", "width":1,  "format":null,            "font_size":tblFont, "anch":"right","fontWgt":"bold"  } ,
+      //                       1:{"title":colTitle[1], "type":"d", "width":1.4,"format":d3.format(".3f"),"font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
+      //                       2:{"title":colTitle[2], "type":"i", "width":1,  "format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
+      //                       3:{"title":colTitle[3], "type":"i", "width":1,  "format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
+      //                       4:{"title":colTitle[4], "type":"d", "width":1.4,"format":d3.format(".3f"),"font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
+      //                       5:{"title":colTitle[5], "type":"i", "width":1,  "format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
+      //                       6:{"title":colTitle[6], "type":"i", "width":1,  "format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
+      //                       "-":{"title":"",        "type":"i", "width":0.4,"format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"}
       //                     }
 
       //   let optTbl         = {};
@@ -3649,23 +3645,23 @@ let main_sub_arr_grp = function (opt_in) {
     // -------------------------------------------------------------------
     function addStretchBand (opt_in) {
       let index = opt_in.index
-      let tagState = opt_in.tagState
-      let tagBck = 'subArr'
+      let tag_state = opt_in.tag_state
+      let tagBck = 'sub_arr'
       let tagG = tagBck + 'telG'
       let tagTel = tagG + 'ele'
       let tag_now = tagTel + index + 'band'
       let data = opt_in.data
       let addMainLbl = false
 
-      let scaleRad1 = com[tagState][opt_in.scaleRad1]
-      // let scaleStroke0 = com[tagState][opt_in.scaleStroke0]
-      let lbl = com[tagState][opt_in.lblProps]
-      let wh = com[tagState][opt_in.wh]
+      let scaleRad1 = com[tag_state][opt_in.scaleRad1]
+      // let scaleStroke0 = com[tag_state][opt_in.scaleStroke0]
+      let lbl = com[tag_state][opt_in.lblProps]
+      let wh = com[tag_state][opt_in.wh]
 
       function xy (tagIn, tel_Id) {
         return [
-          com.telXY[tel_Id].x + com[tagState][opt_in[tagIn]][0],
-          com.telXY[tel_Id].y + com[tagState][opt_in[tagIn]][1]
+          com.telXY[tel_Id].x + com[tag_state][opt_in[tagIn]][0],
+          com.telXY[tel_Id].y + com[tag_state][opt_in[tagIn]][1]
         ]
       }
       function center (tel_Id) {
@@ -3800,7 +3796,7 @@ let main_sub_arr_grp = function (opt_in) {
           )
         })
         .merge(lbl0)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('transform', function (d) {
           d.hasMoved =
@@ -3837,7 +3833,7 @@ let main_sub_arr_grp = function (opt_in) {
       lbl0
         .exit()
         .attr('class', tag_now + 'lbl0' + 'exit')
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -3878,7 +3874,7 @@ let main_sub_arr_grp = function (opt_in) {
             )
           })
           .merge(lbl1)
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .style('font-size', function (d) {
             return lbl.size * (index === 2 ? 2 : 1.5) + 'px'
@@ -3888,7 +3884,7 @@ let main_sub_arr_grp = function (opt_in) {
         lbl1
           .exit()
           .attr('class', tag_now + 'lbl1' + 'exit')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .style('opacity', 0)
           .remove()
@@ -4011,22 +4007,22 @@ let main_sub_arr_grp = function (opt_in) {
 
       let index = opt_in.index
       let isArc = opt_in.isArc
-      let tagState = opt_in.tagState
-      let tagBck = 'subArr'
+      let tag_state = opt_in.tag_state
+      let tagBck = 'sub_arr'
       let tagG = tagBck + 'telG'
       let tagTel = tagG + 'ele'
       let tag_now = tagTel + index + (isArc ? 'arc' : 'ring') + opt_in.tagType
       let data = opt_in.data
 
-      let scaleRad0 = com[tagState][opt_in.scaleRad0]
-      let scaleRad1 = com[tagState][opt_in.scaleRad1]
-      let scaleStroke0 = com[tagState][opt_in.scaleStroke0]
-      let lbl = com[tagState][opt_in.lblProps]
+      let scaleRad0 = com[tag_state][opt_in.scaleRad0]
+      let scaleRad1 = com[tag_state][opt_in.scaleRad1]
+      let scaleStroke0 = com[tag_state][opt_in.scaleStroke0]
+      let lbl = com[tag_state][opt_in.lblProps]
 
       function xy (tagIn, tel_Id) {
         return [
-          com.telXY[tel_Id].x + com[tagState][opt_in[tagIn]][0],
-          com.telXY[tel_Id].y + com[tagState][opt_in[tagIn]][1]
+          com.telXY[tel_Id].x + com[tag_state][opt_in[tagIn]][0],
+          com.telXY[tel_Id].y + com[tag_state][opt_in[tagIn]][1]
         ]
       }
       function center (tel_Id) {
@@ -4365,7 +4361,7 @@ let main_sub_arr_grp = function (opt_in) {
           )
         })
         .merge(lbl0)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('font-size', lbl.size + 'px')
         .attr('transform', function (d, i) {
@@ -4390,7 +4386,7 @@ let main_sub_arr_grp = function (opt_in) {
       lbl0
         .exit()
         .attr('class', tag_now + 'lbl0' + 'exit')
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -4427,7 +4423,7 @@ let main_sub_arr_grp = function (opt_in) {
           )
         })
         .merge(lbl1)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('transform', function (d) {
           return (
@@ -4446,7 +4442,7 @@ let main_sub_arr_grp = function (opt_in) {
       lbl1
         .exit()
         .attr('class', tag_now + 'lbl1' + 'exit')
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -4507,7 +4503,7 @@ let main_sub_arr_grp = function (opt_in) {
     function hex00 () {
       let tag_now = 'hex'
       let strk = 0.5
-      let scale = getScale()
+      let scale = get_scale()
 
       let opac = '0.10'
       if (scale <= com.z['0.2']) opac = '0.25'
@@ -4521,12 +4517,12 @@ let main_sub_arr_grp = function (opt_in) {
         com.svgHex = {}
         com.svgHex.hex = d3
           .hexbin()
-          .size([lenD.w[1], lenD.h[1]])
+          .size([svg_dims.w[1], svg_dims.h[1]])
           .radius(hex_r)
         com.svgHex.g = com.zoom_callable.append('g')
 
-        let xy = com.svgHex.hex([[lenD.w[1] / 2, -lenD.h[1] / 2]])
-        let trans = [lenD.w[1] / 2 - xy[0].x, lenD.h[1] / 2 + xy[0].y]
+        let xy = com.svgHex.hex([[svg_dims.w[1] / 2, -svg_dims.h[1] / 2]])
+        let trans = [svg_dims.w[1] / 2 - xy[0].x, svg_dims.h[1] / 2 + xy[0].y]
 
         com.svgHex.trans = function (xyIn) {
           let xyOut = com.svgHex.hex([xyIn])
@@ -4549,7 +4545,7 @@ let main_sub_arr_grp = function (opt_in) {
       } else {
         com.svgHex.g
           .selectAll('path.' + tag_now)
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .attr('opacity', opac)
       }
@@ -4559,6 +4555,6 @@ let main_sub_arr_grp = function (opt_in) {
   // -------------------------------------------------------------------
   //
   // -------------------------------------------------------------------
-  let svgSubArr = new SvgSubArr()
-  let svgSkyPos = new SvgSkyPos()
+  let svg_sub_arr = new Svg_sub_arr()
+  let svg_sky_pos = new Svg_sky_pos()
 }

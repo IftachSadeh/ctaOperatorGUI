@@ -1139,8 +1139,8 @@ window.BlockQueue = function (opt_in) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    let wMin = min_max_obj({ minMax: 'min', data: blocks, func: 'w' })
-    let hMin = min_max_obj({ minMax: 'min', data: blocks, func: 'h' })
+    let wMin = min_max_obj({ min_max: 'min', data: blocks, func: 'w' })
+    let hMin = min_max_obj({ min_max: 'min', data: blocks, func: 'h' })
     if (!is_def(hMin) || !is_def(wMin)) return []
 
     let margX = wMin * 0.2
@@ -1167,7 +1167,7 @@ window.BlockQueue = function (opt_in) {
       // let o0 = data_now0.o
 
       let telV = [].concat(data_now0.data.tel_ids)
-      let minMax = { minX: x0, minY: y0, maxX: x0 + w0, maxY: y0 + h0 }
+      let min_max = { min_x: x0, min_y: y0, maxX: x0 + w0, maxY: y0 + h0 }
 
       let ovelaps = [{ index: index0, data: data_now0 }]
 
@@ -1193,16 +1193,16 @@ window.BlockQueue = function (opt_in) {
           let o01 = Math.max(data_now0.o, data_now1.o)
 
           let hasOverlap =
-            x1 < minMax.maxX - o01 &&
-            x1 + w1 > minMax.minX + o01 &&
-            y1 < minMax.maxY &&
-            y1 + h1 > minMax.minY
-          // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
+            x1 < min_max.maxX - o01 &&
+            x1 + w1 > min_max.min_x + o01 &&
+            y1 < min_max.maxY &&
+            y1 + h1 > min_max.min_y
+          // if(x1 > min_max.maxX-o1 && x1 < min_max.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
 
           // XXXXXXXXXXXXXXXXXX
           // let hasOverlap = (
-          //   (x1 < minMax.maxX+margX/2) && (x1+w1 > minMax.minX) &&
-          //   (y1 < minMax.maxY)         && (y1+h1 > minMax.minY)
+          //   (x1 < min_max.maxX+margX/2) && (x1+w1 > min_max.min_x) &&
+          //   (y1 < min_max.maxY)         && (y1+h1 > min_max.min_y)
           // );
           // XXXXXXXXXXXXXXXXXX
 
@@ -1213,11 +1213,11 @@ window.BlockQueue = function (opt_in) {
             }
             telV = telV.concat(data_now1.data.tel_ids)
 
-            minMax = {
-              minX: Math.min(minMax.minX, x1),
-              minY: Math.min(minMax.minY, y1),
-              maxX: Math.max(minMax.maxX, x1 + w1),
-              maxY: Math.max(minMax.maxY, y1 + h1)
+            min_max = {
+              min_x: Math.min(min_max.min_x, x1),
+              min_y: Math.min(min_max.min_y, y1),
+              maxX: Math.max(min_max.maxX, x1 + w1),
+              maxY: Math.max(min_max.maxY, y1 + h1)
             }
 
             ovelaps.push({ index: index1, data: data_now1 })
@@ -1357,7 +1357,7 @@ window.BlockQueue = function (opt_in) {
           .attr('width', x2 - x)
           .attr('height', com.blocks.run.box.h * 0.12)
           .attr('fill', com.background.child.runOverflow.fill)
-          .attr('fill-opacity', com.background.child.runOverflow.fillOpacity)
+          .attr('fill-opacity', com.background.child.runOverflow.fill_opacity)
       } else if (tot > box.h) {
         let coef = box.h / tot
         $.each(group, function (index, data_now) {
@@ -1387,7 +1387,7 @@ window.BlockQueue = function (opt_in) {
       b.stroke = cols.stroke
       b.strokeWidth = 0.5
       b.fill = cols.background
-      b.fillOpacity = com.style.blockOpac({ d: b })
+      b.fill_opacity = com.style.blockOpac({ d: b })
       b.strokeOpacity = com.style.blockOpac({ d: b })
       b.strokeDasharray = []
 
@@ -1588,7 +1588,7 @@ window.BlockQueue = function (opt_in) {
           return d.fill
         })
         .style('fill-opacity', function (d, i) {
-          return d.fillOpacity
+          return d.fill_opacity
         })
         .attr('stroke-width', function (d, i) {
           return d.strokeWidth
@@ -1684,7 +1684,7 @@ window.BlockQueue = function (opt_in) {
         })
         .style('font-weight', 'normal')
         .style('opacity', function (d, i) {
-          return d.fillOpacity
+          return d.fill_opacity
         })
         .style('fill', function (d) {
           return d.text
@@ -1709,7 +1709,7 @@ window.BlockQueue = function (opt_in) {
       d3
         .select(this)
         .select('rect.back')
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('stroke', function (d, i) {
           return d.stroke
@@ -1718,7 +1718,7 @@ window.BlockQueue = function (opt_in) {
           return d.fill
         })
         .style('fill-opacity', function (d, i) {
-          return d.fillOpacity
+          return d.fill_opacity
         })
         .attr('x', function (d, i) {
           return timescale(d.data.startTime)
@@ -1783,13 +1783,13 @@ window.BlockQueue = function (opt_in) {
         .attr('dy', function (d) {
           return d.size / 3 + 'px'
         })
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('stroke-opacity', function (d, i) {
-          return d.fillOpacity
+          return d.fill_opacity
         })
         .style('fill-opacity', function (d, i) {
-          return d.fillOpacity
+          return d.fill_opacity
         })
         .attr('x', function (d, i) {
           return timescale(d.data.startTime + d.data.duration * 0.5)
@@ -1800,7 +1800,7 @@ window.BlockQueue = function (opt_in) {
     })
     rect
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()
@@ -1817,7 +1817,7 @@ window.BlockQueue = function (opt_in) {
 
     // text
     //   .exit()
-    //   .transition('inOut')
+    //   .transition('in_out')
     //   .duration(times.anim_arc)
     //   .style('opacity', 0)
     //   .remove()
@@ -1862,7 +1862,7 @@ window.BlockQueue = function (opt_in) {
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
         .merge(rectNow)
-        .transition('inOut')
+        .transition('in_out')
         .duration(50)
         .attr('x', function (d, i) {
           if (d > com.axis.scale.domain()[1]) { return com.axis.scale(com.axis.scale.domain()[1]) } else if (d < com.axis.scale.domain()[0]) { return com.axis.scale(com.axis.scale.domain()[0]) }
@@ -1924,7 +1924,7 @@ window.BlockQueue = function (opt_in) {
       .style('pointer-events', 'none')
       .attr('vector-effect', 'non-scaling-stroke')
       .merge(rectNow)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('x', function (d, i) {
         return d.x
@@ -1936,7 +1936,7 @@ window.BlockQueue = function (opt_in) {
     // .attr("height", function(d,i) { return d.h; })
 
     // rectNow.exit()
-    //   .transition("inOut").duration(times.anim_arc/2)
+    //   .transition("in_out").duration(times.anim_arc/2)
     //   .attr("width", 0)
     //   .style("opacity", 0)
     //   .remove()

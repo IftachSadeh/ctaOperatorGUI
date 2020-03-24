@@ -50,20 +50,20 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 10
   let w0 = 12
-  let divKey = 'main'
+  let div_key = 'main'
 
   opt_in.widget_func = { sock_func: sock_sched_blocks, main_func: main_sched_blocks }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: true,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   sock.add_to_table(opt_in)
@@ -99,7 +99,7 @@ function main_sched_blocks (opt_in) {
 
   let svg = {}
   let box = {}
-  let lenD = {}
+  let svg_dims = {}
 
   let event_queue_serverPast = null
   let event_queue_serverFutur = null
@@ -127,7 +127,7 @@ function main_sched_blocks (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  locker.add('inInit')
+  locker.add('in_init')
   console.log(' -- FIXME -- use tel_info.get_ids and tel_info.tel_id_to_types as in arr_zoomer.js .... -- see optional filter option in the python file -- self.SockManager.InstData.get_inst_ids(inst_types=[....])')
 
   // function loop
@@ -163,7 +163,7 @@ function main_sched_blocks (opt_in) {
     if (type === 'syncObFocus') {
       if (prev_sync[type] !== data_in.data.obs_block_id) {
         prev_sync[type] = data_in.data.obs_block_id
-        svgMain.blockFocus({ id: data_in.data.obs_block_id })
+        svg_main.block_focus({ id: data_in.data.obs_block_id })
       }
     }
   }
@@ -232,16 +232,16 @@ function main_sched_blocks (opt_in) {
   // -------------------------------------------------------------------
   function init_data (data_in) {
     function initSvg () {
-      lenD.w = {}
-      lenD.h = {}
-      lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
+      svg_dims.w = {}
+      svg_dims.h = {}
+      svg_dims.w[0] = 1000
+      svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
       svg.svg = d3
         .select(svg_div)
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
@@ -264,8 +264,8 @@ function main_sched_blocks (opt_in) {
       svg.back.append('rect')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', lenD.w[0] * 1)
-        .attr('height', lenD.h[0] * 0.03)
+        .attr('width', svg_dims.w[0] * 1)
+        .attr('height', svg_dims.h[0] * 0.03)
         .attr('fill', color_theme.darker.stroke) // color_theme.dark.background)
         .attr('stroke', 'none')
         .attr('rx', 0)
@@ -275,26 +275,26 @@ function main_sched_blocks (opt_in) {
         .style('font-weight', 'bold')
         .style('font-size', '20px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.25) + ',' + (lenD.h[0] * 0.02) + ')')
+        .attr('transform', 'translate(' + (svg_dims.w[0] * 0.25) + ',' + (svg_dims.h[0] * 0.02) + ')')
       svg.back.append('text')
         .text('Running')
         .style('fill', color_theme.bright.background)
         .style('font-weight', 'bold')
         .style('font-size', '20px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.5) + ',' + (lenD.h[0] * 0.02) + ')')
+        .attr('transform', 'translate(' + (svg_dims.w[0] * 0.5) + ',' + (svg_dims.h[0] * 0.02) + ')')
       svg.back.append('text')
         .text('Waiting')
         .style('fill', color_theme.bright.background)
         .style('font-weight', 'bold')
         .style('font-size', '20px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.75) + ',' + (lenD.h[0] * 0.02) + ')')
+        .attr('transform', 'translate(' + (svg_dims.w[0] * 0.75) + ',' + (svg_dims.h[0] * 0.02) + ')')
       // svg.back.append('rect')
       //   .attr('x', 0)
-      //   .attr('y', lenD.h[0] * 0.495)
-      //   .attr('width', lenD.w[0] * 1)
-      //   .attr('height', lenD.h[0] * 0.01)
+      //   .attr('y', svg_dims.h[0] * 0.495)
+      //   .attr('width', svg_dims.w[0] * 1)
+      //   .attr('height', svg_dims.h[0] * 0.01)
       //   .attr('fill', color_theme.darker.stroke) // color_theme.dark.background)
       //   .attr('stroke', 'none')
     }
@@ -322,74 +322,74 @@ function main_sched_blocks (opt_in) {
     }
     function initBox () {
       box.event_queue_serverPast = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.03,
-        w: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
-        h: lenD.h[0] * 0.12,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.0,
+        y: svg_dims.h[0] * 0.03,
+        w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
+        h: svg_dims.h[0] * 0.12,
+        marg: svg_dims.w[0] * 0.01
       }
       box.event_queue_serverFutur = {
-        x: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.6),
-        y: lenD.h[0] * 0.03,
-        w: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
-        h: lenD.h[0] * 0.12,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.6),
+        y: svg_dims.h[0] * 0.03,
+        w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
+        h: svg_dims.h[0] * 0.12,
+        marg: svg_dims.w[0] * 0.01
       }
       box.brushPast = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.14,
-        w: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
-        h: lenD.h[0] * 0.05,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.0,
+        y: svg_dims.h[0] * 0.14,
+        w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
+        h: svg_dims.h[0] * 0.05,
+        marg: svg_dims.w[0] * 0.01
       }
       box.brushFutur = {
-        x: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.6),
-        y: lenD.h[0] * 0.14,
-        w: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
-        h: lenD.h[0] * 0.05,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.6),
+        y: svg_dims.h[0] * 0.14,
+        w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
+        h: svg_dims.h[0] * 0.05,
+        marg: svg_dims.w[0] * 0.01
       }
       box.block_queue_serverPast = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.18,
-        w: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
-        h: lenD.h[0] * 0.405,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.0,
+        y: svg_dims.h[0] * 0.18,
+        w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
+        h: svg_dims.h[0] * 0.405,
+        marg: svg_dims.w[0] * 0.01
       }
       box.block_queue_server_futur = {
-        x: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.6),
-        y: lenD.h[0] * 0.18,
-        w: lenD.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
-        h: lenD.h[0] * 0.405,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.6),
+        y: svg_dims.h[0] * 0.18,
+        w: svg_dims.w[0] * (displayMode === 'refine' ? 0.5 : 0.4),
+        h: svg_dims.h[0] * 0.405,
+        marg: svg_dims.w[0] * 0.01
       }
       box.freeTels = {
-        x: lenD.w[0] * 0.002,
-        y: lenD.h[0] * 0.5875,
-        w: lenD.w[0] * 0.996,
-        h: lenD.h[0] * 0.41,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.002,
+        y: svg_dims.h[0] * 0.5875,
+        w: svg_dims.w[0] * 0.996,
+        h: svg_dims.h[0] * 0.41,
+        marg: svg_dims.w[0] * 0.01
       }
       box.current_blocks = {
-        x: lenD.w[0] * 0.405,
-        y: lenD.h[0] * 0.18,
-        w: lenD.w[0] * 0.18,
-        h: lenD.h[0] * 0.405,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.405,
+        y: svg_dims.h[0] * 0.18,
+        w: svg_dims.w[0] * 0.18,
+        h: svg_dims.h[0] * 0.405,
+        marg: svg_dims.w[0] * 0.01
       }
 
       // box.execution = {
-      //   x: lenD.w[0] * 0.65,
-      //   y: lenD.h[0] * 0.15,
-      //   w: lenD.w[0] * 0.35,
-      //   h: lenD.h[0] * 0.85,
-      //   marg: lenD.w[0] * 0.01
+      //   x: svg_dims.w[0] * 0.65,
+      //   y: svg_dims.h[0] * 0.15,
+      //   w: svg_dims.w[0] * 0.35,
+      //   h: svg_dims.h[0] * 0.85,
+      //   marg: svg_dims.w[0] * 0.01
       // }
       // box.details = {
-      //   x: lenD.w[0] * 0,
-      //   y: lenD.h[0] * 0.01,
-      //   w: lenD.w[0] * 0,
-      //   h: lenD.h[0] * 0.05
+      //   x: svg_dims.w[0] * 0,
+      //   y: svg_dims.h[0] * 0.01,
+      //   w: svg_dims.w[0] * 0,
+      //   h: svg_dims.h[0] * 0.05
       // }
     }
     function initDefaultStyle () {
@@ -473,17 +473,17 @@ function main_sched_blocks (opt_in) {
 
     // svg.g.append('rect')
     //   .attr('x', 0)
-    //   .attr('y', lenD.h[0] * 0.03)
-    //   .attr('width', lenD.w[0] * 1)
-    //   .attr('height', lenD.h[0] * 0.026)
+    //   .attr('y', svg_dims.h[0] * 0.03)
+    //   .attr('width', svg_dims.w[0] * 1)
+    //   .attr('height', svg_dims.h[0] * 0.026)
     //   .attr('fill', color_theme.medium.background) // color_theme.dark.background)
     //   .attr('stroke', 'none')
     //   .attr('rx', 0)
     // svg.g.append('rect')
     //   .attr('x', 0)
-    //   .attr('y', lenD.h[0] * 0.584)
-    //   .attr('width', lenD.w[0] * 1)
-    //   .attr('height', lenD.h[0] * 0.026)
+    //   .attr('y', svg_dims.h[0] * 0.584)
+    //   .attr('width', svg_dims.w[0] * 1)
+    //   .attr('height', svg_dims.h[0] * 0.026)
     //   .attr('fill', color_theme.medium.background) // color_theme.dark.background)
     //   .attr('stroke', 'none')
     //   .attr('rx', 0)
@@ -498,7 +498,7 @@ function main_sched_blocks (opt_in) {
     // svgFailQueue.init_data()
     // svgCancelQueue.init_data()
     update()
-    // svgMain.init_data(data_in.data)
+    // svg_main.init_data(data_in.data)
   }
   this.init_data = init_data
 
@@ -538,7 +538,7 @@ function main_sched_blocks (opt_in) {
     // svgSuccessQueue.update_data()
     // svgFailQueue.update_data()
 
-    // svgMain.update_data(data_in.data)
+    // svg_main.update_data(data_in.data)
   }
   this.update_data = update_data
 
@@ -550,7 +550,7 @@ function main_sched_blocks (opt_in) {
         y: box.event_queue_serverPast.y,
         w: box.event_queue_serverPast.w,
         h: box.event_queue_serverPast.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       reserved.g = svg.g.append('g')
@@ -719,7 +719,7 @@ function main_sched_blocks (opt_in) {
         y: box.event_queue_serverFutur.y,
         w: box.event_queue_serverFutur.w,
         h: box.event_queue_serverFutur.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       reserved.g = svg.g.append('g')
@@ -893,7 +893,7 @@ function main_sched_blocks (opt_in) {
         y: box.brushPast.y,
         w: box.brushPast.w,
         h: box.brushPast.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       reserved.g = svg.g.append('g')
@@ -1071,7 +1071,7 @@ function main_sched_blocks (opt_in) {
         y: box.brushFutur.y,
         w: box.brushFutur.w,
         h: box.brushFutur.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       reserved.g = svg.g.append('g')
@@ -1248,7 +1248,7 @@ function main_sched_blocks (opt_in) {
         y: box.block_queue_serverPast.y,
         w: box.block_queue_serverPast.w,
         h: box.block_queue_serverPast.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       reserved.g = svg.g.append('g')
@@ -1540,7 +1540,7 @@ function main_sched_blocks (opt_in) {
         y: box.block_queue_server_futur.y,
         w: box.block_queue_server_futur.w,
         h: box.block_queue_server_futur.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       reserved.g = svg.g.append('g')
@@ -2235,7 +2235,7 @@ function main_sched_blocks (opt_in) {
       })
       current_blocks
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()

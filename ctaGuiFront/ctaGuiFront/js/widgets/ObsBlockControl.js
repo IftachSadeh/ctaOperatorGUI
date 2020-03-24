@@ -52,7 +52,7 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 12
   let w0 = 12
-  let divKey = 'main'
+  let div_key = 'main'
 
   opt_in.widget_func = {
     sock_func: sock_obs_block_control,
@@ -60,15 +60,15 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: true,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   sock.add_to_table(opt_in)
@@ -105,7 +105,7 @@ let main_obs_block_control = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  locker.add('inInit')
+  locker.add('in_init')
 
   // function loop
   let run_loop = new RunLoop({ tag: widget_id })
@@ -118,7 +118,7 @@ let main_obs_block_control = function (opt_in) {
 
     sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
 
-    svgMain.init_data(data_in.data)
+    svg_main.init_data(data_in.data)
   }
   this.init_data = init_data
 
@@ -126,7 +126,7 @@ let main_obs_block_control = function (opt_in) {
   //
   // -------------------------------------------------------------------
   function update_data (data_in) {
-    svgMain.update_data(data_in.data)
+    svg_main.update_data(data_in.data)
   }
   this.update_data = update_data
 
@@ -160,7 +160,7 @@ let main_obs_block_control = function (opt_in) {
     if (type === 'syncObFocus') {
       if (prev_sync[type] !== data_in.data.obs_block_id) {
         prev_sync[type] = data_in.data.obs_block_id
-        svgMain.blockFocus({ id: data_in.data.obs_block_id })
+        svg_main.block_focus({ id: data_in.data.obs_block_id })
       }
     }
   }
@@ -176,11 +176,11 @@ let main_obs_block_control = function (opt_in) {
 
     com.focus = {}
 
-    let lenD = {}
-    lenD.w = {}
-    lenD.h = {}
-    lenD.w[0] = 1000
-    lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
+    let svg_dims = {}
+    svg_dims.w = {}
+    svg_dims.h = {}
+    svg_dims.w[0] = 1000
+    svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
     let tagObsBlkCnt = widget_type
     let tagBlockQueueOld = tagObsBlkCnt + 'blockQueueOld'
@@ -236,16 +236,16 @@ let main_obs_block_control = function (opt_in) {
         .style('background', '#383B42')
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
         .style('top', '0px')
         .style('left', '0px')
-        // .attr("viewBox", "0 0 "+lenD.w[0]+" "+lenD.h[0] * whRatio)
+        // .attr("viewBox", "0 0 "+svg_dims.w[0]+" "+svg_dims.h[0] * whRatio)
         // .classed("svgInGridStack_inner", true)
         .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
-        // .call(com.svgZoom)
+        // .call(com.svg_zoom)
         .on('dblclick.zoom', null)
 
       if (disable_scroll_svg) {
@@ -268,14 +268,14 @@ let main_obs_block_control = function (opt_in) {
         .append('rect')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', lenD.w[0])
-        .attr('height', lenD.h[0])
+        .attr('width', svg_dims.w[0])
+        .attr('height', svg_dims.h[0])
         .attr('fill', '#F2F2F2')
 
-      com.getScaleWH = function () {
+      com.get_scaleWH = function () {
         return {
-          w: lenD.w[0] / +svg.svg.node().getBoundingClientRect().width,
-          h: lenD.h[0] / +svg.svg.node().getBoundingClientRect().height
+          w: svg_dims.w[0] / +svg.svg.node().getBoundingClientRect().width,
+          h: svg_dims.h[0] / +svg.svg.node().getBoundingClientRect().height
         }
       }
 
@@ -284,7 +284,7 @@ let main_obs_block_control = function (opt_in) {
         com: com,
         g_now: svg.g,
         g_tag: 'hex',
-        len_wh: [lenD.w[0], lenD.h[0]],
+        len_wh: [svg_dims.w[0], svg_dims.h[0]],
         opac: 0.1,
         hex_r: 15
       })
@@ -295,9 +295,9 @@ let main_obs_block_control = function (opt_in) {
       let x0, y0, w0, h0, marg
       let gBlockTitle = svg.g.append('g')
 
-      w0 = lenD.w[0] * 0.95
-      h0 = lenD.w[0] * 0.025
-      x0 = (lenD.w[0] - w0) / 2
+      w0 = svg_dims.w[0] * 0.95
+      h0 = svg_dims.w[0] * 0.025
+      x0 = (svg_dims.w[0] - w0) / 2
       y0 = x0
       marg = w0 * 0.01
 
@@ -334,7 +334,7 @@ let main_obs_block_control = function (opt_in) {
 
       blockQueueOld.init({
         tag: tagBlockQueueOld,
-        gBox: gBlockBox,
+        g_box: gBlockBox,
         doPhase: false,
         doText: true,
         style: {
@@ -351,16 +351,16 @@ let main_obs_block_control = function (opt_in) {
             return d.id === blockQueueOld.get('focus_id') ? 1 : 0
           }
         },
-        futureCanceled: { hide: false, shiftY: false },
+        futureCanceled: { hide: false, shift_y: false },
         click: function (d) {
-          blockFocus({ id: d.id })
+          block_focus({ id: d.id })
         },
         boxData: blockBoxData,
         locker: locker,
         lockerV: [tagObsBlkCnt + 'update_data'],
         lockerZoom: {
           all: tagBlockQueueOld + 'zoom',
-          during: tagBlockQueueOld + 'zoomDuring',
+          during: tagBlockQueueOld + 'zoomsuring',
           end: tagBlockQueueOld + 'zoomEnd'
         },
         run_loop: run_loop
@@ -389,11 +389,11 @@ let main_obs_block_control = function (opt_in) {
 
       obScroll.init({
         tag: tagObScroll,
-        gBox: gObBox,
+        g_box: gObBox,
         boxData: obScrolBoxData,
         showCounts: true,
         vorClick: function (d) {
-          blockFocus({ id: d.data.id })
+          block_focus({ id: d.data.id })
         },
         lockerV: [tagObsBlkCnt + 'update_data'],
         utils: utils,
@@ -422,12 +422,12 @@ let main_obs_block_control = function (opt_in) {
 
       telScroll.init({
         tag: tagTelScroll,
-        gBox: gTelBox,
+        g_box: gTelBox,
         boxData: telScrolBoxData,
         vorClick: function (opt_in) {
           sync_state_send({
-            type: 'syncTelFocus',
-            syncTime: Date.now(),
+            type: 'sync_tel_focus',
+            sync_time: Date.now(),
             zoom_state: 1,
             target: opt_in.data.id
           })
@@ -465,7 +465,7 @@ let main_obs_block_control = function (opt_in) {
 
       telSummary.init({
         tag: tagTtelSummary,
-        gBox: gTelSummary,
+        g_box: gTelSummary,
         utils: utils,
         boxData: telSummaryData
       })
@@ -494,7 +494,7 @@ let main_obs_block_control = function (opt_in) {
 
         scrollTable.init({
           tag: tagScrollTable,
-          gBox: gScrollTable,
+          g_box: gScrollTable,
           canScroll: true,
           useRelativeCoords: true,
           title: { text: 'title...' },
@@ -503,7 +503,7 @@ let main_obs_block_control = function (opt_in) {
           lockerV: [tagObsBlkCnt + 'update_data'],
           lockerZoom: {
             all: tagBlockQueueOld + 'zoom',
-            during: tagBlockQueueOld + 'zoomDuring',
+            during: tagBlockQueueOld + 'zoomsuring',
             end: tagBlockQueueOld + 'zoomEnd'
           },
           run_loop: run_loop
@@ -559,7 +559,7 @@ let main_obs_block_control = function (opt_in) {
             },
             tagForm: tagForms,
             disabled: 0,
-            getScaleWH: com.getScaleWH
+            get_scaleWH: com.get_scaleWH
           })
         })
       }
@@ -597,7 +597,7 @@ let main_obs_block_control = function (opt_in) {
 
         scrollBox.init({
           tag: tagScroller,
-          gBox: gScrollBox,
+          g_box: gScrollBox,
           // style: {
           //   recCol: function(opt_in) {
           //     if(opt_in.d.id == blockQueueOld.get('focus_id')) return cols_purples[1];
@@ -612,8 +612,8 @@ let main_obs_block_control = function (opt_in) {
           //     return (d.id == blockQueueOld.get('focus_id')) ? 1 : 0;
           //   }
           // },
-          // futureCanceled: { hide:false, shiftY:false },
-          // click: function(d){ blockFocus({ id:d.id }); },
+          // futureCanceled: { hide:false, shift_y:false },
+          // click: function(d){ block_focus({ id:d.id }); },
           canScroll: true,
           scrollHeight: scrollBoxData.h * 2,
           useRelativeCoords: true,
@@ -623,7 +623,7 @@ let main_obs_block_control = function (opt_in) {
           lockerV: [tagObsBlkCnt + 'update_data'],
           lockerZoom: {
             all: tagBlockQueueOld + 'zoom',
-            during: tagBlockQueueOld + 'zoomDuring',
+            during: tagBlockQueueOld + 'zoomsuring',
             end: tagBlockQueueOld + 'zoomEnd'
           },
           run_loop: run_loop
@@ -860,7 +860,7 @@ let main_obs_block_control = function (opt_in) {
             blocks: data_in.blocks,
             focus_id: obs_block_id
           })
-          blockFocus({ id: com.focus.obs_block_id })
+          block_focus({ id: com.focus.obs_block_id })
         }
       }
       // -------------------------------------------------------------------
@@ -870,7 +870,7 @@ let main_obs_block_control = function (opt_in) {
           return locker.is_free(tagObsBlkCnt + 'update_data')
         },
         execute: function () {
-          locker.remove('inInit')
+          locker.remove('in_init')
         }
       })
     }
@@ -882,7 +882,7 @@ let main_obs_block_control = function (opt_in) {
     run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
 
     function update_data (data_in) {
-      if (!locker.is_free('inInit')) {
+      if (!locker.is_free('in_init')) {
         setTimeout(function () {
           update_data(data_in)
         }, 10)
@@ -956,21 +956,21 @@ let main_obs_block_control = function (opt_in) {
       locker.remove({ id: tagObsBlkCnt + 'update_data' })
       // locker.remove({ id:tagObsBlkCnt+"update_dataOnce", override:true });
 
-      blockFocus({ id: com.focus.obs_block_id })
+      block_focus({ id: com.focus.obs_block_id })
     }
     this.update_data = update_data
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    run_loop.init({ tag: 'blockFocus', func: blockFocusOnce, n_keep: 1 })
+    run_loop.init({ tag: 'block_focus', func: block_focus_once, n_keep: 1 })
 
-    function blockFocus (data_in) {
-      run_loop.push({ tag: 'blockFocus', data: data_in })
+    function block_focus (data_in) {
+      run_loop.push({ tag: 'block_focus', data: data_in })
     }
-    this.blockFocus = blockFocus
+    this.block_focus = block_focus
 
-    function blockFocusOnce (opt_in) {
+    function block_focus_once (opt_in) {
       if (
         !locker.are_free([
           tagObsBlkCnt + 'update_data',
@@ -978,14 +978,14 @@ let main_obs_block_control = function (opt_in) {
           tagBlockQueueOld + 'zoom'
         ])
       ) {
-        // console.log('will delay _blockFocus_');
+        // console.log('will delay _block_focus_');
         setTimeout(function () {
-          blockFocus(opt_in)
+          block_focus(opt_in)
         }, 10)
         return
       }
       locker.add(tagObsBlkCnt + 'update_data')
-      // console.log(' will run _blockFocus_...',opt_in);
+      // console.log(' will run _block_focus_...',opt_in);
 
       let obs_block_id = is_def(opt_in.id) ? opt_in.id : ''
       com.focus = utils.getFocusBlock({ blocks: com.blocks, focus_id: obs_block_id })
@@ -1026,7 +1026,7 @@ let main_obs_block_control = function (opt_in) {
 
       sync_state_send({
         type: 'syncObFocus',
-        syncTime: Date.now(),
+        sync_time: Date.now(),
         obs_block_id: com.focus.obs_block_id
       })
 
@@ -1090,7 +1090,7 @@ let main_obs_block_control = function (opt_in) {
           return d.size / 3 + 'px'
         })
         .merge(text)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_txt)
         .text(function (d) {
           return titleText
@@ -1099,7 +1099,7 @@ let main_obs_block_control = function (opt_in) {
 
       text
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_txt)
         .style('opacity', 0)
         .remove()
@@ -1111,7 +1111,7 @@ let main_obs_block_control = function (opt_in) {
     }
   }
 
-  let svgMain = new SvgMain()
+  let svg_main = new SvgMain()
 }
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -1150,8 +1150,8 @@ let TelSummary = function () {
     com.box = deep_copy(opt_in.boxData)
     com.box.r = Math.min(com.box.w, com.box.h) / 2
 
-    com.gBox = opt_in.gBox.append('g')
-    com.gBox.attr(
+    com.g_box = opt_in.g_box.append('g')
+    com.g_box.attr(
       'transform',
       'translate(' +
         (com.box.x + com.box.w / 2) +
@@ -1168,13 +1168,13 @@ let TelSummary = function () {
       com.style.outerCircR - com.style.outerArcWidth * 1.2,
       com.style.outerCircR - com.style.outerArcWidth
     ]
-    com.style.tauFrac = tau / 3
-    com.style.tauSpace = tau / 50
+    com.style.tau_frac = tau / 3
+    com.style.tau_space = tau / 50
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    let outerG = com.gBox.append('g')
+    let outerG = com.g_box.append('g')
     let showOuterRec = false
 
     if (showOuterRec) {
@@ -1245,7 +1245,7 @@ let TelSummary = function () {
         id: tagArcs + 'outer' + '0',
         col: health_col(hasTels, avgState),
         strokeWidth: 0,
-        fillOpacity: stateOpac(hasTels, false),
+        fill_opacity: stateOpac(hasTels, false),
         innerRadius: com.style.outerCircR - com.style.outerArcWidth / 4,
         outerRadius: com.style.outerCircR + com.style.outerArcWidth / 4,
         endAngle: 0,
@@ -1256,7 +1256,7 @@ let TelSummary = function () {
         id: tagArcs + 'outer' + '1',
         col: health_col(hasTels, avgState),
         strokeWidth: 0,
-        fillOpacity: stateOpac(hasTels, true),
+        fill_opacity: stateOpac(hasTels, true),
         innerRadius: com.style.outerCircR - com.style.outerArcWidth / 2,
         outerRadius: com.style.outerCircR + com.style.outerArcWidth / 2,
         endAngle: 0,
@@ -1267,7 +1267,7 @@ let TelSummary = function () {
         id: tagArcs + 'nominal' + '0',
         col: stateCol(hasTels, TEL_STATES.NOMINAL),
         strokeWidth: 0,
-        fillOpacity: stateOpac(hasTels, false),
+        fill_opacity: stateOpac(hasTels, false),
         innerRadius: com.style.innerArcR[0],
         outerRadius: com.style.innerArcR[1],
         endAngle: innerArcAngles({ index: 0, isEnd: false, isBack: true }),
@@ -1282,7 +1282,7 @@ let TelSummary = function () {
         id: tagArcs + 'nominal' + '1',
         col: stateCol(hasTels, TEL_STATES.NOMINAL),
         strokeWidth: 0,
-        fillOpacity: stateOpac(hasTels, true),
+        fill_opacity: stateOpac(hasTels, true),
         innerRadius: com.style.innerArcR[0],
         outerRadius: com.style.innerArcR[2],
         endAngle: innerArcAngles({ index: 0, isEnd: false, isBack: false }),
@@ -1298,7 +1298,7 @@ let TelSummary = function () {
         id: tagArcs + 'warning' + '0',
         col: stateCol(hasTels, TEL_STATES.WARNING),
         strokeWidth: 0,
-        fillOpacity: stateOpac(hasTels, false),
+        fill_opacity: stateOpac(hasTels, false),
         innerRadius: com.style.innerArcR[0],
         outerRadius: com.style.innerArcR[1],
         endAngle: innerArcAngles({ index: 1, isEnd: false, isBack: true }),
@@ -1313,7 +1313,7 @@ let TelSummary = function () {
         id: tagArcs + 'warning' + '1',
         col: stateCol(hasTels, TEL_STATES.WARNING),
         strokeWidth: 0,
-        fillOpacity: stateOpac(hasTels, true),
+        fill_opacity: stateOpac(hasTels, true),
         innerRadius: com.style.innerArcR[0],
         outerRadius: com.style.innerArcR[2],
         endAngle: innerArcAngles({ index: 1, isEnd: false, isBack: false }),
@@ -1329,7 +1329,7 @@ let TelSummary = function () {
         id: tagArcs + 'error' + '0',
         col: stateCol(hasTels, TEL_STATES.ERROR),
         strokeWidth: 0,
-        fillOpacity: stateOpac(hasTels, false),
+        fill_opacity: stateOpac(hasTels, false),
         innerRadius: com.style.innerArcR[0],
         outerRadius: com.style.innerArcR[1],
         endAngle: innerArcAngles({ index: 2, isEnd: false, isBack: true }),
@@ -1344,7 +1344,7 @@ let TelSummary = function () {
         id: tagArcs + 'error' + '1',
         col: stateCol(hasTels, TEL_STATES.ERROR),
         strokeWidth: 0,
-        fillOpacity: stateOpac(hasTels, true),
+        fill_opacity: stateOpac(hasTels, true),
         innerRadius: com.style.innerArcR[0],
         outerRadius: com.style.innerArcR[2],
         endAngle: innerArcAngles({ index: 2, isEnd: false, isBack: false }),
@@ -1365,7 +1365,7 @@ let TelSummary = function () {
     }
     com.arcData = arcData
 
-    let arcs = com.gBox.selectAll('path.' + tagArcs).data(arcData, function (d) {
+    let arcs = com.g_box.selectAll('path.' + tagArcs).data(arcData, function (d) {
       return d.id
     })
 
@@ -1375,7 +1375,7 @@ let TelSummary = function () {
       .attr('class', tagArcs)
       .style('stroke-opacity', 0.5)
       .attr('fill-opacity', function (d) {
-        return d.fillOpacity
+        return d.fill_opacity
       })
       .attr('stroke-width', function (d) {
         return d.strokeWidth
@@ -1392,10 +1392,10 @@ let TelSummary = function () {
         return d3.arc()(d)
       })
       .merge(arcs)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('fill-opacity', function (d) {
-        return d.fillOpacity
+        return d.fill_opacity
       })
       .attr('fill', function (d, i) {
         return d.col
@@ -1403,7 +1403,7 @@ let TelSummary = function () {
       .attr('stroke', function (d, i) {
         return d3.rgb(d.col).darker(1.0)
       })
-      .attrTween('d', arcTween())
+      .attrTween('d', arc_tween())
 
     // -------------------------------------------------------------------
     //
@@ -1415,26 +1415,26 @@ let TelSummary = function () {
         {
           id: tag_txt + 'nominal',
           textTag: TEL_STATES.NOMINAL,
-          xy: getPropPosShift({ xy: 'xy', r: textR, index: 0 }),
+          xy: get_prop_pos_shift({ xy: 'xy', r: textR, index: 0 }),
           size: textSize
         },
         {
           id: tag_txt + 'warning',
           textTag: TEL_STATES.WARNING,
-          xy: getPropPosShift({ xy: 'xy', r: textR, index: 1 }),
+          xy: get_prop_pos_shift({ xy: 'xy', r: textR, index: 1 }),
           size: textSize
         },
         {
           id: tag_txt + 'error',
           textTag: TEL_STATES.ERROR,
-          xy: getPropPosShift({ xy: 'xy', r: textR, index: 2 }),
+          xy: get_prop_pos_shift({ xy: 'xy', r: textR, index: 2 }),
           size: textSize
         }
       ]
     }
     let textData = hasTels ? com.textData : []
 
-    let text = com.gBox.selectAll('text.' + tag_txt).data(textData, function (d) {
+    let text = com.g_box.selectAll('text.' + tag_txt).data(textData, function (d) {
       return d.id
     })
     text
@@ -1462,7 +1462,7 @@ let TelSummary = function () {
       .style('font-size', function (d) {
         return d.size + 'px'
       })
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_txt)
       .style('opacity', 1)
       // .tween("text", function(d) {
@@ -1477,7 +1477,7 @@ let TelSummary = function () {
 
     text
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_txt)
       .tween('text', function (d) {
         return tweenText(d3.select(this), 0)
@@ -1490,7 +1490,7 @@ let TelSummary = function () {
   // -------------------------------------------------------------------
   // helper functions
   // -------------------------------------------------------------------
-  function arcTween () {
+  function arc_tween () {
     return function (d) {
       let interpolate = d3.interpolate(d.endAngle, d.endAngleFinal)
       return function (t) {
@@ -1510,11 +1510,11 @@ let TelSummary = function () {
   }
 
   function innerArcAngles (opt_in) {
-    let angle = opt_in.index * com.style.tauFrac + com.style.tauSpace
+    let angle = opt_in.index * com.style.tau_frac + com.style.tau_space
     if (opt_in.isEnd) {
       return (
         angle +
-        (com.style.tauFrac - com.style.tauSpace * 2) *
+        (com.style.tau_frac - com.style.tau_space * 2) *
           (opt_in.isBack ? 1 : opt_in.val)
       )
     } else {
@@ -1522,14 +1522,14 @@ let TelSummary = function () {
     }
   }
 
-  function getPropPosShift (opt_in) {
-    let angle = (opt_in.index + 0.5) * com.style.tauFrac + tau / 4
-    let labelX = -1 * opt_in.r * Math.cos(angle)
-    let labelY = -1 * opt_in.r * Math.sin(angle)
+  function get_prop_pos_shift (opt_in) {
+    let angle = (opt_in.index + 0.5) * com.style.tau_frac + tau / 4
+    let label_x = -1 * opt_in.r * Math.cos(angle)
+    let label_y = -1 * opt_in.r * Math.sin(angle)
 
-    if (opt_in.xy === 'x') return labelX
-    if (opt_in.xy === 'y') return labelY
-    else if (opt_in.xy === 'xy') return [labelX, labelY]
+    if (opt_in.xy === 'x') return label_x
+    if (opt_in.xy === 'y') return label_y
+    else if (opt_in.xy === 'xy') return [label_x, label_y]
     else return null
   }
 
@@ -1586,13 +1586,13 @@ let TelScroll = function () {
     // -------------------------------------------------------------------
     com.mainTag = opt_in.tag
     let boxData = opt_in.boxData
-    let gBox = opt_in.gBox
+    let g_box = opt_in.g_box
     com.obs_block_id = ''
     com.obTelIds = []
     com.tel_ids = []
     com.inst_health = {}
     com.recD = {}
-    com.recD.gBase = gBox.append('g')
+    com.recD.g_base = g_box.append('g')
 
     com.scrollGrid = new ScrollGrid({
       id: com.mainTag,
@@ -1607,7 +1607,7 @@ let TelScroll = function () {
       nRows: 2,
       recD: com.recD,
       recV: [],
-      gBox: com.recD.gBase,
+      g_box: com.recD.g_base,
       bckRecOpt: { texture_orient: '5/8', frontProp: { strkWOcp: 0.2 } },
       vorOpt: { click: opt_in.vorClick },
       lockerV: opt_in.lockerV,
@@ -1679,7 +1679,7 @@ let TelScroll = function () {
       })
       .attr('vector-effect', 'non-scaling-stroke')
       .merge(circ)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       // .style("opacity", 1)
       .style('fill', function (d) {
@@ -1700,7 +1700,7 @@ let TelScroll = function () {
 
     circ
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('r', function (d) {
         return d.w
@@ -1746,7 +1746,7 @@ let TelScroll = function () {
         d.size = d.w / 3
         return d.size + 'px'
       })
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 1)
       .attr('x', function (d) {
@@ -1761,7 +1761,7 @@ let TelScroll = function () {
 
     text
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()
@@ -1841,11 +1841,11 @@ let _obScroll = function () {
     // -------------------------------------------------------------------
     com.mainTag = opt_in.tag
     let boxData = opt_in.boxData
-    let gBox = opt_in.gBox
+    let g_box = opt_in.g_box
     com.sched_block_id = ''
     com.obV = []
     com.recD = {}
-    com.recD.gBase = gBox.append('g')
+    com.recD.g_base = g_box.append('g')
 
     com.scrollGrid = new ScrollGrid({
       id: com.mainTag,
@@ -1860,7 +1860,7 @@ let _obScroll = function () {
       nRows: 1,
       recD: com.recD,
       recV: [],
-      gBox: com.recD.gBase,
+      g_box: com.recD.g_base,
       bckRecOpt: {
         opac: 0.06,
         circ_type: 'lighter',
@@ -1936,7 +1936,7 @@ let _obScroll = function () {
       .style('fill', com.style.recCol)
       .attr('vector-effect', 'non-scaling-stroke')
       .merge(rect)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('x', function (d) {
         return d.x
@@ -1956,7 +1956,7 @@ let _obScroll = function () {
 
     rect
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc / 2)
       .style('opacity', 0)
       .remove()
@@ -2002,7 +2002,7 @@ let _obScroll = function () {
       .attr('dy', function (d) {
         return d.size / 3 + 'px'
       })
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 1)
       .attr('x', function (d) {
@@ -2014,7 +2014,7 @@ let _obScroll = function () {
 
     textIn
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()

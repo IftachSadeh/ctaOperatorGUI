@@ -35,13 +35,13 @@ window.PlotTimeBar = function () {
     com.top.axis = {}
     com.top.scale = {}
     com.top.g = {}
-    com.top.g.axis = com.gBox.append('g')
+    com.top.g.axis = com.g_box.append('g')
 
     com.bot = {}
     com.bot.axis = {}
     com.bot.scale = {}
     com.bot.g = {}
-    com.bot.g.axis = com.gBox.append('g')
+    com.bot.g.axis = com.g_box.append('g')
 
     com.top.box = {
       x: com.innerBox.x,
@@ -114,8 +114,8 @@ window.PlotTimeBar = function () {
       h: com.innerBox.h * 0.6
     }
 
-    com.top.g.data = com.gBox.append('g')
-    com.bot.g.data = com.gBox.append('g')
+    com.top.g.data = com.g_box.append('g')
+    com.bot.g.data = com.g_box.append('g')
     com.bot.g.brush = com.bot.g.data.append('g')
 
     // comment data 1
@@ -174,7 +174,7 @@ window.PlotTimeBar = function () {
     if (!is_def(lockerZoom)) {
       lockerZoom = {
         all: com.mainTag + 'zoom',
-        during: com.mainTag + 'zoomDuring',
+        during: com.mainTag + 'zoomsuring',
         end: com.mainTag + 'zoomEnd'
       }
     }
@@ -182,7 +182,7 @@ window.PlotTimeBar = function () {
 
     let lockerV = {}
     lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
-    lockerV.zoomDuring = lockerV.lockerV.slice().concat([lockerZoom.during])
+    lockerV.zoomsuring = lockerV.lockerV.slice().concat([lockerZoom.during])
     lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
     com.lockerV = lockerV
 
@@ -194,7 +194,7 @@ window.PlotTimeBar = function () {
 
     setStyle(opt_in.style)
     com.plotTimeSeries = []
-    com.gBox = opt_in.gBox
+    com.g_box = opt_in.g_box
     com.outerBox = deep_copy(opt_in.boxData)
     com.outerBox.x = 0
     com.outerBox.y = 0
@@ -268,18 +268,18 @@ window.PlotTimeBar = function () {
       ')'
 
     if (duration > 0) {
-      com.gBox
+      com.g_box
         .transition('moveBox')
         .duration(duration)
         .attr('transform', trans)
-    } else com.gBox.attr('transform', trans)
+    } else com.g_box.attr('transform', trans)
   }
   this.transScaleBox = transScaleBox
 
   // function updateTopAxis (data_in) {
   //   com.top.g.axis
   //     .selectAll('.axisX')
-  //     .transition('inOut')
+  //     .transition('in_out')
   //     .duration(times.anim_arc)
   //     .call(com.top.axis.x)
   // }
@@ -295,13 +295,13 @@ window.PlotTimeBar = function () {
   function updateBottomAxis (data_in) {
     com.bot.g.axis
       .selectAll('.axisX')
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .call(com.bot.axis.x)
   }
   function updateBrushPosition () {
     com.bot.g.brush
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .call(com.bot.brush.move, com.middle.range)
   }
@@ -396,7 +396,7 @@ window.PlotTimeBar = function () {
       // .style("stroke-dasharray",  "5,1")
       .attr('stroke', '#000099')
       .merge(line)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('stroke-opacity', 0.5)
       .attr('x1', function (d, i) {
@@ -414,7 +414,7 @@ window.PlotTimeBar = function () {
 
     line
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('stroke-opacity', 0)
       .remove()
@@ -447,7 +447,7 @@ window.PlotTimeBar = function () {
     //   .attr('fill', cols_mix[nTopBot])
     //   .attr('pointer-events', pointerEvents)
     //   .merge(circ)
-    //   .transition('inOut')
+    //   .transition('in_out')
     //   .duration(times.anim_arc)
     //   .style('opacity', 1)
     //   .attr('cx', function (d) {
@@ -459,7 +459,7 @@ window.PlotTimeBar = function () {
     //
     // circ
     //   .exit()
-    //   .transition('inOut')
+    //   .transition('in_out')
     //   .duration(times.anim_arc)
     //   .style('opacity', 0)
     //   .remove()
@@ -473,7 +473,7 @@ window.PlotTimeBar = function () {
     let lockerV = com.lockerV
     let lockerZoom = com.lockerZoom
 
-    function initZoomBrush () {
+    function init_zoomBrush () {
       com.zoom = {}
       com.zoom.sel = {}
       com.zoom.trans = {}
@@ -486,16 +486,16 @@ window.PlotTimeBar = function () {
 
       com.zoom.zoom
         .on('start', function (d) {
-          com.zoomStart(this)
+          com.zoom_start(this)
         })
         .on('zoom', function (d) {
-          com.zoomDuring(this)
+          com.zoomsuring(this)
         })
         .on('end', function (d) {
           com.zoomEnd(this)
         })
 
-      com.gBox.on('wheel', function () {
+      com.g_box.on('wheel', function () {
         d3.event.preventDefault()
       })
 
@@ -519,15 +519,15 @@ window.PlotTimeBar = function () {
       }
     }
 
-    com.zoomStart = function (ele) {
+    com.zoom_start = function (ele) {
       com.isInZoom = true
     }
-    com.zoomDuring = function (ele) {
+    com.zoomsuring = function (ele) {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return // ignore zoom-by-brush
 
       com.inUserZoom = is_def(d3.event.sourceEvent)
 
-      if (locker.are_free(lockerV.zoomDuring)) {
+      if (locker.are_free(lockerV.zoomsuring)) {
         locker.add({ id: lockerZoom.all, override: true })
         locker.add({ id: lockerZoom.during, override: true })
 
@@ -582,7 +582,7 @@ window.PlotTimeBar = function () {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return // ignore brush-by-zoom
       // console.log('brushDuring');
 
-      if (locker.are_free(lockerV.zoomDuring)) {
+      if (locker.are_free(lockerV.zoomsuring)) {
         locker.add({ id: lockerZoom.all, override: true })
         locker.add({ id: lockerZoom.during, override: true })
 
@@ -625,7 +625,7 @@ window.PlotTimeBar = function () {
       })
     }
 
-    initZoomBrush()
+    init_zoomBrush()
   }
   // function doDomainTrans (opt_in) {
   //   for (var i = 0; i < com.plotTimeSeries.length; i++) {

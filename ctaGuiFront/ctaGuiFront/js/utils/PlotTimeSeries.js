@@ -42,7 +42,7 @@ window.PlotTimeSeries = function () {
     if (!is_def(lockerZoom)) {
       lockerZoom = {
         all: com.mainTag + 'zoom',
-        during: com.mainTag + 'zoomDuring',
+        during: com.mainTag + 'zoomsuring',
         end: com.mainTag + 'zoomEnd'
       }
     }
@@ -50,7 +50,7 @@ window.PlotTimeSeries = function () {
 
     let lockerV = {}
     lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
-    lockerV.zoomDuring = lockerV.lockerV.slice().concat([lockerZoom.during])
+    lockerV.zoomsuring = lockerV.lockerV.slice().concat([lockerZoom.during])
     lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
     com.lockerV = lockerV
 
@@ -64,14 +64,14 @@ window.PlotTimeSeries = function () {
     // ------------------------------------------------------------------
     com.outerBox = deep_copy(opt_in.boxData)
     com.boxTrans = { x: opt_in.boxData.x, y: opt_in.boxData.y, k: 1 }
-    com.gBox = opt_in.gBox
+    com.g_box = opt_in.g_box
     transScaleBox()
     com.innerBox = com.outerBox
     com.innerBox.x = 0
     com.innerBox.y = 0
 
     com.bck = {}
-    com.bck.g = com.gBox.append('g')
+    com.bck.g = com.g_box.append('g')
 
     com.top = {}
     com.top.scale = {}
@@ -104,8 +104,8 @@ window.PlotTimeSeries = function () {
       'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
 
     com.top.g = {}
-    com.top.g.axis = com.gBox.append('g')
-    com.top.g.data = com.gBox.append('g')
+    com.top.g.axis = com.g_box.append('g')
+    com.top.g.data = com.g_box.append('g')
     com.top.g.data.attr(
       'transform',
       'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
@@ -149,7 +149,7 @@ window.PlotTimeSeries = function () {
       let tagPlot = 'internalTimeBar' + opt_in.tag
       newTimeBar.init({
         tag: opt_in.tag,
-        gBox: com.gBox.append('g'),
+        g_box: com.g_box.append('g'),
         hasBotPlot: true,
         isPartofPlot: true,
         style: { hasOutline: true },
@@ -158,7 +158,7 @@ window.PlotTimeSeries = function () {
         lockerV: [tagPlot + 'update_data'],
         lockerZoom: {
           all: tagPlot + 'zoom',
-          during: tagPlot + 'zoomDuring',
+          during: tagPlot + 'zoomsuring',
           end: tagPlot + 'zoomEnd'
         },
         run_loop: null
@@ -217,11 +217,11 @@ window.PlotTimeSeries = function () {
       ')'
 
     if (duration > 0) {
-      com.gBox
+      com.g_box
         .transition('moveBox')
         .duration(duration)
         .attr('transform', trans)
-    } else com.gBox.attr('transform', trans)
+    } else com.g_box.attr('transform', trans)
   }
   this.transScaleBox = transScaleBox
   // ------------------------------------------------------------------
@@ -292,7 +292,7 @@ window.PlotTimeSeries = function () {
     com.top.g.axis.selectAll('.axisX').call(com.top.axis.x)
     com.top.g.axis
       .selectAll('.axisY')
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .call(com.top.axis.y)
 
@@ -348,7 +348,7 @@ window.PlotTimeSeries = function () {
       // .style("stroke-dasharray",  "5,1")
       .attr('stroke', '#000099')
       .merge(line)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('stroke-opacity', 0.5)
       .attr('x1', function (d, i) {
@@ -366,7 +366,7 @@ window.PlotTimeSeries = function () {
 
     line
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('stroke-opacity', 0)
       .remove()
@@ -410,7 +410,7 @@ window.PlotTimeSeries = function () {
       //   // .call(com.zoom.zoom)
       //   // .on('click', com.style.click)
       //   .merge(circ)
-      //   .transition('inOut')
+      //   .transition('in_out')
       //   .duration(times.anim_arc)
       //   .style('opacity', 1)
       //   .attr('cx', function (d) {
@@ -422,7 +422,7 @@ window.PlotTimeSeries = function () {
       //
       // circ
       //   .exit()
-      //   .transition('inOut')
+      //   .transition('in_out')
       //   .duration(times.anim_arc)
       //   .style('opacity', 0)
       //   .remove()
@@ -441,22 +441,22 @@ window.PlotTimeSeries = function () {
     data_inDom = data_inDom.map(function (d) {
       return d.y
     })
-    let yMinMax = [d3.min(data_inDom), d3.max(data_inDom)]
-    let deltaY = com.yAxisMarginFrac * (yMinMax[1] - yMinMax[0])
-    if (yMinMax[1] === yMinMax[0]) {
-      if (yMinMax[0] === 0) deltaY = 1
-      else deltaY = com.yAxisMarginFrac * yMinMax[0]
+    let y_min_max = [d3.min(data_inDom), d3.max(data_inDom)]
+    let deltaY = com.yAxisMarginFrac * (y_min_max[1] - y_min_max[0])
+    if (y_min_max[1] === y_min_max[0]) {
+      if (y_min_max[0] === 0) deltaY = 1
+      else deltaY = com.yAxisMarginFrac * y_min_max[0]
     }
-    // yMinMax = [yMinMax[0] - deltaY, yMinMax[1] + deltaY]
+    // y_min_max = [y_min_max[0] - deltaY, y_min_max[1] + deltaY]
     if (!com.updateDomainY) {
-      yMinMax = [0, 100.5]
+      y_min_max = [0, 100.5]
     } else {
-      yMinMax = [yMinMax[0] - deltaY, yMinMax[1] + deltaY]
+      y_min_max = [y_min_max[0] - deltaY, y_min_max[1] + deltaY]
     }
-    com.top.scale.y.domain(yMinMax)
+    com.top.scale.y.domain(y_min_max)
     com.top.g.axis
       .selectAll('.axisY')
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .call(com.top.axis.y)
   }
@@ -479,7 +479,7 @@ window.PlotTimeSeries = function () {
 
       if (doY) {
         circ
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc / 2)
           .attr('cy', function (d) {
             return topBot.scale.y(d.y)
@@ -498,7 +498,7 @@ window.PlotTimeSeries = function () {
 
     if (doY) {
       line
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc / 2)
         .attr('y1', function (d, i) {
           return com.top.scale.y(d.y1)
@@ -537,7 +537,7 @@ window.PlotTimeSeries = function () {
 
         if (is_def(opt_in.duration)) {
           com.zoom.sel[selName]()
-            .transition('inOut')
+            .transition('in_out')
             .duration(opt_in.duration)
             .call(com.zoom.zoom.transform, trans)
         } else {

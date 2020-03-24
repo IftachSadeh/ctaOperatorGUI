@@ -40,7 +40,7 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 9
   let w0 = 12
-  let divKey = 'main'
+  let div_key = 'main'
 
   opt_in.widget_func = {
     sock_func: sock_empty_example,
@@ -48,15 +48,15 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: true,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   sock.add_to_table(opt_in)
@@ -94,7 +94,7 @@ let main_empty_example = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  locker.add('inInit')
+  locker.add('in_init')
 
   // function loop
   let run_loop = new RunLoop({ tag: widget_id })
@@ -107,7 +107,7 @@ let main_empty_example = function (opt_in) {
 
     sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
 
-    svgMain.init_data(data_in)
+    svg_main.init_data(data_in)
   }
   this.init_data = init_data
 
@@ -115,7 +115,7 @@ let main_empty_example = function (opt_in) {
   //
   // -------------------------------------------------------------------
   function update_data (data_in) {
-    svgMain.update_data(data_in.data)
+    svg_main.update_data(data_in.data)
   }
   this.update_data = update_data
 
@@ -127,11 +127,11 @@ let main_empty_example = function (opt_in) {
     let svg = {}
     // let thisMain = this
 
-    let lenD = {}
-    lenD.w = {}
-    lenD.h = {}
-    lenD.w[0] = 1000
-    lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
+    let svg_dims = {}
+    svg_dims.w = {}
+    svg_dims.h = {}
+    svg_dims.w[0] = 1000
+    svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
     let tag_empty_example = 'empty_example'
 
@@ -170,16 +170,16 @@ let main_empty_example = function (opt_in) {
         .style('background', '#383B42')
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
         .style('top', '0px')
         .style('left', '0px')
-        // .attr("viewBox", "0 0 "+lenD.w[0]+" "+lenD.h[0] * whRatio)
+        // .attr("viewBox", "0 0 "+svg_dims.w[0]+" "+svg_dims.h[0] * whRatio)
         // .classed("svgInGridStack_inner", true)
         .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
-        // .call(com.svgZoom)
+        // .call(com.svg_zoom)
         .on('dblclick.zoom', null)
 
       if (disable_scroll_svg) {
@@ -202,8 +202,8 @@ let main_empty_example = function (opt_in) {
         .append('rect')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', lenD.w[0])
-        .attr('height', lenD.h[0])
+        .attr('width', svg_dims.w[0])
+        .attr('height', svg_dims.h[0])
         .attr('fill', '#F2F2F2')
 
       // the background grid
@@ -211,7 +211,7 @@ let main_empty_example = function (opt_in) {
         com: com,
         g_now: svg.g,
         g_tag: 'hex',
-        len_wh: [lenD.w[0], lenD.h[0]],
+        len_wh: [svg_dims.w[0], svg_dims.h[0]],
         opac: 0.1,
         hex_r: 15
       })
@@ -239,11 +239,11 @@ let main_empty_example = function (opt_in) {
       // // 
       // // ------------------------------------------------------------------
       // let my_unique_id = unique()
-      // let arr_zoomerLockInitKey = 'inInitarr_zoomer' + my_unique_id
+      // let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id
       // let is_south = window.__site_type__ === 'S'
       // let svgG = svg.g
 
-      // locker.add(arr_zoomerLockInitKey)
+      // locker.add(arr_zoomer_lock_init_key)
 
       // let arr_zoomer_ele_opts = {
       //   do_ele: {
@@ -263,20 +263,20 @@ let main_empty_example = function (opt_in) {
       //     // lens: 'translate(245,5)scale(0.60)',
       //   },
       //   main:{
-      //     // dblclickZoomInOut: false,
+      //     // dblclick_zoom_in_out: false,
       //   },
       //   ches:{
       //     // myOpt: 0,
       //   },
       //   mini:{
-      //     // staticZoom: false,
+      //     // static_zoom: false,
       //   },
       //   tree: {
-      //     // aspectRatio: 6/5,
+      //     // aspect_ratio: 6/5,
       //   },
       //   lens: {
-      //     aspectRatio: 4,
-      //     hasTitles: true,
+      //     aspect_ratio: 4,
+      //     has_titles: true,
       //     // pointerEvents: true,
       //   },
       // }
@@ -297,7 +297,7 @@ let main_empty_example = function (opt_in) {
       //   widget_type: widget_type,
       //   sock: sock,
       //   ele_opts: arr_zoomer_ele_opts,
-      //   lock_init_key: arr_zoomerLockInitKey,
+      //   lock_init_key: arr_zoomer_lock_init_key,
       //   svg: svgG,
       // })
       // arr_zoomer_base.init_data(data_in.data.arr_zoomer)
@@ -330,7 +330,7 @@ let main_empty_example = function (opt_in) {
           return locker.is_free(tag_empty_example + 'update_data')
         },
         execute: function () {
-          locker.remove('inInit')
+          locker.remove('in_init')
         }
       })
     }
@@ -342,7 +342,7 @@ let main_empty_example = function (opt_in) {
     run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
 
     function update_data (data_in) {
-      if (!locker.is_free('inInit')) {
+      if (!locker.is_free('in_init')) {
         setTimeout(function () {
           update_data(data_in)
         }, 10)
@@ -408,13 +408,13 @@ let main_empty_example = function (opt_in) {
         .attr('stroke', 'transparent')
         .attr('stroke-width', '3')
         .attr('cx', function (d) {
-          return lenD.w[0] / 2
+          return svg_dims.w[0] / 2
         })
         .attr('cy', function (d) {
-          return lenD.h[0] / 2
+          return svg_dims.h[0] / 2
         })
         .merge(circ)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('fill-opacity', opac)
         .style('fill', function (d, i) {
@@ -424,12 +424,12 @@ let main_empty_example = function (opt_in) {
           return i === 1 ? cols_mix[time % cols_mix.length] : 'transparent'
         })
         .attr('r', function (d) {
-          return d.r * Math.min(lenD.w[0], lenD.h[0]) / 3
+          return d.r * Math.min(svg_dims.w[0], svg_dims.h[0]) / 3
         })
 
       circ
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('r', function (d) {
           return 0
@@ -443,7 +443,7 @@ let main_empty_example = function (opt_in) {
     this.update_data = update_data
   }
 
-  let svgMain = new SvgMain()
+  let svg_main = new SvgMain()
 }
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------

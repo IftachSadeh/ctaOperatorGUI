@@ -33,7 +33,7 @@
 function SocketManager () {
   let this_top = this
   let is_debug = true
-  // let gsIdV = []
+  // let gs_idV = []
   let init_views = {}
   let is_south = window.__site_type__ === 'S'
   let server_name = null
@@ -308,7 +308,7 @@ function SocketManager () {
 
     let is_same = true
     $.each(data_in, function (tag_now, obj_now) {
-      if (tag_now !== 'syncTime') {
+      if (tag_now !== 'sync_time') {
         if (!(prev_sync[data_in.type][tag_now] === obj_now)) is_same = false
       }
     })
@@ -322,7 +322,7 @@ function SocketManager () {
   function is_old_sync (prev_sync, data_in) {
     if (!is_def(prev_sync[data_in.type])) return false
 
-    return prev_sync[data_in.type].syncTime >= data_in.syncTime
+    return prev_sync[data_in.type].sync_time >= data_in.sync_time
   }
   this.is_old_sync = is_old_sync
 
@@ -483,7 +483,6 @@ function SocketManager () {
     let gs_name = tab_table_id + 'tbl'
 
     if (has_icon) icon_divs[0] = { id: main_id + 'icon_div' }
-    // if (has_drawer) icon_divs[1] = { id: sideId + 'icon_div' }
 
     let tab_table_NEW = main_div.appendChild(document.createElement('div'))
     tab_table_NEW.id = tab_table_id
@@ -545,7 +544,6 @@ function SocketManager () {
         base_name: name_tag + widget_id,
         gs_name: gs_name,
         tab_table: tab_table_NEW,
-        // sideId: sideId,
         icon_divs: icon_divs,
         is_south: is_south,
         widget: null,
@@ -560,7 +558,7 @@ function SocketManager () {
     // // -------------------------------------------------------------------
     // // after setting up the event listners, can finally add the element
     // // -------------------------------------------------------------------
-    // gsIdV.push({ tab_table: tab_table_NEW, gs_name: gs_name })
+    // gs_idV.push({ tab_table: tab_table_NEW, gs_name: gs_name })
     // winResize()
   }
   this.add_widget = add_widget
@@ -578,7 +576,6 @@ function SocketManager () {
     let widget_id = opt_in.widget_id
     let tab_table = opt_in.tab_table
     let icon_divs = opt_in.icon_divs
-    // let sideId = opt_in.sideId
     let ele_props = opt_in.ele_props
     let widget_div_id = opt_in.widget_div_id
     let widget_types = Object.keys(opt_in.ele_props)
@@ -603,7 +600,7 @@ function SocketManager () {
       let widget_index = 0
       let widget_tag = null
       $.each(widget_types, function (index, data_now1) {
-        if (ele_props[data_now]['gsId'] === widget_div_id + data_now1) {
+        if (ele_props[data_now]['gs_id'] === widget_div_id + data_now1) {
           widget_index = index
           widget_tag = data_now1
         }
@@ -698,12 +695,12 @@ function SocketManager () {
   //     }
 
   //     prevResize = Date.now()
-  //     $.each(gsIdV, function (index, gsNow) {
-  //       gsNow.tab_table.setAllWidgetWH(gsNow.gs_name)
+  //     $.each(gs_idV, function (index, gsNow) {
+  //       gsNow.tab_table.set_all_widget_wh(gsNow.gs_name)
   //     })
   //   }
 
-  //   $.each(gsIdV, function (index, gsNow) {
+  //   $.each(gs_idV, function (index, gsNow) {
   //     let tblNow = gsNow.tab_table.get_ele(gsNow.gs_name)
   //     $(tblNow).on('resizestop', function (event, ui) {
   //       resizeNow()

@@ -59,9 +59,9 @@ window.ArrZoomerBase = function (opt_in0) {
 
   let ele_opts = opt_in0.ele_opts
   let do_ele = ele_opts.do_ele
-  // let rScale = instruments.rScale
+  // let scale_r = instruments.scale_r
 
-  this_top.hasInit = false
+  this_top.has_init = false
 
   // ------------------------------------------------------------------
   // 
@@ -82,81 +82,81 @@ window.ArrZoomerBase = function (opt_in0) {
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  let svgD = {}
-  this_top.svgD = svgD
-  svgD.main = {}
-  svgD.mini = {}
-  svgD.ches = {}
-  svgD.tree = {}
-  svgD.lens = {}
-  svgD.g_svg = svg.append('g')
+  let svgs = {}
+  this_top.svgs = svgs
+  svgs.main = {}
+  svgs.mini = {}
+  svgs.ches = {}
+  svgs.tree = {}
+  svgs.lens = {}
+  svgs.g_svg = svg.append('g')
 
   let interpolate01 = d3.interpolate(0, 1)
   this_top.interpolate01 = interpolate01
 
-  let zoomD = {}
-  this_top.zoomD = zoomD
-  zoomD.target = ''
+  let zooms = {}
+  this_top.zooms = zooms
+  zooms.target = ''
 
   let instruments = {}
   this_top.instruments = instruments
   
   instruments.props = {}
   instruments.props0 = {}
-  instruments.tauFracs = {}
-  instruments.propTitles = {}
-  instruments.allIds = []
-  instruments.allIds0 = []
-  instruments.allProps = []
-  instruments.allProps0 = []
+  instruments.tau_fracs = {}
+  instruments.prop_titles = {}
+  instruments.all_ids = []
+  instruments.all_ids0 = []
+  instruments.all_props = []
+  instruments.all_props0 = []
   instruments.prop0 = 'health'
-  instruments.propTitle0 = 'Health'
-  instruments.tauSpace = tau / 50
+  instruments.prop_title0 = 'Health'
+  instruments.tau_space = tau / 50
 
   instruments.data = {}
   instruments.data.tel = []
-  instruments.data.idToIndex = {}
-  instruments.data.dataBaseS1 = {}
-  instruments.data.propDataS1 = {}
-  instruments.data.propParentS1 = {}
-  instruments.data.propTitleS1 = {}
+  instruments.data.id_indices = {}
+  instruments.data.data_base_s1 = {}
+  instruments.data.prop_data_s1 = {}
+  instruments.data.prop_parent_s1 = {}
+  instruments.data.prop_title_s1 = {}
 
-  instruments.rScale = {}
-  instruments.rScale[0] = {}
-  instruments.rScale[1] = {}
+  instruments.scale_r = {}
+  instruments.scale_r[0] = {}
+  instruments.scale_r[1] = {}
 
-  instruments.rScale[0].health0 = 1.1
-  instruments.rScale[0].health1 = 1.2
-  instruments.rScale[0].health2 = 1.35
-  instruments.rScale[0].line0 = 1.2
-  instruments.rScale[0].line1 = 1.8
-  instruments.rScale[0].percent = 0.6
-  instruments.rScale[0].label = 1.95
-  instruments.rScale[0].title = 2.05
+  instruments.scale_r[0].health0 = 1.1
+  instruments.scale_r[0].health1 = 1.2
+  instruments.scale_r[0].health2 = 1.35
+  instruments.scale_r[0].line0 = 1.2
+  instruments.scale_r[0].line1 = 1.8
+  instruments.scale_r[0].percent = 0.6
+  instruments.scale_r[0].label = 1.95
+  instruments.scale_r[0].title = 2.05
 
-  instruments.rScale[1].health0 = 1.5
-  instruments.rScale[1].health1 = 1.65
-  instruments.rScale[1].innerH0 = 1.25
-  instruments.rScale[1].innerH1 = 1.3
+  instruments.scale_r[1].health0 = 1.5
+  instruments.scale_r[1].health1 = 1.65
+  instruments.scale_r[1].inner_h0 = 1.25
+  instruments.scale_r[1].inner_h1 = 1.3
 
-  this_top.siteScale = is_south ? 4 / 9 : 1
+  this_top.site_scale = is_south ? 4 / 9 : 1
   
-  this_top.teleR = { s00: [12, 13, 14, 14] }
-  this_top.teleR.s00 = this_top.teleR.s00.map(
-    function(x) { return x * this_top.siteScale }
+  this_top.tel_rs = { s00: [12, 13, 14, 14] }
+  this_top.tel_rs.s00 = this_top.tel_rs.s00.map(
+    function(x) { return x * this_top.site_scale }
   )
 
-  let tel_typeV = tel_info.get_ids()
+  let tel_id_types = tel_info.get_ids()
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
   let lock_init_keys = {
-    main: 'in_arr_zoomerInitMain' + my_unique_id,
-    ches: 'in_arr_zoomerInitChes' + my_unique_id,
-    mini: 'in_arr_zoomerInitMini' + my_unique_id,
-    tree: 'in_arr_zoomerInitTree' + my_unique_id,
-    lens: 'in_arr_zoomerInitLens' + my_unique_id,
+    main: 'in_arr_zoomer_init_main' + my_unique_id,
+    ches: 'in_arr_zoomer_init_ches' + my_unique_id,
+    mini: 'in_arr_zoomer_init_mini' + my_unique_id,
+    tree: 'in_arr_zoomer_init_tree' + my_unique_id,
+    lens: 'in_arr_zoomer_init_lens' + my_unique_id,
   }
   this_top.lock_init_keys = lock_init_keys
 
@@ -186,8 +186,8 @@ window.ArrZoomerBase = function (opt_in0) {
   //     main: ['LST'],
   //   }
 
-  //   let telIndex = tel_types_ele[tag].indexOf(this_top.tel_types[tel_Id])
-  //   return (telIndex !== -1)
+  //   let tel_index = tel_types_ele[tag].indexOf(this_top.tel_types[tel_Id])
+  //   return (tel_index !== -1)
   // }
   // this_top.isTelTypeIn = isTelTypeIn
 
@@ -195,26 +195,26 @@ window.ArrZoomerBase = function (opt_in0) {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  function initInstProps (data_in) {
+  function init_inst_props (data_in) {
     let tel_prop_types = data_in.tel_prop_types
     
-    instruments.allProps0.push(instruments.prop0)
-    instruments.allIds0.push('')
+    instruments.all_props0.push(instruments.prop0)
+    instruments.all_ids0.push('')
     instruments.props[''] = []
     instruments.props0[''] = [instruments.prop0]
-    instruments.propTitles[''] = {}
+    instruments.prop_titles[''] = {}
 
     // --FIXME-- currently sorting by the property name, but
     // should actually be by property title ...
-    function propSort (arr_in) {
+    function prop_sort (arr_in) {
       arr_in.sort().sort(function (a, b) {
         if (a === instruments.prop0) return -1
         else return 1
       })
     }
-    function propSortV (arr_inV) {
+    function prop_sorts (arr_inV) {
       $.each(arr_inV, function (i, arrNow) {
-        propSort(arrNow)
+        prop_sort(arrNow)
       })
     }
 
@@ -224,40 +224,40 @@ window.ArrZoomerBase = function (opt_in0) {
 
       instruments.props[id_now] = []
       instruments.props0[id_now] = [instruments.prop0]
-      instruments.propTitles[id_now] = {}
+      instruments.prop_titles[id_now] = {}
 
-      instruments.allIds.push(id_now)
-      instruments.allIds0.push(id_now)
+      instruments.all_ids.push(id_now)
+      instruments.all_ids0.push(id_now)
 
       $.each(typeV, function (i, type_now) {
         instruments.props[id_now].push(type_now.id)
         instruments.props0[id_now].push(type_now.id)
-        instruments.propTitles[id_now][type_now.id] = type_now.title
+        instruments.prop_titles[id_now][type_now.id] = type_now.title
 
         if (instruments.props[''].indexOf(type_now.id) === -1) {
           instruments.props[''].push(type_now.id)
           instruments.props0[''].push(type_now.id)
-          instruments.propTitles[''][type_now.id] = type_now.title
+          instruments.prop_titles[''][type_now.id] = type_now.title
         }
 
-        if (instruments.allProps.indexOf(type_now.id) === -1) {
-          instruments.allProps.push(type_now.id)
-          instruments.allProps0.push(type_now.id)
+        if (instruments.all_props.indexOf(type_now.id) === -1) {
+          instruments.all_props.push(type_now.id)
+          instruments.all_props0.push(type_now.id)
         }
       })
-      propSortV([instruments.props[id_now], instruments.props0[id_now]])
+      prop_sorts([instruments.props[id_now], instruments.props0[id_now]])
 
-      instruments.propTitles[id_now][instruments.prop0] = instruments.propTitle0
-      instruments.tauFracs[id_now] = tau / instruments.props[id_now].length
-      instruments.propTitles[''][instruments.prop0] = instruments.propTitle0
+      instruments.prop_titles[id_now][instruments.prop0] = instruments.prop_title0
+      instruments.tau_fracs[id_now] = tau / instruments.props[id_now].length
+      instruments.prop_titles[''][instruments.prop0] = instruments.prop_title0
     })
-    instruments.tauFracs[''] = tau / instruments.props[''].length
+    instruments.tau_fracs[''] = tau / instruments.props[''].length
 
-    propSortV([instruments.props[''], instruments.props0[''], instruments.allProps, instruments.allProps0])
+    prop_sorts([instruments.props[''], instruments.props0[''], instruments.all_props, instruments.all_props0])
 
     instruments.props['avg'] = instruments.props[''] // .slice()
     instruments.props0['avg'] = instruments.props0[''] // .slice()
-    instruments.tauFracs['avg'] = instruments.tauFracs['']
+    instruments.tau_fracs['avg'] = instruments.tau_fracs['']
 
     return
   }
@@ -267,11 +267,11 @@ window.ArrZoomerBase = function (opt_in0) {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  function setTelData (data_in, isInit) {
+  function set_tel_data (data_in, isInit) {
     if (isInit) {
       instruments.data.tel = []
       instruments.data.avg = {}
-      instruments.data.idToIndex = {}
+      instruments.data.id_indices = {}
     }
 
     $.each(data_in, function (id, data_now) {
@@ -281,116 +281,116 @@ window.ArrZoomerBase = function (opt_in0) {
       // if (!isTelTypeIn('main', id)) return
       
       // console.log('==',id,data_now)
-      let telD = {}
-      telD.id = id
+      let tel_data = {}
+      tel_data.id = id
 
-      $.each(instruments.props0[telD.id], function (index, porpNow) {
-        telD[porpNow] = is_def(data_now[porpNow])
-          ? Math.round(data_now[porpNow])
+      $.each(instruments.props0[tel_data.id], function (index, porp_now) {
+        tel_data[porp_now] = is_def(data_now[porp_now])
+          ? Math.round(data_now[porp_now])
           : 0
       })
 
       if (isInit) {
-        instruments.data.idToIndex[id] = instruments.data.tel.length
-        instruments.data.tel.push(telD)
+        instruments.data.id_indices[id] = instruments.data.tel.length
+        instruments.data.tel.push(tel_data)
       } else {
-        let origIndex = instruments.data.idToIndex[id]
-        instruments.data.tel[origIndex] = telD
+        let origIndex = instruments.data.id_indices[id]
+        instruments.data.tel[origIndex] = tel_data
       }
     })
 
     // average of each property
     instruments.data.avg.id = 'avg'
-    let propsNow = instruments.props0[instruments.data.avg.id]
-    $.each(propsNow, function (index, porpNow) {
-      instruments.data.avg[porpNow] = 0
+    let props_now = instruments.props0[instruments.data.avg.id]
+    $.each(props_now, function (index, porp_now) {
+      instruments.data.avg[porp_now] = 0
       $.each(instruments.data.tel, function (id, data_now) {
-        // console.log('    ++',id,porpNow,data_now[porpNow])
+        // console.log('    ++',id,porp_now,data_now[porp_now])
         if (
-          data_now[porpNow] !== undefined &&
-          typeof data_now[porpNow] === 'number'
+          data_now[porp_now] !== undefined &&
+          typeof data_now[porp_now] === 'number'
         ) {
-          instruments.data.avg[porpNow] += data_now[porpNow]
+          instruments.data.avg[porp_now] += data_now[porp_now]
         }
       })
-      // console.log('--',porpNow,instruments.data.avg[porpNow] , instruments.data.tel.length)
-      instruments.data.avg[porpNow] /= instruments.data.tel.length
+      // console.log('--',porp_now,instruments.data.avg[porp_now] , instruments.data.tel.length)
+      instruments.data.avg[porp_now] /= instruments.data.tel.length
     })
     // console.log('SSS-------------SS',instruments.data, instruments.props0)
 
     return
   }
-  this_top.setTelData = setTelData
+  this_top.set_tel_data = set_tel_data
 
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function getTelProps (keys, tel_Id) {
+  function get_tel_props (keys, tel_Id) {
     return keys.filter(function (k) {
       return instruments.props[tel_Id].indexOf(k) !== -1
     })
   }
-  this_top.getTelProps = getTelProps
+  this_top.get_tel_props = get_tel_props
   
-  function getTauFrac (nProps) {
-    return tau / nProps
+  function get_tau_frac (n_props) {
+    return tau / n_props
   }
-  this_top.getTauFrac = getTauFrac
+  this_top.get_tau_frac = get_tau_frac
 
-  function getPropPosShift (xy, r, n_prop_now, nProps) {
-    let angle = (n_prop_now + 0.5) * getTauFrac(nProps) + tau / 4
-    let labelX = r * Math.cos(angle)
-    let labelY = r * Math.sin(angle)
+  function get_prop_pos_shift (xy, r, n_prop_now, n_props) {
+    let angle = (n_prop_now + 0.5) * get_tau_frac(n_props) + tau / 4
+    let label_x = r * Math.cos(angle)
+    let label_y = r * Math.sin(angle)
 
-    if (xy === 'x') return labelX
-    if (xy === 'y') return labelY
-    else if (xy === 'xy') return [labelX, labelY]
+    if (xy === 'x') return label_x
+    if (xy === 'y') return label_y
+    else if (xy === 'xy') return [label_x, label_y]
     else return null
   }
-  this_top.getPropPosShift = getPropPosShift
+  this_top.get_prop_pos_shift = get_prop_pos_shift
 
-  zoomD.len = {}
-  zoomD.len['0.0'] = 1
+  zooms.len = {}
+  zooms.len['0.0'] = 1
   if (is_south) {
-    zoomD.len['0.1'] = 2 // - 0.4
-    zoomD.len['0.2'] = 12 // - 4
-    zoomD.len['1.0'] = 15 // - 6
-    zoomD.len['1.1'] = zoomD.len['1.0'] + 0.1
-    zoomD.len['1.2'] = zoomD.len['1.0'] + 2
-    zoomD.len['1.3'] = 20
-    // zoomD.len["0.1"]  = 4  //- 4
-    // zoomD.len["0.2"]  = 10 //- 15.5
-    // zoomD.len["1.0"]  = 12 //- 16.5
-    // zoomD.len["1.1"]  = zoomD.len["1.0"] + 0.1
-    // zoomD.len["1.2"]  = zoomD.len["1.0"] + 2
-    // zoomD.len["1.3"]  = 90
+    zooms.len['0.1'] = 2 // - 0.4
+    zooms.len['0.2'] = 12 // - 4
+    zooms.len['1.0'] = 15 // - 6
+    zooms.len['1.1'] = zooms.len['1.0'] + 0.1
+    zooms.len['1.2'] = zooms.len['1.0'] + 2
+    zooms.len['1.3'] = 20
+    // zooms.len["0.1"]  = 4  //- 4
+    // zooms.len["0.2"]  = 10 //- 15.5
+    // zooms.len["1.0"]  = 12 //- 16.5
+    // zooms.len["1.1"]  = zooms.len["1.0"] + 0.1
+    // zooms.len["1.2"]  = zooms.len["1.0"] + 2
+    // zooms.len["1.3"]  = 90
   } else {
-    zoomD.len['0.1'] = 2 // - 0.4
-    zoomD.len['0.2'] = 5 // - 4
-    zoomD.len['1.0'] = 6.5 // - 6
-    zoomD.len['1.1'] = zoomD.len['1.0'] + 0.1
-    zoomD.len['1.2'] = zoomD.len['1.0'] + 1
-    zoomD.len['1.3'] = 9
+    zooms.len['0.1'] = 2 // - 0.4
+    zooms.len['0.2'] = 5 // - 4
+    zooms.len['1.0'] = 6.5 // - 6
+    zooms.len['1.1'] = zooms.len['1.0'] + 0.1
+    zooms.len['1.2'] = zooms.len['1.0'] + 1
+    zooms.len['1.3'] = 9
   }
-  zoomD.len.prev = zoomD.len['0.0']
+  zooms.len.prev = zooms.len['0.0']
 
-  zoomD.scaleExtent = [zoomD.len['0.0'], zoomD.len['1.3']]
+  zooms.scale_extent = [zooms.len['0.0'], zooms.len['1.3']]
 
-  function isStateUp (scale, scaleTag) {
-    return zoomD.len.prev < zoomD.len[scaleTag] && scale >= zoomD.len[scaleTag]
+  function is_state_up (scale, scaleTag) {
+    return zooms.len.prev < zooms.len[scaleTag] && scale >= zooms.len[scaleTag]
   }
-  this_top.isStateUp = isStateUp
+  this_top.is_state_up = is_state_up
 
-  function isStateDown (scale, scaleTag) {
-    return zoomD.len.prev >= zoomD.len[scaleTag] && scale < zoomD.len[scaleTag]
+  function is_state_down (scale, scaleTag) {
+    return zooms.len.prev >= zooms.len[scaleTag] && scale < zooms.len[scaleTag]
   }
-  this_top.isStateDown = isStateDown
+  this_top.is_state_down = is_state_down
 
-  function isStateChange (scale, scaleTag) {
-    return isStateUp(scale, scaleTag) || isStateDown(scale, scaleTag)
+  function is_state_change (scale, scaleTag) {
+    return is_state_up(scale, scaleTag) || is_state_down(scale, scaleTag)
   }
-  this_top.isStateChange = isStateChange
+  this_top.is_state_change = is_state_change
 
   // ------------------------------------------------------------------
   // 
@@ -398,21 +398,21 @@ window.ArrZoomerBase = function (opt_in0) {
   function init_data (data_in) {
     this_top.tel_types = data_in.tel_types
 
-    initInstProps(data_in)
+    init_inst_props(data_in)
 
-    setTelData(data_in.arrProp, true)
+    set_tel_data(data_in.arrProp, true)
 
     // arbitrary but safe initialization of target
-    zoomD.target = instruments.data.tel[0].id 
+    zooms.target = instruments.data.tel[0].id 
 
 
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    function addUserOpts(opt_in, eleTag) {
-      if (!is_def(ele_opts[eleTag])) return
+    function add_user_opts(opt_in, ele_tag) {
+      if (!is_def(ele_opts[ele_tag])) return
 
-      $.each(ele_opts[eleTag], function(i, d) {
+      $.each(ele_opts[ele_tag], function(i, d) {
         opt_in[i] = d
       })
 
@@ -422,25 +422,25 @@ window.ArrZoomerBase = function (opt_in0) {
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    let ele_optsMain = {
+    let ele_opts_main = {
       run_loop: run_loop,
       sgv_tag: sgv_tag,
       widget_id: widget_id,
       locker: locker,
       is_south: is_south,
       my_unique_id: my_unique_id,
-      noRender: !do_ele.main,
+      no_render: !do_ele.main,
       widget_type: widget_type,
-      eleBase: this_top,
+      ele_base: this_top,
     }
-    addUserOpts(ele_optsMain, 'main')
+    add_user_opts(ele_opts_main, 'main')
     
-    let eleMain = new ArrZoomerMain(ele_optsMain)
+    let eleMain = new ArrZoomerMain(ele_opts_main)
     eleMain.init_data(data_in)
 
     if (do_ele.main) {
       if(is_def(ele_opts.trans.main)) {
-        eleMain.setTransform(ele_opts.trans.main)
+        eleMain.set_transform(ele_opts.trans.main)
       }
     }
     
@@ -448,22 +448,22 @@ window.ArrZoomerBase = function (opt_in0) {
     // 
     // ------------------------------------------------------------------
     if (do_ele.tree) {
-      let ele_optsTree = {
+      let ele_opts_tree = {
         run_loop: run_loop,
         sgv_tag: sgv_tag,
         widget_id: widget_id,
         locker: locker,
         is_south: is_south,
         my_unique_id: my_unique_id,
-        eleBase: this_top,
+        ele_base: this_top,
       }      
-      addUserOpts(ele_optsTree, 'tree')
+      add_user_opts(ele_opts_tree, 'tree')
       
-      let eleTree = new ArrZoomerTree(ele_optsTree)
+      let eleTree = new ArrZoomerTree(ele_opts_tree)
       eleTree.init_data(data_in)
 
       if(is_def(ele_opts.trans.tree)) {
-        eleTree.setTransform(ele_opts.trans.tree)
+        eleTree.set_transform(ele_opts.trans.tree)
       }
     }
     
@@ -471,29 +471,27 @@ window.ArrZoomerBase = function (opt_in0) {
     // 
     // ------------------------------------------------------------------
     if (do_ele.ches) {
-      let ele_optsChes = {
+      let ele_opts_ches = {
         run_loop: run_loop,
         sgv_tag: sgv_tag,
         widget_id: widget_id,
         locker: locker,
         is_south: is_south,
-        eleBase: this_top,
+        ele_base: this_top,
       }
-      addUserOpts(ele_optsChes, 'ches')
+      add_user_opts(ele_opts_ches, 'ches')
 
-      let eleChes = new ArrZoomerChes(ele_optsChes)
+      let eleChes = new ArrZoomerChes(ele_opts_ches)
       eleChes.init_data({
-        instrumentData: {
+        instrument_data: {
           tel: instruments.data.tel,
-          // mini: instruments.data.mini,
-          // xyr: instruments.data.xyr,
-          vorDblclick: instruments.data.dblclick
+          vor_dblclick: instruments.data.dblclick
         },
-        tel_typeV: tel_typeV
+        tel_id_types: tel_id_types
       })
 
       if(is_def(ele_opts.trans.ches)) {
-        eleChes.setTransform(ele_opts.trans.ches)
+        eleChes.set_transform(ele_opts.trans.ches)
       }
     }
 
@@ -501,31 +499,30 @@ window.ArrZoomerBase = function (opt_in0) {
     // 
     // ------------------------------------------------------------------
     if (do_ele.mini) {
-      let ele_optsMini = {
+      let ele_opts_mini = {
         run_loop: run_loop,
         sgv_tag: sgv_tag,
         widget_id: widget_id,
         locker: locker,
         is_south: is_south,
         my_unique_id: my_unique_id,
-        eleBase: this_top,
+        ele_base: this_top,
       }
-      addUserOpts(ele_optsMini, 'mini')
+      add_user_opts(ele_opts_mini, 'mini')
       
-      let eleMini = new ArrZoomerMini(ele_optsMini)
+      let eleMini = new ArrZoomerMini(ele_opts_mini)
       eleMini.init_data({
-        instrumentData: {
+        instrument_data: {
           tel: instruments.data.tel,
           vor: { data: instruments.data.vor.data },
-          xyrPhysical: instruments.data.mini,
-          // xyr: instruments.data.xyr,
-          vorDblclick: instruments.data.dblclick
+          xyr_physical: instruments.data.mini,
+          vor_dblclick: instruments.data.dblclick
         },
-        tel_typeV: tel_typeV
+        tel_id_types: tel_id_types
       })
 
       if(is_def(ele_opts.trans.mini)) {
-        eleMini.setTransform(ele_opts.trans.mini)
+        eleMini.set_transform(ele_opts.trans.mini)
       }
     }
 
@@ -533,53 +530,34 @@ window.ArrZoomerBase = function (opt_in0) {
     // 
     // ------------------------------------------------------------------
     if (do_ele.lens) {
-      let ele_optsLens = {
+      let ele_opts_lens = {
         run_loop: run_loop,
         sgv_tag: sgv_tag,
         widget_id: widget_id,
         locker: locker,
         is_south: is_south,
         my_unique_id: my_unique_id,
-        eleBase: this_top,
+        ele_base: this_top,
         isLens: 1,
-        staticZoom: false,
+        static_zoom: false,
       }
-      addUserOpts(ele_optsLens, 'lens')
+      add_user_opts(ele_opts_lens, 'lens')
       
-      let eleLens = new ArrZoomerMini(ele_optsLens)
+      let eleLens = new ArrZoomerMini(ele_opts_lens)
       eleLens.init_data({
-        instrumentData: {
+        instrument_data: {
           tel: instruments.data.tel,
           vor: { data: instruments.data.vor.data },
-          xyrPhysical: instruments.data.lens,
+          xyr_physical: instruments.data.lens,
           // xyr: instruments.data.xyr,
-          vorDblclick: instruments.data.dblclick
+          vor_dblclick: instruments.data.dblclick
         },
-        tel_typeV: tel_typeV
+        tel_id_types: tel_id_types
       })
 
       if(is_def(ele_opts.trans.lens)) {
-        eleLens.setTransform(ele_opts.trans.lens)
+        eleLens.set_transform(ele_opts.trans.lens)
       }
-
-
-      // let ele_optsLens = {
-      //   run_loop: run_loop,
-      //   sgv_tag: sgv_tag,
-      //   widget_id: widget_id,
-      //   locker: locker,
-      //   is_south: is_south,
-      //   my_unique_id: my_unique_id,
-      //   eleBase: this_top,
-      // }      
-      // addUserOpts(ele_optsLens, 'lens')
-      
-      // let eleLens = new arr_zoomerLens(ele_optsLens)
-      // eleLens.init_data(data_in)
-
-      // if(is_def(ele_opts.trans.lens)) {
-      //   eleLens.setTransform(ele_opts.trans.lens)
-      // }
     }
 
     return
@@ -595,35 +573,35 @@ window.ArrZoomerBase = function (opt_in0) {
   // is a full update of all the data)
   // ------------------------------------------------------------------
   run_loop.init({
-    tag: '_s00update_'+my_unique_id, 
-    func: updateS0, 
+    tag: '_s00_update_' + my_unique_id, 
+    func: update_s0, 
     n_keep: -1, 
     wait: 500,
   })
   run_loop.init({
-    tag: '_s11update_'+my_unique_id, 
-    func: updateS1, 
+    tag: '_s11_update_' + my_unique_id, 
+    func: update_s1, 
     n_keep: 1, 
     wait: 500,
   })
   run_loop.init({
-    tag: 'subArrUpdate'+my_unique_id,
-    func: subArrUpdate,
+    tag: 'sub_arr_update' + my_unique_id,
+    func: sub_arr_update,
     n_keep: 1,
     wait: 500,
   })
 
   function update_data (data_in) {
-    if (!locker.is_free('inInit')) return
+    if (!locker.is_free('in_init')) return
 
     if (data_in.type === 's00') {
-      run_loop.push({ tag: '_s00update_'+my_unique_id, data: data_in })
+      run_loop.push({ tag: '_s00_update_' + my_unique_id, data: data_in })
     } 
     else if (data_in.type === 's11') {
-      run_loop.push({ tag: '_s11update_'+my_unique_id, data: data_in })
+      run_loop.push({ tag: '_s11_update_' + my_unique_id, data: data_in })
     } 
-    else if (data_in.type === 'subArr') {
-      run_loop.push({ tag: 'subArrUpdate'+my_unique_id, data: data_in })
+    else if (data_in.type === 'sub_arr') {
+      run_loop.push({ tag: 'sub_arr_update' + my_unique_id, data: data_in })
     } 
     else {
       console.error('undefined tag for data_in = ', data_in, ' !!!!!! ')
@@ -634,79 +612,78 @@ window.ArrZoomerBase = function (opt_in0) {
   // ------------------------------------------------------------------
   // update the data for s0
   // ------------------------------------------------------------------
-  function updateS0 (data_in) {
-    if (!locker.are_free(['zoom', 'autoZoomTarget', 'dataChange'])) {
+  function update_s0 (data_in) {
+    if (!locker.are_free(['zoom', 'auto_zoom_target', 'data_change'])) {
       // console.log('delay-s0 ....',data_in.type,data_in.emit_time )
       setTimeout(function () {
-        updateS0(data_in)
+        update_s0(data_in)
       }, 10)
       return
     }
     // console.log('do   -s0 ....',data_in.type,data_in.emit_time )
 
-    locker.add('dataChange')
+    locker.add('data_change')
 
     // ------------------------------------------------------------------
     // fill the updated properties (accumilate all updates in order,
     // so that if some id was updated multiple times,
     // the latest value will be kept
     // ------------------------------------------------------------------
-    setTelData(data_in.data, false)
+    set_tel_data(data_in.data, false)
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    setState()
+    set_state()
 
-    locker.remove('dataChange')
-    // locker.remove({id:"dataChange",delay:1500}); // for testing... never delay this...
+    locker.remove('data_change')
+    // locker.remove({id:"data_change",delay:1500}); // for testing... never delay this...
   }
 
   // ------------------------------------------------------------------
   // update the data for s1
   // ------------------------------------------------------------------
-  function updateS1 (dataDictIn) {
-    if (get_ele('main').getZoomS() === 0) return
+  function update_s1 (data_in) {
+    if (get_ele('main').get_zoom_state() === 0) return
 
-    if (!locker.are_free(['zoom', 'autoZoomTarget', 'dataChange'])) {
+    if (!locker.are_free(['zoom', 'auto_zoom_target', 'data_change'])) {
       setTimeout(function () {
-        updateS1(dataDictIn)
+        update_s1(data_in)
       }, 10)
       return
     }
 
-    let data_in = dataDictIn.data
-    let updtData = data_in.data
-    let tel_Id = data_in.id
-    let telIndex = instruments.data.idToIndex[tel_Id]
+    let new_data = data_in.data.data
+    let tel_Id = data_in.data.id
+    let tel_index = instruments.data.id_indices[tel_Id]
 
     // if by the time the update has arrived, 
     // were already gone from this element...
-    if (!is_def(instruments.data.propDataS1[tel_Id])) {
-      // console.log('-+-> updateS1: could not find',tel_Id,'in instruments.data.propDataS1')
+    if (!is_def(instruments.data.prop_data_s1[tel_Id])) {
+      // console.log('-+-> update_s1: could not find',tel_Id,'in instruments.data.prop_data_s1')
       return
     }
-    // console.log('````',data_in,instruments.data.propDataS1[tel_Id]);
+    // console.log('````',data_in.data,instruments.data.prop_data_s1[tel_Id]);
 
-    locker.add('dataChange')
+    locker.add('data_change')
 
     // ------------------------------------------------------------------
     // update the underlying data
     // ------------------------------------------------------------------
-    let propsNow = getTelProps(
-      Object.keys(instruments.data.propDataS1[tel_Id]), tel_Id)
+    let props_now = get_tel_props(
+      Object.keys(instruments.data.prop_data_s1[tel_Id]), tel_Id)
     
-    $.each(propsNow, function (index, porpNow) {
+    $.each(props_now, function (index, porp_now) {
       // update the data container with the s0 updated health
-      instruments.data.propDataS1[tel_Id][porpNow].val = instruments.data.tel[telIndex][porpNow]
+      instruments.data.prop_data_s1[tel_Id][porp_now].val = instruments.data.tel[tel_index][porp_now]
 
       // now go through the hirch
-      let data_now = instruments.data.propDataS1[tel_Id][porpNow]
+      let data_now = instruments.data.prop_data_s1[tel_Id][porp_now]
       update_data_now(data_now)
 
       function update_data_now (d) {
-        if (is_def(updtData[d.id])) {
-          d.val = updtData[d.id]
+        if (is_def(new_data[d.id])) {
+          d.val = new_data[d.id]
           // console.log('upddd',d.id,d)
         }
         if (d.children) {
@@ -714,35 +691,35 @@ window.ArrZoomerBase = function (opt_in0) {
             update_data_now(dNow)
           })
         }
-        // no need to explicitly change the d[childName] element, since it is just a pointer to d[children]
-        // let childName = "child_"+d.childDepth
-        // if(d[childName]) {
-        //   d[childName].forEach(function(dNow) { update_data_now(dNow); })
+        // no need to explicitly change the d[child_mame] element, since it is just a pointer to d[children]
+        // let child_mame = "child_"+d.child_depth
+        // if(d[child_mame]) {
+        //   d[child_mame].forEach(function(dNow) { update_data_now(dNow); })
         // }
       }
     })
 
-    get_ele('main').updateS1(data_in)
+    get_ele('main').update_s1(data_in)
     if (get_ele('tree')) {
-      get_ele('tree').updateS1(data_in)
+      get_ele('tree').update_s1(data_in)
     }
 
-    locker.remove('dataChange')
+    locker.remove('data_change')
   }
 
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  function subArrUpdate (data_in) {
-    if (!locker.are_free(['zoom', 'autoZoomTarget', 'dataChange'])) {
+  function sub_arr_update (data_in) {
+    if (!locker.are_free(['zoom', 'auto_zoom_target', 'data_change'])) {
       setTimeout(function () {
-        subArrUpdate(data_in)
+        sub_arr_update(data_in)
       }, 10)
       return
     }
 
     get_ele('main').set_tel_layout({ 
-      id: 'subArr', data: data_in.data, updtId: false,
+      id: 'sub_arr', data: data_in.data, updtId: false,
     })
 
     return
@@ -758,81 +735,91 @@ window.ArrZoomerBase = function (opt_in0) {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  run_loop.init({ tag: 'setState'+my_unique_id, func: setStateOnce, n_keep: 1 })
+  run_loop.init({ 
+    tag: 'set_state'+my_unique_id, func: set_state_once, n_keep: 1, 
+  })
 
-  function setState () {
-    run_loop.push({ tag: 'setState'+my_unique_id })
+  function set_state () {
+    run_loop.push({ tag: 'set_state'+my_unique_id })
   }
-  this_top.setState = setState
+  this_top.set_state = set_state
 
-  function setStateOnce () {
-    // create delay if currently in data update or a previous call of setStateOnce
-    if (!locker.are_free(['setStateLock', 'dataChange'])) {
-      // console.log('delay setStateOnce',' :',locker.is_free({id:"setStateLock"}),' - data_updateate:',locker.is_free({id:"setStateLock"}))
+  function set_state_once () {
+    // create delay if currently in data update or a previous call of set_state_once
+    if (!locker.are_free(['set_state_lock', 'data_change'])) {
+      // console.log('delay set_state_once',' :',locker.is_free({id:"set_state_lock"}),' - data_updateate:',locker.is_free({id:"set_state_lock"}))
       setTimeout(function () {
-        setState()
+        set_state()
       }, times.anim_arc)
       return
     }
-    // console.log("setState");
+    // console.log("set_state");
 
-    locker.add('setStateLock')
+    locker.add('set_state_lock')
 
-    get_ele('main').setStateOnce()
+    get_ele('main').set_state_once()
     if (get_ele('tree')) {
-      get_ele('tree').setStateOnce()
+      get_ele('tree').set_state_once()
     }
     if (get_ele('mini')) {
-      get_ele('mini').setStateOnce()
+      get_ele('mini').set_state_once()
     }
     if (get_ele('lens')) {
-      get_ele('lens').setStateOnce()
+      get_ele('lens').set_state_once()
     }
     if (get_ele('ches')) {
-      get_ele('ches').setStateOnce()
+      get_ele('ches').set_state_once()
     }
 
-    locker.remove({ id: 'setStateLock', delay: times.anim_arc * 2 })
+    locker.remove({
+      id: 'set_state_lock', delay: times.anim_arc * 2,
+    })
   }
 
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  run_loop.init({ tag: '_s1props_'+my_unique_id, func: propsS1Once, n_keep: -1 })
+  run_loop.init({ 
+    tag: '_s1_props_'+my_unique_id, func: props_s1_once, n_keep: -1,
+  })
 
-  function propsS1 (opt_in) {
-    // console.log('setState',get_ele('main').getZoomS(),getScale())
-    run_loop.push({ tag: '_s1props_'+my_unique_id, data: opt_in })
+  function props_s1 (opt_in) {
+    // console.log('set_state',get_ele('main').get_zoom_state(),get_scale())
+    run_loop.push({
+      tag: '_s1_props_'+my_unique_id, data: opt_in,
+    })
   }
-  // this.propsS1 = propsS1;
-  this_top.propsS1 = propsS1
+  // this.props_s1 = props_s1;
+  this_top.props_s1 = props_s1
 
-  function propsS1Once (opt_in) {
-    // not sure i need "dataChange" or others here .... FIXME
-    if (!locker.are_free(['s1propsChange', 'dataChange'])) {
-      // console.log('delay propsS1Once....')
-      propsS1(opt_in)
+  function props_s1_once (opt_in) {
+    // not sure i need "data_change" or others here .... FIXME
+    if (!locker.are_free(['s1_props_change', 'data_change'])) {
+      // console.log('delay props_s1_once....')
+      props_s1(opt_in)
       return
     }
 
-    locker.add('s1propsChange')
+    locker.add('s1_props_change')
 
-    let doFunc = opt_in.doFunc
-    let doBckArcClick = is_def(doFunc)
-      ? doFunc.indexOf('bckArcClick') >= 0
+    let do_func = opt_in.do_func
+    let do_bck_arc_click = is_def(do_func)
+      ? do_func.indexOf('bck_arc_click') >= 0
       : true
-    let doTelHirch = is_def(doFunc) ? doFunc.indexOf('telHirch') >= 0 : true
+    let do_tel_hierarchy = (
+      is_def(do_func) ? do_func.indexOf('tel_hierarchy') >= 0 : true
+    )
 
     if (get_ele('tree')) {
-      if (doTelHirch) get_ele('tree').telHirch(opt_in)
+      if (do_tel_hierarchy) get_ele('tree').tel_hierarchy(opt_in)
     }
 
-    if (doBckArcClick) {
-      opt_in.canIgnore = false
-      get_ele('main').bckArcClick(opt_in)
+    if (do_bck_arc_click) {
+      opt_in.can_ignore = false
+      get_ele('main').bck_arc_click(opt_in)
     }
 
-    locker.remove('s1propsChange')
+    locker.remove('s1_props_change')
   }
 
   // ------------------------------------------------------------------
@@ -842,7 +829,9 @@ window.ArrZoomerBase = function (opt_in0) {
   // by the time the transitions to open it
   // has ended, another was already requested too).
   // ------------------------------------------------------------------
-  run_loop.init({ tag: '_get_data_s1_'+my_unique_id, func: get_data_s1_once, n_keep: 1 })
+  run_loop.init({
+    tag: '_get_data_s1_'+my_unique_id, func: get_data_s1_once, n_keep: 1,
+  })
 
   function get_data_s1 (widget_id_in, data_in) {
     // just in case... should not be needed
@@ -852,7 +841,7 @@ window.ArrZoomerBase = function (opt_in0) {
     }
     // console.log('-client- get_data_s1',data_in)
 
-    if (get_ele('main').getZoomS() === 1) {
+    if (get_ele('main').get_zoom_state() === 1) {
       run_loop.push({ tag: '_get_data_s1_'+my_unique_id, data: data_in })
     }
   }
@@ -860,35 +849,22 @@ window.ArrZoomerBase = function (opt_in0) {
 
   function get_data_s1_once (data_in) {
     if (
-      get_ele('main').getZoomS() === 1 &&
-      get_ele('main').syncD.zoom_target !== data_in.data.id
+      get_ele('main').get_zoom_state() === 1 &&
+      get_ele('main').syncs.zoom_target !== data_in.data.id
     ) {
-      get_ele('main').syncD.zoom_target = data_in.data.id
+      get_ele('main').syncs.zoom_target = data_in.data.id
 
-      get_ele('main').s10main(data_in.data)
+      get_ele('main').s10_main(data_in.data)
 
-      propsS1({
+      props_s1({
         tel_Id: data_in.data.id,
-        clickIn: false,
-        propIn: '',
-        doFunc: ['bckArcClick'],
+        click_in: false,
+        prop_in: '',
+        do_func: ['bck_arc_click'],
         debug: 'get_data_s1_once'
       })
     }
   }
-
-  
-
-
-
-
-
-
-
-
-
-
-
 
   // ------------------------------------------------------------------
   //
@@ -909,22 +885,22 @@ window.ArrZoomerBase = function (opt_in0) {
     prev_sync[data_in.type] = data_in.data
 
     let type = data_in.type
-    if (type === 'syncTelFocus') {
+    if (type === 'sync_tel_focus') {
       // locker.add("get_sync_state");
 
       let target = data_in.data.target
       let zoom_state = data_in.data.zoom_state
 
-      let scale = zoomD.len['0.0']
-      if (zoom_state === 1) scale = zoomD.len['1.0']
+      let scale = zooms.len['0.0']
+      if (zoom_state === 1) scale = zooms.len['1.0']
 
-      get_ele('main').zoomToTrgMain({
+      get_ele('main').zoom_to_target_main({
         target: target,
         scale: scale,
         duration_scale: 1,
-        endFunc: function () {
+        end_func: function () {
           // locker.remove("get_sync_state");
-          get_ele('main').ask_dataS1()
+          get_ele('main').ask_data_s1()
         }
       })
     }
@@ -937,28 +913,30 @@ window.ArrZoomerBase = function (opt_in0) {
   //
   // ------------------------------------------------------------------
   run_loop.init({
-    tag: 'sync_state_send'+my_unique_id,
+    tag: 'sync_state_send' + my_unique_id,
     func: _sync_state_send,
     n_keep: 1,
     wait: times.wait_sync_state
   })
 
   function sync_state_send (data_in) {
-    run_loop.push({ tag: 'sync_state_send'+my_unique_id, data: data_in })
+    run_loop.push({
+      tag: 'sync_state_send' + my_unique_id, data: data_in,
+    })
   }
   this_top.sync_state_send = sync_state_send
 
   function _sync_state_send (data_in) {
     if (sock.con_stat.is_offline()) return
 
-    if (data_in.type === 'syncTelFocus') {
+    if (data_in.type === 'sync_tel_focus') {
       if (
         !locker.are_free([
-          'inInit',
+          'in_init',
           'zoom',
-          'autoZoomTarget',
-          'setStateLock',
-          'dataChange'
+          'auto_zoom_target',
+          'set_state_lock',
+          'data_change'
         ])
       ) {
         setTimeout(function () {
@@ -984,7 +962,7 @@ window.ArrZoomerBase = function (opt_in0) {
   // ------------------------------------------------------------------
   // ask for update for state1 data for a given module
   // ------------------------------------------------------------------
-  function sockAskDataS1 (opt_in) {
+  function sock_ask_data_s1 (opt_in) {
     if (sock.con_stat.is_offline()) return
 
     let data = {}
@@ -1004,49 +982,49 @@ window.ArrZoomerBase = function (opt_in0) {
 
     return
   }
-  this_top.sockAskDataS1 = sockAskDataS1
+  this_top.sock_ask_data_s1 = sock_ask_data_s1
 
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function setZoomState () {
+  function set_zoom_state () {
     if (sock.con_stat.is_offline()) return
 
-    let mainWidgetState = get_ele('main').getWidgetState()
+    let main_widget_state = get_ele('main').get_widget_state()
     
-    let treeWidgetState = {}
+    let tree_widget_state = {}
     if (get_ele('tree')) {
-      treeWidgetState = get_ele('tree').getWidgetState()
+      tree_widget_state = get_ele('tree').get_widget_state()
     } 
     else {
-      function getWidgetState () {
+      function get_widget_state () {
         return {
-          zoom_targetProp: '',
+          zoom_target_prop: '',
         }
       }
-      treeWidgetState['zoom_targetProp'] = getWidgetState()
+      tree_widget_state['zoom_target_prop'] = get_widget_state()
     }
 
-    let dataWidget = {}
-    dataWidget.widget_id = widget_id
-    dataWidget.zoom_state = mainWidgetState.zoom_state
-    dataWidget.zoom_target = mainWidgetState.zoom_target
-    dataWidget.zoom_targetProp = treeWidgetState.zoom_targetProp
+    let data_widget = {}
+    data_widget.widget_id = widget_id
+    data_widget.zoom_state = main_widget_state.zoom_state
+    data_widget.zoom_target = main_widget_state.zoom_target
+    data_widget.zoom_target_prop = tree_widget_state.zoom_target_prop
 
     let emit_data = {
       widget_source: widget_source,
       widget_name: widget_type,
       widget_id: widget_id,
       method_name: 'arr_zoomer_set_widget_state',
-      method_arg: dataWidget
+      method_arg: data_widget
     }
 
     sock.socket.emit('widget', emit_data)
 
     return
   }
-  this_top.setZoomState = setZoomState
+  this_top.set_zoom_state = set_zoom_state
 
   // ------------------------------------------------------------------
   // get update for state1 data which was explicitly asked for by a given module

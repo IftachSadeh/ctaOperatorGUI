@@ -516,8 +516,8 @@ window.BlockDisplayer = function (opt_in) {
       // ------------------------------------------------------------------
       //
       // ------------------------------------------------------------------
-      let wMin = min_max_obj({ minMax: 'min', data: blocks, func: 'w' })
-      let hMin = min_max_obj({ minMax: 'min', data: blocks, func: 'h' })
+      let wMin = min_max_obj({ min_max: 'min', data: blocks, func: 'w' })
+      let hMin = min_max_obj({ min_max: 'min', data: blocks, func: 'h' })
       if (!is_def(hMin) || !is_def(wMin)) return []
 
       let margX = wMin * 0.2
@@ -544,7 +544,7 @@ window.BlockDisplayer = function (opt_in) {
         // let o0 = data_now0.o
 
         let telV = [].concat(data_now0.tel_ids)
-        let minMax = { minX: x0, minY: y0, maxX: x0 + w0, maxY: y0 + h0 }
+        let min_max = { min_x: x0, min_y: y0, maxX: x0 + w0, maxY: y0 + h0 }
 
         let ovelaps = [{ index: index0, data: data_now0 }]
 
@@ -570,16 +570,16 @@ window.BlockDisplayer = function (opt_in) {
             let o01 = Math.max(data_now0.o, data_now1.o)
 
             let hasOverlap =
-                              x1 < minMax.maxX - o01 &&
-                              x1 + w1 > minMax.minX + o01 &&
-                              y1 < minMax.maxY &&
-                              y1 + h1 > minMax.minY
-            // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
+                              x1 < min_max.maxX - o01 &&
+                              x1 + w1 > min_max.min_x + o01 &&
+                              y1 < min_max.maxY &&
+                              y1 + h1 > min_max.min_y
+            // if(x1 > min_max.maxX-o1 && x1 < min_max.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
 
             // XXXXXXXXXXXXXXXXXX
             // let hasOverlap = (
-            //   (x1 < minMax.maxX+margX/2) && (x1+w1 > minMax.minX) &&
-            //   (y1 < minMax.maxY)         && (y1+h1 > minMax.minY)
+            //   (x1 < min_max.maxX+margX/2) && (x1+w1 > min_max.min_x) &&
+            //   (y1 < min_max.maxY)         && (y1+h1 > min_max.min_y)
             // );
             // XXXXXXXXXXXXXXXXXX
 
@@ -590,11 +590,11 @@ window.BlockDisplayer = function (opt_in) {
               }
               telV = telV.concat(data_now1.tel_ids)
 
-              minMax = {
-                minX: Math.min(minMax.minX, x1),
-                minY: Math.min(minMax.minY, y1),
-                maxX: Math.max(minMax.maxX, x1 + w1),
-                maxY: Math.max(minMax.maxY, y1 + h1)
+              min_max = {
+                min_x: Math.min(min_max.min_x, x1),
+                min_y: Math.min(min_max.min_y, y1),
+                maxX: Math.max(min_max.maxX, x1 + w1),
+                maxY: Math.max(min_max.maxY, y1 + h1)
               }
 
               ovelaps.push({ index: index1, data: data_now1 })
@@ -726,7 +726,7 @@ window.BlockDisplayer = function (opt_in) {
       //       .attr('width', x2 - x)
       //       .attr('height', com.blockQueue.blocks.run.box.h * 0.12)
       //       .attr('fill', com.background.child.runOverflow.fill)
-      //       .attr('fill-opacity', com.background.child.runOverflow.fillOpacity)
+      //       .attr('fill-opacity', com.background.child.runOverflow.fill_opacity)
       //   } else if (tot > box.h) {
       //     let coef = box.h / tot
       //     $.each(group, function (index, data_now) {
@@ -755,7 +755,7 @@ window.BlockDisplayer = function (opt_in) {
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
-        bDisplay.fillOpacity = com.style.blockOpac({ d: b })
+        bDisplay.fill_opacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
@@ -931,12 +931,12 @@ window.BlockDisplayer = function (opt_in) {
       rect.each(function (d, i) {
         d3.select(this).attr('opacity', d.display.opacity)
         d3.select(this).select('rect.back')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .ease(d3.easeLinear)
           .attr('stroke', d.display.stroke)
           .style('fill', d.display.fill)
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('fill-opacity', d.display.fill_opacity)
           .attr('x', timescale(d.time.start))
           .attr('y', d.display.y - 2)
           .attr('width', timescale(d.time.end) - timescale(d.time.start))
@@ -945,7 +945,7 @@ window.BlockDisplayer = function (opt_in) {
           .style('stroke-opacity', d.display.strokeOpacity)
           .style('stroke-dasharray', d.display.strokeDasharray)
         d3.select(this).select('rect.pattern')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .attr('x', timescale(d.time.start))
           .attr('y', d.display.y - 2)
@@ -954,7 +954,7 @@ window.BlockDisplayer = function (opt_in) {
           .style('fill', d.display.patternFill)
           .style('fill-opacity', d.display.patternOpacity)
         d3.select(this).select('text')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .text(d.metadata.block_name)
           .style('font-size', function (d) {
@@ -966,9 +966,9 @@ window.BlockDisplayer = function (opt_in) {
             return d.display.size + 'px'
           })
           .attr('dy', d.display.size / 3 + 'px')
-          .style('opacity', d.display.fillOpacity)
-          .style('stroke-opacity', d.display.fillOpacity)
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('opacity', d.display.fill_opacity)
+          .style('stroke-opacity', d.display.fill_opacity)
+          .style('fill-opacity', d.display.fill_opacity)
           .attr('x', timescale(d.time.start + d.time.duration * 0.5))
           .attr('y', d.display.y + d.display.h / 2)
       })
@@ -1013,7 +1013,7 @@ window.BlockDisplayer = function (opt_in) {
     //       .style('pointer-events', 'none')
     //       .attr('vector-effect', 'non-scaling-stroke')
     //       .merge(rectNow)
-    //       .transition('inOut')
+    //       .transition('in_out')
     //       .duration(50)
     //       .attr('x', function (d, i) {
     //         if (d > com.blockQueue.axis.scale.domain()[1]) return com.blockQueue.axis.scale(com.blockQueue.axis.scale.domain()[1])
@@ -1072,7 +1072,7 @@ window.BlockDisplayer = function (opt_in) {
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
         .merge(rectNow)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('x', function (d, i) {
           return d.x
@@ -1084,7 +1084,7 @@ window.BlockDisplayer = function (opt_in) {
       // .attr("height", function(d,i) { return d.h; })
 
       // rectNow.exit()
-      //   .transition("inOut").duration(times.anim_arc/2)
+      //   .transition("in_out").duration(times.anim_arc/2)
       //   .attr("width", 0)
       //   .style("opacity", 0)
       //   .remove()
@@ -1117,7 +1117,7 @@ window.BlockDisplayer = function (opt_in) {
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
-        bDisplay.fillOpacity = com.style.blockOpac({ d: b })
+        bDisplay.fill_opacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
@@ -1299,12 +1299,12 @@ window.BlockDisplayer = function (opt_in) {
 
       rect.each(function (d, i) {
         d3.select(this)
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
           .attr('opacity', d.display.opacity)
         d3.select(this).select('rect.back')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           // .attr('stroke', d.display.stroke)
           // .style('fill', d.display.fill)
@@ -1317,7 +1317,7 @@ window.BlockDisplayer = function (opt_in) {
           // .style('stroke-opacity', 1)
           // .style('stroke-dasharray', [])
         // d3.select(this).select('rect.pattern')
-        //   .transition('inOut')
+        //   .transition('in_out')
         //   .duration(times.anim_arc)
         //   .attr('x', timescale(d.time.start))
         //   .attr('y', d.display.y - 2)
@@ -1326,14 +1326,14 @@ window.BlockDisplayer = function (opt_in) {
         //   .style('fill', d.display.patternFill)
         //   .style('fill-opacity', d.display.patternOpacity)
         d3.select(this).select('text')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .text(d.metadata.n_obs)
           .style('font-size', minTxtSize + 'px')
           // .attr('dy', d.display.size / 3 + 'px')
-          // .style('opacity', d.display.fillOpacity)
-          // .style('stroke-opacity', d.display.fillOpacity)
-          // .style('fill-opacity', d.display.fillOpacity)
+          // .style('opacity', d.display.fill_opacity)
+          // .style('stroke-opacity', d.display.fill_opacity)
+          // .style('fill-opacity', d.display.fill_opacity)
           .attr('dy', minTxtSize * 0.25)
           .attr('x', box.w * blocksTemplate['' + blocks.length][i].x)
           .attr('y', box.h * blocksTemplate['' + blocks.length][i].y)
@@ -1365,7 +1365,7 @@ window.BlockDisplayer = function (opt_in) {
       com.blockForm.forms.scroll.scrollBox = new ScrollBox()
       com.blockForm.forms.scroll.scrollBox.init({
         tag: 'blockDisplayerFormScroll',
-        gBox: com.blockForm.forms.scroll.scrollBoxG,
+        g_box: com.blockForm.forms.scroll.scrollBoxG,
         boxData: {
           x: 0,
           y: 0,
@@ -1378,7 +1378,7 @@ window.BlockDisplayer = function (opt_in) {
         lockerV: ['blockDisplayerFormScroll' + 'update_data'],
         lockerZoom: {
           all: 'ScrollBox' + 'zoom',
-          during: 'ScrollBox' + 'zoomDuring',
+          during: 'ScrollBox' + 'zoomsuring',
           end: 'ScrollBox' + 'zoomEnd'
         },
         run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
@@ -1422,7 +1422,7 @@ window.BlockDisplayer = function (opt_in) {
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
-        bDisplay.fillOpacity = com.style.blockOpac({ d: b })
+        bDisplay.fill_opacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
@@ -1547,7 +1547,7 @@ window.BlockDisplayer = function (opt_in) {
 
       rect.each(function (d, i) {
         d3.select(this)
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
           .attr('opacity', d => d.display.opacity)
@@ -1556,7 +1556,7 @@ window.BlockDisplayer = function (opt_in) {
             let t = (1.0 / parseFloat(blocks.length - 1)) * parseFloat(i)
             com.blockForm.forms.scroll.scrollBox.moveHorizontalScrollerTo(t)
           })
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           // .attr('stroke', d.display.stroke)
           // .style('fill', d.display.fill)
@@ -1569,7 +1569,7 @@ window.BlockDisplayer = function (opt_in) {
           // .style('stroke-opacity', 1)
           // .style('stroke-dasharray', [])
         // d3.select(this).select('rect.pattern')
-        //   .transition('inOut')
+        //   .transition('in_out')
         //   .duration(times.anim_arc)
         //   .attr('x', timescale(d.time.start))
         //   .attr('y', d.display.y - 2)
@@ -1578,14 +1578,14 @@ window.BlockDisplayer = function (opt_in) {
         //   .style('fill', d.display.patternFill)
         //   .style('fill-opacity', d.display.patternOpacity)
         d3.select(this).select('text')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .text(d.metadata.n_obs)
           .style('font-size', minTxtSize + 'px')
           // .attr('dy', d.display.size / 3 + 'px')
-          // .style('opacity', d.display.fillOpacity)
-          // .style('stroke-opacity', d.display.fillOpacity)
-          // .style('fill-opacity', d.display.fillOpacity)
+          // .style('opacity', d.display.fill_opacity)
+          // .style('stroke-opacity', d.display.fill_opacity)
+          // .style('fill-opacity', d.display.fill_opacity)
           .attr('dy', minTxtSize * 0.33)
           .attr('x', dim.w * (i % column) + dim.w * 0.5)
           .attr('y', dim.h * parseInt(i / column) + dim.h * 0.5)
@@ -1661,7 +1661,7 @@ window.BlockDisplayer = function (opt_in) {
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
-        bDisplay.fillOpacity = com.style.blockOpac({ d: b })
+        bDisplay.fill_opacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
@@ -1808,7 +1808,7 @@ window.BlockDisplayer = function (opt_in) {
           mainOffset += d.nLine
           return 'translate(' + translate.x + ',' + translate.y + ')'
         })
-      let minX = com.blockQueue2.sched_blocks.label.position === 'left' ? -2 : com.main.box.w + 2
+      let min_x = com.blockQueue2.sched_blocks.label.position === 'left' ? -2 : com.main.box.w + 2
       let maxWidth = 0
       enterAllScheds.each(function (d, i) {
         d3.select(this).append('line')
@@ -1870,14 +1870,14 @@ window.BlockDisplayer = function (opt_in) {
           let ww = com.blockQueue2.sched_blocks.label.size ? com.blockQueue2.sched_blocks.label.size : maxWidth
           ww = com.blockQueue2.sched_blocks.label.position === 'left' ? -ww : ww
           let poly = [
-            {x: minX, y: 1},
-            {x: minX + ww * 0.85, y: 1},
+            {x: min_x, y: 1},
+            {x: min_x + ww * 0.85, y: 1},
 
-            {x: minX + ww, y: (height * d.nLine) * 0.3},
-            {x: minX + ww, y: (height * d.nLine) * 0.7},
+            {x: min_x + ww, y: (height * d.nLine) * 0.3},
+            {x: min_x + ww, y: (height * d.nLine) * 0.7},
 
-            {x: minX + ww * 0.85, y: (height * d.nLine) - 1},
-            {x: minX, y: (height * d.nLine) - 1}
+            {x: min_x + ww * 0.85, y: (height * d.nLine) - 1},
+            {x: min_x, y: (height * d.nLine) - 1}
           ]
           d3.select(this).select('polygon')
             .attr('points', function () {
@@ -1904,12 +1904,12 @@ window.BlockDisplayer = function (opt_in) {
         })
       rect.each(function (d, i) {
         d3.select(this)
-          .transition('inOut')
+          .transition('in_out')
           .duration(0)
           .attr('transform', 'translate(' + box.x + ',' + (box.y + ((d.nLine - 1) * box.h)) + ')')
           .attr('opacity', d => d.display.opacity)
         d3.select(this).select('rect.back')
-          .transition('inOut')
+          .transition('in_out')
           .duration(0)
           .ease(d3.easeLinear)
           .attr('x', timescale(d.time.start))
@@ -1917,12 +1917,12 @@ window.BlockDisplayer = function (opt_in) {
           .attr('width', (timescale(d.time.end) - timescale(d.time.start)) - d.display.strokeWidth * 0.5)
           .attr('height', box.h - d.display.strokeWidth * 0.5)
           .style('fill', d.display.fill)
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('fill-opacity', d.display.fill_opacity)
           .attr('stroke-width', d.display.strokeWidth)
           .style('stroke-opacity', d.display.strokeOpacity)
           .style('stroke-dasharray', d.display.strokeDasharray)
         d3.select(this).select('rect.pattern')
-          .transition('inOut')
+          .transition('in_out')
           .duration(0)
           .attr('x', timescale(d.time.start))
           .attr('y', 0)
@@ -1931,16 +1931,16 @@ window.BlockDisplayer = function (opt_in) {
           .style('fill', d.display.patternFill)
           .style('fill-opacity', d.display.patternOpacity)
         d3.select(this).select('text')
-          .transition('inOut')
+          .transition('in_out')
           .duration(0)
           .text(d.metadata.n_obs)
           .style('font-size', (box.h * 0.5) + 'px')
           .attr('dy', 1)
           .attr('x', timescale(d.time.start) + (timescale(d.time.end) - timescale(d.time.start)) * 0.5)
           .attr('y', (box.h * 0.5))
-          .style('opacity', d.display.fillOpacity)
-          .style('stroke-opacity', d.display.fillOpacity)
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('opacity', d.display.fill_opacity)
+          .style('stroke-opacity', d.display.fill_opacity)
+          .style('fill-opacity', d.display.fill_opacity)
       })
     }
 
@@ -2016,7 +2016,7 @@ window.BlockDisplayer = function (opt_in) {
     //       .style('pointer-events', 'none')
     //       .attr('vector-effect', 'non-scaling-stroke')
     //       .merge(rectNow)
-    //       .transition('inOut')
+    //       .transition('in_out')
     //       .duration(50)
     //       .attr('x', function (d, i) {
     //         if (d > com.blockQueue2.axis.scale.domain()[1]) return com.blockQueue2.axis.scale(com.blockQueue2.axis.scale.domain()[1])
@@ -2076,7 +2076,7 @@ window.BlockDisplayer = function (opt_in) {
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
         .merge(rectNow)
-        // .transition('inOut')
+        // .transition('in_out')
         // .duration(times.anim_arc)
         .attr('x', function (d, i) {
           if (d.x < 0) return 0
@@ -2090,7 +2090,7 @@ window.BlockDisplayer = function (opt_in) {
       // .attr("height", function(d,i) { return d.h; })
 
       // rectNow.exit()
-      //   .transition("inOut").duration(times.anim_arc/2)
+      //   .transition("in_out").duration(times.anim_arc/2)
       //   .attr("width", 0)
       //   .style("opacity", 0)
       //   .remove()
@@ -2166,7 +2166,7 @@ window.BlockDisplayer = function (opt_in) {
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
-        bDisplay.fillOpacity = com.style.blockOpac({ d: b })
+        bDisplay.fill_opacity = com.style.blockOpac({ d: b })
         bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
         bDisplay.strokeDasharray = []
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
@@ -2448,12 +2448,12 @@ window.BlockDisplayer = function (opt_in) {
 
       rect.each(function (d, i) {
         d3.select(this)
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
           .attr('opacity', d => d.display.opacity)
         d3.select(this).select('rect.back')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .ease(d3.easeLinear)
           .attr('x', timescale(d.time.start))
@@ -2461,12 +2461,12 @@ window.BlockDisplayer = function (opt_in) {
           .attr('width', timescale(d.time.end) - timescale(d.time.start))
           .attr('height', box.h)
           .style('fill', d.display.fill)
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('fill-opacity', d.display.fill_opacity)
           .attr('stroke-width', d.display.strokeWidth)
           .style('stroke-opacity', d.display.strokeOpacity)
           .style('stroke-dasharray', d.display.strokeDasharray)
         d3.select(this).select('rect.pattern')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .attr('x', timescale(d.time.start))
           .attr('y', 0)
@@ -2475,7 +2475,7 @@ window.BlockDisplayer = function (opt_in) {
           .style('fill', d.display.patternFill)
           .style('fill-opacity', d.display.patternOpacity)
         d3.select(this).select('text')
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .ease(d3.easeLinear)
           .text(d.metadata.n_obs)
@@ -2483,9 +2483,9 @@ window.BlockDisplayer = function (opt_in) {
           .attr('dy', 1)
           .attr('x', timescale(d.time.start) + (timescale(d.time.end) - timescale(d.time.start)) * 0.5)
           .attr('y', (box.h * 0.5))
-          .style('opacity', d.display.fillOpacity)
-          .style('stroke-opacity', d.display.fillOpacity)
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('opacity', d.display.fill_opacity)
+          .style('stroke-opacity', d.display.fill_opacity)
+          .style('fill-opacity', d.display.fill_opacity)
       })
     }
 
@@ -2561,7 +2561,7 @@ window.BlockDisplayer = function (opt_in) {
     //       .style('pointer-events', 'none')
     //       .attr('vector-effect', 'non-scaling-stroke')
     //       .merge(rectNow)
-    //       .transition('inOut')
+    //       .transition('in_out')
     //       .duration(50)
     //       .attr('x', function (d, i) {
     //         if (d > com.blockTrackShrink.axis.scale.domain()[1]) return com.blockTrackShrink.axis.scale(com.blockTrackShrink.axis.scale.domain()[1])
@@ -2620,7 +2620,7 @@ window.BlockDisplayer = function (opt_in) {
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
         .merge(rectNow)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('x', function (d, i) {
           return d.x
@@ -2632,7 +2632,7 @@ window.BlockDisplayer = function (opt_in) {
       // .attr("height", function(d,i) { return d.h; })
 
       // rectNow.exit()
-      //   .transition("inOut").duration(times.anim_arc/2)
+      //   .transition("in_out").duration(times.anim_arc/2)
       //   .attr("width", 0)
       //   .style("opacity", 0)
       //   .remove()
@@ -2702,7 +2702,7 @@ window.BlockDisplayer = function (opt_in) {
     com.main.scroll.scrollBox = new ScrollBox()
     com.main.scroll.scrollBox.init({
       tag: ntag,
-      gBox: com.main.scroll.scrollBoxG,
+      g_box: com.main.scroll.scrollBoxG,
       boxData: {
         x: 0,
         y: 0,
@@ -2714,7 +2714,7 @@ window.BlockDisplayer = function (opt_in) {
       lockerV: ['blockDisplayerScroll' + 'update_data'],
       lockerZoom: {
         all: 'blockDisplayerScroll' + 'zoom',
-        during: 'blockDisplayerScroll' + 'zoomDuring',
+        during: 'blockDisplayerScroll' + 'zoomsuring',
         end: 'blockDisplayerScroll' + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: 'blockDisplayerScroll'}),

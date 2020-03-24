@@ -269,7 +269,7 @@ window.TelescopeDisplayer = function (opt_in) {
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.5
         bDisplay.fill = cols.background
-        bDisplay.fillOpacity = com.style.telescopeOpac({ d: b })
+        bDisplay.fill_opacity = com.style.telescopeOpac({ d: b })
         bDisplay.strokeOpacity = com.style.telescopeOpac({ d: b })
         bDisplay.strokeDasharray = []
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
@@ -642,7 +642,7 @@ window.TelescopeDisplayer = function (opt_in) {
 
       rect
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -715,7 +715,7 @@ window.TelescopeDisplayer = function (opt_in) {
       //
       // current
       //   .exit()
-      //   .transition('inOut')
+      //   .transition('in_out')
       //   .duration(times.anim_arc)
       //   .style('opacity', 0)
       //   .remove()
@@ -804,7 +804,7 @@ window.TelescopeDisplayer = function (opt_in) {
             .on('mouseenter', enter)
             .on('mouseleave', leave)
 
-          let fontSize = com.gridBib.blocks.txt_size ? com.gridBib.blocks.txt_size : Math.max(Math.min(sizeRow * 0.24, 18), 18)
+          let font_size = com.gridBib.blocks.txt_size ? com.gridBib.blocks.txt_size : Math.max(Math.min(sizeRow * 0.24, 18), 18)
 
           if (com.gridBib.blocks.left.enabled) {
             d3.select(this).append('rect')
@@ -852,13 +852,13 @@ window.TelescopeDisplayer = function (opt_in) {
             d3.select(this).append('text')
               .attr('id', 'name')
               .attr('x', com.main.box.w * 0.04)
-              .attr('y', sizeRow * 0.5 + 0.5 * fontSize)
+              .attr('y', sizeRow * 0.5 + 0.5 * font_size)
               .text(function (d) {
                 return d.metadata ? d.metadata.block_name : 'P' + get_pointing_value(d)
               })
               .style('fill', color_theme.blocks.run.text)
               .style('font-weight', 'bold')
-              .style('font-size', fontSize + 'px')
+              .style('font-size', font_size + 'px')
               .attr('text-anchor', 'middle')
               .style('pointer-events', 'none')
           }
@@ -877,10 +877,10 @@ window.TelescopeDisplayer = function (opt_in) {
               .attr('id', 'target')
               .text(get_pointing_target(d.pointings[0]))
               .attr('x', com.main.box.w - com.main.box.w * 0.04)
-              .attr('y', sizeRow * 0.5 + 0.5 * fontSize)
+              .attr('y', sizeRow * 0.5 + 0.5 * font_size)
               .style('fill', color_theme.blocks.run.text)
               .style('font-weight', 'normal')
-              .style('font-size', fontSize + 'px')
+              .style('font-size', font_size + 'px')
               .attr('text-anchor', 'middle')
               .style('pointer-events', 'none')
           }
@@ -928,17 +928,17 @@ window.TelescopeDisplayer = function (opt_in) {
             .attr('y', 2)
             .attr('height', sizeRow - 4)
 
-          let fontSize = com.gridBib.blocks.txt_size ? com.gridBib.blocks.txt_size : Math.max(Math.min(sizeRow * 0.24, 18), 10)
+          let font_size = com.gridBib.blocks.txt_size ? com.gridBib.blocks.txt_size : Math.max(Math.min(sizeRow * 0.24, 18), 10)
           d3.select(this).select('text#name')
-            .attr('y', sizeRow * 0.5 + 0.35 * fontSize)
-            .style('font-size', fontSize + 'px')
+            .attr('y', sizeRow * 0.5 + 0.35 * font_size)
+            .style('font-size', font_size + 'px')
           d3.select(this).select('text#target')
-            .attr('y', sizeRow * 0.5 + 0.35 * fontSize)
-            .style('font-size', fontSize + 'px')
+            .attr('y', sizeRow * 0.5 + 0.35 * font_size)
+            .style('font-size', font_size + 'px')
         })
         current
           .exit()
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .style('opacity', 0)
           .remove()
@@ -991,14 +991,14 @@ window.TelescopeDisplayer = function (opt_in) {
         drawTels(mediumT, com.gridBib.telescope.medium.g, mb, com.gridBib.telescope.medium.opt)
         drawTels(smallT, com.gridBib.telescope.small.g, sb, com.gridBib.telescope.small.opt)
 
-        let fontSize = com.gridBib.idle.txt_size !== undefined ? com.gridBib.idle.txt_size : Math.max(Math.min(sizeRow * 0.24, 18), 10)
+        let font_size = com.gridBib.idle.txt_size !== undefined ? com.gridBib.idle.txt_size : Math.max(Math.min(sizeRow * 0.24, 18), 10)
         com.gridBib.back.select('text#idle')
           .transition()
           .duration(times.anim_arc)
           .attr('x', com.main.box.w * 0.04)
-          .attr('y', (sizeRow * 0.5) + (fontSize * 0.4) + offset.y)
+          .attr('y', (sizeRow * 0.5) + (font_size * 0.4) + offset.y)
           .attr('opacity', com.gridBib.freeTels.length === 0 ? 0 : 1)
-          .style('font-size', fontSize + 'px')
+          .style('font-size', font_size + 'px')
         com.gridBib.back.select('rect#idle')
           .transition()
           .duration(times.anim_arc)
@@ -1052,7 +1052,7 @@ window.TelescopeDisplayer = function (opt_in) {
     let ntag = com.main.tag + 'Scroll'
     com.main.scroll.scrollBox.init({
       tag: ntag,
-      gBox: com.main.scroll.scrollBoxG,
+      g_box: com.main.scroll.scrollBoxG,
       boxData: {
         x: 0,
         y: 0,
@@ -1064,7 +1064,7 @@ window.TelescopeDisplayer = function (opt_in) {
       lockerV: [ntag + 'update_data'],
       lockerZoom: {
         all: ntag + 'zoom',
-        during: ntag + 'zoomDuring',
+        during: ntag + 'zoomsuring',
         end: ntag + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: ntag}),
@@ -1350,7 +1350,7 @@ window.TelescopeDisplayer = function (opt_in) {
     //   .merge(rect)
     rect
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()

@@ -28,42 +28,42 @@ window.ArrZoomerMain = function (opt_in0) {
   let parentUniqueId = opt_in0.my_unique_id
   let widget_type = opt_in0.widget_type
 
-  let noRender = opt_in0.noRender
-  let dblclickZoomInOut = is_def(opt_in0.dblclickZoomInOut) ? opt_in0.dblclickZoomInOut : true
+  let no_render = opt_in0.no_render
+  let dblclick_zoom_in_out = is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
 
-  let eleBase = opt_in0.eleBase
+  let ele_base = opt_in0.ele_base
 
-  let instruments = eleBase.instruments
-  let zoomD = eleBase.zoomD
-  let lock_init_key = eleBase.lock_init_keys.main
+  let instruments = ele_base.instruments
+  let zooms = ele_base.zooms
+  let lock_init_key = ele_base.lock_init_keys.main
   
-  let rScale = instruments.rScale
+  let scale_r = instruments.scale_r
 
-  let getPropPosShift = eleBase.getPropPosShift
-  let interpolate01 = eleBase.interpolate01
-  let setZoomState = eleBase.setZoomState
-  let propsS1 = eleBase.propsS1
-  let setState = eleBase.setState
-  let isStateUp = eleBase.isStateUp
-  let isStateDown = eleBase.isStateDown
-  let isStateChange = eleBase.isStateChange
-  let sync_state_send = eleBase.sync_state_send
+  let get_prop_pos_shift = ele_base.get_prop_pos_shift
+  let interpolate01 = ele_base.interpolate01
+  let set_zoom_state = ele_base.set_zoom_state
+  let props_s1 = ele_base.props_s1
+  let set_state = ele_base.set_state
+  let is_state_up = ele_base.is_state_up
+  let is_state_down = ele_base.is_state_down
+  let is_state_change = ele_base.is_state_change
+  let sync_state_send = ele_base.sync_state_send
   
-  eleBase.set_ele(this_top, 'main')
-  let get_ele = eleBase.get_ele
+  ele_base.set_ele(this_top, 'main')
+  let get_ele = ele_base.get_ele
 
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  this_top.hasInit = false
+  this_top.has_init = false
   // this_top.svgQuick = null
 
   let com = {}
   this_top.com = com
-  let s10V = []
-  let syncD = {}
-  this_top.syncD = syncD
+  let s10_eles = []
+  let syncs = {}
+  this_top.syncs = syncs
   com.vor = {}
   com.s00 = {}
   com.s01 = {}
@@ -71,74 +71,74 @@ window.ArrZoomerMain = function (opt_in0) {
   instruments.data.vor = {}
 
   
-  let focusD = {}
+  let focus = {}
 
-  let s1LblXY = {}
-  let arcFunc = {}
+  let s1_lbl_xy = {}
+  let arc_func = {}
 
-  let links2V = {}
+  let links_2 = {}
 
   let arc_prev = {}
   arc_prev.ang = {}
   arc_prev.rad = {}
 
-  let teleR = eleBase.teleR
-  let siteScale = eleBase.siteScale
+  let tel_rs = ele_base.tel_rs
+  let site_scale = ele_base.site_scale
 
-  let lenD = { 
-    // w: 500, h: 500, fracCircWH: 1,
-    w: 600, h: 600, fracCircWH: 0.85,
+  let svg_dims = { 
+    // w: 500, h: 500, frac_circ_wh: 1,
+    w: 600, h: 600, frac_circ_wh: 0.85,
   }
-  this_top.lenD = lenD
+  this_top.svg_dims = svg_dims
   
 
 
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  let gMainD = eleBase.svgD.main
-  gMainD.g = eleBase.svgD.g_svg.append('g')
-  gMainD.g_outer = gMainD.g.append('g')
+  let main_gs = ele_base.svgs.main
+  main_gs.g = ele_base.svgs.g_svg.append('g')
+  main_gs.g_outer = main_gs.g.append('g')
 
-  let uniqueClipId = 'clip' + my_unique_id
+  let unique_clip_id = 'clip' + my_unique_id
   
-  gMainD.g_outer.append('defs')
+  main_gs.g_outer.append('defs')
     .append('clipPath')
-    .attr('id', uniqueClipId)
+    .attr('id', unique_clip_id)
     .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', lenD.w)
-      .attr('height', lenD.h)
+      .attr('width', svg_dims.w)
+      .attr('height', svg_dims.h)
 
-  gMainD.gClipped = gMainD.g_outer.append('g')
-  gMainD.gClipped.attr('class', 'gClipped')
-    .attr('clip-path', 'url(#'+uniqueClipId+')');
+  main_gs.clipped_g = main_gs.g_outer.append('g')
+  main_gs.clipped_g.attr('class', 'clipped_g')
+    .attr('clip-path', 'url(#'+unique_clip_id+')');
 
   // ------------------------------------------------------------------
   // initial scale to 100x100 px
   // ------------------------------------------------------------------
-  gMainD.g_outer.attr('transform', function (d) {
-    return 'translate(0,0)scale('+ (100 / lenD.w) +')'
+  main_gs.g_outer.attr('transform', function (d) {
+    return 'translate(0,0)scale('+ (100 / svg_dims.w) +')'
   })
 
   // ------------------------------------------------------------------
   // to avoid bugs, this is the g which should be used
   // for translations and sacling of this element
   // ------------------------------------------------------------------
-  this_top.setTransform = function (trans) {
-    if (is_def(trans)) gMainD.g.attr('transform', trans)
-    return gMainD.g
+  this_top.set_transform = function (trans) {
+    if (is_def(trans)) main_gs.g.attr('transform', trans)
+    return main_gs.g
   }
 
-  gMainD.gBase = gMainD.gClipped.append('g')
-  gMainD.gBack = gMainD.gBase.append('g')
-  com.vor.g = gMainD.gBase.append('g')
-  com.s00.g = gMainD.gBase.append('g')
-  com.s01.g = gMainD.gBase.append('g')
+  main_gs.g_base = main_gs.clipped_g.append('g')
+  main_gs.g_back = main_gs.g_base.append('g')
+  com.vor.g = main_gs.g_base.append('g')
+  com.s00.g = main_gs.g_base.append('g')
+  com.s01.g = main_gs.g_base.append('g')
 
-  if (noRender) {
-    gMainD.g
+  if (no_render) {
+    main_gs.g
       .style('opacity', 0)
       .style('pointer-events', 'none')
   }
@@ -147,14 +147,14 @@ window.ArrZoomerMain = function (opt_in0) {
   // 
   // ------------------------------------------------------------------
   function cat_ele_pos(n_ele_now, n_elements) {
-    let yMargTop = lenD.h * 0.3
-    let yMargBot = 0
-    let yMarg = teleR.s00[2] + lenD.h * 0.2
-    let yTot = lenD.h - 2 * yMarg - yMargTop - yMargBot
-    let yWidth = yTot / (n_elements - 1)
-    let x = (lenD.w * (1-lenD.fracCircWH)) / 2
-    let y = yMargTop + yMarg + yWidth * n_ele_now
-    let r = teleR.s00[3]
+    let y_marg_top = svg_dims.h * 0.3
+    let y_marg_bot = 0
+    let y_marg = tel_rs.s00[2] + svg_dims.h * 0.2
+    let y_tot = svg_dims.h - 2 * y_marg - y_marg_top - y_marg_bot
+    let y_width = y_tot / (n_elements - 1)
+    let x = (svg_dims.w * (1-svg_dims.frac_circ_wh)) / 2
+    let y = y_marg_top + y_marg + y_width * n_ele_now
+    let r = tel_rs.s00[3]
 
     return { x: x, y: y, r: r, }
   }
@@ -163,73 +163,52 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function isCategoricalId(id) {
-    let catIds = ['PROC']
+  function is_categorical_id(id) {
+    let cat_ids = ['PROC']
 
-    let telIndex = catIds.indexOf(eleBase.tel_types[id])
-    return (telIndex !== -1)
+    let tel_index = cat_ids.indexOf(ele_base.tel_types[id])
+    return (tel_index !== -1)
   }
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function addBackShapes(gIn, len_wh, telData) {
-    gIn
+  function add_back_shapes(g_in, len_wh, tel_data) {
+    g_in
       .append('circle')
-      .attr('r', (len_wh.w - len_wh.w * (1-len_wh.fracCircWH)) / 2.1)
-      .attr('cx', (len_wh.w + len_wh.w * (1-len_wh.fracCircWH)) / 2)
+      .attr('r', (len_wh.w - len_wh.w * (1-len_wh.frac_circ_wh)) / 2.1)
+      .attr('cx', (len_wh.w + len_wh.w * (1-len_wh.frac_circ_wh)) / 2)
       .attr('cy', len_wh.h / 2)
       // .attr('r', len_wh.w / 2.1)
       // .attr('cx', len_wh.w / 2)
-      // .attr('cy', (len_wh.h - len_wh.h * (1-len_wh.fracCircWH)) / 2)
+      // .attr('cy', (len_wh.h - len_wh.h * (1-len_wh.frac_circ_wh)) / 2)
       .attr('fill', '#F2F2F2')
 
-    // let tag_now = 'bckCirc'
-    // let rCirc = [ len_wh.w / 12, len_wh.w / 2.1]
-    // let dataV = [
-    //   {cx: len_wh.w / 10, cy: len_wh.h / 10, r: rCirc[0]},
-    //   {cx: len_wh.w / 2, cy: len_wh.h / 2, r: rCirc[1]},
-    // ]
-    // let circ = gMainD.gBack
-    //   .selectAll('circle.' + tag_now)
-    //   .data(dataV)
-
-    // circ
-    //   .enter()
-    //   .append('circle')
-    //   .attr('r', 0)
-    //   .style('r', function (d) { return d.r })
-    //   .style('cx', function (d) { return d.cx })
-    //   .style('cy', function (d) { return d.cy })
-    //   .attr('fill', '#F2F2F2')
-    //   .style("stroke",'#383B42' )
-    //   .style("stroke-width", 1)
-
     let y_ele = []
-    let dataCat = Object.entries(telData).filter(function(d) {
-      return isCategoricalId(d[0])
+    let data_cat = Object.entries(tel_data).filter(function(d) {
+      return is_categorical_id(d[0])
     })
-    $.each(dataCat, function(i, d) {
+    $.each(data_cat, function(i, d) {
       let id = d[0]
       // let data_now = d[1]
-      y_ele.push(this_top.cat_ele_pos(i, dataCat.length).y)
+      y_ele.push(this_top.cat_ele_pos(i, data_cat.length).y)
     })
-    let yMin = Math.min(...y_ele) - teleR.s00[3]*3
-    let yMax = Math.max(...y_ele) + teleR.s00[3]*3
-    let xShift = len_wh.w * (1-len_wh.fracCircWH) * 0.1
+    let y_min = Math.min(...y_ele) - tel_rs.s00[3]*3
+    let y_max = Math.max(...y_ele) + tel_rs.s00[3]*3
+    let x_shift = len_wh.w * (1-len_wh.frac_circ_wh) * 0.1
 
-    gIn
+    g_in
       .append('rect')
-      .attr('x', xShift)
-      .attr('y', yMin)
-      .attr('width', (len_wh.w * (1-len_wh.fracCircWH)) - 1.5*xShift)
-      .attr('height', yMax - yMin)
+      .attr('x', x_shift)
+      .attr('y', y_min)
+      .attr('width', (len_wh.w * (1-len_wh.frac_circ_wh)) - 1.5*x_shift)
+      .attr('height', y_max - y_min)
       .attr("rx", len_wh.h * 0.02)
       .attr("ry", len_wh.h * 0.02)
       .attr('fill', '#F2F2F2')
     return
   }
-  this_top.addBackShapes = addBackShapes
+  this_top.add_back_shapes = add_back_shapes
 
 
   // ------------------------------------------------------------------
@@ -237,23 +216,23 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   function init_data (data_in) {
     let arr_init = data_in.arr_init
-    let subArr = data_in.subArr
+    let sub_arr = data_in.sub_arr
 
-    if (this_top.hasInit) return
-    this_top.hasInit = true
+    if (this_top.has_init) return
+    this_top.has_init = true
 
-    initVor()
+    init_vor()
 
     // ------------------------------------------------------------------
     // add one circle as background
     // ------------------------------------------------------------------
-    if (!noRender) {
-      gMainD.g_outer
+    if (!no_render) {
+      main_gs.g_outer
         .append('rect')
           .attr('x', 0)
           .attr('y', 0)
-          .attr('width',lenD.w)
-          .attr('height',lenD.h)
+          .attr('width',svg_dims.w)
+          .attr('height',svg_dims.h)
           .style("fill",'transparent' )
           .style("stroke",'#383B42' )
           // .style("stroke",'#F2F2F2' )
@@ -262,15 +241,15 @@ window.ArrZoomerMain = function (opt_in0) {
           .attr("pointer-events",'none')
           .attr("opacity",1)
 
-      addBackShapes(gMainD.gBack, lenD, arr_init)
+      add_back_shapes(main_gs.g_back, svg_dims, arr_init)
 
       // the background grid
       bck_pattern({
         com: com,
-        g_now: gMainD.gBack,
+        g_now: main_gs.g_back,
         g_tag: 'hex',
-        len_wh: [lenD.w, lenD.h],
-        opac: this_top.getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
+        len_wh: [svg_dims.w, svg_dims.h],
+        opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
         hex_r: 18
       })
     }
@@ -281,16 +260,16 @@ window.ArrZoomerMain = function (opt_in0) {
     // (but only the last one will take affect - this will be the default value)
     // ------------------------------------------------------------------
     instruments.data.layout = 'physical' // physical layout as default
-    // instruments.data.layout = "subArr";  // sub-array layout as default
+    // instruments.data.layout = "sub_arr";  // sub-array layout as default
 
-    // this_top.set_layoutSubArr(subArr)
-    this_top.set_layoutPhysical(arr_init)
+    // this_top.set_layout_sub_arr(sub_arr)
+    this_top.set_layout_physical(arr_init)
 
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    setState()
+    set_state()
 
     locker.remove(lock_init_key)
     return
@@ -301,95 +280,96 @@ window.ArrZoomerMain = function (opt_in0) {
   // // ------------------------------------------------------------------
   // // 
   // // ------------------------------------------------------------------
-  // function setupZoom () {
+  // function setup_zoom () {
   //   // initialize a global function (to be overriden below)
-  //   this_top.zoomToTrgMain = function (opt_in) {
-  //     if (!locker.is_free('inInit')) {
+  //   this_top.zoom_to_target_main = function (opt_in) {
+  //     if (!locker.is_free('in_init')) {
   //       setTimeout(function () {
-  //         this_top.zoomToTrgMain(opt_in)
+  //         this_top.zoom_to_target_main(opt_in)
   //       }, times.wait_loop)
   //     }
   //   }
 
   //   // initialize a couple of functions to be overriden below
-  //   this_top.getScale = function () { return zoomD.len['0.0'] }
-  //   this_top.getTrans = function () { return [0, 0] }
-  //   this_top.getZoomS = function () { return 0 }
+  //   this_top.get_scale = function () { return zooms.len['0.0'] }
+  //   this_top.get_trans = function () { return [0, 0] }
+  //   this_top.get_zoom_state = function () { return 0 }
 
   //   return
   // }
-  // setupZoom()
+  // setup_zoom()
 
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function initZoom () {
-    let scaleStart = 0
-    let zoomSyncMiniLockers = [
-      'zoomSyncMain', 'zoomSyncMini', 'zoomSyncLens', 'inZoomMini',
+  function init_zoom () {
+    let scale_start = 0
+    let zoom_sync_mini_lockers = [
+      'zoom_sync_main', 'zoom_sync_mini',
+      'zoom_sync_lens', 'in_zoom_mini',
     ]
     
-    function svgZoomStart () {
-      if (!locker.are_free(zoomSyncMiniLockers)) return
+    function svg_zoom_start () {
+      if (!locker.are_free(zoom_sync_mini_lockers)) return
 
-      scaleStart = d3.event.transform.k
+      scale_start = d3.event.transform.k
       locker.add({ id: 'zoom', override: true })
-      locker.add({ id: 'inZoomMain', override: true })
+      locker.add({ id: 'in_zoom_main', override: true })
     }
 
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    function svgZoomDuring () {
-      if (!locker.are_free(zoomSyncMiniLockers)) {
+    function svg_zoom_during () {
+      if (!locker.are_free(zoom_sync_mini_lockers)) {
         return
       }
       
-      gMainD.gBase.attr('transform', d3.event.transform)
+      main_gs.g_base.attr('transform', d3.event.transform)
 
       $.each(['mini', 'lens'], function(i, d) {
-        let svgMini = get_ele(d)
-        if (!svgMini) return
-        if(svgMini.staticZoom) return
+        let svg_mini = get_ele(d)
+        if (!svg_mini) return
+        if(svg_mini.static_zoom) return
         
-        eleBase.svgD[d].gBase.attr('transform', d3.event.transform)
+        ele_base.svgs[d].g_base.attr('transform', d3.event.transform)
       })
 
-      svgZoomUpdState()
+      svg_zoom_update_state()
     }
 
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    function svgZoomEnd () {
-      if (!locker.are_free(zoomSyncMiniLockers)) return
+    function svg_zoom_end () {
+      if (!locker.are_free(zoom_sync_mini_lockers)) return
       
-      svgZoomUpdState()
-      setZoomState()
+      svg_zoom_update_state()
+      set_zoom_state()
 
-      focusD.target = zoomD.target
-      focusD.scale = d3.event.transform.k
+      focus.target = zooms.target
+      focus.scale = d3.event.transform.k
 
       $.each(['mini', 'lens'], function(i, d) {
-        let svgMini = get_ele(d)
-        if (!svgMini) return
-        // if(svgMini.staticZoom) return
+        let svg_mini = get_ele(d)
+        if (!svg_mini) return
+        // if(svg_mini.static_zoom) return
 
-        svgMini.miniZoomViewRec()
-        svgMini.zoomSync(d3.event.transform)
+        svg_mini.mini_zoom_view_rec()
+        svg_mini.zoom_sync(d3.event.transform)
       })
 
       locker.remove('zoom')
-      locker.remove('inZoomMain')
+      locker.remove('in_zoom_main')
 
       // ------------------------------------------------------------------
       // if on minimal zoom, center
       // ------------------------------------------------------------------
-      if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
-        if (Math.abs(d3.event.transform.k - zoomD.len['0.0']) < 0.00001) {
-          if (locker.are_free(['autoZoomTarget'])) {
-            this_top.zoomToTrgMain({
+      if (Math.abs(d3.event.transform.k - scale_start) > 0.00001) {
+        if (Math.abs(d3.event.transform.k - zooms.len['0.0']) < 0.00001) {
+          if (locker.are_free(['auto_zoom_target'])) {
+            this_top.zoom_to_target_main({
               target: 'init',
               scale: d3.event.transform.k,
               duration_scale: 0.5
@@ -398,8 +378,8 @@ window.ArrZoomerMain = function (opt_in0) {
 
           // syncroniz changes with other panels
           sync_state_send({
-            type: 'syncTelFocus',
-            syncTime: Date.now(),
+            type: 'sync_tel_focus',
+            sync_time: Date.now(),
             zoom_state: 0,
             target: 'init'
           })
@@ -412,53 +392,53 @@ window.ArrZoomerMain = function (opt_in0) {
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    function zoomSync(trans) {
-      locker.add({ id: 'zoomSyncMain', override: true })
+    function zoom_sync(trans) {
+      locker.add({ id: 'zoom_sync_main', override: true })
       function func_end() {
-        locker.remove('zoomSyncMain')
+        locker.remove('zoom_sync_main')
       }
 
-      let x = (lenD.w / 2 - trans.x) / trans.k
-      let y = (lenD.h / 2 - trans.y) / trans.k
+      let x = (svg_dims.w / 2 - trans.x) / trans.k
+      let y = (svg_dims.h / 2 - trans.y) / trans.k
       let trans_to = [x, y]
 
       let data_out = {
         target_scale: trans.k,
         duration_scale: 0,
-        baseTime: 300,
+        base_time: 300,
         trans_to: trans_to,
-        wh: [lenD.w, lenD.h],
+        wh: [svg_dims.w, svg_dims.h],
         cent: null,
         // func_start: func_start,
         func_end: func_end,
         // func_during: func_during,
-        svg: gMainD.g_outer,
-        svgZoom: com.svgZoom,
-        zoom_callable: gMainD.gBase,
-        svg_zoom_node: gMainD.zoom_node
+        svg: main_gs.g_outer,
+        svg_zoom: com.svg_zoom,
+        zoom_callable: main_gs.g_base,
+        svg_zoom_node: main_gs.zoom_node
       }
 
       do_zoom_to_target(data_out)
     }
-    this_top.zoomSync = zoomSync
+    this_top.zoom_sync = zoom_sync
 
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
-    com.svgZoom = d3.zoom()
-    com.svgZoom.scaleExtent(zoomD.scaleExtent)
-    com.svgZoom.on('start', svgZoomStart)
-    com.svgZoom.on('zoom', svgZoomDuring)
-    com.svgZoom.on('end', svgZoomEnd)
+    com.svg_zoom = d3.zoom()
+    com.svg_zoom.scaleExtent(zooms.scale_extent)
+    com.svg_zoom.on('start', svg_zoom_start)
+    com.svg_zoom.on('zoom', svg_zoom_during)
+    com.svg_zoom.on('end', svg_zoom_end)
 
-    gMainD.g_outer.call(com.svgZoom)
+    main_gs.g_outer.call(com.svg_zoom)
       .on('dblclick.zoom', null)
       .on('wheel', function () {
         d3.event.preventDefault()
       })
 
     // save the svg node to use for d3.zoomTransform() later
-    gMainD.zoom_node = gMainD.g_outer.nodes()[0]
+    main_gs.zoom_node = main_gs.g_outer.nodes()[0]
 
 
     // ------------------------------------------------------------------
@@ -466,7 +446,7 @@ window.ArrZoomerMain = function (opt_in0) {
     // last of any set of ovelapping zoom requests
     // ------------------------------------------------------------------
     run_loop.init({
-      tag: 'zoom_to_target_main'+my_unique_id,
+      tag: 'zoom_to_target_main' + my_unique_id,
       func: do_zoom_to_target,
       n_keep: -1
     })
@@ -475,44 +455,44 @@ window.ArrZoomerMain = function (opt_in0) {
     // the actual function to be called when a
     // zoom needs to be put in the queue
     // ------------------------------------------------------------------
-    this_top.zoomToTrgMain = function (opt_in) {
-      if (!locker.is_free('inInit')) {
+    this_top.zoom_to_target_main = function (opt_in) {
+      if (!locker.is_free('in_init')) {
         setTimeout(function () {
-          this_top.zoomToTrgMain(opt_in)
+          this_top.zoom_to_target_main(opt_in)
         }, times.wait_loop)
         return
       }
-      if (!locker.are_free(['autoZoomTarget'])) return
+      if (!locker.are_free(['auto_zoom_target'])) return
       
       let target_name = opt_in.target
-      let targetScale = opt_in.scale
+      let target_scale = opt_in.scale
       let duration_scale = opt_in.duration_scale
-      let endFunc = opt_in.endFunc
+      let end_func = opt_in.end_func
 
-      if (targetScale < zoomD.len['0.0']) targetScale = this_top.getScale()
+      if (target_scale < zooms.len['0.0']) target_scale = this_top.get_scale()
 
       let trans_to = null
       if (target_name === 'init') {
-        trans_to = [lenD.w / 2, lenD.h / 2]
+        trans_to = [svg_dims.w / 2, svg_dims.h / 2]
       } 
       else if (
         target_name === '' || 
         !is_def(instruments.data.mini[target_name])) 
       {
-        let scale = this_top.getScale()
-        let trans = this_top.getTrans()
-        let x = (lenD.w / 2 - trans[0]) / scale
-        let y = (lenD.h / 2 - trans[1]) / scale
+        let scale = this_top.get_scale()
+        let trans = this_top.get_trans()
+        let x = (svg_dims.w / 2 - trans[0]) / scale
+        let y = (svg_dims.h / 2 - trans[1]) / scale
         trans_to = [x, y]
 
-        let diffMin = -1
-        target_name = zoomD.target
+        let min_diff = -1
+        target_name = zooms.target
         $.each(instruments.data.xyr, function (id_now, data_now) {
           if (data_now.isTel) {
-            let diffNow =
+            let diff_now =
               Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
-            if (diffNow < diffMin || diffMin < 0) {
-              diffMin = diffNow
+            if (diff_now < min_diff || min_diff < 0) {
+              min_diff = diff_now
               target_name = id_now
             }
           }
@@ -525,86 +505,89 @@ window.ArrZoomerMain = function (opt_in0) {
       }
 
       let func_start = function () {
-        locker.add({ id: 'autoZoomTarget', override: true })
+        locker.add({ id: 'auto_zoom_target', override: true })
         if (target_name !== '' && target_name !== 'init') {
-          zoomD.target = target_name
+          zooms.target = target_name
         }
       }
       
       let func_during = function () {}
       
       let func_end = function () {
-        locker.remove('autoZoomTarget')
+        locker.remove('auto_zoom_target')
 
-        let isDone = true
-        if (Math.abs(this_top.getScale() - zoomD.len['0.0']) < 0.00001) {
-          let trans = this_top.getTrans()
+        let is_done = true
+        if (Math.abs(this_top.get_scale() - zooms.len['0.0']) < 0.00001) {
+          let trans = this_top.get_trans()
           if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
-            isDone = false
-            this_top.zoomToTrgMain({
+            is_done = false
+            this_top.zoom_to_target_main({
               target: 'init',
-              scale: zoomD.len['0.0'],
+              scale: zooms.len['0.0'],
               duration_scale: 1
             })
           }
         }
-        if (duration_scale > 0 && isDone) setState()
+        if (duration_scale > 0 && is_done) set_state()
 
-        if (is_def(endFunc)) endFunc(opt_in)
+        if (is_def(end_func)) end_func(opt_in)
       }
 
       let data_out = {
-        target_scale: targetScale,
+        target_scale: target_scale,
         duration_scale: duration_scale,
-        baseTime: 300,
+        base_time: 300,
         trans_to: trans_to,
-        wh: [lenD.w, lenD.h],
+        wh: [svg_dims.w, svg_dims.h],
         cent: null,
         func_start: func_start,
         func_end: func_end,
         func_during: func_during,
-        svg: gMainD.g_outer,
-        svgZoom: com.svgZoom,
-        zoom_callable: gMainD.gBase,
-        svg_zoom_node: gMainD.zoom_node
+        svg: main_gs.g_outer,
+        svg_zoom: com.svg_zoom,
+        zoom_callable: main_gs.g_base,
+        svg_zoom_node: main_gs.zoom_node
       }
 
       if (duration_scale < 0) {
         data_out.duration_scale = 0
         do_zoom_to_target(data_out)
       } else {
-        run_loop.push({ tag: 'zoom_to_target_main'+my_unique_id, data: data_out })
+        run_loop.push({
+          tag: 'zoom_to_target_main' + my_unique_id, 
+          data: data_out,
+        })
       }
     }
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    this_top.getScale = function () {
-      return d3.zoomTransform(gMainD.zoom_node).k
+    this_top.get_scale = function () {
+      return d3.zoomTransform(main_gs.zoom_node).k
     }
-    this_top.getTrans = function () {
+    this_top.get_trans = function () {
       return [
-        d3.zoomTransform(gMainD.zoom_node).x,
-        d3.zoomTransform(gMainD.zoom_node).y
+        d3.zoomTransform(main_gs.zoom_node).x,
+        d3.zoomTransform(main_gs.zoom_node).y
       ]
     }
-    this_top.getZoomS = function () {
-      return this_top.getScale() < zoomD.len['1.0'] ? 0 : 1
+    this_top.get_zoom_state = function () {
+      return this_top.get_scale() < zooms.len['1.0'] ? 0 : 1
     }
 
     return
   }
-  initZoom()
+  init_zoom()
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function initVor() {
+  function init_vor() {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    let vorFunc = d3
+    let vor_func = d3
       .voronoi()
       .x(function (d) {
         return d.x
@@ -612,7 +595,7 @@ window.ArrZoomerMain = function (opt_in0) {
       .y(function (d) {
         return d.y
       })
-      .extent([[0, 0], [lenD.w, lenD.h]])
+      .extent([[0, 0], [svg_dims.w, svg_dims.h]])
 
 
     // ------------------------------------------------------------------
@@ -620,14 +603,14 @@ window.ArrZoomerMain = function (opt_in0) {
     // see: https://bl.ocks.org/mbostock/4060366
     // ------------------------------------------------------------------
     instruments.data.hover = function (d) {
-      if (zoomD.target === d.data.id) return
-      if (!locker.are_free(['zoom', 'autoZoomTarget'])) return
+      if (zooms.target === d.data.id) return
+      if (!locker.are_free(['zoom', 'auto_zoom_target'])) return
 
-      let scale = this_top.getScale()
-      if (scale >= zoomD.len['1.0']) return
+      let scale = this_top.get_scale()
+      if (scale >= zooms.len['1.0']) return
 
-      zoomD.target = d.data.id
-      setState()
+      zooms.target = d.data.id
+      set_state()
       return
     }
 
@@ -635,38 +618,42 @@ window.ArrZoomerMain = function (opt_in0) {
     //
     // ------------------------------------------------------------------
     run_loop.init({
-      tag: 'clickOnce'+my_unique_id, func: clickOnce, n_keep: 1,
+      tag: 'click_once' + my_unique_id, func: click_once, n_keep: 1,
     })
 
     instruments.data.click = function (opt_in) {
-      if (locker.are_free(['zoom', 'autoZoomTarget'])) {
-        run_loop.push({ tag: 'clickOnce'+my_unique_id, data: opt_in })
+      if (locker.are_free(['zoom', 'auto_zoom_target'])) {
+        run_loop.push({
+          tag: 'click_once' + my_unique_id, data: opt_in,
+        })
       }
       return
     }
 
-    function clickOnce (d) {
-      if (!locker.is_free('vorZoomClick')) {
+    function click_once (d) {
+      if (!locker.is_free('vor_zoom_click')) {
         setTimeout(function () {
           instruments.data.click(d)
         }, times.wait_loop / 2)
         return
       }
-      locker.add({ id: 'vorZoomClick', override: true })
+      locker.add({ id: 'vor_zoom_click', override: true })
 
-      let scale = this_top.getScale()
-      // console.log((scale >= zoomD.len["1.0"]),(zoomD.target == d.data.id))
+      let scale = this_top.get_scale()
+      // console.log((scale >= zooms.len["1.0"]),(zooms.target == d.data.id))
 
-      if (scale < zoomD.len['1.0']) {
-        instruments.data.dblclick({ d: d, isInOut: dblclickZoomInOut })
-      } else if (scale >= zoomD.len['1.0'] && zoomD.target !== d.data.id) {
-        instruments.data.dblclick({ d: d, isInOut: false })
+      if (scale < zooms.len['1.0']) {
+        instruments.data.dblclick({
+          d: d, is_in_out: dblclick_zoom_in_out,
+        })
+      } else if (scale >= zooms.len['1.0'] && zooms.target !== d.data.id) {
+        instruments.data.dblclick({ d: d, is_in_out: false })
       } else {
-        zoomD.target = d.data.id
-        setState()
+        zooms.target = d.data.id
+        set_state()
       }
 
-      locker.remove({ id: 'vorZoomClick', delay: times.anim_arc })
+      locker.remove({ id: 'vor_zoom_click', delay: times.anim_arc })
 
       return
     }
@@ -675,70 +662,88 @@ window.ArrZoomerMain = function (opt_in0) {
     //
     // ------------------------------------------------------------------
     run_loop.init({
-      tag: 'dblclickOnce'+my_unique_id, func: dblclickOnce, n_keep: 1,
+      tag: 'dblclick_once' + my_unique_id,
+      func: dblclick_once, n_keep: 1,
     })
 
     instruments.data.dblclick = function (opt_in) {
       // console.log( opt_in.source);
-      if (locker.are_free(['zoom', 'autoZoomTarget'])) {
-        run_loop.push({ tag: 'dblclickOnce'+my_unique_id, data: opt_in })
+      if (locker.are_free(['zoom', 'auto_zoom_target'])) {
+        run_loop.push({
+          tag: 'dblclick_once' + my_unique_id, data: opt_in,
+        })
       }
       return
     }
 
-    function dblclickOnce (opt_in) {
-      if (!locker.is_free('vorZoomDblclick')) {
+    function dblclick_once (opt_in) {
+      if (!locker.is_free('vor_zoom_dblclick')) {
         setTimeout(function () {
           instruments.data.dblclick(opt_in)
         }, times.wait_loop / 2)
         return
       }
-      locker.add({ id: 'vorZoomDblclick', override: true })
+      locker.add({ id: 'vor_zoom_dblclick', override: true })
 
       let d = opt_in.d
-      let zoomInOut = opt_in.isInOut
-      let scale = this_top.getScale()
-      let isOnTarget = zoomD.target === d.data.id
-      // console.log('vorClick',d.data.id,(scale >= zoomD.len["1.0"]),!isOnTarget)
+      let zoom_in_out = opt_in.is_in_out
+      let scale = this_top.get_scale()
+      let is_on_target = zooms.target === d.data.id
+      // console.log('vorClick',d.data.id,(scale >= zooms.len["1.0"]),!is_on_target)
 
-      zoomD.target = d.data.id
+      zooms.target = d.data.id
 
-      let scaleToZoom = 1
-      if (zoomInOut) {
-        if (scale < zoomD.len['1.2']) scaleToZoom = zoomD.len['1.2'] + 0.001
-        else scaleToZoom = zoomD.len['0.0']
-      } else {
-        if (scale < zoomD.len['0.2'] * 0.999) scaleToZoom = zoomD.len['0.2']
-        else if (scale < zoomD.len['1.0'] * 1.001) scaleToZoom = zoomD.len['1.1']
-        else scaleToZoom = zoomD.len['1.2']
+      let scale_to_zoom = 1
+      if (zoom_in_out) {
+        if (scale < zooms.len['1.2']) {
+          scale_to_zoom = zooms.len['1.2'] + 0.001
+        }
+        else {
+          scale_to_zoom = zooms.len['0.0']
+        }
+      }
+      else {
+        if (scale < zooms.len['0.2'] * 0.999) {
+          scale_to_zoom = zooms.len['0.2']
+        }
+        else if (scale < zooms.len['1.0'] * 1.001) {
+          scale_to_zoom = zooms.len['1.1']
+        }
+        else {
+          scale_to_zoom = zooms.len['1.2']
+        }
       }
 
-      this_top.zoomToTrgMain({
-        target: zoomD.target,
-        scale: scaleToZoom,
+      this_top.zoom_to_target_main({
+        target: zooms.target,
+        scale: scale_to_zoom,
         duration_scale: 1.25
       })
 
-      if (scale >= zoomD.len['1.0'] && !isOnTarget) {
-        setState()
+      if (scale >= zooms.len['1.0'] && !is_on_target) {
+        set_state()
 
-        ask_dataS1()
-        propsS1({ tel_Id: zoomD.target, clickIn: false, propIn: '' })
+        ask_data_s1()
+        props_s1({
+          tel_Id: zooms.target, click_in: false, prop_in: '',
+        })
       }
 
-      locker.remove({ id: 'vorZoomDblclick', delay: times.anim_arc })
+      locker.remove({
+        id: 'vor_zoom_dblclick', delay: times.anim_arc,
+      })
     }
 
     // ------------------------------------------------------------------
     // 
     // ------------------------------------------------------------------
     function setVor () {
-      let tagVor = 'vor'
-      let vorShowLines = false
+      let tag_vor = 'vor'
+      let vor_show_lines = false
 
-      let polygons = vorFunc.polygons(instruments.data.vor.data)
+      let polygons = vor_func.polygons(instruments.data.vor.data)
       let vor = com.vor.g
-        .selectAll('path.' + tagVor)
+        .selectAll('path.' + tag_vor)
         .data(polygons, function (d) {
           return d.data.id
         })
@@ -746,7 +751,7 @@ window.ArrZoomerMain = function (opt_in0) {
       vor
         .enter()
         .append('path')
-        .attr('class', tagVor)
+        .attr('class', tag_vor)
         .style('fill', 'transparent')
         .style('opacity', '0')
         .attr('vector-effect', 'non-scaling-stroke')
@@ -754,14 +759,18 @@ window.ArrZoomerMain = function (opt_in0) {
         .style('opacity', 0)
         .style('stroke', '#383B42')
         .style('stroke-width', '1')
-        .style('opacity', vorShowLines ? 1 : 0)
+        .style('opacity', vor_show_lines ? 1 : 0)
         .style('stroke', '#4F94CD')
         .on('mouseover', instruments.data.hover)
         .on('click', instruments.data.click)
         .on('dblclick', function (d) {
-          instruments.data.dblclick({ d: d, isInOut: dblclickZoomInOut })
+          instruments.data.dblclick({ 
+            d: d, is_in_out: dblclick_zoom_in_out,
+          })
         })
-        // .on("mouseover", function(d) { console.log(d.data.id);  }) // debugging
+        // .on("mouseover", function(d) {
+        //   console.log(d.data.id)
+        // }) // debugging
         .merge(vor)
         .call(function (d) {
           d.attr('d', vor_ploy_func)
@@ -773,15 +782,19 @@ window.ArrZoomerMain = function (opt_in0) {
       // calculation of coordinates for labels, added next
       // ------------------------------------------------------------------
       $.each(instruments.data.vor.data, function (index_, data_now) {
-        $.each(instruments.props[data_now.id], function (index, porpNow) {
-          let angle = (index + 0.5) * instruments.tauFracs[data_now.id] + tau / 4
-          let labelX = data_now.r * Math.cos(angle)
-          let labelY = data_now.r * Math.sin(angle)
+        $.each(instruments.props[data_now.id], function (index, porp_now) {
+          let angle = (
+            (index + 0.5) 
+            * instruments.tau_fracs[data_now.id] 
+            + tau / 4
+          )
+          let label_x = data_now.r * Math.cos(angle)
+          let label_y = data_now.r * Math.sin(angle)
 
-          if (s1LblXY[porpNow] === undefined) {
-            s1LblXY[porpNow] = {}
+          if (s1_lbl_xy[porp_now] === undefined) {
+            s1_lbl_xy[porp_now] = {}
           }
-          s1LblXY[porpNow][data_now.id] = [labelX, labelY]
+          s1_lbl_xy[porp_now][data_now.id] = [label_x, label_y]
         })
       })
 
@@ -791,115 +804,117 @@ window.ArrZoomerMain = function (opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function set_layoutPhysical (data_in) {
+    function set_layout_physical (data_in) {
       if (is_def(data_in)) {
-        setTelDataPhysical(data_in)
+        set_tel_data_physical(data_in)
       }
 
       if (instruments.data.layout !== 'physical') return
 
-      instruments.data.xyr = instruments.data.xyrPhysical
-      instruments.data.vor.data = instruments.data.vor.dataPhysical
-      links2V.xyz = links2V.physical
+      instruments.data.xyr = instruments.data.xyr_physical
+      instruments.data.vor.data = instruments.data.vor.data_physical
+      links_2.xyz = links_2.physical
 
       setVor()
       this_top._sub_arr_grp_circ([])
 
-      if (locker.is_free('inInit')) {
-        if (is_def(focusD.target)) {
-          if (is_def(instruments.data.xyr[focusD.target])) {
-            this_top.zoomToTrgMain({
-              target: focusD.target,
-              scale: focusD.scale,
+      if (locker.is_free('in_init')) {
+        if (is_def(focus.target)) {
+          if (is_def(instruments.data.xyr[focus.target])) {
+            this_top.zoom_to_target_main({
+              target: focus.target,
+              scale: focus.scale,
               duration_scale: 1
             })
           }
         }
-        // thisarr_zoomer.setState();
+        // thisarr_zoomer.set_state();
       }
 
       return
     }
-    this_top.set_layoutPhysical = set_layoutPhysical
+    this_top.set_layout_physical = set_layout_physical
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function setTelDataPhysical (data_in) {
+    function set_tel_data_physical (data_in) {
       // console.log("dataphyzoom", data_in);
-      instruments.data.xyrPhysical = {}
-      instruments.data.vor.dataPhysical = []
+      instruments.data.xyr_physical = {}
+      instruments.data.vor.data_physical = []
 
       // ------------------------------------------------------------------
       // get the width of the initial data (should be most inclusive)
       // ------------------------------------------------------------------
       let keys = Object.keys(data_in)
-      let minDataX = data_in[keys[0]].x
-      let maxDataX = data_in[keys[0]].x
-      let minDataY = data_in[keys[0]].y
-      let maxDataY = data_in[keys[0]].y
+      let min_data_x = data_in[keys[0]].x
+      let max_data_x = data_in[keys[0]].x
+      let min_data_y = data_in[keys[0]].y
+      let max_data_y = data_in[keys[0]].y
 
       $.each(data_in, function (id, data_now) {
-        minDataX = Math.min(minDataX, data_now.x)
-        maxDataX = Math.max(maxDataX, data_now.x)
-        minDataY = Math.min(minDataY, data_now.y)
-        maxDataY = Math.max(maxDataY, data_now.y)
+        min_data_x = Math.min(min_data_x, data_now.x)
+        max_data_x = Math.max(max_data_x, data_now.x)
+        min_data_y = Math.min(min_data_y, data_now.y)
+        max_data_y = Math.max(max_data_y, data_now.y)
       })
 
-      let data_inWH = [maxDataX - minDataX, maxDataY - minDataY]
+      let data_in_wh = [
+        max_data_x - min_data_x, max_data_y - min_data_y
+      ]
       if (!is_south) {
-        data_inWH[0] *= 1.1
-        data_inWH[1] *= 1.1
+        data_in_wh[0] *= 1.1
+        data_in_wh[1] *= 1.1
       }
 
       // ------------------------------------------------------------------
       // 
       // ------------------------------------------------------------------
-      let xyCat = {}
-      let dataCat = Object.entries(data_in).filter(function(d) {
-        return isCategoricalId(d[0])
+      let xy_cat = {}
+      let data_cat = Object.entries(data_in).filter(function(d) {
+        return is_categorical_id(d[0])
       })
 
-      $.each(dataCat, function(i, d) {
+      $.each(data_cat, function(i, d) {
         let id = d[0]
         // let data_now = d[1]
-        xyCat[id] = this_top.cat_ele_pos(i, dataCat.length)
+        xy_cat[id] = this_top.cat_ele_pos(i, data_cat.length)
       })
 
       $.each(data_in, function (id, data_now) {
         let x, y, r
-        if(is_def(xyCat[id])) {
-          x = xyCat[id].x
-          y = xyCat[id].y
-          r = xyCat[id].r
+        if(is_def(xy_cat[id])) {
+          x = xy_cat[id].x
+          y = xy_cat[id].y
+          r = xy_cat[id].r
         }
         else {
-          if (data_now.t === 'LST') r = teleR.s00[2]
-          else if (data_now.t === 'MST') r = teleR.s00[1]
-          else r = teleR.s00[0]
+          if (data_now.t === 'LST') r = tel_rs.s00[2]
+          else if (data_now.t === 'MST') r = tel_rs.s00[1]
+          else r = tel_rs.s00[0]
 
-          let shiftMainX = lenD.w * (1 - lenD.fracCircWH)
-          let shiftMainY = lenD.h * (1 - lenD.fracCircWH) / 2
-          // let shiftMainY = 0
+          let shift_main_x = svg_dims.w * (1 - svg_dims.frac_circ_wh)
+          let shift_main_y = svg_dims.h * (1 - svg_dims.frac_circ_wh) / 2
+          // let shift_main_y = 0
           
-          let lenW = lenD.w * lenD.fracCircWH
-          let lenH = lenD.h * lenD.fracCircWH
-          x = shiftMainX + (1 * data_now.x * lenW
-                  / (1.2 * data_inWH[0]) + lenW / 2)
-          y = shiftMainY + (-1 * data_now.y * lenH
-                  / (1.2 * data_inWH[1]) + lenH / 2)
+          let len_w = svg_dims.w * svg_dims.frac_circ_wh
+          let len_h = svg_dims.h * svg_dims.frac_circ_wh
+          x = shift_main_x + (1 * data_now.x * len_w
+                  / (1.2 * data_in_wh[0]) + len_w / 2)
+          y = shift_main_y + (-1 * data_now.y * len_h
+                  / (1.2 * data_in_wh[1]) + len_h / 2)
 
         }
 
         // translate to the center of the respective hex-cell
         // let xy = com.svgBck.trans([x,y]);  x = xy[0]; y = xy[1];
-        instruments.data.xyrPhysical[id] = { 
+        instruments.data.xyr_physical[id] = { 
           x: x, y: y, r: r, //isTel: true 
         }
-        instruments.data.vor.dataPhysical.push({ 
+        instruments.data.vor.data_physical.push({ 
           id: id, x: x, y: y, r: r 
         })
-        // console.log(id, instruments.data.xyrPhysical[id], eleBase.tel_types[id], isCategoricalId(id))
+        // console.log(id, instruments.data.xyr_physical[id], ele_base.tel_types[id], is_categorical_id(id))
       })
 
 
@@ -907,34 +922,35 @@ window.ArrZoomerMain = function (opt_in0) {
       // use delaunay links to get the closest neighbours of each data-point
       // see: http://christophermanning.org/projects/voronoi-diagram-with-force-directed-nodes-and-delaunay-links/
       // ------------------------------------------------------------------
-      let linksV = {}
-      $.each(vorFunc.links(instruments.data.vor.dataPhysical), function (
-        index,
-        linkNow
-      ) {
-        let idS = linkNow.source.id
-        let idT = linkNow.target.id
+      let vor_links = vor_func.links(
+        instruments.data.vor.data_physical
+      )
+      let links_1 = {}
+      $.each(vor_links, function (index, link_now) {
+        let id_s = link_now.source.id
+        let id_t = link_now.target.id
 
-        if (!linksV[idS]) linksV[idS] = [idT]
-        else linksV[idS].push(idT)
-        if (!linksV[idT]) linksV[idT] = [idS]
-        else linksV[idT].push(idS)
+        if (!links_1[id_s]) links_1[id_s] = [id_t]
+        else links_1[id_s].push(id_t)
+        
+        if (!links_1[id_t]) links_1[id_t] = [id_s]
+        else links_1[id_t].push(id_s)
       })
 
-      links2V.physical = deep_copy(linksV) // deep copy
-      $.each(linksV, function (idS, linkNow0) {
-        $.each(linkNow0, function (index0, idT0) {
-          $.each(linksV[idT0], function (index1, idT1) {
-            if (links2V.physical[idS].indexOf(idT1) === -1) {
-              links2V.physical[idS].push(idT1)
+      links_2.physical = deep_copy(links_1) // deep copy
+      $.each(links_1, function (id_s, link_now) {
+        $.each(link_now, function (index0, idT0) {
+          $.each(links_1[idT0], function (index1, idT1) {
+            if (links_2.physical[id_s].indexOf(idT1) === -1) {
+              links_2.physical[id_s].push(idT1)
             }
-            // console.log(index1,links2V.physical[idS],idT0,idT1)
+            // console.log(index1,links_2.physical[id_s],idT0,idT1)
           })
         })
       })
 
-      instruments.data.mini = instruments.data.xyrPhysical
-      instruments.data.lens = instruments.data.xyrPhysical
+      instruments.data.mini = instruments.data.xyr_physical
+      instruments.data.lens = instruments.data.xyr_physical
 
       return
     }
@@ -943,31 +959,31 @@ window.ArrZoomerMain = function (opt_in0) {
     // // ------------------------------------------------------------------
     // // 
     // // ------------------------------------------------------------------
-    // function set_layoutSubArr (data_in) {
+    // function set_layout_sub_arr (data_in) {
     //   if (is_def(data_in)) {
-    //     setTelDataSubArr(data_in)
+    //     set_tel_data_sub_arr(data_in)
     //   }
 
-    //   if (instruments.data.layout !== 'subArr') return
+    //   if (instruments.data.layout !== 'sub_arr') return
       
-    //   instruments.data.xyr = instruments.data.xyrSubArr
-    //   instruments.data.vor.data = instruments.data.vor.dataSubArr
-    //   links2V.xyz = links2V.subArr
+    //   instruments.data.xyr = instruments.data.xyr_sub_arr
+    //   instruments.data.vor.data = instruments.data.vor.data_sub_arr
+    //   links_2.xyz = links_2.sub_arr
 
     //   setVor()
 
     //   this_top._sub_arr_grp_circ(instruments.data.xyr_sub_arr_grp)
 
-    //   if (locker.is_free('inInit')) {
-    //     if (is_def(focusD.target)) {
-    //       if (is_def(instruments.data.xyr[focusD.target])) {
+    //   if (locker.is_free('in_init')) {
+    //     if (is_def(focus.target)) {
+    //       if (is_def(instruments.data.xyr[focus.target])) {
     //         // console.log('222222222222');
-    //         if (Math.abs(this_top.getScale() - zoomD.len['0.0']) > 0.00001) {
-    //           let trans = this_top.getTrans()
+    //         if (Math.abs(this_top.get_scale() - zooms.len['0.0']) > 0.00001) {
+    //           let trans = this_top.get_trans()
     //           if (Math.abs(trans[0]) > 0.1 && Math.abs(trans[1]) > 0.1) {
-    //             this_top.zoomToTrgMain({
-    //               target: focusD.target,
-    //               scale: focusD.scale,
+    //             this_top.zoom_to_target_main({
+    //               target: focus.target,
+    //               scale: focus.scale,
     //               duration_scale: 1
     //             })
     //           }
@@ -978,14 +994,14 @@ window.ArrZoomerMain = function (opt_in0) {
 
     //   return
     // }
-    // this_top.set_layoutSubArr = set_layoutSubArr
+    // this_top.set_layout_sub_arr = set_layout_sub_arr
 
     // // ------------------------------------------------------------------
     // //
     // // ------------------------------------------------------------------
-    // function setTelDataSubArr (data_in) {
-    //   instruments.data.xyrSubArr = {}
-    //   instruments.data.vor.dataSubArr = []
+    // function set_tel_data_sub_arr (data_in) {
+    //   instruments.data.xyr_sub_arr = {}
+    //   instruments.data.vor.data_sub_arr = []
     //   instruments.data.xyr_sub_arr_grp = []
     //   let hirchScale = 0.9
     //   let hirch = d3.hierarchy(data_in).sum(function (d) {
@@ -993,7 +1009,7 @@ window.ArrZoomerMain = function (opt_in0) {
     //   })
     //   let packNode = d3
     //     .pack()
-    //     .size([lenD.w * hirchScale, lenD.h * hirchScale])
+    //     .size([svg_dims.w * hirchScale, svg_dims.h * hirchScale])
     //     .padding(10)
     //   packNode(hirch)
 
@@ -1002,33 +1018,33 @@ window.ArrZoomerMain = function (opt_in0) {
     //     if (data_now.height < 2) {
     //       let id = data_now.data.id
     //       // if(!isTel) {
-    //       //   if(id == -1) id = tel_info.no_subArr_name();
-    //       //   else         id = tel_info.subArr_prefix()+id;
+    //       //   if(id == -1) id = tel_info.no_sub_arr_name();
+    //       //   else         id = tel_info.sub_arr_prefix()+id;
     //       //   console.log('-------',id);
     //       // }
 
-    //       let x = data_now.x + lenD.w * (1 - hirchScale) / 2
-    //       let y = data_now.y + lenD.h * (1 - hirchScale) / 2
+    //       let x = data_now.x + svg_dims.w * (1 - hirchScale) / 2
+    //       let y = data_now.y + svg_dims.h * (1 - hirchScale) / 2
 
     //       let eleR = data_now.r
     //       if (isTel) {
-    //         if (data_now.t === 'LST') eleR = teleR.s00[2]
-    //         else if (data_now.t === 'MST') eleR = teleR.s00[1]
-    //         else eleR = teleR.s00[0]
+    //         if (data_now.t === 'LST') eleR = tel_rs.s00[2]
+    //         else if (data_now.t === 'MST') eleR = tel_rs.s00[1]
+    //         else eleR = tel_rs.s00[0]
     //       }
 
-    //       instruments.data.xyrSubArr[id] = { 
+    //       instruments.data.xyr_sub_arr[id] = { 
     //         x: x, y: y, r: eleR, // isTel: isTel,
     //       }
 
     //       if (isTel) {
-    //         instruments.data.vor.dataSubArr.push({ 
+    //         instruments.data.vor.data_sub_arr.push({ 
     //           id: id, x: x, y: y, r: eleR,
     //         })
     //       } else {
     //         let title = is_def(data_now.data.N)
     //           ? data_now.data.N
-    //           : tel_info.no_subArr_title()
+    //           : tel_info.no_sub_arr_title()
     //         instruments.data.xyr_sub_arr_grp.push({
     //           id: id,
     //           N: title,
@@ -1042,18 +1058,18 @@ window.ArrZoomerMain = function (opt_in0) {
     //     }
     //   })
 
-    //   links2V.subArr = {}
+    //   links_2.sub_arr = {}
     //   $.each(hirch.descendants(), function (index0, data_now0) {
     //     if (data_now0.height === 1) {
     //       $.each(data_now0.children, function (index1, data_now1) {
     //         if (data_now1.height === 0) {
-    //           let allIds = data_now0.children.map(function (d) {
+    //           let all_ids = data_now0.children.map(function (d) {
     //             return d.data.id
     //           })
-    //           links2V.subArr[data_now1.data.id] = []
-    //           $.each(allIds, function (index2, data_now2) {
+    //           links_2.sub_arr[data_now1.data.id] = []
+    //           $.each(all_ids, function (index2, data_now2) {
     //             if (data_now2 !== data_now1.data.id) {
-    //               links2V.subArr[data_now1.data.id].push(data_now2)
+    //               links_2.sub_arr[data_now1.data.id].push(data_now2)
     //             }
     //           })
     //         }
@@ -1070,9 +1086,9 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   // see: http://bl.ocks.org/mbostock/5100636
   // ------------------------------------------------------------------
-  com.arcTween = function (transition, opt_in) {
+  com.arc_tween = function (transition, opt_in) {
     // if(opt_in.skip != undefined && opt_in.skip) return null;
-    transition.attrTween('d', function (d) {
+    function tween_func (d) {
       if (is_def(opt_in.incIdV)) {
         if (opt_in.incIdV.indexOf(d.id) === -1) return null
       }
@@ -1082,40 +1098,47 @@ window.ArrZoomerMain = function (opt_in0) {
 
       let tag_now = opt_in.tag_now
       let ang_str_0 = opt_in.ang_str_0
-        ? arcFunc[tag_now][opt_in.ang_str_0](d)
+        ? arc_func[tag_now][opt_in.ang_str_0](d)
         : opt_in.arc_prev[tag_now].ang[d.id][0]
       let ang_str_1 = opt_in.ang_str_1
-        ? arcFunc[tag_now][opt_in.ang_str_1](d)
+        ? arc_func[tag_now][opt_in.ang_str_1](d)
         : opt_in.arc_prev[tag_now].ang[d.id][0]
       let ang_end_0 = opt_in.ang_end_0
-        ? arcFunc[tag_now][opt_in.ang_end_0](d)
+        ? arc_func[tag_now][opt_in.ang_end_0](d)
         : opt_in.arc_prev[tag_now].ang[d.id][1]
       let ang_end_1 = opt_in.ang_end_1
-        ? arcFunc[tag_now][opt_in.ang_end_1](d)
+        ? arc_func[tag_now][opt_in.ang_end_1](d)
         : opt_in.arc_prev[tag_now].ang[d.id][1]
       let r_in_0 = opt_in.r_in_0
-        ? arcFunc[tag_now][opt_in.r_in_0](d)
+        ? arc_func[tag_now][opt_in.r_in_0](d)
         : opt_in.arc_prev[tag_now].rad[d.id][0]
       let r_in_1 = opt_in.r_in_1
-        ? arcFunc[tag_now][opt_in.r_in_1](d)
+        ? arc_func[tag_now][opt_in.r_in_1](d)
         : opt_in.arc_prev[tag_now].rad[d.id][0]
       let r_out_0 = opt_in.r_out_0
-        ? arcFunc[tag_now][opt_in.r_out_0](d)
+        ? arc_func[tag_now][opt_in.r_out_0](d)
         : opt_in.arc_prev[tag_now].rad[d.id][1]
       let r_out_1 = opt_in.r_out_1
-        ? arcFunc[tag_now][opt_in.r_out_1](d)
+        ? arc_func[tag_now][opt_in.r_out_1](d)
         : opt_in.arc_prev[tag_now].rad[d.id][1]
       // console.log(tag_now,[ang_str_0,ang_str_1],[ang_end_0,ang_end_1],[r_in_0,r_in_1],[r_out_0,r_out_1])
 
-      let needUpd = 0
-      if (Math.abs(ang_str_0 - ang_str_1) / ang_str_0 > 1e-5) needUpd++
-      if (Math.abs(ang_end_0 - ang_end_1) / ang_end_0 > 1e-5) needUpd++
-      if (Math.abs(r_in_0 - r_in_1) / r_in_0 > 1e-5) needUpd++
-      if (Math.abs(r_out_0 - r_out_1) / r_out_0 > 1e-5) needUpd++
-      if (needUpd === 0) return null
+      let need_update = 0
+      if (Math.abs(ang_str_0 - ang_str_1) / ang_str_0 > 1e-5) 
+        need_update++
+      if (Math.abs(ang_end_0 - ang_end_1) / ang_end_0 > 1e-5) 
+        need_update++
+      if (Math.abs(r_in_0 - r_in_1) / r_in_0 > 1e-5) 
+        need_update++
+      if (Math.abs(r_out_0 - r_out_1) / r_out_0 > 1e-5) 
+        need_update++
+      
+      if (need_update === 0) 
+        return null
 
       let arc = d3.arc()
-      return function (t) {
+      
+      function out_func (t) {
         let intrNow = interpolate01(t)
         d.startAngle = ang_str_0 + (ang_str_1 - ang_str_0) * intrNow
         d.endAngle = ang_end_0 + (ang_end_1 - ang_end_0) * intrNow
@@ -1129,38 +1152,41 @@ window.ArrZoomerMain = function (opt_in0) {
 
         return arc(d)
       }
-    })
+      return out_func
+    }
+    
+    transition.attrTween('d', tween_func)
   }
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function svgZoomUpdState () {
-    let scale = this_top.getScale()
-    let zoomS = this_top.getZoomS()
+  function svg_zoom_update_state () {
+    let scale = this_top.get_scale()
+    let zoom_state = this_top.get_zoom_state()
 
-    let change01 = isStateChange(scale, '0.1')
-    let change10 = isStateChange(scale, '1.0')
+    let change_01 = is_state_change(scale, '0.1')
+    let change_10 = is_state_change(scale, '1.0')
 
-    if (zoomS === 0) syncD.zoom_target = ''
+    if (zoom_state === 0) syncs.zoom_target = ''
 
-    if (change01 || change10) {
-      setState()
+    if (change_01 || change_10) {
+      set_state()
 
       // update the opacity of the background grid
-      if (change10) {
+      if (change_10) {
         bck_pattern({
           com: com,
-          g_now: gMainD.gBase,
+          g_now: main_gs.g_base,
           g_tag: 'hex',
-          len_wh: [lenD.w, lenD.h],
-          opac: this_top.getScale() < zoomD.len['1.0'] ? 0.15 : 0.07,
+          len_wh: [svg_dims.w, svg_dims.h],
+          opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
           hex_r: 18
         })
       }
-      if (isStateUp(scale, '1.0')) ask_dataS1()
+      if (is_state_up(scale, '1.0')) ask_data_s1()
 
-      zoomD.len.prev = scale
+      zooms.len.prev = scale
     }
   }
 
@@ -1171,11 +1197,11 @@ window.ArrZoomerMain = function (opt_in0) {
   function set_tel_layout (opt_in) {
     if (
       !locker.are_free([
-        'setStateLock',
-        'dataChange',
+        'set_state_lock',
+        'data_change',
         'zoom',
-        'autoZoomTarget',
-        's1propsChange'
+        'auto_zoom_target',
+        's1_props_change'
       ])
     ) {
       setTimeout(function () {
@@ -1185,35 +1211,37 @@ window.ArrZoomerMain = function (opt_in0) {
     }
 
     let id = opt_in.id
-    let updtId = opt_in.updtId
+    let update_id = opt_in.update_id
     let data = opt_in.data
 
     // check if we are about to change the id
-    let isChange = instruments.data.layout !== id
+    let is_change = instruments.data.layout !== id
 
-    if (isChange || is_def(data)) {
-      locker.expires({ id: 'setStateLock', duration: times.anim_arc / 2 })
+    if (is_change || is_def(data)) {
+      locker.expires({
+        id: 'set_state_lock', duration: times.anim_arc / 2,
+      })
     }
 
     if (id === 'physical') {
-      if (updtId) instruments.data.layout = id
-      this_top.set_layoutPhysical(data)
+      if (update_id) instruments.data.layout = id
+      this_top.set_layout_physical(data)
     } 
-    // else if (id === 'subArr') {
-    //   if (updtId) instruments.data.layout = id
-    //   this_top.set_layoutSubArr(data)
+    // else if (id === 'sub_arr') {
+    //   if (update_id) instruments.data.layout = id
+    //   this_top.set_layout_sub_arr(data)
     // } 
     else {
       console.error(' - trying to set undefined layout', id)
       return
     }
 
-    if ((updtId && isChange) || is_def(data)) {
-      setState()
+    if ((update_id && is_change) || is_def(data)) {
+      set_state()
 
-      if (this_top.getZoomS() === 1) {
-        $.each(s10V, function (index, ele_now) {
-          ele_now.s10.updatePosG(times.anim_arc)
+      if (this_top.get_zoom_state() === 1) {
+        $.each(s10_eles, function (index, ele_now) {
+          ele_now.s10.update_pos_g(times.anim_arc)
         })
       }
     }
@@ -1223,23 +1251,23 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function _sub_arr_grp_circ (dataV) {
-    if (noRender) return
+  function _sub_arr_grp_circ (data_in) {
+    if (no_render) return
 
-    if (!locker.is_free('inInit')) {
+    if (!locker.is_free('in_init')) {
       setTimeout(function () {
-        _sub_arr_grp_circ(dataV)
+        _sub_arr_grp_circ(data_in)
       }, times.wait_loop)
       return
     }
 
     let tag_now = 'sub_arr_grp'
-    let fontSize = 23 * siteScale
+    let font_size = 23 * site_scale
 
     // operate on new elements only
     let circ = com.s00.g
       .selectAll('circle.' + tag_now)
-      .data(dataV, function (d) {
+      .data(data_in, function (d) {
         return d.id
       })
 
@@ -1263,7 +1291,7 @@ window.ArrZoomerMain = function (opt_in0) {
         return 'translate(' + d.x + ',' + d.y + ')'
       })
       .merge(circ)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('transform', function (d) {
         return 'translate(' + d.x + ',' + d.y + ')'
@@ -1274,14 +1302,14 @@ window.ArrZoomerMain = function (opt_in0) {
 
     circ
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('r', 0)
       .remove()
 
     let text = com.s00.g
       .selectAll('text.' + tag_now)
-      .data(dataV, function (d) {
+      .data(data_in, function (d) {
         return d.id
       })
 
@@ -1302,8 +1330,8 @@ window.ArrZoomerMain = function (opt_in0) {
       .style('stroke-width', 0.7)
       .attr('text-anchor', 'middle')
       .style('stroke', '#383b42')
-      .attr('font-size', fontSize + 'px')
-      // .attr("dy", (fontSize/3)+'px' )
+      .attr('font-size', font_size + 'px')
+      // .attr("dy", (font_size/3)+'px' )
       .attr('dy', '0px')
       .merge(text)
       .transition('in')
@@ -1327,39 +1355,42 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   // add a lable with the
   // ------------------------------------------------------------------
-  function s00title (focusV0, focusV1) {
-    if (noRender) return
+  function s00_title (focus_0, focus_1) {
+    if (no_render) return
     
-    let focus_idV = [
-      focusV0.map(function (d) {
+    let focus_ids = [
+      focus_0.map(function (d) {
         return d.id
       }),
-      focusV1.map(function (d) {
+      focus_1.map(function (d) {
         return d.id
       })
     ]
-    function isFocused (d, nFocus) {
-      return focus_idV[nFocus].indexOf(d.id) >= 0
+    function is_focused (d, n_focus) {
+      return focus_ids[n_focus].indexOf(d.id) >= 0
     }
 
-    let tagLbl = 'lbls00title'
-    // let tagState = 'state_00'
-    // let tag_txt = tagState + tagLbl
-    let fontSize0 = 11 * siteScale
+    let tag_lbl = 'lbls_00_title'
+    // let tag_state = 'state_00'
+    // let tag_txt = tag_state + tag_lbl
+    let font_size0 = 11 * site_scale
 
-    function fontSize (d) {
-      if (isFocused(d, 1)) return fontSize0 * 0.5
-      else if (isFocused(d, 0)) return fontSize0 * 0.6
-      else return fontSize0 * 1.0
+    function font_size (d) {
+      if (is_focused(d, 1)) 
+        return font_size0 * 0.5
+      else if (is_focused(d, 0)) 
+        return font_size0 * 0.6
+      else 
+        return font_size0 * 1.0
     }
 
-    if (!is_def(com[tagLbl])) {
-      com[tagLbl] = {}
-      com[tagLbl].g = gMainD.gBase.append('g')
+    if (!is_def(com[tag_lbl])) {
+      com[tag_lbl] = {}
+      com[tag_lbl].g = main_gs.g_base.append('g')
     }
 
-    let text = com[tagLbl].g
-      .selectAll('text.' + tagLbl)
+    let text = com[tag_lbl].g
+      .selectAll('text.' + tag_lbl)
       .data(instruments.data.tel, function (d) {
         return d.id
       })
@@ -1370,7 +1401,7 @@ window.ArrZoomerMain = function (opt_in0) {
       .text(function (d) {
         return tel_info.get_title(d.id)
       })
-      .attr('class', tagLbl)
+      .attr('class', tag_lbl)
       .style('font-weight', 'bold')
       .style('opacity', 0)
       .style('fill', '#383b42')
@@ -1379,10 +1410,10 @@ window.ArrZoomerMain = function (opt_in0) {
       .style('pointer-events', 'none')
       .style('stroke', '#383b42')
       .style('font-size', function (d) {
-        return fontSize(d) + 'px'
+        return font_size(d) + 'px'
       })
       .attr('dy', function (d) {
-        return fontSize(d) / 3 + 'px'
+        return font_size(d) / 3 + 'px'
       })
       .attr('transform', function (d, i) {
         return (
@@ -1391,12 +1422,15 @@ window.ArrZoomerMain = function (opt_in0) {
       })
       .attr('text-anchor', 'middle')
       .merge(text)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('transform', function (d, i) {
         let shiftVal = 0
-        if (isFocused(d, 1)) {
-          shiftVal = instruments.data.xyr[d.id].r * (rScale[1].health1 + 0.5)
+        if (is_focused(d, 1)) {
+          shiftVal = (
+            instruments.data.xyr[d.id].r 
+            * (scale_r[1].health1 + 0.5)
+          )
         }
         return (
           'translate(' +
@@ -1407,10 +1441,10 @@ window.ArrZoomerMain = function (opt_in0) {
         )
       })
       .style('font-size', function (d) {
-        return fontSize(d) + 'px'
+        return font_size(d) + 'px'
       })
       .attr('dy', function (d) {
-        return fontSize(d) / 3 + 'px'
+        return font_size(d) / 3 + 'px'
       })
       .style('opacity', 1)
 
@@ -1427,50 +1461,51 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   // innner arcs for the different properties
   // ------------------------------------------------------------------
-  function s01inner (dataV, focusV) {
-    if (noRender) return
+  function s01_inner (data_in, focuses) {
+    if (no_render) return
 
-    let tagState = 'state01'
+    let tag_state = 'state01'
 
     if (!is_def(com.s01.inner)) {
       com.s01.inner = true
 
       // let telProps = Object.keys(instruments.props)
-      $.each(instruments.allIds, function (n_ele, key) {
+      $.each(instruments.all_ids, function (n_ele, key) {
         // $.each(instruments.props, function (key, telProps) {
-        $.each(instruments.props[key], function (index, porpNow) {
-          // console.log('+', key, index, porpNow)
-          $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
-            // let tag_now = porpNow + nArcDrawNow
-            let tag_now = key + porpNow + nArcDrawNow
-            let is0 = nArcDrawNow === 0
+        $.each(instruments.props[key], function (index, porp_now) {
+          // console.log('+', key, index, porp_now)
+          $.each([0, 1], function (n_arc_draw_now, n_arc_draw_now_) {
+            // let tag_now = porp_now + n_arc_draw_now
+            let tag_now = key + porp_now + n_arc_draw_now
+            let is0 = n_arc_draw_now === 0
 
-            arcFunc[tag_now] = {}
-            arcFunc[tag_now].rad00 = function (d) {
+            arc_func[tag_now] = {}
+            arc_func[tag_now].rad00 = function (d) {
               return instruments.data.xyr[d.id].r * (is0 ? 0.85 : 0.81)
             }
-            arcFunc[tag_now].rad01 = function (d) {
+            arc_func[tag_now].rad01 = function (d) {
               return instruments.data.xyr[d.id].r * (is0 ? 0.95 : 0.99)
             }
-            arcFunc[tag_now].rad10 = function (d) {
+            arc_func[tag_now].rad10 = function (d) {
               return (
-                instruments.data.xyr[d.id].r * rScale[1].innerH0 * (is0 ? 1 : 0.97)
+                instruments.data.xyr[d.id].r * scale_r[1].inner_h0 * (is0 ? 1 : 0.97)
               )
             }
-            arcFunc[tag_now].rad11 = function (d) {
+            arc_func[tag_now].rad11 = function (d) {
               return (
-                instruments.data.xyr[d.id].r * rScale[1].innerH1 * (is0 ? 1 : 1.03)
+                instruments.data.xyr[d.id].r * scale_r[1].inner_h1 * (is0 ? 1 : 1.03)
               )
             }
-            arcFunc[tag_now].ang00 = function (d) {
-              return index * instruments.tauFracs[key] + instruments.tauSpace
+            arc_func[tag_now].ang00 = function (d) {
+              return index * instruments.tau_fracs[key] + instruments.tau_space
             }
-            arcFunc[tag_now].ang01 = function (d) {
+            arc_func[tag_now].ang01 = function (d) {
               return (
-                index * instruments.tauFracs[key] +
-                instruments.tauSpace +
-                (instruments.tauFracs[key] - instruments.tauSpace * 2) *
-                  (is0 ? 1 : inst_health_frac(d[porpNow]))
+                index * instruments.tau_fracs[key] +
+                instruments.tau_space +
+                (instruments.tau_fracs[key] 
+                  - instruments.tau_space * 2)
+                * (is0 ? 1 : inst_health_frac(d[porp_now]))
               )
             }
           })
@@ -1481,21 +1516,21 @@ window.ArrZoomerMain = function (opt_in0) {
     // ------------------------------------------------------------------
     // innner arcs for the different properties
     // ------------------------------------------------------------------
-    let focus_idV = []
-    if (focusV !== undefined && focusV != null) {
-      $.each(focusV, function (index, data_now) {
-        focus_idV.push(data_now.id)
+    let focus_ids = []
+    if (focuses !== undefined && focuses != null) {
+      $.each(focuses, function (index, data_now) {
+        focus_ids.push(data_now.id)
       })
     }
-    // let tel_Id = dataV.id
-    // let tel_Id = zoomD.target
+    // let tel_Id = data_in.id
+    // let tel_Id = zooms.target
     // DDFF
 
-    $.each(instruments.allIds, function (n_ele, tel_Id) {
-      $.each(instruments.props[tel_Id], function (index, porpNow) {
-        $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
-          let tag_now = tel_Id + porpNow + nArcDrawNow
-          let is0 = nArcDrawNow === 0
+    $.each(instruments.all_ids, function (n_ele, tel_Id) {
+      $.each(instruments.props[tel_Id], function (index, porp_now) {
+        $.each([0, 1], function (n_arc_draw_now, n_arc_draw_now_) {
+          let tag_now = tel_Id + porp_now + n_arc_draw_now
+          let is0 = n_arc_draw_now === 0
 
           if (!is_def(arc_prev[tag_now])) {
             arc_prev[tag_now] = {}
@@ -1503,9 +1538,9 @@ window.ArrZoomerMain = function (opt_in0) {
             arc_prev[tag_now].rad = {}
           }
 
-          let dataVnow = dataV
-          if (dataV.length > 0) {
-            if (dataV[0].id != tel_Id) {
+          let dataVnow = data_in
+          if (data_in.length > 0) {
+            if (data_in[0].id != tel_Id) {
               dataVnow = []
             }
           }
@@ -1526,7 +1561,7 @@ window.ArrZoomerMain = function (opt_in0) {
             .attr('id', function (d) {
               return my_unique_id + d.id + tag_now
             })
-            .attr('class', tagState + ' ' + tag_now)
+            .attr('class', tag_state + ' ' + tag_now)
             // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
             .style('opacity', function (d) {
               return is0 ? '0.5' : '1'
@@ -1543,12 +1578,12 @@ window.ArrZoomerMain = function (opt_in0) {
             .each(function (d, i) {
               // console.log(i,d,tag_now)
               arc_prev[tag_now].ang[d.id] = [
-                arcFunc[tag_now].ang00(d),
-                arcFunc[tag_now].ang00(d)
+                arc_func[tag_now].ang00(d),
+                arc_func[tag_now].ang00(d)
               ]
               arc_prev[tag_now].rad[d.id] = [
-                arcFunc[tag_now].rad00(d),
-                arcFunc[tag_now].rad01(d)
+                arc_func[tag_now].rad00(d),
+                arc_func[tag_now].rad01(d)
               ]
             })
             .merge(path)
@@ -1564,12 +1599,12 @@ window.ArrZoomerMain = function (opt_in0) {
               )
             })
             .style('stroke', function (d) {
-              return is0 ? null : inst_health_col(d[porpNow])
+              return is0 ? null : inst_health_col(d[porp_now])
             })
             .style('fill', function (d) {
-              return inst_health_col(d[porpNow])
-            }) // return is0 ? "#383b42" : inst_health_col(d[porpNow]); })
-            .call(com.arcTween, {
+              return inst_health_col(d[porp_now])
+            }) // return is0 ? "#383b42" : inst_health_col(d[porp_now]); })
+            .call(com.arc_tween, {
               tag_now: tag_now,
               arc_prev: arc_prev,
               ang_str_0: null,
@@ -1585,10 +1620,10 @@ window.ArrZoomerMain = function (opt_in0) {
             // r_in_0:"rad00", r_in_1:"rad00", r_out_0:"rad01", r_out_1:"rad01"
             .transition('update')
             .duration(times.anim_arc)
-            .call(com.arcTween, {
+            .call(com.arc_tween, {
               tag_now: tag_now,
               arc_prev: arc_prev,
-              incIdV: focus_idV,
+              incIdV: focus_ids,
               ang_str_0: null,
               ang_str_1: null,
               ang_end_0: null,
@@ -1600,10 +1635,10 @@ window.ArrZoomerMain = function (opt_in0) {
             })
             .transition('update')
             .duration(times.anim_arc)
-            .call(com.arcTween, {
+            .call(com.arc_tween, {
               tag_now: tag_now,
               arc_prev: arc_prev,
-              excIdV: focus_idV,
+              excIdV: focus_ids,
               ang_str_0: null,
               ang_str_1: null,
               ang_end_0: null,
@@ -1620,7 +1655,7 @@ window.ArrZoomerMain = function (opt_in0) {
             .transition('out')
             // .each(function (d, i) {console.log('qquq', i, d); })
             .duration(times.anim_arc)
-            .call(com.arcTween, {
+            .call(com.arc_tween, {
               tag_now: tag_now,
               arc_prev: arc_prev,
               ang_str_0: null,
@@ -1637,7 +1672,7 @@ window.ArrZoomerMain = function (opt_in0) {
       })
     })
 
-    focus_idV = null
+    focus_ids = null
   
     return
   }
@@ -1646,36 +1681,36 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   // outer rings for the instruments.prop0 (equivalent of s00_D metric in s01_D)
   // ------------------------------------------------------------------
-  function s01outer (dataV, focusV) {
-    if (noRender) return
+  function s01_outer (data_in, focuses) {
+    if (no_render) return
 
-    let tagState = 'state01'
-    let porpNow = instruments.prop0
+    let tag_state = 'state01'
+    let porp_now = instruments.prop0
 
     if (!is_def(com.s01.outer)) {
       com.s01.outer = true
 
-      $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
-        let tag_now = porpNow + nArcDrawNow
-        let is0 = nArcDrawNow === 0
+      $.each([0, 1], function (n_arc_draw_now, n_arc_draw_now_) {
+        let tag_now = porp_now + n_arc_draw_now
+        let is0 = n_arc_draw_now === 0
 
-        arcFunc[tag_now] = {}
-        arcFunc[tag_now].rad00 = function (d) {
-          return instruments.data.xyr[d.id].r * rScale[0].health0 * (is0 ? 1 : 0.95)
+        arc_func[tag_now] = {}
+        arc_func[tag_now].rad00 = function (d) {
+          return instruments.data.xyr[d.id].r * scale_r[0].health0 * (is0 ? 1 : 0.95)
         }
-        arcFunc[tag_now].rad01 = function (d) {
-          return instruments.data.xyr[d.id].r * rScale[0].health1 * (is0 ? 1 : 1.05)
+        arc_func[tag_now].rad01 = function (d) {
+          return instruments.data.xyr[d.id].r * scale_r[0].health1 * (is0 ? 1 : 1.05)
         }
-        arcFunc[tag_now].rad10 = function (d) {
-          return instruments.data.xyr[d.id].r * rScale[1].health0 * (is0 ? 1 : 0.98)
+        arc_func[tag_now].rad10 = function (d) {
+          return instruments.data.xyr[d.id].r * scale_r[1].health0 * (is0 ? 1 : 0.98)
         }
-        arcFunc[tag_now].rad11 = function (d) {
-          return instruments.data.xyr[d.id].r * rScale[1].health1 * (is0 ? 1 : 1.02)
+        arc_func[tag_now].rad11 = function (d) {
+          return instruments.data.xyr[d.id].r * scale_r[1].health1 * (is0 ? 1 : 1.02)
         }
-        arcFunc[tag_now].ang00 = function (d) {
+        arc_func[tag_now].ang00 = function (d) {
           return 0
         }
-        arcFunc[tag_now].ang01 = function (d) {
+        arc_func[tag_now].ang01 = function (d) {
           return is0 ? tau : tau * inst_health_frac(d[instruments.prop0])
         }
       })
@@ -1684,16 +1719,16 @@ window.ArrZoomerMain = function (opt_in0) {
     // ------------------------------------------------------------------
     // innner arcs for the different properties
     // ------------------------------------------------------------------
-    let focus_idV = []
-    if (focusV !== undefined && focusV != null) {
-      $.each(focusV, function (index, data_now) {
-        focus_idV.push(data_now.id)
+    let focus_ids = []
+    if (focuses !== undefined && focuses != null) {
+      $.each(focuses, function (index, data_now) {
+        focus_ids.push(data_now.id)
       })
     }
 
-    $.each([0, 1], function (nArcDrawNow, nArcDrawNow_) {
-      let tag_now = porpNow + nArcDrawNow
-      let is0 = nArcDrawNow === 0
+    $.each([0, 1], function (n_arc_draw_now, n_arc_draw_now_) {
+      let tag_now = porp_now + n_arc_draw_now
+      let is0 = (n_arc_draw_now === 0)
 
       if (!is_def(arc_prev[tag_now])) {
         arc_prev[tag_now] = {}
@@ -1703,7 +1738,7 @@ window.ArrZoomerMain = function (opt_in0) {
 
       let path = com.s01.g
         .selectAll('path.' + tag_now)
-        .data(dataV, function (d) {
+        .data(data_in, function (d) {
           return d.id
         })
 
@@ -1717,7 +1752,7 @@ window.ArrZoomerMain = function (opt_in0) {
         .attr('id', function (d) {
           return my_unique_id + d.id + tag_now
         })
-        .attr('class', tagState + ' ' + tag_now)
+        .attr('class', tag_state + ' ' + tag_now)
         // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
         .style('opacity', function (d) {
           return is0 ? '0.5' : '1'
@@ -1733,12 +1768,12 @@ window.ArrZoomerMain = function (opt_in0) {
         })
         .each(function (d, i) {
           arc_prev[tag_now].ang[d.id] = [
-            arcFunc[tag_now].ang00(d),
-            arcFunc[tag_now].ang00(d)
+            arc_func[tag_now].ang00(d),
+            arc_func[tag_now].ang00(d)
           ]
           arc_prev[tag_now].rad[d.id] = [
-            arcFunc[tag_now].rad00(d),
-            arcFunc[tag_now].rad01(d)
+            arc_func[tag_now].rad00(d),
+            arc_func[tag_now].rad01(d)
           ]
         })
         .merge(path)
@@ -1754,12 +1789,12 @@ window.ArrZoomerMain = function (opt_in0) {
           )
         })
         .style('stroke', function (d) {
-          return is0 ? null : inst_health_col(d[porpNow])
+          return is0 ? null : inst_health_col(d[porp_now])
         })
         .style('fill', function (d) {
-          return inst_health_col(d[porpNow])
-        }) // return is0 ? "#383b42" : inst_health_col(d[porpNow]); })
-        .call(com.arcTween, {
+          return inst_health_col(d[porp_now])
+        }) // return is0 ? "#383b42" : inst_health_col(d[porp_now]); })
+        .call(com.arc_tween, {
           tag_now: tag_now,
           arc_prev: arc_prev,
           ang_str_0: null,
@@ -1775,10 +1810,10 @@ window.ArrZoomerMain = function (opt_in0) {
         // r_in_0:"rad00", r_in_1:"rad00", r_out_0:"rad01", r_out_1:"rad01"
         .transition('update')
         .duration(times.anim_arc)
-        .call(com.arcTween, {
+        .call(com.arc_tween, {
           tag_now: tag_now,
           arc_prev: arc_prev,
-          incIdV: focus_idV,
+          incIdV: focus_ids,
           ang_str_0: null,
           ang_str_1: null,
           ang_end_0: null,
@@ -1790,10 +1825,10 @@ window.ArrZoomerMain = function (opt_in0) {
         })
         .transition('update')
         .duration(times.anim_arc)
-        .call(com.arcTween, {
+        .call(com.arc_tween, {
           tag_now: tag_now,
           arc_prev: arc_prev,
-          excIdV: focus_idV,
+          excIdV: focus_ids,
           ang_str_0: null,
           ang_str_1: null,
           ang_end_0: null,
@@ -1809,7 +1844,7 @@ window.ArrZoomerMain = function (opt_in0) {
         .exit()
         .transition('out')
         .duration(times.anim_arc)
-        .call(com.arcTween, {
+        .call(com.arc_tween, {
           tag_now: tag_now,
           arc_prev: arc_prev,
           ang_str_0: null,
@@ -1824,15 +1859,15 @@ window.ArrZoomerMain = function (opt_in0) {
         .remove()
     })
 
-    focus_idV = null
+    focus_ids = null
   
     return
   }
 
   // function hasS10main(target_id) {
   //   let hasId = false;
-  //   $.each(s10V, function(index,ele_now) {
-  //     if(ele_now.id == zoomD.target) hasId = true;
+  //   $.each(s10_eles, function(index,ele_now) {
+  //     if(ele_now.id == zooms.target) hasId = true;
   //   })
   //   return hasId;
   // }
@@ -1841,57 +1876,57 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  function s10main (data_in) {
-    // console.log('s10main',zoomD.target,data_in);
+  function s10_main (data_in) {
+    // console.log('s10_main',zooms.target,data_in);
 
     let max_ele_keep = 1
-    let childV = is_def(data_in) ? data_in.data : null
+    let base_node = is_def(data_in) ? data_in.data : null
 
-    if (childV) {
+    if (base_node) {
       let tel_Id = data_in.id
 
-      $.each(instruments.props[tel_Id], function (index, porpNow) {
-        instruments.data.propDataS1[tel_Id] = {}
-        instruments.data.propDataS1[tel_Id][porpNow] = null
-        instruments.data.propParentS1[tel_Id] = {}
-        instruments.data.propParentS1[tel_Id][porpNow] = ''
-        instruments.data.propTitleS1[tel_Id] = {}
-        instruments.data.propTitleS1[tel_Id][porpNow] = ''
+      $.each(instruments.props[tel_Id], function (index, porp_now) {
+        instruments.data.prop_data_s1[tel_Id] = {}
+        instruments.data.prop_data_s1[tel_Id][porp_now] = null
+        instruments.data.prop_parent_s1[tel_Id] = {}
+        instruments.data.prop_parent_s1[tel_Id][porp_now] = ''
+        instruments.data.prop_title_s1[tel_Id] = {}
+        instruments.data.prop_title_s1[tel_Id][porp_now] = ''
       })
 
-      // construct the dataBase object b hand, as
+      // construct the data_base object b hand, as
       // some properties may not be included in instruments.props[tel_Id]
-      instruments.data.dataBaseS1[tel_Id] = {}
-      instruments.data.dataBaseS1[tel_Id].id = instruments.prop0
-      instruments.data.dataBaseS1[tel_Id].val = data_in[instruments.prop0]
-      instruments.data.dataBaseS1[tel_Id].children = []
+      instruments.data.data_base_s1[tel_Id] = {}
+      instruments.data.data_base_s1[tel_Id].id = instruments.prop0
+      instruments.data.data_base_s1[tel_Id].val = data_in[instruments.prop0]
+      instruments.data.data_base_s1[tel_Id].children = []
       // console.log('qqqqqqqq',tel_Id,data_in.data.val,data_in.data)
 
-      $.each(childV, function (indexData, childNow) {
-        let porpNow = childNow.id
-        if (instruments.props[tel_Id].indexOf(porpNow) >= 0) {
+      $.each(base_node, function (index_data, child_now) {
+        let porp_now = child_now.id
+        if (instruments.props[tel_Id].indexOf(porp_now) >= 0) {
           // add a reference to each property
-          instruments.data.propDataS1[tel_Id][porpNow] = childNow
-          instruments.data.propParentS1[tel_Id][porpNow] = porpNow
+          instruments.data.prop_data_s1[tel_Id][porp_now] = child_now
+          instruments.data.prop_parent_s1[tel_Id][porp_now] = porp_now
 
           // also add a reference for each level of the hierarchy which has a sub-hierarchy of its own
-          addChildren(childNow, tel_Id, porpNow)
+          add_children(child_now, tel_Id, porp_now)
 
           // build up the baseData object
-          instruments.data.dataBaseS1[tel_Id].children.push(childNow)
+          instruments.data.data_base_s1[tel_Id].children.push(child_now)
         }
       })
     }
 
-    function addChildren (data_now, tel_Id, porpNow) {
+    function add_children (data_now, tel_Id, porp_now) {
       if (data_now.children) {
         data_now.children.forEach(function (d, i) {
           if (d.children) {
-            instruments.data.propDataS1[tel_Id][d.id] = d
-            addChildren(d, tel_Id, porpNow)
+            instruments.data.prop_data_s1[tel_Id][d.id] = d
+            add_children(d, tel_Id, porp_now)
           }
-          instruments.data.propParentS1[tel_Id][d.id] = porpNow
-          instruments.data.propTitleS1[tel_Id][d.id] = d.title
+          instruments.data.prop_parent_s1[tel_Id][d.id] = porp_now
+          instruments.data.prop_title_s1[tel_Id][d.id] = d.title
         })
       }
     }
@@ -1899,198 +1934,206 @@ window.ArrZoomerMain = function (opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    if (!childV) {
-      $.each(s10V, function (index, ele_now) {
+    if (!base_node) {
+      $.each(s10_eles, function (index, ele_now) {
         // console.log('clean -',index,ele_now);
         let s10 = ele_now.s10
 
-        s10.bckArcRemove() // console.log('clickBckArc s10 000')
+        s10.bck_arc_remove() // console.log('click_bck_arc s10 000')
       })
       return
-    } else {
-      $.each(s10V, function (index, ele_now) {
+    } 
+    else {
+      $.each(s10_eles, function (index, ele_now) {
         let id = ele_now.id
         let s10 = ele_now.s10
 
-        if (id !== zoomD.target) {
-          // s10.clickBckArc(null);
-          s10.bckArcRemove() // console.log('clickBckArc s10 111')
+        if (id !== zooms.target) {
+          // s10.click_bck_arc(null);
+          s10.bck_arc_remove() // console.log('click_bck_arc s10 111')
         }
       })
     }
 
     let s10 = null
-    $.each(s10V, function (index, ele_now) {
-      if (ele_now.id === zoomD.target) s10 = ele_now.s10
+    $.each(s10_eles, function (index, ele_now) {
+      if (ele_now.id === zooms.target) s10 = ele_now.s10
     })
     if (!s10) {
       // ------------------------------------------------------------------
       //
       // ------------------------------------------------------------------
-      let S10obj = function (tel_Id) {
-        let thisS10 = this
-        thisS10.tel_Id = tel_Id
-        thisS10.instruments = {}
-        thisS10.instruments.props = instruments.props[tel_Id]
-        thisS10.tauFrac = instruments.tauFracs[tel_Id]
-        thisS10.instruments.propTitles = instruments.propTitles[tel_Id]
+      let S10 = function (tel_Id) {
+        let this_S10 = this
+        this_S10.tel_Id = tel_Id
+        this_S10.instruments = {}
+        this_S10.instruments.props = instruments.props[tel_Id]
+        this_S10.tau_frac = instruments.tau_fracs[tel_Id]
+        this_S10.instruments.prop_titles = instruments.prop_titles[tel_Id]
 
-        let myDate = Date.now()
-        let gBase = null
-        let gBckArc = null
-        let gHirch = null
-        let gPropLbl = null
-        let gTrans = null
+        let my_date = Date.now() 
+        let g_base = null
+        let g_bck_arc = null
+        let g_hierarchy = null
+        let g_prop_lbl = null
+        let g_trans = null
         let arcs = null
-        let depthClick = null
-        let parentV = null
-        let hirchDataV = null
+        let depth_click = null
+        let parents = null
+        let hierarchies = null
 
-        thisS10.hirchData = {}
-        $.each(thisS10.instruments.props, function (index, porpNow) {
-          thisS10.hirchData[porpNow] = null
+        this_S10.data_hierarchy = {}
+        $.each(this_S10.instruments.props, function (index, porp_now) {
+          this_S10.data_hierarchy[porp_now] = null
         })
 
-        thisS10.getDate = function () {
-          return myDate
+        this_S10.get_date = function () {
+          return my_date
         }
 
-        let wh = instruments.data.xyr[tel_Id].r * rScale[1].innerH1 * 1.6
+        let wh = (
+          instruments.data.xyr[tel_Id].r 
+          * scale_r[1].inner_h1 * 1.6
+        )
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
         function init () {
-          if (gBase) {
-            myDate = Date.now()
-          } else {
-            gBase = gMainD.gBase.append('g')
+          if (g_base) {
+            my_date = Date.now()
+          } 
+          else {
+            g_base = main_gs.g_base.append('g')
 
-            updatePosG(0)
+            update_pos_g(0)
 
-            gBckArc = gBase.append('g')
-            gPropLbl = gBase.append('g')
-            // gBckArc.append("rect").attr("width",wh).attr("height",wh).style("stroke",'#2196F3' ).style("fill",'transparent' ).style("stroke-width", 0.1).attr("pointer-events",'none').attr("opacity",0.5);
+            g_bck_arc = g_base.append('g')
+            g_prop_lbl = g_base.append('g')
+            // g_bck_arc.append("rect").attr("width",wh).attr("height",wh).style("stroke",'#2196F3' ).style("fill",'transparent' ).style("stroke-width", 0.1).attr("pointer-events",'none').attr("opacity",0.5);
 
-            parentV = {}
-            depthClick = {}
+            parents = {}
+            depth_click = {}
 
             arcs = {}
             arcs.arc = {}
             arcs.tween = {}
-            arcs.isOpen = false
-            arcs.inProp = ''
+            arcs.is_open = false
+            // arcs.in_prop = ''
 
-            gHirch = {}
-            gTrans = {}
-            hirchDataV = {}
-            $.each(childV, function (indexData, dataBase) {
-              let porpNow = dataBase.id
+            g_hierarchy = {}
+            g_trans = {}
+            hierarchies = {}
+            $.each(base_node, function (index_data, data_base) {
+              let porp_now = data_base.id
 
-              if (thisS10.instruments.props.indexOf(porpNow) >= 0) {
-                gTrans[porpNow] = {}
-                gHirch[porpNow] = {}
-                gHirch[porpNow].hirch = gBase.append('g')
-                hirchDataV[porpNow] = {}
+              if (this_S10.instruments.props.indexOf(porp_now) >= 0) {
+                g_trans[porp_now] = {}
+                g_hierarchy[porp_now] = {}
+                g_hierarchy[porp_now].hirch = g_base.append('g')
+                hierarchies[porp_now] = {}
               }
             })
 
             // // expose the objects (must come after their initialization!)
-            thisS10.gBase = gBase
-            thisS10.arcs = arcs
+            this_S10.g_base = g_base
+            this_S10.arcs = arcs
 
-            // initBckArc();
-            initHirch()
+            // init_bck_arc();
+            init_hierarchy()
           }
 
-          // console.log('clickBckArc init')
-          // initBckArc(); // called from bckArcClick on init anyway...
+          // console.log('click_bck_arc init')
+          // init_bck_arc(); // called from bck_arc_click on init anyway...
         }
-        thisS10.init = init
+        this_S10.init = init
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function updatePosG (duration) {
-          let gBaseTrans = [
+        function update_pos_g (duration) {
+          let g_base_trans = [
             instruments.data.xyr[tel_Id].x - wh / 2,
             instruments.data.xyr[tel_Id].y - wh / 2
           ]
 
-          gBase
+          g_base
             .transition('updtPos')
             .duration(duration)
             .attr('transform', function (d) {
-              return 'translate(' + gBaseTrans[0] + ',' + gBaseTrans[1] + ')'
+              return 'translate(' + g_base_trans[0] + ',' + g_base_trans[1] + ')'
             })
         }
-        thisS10.updatePosG = updatePosG
+        this_S10.update_pos_g = update_pos_g
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
         function cleanup () {
-          gBase.remove()
+          g_base.remove()
 
-          gBase = null
-          gBckArc = null
-          gHirch = null
-          gPropLbl = null
-          gTrans = null
+          g_base = null
+          g_bck_arc = null
+          g_hierarchy = null
+          g_prop_lbl = null
+          g_trans = null
           arcs = null
-          depthClick = null
-          parentV = null
-          hirchDataV = null
+          depth_click = null
+          parents = null
+          hierarchies = null
         }
-        thisS10.cleanup = cleanup
+        this_S10.cleanup = cleanup
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function setPropLbl (opt_in) {
-          if (noRender) return
+        function set_prop_lbl (opt_in) {
+          if (no_render) return
 
-          // due to delays from locker, this function could be called after the S10obj has
-          // been removed - make a safety check using gBase...
-          if (!is_def(gBase)) return
+          // due to delays from locker, this function could be called after the S10 has
+          // been removed - make a safety check using g_base...
+          if (!is_def(g_base)) return
 
-          let base_tag = 's10arc'
-          let tagLbl = base_tag + '_propLbl'
-          let propIn = is_def(opt_in.propIn) ? opt_in.propIn : ''
+          let base_tag = 's10_arc'
+          let tag_lbl = base_tag + '_prop_lbl'
+          let prop_in = is_def(opt_in.prop_in) ? opt_in.prop_in : ''
           let remove = is_def(opt_in.remove) ? opt_in.remove : false
 
-          if (propIn !== '') {
-            if (thisS10.instruments.props.indexOf(propIn) < 0) {
-              if (is_def(instruments.data.propParentS1[tel_Id][propIn])) {
-                propIn = instruments.data.propParentS1[tel_Id][propIn]
+          if (prop_in !== '') {
+            if (this_S10.instruments.props.indexOf(prop_in) < 0) {
+              if (is_def(instruments.data.prop_parent_s1[tel_Id][prop_in])) {
+                prop_in = instruments.data.prop_parent_s1[tel_Id][prop_in]
               }
             }
           }
 
-          let textD = []
-          if (this_top.getZoomS() === 1 && !remove) {
-            $.each(thisS10.instruments.props, function (index, porpNow) {
+          let text_data = []
+          if (this_top.get_zoom_state() === 1 && !remove) {
+            $.each(this_S10.instruments.props, function (index, porp_now) {
               let state = 0
-              if (propIn !== '') {
-                state = propIn === porpNow ? 1 : 2
+              if (prop_in !== '') {
+                state = prop_in === porp_now ? 1 : 2
               }
 
-              let txtR = instruments.data.xyr[tel_Id].r * rScale[1].innerH1 * 1.45
-              let xy = getPropPosShift(
+              let txt_r = (
+                instruments.data.xyr[tel_Id].r 
+                * scale_r[1].inner_h1 * 1.45
+              )
+              let xy = get_prop_pos_shift(
                 'xy',
-                txtR,
+                txt_r,
                 index,
-                thisS10.instruments.props.length
+                this_S10.instruments.props.length
               )
 
-              textD.push({
-                id: tagLbl + porpNow,
-                text: thisS10.instruments.propTitles[porpNow],
-                h: 30 / zoomD.len['1.3'],
+              text_data.push({
+                id: tag_lbl + porp_now,
+                text: this_S10.instruments.prop_titles[porp_now],
+                h: 30 / zooms.len['1.3'],
                 xy: xy,
                 x: wh / 2 - xy[0],
                 y: wh / 2 - xy[1],
-                strkW: state === 1 ? 3 : 0,
+                strk_w: state === 1 ? 3 : 0,
                 opac: state === 1 ? 0.9 : state === 2 ? 0.1 : 0.7,
                 anch:
                   Math.abs(xy[0] / instruments.data.xyr[tel_Id].r) < 0.001
@@ -2100,11 +2143,11 @@ window.ArrZoomerMain = function (opt_in0) {
             })
           }
 
-          let eleH = null
+          let ele_h = null
 
-          let title = gPropLbl
-            .selectAll('text.' + tagLbl)
-            .data(textD, function (d) {
+          let title = g_prop_lbl
+            .selectAll('text.' + tag_lbl)
+            .data(text_data, function (d) {
               return d.id
             })
 
@@ -2115,11 +2158,11 @@ window.ArrZoomerMain = function (opt_in0) {
             .text(function (d) {
               return d.text
             })
-            .attr('class', base_tag + ' ' + tagLbl) // class list for easy selection
+            .attr('class', base_tag + ' ' + tag_lbl) // class list for easy selection
             .style('opacity', '0')
             .style('fill', '#383b42')
             .attr('stroke-width', function (d) {
-              return d.strkW
+              return d.strk_w
             })
             .style('stroke', function (d) {
               return '#383b42'
@@ -2137,7 +2180,7 @@ window.ArrZoomerMain = function (opt_in0) {
             .transition('update1')
             .duration(times.anim_arc)
             .attr('stroke-width', function (d) {
-              return d.strkW
+              return d.strk_w
             })
             .attr('transform', function (d) {
               return 'translate(' + d.x + ',' + d.y + ')'
@@ -2146,14 +2189,14 @@ window.ArrZoomerMain = function (opt_in0) {
               return d.anch
             })
             .attr('dy', function (d) {
-              if (!is_def(eleH)) {
-                eleH = get_node_height_by_id({
-                  selction: gPropLbl.selectAll('text.' + tagLbl),
+              if (!is_def(ele_h)) {
+                ele_h = get_node_height_by_id({
+                  selction: g_prop_lbl.selectAll('text.' + tag_lbl),
                   id: d.id,
                   txt_scale: true
                 })
               }
-              return eleH + 'px'
+              return ele_h + 'px'
             })
             .style('opacity', function (d) {
               return d.opac
@@ -2170,80 +2213,81 @@ window.ArrZoomerMain = function (opt_in0) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function initBckArc () {
-          if (noRender) return
+        function init_bck_arc () {
+          if (no_render) return
 
-          // due to delays from locker, this function could be called after the S10obj has
-          // been removed - make a safety check using gBase...
-          if (!is_def(gBase)) return
+          // due to delays from locker, this function could be called after the S10 has
+          // been removed - make a safety check using g_base...
+          if (!is_def(g_base)) return
 
-          // console.log('initBckArc')
-          let propsNow = instruments.data.propDataS1[tel_Id]
-          $.each(propsNow, function (porpNow, data_now) {
+          // console.log('init_bck_arc')
+          let props_now = instruments.data.prop_data_s1[tel_Id]
+          $.each(props_now, function (porp_now, data_now) {
             if (data_now) {
-              let base_tag = 's10arc'
-              let tag_now = base_tag + porpNow
+              let base_tag = 's10_arc'
+              let tag_now = base_tag + porp_now
               // let is0 = 1
 
-              let nProp = thisS10.instruments.props.indexOf(porpNow)
-              if (nProp >= 0) {
+              let n_prop = this_S10.instruments.props.indexOf(porp_now)
+              if (n_prop >= 0) {
                 if (!is_def(arcs[tag_now])) {
                   arcs[tag_now] = {}
                   arcs[tag_now].ang = {}
                   arcs[tag_now].rad = {}
 
-                  arcFunc[tag_now] = {}
-                  arcFunc[tag_now].radN1 = function (d) {
+                  arc_func[tag_now] = {}
+                  arc_func[tag_now].radN1 = function (d) {
                     return 0
                   }
-                  arcFunc[tag_now].rad00 = function (d) {
-                    return instruments.data.xyr[tel_Id].r * rScale[1].innerH1 * 0.1
+                  arc_func[tag_now].rad00 = function (d) {
+                    return instruments.data.xyr[tel_Id].r * scale_r[1].inner_h1 * 0.1
                   }
-                  arcFunc[tag_now].rad01 = function (d) {
-                    return instruments.data.xyr[tel_Id].r * rScale[1].innerH1 * 0.8
+                  arc_func[tag_now].rad01 = function (d) {
+                    return instruments.data.xyr[tel_Id].r * scale_r[1].inner_h1 * 0.8
                   }
-                  arcFunc[tag_now].rad10 = function (d) {
-                    return instruments.data.xyr[tel_Id].r * rScale[1].innerH1 * 0.85
+                  arc_func[tag_now].rad10 = function (d) {
+                    return instruments.data.xyr[tel_Id].r * scale_r[1].inner_h1 * 0.85
                   }
-                  arcFunc[tag_now].rad11 = function (d) {
-                    return instruments.data.xyr[tel_Id].r * rScale[1].innerH1 * 1.35
+                  arc_func[tag_now].rad11 = function (d) {
+                    return instruments.data.xyr[tel_Id].r * scale_r[1].inner_h1 * 1.35
                   }
-                  arcFunc[tag_now].ang00 = function (d) {
-                    return nProp * thisS10.tauFrac + instruments.tauSpace
+                  arc_func[tag_now].ang00 = function (d) {
+                    return n_prop * this_S10.tau_frac + instruments.tau_space
                   }
-                  arcFunc[tag_now].ang01 = function (d) {
-                    return (nProp + 1) * thisS10.tauFrac - instruments.tauSpace
+                  arc_func[tag_now].ang01 = function (d) {
+                    return (n_prop + 1) * this_S10.tau_frac - instruments.tau_space
                   }
-                  arcFunc[tag_now].ang10 = function (d) {
+                  arc_func[tag_now].ang10 = function (d) {
                     return 0
                   }
-                  arcFunc[tag_now].ang11 = function (d) {
+                  arc_func[tag_now].ang11 = function (d) {
                     return tau
                   }
-                  arcFunc[tag_now].ang20 = function (d) {
-                    return nProp * thisS10.tauFrac
+                  arc_func[tag_now].ang20 = function (d) {
+                    return n_prop * this_S10.tau_frac
                   }
-                  arcFunc[tag_now].ang21 = function (d) {
-                    return (nProp + 1) * thisS10.tauFrac
+                  arc_func[tag_now].ang21 = function (d) {
+                    return (n_prop + 1) * this_S10.tau_frac
                   }
                 }
 
-                let path = gBckArc.selectAll('path.' + tag_now).data([
-                  {
-                    id: tag_now + '0',
-                    porpNow: porpNow,
-                    nArc: 0,
-                    isFull: false,
-                    col: ''
-                  },
-                  {
-                    id: tag_now + '1',
-                    porpNow: porpNow,
-                    nArc: 1,
-                    isFull: false,
-                    col: ''
-                  }
-                ])
+                let path = g_bck_arc
+                  .selectAll('path.' + tag_now).data([
+                    {
+                      id: tag_now + '0',
+                      porp_now: porp_now,
+                      nArc: 0,
+                      is_full: false,
+                      col: ''
+                    },
+                    {
+                      id: tag_now + '1',
+                      porp_now: porp_now,
+                      nArc: 1,
+                      is_full: false,
+                      col: ''
+                    }
+                  ])
 
                 // operate on new elements only
                 path
@@ -2256,12 +2300,12 @@ window.ArrZoomerMain = function (opt_in0) {
                   })
                   .each(function (d, i) {
                     arcs[tag_now].ang[d.id] = [
-                      arcFunc[tag_now].ang00(d),
-                      arcFunc[tag_now].ang01(d)
+                      arc_func[tag_now].ang00(d),
+                      arc_func[tag_now].ang01(d)
                     ]
                     arcs[tag_now].rad[d.id] = [
-                      arcFunc[tag_now].rad00(d),
-                      arcFunc[tag_now].rad00(d)
+                      arc_func[tag_now].rad00(d),
+                      arc_func[tag_now].rad00(d)
                     ]
                   })
                   .style('stroke', '#383b42')
@@ -2271,27 +2315,27 @@ window.ArrZoomerMain = function (opt_in0) {
                   })
                   .on('click', click)
                   // .on("mouseover", mouseover)
-                  .style('fill', getCol)
+                  .style('fill', get_col)
                   .style('opacity', 0)
                   .style('fill-opacity', 0)
                   .merge(path)
                   .each(function (d) {
-                    d.isFull = false
+                    d.is_full = false
                   })
-                  .transition('inOut')
+                  .transition('in_out')
                   .duration(times.anim_arc)
                   .delay(times.anim_arc)
                   .style('opacity', function (d) {
                     return d.nArc === 0 ? 1 : 0
                   })
-                  .style('fill', getCol)
+                  .style('fill', get_col)
                   .style('fill-opacity', function (d) {
                     return d.nArc === 0 ? 0.5 : 0
                   })
                   .style('stroke-opacity', function (d) {
                     return d.nArc === 0 ? 0 : 0.3
                   })
-                  .call(com.arcTween, {
+                  .call(com.arc_tween, {
                     tag_now: tag_now,
                     arc_prev: arcs,
                     ang_str_0: null,
@@ -2307,66 +2351,66 @@ window.ArrZoomerMain = function (opt_in0) {
             }
 
             //
-            function getCol (d) {
+            function get_col (d) {
               d.col =
                 d.nArc === 0
-                  ? inst_health_col(instruments.data.propDataS1[tel_Id][d.porpNow].val)
+                  ? inst_health_col(instruments.data.prop_data_s1[tel_Id][d.porp_now].val)
                   : '#383b42'
               return d.col
             }
 
             //
             function click (d) {
-              bckArcClick({
-                clickIn: isClickIn(d.porpNow),
-                propIn: d.porpNow
+              bck_arc_click({
+                click_in: is_click_in(d.porp_now),
+                prop_in: d.porp_now
               })
             }
           })
 
-          setPropLbl({ propIn: '' })
+          set_prop_lbl({ prop_in: '' })
         }
-        thisS10.initBckArc = initBckArc
+        this_S10.init_bck_arc = init_bck_arc
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        let prevFocusedProp = ''
-        function isClickIn (propIn) {
-          return prevFocusedProp !== propIn
+        let prev_focused_prop = ''
+        function is_click_in (prop_in) {
+          return prev_focused_prop !== prop_in
         }
         
-        function setPrevProp (propIn) {
-          prevFocusedProp = propIn
+        function set_prev_prop (prop_in) {
+          prev_focused_prop = prop_in
         }
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function bckArcRemove () {
-          if (noRender) return
+        function bck_arc_remove () {
+          if (no_render) return
 
           // due to delays from locker, this function could 
-          // be called after the S10obj has been removed
-           // - make a safety check using gBase...
-          if (!is_def(gBase)) return
+          // be called after the S10 has been removed
+           // - make a safety check using g_base...
+          if (!is_def(g_base)) return
 
-          locker.add('s10bckArcChange')
-
-          //
-          hirchStyleClick({ propIn: '', id: '', isOpen: false })
+          locker.add('s10_bck_arc_change')
 
           //
-          $.each(thisS10.instruments.props, function (index, porpNow) {
-            let base_tag = 's10arc'
-            let tag_now = base_tag + porpNow
-            let path = gBckArc.selectAll('path.' + tag_now)
+          hierarchy_style_click({ prop_in: '', id: '', is_open: false })
+
+          //
+          $.each(this_S10.instruments.props, function (index, porp_now) {
+            let base_tag = 's10_arc'
+            let tag_now = base_tag + porp_now
+            let path = g_bck_arc.selectAll('path.' + tag_now)
 
             path
-              .transition('inOut')
+              .transition('in_out')
               .duration(times.anim_arc)
               .style('opacity', 0)
-              .call(com.arcTween, {
+              .call(com.arc_tween, {
                 tag_now: tag_now,
                 arc_prev: arcs,
                 ang_str_0: null,
@@ -2381,154 +2425,158 @@ window.ArrZoomerMain = function (opt_in0) {
               .remove()
           })
 
-          setPrevProp('')
-          locker.remove('s10bckArcChange')
+          set_prev_prop('')
+          locker.remove('s10_bck_arc_change')
 
-          setPropLbl({ propIn: '', remove: true })
+          set_prop_lbl({ prop_in: '', remove: true })
 
-          hirchHovTitleOut(null)
+          hierarchy_hov_title_out(null)
         }
-        thisS10.bckArcRemove = bckArcRemove
+        this_S10.bck_arc_remove = bck_arc_remove
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function bckArcClick (opt_in) {
+        function bck_arc_click (opt_in) {
           // due to delays from locker, this function could be 
-          // called after the S10obj has been removed 
-          // - make a safety check using gBase...
-          if (!is_def(gBase)) return
+          // called after the S10 has been removed 
+          // - make a safety check using g_base...
+          if (!is_def(g_base)) return
 
-          let clickIn = opt_in.clickIn
-          let propIn = opt_in.propIn
-          let onlyOpen = is_def(opt_in.onlyOpen) ? opt_in.onlyOpen : false
-          let canIgnore = is_def(opt_in.canIgnore) ? opt_in.canIgnore : true
+          let click_in = opt_in.click_in
+          let prop_in = opt_in.prop_in
+          let only_open = is_def(opt_in.only_open) ? opt_in.only_open : false
+          let can_ignore = is_def(opt_in.can_ignore) ? opt_in.can_ignore : true
 
-          if (thisS10.instruments.props.indexOf(propIn) < 0 && propIn != '') return
+          if (this_S10.instruments.props.indexOf(prop_in) < 0 && prop_in != '') return
 
           if (
             !locker.are_free([
-              's10bckArcChange',
-              'dataChange',
-              's10clickHirch'
+              's10_bck_arc_change',
+              'data_change',
+              's10_click_hierarchy'
             ])
           ) {
-            if (!canIgnore) {
+            if (!can_ignore) {
               setTimeout(function () {
-                bckArcClick(opt_in)
+                bck_arc_click(opt_in)
               }, times.anim_arc / 3)
             }
             return
           }
 
-          locker.add({ id: 's10bckArcChange', override: true })
-          function freeMe (doDelay) {
+          locker.add({ id: 's10_bck_arc_change', override: true })
+          function free_me (do_delay) {
             locker.remove({
-              id: 's10bckArcChange',
-              delay: doDelay ? times.anim_arc * 1.5 : 0,
+              id: 's10_bck_arc_change',
+              delay: do_delay ? times.anim_arc * 1.5 : 0,
               override: true
             })
           }
 
-          setPropLbl({ propIn: propIn })
+          set_prop_lbl({ prop_in: prop_in })
 
-          setPrevProp(propIn)
+          set_prev_prop(prop_in)
 
           // ------------------------------------------------------------------
           //
           // ------------------------------------------------------------------
-          $.each(thisS10.instruments.props, function (index, porpNow) {
-            let base_tag = 's10arc'
-            let tag_now = base_tag + porpNow
-            let path0 = gBckArc.selectAll('path.' + tag_now + '0')
-            let path1 = gBckArc.selectAll('path.' + tag_now + '1')
+          $.each(this_S10.instruments.props, function (index, porp_now) {
+            let base_tag = 's10_arc'
+            let tag_now = base_tag + porp_now
+            let path0 = g_bck_arc.selectAll('path.' + tag_now + '0')
+            let path1 = g_bck_arc.selectAll('path.' + tag_now + '1')
 
-            if (propIn === porpNow) {
-              fullArcs(path0, path1, tag_now, clickIn)
+            if (prop_in === porp_now) {
+              full_arcs(path0, path1, tag_now, click_in)
             } else {
-              hideArcs(path0, tag_now)
-              hideArcs(path1, tag_now)
+              hide_arcs(path0, tag_now)
+              hide_arcs(path1, tag_now)
             }
           })
 
-          if (onlyOpen && clickIn) {
-            freeMe(true)
+          if (only_open && click_in) {
+            free_me(true)
             return
           }
 
-          if (!clickIn && depthClick[propIn] > 0) {
-            let parentName = ''
-            $.each(hirchDataV[propIn], function (id_now, data_now) {
-              if (data_now.childDepth === depthClick[propIn]) {
-                parentName = data_now.parentName
+          if (!click_in && depth_click[prop_in] > 0) {
+            let parent_name = ''
+            $.each(hierarchies[prop_in], function (id_now, data_now) {
+              if (data_now.child_depth === depth_click[prop_in]) {
+                parent_name = data_now.parent_name
               }
             })
 
-            hirchStyleClick({ propIn: propIn, id: parentName, isOpen: true })
+            hierarchy_style_click({
+              prop_in: prop_in, id: parent_name, is_open: true,
+            })
             
-            propsS1({
+            props_s1({
               tel_Id: tel_Id,
-              clickIn: true,
-              propIn: parentName,
-              doFunc: ['telHirch'],
-              debug: 'bckArcClick'
+              click_in: true,
+              prop_in: parent_name,
+              do_func: ['tel_hierarchy'],
+              debug: 'bck_arc_click'
             })
 
-            freeMe(true)
+            free_me(true)
             
             return
           } 
           else {
-            // console.log('openCloseHirch',propIn,'--',depthClick[propIn],clickIn)
+            // console.log('tog_hierarchy',prop_in,'--',depth_click[prop_in],click_in)
 
-            hirchStyleClick({ propIn: propIn, id: propIn, isOpen: clickIn })
+            hierarchy_style_click({
+              prop_in: prop_in, id: prop_in, is_open: click_in,
+            })
 
-            propsS1({
+            props_s1({
               tel_Id: tel_Id,
-              clickIn: clickIn,
-              propIn: propIn,
-              doFunc: ['telHirch'],
-              debug: 'bckArcClick'
+              click_in: click_in,
+              prop_in: prop_in,
+              do_func: ['tel_hierarchy'],
+              debug: 'bck_arc_click'
             })
           }
 
-          if (!clickIn) {
-            initBckArc()
-            setPrevProp('')
-            freeMe(true)
+          if (!click_in) {
+            init_bck_arc()
+            set_prev_prop('')
+            free_me(true)
             return
           }
 
           //
-          if (clickIn) {
-            this_top.zoomToTrgMain({
+          if (click_in) {
+            this_top.zoom_to_target_main({
               target: tel_Id,
-              scale: zoomD.len['1.2'],
+              scale: zooms.len['1.2'],
               duration_scale: 1
             })
           }
 
-          freeMe(true)
+          free_me(true)
         }
-        thisS10.bckArcClick = bckArcClick
+        this_S10.bck_arc_click = bck_arc_click
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function fullArcs (path0, path1, tag_now, isOpen) {
-          if (noRender) return
+        function full_arcs (path0, path1, tag_now, is_open) {
+          if (no_render) return
 
           path0
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 1)
             .style('fill', '#383b42')
             .style('fill-opacity', 0.06)
             // .style("fill-opacity", 0.2)
             .each(function (d) {
-              d.isFull = true
+              d.is_full = true
             })
-            .call(com.arcTween, {
+            .call(com.arc_tween, {
               tag_now: tag_now,
               arc_prev: arcs,
               ang_str_0: null,
@@ -2542,9 +2590,9 @@ window.ArrZoomerMain = function (opt_in0) {
             })
 
           path1
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc / 2)
-            .call(com.arcTween, {
+            .call(com.arc_tween, {
               tag_now: tag_now,
               arc_prev: arcs,
               ang_str_0: null,
@@ -2558,9 +2606,9 @@ window.ArrZoomerMain = function (opt_in0) {
             })
             .style('fill-opacity', 0.07)
             .style('opacity', 1)
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc / 2)
-            .call(com.arcTween, {
+            .call(com.arc_tween, {
               tag_now: tag_now,
               arc_prev: arcs,
               ang_str_0: null,
@@ -2577,14 +2625,14 @@ window.ArrZoomerMain = function (opt_in0) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function hideArcs (path, tag_now) {
-          if (noRender) return
+        function hide_arcs (path, tag_now) {
+          if (no_render) return
 
           path
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc / 2)
             .style('opacity', 0)
-            .call(com.arcTween, {
+            .call(com.arc_tween, {
               tag_now: tag_now,
               arc_prev: arcs,
               ang_str_0: null,
@@ -2601,33 +2649,37 @@ window.ArrZoomerMain = function (opt_in0) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function hirchHovTitleIn (dIn) {
-          if (noRender) return
+        function hierarchy_hov_title_in (dIn) {
+          if (no_render) return
 
           if (
             !locker.are_free([
-              's10bckArcChange',
-              'dataChange',
-              's10clickHirch'
+              's10_bck_arc_change',
+              'data_change',
+              's10_click_hierarchy'
             ])
           ) {
             return
           }
 
-          hirchHovTitleOut(null)
+          hierarchy_hov_title_out(null)
 
-          let r = teleR.s00[2] * rScale[1].innerH1 / 3.5
+          let r = tel_rs.s00[2] * scale_r[1].inner_h1 / 3.5
           let dx = wh / 2
-          let dy = wh + 2 * r * instruments.data.xyr[tel_Id].r / teleR.s00[2]
+          let dy = (
+            wh + 2 * r 
+            * instruments.data.xyr[tel_Id].r 
+            / tel_rs.s00[2]
+          )
 
-          gBase
-            .selectAll('text.' + 'hovTitle')
+          g_base
+            .selectAll('text.' + 'hov_title')
             .data([{ id: dIn.data.id }], function (d) {
               return d.id
             })
             .enter()
             .append('text')
-            .attr('class', 'hovTitle')
+            .attr('class', 'hov_title')
             .text(dIn.data.title)
             .style('opacity', 0)
             .style('fill-opacity', 0.8)
@@ -2643,13 +2695,13 @@ window.ArrZoomerMain = function (opt_in0) {
               return 'translate(' + dx + ',' + dy + ')'
             })
             .attr('dy', function (d) {
-              let eleH =
+              let ele_h =
                 -0.5 *
                 get_node_height_by_id({
-                  selction: gBase.selectAll('text.' + 'hovTitle'),
+                  selction: g_base.selectAll('text.' + 'hov_title'),
                   id: d.id
                 })
-              return eleH + 'px'
+              return ele_h + 'px'
             })
             .transition('update1')
             .duration(times.anim_arc)
@@ -2659,11 +2711,11 @@ window.ArrZoomerMain = function (opt_in0) {
         // ------------------------------------------------------------------
         // 
         // ------------------------------------------------------------------
-        function hirchHovTitleOut (dIn) {
-          if (noRender) return
+        function hierarchy_hov_title_out (dIn) {
+          if (no_render) return
 
-          gBase
-            .selectAll('text.' + 'hovTitle')
+          g_base
+            .selectAll('text.' + 'hov_title')
             .filter(function (d) {
               return is_def(dIn) ? d.id === dIn.data.id : true
             })
@@ -2678,132 +2730,141 @@ window.ArrZoomerMain = function (opt_in0) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function initHirch () {
-          if (noRender) return
+        function init_hierarchy () {
+          if (no_render) return
 
           // due to delays from locker, this function could be 
-          // called after the S10obj has been removed 
-          // - make a safety check using gBase...
-          if (!is_def(gBase)) return
+          // called after the S10 has been removed 
+          // - make a safety check using g_base...
+          if (!is_def(g_base)) return
 
-          $.each(childV, function (indexData, dataBase) {
-            let porpNow = dataBase.id
+          $.each(base_node, function (index_data, data_base) {
+            let porp_now = data_base.id
 
-            let getChild = {}
-            let hirchV = {}
+            let get_child = {}
+            let hierarchy_by_id = {}
             let max_depth = 0
 
-            function getAllChildren (d) {
-              return d['child' + String(d.childDepth)]
+            function get_all_children (d) {
+              return d['child' + String(d.child_depth)]
             }
 
-            function renameChildren (data_now, depthIn, parentName) {
-              if (!is_def(depthIn)) depthIn = -1
-              if (!is_def(parentName)) parentName = null
+            function rename_children (data_now, depth_in, parent_name) {
+              if (!is_def(depth_in)) depth_in = -1
+              if (!is_def(parent_name)) parent_name = null
 
-              let depthNow = depthIn
-              depthNow++
-              max_depth = Math.max(depthNow, max_depth)
+              let depth_now = depth_in
+              depth_now++
+              max_depth = Math.max(depth_now, max_depth)
 
-              let childName = 'child' + String(depthNow)
+              let child_mame = 'child' + String(depth_now)
 
               // access function
-              if (!is_def(getChild[childName])) {
-                getChild[childName] = function (d) {
-                  return d[childName]
+              if (!is_def(get_child[child_mame])) {
+                get_child[child_mame] = function (d) {
+                  return d[child_mame]
                 }
               }
 
               // internal variables to keep track of the depth, name of the parent
-              data_now.childDepth = depthNow
-              data_now.parentName = parentName
-              parentName = data_now.id
+              data_now.child_depth = depth_now
+              data_now.parent_name = parent_name
+              parent_name = data_now.id
 
               // modify children names and go one level deeper if needed
               if (data_now.children) {
-                // console.log('+++++',data_now.id,childName,data_now);
-                if (!is_def(gHirch[porpNow][data_now.id])) {
+                // console.log('+++++',data_now.id,child_mame,data_now);
+                if (!is_def(g_hierarchy[porp_now][data_now.id])) {
                   // the baseline g element (parent g from the hirch, or else the first one)
-                  let parentNameNow = data_now.parentName
-                    ? data_now.parentName
+                  let parent_name_now = data_now.parent_name
+                    ? data_now.parent_name
                     : 'hirch'
 
                   // new baseline g element which may get child-g elements from the hirch
-                  let g_now
-                  g_now = gHirch[porpNow][parentNameNow].append('g')
-                  gHirch[porpNow][data_now.id] = g_now
+                  let g_now = (
+                    g_hierarchy[porp_now][parent_name_now]
+                      .append('g')
+                  )
+                  g_hierarchy[porp_now][data_now.id] = g_now
                   // the first g elelment into which all circles will be appended (so that they
                   // are  always at the top of the g element, before any child-g elements)
-                  g_now = gHirch[porpNow][data_now.id].append('g')
-                  gHirch[porpNow][data_now.id + 'circ'] = g_now
+                  g_now = (
+                    g_hierarchy[porp_now][data_now.id]
+                      .append('g')
+                  )
+                  g_hierarchy[porp_now][data_now.id + 'circ'] = g_now
                 }
 
-                data_now[childName] = data_now.children
+                data_now[child_mame] = data_now.children
                 // data_now.children   = null;
-                data_now[childName].forEach(function (d) {
-                  renameChildren(d, depthNow, parentName)
+                data_now[child_mame].forEach(function (d) {
+                  rename_children(d, depth_now, parent_name)
                 })
 
-                hirchV[data_now.id] = d3
-                  .hierarchy(data_now, getChild[childName])
+                hierarchy_by_id[data_now.id] = d3
+                  .hierarchy(data_now, get_child[child_mame])
                   .sum(function (d) {
                     return 1
                   })
-                hirchDataV[porpNow][data_now.id] = data_now
-                // console.log('--',data_now.id,childName,data_now)
+                hierarchies[porp_now][data_now.id] = data_now
+                // console.log('--',data_now.id,child_mame,data_now)
               }
             }
 
-            if (thisS10.instruments.props.indexOf(porpNow) >= 0) {
-              renameChildren(dataBase)
+            if (this_S10.instruments.props.indexOf(porp_now) >= 0) {
+              rename_children(data_base)
 
-              thisS10.hirchData[porpNow] = dataBase
-              // console.log(dataBase)
+              this_S10.data_hierarchy[porp_now] = data_base
+              // console.log(data_base)
 
-              $.each(hirchV, function (hirchName, hirchNow) {
-                let packNode = d3
+              $.each(hierarchy_by_id, function (hierarchy_name, hierarchy_now) {
+                let pack_node = d3
                   .pack()
                   .size([wh, wh])
-                  .padding(1.5 * siteScale)
-                packNode(hirchNow)
+                  .padding(1.5 * site_scale)
+                pack_node(hierarchy_now)
               })
 
-              parentV[porpNow] = {}
-              depthClick[porpNow] = 0
+              parents[porp_now] = {}
+              depth_click[porp_now] = 0
 
-              let hirchAll = d3.hierarchy(dataBase, getAllChildren)
-              $.each(hirchAll.descendants(), function (index, data_now) {
-                let nameNow = data_now.data.id
-                if (!is_def(parentV[porpNow][nameNow])) {
-                  parentV[porpNow][nameNow] = [nameNow]
+              let hierarchy_all = d3.hierarchy(
+                data_base, get_all_children
+              )
+              let descend = hierarchy_all.descendants()
+              
+              $.each(descend, function (index, data_now) {
+                let name_now = data_now.data.id
+                if (!is_def(parents[porp_now][name_now])) {
+                  parents[porp_now][name_now] = [name_now]
                 }
 
-                let parentNow = data_now.parent
-                while (parentNow) {
-                  parentV[porpNow][nameNow].push(parentNow.data.id)
-                  parentNow = parentNow.parent
+                let parent_now = data_now.parent
+                while (parent_now) {
+                  parents[porp_now][name_now].push(parent_now.data.id)
+                  parent_now = parent_now.parent
                 }
               })
-              hirchAll = null
-              // console.log('parentV -',parentV)
+              hierarchy_all = null
+              // console.log('parents -',parents)
 
-              for (let depthNow = 0; depthNow < max_depth; depthNow++) {
-                $.each(hirchV, function (hirchName, hirchNow) {
-                  if (hirchNow.data.childDepth !== depthNow) return
-                  // console.log(hirchName,hirchNow.data.childDepth,hirchNow)
+              for (let depth_now = 0; depth_now < max_depth; depth_now++) {
+                $.each(hierarchy_by_id, function (hierarchy_name, hierarchy_now) {
+                  if (hierarchy_now.data.child_depth !== depth_now) return
+                  // console.log(hierarchy_name,hierarchy_now.data.child_depth,hierarchy_now)
 
-                  let parentName = hirchNow.data.parentName
-                  if (parentName != null) {
-                    let parent = hirchV[parentName]
-                    $.each(parent.children, function (index, childNow) {
-                      // console.log('---- ',parentName,parentName,childNow.data.id,childNow)
-                      if (childNow.data.id === hirchName) {
-                        let parentR = childNow.r / (wh / 2)
-                        let parentX = childNow.x - childNow.r
-                        let parentY = childNow.y - childNow.r
+                  let parent_name = hierarchy_now.data.parent_name
+                  if (parent_name != null) {
+                    let parent = hierarchy_by_id[parent_name]
+                    $.each(parent.children, function (index, child_now) {
+                      // console.log('---- ',parent_name,parent_name,child_now.data.id,child_now)
+                      if (child_now.data.id === hierarchy_name) {
+                        let parentR = child_now.r / (wh / 2)
+                        let parentX = child_now.x - child_now.r
+                        let parentY = child_now.y - child_now.r
 
-                        // console.log('move-g in(',parentName,'):  ',hirchName)
-                        gTrans[porpNow][hirchName] =
+                        // console.log('move-g in(',parent_name,'):  ',hierarchy_name)
+                        g_trans[porp_now][hierarchy_name] =
                           'translate(' +
                           parentX +
                           ',' +
@@ -2811,33 +2872,33 @@ window.ArrZoomerMain = function (opt_in0) {
                           ')scale(' +
                           parentR +
                           ')'
-                        gHirch[porpNow][hirchName].attr(
+                        g_hierarchy[porp_now][hierarchy_name].attr(
                           'transform',
-                          gTrans[porpNow][hirchName]
+                          g_trans[porp_now][hierarchy_name]
                         )
                       }
                     })
                   }
 
-                  // console.log('hirchName',hirchName,depthClick)
-                  gHirch[porpNow][hirchName + 'circ']
-                    .selectAll('circle.' + hirchName)
-                    .data(hirchNow.descendants())
+                  // console.log('hierarchy_name',hierarchy_name,depth_click)
+                  g_hierarchy[porp_now][hierarchy_name + 'circ']
+                    .selectAll('circle.' + hierarchy_name)
+                    .data(hierarchy_now.descendants())
                     .enter()
                     .append('circle')
-                    .attr('class', hirchName)
-                    // .attr("id",            function(d){ return my_unique_id+hirchName+"_"+d.data.id; })
+                    .attr('class', hierarchy_name)
+                    // .attr("id",            function(d){ return my_unique_id+hierarchy_name+"_"+d.data.id; })
                     .style('opacity', function (d) {
-                      return hirchStyleOpac(d, hirchNow, 0)
+                      return hierarchy_style_opac(d, hierarchy_now, 0)
                     })
                     .style('stroke', function (d) {
-                      return hirchStyleStroke(d, hirchNow, 0)
+                      return hierarchy_style_stroke(d, hierarchy_now, 0)
                     })
                     .style('stroke-width', function (d) {
-                      return hirchStrkW(d, hirchNow, 0)
+                      return hierarchy_strk_w(d, hierarchy_now, 0)
                     })
                     .style('fill', function (d) {
-                      return hirchStyleFill(d, hirchNow, 0)
+                      return hierarchy_style_fill(d, hierarchy_now, 0)
                     })
                     .attr('cx', function (d) {
                       return d.x
@@ -2848,43 +2909,43 @@ window.ArrZoomerMain = function (opt_in0) {
                     .attr('r', 0)
                     .attr('vector-effect', 'non-scaling-stroke')
                     .attr('pointer-events', function (d) {
-                      return d.data.childDepth === 1 ? 'auto' : 'none'
+                      return d.data.child_depth === 1 ? 'auto' : 'none'
                     })
                     .on('click', click)
-                    .on('mouseover', hirchHovTitleIn)
-                    .on('mouseout', hirchHovTitleOut)
+                    .on('mouseover', hierarchy_hov_title_in)
+                    .on('mouseout', hierarchy_hov_title_out)
                   // .on('mouseover', function(d){ console.log(d.data.id,d); })
-                  // .transition("inOut").duration(times.anim_arc)
+                  // .transition("in_out").duration(times.anim_arc)
                   // .attr("r",             function(d,i){ return d.r; });
 
                   function click (d) {
                     if (
                       !locker.are_free([
-                        's10bckArcChange',
-                        'dataChange',
-                        's10clickHirch'
+                        's10_bck_arc_change',
+                        'data_change',
+                        's10_click_hierarchy'
                       ])
                     ) {
                       return
                     }
 
-                    hirchStyleClick({
-                      propIn: porpNow,
+                    hierarchy_style_click({
+                      prop_in: porp_now,
                       id: d.data.id,
-                      isOpen: true
+                      is_open: true
                     })
                     
-                    propsS1({
+                    props_s1({
                       tel_Id: tel_Id,
-                      clickIn: true,
-                      propIn: d.data.id,
-                      debug: 'hirchClick'
+                      click_in: true,
+                      prop_in: d.data.id,
+                      debug: 'hirch_click'
                     })
 
                     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     // FIXME:
-                    // here we can set non thisS10.instruments.props names if needed.....
-                    // console.log('_setPropLblInitHirch',d.data.id); setPropLbl({ propIn:d.data.id });
+                    // here we can set non this_S10.instruments.props names if needed.....
+                    // console.log('_setPropLblInit_hierarchy',d.data.id); set_prop_lbl({ prop_in:d.data.id });
                     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                   }
                 })
@@ -2892,190 +2953,204 @@ window.ArrZoomerMain = function (opt_in0) {
             }
           })
         }
-        thisS10.initHirch = initHirch
+        this_S10.init_hierarchy = init_hierarchy
 
         // setTimeout(function() {
         //   console.log('==========================')
-        //   porpNow = "mirror"
-        //   // hirchName = "mirror_1_1"
-        //   hirchName = porpNow
-        //   hirchStyleClick({ propIn:porpNow, id:hirchName isOpen:true })
+        //   porp_now = "mirror"
+        //   // hierarchy_name = "mirror_1_1"
+        //   hierarchy_name = porp_now
+        //   hierarchy_style_click({ prop_in:porp_now, id:hierarchy_name is_open:true })
 
         // }, 4000);
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function hirchStyleClick (opt_in) {
-          if (noRender) return
-          if (!is_def(gBase)) return
+        function hierarchy_style_click (opt_in) {
+          if (no_render) return
+          if (!is_def(g_base)) return
 
-          if (!locker.are_free(['dataChange', 's10clickHirch'])) {
+          if (!locker.are_free([
+            'data_change', 's10_click_hierarchy'
+          ])) {
             setTimeout(function () {
-              hirchStyleClick(opt_in)
+              hierarchy_style_click(opt_in)
             }, times.anim_arc / 3)
             return
           }
 
-          locker.add({ id: 's10clickHirch', override: true })
-          function freeMe (doDelay) {
+          locker.add({ id: 's10_click_hierarchy', override: true })
+          function free_me (do_delay) {
             locker.remove({
-              id: 's10clickHirch',
-              delay: doDelay ? times.anim_arc * 1.5 : 0,
+              id: 's10_click_hierarchy',
+              delay: do_delay ? times.anim_arc * 1.5 : 0,
               override: true
             })
           }
 
           let id = opt_in.id
-          let propIn = opt_in.propIn
-          let isOpen = opt_in.isOpen
-          let syncProp = is_def(opt_in.syncProp) ? opt_in.syncProp : opt_in.id
-          // console.log('clk',id,'==',propIn,'--', hirchDataV[propIn])
+          let prop_in = opt_in.prop_in
+          let is_open = opt_in.is_open
+          let sync_prop = (
+            is_def(opt_in.sync_prop) ? opt_in.sync_prop : opt_in.id
+          )
+          // console.log('clk',id,'==',prop_in,'--', hierarchies[prop_in])
 
-          if (this_top.getZoomS() === 1) {
-            let arr_zoomerProp = isOpen ? syncProp : ''
+          if (this_top.get_zoom_state() === 1) {
+            let arr_zoomer_prop = is_open ? sync_prop : ''
             sync_state_send({
-              type: 'sync_arr_zoomerProp',
-              syncTime: Date.now(),
-              tel_Id: zoomD.target,
-              propId: arr_zoomerProp
+              type: 'sync_arr_zoomer_prop',
+              sync_time: Date.now(),
+              tel_Id: zooms.target,
+              propId: arr_zoomer_prop
             })
           }
 
-          if (propIn === '' || !is_def(propIn)) {
-            $.each(gHirch, function (porpAllNow, gHirchNow) {
-              gHirchNow.hirch
+          if (prop_in === '' || !is_def(prop_in)) {
+            $.each(g_hierarchy, function (porp_all_now, g_hierarchy_now) {
+              g_hierarchy_now.hirch
                 .selectAll('circle')
                 .transition('updt')
                 .duration(times.anim_arc)
                 .style('stroke', 'transparent')
                 .attr('r', 0)
 
-              $.each(gHirchNow, function (hirchName, g_now) {
+              $.each(g_hierarchy_now, function (hierarchy_name, g_now) {
                 g_now
-                  .transition('inOut')
+                  .transition('in_out')
                   .duration(times.anim_arc)
-                  .attr('transform', gTrans[porpAllNow][hirchName])
+                  .attr('transform', 
+                    g_trans[porp_all_now][hierarchy_name])
               })
             })
 
-            freeMe(true)
+            free_me(true)
             return
           }
 
           if (
-            !is_def(gHirch[propIn][id]) ||
-            !is_def(hirchDataV[propIn][id])
+            !is_def(g_hierarchy[prop_in][id]) ||
+            !is_def(hierarchies[prop_in][id])
           ) {
-            freeMe(true)
+            free_me(true)
             return
           }
 
-          let depthNow = hirchDataV[propIn][id].childDepth
-          let childDepth = depthNow + 1
+          let depth_now = hierarchies[prop_in][id].child_depth
+          let child_depth = depth_now + 1
 
-          depthClick[propIn] = depthNow
+          depth_click[prop_in] = depth_now
 
-          $.each(gHirch, function (porpAllNow, gHirchNow) {
-            function isOut (d) {
-              let inParentV = parentV[porpAllNow][d.data.id].indexOf(id) >= 0
-              return isOpen && inParentV && d.data.childDepth > depthNow
+          $.each(g_hierarchy, function (porp_all_now, g_hierarchy_now) {
+            function is_out (d) {
+              let in_parents = (
+                parents[porp_all_now][d.data.id].indexOf(id) >= 0
+              )
+              return (
+                is_open 
+                && in_parents 
+                && (d.data.child_depth > depth_now)
+              )
             }
 
-            gHirchNow.hirch
+            g_hierarchy_now.hirch
               .selectAll('circle')
               .transition('updt')
               .duration(times.anim_arc)
               .attr('r', function (d) {
-                return isOut(d) ? d.r : 0
+                return is_out(d) ? d.r : 0
               })
               .attr('pointer-events', function (d) {
-                return isOut(d) && d.data.childDepth === childDepth
+                return is_out(d) && d.data.child_depth === child_depth
                   ? 'auto'
                   : 'none'
               })
               .style('opacity', function (d) {
-                return hirchStyleOpac(d, d, childDepth)
+                return hierarchy_style_opac(d, d, child_depth)
               })
               .style('stroke', function (d) {
-                return isOut(d)
-                  ? hirchStyleStroke(d, d, childDepth)
+                return is_out(d)
+                  ? hierarchy_style_stroke(d, d, child_depth)
                   : 'transparent'
               })
               .style('stroke-width', function (d) {
-                return hirchStrkW(d, d, childDepth)
+                return hierarchy_strk_w(d, d, child_depth)
               })
               .style('fill', function (d) {
-                return hirchStyleFill(d, d, childDepth)
+                return hierarchy_style_fill(d, d, child_depth)
               })
           })
 
-          $.each(gHirch, function (porpAllNow, gHirchNow) {
-            $.each(gHirchNow, function (hirchName, g_now) {
-              let inParentV = parentV[propIn][id].indexOf(hirchName) >= 0
+          $.each(g_hierarchy, function (porp_all_now, g_hierarchy_now) {
+            $.each(g_hierarchy_now, function (hierarchy_name, g_now) {
+              let in_parents = (
+                parents[prop_in][id].indexOf(hierarchy_name) >= 0
+              )
 
               g_now
-                .transition('inOut')
+                .transition('in_out')
                 .duration(times.anim_arc)
                 .attr(
                   'transform',
-                  inParentV
+                  in_parents
                     ? 'translate(0,0)scale(1)'
-                    : gTrans[porpAllNow][hirchName]
+                    : g_trans[porp_all_now][hierarchy_name]
                 )
             })
           })
 
-          freeMe(true)
+          free_me(true)
         }
-        this_top.hirchStyleClick = hirchStyleClick
+        this_top.hierarchy_style_click = hierarchy_style_click
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function updateHirch (data_in) {
-          // due to delays from locker, this function could be called after the S10obj has
-          // been removed - make a safety check using gBase...
-          if (!is_def(gBase)) return
+        function update_hierarchy (data_in) {
+          // due to delays from locker, this function could be called after the S10 has
+          // been removed - make a safety check using g_base...
+          if (!is_def(g_base)) return
 
           if (
             !locker.are_free([
-              's10bckArcChange',
-              's10clickHirch',
-              'updateHirch'
+              's10_bck_arc_change',
+              's10_click_hierarchy',
+              'update_hierarchy'
             ])
           ) {
-            // console.log('will delay updateHirch',data_in);
+            // console.log('will delay update_hierarchy',data_in);
             setTimeout(function () {
-              updateHirch(data_in)
+              update_hierarchy(data_in)
             }, times.anim_arc / 3)
             return
           }
-          locker.add('updateHirch')
+          locker.add('update_hierarchy')
 
           //
-          $.each(thisS10.instruments.props, function (index, porpNow) {
-            let base_tag = 's10arc'
-            let tag_now = base_tag + porpNow
-            let path = gBckArc.selectAll('path.' + tag_now)
+          $.each(this_S10.instruments.props, function (index, porp_now) {
+            let base_tag = 's10_arc'
+            let tag_now = base_tag + porp_now
+            let path = g_bck_arc.selectAll('path.' + tag_now)
 
             path
-              .transition('updtData')
+              .transition('update_data')
               .duration(times.anim_arc)
               .each(function (d) {
                 if (d.nArc === 0) {
                   d.col = inst_health_col(
-                    instruments.data.propDataS1[tel_Id][porpNow].val)
+                    instruments.data.prop_data_s1[tel_Id][porp_now].val
+                  )
                 }
               })
               .style('fill', function (d) {
-                return d.isFull ? '#383b42' : d.col
+                return d.is_full ? '#383b42' : d.col
               })
           })
 
           //
-          $.each(gHirch, function (porpNow, hirchNow) {
-            hirchNow.hirch
+          $.each(g_hierarchy, function (porp_now, hierarchy_now) {
+            hierarchy_now.hirch
               .selectAll('circle')
               .each(function (d) {
                 if (is_def(data_in[d.data.id])) {
@@ -3083,101 +3158,102 @@ window.ArrZoomerMain = function (opt_in0) {
                   d.data.val = data_in[d.data.id]
                 }
               })
-              .transition('updtData')
+              .transition('update_data')
               .duration(times.anim_arc)
               .style('fill', function (d) {
-                return hirchStyleFill(d, d, depthClick[porpNow] + 1)
+                return hierarchy_style_fill(d, d, depth_click[porp_now] + 1)
               })
           })
           // console.log('--------------------------------')
 
-          locker.remove('updateHirch')
+          locker.remove('update_hierarchy')
         }
-        thisS10.updateHirch = updateHirch
+        this_S10.update_hierarchy = update_hierarchy
 
         // ------------------------------------------------------------------
         // utility functions
         // ------------------------------------------------------------------
-        function hirchStyleFill (d, dRef, depth) {
-          return dRef.data.childDepth === depth && d.parent
+        function hierarchy_style_fill (d, d_ref, depth) {
+          return d_ref.data.child_depth === depth && d.parent
             ? inst_health_col(d.data.val)
             : 'transparent'
         }
         
-        function hirchStrkW (d, dRef, depth) {
+        function hierarchy_strk_w (d, d_ref, depth) {
           if (!d.parent) return 0
-          else return dRef.data.childDepth === depth ? 0 : 1
+          else return d_ref.data.child_depth === depth ? 0 : 1
         }
         
-        function hirchStyleStroke (d, dRef, depth) {
-          return hirchStrkW(d, dRef, depth) < 0.0001
+        function hierarchy_style_stroke (d, d_ref, depth) {
+          return hierarchy_strk_w(d, d_ref, depth) < 0.0001
             ? 'transparent'
             : '#383b42'
         }
         
-        function hirchStyleOpac (d, dRef, depth) {
-          return hirchStrkW(d, dRef, depth) < 0.0001 ? 0.9 : 1
+        function hierarchy_style_opac (d, d_ref, depth) {
+          return hierarchy_strk_w(d, d_ref, depth) < 0.0001 ? 0.9 : 1
         }
       
         return
       }
 
-      s10 = new S10obj(zoomD.target)
-      s10V.push({ id: zoomD.target, s10: s10 })
+      s10 = new S10(zooms.target)
+      s10_eles.push({ id: zooms.target, s10: s10 })
       
       ;(function () {
-        if (s10V.length <= max_ele_keep) return
+        if (s10_eles.length <= max_ele_keep) return
 
         let debug = false
-        let s10in = []
-        let s10out = []
-        let s10indexDate = []
+        let s10_in = []
+        let s10_out = []
+        let s10_index_date = []
 
-        $.each(s10V, function (index, ele_now) {
-          s10indexDate.push([index, ele_now.s10.getDate()])
+        $.each(s10_eles, function (index, ele_now) {
+          s10_index_date.push([index, ele_now.s10.get_date()])
         })
 
-        s10indexDate.sort(function (a, b) {
+        s10_index_date.sort(function (a, b) {
           return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0
         })
 
         let dbg_txt = ''
         if (debug) {
-          $.each(s10indexDate, function (index, ele_now) {
-            dbg_txt += '[' + s10V[ele_now[0]].id + ' , '
-            dbg_txt += s10V[ele_now[0]].s10.getDate() + '] '
+          $.each(s10_index_date, function (index, ele_now) {
+            dbg_txt += '[' + s10_eles[ele_now[0]].id + ' , '
+            dbg_txt += s10_eles[ele_now[0]].s10.get_date() + '] '
           })
           dbg_txt += ' ---> removing: '
         }
 
-        $.each(s10indexDate, function (index, ele_now) {
-          if (index < max_ele_keep) s10in.push(s10V[ele_now[0]])
-          else s10out.push(s10V[ele_now[0]])
+        $.each(s10_index_date, function (index, ele_now) {
+          if (index < max_ele_keep) s10_in.push(s10_eles[ele_now[0]])
+          else s10_out.push(s10_eles[ele_now[0]])
 
           if (debug) {
-            if (index >= max_ele_keep) dbg_txt += s10V[ele_now[0]].id + ' '
+            if (index >= max_ele_keep) 
+              dbg_txt += s10_eles[ele_now[0]].id + ' '
           }
         })
         if (debug) console.log('- Sorted:', dbg_txt)
 
-        s10V = s10in
+        s10_eles = s10_in
 
-        $.each(s10out, function (index, ele_now) {
-          // console.log('- removing:',index,ele_now.id,ele_now.s10,ele_now.s10.gBase)
+        $.each(s10_out, function (index, ele_now) {
+          // console.log('- removing:',index,ele_now.id,ele_now.s10,ele_now.s10.g_base)
           ele_now.s10.cleanup()
           ele_now.s10 = null
 
-          if (is_def(instruments.data.propDataS1[ele_now.id])) {
-            delete instruments.data.propDataS1[ele_now.id]
-            delete instruments.data.propParentS1[ele_now.id]
-            delete instruments.data.propTitleS1[ele_now.id]
-            delete instruments.data.dataBaseS1[ele_now.id]
+          if (is_def(instruments.data.prop_data_s1[ele_now.id])) {
+            delete instruments.data.prop_data_s1[ele_now.id]
+            delete instruments.data.prop_parent_s1[ele_now.id]
+            delete instruments.data.prop_title_s1[ele_now.id]
+            delete instruments.data.data_base_s1[ele_now.id]
           }
         })
 
-        s10in = null
-        s10out = null
-        s10indexDate = null
+        s10_in = null
+        s10_out = null
+        s10_index_date = null
       })()
     }
 
@@ -3185,133 +3261,136 @@ window.ArrZoomerMain = function (opt_in0) {
   
     return
   }
-  this_top.s10main = s10main
+  this_top.s10_main = s10_main
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function bckArcClick (opt_in) {
-    $.each(s10V, function (index, ele_now) {
-      if (ele_now.id === zoomD.target) {
-        ele_now.s10.bckArcClick(opt_in)
+  function bck_arc_click (opt_in) {
+    $.each(s10_eles, function (index, ele_now) {
+      if (ele_now.id === zooms.target) {
+        ele_now.s10.bck_arc_click(opt_in)
       }
     })
     return
   }
-  this_top.bckArcClick = bckArcClick
+  this_top.bck_arc_click = bck_arc_click
 
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  function updateS1 (data_in) {
-    $.each(s10V, function (index, ele_now) {
+  function update_s1 (data_in) {
+    $.each(s10_eles, function (index, ele_now) {
       if (ele_now.id === data_in.id) {
-        ele_now.s10.updateHirch(data_in.data)
+        ele_now.s10.update_hierarchy(data_in.data)
       }
     })
     return
   }
-  this_top.updateS1 = updateS1
+  this_top.update_s1 = update_s1
 
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  function setStateOnce () {
-    // console.log('setState_main main',this_top.getScale())
-    let scale = this_top.getScale()
-    let zoomS = this_top.getZoomS()
+  function set_state_once () {
+    // console.log('set_state_main main',this_top.get_scale())
+    let scale = this_top.get_scale()
+    let zoom_state = this_top.get_zoom_state()
 
-    if (zoomS === 0) {
-      s10main(null)
+    if (zoom_state === 0) {
+      s10_main(null)
     }
 
-    if (scale <= zoomD.len['0.1']) {
-      updateMap({})
-      s00title([], [])
-      s01inner([])
-      s01outer([])
+    if (scale <= zooms.len['0.1']) {
+      update_map({})
+      s00_title([], [])
+      s01_inner([])
+      s01_outer([])
     } else {
-      // let zoom_targetIndex = instruments.data.idToIndex[zoomD.target];
-      // let arrPropVtarget = [ instruments.data.tel[zoom_targetIndex] ];
+      // let zoom_targetIndex = instruments.data.id_indices[zooms.target];
+      // let arr_props_target = [ instruments.data.tel[zoom_targetIndex] ];
 
-      let arrPropVon = []
-      let arrPropVoff = []
-      let arrPropVtarget = []
+      let arr_props_on = []
+      let arr_props_off = []
+      let arr_props_target = []
       $.each(instruments.data.tel, function (index, data_now) {
-        if (zoomD.target === data_now.id || !is_def(links2V.xyz[zoomD.target])) {
-          zoomD.target = data_now.id
-          arrPropVon.push(data_now)
-          arrPropVtarget.push(data_now)
+        if (zooms.target === data_now.id || !is_def(links_2.xyz[zooms.target])) {
+          zooms.target = data_now.id
+          arr_props_on.push(data_now)
+          arr_props_target.push(data_now)
         } else {
-          // arrPropVoff.push(data_now)
-          if (links2V.xyz[zoomD.target].indexOf(data_now.id) < 0) {
-            arrPropVoff.push(data_now)
+          // arr_props_off.push(data_now)
+          if (links_2.xyz[zooms.target].indexOf(data_now.id) < 0) {
+            arr_props_off.push(data_now)
           } else {
-            arrPropVon.push(data_now)
+            arr_props_on.push(data_now)
           }
         }
       })
 
-      updateMap({ focusV0: arrPropVon, focusV1: arrPropVtarget })
+      update_map({
+        focus_0: arr_props_on, focus_1: arr_props_target,
+      })
 
-      if (zoomS === 0) {
-        s01inner(arrPropVtarget)
-        s01outer(arrPropVon)
+      if (zoom_state === 0) {
+        s01_inner(arr_props_target)
+        s01_outer(arr_props_on)
 
-        s00title(arrPropVon, [])
-      } else {
-        s00title(arrPropVon, arrPropVtarget)
+        s00_title(arr_props_on, [])
+      } 
+      else {
+        s00_title(arr_props_on, arr_props_target)
 
-        s01inner(arrPropVtarget, arrPropVtarget)
-        s01outer(arrPropVon, arrPropVtarget)
+        s01_inner(arr_props_target, arr_props_target)
+        s01_outer(arr_props_on, arr_props_target)
 
         // ------------------------------------------------------------------
         // syncroniz changes with other panels
         // ------------------------------------------------------------------
         sync_state_send({
-          type: 'syncTelFocus',
-          syncTime: Date.now(),
-          zoom_state: this_top.getZoomS(),
-          target: zoomD.target
+          type: 'sync_tel_focus',
+          sync_time: Date.now(),
+          zoom_state: this_top.get_zoom_state(),
+          target: zooms.target
         })
       }
 
-      arrPropVtarget = null
+      arr_props_target = null
     }
   
     return
   }
-  this_top.setStateOnce = setStateOnce
+  this_top.set_state_once = set_state_once
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function updateMap (opt_in) {
-    let dataV = instruments.data.tel
+  function update_map (opt_in) {
+    let data_in = instruments.data.tel
     let g_now = com.s00.g
-    let posTag = 'xyr'
-    let focusV0 = is_def(opt_in.focusV0) ? opt_in.focusV0 : []
-    let focusV1 = is_def(opt_in.focusV1) ? opt_in.focusV1 : []
+    let pos_tag = 'xyr'
+    let focus_0 = is_def(opt_in.focus_0) ? opt_in.focus_0 : []
+    let focus_1 = is_def(opt_in.focus_1) ? opt_in.focus_1 : []
     let tag_now = instruments.prop0
 
-    let focus_idV = [
-      focusV0.map(function (d) {
+    let focus_ids = [
+      focus_0.map(function (d) {
         return d.id
       }),
-      focusV1.map(function (d) {
+      focus_1.map(function (d) {
         return d.id
       })
     ]
-    function isFocused (d, nFocus) {
-      return focus_idV[nFocus].indexOf(d.id) >= 0
+    function is_focused (d, n_focus) {
+      return focus_ids[n_focus].indexOf(d.id) >= 0
     }
 
-    if (noRender) return
+    if (no_render) return
 
     // operate on new elements only
     let circ = g_now
         .selectAll('circle.' + tag_now)
-        .data(dataV, function (d) {
+        .data(data_in, function (d) {
           return d.id
         })
 
@@ -3329,21 +3408,21 @@ window.ArrZoomerMain = function (opt_in0) {
       .attr('transform', function (d) {
         return (
           'translate(' +
-          instruments.data[posTag][d.id].x +
+          instruments.data[pos_tag][d.id].x +
           ',' +
-          instruments.data[posTag][d.id].y +
+          instruments.data[pos_tag][d.id].y +
           ')'
         )
       })
       .merge(circ)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('transform', function (d) {
         return (
           'translate(' +
-          instruments.data[posTag][d.id].x +
+          instruments.data[pos_tag][d.id].x +
           ',' +
-          instruments.data[posTag][d.id].y +
+          instruments.data[pos_tag][d.id].y +
           ')'
         )
       })
@@ -3354,14 +3433,14 @@ window.ArrZoomerMain = function (opt_in0) {
         return inst_health_col(d[tag_now], 0.5)
       })
       .style('opacity', function (d) {
-        if (isFocused(d, 1)) return 0.01
-        else if (isFocused(d, 0)) return 0.07
+        if (is_focused(d, 1)) return 0.01
+        else if (is_focused(d, 0)) return 0.07
         else return 1
       })
       .attr('r', function (d) {
-        let r = instruments.data[posTag][d.id].r * rScale[0].health2
-        if (isFocused(d, 1)) return r * 2
-        else if (isFocused(d, 0)) return r * 1.1
+        let r = instruments.data[pos_tag][d.id].r * scale_r[0].health2
+        if (is_focused(d, 1)) return r * 2
+        else if (is_focused(d, 0)) return r * 1.1
         else return r
       })
     
@@ -3371,29 +3450,29 @@ window.ArrZoomerMain = function (opt_in0) {
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function ask_dataS1 () {
-    let zoomS = this_top.getZoomS()
-    if (zoomS === 0) return
+  function ask_data_s1 () {
+    let zoom_state = this_top.get_zoom_state()
+    if (zoom_state === 0) return
 
-    eleBase.sockAskDataS1({
-      zoom_state: zoomS,
-      zoom_target: zoomD.target
+    ele_base.sock_ask_data_s1({
+      zoom_state: zoom_state,
+      zoom_target: zooms.target
     })
     return
   }
-  this_top.ask_dataS1 = ask_dataS1
+  this_top.ask_data_s1 = ask_data_s1
 
   // ------------------------------------------------------------------
   // 
   // ------------------------------------------------------------------
-  function getWidgetState () {
+  function get_widget_state () {
     return {
-      zoom_state: this_top.getZoomS(),
-      zoom_target: zoomD.target
+      zoom_state: this_top.get_zoom_state(),
+      zoom_target: zooms.target
     }
     return
   }
-  this_top.getWidgetState = getWidgetState
+  this_top.get_widget_state = get_widget_state
 
   return
 }

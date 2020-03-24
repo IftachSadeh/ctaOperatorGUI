@@ -77,7 +77,7 @@ window.TelescopeForm = function (opt_in) {
   }
   com = opt_in
 
-  let titleSize = 11
+  let title_size = 11
   let headerSize = 10
   let txt_size = 9
 
@@ -120,7 +120,7 @@ window.TelescopeForm = function (opt_in) {
     let scrollBox = new ScrollBox()
     scrollBox.init({
       tag: tag,
-      gBox: g,
+      g_box: g,
       boxData: {
         x: 0,
         y: 0,
@@ -132,7 +132,7 @@ window.TelescopeForm = function (opt_in) {
       lockerV: [tag + 'update_data'],
       lockerZoom: {
         all: tag + 'zoom',
-        during: tag + 'zoomDuring',
+        during: tag + 'zoomsuring',
         end: tag + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: tag}),
@@ -247,7 +247,7 @@ window.TelescopeForm = function (opt_in) {
       .text(tel.val + '%: ' + (telState === 0 ? 'Error' : telState === 1 ? 'Warning' : 'Good'))
       .style('fill', color.text)
       .style('font-weight', 'bold')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .attr('text-anchor', 'middle')
       .attr('transform', 'translate(' + (box.w * 0.4) + ',' + (box.h * 0.6 + txt_size * 0.2) + ')')
   }
@@ -261,7 +261,7 @@ window.TelescopeForm = function (opt_in) {
   //     .text('Associated ressources:')
   //     .style('fill', colorPalette.dark.stroke)
   //     .style('font-weight', 'bold')
-  //     .style('font-size', titleSize + 'px')
+  //     .style('font-size', title_size + 'px')
   //     .attr('text-anchor', 'start')
   //     .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
   //   g.append('line')
@@ -368,7 +368,7 @@ window.TelescopeForm = function (opt_in) {
   //     })
   //     current
   //       .exit()
-  //       .transition('inOut')
+  //       .transition('in_out')
   //       .duration(times.anim_arc)
   //       .style('opacity', 0)
   //       .remove()
@@ -429,7 +429,7 @@ window.TelescopeForm = function (opt_in) {
   //         .text('S' + d.blocks[0].metadata.n_sched)
   //         .style('fill', colorPalette.dark.text)
   //         .style('font-weight', 'bold')
-  //         .style('font-size', titleSize + 'px')
+  //         .style('font-size', title_size + 'px')
   //         .attr('text-anchor', 'middle')
   //         .attr('transform', 'translate(' + (dimPoly * 0.5) + ',' + (dimPoly * 0.5 + txt_size * 0.3) + ')')
   //         .style('pointer-events', 'none')
@@ -442,7 +442,7 @@ window.TelescopeForm = function (opt_in) {
   //     })
   //     current
   //       .exit()
-  //       .transition('inOut')
+  //       .transition('in_out')
   //       .duration(times.anim_arc)
   //       .style('opacity', 0)
   //       .remove()
@@ -460,8 +460,8 @@ window.TelescopeForm = function (opt_in) {
   //   //   targs.push(inter[key])
   //   // }
   //   //
-  //   // let line = titleSize * 3
-  //   // let offsetY = titleSize * 1.5
+  //   // let line = title_size * 3
+  //   // let offsetY = title_size * 1.5
   //   // function blockCore (blocks, g, offset) {
   //   //   let current = g
   //   //     .selectAll('g.block')
@@ -510,7 +510,7 @@ window.TelescopeForm = function (opt_in) {
   //   //   })
   //   //   current
   //   //     .exit()
-  //   //     .transition('inOut')
+  //   //     .transition('in_out')
   //   //     .duration(times.anim_arc)
   //   //     .style('opacity', 0)
   //   //     .remove()
@@ -579,7 +579,7 @@ window.TelescopeForm = function (opt_in) {
   //   // })
   //   // current
   //   //   .exit()
-  //   //   .transition('inOut')
+  //   //   .transition('in_out')
   //   //   .duration(times.anim_arc)
   //   //   .style('opacity', 0)
   //   //   .remove()
@@ -626,7 +626,7 @@ window.TelescopeForm = function (opt_in) {
       .text('Associated ressources:')
       .style('fill', colorPalette.dark.stroke)
       .style('font-weight', 'bold')
-      .style('font-size', titleSize + 'px')
+      .style('font-size', title_size + 'px')
       .attr('text-anchor', 'start')
       .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
     g.append('line')
@@ -704,7 +704,7 @@ window.TelescopeForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -786,7 +786,7 @@ window.TelescopeForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -846,7 +846,7 @@ window.TelescopeForm = function (opt_in) {
             .text('S' + d.blocks[0].metadata.n_sched)
             .style('fill', colorPalette.dark.text)
             .style('font-weight', 'bold')
-            .style('font-size', titleSize + 'px')
+            .style('font-size', title_size + 'px')
             .attr('text-anchor', 'middle')
             .attr('transform', 'translate(' + (dimPoly * 0.5) + ',' + (dimPoly * 0.5 + txt_size * 0.3) + ')')
             .style('pointer-events', 'none')
@@ -861,7 +861,7 @@ window.TelescopeForm = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -942,7 +942,7 @@ window.TelescopeForm = function (opt_in) {
     //   })
     //   current
     //     .exit()
-    //     .transition('inOut')
+    //     .transition('in_out')
     //     .duration(times.anim_arc)
     //     .style('opacity', 0)
     //     .remove()

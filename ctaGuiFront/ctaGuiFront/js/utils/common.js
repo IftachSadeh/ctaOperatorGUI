@@ -521,13 +521,13 @@ window.tel_info = function () {
   // ------------------------------------------------------------------
   // names which should match definitions on the python server side
   // ------------------------------------------------------------------
-  this.no_subArr_name = function () {
+  this.no_sub_arr_name = function () {
     return 'empty_sub_array'
   }
-  this.no_subArr_title = function () {
+  this.no_sub_arr_title = function () {
     return 'Free'
   }
-  this.subArr_prefix = function () {
+  this.sub_arr_prefix = function () {
     return 'SA_'
   }
 
@@ -1290,7 +1290,7 @@ window.IconBadge = function () {
       .select(icon_div_id)
       .selectAll('svg')
       .style('position', 'absolute')
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()
@@ -1474,7 +1474,7 @@ window.IconBadge = function () {
       .style('opacity', function (d, i) {
         return d.opacity
       })
-      .transition('inOut')
+      .transition('in_out')
       .delay(delay)
       .duration(duration)
       .attr('r', function (d, i) {
@@ -1502,7 +1502,7 @@ window.IconBadge = function () {
         .style('stroke-opacity', 1)
         .style('stroke', col_dark)
         .style('opacity', 0)
-        .transition('inOut')
+        .transition('in_out')
         .delay(delay)
         .duration(duration)
         .style('opacity', col_dark_opac)
@@ -1559,7 +1559,7 @@ window.IconBadge = function () {
     //       .attr("xlink:href", icon_file)
     //       .attr({"width": 68, "height":68, "x":16, "y":16})
     //       .style({"opacity":"0"})
-    //       .transition("inOut").delay(delay).duration(duration*2)
+    //       .transition("in_out").delay(delay).duration(duration*2)
     //       .style({"opacity":"1"})
 
     // ------------------------------------------------------------------
@@ -1615,7 +1615,7 @@ window.IconBadge = function () {
         .attr('width', 0)
         .attr('height', 0)
         .style('opacity', 0.5)
-        .transition('inOut')
+        .transition('in_out')
         .delay(delay + duration / 2)
         .duration(duration)
         .attr('x', coords[0])
@@ -1643,7 +1643,7 @@ window.IconBadge = function () {
         .on('mouseout', function () {
           if (pulse_hov_out) on_hov(1)
         })
-        .transition('inOut')
+        .transition('in_out')
         .delay(delay + duration / 2)
         .duration(duration)
         .style('opacity', show_outline ? '1' : '0')
@@ -1925,14 +1925,14 @@ window.bck_pattern = function (opt_in) {
       .attr('vector-effect', 'non-scaling-stroke')
       .style('pointer-events', 'none')
       .merge(rect)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('fill', com[tag_now].txtr.url())
       .attr('opacity', opac)
 
     rect
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', '0')
       .remove()
@@ -1967,14 +1967,14 @@ window.bck_pattern = function (opt_in) {
       .attr('stroke-width', strk)
       .attr('vector-effect', 'non-scaling-stroke')
       .merge(path)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('d', com[tag_now].path.mesh())
       .attr('opacity', opac)
 
     path
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', '0')
       .remove()
@@ -2000,7 +2000,7 @@ window.do_zoom_to_target = function (opt_in) {
 
   // // for chrome the following is enough, but for firefox we need to define attrTween explicitly...
   // opt_in.svg.transition("do_zoom_to_target").duration(duration*5)
-  //   .call(opt_in.svgZoom.transform, trans_target)
+  //   .call(opt_in.svg_zoom.transform, trans_target)
   //   .on("start", opt_in.func_start)
   //   .on("end", opt_in.func_end)
   // return;
@@ -2028,7 +2028,7 @@ window.do_zoom_to_target = function (opt_in) {
       return tween_step
     })
     .on('end', function () {
-      opt_in.svg.call(opt_in.svgZoom.transform, trans_target)
+      opt_in.svg.call(opt_in.svg_zoom.transform, trans_target)
 
       if (is_def(opt_in.func_end)) opt_in.func_end()
     })
@@ -2197,7 +2197,7 @@ window.min_max_obj = function (opt_in) {
   var mapped = opt_in.data.map(func)
   if (is_def(opt_in.filt)) mapped = mapped.filter(opt_in.filt)
 
-  var min_max_func = opt_in.minMax === 'max' ? Math.max : Math.min
+  var min_max_func = opt_in.min_max === 'max' ? Math.max : Math.min
 
   if (mapped.length === 0) return is_def(opt_in.default_val) ? opt_in.default_val : null
 

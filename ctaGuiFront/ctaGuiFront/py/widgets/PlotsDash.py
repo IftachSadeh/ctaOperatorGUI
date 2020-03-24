@@ -218,7 +218,7 @@ class PlotsDash():
                 if 'val' in val['data']:
                     self.inst_health_sub_fields[id_now] += [key]
 
-        self.get_subArr_grp()
+        self.get_sub_arr_grp()
 
         return
 
@@ -378,11 +378,11 @@ class PlotsDash():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_subArr_grp(self):
-        #print 'get_subArr_grp'
+    def get_sub_arr_grp(self):
+        #print 'get_sub_arr_grp'
         with PlotsDash.lock:
-            subArrs = self.redis.get(name="subArrs", packed=True, default_val=[])
-            self.sub_arr_grp = {"id": "subArr", "children": subArrs}
+            sub_arrs = self.redis.get(name="sub_arrs", packed=True, default_val=[])
+            self.sub_arr_grp = {"id": "sub_arr", "children": sub_arrs}
 
         return
 

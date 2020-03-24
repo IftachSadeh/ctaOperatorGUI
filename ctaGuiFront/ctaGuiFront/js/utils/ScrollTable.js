@@ -48,19 +48,19 @@ window.ScrollTable = function () {
     // ------------------------------------------------------------------
     // box definition
     // ------------------------------------------------------------------
-    let gBox = opt_in.gBox
+    let g_box = opt_in.g_box
     com.outerBox = deep_copy(opt_in.boxData)
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    com.outerG = gBox.append('g')
+    com.outerG = g_box.append('g')
     com.scrollBoxG = com.outerG.append('g')
 
     com.scrollBox = new ScrollBox()
     com.scrollBox.init({
       tag: com.tagScrollBox,
-      gBox: com.scrollBoxG,
+      g_box: com.scrollBoxG,
       boxData: com.outerBox,
       useRelativeCoords: opt_in.useRelativeCoords,
       title: opt_in.title,
@@ -201,7 +201,7 @@ window.ScrollTable = function () {
         })
         .attr('opacity', 0)
         .merge(rect)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('opacity', 1)
         .attr('x', function (d, i) {
@@ -225,7 +225,7 @@ window.ScrollTable = function () {
 
       rect
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_txt)
         .style('opacity', 0)
         .remove()

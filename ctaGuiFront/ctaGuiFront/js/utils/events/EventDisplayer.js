@@ -221,7 +221,7 @@ window.EventDisplayer = function (opt_in) {
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.2
         bDisplay.fill = cols.background
-        bDisplay.fillOpacity = com.style.eventOpac({ d: b })
+        bDisplay.fill_opacity = com.style.eventOpac({ d: b })
         bDisplay.strokeOpacity = com.style.eventOpac({ d: b })
         bDisplay.strokeDasharray = []
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
@@ -377,7 +377,7 @@ window.EventDisplayer = function (opt_in) {
       //     return 'translate(' + translate.x + ',' + translate.y + ')'
       //   })
       // currentTrack.exit()
-      //   .transition('inOut').duration(times.anim_arc)
+      //   .transition('in_out').duration(times.anim_arc)
       //   .attr('width', 0)
       //   .style('opacity', 0)
       //   .remove()
@@ -469,7 +469,7 @@ window.EventDisplayer = function (opt_in) {
           .style('stroke', colorPalette.medium.stroke)
           .attr('stroke-width', 0.4)
           .style('stroke-opacity', 1)
-          .style('fill-opacity', 1) // d.display.fillOpacity)
+          .style('fill-opacity', 1) // d.display.fill_opacity)
         d3.select(this).select('path.anchor')
           .attr('d', function () {
             let lineGenerator = d3.line()
@@ -497,7 +497,7 @@ window.EventDisplayer = function (opt_in) {
           // })
           // .attr('height', box.h * 0.1)
           .style('fill', 'none')
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('fill-opacity', d.display.fill_opacity)
           .attr('stroke-width', 4)
           .style('stroke-opacity', d.display.strokeOpacity)
           .style('stroke-dasharray', d.display.strokeDasharray)
@@ -514,7 +514,7 @@ window.EventDisplayer = function (opt_in) {
           .attr('x', box.x + box.h * 0.1)
           .attr('y', box.y + box.h * 0.1)
         // d3.select(this).select('text')
-        //   .transition('inOut')
+        //   .transition('in_out')
         //   .duration(times.anim_arc)
         //   .ease(d3.easeLinear)
         //   .text(d.name)
@@ -522,9 +522,9 @@ window.EventDisplayer = function (opt_in) {
         //   .attr('dy', 1)
         //   .attr('x', timescale(d.startT) + (timescale(d.endT) - timescale(d.startT)) * 0.5)
         //   .attr('y', (box.h * 0.5))
-        //   .style('opacity', d.display.fillOpacity)
-        //   .style('stroke-opacity', d.display.fillOpacity)
-        //   .style('fill-opacity', d.display.fillOpacity)
+        //   .style('opacity', d.display.fill_opacity)
+        //   .style('stroke-opacity', d.display.fill_opacity)
+        //   .style('fill-opacity', d.display.fill_opacity)
       })
     }
 
@@ -595,7 +595,7 @@ window.EventDisplayer = function (opt_in) {
     //       .style('pointer-events', 'none')
     //       .attr('vector-effect', 'non-scaling-stroke')
     //       .merge(rectNow)
-    //       .transition('inOut')
+    //       .transition('in_out')
     //       .duration(50)
     //       .attr('x', function (d, i) {
     //         if (d > com.eventTrack.axis.scale.domain()[1]) return com.eventTrack.axis.scale(com.eventTrack.axis.scale.domain()[1])
@@ -654,7 +654,7 @@ window.EventDisplayer = function (opt_in) {
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
         .merge(rectNow)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('x', function (d, i) {
           return d.x
@@ -666,7 +666,7 @@ window.EventDisplayer = function (opt_in) {
       // .attr("height", function(d,i) { return d.h; })
 
       // rectNow.exit()
-      //   .transition("inOut").duration(times.anim_arc/2)
+      //   .transition("in_out").duration(times.anim_arc/2)
       //   .attr("width", 0)
       //   .style("opacity", 0)
       //   .remove()
@@ -728,7 +728,7 @@ window.EventDisplayer = function (opt_in) {
         bDisplay.stroke = cols.stroke
         bDisplay.strokeWidth = 0.2
         bDisplay.fill = cols.background
-        bDisplay.fillOpacity = com.style.eventOpac({ d: b })
+        bDisplay.fill_opacity = com.style.eventOpac({ d: b })
         bDisplay.strokeOpacity = com.style.eventOpac({ d: b })
         bDisplay.strokeDasharray = []
         bDisplay.opacity = b.filtered === true ? 0.05 : 1
@@ -885,7 +885,7 @@ window.EventDisplayer = function (opt_in) {
       //     return 'translate(' + translate.x + ',' + translate.y + ')'
       //   })
       // currentTrack.exit()
-      //   .transition('inOut').duration(times.anim_arc)
+      //   .transition('in_out').duration(times.anim_arc)
       //   .attr('width', 0)
       //   .style('opacity', 0)
       //   .remove()
@@ -962,19 +962,19 @@ window.EventDisplayer = function (opt_in) {
         .data(events, function (d) {
           return d.id
         })
-      let indexShift = -1
+      let index_shift = -1
       rect.each(function (d, i) {
         let opac = 0
         if (com.eventQueue.details.range === 'in') {
           if (d.start > com.time.startTime.time && d.end < com.time.endTime.time) {
             opac = 1
-            indexShift += 1
+            index_shift += 1
           }
         } else if (timeIntersect(d, {start: com.time.startTime.time, end: com.time.endTime.time})) {
           opac = 1
-          indexShift += 1
+          index_shift += 1
         }
-        let box = {x: com.eventQueue.details.anchor === 'right' ? (com.main.box.w - (2 + 56 * (indexShift + 1))) : 2 + 56 * indexShift, y: 2, w: 50, h: com.main.box.h * 0.5}
+        let box = {x: com.eventQueue.details.anchor === 'right' ? (com.main.box.w - (2 + 56 * (index_shift + 1))) : 2 + 56 * index_shift, y: 2, w: 50, h: com.main.box.h * 0.5}
         d3.select(this)
           // .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
           .attr('opacity', d => d.display.opacity)
@@ -990,7 +990,7 @@ window.EventDisplayer = function (opt_in) {
             return w
           })
           .attr('height', height)
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('fill-opacity', d.display.fill_opacity)
           .attr('stroke-width', 0.4)
           .style('stroke-opacity', 1)
 
@@ -1002,7 +1002,7 @@ window.EventDisplayer = function (opt_in) {
           .attr('width', box.w) // timescale(d.endT) - timescale(d.startT))
           .attr('height', box.h)
           // .style('fill', d.display.fill)
-          .style('fill-opacity', d.display.fillOpacity)
+          .style('fill-opacity', d.display.fill_opacity)
           .attr('stroke-width', d.display.strokeWidth)
           .style('stroke-opacity', d.display.strokeOpacity)
           .style('stroke-dasharray', d.display.strokeDasharray)
@@ -1020,7 +1020,7 @@ window.EventDisplayer = function (opt_in) {
           .attr('width', box.w * 0.5) // timescale(d.endT) - timescale(d.startT))
           .attr('height', box.h * 0.5)
         // d3.select(this).select('text')
-        //   .transition('inOut')
+        //   .transition('in_out')
         //   .duration(times.anim_arc)
         //   .ease(d3.easeLinear)
         //   .text(d.name)
@@ -1028,9 +1028,9 @@ window.EventDisplayer = function (opt_in) {
         //   .attr('dy', 1)
         //   .attr('x', timescale(d.startT) + (timescale(d.endT) - timescale(d.startT)) * 0.5)
         //   .attr('y', (box.h * 0.5))
-        //   .style('opacity', d.display.fillOpacity)
-        //   .style('stroke-opacity', d.display.fillOpacity)
-        //   .style('fill-opacity', d.display.fillOpacity)
+        //   .style('opacity', d.display.fill_opacity)
+        //   .style('stroke-opacity', d.display.fill_opacity)
+        //   .style('fill-opacity', d.display.fill_opacity)
       })
     }
 
@@ -1101,7 +1101,7 @@ window.EventDisplayer = function (opt_in) {
     //       .style('pointer-events', 'none')
     //       .attr('vector-effect', 'non-scaling-stroke')
     //       .merge(rectNow)
-    //       .transition('inOut')
+    //       .transition('in_out')
     //       .duration(50)
     //       .attr('x', function (d, i) {
     //         if (d > com.eventTrack.axis.scale.domain()[1]) return com.eventTrack.axis.scale(com.eventTrack.axis.scale.domain()[1])
@@ -1160,7 +1160,7 @@ window.EventDisplayer = function (opt_in) {
         .style('pointer-events', 'none')
         .attr('vector-effect', 'non-scaling-stroke')
         .merge(rectNow)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('x', function (d, i) {
           return d.x
@@ -1172,7 +1172,7 @@ window.EventDisplayer = function (opt_in) {
       // .attr("height", function(d,i) { return d.h; })
 
       // rectNow.exit()
-      //   .transition("inOut").duration(times.anim_arc/2)
+      //   .transition("in_out").duration(times.anim_arc/2)
       //   .attr("width", 0)
       //   .style("opacity", 0)
       //   .remove()
@@ -1236,7 +1236,7 @@ window.EventDisplayer = function (opt_in) {
     com.main.scroll.scrollBox = new ScrollBox()
     com.main.scroll.scrollBox.init({
       tag: ntag,
-      gBox: com.main.scroll.scrollBoxG,
+      g_box: com.main.scroll.scrollBoxG,
       boxData: {
         x: 0,
         y: 0,
@@ -1248,7 +1248,7 @@ window.EventDisplayer = function (opt_in) {
       lockerV: ['eventDisplayerScroll' + 'update_data'],
       lockerZoom: {
         all: 'eventDisplayerScroll' + 'zoom',
-        during: 'eventDisplayerScroll' + 'zoomDuring',
+        during: 'eventDisplayerScroll' + 'zoomsuring',
         end: 'eventDisplayerScroll' + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: 'eventDisplayerScroll'}),

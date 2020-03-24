@@ -57,14 +57,14 @@ window.ClockEvents = function () {
   }
   this.reset = reset
 
-  function setSendFunction (fun) {
-    com.sendFunction = fun
+  function setSend_function (fun) {
+    com.send_function = fun
   }
-  this.setSendFunction = setSendFunction
+  this.setSend_function = setSend_function
 
   function getMouseCursorTime (pos) {
-    if (pos === null) com.sendFunction(null)
-    else com.sendFunction(com.axis.scaleX.invert(pos))
+    if (pos === null) com.send_function(null)
+    else com.send_function(com.axis.scaleX.invert(pos))
   }
 
   function init (opt_in) {

@@ -47,7 +47,7 @@ window.BlockQueueOld = function () {
     if (!is_def(lockerZoom)) {
       lockerZoom = {
         all: com.mainTag + 'zoom',
-        during: com.mainTag + 'zoomDuring',
+        during: com.mainTag + 'zoomsuring',
         end: com.mainTag + 'zoomEnd'
       }
     }
@@ -55,9 +55,9 @@ window.BlockQueueOld = function () {
 
     let lockerV = {}
     lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
-    lockerV.zoomDuring = lockerV.lockerV.slice().concat([lockerZoom.during])
+    lockerV.zoomsuring = lockerV.lockerV.slice().concat([lockerZoom.during])
     lockerV.zoomEnd = lockerV.lockerV.slice().concat([lockerZoom.end])
-    // console.log(lockerV.zoomDuring);
+    // console.log(lockerV.zoomsuring);
     com.lockerV = lockerV
 
     com.scrollTrans = {
@@ -87,7 +87,7 @@ window.BlockQueueOld = function () {
 
     if (is_def(opt_in.futureCanceled)) com.futureCanceled = opt_in.futureCanceled
     else {
-      com.futureCanceled = { hide: false, shiftY: true }
+      com.futureCanceled = { hide: false, shift_y: true }
     }
 
     com.prevUpdate = null
@@ -95,15 +95,15 @@ window.BlockQueueOld = function () {
     // ------------------------------------------------------------------
     // box definition
     // ------------------------------------------------------------------
-    let gBox = opt_in.gBox
+    let g_box = opt_in.g_box
     com.outerBox = deep_copy(opt_in.boxData)
-    com.outerG = gBox.append('g')
+    com.outerG = g_box.append('g')
     com.scrollBoxG = com.outerG.append('g')
 
     com.scrollBox = new ScrollBox()
     com.scrollBox.init({
       tag: com.mainTag,
-      gBox: com.scrollBoxG,
+      g_box: com.scrollBoxG,
       boxData: com.outerBox,
       useRelativeCoords: false,
       title: opt_in.title,
@@ -314,25 +314,25 @@ window.BlockQueueOld = function () {
       com.blocksIn.run.length === 0 ? 0 : 2 * (box.x - com.outerBox.x)
 
     let maxDone = min_max_obj({
-      minMax: 'max',
+      min_max: 'max',
       data: com.blocksIn.done,
       func: 'endTime',
       default_val: 0
     })
     // let minRun = min_max_obj({
-    //   minMax: 'min',
+    //   min_max: 'min',
     //   data: com.blocksIn.run,
     //   func: 'startTime',
     //   default_val: 0
     // })
     // let maxRun = min_max_obj({
-    //   minMax: 'max',
+    //   min_max: 'max',
     //   data: com.blocksIn.run,
     //   func: 'endTime',
     //   default_val: 0
     // })
     let minWait = min_max_obj({
-      minMax: 'min',
+      min_max: 'min',
       data: com.blocksIn.wait,
       func: 'startTime',
       default_val: 0
@@ -381,12 +381,12 @@ window.BlockQueueOld = function () {
       if (com.blockRow[type_now].length === 0) return
 
       let xMin = min_max_obj({
-        minMax: 'min',
+        min_max: 'min',
         data: com.blockRow[type_now],
         func: 'x'
       })
       let xMax = min_max_obj({
-        minMax: 'max',
+        min_max: 'max',
         data: com.blockRow[type_now],
         func: function (d, i) {
           return d.x + d.w
@@ -394,30 +394,30 @@ window.BlockQueueOld = function () {
       })
       let scale = frac[type_now] / ((xMax - xMin) / box.w)
 
-      let xShift = null
-      let xShiftType = 0
-      if (type_now === 'run') xShiftType = frac.done * box.w + runMarg
+      let x_shift = null
+      let x_shift_type = 0
+      if (type_now === 'run') x_shift_type = frac.done * box.w + runMarg
       if (type_now === 'wait') {
-        xShiftType = (frac.done + frac.run) * box.w + 2 * runMarg
+        x_shift_type = (frac.done + frac.run) * box.w + 2 * runMarg
       }
-      // if(type_now=='run')console.log('----',xMin,xMax,scale,xShiftType);
+      // if(type_now=='run')console.log('----',xMin,xMax,scale,x_shift_type);
 
       $.each(com.blockRow[type_now], function (index, data_now) {
         data_now.x = (data_now.x - box.x) * scale + box.x
       })
 
       $.each(com.blockRow[type_now], function (index, data_now) {
-        if (!is_def(xShift)) {
+        if (!is_def(x_shift)) {
           let xMinNow = min_max_obj({
-            minMax: 'min',
+            min_max: 'min',
             data: com.blockRow[type_now],
             func: 'x'
           })
-          xShift = box.x - xMinNow + xShiftType
-          // xShift = box.x - com.blockRow[type_now][0].x + xShiftType;
+          x_shift = box.x - xMinNow + x_shift_type
+          // x_shift = box.x - com.blockRow[type_now][0].x + x_shift_type;
         }
 
-        data_now.x += xShift
+        data_now.x += x_shift
         data_now.w = data_now.w * scale
       })
     })
@@ -430,19 +430,19 @@ window.BlockQueueOld = function () {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    let yMin = min_max_obj({
-      minMax: 'min',
+    let y_min = min_max_obj({
+      min_max: 'min',
       data: com.blocksAll,
       func: 'y'
     })
-    let yMax = min_max_obj({
-      minMax: 'max',
+    let y_max = min_max_obj({
+      min_max: 'max',
       data: com.blocksAll,
       func: function (d, i) {
         return d.y + d.h
       }
     })
-    let yDif = yMax - yMin
+    let yDif = y_max - y_min
 
     let hasScroll = yDif > com.innerBox.h + 0.01
 
@@ -475,7 +475,7 @@ window.BlockQueueOld = function () {
 
       if (
         !com.futureCanceled.hide &&
-        com.futureCanceled.shiftY &&
+        com.futureCanceled.shift_y &&
         !data_now.exe_state.can_run
       ) {
         y0 += box.h + 2 * box.marg
@@ -507,8 +507,8 @@ window.BlockQueueOld = function () {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    let wMin = min_max_obj({ minMax: 'min', data: blocks, func: 'w' })
-    let hMin = min_max_obj({ minMax: 'min', data: blocks, func: 'h' })
+    let wMin = min_max_obj({ min_max: 'min', data: blocks, func: 'w' })
+    let hMin = min_max_obj({ min_max: 'min', data: blocks, func: 'h' })
     if (!is_def(hMin) || !is_def(wMin)) return []
 
     let margX = wMin * 0.2
@@ -540,7 +540,7 @@ window.BlockQueueOld = function () {
       // let o0 = data_now0.o
 
       let telV = [].concat(data_now0.data.tel_ids)
-      let minMax = { minX: x0, minY: y0, maxX: x0 + w0, maxY: y0 + h0 }
+      let min_max = { min_x: x0, min_y: y0, maxX: x0 + w0, maxY: y0 + h0 }
 
       let ovelaps = [{ index: index0, data: data_now0 }]
 
@@ -566,16 +566,16 @@ window.BlockQueueOld = function () {
           let o01 = Math.max(data_now0.o, data_now1.o)
 
           let hasOverlap =
-            x1 < minMax.maxX - o01 &&
-            x1 + w1 > minMax.minX + o01 &&
-            y1 < minMax.maxY &&
-            y1 + h1 > minMax.minY
-          // if(x1 > minMax.maxX-o1 && x1 < minMax.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
+            x1 < min_max.maxX - o01 &&
+            x1 + w1 > min_max.min_x + o01 &&
+            y1 < min_max.maxY &&
+            y1 + h1 > min_max.min_y
+          // if(x1 > min_max.maxX-o1 && x1 < min_max.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
 
           // XXXXXXXXXXXXXXXXXX
           // let hasOverlap = (
-          //   (x1 < minMax.maxX+margX/2) && (x1+w1 > minMax.minX) &&
-          //   (y1 < minMax.maxY)         && (y1+h1 > minMax.minY)
+          //   (x1 < min_max.maxX+margX/2) && (x1+w1 > min_max.min_x) &&
+          //   (y1 < min_max.maxY)         && (y1+h1 > min_max.min_y)
           // );
           // XXXXXXXXXXXXXXXXXX
 
@@ -586,11 +586,11 @@ window.BlockQueueOld = function () {
             }
             telV = telV.concat(data_now1.data.tel_ids)
 
-            minMax = {
-              minX: Math.min(minMax.minX, x1),
-              minY: Math.min(minMax.minY, y1),
-              maxX: Math.max(minMax.maxX, x1 + w1),
-              maxY: Math.max(minMax.maxY, y1 + h1)
+            min_max = {
+              min_x: Math.min(min_max.min_x, x1),
+              min_y: Math.min(min_max.min_y, y1),
+              maxX: Math.max(min_max.maxX, x1 + w1),
+              maxY: Math.max(min_max.maxY, y1 + h1)
             }
 
             ovelaps.push({ index: index1, data: data_now1 })
@@ -716,7 +716,7 @@ window.BlockQueueOld = function () {
       .on('click', com.click)
       // .attr("clip-path", "url(#"+com.tagClipPath.inner+")")
       .merge(rect)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 1)
       .attr('stroke', function (d, i) {
@@ -744,7 +744,7 @@ window.BlockQueueOld = function () {
 
     rect
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc / 2)
       .attr('width', 0)
       .style('opacity', 0)
@@ -799,7 +799,7 @@ window.BlockQueueOld = function () {
       .attr('dy', function (d) {
         return d.size / 3 + 'px'
       })
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', com.style.textOpac)
       .attr('x', function (d, i) {
@@ -811,7 +811,7 @@ window.BlockQueueOld = function () {
 
     text
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .style('opacity', 0)
       .remove()
@@ -827,12 +827,12 @@ window.BlockQueueOld = function () {
     let recRunData = []
     if (com.blockRow.run.length > 0 && com.doPhase && com.doRunRect) {
       let xMin = min_max_obj({
-        minMax: 'min',
+        min_max: 'min',
         data: com.blockRow.run,
         func: 'x'
       })
       let xMax = min_max_obj({
-        minMax: 'max',
+        min_max: 'max',
         data: com.blockRow.run,
         func: function (d, i) {
           return d.x + d.w
@@ -884,7 +884,7 @@ window.BlockQueueOld = function () {
       .attr('vector-effect', 'non-scaling-stroke')
       // .attr("clip-path", "url(#"+com.tagClipPath.outer+")")
       .merge(rectRun)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('x', function (d, i) {
         return d.x
@@ -897,7 +897,7 @@ window.BlockQueueOld = function () {
 
     rectRun
       .exit()
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc / 2)
       .attr('x', function (d, i) {
         return d.x + d.w / 2
@@ -922,14 +922,14 @@ window.BlockQueueOld = function () {
         refData = com.blockRow.run
 
         let time_min = min_max_obj({
-          minMax: 'min',
+          min_max: 'min',
           data: com.blockRow.run,
           func: function (d, i) {
             return d.data.startTime
           }
         })
         let time_max = min_max_obj({
-          minMax: 'max',
+          min_max: 'max',
           data: com.blockRow.run,
           func: function (d, i) {
             return d.data.endTime
@@ -950,9 +950,9 @@ window.BlockQueueOld = function () {
       let xMin = box.x
       let xMax = box.x + box.w
       if (is_def(refData)) {
-        xMin = min_max_obj({ minMax: 'min', data: refData, func: 'x' })
+        xMin = min_max_obj({ min_max: 'min', data: refData, func: 'x' })
         xMax = min_max_obj({
-          minMax: 'max',
+          min_max: 'max',
           data: refData,
           func: function (d, i) {
             return d.x + d.w
@@ -1006,7 +1006,7 @@ window.BlockQueueOld = function () {
       .style('pointer-events', 'none')
       .attr('vector-effect', 'non-scaling-stroke')
       .merge(rectNow)
-      .transition('inOut')
+      .transition('in_out')
       .duration(times.anim_arc)
       .attr('x', function (d, i) {
         return d.x
@@ -1018,7 +1018,7 @@ window.BlockQueueOld = function () {
     // .attr("height", function(d,i) { return d.h; })
 
     // rectNow.exit()
-    //   .transition("inOut").duration(times.anim_arc/2)
+    //   .transition("in_out").duration(times.anim_arc/2)
     //   .attr("width", 0)
     //   .style("opacity", 0)
     //   .remove()

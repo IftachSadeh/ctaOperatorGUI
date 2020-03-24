@@ -56,20 +56,20 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 9
   let w0 = 12
-  let divKey = 'main'
+  let div_key = 'main'
 
   opt_in.widget_func = { sock_func: sock_sched_block_inspector, main_func: main_sched_blocksInspector }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: false,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   sock.add_to_table(opt_in)
@@ -165,7 +165,7 @@ let main_sched_blocksInspector = function (opt_in) {
   }
   let svg = {}
   let box = {}
-  let lenD = {}
+  let svg_dims = {}
 
   let blockQueueOverlay = null
   let blockQueue = null
@@ -186,7 +186,7 @@ let main_sched_blocksInspector = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  // locker.add('inInit')
+  // locker.add('in_init')
   let run_loop = new RunLoop({ tag: widget_id })
 
   function setStandbyMode () {
@@ -647,16 +647,16 @@ let main_sched_blocksInspector = function (opt_in) {
 
   function init_data (data_in) {
     function initSvg () {
-      lenD.w = {}
-      lenD.h = {}
-      lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
+      svg_dims.w = {}
+      svg_dims.h = {}
+      svg_dims.w[0] = 1000
+      svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
       svg.svg = d3
         .select(svg_div)
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
@@ -832,11 +832,11 @@ let main_sched_blocksInspector = function (opt_in) {
     }
     function initBox () {
       box.topBox = {
-        x: lenD.w[0] * 0,
-        y: lenD.h[0] * 0,
-        w: lenD.w[0] * 1,
-        h: lenD.h[0] * 0.65,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0,
+        y: svg_dims.h[0] * 0,
+        w: svg_dims.w[0] * 1,
+        h: svg_dims.h[0] * 0.65,
+        marg: svg_dims.w[0] * 0.01
       }
       box.block_queue_server = {
         x: box.topBox.w * 0.48, //0.374,
@@ -850,43 +850,43 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.topBox.h * 0.03,
         w: box.topBox.w * 0.5, // 59
         h: box.topBox.h * 0.112,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       box.brushZoom = {
         x: box.topBox.w * 0.48, //0.374,
         y: box.topBox.h * 0.655,
         w: box.topBox.w * 0.5, // 59
         h: box.topBox.h * 0.05,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       box.tools = {
         x: box.topBox.w * 0.48, //0.374,
         y: box.topBox.h * 0.75,
         w: box.topBox.w * 0.5, // 59
         h: box.topBox.h * 0.225,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       box.focusOverlay = {
         x: box.topBox.w * 0.48, //0.374,
         y: box.topBox.h * 0.025,
         w: box.topBox.w * 0.5, // 59
         h: box.topBox.h * 0.955,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       box.right_info = {
-        x: box.topBox.w * 0.02, // lenD.w[0] * 0.68,
+        x: box.topBox.w * 0.02, // svg_dims.w[0] * 0.68,
         y: box.topBox.h * 0.01,
         w: box.topBox.w * 0.41, // 0.315,
         h: box.topBox.h * 0.95,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       box.botBox = {
-        x: lenD.w[0] * 0,
-        y: lenD.h[0] * 0.65,
-        w: lenD.w[0] * 1,
-        h: lenD.h[0] * 0.35,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0,
+        y: svg_dims.h[0] * 0.65,
+        w: svg_dims.w[0] * 1,
+        h: svg_dims.h[0] * 0.35,
+        marg: svg_dims.w[0] * 0.01
       }
       box.summaryMetrics = {
         x: box.botBox.w * 0.02,
@@ -1158,7 +1158,7 @@ let main_sched_blocksInspector = function (opt_in) {
         //   mainUnfocusOn_block()
         // }
         // mainUnfocusOn_sched_blocks()
-        // mainFocusOn_sched_blocks(block.sched_block_id)
+        // main_focusOn_sched_blocks(block.sched_block_id)
         // shared.focus.block = block.obs_block_id
         // // svg_sched_blocks_icons.focusOn_sched_blocks(block)
         // svg_information.focusOn_block(block.obs_block_id)
@@ -1321,8 +1321,8 @@ let main_sched_blocksInspector = function (opt_in) {
       .style('font-weight', 'bold')
       .style('font-size', '30px')
       .attr('text-anchor', 'middle')
-      .attr('x', lenD.w[0] * 0.7)
-      .attr('y', lenD.h[0] * 0.6)
+      .attr('x', svg_dims.w[0] * 0.7)
+      .attr('y', svg_dims.h[0] * 0.6)
     svg.g.selectAll('g.pushingNewSchedule')
       .transition()
       .delay(1000)
@@ -1394,8 +1394,8 @@ let main_sched_blocksInspector = function (opt_in) {
     pushingG.append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', lenD.w[0])
-      .attr('height', lenD.h[0])
+      .attr('width', svg_dims.w[0])
+      .attr('height', svg_dims.h[0])
       .attr('fill', color_theme.darker.background)
       .style('opacity', 0)
       .transition()
@@ -1420,15 +1420,15 @@ let main_sched_blocksInspector = function (opt_in) {
             })
         }
         pushingG.append('circle')
-          .attr('cx', lenD.w[0] * 0.5)
-          .attr('cy', lenD.h[0] * 0.33)
+          .attr('cx', svg_dims.w[0] * 0.5)
+          .attr('cy', svg_dims.h[0] * 0.33)
           .attr('r', 25)
           .attr('fill', 'transparent')
           .attr('stroke', color_theme.medium.background)
           .attr('stroke-width', 10)
         let innerCircle = pushingG.append('circle')
-          .attr('cx', lenD.w[0] * 0.5)
-          .attr('cy', lenD.h[0] * 0.33)
+          .attr('cx', svg_dims.w[0] * 0.5)
+          .attr('cy', svg_dims.h[0] * 0.33)
           .attr('r', 25)
           .attr('fill', 'transparent')
           .attr('stroke', color_theme.medium.stroke)
@@ -1443,8 +1443,8 @@ let main_sched_blocksInspector = function (opt_in) {
           .style('font-weight', 'bold')
           .style('font-size', '30px')
           .attr('text-anchor', 'middle')
-          .attr('x', lenD.w[0] * 0.3)
-          .attr('y', lenD.h[0] * 0.6)
+          .attr('x', svg_dims.w[0] * 0.3)
+          .attr('y', svg_dims.h[0] * 0.6)
       })
   }
   this.pushNewSchedule = pushNewSchedule
@@ -1454,7 +1454,7 @@ let main_sched_blocksInspector = function (opt_in) {
     svg.g.append('rect')
       .attr('id', 'createNewSched_button')
       .attr('x', box.brushZoom.x)
-      .attr('y', box.brushZoom.y + lenD.h[0] * 0.015)
+      .attr('y', box.brushZoom.y + svg_dims.h[0] * 0.015)
       .attr('width', box.brushZoom.w)
       .attr('height', 21)
       .attr('fill', color_theme.brighter.background)
@@ -1895,10 +1895,10 @@ let main_sched_blocksInspector = function (opt_in) {
   //   // -------------------------------------------------------------------
   //   function init_data () {
   //     let x0, y0, w0, h0, marg
-  //     w0 = lenD.w[0] * 0.45 // 0.6
-  //     h0 = lenD.h[0] * 0.14 // 0.18
-  //     x0 = (lenD.w[0] * 0.02)
-  //     y0 = (lenD.h[0] * 0.04)
+  //     w0 = svg_dims.w[0] * 0.45 // 0.6
+  //     h0 = svg_dims.h[0] * 0.14 // 0.18
+  //     x0 = (svg_dims.w[0] * 0.02)
+  //     y0 = (svg_dims.h[0] * 0.04)
   //     marg = w0 * 0.01
   //     let blockBoxData = {
   //       x: x0,
@@ -2028,7 +2028,7 @@ let main_sched_blocksInspector = function (opt_in) {
   //       filters: {
   //         enabled: false,
   //         g: undefined,
-  //         box: {x: 0, y: blockBoxData.h * 0.15, w: lenD.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0},
+  //         box: {x: 0, y: blockBoxData.h * 0.15, w: svg_dims.w[0] * 0.12, h: blockBoxData.h * 0.7, marg: 0},
   //         filters: []
   //       },
   //       timeBars: {
@@ -2093,7 +2093,7 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.event_queue_server.y,
         w: box.event_queue_server.w,
         h: box.event_queue_server.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       reserved.g = svg.g.append('g')
@@ -2269,7 +2269,7 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.block_queue_server.y,
         w: box.block_queue_server.w,
         h: box.block_queue_server.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       let overlay = svg.g.append('g')
         .attr('transform', 'translate(' + (adjustedBox.x) + ',' + adjustedBox.y + ')')
@@ -2394,7 +2394,7 @@ let main_sched_blocksInspector = function (opt_in) {
               enabled: false,
               position: 'left',
               clickable: true,
-              size: (lenD.w[0] * 0.65 - adjustedBox.w)
+              size: (svg_dims.w[0] * 0.65 - adjustedBox.w)
             },
             layout: undefined
           },
@@ -2568,7 +2568,7 @@ let main_sched_blocksInspector = function (opt_in) {
               enabled: true,
               position: 'left',
               clickable: true,
-              size: (lenD.w[0] * 0.53 - adjustedBox.w)
+              size: (svg_dims.w[0] * 0.53 - adjustedBox.w)
             }
           },
           axis: {
@@ -2882,7 +2882,7 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.brushZoom.y,
         w: box.brushZoom.w,
         h: box.brushZoom.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       reserved.g = svg.g.append('g')
         .attr('transform', 'translate(' + brushBox.x + ',' + brushBox.y + ')')
@@ -3118,7 +3118,7 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.tools.y + box.tools.h * 0.0,
         w: box.tools.w,
         h: box.tools.h * 0.5,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       initClipping()
     }
@@ -3409,7 +3409,7 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.tools.y + box.tools.h * 0.5,
         w: box.tools.w,
         h: box.tools.h * 0.5,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       initClipping()
       // gBlockBox.append('text')
@@ -4038,7 +4038,7 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.focusOverlay.y,
         w: box.focusOverlay.w,
         h: box.focusOverlay.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       reserved.clipping.g = svg.g.append('g')
         .attr('transform', 'translate(' + reserved.drag.box.x + ',' + reserved.drag.box.y + ')')
@@ -4339,7 +4339,7 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.focusOverlay.y,
         w: box.focusOverlay.w,
         h: box.focusOverlay.h,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
       let axisTop = brushZoom.getAxis('top').axis.scale().domain()
       let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
@@ -4765,7 +4765,7 @@ let main_sched_blocksInspector = function (opt_in) {
     }
     let reserved = template
 
-    let titleSize = 11
+    let title_size = 11
     let headerSize = 10
     let txt_size = 9
 
@@ -4802,7 +4802,7 @@ let main_sched_blocksInspector = function (opt_in) {
       let scrollBox = new ScrollBox()
       scrollBox.init({
         tag: tag,
-        gBox: g,
+        g_box: g,
         boxData: {
           x: 0,
           y: 0,
@@ -4814,7 +4814,7 @@ let main_sched_blocksInspector = function (opt_in) {
         lockerV: [tag + 'update_data'],
         lockerZoom: {
           all: tag + 'zoom',
-          during: tag + 'zoomDuring',
+          during: tag + 'zoomsuring',
           end: tag + 'zoomEnd'
         },
         run_loop: new RunLoop({tag: tag}),
@@ -4979,7 +4979,7 @@ let main_sched_blocksInspector = function (opt_in) {
           })
           current
             .exit()
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 0)
             .remove()
@@ -5050,7 +5050,7 @@ let main_sched_blocksInspector = function (opt_in) {
               .text('S' + d.blocks[0].metadata.n_sched)
               .style('fill', color_theme.dark.text)
               .style('font-weight', 'bold')
-              .style('font-size', titleSize + 'px')
+              .style('font-size', title_size + 'px')
               .attr('text-anchor', 'middle')
               .attr('transform', 'translate(' + (dimPoly * 0.5) + ',' + (dimPoly * 0.5 + txt_size * 0.33) + ')')
               .style('pointer-events', 'none')
@@ -5066,7 +5066,7 @@ let main_sched_blocksInspector = function (opt_in) {
           })
           current
             .exit()
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 0)
             .remove()
@@ -5150,7 +5150,7 @@ let main_sched_blocksInspector = function (opt_in) {
         })
         targets
           .exit()
-          .transition('inOut')
+          .transition('in_out')
           .duration(times.anim_arc)
           .style('opacity', 0)
           .remove()
@@ -5486,7 +5486,7 @@ let main_sched_blocksInspector = function (opt_in) {
           .attr('y', box.y)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', color_theme.dark.text)
           .attr('stroke', 'none')
@@ -5549,7 +5549,7 @@ let main_sched_blocksInspector = function (opt_in) {
           .attr('y', box.y)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'start')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', color_theme.dark.text)
           .attr('stroke', 'none')
@@ -5576,10 +5576,10 @@ let main_sched_blocksInspector = function (opt_in) {
         g.append('text')
           .text('Obs')
           .attr('x', marg + line * 0.5)
-          .attr('y', marg + line * 0.3 + titleSize * 0.33)
+          .attr('y', marg + line * 0.3 + title_size * 0.33)
           .style('font-weight', '')
           .attr('text-anchor', 'middle')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', colorPalette.dark.text)
           .attr('stroke', 'none')
@@ -5587,7 +5587,7 @@ let main_sched_blocksInspector = function (opt_in) {
         g.append('text')
           .text('L M S')
           .attr('x', marg + line * 0.5)
-          .attr('y', marg + line * 0.66 + titleSize * 0.33)
+          .attr('y', marg + line * 0.66 + title_size * 0.33)
           .style('font-weight', '')
           .attr('text-anchor', 'middle')
           .style('font-size', headerSize + 'px')
@@ -5731,10 +5731,10 @@ let main_sched_blocksInspector = function (opt_in) {
         g.append('text')
           .text(block.metadata.block_name)
           .attr('x', box.x)
-          .attr('y', box.y + titleSize * 1.5)
+          .attr('y', box.y + title_size * 1.5)
           .style('font-weight', 'bold')
           .attr('text-anchor', 'end')
-          .style('font-size', titleSize + 'px')
+          .style('font-size', title_size + 'px')
           .style('pointer-events', 'none')
           .attr('fill', colorPalette.dark.text)
           .attr('stroke', 'none')
@@ -5759,7 +5759,7 @@ let main_sched_blocksInspector = function (opt_in) {
           w: box.w * 0.49,
           h: box.h
         }
-        box.h -= titleSize * 2
+        box.h -= title_size * 2
         let gt = g.append('g')
           .attr('id', 'telsDisplayer')
           .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
@@ -6061,7 +6061,7 @@ let main_sched_blocksInspector = function (opt_in) {
         .attr('y', allBox.modifications.h * 1.5)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'end')
-        .style('font-size', titleSize + 'px')
+        .style('font-size', title_size + 'px')
         .style('pointer-events', 'none')
         .attr('fill', colorPalette.dark.text)
         .attr('stroke', 'none')
@@ -6072,7 +6072,7 @@ let main_sched_blocksInspector = function (opt_in) {
         .attr('y', allBox.modifications.h * 1.5)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'end')
-        .style('font-size', titleSize + 'px')
+        .style('font-size', title_size + 'px')
         .style('pointer-events', 'none')
         .attr('fill', colorPalette.dark.text)
         .attr('stroke', 'none')
@@ -6083,7 +6083,7 @@ let main_sched_blocksInspector = function (opt_in) {
         .attr('y', allBox.modifications.h * 1.5)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'end')
-        .style('font-size', titleSize + 'px')
+        .style('font-size', title_size + 'px')
         .style('pointer-events', 'none')
         .attr('fill', colorPalette.dark.text)
         .attr('stroke', 'none')
@@ -6094,7 +6094,7 @@ let main_sched_blocksInspector = function (opt_in) {
         .attr('y', allBox.modifications.h * 1.5)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'end')
-        .style('font-size', titleSize + 'px')
+        .style('font-size', title_size + 'px')
         .style('pointer-events', 'none')
         .attr('fill', colorPalette.dark.text)
         .attr('stroke', 'none')
@@ -6105,7 +6105,7 @@ let main_sched_blocksInspector = function (opt_in) {
         .attr('y', allBox.modifications.h * 1.54)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'end')
-        .style('font-size', titleSize + 'px')
+        .style('font-size', title_size + 'px')
         .style('pointer-events', 'none')
         .attr('fill', colorPalette.dark.text)
         .attr('stroke', 'none')
@@ -6115,7 +6115,7 @@ let main_sched_blocksInspector = function (opt_in) {
         .attr('y', allBox.modifications.h * 1.54)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'end')
-        .style('font-size', titleSize + 'px')
+        .style('font-size', title_size + 'px')
         .style('pointer-events', 'none')
         .attr('fill', colorPalette.dark.text)
         .attr('stroke', 'none')
@@ -6125,7 +6125,7 @@ let main_sched_blocksInspector = function (opt_in) {
         .attr('y', allBox.modifications.h * 1.54)
         .style('font-weight', 'bold')
         .attr('text-anchor', 'end')
-        .style('font-size', titleSize + 'px')
+        .style('font-size', title_size + 'px')
         .style('pointer-events', 'none')
         .attr('fill', colorPalette.dark.text)
         .attr('stroke', 'none')
@@ -6231,9 +6231,9 @@ let main_sched_blocksInspector = function (opt_in) {
 
         let popupOffset = 0
 
-        let schedIndex = 0
-        let blockIndex = 0
-        let propIndex = 0
+        let sched_index = 0
+        let block_index = 0
+        let prop_index = 0
 
         function schedCore (scheds, g, offset) {
           let current = g
@@ -6297,7 +6297,7 @@ let main_sched_blocksInspector = function (opt_in) {
               .text('S' + d.blocks[0].metadata.n_sched)
               .style('fill', colorPalette.dark.text)
               .style('font-weight', 'bold')
-              .style('font-size', titleSize + 'px')
+              .style('font-size', title_size + 'px')
               .attr('text-anchor', 'middle')
               .attr('transform', 'translate(' + (labels[0].w * 0.5) + ',' + (line * 0.5 + txt_size * 0.3) + ')')
               .style('pointer-events', 'none')
@@ -6305,7 +6305,7 @@ let main_sched_blocksInspector = function (opt_in) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + -5 + ',' + (schedIndex * (line + marg) + offset) + ')')
+            g.attr('transform', 'translate(' + -5 + ',' + (sched_index * (line + marg) + offset) + ')')
 
             let points = [{x: labels[0].w * 0.5, y: labels[0].w * 0.5}]
             for (let j = 0; j < d.blocks.length; j++) {
@@ -6320,14 +6320,14 @@ let main_sched_blocksInspector = function (opt_in) {
             g.select('path#backpath')
               .attr('d', lineGenerator(points))
             // innerOffset += line
-            blockIndex = 1
+            block_index = 1
             blockCore(d.blocks, g.select('g#header'), 0)
-            schedIndex += blockIndex
+            sched_index += block_index
             // index += 1
           })
           current
             .exit()
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 0)
             .remove()
@@ -6391,24 +6391,24 @@ let main_sched_blocksInspector = function (opt_in) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (labels[1].x) + ',' + (offset + (line + marg) * blockIndex) + ')')
+            g.attr('transform', 'translate(' + (labels[1].x) + ',' + (offset + (line + marg) * block_index) + ')')
             let old = getBlockById(get_blocksData('server'), d.obs_block_id).data
             let diff = checkBlocksDifference(old, d)
-            propIndex = 0
+            prop_index = 0
             // g.selectAll('g#props').remove()
             propCore(diff, g, 0)
-            blockIndex += 1
+            block_index += 1
           })
           current
             .exit()
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 0)
             .remove()
         }
         function propCore (props, g, offset) {
           function drawDiffTime (g, d) {
-            let localoffset = (line + marg) * (propIndex + blockIndex + schedIndex)
+            let localoffset = (line + marg) * (prop_index + block_index + sched_index)
             function drawHoverClock () {
               let timeSOld = new Date(shared.data.server.time_of_night.date_start)
               timeSOld.setSeconds(timeSOld.getSeconds() + d.start.old)
@@ -6581,7 +6581,7 @@ let main_sched_blocksInspector = function (opt_in) {
                   .text(d.duration.new > d.duration.old ? '+' : '-')
                   .style('fill', '#000000')
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
                   .attr('transform', 'translate(' + (offset + labels[3].w * 0.85 - line * 0.33) + ',' + (txt_size * 0.8) + ')')
                   .style('pointer-events', 'none')
@@ -6637,14 +6637,14 @@ let main_sched_blocksInspector = function (opt_in) {
               .style('pointer-events', 'none')
           }
           function drawDiffTels (g, d) {
-            let localoffset = (line + marg) * (propIndex + blockIndex + schedIndex)
+            let localoffset = (line + marg) * (prop_index + block_index + sched_index)
             let marg1 = 6
             let marg2 = 2
             function drawHoverLarge () {
               if (d.large.new.length === 0 && d.large.rem.length === 0) return
               let marg = 2 * marg1 + ((d.large.new.length > 0 && d.large.rem.length > 0) ? marg1 * 2 : 0)
-              let newH = (titleSize + marg2) * (parseInt(d.large.new.length / 2) + (d.large.new.length % 2 !== 0 ? 1 : 0))
-              let remH = (titleSize + marg2) * (parseInt(d.large.rem.length / 2) + (d.large.rem.length % 2 !== 0 ? 1 : 0))
+              let newH = (title_size + marg2) * (parseInt(d.large.new.length / 2) + (d.large.new.length % 2 !== 0 ? 1 : 0))
+              let remH = (title_size + marg2) * (parseInt(d.large.rem.length / 2) + (d.large.rem.length % 2 !== 0 ? 1 : 0))
 
               let g = reserved.g.select('g#modifications_information')
               let largeg = g.append('g')
@@ -6697,10 +6697,10 @@ let main_sched_blocksInspector = function (opt_in) {
                 largeg.append('text')
                   .text('+')
                   .attr('x', labels[5].x - 28)
-                  .attr('y', line * 0.5 + titleSize * 0.33)
+                  .attr('y', line * 0.5 + title_size * 0.33)
                   .style('fill', '#000000')
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
                   .style('pointer-events', 'none')
               }
@@ -6708,10 +6708,10 @@ let main_sched_blocksInspector = function (opt_in) {
                 largeg.append('text')
                   .text('-')
                   .attr('x', labels[5].x - 28)
-                  .attr('y',  marg + newH + remH + line * 0.5 + titleSize * 0.33)
+                  .attr('y',  marg + newH + remH + line * 0.5 + title_size * 0.33)
                   .style('fill', '#000000')
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
                   .style('pointer-events', 'none')
               }
@@ -6725,10 +6725,10 @@ let main_sched_blocksInspector = function (opt_in) {
                   .style('font-weight', '')
                   .style('font-size', headerSize + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (15 + 22 * (i % 2)) + ',' + ((marg1 + titleSize) + (titleSize + marg2) * parseInt(i / 2)) + ')')
+                  .attr('transform', 'translate(' + (15 + 22 * (i % 2)) + ',' + ((marg1 + title_size) + (title_size + marg2) * parseInt(i / 2)) + ')')
                   .style('pointer-events', 'none')
               }
-              let midOffset = d.large.new.length > 0 ? (marg1 * 2 + (titleSize + marg2) * Math.ceil(d.large.new.length / 2)) : 0
+              let midOffset = d.large.new.length > 0 ? (marg1 * 2 + (title_size + marg2) * Math.ceil(d.large.new.length / 2)) : 0
               for (let i = 0; i < d.large.rem.length; i++) {
                 largeg.append('text')
                   .text(d.large.rem[i])
@@ -6738,7 +6738,7 @@ let main_sched_blocksInspector = function (opt_in) {
                   .style('font-weight', '')
                   .style('font-size', headerSize + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (15 + 22 * (i % 2)) + ',' + (midOffset + (marg1 + titleSize) + (titleSize + marg2) * parseInt(i / 2)) + ')')
+                  .attr('transform', 'translate(' + (15 + 22 * (i % 2)) + ',' + (midOffset + (marg1 + title_size) + (title_size + marg2) * parseInt(i / 2)) + ')')
                   .style('pointer-events', 'none')
               }
             }
@@ -6799,10 +6799,10 @@ let main_sched_blocksInspector = function (opt_in) {
                 mediumg.append('text')
                   .text('+')
                   .attr('x', labels[5].x - 18)
-                  .attr('y', line * 0.5 + titleSize * 0.33)
+                  .attr('y', line * 0.5 + title_size * 0.33)
                   .style('fill', '#000000')
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
                   .style('pointer-events', 'none')
               }
@@ -6810,10 +6810,10 @@ let main_sched_blocksInspector = function (opt_in) {
                 mediumg.append('text')
                   .text('-')
                   .attr('x', labels[5].x - 18)
-                  .attr('y', marg + newH + remH + line * 0.5 + titleSize * 0.33)
+                  .attr('y', marg + newH + remH + line * 0.5 + title_size * 0.33)
                   .style('fill', '#000000')
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
                   .style('pointer-events', 'none')
               }
@@ -6900,10 +6900,10 @@ let main_sched_blocksInspector = function (opt_in) {
                 smallg.append('text')
                   .text('+')
                   .attr('x', labels[5].x - 8)
-                  .attr('y', line * 0.5 + titleSize * 0.33)
+                  .attr('y', line * 0.5 + title_size * 0.33)
                   .style('fill', '#000000')
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
                   .style('pointer-events', 'none')
               }
@@ -6911,10 +6911,10 @@ let main_sched_blocksInspector = function (opt_in) {
                 smallg.append('text')
                   .text('-')
                   .attr('x', labels[5].x - 8)
-                  .attr('y', marg + newH + remH + line * 0.5 + titleSize * 0.33)
+                  .attr('y', marg + newH + remH + line * 0.5 + title_size * 0.33)
                   .style('fill', '#000000')
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
                   .style('pointer-events', 'none')
               }
@@ -6975,9 +6975,9 @@ let main_sched_blocksInspector = function (opt_in) {
                   .text(Math.abs(d.large.diff))
                   .style('fill', d.large.diff < 0 ? 'red' : (d.large.diff > 0 ? 'green' : '#000000'))
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.2) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.2) + ',' + (line * 0.5 + title_size * 0.3) + ')')
                   .style('pointer-events', 'none')
               }
             }
@@ -7008,9 +7008,9 @@ let main_sched_blocksInspector = function (opt_in) {
                   .text(Math.abs(d.medium.diff))
                   .style('fill', d.medium.diff < 0 ? 'red' : (d.medium.diff > 0 ? 'green' : '#000000'))
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.56) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.56) + ',' + (line * 0.5 + title_size * 0.3) + ')')
                   .style('pointer-events', 'none')
               }
             }
@@ -7041,9 +7041,9 @@ let main_sched_blocksInspector = function (opt_in) {
                   .text(Math.abs(d.small.diff))
                   .style('fill', d.small.diff < 0 ? 'red' : (d.small.diff > 0 ? 'green' : '#000000'))
                   .style('font-weight', 'bold')
-                  .style('font-size', titleSize + 'px')
+                  .style('font-size', title_size + 'px')
                   .attr('text-anchor', 'middle')
-                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.86) + ',' + (line * 0.5 + titleSize * 0.3) + ')')
+                  .attr('transform', 'translate(' + (offset + labels[5].w * 0.86) + ',' + (line * 0.5 + title_size * 0.3) + ')')
                   .style('pointer-events', 'none')
               }
             }
@@ -7066,15 +7066,15 @@ let main_sched_blocksInspector = function (opt_in) {
           let merge = current.merge(enter)
           merge.each(function (d, i) {
             let g = d3.select(this)
-            g.attr('transform', 'translate(' + (labels[1].x) + ',' + (offset + (line + marg) * propIndex) + ')')
+            g.attr('transform', 'translate(' + (labels[1].x) + ',' + (offset + (line + marg) * prop_index) + ')')
             if (d.type === 'time') drawDiffTime(g, d)
             else if (d.type === 'state') drawDiffState(g, d)
             else if (d.type === 'telescope') drawDiffTels(g, d)
-            // propIndex += 1
+            // prop_index += 1
           })
           current
             .exit()
-            .transition('inOut')
+            .transition('in_out')
             .duration(times.anim_arc)
             .style('opacity', 0)
             .remove()
@@ -7082,7 +7082,7 @@ let main_sched_blocksInspector = function (opt_in) {
         schedCore(shared.data.copy.modifications, innerg, marg)
 
         // reserved.overview.modifications.scrollBox.moveVerticalScrollerTo(0.5)
-        reserved.overview.modifications.scrollBox.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (line + marg) * (schedIndex + 0)})
+        reserved.overview.modifications.scrollBox.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (line + marg) * (sched_index + 0)})
         let scrollProp = reserved.overview.modifications.scrollBox.getScrollProp('vertical')
         popupOffset = scrollProp.now
       }
@@ -7120,10 +7120,10 @@ let main_sched_blocksInspector = function (opt_in) {
           g.append('text')
             .text(d.blocks.length + ' obs')
             .attr('x', line * 0.5)
-            .attr('y', line * 0.2 + titleSize * 0.33)
+            .attr('y', line * 0.2 + title_size * 0.33)
             .style('font-weight', '')
             .attr('text-anchor', 'middle')
-            .style('font-size', titleSize + 'px')
+            .style('font-size', title_size + 'px')
             .style('pointer-events', 'none')
             .attr('fill', colorPalette.dark.text)
             .attr('stroke', 'none')
@@ -7140,7 +7140,7 @@ let main_sched_blocksInspector = function (opt_in) {
           g.append('text')
             .text('L - M - S')
             .attr('x', line * 0.5)
-            .attr('y', line * 0.8 + titleSize * 0.33)
+            .attr('y', line * 0.8 + title_size * 0.33)
             .style('font-weight', '')
             .attr('text-anchor', 'middle')
             .style('font-size', txt_size + 'px')
@@ -7164,7 +7164,7 @@ let main_sched_blocksInspector = function (opt_in) {
         // current
         //   .exit()
         //   .each(d => console.log(d.id))
-        //   .transition('inOut')
+        //   .transition('in_out')
         //   .duration(times.anim_arc)
         //   .style('opacity', 0)
         //   .remove()
@@ -7673,7 +7673,7 @@ let main_sched_blocksInspector = function (opt_in) {
         y: box.summaryMetrics.h * 0.02,
         w: box.summaryMetrics.w * 0.52,
         h: box.summaryMetrics.h * 0.9,
-        marg: lenD.w[0] * 0.01
+        marg: svg_dims.w[0] * 0.01
       }
 
       blockQueue = new BlockDisplayer({

@@ -131,7 +131,7 @@ window.PlotBrushZoom = function (opt_in) {
     initFocus()
     initContent()
     // initBrush()
-    initZoom()
+    init_zoom()
     initAxis()
     // setupZoomBrush()
   }
@@ -359,7 +359,7 @@ window.PlotBrushZoom = function (opt_in) {
   //
   //     updateFocus()
   //     updateAxes()
-  //     // if (locker.are_free(lockerV.zoomDuring)) {
+  //     // if (locker.are_free(lockerV.zoomsuring)) {
   //     //   locker.add({ id: lockerZoom.all, override: true })
   //     //   locker.add({ id: lockerZoom.during, override: true })
   //     //
@@ -491,7 +491,7 @@ window.PlotBrushZoom = function (opt_in) {
     })
   }
 
-  function initZoom () {
+  function init_zoom () {
     let zoom = {
       kx: {
         min: 1,
@@ -567,10 +567,10 @@ window.PlotBrushZoom = function (opt_in) {
       let bottom = reserved.zoom.coef.y + zoom.y.max * (1 / zoom.ky.now)
       if (bottom > zoom.y.max) { reserved.zoom.coef.y = reserved.zoom.coef.y - (bottom - zoom.y.max) }
     }
-    // let zoomStart = function (ele) {
+    // let zoom_start = function (ele) {
     //   reserved.zoom.isInZoom = true
     // }
-    // let zoomDuring = function (ele) {
+    // let zoomsuring = function (ele) {
     //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return // ignore zoom-by-brush
     //   // if (reserved.zoom.coef.k - d3.event.transform.k !== 0) {
     //   //   reserved.zoom.coef.k = d3.event.transform.k
@@ -614,7 +614,7 @@ window.PlotBrushZoom = function (opt_in) {
     //
     //   // reserved.brush.inUserZoom = is_def(d3.event.sourceEvent)
     //
-    //   // if (locker.are_free(lockerV.zoomDuring)) {
+    //   // if (locker.are_free(lockerV.zoomsuring)) {
     //   //   locker.add({ id: lockerZoom.all, override: true })
     //   //   locker.add({ id: lockerZoom.during, override: true })
     //   //
@@ -669,10 +669,10 @@ window.PlotBrushZoom = function (opt_in) {
     //   .extent([[0, 0], [reserved.focus.main.box.w, reserved.focus.main.box.h]])
     // reserved.zoom.fun
     //   .on('start', function (d) {
-    //     zoomStart(this)
+    //     zoom_start(this)
     //   })
     //   .on('zoom', function (d) {
-    //     zoomDuring(this)
+    //     zoomsuring(this)
     //   })
     //   .on('end', function (d) {
     //     zoomEnd(this)

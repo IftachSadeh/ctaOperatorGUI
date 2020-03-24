@@ -134,16 +134,16 @@ class ArrZoomer():
                     self.SockManager.user_group_id, "arr_zoomer_update_data", True)
                 _ = gevent.spawn(self.arr_zoomer_update_data, thread_id)
 
-            if self.SockManager.get_thread_id(self.SockManager.user_group_id, "arr_zoomer_update_subArr") == -1:
+            if self.SockManager.get_thread_id(self.SockManager.user_group_id, "arr_zoomer_update_sub_arr") == -1:
                 if self.log_send_packet:
                     self.log.info([
-                      ['y', " - starting arr_zoomer_update_subArr("],
+                      ['y', " - starting arr_zoomer_update_sub_arr("],
                       ['g', self.SockManager.user_group_id], ['y', ")"]
                     ])
 
                 thread_id = self.SockManager.set_thread_state(
-                    self.SockManager.user_group_id, "arr_zoomer_update_subArr", True)
-                _ = gevent.spawn(self.arr_zoomer_update_subArr, thread_id)
+                    self.SockManager.user_group_id, "arr_zoomer_update_sub_arr", True)
+                _ = gevent.spawn(self.arr_zoomer_update_sub_arr, thread_id)
 
         return
 
@@ -172,7 +172,7 @@ class ArrZoomer():
 
         data = {
             'arr_zoomer': {
-                "subArr": self.sub_arr_grp,
+                "sub_arr": self.sub_arr_grp,
                 "arr_init": inst_info,
                 "arrProp": self.get_tel_health_s0(),
                 'tel_prop_types': inst_prop_types,
@@ -190,7 +190,7 @@ class ArrZoomer():
 
         self.widget_state["zoom_state"] = data["zoom_state"]
         self.widget_state["zoom_target"] = data["zoom_target"]
-        self.widget_state["zoom_targetProp"] = data["zoom_targetProp"]
+        self.widget_state["zoom_target_prop"] = data["zoom_target_prop"]
 
         return
 
@@ -223,7 +223,7 @@ class ArrZoomer():
                 if 'val' in val['data']:
                     self.tel_sub_health_fields[id_now] += [key]
 
-        self.get_subArr_grp()
+        self.get_sub_arr_grp()
 
         return
 
@@ -425,36 +425,36 @@ class ArrZoomer():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def get_subArr_grp(self):
-        #print 'get_subArr_grp'
+    def get_sub_arr_grp(self):
+        #print 'get_sub_arr_grp'
         with ArrZoomer.lock:
-            subArrs = self.redis.get(name="subArrs", packed=True, default_val=[])
-            self.sub_arr_grp = {"id": "subArr", "children": subArrs}
+            sub_arrs = self.redis.get(name="sub_arrs", packed=True, default_val=[])
+            self.sub_arr_grp = {"id": "sub_arr", "children": sub_arrs}
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def arr_zoomer_update_subArr(self, thread_id):
-        #print 'arr_zoomer_update_subArr'
+    def arr_zoomer_update_sub_arr(self, thread_id):
+        #print 'arr_zoomer_update_sub_arr'
         sleep(1)
 
         redis_pubsub = None
         while (
-          thread_id == self.SockManager.get_thread_id(self.SockManager.user_group_id, "arr_zoomer_update_subArr")
+          thread_id == self.SockManager.get_thread_id(self.SockManager.user_group_id, "arr_zoomer_update_sub_arr")
         ):
             while redis_pubsub is None:
-                redis_pubsub = self.redis.set_pubsub("subArrs")
+                redis_pubsub = self.redis.set_pubsub("sub_arrs")
                 sleep(0.5)
 
-            msg = self.redis.get_pubsub("subArrs")
+            msg = self.redis.get_pubsub("sub_arrs")
             if msg is not None:
-                self.get_subArr_grp()
+                self.get_sub_arr_grp()
 
                 data = {
                     "widget_id": "",
-                    "type": "subArr",
+                    "type": "sub_arr",
                     "data": self.sub_arr_grp
                 }
 

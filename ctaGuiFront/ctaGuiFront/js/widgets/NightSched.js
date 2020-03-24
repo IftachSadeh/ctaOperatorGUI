@@ -38,20 +38,20 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 8
   let w0 = 12
-  let divKey = 'main'
+  let div_key = 'main'
 
   opt_in.widget_func = { sock_func: sock_night_sched, main_func: main_night_sched }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: true,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
     h: h0,
-    content: "<div id='" + opt_in.base_name + divKey + "'></div>"
+    content: "<div id='" + opt_in.base_name + div_key + "'></div>"
   }
 
   sock.add_to_table(opt_in)
@@ -108,7 +108,7 @@ let main_night_sched = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  locker.add('inInit')
+  locker.add('in_init')
 
   // function loop
   let run_loop = new RunLoop({ tag: widget_id })
@@ -121,7 +121,7 @@ let main_night_sched = function (opt_in) {
 
     sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
 
-    svgMain.init_data(data_in.data)
+    svg_main.init_data(data_in.data)
   }
   this.init_data = init_data
 
@@ -129,7 +129,7 @@ let main_night_sched = function (opt_in) {
   //
   // -------------------------------------------------------------------
   function update_data (data_in) {
-    svgMain.update_data(data_in.data)
+    svg_main.update_data(data_in.data)
   }
   this.update_data = update_data
 
@@ -154,11 +154,11 @@ let main_night_sched = function (opt_in) {
     let svg = {}
     // let thisMain = this
 
-    let lenD = {}
-    lenD.w = {}
-    lenD.h = {}
-    lenD.w[0] = 1000
-    lenD.h[0] = lenD.w[0] / sgv_tag.main.whRatio
+    let svg_dims = {}
+    svg_dims.w = {}
+    svg_dims.h = {}
+    svg_dims.w[0] = 1000
+    svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
     let tag_night_sched = widget_type
     let tagBlockQueue = 'blockQueue'
@@ -202,16 +202,16 @@ let main_night_sched = function (opt_in) {
         .style('background', '#383B42')
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
         .style('top', '0px')
         .style('left', '0px')
-        // .attr("viewBox", "0 0 "+lenD.w[0]+" "+lenD.h[0] * whRatio)
+        // .attr("viewBox", "0 0 "+svg_dims.w[0]+" "+svg_dims.h[0] * whRatio)
         // .classed("svgInGridStack_inner", true)
         .style('background', '#383B42') // .style("background", "red")// .style("border","1px solid red")
-        // .call(com.svgZoom)
+        // .call(com.svg_zoom)
         .on('dblclick.zoom', null)
 
       if (disable_scroll_svg) {
@@ -234,8 +234,8 @@ let main_night_sched = function (opt_in) {
         .append('rect')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', lenD.w[0])
-        .attr('height', lenD.h[0])
+        .attr('width', svg_dims.w[0])
+        .attr('height', svg_dims.h[0])
         .attr('fill', '#F2F2F2')
 
       // the background grid
@@ -243,7 +243,7 @@ let main_night_sched = function (opt_in) {
         com: com,
         g_now: svg.g,
         g_tag: 'hex',
-        len_wh: [lenD.w[0], lenD.h[0]],
+        len_wh: [svg_dims.w[0], svg_dims.h[0]],
         opac: 0.1,
         hex_r: 15
       })
@@ -254,9 +254,9 @@ let main_night_sched = function (opt_in) {
       let x0, y0, w0, h0, marg
       let gBlockBox = svg.g.append('g')
 
-      w0 = lenD.w[0] * 0.95
-      h0 = lenD.h[0] * 0.3 // h0 *= 2.5;
-      x0 = (lenD.w[0] - w0) / 2
+      w0 = svg_dims.w[0] * 0.95
+      h0 = svg_dims.h[0] * 0.3 // h0 *= 2.5;
+      x0 = (svg_dims.w[0] - w0) / 2
       y0 = x0
       marg = w0 * 0.01
 
@@ -270,17 +270,17 @@ let main_night_sched = function (opt_in) {
 
       blockQueue.init({
         tag: tagBlockQueue,
-        gBox: gBlockBox,
+        g_box: gBlockBox,
         doPhase: true,
         click: function (d) {
-          blockFocus({ id: d.id })
+          block_focus({ id: d.id })
         },
         boxData: blockBoxData,
         locker: locker,
         lockerV: [tag_night_sched + 'update_data'],
         lockerZoom: {
           all: tagBlockQueue + 'zoom',
-          during: tagBlockQueue + 'zoomDuring',
+          during: tagBlockQueue + 'zoomsuring',
           end: tagBlockQueue + 'zoomEnd'
         },
         run_loop: run_loop
@@ -294,7 +294,7 @@ let main_night_sched = function (opt_in) {
       w0 = blockBoxData.w
       x0 = blockBoxData.x
       y0 = blockBoxData.y + blockBoxData.h + blockBoxData.x
-      h0 = lenD.h[0] - y0 - blockBoxData.x
+      h0 = svg_dims.h[0] - y0 - blockBoxData.x
       marg = blockBoxData.marg * 2
 
       let telBoxData = {
@@ -310,17 +310,17 @@ let main_night_sched = function (opt_in) {
         click: function (opt_in) {
           // console.log('click',opt_in);
           if (opt_in.nTel === -1) {
-            blockFocus({ id: opt_in.id })
+            block_focus({ id: opt_in.id })
           } else {
             sync_state_send({
-              type: 'syncTelFocus',
-              syncTime: Date.now(),
+              type: 'sync_tel_focus',
+              sync_time: Date.now(),
               zoom_state: 1,
               target: opt_in.id
             })
           }
         },
-        gBox: gTelBox,
+        g_box: gTelBox,
         boxData: telBoxData
       })
 
@@ -344,7 +344,7 @@ let main_night_sched = function (opt_in) {
           return locker.is_free(tag_night_sched + 'update_data')
         },
         execute: function () {
-          locker.remove('inInit')
+          locker.remove('in_init')
         }
       })
     }
@@ -356,7 +356,7 @@ let main_night_sched = function (opt_in) {
     run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
 
     function update_data (data_in) {
-      if (!locker.is_free('inInit')) {
+      if (!locker.is_free('in_init')) {
         setTimeout(function () {
           update_data(data_in)
         }, 10)
@@ -403,8 +403,8 @@ let main_night_sched = function (opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function blockFocus (opt_in) {
-      let data = { type: 'syncObFocus', syncTime: Date.now(), obs_block_id: opt_in.id }
+    function block_focus (opt_in) {
+      let data = { type: 'syncObFocus', sync_time: Date.now(), obs_block_id: opt_in.id }
       sock.sock_sync_state_send({
         widget_id: widget_id,
         type: data.type,
@@ -420,7 +420,7 @@ let main_night_sched = function (opt_in) {
   // function get_sync_state(data_in) {
 
   //   let type = data_in.type;
-  //   if(type == "sync_arr_zoomerProp") {
+  //   if(type == "sync_arr_zoomer_prop") {
   //     // console.log(' - main_night_sched - get_sync_state ',data_in.data);
   //     // locker.add("get_sync_state");
 
@@ -435,7 +435,7 @@ let main_night_sched = function (opt_in) {
   // }
   // this.get_sync_state = get_sync_state;
 
-  let svgMain = new SvgMain()
+  let svg_main = new SvgMain()
 }
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -474,7 +474,7 @@ let TelTreeMap = function () {
     // box definition
     // -------------------------------------------------------------------
     let boxData = opt_in.boxData
-    let gBox = opt_in.gBox
+    let g_box = opt_in.g_box
 
     com.box = {
       x: boxData.x + boxData.marg,
@@ -483,12 +483,12 @@ let TelTreeMap = function () {
       h: boxData.h - 2 * boxData.marg,
       marg: boxData.marg,
       margFrac: 0.6,
-      g: gBox,
+      g: g_box,
       outerBox: boxData
     }
     box = com.box
 
-    gBox
+    g_box
       .selectAll('rect.' + mainTag + 'telBoxBack')
       .data([boxData], function (d) {
         return d.id
@@ -517,7 +517,7 @@ let TelTreeMap = function () {
 
     bck_pattern({
       com: com,
-      g_now: gBox,
+      g_now: g_box,
       g_tag: mainTag + 'telBoxBack',
       len_wh: [boxData.w, boxData.h],
       trans: [boxData.x, boxData.y],
@@ -569,30 +569,30 @@ let TelTreeMap = function () {
     })
     if (telV.length > 0) {
       hirchData.children.push({
-        id: tel_info.no_subArr_name(),
+        id: tel_info.no_sub_arr_name(),
         nTel: blocks.length,
         children: telV.map(function (d) {
           return { id: d, nTel: com.tel_ids.indexOf(d) }
         })
       })
       $.each(telV, function (i, d) {
-        obTelIdV[d] = tel_info.no_subArr_name()
+        obTelIdV[d] = tel_info.no_sub_arr_name()
       })
     }
 
     // -------------------------------------------------------------------
     // check if the hirch needs to be recalculated
     // -------------------------------------------------------------------
-    let isNewHirch = true
+    let is_new_hierarchy = true
     if (is_def(com.tel_idsObTelIdV)) {
-      isNewHirch = false
+      is_new_hierarchy = false
       $.each(com.tel_idsObTelIdV, function (tel_IdNow, obs_block_id_now) {
-        if (obTelIdV[tel_IdNow] !== obs_block_id_now) isNewHirch = true
+        if (obTelIdV[tel_IdNow] !== obs_block_id_now) is_new_hierarchy = true
       })
     }
     com.tel_idsObTelIdV = obTelIdV
 
-    if (isNewHirch) {
+    if (is_new_hierarchy) {
       // -------------------------------------------------------------------
       // see: https://github.com/d3/d3-hierarchy/blob/master/README.md#resquarify_ratio
       // see: https://bl.ocks.org/d3indepth/fa5e9d42d8e260f3f76a98be648c9edd
@@ -619,8 +619,8 @@ let TelTreeMap = function () {
           if (a.height === 1 && b.height === 1) {
             // make sure the empty sub-array is always last
             if (
-              a.data.id === tel_info.no_subArr_name() ||
-              b.data.id === tel_info.no_subArr_name()
+              a.data.id === tel_info.no_sub_arr_name() ||
+              b.data.id === tel_info.no_sub_arr_name()
             ) {
               return -2 * com.tel_ids.length
             }
@@ -641,7 +641,7 @@ let TelTreeMap = function () {
       })
       let rectData = desc.filter(function (d) {
         return (
-          (d.height === 1 && d.data.id !== tel_info.no_subArr_name()) ||
+          (d.height === 1 && d.data.id !== tel_info.no_sub_arr_name()) ||
           d.data.nTel === -1
         )
       })
@@ -675,20 +675,20 @@ let TelTreeMap = function () {
         com.telR[id] =
           0.5 *
           min_max_obj({
-            minMax: 'min',
+            min_max: 'min',
             data: data_now.children,
             func: function (d, i) {
               return Math.min(d.x1 - d.x0, d.y1 - d.y0)
             }
           })
 
-        if (id !== tel_info.no_subArr_name()) telR.push(com.telR[id])
+        if (id !== tel_info.no_sub_arr_name()) telR.push(com.telR[id])
       })
 
       // choose the minimal value from all blocks
       let minTelR = Math.min(...Object.values(telR))
       $.each(com.telR, function (key, val) {
-        if (key !== tel_info.no_subArr_name()) com.telR[key] = minTelR
+        if (key !== tel_info.no_sub_arr_name()) com.telR[key] = minTelR
         else com.telR[key] = Math.min(com.telR[key], minTelR)
       })
 
@@ -723,7 +723,7 @@ let TelTreeMap = function () {
         .attr('pointer-events', com.style.pointerEvents)
         .on('click', com.style.click)
         .merge(circ)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .attr('cx', com.style.cx)
         .attr('cy', com.style.cy)
@@ -768,7 +768,7 @@ let TelTreeMap = function () {
         .attr('fill', function (d, i) {
           return com.style.fill(d, d.data.n_block)
         })
-        .attr('fill-opacity', com.style.fillOpacity)
+        .attr('fill-opacity', com.style.fill_opacity)
         .attr('stroke', function (d, i) {
           return com.style.stroke(d, d.data.n_block)
         })
@@ -777,7 +777,7 @@ let TelTreeMap = function () {
         .attr('pointer-events', com.style.pointerEvents)
         .on('click', com.style.click)
         .merge(rect)
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         // .attr("x", com.style.x)
         // .attr("y", com.style.y)
@@ -801,7 +801,7 @@ let TelTreeMap = function () {
         .attr('fill', function (d, i) {
           return com.style.fill(d, d.data.n_block)
         })
-        .attr('fill-opacity', com.style.fillOpacity)
+        .attr('fill-opacity', com.style.fill_opacity)
         .attr('stroke', function (d) {
           return com.style.stroke(d, d.data.n_block)
         })
@@ -809,7 +809,7 @@ let TelTreeMap = function () {
 
       rect
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc / 2)
         .style('opacity', 0)
         .remove()
@@ -850,8 +850,8 @@ let TelTreeMap = function () {
         .attr('text-anchor', 'middle')
         .style('font-weight', 'bold')
         .merge(text)
-        .style('font-size', com.style.fontSize)
-        .transition('inOut')
+        .style('font-size', com.style.font_size)
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', com.style.opacity)
         .attr('x', com.style.textX)
@@ -862,7 +862,7 @@ let TelTreeMap = function () {
 
       text
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -942,7 +942,7 @@ let TelTreeMap = function () {
         return 'transparent'
       }
     }
-    com.style.fillOpacity = function (d) {
+    com.style.fill_opacity = function (d) {
       if (d.data.nTel === -1) return com.recFillOpac('run')
       else return 0.7
     }
@@ -976,10 +976,10 @@ let TelTreeMap = function () {
     com.style.opacity = function (d) {
       if (d.height === 2) return 0
       else if (d.height === 1) {
-        if (d.data.id === tel_info.no_subArr_name()) return 0
+        if (d.data.id === tel_info.no_sub_arr_name()) return 0
         else return 0.5
       } else {
-        if (d.parent.data.id === tel_info.no_subArr_name()) return 0.4
+        if (d.parent.data.id === tel_info.no_sub_arr_name()) return 0.4
         else return 1
       }
     }
@@ -1000,7 +1000,7 @@ let TelTreeMap = function () {
     com.style.textY = function (d) {
       return com.style.y(d) + com.style.height(d) / 2
     }
-    com.style.fontSize = function (d) {
+    com.style.font_size = function (d) {
       if (d.data.nTel >= 0) {
         d.size = com.style.r(d) * 2
       } else {

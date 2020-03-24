@@ -10,7 +10,7 @@ from datetime import timedelta
 from datetime import datetime
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_subArr_name, has_acs
+from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_sub_arr_name, has_acs
 from ctaGuiUtils.py.RedisManager import RedisManager
 from MockSched import MockSched
 
@@ -103,8 +103,8 @@ class ObsBlocks():
 
         for sched_blk_id, schBlock in schBlocks['blocks'].iteritems():
 
-            subArrayTels = schBlock['sched_block'].config.instrument.sub_array.telescopes
-            tel_ids = [x.id for x in subArrayTels]
+            sub_arrayTels = schBlock['sched_block'].config.instrument.sub_array.telescopes
+            tel_ids = [x.id for x in sub_arrayTels]
 
             obs_blocks = schBlock['sched_block'].observation_blocks
 
@@ -229,14 +229,14 @@ class ObsBlocks():
 
         self.redis.pipe.execute()
 
-        self.update_subArrs(blocks=blocks_run)
+        self.update_sub_arrs(blocks=blocks_run)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def update_subArrs(self, blocks=None):
+    def update_sub_arrs(self, blocks=None):
         # inst_pos = self.redis.hGetAll(name="inst_pos")
 
         if blocks is None:
@@ -252,7 +252,7 @@ class ObsBlocks():
             b['timestamp']) - int(a['timestamp']))
         # print [a['timestamp'] for a in blocks]
 
-        subArrs = []
+        sub_arrs = []
         all_tel_ids_in = []
         for n_block in range(len(blocks)):
             block_tel_ids = blocks[n_block]["tel_ids"]
@@ -267,7 +267,7 @@ class ObsBlocks():
                     telV.append({"id": id_now})
 
             # add the telescope list for this block
-            subArrs.append({
+            sub_arrs.append({
                 "id": pntId, "N": pointing_name, "children": telV
             })
 
@@ -279,16 +279,16 @@ class ObsBlocks():
         for id_now in all_tel_ids:
             telV.append({"id": id_now})
 
-        subArrs.append({
-            "id": no_subArr_name, "children": telV
+        sub_arrs.append({
+            "id": no_sub_arr_name, "children": telV
         })
 
         # ------------------------------------------------------------------
         # for now - a simple/stupid solution, where we write the sub-arrays and publish each
         # time, even if the content is actually the same ...
         # ------------------------------------------------------------------
-        self.redis.set(name='subArrs', data=subArrs, packed=True)
-        self.redis.publish(channel="subArrs")
+        self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
+        self.redis.publish(channel="sub_arrs")
 
         return
 
@@ -306,7 +306,7 @@ class ObsBlocks():
 
         self.redis.pipe.execute()
 
-        self.update_subArrs(blocks=[])
+        self.update_sub_arrs(blocks=[])
 
         while True:
             self.reset_blocks()
@@ -828,22 +828,22 @@ class ObsBlocksNoACS():
                 if phaseNow in block['run_phase']:
 
                     if phaseNow in self.phases_exe['start']:
-                        isDone = (self.rnd_gen.random() <
+                        is_done = (self.rnd_gen.random() <
                                   self.phase_rnd_frac['start'])
-                        # if isDone:
+                        # if is_done:
                         #   block["endTime"] = block["startTime"] + block["duration"]
 
                     elif phaseNow in self.phases_exe["during"]:
-                        isDone = (
+                        is_done = (
                             time_now >= (block["time"]["end"] -
                                         block["time"]["duration"] * self.phase_rnd_frac['finish']))# (datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") - timedelta(seconds = int(block["duration"]) * self.phase_rnd_frac['finish'])))
 
                     else:
-                        isDone = (time_now >= block["time"]["end"]) # isDone = (time_now >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"))
+                        is_done = (time_now >= block["time"]["end"]) # is_done = (time_now >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"))
 
-                    if isDone:
+                    if is_done:
                         block['run_phase'].remove(phaseNow)
-                    # print isDone,block['run_phase']
+                    # print is_done,block['run_phase']
 
             if len(block['run_phase']) == 0:
                 nextPhase = ""
@@ -943,14 +943,14 @@ class ObsBlocksNoACS():
 
         self.redis.pipe.execute()
 
-        self.update_subArrs(blocks_run)
+        self.update_sub_arrs(blocks_run)
 
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def update_subArrs(self, blocks=None):
+    def update_sub_arrs(self, blocks=None):
         # inst_pos = self.redis.hGetAll(name="inst_pos")
 
         if blocks is None:
@@ -962,7 +962,7 @@ class ObsBlocksNoACS():
             blocks = self.redis.pipe.execute(packed=True)
 
         #
-        subArrs = []
+        sub_arrs = []
         all_tel_ids = copy.deepcopy(self.tel_ids)
 
         for n_block in range(len(blocks)):
@@ -979,7 +979,7 @@ class ObsBlocksNoACS():
                     all_tel_ids.remove(id_now)
 
             # add the telescope list for this block
-            subArrs.append({
+            sub_arrs.append({
                 "id": pntId, "N": pointing_name, "children": telV
             })
 
@@ -990,16 +990,16 @@ class ObsBlocksNoACS():
         for id_now in all_tel_ids:
             telV.append({"id": id_now})
 
-        subArrs.append({
-            "id": no_subArr_name, "children": telV
+        sub_arrs.append({
+            "id": no_sub_arr_name, "children": telV
         })
 
         # ------------------------------------------------------------------
         # for now - a simple/stupid solution, where we write the sub-arrays and publish each
         # time, even if the content is actually the same ...
         # ------------------------------------------------------------------
-        self.redis.set(name='subArrs', data=subArrs, packed=True)
-        self.redis.publish(channel="subArrs")
+        self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
+        self.redis.publish(channel="sub_arrs")
 
         return
 

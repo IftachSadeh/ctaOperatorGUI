@@ -40,8 +40,8 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   let y0 = 0
   let h0 = 12
   let w0 = 12
-  let divKey = 'main'
-  let content = "<div id='" + opt_in.base_name + divKey + "'>" +
+  let div_key = 'main'
+  let content = "<div id='" + opt_in.base_name + div_key + "'>" +
   // '<iframe width="600" height="500" id="gmap_canvas" src="https://maps.google.com/maps?q=la%20palma&t=&z=13&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>' +
   // '<iframe width="650" height="650" src="https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" frameborder="0"></iframe>' +
   '</div>'
@@ -52,10 +52,10 @@ sock.widget_table[main_script_tag] = function (opt_in) {
   }
   opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
   opt_in.ele_props = {}
-  opt_in.ele_props[divKey] = {
-    autoPos: true,
+  opt_in.ele_props[div_key] = {
+    auto_pos: true,
     is_dark_ele: false,
-    gsId: opt_in.widget_div_id + divKey,
+    gs_id: opt_in.widget_div_id + div_key,
     x: x0,
     y: y0,
     w: w0,
@@ -98,7 +98,7 @@ let main_weather_monitoring = function (opt_in) {
   }
   let svg = {}
   let box = {}
-  let lenD = {}
+  let svg_dims = {}
 
   // let this_sched_block_inspector = this
   // let is_south = window.__site_type__ === 'S'
@@ -114,15 +114,15 @@ let main_weather_monitoring = function (opt_in) {
 
   // delay counters
   let locker = new Locker()
-  // locker.add('inInit')
+  // locker.add('in_init')
   let run_loop = new RunLoop({ tag: widget_id })
 
   function init_data (data_in) {
     function initSvg () {
-      lenD.w = {}
-      lenD.h = {}
-      lenD.w[0] = 1000
-      lenD.h[0] = lenD.w[0] * 1.33 // / sgv_tag.main.whRatio
+      svg_dims.w = {}
+      svg_dims.h = {}
+      svg_dims.w[0] = 1000
+      svg_dims.h[0] = svg_dims.w[0] * 1.33 // / sgv_tag.main.whRatio
 
       d3.select(svg_div)
         .style('width', 'calc(100% - 200px)')
@@ -135,7 +135,7 @@ let main_weather_monitoring = function (opt_in) {
         .select(svg_div)
         .append('svg')
         // .attr('preserveAspectRatio', 'xMidYMid meet')
-        .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('position', 'relative')
         .style('width', '100%')
         .style('height', '100%')
@@ -156,7 +156,7 @@ let main_weather_monitoring = function (opt_in) {
         .select(svg_divFM)
         .append('svg')
         // .attr('preserveAspectRatio', 'xMidYMid meet')
-        // .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        // .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('width', '100%')
         .style('height', '100%')
         .style('top', '0%')
@@ -183,7 +183,7 @@ let main_weather_monitoring = function (opt_in) {
         .select(svg_divPL)
         .append('svg')
         // .attr('preserveAspectRatio', 'xMidYMid meet')
-        // .attr('viewBox', '0 0 ' + lenD.w[0] + ' ' + lenD.h[0])
+        // .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
         .style('width', '100%')
         .style('height', '100%')
         .style('top', '0%')
@@ -215,7 +215,7 @@ let main_weather_monitoring = function (opt_in) {
         })
 
       svg.floatingMenuRoot = svg.floatingMenu.append('g')
-      // .attr('transform', 'translate(' + -lenD.w[0] * 0.12 + ',' + 0 + ')')
+      // .attr('transform', 'translate(' + -svg_dims.w[0] * 0.12 + ',' + 0 + ')')
 
       if (disable_scroll_svg) {
         svg.svg.on('wheel', function () {
@@ -270,16 +270,16 @@ let main_weather_monitoring = function (opt_in) {
         .attr('stroke-opacity', 6)
 
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.0)
-        .attr('y', lenD.h[0] * 0.0)
-        .attr('width', lenD.w[0] * 0.26)
+        .attr('x', svg_dims.w[0] * 0.0)
+        .attr('y', svg_dims.h[0] * 0.0)
+        .attr('width', svg_dims.w[0] * 0.26)
         .attr('height', 30)
         .attr('fill', colorPalette.darker.background)
       svg.back.append('rect')
-        .attr('x', lenD.w[0] * 0.26 - 30)
-        .attr('y', lenD.h[0] * 0.0)
+        .attr('x', svg_dims.w[0] * 0.26 - 30)
+        .attr('y', svg_dims.h[0] * 0.0)
         .attr('width', 30)
-        .attr('height', lenD.h[0] * 1)
+        .attr('height', svg_dims.h[0] * 1)
         .attr('fill', colorPalette.darker.background)
       svg.back.append('text')
         .text('Data tracking')
@@ -290,10 +290,10 @@ let main_weather_monitoring = function (opt_in) {
         .attr('transform', 'translate(' + (4) + ',' + (20) + ')')
 
       // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.26)
-      //   .attr('y', lenD.h[0] * 0.17)
-      //   .attr('width', lenD.w[0] * 0.48)
-      //   .attr('height', lenD.h[0] * 0.4)
+      //   .attr('x', svg_dims.w[0] * 0.26)
+      //   .attr('y', svg_dims.h[0] * 0.17)
+      //   .attr('width', svg_dims.w[0] * 0.48)
+      //   .attr('height', svg_dims.h[0] * 0.4)
       //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
@@ -303,26 +303,26 @@ let main_weather_monitoring = function (opt_in) {
         .style('font-weight', 'bold')
         .style('font-size', '8px')
         .attr('text-anchor', 'middle')
-        .attr('transform', 'translate(' + (lenD.w[0] * 0.5) + ',' + (lenD.h[0] * 0.25) + ')')
+        .attr('transform', 'translate(' + (svg_dims.w[0] * 0.5) + ',' + (svg_dims.h[0] * 0.25) + ')')
       let fo = svg.back.append('foreignObject')
-        .attr('x', lenD.w[0] * 0.5 + 'px')
-        .attr('y', lenD.h[0] * 0.36 + 'px')
-        .attr('width', lenD.w[0] * 0.48 + 'px')
-        .attr('height', lenD.h[0] * 0.495 + 'px').node()
+        .attr('x', svg_dims.w[0] * 0.5 + 'px')
+        .attr('y', svg_dims.h[0] * 0.36 + 'px')
+        .attr('width', svg_dims.w[0] * 0.48 + 'px')
+        .attr('height', svg_dims.h[0] * 0.495 + 'px').node()
 
       let iframe = document.createElement('iframe')
-      iframe.width = (lenD.w[0] * 0.48) + 'px'
-      iframe.height = (lenD.h[0] * 0.3) + 'px'
+      iframe.width = (svg_dims.w[0] * 0.48) + 'px'
+      iframe.height = (svg_dims.h[0] * 0.3) + 'px'
       iframe.src = "https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"
 
       fo.appendChild(iframe)
       // svg.svg._groups[0][0].appendChild(fo)
 
       // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.78)
-      //   .attr('y', lenD.h[0] * 0.98)
-      //   .attr('width', lenD.w[0] * 0.25)
-      //   .attr('height', lenD.h[0] * 0.02)
+      //   .attr('x', svg_dims.w[0] * 0.78)
+      //   .attr('y', svg_dims.h[0] * 0.98)
+      //   .attr('width', svg_dims.w[0] * 0.25)
+      //   .attr('height', svg_dims.h[0] * 0.02)
       //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
@@ -332,13 +332,13 @@ let main_weather_monitoring = function (opt_in) {
       //   .style('font-weight', 'bold')
       //   .style('font-size', '8px')
       //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + (lenD.w[0] * 0.875) + ',' + (lenD.h[0] * 0.995) + ')')
+      //   .attr('transform', 'translate(' + (svg_dims.w[0] * 0.875) + ',' + (svg_dims.h[0] * 0.995) + ')')
 
       // svg.back.append('rect')
-      //   .attr('x', lenD.w[0] * 0.0)
+      //   .attr('x', svg_dims.w[0] * 0.0)
       //   .attr('y', 0)
-      //   .attr('width', lenD.w[0] * 0.32)
-      //   .attr('height', lenD.h[0] * 0.14)
+      //   .attr('width', svg_dims.w[0] * 0.32)
+      //   .attr('height', svg_dims.h[0] * 0.14)
       //   .attr('fill', colorPalette.darker.stroke) // colorPalette.dark.background)
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
@@ -348,15 +348,15 @@ let main_weather_monitoring = function (opt_in) {
       //   .style('font-weight', 'bold')
       //   .style('font-size', '8px')
       //   .attr('text-anchor', 'middle')
-      //   .attr('transform', 'translate(' + (lenD.w[0] * 0.16) + ',' + (lenD.h[0] * 0.015) + ')')
+      //   .attr('transform', 'translate(' + (svg_dims.w[0] * 0.16) + ',' + (svg_dims.h[0] * 0.015) + ')')
     }
     function initBox () {
       box.block_queue_server = {
-        x: lenD.w[0] * 0.374,
-        y: lenD.h[0] * 0.155,
-        w: lenD.w[0] * 0.59,
-        h: lenD.h[0] * 0.47,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.374,
+        y: svg_dims.h[0] * 0.155,
+        w: svg_dims.w[0] * 0.59,
+        h: svg_dims.h[0] * 0.47,
+        marg: svg_dims.w[0] * 0.01
       }
       box.pl = {
         x: 0,
@@ -508,7 +508,7 @@ let main_weather_monitoring = function (opt_in) {
     let scrollBox = new ScrollBox()
     scrollBox.init({
       tag: tag,
-      gBox: g,
+      g_box: g,
       boxData: {
         x: 0,
         y: 0,
@@ -520,7 +520,7 @@ let main_weather_monitoring = function (opt_in) {
       lockerV: [tag + 'update_data'],
       lockerZoom: {
         all: tag + 'zoom',
-        during: tag + 'zoomDuring',
+        during: tag + 'zoomsuring',
         end: tag + 'zoomEnd'
       },
       run_loop: new RunLoop({tag: tag}),
@@ -913,16 +913,16 @@ let main_weather_monitoring = function (opt_in) {
 
     function init_data () {
       plotbox = {
-        x: lenD.w[0] * 0.5 + 20,
-        y: lenD.h[0] * 0.05 + 20,
-        w: lenD.w[0] * 0.48 - 40,
-        h: lenD.h[0] * 0.27 - 40
+        x: svg_dims.w[0] * 0.5 + 20,
+        y: svg_dims.h[0] * 0.05 + 20,
+        w: svg_dims.w[0] * 0.48 - 40,
+        h: svg_dims.h[0] * 0.27 - 40
       }
       brushbox = {
-        x: lenD.w[0] * 0.5 + 20,
-        y: lenD.h[0] * 0.32 - 26,
-        w: lenD.w[0] * 0.48 - 40,
-        h: lenD.h[0] * 0.05
+        x: svg_dims.w[0] * 0.5 + 20,
+        y: svg_dims.h[0] * 0.32 - 26,
+        w: svg_dims.w[0] * 0.48 - 40,
+        h: svg_dims.h[0] * 0.05
       }
 
       maing = svg.g.append('g')
@@ -1437,18 +1437,18 @@ let main_weather_monitoring = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
     }
     function init_data () {
       box = {
-        x: lenD.w[0] * 0.0,
-        y: lenD.h[0] * 0.7,
-        w: lenD.w[0] * 0.265,
-        h: lenD.h[0] * 0.28,
-        marg: lenD.w[0] * 0.01
+        x: svg_dims.w[0] * 0.0,
+        y: svg_dims.h[0] * 0.7,
+        w: svg_dims.w[0] * 0.265,
+        h: svg_dims.h[0] * 0.28,
+        marg: svg_dims.w[0] * 0.01
       }
 
       let fillfun = function () {
@@ -1959,18 +1959,18 @@ let main_weather_monitoring = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
     }
     function init_data () {
       box = {
-        x: lenD.w[0] * 0.0,
+        x: svg_dims.w[0] * 0.0,
         y: 48,
-        w: lenD.w[0] * 0.26,
-        h: lenD.h[0] * 0.55,
-        marg: lenD.w[0] * 0.01
+        w: svg_dims.w[0] * 0.26,
+        h: svg_dims.h[0] * 0.55,
+        marg: svg_dims.w[0] * 0.01
       }
 
       let main = svg.g.append('g').attr('id', 'measured_data')
@@ -1990,44 +1990,44 @@ let main_weather_monitoring = function (opt_in) {
         .style('user-select', 'none')
         .attr('text-anchor', 'start')
         .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y) + ')')
-      // let startY = lenD.h[0] * 0.4
-      // let endY = lenD.h[0] * 0.6
+      // let startY = svg_dims.h[0] * 0.4
+      // let endY = svg_dims.h[0] * 0.6
       // svg.g.append('rect')
-      //   .attr('x', lenD.w[0] * 0.0)
+      //   .attr('x', svg_dims.w[0] * 0.0)
       //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.015)
+      //   .attr('width', svg_dims.w[0] * 0.015)
       //   .attr('height', endY)
       //   .attr('fill', '#0288D1')
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
       // svg.g.append('rect')
-      //   .attr('x', lenD.w[0] * 0.015)
+      //   .attr('x', svg_dims.w[0] * 0.015)
       //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.015)
+      //   .attr('width', svg_dims.w[0] * 0.015)
       //   .attr('height', endY)
       //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
       // svg.g.append('rect')
-      //   .attr('x', lenD.w[0] * 0.03)
+      //   .attr('x', svg_dims.w[0] * 0.03)
       //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.03)
+      //   .attr('width', svg_dims.w[0] * 0.03)
       //   .attr('height', endY)
       //   .attr('fill', colorPalette.blocks.done.background) // colorPalette.dark.background)
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
       // svg.g.append('rect')
-      //   .attr('x', lenD.w[0] * 0.06)
+      //   .attr('x', svg_dims.w[0] * 0.06)
       //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.015)
+      //   .attr('width', svg_dims.w[0] * 0.015)
       //   .attr('height', endY)
       //   .attr('fill', colorPalette.blocks.warning.background) // colorPalette.dark.background)
       //   .attr('stroke', 'none')
       //   .attr('rx', 0)
       // svg.g.append('rect')
-      //   .attr('x', lenD.w[0] * 0.075)
+      //   .attr('x', svg_dims.w[0] * 0.075)
       //   .attr('y', startY)
-      //   .attr('width', lenD.w[0] * 0.015)
+      //   .attr('width', svg_dims.w[0] * 0.015)
       //   .attr('height', endY)
       //   .attr('fill', '#0288D1')
       //   .attr('stroke', 'none')
@@ -2213,7 +2213,7 @@ let main_weather_monitoring = function (opt_in) {
       })
       current
         .exit()
-        .transition('inOut')
+        .transition('in_out')
         .duration(times.anim_arc)
         .style('opacity', 0)
         .remove()
@@ -2221,10 +2221,10 @@ let main_weather_monitoring = function (opt_in) {
     function init_data () {
       box = {
         x: 8,
-        y: lenD.h[0] * 0.2,
-        w: lenD.w[0] * 0.18,
-        h: lenD.h[0] * 0.4,
-        marg: lenD.w[0] * 0.01
+        y: svg_dims.h[0] * 0.2,
+        w: svg_dims.w[0] * 0.18,
+        h: svg_dims.h[0] * 0.4,
+        marg: svg_dims.w[0] * 0.01
       }
 
       let main = svg.floatingMenuRoot.append('g').attr('id', 'urgentSupervision')
@@ -2305,8 +2305,8 @@ let main_weather_monitoring = function (opt_in) {
       box = {
         x: 8,
         y: 0,
-        w: lenD.w[0] * 0.18,
-        h: lenD.h[0] * 0.065
+        w: svg_dims.w[0] * 0.18,
+        h: svg_dims.h[0] * 0.065
       }
 
       let main = svg.floatingMenuRoot.append('g').attr('id', 'fmdate')
@@ -2516,9 +2516,9 @@ let main_weather_monitoring = function (opt_in) {
     function init_data () {
       box = {
         x: 8,
-        y: lenD.h[0] * 0.07,
-        w: lenD.w[0] * 0.18,
-        h: lenD.h[0] * 0.1
+        y: svg_dims.h[0] * 0.07,
+        w: svg_dims.w[0] * 0.18,
+        h: svg_dims.h[0] * 0.1
       }
 
       let main = svg.floatingMenuRoot.append('g').attr('id', 'fmdate')
@@ -2562,7 +2562,7 @@ let main_weather_monitoring = function (opt_in) {
         .attr('text-anchor', 'start')
         .attr('transform', 'translate(' + (15) + ',' + (box.h * 0.12) + ')')
 
-      let fontSize = 11
+      let font_size = 11
       let time = new Date(1000 * (3600 * (parseInt(2)) + 60 * parseInt(0)))
       let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
       let hbox = {
@@ -2589,7 +2589,7 @@ let main_weather_monitoring = function (opt_in) {
       gDateSelector.append('text')
         .text(':')
         .style('fill', colorPalette.dark.stroke)
-        .style('font-size', fontSize + 'px')
+        .style('font-size', font_size + 'px')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 5) + ',' + (hbox.h * 0.5) + ')')
       stock.minuteOpts = {disabled: false, value: min, min: 0, max: 59, step: 1}
@@ -2768,8 +2768,8 @@ let main_weather_monitoring = function (opt_in) {
       plotbox = {
         x: 0,
         y: 0,
-        w: lenD.w[0] * 0.18,
-        h: lenD.h[0] * 0.16 * 0.58
+        w: svg_dims.w[0] * 0.18,
+        h: svg_dims.h[0] * 0.16 * 0.58
       }
 
       let plotlistg = svg.plotList.append('g').attr('id', 'plotList')
@@ -2838,10 +2838,10 @@ let main_weather_monitoring = function (opt_in) {
 
     function init_data () {
       obsbox = {
-        x: lenD.w[0] * 0.55,
-        y: lenD.h[0] * 0.68,
-        w: lenD.h[0] * 0.32,
-        h: lenD.h[0] * 0.32
+        x: svg_dims.w[0] * 0.55,
+        y: svg_dims.h[0] * 0.68,
+        w: svg_dims.h[0] * 0.32,
+        h: svg_dims.h[0] * 0.32
       }
 
       let maing = svg.g.append('g')
