@@ -15,7 +15,7 @@ class ArrZoomer():
     widget_group_sess = dict()
 
     send_data = {
-        's_0': {'sess_id': [], 'widget_id': []}, 
+        's_0': {'sess_id': [], 'widget_id': []},
         's_1': dict(),
     }
 
@@ -44,7 +44,7 @@ class ArrZoomer():
 
         my_assert(
             log=ArrZoomer.log, state=(self.socket_manager is not None),
-            msg=[' - no socket_manager handed to', self.__class__.__name__], 
+            msg=[' - no socket_manager handed to', self.__class__.__name__],
         )
 
         self.zoom_state = None
@@ -60,36 +60,39 @@ class ArrZoomer():
     # ------------------------------------------------------------------
     def set_parent_widget(self, parent_widget):
         self.parent_widget = parent_widget
-        
+
         check_init_properties = [
             'widget_id', 'socket_manager', 'widget_name',
             'redis', 'do_data_updates', 'log_send_packet', 'n_icon',
         ]
-        
+
         for init_property in check_init_properties:
             if not hasattr(parent_widget, init_property):
                 ArrZoomer.log.error([
-                  ['wr', ' - bad initialisation of ArrZoomer()...',
-                    'Missing: '], ['yr', init_property, '' ],
+                    ['wr', ' - bad initialisation of ArrZoomer()...',
+                     'Missing: '], ['yr', init_property, ''],
                 ])
                 print('FIXME - need proper exception handling ...')
                 raise
-        
+
         return
 
     # ------------------------------------------------------------------
     # add interface functions to the parent related eg to socket events
     # ------------------------------------------------------------------
     def add_parent_interfaces(self):
+        # get_zoomer_state
         def get_zoomer_state():
             return self.zoom_state
         self.parent_widget.get_zoomer_state = get_zoomer_state
 
+        # arr_zoomer_ask_data_s1
         def ask_data_s1(*args):
             self.ask_data_s1(*args)
             return
         self.parent_widget.arr_zoomer_ask_data_s1 = ask_data_s1
 
+        # arr_zoomer_set_widget_state
         def set_widget_state(*args):
             self.set_widget_state(*args)
             return
@@ -120,10 +123,15 @@ class ArrZoomer():
         opt_in = {
             'widget': self,
             'data_func': self.get_init_data,
+            'thread_type': 'init_data'# + 'ArrZoomer',
+            # + self.widget_id,
         }
 
         self.socket_manager.send_init_widget(opt_in=opt_in)
-
+        
+        # ------------------------------------------------------------------
+        # spawn updating threads if needed
+        # ------------------------------------------------------------------
         with self.socket_manager.lock:
             self.start_threads()
 
@@ -143,8 +151,8 @@ class ArrZoomer():
         if thread_id == -1:
             if self.log_send_packet:
                 ArrZoomer.log.info([
-                  ['y', ' - starting arr_zoomer_update_data('],
-                  ['g', self.socket_manager.user_group_id], ['y', ')']
+                    ['y', ' - starting arr_zoomer_update_data('],
+                    ['g', self.socket_manager.user_group_id], ['y', ')']
                 ])
 
             thread_id = self.socket_manager.set_thread_state(
@@ -163,8 +171,8 @@ class ArrZoomer():
         if thread_id == -1:
             if self.log_send_packet:
                 ArrZoomer.log.info([
-                  ['y', ' - starting arr_zoomer_update_sub_arr('],
-                  ['g', self.socket_manager.user_group_id], ['y', ')']
+                    ['y', ' - starting arr_zoomer_update_sub_arr('],
+                    ['g', self.socket_manager.user_group_id], ['y', ')']
                 ])
 
             thread_id = self.socket_manager.set_thread_state(
@@ -194,8 +202,8 @@ class ArrZoomer():
         inst_ids = self.inst_data.get_inst_ids()
         for id_now in inst_ids:
             inst_prop_types[id_now] = [
-                { 'id': v['id'], 'title': v['title'], }
-                for (k,v) in self.tel_sub_health[id_now].items()
+                {'id': v['id'], 'title': v['title'], }
+                for (k, v) in self.tel_sub_health[id_now].items()
             ]
 
         data = {
@@ -243,7 +251,7 @@ class ArrZoomer():
             self.tel_health[id_now] = {
                 'id': id_now, 'health': 0, 'status': '',
                 'data': [
-                    v for (k,v) in self.tel_sub_health[id_now].items()
+                    v for (k, v) in self.tel_sub_health[id_now].items()
                 ],
             }
 
@@ -265,9 +273,9 @@ class ArrZoomer():
         fields = dict()
 
         for id_now in self.inst_ids:
-            fields[id_now] = [ 'health', 'status' ]
+            fields[id_now] = ['health', 'status']
             fields[id_now] += [
-                v['id'] for (k,v)
+                v['id'] for (k, v)
                 in self.tel_sub_health[id_now].items()
             ]
 
@@ -295,7 +303,7 @@ class ArrZoomer():
     # ------------------------------------------------------------------
     def update_tel_health_s1(self, id_in):
         redis_data = self.redis.hMget(
-            name='inst_health;'+str(id_in), 
+            name='inst_health;'+str(id_in),
             key=self.tel_sub_health_fields[id_in],
         )
 
@@ -336,17 +344,17 @@ class ArrZoomer():
         data = args[0]
         if self.socket_manager.log_send_packet:
             ArrZoomer.log.info([
-              ['b', ' - get_data_s1 '],
-              ['b', self.socket_manager.sess_id, ' , '],
-              ['g', data['zoom_state']], ['b', ' , '],
-              ['y', data['zoom_target']],
+                ['b', ' - get_data_s1 '],
+                ['b', self.socket_manager.sess_id, ' , '],
+                ['g', data['zoom_state']], ['b', ' , '],
+                ['y', data['zoom_target']],
             ])
 
         self.zoom_state['zoom_state'] = data['zoom_state']
         self.zoom_state['zoom_target'] = data['zoom_target']
 
         # ------------------------------------------------------------------
-        # to avoid missmatch while waiting for the loop in 
+        # to avoid missmatch while waiting for the loop in
         # update_data, send s0 too...
         # ------------------------------------------------------------------
         with ArrZoomer.lock:
@@ -385,7 +393,7 @@ class ArrZoomer():
         all_widgets = self.redis.hGetAll(
             name='all_widgets', packed=True,
         )
-        
+
         for widget_id, widget_now in all_widgets.iteritems():
             if widget_now['widget_name'] != self.widget_name:
                 continue
@@ -422,7 +430,7 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def update_data_once(self):
         # get the current set of widgest which need an update
@@ -451,7 +459,7 @@ class ArrZoomer():
             'widget_id': '', 'type': 's00',
             'data': self.get_tel_health_s0()
         }
-        
+
         self.socket_manager.socket_event_widgets(
             event_name='arr_zoomer_update_data',
             sess_ids=sess_ids, widget_ids=widget_ids,
@@ -466,7 +474,7 @@ class ArrZoomer():
                 'widget_id': '', 'type': 's11',
                 'data': prop_s1[zoom_target]
             }
-            
+
             self.socket_manager.socket_event_widgets(
                 event_name='arr_zoomer_update_data',
                 sess_ids=sess_ids, widget_ids=widget_ids,
@@ -481,15 +489,15 @@ class ArrZoomer():
     def update_data(self, thread_id):
         if not self.do_data_updates:
             return
-        
+
         n_sec_sleep = 10
         sleep(n_sec_sleep)
 
-        get_thread_id = lambda : self.socket_manager.get_thread_id(
+        def get_thread_id(): return self.socket_manager.get_thread_id(
             self.socket_manager.user_group_id,
             'arr_zoomer_update_data',
         )
-        
+
         while (get_thread_id() == thread_id):
             self.update_data_once()
             sleep(n_sec_sleep)
@@ -517,7 +525,7 @@ class ArrZoomer():
         n_sec_sleep = 10
         sleep(n_sec_sleep)
 
-        get_thread_id = lambda : self.socket_manager.get_thread_id(
+        def get_thread_id(): return self.socket_manager.get_thread_id(
             self.socket_manager.user_group_id,
             'arr_zoomer_update_sub_arr',
         )
@@ -553,8 +561,6 @@ class ArrZoomer():
         return
 
 
-
-
 # # list of initial monitoring points that roughly correspond to the different assemblies
 # if False:
 #   mount:
@@ -586,4 +592,3 @@ class ArrZoomer():
 # position grouping
 # all offline telescops grouping
 # mount == drive-system, structual monitoring, pointing monitoring
-

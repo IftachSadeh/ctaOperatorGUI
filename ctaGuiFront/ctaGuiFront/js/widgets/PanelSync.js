@@ -28,7 +28,10 @@ var main_script_tag = 'PanelSync'
 /* global bck_pattern */
 /* global ScrollGrid */
 
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollGrid.js' })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollGrid.js',
+})
 
 // -------------------------------------------------------------------
 sock.widget_table[main_script_tag] = function(opt_in) {
@@ -38,9 +41,13 @@ sock.widget_table[main_script_tag] = function(opt_in) {
     let w0 = 12
     let div_key = 'main'
 
-    opt_in.widget_func = { sock_func: sock_panel_sync, main_func: main_panel_sync }
+    opt_in.widget_func = {
+        sock_func: sock_panel_sync,
+        main_func: main_panel_sync,
+    }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: true,
@@ -88,7 +95,8 @@ let sock_panel_sync = function(opt_in) {
             return
         }
 
-        let data = {}
+        let data = {
+        }
         data.widget_id = opt_in.widget_id
         data.data = opt_in.data
 
@@ -118,7 +126,8 @@ let main_panel_sync = function(opt_in) {
     // $.each(widget_ele, function(index,ele_now) {
     //   sgv_tag[ele_now.id] = { id:tag_panel_sync_svg+"_"+ele_now.id, whRatio:(ele_now.w/ele_now.h) };
     // })
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_panel_sync_svg + ele_now.id,
@@ -132,7 +141,9 @@ let main_panel_sync = function(opt_in) {
     locker.add('in_init')
 
     // function loop
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     // -------------------------------------------------------------------
     //
@@ -142,11 +153,17 @@ let main_panel_sync = function(opt_in) {
     //
     // -------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: null })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: null,
+        })
     
         svg_main.init_data(data_in.data)
 
@@ -166,14 +183,21 @@ let main_panel_sync = function(opt_in) {
     //
     // -------------------------------------------------------------------
     let SvgMain = function() {
-        let com = {}
-        let recD = {}
-        let svg = {}
-        let grpD = {}
+        let com = {
+        }
+        let recD = {
+        }
+        let svg = {
+        }
+        let grpD = {
+        }
 
-        let scale_r = {}
-        scale_r[0] = {}
-        scale_r[1] = {}
+        let scale_r = {
+        }
+        scale_r[0] = {
+        }
+        scale_r[1] = {
+        }
 
         scale_r[0].health0 = 1.1
         scale_r[0].health1 = 1.2
@@ -197,9 +221,12 @@ let main_panel_sync = function(opt_in) {
 
         let site_scale = is_south ? 4 / 9 : 1
 
-        let svg_dims = {}
-        svg_dims.w = {}
-        svg_dims.h = {}
+        let svg_dims = {
+        }
+        svg_dims.w = {
+        }
+        svg_dims.h = {
+        }
 
         // svg_dims.w[0] = 400;
         // svg_dims.h[0] = svg_dims.w[0];
@@ -207,13 +234,15 @@ let main_panel_sync = function(opt_in) {
         svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
         // is_south ? 900 : 400;
 
-        svg_dims.r = {}
+        svg_dims.r = {
+        }
         svg_dims.r.s00 = [ 12, 13, 14 ]
         if (is_south) {
             svg_dims.r.s00 = [ 12 * site_scale, 13 * site_scale, 14 * site_scale ]
         }
 
-        let zoomLen = {}
+        let zoomLen = {
+        }
         zoomLen['0'] = 1
         zoomLen['1'] = 5
 
@@ -251,7 +280,10 @@ let main_panel_sync = function(opt_in) {
         let n_empty_icon = -1 // n_empty_icon = 81; // set high for debugging...
 
         function groups_to_server() {
-            let data = { id: 'all_groups', children: [] }
+            let data = {
+                id: 'all_groups',
+                children: [],
+            }
 
             updateEmptyGrp()
 
@@ -318,7 +350,12 @@ let main_panel_sync = function(opt_in) {
 
                 return
             }
-            sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+            sock.emit_mouse_move({
+                eleIn: svg_div,
+                data: {
+                    widget_id: widget_id,
+                },
+            })
 
             svg.svg = d3
                 .select(svg_div)
@@ -380,16 +417,20 @@ let main_panel_sync = function(opt_in) {
 
             svg.mainG = svg.g.append('g')
 
-            com.vor = {}
+            com.vor = {
+            }
             com.vor.g = svg.mainG.append('g')
 
-            com.empty = {}
+            com.empty = {
+            }
             com.empty.g = svg.mainG.append('g')
 
-            com.icons = {}
+            com.icons = {
+            }
             com.icons.g = svg.mainG.append('g')
 
-            com.highlight = {}
+            com.highlight = {
+            }
             com.highlight.g = svg.mainG.append('g')
 
             svg.mainG.attr(
@@ -425,7 +466,10 @@ let main_panel_sync = function(opt_in) {
             }
 
             com.drag_main_start = function(dIn, thisIn) {
-                locker.add({ id: tag_main + 'in_drag', override: true })
+                locker.add({
+                    id: tag_main + 'in_drag',
+                    override: true,
+                })
 
                 doDrag_main_start(dIn, thisIn)
             }
@@ -482,7 +526,10 @@ let main_panel_sync = function(opt_in) {
             let icon_side = null
             let icon_side_sel = null
             com.dragSideStart = function(dIn) {
-                locker.add({ id: tag_main + 'in_drag', override: true })
+                locker.add({
+                    id: tag_main + 'in_drag',
+                    override: true,
+                })
 
                 let id_side = sideColClick(dIn)
                 let icons = com.hirchDesc.filter(function(d) {
@@ -573,10 +620,21 @@ let main_panel_sync = function(opt_in) {
                 recW: w0 * 0.5,
                 showCounts: false,
                 isHorz: false,
-                bckRecOpt: { texture_orient: '5/8', frontProp: { strkWOcp: 0.2 } },
+                bckRecOpt: {
+                    texture_orient: '5/8',
+                    frontProp: {
+                        strkWOcp: 0.2,
+                    },
+                },
                 // vorOpt: { mouseover: sideColHov, call: com.dragSide },
-                vorOpt: { mouseover: sideColHov, call: com.dragSide },
-                onZoom: { during: updSideColOnZoom, end: updSideColOnZoom },
+                vorOpt: {
+                    mouseover: sideColHov,
+                    call: com.dragSide,
+                },
+                onZoom: {
+                    during: updSideColOnZoom,
+                    end: updSideColOnZoom,
+                },
                 run_loop: run_loop,
                 locker: locker,
                 lockerV: [ tag_main + 'update_data', tag_main + 'in_drag' ],
@@ -597,7 +655,10 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            run_loop.push({ tag: 'update_data', data: data_in.groups })
+            run_loop.push({
+                tag: 'update_data',
+                data: data_in.groups,
+            })
 
             run_when_ready({
                 pass: function() {
@@ -649,7 +710,9 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function ask_data() {
-            sock.all_widgets[widget_type].sock_func.ask_data({ widget_id: widget_id })
+            sock.all_widgets[widget_type].sock_func.ask_data({
+                widget_id: widget_id,
+            })
         }
         this.ask_data = ask_data
 
@@ -664,7 +727,11 @@ let main_panel_sync = function(opt_in) {
             tagGridRec + 'zoom',
         ]
         // -------------------------------------------------------------------
-        run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
+        run_loop.init({
+            tag: 'update_data',
+            func: update_dataOnce,
+            n_keep: 1,
+        })
 
         function update_data(data_in) {
             if (!locker.is_free('in_init')) {
@@ -674,7 +741,10 @@ let main_panel_sync = function(opt_in) {
                 return
             }
 
-            run_loop.push({ tag: 'update_data', data: data_in }) //, time:data_in.emit_time
+            run_loop.push({
+                tag: 'update_data',
+                data: data_in,
+            }) //, time:data_in.emit_time
         }
         this.update_data = update_data
 
@@ -707,7 +777,8 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             // use the original data for existing elements
             // -------------------------------------------------------------------
-            let origV = {}
+            let origV = {
+            }
             $.each(grpD.data.children, function(nChild0, child_now0) {
                 $.each(child_now0.children, function(nChild1, child_now1) {
                     $.each(child_now1.children, function(nChild2, child_now2) {
@@ -774,9 +845,15 @@ let main_panel_sync = function(opt_in) {
                         id: 'emptyGroup0',
                         title: 'Add/remove',
                         children: [
-                            { id: 'emptyGroup00' },
-                            { id: 'emptyGroup01' },
-                            { id: 'emptyGroup02' },
+                            {
+                                id: 'emptyGroup00',
+                            },
+                            {
+                                id: 'emptyGroup01',
+                            },
+                            {
+                                id: 'emptyGroup02',
+                            },
                         ],
                     },
                 ],
@@ -885,8 +962,14 @@ let main_panel_sync = function(opt_in) {
                         return
                     }
 
-                    locker.add({ id: tag_main + 'click_empty_grp', override: true })
-                    locker.add({ id: tag_main + 'added_empty_grp', override: true })
+                    locker.add({
+                        id: tag_main + 'click_empty_grp',
+                        override: true,
+                    })
+                    locker.add({
+                        id: tag_main + 'added_empty_grp',
+                        override: true,
+                    })
 
                     // if(allowPermEmptyGrp) com.addEmptyGrp = !com.addEmptyGrp;
 
@@ -1035,7 +1118,10 @@ let main_panel_sync = function(opt_in) {
                     let badge = icon_badge.add({
                         parent_svg: d3.select(this),
                         icon_file: icon_svg[0],
-                        text: { pos: 'topRight', txt: icon_svg[1] },
+                        text: {
+                            pos: 'topRight',
+                            txt: icon_svg[1],
+                        },
                         rad: d.r * sclR,
                         delay: 0,
                         pulse_hov_in: true,
@@ -1105,7 +1191,8 @@ let main_panel_sync = function(opt_in) {
                 let n_icon = dIn.data.data.data.n_icon
                 let trgWidgId = dIn.data.data.data.trgWidgId
 
-                let initXYR = {}
+                let initXYR = {
+                }
                 let scale_r = 1.2
                 initXYR.r = dIn.data.w / 2
                 initXYR.x =
@@ -1151,7 +1238,10 @@ let main_panel_sync = function(opt_in) {
                         id: 'grp' + nGrp,
                         title: 'Group ' + nGrp,
                         children: [
-                            { id: 'grp' + nGrp + '_0', children: [ dataAdd ] },
+                            {
+                                id: 'grp' + nGrp + '_0',
+                                children: [ dataAdd ],
+                            },
                             // { id:"grp_"+nGrp+"_0", children: [{id:"icn_"+nGrp+"_0"+id_now, trgWidgId:"", n_icon:n_empty_icon}, dataAdd] },
                             {
                                 id: 'grp' + nGrp + '_1',
@@ -1229,7 +1319,11 @@ let main_panel_sync = function(opt_in) {
                         // console.log(ele0.trgWidgId);
                         icons_new.push({
                             id: id_now,
-                            data: { id: id_now, trgWidgId: trgWidgId, n_icon: ele0.n_icon },
+                            data: {
+                                id: id_now,
+                                trgWidgId: trgWidgId,
+                                n_icon: ele0.n_icon,
+                            },
                         })
 
                         trgWidgIdV.push(trgWidgId)
@@ -1254,7 +1348,9 @@ let main_panel_sync = function(opt_in) {
                 recV = []
             }
 
-            com.scrollGrid.update({ recV: recV })
+            com.scrollGrid.update({
+                recV: recV,
+            })
 
             let needUpdt = false
             let sclR = 1
@@ -1277,7 +1373,10 @@ let main_panel_sync = function(opt_in) {
                     let badge = icon_badge.add({
                         parent_svg: d3.select(this),
                         icon_file: icon_svg[0],
-                        text: { pos: 'topRight', txt: icon_svg[1] },
+                        text: {
+                            pos: 'topRight',
+                            txt: icon_svg[1],
+                        },
                         rad: d.w / 2 * sclR,
                         delay: 300,
                         pulse_hov_in: true,
@@ -1518,7 +1617,11 @@ let main_panel_sync = function(opt_in) {
                     if (is_def(d)) {
                         highlight({
                             id: d.data.data.id,
-                            data: [{ x: d.data.x, y: d.data.y, r: d.data.r }],
+                            data: [{
+                                x: d.data.x,
+                                y: d.data.y,
+                                r: d.data.r,
+                            }],
                             type: {
                                 name: 'pulse',
                                 duration: 1500,
@@ -1579,7 +1682,9 @@ let main_panel_sync = function(opt_in) {
                 }, times.anim_arc / 2)
                 return
             }
-            locker.add({ id: tag_main + 'update_groups' })
+            locker.add({
+                id: tag_main + 'update_groups',
+            })
 
             // -------------------------------------------------------------------
             //
@@ -1720,14 +1825,20 @@ let main_panel_sync = function(opt_in) {
             highlight({
                 id: 'all',
                 data: [],
-                type: { name: 'pulse', duration: 100, col: '#383b42' },
+                type: {
+                    name: 'pulse',
+                    duration: 100,
+                    col: '#383b42',
+                },
             })
 
             set_all()
 
             initSideCol()
 
-            locker.remove({ id: tag_main + 'update_groups' })
+            locker.remove({
+                id: tag_main + 'update_groups',
+            })
         }
 
         // -------------------------------------------------------------------
@@ -1785,7 +1896,8 @@ let main_panel_sync = function(opt_in) {
         function removeDuplicates() {
             let hasRemoved = false
             $.each(grpD.data.children, function(nChild0, child_now0) {
-                let ids = {}
+                let ids = {
+                }
                 let hasDuplicates = false
                 $.each(child_now0.children, function(nChild1, child_now1) {
                     $.each(child_now1.children, function(nChild2, child_now2) {
@@ -1878,14 +1990,19 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function set_all() {
-            locker.add({ id: tag_main + 'set_all' })
+            locker.add({
+                id: tag_main + 'set_all',
+            })
 
             set_hierarchy()
             set_icons()
             setTtl()
             setVor()
 
-            locker.remove({ id: tag_main + 'set_all', delay: times.anim_arc * 2 })
+            locker.remove({
+                id: tag_main + 'set_all',
+                delay: times.anim_arc * 2,
+            })
         }
 
         // -------------------------------------------------------------------

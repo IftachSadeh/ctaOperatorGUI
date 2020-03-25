@@ -35,8 +35,8 @@ class PlotsDash():
         # the parent of this widget
         self.socket_manager = socket_manager
         my_assert(log=self.log, msg=[
-               " - no socket_manager handed to", self.__class__.__name__],
-               state=(self.socket_manager is not None))
+            " - no socket_manager handed to", self.__class__.__name__],
+            state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
@@ -166,7 +166,7 @@ class PlotsDash():
 
         # override the root logging variable with a name corresponding to the current session id
         self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
-                         str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
+                          str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
 
         self.init_tel_health()
         self.init_urgent_current()
@@ -276,10 +276,13 @@ class PlotsDash():
         for i in range(n_rnd_pin):
             data = []
             for j in range(random.randint(1, 12)):
-                rnd_key = self.tel_key[random.randint(0, len(self.tel_key) - 1)]
-                rnd_id = self.tel_ids[random.randint(0, len( self.tel_ids) - 1)]
-                data.append({'data': self.get_tel_data(rnd_id, [rnd_key]), 'keys': [self.tel_category, rnd_key, rnd_id]})
-            self.pinned_eles.append({"id": "pinned" + str(i), "timestamp": getTime(), 'data': data, 'context': {}})
+                rnd_key = self.tel_key[random.randint(
+                    0, len(self.tel_key) - 1)]
+                rnd_id = self.tel_ids[random.randint(0, len(self.tel_ids) - 1)]
+                data.append({'data': self.get_tel_data(rnd_id, [rnd_key]), 'keys': [
+                            self.tel_category, rnd_key, rnd_id]})
+            self.pinned_eles.append(
+                {"id": "pinned" + str(i), "timestamp": getTime(), 'data': data, 'context': {}})
 
     # ------------------------------------------------------------------
     #
@@ -320,12 +323,14 @@ class PlotsDash():
         inst_health = []
         for index in range(len(self.tel_ids)):
             for key in self.tel_key:
-                self.redis.pipe.zGet('inst_health;'+self.tel_ids[index]+';'+key)
+                self.redis.pipe.zGet(
+                    'inst_health;'+self.tel_ids[index]+';'+key)
             data = self.redis.pipe.execute(packed_score=True)
             n_ele_now = 0
             for key in self.tel_key:
                 data_now = data[n_ele_now]
-                inst_health.append({'id': self.tel_ids[index]+'-'+key, 'keys': [self.tel_ids[index], key], 'data': [{'y': x[0]['data'], 'x':x[1]} for x in data_now]})
+                inst_health.append({'id': self.tel_ids[index]+'-'+key, 'keys': [
+                                   self.tel_ids[index], key], 'data': [{'y': x[0]['data'], 'x':x[1]} for x in data_now]})
                 n_ele_now += 1
         return inst_health
 
@@ -381,7 +386,8 @@ class PlotsDash():
     def get_sub_arr_grp(self):
         #print 'get_sub_arr_grp'
         with PlotsDash.lock:
-            sub_arrs = self.redis.get(name="sub_arrs", packed=True, default_val=[])
+            sub_arrs = self.redis.get(
+                name="sub_arrs", packed=True, default_val=[])
             self.sub_arr_grp = {"id": "sub_arr", "children": sub_arrs}
 
         return
@@ -498,7 +504,7 @@ class PlotsDash():
             for key, value in vect.items():
                 if (key != "status" and value != None and self.get_tel_state(int(value)) == "ERROR"):
                     self.urgent_current.append({"id": tel_id+key, "keys": [tel_id, key, self.socket_manager.InstData.get_tel_type(tel_id), self.tel_category], "name": tel_id, "data": {
-                                              "measures": [{"value": value, "timestamp": getTime()}], "type": self.get_tel_measure_types(key)}})
+                        "measures": [{"value": value, "timestamp": getTime()}], "type": self.get_tel_measure_types(key)}})
 
     # ------------------------------------------------------------------
     #
@@ -510,7 +516,7 @@ class PlotsDash():
             for key, value in vect.items():
                 if (key != "status" and value != None and self.get_tel_state(int(value)) == "ERROR"):
                     self.urgent_current.append({"id": tel_id+key, "keys": [tel_id, key, self.socket_manager.InstData.get_tel_type(tel_id), self.tel_category], "name": tel_id, "data": {
-                                              "measures": [{"value": value, "timestamp": getTime()}], "type": self.get_tel_measure_types(key)}})
+                        "measures": [{"value": value, "timestamp": getTime()}], "type": self.get_tel_measure_types(key)}})
 
     # ------------------------------------------------------------------
     #

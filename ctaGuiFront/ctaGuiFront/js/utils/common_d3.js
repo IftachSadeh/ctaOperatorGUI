@@ -125,7 +125,8 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
 }
 
 window.input_number_d3 = function(g, box, id, opt_in, events) {
-    let linker = {}
+    let linker = {
+    }
     let fo = g
         .append('foreignObject')
         .attr('width', box.w + 'px')
@@ -233,14 +234,18 @@ window.button_d3 = function() {
             g: undefined,
             dim: undefined,
             background: {
-                style: {},
-                attr: {},
+                style: {
+                },
+                attr: {
+                },
             },
         },
         foreground: {
             type: 'image/text',
-            style: {},
-            attr: {},
+            style: {
+            },
+            attr: {
+            },
         },
         events: {
             click: undefined,
@@ -321,12 +326,16 @@ window.dropdown_d3 = function() {
             g: undefined,
             dim: undefined,
             background: {
-                style: {},
-                attr: {},
+                style: {
+                },
+                attr: {
+                },
             },
             text: {
-                style: {},
-                attr: {},
+                style: {
+                },
+                attr: {
+                },
             },
         },
         options: {
@@ -335,12 +344,16 @@ window.dropdown_d3 = function() {
             dim: undefined,
             nb: undefined,
             background: {
-                style: {},
-                attr: {},
+                style: {
+                },
+                attr: {
+                },
             },
             text: {
-                style: {},
-                attr: {},
+                style: {
+                },
+                attr: {
+                },
             },
         },
         events: {
@@ -355,17 +368,35 @@ window.dropdown_d3 = function() {
 
     function drawArrowDown() {
         let arrowBox = [
-            { x: reserved.main.dim.w * 0.8, y: reserved.main.dim.h * 0.4 },
-            { x: reserved.main.dim.w * 0.9, y: reserved.main.dim.h * 0.4 },
-            { x: reserved.main.dim.w * 0.85, y: reserved.main.dim.h * 0.6 },
+            {
+                x: reserved.main.dim.w * 0.8,
+                y: reserved.main.dim.h * 0.4,
+            },
+            {
+                x: reserved.main.dim.w * 0.9,
+                y: reserved.main.dim.h * 0.4,
+            },
+            {
+                x: reserved.main.dim.w * 0.85,
+                y: reserved.main.dim.h * 0.6,
+            },
         ]
         drawArrowCore(arrowBox)
     }
     function drawArrowUp() {
         let arrowBox = [
-            { x: reserved.main.dim.w * 0.8, y: reserved.main.dim.h * 0.6 },
-            { x: reserved.main.dim.w * 0.9, y: reserved.main.dim.h * 0.6 },
-            { x: reserved.main.dim.w * 0.85, y: reserved.main.dim.h * 0.4 },
+            {
+                x: reserved.main.dim.w * 0.8,
+                y: reserved.main.dim.h * 0.6,
+            },
+            {
+                x: reserved.main.dim.w * 0.9,
+                y: reserved.main.dim.h * 0.6,
+            },
+            {
+                x: reserved.main.dim.w * 0.85,
+                y: reserved.main.dim.h * 0.4,
+            },
         ]
         drawArrowCore(arrowBox)
     }
@@ -403,7 +434,12 @@ window.dropdown_d3 = function() {
             reserved.main.g,
             'rect',
             merge_obj(
-                { x: 0, y: 0, width: reserved.main.dim.w, height: reserved.main.dim.h },
+                {
+                    x: 0,
+                    y: 0,
+                    width: reserved.main.dim.w,
+                    height: reserved.main.dim.h,
+                },
                 reserved.main.background.common.attr
             ),
             reserved.main.background.common.style
@@ -435,7 +471,10 @@ window.dropdown_d3 = function() {
             reserved.main.g,
             'text',
             merge_obj(
-                { x: 4, y: reserved.main.dim.h * 0.5 },
+                {
+                    x: 4,
+                    y: reserved.main.dim.h * 0.5,
+                },
                 reserved.main.text.common.attr
             ),
             reserved.main.text.common.style
@@ -462,15 +501,21 @@ window.dropdown_d3 = function() {
                 during: tag + 'zoomsuring',
                 end: tag + 'zoomEnd',
             },
-            run_loop: new RunLoop({ tag: tag }),
+            run_loop: new RunLoop({
+                tag: tag,
+            }),
             canScroll: true,
             scrollVertical: true,
             scrollHorizontal: false,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'black',
-            scrollRecH: { h: 4 },
-            scrollRecV: { w: 4 },
+            scrollRecH: {
+                h: 4,
+            },
+            scrollRecV: {
+                w: 4,
+            },
         })
         return scrollBox
     }
@@ -568,7 +613,10 @@ window.dropdown_d3 = function() {
                 g,
                 'text',
                 merge_obj(
-                    { x: 4, y: reserved.options.dim.h * 0.5 },
+                    {
+                        x: 4,
+                        y: reserved.options.dim.h * 0.5,
+                    },
                     reserved.options.text.common.attr
                 ),
                 reserved.options.text.common.style

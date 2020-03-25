@@ -25,11 +25,26 @@ var main_script_tag = 'PlotsDash'
 /* global ScrollBox */
 /* global PlotBrushZoom */
 
-window.load_script({source: main_script_tag, script: '/js/utils/PlotTimeSeriesV2.js'})
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollBox.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/PlotTimeBar.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/PlotBrushZoom.js' })
-window.load_script({ source: 'utils_scrollTable', script: '/js/utils/common_d3.js' })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotTimeSeriesV2.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollBox.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotTimeBar.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotBrushZoom.js',
+})
+window.load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/common_d3.js',
+})
 // // load additional js files:
 // window.load_script({ source:main_script_tag, script:"/js/utils_scrollGrid.js"});
 
@@ -48,7 +63,8 @@ sock.widget_table[main_script_tag] = function(opt_in) {
         main_func: main_plots_dash,
     }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: false,
@@ -77,7 +93,8 @@ let sock_plots_dash = function(opt_in) {
             return
         }
 
-        let data = {}
+        let data = {
+        }
         data.widget_id = opt_in.widget_id
         data.newKeys = opt_in.newKeys
 
@@ -109,7 +126,8 @@ let main_plots_dash = function(opt_in) {
     let icon_divs = opt_in.icon_divs
 
     let shared = {
-        server: {},
+        server: {
+        },
         time: {
             current: undefined,
             from: undefined,
@@ -117,14 +135,18 @@ let main_plots_dash = function(opt_in) {
         },
         data: [],
     }
-    let svg = {}
-    let box = {}
-    let svg_dims = {}
+    let svg = {
+    }
+    let box = {
+    }
+    let svg_dims = {
+    }
 
     // let this_sched_block_inspector = this
     // let is_south = window.__site_type__ === 'S'
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_arr_zoomerPlotsSvg + ele_now.id,
@@ -136,7 +158,9 @@ let main_plots_dash = function(opt_in) {
     // delay counters
     let locker = new Locker()
     // locker.add('in_init')
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
     let middleSeparation = 0
 
     function pushNewHierachyKeys() {
@@ -150,8 +174,10 @@ let main_plots_dash = function(opt_in) {
 
     function init_data(data_in) {
         function initSvg() {
-            svg_dims.w = {}
-            svg_dims.h = {}
+            svg_dims.w = {
+            }
+            svg_dims.h = {
+            }
             svg_dims.w[0] = 1000
             svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
@@ -274,7 +300,8 @@ let main_plots_dash = function(opt_in) {
             }
         }
         function initDefaultStyle() {
-            shared.style = {}
+            shared.style = {
+            }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
                 // let endTime = is_def(opt_in.endTime)
@@ -313,11 +340,17 @@ let main_plots_dash = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         let svg_div_id = sgv_tag.main.id + ''
         let parent = sgv_tag.main.widget.get_ele(sgv_tag.main.id)
@@ -338,7 +371,12 @@ let main_plots_dash = function(opt_in) {
             })
             return
         }
-        sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+        sock.emit_mouse_move({
+            eleIn: svg_div,
+            data: {
+                widget_id: widget_id,
+            },
+        })
 
         initSvg()
         initDefaultStyle()
@@ -389,10 +427,17 @@ let main_plots_dash = function(opt_in) {
         locker.remove('update_data')
     }
     function update_data(data_in) {
-        run_loop.push({ tag: 'update_data', data: data_in })
+        run_loop.push({
+            tag: 'update_data',
+            data: data_in,
+        })
     }
     this.update_data = update_data
-    run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
+    run_loop.init({
+        tag: 'update_data',
+        func: update_dataOnce,
+        n_keep: 1,
+    })
 
     function initScrollBox(tag, g, box, background, isVertical) {
         if (background.enabled) {
@@ -425,15 +470,21 @@ let main_plots_dash = function(opt_in) {
                 during: tag + 'zoomsuring',
                 end: tag + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: tag}),
+            run_loop: new RunLoop({
+                tag: tag,
+            }),
             canScroll: true,
             scrollVertical: isVertical,
             scrollHorizontal: !isVertical,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 4},
-            scrollRecV: {w: 4},
+            scrollRecH: {
+                h: 4,
+            },
+            scrollRecV: {
+                w: 4,
+            },
         })
         return scrollBox
     }
@@ -445,7 +496,15 @@ let main_plots_dash = function(opt_in) {
             for (let z = 0; z < shared.server.urgent.urgentKey.length; z++) {
                 if (Math.random() > 0.85) {
                     // let insert = true
-                    let toadd = {id: 'id' + Math.floor(Math.random() * 200), added: shared.time.current, type: shared.server.urgent.urgentKey[z], name: shared.server.urgent.urgentKey[z], status: fillfun(0), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: []}
+                    let toadd = {
+                        id: 'id' + Math.floor(Math.random() * 200),
+                        added: shared.time.current,
+                        type: shared.server.urgent.urgentKey[z],
+                        name: shared.server.urgent.urgentKey[z],
+                        status: fillfun(0),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                        subMeasures: [],
+                    }
                     shared.server.fullList.push(toadd)
                     shared.server.urgent.urgent_current[z].data.push(toadd)
                     shared.server.category[z].data.push(toadd)
@@ -455,14 +514,19 @@ let main_plots_dash = function(opt_in) {
                     // }
 
                     if (shared.server.history.timestamp.length === 0) {
-                        shared.server.history.timestamp.push({key: shared.time.current})
+                        shared.server.history.timestamp.push({
+                            key: shared.time.current,
+                        })
                     }
                     if (shared.server.history.timestamp.length > 0 && shared.server.history.timestamp[shared.server.history.timestamp.length - 1].key === shared.time.current) {
                         if (shared.server.history.timestamp[shared.server.history.timestamp.length - 1].hasOwnProperty(toadd.type)) {
                             shared.server.history.timestamp[shared.server.history.timestamp.length - 1][toadd.type].data.push(toadd)
                         }
                         else {
-                            shared.server.history.timestamp[shared.server.history.timestamp.length - 1][toadd.type] = {data: [ toadd ], remove: []}
+                            shared.server.history.timestamp[shared.server.history.timestamp.length - 1][toadd.type] = {
+                                data: [ toadd ],
+                                remove: [],
+                            }
                         }
                         let tot = 0
                         $.each(shared.server.history.timestamp[shared.server.history.timestamp.length - 1], function(key, value) {
@@ -481,7 +545,10 @@ let main_plots_dash = function(opt_in) {
                             newt[toadd.type].data.push(toadd)
                         }
                         else {
-                            newt[toadd.type] = {data: [ toadd ], remove: []}
+                            newt[toadd.type] = {
+                                data: [ toadd ],
+                                remove: [],
+                            }
                         }
                         shared.server.history.timestamp.push(newt)
                         let tot = 0
@@ -567,7 +634,10 @@ let main_plots_dash = function(opt_in) {
         }
 
         let fillfun = function(index) {
-            let status = {current: '', previous: []}
+            let status = {
+                current: '',
+                previous: [],
+            }
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
             status.current.x = new Date(shared.server.time_of_night.date_now)
             status.gradient = Math.floor((Math.random() * 20) - 10)
@@ -590,7 +660,10 @@ let main_plots_dash = function(opt_in) {
     function loadMesures() {
         let fillfun = function(index) {
             index = 0
-            let status = {current: '', previous: []}
+            let status = {
+                current: '',
+                previous: [],
+            }
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
             status.current.x = new Date(shared.server.time_of_night.date_now)
             status.gradient = Math.floor((Math.random() * 20) - 10)
@@ -608,8 +681,14 @@ let main_plots_dash = function(opt_in) {
         shared.server.urgent.urgent_current = []
         shared.server.category = []
         for (let z = 0; z < shared.server.urgent.urgentKey.length; z++) {
-            shared.server.urgent.urgent_current.push({key: shared.server.urgent.urgentKey[z], data: []})
-            shared.server.category.push({key: shared.server.urgent.urgentKey[z], data: []})
+            shared.server.urgent.urgent_current.push({
+                key: shared.server.urgent.urgentKey[z],
+                data: [],
+            })
+            shared.server.category.push({
+                key: shared.server.urgent.urgentKey[z],
+                data: [],
+            })
         }
         shared.server.fullList = []
 
@@ -701,7 +780,11 @@ let main_plots_dash = function(opt_in) {
         //   otherP
         // ]
 
-        shared.server.history = {max: 0, min: 0, timestamp: []}
+        shared.server.history = {
+            max: 0,
+            min: 0,
+            timestamp: [],
+        }
     }
 
     function drawfakefocus() {
@@ -739,7 +822,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: opt_in.box.h, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: opt_in.box.h,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -770,7 +859,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'left',
                             mode: 'linear',
                             attr: {
@@ -841,13 +936,20 @@ let main_plots_dash = function(opt_in) {
             w: box.focusPlots.w * 0.9,
             h: box.focusPlots.h * 0.6,
         }
-        let opt_in = {g: topg,
+        let opt_in = {
+            g: topg,
             box: plotb,
         }
         opt_in.g = opt_in.g.append('g') // .style('opacity', 0.8)
         let plotObject = createPlot(opt_in)
-        let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-        let endTime = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
+        let startTime = {
+            date: new Date(shared.time.from),
+            time: Number(shared.time.from.getTime()),
+        }
+        let endTime = {
+            date: new Date(shared.server.time_of_night.date_now),
+            time: Number(shared.server.time_of_night.now),
+        }
 
         plotObject.updateAxis({
             id: 'bottom',
@@ -883,8 +985,16 @@ let main_plots_dash = function(opt_in) {
             for (let i = 0; i < shared.server.urgent.urgent_current.length; i++) {
                 tot += shared.server.urgent.urgent_current[i].length
             }
-            scrollbox.updateBox({x: 0, y: 40, w: box.pinnedPlots.w, h: box.pinnedPlots.h - 80})
-            scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(tot / nbperline))})
+            scrollbox.updateBox({
+                x: 0,
+                y: 40,
+                w: box.pinnedPlots.w,
+                h: box.pinnedPlots.h - 80,
+            })
+            scrollbox.resetVerticalScroller({
+                canScroll: true,
+                scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(tot / nbperline)),
+            })
             // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
         }
         this.adjustScrollBox = adjustScrollBox
@@ -937,7 +1047,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: opt_in.box.h, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: opt_in.box.h,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -968,7 +1084,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'left',
                             mode: 'linear',
                             attr: {
@@ -1000,7 +1122,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: scrollBoxPlot.w, y: 0, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: scrollBoxPlot.w,
+                                y: 0,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'right',
                             mode: 'linear',
                             attr: {
@@ -1130,7 +1258,8 @@ let main_plots_dash = function(opt_in) {
             let g = svgPinnedPlotsg.append('g')
                 .attr('id', 'pinned_eles')
                 .attr('transform', 'translate(' + scrollBoxList.x + ',' + scrollBoxList.y + ')')
-            scrollPinnedList = initScrollBox('pinned_elesScrollbox', g, scrollBoxList, {}, true)
+            scrollPinnedList = initScrollBox('pinned_elesScrollbox', g, scrollBoxList, {
+            }, true)
             g.append('line')
                 .attr('id', 'toplimit')
                 .attr('x1', 0)
@@ -1192,7 +1321,9 @@ let main_plots_dash = function(opt_in) {
 
             // Below calculations are taken and adapted from the private function
             // transform/decompose.js of D3's module d3-interpolate.
-            var {a, b, c, d, e, f} = matrix // ES6, if this doesn't work, use below assignment
+            var {
+                a, b, c, d, e, f,
+            } = matrix // ES6, if this doesn't work, use below assignment
             // var a=matrix.a, b=matrix.b, c=matrix.c, d=matrix.d, e=matrix.e, f=matrix.f; // ES5
             var scaleX, scaleY, skewX
             if (scaleX = Math.sqrt(a * a + b * b)) {
@@ -1307,7 +1438,12 @@ let main_plots_dash = function(opt_in) {
             is_focused = !is_focused
             if (is_focused) {
                 scrollBoxList.w = scrollBoxList.w * shrinkFrac
-                scrollPinnedList.updateBox({x: 0, y: 0, w: scrollBoxList.w, h: scrollBoxList.h}, 600)
+                scrollPinnedList.updateBox({
+                    x: 0,
+                    y: 0,
+                    w: scrollBoxList.w,
+                    h: scrollBoxList.h,
+                }, 600)
                 let gg = svgPinnedPlotsg.select('g#pinned_eles')
                 gg.select('line#toplimit')
                     .transition()
@@ -1324,7 +1460,12 @@ let main_plots_dash = function(opt_in) {
             else {
                 unfocusOnPlot()
                 scrollBoxList.w = scrollBoxList.w * (1 / shrinkFrac)
-                scrollPinnedList.updateBox({x: 0, y: 0, w: scrollBoxList.w, h: scrollBoxList.h}, 600)
+                scrollPinnedList.updateBox({
+                    x: 0,
+                    y: 0,
+                    w: scrollBoxList.w,
+                    h: scrollBoxList.h,
+                }, 600)
                 let gg = svgPinnedPlotsg.select('g#pinned_eles')
                 gg.select('line#toplimit').transition().duration(600).attr('x2', scrollBoxList.w)
                 gg.select('line#bottomlimit').transition().duration(600).attr('x2', scrollBoxList.w)
@@ -1401,7 +1542,11 @@ let main_plots_dash = function(opt_in) {
             }
 
             // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
-            scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
+            scrollPinnedList.resetVerticalScroller({
+                canScroll: true,
+                keepFrac: true,
+                scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
+            })
         }
         function listBib(g, d, i, caller) {
             let dim = {
@@ -1458,7 +1603,11 @@ let main_plots_dash = function(opt_in) {
             }
 
             // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
-            scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
+            scrollPinnedList.resetVerticalScroller({
+                canScroll: true,
+                keepFrac: true,
+                scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
+            })
         }
         function updatePinnedList() {
             let dim = {
@@ -1549,7 +1698,8 @@ let main_plots_dash = function(opt_in) {
             h: 70,
         }
         let allPlots
-        let miniPlotsVect = {}
+        let miniPlotsVect = {
+        }
 
         let middleplot
         let overlaymiddleplot
@@ -1592,7 +1742,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: opt_in.box.h, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: opt_in.box.h,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             mode: 'time',
                             attr: {
@@ -1624,7 +1780,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'left',
                             mode: 'linear',
                             attr: {
@@ -1656,7 +1818,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: opt_in.box.w, y: 0, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: opt_in.box.w,
+                                y: 0,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'right',
                             mode: 'linear',
                             attr: {
@@ -1745,7 +1913,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: opt_in.box.h, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: opt_in.box.h,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             mode: 'time',
                             attr: {
@@ -1782,7 +1956,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: spaceline * i + 2, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: spaceline * i + 2,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'left',
                             mode: 'linear',
                             attr: {
@@ -1818,7 +1998,13 @@ let main_plots_dash = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: middleDim.w, y: spaceline * i + 2, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: middleDim.w,
+                                y: spaceline * i + 2,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'right',
                             mode: 'linear',
                             attr: {
@@ -1852,25 +2038,73 @@ let main_plots_dash = function(opt_in) {
         }
 
         function initBox() {
-            leftDim = {x: 4, y: 10, w: 200, h: box.urgentPlots.h - 20}
-            middleDim = {x: (leftDim.x + leftDim.w) + 5, y: 10, w: (box.urgentPlots.w * 0.5) - (leftDim.x + leftDim.w) + 5, h: box.urgentPlots.h - 20}
-            topBox = {x: leftDim.x, y: 10, w: leftDim.w + 5 + middleDim.w, h: 40}
-            rightDim = {x: box.urgentPlots.w * 0.5 + 10, y: 10, w: box.urgentPlots.w * 0.5 - 20, h: box.urgentPlots.h - 20}
+            leftDim = {
+                x: 4,
+                y: 10,
+                w: 200,
+                h: box.urgentPlots.h - 20,
+            }
+            middleDim = {
+                x: (leftDim.x + leftDim.w) + 5,
+                y: 10,
+                w: (box.urgentPlots.w * 0.5) - (leftDim.x + leftDim.w) + 5,
+                h: box.urgentPlots.h - 20,
+            }
+            topBox = {
+                x: leftDim.x,
+                y: 10,
+                w: leftDim.w + 5 + middleDim.w,
+                h: 40,
+            }
+            rightDim = {
+                x: box.urgentPlots.w * 0.5 + 10,
+                y: 10,
+                w: box.urgentPlots.w * 0.5 - 20,
+                h: box.urgentPlots.h - 20,
+            }
             // telbox = {x: box.urgentPlots.w * 0.66, y: 30, w: box.urgentPlots.w * 0.3, h: box.urgentPlots.h - 60}
         }
         function initLeftPart(g) {
-            itemBox = {x: 100, y: leftDim.y, w: 200, h: leftDim.h}
-            itemDim = {offsetL: 2, offset_r: 0, offsetT: 2, offsetB: 0, w: 60, h: 60}
-            categoryBox = {x: 0, y: leftDim.y, w: 100, h: leftDim.h}
-            categoryDim = {offsetL: 0, offset_r: 0, offsetT: 0, offsetB: 0, w: categoryBox.w - 0, h: (categoryBox.h - 0 * shared.server.urgent.urgent_current.length) / shared.server.urgent.urgent_current.length}
+            itemBox = {
+                x: 100,
+                y: leftDim.y,
+                w: 200,
+                h: leftDim.h,
+            }
+            itemDim = {
+                offsetL: 2,
+                offset_r: 0,
+                offsetT: 2,
+                offsetB: 0,
+                w: 60,
+                h: 60,
+            }
+            categoryBox = {
+                x: 0,
+                y: leftDim.y,
+                w: 100,
+                h: leftDim.h,
+            }
+            categoryDim = {
+                offsetL: 0,
+                offset_r: 0,
+                offsetT: 0,
+                offsetB: 0,
+                w: categoryBox.w - 0,
+                h: (categoryBox.h - 0 * shared.server.urgent.urgent_current.length) / shared.server.urgent.urgent_current.length,
+            }
             leftg = g.append('g').attr('id', 'lefturgent').attr('transform', 'translate(' + leftDim.x + ',' + leftDim.y + ')')
-            focusScrollbox = initScrollBox('focusScrollbox', leftg.append('g').attr('transform', 'translate(' + itemBox.x + ',' + 0 + ')'), itemBox, {}, true)
+            focusScrollbox = initScrollBox('focusScrollbox', leftg.append('g').attr('transform', 'translate(' + itemBox.x + ',' + 0 + ')'), itemBox, {
+            }, true)
         }
         function initMiddlePart(g) {
             line = shared.server.urgent.urgentKey.length
             spaceline = middleDim.h / line
             middleg = g.append('g').attr('id', 'middleurgent').attr('transform', 'translate(' + middleDim.x + ',' + middleDim.y + ')')
-            createMiddlePlot({g: middleg, box: middleDim})
+            createMiddlePlot({
+                g: middleg,
+                box: middleDim,
+            })
         }
         function initTopPart(g) {
             topg = g.append('g').attr('id', 'topurgent').attr('transform', 'translate(' + topBox.x + ',' + topBox.y + ')')
@@ -1878,7 +2112,12 @@ let main_plots_dash = function(opt_in) {
         function initRightPart(g) {
             // rightDim = {x: (middleDim.x + middleDim.w) + 5, y: 20, w: (box.urgentPlots.w - leftDim.w) * 0.4, h: box.urgentPlots.h - 10}
             // rightBox = {x: spaceline, y: rightDim.y, w: rightDim.w - spaceline, h: rightDim.h}
-            rightBox = {x: spaceline * 1.5, y: 0, w: rightDim.w - spaceline * 1.5, h: rightDim.h}
+            rightBox = {
+                x: spaceline * 1.5,
+                y: 0,
+                w: rightDim.w - spaceline * 1.5,
+                h: rightDim.h,
+            }
             rightg = g.append('g').attr('id', 'righturgent').attr('transform', 'translate(' + rightDim.x + ',' + rightDim.y + ')')
             rightItems = rightg.append('g').attr('id', 'rightItems').attr('transform', 'translate(' + rightBox.x + ',' + rightBox.y + ')')
             rightCats = rightg.append('g').attr('id', 'rightCats').attr('transform', 'translate(' + 0 + ',' + 0 + ')')
@@ -1889,12 +2128,17 @@ let main_plots_dash = function(opt_in) {
             //   .attr('stroke-width', 0)
             //   .style('opacity', 1)
             //   .attr('fill', 'black')
-            scrollbox = initScrollBox('urgentPlotsScrollbox', rightg.append('g').attr('transform', 'translate(' + rightBox.x + ',' + 0 + ')'), rightBox, {}, true)
+            scrollbox = initScrollBox('urgentPlotsScrollbox', rightg.append('g').attr('transform', 'translate(' + rightBox.x + ',' + 0 + ')'), rightBox, {
+            }, true)
         }
 
         function initTelPart(g) {
             telg = g.append('g').attr('id', 'telurgent').attr('transform', 'translate(' + telbox.x + ',' + telbox.y + ')')
-            telplot = createPlot({g: telg, box: telbox, tag: 'telUrgentPlot'})
+            telplot = createPlot({
+                g: telg,
+                box: telbox,
+                tag: 'telUrgentPlot',
+            })
         }
         function init_data() {
             let plotlistg = svg.svg.append('g').attr('id', 'plotList')
@@ -2048,7 +2292,12 @@ let main_plots_dash = function(opt_in) {
                 })
                 let gMergeGroup = allGroup.merge(gEnterGroup)
                 gMergeGroup.each(function(d, i) {
-                    drawBlock(d3.select(this), d.id, d.children, depth + 1, {x: dim.w, y: 0, w: dim.w, h: dim.h / d.children.length})
+                    drawBlock(d3.select(this), d.id, d.children, depth + 1, {
+                        x: dim.w,
+                        y: 0,
+                        w: dim.w,
+                        h: dim.h / d.children.length,
+                    })
                     d3.select(this)
                         .transition()
                         .duration(200)
@@ -2059,7 +2308,12 @@ let main_plots_dash = function(opt_in) {
                     .style('opacity', 0)
                     .remove()
             }
-            drawBlock(topg, 'rootroot', [ shared.server.hierarchy.tree ], 1, {x: 0, y: 0, w: topBox.w / shared.server.hierarchy.depth, h: topBox.h})
+            drawBlock(topg, 'rootroot', [ shared.server.hierarchy.tree ], 1, {
+                x: 0,
+                y: 0,
+                w: topBox.w / shared.server.hierarchy.depth,
+                h: topBox.h,
+            })
         }
 
         function drawMiddlePart() {
@@ -2407,8 +2661,18 @@ let main_plots_dash = function(opt_in) {
             gEnterGroup.each(function(d, i) {
                 let data = shared.server.hierarchy.relationship[d]
                 let g = d3.select(this)
-                let gdim = {x: (20 * i), y: 0, w: leftDim.w - (20 * i), h: leftDim.h - (20 * i)}
-                let dim = {x: gdim.x, y: gdim.y, w: 20, h: gdim.h}
+                let gdim = {
+                    x: (20 * i),
+                    y: 0,
+                    w: leftDim.w - (20 * i),
+                    h: leftDim.h - (20 * i),
+                }
+                let dim = {
+                    x: gdim.x,
+                    y: gdim.y,
+                    w: 20,
+                    h: gdim.h,
+                }
                 g.append('rect')
                     .attr('id', d)
                     .attr('x', dim.x)
@@ -2444,10 +2708,20 @@ let main_plots_dash = function(opt_in) {
             gMergeGroup.each(function(d, i) {
                 let g = d3.select(this)
                 let data = shared.server.hierarchy.relationship[d]
-                let gdim = {x: (20 * i), y: 0, w: leftDim.w - (20 * i), h: leftDim.h - (20 * i)}
+                let gdim = {
+                    x: (20 * i),
+                    y: 0,
+                    w: leftDim.w - (20 * i),
+                    h: leftDim.h - (20 * i),
+                }
 
                 if (i < shared.server.hierarchy.keys.length - 1) {
-                    let dim = {x: gdim.x + 20, y: gdim.y + gdim.h - 20, w: gdim.w - 20, h: 20}
+                    let dim = {
+                        x: gdim.x + 20,
+                        y: gdim.y + gdim.h - 20,
+                        w: gdim.w - 20,
+                        h: 20,
+                    }
                     let tree = ''
                     for (let j = 0; j < data.children.length; j++) {
                         tree += shared.server.hierarchy.keys[i + 1] === data.children[j] ? '' : (j < data.children.length - 1 ? data.children[j] + '-' : data.children[j])
@@ -2456,7 +2730,12 @@ let main_plots_dash = function(opt_in) {
                     // g.style('visibility', 'hidden')
                 }
                 else {
-                    let dim = {x: gdim.x + 20, y: gdim.y, w: gdim.w - 20, h: gdim.h}
+                    let dim = {
+                        x: gdim.x + 20,
+                        y: gdim.y,
+                        w: gdim.w - 20,
+                        h: gdim.h,
+                    }
                     let tree = []
                     for (let j = 0; j < data.children.length; j++) {
                         let index = shared.server.hierarchy.keys.indexOf(data.children[j])
@@ -2667,10 +2946,16 @@ let main_plots_dash = function(opt_in) {
             let maxiter = 100
             function bestFitPerLine(index) {
                 if (maxiter < 0) {
-                    return {w: 0, h: 0}
+                    return {
+                        w: 0,
+                        h: 0,
+                    }
                 }
                 let max = rightBox.w * rightBox.h
-                let dim = {w: rightBox.w / index, h: rightBox.h / index}
+                let dim = {
+                    w: rightBox.w / index,
+                    h: rightBox.h / index,
+                }
                 let tot = 0
                 for (let i = 0; i < line.length; i++) {
                     tot += Math.ceil(line[i] / index) * index * (dim.w * dim.h)
@@ -2685,9 +2970,15 @@ let main_plots_dash = function(opt_in) {
             }
             function bestFitGlobal(index) {
                 if (maxiter < 0) {
-                    return {w: 0, h: 0}
+                    return {
+                        w: 0,
+                        h: 0,
+                    }
                 }
-                let dim = {w: rightBox.w / index, h: rightBox.h / (glob / index)}
+                let dim = {
+                    w: rightBox.w / index,
+                    h: rightBox.h / (glob / index),
+                }
                 maxiter -= 1
                 if (dim.h < dim.w) {
                     return bestFitGlobal(index += 1)
@@ -2698,7 +2989,10 @@ let main_plots_dash = function(opt_in) {
             }
 
             let bestF = bestFitPerLine(1)
-            let dim = {w: (rightBox.w / bestF), h: (rightBox.h / bestF)}
+            let dim = {
+                w: (rightBox.w / bestF),
+                h: (rightBox.h / bestF),
+            }
             if (dim.h < 6 || dim.w < 6) {
                 maxiter = 100
                 bestF = bestFitGlobal(1)
@@ -2709,9 +3003,15 @@ let main_plots_dash = function(opt_in) {
             function chooseDrawingMode() {
                 function bestFitPerLine(index) {
                     if (maxiter < 0) {
-                        return {w: 0, h: 0}
+                        return {
+                            w: 0,
+                            h: 0,
+                        }
                     }
-                    let dim = {w: rightBox.w / index, h: rightBox.h / index}
+                    let dim = {
+                        w: rightBox.w / index,
+                        h: rightBox.h / index,
+                    }
                     let tot = 0
                     for (let i = 0; i < line.length; i++) {
                         tot += Math.ceil(line[i] / index) * index * (dim.w * dim.h)
@@ -2726,7 +3026,10 @@ let main_plots_dash = function(opt_in) {
                 }
                 function bestFitGlobal(index) {
                     if (maxiter < 0) {
-                        return {w: 0, h: 0}
+                        return {
+                            w: 0,
+                            h: 0,
+                        }
                     }
 
                     let sqrtGlob = Math.floor(Math.sqrt(glob)) + 1
@@ -2745,11 +3048,17 @@ let main_plots_dash = function(opt_in) {
                 let glob = line.reduce((acc, cur) => acc + cur, 0)
 
                 nbperline = bestFitPerLine(1)
-                dim = {w: (rightBox.w / nbperline), h: (rightBox.h / nbperline)}
+                dim = {
+                    w: (rightBox.w / nbperline),
+                    h: (rightBox.h / nbperline),
+                }
                 return
                 if ((dim.w * dim.h * glob) / max < 0.8) {
                     nbperline = bestFitGlobal(1)
-                    dim = {w: (rightBox.w / nbperline), h: (rightBox.h / nbperline)}
+                    dim = {
+                        w: (rightBox.w / nbperline),
+                        h: (rightBox.h / nbperline),
+                    }
                     mode = 2
                 }
                 else {
@@ -2767,44 +3076,209 @@ let main_plots_dash = function(opt_in) {
             }
             function chooseTemplateDim(dim) {
                 let basicTemplate = {
-                    title1: {display: true, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
-                    title2: {display: true, x: 4 * factor.x, y: 50 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
-                    plot: {display: true, x: 4 * factor.x, y: 104 * factor.y, w: 92 * factor.x, h: 92 * factor.y},
-                    value1: {display: true, x: 104 * factor.x, y: 104 * factor.y, w: 92 * factor.x, h: 46 * factor.y},
-                    value2: {display: true, x: 104 * factor.x, y: 150 * factor.y, w: 92 * factor.x, h: 46 * factor.y},
-                    dim: {w: 140, h: 140},
+                    title1: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 4 * factor.y,
+                        w: 192 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    title2: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 50 * factor.y,
+                        w: 192 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    plot: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 104 * factor.y,
+                        w: 92 * factor.x,
+                        h: 92 * factor.y,
+                    },
+                    value1: {
+                        display: true,
+                        x: 104 * factor.x,
+                        y: 104 * factor.y,
+                        w: 92 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    value2: {
+                        display: true,
+                        x: 104 * factor.x,
+                        y: 150 * factor.y,
+                        w: 92 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    dim: {
+                        w: 140,
+                        h: 140,
+                    },
                 }
                 let mediumTemplate = {
-                    title1: {display: true, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
-                    title2: {display: true, x: 4 * factor.x, y: 50 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
-                    plot: {display: true, x: 4 * factor.x, y: 104 * factor.y, w: 22 * factor.x, h: 92 * factor.y},
-                    value1: {display: true, x: 34 * factor.x, y: 104 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-                    value2: {display: true, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-                    dim: {w: dim.w > 100 ? 100 : dim.w, h: dim.h},
+                    title1: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 4 * factor.y,
+                        w: 192 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    title2: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 50 * factor.y,
+                        w: 192 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    plot: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 104 * factor.y,
+                        w: 22 * factor.x,
+                        h: 92 * factor.y,
+                    },
+                    value1: {
+                        display: true,
+                        x: 34 * factor.x,
+                        y: 104 * factor.y,
+                        w: 162 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    value2: {
+                        display: true,
+                        x: 34 * factor.x,
+                        y: 150 * factor.y,
+                        w: 162 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    dim: {
+                        w: dim.w > 100 ? 100 : dim.w,
+                        h: dim.h,
+                    },
                 }
                 let smallTemplate = {
-                    title1: {display: true, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 96 * factor.y},
-                    title2: {display: true, x: 4 * factor.x, y: 104 * factor.y, w: 192 * factor.x, h: 96 * factor.y},
-                    plot: {display: false, x: 4 * factor.x, y: 104 * factor.y, w: 22 * factor.x, h: 92 * factor.y},
-                    value1: {display: false, x: 34 * factor.x, y: 104 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-                    value2: {display: false, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-                    dim: {w: dim.w, h: dim.h},
+                    title1: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 4 * factor.y,
+                        w: 192 * factor.x,
+                        h: 96 * factor.y,
+                    },
+                    title2: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 104 * factor.y,
+                        w: 192 * factor.x,
+                        h: 96 * factor.y,
+                    },
+                    plot: {
+                        display: false,
+                        x: 4 * factor.x,
+                        y: 104 * factor.y,
+                        w: 22 * factor.x,
+                        h: 92 * factor.y,
+                    },
+                    value1: {
+                        display: false,
+                        x: 34 * factor.x,
+                        y: 104 * factor.y,
+                        w: 162 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    value2: {
+                        display: false,
+                        x: 34 * factor.x,
+                        y: 150 * factor.y,
+                        w: 162 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    dim: {
+                        w: dim.w,
+                        h: dim.h,
+                    },
                 }
                 let miniTemplate = {
-                    title1: {display: true, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 192 * factor.y},
-                    title2: {display: false, x: 4 * factor.x, y: 50 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
-                    plot: {display: false, x: 4 * factor.x, y: 104 * factor.y, w: 22 * factor.x, h: 92 * factor.y},
-                    value1: {display: false, x: 34 * factor.x, y: 104 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-                    value2: {display: false, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-                    dim: {w: dim.w, h: dim.h},
+                    title1: {
+                        display: true,
+                        x: 4 * factor.x,
+                        y: 4 * factor.y,
+                        w: 192 * factor.x,
+                        h: 192 * factor.y,
+                    },
+                    title2: {
+                        display: false,
+                        x: 4 * factor.x,
+                        y: 50 * factor.y,
+                        w: 192 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    plot: {
+                        display: false,
+                        x: 4 * factor.x,
+                        y: 104 * factor.y,
+                        w: 22 * factor.x,
+                        h: 92 * factor.y,
+                    },
+                    value1: {
+                        display: false,
+                        x: 34 * factor.x,
+                        y: 104 * factor.y,
+                        w: 162 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    value2: {
+                        display: false,
+                        x: 34 * factor.x,
+                        y: 150 * factor.y,
+                        w: 162 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    dim: {
+                        w: dim.w,
+                        h: dim.h,
+                    },
                 }
                 let microTemplate = {
-                    title1: {display: false, x: 4 * factor.x, y: 4 * factor.y, w: 192 * factor.x, h: 192 * factor.y},
-                    title2: {display: false, x: 4 * factor.x, y: 50 * factor.y, w: 192 * factor.x, h: 46 * factor.y},
-                    plot: {display: false, x: 4 * factor.x, y: 104 * factor.y, w: 22 * factor.x, h: 92 * factor.y},
-                    value1: {display: false, x: 34 * factor.x, y: 104 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-                    value2: {display: false, x: 34 * factor.x, y: 150 * factor.y, w: 162 * factor.x, h: 46 * factor.y},
-                    dim: {w: dim.w, h: dim.h},
+                    title1: {
+                        display: false,
+                        x: 4 * factor.x,
+                        y: 4 * factor.y,
+                        w: 192 * factor.x,
+                        h: 192 * factor.y,
+                    },
+                    title2: {
+                        display: false,
+                        x: 4 * factor.x,
+                        y: 50 * factor.y,
+                        w: 192 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    plot: {
+                        display: false,
+                        x: 4 * factor.x,
+                        y: 104 * factor.y,
+                        w: 22 * factor.x,
+                        h: 92 * factor.y,
+                    },
+                    value1: {
+                        display: false,
+                        x: 34 * factor.x,
+                        y: 104 * factor.y,
+                        w: 162 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    value2: {
+                        display: false,
+                        x: 34 * factor.x,
+                        y: 150 * factor.y,
+                        w: 162 * factor.x,
+                        h: 46 * factor.y,
+                    },
+                    dim: {
+                        w: dim.w,
+                        h: dim.h,
+                    },
                 }
                 if (dim.h > 140) {
                     return basicTemplate
@@ -2823,9 +3297,18 @@ let main_plots_dash = function(opt_in) {
 
             let mode = 1
             let offset = 0
-            let factor = {x: 1, y: 1}
-            let basicDim = {w: 200 * factor.x, h: 200 * factor.y}
-            let dim = {w: 0, h: 0}
+            let factor = {
+                x: 1,
+                y: 1,
+            }
+            let basicDim = {
+                w: 200 * factor.x,
+                h: 200 * factor.y,
+            }
+            let dim = {
+                w: 0,
+                h: 0,
+            }
             let nbperline = 0
 
             chooseDrawingMode()
@@ -2952,8 +3435,14 @@ let main_plots_dash = function(opt_in) {
                     labelCat.select('text').text(d.data.length)
 
                     let points = [
-                        {x: -spaceline, y: spaceline * 0.5 + (shared.server.urgent.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1))},
-                        {x: 0, y: spaceline * 0.5 + (shared.server.urgent.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1))},
+                        {
+                            x: -spaceline,
+                            y: spaceline * 0.5 + (shared.server.urgent.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1)),
+                        },
+                        {
+                            x: 0,
+                            y: spaceline * 0.5 + (shared.server.urgent.urgentKey.indexOf(d.key) * (spaceline)) - (offsetLine * (i + 1)),
+                        },
                     ]
                     // if (d.data.length > nbperline) {
                     //   if (mode === 1) labelCat.select('g#extension').style('opacity', 0)
@@ -3011,7 +3500,8 @@ let main_plots_dash = function(opt_in) {
                             .style('user-select', 'none')
                             .attr('text-anchor', 'middle')
 
-                        let opt_in = {g: d3.select(this).append('g'),
+                        let opt_in = {
+                            g: d3.select(this).append('g'),
                             box: choosenTemplateDim.plot,
                         }
                         miniPlotsVect[dd.id] = createPlot(opt_in)
@@ -3110,8 +3600,14 @@ let main_plots_dash = function(opt_in) {
 
                             let newplotbox = adjustTemplate(dim, choosenTemplateDim.plot)
                             miniPlotsVect[dd.id].get('main').g.style('visibility', newplotbox.display ? 'visible' : 'hidden')
-                            let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-                            let endTime = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
+                            let startTime = {
+                                date: new Date(shared.time.from),
+                                time: Number(shared.time.from.getTime()),
+                            }
+                            let endTime = {
+                                date: new Date(shared.server.time_of_night.date_now),
+                                time: Number(shared.server.time_of_night.now),
+                            }
 
                             // newplotbox.h -= offset
                             miniPlotsVect[dd.id].updateBox(newplotbox)
@@ -3119,14 +3615,24 @@ let main_plots_dash = function(opt_in) {
                                 id: 'bottom',
                                 domain: [ startTime.date, endTime.date ],
                                 range: [ 0, newplotbox.w ],
-                                box: {x: 0, y: 0, w: newplotbox.w, h: newplotbox.h},
+                                box: {
+                                    x: 0,
+                                    y: 0,
+                                    w: newplotbox.w,
+                                    h: newplotbox.h,
+                                },
                                 tickSize: -newplotbox.h,
                             })
                             miniPlotsVect[dd.id].updateAxis({
                                 id: 'left',
                                 domain: [ 0, 100 ],
                                 range: [ newplotbox.h, 0 ],
-                                box: {x: 0, y: 0, w: newplotbox.w, h: newplotbox.h},
+                                box: {
+                                    x: 0,
+                                    y: 0,
+                                    w: newplotbox.w,
+                                    h: newplotbox.h,
+                                },
                                 tickSize: -newplotbox.w,
                             })
                         }
@@ -3145,8 +3651,14 @@ let main_plots_dash = function(opt_in) {
                                 .transition()
                                 .duration(200)
                                 .attr('transform', 'translate(' + (offleft + generalIndex[0] * (offset + (dim.w))) + ',' + ((generalIndex[1] * (offset + (dim.h)))) + ')')
-                            points.push({x: (offleft + generalIndex[0] * (offset + (dim.w))) - dim.w * 0.1, y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5})
-                            points.push({x: (offleft + generalIndex[0] * (offset + (dim.w))) + dim.w * 1.1, y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5})
+                            points.push({
+                                x: (offleft + generalIndex[0] * (offset + (dim.w))) - dim.w * 0.1,
+                                y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5,
+                            })
+                            points.push({
+                                x: (offleft + generalIndex[0] * (offset + (dim.w))) + dim.w * 1.1,
+                                y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5,
+                            })
                             generalIndex[0] = (generalIndex[0] + 1)
                         }
                         else if (mode === 2) {
@@ -3158,8 +3670,14 @@ let main_plots_dash = function(opt_in) {
                                 .transition()
                                 .duration(200)
                                 .attr('transform', 'translate(' + (generalIndex[0] * (offset + (dim.w))) + ',' + ((generalIndex[1] * (offset + (dim.h)))) + ')')
-                            points.push({x: (generalIndex[0] * (offset + (dim.w))) - dim.w * 0.1, y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5})
-                            points.push({x: (generalIndex[0] * (offset + (dim.w))) + dim.w * 1.1, y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5})
+                            points.push({
+                                x: (generalIndex[0] * (offset + (dim.w))) - dim.w * 0.1,
+                                y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5,
+                            })
+                            points.push({
+                                x: (generalIndex[0] * (offset + (dim.w))) + dim.w * 1.1,
+                                y: (generalIndex[1] * (offset + (dim.h))) + dim.h * 0.5,
+                            })
                             generalIndex[0] = (generalIndex[0] + 1)
                         }
                     })

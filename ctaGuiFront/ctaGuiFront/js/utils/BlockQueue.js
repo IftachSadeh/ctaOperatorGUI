@@ -9,7 +9,10 @@
 /* global cols_blues */
 /* global cols_yellows */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/ScrollBox.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/ScrollBox.js',
+})
 
 // ------------------------------------------------------------------
 //
@@ -20,7 +23,13 @@ window.BlockQueue = function(opt_in) {
         main: {
             tag: 'blockQueueRootTag',
             g: undefined,
-            box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: color_theme.brighter.background,
                 stroke: color_theme.brighter.stroke,
@@ -30,7 +39,13 @@ window.BlockQueue = function(opt_in) {
         axis: {
             enabled: true,
             g: undefined,
-            box: { x: 0, y: 300, w: 1000, h: 0, marg: 0 },
+            box: {
+                x: 0,
+                y: 300,
+                w: 1000,
+                h: 0,
+                marg: 0,
+            },
             axis: undefined,
             scale: undefined,
             domain: [ 0, 1000 ],
@@ -53,7 +68,13 @@ window.BlockQueue = function(opt_in) {
             run: {
                 enabled: true,
                 g: undefined,
-                box: { x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0 },
+                box: {
+                    x: 0,
+                    y: 300 * 0.66,
+                    w: 1000,
+                    h: 300 * 0.34,
+                    marg: 0,
+                },
                 events: {
                     click: () => {},
                     mouseover: () => {},
@@ -73,7 +94,13 @@ window.BlockQueue = function(opt_in) {
             cancel: {
                 enabled: true,
                 g: undefined,
-                box: { x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0 },
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 1000,
+                    h: 300 * 0.2,
+                    marg: 0,
+                },
                 events: {
                     click: () => {},
                     mouseover: () => {},
@@ -93,7 +120,13 @@ window.BlockQueue = function(opt_in) {
             modification: {
                 enabled: true,
                 g: undefined,
-                box: { x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0 },
+                box: {
+                    x: 0,
+                    y: 300 * 0.24,
+                    w: 1000,
+                    h: 300 * 0.36,
+                    marg: 0,
+                },
                 events: {
                     click: () => {},
                     mouseover: () => {},
@@ -115,37 +148,62 @@ window.BlockQueue = function(opt_in) {
         filters: {
             enabled: false,
             g: undefined,
-            box: { x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0 },
+            box: {
+                x: 0,
+                y: 300 * 0.15,
+                w: 1000 * 0.12,
+                h: 300 * 0.7,
+                marg: 0,
+            },
             filters: [],
         },
         timeBars: {
             enabled: true,
             g: undefined,
-            box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
         },
         time: {
-            currentTime: { date: new Date(), time: 0 },
-            startTime: { date: new Date(), time: 0 },
-            endTime: { date: new Date(), time: 1000 },
+            currentTime: {
+                date: new Date(),
+                time: 0,
+            },
+            startTime: {
+                date: new Date(),
+                time: 0,
+            },
+            endTime: {
+                date: new Date(),
+                time: 1000,
+            },
         },
         data: {
             raw: {
                 blocks: [],
                 tel_ids: [],
             },
-            filtered: {},
+            filtered: {
+            },
             modified: [],
         },
         debug: {
             enabled: false,
         },
-        pattern: {},
-        event: {},
+        pattern: {
+        },
+        event: {
+        },
         input: {
             selection: [],
         },
     }
-    let com = {}
+    let com = {
+    }
     com = opt_in
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
@@ -166,7 +224,8 @@ window.BlockQueue = function(opt_in) {
         if (com.style) {
             return
         }
-        com.style = {}
+        com.style = {
+        }
         com.style.runRecCol = cols_blues[2]
         com.style.blockCol = function(opt_in) {
             let state = is_def(opt_in.state)
@@ -239,7 +298,8 @@ window.BlockQueue = function(opt_in) {
             }
         }
 
-        com.pattern.select = {}
+        com.pattern.select = {
+        }
         com.pattern.select.defs = com.main.g.append('defs')
         // com.pattern.select.patternHover = com.pattern.select.defs.append('pattern')
         //   .attr('id', 'patternHover')
@@ -349,7 +409,8 @@ window.BlockQueue = function(opt_in) {
             return
         }
 
-        com.blocks.clipping = {}
+        com.blocks.clipping = {
+        }
         com.blocks.clipping.g = com.main.g.append('g')
         com.blocks.clipping.g
             .append('defs')
@@ -459,7 +520,8 @@ window.BlockQueue = function(opt_in) {
             com.filters.top = {
                 g: com.filters.g.append('g'),
                 box: deep_copy(com.filters.box),
-                childs: {},
+                childs: {
+                },
             }
             com.filters.top.box.y = com.filters.top.box.y
             com.filters.top.box.h *= 0.15
@@ -505,9 +567,12 @@ window.BlockQueue = function(opt_in) {
             com.filters.middle = {
                 g: com.filters.g.append('g'),
                 box: deep_copy(com.filters.box),
-                states: {},
-                tels: {},
-                targets: {},
+                states: {
+                },
+                tels: {
+                },
+                targets: {
+                },
             }
             com.filters.middle.box.x = 0
             com.filters.middle.box.y =
@@ -527,7 +592,8 @@ window.BlockQueue = function(opt_in) {
             com.filters.bottom = {
                 g: com.filters.g.append('g'),
                 box: deep_copy(com.filters.box),
-                childs: {},
+                childs: {
+                },
             }
             com.filters.bottom.box.y =
         com.filters.bottom.box.y + com.filters.bottom.box.h * 0.85
@@ -547,9 +613,12 @@ window.BlockQueue = function(opt_in) {
             com.filters.general = {
                 g: com.filters.g.append('g'),
                 box: deep_copy(com.filters.box),
-                states: {},
-                tels: {},
-                targets: {},
+                states: {
+                },
+                tels: {
+                },
+                targets: {
+                },
             }
             com.filters.general.box.x = 0
             com.filters.general.box.y =
@@ -829,25 +898,67 @@ window.BlockQueue = function(opt_in) {
             // }
 
             com.filters.middle.button = {
-                Fail: create_button({ row: 1, col: 3 }, 'Fail', [
-                    { keys: [ 'exe_state', 'state' ], value: 'fail' },
+                Fail: create_button({
+                    row: 1,
+                    col: 3,
+                }, 'Fail', [
+                    {
+                        keys: [ 'exe_state', 'state' ],
+                        value: 'fail',
+                    },
                 ]),
-                Done: create_button({ row: 2, col: 3 }, 'Done', [
-                    { keys: [ 'exe_state', 'state' ], value: 'done' },
+                Done: create_button({
+                    row: 2,
+                    col: 3,
+                }, 'Done', [
+                    {
+                        keys: [ 'exe_state', 'state' ],
+                        value: 'done',
+                    },
                 ]),
-                Run: create_button({ row: 3, col: 3 }, 'Run', [
-                    { keys: [ 'exe_state', 'state' ], value: 'run' },
+                Run: create_button({
+                    row: 3,
+                    col: 3,
+                }, 'Run', [
+                    {
+                        keys: [ 'exe_state', 'state' ],
+                        value: 'run',
+                    },
                 ]),
-                'Cancel.canrun': create_button({ row: 4, col: 3 }, 'Cancel.canrun', [
-                    { keys: [ 'exe_state', 'state' ], value: 'cancel' },
-                    { keys: [ 'exe_state', 'can_run' ], value: true },
+                'Cancel.canrun': create_button({
+                    row: 4,
+                    col: 3,
+                }, 'Cancel.canrun', [
+                    {
+                        keys: [ 'exe_state', 'state' ],
+                        value: 'cancel',
+                    },
+                    {
+                        keys: [ 'exe_state', 'can_run' ],
+                        value: true,
+                    },
                 ]),
-                Cancel: create_button({ row: 5, col: 3 }, 'Cancel', [
-                    { keys: [ 'exe_state', 'state' ], value: 'cancel' },
-                    { keys: [ 'exe_state', 'can_run' ], value: false },
+                Cancel: create_button({
+                    row: 5,
+                    col: 3,
+                }, 'Cancel', [
+                    {
+                        keys: [ 'exe_state', 'state' ],
+                        value: 'cancel',
+                    },
+                    {
+                        keys: [ 'exe_state', 'can_run' ],
+                        value: false,
+                    },
                 ]),
-                Wait: create_button({ row: 6, col: 3 }, 'Wait', [
-                    { keys: [ 'exe_state', 'state' ], value: 'wait' },
+                Wait: create_button({
+                    row: 6,
+                    col: 3,
+                }, 'Wait', [
+                    {
+                        keys: [ 'exe_state', 'state' ],
+                        value: 'wait',
+                    },
                 ]),
             }
 
@@ -919,7 +1030,13 @@ window.BlockQueue = function(opt_in) {
             }
             return false
         }
-        let filtered = { done: [], run: [], cancel: [], wait: [], fail: [] }
+        let filtered = {
+            done: [],
+            run: [],
+            cancel: [],
+            wait: [],
+            fail: [],
+        }
         for (var z = 0; z < com.data.raw.blocks.done.length; z++) {
             let data_now = com.data.raw.blocks.done[z]
             if (com.filters.filters.length === 0) {
@@ -1247,8 +1364,16 @@ window.BlockQueue = function(opt_in) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-        let wMin = min_max_obj({ min_max: 'min', data: blocks, func: 'w' })
-        let hMin = min_max_obj({ min_max: 'min', data: blocks, func: 'h' })
+        let wMin = min_max_obj({
+            min_max: 'min',
+            data: blocks,
+            func: 'w',
+        })
+        let hMin = min_max_obj({
+            min_max: 'min',
+            data: blocks,
+            func: 'h',
+        })
         if (!is_def(hMin) || !is_def(wMin)) {
             return []
         }
@@ -1279,9 +1404,17 @@ window.BlockQueue = function(opt_in) {
             // let o0 = data_now0.o
 
             let telV = [].concat(data_now0.data.tel_ids)
-            let min_max = { min_x: x0, min_y: y0, maxX: x0 + w0, maxY: y0 + h0 }
+            let min_max = {
+                min_x: x0,
+                min_y: y0,
+                maxX: x0 + w0,
+                maxY: y0 + h0,
+            }
 
-            let ovelaps = [{ index: index0, data: data_now0 }]
+            let ovelaps = [{
+                index: index0,
+                data: data_now0,
+            }]
 
             for (let n_tries = 0; n_tries < 1; n_tries++) {
                 let nOver = ovelaps.length
@@ -1334,7 +1467,10 @@ window.BlockQueue = function(opt_in) {
                             maxY: Math.max(min_max.maxY, y1 + h1),
                         }
 
-                        ovelaps.push({ index: index1, data: data_now1 })
+                        ovelaps.push({
+                            index: index1,
+                            data: data_now1,
+                        })
                     }
                 })
                 // console.log('xxxxxxxxxxxxxxx',n_tries,ovelaps,ovelaps.map(function(d){return d.data.data.metadata.block_name;}));
@@ -1410,7 +1546,8 @@ window.BlockQueue = function(opt_in) {
         let yScale = box.h / (com.data.raw.tel_ids.length + 2)
 
         let blocks = []
-        let n_blocksType = {}
+        let n_blocksType = {
+        }
         // console.log(data_in);
         // compute width/height/x/y of blocks, only y need to be modified (so far)
 
@@ -1508,14 +1645,20 @@ window.BlockQueue = function(opt_in) {
             .domain([ com.time.startTime.time, com.time.endTime.time ])
         for (let index in blocks) {
             let b = blocks[index]
-            let cols = com.style.blockCol({ d: b })
+            let cols = com.style.blockCol({
+                d: b,
+            })
 
             b.w = timescale(b.data.endTime) - timescale(b.data.startTime)
             b.stroke = cols.stroke
             b.strokeWidth = 0.5
             b.fill = cols.background
-            b.fill_opacity = com.style.blockOpac({ d: b })
-            b.strokeOpacity = com.style.blockOpac({ d: b })
+            b.fill_opacity = com.style.blockOpac({
+                d: b,
+            })
+            b.strokeOpacity = com.style.blockOpac({
+                d: b,
+            })
             b.strokeDasharray = []
 
             b.text = cols.text
@@ -1773,7 +1916,8 @@ window.BlockQueue = function(opt_in) {
                     d3
                         .drag()
                         .on('start', function(d) {
-                            com.interaction = {}
+                            com.interaction = {
+                            }
                             com.interaction.oldG = parent
                             group.events.drag.start(d)
                         })

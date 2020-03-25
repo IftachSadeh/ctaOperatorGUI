@@ -15,15 +15,17 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 from ctaGuiUtils.py.InstData import InstData
 
 # ------------------------------------------------------------------
-# general class for views corresponding to sockets, 
+# general class for views corresponding to sockets,
 # from which specific view can also inherit
 # ------------------------------------------------------------------
+
+
 class SocketManager(BaseNamespace, BroadcastMixin):
     server_name = None
     sess_expire = 10
     cleanup_sleep = 60
 
-    # common dictionaries for all instances of 
+    # common dictionaries for all instances of
     # the class (keeping track of all sessions etc.)
     sess_endpoints = dict()
     thread_sigs = dict()
@@ -100,7 +102,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             widget_ids = self.redis.lGet('sess_widgets;'+self.sess_id)
             for widget_id in widget_ids:
                 if widget_id in SocketManager.widget_inits:
-                    getattr(SocketManager.widget_inits[widget_id], 'back_from_offline')()
+                    getattr(
+                        SocketManager.widget_inits[widget_id], 'back_from_offline')()
 
         return
 
@@ -140,7 +143,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         ])
         self.log.debug([
             ['b', ' - session details: '],
-            ['y', SocketManager.server_name, ''], ['p', self.user_group_id, ''],
+            ['y', SocketManager.server_name, ''], [
+                'p', self.user_group_id, ''],
             ['y', self.user_id, ''], ['p', self.user_group_id, ''],
             ['y', self.sess_id, ''],
             ['p', self.sess_name, ''], ['y', self.ns_name, '']
@@ -174,7 +178,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             # ------------------------------------------------------------------
             # list of all sessions for this user
             # ------------------------------------------------------------------
-            self.redis.lPush(name='user_sess_ids;'+self.user_id, data=self.sess_id)
+            self.redis.lPush(name='user_sess_ids;' +
+                             self.user_id, data=self.sess_id)
 
         # ------------------------------------------------------------------
         # initiate the threads which does periodic cleanup, heartbeat managment etc.
@@ -186,7 +191,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 gevent.spawn(self.sess_heartbeat, thread_id)
 
             if self.get_thread_id('shared_thread', 'cleanup') == -1:
-                thread_id = self.set_thread_state('shared_thread', 'cleanup', True)
+                thread_id = self.set_thread_state(
+                    'shared_thread', 'cleanup', True)
                 gevent.spawn(self.cleanup, thread_id)
 
             if self.get_thread_id('shared_thread', 'pubsub_socket_evt_widgets') == -1:
@@ -261,7 +267,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         # (no need for a 'from dynamicLoadWidget import dynWidg_0' statement)
         # ------------------------------------------------------------------
         with SocketManager.lock:
-            has_widget_id = self.redis.hExists(name='all_widgets', key=widget_id)
+            has_widget_id = self.redis.hExists(
+                name='all_widgets', key=widget_id)
 
         if not has_widget_id:
             # the following is equivalent e.g., to:
@@ -283,7 +290,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 else:
                     n_icon = allowed_widget_types['synced'].index(widget_name)
                     while True:
-                        widget_ids = self.redis.lGet('user_widgets;'+self.user_id)
+                        widget_ids = self.redis.lGet(
+                            'user_widgets;'+self.user_id)
                         if len(widget_ids) == 0:
                             break
 
@@ -319,7 +327,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
                 if sync_type > 2 or sync_type < 0:
                     self.log.warning([
-                        ['rb', ' - sync_type = ', sync_type, ' too large - on_widget('],
+                        ['rb', ' - sync_type = ', sync_type,
+                            ' too large - on_widget('],
                         ['yb', data], ['rb', ') !!!!!!!!']
                     ])
                     sync_type = min(max(sync_type, 0), 2)
@@ -371,7 +380,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 getattr(SocketManager.widget_inits[widget_id], data['method_name'])(
                     data['method_arg'])
             else:
-                getattr(SocketManager.widget_inits[widget_id], data['method_name'])()
+                getattr(
+                    SocketManager.widget_inits[widget_id], data['method_name'])()
 
         return
 
@@ -404,7 +414,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                     widget_ids.append(widget_id)
 
         for widget_id in widget_ids:
-            getattr(SocketManager.widget_inits[widget_id], 'update_sync_groups')()
+            getattr(
+                SocketManager.widget_inits[widget_id], 'update_sync_groups')()
 
         return
 
@@ -433,7 +444,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
                 get_states = states_0 + states_2
                 do_send = (data_in['widget_id'] in states_0 or
-                          data_in['widget_id'] in states_1)
+                           data_in['widget_id'] in states_1)
                 if do_send:
                     sync_group['sync_types'][data_in['type']] = data_in['data']
 
@@ -449,7 +460,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             'data': data_in['data']
         }
         self.socket_event_widgets(event_name='get_sync_state',
-                              data=data, widget_ids=all_sync_ids)
+                                  data=data, widget_ids=all_sync_ids)
 
         return
 
@@ -491,10 +502,12 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             }
 
             widget.log.info([
-                ['y', ' - sending - ('], ['b', widget.widget_name, thread_type],
+                ['y', ' - sending - ('], ['b',
+                                          widget.widget_name, thread_type],
                 ['y', ','], ['g', self.sess_id, '/', widget.widget_id], ['y', ')']
             ])
 
+            # print('widget.widget_id',widget.widget_id, thread_type, emit_data)
             self.socket_evt_session(
                 widget_id=widget.widget_id, event_name=thread_type, data=emit_data)
 
@@ -515,7 +528,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         thread_func = opt_in['thread_func'] if 'thread_func' in opt_in else None
         if thread_func is None and thread_type == 'update_data':
             thread_func = self.widget_thread_func
-        
+
         is_group_thread = opt_in['is_group_thread']
 
         with widget.lock:
@@ -566,24 +579,25 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                     emit_data['data'] = data_func()
 
                     self.socket_event_widgets(event_name=thread_type,
-                                          data=emit_data, sess_ids=sess_ids)
+                                              data=emit_data, sess_ids=sess_ids)
 
                     if len(widget.widget_group_sess[widget.widget_group]) == 0:
                         with self.lock:
                             self.clear_threads_type(widget.widget_group)
-                            widget.widget_group_sess.pop(widget.widget_group, None)
+                            widget.widget_group_sess.pop(
+                                widget.widget_group, None)
                             break
 
                 sleep(sleep_seconds)
-        
+
         else:
             while (thread_id == self.get_thread_id(widget.widget_id, thread_type)):
                 with widget.lock:
-                    sess_ids = [ widget.socket_manager.sess_id ]
+                    sess_ids = [widget.socket_manager.sess_id]
                     emit_data['data'] = data_func()
-                    
+
                     self.socket_event_widgets(event_name=thread_type,
-                                          data=emit_data, sess_ids=sess_ids)
+                                              data=emit_data, sess_ids=sess_ids)
 
                 sleep(sleep_seconds)
 
@@ -629,7 +643,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                         ['b', 'start '+event_name+'  --> '+lts(sess_ids)]
                     ])
                     self.log.info([
-                        ['b', 'start '+event_name+'  --> '+'['+(',').join(sess_ids)+']']
+                        ['b', 'start '+event_name+'  --> ' +
+                            '['+(',').join(sess_ids)+']']
                     ])
 
                 user_sess_ids = self.redis.lGet('user_sess_ids;'+self.user_id)
@@ -708,14 +723,16 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             if thread_type not in SocketManager.thread_sigs:
                 SocketManager.thread_sigs[thread_type] = []
 
-            thread_id_now = SocketManager.thread_id_gen.randint(10000000000, 99999999999)
+            thread_id_now = SocketManager.thread_id_gen.randint(
+                10000000000, 99999999999)
 
             for n_ele_now in range(len(SocketManager.thread_sigs[thread_type])):
                 if SocketManager.thread_sigs[thread_type][n_ele_now][0] == thread_tag:
                     SocketManager.thread_sigs[thread_type][n_ele_now][1] = thread_id_now
                     return thread_id_now
 
-            SocketManager.thread_sigs[thread_type].append([thread_tag, thread_id_now])
+            SocketManager.thread_sigs[thread_type].append(
+                [thread_tag, thread_id_now])
 
             return thread_id_now
         else:
@@ -799,7 +816,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         with SocketManager.lock:
             sess_ids_now = self.redis.lGet('user_sess_ids;'+self.user_id)
             self.log.info([
-                ['b', ' - leaving session '], ['y', self.sess_name+' , '+self.user_id],
+                ['b', ' - leaving session '], ['y',
+                                               self.sess_name+' , '+self.user_id],
                 ['b', ' where all Ids('], ['g', str(len(sess_ids_now))],
                 ['b', ') = ['], ['p', (',').join(sess_ids_now)], ['b', ']']
             ])
@@ -820,7 +838,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                                 rm_elements.append(sync_type_now)
                         for rm_element in rm_elements:
                             sync_states.remove(rm_element)
-                
+
                 self.clear_threads_type(widget_id)
 
             self.redis.hSet(name='sync_groups', key=self.user_id,
@@ -855,7 +873,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         if sess_id is None:
             return
         self.log.info([
-            ['b', ' - cleanup_session sessionId(', SocketManager.server_name, ') '], ['p', sess_id]
+            ['b', ' - cleanup_session sessionId(', SocketManager.server_name, ') '], [
+                'p', sess_id]
         ])
 
         user_ids = self.redis.lGet('user_ids')
@@ -866,7 +885,8 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         for widget_id in widget_ids:
             self.log.info([
-                ['b', ' - cleanup_session widget_id (', SocketManager.server_name, ') '],
+                ['b',
+                    ' - cleanup_session widget_id (', SocketManager.server_name, ') '],
                 ['p', widget_id]
             ])
 

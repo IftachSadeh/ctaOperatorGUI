@@ -24,9 +24,21 @@ var blockTemplate = {
     target: [], // {id:"", observability:{maximal,optimal,minimal}, name:"", pos:[]}
     tel_ids: [],
     telescopes: {
-        large: { min: 0, max: 0, ids: [] },
-        medium: { min: 0, max: 0, ids: [] },
-        small: { min: 0, max: 0, ids: [] },
+        large: {
+            min: 0,
+            max: 0,
+            ids: [],
+        },
+        medium: {
+            min: 0,
+            max: 0,
+            ids: [],
+        },
+        small: {
+            min: 0,
+            max: 0,
+            ids: [],
+        },
     }, // TO REPLACE WITH SUB-ARRAY
 }
 window.blockTemplate = blockTemplate
@@ -40,27 +52,55 @@ window.blockStyle = function(opt_in) {
         : opt_in.exe_state.can_run
 
     if (state === 'wait') {
-        return {color: colorPalette.blocks.wait, opacity: 1, pattern: 'none'}
+        return {
+            color: colorPalette.blocks.wait,
+            opacity: 1,
+            pattern: 'none',
+        }
     }
     else if (state === 'done') {
-        return {color: colorPalette.blocks.done, opacity: 1, pattern: 'none'}
+        return {
+            color: colorPalette.blocks.done,
+            opacity: 1,
+            pattern: 'none',
+        }
     }
     else if (state === 'fail') {
-        return {color: colorPalette.blocks.fail, opacity: 1, pattern: 'none'}
+        return {
+            color: colorPalette.blocks.fail,
+            opacity: 1,
+            pattern: 'none',
+        }
     }
     else if (state === 'run') {
-        return {color: colorPalette.blocks.run, opacity: 1, pattern: 'none'}
+        return {
+            color: colorPalette.blocks.run,
+            opacity: 1,
+            pattern: 'none',
+        }
     }
     else if (state === 'cancel') {
         if (is_def(can_run)) {
             if (!can_run) {
-                return {color: colorPalette.blocks.cancelOp, opacity: 1, pattern: 'none'}
+                return {
+                    color: colorPalette.blocks.cancelOp,
+                    opacity: 1,
+                    pattern: 'none',
+                }
             }
         }
-        return {color: colorPalette.blocks.cancelSys, opacity: 1, pattern: 'none'}
+        return {
+            color: colorPalette.blocks.cancelSys,
+            opacity: 1,
+            pattern: 'none',
+        }
     }
     else {
-        return {color: colorPalette.blocks.shutdown, opacity: 1, pattern: 'none'}
+        return {
+            color: colorPalette.blocks.shutdown,
+            opacity: 1,
+            pattern: 'none',
+        }
     }
 }
 
@@ -184,7 +224,9 @@ window.extractRandomTelsFromBlock = function(blocks, teltype) {
             }
         }
         for (let i = 0; i < blocks.length; i++) {
-            removeTelescopeFromBlock(blocks[i], {id: tel})
+            removeTelescopeFromBlock(blocks[i], {
+                id: tel,
+            })
         }
         return true
     }
@@ -205,7 +247,9 @@ window.extractRandomTelsFromBlock = function(blocks, teltype) {
 
 window.forceExtractTelsFromBlock = function(blocks, tel) {
     for (let i = 0; i < blocks.length; i++) {
-        removeTelescopeFromBlock(blocks[i], {id: tel})
+        removeTelescopeFromBlock(blocks[i], {
+            id: tel,
+        })
     }
 }
 
@@ -248,7 +292,9 @@ window.balanceTelescopesBetween_blocks = function(b, blocks) {
                 if (t === undefined) {
                     break
                 }
-                addTelescopeToBlock(b, {id: t})
+                addTelescopeToBlock(b, {
+                    id: t,
+                })
             }
         }
     }
@@ -419,7 +465,8 @@ window.inputDate = function(g, box, id, opt_in, events) {
     return input
 }
 window.inputNumber = function(g, box, id, opt_in, events) {
-    let linker = {}
+    let linker = {
+    }
     let fo = g.append('foreignObject')
         .attr('width', box.w + 'px')
         .attr('height', box.h + 'px')
@@ -611,7 +658,11 @@ window.reassignTelescope = function(block) {
     let sizeChunk = allTels.length / block.pointings.length
     function getRandom(arr, size) {
         let rand = []
-        let stats = {large: 0, medium: 0, small: 0}
+        let stats = {
+            large: 0,
+            medium: 0,
+            small: 0,
+        }
         for (let i = 0; i < size && arr.length > 0; i++) {
             let index = Math.floor(Math.random() * arr.length)
             let tt = arr.splice(index, 1)[0]
@@ -626,7 +677,10 @@ window.reassignTelescope = function(block) {
             }
             rand.push(tt)
         }
-        return {ids: rand, stats: stats}
+        return {
+            ids: rand,
+            stats: stats,
+        }
     }
     for (let i = 0; i < block.pointings.length - 1; i++) {
         let tels = getRandom(allTels, sizeChunk)

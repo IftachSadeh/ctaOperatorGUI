@@ -40,7 +40,8 @@ sock.widget_table[main_script_tag] = function(opt_in) {
         main_func: main_arr_zoomer,
     }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
 
     opt_in.ele_props[div_key] = {
         auto_pos: true,
@@ -78,7 +79,8 @@ let main_arr_zoomer = function(opt_in) {
 
     let is_south = window.__site_type__ === 'S'
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_arr_zoomer_svg + ele_now.id,
@@ -88,7 +90,10 @@ let main_arr_zoomer = function(opt_in) {
     })
 
     // let svg_dims = { w: 500, h: 400 }
-    let svg_dims = { w: 500, h: 350 }
+    let svg_dims = {
+        w: 500,
+        h: 350,
+    }
     let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id
 
     // ------------------------------------------------------------------
@@ -138,13 +143,18 @@ let main_arr_zoomer = function(opt_in) {
     locker.add(arr_zoomer_lock_init_key)
 
     // function loop
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
@@ -177,8 +187,16 @@ let main_arr_zoomer = function(opt_in) {
 
             return
         }
-        sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.emit_mouse_move({
+            eleIn: svg_div,
+            data: {
+                widget_id: widget_id,
+            },
+        })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         // ------------------------------------------------------------------
         // create the main svg element

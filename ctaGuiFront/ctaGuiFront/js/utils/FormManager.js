@@ -13,7 +13,8 @@ window.load_script({
 })
 
 window.FormManager = function() {
-    let com = {}
+    let com = {
+    }
 
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
@@ -40,11 +41,16 @@ window.FormManager = function() {
         }
 
         com.mainTag = opt_in.tag
-        com.body = {}
-        com.forObj = {}
-        com.main_div = {}
-        com.input = {}
-        com.title = {}
+        com.body = {
+        }
+        com.forObj = {
+        }
+        com.main_div = {
+        }
+        com.input = {
+        }
+        com.title = {
+        }
 
         // ------------------------------------------------------------------
         //
@@ -58,10 +64,12 @@ window.FormManager = function() {
     // ------------------------------------------------------------------
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        com.style = {}
+        com.style = {
+        }
     }
     this.setStyle = setStyle
 

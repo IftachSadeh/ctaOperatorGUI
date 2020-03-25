@@ -5,7 +5,8 @@
 /* global sock */
 /* global setup_view */
 
-window.setup_view = {}
+window.setup_view = {
+}
 
 // -------------------------------------------------------------------
 // development

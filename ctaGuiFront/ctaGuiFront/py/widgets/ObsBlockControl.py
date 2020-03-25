@@ -43,7 +43,7 @@ class ObsBlockControl():
         # the parent of this widget
         self.socket_manager = socket_manager
         my_assert(log=self.log, msg=[
-               " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
+            " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
@@ -73,7 +73,6 @@ class ObsBlockControl():
 
         return
 
-
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -86,7 +85,7 @@ class ObsBlockControl():
 
         # override the global logging variable with a name corresponding to the current session id
         self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
-                         str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
+                          str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
 
         self.widget_state = wgt["widget_state"]
         self.widget_state["focus_id"] = ""

@@ -35,12 +35,30 @@ var main_script_tag = 'SchedBlocks'
 /* global cols_blocks */
 /* global inst_health_col */
 
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollGrid.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/telescopes/TelescopeDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/blocks/BlockDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/events/EventDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollBox.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/PlotBrushZoom.js' })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollGrid.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/telescopes/TelescopeDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/blocks/BlockDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/events/EventDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollBox.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotBrushZoom.js',
+})
 
 // -------------------------------------------------------------------
 //
@@ -52,9 +70,13 @@ sock.widget_table[main_script_tag] = function(opt_in) {
     let w0 = 12
     let div_key = 'main'
 
-    opt_in.widget_func = { sock_func: sock_sched_blocks, main_func: main_sched_blocks }
+    opt_in.widget_func = {
+        sock_func: sock_sched_blocks,
+        main_func: main_sched_blocks,
+    }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: true,
@@ -89,7 +111,8 @@ function main_sched_blocks(opt_in) {
     let shared = {
         data: {
             serverPast: undefined,
-            blocks: {},
+            blocks: {
+            },
         },
         focus: {
             sched_blocks: undefined,
@@ -97,9 +120,12 @@ function main_sched_blocks(opt_in) {
         },
     }
 
-    let svg = {}
-    let box = {}
-    let svg_dims = {}
+    let svg = {
+    }
+    let box = {
+    }
+    let svg_dims = {
+    }
 
     let event_queue_serverPast = null
     let event_queue_serverFutur = null
@@ -116,7 +142,8 @@ function main_sched_blocks(opt_in) {
     // $.each(widget_ele, function(index,ele_now) {
     //   sgv_tag[ele_now.id] = { id:tag_sched_blocksSvg+"_"+ele_now.id, whRatio:(ele_now.w/ele_now.h) };
     // })
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_sched_blocksSvg + ele_now.id,
@@ -131,7 +158,9 @@ function main_sched_blocks(opt_in) {
     console.log(' -- FIXME -- use tel_info.get_ids and tel_info.tel_id_to_types as in arr_zoomer.js .... -- see optional filter option in the python file -- self.socket_manager.InstData.get_inst_ids(inst_types=[....])')
 
     // function loop
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     // -------------------------------------------------------------------
     //
@@ -151,7 +180,8 @@ function main_sched_blocks(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    let prev_sync = {}
+    let prev_sync = {
+    }
     function get_sync_state(data_in) {
         if (document.hidden) {
             return
@@ -169,7 +199,9 @@ function main_sched_blocks(opt_in) {
         if (type === 'syncObFocus') {
             if (prev_sync[type] !== data_in.data.obs_block_id) {
                 prev_sync[type] = data_in.data.obs_block_id
-                svg_main.block_focus({ id: data_in.data.obs_block_id })
+                svg_main.block_focus({
+                    id: data_in.data.obs_block_id,
+                })
             }
         }
     }
@@ -179,7 +211,8 @@ function main_sched_blocks(opt_in) {
         if (!array) {
             return
         }
-        let blocks = {}
+        let blocks = {
+        }
         blocks.success = []
         blocks.fail = []
         blocks.cancel = []
@@ -206,7 +239,8 @@ function main_sched_blocks(opt_in) {
         return shared.data.server.inst_health.find(x => x.id === id).val
     }
     function groupBlocksBySchedule(blocks) {
-        let res = {}
+        let res = {
+        }
         for (var key in blocks) {
             for (var i = 0; i < blocks[key].length; i++) {
                 let ns = blocks[key][i].metadata.n_sched
@@ -220,7 +254,11 @@ function main_sched_blocks(opt_in) {
         }
         let ret = []
         Object.keys(res).map(function(key, index) {
-            ret.push({schedName: key, scheduleId: res[key][0].sched_block_id, blocks: res[key]})
+            ret.push({
+                schedName: key,
+                scheduleId: res[key][0].sched_block_id,
+                blocks: res[key],
+            })
         })
         return ret
     }
@@ -261,8 +299,10 @@ function main_sched_blocks(opt_in) {
     // -------------------------------------------------------------------
     function init_data(data_in) {
         function initSvg() {
-            svg_dims.w = {}
-            svg_dims.h = {}
+            svg_dims.w = {
+            }
+            svg_dims.h = {
+            }
             svg_dims.w[0] = 1000
             svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
@@ -422,7 +462,8 @@ function main_sched_blocks(opt_in) {
             // }
         }
         function initDefaultStyle() {
-            shared.style = {}
+            shared.style = {
+            }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
                 let endTime = is_def(opt_in.endTime)
@@ -465,11 +506,17 @@ function main_sched_blocks(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         let svg_div_id = sgv_tag.main.id + 'svg'
         let svg_div = sgv_tag.main.widget.get_ele(svg_div_id)
@@ -490,7 +537,12 @@ function main_sched_blocks(opt_in) {
             })
             return
         }
-        sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+        sock.emit_mouse_move({
+            eleIn: svg_div,
+            data: {
+                widget_id: widget_id,
+            },
+        })
 
         initSvg()
         initDefaultStyle()
@@ -554,7 +606,9 @@ function main_sched_blocks(opt_in) {
         svgRunningPhase.update_data()
         svgFreeTels.update_data()
 
-        let currentTime = {date: new Date(shared.data.server.time_of_night.date_now)}
+        let currentTime = {
+            date: new Date(shared.data.server.time_of_night.date_now),
+        }
         svg.foreground.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
     }
     // -------------------------------------------------------------------
@@ -585,7 +639,8 @@ function main_sched_blocks(opt_in) {
     this.update_data = update_data
 
     let Svg_events_queue_serverPast = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let adjustedBox = {
                 x: box.event_queue_serverPast.x,
@@ -602,7 +657,8 @@ function main_sched_blocks(opt_in) {
                 main: {
                     tag: 'eventDisplayerPastSchedBlock',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: color_theme.medium.background,
@@ -618,7 +674,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -653,7 +715,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -675,7 +743,13 @@ function main_sched_blocks(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
 
@@ -684,9 +758,18 @@ function main_sched_blocks(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -696,7 +779,8 @@ function main_sched_blocks(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     event: {
                         click: (d) => {
@@ -716,8 +800,14 @@ function main_sched_blocks(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: undefined, block: undefined},
-                    over: {sched_blocks: undefined, block: undefined},
+                    focus: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
+                    over: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
                     selection: [],
                 },
             })
@@ -727,10 +817,19 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let currentTime = {date: date, time: Number(shared.data.server.time_of_night.now)}
+            let currentTime = {
+                date: date,
+                time: Number(shared.data.server.time_of_night.now),
+            }
             let axisTop = brushZoomPast.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             event_queue_serverPast.update_data({
                 time: {
                     currentTime: currentTime,
@@ -760,7 +859,8 @@ function main_sched_blocks(opt_in) {
         this.update = update
     }
     let Svg_events_queue_serverFutur = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let adjustedBox = {
                 x: box.event_queue_serverFutur.x,
@@ -777,7 +877,8 @@ function main_sched_blocks(opt_in) {
                 main: {
                     tag: 'eventDisplayerFuturSchedBlock',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: color_theme.medium.background,
@@ -793,7 +894,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -828,7 +935,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -850,7 +963,13 @@ function main_sched_blocks(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
 
@@ -859,9 +978,18 @@ function main_sched_blocks(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -871,7 +999,8 @@ function main_sched_blocks(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     event: {
                         click: (d) => {
@@ -891,8 +1020,14 @@ function main_sched_blocks(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: undefined, block: undefined},
-                    over: {sched_blocks: undefined, block: undefined},
+                    focus: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
+                    over: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
                     selection: [],
                 },
             })
@@ -902,10 +1037,19 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let currentTime = {date: date, time: Number(shared.data.server.time_of_night.now)}
+            let currentTime = {
+                date: date,
+                time: Number(shared.data.server.time_of_night.now),
+            }
             let axisTop = brushZoomFutur.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
 
             event_queue_serverFutur.update_data({
                 time: {
@@ -940,7 +1084,8 @@ function main_sched_blocks(opt_in) {
         this.update = update
     }
     let SvgBrushPast = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let brushBox = {
                 x: box.brushPast.x,
@@ -968,7 +1113,13 @@ function main_sched_blocks(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.0,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -999,7 +1150,13 @@ function main_sched_blocks(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.8,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.0,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -1030,7 +1187,13 @@ function main_sched_blocks(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.2,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -1060,7 +1223,13 @@ function main_sched_blocks(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushBox.h * 0.2,
+                            w: brushBox.w,
+                            h: brushBox.h * 0.6,
+                            marg: 0,
+                        },
                         attr: {
                             fill: color_theme.medium.background,
                         },
@@ -1070,7 +1239,13 @@ function main_sched_blocks(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushBox.h * 0.2,
+                            w: brushBox.w,
+                            h: brushBox.h * 0.6,
+                            marg: 0,
+                        },
                         attr: {
                             fill: color_theme.darker.background,
                             opacity: 1,
@@ -1079,11 +1254,19 @@ function main_sched_blocks(opt_in) {
                     },
                 },
                 brush: {
-                    coef: {x: 0, y: 0},
+                    coef: {
+                        x: 0,
+                        y: 0,
+                    },
                     callback: () => {},
                 },
                 zoom: {
-                    coef: {kx: 1, ky: 1, x: 0, y: 0},
+                    coef: {
+                        kx: 1,
+                        ky: 1,
+                        x: 0,
+                        y: 0,
+                    },
                     callback: function() {
                         svg_blocks_queue_serverPast.update_data()
                         svg_events_queue_serverPast.update_data()
@@ -1096,8 +1279,14 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let startTime = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() - (3600 * 8)), time: Number(shared.data.server.time_of_night.now) - (3600 * 8)}
-            let endTime = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_of_night.now)}
+            let startTime = {
+                date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() - (3600 * 8)),
+                time: Number(shared.data.server.time_of_night.now) - (3600 * 8),
+            }
+            let endTime = {
+                date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()),
+                time: Number(shared.data.server.time_of_night.now),
+            }
 
             brushZoomPast.updateAxis({
                 id: 'top',
@@ -1118,7 +1307,8 @@ function main_sched_blocks(opt_in) {
         this.update = update
     }
     let SvgBrushFutur = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let brushBox = {
                 x: box.brushFutur.x,
@@ -1145,7 +1335,13 @@ function main_sched_blocks(opt_in) {
                         enabled: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.0, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.0,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -1176,7 +1372,13 @@ function main_sched_blocks(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.8, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.8,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.0,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -1207,7 +1409,13 @@ function main_sched_blocks(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.2,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -1237,7 +1445,13 @@ function main_sched_blocks(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushBox.h * 0.2,
+                            w: brushBox.w,
+                            h: brushBox.h * 0.6,
+                            marg: 0,
+                        },
                         attr: {
                             fill: color_theme.medium.background,
                         },
@@ -1247,7 +1461,13 @@ function main_sched_blocks(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.6, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushBox.h * 0.2,
+                            w: brushBox.w,
+                            h: brushBox.h * 0.6,
+                            marg: 0,
+                        },
                         attr: {
                             fill: color_theme.darker.background,
                             opacity: 1,
@@ -1256,11 +1476,19 @@ function main_sched_blocks(opt_in) {
                     },
                 },
                 brush: {
-                    coef: {x: 0, y: 0},
+                    coef: {
+                        x: 0,
+                        y: 0,
+                    },
                     callback: () => {},
                 },
                 zoom: {
-                    coef: {kx: 1, ky: 1, x: 0, y: 0},
+                    coef: {
+                        kx: 1,
+                        ky: 1,
+                        x: 0,
+                        y: 0,
+                    },
                     callback: function() {
                         svg_blocks_queue_serverFutur.update_data()
                         svg_events_queue_serverFutur.update_data()
@@ -1273,8 +1501,14 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let startTime = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_of_night.now)}
-            let endTime = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.time_of_night.now) + (3600 * 8)}
+            let startTime = {
+                date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()),
+                time: Number(shared.data.server.time_of_night.now),
+            }
+            let endTime = {
+                date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)),
+                time: Number(shared.data.server.time_of_night.now) + (3600 * 8),
+            }
 
             brushZoomFutur.updateAxis({
                 id: 'top',
@@ -1295,7 +1529,8 @@ function main_sched_blocks(opt_in) {
         this.update = update
     }
     let Svg_blocks_queue_serverPast = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let adjustedBox = {
                 x: box.block_queue_serverPast.x,
@@ -1312,7 +1547,8 @@ function main_sched_blocks(opt_in) {
                 main: {
                     tag: 'blockQueuePastSchedBlock',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: color_theme.medium.background,
@@ -1327,7 +1563,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1350,7 +1592,13 @@ function main_sched_blocks(opt_in) {
                         run: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.6,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.6,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1370,7 +1618,13 @@ function main_sched_blocks(opt_in) {
                         cancel: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.0,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.33,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1390,7 +1644,13 @@ function main_sched_blocks(opt_in) {
                         modification: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.5,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.47,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1412,7 +1672,13 @@ function main_sched_blocks(opt_in) {
                     timeBars: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockQueue2: {
@@ -1426,7 +1692,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1447,7 +1719,13 @@ function main_sched_blocks(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockTrackShrink: {
@@ -1461,7 +1739,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1483,7 +1767,13 @@ function main_sched_blocks(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockList: {
@@ -1491,18 +1781,27 @@ function main_sched_blocks(opt_in) {
                 },
                 blockForm: {
                     mosaic: {
-                        box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w * 0.2,
+                            h: adjustedBox.h,
+                            marg: adjustedBox.marg,
+                        },
                         order: 'n_sched',
                     },
                     forms: {
                         g: undefined,
-                        box: {x: adjustedBox.w * 0.22,
+                        box: {
+                            x: adjustedBox.w * 0.22,
                             y: adjustedBox.h * 0.02,
                             w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
                             h: adjustedBox.h * 0.96,
-                            marg: adjustedBox.marg},
+                            marg: adjustedBox.marg,
+                        },
                         display: 'list',
-                        scroll: {},
+                        scroll: {
+                        },
                     },
                 },
 
@@ -1511,9 +1810,18 @@ function main_sched_blocks(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -1523,7 +1831,8 @@ function main_sched_blocks(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     block: {
                         click: (d) => {
@@ -1554,8 +1863,14 @@ function main_sched_blocks(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: undefined, block: undefined},
-                    over: {sched_blocks: undefined, block: undefined},
+                    focus: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
+                    over: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
                     selection: [],
                 },
             })
@@ -1565,10 +1880,19 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let currentTime = {date: date, time: Number(shared.data.server.time_of_night.now)}
+            let currentTime = {
+                date: date,
+                time: Number(shared.data.server.time_of_night.now),
+            }
             let axisTop = brushZoomPast.getAxis('bottom').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
 
             block_queue_serverPast.update_data({
                 time: {
@@ -1590,16 +1914,26 @@ function main_sched_blocks(opt_in) {
         function update() {
             block_queue_serverPast.update({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
-                    startTime: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
-                    endTime: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
+                    startTime: {
+                        date: new Date(shared.data.server.time_of_night.date_start),
+                        time: Number(shared.data.server.time_of_night.start),
+                    },
+                    endTime: {
+                        date: new Date(shared.data.server.time_of_night.date_end),
+                        time: Number(shared.data.server.time_of_night.end),
+                    },
                 },
             })
         }
         this.update = update
     }
     let Svg_blocks_queue_serverFutur = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let adjustedBox = {
                 x: box.block_queue_server_futur.x,
@@ -1616,7 +1950,8 @@ function main_sched_blocks(opt_in) {
                 main: {
                     tag: 'blockQueueFuturSchedBlock',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: color_theme.medium.background,
@@ -1631,7 +1966,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1654,7 +1995,13 @@ function main_sched_blocks(opt_in) {
                         run: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.66875, w: adjustedBox.w, h: adjustedBox.h * 0.33125, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.66875,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.33125,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1674,7 +2021,13 @@ function main_sched_blocks(opt_in) {
                         cancel: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.15, w: adjustedBox.w, h: adjustedBox.h * 0.1525, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.15,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.1525,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1694,7 +2047,13 @@ function main_sched_blocks(opt_in) {
                         modification: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.5,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.47,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1716,7 +2075,13 @@ function main_sched_blocks(opt_in) {
                     timeBars: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockQueue2: {
@@ -1730,7 +2095,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1751,7 +2122,13 @@ function main_sched_blocks(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockTrackShrink: {
@@ -1765,7 +2142,13 @@ function main_sched_blocks(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1787,7 +2170,13 @@ function main_sched_blocks(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockList: {
@@ -1795,18 +2184,27 @@ function main_sched_blocks(opt_in) {
                 },
                 blockForm: {
                     mosaic: {
-                        box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w * 0.2,
+                            h: adjustedBox.h,
+                            marg: adjustedBox.marg,
+                        },
                         order: 'n_sched',
                     },
                     forms: {
                         g: undefined,
-                        box: {x: adjustedBox.w * 0.22,
+                        box: {
+                            x: adjustedBox.w * 0.22,
                             y: adjustedBox.h * 0.02,
                             w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
                             h: adjustedBox.h * 0.96,
-                            marg: adjustedBox.marg},
+                            marg: adjustedBox.marg,
+                        },
                         display: 'list',
-                        scroll: {},
+                        scroll: {
+                        },
                     },
                 },
 
@@ -1815,9 +2213,18 @@ function main_sched_blocks(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -1827,7 +2234,8 @@ function main_sched_blocks(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     block: {
                         click: (d) => {
@@ -1858,8 +2266,14 @@ function main_sched_blocks(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: undefined, block: undefined},
-                    over: {sched_blocks: undefined, block: undefined},
+                    focus: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
+                    over: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
                     selection: [],
                 },
             })
@@ -1869,10 +2283,19 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let currentTime = {date: date, time: Number(shared.data.server.time_of_night.now)}
+            let currentTime = {
+                date: date,
+                time: Number(shared.data.server.time_of_night.now),
+            }
             let axisTop = brushZoomFutur.getAxis('bottom').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
 
             block_queue_server_futur.update_data({
                 time: {
@@ -1893,9 +2316,18 @@ function main_sched_blocks(opt_in) {
 
         function update() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let currentTime = {date: date, time: Number(shared.data.server.time_of_night.now)}
-            let startTime = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_of_night.now)}
-            let endTime = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.time_of_night.now) + (3600 * 8)}
+            let currentTime = {
+                date: date,
+                time: Number(shared.data.server.time_of_night.now),
+            }
+            let startTime = {
+                date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()),
+                time: Number(shared.data.server.time_of_night.now),
+            }
+            let endTime = {
+                date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)),
+                time: Number(shared.data.server.time_of_night.now) + (3600 * 8),
+            }
             block_queue_server_futur.update_data({
                 time: {
                     currentTime: currentTime,
@@ -1908,7 +2340,8 @@ function main_sched_blocks(opt_in) {
     }
 
     let SvgRunningPhase = function() {
-        let reserved = {}
+        let reserved = {
+        }
 
         function init_data() {
             reserved.gBlockBox = svg.g.append('g')
@@ -2041,7 +2474,27 @@ function main_sched_blocks(opt_in) {
                     [],
                     [],
                     [],
-                    [{x: 0, y: 0, w: 0.49, h: 0.49}, {x: 0.5, y: 0, w: 0.49, h: 0.49}, {x: 0, y: 0.5, w: 0.49, h: 0.49}, {x: 0.5, y: 0.5, w: 0.49, h: 0.49}],
+                    [{
+                        x: 0,
+                        y: 0,
+                        w: 0.49,
+                        h: 0.49,
+                    }, {
+                        x: 0.5,
+                        y: 0,
+                        w: 0.49,
+                        h: 0.49,
+                    }, {
+                        x: 0,
+                        y: 0.5,
+                        w: 0.49,
+                        h: 0.49,
+                    }, {
+                        x: 0.5,
+                        y: 0.5,
+                        w: 0.49,
+                        h: 0.49,
+                    }],
                 ]
                 let categories = [ 'mount', 'mirror', 'daq', 'camera' ]
                 let box = {
@@ -2374,7 +2827,8 @@ function main_sched_blocks(opt_in) {
         this.update_data = update_data
     }
     let SvgFreeTels = function() {
-        let reserved = {}
+        let reserved = {
+        }
 
         function init_data() {
             let telsBox = deep_copy(box.freeTels)
@@ -2407,7 +2861,8 @@ function main_sched_blocks(opt_in) {
                 main: {
                     tag: 'telescopeDisplayerSchedBlock',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: telsBox,
                     background: {
                         fill: color_theme.medium.background,
@@ -2510,14 +2965,16 @@ function main_sched_blocks(opt_in) {
                     raw: {
                         telescopes: [],
                     },
-                    filtered: {},
+                    filtered: {
+                    },
                     modified: [],
                 },
                 debug: {
                     enabled: false,
                 },
                 pattern: {
-                    select: {},
+                    select: {
+                    },
                 },
                 events: {
                     block: {
@@ -2572,7 +3029,10 @@ function main_sched_blocks(opt_in) {
             let tels = []
             for (let i = 0; i < shared.data.server.tel_ids.length; i++) {
                 let id = shared.data.server.tel_ids[i]
-                tels.push({id: id, health: get_tel_healthById(id)})
+                tels.push({
+                    id: id,
+                    health: get_tel_healthById(id),
+                })
             }
             telescopeRunning.update_data({
                 data: {
@@ -2615,6 +3075,7 @@ function main_sched_blocks(opt_in) {
             })
         }
 
-        return is_def(focusBlock) ? focusBlock : {}
+        return is_def(focusBlock) ? focusBlock : {
+        }
     }
 }

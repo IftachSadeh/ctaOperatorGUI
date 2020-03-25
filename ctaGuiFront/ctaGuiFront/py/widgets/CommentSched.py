@@ -35,8 +35,9 @@ class CommentSched():
         # the parent of this widget
         self.socket_manager = socket_manager
         my_assert(log=self.log,
-               msg=[" - no socket_manager handed to", self.__class__.__name__],
-               state=(self.socket_manager is not None))
+                  msg=[" - no socket_manager handed to",
+                       self.__class__.__name__],
+                  state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
@@ -76,8 +77,9 @@ class CommentSched():
         # override the global logging variable with a name
         # corresponding to the current session id
         self.log = my_log(title=str(self.socket_manager.user_id) + "/" +
-                         str(self.socket_manager.sess_id) + "/" + __name__ + "/"
-                         + self.widget_id)
+                          str(self.socket_manager.sess_id) +
+                          "/" + __name__ + "/"
+                          + self.widget_id)
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
@@ -110,7 +112,7 @@ class CommentSched():
             "now": int(CommentSched.time_of_night['now']),
             "start": int(CommentSched.time_of_night['start']),
             "end": int(CommentSched.time_of_night['end'])
-            }
+        }
 
         self.get_blocks()
         self.get_tel_health()
@@ -184,7 +186,8 @@ class CommentSched():
             CommentSched.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['startTime'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['startTime'],"%Y-%m-%d %H:%M:%S")).total_seconds())
-                cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
+                cmp=lambda a, b: int(a['time']['start']) - \
+                int(b['time']['start'])
             )
 
         return

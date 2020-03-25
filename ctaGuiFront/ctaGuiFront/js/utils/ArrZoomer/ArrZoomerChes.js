@@ -72,11 +72,18 @@ window.ArrZoomerChes = function(opt_in_top) {
 
 
 
-    let com = {}
-    com.ches_xy = { x: {}, y: {} }
+    let com = {
+    }
+    com.ches_xy = {
+        x: {
+        },
+        y: {
+        },
+    }
 
     let zoom_target = null
-    let zoomLen = {}
+    let zoomLen = {
+    }
     let tel_data = null
     let tel_id_types = null
     let prop0 = 'health'
@@ -140,9 +147,11 @@ window.ArrZoomerChes = function(opt_in_top) {
 
         let g_ches_rec = ches_gs.g_outer.append('g')
 
-        com.ches_g = {}
+        com.ches_g = {
+        }
         com.ches_g.g = ches_gs.g_outer.append('g')
-        com.ches_g.xyr = {}
+        com.ches_g.xyr = {
+        }
 
         // let nRows     = is_south ? 5 : 2;
         // let n_ele = is_south ? 99 : 19
@@ -178,21 +187,33 @@ window.ArrZoomerChes = function(opt_in_top) {
                 y: y,
                 r: ele_r * 1.5,
             }
-            vor_data.push({ id: id_now, x: x, y: y })
+            vor_data.push({
+                id: id_now,
+                x: x,
+                y: y,
+            })
         })
 
         let xyr_flat = Object.values(com.ches_g.xyr)
         com.ches_xy.x.min = min_max_obj({
-            min_max: 'min', data: xyr_flat, func: (x => x.x - 1. * x.r),
+            min_max: 'min',
+            data: xyr_flat,
+            func: (x => x.x - 1. * x.r),
         })
         com.ches_xy.x.max = min_max_obj({
-            min_max: 'max', data: xyr_flat, func: (x => x.x + 1. * x.r),
+            min_max: 'max',
+            data: xyr_flat,
+            func: (x => x.x + 1. * x.r),
         })
         com.ches_xy.y.min = min_max_obj({
-            min_max: 'min', data: xyr_flat, func: (x => x.y - 1. * x.r),
+            min_max: 'min',
+            data: xyr_flat,
+            func: (x => x.y - 1. * x.r),
         })
         com.ches_xy.y.max = min_max_obj({
-            min_max: 'max', data: xyr_flat, func: (x => x.y + 1. * x.r),
+            min_max: 'max',
+            data: xyr_flat,
+            func: (x => x.y + 1. * x.r),
         })
 
         g_ches_rec
@@ -459,7 +480,9 @@ window.ArrZoomerChes = function(opt_in_top) {
             })
             .on('click', function(d) {
                 tel_data.vor_dblclick({
-                    source: 'com.ches_g.g', d: d, is_in_out: false,
+                    source: 'com.ches_g.g',
+                    d: d,
+                    is_in_out: false,
                 })
             })
         // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:true }); }) // dousnt work well...

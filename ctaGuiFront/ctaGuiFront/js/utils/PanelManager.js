@@ -12,19 +12,37 @@ window.PanelManager = function() {
     let template = {
         tag: 'tagDefaultPanelManager',
         g: undefined,
-        box: { x: 1, y: 1, w: 1, h: 1 },
+        box: {
+            x: 1,
+            y: 1,
+            w: 1,
+            h: 1,
+        },
         tab: {
             enabled: true,
             g: undefined,
-            box: { x: 1, y: 1, w: 1, h: 1 },
-            dimension: { w: 0, h: 0 },
+            box: {
+                x: 1,
+                y: 1,
+                w: 1,
+                h: 1,
+            },
+            dimension: {
+                w: 0,
+                h: 0,
+            },
             dragable: false,
             closable: false,
         },
         content: {
             enabled: true,
             g: undefined,
-            box: { x: 1, y: 1, w: 1, h: 1 },
+            box: {
+                x: 1,
+                y: 1,
+                w: 1,
+                h: 1,
+            },
         },
         panels: {
             current: undefined,
@@ -82,7 +100,10 @@ window.PanelManager = function() {
         }
 
         let defaultPanel = new CustomPanel()
-        defaultPanel.set({ tag: 'id', def: 'default' })
+        defaultPanel.set({
+            tag: 'id',
+            def: 'default',
+        })
         defaultPanel.set({
             tag: 'opt',
             def: {
@@ -169,7 +190,10 @@ window.PanelManager = function() {
         }
         let w = com.tab.box.w
         let h = com.tab.box.h + 2
-        com.tab.dimension = { w: w, h: h } // ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
+        com.tab.dimension = {
+            w: w,
+            h: h,
+        } // ((com.width - (com.margin * 1)) - ((com.panels.length - 1) * com.spaceBetweenLabel)) / com.panels.length
     }
     function updateTab(data) {
         if (com.debug) {
@@ -349,7 +373,8 @@ window.CustomPanel = function() {
             g: undefined,
             repaint: () => {},
         },
-        data: {},
+        data: {
+        },
     }
     // com.tab = {}
     // com.panel = {}

@@ -12,7 +12,10 @@
 /* global RunLoop */
 /* global BlockForm */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/ScrollBox.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/ScrollBox.js',
+})
 
 // ------------------------------------------------------------------
 //
@@ -23,8 +26,15 @@ window.BlockDisplayer = function(opt_in) {
         main: {
             tag: 'blockQueueRootTag',
             g: undefined,
-            scroll: {},
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            scroll: {
+            },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: color_theme.brighter.background,
                 stroke: color_theme.brighter.stroke,
@@ -37,7 +47,13 @@ window.BlockDisplayer = function(opt_in) {
             axis: {
                 enabled: true,
                 g: undefined,
-                box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+                box: {
+                    x: 0,
+                    y: 300,
+                    w: 1000,
+                    h: 0,
+                    marg: 0,
+                },
                 axis: undefined,
                 scale: undefined,
                 domain: [ 0, 1000 ],
@@ -60,7 +76,13 @@ window.BlockDisplayer = function(opt_in) {
                 run: {
                     enabled: true,
                     g: undefined,
-                    box: {x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0},
+                    box: {
+                        x: 0,
+                        y: 300 * 0.66,
+                        w: 1000,
+                        h: 300 * 0.34,
+                        marg: 0,
+                    },
                     events: {
                         click: () => {},
                         mouseover: () => {},
@@ -80,7 +102,13 @@ window.BlockDisplayer = function(opt_in) {
                 cancel: {
                     enabled: true,
                     g: undefined,
-                    box: {x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: 1000,
+                        h: 300 * 0.2,
+                        marg: 0,
+                    },
                     events: {
                         click: () => {},
                         mouseover: () => {},
@@ -100,7 +128,13 @@ window.BlockDisplayer = function(opt_in) {
                 modification: {
                     enabled: true,
                     g: undefined,
-                    box: {x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0},
+                    box: {
+                        x: 0,
+                        y: 300 * 0.24,
+                        w: 1000,
+                        h: 300 * 0.36,
+                        marg: 0,
+                    },
                     events: {
                         click: () => {},
                         mouseover: () => {},
@@ -122,7 +156,13 @@ window.BlockDisplayer = function(opt_in) {
             timeBars: {
                 enabled: true,
                 g: undefined,
-                box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 1000,
+                    h: 300,
+                    marg: 0,
+                },
             },
         },
         blockQueue2: {
@@ -130,7 +170,13 @@ window.BlockDisplayer = function(opt_in) {
             axis: {
                 enabled: true,
                 g: undefined,
-                box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+                box: {
+                    x: 0,
+                    y: 300,
+                    w: 1000,
+                    h: 0,
+                    marg: 0,
+                },
                 axis: undefined,
                 scale: undefined,
                 domain: [ 0, 1000 ],
@@ -151,7 +197,13 @@ window.BlockDisplayer = function(opt_in) {
             timeBars: {
                 enabled: true,
                 g: undefined,
-                box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 1000,
+                    h: 300,
+                    marg: 0,
+                },
             },
         },
         blockTrackShrink: {
@@ -159,7 +211,13 @@ window.BlockDisplayer = function(opt_in) {
             axis: {
                 enabled: true,
                 g: undefined,
-                box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+                box: {
+                    x: 0,
+                    y: 300,
+                    w: 1000,
+                    h: 0,
+                    marg: 0,
+                },
                 axis: undefined,
                 scale: undefined,
                 domain: [ 0, 1000 ],
@@ -180,7 +238,13 @@ window.BlockDisplayer = function(opt_in) {
             timeBars: {
                 enabled: true,
                 g: undefined,
-                box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 1000,
+                    h: 300,
+                    marg: 0,
+                },
             },
         },
         blockList: {
@@ -188,10 +252,12 @@ window.BlockDisplayer = function(opt_in) {
         },
         blockForm: {
             mosaic: {
-                box: {},
+                box: {
+                },
             },
             forms: {
-                box: {},
+                box: {
+                },
                 display: 'focus',
             },
         },
@@ -201,23 +267,34 @@ window.BlockDisplayer = function(opt_in) {
             filtering: [],
         },
         time: {
-            currentTime: {date: new Date(), time: 0},
-            startTime: {date: new Date(), time: 0},
-            endTime: {date: new Date(), time: 1000},
+            currentTime: {
+                date: new Date(),
+                time: 0,
+            },
+            startTime: {
+                date: new Date(),
+                time: 0,
+            },
+            endTime: {
+                date: new Date(),
+                time: 1000,
+            },
         },
         data: {
             raw: {
                 blocks: [],
                 tel_ids: [],
             },
-            filtered: {},
+            filtered: {
+            },
             modified: [],
         },
         debug: {
             enabled: false,
         },
         pattern: {
-            select: {},
+            select: {
+            },
         },
         input: {
             over: {
@@ -247,7 +324,8 @@ window.BlockDisplayer = function(opt_in) {
     }
 
     function setDefaultStyle() {
-        com.style = {}
+        com.style = {
+        }
         com.style.runRecCol = cols_blues[2]
         com.style.blockCol = function(opt_in) {
             let state = is_def(opt_in.state)
@@ -319,7 +397,8 @@ window.BlockDisplayer = function(opt_in) {
             return 'none'
         }
 
-        com.pattern.select = {}
+        com.pattern.select = {
+        }
         com.pattern.select.defs = com.main.g.append('defs')
         // com.pattern.select.patternHover = com.pattern.select.defs.append('pattern')
         //   .attr('id', 'patternHover')
@@ -462,7 +541,8 @@ window.BlockDisplayer = function(opt_in) {
                 return
             }
 
-            com.blockQueue.blocks.clipping = {}
+            com.blockQueue.blocks.clipping = {
+            }
             com.blockQueue.blocks.clipping.g = com.main.g.append('g')
             com.blockQueue.blocks.clipping.g.append('defs').append('svg:clipPath')
                 .attr('id', 'clip')
@@ -528,10 +608,22 @@ window.BlockDisplayer = function(opt_in) {
                     start: com.time.startTime.time,
                     end: com.time.endTime.time,
                     data: dataBottom,
-                    box: {x: 0, y: 0, w: com.blockQueue.blocks.run.box.w, h: com.blockQueue.blocks.run.box.h, marg: com.blockQueue.blocks.run.box.marg},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: com.blockQueue.blocks.run.box.w,
+                        h: com.blockQueue.blocks.run.box.h,
+                        marg: com.blockQueue.blocks.run.box.marg,
+                    },
                     yScale: true,
                 })
-                bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blockQueue.blocks.run.box.w, h: com.blockQueue.blocks.run.box.h, marg: com.blockQueue.blocks.run.box.marg}, 'toTop')
+                bottomRow = adjustBlockRow(bottomRow, {
+                    x: 0,
+                    y: 0,
+                    w: com.blockQueue.blocks.run.box.w,
+                    h: com.blockQueue.blocks.run.box.h,
+                    marg: com.blockQueue.blocks.run.box.marg,
+                }, 'toTop')
                 bottomRow = setDefaultStyleForBlocks(bottomRow)
                 return bottomRow
             }
@@ -548,8 +640,16 @@ window.BlockDisplayer = function(opt_in) {
             // ------------------------------------------------------------------
             //
             // ------------------------------------------------------------------
-            let wMin = min_max_obj({ min_max: 'min', data: blocks, func: 'w' })
-            let hMin = min_max_obj({ min_max: 'min', data: blocks, func: 'h' })
+            let wMin = min_max_obj({
+                min_max: 'min',
+                data: blocks,
+                func: 'w',
+            })
+            let hMin = min_max_obj({
+                min_max: 'min',
+                data: blocks,
+                func: 'h',
+            })
             if (!is_def(hMin) || !is_def(wMin)) {
                 return []
             }
@@ -580,9 +680,17 @@ window.BlockDisplayer = function(opt_in) {
                 // let o0 = data_now0.o
 
                 let telV = [].concat(data_now0.tel_ids)
-                let min_max = { min_x: x0, min_y: y0, maxX: x0 + w0, maxY: y0 + h0 }
+                let min_max = {
+                    min_x: x0,
+                    min_y: y0,
+                    maxX: x0 + w0,
+                    maxY: y0 + h0,
+                }
 
-                let ovelaps = [{ index: index0, data: data_now0 }]
+                let ovelaps = [{
+                    index: index0,
+                    data: data_now0,
+                }]
 
                 for (let n_tries = 0; n_tries < 1; n_tries++) {
                     let nOver = ovelaps.length
@@ -635,7 +743,10 @@ window.BlockDisplayer = function(opt_in) {
                                 maxY: Math.max(min_max.maxY, y1 + h1),
                             }
 
-                            ovelaps.push({ index: index1, data: data_now1 })
+                            ovelaps.push({
+                                index: index1,
+                                data: data_now1,
+                            })
                         }
                     })
                     // console.log('xxxxxxxxxxxxxxx',n_tries,ovelaps,ovelaps.map(function(d){return d.data.data.metadata.block_name;}));
@@ -715,7 +826,8 @@ window.BlockDisplayer = function(opt_in) {
             let xScale = box.w / (opt_in.end - opt_in.start)
             let yScale = box.h / (com.data.raw.tel_ids.length + 2)
 
-            let n_blocksType = {}
+            let n_blocksType = {
+            }
             // console.log(data_in);
             // compute width/height/x/y of blocks, only y need to be modified (so far)
 
@@ -795,14 +907,20 @@ window.BlockDisplayer = function(opt_in) {
                 let b = blocks[index]
                 let bDisplay = b.display
 
-                let cols = com.style.blockCol({ d: b })
+                let cols = com.style.blockCol({
+                    d: b,
+                })
 
                 bDisplay.w = timescale(b.time.endTime) - timescale(b.time.start)
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.5
                 bDisplay.fill = cols.background
-                bDisplay.fill_opacity = com.style.blockOpac({ d: b })
-                bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
+                bDisplay.fill_opacity = com.style.blockOpac({
+                    d: b,
+                })
+                bDisplay.strokeOpacity = com.style.blockOpac({
+                    d: b,
+                })
                 bDisplay.strokeDasharray = []
                 bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
@@ -931,10 +1049,22 @@ window.BlockDisplayer = function(opt_in) {
                     start: com.time.startTime.time,
                     end: com.time.endTime.time,
                     data: dataBottom,
-                    box: {x: 0, y: 0, w: com.blockQueue.blocks.run.box.w, h: com.blockQueue.blocks.run.box.h, marg: com.blockQueue.blocks.run.box.marg},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: com.blockQueue.blocks.run.box.w,
+                        h: com.blockQueue.blocks.run.box.h,
+                        marg: com.blockQueue.blocks.run.box.marg,
+                    },
                     yScale: true,
                 })
-                bottomRow = adjustBlockRow(bottomRow, {x: 0, y: 0, w: com.blockQueue.blocks.run.box.w, h: com.blockQueue.blocks.run.box.h, marg: com.blockQueue.blocks.run.box.marg}, 'toTop')
+                bottomRow = adjustBlockRow(bottomRow, {
+                    x: 0,
+                    y: 0,
+                    w: com.blockQueue.blocks.run.box.w,
+                    h: com.blockQueue.blocks.run.box.h,
+                    marg: com.blockQueue.blocks.run.box.marg,
+                }, 'toTop')
                 bottomRow = setDefaultStyleForBlocks(bottomRow)
                 setBlockRect(bottomRow, com.blockQueue.blocks.run)
             }
@@ -946,10 +1076,22 @@ window.BlockDisplayer = function(opt_in) {
                     start: com.time.startTime.time,
                     end: com.time.endTime.time,
                     data: dataTop,
-                    box: {x: 0, y: 0, w: com.blockQueue.blocks.cancel.box.w, h: com.blockQueue.blocks.cancel.box.h, marg: com.blockQueue.blocks.cancel.box.marg},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: com.blockQueue.blocks.cancel.box.w,
+                        h: com.blockQueue.blocks.cancel.box.h,
+                        marg: com.blockQueue.blocks.cancel.box.marg,
+                    },
                     yScale: false,
                 })
-                topRow = adjustBlockRow(topRow, {x: 0, y: 0, w: com.blockQueue.blocks.cancel.box.w, h: com.blockQueue.blocks.cancel.box.h, marg: com.blockQueue.blocks.cancel.box.marg}, 'toTop')
+                topRow = adjustBlockRow(topRow, {
+                    x: 0,
+                    y: 0,
+                    w: com.blockQueue.blocks.cancel.box.w,
+                    h: com.blockQueue.blocks.cancel.box.h,
+                    marg: com.blockQueue.blocks.cancel.box.marg,
+                }, 'toTop')
                 topRow = setDefaultStyleForBlocks(topRow)
                 setBlockRect(topRow, com.blockQueue.blocks.cancel)
             }
@@ -959,10 +1101,22 @@ window.BlockDisplayer = function(opt_in) {
                     start: com.time.startTime.time,
                     end: com.time.endTime.time,
                     data: com.data.modified,
-                    box: {x: 0, y: 0, w: com.blockQueue.blocks.run.box.w, h: com.blockQueue.blocks.run.box.h, marg: com.blockQueue.blocks.run.box.marg},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: com.blockQueue.blocks.run.box.w,
+                        h: com.blockQueue.blocks.run.box.h,
+                        marg: com.blockQueue.blocks.run.box.marg,
+                    },
                     yScale: true,
                 })
-                middleRow = adjustBlockRow(middleRow, {x: 0, y: 0, w: com.blockQueue.blocks.modification.box.w, h: com.blockQueue.blocks.modification.box.h, marg: com.blockQueue.blocks.modification.box.marg}, 'toBottom')
+                middleRow = adjustBlockRow(middleRow, {
+                    x: 0,
+                    y: 0,
+                    w: com.blockQueue.blocks.modification.box.w,
+                    h: com.blockQueue.blocks.modification.box.h,
+                    marg: com.blockQueue.blocks.modification.box.marg,
+                }, 'toBottom')
                 middleRow = setDefaultStyleForBlocks(middleRow)
                 setBlockRect(middleRow, com.blockQueue.blocks.modification)
             }
@@ -1176,15 +1330,22 @@ window.BlockDisplayer = function(opt_in) {
         function setDefaultStyleForBlocks(blocks) {
             for (let index in blocks) {
                 let b = blocks[index]
-                let bDisplay = {}
+                let bDisplay = {
+                }
 
-                let cols = com.style.blockCol({ d: b })
+                let cols = com.style.blockCol({
+                    d: b,
+                })
 
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.5
                 bDisplay.fill = cols.background
-                bDisplay.fill_opacity = com.style.blockOpac({ d: b })
-                bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
+                bDisplay.fill_opacity = com.style.blockOpac({
+                    d: b,
+                })
+                bDisplay.strokeOpacity = com.style.blockOpac({
+                    d: b,
+                })
                 bDisplay.strokeDasharray = []
                 bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
@@ -1226,7 +1387,8 @@ window.BlockDisplayer = function(opt_in) {
             return blocks
         }
         function groupBlocksBySchedule(blocks) {
-            let res = {}
+            let res = {
+            }
             for (var key in blocks) {
                 for (var i = 0; i < blocks[key].length; i++) {
                     let ns = blocks[key][i].metadata.n_sched
@@ -1240,7 +1402,11 @@ window.BlockDisplayer = function(opt_in) {
             }
             let ret = []
             Object.keys(res).map(function(key, index) {
-                ret.push({name: key, id: res[key][0].sched_block_id, blocks: res[key]})
+                ret.push({
+                    name: key,
+                    id: res[key][0].sched_block_id,
+                    blocks: res[key],
+                })
             })
             return ret
         }
@@ -1350,11 +1516,56 @@ window.BlockDisplayer = function(opt_in) {
         }
         function setBlockRect(blocks, box) {
             let blocksTemplate = {
-                '1': [{x: 0.5, y: 0.5}],
-                '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
-                '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
-                '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
-                '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
+                '1': [{
+                    x: 0.5,
+                    y: 0.5,
+                }],
+                '2': [{
+                    x: 0.3,
+                    y: 0.5,
+                }, {
+                    x: 0.7,
+                    y: 0.5,
+                }],
+                '3': [{
+                    x: 0.3,
+                    y: 0.3,
+                }, {
+                    x: 0.7,
+                    y: 0.3,
+                }, {
+                    x: 0.5,
+                    y: 0.7,
+                }],
+                '4': [{
+                    x: 0.3,
+                    y: 0.3,
+                }, {
+                    x: 0.7,
+                    y: 0.3,
+                }, {
+                    x: 0.3,
+                    y: 0.7,
+                }, {
+                    x: 0.7,
+                    y: 0.7,
+                }],
+                '5': [{
+                    x: 0.3,
+                    y: 0.16,
+                }, {
+                    x: 0.7,
+                    y: 0.16,
+                }, {
+                    x: 0.5,
+                    y: 0.5,
+                }, {
+                    x: 0.3,
+                    y: 0.84,
+                }, {
+                    x: 0.7,
+                    y: 0.84,
+                }],
                 '6': [],
                 '7': [],
                 '8': [],
@@ -1453,15 +1664,21 @@ window.BlockDisplayer = function(opt_in) {
                     during: 'ScrollBox' + 'zoomsuring',
                     end: 'ScrollBox' + 'zoomEnd',
                 },
-                run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
+                run_loop: new RunLoop({
+                    tag: 'inputHistoryScrollBox',
+                }),
                 canScroll: true,
                 scrollVertical: false,
                 scrollHorizontal: true,
                 scrollHeight: 0,
                 scrollWidth: com.blockForm.forms.box.w + 0.01,
                 background: 'transparent',
-                scrollRecH: {h: 4},
-                scrollRecV: {w: 2},
+                scrollRecH: {
+                    h: 4,
+                },
+                scrollRecV: {
+                    w: 2,
+                },
             })
             com.blockForm.forms.scroll.scrollG = com.blockForm.forms.scroll.scrollBox.get('innerG')
         }
@@ -1494,15 +1711,22 @@ window.BlockDisplayer = function(opt_in) {
         function setDefaultStyleForBlocks(blocks) {
             for (let index in blocks) {
                 let b = blocks[index]
-                let bDisplay = {}
+                let bDisplay = {
+                }
 
-                let cols = com.style.blockCol({ d: b })
+                let cols = com.style.blockCol({
+                    d: b,
+                })
 
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.5
                 bDisplay.fill = cols.background
-                bDisplay.fill_opacity = com.style.blockOpac({ d: b })
-                bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
+                bDisplay.fill_opacity = com.style.blockOpac({
+                    d: b,
+                })
+                bDisplay.strokeOpacity = com.style.blockOpac({
+                    d: b,
+                })
                 bDisplay.strokeDasharray = []
                 bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
@@ -1544,7 +1768,8 @@ window.BlockDisplayer = function(opt_in) {
             return blocks
         }
         function groupBlocksBySchedule(blocks) {
-            let res = {}
+            let res = {
+            }
             for (var key in blocks) {
                 for (var i = 0; i < blocks[key].length; i++) {
                     let ns = blocks[key][i].metadata.n_sched
@@ -1558,7 +1783,11 @@ window.BlockDisplayer = function(opt_in) {
             }
             let ret = []
             Object.keys(res).map(function(key, index) {
-                ret.push({name: key, id: res[key][0].sched_block_id, blocks: res[key]})
+                ret.push({
+                    name: key,
+                    id: res[key][0].sched_block_id,
+                    blocks: res[key],
+                })
             })
             return ret
         }
@@ -1590,8 +1819,15 @@ window.BlockDisplayer = function(opt_in) {
                     main: {
                         tag: 'blockFormTag' + blocks[i].obs_block_id,
                         g: com.blockForm.forms.scroll.scrollG.append('g'),
-                        scroll: {},
-                        box: {x: 200 * i, y: 0, w: 190, h: com.blockForm.forms.box.h * 1.0, marg: 0},
+                        scroll: {
+                        },
+                        box: {
+                            x: 200 * i,
+                            y: 0,
+                            w: 190,
+                            h: com.blockForm.forms.box.h * 1.0,
+                            marg: 0,
+                        },
                         background: {
                             fill: color_theme.brighter.background,
                             stroke: color_theme.brighter.stroke,
@@ -1617,7 +1853,10 @@ window.BlockDisplayer = function(opt_in) {
                 })
                 bform.update()
             }
-            com.blockForm.forms.scroll.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: 200 * blocks.length})
+            com.blockForm.forms.scroll.scrollBox.resetHorizontalScroller({
+                canScroll: true,
+                scrollWidth: 200 * blocks.length,
+            })
         }
 
         function setBlockRect(blocks, box) {
@@ -1733,7 +1972,8 @@ window.BlockDisplayer = function(opt_in) {
         }
 
         function groupBlocksBySchedule(blocks) {
-            let res = {}
+            let res = {
+            }
             for (var key in blocks) {
                 for (var i = 0; i < blocks[key].length; i++) {
                     let ns = blocks[key][i].metadata.n_sched
@@ -1747,27 +1987,40 @@ window.BlockDisplayer = function(opt_in) {
             }
             let ret = []
             Object.keys(res).map(function(key, index) {
-                ret.push({name: key, id: res[key][0].sched_block_id, blocks: res[key]})
+                ret.push({
+                    name: key,
+                    id: res[key][0].sched_block_id,
+                    blocks: res[key],
+                })
             })
             return ret
         }
         function setDefaultStyleForBlocks(blocks) {
             for (let index in blocks) {
                 let b = blocks[index]
-                let bDisplay = {}
+                let bDisplay = {
+                }
 
-                let cols = com.style.blockCol({ d: b })
+                let cols = com.style.blockCol({
+                    d: b,
+                })
 
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.5
                 bDisplay.fill = cols.background
-                bDisplay.fill_opacity = com.style.blockOpac({ d: b })
-                bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
+                bDisplay.fill_opacity = com.style.blockOpac({
+                    d: b,
+                })
+                bDisplay.strokeOpacity = com.style.blockOpac({
+                    d: b,
+                })
                 bDisplay.strokeDasharray = []
                 bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
                 bDisplay.text = cols.text
-                bDisplay.patternFill = com.style.blockPattern({ d: b })
+                bDisplay.patternFill = com.style.blockPattern({
+                    d: b,
+                })
                 bDisplay.patternOpacity = 1
                 if (com.input.focus.sched_blocks.indexOf(b.sched_block_id) !== -1) {
                     if (!(com.input.over.sched_blocks !== undefined && com.input.over.sched_blocks !== com.input.focus.sched_blocks)) { // b.stroke = color_theme.blocks.critical.background
@@ -1839,7 +2092,10 @@ window.BlockDisplayer = function(opt_in) {
             let scheds = groupBlocksBySchedule(com.data.filtered)
             lineCount(scheds)
             scheds.forEach(d => (d.blocks = d.blocks.map(function(dd) {
-                return {obs_block_id: dd.obs_block_id, nLine: dd.nLine}
+                return {
+                    obs_block_id: dd.obs_block_id,
+                    nLine: dd.nLine,
+                }
             })))
             return scheds
         }
@@ -1986,19 +2242,42 @@ window.BlockDisplayer = function(opt_in) {
                     }
                     d3.select(this).attr('transform', 'translate(' + translate.x + ',' + translate.y + ')')
                     d.blocks = setDefaultStyleForBlocks(d.blocks)
-                    setBlockRect(d.blocks, {x: 0, y: (height * mainOffset), w: com.main.box.w, h: height})
+                    setBlockRect(d.blocks, {
+                        x: 0,
+                        y: (height * mainOffset),
+                        w: com.main.box.w,
+                        h: height,
+                    })
 
                     let ww = com.blockQueue2.sched_blocks.label.size ? com.blockQueue2.sched_blocks.label.size : maxWidth
                     ww = com.blockQueue2.sched_blocks.label.position === 'left' ? -ww : ww
                     let poly = [
-                        {x: min_x, y: 1},
-                        {x: min_x + ww * 0.85, y: 1},
+                        {
+                            x: min_x,
+                            y: 1,
+                        },
+                        {
+                            x: min_x + ww * 0.85,
+                            y: 1,
+                        },
 
-                        {x: min_x + ww, y: (height * d.nLine) * 0.3},
-                        {x: min_x + ww, y: (height * d.nLine) * 0.7},
+                        {
+                            x: min_x + ww,
+                            y: (height * d.nLine) * 0.3,
+                        },
+                        {
+                            x: min_x + ww,
+                            y: (height * d.nLine) * 0.7,
+                        },
 
-                        {x: min_x + ww * 0.85, y: (height * d.nLine) - 1},
-                        {x: min_x, y: (height * d.nLine) - 1},
+                        {
+                            x: min_x + ww * 0.85,
+                            y: (height * d.nLine) - 1,
+                        },
+                        {
+                            x: min_x,
+                            y: (height * d.nLine) - 1,
+                        },
                     ]
                     d3.select(this).select('polygon')
                         .attr('points', function() {
@@ -2277,7 +2556,8 @@ window.BlockDisplayer = function(opt_in) {
         }
 
         function groupBlocksBySchedule(blocks) {
-            let res = {}
+            let res = {
+            }
             for (var key in blocks) {
                 for (var i = 0; i < blocks[key].length; i++) {
                     let ns = blocks[key][i].metadata.n_sched
@@ -2291,22 +2571,33 @@ window.BlockDisplayer = function(opt_in) {
             }
             let ret = []
             Object.keys(res).map(function(key, index) {
-                ret.push({name: key, id: res[key][0].sched_block_id, blocks: res[key]})
+                ret.push({
+                    name: key,
+                    id: res[key][0].sched_block_id,
+                    blocks: res[key],
+                })
             })
             return ret
         }
         function setDefaultStyleForBlocks(blocks) {
             for (let index in blocks) {
                 let b = blocks[index]
-                let bDisplay = {}
+                let bDisplay = {
+                }
 
-                let cols = com.style.blockCol({ d: b })
+                let cols = com.style.blockCol({
+                    d: b,
+                })
 
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.5
                 bDisplay.fill = cols.background
-                bDisplay.fill_opacity = com.style.blockOpac({ d: b })
-                bDisplay.strokeOpacity = com.style.blockOpac({ d: b })
+                bDisplay.fill_opacity = com.style.blockOpac({
+                    d: b,
+                })
+                bDisplay.strokeOpacity = com.style.blockOpac({
+                    d: b,
+                })
                 bDisplay.strokeDasharray = []
                 bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
@@ -2538,7 +2829,12 @@ window.BlockDisplayer = function(opt_in) {
             enterAllScheds.merge(allScheds)
                 .each(function(d, i) {
                     d.blocks = setDefaultStyleForBlocks(d.blocks)
-                    setBlockRect(d.blocks, {x: 0, y: (offsetY + height) * d.track, w: com.main.box.w, h: height * 1.0})
+                    setBlockRect(d.blocks, {
+                        x: 0,
+                        y: (offsetY + height) * d.track,
+                        w: com.main.box.w,
+                        h: height * 1.0,
+                    })
 
                     d3.select(this).select('line#aesthetic')
                         .transition()
@@ -2887,15 +3183,21 @@ window.BlockDisplayer = function(opt_in) {
                 during: 'blockDisplayerScroll' + 'zoomsuring',
                 end: 'blockDisplayerScroll' + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: 'blockDisplayerScroll'}),
+            run_loop: new RunLoop({
+                tag: 'blockDisplayerScroll',
+            }),
             canScroll: true,
             scrollVertical: false,
             scrollHorizontal: true,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 2},
-            scrollRecV: {w: 2},
+            scrollRecH: {
+                h: 2,
+            },
+            scrollRecV: {
+                w: 2,
+            },
         })
         com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
     }
@@ -2987,8 +3289,17 @@ window.BlockDisplayer = function(opt_in) {
 
         let filters = opt_in.filters ? opt_in.filters : com.filters.filtering
 
-        let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
-        let stats = {tot: 0, filtered: 0}
+        let filtered = {
+            done: [],
+            run: [],
+            cancel: [],
+            wait: [],
+            fail: [],
+        }
+        let stats = {
+            tot: 0,
+            filtered: 0,
+        }
         stats.tot = com.data.raw.blocks.done.length + com.data.raw.blocks.wait.length + com.data.raw.blocks.run.length
         // separate block according to states
         for (var z = 0; z < com.data.raw.blocks.done.length; z++) {
@@ -3071,7 +3382,10 @@ window.BlockDisplayer = function(opt_in) {
             }
             return data_now
         })
-        return {data: filtered, stats: stats}
+        return {
+            data: filtered,
+            stats: stats,
+        }
     }
     this.filterData = filterData
 
@@ -3209,7 +3523,8 @@ window.BlockDisplayer = function(opt_in) {
                 })
                 .call(d3.drag()
                     .on('start', function(d) {
-                        com.interaction = {}
+                        com.interaction = {
+                        }
                         com.interaction.oldG = parent
                         if (com.events.block.drag) {
                             com.events.block.drag.start(d)
@@ -3265,7 +3580,8 @@ window.BlockDisplayer = function(opt_in) {
         com.data.raw = data_in.data.raw
         com.data.modified = data_in.data.modified
         com.filters.filtering = updateFiltering()
-        com.data.filtered = filterData({}).data
+        com.data.filtered = filterData({
+        }).data
         createBlocksGroup()
 
         if (com.displayer === 'blockQueue') {
@@ -3287,7 +3603,8 @@ window.BlockDisplayer = function(opt_in) {
     this.update_data = update_data
     function update() {
         com.filters.filtering = updateFiltering()
-        com.data.filtered = filterData({}).data
+        com.data.filtered = filterData({
+        }).data
         createBlocksGroup()
         if (com.displayer === 'blockQueue') {
             block_queue_bib.update()

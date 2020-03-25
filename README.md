@@ -257,6 +257,11 @@ The `timeout` sets the maximal time for a greenlet (a gunicorn thread) to be abl
 - The python code complies with `pep8`/`flake8`. (One can e.g., do `$VENV/bin/autopep8 -i ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py`, `$VENV/bin/flake8 ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py` etc.)
 - The JavaScript code complies with the [`eslint`](https://eslint.org/). (One can e.g., do `eslint --fix ctaGuiFront/ctaGuiFront/js/widget_emptyExample.js`.) The rules are defined in `ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront/js/.eslintrc.json`.
 
+<!-- 
+cd ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront
+eslint --fix js/utils/*js js/utils/*/*js js/widgets/*js
+$VENV/bin/autopep8 -i py/widgets/*py py/utils/*py py/__init__.py __init__.py
+-->
 
 ### Credits
 

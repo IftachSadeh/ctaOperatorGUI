@@ -64,14 +64,26 @@ window.load_script({
     source: main_script_tag,
     script: '/js/utils/PanelManager.js',
 })
-window.load_script({ source: main_script_tag, script: '/js/utils_buttonPanel.js' })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils_buttonPanel.js',
+})
 window.load_script({
     source: main_script_tag,
     script: '/js/utils/events/ClockEvents.js',
 })
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollTable.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/FormManager.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollBox.js' })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollTable.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/FormManager.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollBox.js',
+})
 
 // -------------------------------------------------------------------
 sock.widget_table[main_script_tag] = function(opt_in) {
@@ -86,7 +98,8 @@ sock.widget_table[main_script_tag] = function(opt_in) {
         main_func: main_comment_sched,
     }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: true,
@@ -152,15 +165,32 @@ let main_comment_sched = function(opt_in) {
             block: undefined,
         },
     }
-    let svg = {}
-    let box = {}
-    let svg_dims = {}
+    let svg = {
+    }
+    let box = {
+    }
+    let svg_dims = {
+    }
 
-    let com = {}
+    let com = {
+    }
 
-    let filters = { states: [], errors: [] }
-    let tokens = { blockState: {}, blockError: {} }
-    let filteredTokens = { blockState: {}, blockError: {} }
+    let filters = {
+        states: [],
+        errors: [],
+    }
+    let tokens = {
+        blockState: {
+        },
+        blockError: {
+        },
+    }
+    let filteredTokens = {
+        blockState: {
+        },
+        blockError: {
+        },
+    }
 
     let block_queue_server = null
     let blockFilters = null
@@ -170,7 +200,8 @@ let main_comment_sched = function(opt_in) {
     // let this_comment_sched = this
     // let is_south = window.__site_type__ === 'S'
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_arr_zoomerPlotsSvg + ele_now.id,
@@ -184,7 +215,9 @@ let main_comment_sched = function(opt_in) {
     locker.add('in_init')
 
     // function loop
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     // -------------------------------------------------------------------
     //
@@ -258,8 +291,10 @@ let main_comment_sched = function(opt_in) {
     }
     function init_data(data_in) {
         function initSvg() {
-            svg_dims.w = {}
-            svg_dims.h = {}
+            svg_dims.w = {
+            }
+            svg_dims.h = {
+            }
             svg_dims.w[0] = 1000
             svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
@@ -613,7 +648,8 @@ let main_comment_sched = function(opt_in) {
             }
         }
         function initDefaultStyle() {
-            shared.style = {}
+            shared.style = {
+            }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
                 let endTime = is_def(opt_in.endTime) ? opt_in.endTime : undefined
@@ -654,11 +690,17 @@ let main_comment_sched = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         let svg_div_id = sgv_tag.main.id + 'svg'
         let svg_div = sgv_tag.main.widget.get_ele(svg_div_id)
@@ -680,7 +722,12 @@ let main_comment_sched = function(opt_in) {
 
             return
         }
-        sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+        sock.emit_mouse_move({
+            eleIn: svg_div,
+            data: {
+                widget_id: widget_id,
+            },
+        })
 
         initSvg()
         initDefaultStyle()
@@ -722,8 +769,10 @@ let main_comment_sched = function(opt_in) {
     this.update_data = update_data
 
     function clusterData(data_in) {
-        tokens.blockState = {}
-        tokens.blockError = {}
+        tokens.blockState = {
+        }
+        tokens.blockError = {
+        }
         for (var i = 0; i < data_in.blocks.done.length; i++) {
             if (is_def(tokens.blockState[data_in.blocks.done[i].exe_state.state])) {
                 if (
@@ -788,8 +837,10 @@ let main_comment_sched = function(opt_in) {
         return false
     }
     function filterData(data_in) {
-        filteredTokens.blockState = {}
-        filteredTokens.blockError = {}
+        filteredTokens.blockState = {
+        }
+        filteredTokens.blockError = {
+        }
         for (var i = 0; i < data_in.blocks.done.length; i++) {
             if (checkWithErrorsFilters(data_in.blocks.done[i].exe_state)) {
                 if (
@@ -876,7 +927,8 @@ let main_comment_sched = function(opt_in) {
         let reserved = {
             main: {
                 g: undefined,
-                box: {},
+                box: {
+                },
             },
         }
 
@@ -1531,7 +1583,8 @@ let main_comment_sched = function(opt_in) {
             )
 
             function initScrollBox() {
-                reserved.log_info.scroll = {}
+                reserved.log_info.scroll = {
+                }
                 reserved.log_info.scroll.scrollBoxG = reserved.log_info.g.append('g')
                 let box = {
                     x: reserved.log_info.box.w * 0.05,
@@ -1575,15 +1628,21 @@ let main_comment_sched = function(opt_in) {
                         during: 'log_infoBox' + 'zoomsuring',
                         end: 'log_infoBox' + 'zoomEnd',
                     },
-                    run_loop: new RunLoop({ tag: 'log_infoScrollBox' }),
+                    run_loop: new RunLoop({
+                        tag: 'log_infoScrollBox',
+                    }),
                     canScroll: true,
                     scrollVertical: true,
                     scrollHorizontal: false,
                     scrollHeight: 0,
                     scrollWidth: 0,
                     background: 'transparent',
-                    scrollRecH: { h: 0 },
-                    scrollRecV: { w: 0 },
+                    scrollRecH: {
+                        h: 0,
+                    },
+                    scrollRecV: {
+                        w: 0,
+                    },
                 })
                 reserved.log_info.scroll.scrollG = reserved.log_info.scroll.scrollBox.get(
                     'innerG'
@@ -2176,10 +2235,16 @@ let main_comment_sched = function(opt_in) {
                                 typeof object[key] === 'string' ||
                 object[key] instanceof String
                             ) {
-                                dl.push({ key: cpString, action: object[key] })
+                                dl.push({
+                                    key: cpString,
+                                    action: object[key],
+                                })
                             }
                             else {
-                                dl.push({ key: cpString, action: 'none' })
+                                dl.push({
+                                    key: cpString,
+                                    action: 'none',
+                                })
                                 rec(object[key], cpString)
                             }
                         }
@@ -2190,17 +2255,24 @@ let main_comment_sched = function(opt_in) {
                             typeof object[key] === 'string' ||
               object[key] instanceof String
                         ) {
-                            dl.push({ key: cpString, action: object[key] })
+                            dl.push({
+                                key: cpString,
+                                action: object[key],
+                            })
                         }
                         else {
-                            dl.push({ key: cpString, action: 'none' })
+                            dl.push({
+                                key: cpString,
+                                action: 'none',
+                            })
                             rec(object[key], cpString)
                         }
                     }
                     return dl
                 }
                 let ib = reserved.logHistory.innerBoxFilter
-                reserved.logHistory.filtering = {}
+                reserved.logHistory.filtering = {
+                }
                 reserved.logHistory.filtering.g = reserved.logHistory.g.append('g')
                 reserved.logHistory.filtering.filters = filters
 
@@ -2322,7 +2394,8 @@ let main_comment_sched = function(opt_in) {
                     .style('user-select', 'none')
 
                 function initScrollBox() {
-                    reserved.logHistory.filtering.scroll = {}
+                    reserved.logHistory.filtering.scroll = {
+                    }
                     reserved.logHistory.filtering.scroll.scrollBoxG = reserved.logHistory.filtering.g.append(
                         'g'
                     )
@@ -2361,15 +2434,21 @@ let main_comment_sched = function(opt_in) {
                             during: 'ScrollFiltering_box' + 'zoomsuring',
                             end: 'ScrollFiltering_box' + 'zoomEnd',
                         },
-                        run_loop: new RunLoop({ tag: 'inputHistoryFilteringScrollBox' }),
+                        run_loop: new RunLoop({
+                            tag: 'inputHistoryFilteringScrollBox',
+                        }),
                         canScroll: true,
                         scrollVertical: true,
                         scrollHorizontal: false,
                         scrollHeight: ob.h * reserved.logHistory.filtering.filters.length,
                         scrollWidth: 0,
                         background: 'transparent',
-                        scrollRecH: { h: 1 },
-                        scrollRecV: { w: 1 },
+                        scrollRecH: {
+                            h: 1,
+                        },
+                        scrollRecV: {
+                            w: 1,
+                        },
                     })
                     reserved.logHistory.filtering.scroll.scrollG = reserved.logHistory.filtering.scroll.scrollBox.get(
                         'innerG'
@@ -2381,9 +2460,11 @@ let main_comment_sched = function(opt_in) {
 
             function createLogList() {
                 let ib = reserved.logHistory.innerBoxLog
-                reserved.logHistory.list = {}
+                reserved.logHistory.list = {
+                }
                 function initScrollBox() {
-                    reserved.logHistory.list.scroll = {}
+                    reserved.logHistory.list.scroll = {
+                    }
                     reserved.logHistory.list.g = reserved.logHistory.g.append('g')
                     reserved.logHistory.list.scroll.scrollBoxG = reserved.logHistory.list.g.append(
                         'g'
@@ -2418,15 +2499,21 @@ let main_comment_sched = function(opt_in) {
                             during: 'ScrollBox' + 'zoomsuring',
                             end: 'ScrollBox' + 'zoomEnd',
                         },
-                        run_loop: new RunLoop({ tag: 'inputHistoryScrollBox' }),
+                        run_loop: new RunLoop({
+                            tag: 'inputHistoryScrollBox',
+                        }),
                         canScroll: true,
                         scrollVertical: true,
                         scrollHorizontal: false,
                         scrollHeight: 0.1 + historyBox.h,
                         scrollWidth: 0,
                         background: 'transparent',
-                        scrollRecH: { h: 2 },
-                        scrollRecV: { w: 2 },
+                        scrollRecH: {
+                            h: 2,
+                        },
+                        scrollRecV: {
+                            w: 2,
+                        },
                     })
                     reserved.logHistory.list.scroll.scrollG = reserved.logHistory.list.scroll.scrollBox.get(
                         'innerG'
@@ -2829,15 +2916,42 @@ let main_comment_sched = function(opt_in) {
                 .curve(d3.curveLinear)
             let depth = 3
             let dataPointFuturTop = [
-                { x: 0, y: 0 },
-                { x: -depth, y: depth },
-                { x: -depth, y: reserved.main.box.h + depth },
-                { x: reserved.main.box.w - depth, y: reserved.main.box.h + depth },
-                { x: reserved.main.box.w + 0, y: reserved.main.box.h },
-                { x: 0, y: reserved.main.box.h },
-                { x: -depth, y: reserved.main.box.h + depth },
-                { x: 0, y: reserved.main.box.h },
-                { x: 0, y: 0 },
+                {
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    x: -depth,
+                    y: depth,
+                },
+                {
+                    x: -depth,
+                    y: reserved.main.box.h + depth,
+                },
+                {
+                    x: reserved.main.box.w - depth,
+                    y: reserved.main.box.h + depth,
+                },
+                {
+                    x: reserved.main.box.w + 0,
+                    y: reserved.main.box.h,
+                },
+                {
+                    x: 0,
+                    y: reserved.main.box.h,
+                },
+                {
+                    x: -depth,
+                    y: reserved.main.box.h + depth,
+                },
+                {
+                    x: 0,
+                    y: reserved.main.box.h,
+                },
+                {
+                    x: 0,
+                    y: 0,
+                },
             ]
             reserved.main.g
                 .append('path')
@@ -3123,18 +3237,42 @@ let main_comment_sched = function(opt_in) {
                 .curve(d3.curveLinear)
             let depth = 2
             let dataPointFuturTop = [
-                { x: 0, y: 0 },
-                { x: -depth, y: depth },
-                { x: -depth, y: box.block_queue_server_icon.h + depth },
+                {
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    x: -depth,
+                    y: depth,
+                },
+                {
+                    x: -depth,
+                    y: box.block_queue_server_icon.h + depth,
+                },
                 {
                     x: box.block_queue_server_icon.w - depth,
                     y: box.block_queue_server_icon.h + depth,
                 },
-                { x: box.block_queue_server_icon.w + 0, y: box.block_queue_server_icon.h },
-                { x: 0, y: box.block_queue_server_icon.h },
-                { x: -depth, y: box.block_queue_server_icon.h + depth },
-                { x: 0, y: box.block_queue_server_icon.h },
-                { x: 0, y: 0 },
+                {
+                    x: box.block_queue_server_icon.w + 0,
+                    y: box.block_queue_server_icon.h,
+                },
+                {
+                    x: 0,
+                    y: box.block_queue_server_icon.h,
+                },
+                {
+                    x: -depth,
+                    y: box.block_queue_server_icon.h + depth,
+                },
+                {
+                    x: 0,
+                    y: box.block_queue_server_icon.h,
+                },
+                {
+                    x: 0,
+                    y: 0,
+                },
             ]
             reserved.icon.g
                 .append('path')
@@ -3170,9 +3308,18 @@ let main_comment_sched = function(opt_in) {
                 })
                 .on('click', function() {
                     let dataPointFuturTop = [
-                        { x: -4, y: 4 },
-                        { x: -5, y: 5 },
-                        { x: -5, y: box.block_queue_server_icon.h + 5 },
+                        {
+                            x: -4,
+                            y: 4,
+                        },
+                        {
+                            x: -5,
+                            y: 5,
+                        },
+                        {
+                            x: -5,
+                            y: box.block_queue_server_icon.h + 5,
+                        },
                         {
                             x: box.block_queue_server_icon.w - 5,
                             y: box.block_queue_server_icon.h + 5,
@@ -3181,10 +3328,22 @@ let main_comment_sched = function(opt_in) {
                             x: box.block_queue_server_icon.w - 4,
                             y: box.block_queue_server_icon.h + 4,
                         },
-                        { x: -4, y: box.block_queue_server_icon.h + 4 },
-                        { x: -5, y: box.block_queue_server_icon.h + 5 },
-                        { x: -4, y: box.block_queue_server_icon.h + 4 },
-                        { x: -4, y: 4 },
+                        {
+                            x: -4,
+                            y: box.block_queue_server_icon.h + 4,
+                        },
+                        {
+                            x: -5,
+                            y: box.block_queue_server_icon.h + 5,
+                        },
+                        {
+                            x: -4,
+                            y: box.block_queue_server_icon.h + 4,
+                        },
+                        {
+                            x: -4,
+                            y: 4,
+                        },
                     ]
                     reserved.icon.g
                         .select('path')
@@ -3239,13 +3398,34 @@ let main_comment_sched = function(opt_in) {
                     h: box.block_queue_server.h - 2 * box.block_queue_server.marg,
                 }
                 let dataPointBottom = [
-                    { x: b.x + b.w * 0.1, y: b.y },
-                    { x: b.x + b.w, y: b.y },
-                    { x: b.x + b.w, y: b.y + b.h },
-                    { x: b.x, y: b.y + b.h },
-                    { x: b.x, y: b.y + b.h * 0.3 },
-                    { x: b.x + b.w * 0.1, y: b.y + b.h * 0.3 },
-                    { x: b.x + b.w * 0.1, y: b.y },
+                    {
+                        x: b.x + b.w * 0.1,
+                        y: b.y,
+                    },
+                    {
+                        x: b.x + b.w,
+                        y: b.y,
+                    },
+                    {
+                        x: b.x + b.w,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h * 0.3,
+                    },
+                    {
+                        x: b.x + b.w * 0.1,
+                        y: b.y + b.h * 0.3,
+                    },
+                    {
+                        x: b.x + b.w * 0.1,
+                        y: b.y,
+                    },
                 ]
                 reserved.back.g
                     .append('path')
@@ -3257,19 +3437,58 @@ let main_comment_sched = function(opt_in) {
 
                 let depth = 3
                 let dataPointFuturTop = [
-                    { x: b.x + b.w * 0.1, y: b.y },
-                    { x: b.x + b.w * 0.1 - depth, y: b.y + depth },
-                    { x: b.x + b.w * 0.1 - depth, y: b.y + b.h * 0.3 },
-                    { x: b.x, y: b.y + b.h * 0.3 },
-                    { x: b.x - depth, y: b.y + b.h * 0.3 + depth },
-                    { x: b.x - depth, y: b.y + b.h + depth },
-                    { x: b.x + b.w - depth, y: b.y + b.h + depth },
-                    { x: b.x + b.w, y: b.y + b.h },
-                    { x: b.x, y: b.y + b.h },
-                    { x: b.x - depth, y: b.y + b.h + depth },
-                    { x: b.x, y: b.y + b.h },
-                    { x: b.x, y: b.y + b.h * 0.3 },
-                    { x: b.x + b.w * 0.1, y: b.y + b.h * 0.3 },
+                    {
+                        x: b.x + b.w * 0.1,
+                        y: b.y,
+                    },
+                    {
+                        x: b.x + b.w * 0.1 - depth,
+                        y: b.y + depth,
+                    },
+                    {
+                        x: b.x + b.w * 0.1 - depth,
+                        y: b.y + b.h * 0.3,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h * 0.3,
+                    },
+                    {
+                        x: b.x - depth,
+                        y: b.y + b.h * 0.3 + depth,
+                    },
+                    {
+                        x: b.x - depth,
+                        y: b.y + b.h + depth,
+                    },
+                    {
+                        x: b.x + b.w - depth,
+                        y: b.y + b.h + depth,
+                    },
+                    {
+                        x: b.x + b.w,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x - depth,
+                        y: b.y + b.h + depth,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h * 0.3,
+                    },
+                    {
+                        x: b.x + b.w * 0.1,
+                        y: b.y + b.h * 0.3,
+                    },
                 ]
                 reserved.back.g
                     .append('path')
@@ -3509,10 +3728,16 @@ let main_comment_sched = function(opt_in) {
                     },
                 },
                 expert: {
-                    token_focus: {},
+                    token_focus: {
+                    },
                     enabled: {
                         g: reserved.filter.g.append('g'),
-                        box: { x: 0, y: 0, w: fbox.w * 1, h: fbox.h * 0.15 },
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: fbox.w * 1,
+                            h: fbox.h * 0.15,
+                        },
                         scroll: {
                             direction: 'vertical',
                         },
@@ -3531,7 +3756,12 @@ let main_comment_sched = function(opt_in) {
                     },
                     content: {
                         g: reserved.filter.g.append('g'),
-                        box: { x: 0, y: 0 + fbox.h * 0.15, w: fbox.w * 1, h: fbox.h * 0.7 },
+                        box: {
+                            x: 0,
+                            y: 0 + fbox.h * 0.15,
+                            w: fbox.w * 1,
+                            h: fbox.h * 0.7,
+                        },
                         button: {
                             g: undefined,
                         },
@@ -3557,7 +3787,8 @@ let main_comment_sched = function(opt_in) {
                 main: {
                     tag: 'blockQueueMiddleTag',
                     g: reserved.content.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: box.block_queue_server_content,
                     background: {
                         fill: color_theme.medium.background,
@@ -3780,7 +4011,8 @@ let main_comment_sched = function(opt_in) {
                         },
                     },
                 },
-                blockList: {},
+                blockList: {
+                },
                 blockForm: {
                     mosaic: {
                         box: {
@@ -3804,7 +4036,8 @@ let main_comment_sched = function(opt_in) {
                             marg: box.block_queue_server_content.marg,
                         },
                         display: 'list',
-                        scroll: {},
+                        scroll: {
+                        },
                     },
                 },
 
@@ -3813,9 +4046,18 @@ let main_comment_sched = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: { time: 0, date: undefined },
-                    startTime: { time: 0, date: undefined },
-                    endTime: { time: 0, date: undefined },
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -3825,7 +4067,8 @@ let main_comment_sched = function(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     block: {
                         click: d => {
@@ -3856,8 +4099,14 @@ let main_comment_sched = function(opt_in) {
                     },
                 },
                 input: {
-                    focus: { sched_blocks: undefined, block: undefined },
-                    over: { sched_blocks: undefined, block: undefined },
+                    focus: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
+                    over: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
                     selection: [],
                 },
             })
@@ -4026,18 +4275,42 @@ let main_comment_sched = function(opt_in) {
                 .curve(d3.curveLinear)
             let depth = 2
             let dataPointFuturTop = [
-                { x: 0, y: 0 },
-                { x: -depth, y: depth },
-                { x: -depth, y: box.event_queue_server_icon.h + depth },
+                {
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    x: -depth,
+                    y: depth,
+                },
+                {
+                    x: -depth,
+                    y: box.event_queue_server_icon.h + depth,
+                },
                 {
                     x: box.event_queue_server_icon.w - depth,
                     y: box.event_queue_server_icon.h + depth,
                 },
-                { x: box.event_queue_server_icon.w + 0, y: box.event_queue_server_icon.h },
-                { x: 0, y: box.event_queue_server_icon.h },
-                { x: -depth, y: box.event_queue_server_icon.h + depth },
-                { x: 0, y: box.event_queue_server_icon.h },
-                { x: 0, y: 0 },
+                {
+                    x: box.event_queue_server_icon.w + 0,
+                    y: box.event_queue_server_icon.h,
+                },
+                {
+                    x: 0,
+                    y: box.event_queue_server_icon.h,
+                },
+                {
+                    x: -depth,
+                    y: box.event_queue_server_icon.h + depth,
+                },
+                {
+                    x: 0,
+                    y: box.event_queue_server_icon.h,
+                },
+                {
+                    x: 0,
+                    y: 0,
+                },
             ]
             reserved.icon.g
                 .append('path')
@@ -4114,13 +4387,34 @@ let main_comment_sched = function(opt_in) {
                     h: box.event_queue_server.h - 2 * box.event_queue_server.marg,
                 }
                 let dataPointBottom = [
-                    { x: b.x, y: b.y },
-                    { x: b.x + b.w * 0.9, y: b.y },
-                    { x: b.x + b.w * 0.9, y: b.y + b.h * 0.3 },
-                    { x: b.x + b.w, y: b.y + b.h * 0.3 },
-                    { x: b.x + b.w, y: b.y + b.h },
-                    { x: b.x, y: b.y + b.h },
-                    { x: b.x, y: b.y },
+                    {
+                        x: b.x,
+                        y: b.y,
+                    },
+                    {
+                        x: b.x + b.w * 0.9,
+                        y: b.y,
+                    },
+                    {
+                        x: b.x + b.w * 0.9,
+                        y: b.y + b.h * 0.3,
+                    },
+                    {
+                        x: b.x + b.w,
+                        y: b.y + b.h * 0.3,
+                    },
+                    {
+                        x: b.x + b.w,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y,
+                    },
                 ]
                 reserved.back.g
                     .append('path')
@@ -4131,15 +4425,42 @@ let main_comment_sched = function(opt_in) {
                     .attr('stroke-width', 0.2)
 
                 let dataPointFuturTop = [
-                    { x: b.x, y: b.y },
-                    { x: b.x - 5, y: b.y + 5 },
-                    { x: b.x - 5, y: b.y + b.h + 5 },
-                    { x: b.x + b.w - 5, y: b.y + b.h + 5 },
-                    { x: b.x + b.w, y: b.y + b.h },
-                    { x: b.x, y: b.y + b.h },
-                    { x: b.x - 5, y: b.y + b.h + 5 },
-                    { x: b.x, y: b.y + b.h },
-                    { x: b.x, y: b.y },
+                    {
+                        x: b.x,
+                        y: b.y,
+                    },
+                    {
+                        x: b.x - 5,
+                        y: b.y + 5,
+                    },
+                    {
+                        x: b.x - 5,
+                        y: b.y + b.h + 5,
+                    },
+                    {
+                        x: b.x + b.w - 5,
+                        y: b.y + b.h + 5,
+                    },
+                    {
+                        x: b.x + b.w,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x - 5,
+                        y: b.y + b.h + 5,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y + b.h,
+                    },
+                    {
+                        x: b.x,
+                        y: b.y,
+                    },
                 ]
                 reserved.back.g
                     .append('path')
@@ -4814,18 +5135,42 @@ let main_comment_sched = function(opt_in) {
                 .curve(d3.curveLinear)
             let depth = 2
             let dataPointFuturTop = [
-                { x: 0, y: 0 },
-                { x: -depth, y: depth },
-                { x: -depth, y: box.tels_queue_server_icon.h + depth },
+                {
+                    x: 0,
+                    y: 0,
+                },
+                {
+                    x: -depth,
+                    y: depth,
+                },
+                {
+                    x: -depth,
+                    y: box.tels_queue_server_icon.h + depth,
+                },
                 {
                     x: box.tels_queue_server_icon.w - depth,
                     y: box.tels_queue_server_icon.h + depth,
                 },
-                { x: box.tels_queue_server_icon.w + 0, y: box.tels_queue_server_icon.h },
-                { x: 0, y: box.tels_queue_server_icon.h },
-                { x: -depth, y: box.tels_queue_server_icon.h + depth },
-                { x: 0, y: box.tels_queue_server_icon.h },
-                { x: 0, y: 0 },
+                {
+                    x: box.tels_queue_server_icon.w + 0,
+                    y: box.tels_queue_server_icon.h,
+                },
+                {
+                    x: 0,
+                    y: box.tels_queue_server_icon.h,
+                },
+                {
+                    x: -depth,
+                    y: box.tels_queue_server_icon.h + depth,
+                },
+                {
+                    x: 0,
+                    y: box.tels_queue_server_icon.h,
+                },
+                {
+                    x: 0,
+                    y: 0,
+                },
             ]
             reserved.icon.g
                 .append('path')

@@ -10,17 +10,30 @@
 /* global TelescopeDisplayer */
 /* global deep_copy */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/blocks/common.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/blocks/common.js',
+})
 // load_script({ source: 'utils_scrollTable', script: '/js/blocks/utils_telescopeCommon.js' })
-load_script({ source: 'utils_scrollTable', script: '/js/utils/common_d3.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/common_d3.js',
+})
 
 window.ObsblockForm = function(opt_in) {
     let com = {
         main: {
             tag: 'blockFormTag',
             g: undefined,
-            scroll: {},
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            scroll: {
+            },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: colorPalette.brighter.background,
                 stroke: colorPalette.brighter.stroke,
@@ -28,7 +41,8 @@ window.ObsblockForm = function(opt_in) {
             },
         },
         tree: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -36,7 +50,8 @@ window.ObsblockForm = function(opt_in) {
             },
         },
         schedule: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -44,7 +59,8 @@ window.ObsblockForm = function(opt_in) {
             },
         },
         target: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -52,7 +68,8 @@ window.ObsblockForm = function(opt_in) {
             },
         },
         telescope: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -145,15 +162,21 @@ window.ObsblockForm = function(opt_in) {
                 during: tag + 'zoomsuring',
                 end: tag + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: tag}),
+            run_loop: new RunLoop({
+                tag: tag,
+            }),
             canScroll: true,
             scrollVertical: true,
             scrollHorizontal: false,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 4},
-            scrollRecV: {w: 4},
+            scrollRecH: {
+                h: 4,
+            },
+            scrollRecV: {
+                w: 4,
+            },
         })
         return scrollBox
     }
@@ -219,17 +242,41 @@ window.ObsblockForm = function(opt_in) {
         //   .attr('transform', 'translate(' + (box.w * 0.25) + ',' + (box.h * 0.25 + txt_size * 0.3) + ')')
         let dimPoly = box.h * 0.5
         let poly = [
-            {x: dimPoly * 0.3, y: dimPoly * 0.0},
-            {x: dimPoly * 0.7, y: dimPoly * 0.0},
+            {
+                x: dimPoly * 0.3,
+                y: dimPoly * 0.0,
+            },
+            {
+                x: dimPoly * 0.7,
+                y: dimPoly * 0.0,
+            },
 
-            {x: dimPoly * 1, y: dimPoly * 0.3},
-            {x: dimPoly * 1, y: dimPoly * 0.7},
+            {
+                x: dimPoly * 1,
+                y: dimPoly * 0.3,
+            },
+            {
+                x: dimPoly * 1,
+                y: dimPoly * 0.7,
+            },
 
-            {x: dimPoly * 0.7, y: dimPoly * 1},
-            {x: dimPoly * 0.3, y: dimPoly * 1},
+            {
+                x: dimPoly * 0.7,
+                y: dimPoly * 1,
+            },
+            {
+                x: dimPoly * 0.3,
+                y: dimPoly * 1,
+            },
 
-            {x: dimPoly * 0.0, y: dimPoly * 0.7},
-            {x: dimPoly * 0.0, y: dimPoly * 0.3},
+            {
+                x: dimPoly * 0.0,
+                y: dimPoly * 0.7,
+            },
+            {
+                x: dimPoly * 0.0,
+                y: dimPoly * 0.3,
+            },
         ]
         g.selectAll('polygon')
             .data([ poly ])
@@ -448,10 +495,34 @@ window.ObsblockForm = function(opt_in) {
         //   .attr('height', headerSize)
         //   .attr('fill', colorPalette.dark.stroke)
         let label = [
-            {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.2, text: 'State', anchor: 'middle'},
-            {x: box.w * 0.2, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.266, text: 'Start', anchor: 'middle'},
-            {x: box.w * 0.466, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.266, text: 'End', anchor: 'middle'},
-            {x: box.w * 0.732, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.266, text: 'Duration', anchor: 'middle'},
+            {
+                x: box.w * 0.0,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.2,
+                text: 'State',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.2,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.266,
+                text: 'Start',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.466,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.266,
+                text: 'End',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.732,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.266,
+                text: 'Duration',
+                anchor: 'middle',
+            },
             // {x: box.w * 0.69, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.31, text: 'Target & pointing', anchor: 'middle'}
         ]
         for (let i = 0; i < label.length; i++) {
@@ -481,7 +552,12 @@ window.ObsblockForm = function(opt_in) {
                     main: {
                         id: type + 'minus_button',
                         g: g,
-                        box: {x: innerbox.x - 3, y: innerbox.y + 18, width: 9, height: 9},
+                        box: {
+                            x: innerbox.x - 3,
+                            y: innerbox.y + 18,
+                            width: 9,
+                            height: 9,
+                        },
                         background: {
                             common: {
                                 style: {
@@ -499,7 +575,8 @@ window.ObsblockForm = function(opt_in) {
                                     stroke: colorPalette.darkest.stroke,
                                     'stroke-width': 0.1,
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                         },
                     },
@@ -529,7 +606,8 @@ window.ObsblockForm = function(opt_in) {
                                 'pointer-events': 'none',
                                 'user-select': 'none',
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                     events: {
@@ -553,7 +631,12 @@ window.ObsblockForm = function(opt_in) {
                     main: {
                         id: type + 'plus_button',
                         g: g,
-                        box: {x: innerbox.x + 6, y: innerbox.y + 18, width: 9, height: 9},
+                        box: {
+                            x: innerbox.x + 6,
+                            y: innerbox.y + 18,
+                            width: 9,
+                            height: 9,
+                        },
                         background: {
                             common: {
                                 style: {
@@ -571,7 +654,8 @@ window.ObsblockForm = function(opt_in) {
                                     stroke: colorPalette.darkest.stroke,
                                     'stroke-width': 0.1,
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                         },
                     },
@@ -601,7 +685,8 @@ window.ObsblockForm = function(opt_in) {
                                 'pointer-events': 'none',
                                 'user-select': 'none',
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                     events: {
@@ -621,7 +706,8 @@ window.ObsblockForm = function(opt_in) {
                 })
             }
 
-            let stock = {}
+            let stock = {
+            }
             let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
             let hbox = {
                 x: x - 6,
@@ -648,16 +734,25 @@ window.ObsblockForm = function(opt_in) {
             let ig = g.append('g').attr('id', id)
                 .attr('transform', 'translate(' + ((w - (14 * 3)) * 0.33) + ',0)')
 
-            stock.hourOpts = {disabled: !com.schedule.editabled, value: hour, min: 0, max: 23, step: 1}
+            stock.hourOpts = {
+                disabled: !com.schedule.editabled,
+                value: hour,
+                min: 0,
+                max: 23,
+                step: 1,
+            }
             stock.hour = input_date_d3(ig,
                 hbox,
                 'hour',
                 stock.hourOpts,
-                {change: (d) => {
-                    changeBlockTime(id, d, stock.minute.property('value'), stock.second.property('value'))
-                }, enter: (d) => {
-                    stock.minute.node().focus()
-                }})
+                {
+                    change: (d) => {
+                        changeBlockTime(id, d, stock.minute.property('value'), stock.second.property('value'))
+                    },
+                    enter: (d) => {
+                        stock.minute.node().focus()
+                    },
+                })
             createInput('hour', ig, hbox)
             ig.append('text')
                 .text(':')
@@ -666,16 +761,25 @@ window.ObsblockForm = function(opt_in) {
                 .attr('text-anchor', 'middle')
                 .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
 
-            stock.minuteOpts = {disabled: !com.schedule.editabled, value: min, min: 0, max: 60, step: 1}
+            stock.minuteOpts = {
+                disabled: !com.schedule.editabled,
+                value: min,
+                min: 0,
+                max: 60,
+                step: 1,
+            }
             stock.minute = input_date_d3(ig,
                 mbox,
                 'minute',
                 stock.minuteOpts,
-                {change: (d) => {
-                    changeBlockTime(id, stock.hour.property('value'), d, stock.second.property('value'))
-                }, enter: (d) => {
-                    stock.second.node().focus()
-                }})
+                {
+                    change: (d) => {
+                        changeBlockTime(id, stock.hour.property('value'), d, stock.second.property('value'))
+                    },
+                    enter: (d) => {
+                        stock.second.node().focus()
+                    },
+                })
             createInput('minute', ig, mbox)
             ig.append('text')
                 .text(':')
@@ -684,16 +788,25 @@ window.ObsblockForm = function(opt_in) {
                 .attr('text-anchor', 'middle')
                 .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
 
-            stock.secondOpts = {disabled: !com.schedule.editabled, value: sec, min: 0, max: 60, step: 1}
+            stock.secondOpts = {
+                disabled: !com.schedule.editabled,
+                value: sec,
+                min: 0,
+                max: 60,
+                step: 1,
+            }
             stock.second = input_date_d3(ig,
                 sbox,
                 'second',
                 stock.secondOpts,
-                {change: (d) => {
-                    changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), d)
-                }, enter: (d) => {
-                    stock.second.node().blur()
-                }})
+                {
+                    change: (d) => {
+                        changeBlockTime(id, stock.hour.property('value'), stock.minute.property('value'), d)
+                    },
+                    enter: (d) => {
+                        stock.second.node().blur()
+                    },
+                })
             createInput('second', ig, sbox)
         }
 
@@ -728,7 +841,10 @@ window.ObsblockForm = function(opt_in) {
             main: {
                 id: 'dropState',
                 g: gdropstate,
-                dim: {w: label[0].w, h: box.h - headerSize - 4},
+                dim: {
+                    w: label[0].w,
+                    h: box.h - headerSize - 4,
+                },
                 background: {
                     common: {
                         style: {
@@ -736,7 +852,8 @@ window.ObsblockForm = function(opt_in) {
                             stroke: colorPalette.medium.stroke,
                             'stroke-width': 0.2,
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                     hovered: {
                         style: {
@@ -744,7 +861,8 @@ window.ObsblockForm = function(opt_in) {
                             stroke: colorPalette.darkest.stroke,
                             'stroke-width': 0.2,
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                 },
                 text: {
@@ -757,7 +875,8 @@ window.ObsblockForm = function(opt_in) {
                             'pointer-events': 'none',
                             'user-select': 'none',
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                     hovered: {
                         style: {
@@ -768,7 +887,8 @@ window.ObsblockForm = function(opt_in) {
                             'pointer-events': 'none',
                             'user-select': 'none',
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                 },
             },
@@ -777,7 +897,10 @@ window.ObsblockForm = function(opt_in) {
                 blocked: false,
                 keepDropOpen: false,
                 list: options,
-                dim: {w: label[0].w, h: title_size * 1.5},
+                dim: {
+                    w: label[0].w,
+                    h: title_size * 1.5,
+                },
                 nb: 1,
                 background: {
                     common: {
@@ -786,7 +909,8 @@ window.ObsblockForm = function(opt_in) {
                             stroke: colorPalette.medium.stroke,
                             'stroke-width': 0.2,
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                     hovered: {
                         style: {
@@ -794,7 +918,8 @@ window.ObsblockForm = function(opt_in) {
                             stroke: colorPalette.darkest.stroke,
                             'stroke-width': 0.2,
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                 },
                 text: {
@@ -807,7 +932,8 @@ window.ObsblockForm = function(opt_in) {
                             'pointer-events': 'none',
                             'user-select': 'none',
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                     hovered: {
                         style: {
@@ -818,7 +944,8 @@ window.ObsblockForm = function(opt_in) {
                             'pointer-events': 'none',
                             'user-select': 'none',
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                 },
             },
@@ -922,7 +1049,10 @@ window.ObsblockForm = function(opt_in) {
                     main: {
                         id: 'dropState',
                         g: addPointingg,
-                        dim: {w: sizeNewPointing * 2, h: sizeNewPointing * 1.3},
+                        dim: {
+                            w: sizeNewPointing * 2,
+                            h: sizeNewPointing * 1.3,
+                        },
                         background: {
                             common: {
                                 style: {
@@ -930,7 +1060,8 @@ window.ObsblockForm = function(opt_in) {
                                     stroke: colorPalette.medium.stroke,
                                     'stroke-width': 0.2,
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                             hovered: {
                                 style: {
@@ -938,7 +1069,8 @@ window.ObsblockForm = function(opt_in) {
                                     stroke: colorPalette.darkest.stroke,
                                     'stroke-width': 0.2,
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                         },
                         text: {
@@ -951,7 +1083,8 @@ window.ObsblockForm = function(opt_in) {
                                     'pointer-events': 'none',
                                     'user-select': 'none',
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                             hovered: {
                                 style: {
@@ -962,7 +1095,8 @@ window.ObsblockForm = function(opt_in) {
                                     'pointer-events': 'none',
                                     'user-select': 'none',
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                         },
                     },
@@ -971,7 +1105,10 @@ window.ObsblockForm = function(opt_in) {
                         blocked: true,
                         keepDropOpen: false,
                         list: com.data.target.map(x => x.name),
-                        dim: {w: sizeNewPointing * 2.2, h: sizeNewPointing * 1},
+                        dim: {
+                            w: sizeNewPointing * 2.2,
+                            h: sizeNewPointing * 1,
+                        },
                         nb: 3,
                         background: {
                             common: {
@@ -980,7 +1117,8 @@ window.ObsblockForm = function(opt_in) {
                                     stroke: colorPalette.medium.stroke,
                                     'stroke-width': 0.2,
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                             hovered: {
                                 style: {
@@ -988,7 +1126,8 @@ window.ObsblockForm = function(opt_in) {
                                     stroke: colorPalette.darkest.stroke,
                                     'stroke-width': 0.2,
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                         },
                         text: {
@@ -1001,7 +1140,8 @@ window.ObsblockForm = function(opt_in) {
                                     'pointer-events': 'none',
                                     'user-select': 'none',
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                             hovered: {
                                 style: {
@@ -1012,7 +1152,8 @@ window.ObsblockForm = function(opt_in) {
                                     'pointer-events': 'none',
                                     'user-select': 'none',
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                         },
                     },
@@ -1023,7 +1164,10 @@ window.ObsblockForm = function(opt_in) {
                             for (let i = 0; i < com.data.target.length; i++) {
                                 if (com.data.target[i].name === d) {
                                     target = com.data.target[i]
-                                    target_icon(chooseTarget, {w: sizeNewPointing * 1.2, h: sizeNewPointing * 1.2}, get_target_name(target), tevents, colorPalette)
+                                    target_icon(chooseTarget, {
+                                        w: sizeNewPointing * 1.2,
+                                        h: sizeNewPointing * 1.2,
+                                    }, get_target_name(target), tevents, colorPalette)
                                     return
                                 }
                             }
@@ -1032,7 +1176,10 @@ window.ObsblockForm = function(opt_in) {
                     },
                 })
 
-                let ticon = target_icon(addPointingg.append('g'), {w: sizeNewPointing, h: sizeNewPointing}, '+', tevents, colorPalette)
+                let ticon = target_icon(addPointingg.append('g'), {
+                    w: sizeNewPointing,
+                    h: sizeNewPointing,
+                }, '+', tevents, colorPalette)
                 ticon.style('pointer-events', 'none')
                     .attr('transform', 'translate(' + (sizeNewPointing * 0.3) + ',' + (sizeNewPointing * 0.15) + ')')
                 // dropDown_div(addPointingg,
@@ -1121,11 +1268,17 @@ window.ObsblockForm = function(opt_in) {
                         if (!target) {
                             target = com.data.block.targets[0]
                         }
-                        pointing = {id: com.data.block.sched_block_id + '_' + com.data.block.obs_block_id}
+                        pointing = {
+                            id: com.data.block.sched_block_id + '_' + com.data.block.obs_block_id,
+                        }
                         pointing.name = target.name + '/p_' + com.data.block.metadata.n_obs + '-' + com.data.block.pointings.length
                         pointing.pos = [ target.pos[0], target.pos[1] ]
                         pointing.tel_ids = []
-                        pointing.tels_info = {large: 0, medium: 0, small: 0}
+                        pointing.tels_info = {
+                            large: 0,
+                            medium: 0,
+                            small: 0,
+                        }
                         com.data.block.pointings.push(pointing)
 
                         let insertTarget = true
@@ -1196,9 +1349,27 @@ window.ObsblockForm = function(opt_in) {
             .attr('fill', colorPalette.dark.stroke)
         let label = [
             // {x: 0, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 1, text: 'Targets & pointings mapping', anchor: 'middle'}
-            {x: 0, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.10, text: 'Tgts', anchor: 'middle'},
-            {x: box.w * 0.10, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.10, text: 'Ptgs', anchor: 'middle'},
-            {x: box.w * 0.2, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.8, text: 'Mapping', anchor: 'middle'},
+            {
+                x: 0,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.10,
+                text: 'Tgts',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.10,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.10,
+                text: 'Ptgs',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.2,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.8,
+                text: 'Mapping',
+                anchor: 'middle',
+            },
         ]
         for (let i = 0; i < label.length; i++) {
             let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
@@ -1213,9 +1384,16 @@ window.ObsblockForm = function(opt_in) {
 
         let line = 20
 
-        let tbox = {x: label[0].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[0].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
+        let tbox = {
+            x: label[0].x,
+            y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0),
+            w: label[0].w,
+            h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1),
+        }
         let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
-        let scrollBoxt = initScrollBox(com.main.tag + 'targetListScroll', blocktg, tbox, {enabled: false})
+        let scrollBoxt = initScrollBox(com.main.tag + 'targetListScroll', blocktg, tbox, {
+            enabled: false,
+        })
         let innertg = scrollBoxt.get('innerG')
         com.target.target = {
             scroll: scrollBoxt,
@@ -1266,7 +1444,10 @@ window.ObsblockForm = function(opt_in) {
                     over: function() {},
                     out: function() {},
                 }
-                target_icon(g, {w: line * 1.1, h: line * 1.1}, 'T' + get_target_short(d), tevents, colorPalette)
+                target_icon(g, {
+                    w: line * 1.1,
+                    h: line * 1.1,
+                }, 'T' + get_target_short(d), tevents, colorPalette)
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -1286,11 +1467,21 @@ window.ObsblockForm = function(opt_in) {
                 .remove()
         }
         targetCore(data.targets, innertg, 0)
-        scrollBoxt.resetVerticalScroller({canScroll: true, scrollHeight: line * data.targets.length})
+        scrollBoxt.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: line * data.targets.length,
+        })
 
-        let pbox = {x: label[1].x, y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0), w: label[1].w, h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1)}
+        let pbox = {
+            x: label[1].x,
+            y: 3 + headerSize + (com.target.editable ? (headerSize * 2) : 0),
+            w: label[1].w,
+            h: com.target.editable ? (box.h - headerSize * 3) : (box.h - headerSize * 1),
+        }
         let blockpg = g.append('g').attr('transform', 'translate(' + pbox.x + ',' + pbox.y + ')')
-        let scrollBoxp = initScrollBox(com.main.tag + 'pointingListScroll', blockpg, pbox, {enabled: false})
+        let scrollBoxp = initScrollBox(com.main.tag + 'pointingListScroll', blockpg, pbox, {
+            enabled: false,
+        })
         let innerpg = scrollBoxp.get('innerG')
         com.target.pointing = {
             scroll: scrollBoxp,
@@ -1339,7 +1530,10 @@ window.ObsblockForm = function(opt_in) {
                     over: function() {},
                     out: function() {},
                 }
-                pointing_icon(g, {w: box.w * 0.07, h: line}, 'P' + get_pointing_value(d), pevents, colorPalette)
+                pointing_icon(g, {
+                    w: box.w * 0.07,
+                    h: line,
+                }, 'P' + get_pointing_value(d), pevents, colorPalette)
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -1359,7 +1553,10 @@ window.ObsblockForm = function(opt_in) {
                 .remove()
         }
         pointingCore(data.pointings, innerpg, 0)
-        scrollBoxp.resetVerticalScroller({canScroll: true, scrollHeight: line * data.pointings.length})
+        scrollBoxp.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: line * data.pointings.length,
+        })
 
         // function pointingCore (trg, pointings, pg, x, y, w, h) {
         //   if (com.target.editable) {
@@ -1617,8 +1814,15 @@ window.ObsblockForm = function(opt_in) {
             main: {
                 tag: 'targetRootTag',
                 g: gt,
-                scroll: {},
-                box: {x: 0, y: 0, w: label[2].w, h: box.h * 0.9, marg: 0},
+                scroll: {
+                },
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: label[2].w,
+                    h: box.h * 0.9,
+                    marg: 0,
+                },
                 background: {
                     fill: colorPalette.brighter.background,
                     stroke: colorPalette.brighter.stroke,
@@ -1648,7 +1852,13 @@ window.ObsblockForm = function(opt_in) {
                 skymap: {
                     enabled: true,
                     g: undefined,
-                    box: {x: 0, y: 0, w: label[2].w, h: box.h * 0.9, marg: 0},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: label[2].w,
+                        h: box.h * 0.9,
+                        marg: 0,
+                    },
                     mainTarget: undefined,
                 },
                 legend: {
@@ -1659,7 +1869,13 @@ window.ObsblockForm = function(opt_in) {
                 map: {
                     enabled: true,
                     g: undefined,
-                    box: {x: 0, y: 0, w: box.w, h: box.h * 0.9, marg: 0},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: box.w,
+                        h: box.h * 0.9,
+                        marg: 0,
+                    },
                 },
             },
 
@@ -1671,14 +1887,16 @@ window.ObsblockForm = function(opt_in) {
                 raw: {
                     targets: [],
                 },
-                filtered: {},
+                filtered: {
+                },
                 modified: [],
             },
             debug: {
                 enabled: false,
             },
             pattern: {
-                select: {},
+                select: {
+                },
             },
             input: {
                 over: {
@@ -1707,7 +1925,10 @@ window.ObsblockForm = function(opt_in) {
                 main: {
                     id: 'dropPointing',
                     g: gdropPointing,
-                    dim: {w: label[0].w + label[1].w, h: sizeNewPointing * 1.3},
+                    dim: {
+                        w: label[0].w + label[1].w,
+                        h: sizeNewPointing * 1.3,
+                    },
                     background: {
                         common: {
                             style: {
@@ -1715,7 +1936,8 @@ window.ObsblockForm = function(opt_in) {
                                 stroke: colorPalette.medium.stroke,
                                 'stroke-width': 0.2,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                         hovered: {
                             style: {
@@ -1723,7 +1945,8 @@ window.ObsblockForm = function(opt_in) {
                                 stroke: colorPalette.darkest.stroke,
                                 'stroke-width': 0.2,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                     text: {
@@ -1736,11 +1959,14 @@ window.ObsblockForm = function(opt_in) {
                                 'pointer-events': 'none',
                                 'user-select': 'none',
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                         hovered: {
-                            style: {},
-                            attr: {},
+                            style: {
+                            },
+                            attr: {
+                            },
                         },
                     },
                 },
@@ -1749,7 +1975,10 @@ window.ObsblockForm = function(opt_in) {
                     blocked: true,
                     keepDropOpen: false,
                     list: [ 'coordinates', 'divergentes' ],
-                    dim: {w: (label[0].w + label[1].w) * 1.2, h: title_size * 1.5},
+                    dim: {
+                        w: (label[0].w + label[1].w) * 1.2,
+                        h: title_size * 1.5,
+                    },
                     nb: 2,
                     background: {
                         common: {
@@ -1758,7 +1987,8 @@ window.ObsblockForm = function(opt_in) {
                                 stroke: colorPalette.medium.stroke,
                                 'stroke-width': 0.2,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                         hovered: {
                             style: {
@@ -1766,7 +1996,8 @@ window.ObsblockForm = function(opt_in) {
                                 stroke: colorPalette.darkest.stroke,
                                 'stroke-width': 0.2,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                     text: {
@@ -1779,11 +2010,14 @@ window.ObsblockForm = function(opt_in) {
                                 'pointer-events': 'none',
                                 'user-select': 'none',
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                         hovered: {
-                            style: {},
-                            attr: {},
+                            style: {
+                            },
+                            attr: {
+                            },
                         },
                     },
                 },
@@ -1801,7 +2035,11 @@ window.ObsblockForm = function(opt_in) {
             //   {disabled: !com.schedule.editabled, value: '', options: ['coordinates', 'divergentes'], 'font-size': '0px'},
             //   {change: (d) => { addNewPointing(d) }, enter: (d) => { addNewPointing(d) }})
 
-            let picon = pointing_icon(gdropPointing.append('g'), {w: sizeNewPointing * 1, h: sizeNewPointing * 0.8}, '+', {}, colorPalette)
+            let picon = pointing_icon(gdropPointing.append('g'), {
+                w: sizeNewPointing * 1,
+                h: sizeNewPointing * 0.8,
+            }, '+', {
+            }, colorPalette)
             picon.style('pointer-events', 'none')
                 .attr('transform', 'translate(' + ((label[0].w + label[1].w - sizeNewPointing) * 0.3) + ',' + (sizeNewPointing * 0.25) + ')')
         }
@@ -1814,9 +2052,27 @@ window.ObsblockForm = function(opt_in) {
 
         let label = [
             // {x: 0, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 1, text: 'Targets & pointings mapping', anchor: 'middle'}
-            {x: 0, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.10, text: 'Tgts', anchor: 'middle'},
-            {x: box.w * 0.10, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.10, text: 'Ptgs', anchor: 'middle'},
-            {x: box.w * 0.2, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.8, text: 'Mapping', anchor: 'middle'},
+            {
+                x: 0,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.10,
+                text: 'Tgts',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.10,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.10,
+                text: 'Ptgs',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.2,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.8,
+                text: 'Mapping',
+                anchor: 'middle',
+            },
         ]
 
         let line = 20
@@ -1844,7 +2100,10 @@ window.ObsblockForm = function(opt_in) {
                     over: function() {},
                     out: function() {},
                 }
-                target_icon(g, {w: line * 1.1, h: line * 1.1}, 'T' + get_target_short(d), tevents, colorPalette)
+                target_icon(g, {
+                    w: line * 1.1,
+                    h: line * 1.1,
+                }, 'T' + get_target_short(d), tevents, colorPalette)
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -1864,7 +2123,10 @@ window.ObsblockForm = function(opt_in) {
                 .remove()
         }
         targetCore(data.targets, innertg, 0)
-        com.target.target.scroll.resetVerticalScroller({canScroll: true, scrollHeight: line * data.targets.length})
+        com.target.target.scroll.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: line * data.targets.length,
+        })
 
         let pbox = com.target.pointing.box
         let innerpg = com.target.pointing.scroll.get('innerG')
@@ -1887,7 +2149,10 @@ window.ObsblockForm = function(opt_in) {
                     over: function() {},
                     out: function() {},
                 }
-                pointing_icon(g, {w: box.w * 0.07, h: line}, 'P' + get_pointing_value(d), pevents, colorPalette)
+                pointing_icon(g, {
+                    w: box.w * 0.07,
+                    h: line,
+                }, 'P' + get_pointing_value(d), pevents, colorPalette)
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -1907,7 +2172,10 @@ window.ObsblockForm = function(opt_in) {
                 .remove()
         }
         pointingCore(data.pointings, innerpg, 0)
-        com.target.pointing.scroll.resetVerticalScroller({canScroll: true, scrollHeight: line * data.pointings.length})
+        com.target.pointing.scroll.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: line * data.pointings.length,
+        })
 
         com.targetBlock.update_data({
             data: {
@@ -1960,14 +2228,38 @@ window.ObsblockForm = function(opt_in) {
             w: box.w * 0.8,
             h: box.h - 16,
         }
-        let largeBox = {x: 0, y: 0, w: 0, h: 0}
-        let mediumBox = {x: 0, y: 0, w: 0, h: 0}
-        let smallBox = {x: 0, y: 0, w: 0, h: 0}
+        let largeBox = {
+            x: 0,
+            y: 0,
+            w: 0,
+            h: 0,
+        }
+        let mediumBox = {
+            x: 0,
+            y: 0,
+            w: 0,
+            h: 0,
+        }
+        let smallBox = {
+            x: 0,
+            y: 0,
+            w: 0,
+            h: 0,
+        }
 
         function duplicateTels() {
             for (let i = 0; i < trueBlock.length; i++) {
                 let b1 = trueBlock[i]
-                let newBlock = {metadata: {n_obs: '', n_sched: '', block_name: '+'}, obs_block_id: '+', name: '+', tel_ids: []}
+                let newBlock = {
+                    metadata: {
+                        n_obs: '',
+                        n_sched: '',
+                        block_name: '+',
+                    },
+                    obs_block_id: '+',
+                    name: '+',
+                    tel_ids: [],
+                }
                 for (let z = b1.tel_ids.length - 1; z >= 0; z--) {
                     let dupli = false
                     for (let j = i + 1; j < trueBlock.length; j++) {
@@ -1988,7 +2280,12 @@ window.ObsblockForm = function(opt_in) {
         }
 
         if (tel.id.includes('L')) {
-            largeBox = {x: ibox.w * 0.35, y: 0, w: ibox.w * 0.16, h: ibox.h * 0.9}
+            largeBox = {
+                x: ibox.w * 0.35,
+                y: 0,
+                w: ibox.w * 0.16,
+                h: ibox.h * 0.9,
+            }
             allTel.allTels = allTel.allTels.filter(d => d.id.includes('L'))
             trueBlock.map(function(d) {
                 d.tel_ids = d.tel_ids.filter(dd => dd.includes('L'))
@@ -1997,7 +2294,12 @@ window.ObsblockForm = function(opt_in) {
             trueBlock = trueBlock.filter(d => d.tel_ids.length > 0)
         }
         else if (tel.id.includes('M')) {
-            mediumBox = {x: ibox.w * 0.2, y: 0, w: ibox.w * 0.5, h: ibox.h * 0.9}
+            mediumBox = {
+                x: ibox.w * 0.2,
+                y: 0,
+                w: ibox.w * 0.5,
+                h: ibox.h * 0.9,
+            }
             allTel.allTels = allTel.allTels.filter(d => d.id.includes('M'))
             trueBlock.map(function(d) {
                 d.tel_ids = d.tel_ids.filter(dd => dd.includes('M'))
@@ -2006,7 +2308,12 @@ window.ObsblockForm = function(opt_in) {
             trueBlock = trueBlock.filter(d => d.tel_ids.length > 0)
         }
         else if (tel.id.includes('S')) {
-            smallBox = {x: ibox.w * 0.08, y: 0, w: ibox.w * 0.7, h: ibox.h * 0.9}
+            smallBox = {
+                x: ibox.w * 0.08,
+                y: 0,
+                w: ibox.w * 0.7,
+                h: ibox.h * 0.9,
+            }
             allTel.allTels = allTel.allTels.filter(d => d.id.includes('S'))
             trueBlock.map(function(d) {
                 d.tel_ids = d.tel_ids.filter(dd => dd.includes('S'))
@@ -2023,7 +2330,8 @@ window.ObsblockForm = function(opt_in) {
             main: {
                 tag: 'telescopeRootTag',
                 g: gt,
-                scroll: {},
+                scroll: {
+                },
                 box: ibox,
                 background: {
                     fill: 'none',
@@ -2125,14 +2433,16 @@ window.ObsblockForm = function(opt_in) {
                 raw: {
                     telescopes: [],
                 },
-                filtered: {},
+                filtered: {
+                },
                 modified: [],
             },
             debug: {
                 enabled: false,
             },
             pattern: {
-                select: {},
+                select: {
+                },
             },
             events: {
                 block: {
@@ -2380,16 +2690,20 @@ window.ObsblockForm = function(opt_in) {
         let allTel = resources.allTels
         let blocks = resources.blocks.filter(d => d.obs_block_id !== com.data.block.obs_block_id)
         com.otherBlocks = blocks
-        let innerOtherBlock = {}
+        let innerOtherBlock = {
+        }
         let otherg = com.main.g.append('g').attr('id', 'otherg')
             .attr('transform', 'translate(' + box.x + ',' + (box.y + box.h) + ')')
         otherg.transition()
             .delay(200)
             .duration(600)
             .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-        let scroll = initScrollBox(com.main.tag + 'focusedConflictListScroll', otherg, box, {enabled: false}, true)
+        let scroll = initScrollBox(com.main.tag + 'focusedConflictListScroll', otherg, box, {
+            enabled: false,
+        }, true)
         function initTelescope_information(block, box) {
-            innerOtherBlock[block.obs_block_id] = {}
+            innerOtherBlock[block.obs_block_id] = {
+            }
             let g = scroll.get('innerG').append('g')
                 .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
             // g.append('rect')
@@ -2443,7 +2757,8 @@ window.ObsblockForm = function(opt_in) {
                 main: {
                     tag: 'telescopeRootTag' + block.obs_block_id,
                     g: gt,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: box,
                     background: {
                         fill: colorPalette.medium.background,
@@ -2544,14 +2859,16 @@ window.ObsblockForm = function(opt_in) {
                     raw: {
                         telescopes: [],
                     },
-                    filtered: {},
+                    filtered: {
+                    },
                     modified: [],
                 },
                 debug: {
                     enabled: false,
                 },
                 pattern: {
-                    select: {},
+                    select: {
+                    },
                 },
                 events: {
                     block: {
@@ -2607,7 +2924,9 @@ window.ObsblockForm = function(opt_in) {
                         for (let i = data.min; (i < data.ids.length && (com.data.block.telescopes[type].ids.length < com.data.block.telescopes[type].min)); i++) {
                             let t = data.ids[0]
                             forceExtractTelsFromBlock(blocks, t)
-                            addTelescopeToBlock(com.data.block, {id: t})
+                            addTelescopeToBlock(com.data.block, {
+                                id: t,
+                            })
                         }
                     }
                 }
@@ -2637,7 +2956,9 @@ window.ObsblockForm = function(opt_in) {
                             if (t === undefined) {
                                 break
                             }
-                            addTelescopeToBlock(block, {id: t})
+                            addTelescopeToBlock(block, {
+                                id: t,
+                            })
                         }
                     }
                 }
@@ -2676,13 +2997,22 @@ window.ObsblockForm = function(opt_in) {
             innerOtherBlock[block.obs_block_id].updateOtherTelescope_information = function() {
                 let tels = []
                 for (let i = 0; i < block.telescopes.large.ids.length; i++) {
-                    tels.push({id: block.telescopes.large.ids[i], health: allTel.find(x => x.id === block.telescopes.large.ids[i]).val})
+                    tels.push({
+                        id: block.telescopes.large.ids[i],
+                        health: allTel.find(x => x.id === block.telescopes.large.ids[i]).val,
+                    })
                 }
                 for (let i = 0; i < block.telescopes.medium.ids.length; i++) {
-                    tels.push({id: block.telescopes.medium.ids[i], health: allTel.find(x => x.id === block.telescopes.medium.ids[i]).val})
+                    tels.push({
+                        id: block.telescopes.medium.ids[i],
+                        health: allTel.find(x => x.id === block.telescopes.medium.ids[i]).val,
+                    })
                 }
                 for (let i = 0; i < block.telescopes.small.ids.length; i++) {
-                    tels.push({id: block.telescopes.small.ids[i], health: allTel.find(x => x.id === block.telescopes.small.ids[i]).val})
+                    tels.push({
+                        id: block.telescopes.small.ids[i],
+                        health: allTel.find(x => x.id === block.telescopes.small.ids[i]).val,
+                    })
                 }
                 innerOtherBlock[block.obs_block_id].displayer.update_data({
                     data: {
@@ -2695,34 +3025,77 @@ window.ObsblockForm = function(opt_in) {
                 })
             }
 
-            innerOtherBlock[block.obs_block_id].tels = {}
+            innerOtherBlock[block.obs_block_id].tels = {
+            }
             innerOtherBlock[block.obs_block_id].tels.large = inputNumber(g,
-                {x: box.x + 2, y: (box.y + box.h + 1), w: 40, h: 15},
+                {
+                    x: box.x + 2,
+                    y: (box.y + box.h + 1),
+                    w: 40,
+                    h: 15,
+                },
                 'large',
-                {disabled: false, value: block.telescopes.large.min, min: 0, max: block.telescopes.large.max, step: 1},
-                {change: (d) => {
-                    changeOtherTelescopeNumber('large', d)
-                }, enter: (d) => {
-                    changeOtherTelescopeNumber('large', d)
-                }})
+                {
+                    disabled: false,
+                    value: block.telescopes.large.min,
+                    min: 0,
+                    max: block.telescopes.large.max,
+                    step: 1,
+                },
+                {
+                    change: (d) => {
+                        changeOtherTelescopeNumber('large', d)
+                    },
+                    enter: (d) => {
+                        changeOtherTelescopeNumber('large', d)
+                    },
+                })
             innerOtherBlock[block.obs_block_id].tels.medium = inputNumber(g,
-                {x: box.x + (0 + mediumBox.x + mediumBox.w * 0.5 - 20), y: (box.y + box.h + 1), w: 40, h: 15},
+                {
+                    x: box.x + (0 + mediumBox.x + mediumBox.w * 0.5 - 20),
+                    y: (box.y + box.h + 1),
+                    w: 40,
+                    h: 15,
+                },
                 'small',
-                {disabled: false, value: block.telescopes.medium.min, min: 0, max: block.telescopes.medium.max, step: 1},
-                {change: (d) => {
-                    changeOtherTelescopeNumber('medium', d)
-                }, enter: (d) => {
-                    changeOtherTelescopeNumber('medium', d)
-                }})
+                {
+                    disabled: false,
+                    value: block.telescopes.medium.min,
+                    min: 0,
+                    max: block.telescopes.medium.max,
+                    step: 1,
+                },
+                {
+                    change: (d) => {
+                        changeOtherTelescopeNumber('medium', d)
+                    },
+                    enter: (d) => {
+                        changeOtherTelescopeNumber('medium', d)
+                    },
+                })
             innerOtherBlock[block.obs_block_id].tels.small = inputNumber(g,
-                {x: box.x + (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 40, h: 15},
+                {
+                    x: box.x + (smallBox.x + smallBox.w * 0.5 - 25),
+                    y: (box.y + box.h + 1),
+                    w: 40,
+                    h: 15,
+                },
                 'small',
-                {disabled: false, value: block.telescopes.small.min, min: 0, max: block.telescopes.small.max, step: 1},
-                {change: (d) => {
-                    changeOtherTelescopeNumber('small', d)
-                }, enter: (d) => {
-                    changeOtherTelescopeNumber('small', d)
-                }})
+                {
+                    disabled: false,
+                    value: block.telescopes.small.min,
+                    min: 0,
+                    max: block.telescopes.small.max,
+                    step: 1,
+                },
+                {
+                    change: (d) => {
+                        changeOtherTelescopeNumber('small', d)
+                    },
+                    enter: (d) => {
+                        changeOtherTelescopeNumber('small', d)
+                    },
+                })
             innerOtherBlock[block.obs_block_id].updateOtherTelescope_information()
         }
         let sizeRow = box.h / 2.1
@@ -2735,7 +3108,10 @@ window.ObsblockForm = function(opt_in) {
             }
             initTelescope_information(blocks[i], ibox)
         }
-        scroll.resetVerticalScroller({canScroll: true, scrollHeight: sizeRow * blocks.length})
+        scroll.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: sizeRow * blocks.length,
+        })
 
         otherg.append('line')
             .attr('x1', 0)
@@ -2916,7 +3292,9 @@ window.ObsblockForm = function(opt_in) {
                     if (t === undefined) {
                         break
                     }
-                    addTelescopeToBlock(com.data.block, {id: t})
+                    addTelescopeToBlock(com.data.block, {
+                        id: t,
+                    })
                 }
             }
         }
@@ -2951,7 +3329,9 @@ window.ObsblockForm = function(opt_in) {
     // reassignTelescope()
     }
     function removeTelescope(t) {
-        removeTelescopeFromBlock(com.data.block, {id: t.id})
+        removeTelescopeFromBlock(com.data.block, {
+            id: t.id,
+        })
     }
     function update_input() {
         com.main.g.select('text#largeTelNumber')
@@ -3069,7 +3449,8 @@ window.ObsblockForm = function(opt_in) {
             main: {
                 tag: com.main.tag + 'telescopeRootTag',
                 g: gt,
-                scroll: {},
+                scroll: {
+                },
                 box: box,
                 background: {
                     fill: colorPalette.medium.background,
@@ -3171,14 +3552,16 @@ window.ObsblockForm = function(opt_in) {
                 raw: {
                     telescopes: [],
                 },
-                filtered: {},
+                filtered: {
+                },
                 modified: [],
             },
             debug: {
                 enabled: false,
             },
             pattern: {
-                select: {},
+                select: {
+                },
             },
             events: {
                 block: {
@@ -3264,23 +3647,42 @@ window.ObsblockForm = function(opt_in) {
             .attr('stroke', 'none')
 
         function createInput(tel_type, g, innerbox) {
-            com.telescope.tels[tel_type + 'Opts'] = {disabled: !com.schedule.editabled, value: com.data.block.telescopes[tel_type].min, min: 0, max: com.data.block.telescopes[tel_type].max, step: 1}
+            com.telescope.tels[tel_type + 'Opts'] = {
+                disabled: !com.schedule.editabled,
+                value: com.data.block.telescopes[tel_type].min,
+                min: 0,
+                max: com.data.block.telescopes[tel_type].max,
+                step: 1,
+            }
             com.telescope.tels[tel_type] = input_number_d3(g,
-                {x: (innerbox.x + innerbox.w * 0.5 - 6), y: (box.y + box.h + headerSize * 2), w: 12, h: 15},
+                {
+                    x: (innerbox.x + innerbox.w * 0.5 - 6),
+                    y: (box.y + box.h + headerSize * 2),
+                    w: 12,
+                    h: 15,
+                },
                 tel_type,
                 com.telescope.tels[tel_type + 'Opts'],
-                {change: (d) => {
-                    changeTelescopeNumber(tel_type, d)
-                }, enter: (d) => {
-                    changeTelescopeNumber(tel_type, d)
-                }})
+                {
+                    change: (d) => {
+                        changeTelescopeNumber(tel_type, d)
+                    },
+                    enter: (d) => {
+                        changeTelescopeNumber(tel_type, d)
+                    },
+                })
 
             com.telescope.tels[tel_type + 'minus_button'] = new button_d3()
             com.telescope.tels[tel_type + 'minus_button'].init({
                 main: {
                     id: tel_type + 'minus_button',
                     g: g,
-                    box: {x: (innerbox.x + innerbox.w * 0.5 - 23), y: (box.y + box.h + headerSize * 2), width: 15, height: 15},
+                    box: {
+                        x: (innerbox.x + innerbox.w * 0.5 - 23),
+                        y: (box.y + box.h + headerSize * 2),
+                        width: 15,
+                        height: 15,
+                    },
                     background: {
                         common: {
                             style: {
@@ -3298,7 +3700,8 @@ window.ObsblockForm = function(opt_in) {
                                 stroke: colorPalette.darkest.stroke,
                                 'stroke-width': 0.1,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                 },
@@ -3328,7 +3731,8 @@ window.ObsblockForm = function(opt_in) {
                             'pointer-events': 'none',
                             'user-select': 'none',
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                 },
                 events: {
@@ -3349,7 +3753,12 @@ window.ObsblockForm = function(opt_in) {
                 main: {
                     id: tel_type + 'plus_button',
                     g: g,
-                    box: {x: (innerbox.x + innerbox.w * 0.5 + 8), y: (box.y + box.h + headerSize * 2), width: 15, height: 15},
+                    box: {
+                        x: (innerbox.x + innerbox.w * 0.5 + 8),
+                        y: (box.y + box.h + headerSize * 2),
+                        width: 15,
+                        height: 15,
+                    },
                     background: {
                         common: {
                             style: {
@@ -3367,7 +3776,8 @@ window.ObsblockForm = function(opt_in) {
                                 stroke: colorPalette.darkest.stroke,
                                 'stroke-width': 0.1,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                 },
@@ -3397,7 +3807,8 @@ window.ObsblockForm = function(opt_in) {
                             'pointer-events': 'none',
                             'user-select': 'none',
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                 },
                 events: {
@@ -3414,7 +3825,8 @@ window.ObsblockForm = function(opt_in) {
             })
         }
         if (com.schedule.editabled) {
-            com.telescope.tels = {}
+            com.telescope.tels = {
+            }
 
             createInput('large', g, largeBox)
             createInput('medium', g, mediumBox)
@@ -3503,13 +3915,22 @@ window.ObsblockForm = function(opt_in) {
     function updateTelescope_information() {
         let tels = []
         for (let i = 0; i < com.data.block.telescopes.large.ids.length; i++) {
-            tels.push({id: com.data.block.telescopes.large.ids[i], health: com.data.tels.find(x => x.id === com.data.block.telescopes.large.ids[i]).val})
+            tels.push({
+                id: com.data.block.telescopes.large.ids[i],
+                health: com.data.tels.find(x => x.id === com.data.block.telescopes.large.ids[i]).val,
+            })
         }
         for (let i = 0; i < com.data.block.telescopes.medium.ids.length; i++) {
-            tels.push({id: com.data.block.telescopes.medium.ids[i], health: com.data.tels.find(x => x.id === com.data.block.telescopes.medium.ids[i]).val})
+            tels.push({
+                id: com.data.block.telescopes.medium.ids[i],
+                health: com.data.tels.find(x => x.id === com.data.block.telescopes.medium.ids[i]).val,
+            })
         }
         for (let i = 0; i < com.data.block.telescopes.small.ids.length; i++) {
-            tels.push({id: com.data.block.telescopes.small.ids[i], health: com.data.tels.find(x => x.id === com.data.block.telescopes.small.ids[i]).val})
+            tels.push({
+                id: com.data.block.telescopes.small.ids[i],
+                health: com.data.tels.find(x => x.id === com.data.block.telescopes.small.ids[i]).val,
+            })
         }
         com.telescopeRunningBlock.update_data({
             data: {

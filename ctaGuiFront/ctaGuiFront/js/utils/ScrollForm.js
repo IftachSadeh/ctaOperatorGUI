@@ -10,7 +10,8 @@
 // ------------------------------------------------------------------
 window.ScrollForm = function(opt_in) {
     let color_theme = get_color_theme('bright_grey')
-    let com = {}
+    let com = {
+    }
     com = opt_in
 
     this.set = function(opt_in) {
@@ -28,7 +29,8 @@ window.ScrollForm = function(opt_in) {
         return com[type]
     }
 
-    com.component = {}
+    com.component = {
+    }
     com.component.fo = com.main.g
         .append('foreignObject')
         .attr('width', com.main.box.w + 'px')
@@ -83,7 +85,13 @@ window.ScrollForm = function(opt_in) {
     com.scrollBox.init({
         tag: com.main.tag,
         g_box: com.scrollBoxG,
-        boxData: { x: 0, y: 0, w: com.main.box.w, h: com.main.box.h, marg: 0 },
+        boxData: {
+            x: 0,
+            y: 0,
+            w: com.main.box.w,
+            h: com.main.box.h,
+            marg: 0,
+        },
         useRelativeCoords: true,
         locker: new Locker(),
         lockerV: [ com.main.tag + 'update_data' ],
@@ -92,13 +100,17 @@ window.ScrollForm = function(opt_in) {
             during: com.main.tag + 'zoomsuring',
             end: com.main.tag + 'zoomEnd',
         },
-        run_loop: new RunLoop({ tag: 'scrollForm' }),
+        run_loop: new RunLoop({
+            tag: 'scrollForm',
+        }),
         canScroll: true,
         scrollVertical: true,
         scrollHorizontal: false,
         scrollHeight: com.main.box.h,
         background: color_theme.dark.background,
-        scrollRecV: { w: 6 },
+        scrollRecV: {
+            w: 6,
+        },
     })
     com.scrollBoxInner = com.scrollBox.get('innerG')
     com.scrollBoxG.select('g.clipping').attr('clip-path', '')

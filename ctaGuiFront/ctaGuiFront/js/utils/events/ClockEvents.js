@@ -6,13 +6,15 @@
 /* global is_def */
 
 window.ClockEvents = function() {
-    let com = {}
+    let com = {
+    }
     com.futurEvents = []
     com.timelineEvents = []
     com.popupEvents = []
     com.pastEvents = []
     com.floor = 1
-    com.timeRange = {}
+    com.timeRange = {
+    }
     com.timeRange.total = 21600
     com.timeRange.day = 0
     com.timeRange.hour = 21600
@@ -93,7 +95,8 @@ window.ClockEvents = function() {
         com.popup = com.g.append('g')
             .attr('transform', 'translate(0,' + com.box.h * 0.2 + ')')
 
-        com.axis = {}
+        com.axis = {
+        }
         com.axis.scaleX = d3.scaleTime().range([ 0, com.box.w * 0.78 ]).domain([])
         com.axis.translate = 'translate(' + com.box.w * 0.12 + ',' + com.box.h * 0.62 + ')'
         com.axis.bottom = d3.axisBottom(com.axis.scaleX).tickSize(6).tickFormat(function(d) {

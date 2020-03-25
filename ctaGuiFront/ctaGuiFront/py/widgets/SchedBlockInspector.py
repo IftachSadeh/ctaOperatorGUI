@@ -35,8 +35,9 @@ class SchedBlockInspector():
         # the parent of this widget
         self.socket_manager = socket_manager
         my_assert(log=self.log,
-               msg=[" - no socket_manager handed to", self.__class__.__name__],
-               state=(self.socket_manager is not None))
+                  msg=[" - no socket_manager handed to",
+                       self.__class__.__name__],
+                  state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
@@ -60,10 +61,10 @@ class SchedBlockInspector():
         # ------------------------------------------------------------------
         if len(SchedBlockInspector.inst_health) == 0:
             for id_now in self.tel_ids:
-                SchedBlockInspector.inst_health.append({"id": id_now, "val": 0})
+                SchedBlockInspector.inst_health.append(
+                    {"id": id_now, "val": 0})
 
         return
-
 
     # ------------------------------------------------------------------
     #
@@ -77,8 +78,9 @@ class SchedBlockInspector():
         # override the global logging variable with a name
         # corresponding to the current session id
         self.log = my_log(title=str(self.socket_manager.user_id) + "/" +
-                         str(self.socket_manager.sess_id) + "/" + __name__ + "/"
-                         + self.widget_id)
+                          str(self.socket_manager.sess_id) +
+                          "/" + __name__ + "/"
+                          + self.widget_id)
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
@@ -117,7 +119,7 @@ class SchedBlockInspector():
             "now": int(SchedBlockInspector.time_of_night['now']),
             "start": int(SchedBlockInspector.time_of_night['start']),
             "end": int(SchedBlockInspector.time_of_night['end'])
-            }
+        }
 
         data = {
             "time_of_night": time_of_night_date,
@@ -169,7 +171,8 @@ class SchedBlockInspector():
     def get_target(self):
         self.redis.pipe.reset()
 
-        SchedBlockInspector.target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
+        SchedBlockInspector.target_ids = self.redis.get(
+            name='target_ids', packed=True, default_val=[])
         for id in SchedBlockInspector.target_ids:
             self.redis.pipe.get(id)
         SchedBlockInspector.targets = self.redis.pipe.execute(packed=True)
@@ -196,14 +199,15 @@ class SchedBlockInspector():
             SchedBlockInspector.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['startTime'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['startTime'],"%Y-%m-%d %H:%M:%S")).total_seconds())
-                cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
+                cmp=lambda a, b: int(a['time']['start']) - \
+                int(b['time']['start'])
             )
 
         return
 
     # data.zoom_target = name of telescope focus on (ex: L_2)
     def sched_block_inspector_push_schedule(self, *args):
-        self.expire = 86400 # one day
+        self.expire = 86400  # one day
         print 'sched_block_inspector_push_schedule'
         data = args[0]['newSchedule']
         self.redis.pipe.reset()

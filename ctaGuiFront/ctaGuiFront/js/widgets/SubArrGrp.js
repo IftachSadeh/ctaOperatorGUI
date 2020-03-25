@@ -44,9 +44,13 @@ sock.widget_table[main_script_tag] = function(opt_in) {
     let w0 = 6
     let div_key = ''
 
-    opt_in.widget_func = { sock_func: sock_sub_arr_grp, main_func: main_sub_arr_grp }
+    opt_in.widget_func = {
+        sock_func: sock_sub_arr_grp,
+        main_func: main_sub_arr_grp,
+    }
     opt_in.widget_div_id = opt_in.widget_id + 'Widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
 
     div_key = 'sky_pos'
     opt_in.ele_props[div_key] = {
@@ -104,7 +108,8 @@ let main_sub_arr_grp = function(opt_in) {
     // let this_sub_arr_grp = this
     let is_south = window.__site_type__ === 'S'
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_sub_arr_grpSvg + ele_now.id,
@@ -120,16 +125,22 @@ let main_sub_arr_grp = function(opt_in) {
     locker.add('in_init_sky_pos')
 
     // function loop
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     let interpolate01 = d3.interpolate(0, 1)
 
     let zoom_state = 0
-    let tel_data = {}
+    let tel_data = {
+    }
 
-    let svg_dims = {}
-    svg_dims.w = {}
-    svg_dims.h = {}
+    let svg_dims = {
+    }
+    svg_dims.w = {
+    }
+    svg_dims.h = {
+    }
 
     svg_dims.w[0] = 400 // is_south ? 900 : 400;
     svg_dims.h[0] = svg_dims.w[0]
@@ -150,7 +161,8 @@ let main_sub_arr_grp = function(opt_in) {
     // see: http://colors.findthedata.com/saved_search/Pastel-Colors
     //      https://www.google.de/design/spec/style/color.html#color-color-palette
     //      http://riccardoscalco.github.io/crayon/
-    let stateCol = {}
+    let stateCol = {
+    }
     stateCol.b = [ '#64B5F6' ]
     stateCol.p = [ '#9575CD' ]
     stateCol.g = [ '#b5c69c', '#AED581' ]
@@ -258,7 +270,10 @@ let main_sub_arr_grp = function(opt_in) {
     // }
 
     function init_data(data_init) {
-        if (sock.multiple_inits({ id: widget_id, data: data_init })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_init,
+        })) {
             return
         }
 
@@ -267,7 +282,10 @@ let main_sub_arr_grp = function(opt_in) {
         let data_in = data_init.data
         let hasJoinedData = joinTelProps(data_in, true)
 
-        sock.set_icon_badge({ n_icon: data_init.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_init.n_icon,
+            icon_divs: icon_divs,
+        })
 
         // -------------------------------------------------------------------
         //
@@ -277,7 +295,10 @@ let main_sub_arr_grp = function(opt_in) {
 
         locker.remove('data_change')
 
-        set_state({ type: 'init_data', data: null })
+        set_state({
+            type: 'init_data',
+            data: null,
+        })
 
         run_when_ready({
             pass: function() {
@@ -299,10 +320,17 @@ let main_sub_arr_grp = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: -1 })
+    run_loop.init({
+        tag: 'update_data',
+        func: update_dataOnce,
+        n_keep: -1,
+    })
 
     function update_data(data_in) {
-        run_loop.push({ tag: 'update_data', data: data_in.data }) //, time:data_in.emit_time
+        run_loop.push({
+            tag: 'update_data',
+            data: data_in.data,
+        }) //, time:data_in.emit_time
     }
 
     function update_dataOnce(data_in) {
@@ -330,19 +358,31 @@ let main_sub_arr_grp = function(opt_in) {
             svg_sky_pos.update_data(data_in)
         }
 
-        locker.remove({ id: 'data_change' })
+        locker.remove({
+            id: 'data_change',
+        })
 
-        set_state({ type: 'data_change', data: null })
+        set_state({
+            type: 'data_change',
+            data: null,
+        })
     }
     this.update_data = update_data
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    run_loop.init({ tag: 'set_state', func: set_state_once, n_keep: 1 })
+    run_loop.init({
+        tag: 'set_state',
+        func: set_state_once,
+        n_keep: 1,
+    })
 
     function set_state(data_in) {
-        run_loop.push({ tag: 'set_state', data: data_in })
+        run_loop.push({
+            tag: 'set_state',
+            data: data_in,
+        })
     }
 
     function set_state_once(opt_in) {
@@ -364,9 +404,16 @@ let main_sub_arr_grp = function(opt_in) {
             // console.log('xxxxxxxx',data_in);
             // tel_data = deep_copy(data_in); // deep copy
 
-            tel_data.idToCol = {}
-            tel_data.idToFocus = {}
-            tel_data.trgPntFocus = { trg: {}, pnt: {} }
+            tel_data.idToCol = {
+            }
+            tel_data.idToFocus = {
+            }
+            tel_data.trgPntFocus = {
+                trg: {
+                },
+                pnt: {
+                },
+            }
 
             if (!is_def(tel_data.prevState)) {
                 tel_data.prevState = 0
@@ -429,8 +476,10 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         // quick access for each child by the corresponding id
         // -------------------------------------------------------------------
-        tel_data.sub_arrIds = {}
-        tel_data.tel_sub_arrId = {}
+        tel_data.sub_arrIds = {
+        }
+        tel_data.tel_sub_arrId = {
+        }
         $.each(tel_data.sub_arr.children, function(index0, sub_arrNow) {
             tel_data.sub_arrIds[sub_arrNow.id] = sub_arrNow
 
@@ -445,7 +494,8 @@ let main_sub_arr_grp = function(opt_in) {
         //
         // -------------------------------------------------------------------
         if (!is_def(tel_data.telHover)) {
-            tel_data.telHover = {}
+            tel_data.telHover = {
+            }
             tel_data.telHover.sub_arr = ''
         }
         if (!is_def(tel_data.sub_arrIds[tel_data.telHover.sub_arr])) {
@@ -548,7 +598,8 @@ let main_sub_arr_grp = function(opt_in) {
     // }
     // this.get_sync_state = get_sync_state;
 
-    let prev_sync = {}
+    let prev_sync = {
+    }
     function get_sync_state(data_in) {
         if (document.hidden) {
             return
@@ -603,7 +654,10 @@ let main_sub_arr_grp = function(opt_in) {
     })
 
     function sync_state_send(data_in) {
-        run_loop.push({ tag: 'sync_state_send', data: data_in })
+        run_loop.push({
+            tag: 'sync_state_send',
+            data: data_in,
+        })
     }
 
     function sync_state_sendOnce(data_in) {
@@ -647,7 +701,8 @@ let main_sub_arr_grp = function(opt_in) {
     function Svg_sky_pos() {
         let this_sky_pos = this
 
-        let com = {}
+        let com = {
+        }
 
         // initialize a couple of functions to be overriden below
         let get_scale = function() {
@@ -659,24 +714,32 @@ let main_sub_arr_grp = function(opt_in) {
         this.get_scale = get_scale
         this.get_trans = get_trans
 
-        let funcD = {}
-        funcD.zoomFuncDuring = {}
-        funcD.zoomFuncEnd = {}
-        funcD.updtFocused = {}
+        let funcD = {
+        }
+        funcD.zoomFuncDuring = {
+        }
+        funcD.zoomFuncEnd = {
+        }
+        funcD.updtFocused = {
+        }
 
-        let len_sky_pos = {}
-        len_sky_pos.z = {}
+        let len_sky_pos = {
+        }
+        len_sky_pos.z = {
+        }
         len_sky_pos.z['0.0'] = 1
         len_sky_pos.z['1.0'] = 100
         len_sky_pos.z.scaleFactor = len_sky_pos.z['0.0']
         len_sky_pos.z.gratRatio = 25
 
         // font sizes, scaled to the different zoom levels
-        len_sky_pos.f = {}
+        len_sky_pos.f = {
+        }
         len_sky_pos.f['0.0'] = 9 / len_sky_pos.z['0.0']
 
         //
-        len_sky_pos.r = {}
+        len_sky_pos.r = {
+        }
         len_sky_pos.r.trg = is_south ? 4 : 6
         len_sky_pos.r.tel = is_south ? 10 : 18 // {"L":14,"M":14,"S":14};//{"L":14,"M":12,"S":10};
 
@@ -722,7 +785,12 @@ let main_sub_arr_grp = function(opt_in) {
 
                 return
             }
-            sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+            sock.emit_mouse_move({
+                eleIn: svg_div,
+                data: {
+                    widget_id: widget_id,
+                },
+            })
 
             // -------------------------------------------------------------------
             // zoom start/on/end functions, attachd to com.svg_zoom
@@ -730,8 +798,14 @@ let main_sub_arr_grp = function(opt_in) {
             let scaleStart = 0
             com.svg_zoom_start = function() {
                 scaleStart = d3.event.transform.k
-                locker.add({ id: 'zoom', override: true })
-                locker.add({ id: 'zoomEndFunc', override: true })
+                locker.add({
+                    id: 'zoom',
+                    override: true,
+                })
+                locker.add({
+                    id: 'zoomEndFunc',
+                    override: true,
+                })
             }
 
             com.svg_zoom_during = function() {
@@ -771,10 +845,16 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            run_loop.init({ tag: 'doZoomFuncEnd', func: doZoomFuncEndOnce, n_keep: 1 })
+            run_loop.init({
+                tag: 'doZoomFuncEnd',
+                func: doZoomFuncEndOnce,
+                n_keep: 1,
+            })
 
             function doZoomFuncEnd() {
-                run_loop.push({ tag: 'doZoomFuncEnd' })
+                run_loop.push({
+                    tag: 'doZoomFuncEnd',
+                })
             }
 
             function doZoomFuncEndOnce() {
@@ -849,7 +929,10 @@ let main_sub_arr_grp = function(opt_in) {
                 }
 
                 let func_start = function() {
-                    locker.add({ id: 'auto_zoom_target', override: true })
+                    locker.add({
+                        id: 'auto_zoom_target',
+                        override: true,
+                    })
                 }
                 let func_during = function() {}
                 let func_end = function() {
@@ -877,7 +960,10 @@ let main_sub_arr_grp = function(opt_in) {
                     do_zoom_to_target(data_out)
                 }
                 else {
-                    run_loop.push({ tag: 'zoom_to_target_sky_pos', data: data_out })
+                    run_loop.push({
+                        tag: 'zoom_to_target_sky_pos',
+                        data: data_out,
+                    })
                 }
             }
             this_sky_pos.zoom_to_target = zoom_to_target
@@ -985,7 +1071,8 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         function setOverText() {
             if (!is_def(com.overRect)) {
-                com.overRect = {}
+                com.overRect = {
+                }
                 com.overRect.w = svg_dims.w[1]
                 com.overRect.h = svg_dims.h[1] * 0.06
                 com.overRect.x = -com.overRect.w / 2
@@ -1162,10 +1249,13 @@ let main_sub_arr_grp = function(opt_in) {
             // // fixme !!!!!!!!!!!!!!!!!!!!
             // // fixme !!!!!!!!!!!!!!!!!!!!
             if (!is_def(com.inst_pos)) {
-                com.inst_pos = {}
+                com.inst_pos = {
+                }
                 com.inst_pos.g = com.zoom_callable.append('g')
-                com.inst_pos.circXY = {}
-                com.inst_pos.lblXY = {}
+                com.inst_pos.circXY = {
+                }
+                com.inst_pos.lblXY = {
+                }
             }
             let tagTelLbl = 'telTitle'
             let tagTrgLbl = 'trgTitle'
@@ -1230,7 +1320,10 @@ let main_sub_arr_grp = function(opt_in) {
                         col: nodeNow.col,
                     }
 
-                    com.inst_pos.circXY[id_now] = { x: data_now.x, y: data_now.y }
+                    com.inst_pos.circXY[id_now] = {
+                        x: data_now.x,
+                        y: data_now.y,
+                    }
 
                     if (trgTel === 'tel') {
                         telLblData.push(data_now)
@@ -1267,11 +1360,36 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             if (!is_def(com.inst_pos.lineTags)) {
                 com.inst_pos.lineTags = [
-                    { pair: [ 0, 1 ], telTag: 'tel', tag: 'lineTelPnt', dash: '5,5' },
-                    { pair: [ 1, 2 ], telTag: 'tel', tag: 'lineTrgPnt', dash: '10,10' },
-                    { pair: [ 0, 0 ], telTag: 'tel', tag: 'lineTelLbl', dash: '5,1' },
-                    { pair: [ 0, 0 ], telTag: 'pnt', tag: 'linePntLbl', dash: '5,1' },
-                    { pair: [ 0, 0 ], telTag: 'trg', tag: 'lineTrgLbl', dash: '5,1' },
+                    {
+                        pair: [ 0, 1 ],
+                        telTag: 'tel',
+                        tag: 'lineTelPnt',
+                        dash: '5,5',
+                    },
+                    {
+                        pair: [ 1, 2 ],
+                        telTag: 'tel',
+                        tag: 'lineTrgPnt',
+                        dash: '10,10',
+                    },
+                    {
+                        pair: [ 0, 0 ],
+                        telTag: 'tel',
+                        tag: 'lineTelLbl',
+                        dash: '5,1',
+                    },
+                    {
+                        pair: [ 0, 0 ],
+                        telTag: 'pnt',
+                        tag: 'linePntLbl',
+                        dash: '5,1',
+                    },
+                    {
+                        pair: [ 0, 0 ],
+                        telTag: 'trg',
+                        tag: 'lineTrgLbl',
+                        dash: '5,1',
+                    },
                 ]
             }
 
@@ -1625,7 +1743,10 @@ let main_sub_arr_grp = function(opt_in) {
                     com.inst_pos.g
                         .selectAll('text')
                         .each(function(d) {
-                            com.inst_pos.lblXY[d.id] = { x: d.x, y: d.y }
+                            com.inst_pos.lblXY[d.id] = {
+                                x: d.x,
+                                y: d.y,
+                            }
                         })
                         .transition('updtTickepos_dif')
                         .duration(times.anim_arc * animFrac)
@@ -1731,10 +1852,17 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        run_loop.init({ tag: 'setFocused', func: setFocusedOnce, n_keep: 1 })
+        run_loop.init({
+            tag: 'setFocused',
+            func: setFocusedOnce,
+            n_keep: 1,
+        })
 
         function setFocused(data_in) {
-            run_loop.push({ tag: 'setFocused', data: data_in })
+            run_loop.push({
+                tag: 'setFocused',
+                data: data_in,
+            })
         }
         this.setFocused = setFocused
 
@@ -1748,7 +1876,10 @@ let main_sub_arr_grp = function(opt_in) {
                 }, times.anim_arc)
                 return
             }
-            locker.add({ id: 'setFocused', override: true })
+            locker.add({
+                id: 'setFocused',
+                override: true,
+            })
 
             let tagTelLbl = 'telTitle'
             let tagTrgLbl = 'trgTitle'
@@ -1804,7 +1935,10 @@ let main_sub_arr_grp = function(opt_in) {
                     return is_focused(d.id) ? 1 : fadeOpac
                 })
 
-            locker.remove({ id: 'setFocused', delay: times.anim_arc })
+            locker.remove({
+                id: 'setFocused',
+                delay: times.anim_arc,
+            })
         }
 
         // -------------------------------------------------------------------
@@ -2253,7 +2387,8 @@ let main_sub_arr_grp = function(opt_in) {
     function Svg_sub_arr() {
         let thisSvg_sub_arr = this
 
-        let com = {}
+        let com = {
+        }
         this.com = com
 
         // initialize a couple of functions to be overriden below
@@ -2266,7 +2401,8 @@ let main_sub_arr_grp = function(opt_in) {
         this.get_scale = get_scale
         this.get_trans = get_trans
 
-        com.z = {}
+        com.z = {
+        }
         com.z['0.0'] = 1
         if (is_south) {
             com.z['0.1'] = 1.1
@@ -2332,7 +2468,12 @@ let main_sub_arr_grp = function(opt_in) {
 
                     return
                 }
-                sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+                sock.emit_mouse_move({
+                    eleIn: svg_div,
+                    data: {
+                        widget_id: widget_id,
+                    },
+                })
 
                 // -------------------------------------------------------------------
                 // zoom start/on/end functions, attachd to com.svg_zoom
@@ -2340,7 +2481,10 @@ let main_sub_arr_grp = function(opt_in) {
                 let scaleStart = 0
                 com.svg_zoom_start = function() {
                     scaleStart = d3.event.transform.k
-                    locker.add({ id: 'zoom', override: true })
+                    locker.add({
+                        id: 'zoom',
+                        override: true,
+                    })
                 }
 
                 com.svg_zoom_during = function() {
@@ -2373,7 +2517,10 @@ let main_sub_arr_grp = function(opt_in) {
                             zoom_state = 2
                         }
 
-                        set_state({ type: 'zoom', data: null })
+                        set_state({
+                            type: 'zoom',
+                            data: null,
+                        })
                         hex00()
                     }
                 }
@@ -2471,7 +2618,10 @@ let main_sub_arr_grp = function(opt_in) {
                     }
 
                     let func_start = function() {
-                        locker.add({ id: 'auto_zoom_target', override: true })
+                        locker.add({
+                            id: 'auto_zoom_target',
+                            override: true,
+                        })
                         // if(target_name != "") zoom_target = target_name;
                     }
                     let func_during = function() {}
@@ -2491,7 +2641,10 @@ let main_sub_arr_grp = function(opt_in) {
                             }
                         }
                         if (duration_scale > 0 && is_done) {
-                            set_state({ type: 'zoom', data: null })
+                            set_state({
+                                type: 'zoom',
+                                data: null,
+                            })
                         }
                     }
 
@@ -2516,7 +2669,10 @@ let main_sub_arr_grp = function(opt_in) {
                         do_zoom_to_target(data_out)
                     }
                     else {
-                        run_loop.push({ tag: 'zoom_to_target_sub_arr', data: data_out })
+                        run_loop.push({
+                            tag: 'zoom_to_target_sub_arr',
+                            data: data_out,
+                        })
                     }
                 }
                 thisSvg_sub_arr.zoom_to_target = zoom_to_target
@@ -2623,7 +2779,8 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         function setOverText() {
             if (!is_def(com.overRect)) {
-                com.overRect = {}
+                com.overRect = {
+                }
                 com.overRect.w = svg_dims.w[1]
                 com.overRect.h = svg_dims.h[1] * 0.06
                 com.overRect.x = 0
@@ -2798,7 +2955,10 @@ let main_sub_arr_grp = function(opt_in) {
                         return hirchStyleFill(d)
                     })
 
-                locker.remove({ id: 'set_hierarchy', delay: times.anim_arc })
+                locker.remove({
+                    id: 'set_hierarchy',
+                    delay: times.anim_arc,
+                })
 
                 return
             }
@@ -2813,9 +2973,13 @@ let main_sub_arr_grp = function(opt_in) {
                 )
             }
 
-            com.telXY = {}
+            com.telXY = {
+            }
 
-            let sub_arr = { id: tel_data.sub_arr.id, children: [] }
+            let sub_arr = {
+                id: tel_data.sub_arr.id,
+                children: [],
+            }
             $.each(tel_data.sub_arr.children, function(index, sub_arrNow) {
                 if (sub_arrNow.children.length > 0) {
                     sub_arr.children.push(sub_arrNow)
@@ -2840,7 +3004,10 @@ let main_sub_arr_grp = function(opt_in) {
 
             setCircTxt(com.hirch.descendants())
 
-            locker.remove({ id: 'set_hierarchy', delay: times.anim_arc * 2 })
+            locker.remove({
+                id: 'set_hierarchy',
+                delay: times.anim_arc * 2,
+            })
         }
 
         function setCircTxt(data_in) {
@@ -3099,7 +3266,10 @@ let main_sub_arr_grp = function(opt_in) {
                     svg_sky_pos.update_data()
 
                     if (locker.is_free('zoom') && locker.is_free('zoom_to_target')) {
-                        set_state({ type: 'hover', data: d })
+                        set_state({
+                            type: 'hover',
+                            data: d,
+                        })
                     }
                 }
                 else {
@@ -3308,7 +3478,10 @@ let main_sub_arr_grp = function(opt_in) {
             }
 
             locker.remove('data_change')
-            locker.remove({ id: 'set_state', delay: times.anim_arc })
+            locker.remove({
+                id: 'set_state',
+                delay: times.anim_arc,
+            })
         }
         this.set_state_once = set_state_once
 
@@ -3327,7 +3500,8 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            com[tagTel] = {}
+            com[tagTel] = {
+            }
             $.each(tel_data.sub_arr.children, function(index0, grpNow) {
                 $.each(grpNow.children, function(index1, ele_now) {
                     let tel_Id = ele_now.id
@@ -3337,7 +3511,8 @@ let main_sub_arr_grp = function(opt_in) {
                 ? tel_data_now
                 : find_dict_ele_in_obj(tel_data.pnt, 'id', tel_data_now.pntId, true)[1]
 
-                    com[tagTel][tel_Id] = {}
+                    com[tagTel][tel_Id] = {
+                    }
                     com[tagTel][tel_Id].tels = tel_data_now
                     com[tagTel][tel_Id].pnts = pnts_now
                 })
@@ -3392,7 +3567,8 @@ let main_sub_arr_grp = function(opt_in) {
             ]
             let centreLabel2 = [ centre1[0], centre1[1] - scaleStroke0 * 1.5 ]
 
-            com[tag_state] = {}
+            com[tag_state] = {
+            }
             com[tag_state].tagBck = tagBck
             com[tag_state].tagG = tagG
             com[tag_state].lblProps = lblProps
@@ -3476,7 +3652,8 @@ let main_sub_arr_grp = function(opt_in) {
                 h: tableHeight,
             }
 
-            com[tag_state] = {}
+            com[tag_state] = {
+            }
             com[tag_state].tagBck = tagBck
             com[tag_state].tagG = tagG
             com[tag_state].lblProps = lblProps
@@ -3524,7 +3701,8 @@ let main_sub_arr_grp = function(opt_in) {
             let tagTel = tagG + 'ele'
             // let tag_state = 's01'
 
-            let data_in = {}
+            let data_in = {
+            }
             data_in.azm = []
             data_in.zen = []
             if (is_on) {
@@ -3562,7 +3740,8 @@ let main_sub_arr_grp = function(opt_in) {
             }
             // console.log(data_in); return
 
-            let opt = {}
+            let opt = {
+            }
             opt.index = 0
             opt.isArc = false
             opt.tag_state = 's01'
@@ -3577,7 +3756,8 @@ let main_sub_arr_grp = function(opt_in) {
 
             addRing(opt)
 
-            opt = {}
+            opt = {
+            }
             opt.index = 0
             opt.isArc = true
             opt.tag_state = 's01'
@@ -3604,7 +3784,8 @@ let main_sub_arr_grp = function(opt_in) {
 
             let showByPercision = true
 
-            let data_in = {}
+            let data_in = {
+            }
             data_in.azm = [ [], [], [] ]
             data_in.zen = [ [], [], [] ]
             data_in.posDiff = [] // data_in.tabel = []; data_in.remove = [];
@@ -3705,7 +3886,8 @@ let main_sub_arr_grp = function(opt_in) {
             // azimuth (full circle)
             // -------------------------------------------------------------------
             $.each([ 0, 1, 2 ], function(index_, index) {
-                let opt = {}
+                let opt = {
+                }
                 opt.index = index
                 opt.isArc = false
                 opt.tag_state = 's10'
@@ -3727,7 +3909,8 @@ let main_sub_arr_grp = function(opt_in) {
             // zenith (1/4 of circle)
             // -------------------------------------------------------------------
             $.each([ 0, 1, 2 ], function(index_, index) {
-                let opt = {}
+                let opt = {
+                }
                 opt.index = index
                 opt.tag_state = 's10'
                 opt.tagType = '1'
@@ -3750,7 +3933,8 @@ let main_sub_arr_grp = function(opt_in) {
             // difference between position and pointing (azimuth and zenith combined)
             // -------------------------------------------------------------------
             $.each([ 0, 1, 2 ], function(index_, index) {
-                let opt = {}
+                let opt = {
+                }
                 opt.index = index
                 opt.tag_state = 's10'
                 opt.scaleRad1 = 'sclR3' + index
@@ -3875,7 +4059,8 @@ let main_sub_arr_grp = function(opt_in) {
             let data0 = []
             let dataLbl = []
             let dataCentLbl = []
-            let xyDiff = {}
+            let xyDiff = {
+            }
 
             let lblOffsetH = wh[1] * (index < 2 ? 3 : 2)
             let wFrac = 0.35
@@ -3906,7 +4091,9 @@ let main_sub_arr_grp = function(opt_in) {
                 }
 
                 if (data_now.hasCentLbl && index === 2) {
-                    dataCentLbl.push({ id: tel_Id })
+                    dataCentLbl.push({
+                        id: tel_Id,
+                    })
                 }
 
                 let scaleIndex = 0
@@ -4243,7 +4430,8 @@ let main_sub_arr_grp = function(opt_in) {
                 let tel_Id = data_now.id
 
                 if (!is_def(com[tag_now + 'prev'])) {
-                    com[tag_now + 'prev'] = {}
+                    com[tag_now + 'prev'] = {
+                    }
                 }
                 if (!is_def(com[tag_now + 'prev'][tel_Id + 'pos'])) {
                     com[tag_now + 'prev'][tel_Id + 'pos'] = 0
@@ -4506,7 +4694,9 @@ let main_sub_arr_grp = function(opt_in) {
                     }
 
                     if (data_now.hasCentLbl && index === 0) {
-                        dataCentLbl.push({ id: tel_Id })
+                        dataCentLbl.push({
+                            id: tel_Id,
+                        })
                     }
                 })
             }
@@ -4527,11 +4717,18 @@ let main_sub_arr_grp = function(opt_in) {
                                 rot += 180
                             }
 
-                            dataLbl.push({ id: tel_Id, nLbl: nLblNow, pos: posNow, rot: rot })
+                            dataLbl.push({
+                                id: tel_Id,
+                                nLbl: nLblNow,
+                                pos: posNow,
+                                rot: rot,
+                            })
                         }
 
                         if (data_now.hasCentLbl && index === 0) {
-                            dataCentLbl.push({ id: tel_Id })
+                            dataCentLbl.push({
+                                id: tel_Id,
+                            })
                         }
                     }
                 })
@@ -4739,7 +4936,8 @@ let main_sub_arr_grp = function(opt_in) {
             if (!is_def(com.svgHex)) {
                 let hex_r = 18 // is_south ? 35 : 20;
 
-                com.svgHex = {}
+                com.svgHex = {
+                }
                 com.svgHex.hex = d3
                     .hexbin()
                     .size([ svg_dims.w[1], svg_dims.h[1] ])

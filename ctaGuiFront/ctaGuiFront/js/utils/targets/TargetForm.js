@@ -8,15 +8,25 @@
 /* global Locker */
 /* global RunLoop */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/blocks/common.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/blocks/common.js',
+})
 
 window.TargetForm = function(opt_in) {
     let com = {
         main: {
             tag: 'blockFormTag',
             g: undefined,
-            scroll: {},
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            scroll: {
+            },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: colorPalette.brighter.background,
                 stroke: colorPalette.brighter.stroke,
@@ -24,7 +34,8 @@ window.TargetForm = function(opt_in) {
             },
         },
         tree: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -32,7 +43,8 @@ window.TargetForm = function(opt_in) {
             },
         },
         schedule: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -40,7 +52,8 @@ window.TargetForm = function(opt_in) {
             },
         },
         target: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -48,7 +61,8 @@ window.TargetForm = function(opt_in) {
             },
         },
         telescope: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -140,15 +154,21 @@ window.TargetForm = function(opt_in) {
                 during: tag + 'zoomsuring',
                 end: tag + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: tag}),
+            run_loop: new RunLoop({
+                tag: tag,
+            }),
             canScroll: true,
             scrollVertical: true,
             scrollHorizontal: false,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 4},
-            scrollRecV: {w: 4},
+            scrollRecH: {
+                h: 4,
+            },
+            scrollRecV: {
+                w: 4,
+            },
         })
         return scrollBox
     }
@@ -240,8 +260,20 @@ window.TargetForm = function(opt_in) {
         //   .attr('height', headerSize)
         //   .attr('fill', colorPalette.dark.stroke)
         let label = [
-            {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.119, text: 'Sched', anchor: 'start'},
-            {x: box.w * 0.12, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.88, text: 'Obs', anchor: 'start'},
+            {
+                x: box.w * 0.01,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.119,
+                text: 'Sched',
+                anchor: 'start',
+            },
+            {
+                x: box.w * 0.12,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.88,
+                text: 'Obs',
+                anchor: 'start',
+            },
         ]
         // for (let i = 0; i < label.length; i++) {
         //   g.append('text')
@@ -263,15 +295,62 @@ window.TargetForm = function(opt_in) {
         // }
 
         let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (3 + 0) + ')')
-        com.ressource.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {enabled: false})
+        com.ressource.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {
+            enabled: false,
+        })
         let innerg = com.ressource.scrollBox.get('innerG')
 
         let squareTemplate = {
-            '1': [{x: 0.5, y: 0.5}],
-            '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
-            '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
-            '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
-            '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
+            '1': [{
+                x: 0.5,
+                y: 0.5,
+            }],
+            '2': [{
+                x: 0.3,
+                y: 0.5,
+            }, {
+                x: 0.7,
+                y: 0.5,
+            }],
+            '3': [{
+                x: 0.3,
+                y: 0.3,
+            }, {
+                x: 0.7,
+                y: 0.3,
+            }, {
+                x: 0.5,
+                y: 0.7,
+            }],
+            '4': [{
+                x: 0.3,
+                y: 0.3,
+            }, {
+                x: 0.7,
+                y: 0.3,
+            }, {
+                x: 0.3,
+                y: 0.7,
+            }, {
+                x: 0.7,
+                y: 0.7,
+            }],
+            '5': [{
+                x: 0.3,
+                y: 0.16,
+            }, {
+                x: 0.7,
+                y: 0.16,
+            }, {
+                x: 0.5,
+                y: 0.5,
+            }, {
+                x: 0.3,
+                y: 0.84,
+            }, {
+                x: 0.7,
+                y: 0.84,
+            }],
             '6': [],
             '7': [],
             '8': [],
@@ -310,7 +389,10 @@ window.TargetForm = function(opt_in) {
                     over: function() {},
                     out: function() {},
                 }
-                pointing_icon(g, {w: psize.w, h: psize.h}, 'P' + get_pointing_value(d), pevents, colorPalette)
+                pointing_icon(g, {
+                    w: psize.w,
+                    h: psize.h,
+                }, 'P' + get_pointing_value(d), pevents, colorPalette)
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -412,17 +494,41 @@ window.TargetForm = function(opt_in) {
                 //   .attr('fill-opacity', i % 2 === 0 ? 0.05 : 0.1)
                 //   .attr('rx', 4)
                 let poly = [
-                    {x: dimPoly * 0.3, y: dimPoly * 0.0},
-                    {x: dimPoly * 0.7, y: dimPoly * 0.0},
+                    {
+                        x: dimPoly * 0.3,
+                        y: dimPoly * 0.0,
+                    },
+                    {
+                        x: dimPoly * 0.7,
+                        y: dimPoly * 0.0,
+                    },
 
-                    {x: dimPoly * 1, y: dimPoly * 0.3},
-                    {x: dimPoly * 1, y: dimPoly * 0.7},
+                    {
+                        x: dimPoly * 1,
+                        y: dimPoly * 0.3,
+                    },
+                    {
+                        x: dimPoly * 1,
+                        y: dimPoly * 0.7,
+                    },
 
-                    {x: dimPoly * 0.7, y: dimPoly * 1},
-                    {x: dimPoly * 0.3, y: dimPoly * 1},
+                    {
+                        x: dimPoly * 0.7,
+                        y: dimPoly * 1,
+                    },
+                    {
+                        x: dimPoly * 0.3,
+                        y: dimPoly * 1,
+                    },
 
-                    {x: dimPoly * 0.0, y: dimPoly * 0.7},
-                    {x: dimPoly * 0.0, y: dimPoly * 0.3},
+                    {
+                        x: dimPoly * 0.0,
+                        y: dimPoly * 0.7,
+                    },
+                    {
+                        x: dimPoly * 0.0,
+                        y: dimPoly * 0.3,
+                    },
                 ]
                 g.selectAll('polygon')
                     .data([ poly ])
@@ -472,7 +578,10 @@ window.TargetForm = function(opt_in) {
                 .remove()
         }
         schedCore(scheds, innerg, 4)
-        com.ressource.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: 2 + scheds.length * line})
+        com.ressource.scrollBox.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: 2 + scheds.length * line,
+        })
         blockg.append('line')
             .attr('x1', box.x)
             .attr('y1', box.h)
@@ -496,9 +605,27 @@ window.TargetForm = function(opt_in) {
         //   .attr('height', headerSize)
         //   .attr('fill', colorPalette.dark.stroke)
         let label = [
-            {x: box.w * 0.01, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.33, text: 'Target', anchor: 'start'},
-            {x: box.w * 0.33, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.33, text: 'Pointing', anchor: 'start'},
-            {x: box.w * 0.66, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.34, text: 'offset', anchor: 'start'},
+            {
+                x: box.w * 0.01,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.33,
+                text: 'Target',
+                anchor: 'start',
+            },
+            {
+                x: box.w * 0.33,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.33,
+                text: 'Pointing',
+                anchor: 'start',
+            },
+            {
+                x: box.w * 0.66,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.34,
+                text: 'offset',
+                anchor: 'start',
+            },
         ]
         // for (let i = 0; i < label.length; i++) {
         //   g.append('text')
@@ -595,9 +722,16 @@ window.TargetForm = function(opt_in) {
         //   .attr('text-anchor', 'middle')
         //   .attr('transform', 'translate(' + (box.w * 0.14 * 0.5) + ',' + (headerSize * 6.5 + txt_size * 0.33) + ')')
 
-        let tbox = {x: 0, y: headerSize * 6 + headerSize, w: box.w * 0.14, h: box.h - headerSize * 7.5}
+        let tbox = {
+            x: 0,
+            y: headerSize * 6 + headerSize,
+            w: box.w * 0.14,
+            h: box.h - headerSize * 7.5,
+        }
         let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + tbox.y + ')')
-        let scrollBox = initScrollBox(com.main.tag + 'targetListScroll', blockg, tbox, {enabled: false})
+        let scrollBox = initScrollBox(com.main.tag + 'targetListScroll', blockg, tbox, {
+            enabled: false,
+        })
         let innerg = scrollBox.get('innerG')
 
         let allPoint = []
@@ -607,7 +741,8 @@ window.TargetForm = function(opt_in) {
         let scrollHeight = headerSize * 0.2
         function pointingCore(blocks, pg, offset) {
             let pointings = []
-            let linkbetween = {}
+            let linkbetween = {
+            }
             for (let i = 0; i < blocks.length; i++) {
                 for (let j = 0; j < blocks[i].pointings.length; j++) {
                     if (blocks[i].pointings[j].name.includes(target.name)) {
@@ -643,7 +778,10 @@ window.TargetForm = function(opt_in) {
                     },
                     out: function() {},
                 }
-                pointing_icon(g, {w: line * 1.4, h: line * 0.9}, get_pointing_short(d) + 'P' + get_pointing_value(d), pevents, colorPalette)
+                pointing_icon(g, {
+                    w: line * 1.4,
+                    h: line * 0.9,
+                }, get_pointing_short(d) + 'P' + get_pointing_value(d), pevents, colorPalette)
                 scrollHeight += (marg + line * 0.9)
             })
             let merge = current.merge(enter)
@@ -674,17 +812,41 @@ window.TargetForm = function(opt_in) {
                 let g = d3.select(this)
                 let dimPoly = line * 1.2
                 let poly = [
-                    {x: dimPoly * 0.3, y: dimPoly * 0.0},
-                    {x: dimPoly * 0.7, y: dimPoly * 0.0},
+                    {
+                        x: dimPoly * 0.3,
+                        y: dimPoly * 0.0,
+                    },
+                    {
+                        x: dimPoly * 0.7,
+                        y: dimPoly * 0.0,
+                    },
 
-                    {x: dimPoly * 1, y: dimPoly * 0.3},
-                    {x: dimPoly * 1, y: dimPoly * 0.7},
+                    {
+                        x: dimPoly * 1,
+                        y: dimPoly * 0.3,
+                    },
+                    {
+                        x: dimPoly * 1,
+                        y: dimPoly * 0.7,
+                    },
 
-                    {x: dimPoly * 0.7, y: dimPoly * 1},
-                    {x: dimPoly * 0.3, y: dimPoly * 1},
+                    {
+                        x: dimPoly * 0.7,
+                        y: dimPoly * 1,
+                    },
+                    {
+                        x: dimPoly * 0.3,
+                        y: dimPoly * 1,
+                    },
 
-                    {x: dimPoly * 0.0, y: dimPoly * 0.7},
-                    {x: dimPoly * 0.0, y: dimPoly * 0.3},
+                    {
+                        x: dimPoly * 0.0,
+                        y: dimPoly * 0.7,
+                    },
+                    {
+                        x: dimPoly * 0.0,
+                        y: dimPoly * 0.3,
+                    },
                 ]
                 g.selectAll('polygon')
                     .data([ poly ])
@@ -743,7 +905,10 @@ window.TargetForm = function(opt_in) {
             .attr('stroke', colorPalette.dark.stroke)
             .attr('stroke-width', 0.2)
             .style('opacity', scrollHeight > tbox.h ? 1 : 0)
-        scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: scrollHeight})
+        scrollBox.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: scrollHeight,
+        })
 
         let gt = g.append('g')
             .attr('id', 'telsDisplayer')
@@ -752,8 +917,15 @@ window.TargetForm = function(opt_in) {
             main: {
                 tag: 'targetRootTag',
                 g: gt,
-                scroll: {},
-                box: {x: 0, y: 0, w: box.w * 0.7, h: box.h - headerSize * 6.5, marg: 0},
+                scroll: {
+                },
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: box.w * 0.7,
+                    h: box.h - headerSize * 6.5,
+                    marg: 0,
+                },
                 background: {
                     fill: colorPalette.brighter.background,
                     stroke: colorPalette.brighter.stroke,
@@ -783,7 +955,13 @@ window.TargetForm = function(opt_in) {
                 skymap: {
                     enabled: true,
                     g: undefined,
-                    box: {x: 0, y: 0, w: box.w * 0.7, h: box.h - headerSize * 6.5, marg: 0},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: box.w * 0.7,
+                        h: box.h - headerSize * 6.5,
+                        marg: 0,
+                    },
                     mainTarget: undefined,
                 },
                 legend: {
@@ -799,14 +977,16 @@ window.TargetForm = function(opt_in) {
                 raw: {
                     targets: [],
                 },
-                filtered: {},
+                filtered: {
+                },
                 modified: [],
             },
             debug: {
                 enabled: false,
             },
             pattern: {
-                select: {},
+                select: {
+                },
             },
             input: {
                 over: {

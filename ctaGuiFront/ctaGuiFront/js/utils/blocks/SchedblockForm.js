@@ -10,15 +10,25 @@
 /* global target_icon */
 /* global pointing_icon */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/blocks/common.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/blocks/common.js',
+})
 
 window.SchedblockForm = function(opt_in) {
     let com = {
         main: {
             tag: 'blockFormTag',
             g: undefined,
-            scroll: {},
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            scroll: {
+            },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: colorPalette.brighter.background,
                 stroke: colorPalette.brighter.stroke,
@@ -26,7 +36,8 @@ window.SchedblockForm = function(opt_in) {
             },
         },
         tree: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -34,7 +45,8 @@ window.SchedblockForm = function(opt_in) {
             },
         },
         schedule: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -42,7 +54,8 @@ window.SchedblockForm = function(opt_in) {
             },
         },
         target: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -50,7 +63,8 @@ window.SchedblockForm = function(opt_in) {
             },
         },
         telescope: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -226,15 +240,21 @@ window.SchedblockForm = function(opt_in) {
                 during: tag + 'zoomsuring',
                 end: tag + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: tag}),
+            run_loop: new RunLoop({
+                tag: tag,
+            }),
             canScroll: true,
             scrollVertical: true,
             scrollHorizontal: false,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 4},
-            scrollRecV: {w: 4},
+            scrollRecH: {
+                h: 4,
+            },
+            scrollRecV: {
+                w: 4,
+            },
         })
         return scrollBox
     }
@@ -248,17 +268,41 @@ window.SchedblockForm = function(opt_in) {
 
         let dimPoly = box.h * 0.6
         let poly = [
-            {x: dimPoly * 0.3, y: dimPoly * 0.0},
-            {x: dimPoly * 0.7, y: dimPoly * 0.0},
+            {
+                x: dimPoly * 0.3,
+                y: dimPoly * 0.0,
+            },
+            {
+                x: dimPoly * 0.7,
+                y: dimPoly * 0.0,
+            },
 
-            {x: dimPoly * 1, y: dimPoly * 0.3},
-            {x: dimPoly * 1, y: dimPoly * 0.7},
+            {
+                x: dimPoly * 1,
+                y: dimPoly * 0.3,
+            },
+            {
+                x: dimPoly * 1,
+                y: dimPoly * 0.7,
+            },
 
-            {x: dimPoly * 0.7, y: dimPoly * 1},
-            {x: dimPoly * 0.3, y: dimPoly * 1},
+            {
+                x: dimPoly * 0.7,
+                y: dimPoly * 1,
+            },
+            {
+                x: dimPoly * 0.3,
+                y: dimPoly * 1,
+            },
 
-            {x: dimPoly * 0.0, y: dimPoly * 0.7},
-            {x: dimPoly * 0.0, y: dimPoly * 0.3},
+            {
+                x: dimPoly * 0.0,
+                y: dimPoly * 0.7,
+            },
+            {
+                x: dimPoly * 0.0,
+                y: dimPoly * 0.3,
+            },
         ]
         g.selectAll('polygon.new')
             .data([ poly ])
@@ -310,17 +354,41 @@ window.SchedblockForm = function(opt_in) {
 
         dimPoly = box.h * 0.5
         poly = [
-            {x: dimPoly * 0.3, y: dimPoly * 0.0},
-            {x: dimPoly * 0.7, y: dimPoly * 0.0},
+            {
+                x: dimPoly * 0.3,
+                y: dimPoly * 0.0,
+            },
+            {
+                x: dimPoly * 0.7,
+                y: dimPoly * 0.0,
+            },
 
-            {x: dimPoly * 1, y: dimPoly * 0.3},
-            {x: dimPoly * 1, y: dimPoly * 0.7},
+            {
+                x: dimPoly * 1,
+                y: dimPoly * 0.3,
+            },
+            {
+                x: dimPoly * 1,
+                y: dimPoly * 0.7,
+            },
 
-            {x: dimPoly * 0.7, y: dimPoly * 1},
-            {x: dimPoly * 0.3, y: dimPoly * 1},
+            {
+                x: dimPoly * 0.7,
+                y: dimPoly * 1,
+            },
+            {
+                x: dimPoly * 0.3,
+                y: dimPoly * 1,
+            },
 
-            {x: dimPoly * 0.0, y: dimPoly * 0.7},
-            {x: dimPoly * 0.0, y: dimPoly * 0.3},
+            {
+                x: dimPoly * 0.0,
+                y: dimPoly * 0.7,
+            },
+            {
+                x: dimPoly * 0.0,
+                y: dimPoly * 0.3,
+            },
         ]
         g.selectAll('polygon.new')
             .data([ poly ])
@@ -456,11 +524,41 @@ window.SchedblockForm = function(opt_in) {
         //   .attr('height', headerSize)
         //   .attr('fill', colorPalette.dark.stroke)
         let label = [
-            {x: box.w * 0.0, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.1, text: 'Blocks', anchor: 'middle'},
-            {x: box.w * 0.1, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.2, text: 'State', anchor: 'middle'},
-            {x: box.w * 0.3, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.233, text: 'Start', anchor: 'middle'},
-            {x: box.w * 0.533, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.233, text: 'Duration', anchor: 'middle'},
-            {x: box.w * 0.766, y: -2 + headerSize * 0.5 + title_size * 0.6, w: box.w * 0.233, text: 'End', anchor: 'middle'},
+            {
+                x: box.w * 0.0,
+                y: -2 + headerSize * 0.5 + title_size * 0.6,
+                w: box.w * 0.1,
+                text: 'Blocks',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.1,
+                y: -2 + headerSize * 0.5 + title_size * 0.6,
+                w: box.w * 0.2,
+                text: 'State',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.3,
+                y: -2 + headerSize * 0.5 + title_size * 0.6,
+                w: box.w * 0.233,
+                text: 'Start',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.533,
+                y: -2 + headerSize * 0.5 + title_size * 0.6,
+                w: box.w * 0.233,
+                text: 'Duration',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.766,
+                y: -2 + headerSize * 0.5 + title_size * 0.6,
+                w: box.w * 0.233,
+                text: 'End',
+                anchor: 'middle',
+            },
             // {x: box.w * 0.63, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.36, text: 'Pointing', anchor: 'middle'}
         ]
 
@@ -487,7 +585,9 @@ window.SchedblockForm = function(opt_in) {
         }
 
         let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + (headerSize + 3) + ')')
-        com.schedule.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {enabled: false})
+        com.schedule.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {
+            enabled: false,
+        })
         let innerg = com.schedule.scrollBox.get('innerG')
         let current = innerg
             .selectAll('g.block')
@@ -552,7 +652,12 @@ window.SchedblockForm = function(opt_in) {
                         main: {
                             id: type + 'minus_button',
                             g: g,
-                            box: {x: innerbox.x - 3, y: innerbox.y + 18, width: 9, height: 9},
+                            box: {
+                                x: innerbox.x - 3,
+                                y: innerbox.y + 18,
+                                width: 9,
+                                height: 9,
+                            },
                             background: {
                                 common: {
                                     style: {
@@ -570,7 +675,8 @@ window.SchedblockForm = function(opt_in) {
                                         stroke: colorPalette.darkest.stroke,
                                         'stroke-width': 0.1,
                                     },
-                                    attr: {},
+                                    attr: {
+                                    },
                                 },
                             },
                         },
@@ -600,7 +706,8 @@ window.SchedblockForm = function(opt_in) {
                                     'pointer-events': 'none',
                                     'user-select': 'none',
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                         },
                         events: {
@@ -624,7 +731,12 @@ window.SchedblockForm = function(opt_in) {
                         main: {
                             id: type + 'plus_button',
                             g: g,
-                            box: {x: innerbox.x + 6, y: innerbox.y + 18, width: 9, height: 9},
+                            box: {
+                                x: innerbox.x + 6,
+                                y: innerbox.y + 18,
+                                width: 9,
+                                height: 9,
+                            },
                             background: {
                                 common: {
                                     style: {
@@ -642,7 +754,8 @@ window.SchedblockForm = function(opt_in) {
                                         stroke: colorPalette.darkest.stroke,
                                         'stroke-width': 0.1,
                                     },
-                                    attr: {},
+                                    attr: {
+                                    },
                                 },
                             },
                         },
@@ -672,7 +785,8 @@ window.SchedblockForm = function(opt_in) {
                                     'pointer-events': 'none',
                                     'user-select': 'none',
                                 },
-                                attr: {},
+                                attr: {
+                                },
                             },
                         },
                         events: {
@@ -692,7 +806,8 @@ window.SchedblockForm = function(opt_in) {
                     })
                 }
 
-                let stock = {}
+                let stock = {
+                }
                 let hour = ('0' + d3.timeFormat('%H')(time)).slice(-2)
                 let hbox = {
                     x: x - 2,
@@ -732,16 +847,25 @@ window.SchedblockForm = function(opt_in) {
                             buttong.transition().duration(100).style('opacity', 0.1)
                         })
                 }
-                stock.hourOpts = {disabled: !com.schedule.editabled, value: hour, min: 0, max: 23, step: 1}
+                stock.hourOpts = {
+                    disabled: !com.schedule.editabled,
+                    value: hour,
+                    min: 0,
+                    max: 23,
+                    step: 1,
+                }
                 stock.hour = input_date_d3(ig,
                     hbox,
                     'hour',
                     stock.hourOpts,
-                    {change: (dd) => {
-                        changeBlockTime(d, id, dd, stock.minute.property('value'), stock.second.property('value'))
-                    }, enter: (dd) => {
-                        stock.minute.node().focus()
-                    }})
+                    {
+                        change: (dd) => {
+                            changeBlockTime(d, id, dd, stock.minute.property('value'), stock.second.property('value'))
+                        },
+                        enter: (dd) => {
+                            stock.minute.node().focus()
+                        },
+                    })
                 createInput('hour', buttong, hbox)
                 ig.append('text')
                     .text(':')
@@ -749,16 +873,25 @@ window.SchedblockForm = function(opt_in) {
                     .style('font-size', headerSize + 'px')
                     .attr('text-anchor', 'middle')
                     .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
-                stock.minuteOpts = {disabled: !com.schedule.editabled, value: min, min: 0, max: 60, step: 1}
+                stock.minuteOpts = {
+                    disabled: !com.schedule.editabled,
+                    value: min,
+                    min: 0,
+                    max: 60,
+                    step: 1,
+                }
                 stock.minute = input_date_d3(ig,
                     mbox,
                     'minute',
                     stock.minuteOpts,
-                    {change: (dd) => {
-                        changeBlockTime(d, id, stock.hour.property('value'), dd, stock.second.property('value'))
-                    }, enter: (d) => {
-                        stock.second.node().focus()
-                    }})
+                    {
+                        change: (dd) => {
+                            changeBlockTime(d, id, stock.hour.property('value'), dd, stock.second.property('value'))
+                        },
+                        enter: (d) => {
+                            stock.second.node().focus()
+                        },
+                    })
                 createInput('minute', buttong, mbox)
                 ig.append('text')
                     .text(':')
@@ -766,16 +899,25 @@ window.SchedblockForm = function(opt_in) {
                     .style('font-size', headerSize + 'px')
                     .attr('text-anchor', 'middle')
                     .attr('transform', 'translate(' + (mbox.x + mbox.w + 0.5 + 2) + ',' + (y + headerSize * 1.1 + (com.schedule.editabled ? 0 : headerSize * 0.35)) + ')')
-                stock.secondOpts = {disabled: !com.schedule.editabled, value: sec, min: 0, max: 60, step: 1}
+                stock.secondOpts = {
+                    disabled: !com.schedule.editabled,
+                    value: sec,
+                    min: 0,
+                    max: 60,
+                    step: 1,
+                }
                 stock.second = input_date_d3(ig,
                     sbox,
                     'second',
                     stock.secondOpts,
-                    {change: (dd) => {
-                        changeBlockTime(d, id, stock.hour.property('value'), stock.minute.property('value'), dd)
-                    }, enter: (d) => {
-                        stock.second.node().blur()
-                    }})
+                    {
+                        change: (dd) => {
+                            changeBlockTime(d, id, stock.hour.property('value'), stock.minute.property('value'), dd)
+                        },
+                        enter: (d) => {
+                            stock.second.node().blur()
+                        },
+                    })
                 createInput('second', buttong, sbox)
             }
             // function drawTime (id, x, w, y, time) {
@@ -889,7 +1031,10 @@ window.SchedblockForm = function(opt_in) {
                 main: {
                     id: 'dropState',
                     g: gdropstate,
-                    dim: {w: label[1].w, h: line},
+                    dim: {
+                        w: label[1].w,
+                        h: line,
+                    },
                     background: {
                         common: {
                             style: {
@@ -897,7 +1042,8 @@ window.SchedblockForm = function(opt_in) {
                                 stroke: colorPalette.medium.stroke,
                                 'stroke-width': 0.2,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                         hovered: {
                             style: {
@@ -905,7 +1051,8 @@ window.SchedblockForm = function(opt_in) {
                                 stroke: colorPalette.darkest.stroke,
                                 'stroke-width': 0.2,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                     text: {
@@ -918,7 +1065,8 @@ window.SchedblockForm = function(opt_in) {
                                 'pointer-events': 'none',
                                 'user-select': 'none',
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                         hovered: {
                             style: {
@@ -929,7 +1077,8 @@ window.SchedblockForm = function(opt_in) {
                                 'pointer-events': 'none',
                                 'user-select': 'none',
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                 },
@@ -938,7 +1087,10 @@ window.SchedblockForm = function(opt_in) {
                     blocked: false,
                     keepDropOpen: false,
                     list: options,
-                    dim: {w: label[1].w, h: line * 0.75},
+                    dim: {
+                        w: label[1].w,
+                        h: line * 0.75,
+                    },
                     nb: 1,
                     background: {
                         common: {
@@ -947,7 +1099,8 @@ window.SchedblockForm = function(opt_in) {
                                 stroke: colorPalette.medium.stroke,
                                 'stroke-width': 0.2,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                         hovered: {
                             style: {
@@ -955,7 +1108,8 @@ window.SchedblockForm = function(opt_in) {
                                 stroke: colorPalette.darkest.stroke,
                                 'stroke-width': 0.2,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                     text: {
@@ -968,7 +1122,8 @@ window.SchedblockForm = function(opt_in) {
                                 'pointer-events': 'none',
                                 'user-select': 'none',
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                         hovered: {
                             style: {
@@ -979,7 +1134,8 @@ window.SchedblockForm = function(opt_in) {
                                 'pointer-events': 'none',
                                 'user-select': 'none',
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                 },
@@ -1035,7 +1191,10 @@ window.SchedblockForm = function(opt_in) {
             .style('opacity', 0)
             .remove()
 
-        com.schedule.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: line * schedB.blocks.length})
+        com.schedule.scrollBox.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: line * schedB.blocks.length,
+        })
         box.h += headerSize + 3
 
         // if (box.h - headerSize - 3 > (line + 2) * schedB.blocks.length) return
@@ -1065,7 +1224,12 @@ window.SchedblockForm = function(opt_in) {
             .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
         com.schedule.g = g
         let line = 20
-        let back = {enabled: false, fill: colorPalette.darker.background, stroke: colorPalette.darker.stroke, 'stroke-width': 0.2}
+        let back = {
+            enabled: false,
+            fill: colorPalette.darker.background,
+            stroke: colorPalette.darker.stroke,
+            'stroke-width': 0.2,
+        }
 
         // g.append('text')
         //   .text('Targets and pointings')
@@ -1137,8 +1301,15 @@ window.SchedblockForm = function(opt_in) {
             main: {
                 tag: 'targetRootTag',
                 g: gt,
-                scroll: {},
-                box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 20 + headerSize), marg: 0},
+                scroll: {
+                },
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: box.w - 43,
+                    h: box.h - (line + 20 + headerSize),
+                    marg: 0,
+                },
                 background: {
                     fill: colorPalette.brighter.background,
                     stroke: colorPalette.brighter.stroke,
@@ -1168,7 +1339,13 @@ window.SchedblockForm = function(opt_in) {
                 skymap: {
                     enabled: true,
                     g: undefined,
-                    box: {x: 0, y: 0, w: box.w - 43, h: box.h - (line + 20 + headerSize), marg: 0},
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: box.w - 43,
+                        h: box.h - (line + 20 + headerSize),
+                        marg: 0,
+                    },
                     mainTarget: undefined,
                 },
                 legend: {
@@ -1184,14 +1361,16 @@ window.SchedblockForm = function(opt_in) {
                 raw: {
                     targets: [],
                 },
-                filtered: {},
+                filtered: {
+                },
                 modified: [],
             },
             debug: {
                 enabled: false,
             },
             pattern: {
-                select: {},
+                select: {
+                },
             },
             input: {
                 over: {
@@ -1213,7 +1392,12 @@ window.SchedblockForm = function(opt_in) {
             },
         })
 
-        let tbox = {x: 40, y: headerSize + line * 1.6, w: box.w - 40, h: line * 1.5}
+        let tbox = {
+            x: 40,
+            y: headerSize + line * 1.6,
+            w: box.w - 40,
+            h: line * 1.5,
+        }
         let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
         let scrollBoxt = initScrollBox(com.main.tag + 'targetListScroll', blocktg, tbox, back)
         let innertg = scrollBoxt.get('innerG')
@@ -1231,7 +1415,8 @@ window.SchedblockForm = function(opt_in) {
                 }
                 else {
                     tar = data.targets.find(t => t.name === get_pointing_target(data.pointings[i]))
-                    tar.pointings = {}
+                    tar.pointings = {
+                    }
                     tar.pointings[data.obs_block_id] = [ data.pointings[i] ]
                     target_point.push(tar)
                 }
@@ -1262,7 +1447,10 @@ window.SchedblockForm = function(opt_in) {
                         g.style('opacity', 0.5)
                     },
                 }
-                target_icon(g, {w: line * 1, h: line * 1}, 'T' + get_target_short(d), tevents, colorPalette)
+                target_icon(g, {
+                    w: line * 1,
+                    h: line * 1,
+                }, 'T' + get_target_short(d), tevents, colorPalette)
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -1407,7 +1595,12 @@ window.SchedblockForm = function(opt_in) {
         //   .attr('text-anchor', 'middle')
         //   .attr('transform', 'translate(' + (20) + ',' + (headerSize * 1.5 + line + 5 + txt_size * 0.33) + ')')
 
-        let pbox = {x: 0, y: headerSize * 2 + line + 5, w: 40, h: box.h - (headerSize * 2 + 10 + line)}
+        let pbox = {
+            x: 0,
+            y: headerSize * 2 + line + 5,
+            w: 40,
+            h: box.h - (headerSize * 2 + 10 + line),
+        }
         let blockpg = g.append('g').attr('transform', 'translate(' + 0 + ',' + pbox.y + ')')
         let scrollBoxp = initScrollBox(com.main.tag + 'pointingListScroll', blockpg, pbox, back)
         let innerpg = scrollBoxp.get('innerG')
@@ -1446,7 +1639,10 @@ window.SchedblockForm = function(opt_in) {
                     over: function() {},
                     out: function() {},
                 }
-                pointing_icon(g, {w: line * 1.2, h: line * 0.8}, 'P' + get_pointing_value(d), pevents, colorPalette)
+                pointing_icon(g, {
+                    w: line * 1.2,
+                    h: line * 0.8,
+                }, 'P' + get_pointing_value(d), pevents, colorPalette)
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -1547,6 +1743,9 @@ window.SchedblockForm = function(opt_in) {
                 .remove()
         }
         blockCore(com.data.schedB.blocks, innerpg, marg)
-        scrollBoxp.resetVerticalScroller({canScroll: true, scrollHeight: scrollHeight})
+        scrollBoxp.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: scrollHeight,
+        })
     }
 }

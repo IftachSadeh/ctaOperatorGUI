@@ -10,15 +10,25 @@
 /* global RunLoop */
 /* global blockStyle */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/blocks/common.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/blocks/common.js',
+})
 
 window.TelescopeForm = function(opt_in) {
     let com = {
         main: {
             tag: 'telescopeFormTag',
             g: undefined,
-            scroll: {},
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            scroll: {
+            },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: colorPalette.brighter.background,
                 stroke: colorPalette.brighter.stroke,
@@ -26,7 +36,8 @@ window.TelescopeForm = function(opt_in) {
             },
         },
         tree: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -34,7 +45,8 @@ window.TelescopeForm = function(opt_in) {
             },
         },
         schedule: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -42,7 +54,8 @@ window.TelescopeForm = function(opt_in) {
             },
         },
         target: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -50,7 +63,8 @@ window.TelescopeForm = function(opt_in) {
             },
         },
         telescope: {
-            box: {},
+            box: {
+            },
             events: {
                 click: undefined,
                 over: undefined,
@@ -141,15 +155,21 @@ window.TelescopeForm = function(opt_in) {
                 during: tag + 'zoomsuring',
                 end: tag + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: tag}),
+            run_loop: new RunLoop({
+                tag: tag,
+            }),
             canScroll: true,
             scrollVertical: true,
             scrollHorizontal: false,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 4},
-            scrollRecV: {w: 4},
+            scrollRecH: {
+                h: 4,
+            },
+            scrollRecV: {
+                w: 4,
+            },
         })
         return scrollBox
     }
@@ -157,9 +177,21 @@ window.TelescopeForm = function(opt_in) {
     function createTitle() {
         function drawHealthBar() {
             let health = [
-                {min: 0, max: 30, color: inst_health_col(15)},
-                {min: 30, max: 55, color: inst_health_col(40)},
-                {min: 55, max: 100, color: inst_health_col(80)},
+                {
+                    min: 0,
+                    max: 30,
+                    color: inst_health_col(15),
+                },
+                {
+                    min: 30,
+                    max: 55,
+                    color: inst_health_col(40),
+                },
+                {
+                    min: 55,
+                    max: 100,
+                    color: inst_health_col(80),
+                },
             ]
             let ba = {
                 x: box.w * 0.25,
@@ -623,7 +655,12 @@ window.TelescopeForm = function(opt_in) {
 
         let box = com.ressource.box
         let line = 20
-        let tbox = {x: 0, y: headerSize + 6 + line * 1.25, w: box.w, h: box.h - headerSize - 6 - line * 1.25}
+        let tbox = {
+            x: 0,
+            y: headerSize + 6 + line * 1.25,
+            w: box.w,
+            h: box.h - headerSize - 6 - line * 1.25,
+        }
         let spaceTarget = ((tbox.h) - (targs.length * line)) / (targs.length)
         let spaceBlock = ((box.w * 0.85) - (scheds.length * line * 1.25)) / (scheds.length)
         let g = com.main.g.append('g')
@@ -653,8 +690,20 @@ window.TelescopeForm = function(opt_in) {
             .attr('height', headerSize)
             .attr('fill', colorPalette.dark.stroke)
         let label = [
-            {x: box.w * 0.0, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.15, text: 'Target', anchor: 'middle'},
-            {x: box.w * 0.15, y: 3 + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.85, text: 'Scheduling & observing blocks', anchor: 'middle'},
+            {
+                x: box.w * 0.0,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.15,
+                text: 'Target',
+                anchor: 'middle',
+            },
+            {
+                x: box.w * 0.15,
+                y: 3 + headerSize * 0.5 + txt_size * 0.3,
+                w: box.w * 0.85,
+                text: 'Scheduling & observing blocks',
+                anchor: 'middle',
+            },
         ]
         for (let i = 0; i < label.length; i++) {
             let off = label[i].anchor === 'middle' ? label[i].w * 0.5 : (label[i].anchor === 'end' ? label[i].w * 0.5 : 0)
@@ -677,10 +726,13 @@ window.TelescopeForm = function(opt_in) {
         }
 
         let blockg = g.append('g').attr('transform', 'translate(' + 0 + ',' + tbox.y + ')')
-        let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {enabled: false})
+        let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {
+            enabled: false,
+        })
         let innerg = scrollBox.get('innerG')
 
-        let pntsPos = {}
+        let pntsPos = {
+        }
         function targetCore(targets, g, offset) {
             let current = g
                 .selectAll('g.target')
@@ -702,7 +754,10 @@ window.TelescopeForm = function(opt_in) {
                     },
                     out: function() {},
                 }
-                target_icon(g, {w: line * 1.4, h: line * 1.4}, 'T' + d.name.split('_')[1], tevents, colorPalette)
+                target_icon(g, {
+                    w: line * 1.4,
+                    h: line * 1.4,
+                }, 'T' + d.name.split('_')[1], tevents, colorPalette)
                 // scrollHeight += marg + line + 4
             })
             let merge = current.merge(enter)
@@ -722,11 +777,56 @@ window.TelescopeForm = function(opt_in) {
         targetCore(targs, innerg, 0)
 
         let squareTemplate = {
-            '1': [{x: 0.5, y: 0.5}],
-            '2': [{x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}],
-            '3': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.5, y: 0.7}],
-            '4': [{x: 0.3, y: 0.3}, {x: 0.7, y: 0.3}, {x: 0.3, y: 0.7}, {x: 0.7, y: 0.7}],
-            '5': [{x: 0.3, y: 0.16}, {x: 0.7, y: 0.16}, {x: 0.5, y: 0.5}, {x: 0.3, y: 0.84}, {x: 0.7, y: 0.84}],
+            '1': [{
+                x: 0.5,
+                y: 0.5,
+            }],
+            '2': [{
+                x: 0.3,
+                y: 0.5,
+            }, {
+                x: 0.7,
+                y: 0.5,
+            }],
+            '3': [{
+                x: 0.3,
+                y: 0.3,
+            }, {
+                x: 0.7,
+                y: 0.3,
+            }, {
+                x: 0.5,
+                y: 0.7,
+            }],
+            '4': [{
+                x: 0.3,
+                y: 0.3,
+            }, {
+                x: 0.7,
+                y: 0.3,
+            }, {
+                x: 0.3,
+                y: 0.7,
+            }, {
+                x: 0.7,
+                y: 0.7,
+            }],
+            '5': [{
+                x: 0.3,
+                y: 0.16,
+            }, {
+                x: 0.7,
+                y: 0.16,
+            }, {
+                x: 0.5,
+                y: 0.5,
+            }, {
+                x: 0.3,
+                y: 0.84,
+            }, {
+                x: 0.7,
+                y: 0.84,
+            }],
             '6': [],
             '7': [],
             '8': [],
@@ -816,17 +916,41 @@ window.TelescopeForm = function(opt_in) {
                 let g = d3.select(this)
                 let dimPoly = line * 1.25
                 let poly = [
-                    {x: dimPoly * 0.3, y: dimPoly * 0.0},
-                    {x: dimPoly * 0.7, y: dimPoly * 0.0},
+                    {
+                        x: dimPoly * 0.3,
+                        y: dimPoly * 0.0,
+                    },
+                    {
+                        x: dimPoly * 0.7,
+                        y: dimPoly * 0.0,
+                    },
 
-                    {x: dimPoly * 1, y: dimPoly * 0.3},
-                    {x: dimPoly * 1, y: dimPoly * 0.7},
+                    {
+                        x: dimPoly * 1,
+                        y: dimPoly * 0.3,
+                    },
+                    {
+                        x: dimPoly * 1,
+                        y: dimPoly * 0.7,
+                    },
 
-                    {x: dimPoly * 0.7, y: dimPoly * 1},
-                    {x: dimPoly * 0.3, y: dimPoly * 1},
+                    {
+                        x: dimPoly * 0.7,
+                        y: dimPoly * 1,
+                    },
+                    {
+                        x: dimPoly * 0.3,
+                        y: dimPoly * 1,
+                    },
 
-                    {x: dimPoly * 0.0, y: dimPoly * 0.7},
-                    {x: dimPoly * 0.0, y: dimPoly * 0.3},
+                    {
+                        x: dimPoly * 0.0,
+                        y: dimPoly * 0.7,
+                    },
+                    {
+                        x: dimPoly * 0.0,
+                        y: dimPoly * 0.3,
+                    },
                 ]
                 g.selectAll('polygon')
                     .data([ poly ])

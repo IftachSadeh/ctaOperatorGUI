@@ -14,18 +14,31 @@
 /* global cols_yellows */
 /* global cols_purples_blues */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/ScrollBox.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/ScrollBox.js',
+})
 
 window.EventQueue = function() {
     let template = {
         tag: 'eventQueueDefaultTag',
         g: undefined,
-        box: {x: 0, y: 0, w: 0, h: 0},
+        box: {
+            x: 0,
+            y: 0,
+            w: 0,
+            h: 0,
+        },
         axis: {
             enabled: true,
             group: {
                 g: undefined,
-                box: {x: 0, y: 0, w: 0, h: 0},
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                },
             },
             main: undefined,
             scale: undefined,
@@ -38,7 +51,12 @@ window.EventQueue = function() {
             enabled: true,
             group: {
                 g: undefined,
-                box: {x: 0, y: 0, w: 0, h: 0},
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                },
             },
             events: {
                 click: () => {},
@@ -50,7 +68,12 @@ window.EventQueue = function() {
             enabled: false,
             group: {
                 g: undefined,
-                box: {x: 0, y: 0, w: 0, h: 0},
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                },
             },
             filters: [],
         },
@@ -58,13 +81,27 @@ window.EventQueue = function() {
             enabled: true,
             group: {
                 g: undefined,
-                box: {x: 0, y: 0, w: 0, h: 0},
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                },
             },
         },
         data: {
-            currentTime: {date: undefined, time: undefined},
-            startTime: {date: undefined, time: undefined},
-            endTime: {date: undefined, time: undefined},
+            currentTime: {
+                date: undefined,
+                time: undefined,
+            },
+            startTime: {
+                date: undefined,
+                time: undefined,
+            },
+            endTime: {
+                date: undefined,
+                time: undefined,
+            },
             lastRawData: undefined,
             formatedData: undefined,
         },
@@ -293,14 +330,53 @@ window.EventQueue = function() {
             stroke: com.main.color_theme.dark.stroke,
         })
 
-        create_button({row: 0, col: 0}, 'Low', 1, [{keys: [ 'priority' ], value: 1}])
-        create_button({row: 0, col: 1}, 'Medium', 2, [{keys: [ 'priority' ], value: 2}])
-        create_button({row: 0, col: 2}, 'High', 3, [{keys: [ 'priority' ], value: 3}])
-        create_button({row: 1, col: 0}, 'Alarm', 3, [{keys: [ 'name' ], value: 'alarm'}])
-        create_button({row: 1, col: 1}, 'GRB', 3, [{keys: [ 'name' ], value: 'grb'}])
-        create_button({row: 1, col: 2}, 'Hardw.', 3, [{keys: [ 'name' ], value: 'hardware'}])
+        create_button({
+            row: 0,
+            col: 0,
+        }, 'Low', 1, [{
+            keys: [ 'priority' ],
+            value: 1,
+        }])
+        create_button({
+            row: 0,
+            col: 1,
+        }, 'Medium', 2, [{
+            keys: [ 'priority' ],
+            value: 2,
+        }])
+        create_button({
+            row: 0,
+            col: 2,
+        }, 'High', 3, [{
+            keys: [ 'priority' ],
+            value: 3,
+        }])
+        create_button({
+            row: 1,
+            col: 0,
+        }, 'Alarm', 3, [{
+            keys: [ 'name' ],
+            value: 'alarm',
+        }])
+        create_button({
+            row: 1,
+            col: 1,
+        }, 'GRB', 3, [{
+            keys: [ 'name' ],
+            value: 'grb',
+        }])
+        create_button({
+            row: 1,
+            col: 2,
+        }, 'Hardw.', 3, [{
+            keys: [ 'name' ],
+            value: 'hardware',
+        }])
 
-        let new_button = buttonPanel.add_button({row: 2, col: 1})
+        let new_button = buttonPanel.add_button({
+            row: 2,
+            col: 1,
+        })
         new_button.append('text')
             .text('Events Filters')
             .attr('x', Number(new_button.attr('width')) * 0.5)
@@ -324,10 +400,12 @@ window.EventQueue = function() {
     }
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        com.style = {}
+        com.style = {
+        }
 
         com.style.runRecCol = opt_in.runRecCol
         if (!is_def(com.style.runRecCol)) {
@@ -507,8 +585,16 @@ window.EventQueue = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        let wMin = min_max_obj({ min_max: 'min', data: blocks, func: 'w' })
-        let hMin = min_max_obj({ min_max: 'min', data: blocks, func: 'h' })
+        let wMin = min_max_obj({
+            min_max: 'min',
+            data: blocks,
+            func: 'w',
+        })
+        let hMin = min_max_obj({
+            min_max: 'min',
+            data: blocks,
+            func: 'h',
+        })
         if (!is_def(hMin) || !is_def(wMin)) {
             return []
         }
@@ -539,9 +625,17 @@ window.EventQueue = function() {
             // let o0 = data_now0.o
 
             let telV = [].concat(data_now0.data.tel_ids)
-            let min_max = { min_x: x0, min_y: y0, maxX: x0 + w0, maxY: y0 + h0 }
+            let min_max = {
+                min_x: x0,
+                min_y: y0,
+                maxX: x0 + w0,
+                maxY: y0 + h0,
+            }
 
-            let ovelaps = [{ index: index0, data: data_now0 }]
+            let ovelaps = [{
+                index: index0,
+                data: data_now0,
+            }]
 
             for (let n_tries = 0; n_tries < 1; n_tries++) {
                 let nOver = ovelaps.length
@@ -594,7 +688,10 @@ window.EventQueue = function() {
                             maxY: Math.max(min_max.maxY, y1 + h1),
                         }
 
-                        ovelaps.push({ index: index1, data: data_now1 })
+                        ovelaps.push({
+                            index: index1,
+                            data: data_now1,
+                        })
                     }
                 })
                 // console.log('xxxxxxxxxxxxxxx',n_tries,ovelaps,ovelaps.map(function(d){return d.data.data.metadata.block_name;}));

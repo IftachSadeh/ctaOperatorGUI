@@ -10,7 +10,10 @@
 /* global tel_info */
 /* global ScrollBox */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/ScrollBox.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/ScrollBox.js',
+})
 
 // ------------------------------------------------------------------
 //
@@ -21,7 +24,13 @@ window.BlockFilters = function(opt_in) {
         main: {
             tag: 'blockQueueFilterTag',
             g: undefined,
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: color_theme.brighter.background,
                 stroke: color_theme.brighter.stroke,
@@ -29,38 +38,71 @@ window.BlockFilters = function(opt_in) {
             },
         },
         blocks: {
-            colorPalette: {},
+            colorPalette: {
+            },
         },
         title: {
             g: undefined,
-            box: {x: 0, y: 0, w: 0, h: 0},
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
         },
         states: {
             g: undefined,
-            box: {x: 0, y: 0, w: 0, h: 0},
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
         },
         tels: {
             g: undefined,
-            box: {x: 0, y: 0, w: 0, h: 0},
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
         },
         targets: {
             g: undefined,
-            box: {x: 0, y: 0, w: 0, h: 0},
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
         },
         time: {
             g: undefined,
-            box: {x: 0, y: 0, w: 0, h: 0},
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
         },
         result: {
             g: undefined,
-            box: {x: 0, y: 0, w: 0, h: 0},
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
         },
         filters: [], // [{key: [], value: ''}]
-        token_focus: {},
+        token_focus: {
+        },
         blockQueue: [],
     }
 
-    let com = {}
+    let com = {
+    }
     com = opt_in
 
     this.set = function(opt_in) {
@@ -105,7 +147,8 @@ window.BlockFilters = function(opt_in) {
         if (com.style) {
             return
         }
-        com.style = {}
+        com.style = {
+        }
         com.style.runRecCol = cols_blues[2]
         com.style.blockCol = function(opt_in) {
             let state = is_def(opt_in.state)
@@ -321,7 +364,9 @@ window.BlockFilters = function(opt_in) {
         allFilters = getFilters()
 
         for (let i = com.blockQueue.length - 1; i > -1; i--) {
-            let stats = com.blockQueue[i].filterData({filters: allFilters}).stats
+            let stats = com.blockQueue[i].filterData({
+                filters: allFilters,
+            }).stats
             com.beginner.middle.g.select('text.tot-percent').text(100 - parseInt((stats.filtered / stats.tot) * 100) + '%')
             com.beginner.middle.g.select('text.tot-number').text((stats.tot - stats.filtered) + '/' + stats.tot)
         }
@@ -333,7 +378,9 @@ window.BlockFilters = function(opt_in) {
         }
 
         for (let i = com.blockQueue.length - 1; i > -1; i--) {
-            let stats = com.blockQueue[i].filterData({filters: allFilters}).stats
+            let stats = com.blockQueue[i].filterData({
+                filters: allFilters,
+            }).stats
             com.beginner.middle.g.select('text.states-show').text(100 - parseInt((stats.filtered / stats.tot) * 100) + '%')
             com.beginner.middle.g.select('text.states-hide').text((stats.tot - stats.filtered) + '/' + stats.tot)
         }
@@ -345,7 +392,9 @@ window.BlockFilters = function(opt_in) {
             allFilters.push(com.beginner.targets.token.filtering[j])
         }
         for (let i = com.blockQueue.length - 1; i > -1; i--) {
-            let stats = com.blockQueue[i].filterData({filters: allFilters}).stats
+            let stats = com.blockQueue[i].filterData({
+                filters: allFilters,
+            }).stats
             if (allFilters[0].filters.length === 0) {
                 com.beginner.middle.g.select('text.targets-show').text(parseInt((stats.filtered / stats.tot) * 100) + '%')
                 com.beginner.middle.g.select('text.targets-hide').text((stats.filtered) + '/' + stats.tot)
@@ -364,7 +413,9 @@ window.BlockFilters = function(opt_in) {
         }
 
         for (let i = com.blockQueue.length - 1; i > -1; i--) {
-            let stats = com.blockQueue[i].filterData({filters: allFilters}).stats
+            let stats = com.blockQueue[i].filterData({
+                filters: allFilters,
+            }).stats
             com.beginner.middle.g.select('text.tels-show').text(100 - parseInt((stats.filtered / stats.tot) * 100) + '%')
             com.beginner.middle.g.select('text.tels-hide').text((stats.tot - stats.filtered) + '/' + stats.tot)
         }
@@ -392,11 +443,26 @@ window.BlockFilters = function(opt_in) {
         //   {x: 0, y: 0}
         // ]
         let dataPointTop = [
-            {x: b.w * 0.7, y: b.h * 0.21},
-            {x: b.w * 0.9, y: b.h * 0.21},
-            {x: b.w * 1, y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
-            {x: com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.4) - (b.w * 0.1), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
-            {x: com.beginner.middle.box.x + com.beginner.middle.box.w * 0.4, y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.325},
+            {
+                x: b.w * 0.7,
+                y: b.h * 0.21,
+            },
+            {
+                x: b.w * 0.9,
+                y: b.h * 0.21,
+            },
+            {
+                x: b.w * 1,
+                y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2,
+            },
+            {
+                x: com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.4) - (b.w * 0.1),
+                y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2,
+            },
+            {
+                x: com.beginner.middle.box.x + com.beginner.middle.box.w * 0.4,
+                y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.325,
+            },
         ]
         com.beginner.states.g.append('path')
             .data([ dataPointTop ])
@@ -582,7 +648,12 @@ window.BlockFilters = function(opt_in) {
             .style('pointer-events', 'none')
             .style('user-select', 'none')
 
-        let bBox = {x: com.beginner.states.box.w * 0.18, y: com.beginner.states.box.h * 0.6, w: (com.beginner.states.box.w * 0.98) / 6, h: (com.beginner.states.box.w * 0.98) / 6}
+        let bBox = {
+            x: com.beginner.states.box.w * 0.18,
+            y: com.beginner.states.box.h * 0.6,
+            w: (com.beginner.states.box.w * 0.98) / 6,
+            h: (com.beginner.states.box.w * 0.98) / 6,
+        }
         let failG = com.beginner.states.g.append('g')
             .attr('width', bBox.w * 0.8)
             .attr('height', bBox.h * 0.8)
@@ -608,16 +679,75 @@ window.BlockFilters = function(opt_in) {
             .attr('height', bBox.h * 0.8)
             .attr('transform', 'translate(' + (bBox.x + bBox.w * 3) + ',' + (bBox.y + com.beginner.states.box.h * 0.2 - bBox.h * 0.5) + ')')
         com.beginner.states.button = {
-            Fail: create_button(failG, 'fail', {name: 'fail', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'fail'}]}),
-            Done: create_button(doneG, 'done', {name: 'done', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'done'}]}),
-            Run: create_button(runG, 'run', {name: 'run', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'run'}]}),
-            'Cancel.canrun': create_button(cancelOG, 'cancelO', {name: 'cancelO', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'cancel'}, {keys: [ 'exe_state', 'can_run' ], value: true}]}),
-            Cancel: create_button(cancelSG, 'cancelS', {name: 'cancelS', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'cancel'}, {keys: [ 'exe_state', 'can_run' ], value: false}]}),
-            Wait: create_button(waitG, 'wait', {name: 'wait', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'wait'}]}),
+            Fail: create_button(failG, 'fail', {
+                name: 'fail',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'fail',
+                }],
+            }),
+            Done: create_button(doneG, 'done', {
+                name: 'done',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'done',
+                }],
+            }),
+            Run: create_button(runG, 'run', {
+                name: 'run',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'run',
+                }],
+            }),
+            'Cancel.canrun': create_button(cancelOG, 'cancelO', {
+                name: 'cancelO',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'cancel',
+                }, {
+                    keys: [ 'exe_state', 'can_run' ],
+                    value: true,
+                }],
+            }),
+            Cancel: create_button(cancelSG, 'cancelS', {
+                name: 'cancelS',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'cancel',
+                }, {
+                    keys: [ 'exe_state', 'can_run' ],
+                    value: false,
+                }],
+            }),
+            Wait: create_button(waitG, 'wait', {
+                name: 'wait',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'wait',
+                }],
+            }),
         }
     }
     function initTels() {
-        com.beginner.tels.token.filtering.push({name: 'tels', operation: 'include', contains: 'all', filters: []})
+        com.beginner.tels.token.filtering.push({
+            name: 'tels',
+            operation: 'include',
+            contains: 'all',
+            filters: [],
+        })
         let b = com.beginner.tels.box
         com.beginner.tels.g.attr('transform', 'translate(' + b.x + ',' + b.y + ')')
 
@@ -630,10 +760,22 @@ window.BlockFilters = function(opt_in) {
             })
             .curve(d3.curveLinear)
         let dataPointTop = [
-            {x: -b.w * 0.02, y: b.h * 0.5},
-            {x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.9), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
-            {x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.6) + (b.w * 0.1), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
-            {x: -b.x + com.beginner.middle.box.x + com.beginner.middle.box.w * 0.6, y: -b.y + com.beginner.middle.box.y + com.beginner.middle.box.h * 0.475},
+            {
+                x: -b.w * 0.02,
+                y: b.h * 0.5,
+            },
+            {
+                x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.9),
+                y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2,
+            },
+            {
+                x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.6) + (b.w * 0.1),
+                y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2,
+            },
+            {
+                x: -b.x + com.beginner.middle.box.x + com.beginner.middle.box.w * 0.6,
+                y: -b.y + com.beginner.middle.box.y + com.beginner.middle.box.h * 0.475,
+            },
         ]
         com.beginner.tels.g.append('path')
             .data([ dataPointTop ])
@@ -713,10 +855,14 @@ window.BlockFilters = function(opt_in) {
                     filtered = true
                 }
             }
-            return {id: d, filtered: filtered}
+            return {
+                id: d,
+                filtered: filtered,
+            }
         })
 
-        let localScroll = {}
+        let localScroll = {
+        }
         let left = {
             x: com.beginner.tels.box.w * 0.05,
             y: com.beginner.tels.box.h * 0.175,
@@ -769,15 +915,21 @@ window.BlockFilters = function(opt_in) {
                     during: 'ScrollBox' + 'zoomsuring',
                     end: 'ScrollBox' + 'zoomEnd',
                 },
-                run_loop: new RunLoop({tag: 'telsFiltersScroll'}),
+                run_loop: new RunLoop({
+                    tag: 'telsFiltersScroll',
+                }),
                 canScroll: true,
                 scrollVertical: true,
                 scrollHorizontal: false,
                 scrollHeight: 0,
                 scrollWidth: 0,
                 background: 'transparent',
-                scrollRecH: {h: 1},
-                scrollRecV: {w: 1},
+                scrollRecH: {
+                    h: 1,
+                },
+                scrollRecV: {
+                    w: 1,
+                },
             })
             localScroll.scrollG = localScroll.scrollBox.get('innerG')
         }
@@ -839,7 +991,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({keys: [ 'tel_ids' ], value: d.id})
+                        removeFiltering({
+                            keys: [ 'tel_ids' ],
+                            value: d.id,
+                        })
                         updateBlockQueue()
                     }
                     else {
@@ -852,20 +1007,50 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({keys: [ 'tel_ids' ], value: d.id})
+                        addFiltering({
+                            keys: [ 'tel_ids' ],
+                            value: d.id,
+                        })
                         updateBlockQueue()
                     }
                 })
             let dataPointTop = [
-                {x: 2, y: 0.5},
-                {x: 2, y: labelBox.h + 0.5},
-                {x: labelBox.w, y: labelBox.h + 0.5},
-                {x: labelBox.w - 2, y: labelBox.h + 2.5},
-                {x: 2 - 2, y: labelBox.h + 2},
-                {x: 2, y: labelBox.h + 0.5},
-                {x: 2 - 2, y: labelBox.h + 2},
-                {x: 2 - 2, y: 0.5 + 2},
-                {x: 2, y: 0.5},
+                {
+                    x: 2,
+                    y: 0.5,
+                },
+                {
+                    x: 2,
+                    y: labelBox.h + 0.5,
+                },
+                {
+                    x: labelBox.w,
+                    y: labelBox.h + 0.5,
+                },
+                {
+                    x: labelBox.w - 2,
+                    y: labelBox.h + 2.5,
+                },
+                {
+                    x: 2 - 2,
+                    y: labelBox.h + 2,
+                },
+                {
+                    x: 2,
+                    y: labelBox.h + 0.5,
+                },
+                {
+                    x: 2 - 2,
+                    y: labelBox.h + 2,
+                },
+                {
+                    x: 2 - 2,
+                    y: 0.5 + 2,
+                },
+                {
+                    x: 2,
+                    y: 0.5,
+                },
             ]
             d3.select(this).append('path')
                 .data([ dataPointTop ])
@@ -920,7 +1105,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({keys: [ 'tel_ids' ], value: d.id})
+                        addFiltering({
+                            keys: [ 'tel_ids' ],
+                            value: d.id,
+                        })
                     }
                 })
                 updateBlockQueue()
@@ -967,7 +1155,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({keys: [ 'tel_ids' ], value: d.id})
+                        removeFiltering({
+                            keys: [ 'tel_ids' ],
+                            value: d.id,
+                        })
                     }
                     else {
                         d.filtered = true
@@ -979,7 +1170,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({keys: [ 'tel_ids' ], value: d.id})
+                        addFiltering({
+                            keys: [ 'tel_ids' ],
+                            value: d.id,
+                        })
                     }
                 })
                 updateBlockQueue()
@@ -1026,7 +1220,15 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: [ 'tel_ids' ], value: d.id}]})
+                        removeFiltering({
+                            name: 'tels',
+                            operation: 'include',
+                            contains: 'all',
+                            filters: [{
+                                keys: [ 'tel_ids' ],
+                                value: d.id,
+                            }],
+                        })
                     }
                 })
                 updateBlockQueue()
@@ -1039,10 +1241,18 @@ window.BlockFilters = function(opt_in) {
             .attr('y', com.beginner.tels.box.h * 0.92 - 5)
             .style('pointer-events', 'none')
 
-        localScroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: labelBox.h * tels.length})
+        localScroll.scrollBox.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: labelBox.h * tels.length,
+        })
     }
     function initTargets() {
-        com.beginner.targets.token.filtering.push({name: 'targets', operation: 'include', contains: 'one', filters: []})
+        com.beginner.targets.token.filtering.push({
+            name: 'targets',
+            operation: 'include',
+            contains: 'one',
+            filters: [],
+        })
         let b = com.beginner.targets.box
         com.beginner.targets.g.attr('transform', 'translate(' + b.x + ',' + b.y + ')')
 
@@ -1056,10 +1266,22 @@ window.BlockFilters = function(opt_in) {
             .curve(d3.curveLinear)
 
         let dataPointTop = [
-            {x: b.w * 1.02, y: b.h * 0.5},
-            {x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.1), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
-            {x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.4) - (b.w * 0.1), y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2},
-            {x: -b.x + com.beginner.middle.box.x + com.beginner.middle.box.w * 0.4, y: -b.y + com.beginner.middle.box.y + com.beginner.middle.box.h * 0.475},
+            {
+                x: b.w * 1.02,
+                y: b.h * 0.5,
+            },
+            {
+                x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.1),
+                y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2,
+            },
+            {
+                x: -b.x + com.beginner.middle.box.x + (com.beginner.middle.box.w * 0.4) - (b.w * 0.1),
+                y: com.beginner.middle.box.y + com.beginner.middle.box.h * 0.2,
+            },
+            {
+                x: -b.x + com.beginner.middle.box.x + com.beginner.middle.box.w * 0.4,
+                y: -b.y + com.beginner.middle.box.y + com.beginner.middle.box.h * 0.475,
+            },
         ]
         com.beginner.targets.g.append('path')
             .data([ dataPointTop ])
@@ -1131,10 +1353,14 @@ window.BlockFilters = function(opt_in) {
                     filtered = true
                 }
             }
-            return {id: d, filtered: filtered}
+            return {
+                id: d,
+                filtered: filtered,
+            }
         })
 
-        let localScroll = {}
+        let localScroll = {
+        }
         let left = {
             x: com.beginner.targets.box.w * 0.05,
             y: com.beginner.targets.box.h * 0.175,
@@ -1187,15 +1413,21 @@ window.BlockFilters = function(opt_in) {
                     during: 'ScrollBox' + 'zoomsuring',
                     end: 'ScrollBox' + 'zoomEnd',
                 },
-                run_loop: new RunLoop({tag: 'targetsFiltersScroll'}),
+                run_loop: new RunLoop({
+                    tag: 'targetsFiltersScroll',
+                }),
                 canScroll: true,
                 scrollVertical: true,
                 scrollHorizontal: false,
                 scrollHeight: 0,
                 scrollWidth: 0,
                 background: 'transparent',
-                scrollRecH: {h: 1},
-                scrollRecV: {w: 1},
+                scrollRecH: {
+                    h: 1,
+                },
+                scrollRecV: {
+                    w: 1,
+                },
             })
             localScroll.scrollG = localScroll.scrollBox.get('innerG')
         }
@@ -1257,7 +1489,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({keys: [ 'target_id' ], value: d.id})
+                        removeFiltering({
+                            keys: [ 'target_id' ],
+                            value: d.id,
+                        })
                         updateBlockQueue()
                     }
                     else {
@@ -1270,20 +1505,50 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({keys: [ 'target_id' ], value: d.id})
+                        addFiltering({
+                            keys: [ 'target_id' ],
+                            value: d.id,
+                        })
                         updateBlockQueue()
                     }
                 })
             let dataPointTop = [
-                {x: 2, y: 0.5},
-                {x: 2, y: labelBox.h + 0.5},
-                {x: labelBox.w, y: labelBox.h + 0.5},
-                {x: labelBox.w - 2, y: labelBox.h + 2.5},
-                {x: 2 - 2, y: labelBox.h + 2},
-                {x: 2, y: labelBox.h + 0.5},
-                {x: 2 - 2, y: labelBox.h + 2},
-                {x: 2 - 2, y: 0.5 + 2},
-                {x: 2, y: 0.5},
+                {
+                    x: 2,
+                    y: 0.5,
+                },
+                {
+                    x: 2,
+                    y: labelBox.h + 0.5,
+                },
+                {
+                    x: labelBox.w,
+                    y: labelBox.h + 0.5,
+                },
+                {
+                    x: labelBox.w - 2,
+                    y: labelBox.h + 2.5,
+                },
+                {
+                    x: 2 - 2,
+                    y: labelBox.h + 2,
+                },
+                {
+                    x: 2,
+                    y: labelBox.h + 0.5,
+                },
+                {
+                    x: 2 - 2,
+                    y: labelBox.h + 2,
+                },
+                {
+                    x: 2 - 2,
+                    y: 0.5 + 2,
+                },
+                {
+                    x: 2,
+                    y: 0.5,
+                },
             ]
             d3.select(this).append('path')
                 .data([ dataPointTop ])
@@ -1338,7 +1603,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({keys: [ 'target_id' ], value: d.id})
+                        addFiltering({
+                            keys: [ 'target_id' ],
+                            value: d.id,
+                        })
                     }
                 })
                 updateBlockQueue()
@@ -1385,7 +1653,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({keys: [ 'target_id' ], value: d.id})
+                        removeFiltering({
+                            keys: [ 'target_id' ],
+                            value: d.id,
+                        })
                     }
                     else {
                         d.filtered = true
@@ -1397,7 +1668,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({keys: [ 'target_id' ], value: d.id})
+                        addFiltering({
+                            keys: [ 'target_id' ],
+                            value: d.id,
+                        })
                     }
                 })
                 updateBlockQueue()
@@ -1444,7 +1718,10 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({keys: [ 'target_id' ], value: d.id})
+                        removeFiltering({
+                            keys: [ 'target_id' ],
+                            value: d.id,
+                        })
                     }
                 })
                 updateBlockQueue()
@@ -1456,7 +1733,10 @@ window.BlockFilters = function(opt_in) {
             .attr('x', com.beginner.targets.box.w * 0.75 - 5)
             .attr('y', com.beginner.targets.box.h * 0.92 - 5)
             .style('pointer-events', 'none')
-        localScroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: labelBox.h * targets.length})
+        localScroll.scrollBox.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: labelBox.h * targets.length,
+        })
     }
     function initTime() {
 
@@ -1900,7 +2180,8 @@ window.BlockFilters = function(opt_in) {
                     .style('stroke-width', 0.0)
                     .on('end', function() {
                         addFilterToken('states')
-                        createStatesFilters({})
+                        createStatesFilters({
+                        })
                     })
             })
             .transition()
@@ -1938,7 +2219,8 @@ window.BlockFilters = function(opt_in) {
                     .style('stroke-width', 0.0)
                     .on('end', function() {
                         addFilterToken('tels')
-                        createTelsFilters({})
+                        createTelsFilters({
+                        })
                     })
             })
             .transition()
@@ -1967,7 +2249,8 @@ window.BlockFilters = function(opt_in) {
             .style('stroke-width', 0.0)
             .on('click', function(d) {
                 addFilterToken('target')
-                create_targetsFilter({})
+                create_targetsFilter({
+                })
             })
             .transition()
             .duration(times.anim_arc)
@@ -1995,7 +2278,8 @@ window.BlockFilters = function(opt_in) {
             .style('stroke-width', 0.0)
             .on('click', function(d) {
                 addFilterToken('time')
-                createTimeFilters({})
+                createTimeFilters({
+                })
             })
             .transition()
             .duration(times.anim_arc)
@@ -2156,7 +2440,12 @@ window.BlockFilters = function(opt_in) {
             .style('pointer-events', 'none')
             .style('user-select', 'none')
 
-        let bBox = {x: com.content.box.w * 0.18, y: com.content.box.h * 0.5, w: (com.content.box.w * 0.98) / 6, h: (com.content.box.w * 0.98) / 6}
+        let bBox = {
+            x: com.content.box.w * 0.18,
+            y: com.content.box.h * 0.5,
+            w: (com.content.box.w * 0.98) / 6,
+            h: (com.content.box.w * 0.98) / 6,
+        }
         let failG = com.content.panel.g.append('g')
             .attr('width', bBox.w * 0.8)
             .attr('height', bBox.h * 0.8)
@@ -2182,12 +2471,66 @@ window.BlockFilters = function(opt_in) {
             .attr('height', bBox.h * 0.8)
             .attr('transform', 'translate(' + (bBox.x + bBox.w * 3) + ',' + (bBox.y + com.content.box.h * 0.2 - bBox.h * 0.5) + ')')
         com.content.panel.button = {
-            Fail: create_button(failG, 'fail', {name: 'fail', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'fail'}]}),
-            Done: create_button(doneG, 'done', {name: 'done', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'done'}]}),
-            Run: create_button(runG, 'run', {name: 'run', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'run'}]}),
-            'Cancel.canrun': create_button(cancelOG, 'cancelO', {name: 'cancelO', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'cancel'}, {keys: [ 'exe_state', 'can_run' ], value: true}]}),
-            Cancel: create_button(cancelSG, 'cancelS', {name: 'cancelS', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'cancel'}, {keys: [ 'exe_state', 'can_run' ], value: false}]}),
-            Wait: create_button(waitG, 'wait', {name: 'wait', operation: 'exclude', contains: 'all', filters: [{keys: [ 'exe_state', 'state' ], value: 'wait'}]}),
+            Fail: create_button(failG, 'fail', {
+                name: 'fail',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'fail',
+                }],
+            }),
+            Done: create_button(doneG, 'done', {
+                name: 'done',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'done',
+                }],
+            }),
+            Run: create_button(runG, 'run', {
+                name: 'run',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'run',
+                }],
+            }),
+            'Cancel.canrun': create_button(cancelOG, 'cancelO', {
+                name: 'cancelO',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'cancel',
+                }, {
+                    keys: [ 'exe_state', 'can_run' ],
+                    value: true,
+                }],
+            }),
+            Cancel: create_button(cancelSG, 'cancelS', {
+                name: 'cancelS',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'cancel',
+                }, {
+                    keys: [ 'exe_state', 'can_run' ],
+                    value: false,
+                }],
+            }),
+            Wait: create_button(waitG, 'wait', {
+                name: 'wait',
+                operation: 'exclude',
+                contains: 'all',
+                filters: [{
+                    keys: [ 'exe_state', 'state' ],
+                    value: 'wait',
+                }],
+            }),
         }
     }
     function createTelsFilters(opt_in) {
@@ -2246,10 +2589,14 @@ window.BlockFilters = function(opt_in) {
                     }
                 }
             }
-            return {id: d, filtered: filtered}
+            return {
+                id: d,
+                filtered: filtered,
+            }
         })
 
-        let localScroll = {}
+        let localScroll = {
+        }
         let left = {
             x: com.content.box.w * 0.05,
             y: com.content.box.h * 0.175,
@@ -2302,15 +2649,21 @@ window.BlockFilters = function(opt_in) {
                     during: 'ScrollBox' + 'zoomsuring',
                     end: 'ScrollBox' + 'zoomEnd',
                 },
-                run_loop: new RunLoop({tag: 'telsFiltersScroll'}),
+                run_loop: new RunLoop({
+                    tag: 'telsFiltersScroll',
+                }),
                 canScroll: true,
                 scrollVertical: true,
                 scrollHorizontal: false,
                 scrollHeight: 0,
                 scrollWidth: 0,
                 background: 'transparent',
-                scrollRecH: {h: 1},
-                scrollRecV: {w: 1},
+                scrollRecH: {
+                    h: 1,
+                },
+                scrollRecV: {
+                    w: 1,
+                },
             })
             localScroll.scrollG = localScroll.scrollBox.get('innerG')
         }
@@ -2360,7 +2713,15 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: [ 'tel_ids' ], value: d.id}]})
+                        removeFiltering({
+                            name: 'tels',
+                            operation: 'include',
+                            contains: 'all',
+                            filters: [{
+                                keys: [ 'tel_ids' ],
+                                value: d.id,
+                            }],
+                        })
                         updateBlockQueue()
                     }
                     else {
@@ -2373,7 +2734,15 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: [ 'tel_ids' ], value: d.id}]})
+                        addFiltering({
+                            name: 'tels',
+                            operation: 'include',
+                            contains: 'all',
+                            filters: [{
+                                keys: [ 'tel_ids' ],
+                                value: d.id,
+                            }],
+                        })
                         updateBlockQueue()
                     }
                 })
@@ -2411,7 +2780,15 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: [ 'tel_ids' ], value: d.id}]})
+                        addFiltering({
+                            name: 'tels',
+                            operation: 'include',
+                            contains: 'all',
+                            filters: [{
+                                keys: [ 'tel_ids' ],
+                                value: d.id,
+                            }],
+                        })
                     }
                 })
                 updateBlockQueue()
@@ -2437,7 +2814,15 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: [ 'tel_ids' ], value: d.id}]})
+                        removeFiltering({
+                            name: 'tels',
+                            operation: 'include',
+                            contains: 'all',
+                            filters: [{
+                                keys: [ 'tel_ids' ],
+                                value: d.id,
+                            }],
+                        })
                     }
                     else {
                         d.filtered = true
@@ -2449,7 +2834,15 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        addFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: [ 'tel_ids' ], value: d.id}]})
+                        addFiltering({
+                            name: 'tels',
+                            operation: 'include',
+                            contains: 'all',
+                            filters: [{
+                                keys: [ 'tel_ids' ],
+                                value: d.id,
+                            }],
+                        })
                     }
                 })
                 updateBlockQueue()
@@ -2475,12 +2868,23 @@ window.BlockFilters = function(opt_in) {
                                 }
                                 return 'translate(' + translate.x + ',' + translate.y + ')'
                             })
-                        removeFiltering({name: 'tels', operation: 'include', contains: 'all', filters: [{keys: [ 'tel_ids' ], value: d.id}]})
+                        removeFiltering({
+                            name: 'tels',
+                            operation: 'include',
+                            contains: 'all',
+                            filters: [{
+                                keys: [ 'tel_ids' ],
+                                value: d.id,
+                            }],
+                        })
                     }
                 })
                 updateBlockQueue()
             })
-        localScroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: labelBox.h * tels.length})
+        localScroll.scrollBox.resetVerticalScroller({
+            canScroll: true,
+            scrollHeight: labelBox.h * tels.length,
+        })
     }
     function create_targetsFilter(opt_in) {
         if (!com.targets.g) {

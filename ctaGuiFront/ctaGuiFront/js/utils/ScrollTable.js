@@ -14,7 +14,8 @@ window.load_script({
 })
 
 window.ScrollTable = function() {
-    let com = {}
+    let com = {
+    }
 
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
@@ -99,10 +100,12 @@ window.ScrollTable = function() {
     // ------------------------------------------------------------------
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        com.style = {}
+        com.style = {
+        }
     }
     this.setStyle = setStyle
 

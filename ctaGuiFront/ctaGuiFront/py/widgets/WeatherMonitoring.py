@@ -35,7 +35,7 @@ class WeatherMonitoring():
         # the parent of this widget
         self.socket_manager = socket_manager
         my_assert(log=self.log, msg=[
-               " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
+            " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
@@ -50,8 +50,8 @@ class WeatherMonitoring():
         #
         self.n_icon = -1
 
-        self.primary_grp = ['LSTS','MSTS','SSTS','AUX']
-        self.primary_key = ['mirror','camera','mount','aux']
+        self.primary_grp = ['LSTS', 'MSTS', 'SSTS', 'AUX']
+        self.primary_key = ['mirror', 'camera', 'mount', 'aux']
 
         # self.tel_ids = self.socket_manager.InstData.get_inst_ids()
         self.tel_ids = self.socket_manager.InstData.get_inst_ids(
@@ -59,7 +59,6 @@ class WeatherMonitoring():
         )
 
         return
-
 
     # ------------------------------------------------------------------
     #
@@ -72,7 +71,7 @@ class WeatherMonitoring():
 
         # override the global logging variable with a name corresponding to the current session id
         self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
-                         str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
+                          str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
@@ -105,24 +104,25 @@ class WeatherMonitoring():
             "now": int(WeatherMonitoring.time_of_night['now']),
             "start": int(WeatherMonitoring.time_of_night['start']),
             "end": int(WeatherMonitoring.time_of_night['end'])
-            }
+        }
 
         tel_indices = 6
         keys_now = {}
-        keys_now[0] = ['mirror','camera','mount','aux']
+        keys_now[0] = ['mirror', 'camera', 'mount', 'aux']
         data_out = {}
 
         for index in range(tel_indices):
             for k, v in keys_now.items():
                 for key in v:
-                    self.redis.pipe.zGet('inst_health;'+self.tel_ids[index]+';'+key)
+                    self.redis.pipe.zGet(
+                        'inst_health;'+self.tel_ids[index]+';'+key)
             data = self.redis.pipe.execute(packed_score=True)
             n_ele = sum([len(v) for k, v in keys_now.items()])
             if len(data) != n_ele:
                 print keys_now
                 print data
                 my_assert(self.log, " - problem with redis.pipe.execute ?!?! " +
-                       str(len(data))+"/"+str(n_ele), False)
+                          str(len(data))+"/"+str(n_ele), False)
             n_ele_now = 0
             for k, v in keys_now.items():
                 data_out[index] = []
@@ -134,7 +134,7 @@ class WeatherMonitoring():
 
         data = {
             "time_of_night": time_of_night_date,
-            "data_out":data_out
+            "data_out": data_out
         }
 
         return data

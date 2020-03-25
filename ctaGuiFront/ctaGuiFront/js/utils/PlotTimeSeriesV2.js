@@ -13,7 +13,12 @@ window.PlotTimeSeries = function() {
     let reserved = {
         main: {
             g: undefined,
-            box: { x: 0, y: 0, w: 0, h: 0 },
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
         },
         axis: [
             {
@@ -21,7 +26,13 @@ window.PlotTimeSeries = function() {
                 showAxis: true,
                 main: {
                     g: undefined,
-                    box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: 0,
+                        h: 0,
+                        marg: 0,
+                    },
                     type: 'top',
                     attr: {
                         text: {
@@ -47,7 +58,8 @@ window.PlotTimeSeries = function() {
                 },
             },
         ],
-        interaction: {},
+        interaction: {
+        },
         content: [],
     }
 
@@ -68,10 +80,12 @@ window.PlotTimeSeries = function() {
 
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        reserved.style = {}
+        reserved.style = {
+        }
 
         reserved.style.hasOutline = is_def(opt_in.hasOutline)
             ? opt_in.hasOutline
@@ -97,13 +111,23 @@ window.PlotTimeSeries = function() {
         let toBind = true
         for (let i = 0; i < reserved.content.length; i++) {
             if (reserved.content[i].id === id) {
-                reserved.content[i] = { id: id, data: data, axisX: axisX, axisY: axisY }
+                reserved.content[i] = {
+                    id: id,
+                    data: data,
+                    axisX: axisX,
+                    axisY: axisY,
+                }
                 toBind = false
                 break
             }
         }
         if (toBind) {
-            reserved.content.push({ id: id, data: data, axisX: axisX, axisY: axisY })
+            reserved.content.push({
+                id: id,
+                data: data,
+                axisX: axisX,
+                axisY: axisY,
+            })
         }
 
         let current = reserved.main.g
@@ -204,7 +228,8 @@ window.PlotTimeSeries = function() {
         if (!reserved.main.clipping) {
             return
         }
-        reserved.clipping = {}
+        reserved.clipping = {
+        }
         reserved.clipping.g = reserved.main.g.append('g')
         reserved.clipping.g
             .append('defs')

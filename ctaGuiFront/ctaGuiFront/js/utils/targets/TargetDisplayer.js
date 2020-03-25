@@ -9,7 +9,10 @@
 /* global target_icon */
 /* global pointing_icon */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/ScrollBox.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/ScrollBox.js',
+})
 
 // ------------------------------------------------------------------
 //
@@ -20,8 +23,15 @@ window.TargetDisplayer = function(opt_in) {
         main: {
             tag: 'targetRootTag',
             g: undefined,
-            scroll: {},
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            scroll: {
+            },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: color_theme.brighter.background,
                 stroke: color_theme.brighter.stroke,
@@ -64,14 +74,16 @@ window.TargetDisplayer = function(opt_in) {
             raw: {
                 targets: [],
             },
-            filtered: {},
+            filtered: {
+            },
             modified: [],
         },
         debug: {
             enabled: false,
         },
         pattern: {
-            select: {},
+            select: {
+            },
         },
         input: {
             over: {
@@ -102,7 +114,8 @@ window.TargetDisplayer = function(opt_in) {
         if (com.style) {
             return
         }
-        com.style = {}
+        com.style = {
+        }
     }
 
     let DefaultBib = function() {
@@ -271,13 +284,32 @@ window.TargetDisplayer = function(opt_in) {
             let sizePointing = 22
             let max = 24
 
-            let data = {nodes: [], links: []}
+            let data = {
+                nodes: [],
+                links: [],
+            }
             for (let i = 0; i < com.data.filtered.targets.length; i++) {
-                data.nodes.push({type: 'target', id: com.data.filtered.targets[i].id, data: com.data.filtered.targets[i], x: com.linkMap.map.box.w * 0.5, y: com.linkMap.map.box.h * 0.5})
+                data.nodes.push({
+                    type: 'target',
+                    id: com.data.filtered.targets[i].id,
+                    data: com.data.filtered.targets[i],
+                    x: com.linkMap.map.box.w * 0.5,
+                    y: com.linkMap.map.box.h * 0.5,
+                })
             }
             for (let i = 0; i < com.data.filtered.pointings.length; i++) {
-                data.nodes.push({type: 'pointing', id: com.data.filtered.pointings[i].name, data: com.data.filtered.pointings[i], x: com.linkMap.map.box.w * 0.5, y: com.linkMap.map.box.h * 0.5})
-                data.links.push({type: 'link', source: com.data.filtered.pointings[i].name, target: get_pointing_target(com.data.filtered.pointings[i])})
+                data.nodes.push({
+                    type: 'pointing',
+                    id: com.data.filtered.pointings[i].name,
+                    data: com.data.filtered.pointings[i],
+                    x: com.linkMap.map.box.w * 0.5,
+                    y: com.linkMap.map.box.h * 0.5,
+                })
+                data.links.push({
+                    type: 'link',
+                    source: com.data.filtered.pointings[i].name,
+                    target: get_pointing_target(com.data.filtered.pointings[i]),
+                })
             }
 
             let simulation = d3.forceSimulation()
@@ -325,10 +357,18 @@ window.TargetDisplayer = function(opt_in) {
                 .each(function(d) {
                     let g = d3.select(this)
                     if (d.type === 'target') {
-                        target_icon(g, {w: sizeTarget, h: sizeTarget}, get_target_short(d.data), {}, colorPalette)
+                        target_icon(g, {
+                            w: sizeTarget,
+                            h: sizeTarget,
+                        }, get_target_short(d.data), {
+                        }, colorPalette)
                     }
                     else if (d.type === 'pointing') {
-                        pointing_icon(g, {w: sizePointing, h: sizePointing * 0.8}, get_pointing_value(d.data), {}, colorPalette)
+                        pointing_icon(g, {
+                            w: sizePointing,
+                            h: sizePointing * 0.8,
+                        }, get_pointing_value(d.data), {
+                        }, colorPalette)
                     }
                 })
                 .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
@@ -436,15 +476,21 @@ window.TargetDisplayer = function(opt_in) {
                 during: ntag + 'zoomsuring',
                 end: ntag + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: ntag}),
+            run_loop: new RunLoop({
+                tag: ntag,
+            }),
             canScroll: true,
             scrollVertical: false,
             scrollHorizontal: true,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 2},
-            scrollRecV: {w: 2},
+            scrollRecH: {
+                h: 2,
+            },
+            scrollRecV: {
+                w: 2,
+            },
         })
         com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
         com.main.background = com.main.scroll.scrollG.append('g')
@@ -464,7 +510,12 @@ window.TargetDisplayer = function(opt_in) {
     this.initBackground = initBackground
 
     function filterData(opt_in) {
-        return {data: {targets: com.data.raw.targets, pointings: com.data.raw.pointings}}
+        return {
+            data: {
+                targets: com.data.raw.targets,
+                pointings: com.data.raw.pointings,
+            },
+        }
         function checkFilter(d, f) {
             let op = f.operation
             let co = f.contains
@@ -539,8 +590,17 @@ window.TargetDisplayer = function(opt_in) {
 
         let filters = opt_in.filters ? opt_in.filters : com.filters.filtering
 
-        let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
-        let stats = {tot: 0, filtered: 0}
+        let filtered = {
+            done: [],
+            run: [],
+            cancel: [],
+            wait: [],
+            fail: [],
+        }
+        let stats = {
+            tot: 0,
+            filtered: 0,
+        }
         stats.tot = com.data.raw.targets.done.length + com.data.raw.targets.wait.length + com.data.raw.targets.run.length
         // separate target according to states
         for (var z = 0; z < com.data.raw.targets.done.length; z++) {
@@ -623,7 +683,10 @@ window.TargetDisplayer = function(opt_in) {
             }
             return data_now
         })
-        return {data: filtered, stats: stats}
+        return {
+            data: filtered,
+            stats: stats,
+        }
     }
     this.filterData = filterData
     function create_targetsGroup() {
@@ -674,7 +737,8 @@ window.TargetDisplayer = function(opt_in) {
     function update_data(data_in) {
         com.data.raw = data_in.data.raw
         // com.filters.filtering = updateFiltering()
-        com.data.filtered = filterData({}).data
+        com.data.filtered = filterData({
+        }).data
         create_targetsGroup()
 
         if (com.displayer === 'defaultBib') {
@@ -687,7 +751,8 @@ window.TargetDisplayer = function(opt_in) {
     this.update_data = update_data
     function update() {
     // com.filters.filtering = updateFiltering()
-        com.data.filtered = filterData({}).data
+        com.data.filtered = filterData({
+        }).data
         create_targetsGroup()
         if (com.displayer === 'defaultBib') {
             defaultBib.update()

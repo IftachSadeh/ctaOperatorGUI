@@ -13,13 +13,17 @@
 /* global cols_yellows */
 /* global cols_purples_blues */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/ScrollBox.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/ScrollBox.js',
+})
 
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
 window.BlockQueueOld = function() {
-    let com = {}
+    let com = {
+    }
 
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
@@ -59,7 +63,8 @@ window.BlockQueueOld = function() {
         }
         com.lockerZoom = lockerZoom
 
-        let lockerV = {}
+        let lockerV = {
+        }
         lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
         lockerV.zoomsuring = lockerV.lockerV.slice().concat([ lockerZoom.during ])
         lockerV.zoomEnd = lockerV.lockerV.slice().concat([ lockerZoom.end ])
@@ -72,9 +77,16 @@ window.BlockQueueOld = function() {
             max: 0,
             frac: 0,
             active: false,
-            drag: { y: 0, frac: 0 },
+            drag: {
+                y: 0,
+                frac: 0,
+            },
         }
-        com.time = { start: 0, now: 1, end: 1000 }
+        com.time = {
+            start: 0,
+            now: 1,
+            end: 1000,
+        }
         com.tel_ids = [ 'placeholder' ]
 
         com.click = is_def(opt_in.click) ? opt_in.click : null
@@ -95,7 +107,10 @@ window.BlockQueueOld = function() {
             com.futureCanceled = opt_in.futureCanceled
         }
         else {
-            com.futureCanceled = { hide: false, shift_y: true }
+            com.futureCanceled = {
+                hide: false,
+                shift_y: true,
+            }
         }
 
         com.prevUpdate = null
@@ -138,10 +153,12 @@ window.BlockQueueOld = function() {
     // ------------------------------------------------------------------
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        com.style = {}
+        com.style = {
+        }
 
         com.style.runRecCol = opt_in.runRecCol
         if (!is_def(com.style.runRecCol)) {
@@ -215,7 +232,8 @@ window.BlockQueueOld = function() {
     // ------------------------------------------------------------------
     function filterBlocks(data_in) {
         if (!is_def(data_in)) {
-            data_in = {}
+            data_in = {
+            }
         }
         $.each([ 'done', 'run', 'wait' ], function(index, type_now) {
             if (!is_def(data_in[type_now])) {
@@ -257,7 +275,11 @@ window.BlockQueueOld = function() {
 
         com.blocksIn = data_in
 
-        let this_update = { ids: [], props: {} }
+        let this_update = {
+            ids: [],
+            props: {
+            },
+        }
 
         $.each(data_in, function(type_now, blocksNow) {
             $.each(blocksNow, function(i, d) {
@@ -370,7 +392,8 @@ window.BlockQueueOld = function() {
 
         let doneWaitW = com.time.end - minWait + maxDone - com.time.start
 
-        let frac = {}
+        let frac = {
+        }
         frac.done = (1 - runFrac) * (maxDone - com.time.start) / doneWaitW
         frac.run = runFrac - 2 * runMarg / box.w
         frac.wait = (1 - runFrac) * (com.time.end - minWait) / doneWaitW
@@ -384,7 +407,8 @@ window.BlockQueueOld = function() {
             frac.wait = 0
         }
 
-        com.blockRow = {}
+        com.blockRow = {
+        }
         $.each([ 'done', 'run', 'wait' ], function(index, type_now) {
             let data_in = com.blocksIn[type_now]
 
@@ -484,7 +508,10 @@ window.BlockQueueOld = function() {
 
         let hasScroll = yDif > com.innerBox.h + 0.01
 
-        com.scrollBox.resetScroller({ canScroll: hasScroll, scrollHeight: yDif })
+        com.scrollBox.resetScroller({
+            canScroll: hasScroll,
+            scrollHeight: yDif,
+        })
     }
     this.get_blocks = get_blocks
 
@@ -498,7 +525,8 @@ window.BlockQueueOld = function() {
         let yScale = box.h / com.tel_ids.length
 
         let blocks = []
-        let n_blocksType = {}
+        let n_blocksType = {
+        }
         $.each(data_in, function(index, data_now) {
             let id = data_now.obs_block_id
             let state = data_now.exe_state.state
@@ -549,8 +577,16 @@ window.BlockQueueOld = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        let wMin = min_max_obj({ min_max: 'min', data: blocks, func: 'w' })
-        let hMin = min_max_obj({ min_max: 'min', data: blocks, func: 'h' })
+        let wMin = min_max_obj({
+            min_max: 'min',
+            data: blocks,
+            func: 'w',
+        })
+        let hMin = min_max_obj({
+            min_max: 'min',
+            data: blocks,
+            func: 'h',
+        })
         if (!is_def(hMin) || !is_def(wMin)) {
             return []
         }
@@ -586,9 +622,17 @@ window.BlockQueueOld = function() {
             // let o0 = data_now0.o
 
             let telV = [].concat(data_now0.data.tel_ids)
-            let min_max = { min_x: x0, min_y: y0, maxX: x0 + w0, maxY: y0 + h0 }
+            let min_max = {
+                min_x: x0,
+                min_y: y0,
+                maxX: x0 + w0,
+                maxY: y0 + h0,
+            }
 
-            let ovelaps = [{ index: index0, data: data_now0 }]
+            let ovelaps = [{
+                index: index0,
+                data: data_now0,
+            }]
 
             for (let n_tries = 0; n_tries < 10; n_tries++) {
                 let nOver = ovelaps.length
@@ -641,7 +685,10 @@ window.BlockQueueOld = function() {
                             maxY: Math.max(min_max.maxY, y1 + h1),
                         }
 
-                        ovelaps.push({ index: index1, data: data_now1 })
+                        ovelaps.push({
+                            index: index1,
+                            data: data_now1,
+                        })
                     }
                 })
                 // console.log('xxxxxxxxxxxxxxx',n_tries,ovelaps,ovelaps.map(function(d){return d.data.data.metadata.block_name;}));
@@ -753,10 +800,14 @@ window.BlockQueueOld = function() {
                 return d.h
             })
             .attr('stroke', function(d, i) {
-                return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
+                return d3.rgb(com.style.recCol({
+                    d: d,
+                })).darker(1.0)
             })
             .style('fill', function(d, i) {
-                return com.style.recCol({ d: d })
+                return com.style.recCol({
+                    d: d,
+                })
             })
             .style('fill-opacity', function(d) {
                 return com.style.recFillOpac(d, d.data.exe_state.state)
@@ -772,10 +823,14 @@ window.BlockQueueOld = function() {
             .duration(times.anim_arc)
             .style('opacity', 1)
             .attr('stroke', function(d, i) {
-                return d3.rgb(com.style.recCol({ d: d })).darker(1.0)
+                return d3.rgb(com.style.recCol({
+                    d: d,
+                })).darker(1.0)
             })
             .style('fill', function(d, i) {
-                return com.style.recCol({ d: d })
+                return com.style.recCol({
+                    d: d,
+                })
             })
             .style('fill-opacity', function(d) {
                 return com.style.recFillOpac(d, d.data.exe_state.state)
@@ -1005,7 +1060,11 @@ window.BlockQueueOld = function() {
             let xMin = box.x
             let xMax = box.x + box.w
             if (is_def(refData)) {
-                xMin = min_max_obj({ min_max: 'min', data: refData, func: 'x' })
+                xMin = min_max_obj({
+                    min_max: 'min',
+                    data: refData,
+                    func: 'x',
+                })
                 xMax = min_max_obj({
                     min_max: 'max',
                     data: refData,

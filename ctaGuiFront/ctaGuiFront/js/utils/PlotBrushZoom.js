@@ -10,7 +10,12 @@ window.PlotBrushZoom = function(opt_in) {
     let reserved = {
         main: {
             g: undefined,
-            box: { x: 0, y: 0, w: 0, h: 0 },
+            box: {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
         },
         axis: [
             {
@@ -18,7 +23,13 @@ window.PlotBrushZoom = function(opt_in) {
                 enabled: true,
                 main: {
                     g: undefined,
-                    box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: 0,
+                        h: 0,
+                        marg: 0,
+                    },
                     type: 'top',
                     attr: {
                         text: {
@@ -48,7 +59,13 @@ window.PlotBrushZoom = function(opt_in) {
                 enabled: true,
                 main: {
                     g: undefined,
-                    box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
+                    box: {
+                        x: 0,
+                        y: 0,
+                        w: 0,
+                        h: 0,
+                        marg: 0,
+                    },
                     type: 'bottom',
                     attr: {
                         text: {
@@ -77,14 +94,26 @@ window.PlotBrushZoom = function(opt_in) {
         content: {
             main: {
                 g: undefined,
-                box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                    marg: 0,
+                },
             },
         },
         focus: {
             enabled: true,
             main: {
                 g: undefined,
-                box: { x: 0, y: 0, w: 0, h: 0, marg: 0 },
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                    marg: 0,
+                },
                 attr: {
                     fill: '#999999',
                     stroke: '#000000',
@@ -92,11 +121,17 @@ window.PlotBrushZoom = function(opt_in) {
             },
         },
         brush: {
-            position: { x: 0, y: 0 },
+            position: {
+                x: 0,
+                y: 0,
+            },
             callback: () => {},
         },
         zoom: {
-            coef: { x: 1, y: 1 },
+            coef: {
+                x: 1,
+                y: 1,
+            },
             callback: () => {},
         },
     }
@@ -104,10 +139,12 @@ window.PlotBrushZoom = function(opt_in) {
 
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        reserved.style = {}
+        reserved.style = {
+        }
 
         reserved.style.hasOutline = is_def(opt_in.hasOutline)
             ? opt_in.hasOutline

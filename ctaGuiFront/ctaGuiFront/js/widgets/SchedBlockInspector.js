@@ -36,17 +36,50 @@ var main_script_tag = 'SchedBlockInspector'
 /* global times */
 /* global deep_copy */
 
-window.load_script({ source: main_script_tag, script: '/js/utils/telescopes/TelescopeDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/telescopes/TelescopeForm.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/targets/TargetDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/targets/common.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/blocks/BlockDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/blocks/ObsblockForm.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/blocks/SchedblockForm.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/targets/TargetForm.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/events/EventDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/PlotBrushZoom.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollBox.js' })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/telescopes/TelescopeDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/telescopes/TelescopeForm.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/targets/TargetDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/targets/common.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/blocks/BlockDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/blocks/ObsblockForm.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/blocks/SchedblockForm.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/targets/TargetForm.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/events/EventDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotBrushZoom.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollBox.js',
+})
 
 // -------------------------------------------------------------------
 //
@@ -58,9 +91,13 @@ sock.widget_table[main_script_tag] = function(opt_in) {
     let w0 = 12
     let div_key = 'main'
 
-    opt_in.widget_func = { sock_func: sock_sched_block_inspector, main_func: main_sched_blocksInspector }
+    opt_in.widget_func = {
+        sock_func: sock_sched_block_inspector,
+        main_func: main_sched_blocksInspector,
+    }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: false,
@@ -105,7 +142,8 @@ let sock_sched_block_inspector = function(opt_in) {
             return
         }
 
-        let data = {}
+        let data = {
+        }
         data.widget_id = opt_in.widget_id
         data.newSchedule = opt_in.newSchedule
 
@@ -163,13 +201,19 @@ let main_sched_blocksInspector = function(opt_in) {
             // current: 0
         },
         focus: undefined, // {type: block, id: idBlock}
-        history: {list: [], index: -1},
+        history: {
+            list: [],
+            index: -1,
+        },
         over: undefined,
         mode: 'modifier',
     }
-    let svg = {}
-    let box = {}
-    let svg_dims = {}
+    let svg = {
+    }
+    let box = {
+    }
+    let svg_dims = {
+    }
 
     let blockQueueOverlay = null
     let blockQueue = null
@@ -179,7 +223,8 @@ let main_sched_blocksInspector = function(opt_in) {
     // let this_sched_block_inspector = this
     // let is_south = window.__site_type__ === 'S'
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_arr_zoomerPlotsSvg + ele_now.id,
@@ -191,13 +236,17 @@ let main_sched_blocksInspector = function(opt_in) {
     // delay counters
     let locker = new Locker()
     // locker.add('in_init')
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     function setStandbyMode() {
         let modificationOverlay = svg.svg.append('g')
         let sizepat = 5
-        let pattern = {}
-        pattern.select = {}
+        let pattern = {
+        }
+        pattern.select = {
+        }
         pattern.select.defs = modificationOverlay.append('defs')
         pattern.select.patternLock = pattern.select.defs.append('pattern')
             .attr('id', 'bar')
@@ -456,7 +505,9 @@ let main_sched_blocksInspector = function(opt_in) {
                     .style('font-size', '24px')
                     .style('pointer-events', 'none')
                     .style('user-select', 'none')
-                let currentTime = {date: new Date(shared.data.server.time_of_night.date_now)}
+                let currentTime = {
+                    date: new Date(shared.data.server.time_of_night.date_now),
+                }
                 svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
 
                 // svg.back.append('rect')
@@ -566,14 +617,32 @@ let main_sched_blocksInspector = function(opt_in) {
 
                 let poly = [
                     // {x: -2 + box.brushZoom.x, y: 8 + box.block_queue_server.y + box.block_queue_server.h + box.brushZoom.h * 0.3},
-                    {x: -1.5 + box.brushZoom.x, y: 1.2 + box.block_queue_server.y + box.block_queue_server.h},
-                    {x: -2 + box.brushZoom.x - (box.topBox.w * 0.03 * 0.85), y: 1.2 + box.block_queue_server.y + box.block_queue_server.h},
+                    {
+                        x: -1.5 + box.brushZoom.x,
+                        y: 1.2 + box.block_queue_server.y + box.block_queue_server.h,
+                    },
+                    {
+                        x: -2 + box.brushZoom.x - (box.topBox.w * 0.03 * 0.85),
+                        y: 1.2 + box.block_queue_server.y + box.block_queue_server.h,
+                    },
 
-                    {x: -2 + box.brushZoom.x - (box.topBox.w * 0.03), y: 1.2 + box.block_queue_server.y + box.block_queue_server.h + (10 + box.brushZoom.h) * 0.3},
-                    {x: -2 + box.brushZoom.x - (box.topBox.w * 0.03), y: 1.2 + box.block_queue_server.y + box.block_queue_server.h + (10 + box.brushZoom.h) * 0.7},
+                    {
+                        x: -2 + box.brushZoom.x - (box.topBox.w * 0.03),
+                        y: 1.2 + box.block_queue_server.y + box.block_queue_server.h + (10 + box.brushZoom.h) * 0.3,
+                    },
+                    {
+                        x: -2 + box.brushZoom.x - (box.topBox.w * 0.03),
+                        y: 1.2 + box.block_queue_server.y + box.block_queue_server.h + (10 + box.brushZoom.h) * 0.7,
+                    },
 
-                    {x: -2 + box.brushZoom.x - (box.topBox.w * 0.03 * 0.85), y: 1.2 + box.block_queue_server.y + box.block_queue_server.h + (10 + box.brushZoom.h)},
-                    {x: -1.5 + box.brushZoom.x, y: 1.2 + box.block_queue_server.y + box.block_queue_server.h + (10 + box.brushZoom.h)},
+                    {
+                        x: -2 + box.brushZoom.x - (box.topBox.w * 0.03 * 0.85),
+                        y: 1.2 + box.block_queue_server.y + box.block_queue_server.h + (10 + box.brushZoom.h),
+                    },
+                    {
+                        x: -1.5 + box.brushZoom.x,
+                        y: 1.2 + box.block_queue_server.y + box.block_queue_server.h + (10 + box.brushZoom.h),
+                    },
                     // {x: -2 + box.brushZoom.x, y: 8 + box.block_queue_server.y + box.block_queue_server.h + box.brushZoom.h * 0.7}
                 ]
                 svg.g.append('polygon')
@@ -651,8 +720,10 @@ let main_sched_blocksInspector = function(opt_in) {
 
     function init_data(data_in) {
         function initSvg() {
-            svg_dims.w = {}
-            svg_dims.h = {}
+            svg_dims.w = {
+            }
+            svg_dims.h = {
+            }
             svg_dims.w[0] = 1000
             svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
@@ -901,7 +972,8 @@ let main_sched_blocksInspector = function(opt_in) {
             }
         }
         function initDefaultStyle() {
-            shared.style = {}
+            shared.style = {
+            }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
                 // let endTime = is_def(opt_in.endTime)
@@ -940,11 +1012,17 @@ let main_sched_blocksInspector = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         let svg_div_id = sgv_tag.main.id + 'svg'
         let svg_div = sgv_tag.main.widget.get_ele(svg_div_id)
@@ -965,7 +1043,12 @@ let main_sched_blocksInspector = function(opt_in) {
             })
             return
         }
-        sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+        sock.emit_mouse_move({
+            eleIn: svg_div,
+            data: {
+                widget_id: widget_id,
+            },
+        })
 
         initSvg()
         initBox()
@@ -1033,16 +1116,25 @@ let main_sched_blocksInspector = function(opt_in) {
         svgBrush.update_data()
         svgRight_info.update()
 
-        let currentTime = {date: new Date(shared.data.server.time_of_night.date_now)}
+        let currentTime = {
+            date: new Date(shared.data.server.time_of_night.date_now),
+        }
         svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
 
         locker.remove('update_data')
     }
     function update_data(data_in) {
-        run_loop.push({ tag: 'update_data', data: data_in })
+        run_loop.push({
+            tag: 'update_data',
+            data: data_in,
+        })
     }
     this.update_data = update_data
-    run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
+    run_loop.init({
+        tag: 'update_data',
+        func: update_dataOnce,
+        n_keep: 1,
+    })
 
     function update_pushon_server() {
         if (shared.data.copy.conflicts.length > 0) {
@@ -1286,7 +1378,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 }
                 else {
                     unfocus()
-                    shared.focus = {type: type, id: id}
+                    shared.focus = {
+                        type: type,
+                        id: id,
+                    }
                     // if (shared.history.index === -1 || shared.history.list[shared.history.index].id !== id) {
                     //   shared.history.list.push({type: type, id: id})
                     //   shared.history.index = shared.history.list.length - 1
@@ -1302,7 +1397,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 }
             }
             else {
-                shared.focus = {type: type, id: id}
+                shared.focus = {
+                    type: type,
+                    id: id,
+                }
                 // if (shared.history.index === -1 || shared.history.list[shared.history.index].id !== id) {
                 //   shared.history.list.push({type: type, id: id})
                 //   shared.history.index = shared.history.list.length - 1
@@ -1323,12 +1421,18 @@ let main_sched_blocksInspector = function(opt_in) {
             if (shared.focus) {
                 if (shared.over) {
                     if (shared.over.type !== type && shared.over.id !== id) {
-                        shared.over = {type: type, id: id}
+                        shared.over = {
+                            type: type,
+                            id: id,
+                        }
                         overCore(type, id)
                     }
                 }
                 else {
-                    shared.over = {type: type, id: id}
+                    shared.over = {
+                        type: type,
+                        id: id,
+                    }
                     if (shared.focus.type === type && shared.focus.id === id) {
                         return
                     }
@@ -1336,7 +1440,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 }
             }
             else {
-                shared.over = {type: type, id: id}
+                shared.over = {
+                    type: type,
+                    id: id,
+                }
                 overCore(type, id)
             }
         }
@@ -1544,14 +1651,18 @@ let main_sched_blocksInspector = function(opt_in) {
             })
     }
     function pullData() {
-        let ori = {blocks: deep_copy(shared.data.server).blocks}
+        let ori = {
+            blocks: deep_copy(shared.data.server).blocks,
+        }
         for (var key in ori.blocks) {
             for (var i = 0; i < ori.blocks[key].length; i++) {
                 ori.blocks[key][i].modifications = {
                     created: false,
                     modified: false,
-                    userModifications: {},
-                    optimizerModifications: {},
+                    userModifications: {
+                    },
+                    optimizerModifications: {
+                    },
                 }
             }
         }
@@ -1560,12 +1671,29 @@ let main_sched_blocksInspector = function(opt_in) {
 
         if (shared.data.copy.length === 0) {
             shared.data.current = 0
-            shared.data.copy.push({original: ori, modified: modi, creation: {blocks: {done: [], run: [], wait: []}}, optimized: opti})
+            shared.data.copy.push({
+                original: ori,
+                modified: modi,
+                creation: {
+                    blocks: {
+                        done: [],
+                        run: [],
+                        wait: [],
+                    },
+                },
+                optimized: opti,
+            })
         }
         else {
             shared.data.copy[shared.data.current].original = ori
             shared.data.copy[shared.data.current].modified = modi
-            shared.data.copy[shared.data.current].creation = {blocks: {done: [], run: [], wait: []}}
+            shared.data.copy[shared.data.current].creation = {
+                blocks: {
+                    done: [],
+                    run: [],
+                    wait: [],
+                },
+            }
             shared.data.copy[shared.data.current].optimized = opti
         }
 
@@ -1575,7 +1703,8 @@ let main_sched_blocksInspector = function(opt_in) {
         svgFocusOverlay.update_data()
     }
     function create_sched_blocks(blocks) {
-        let temp = {}
+        let temp = {
+        }
         function core(blocks) {
             for (let i = 0; i < blocks.length; i++) {
                 let b = blocks[i]
@@ -1647,12 +1776,18 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             if (remTels1.length > 0) {
                 b1.modifications.optimizerModifications.telescopes = []
-                b1.modifications.optimizerModifications.telescopes.push({old: remTels1, new: []})
+                b1.modifications.optimizerModifications.telescopes.push({
+                    old: remTels1,
+                    new: [],
+                })
                 b1.modifications.modified = true
             }
             if (remTels2.length > 0) {
                 b2.modifications.optimizerModifications.telescopes = []
-                b2.modifications.optimizerModifications.telescopes.push({old: remTels2, new: []})
+                b2.modifications.optimizerModifications.telescopes.push({
+                    old: remTels2,
+                    new: [],
+                })
                 b2.modifications.modified = true
             }
         }
@@ -1674,7 +1809,8 @@ let main_sched_blocksInspector = function(opt_in) {
         svgBlocksQueueOptimized.update_data()
     }
     function groupBlocksBySchedule(blocks) {
-        let res = {}
+        let res = {
+        }
         for (var key in blocks) {
             for (var i = 0; i < blocks[key].length; i++) {
                 let ns = blocks[key][i].metadata.n_sched
@@ -1688,7 +1824,11 @@ let main_sched_blocksInspector = function(opt_in) {
         }
         let ret = []
         Object.keys(res).map(function(key, index) {
-            ret.push({schedName: key, scheduleId: res[key][0].sched_block_id, blocks: res[key]})
+            ret.push({
+                schedName: key,
+                scheduleId: res[key][0].sched_block_id,
+                blocks: res[key],
+            })
         })
         return ret
     }
@@ -1707,12 +1847,20 @@ let main_sched_blocksInspector = function(opt_in) {
         }
     }
     function getBlockById(blockList, blockId) {
-        let block = {data: undefined, key: undefined, index: undefined}
+        let block = {
+            data: undefined,
+            key: undefined,
+            index: undefined,
+        }
         for (let key in blockList) {
             let group = blockList[key]
             for (let i = 0; i < group.length; i++) {
                 if (group[i].obs_block_id === blockId) {
-                    block = {data: group[i], key: key, index: i}
+                    block = {
+                        data: group[i],
+                        key: key,
+                        index: i,
+                    }
                     return block
                 }
             }
@@ -1768,7 +1916,11 @@ let main_sched_blocksInspector = function(opt_in) {
 
                 if (sched.length === 0) {
                     if (diff.length !== 0) {
-                        shared.data.copy.modifications.push({id: block.sched_block_id, name: block.metadata.n_sched, blocks: [ block ]})
+                        shared.data.copy.modifications.push({
+                            id: block.sched_block_id,
+                            name: block.metadata.n_sched,
+                            blocks: [ block ],
+                        })
                     }
                 }
                 else {
@@ -1797,38 +1949,79 @@ let main_sched_blocksInspector = function(opt_in) {
         let diff = []
         function diffTime() {
             if (reference === undefined) {
-                diff.push({type: 'time',
-                    start: {old: undefined, new: changed.time.start},
-                    duration: {old: undefined, new: changed.time.duration},
-                    end: {old: undefined, new: changed.time.end},
+                diff.push({
+                    type: 'time',
+                    start: {
+                        old: undefined,
+                        new: changed.time.start,
+                    },
+                    duration: {
+                        old: undefined,
+                        new: changed.time.duration,
+                    },
+                    end: {
+                        old: undefined,
+                        new: changed.time.end,
+                    },
                 })
                 return
             }
             if (reference.time.start !== changed.time.start || reference.time.duration !== changed.time.duration) {
-                diff.push({type: 'time',
-                    start: {old: reference.time.start, new: changed.time.start},
-                    duration: {old: reference.time.duration, new: changed.time.duration},
-                    end: {old: reference.time.end, new: changed.time.end},
+                diff.push({
+                    type: 'time',
+                    start: {
+                        old: reference.time.start,
+                        new: changed.time.start,
+                    },
+                    duration: {
+                        old: reference.time.duration,
+                        new: changed.time.duration,
+                    },
+                    end: {
+                        old: reference.time.end,
+                        new: changed.time.end,
+                    },
                 })
             }
         }
         function diffState() {
             if (reference === undefined) {
-                diff.push({type: 'state', old: undefined, new: changed.exe_state.state})
+                diff.push({
+                    type: 'state',
+                    old: undefined,
+                    new: changed.exe_state.state,
+                })
                 return
             }
             if (reference.exe_state.state !== changed.exe_state.state) {
-                diff.push({type: 'state', old: reference.exe_state.state, new: changed.exe_state.state})
+                diff.push({
+                    type: 'state',
+                    old: reference.exe_state.state,
+                    new: changed.exe_state.state,
+                })
             }
         }
         function diffPointing() {
         }
         function diffTel() {
             if (reference === undefined) {
-                diff.push({type: 'telescope',
-                    small: {diff: changed.telescopes.small.ids.length, new: changed.telescopes.small.ids, rem: []},
-                    medium: {diff: changed.telescopes.medium.ids.length, new: changed.telescopes.medium.ids, rem: []},
-                    large: {diff: changed.telescopes.large.ids.length, new: changed.telescopes.large.ids, rem: []},
+                diff.push({
+                    type: 'telescope',
+                    small: {
+                        diff: changed.telescopes.small.ids.length,
+                        new: changed.telescopes.small.ids,
+                        rem: [],
+                    },
+                    medium: {
+                        diff: changed.telescopes.medium.ids.length,
+                        new: changed.telescopes.medium.ids,
+                        rem: [],
+                    },
+                    large: {
+                        diff: changed.telescopes.large.ids.length,
+                        new: changed.telescopes.large.ids,
+                        rem: [],
+                    },
                 })
                 return
             }
@@ -1846,10 +2039,23 @@ let main_sched_blocksInspector = function(opt_in) {
             let rs = reference.telescopes.small.ids.filter(d => changed.telescopes.small.ids.indexOf(d) === -1)
 
             if ((nl.length > 0 || rl.length > 0) || (nm.length > 0 || rm.length > 0) || (ns.length > 0 || rs.length > 0)) {
-                diff.push({type: 'telescope',
-                    small: {diff: s, new: ns, rem: rs},
-                    medium: {diff: m, new: nm, rem: rm},
-                    large: {diff: l, new: nl, rem: rl},
+                diff.push({
+                    type: 'telescope',
+                    small: {
+                        diff: s,
+                        new: ns,
+                        rem: rs,
+                    },
+                    medium: {
+                        diff: m,
+                        new: nm,
+                        rem: rm,
+                    },
+                    large: {
+                        diff: l,
+                        new: nl,
+                        rem: rl,
+                    },
                 })
             }
         }
@@ -1866,10 +2072,20 @@ let main_sched_blocksInspector = function(opt_in) {
             shared.history.list.splice(shared.history.index + 1, shared.history.list.length)
             let last = shared.history.list[shared.history.index]
             if (shared.history.index >= 0 && last.id === block.obs_block_id && last.type === type) {
-                shared.history.list[shared.history.index] = {data: deep_copy(get_blocksData('copy')), count: globalcounth, id: block.obs_block_id, type: type}
+                shared.history.list[shared.history.index] = {
+                    data: deep_copy(get_blocksData('copy')),
+                    count: globalcounth,
+                    id: block.obs_block_id,
+                    type: type,
+                }
             }
             else {
-                shared.history.list.push({data: deep_copy(get_blocksData('copy')), count: globalcounth, id: block.obs_block_id, type: type})
+                shared.history.list.push({
+                    data: deep_copy(get_blocksData('copy')),
+                    count: globalcounth,
+                    id: block.obs_block_id,
+                    type: type,
+                })
                 shared.history.index = shared.history.list.length - 1
                 globalcounth++
             }
@@ -1907,17 +2123,36 @@ let main_sched_blocksInspector = function(opt_in) {
             duration: 2000,
             end: 2000,
         }
-        newBlock.metadata = {block_name: n_sched + ' (' + n_obs + ')', n_obs: n_obs, n_sched: n_sched}
-        newBlock.exe_state = {state: 'wait', can_run: true}
+        newBlock.metadata = {
+            block_name: n_sched + ' (' + n_obs + ')',
+            n_obs: n_obs,
+            n_sched: n_sched,
+        }
+        newBlock.exe_state = {
+            state: 'wait',
+            can_run: true,
+        }
         newBlock.created = true
 
         if (shared.data.copy.blocks.wait.length <= 0) {
             newBlock.targets = shared.data.copy.blocks['wait'][0].targets
             newBlock.pointings = shared.data.copy.blocks['wait'][0].pointings
             newBlock.telescopes = {
-                large: { min: 0, max: 4, ids: [] },
-                medium: { min: 0, max: 25, ids: [] },
-                small: { min: 0, max: 70, ids: [] },
+                large: {
+                    min: 0,
+                    max: 4,
+                    ids: [],
+                },
+                medium: {
+                    min: 0,
+                    max: 25,
+                    ids: [],
+                },
+                small: {
+                    min: 0,
+                    max: 70,
+                    ids: [],
+                },
             }
         }
 
@@ -1940,8 +2175,15 @@ let main_sched_blocksInspector = function(opt_in) {
             duration: schedB.blocks[0].time.duration,
             end: schedB.blocks[0].time.end + 5 + schedB.blocks[0].time.duration,
         }
-        newBlock.metadata = {block_name: newBlock.metadata.n_sched + ' (' + n_obs + ')', n_obs: n_obs, n_sched: newBlock.metadata.n_sched}
-        newBlock.exe_state = {state: 'wait', can_run: true}
+        newBlock.metadata = {
+            block_name: newBlock.metadata.n_sched + ' (' + n_obs + ')',
+            n_obs: n_obs,
+            n_sched: newBlock.metadata.n_sched,
+        }
+        newBlock.exe_state = {
+            state: 'wait',
+            can_run: true,
+        }
         newBlock.created = true
 
         shared.data.copy.blocks.wait.push(newBlock)
@@ -2204,7 +2446,8 @@ let main_sched_blocksInspector = function(opt_in) {
     //   this.update_data = update_data
     // }
     let Svg_events_queue_server = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let adjustedBox = {
                 x: box.event_queue_server.x,
@@ -2221,7 +2464,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 main: {
                     tag: 'eventDisplayerMiddleTag',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: 'none',
@@ -2237,7 +2481,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -2272,7 +2522,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -2294,7 +2550,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
 
@@ -2303,9 +2565,18 @@ let main_sched_blocksInspector = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -2315,7 +2586,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     event: {
                         click: (d) => {
@@ -2335,8 +2607,14 @@ let main_sched_blocksInspector = function(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: undefined, block: undefined},
-                    over: {sched_blocks: undefined, block: undefined},
+                    focus: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
+                    over: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
                     selection: [],
                 },
             })
@@ -2355,11 +2633,20 @@ let main_sched_blocksInspector = function(opt_in) {
 
         function update_data() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             event_queue_server.update_data({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
@@ -2386,7 +2673,8 @@ let main_sched_blocksInspector = function(opt_in) {
         this.update = update
     }
     let Svg_blocks_queue_server = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let adjustedBox = {
                 x: box.block_queue_server.x,
@@ -2408,7 +2696,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 main: {
                     tag: 'blockQueueOverlayControllerTag',
                     g: overlay,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: 'none',
@@ -2423,7 +2712,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -2446,7 +2741,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         run: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.6,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.6,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -2466,7 +2767,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         cancel: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.0,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.33,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -2486,7 +2793,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         modification: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.5,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.47,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -2508,7 +2821,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockQueue2: {
@@ -2525,7 +2844,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -2547,7 +2872,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: -adjustedBox.h, w: adjustedBox.w, h: adjustedBox.h * 4, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: -adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 4,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
 
@@ -2556,9 +2887,18 @@ let main_sched_blocksInspector = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -2568,11 +2908,19 @@ let main_sched_blocksInspector = function(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
-                events: {},
+                pattern: {
+                },
+                events: {
+                },
                 input: {
-                    focus: {sched_blocks: [], blocks: []},
-                    over: {sched_blocks: [], blocks: []},
+                    focus: {
+                        sched_blocks: [],
+                        blocks: [],
+                    },
+                    over: {
+                        sched_blocks: [],
+                        blocks: [],
+                    },
                     selection: [],
                 },
             })
@@ -2582,7 +2930,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 main: {
                     tag: 'blockQueueControllerTag',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: 'none',
@@ -2597,7 +2946,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -2620,7 +2975,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         run: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.6,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.6,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -2640,7 +3001,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         cancel: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.0,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.33,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -2660,7 +3027,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         modification: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.5,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.47,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -2682,7 +3055,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockQueue2: {
@@ -2698,7 +3077,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -2720,7 +3105,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: -adjustedBox.y, w: adjustedBox.w, h: box.topBox.h + box.event_queue_server.h, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: -adjustedBox.y,
+                            w: adjustedBox.w,
+                            h: box.topBox.h + box.event_queue_server.h,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockTrackShrink: {
@@ -2734,7 +3125,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -2756,7 +3153,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockList: {
@@ -2764,18 +3167,27 @@ let main_sched_blocksInspector = function(opt_in) {
                 },
                 blockForm: {
                     mosaic: {
-                        box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w * 0.2,
+                            h: adjustedBox.h,
+                            marg: adjustedBox.marg,
+                        },
                         order: 'n_sched',
                     },
                     forms: {
                         g: undefined,
-                        box: {x: adjustedBox.w * 0.22,
+                        box: {
+                            x: adjustedBox.w * 0.22,
                             y: adjustedBox.h * 0.02,
                             w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
                             h: adjustedBox.h * 0.96,
-                            marg: adjustedBox.marg},
+                            marg: adjustedBox.marg,
+                        },
                         display: 'list',
-                        scroll: {},
+                        scroll: {
+                        },
                     },
                 },
 
@@ -2784,9 +3196,18 @@ let main_sched_blocksInspector = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -2796,7 +3217,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     block: {
                         click: d => focusManager.focusOn('block', d.obs_block_id),
@@ -2824,8 +3246,14 @@ let main_sched_blocksInspector = function(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: [], blocks: []},
-                    over: {sched_blocks: [], blocks: []},
+                    focus: {
+                        sched_blocks: [],
+                        blocks: [],
+                    },
+                    over: {
+                        sched_blocks: [],
+                        blocks: [],
+                    },
                     selection: [],
                 },
             })
@@ -2969,12 +3397,21 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             reserved.g.select('rect#cloak').attr('width', newWidth)
 
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
 
             blockQueue.update_data({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
@@ -2989,7 +3426,10 @@ let main_sched_blocksInspector = function(opt_in) {
             blockQueueOverlay.set_line_layout(blockQueue.get_line_layout())
             blockQueueOverlay.update_data({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
@@ -3006,19 +3446,31 @@ let main_sched_blocksInspector = function(opt_in) {
 
         function update() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
 
             blockQueueOverlay.update({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
             })
             blockQueue.update({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
@@ -3027,7 +3479,8 @@ let main_sched_blocksInspector = function(opt_in) {
         this.update = update
     }
     let SvgBrush = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let brushBox = {
                 x: box.brushZoom.x,
@@ -3063,7 +3516,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.2,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -3094,7 +3553,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.95, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.95,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.0,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -3125,7 +3590,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.6, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.6,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -3155,7 +3626,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushBox.h * 0.15, w: brushBox.w, h: brushBox.h * 0.65, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushBox.h * 0.15,
+                            w: brushBox.w,
+                            h: brushBox.h * 0.65,
+                            marg: 0,
+                        },
                         attr: {
                             fill: colorPalette.medium.background,
                         },
@@ -3165,7 +3642,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushBox.h * 0.15, w: brushBox.w, h: brushBox.h * 0.65, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushBox.h * 0.15,
+                            w: brushBox.w,
+                            h: brushBox.h * 0.65,
+                            marg: 0,
+                        },
                         attr: {
                             fill: colorPalette.darkest.background,
                             opacity: 1,
@@ -3174,11 +3657,19 @@ let main_sched_blocksInspector = function(opt_in) {
                     },
                 },
                 brush: {
-                    coef: {x: 0, y: 0},
+                    coef: {
+                        x: 0,
+                        y: 0,
+                    },
                     callback: () => {},
                 },
                 zoom: {
-                    coef: {kx: 1, ky: 1, x: 0, y: 0},
+                    coef: {
+                        kx: 1,
+                        ky: 1,
+                        x: 0,
+                        y: 0,
+                    },
                     callback: function() {
                         svg_blocks_queue_server.update_data()
                         svg_events_queue_server.update_data()
@@ -3207,8 +3698,14 @@ let main_sched_blocksInspector = function(opt_in) {
         this.translateTo = translateTo
 
         function update_data() {
-            let startTime = {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)}
-            let endTime = {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
+            let startTime = {
+                date: new Date(shared.data.server.time_of_night.date_start),
+                time: Number(shared.data.server.time_of_night.start),
+            }
+            let endTime = {
+                date: new Date(shared.data.server.time_of_night.date_end),
+                time: Number(shared.data.server.time_of_night.end),
+            }
 
             brushZoom.updateAxis({
                 id: 'top',
@@ -3229,8 +3726,10 @@ let main_sched_blocksInspector = function(opt_in) {
         this.update = update
     }
     let SvgTargets = function() {
-        let reserved = {}
-        reserved.drag = {}
+        let reserved = {
+        }
+        reserved.drag = {
+        }
         function initClipping() {
             let gBlockBox = svg.g.append('g')
                 .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
@@ -3251,7 +3750,8 @@ let main_sched_blocksInspector = function(opt_in) {
             //   .style('font-size', '8px')
             //   .attr('text-anchor', 'middle')
             //   .attr('transform', 'translate(-5,' + (reserved.box.h * 0.5) + ') rotate(270)')
-            reserved.clipping = {}
+            reserved.clipping = {
+            }
             reserved.clipping.g = gBlockBox.append('g')
             reserved.clipping.g.append('defs').append('svg:clipPath')
                 .attr('id', 'clipTarget')
@@ -3293,8 +3793,14 @@ let main_sched_blocksInspector = function(opt_in) {
 
         function drawTargets() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
                 .domain([ startTime.time, endTime.time ])
@@ -3325,9 +3831,18 @@ let main_sched_blocksInspector = function(opt_in) {
                 ig.append('path')
                     .attr('d', function() {
                         let targetPoints = [
-                            {x: scaleX(d.observability.minimal), y: scaleY(0)},
-                            {x: scaleX(d.observability.optimal), y: scaleY(1)},
-                            {x: scaleX(d.observability.maximal), y: scaleY(0)},
+                            {
+                                x: scaleX(d.observability.minimal),
+                                y: scaleY(0),
+                            },
+                            {
+                                x: scaleX(d.observability.optimal),
+                                y: scaleY(1),
+                            },
+                            {
+                                x: scaleX(d.observability.maximal),
+                                y: scaleY(0),
+                            },
                         ]
                         return lineGenerator(targetPoints)
                     })
@@ -3355,7 +3870,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 let tig = ig.append('g')
                     .attr('id', 'target_icon')
                     .attr('transform', 'translate(' + (scaleX((d.observability.minimal + d.observability.maximal) * 0.5) - 10) + ',' + (reserved.box.h - 20) + ')')
-                target_icon(tig, {w: 15, h: 15}, get_target_short(d), {
+                target_icon(tig, {
+                    w: 15,
+                    h: 15,
+                }, get_target_short(d), {
                     click: function() {
                         focusManager.focusOn('target', d.id)
                     },
@@ -3394,9 +3912,18 @@ let main_sched_blocksInspector = function(opt_in) {
                 let ig = d3.select(this)
                 ig.select('path').attr('d', function(d) {
                     let targetPoints = [
-                        {x: scaleX(d.observability.minimal), y: scaleY(0)},
-                        {x: scaleX(d.observability.optimal), y: scaleY(1)},
-                        {x: scaleX(d.observability.maximal), y: scaleY(0)},
+                        {
+                            x: scaleX(d.observability.minimal),
+                            y: scaleY(0),
+                        },
+                        {
+                            x: scaleX(d.observability.optimal),
+                            y: scaleY(1),
+                        },
+                        {
+                            x: scaleX(d.observability.maximal),
+                            y: scaleY(0),
+                        },
                     ]
                     return lineGenerator(targetPoints)
                 })
@@ -3420,7 +3947,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 .domain([ Number(shared.data.server.time_of_night.start), Number(shared.data.server.time_of_night.end) ])
             function dichotomiePath(targetedX, start, end, path, precision, step, maxStack) {
                 if (step > maxStack) {
-                    return {x: -1, y: -1}
+                    return {
+                        x: -1,
+                        y: -1,
+                    }
                 }
                 let middle = (end + start) * 0.5
                 let point = path.getPointAtLength(middle)
@@ -3437,7 +3967,10 @@ let main_sched_blocksInspector = function(opt_in) {
             let scaleY = d3.scaleLinear()
                 .range([ reserved.box.h, reserved.box.h * 0.2 ])
                 .domain([ 0, 1 ])
-            let projBlockStart = {x: scaleX(block.time.start), y: -1}
+            let projBlockStart = {
+                x: scaleX(block.time.start),
+                y: -1,
+            }
 
             if (projBlockStart.x < target.getPointAtLength(0).x || projBlockStart.x > target.getPointAtLength(target.getTotalLength()).x) {
                 projBlockStart.y = scaleY(0)
@@ -3474,7 +4007,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     .style('fill-opacity', 1)
             }
 
-            let projBlockEnd = {x: scaleX(block.time.end), y: -1}
+            let projBlockEnd = {
+                x: scaleX(block.time.end),
+                y: -1,
+            }
             if (projBlockEnd.x < target.getPointAtLength(0).x || projBlockEnd.x > target.getPointAtLength(target.getTotalLength()).x) {
                 projBlockEnd.y = scaleY(0)
                 reserved.clipping.clipBody.append('text')
@@ -3567,13 +4103,16 @@ let main_sched_blocksInspector = function(opt_in) {
     }
 
     let SvgTelsConflict = function() {
-        let reserved = {}
-        reserved.drag = {}
+        let reserved = {
+        }
+        reserved.drag = {
+        }
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
         function initClipping() {
-            reserved.clipping = {}
+            reserved.clipping = {
+            }
             reserved.clipping.g = svg.g.append('g')
                 .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
             reserved.clipping.g.append('defs').append('svg:clipPath')
@@ -3799,8 +4338,14 @@ let main_sched_blocksInspector = function(opt_in) {
             conflictSquare = []
 
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
                 .domain([ startTime.time, endTime.time ])
@@ -3948,7 +4493,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 })
                 .each(function(d) {
                     if (d.smallTels.min < scaleYSmall.domain()[0] || d.smallTels.used > d.smallTels.min) {
-                        conflictSquare.push({d3: d3.select(this), d: d})
+                        conflictSquare.push({
+                            d3: d3.select(this),
+                            d: d,
+                        })
                     }
                 })
 
@@ -4062,7 +4610,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 })
                 .each(function(d) {
                     if (d.mediumTels.min < scaleYMedium.domain()[0] || d.mediumTels.used > d.mediumTels.min) {
-                        conflictSquare.push({d3: d3.select(this), d: d})
+                        conflictSquare.push({
+                            d3: d3.select(this),
+                            d: d,
+                        })
                     }
                 })
 
@@ -4176,7 +4727,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 })
                 .each(function(d) {
                     if (d.largeTels.min < scaleYLarge.domain()[0] || d.largeTels.used > d.largeTels.min) {
-                        conflictSquare.push({d3: d3.select(this), d: d})
+                        conflictSquare.push({
+                            d3: d3.select(this),
+                            d: d,
+                        })
                     }
                 })
 
@@ -4191,22 +4745,40 @@ let main_sched_blocksInspector = function(opt_in) {
         function computeTelsCurve(block) {
             function core(b) {
                 if (!largeTels[b.time.start]) {
-                    largeTels[b.time.start] = {min: 0, used: 0}
+                    largeTels[b.time.start] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 4
                 if (!mediumTels[b.time.start]) {
-                    mediumTels[b.time.start] = {min: 0, used: 0}
+                    mediumTels[b.time.start] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 24
                 if (!smallTels[b.time.start]) {
-                    smallTels[b.time.start] = {min: 0, used: 0}
+                    smallTels[b.time.start] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 70
                 if (!largeTels[b.time.end]) {
-                    largeTels[b.time.end] = {min: 0, used: 0}
+                    largeTels[b.time.end] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 4
                 if (!mediumTels[b.time.end]) {
-                    mediumTels[b.time.end] = {min: 0, used: 0}
+                    mediumTels[b.time.end] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 24
                 if (!smallTels[b.time.end]) {
-                    smallTels[b.time.end] = {min: 0, used: 0}
+                    smallTels[b.time.end] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 70
 
                 smallTels[b.time.start].min += b.telescopes.small.min
@@ -4226,18 +4798,28 @@ let main_sched_blocksInspector = function(opt_in) {
 
 
                 if (!bIds[b.time.start]) {
-                    bIds[b.time.start] = {type: 'add', ids: []}
+                    bIds[b.time.start] = {
+                        type: 'add',
+                        ids: [],
+                    }
                 }
                 if (!bIds[b.time.end]) {
-                    bIds[b.time.end] = {type: 'rem', ids: []}
+                    bIds[b.time.end] = {
+                        type: 'rem',
+                        ids: [],
+                    }
                 }
                 bIds[b.time.start].ids.push(b.obs_block_id)
                 bIds[b.time.end].ids.push(b.obs_block_id)
             }
-            let largeTels = {}
-            let mediumTels = {}
-            let smallTels = {}
-            let bIds = {}
+            let largeTels = {
+            }
+            let mediumTels = {
+            }
+            let smallTels = {
+            }
+            let bIds = {
+            }
             // smallTels[shared.data.server.time_of_night.start] = 0
             // mediumTels[shared.data.server.time_of_night.start] = 0
             // largeTels[shared.data.server.time_of_night.start] = 0
@@ -4273,9 +4855,18 @@ let main_sched_blocksInspector = function(opt_in) {
                         id: 'LMS' + timeMarker[i] + Number(shared.data.server.time_of_night.start),
                         start: Number(shared.data.server.time_of_night.start),
                         end: timeMarker[i + 1],
-                        smallTels: {min: 0, used: 0},
-                        mediumTels: {min: 0, used: 0},
-                        largeTels: {min: 0, used: 0},
+                        smallTels: {
+                            min: 0,
+                            used: 0,
+                        },
+                        mediumTels: {
+                            min: 0,
+                            used: 0,
+                        },
+                        largeTels: {
+                            min: 0,
+                            used: 0,
+                        },
                         blocks: [],
                     })
                 }
@@ -4284,9 +4875,18 @@ let main_sched_blocksInspector = function(opt_in) {
                         id: 'LMS' + timeMarker[i] + Number(shared.data.server.time_of_night.end),
                         start: timeMarker[i],
                         end: Number(shared.data.server.time_of_night.end),
-                        smallTels: {min: 0, used: 0},
-                        mediumTels: {min: 0, used: 0},
-                        largeTels: {min: 0, used: 0},
+                        smallTels: {
+                            min: 0,
+                            used: 0,
+                        },
+                        mediumTels: {
+                            min: 0,
+                            used: 0,
+                        },
+                        largeTels: {
+                            min: 0,
+                            used: 0,
+                        },
                         blocks: [],
                     })
                 }
@@ -4297,9 +4897,18 @@ let main_sched_blocksInspector = function(opt_in) {
                     else {
                         currentBlockIds = currentBlockIds.concat(bIds[timeMarker[i]].ids.filter(d => currentBlockIds.indexOf(d) < 0))
                     }
-                    let s = {min: telsFree[i].smallTels.min + smallTels[timeMarker[i]].min, used: telsFree[i].smallTels.used + smallTels[timeMarker[i]].used}
-                    let m = {min: telsFree[i].mediumTels.min + mediumTels[timeMarker[i]].min, used: telsFree[i].mediumTels.used + mediumTels[timeMarker[i]].used}
-                    let l = {min: telsFree[i].largeTels.min + largeTels[timeMarker[i]].min, used: telsFree[i].largeTels.used + largeTels[timeMarker[i]].used}
+                    let s = {
+                        min: telsFree[i].smallTels.min + smallTels[timeMarker[i]].min,
+                        used: telsFree[i].smallTels.used + smallTels[timeMarker[i]].used,
+                    }
+                    let m = {
+                        min: telsFree[i].mediumTels.min + mediumTels[timeMarker[i]].min,
+                        used: telsFree[i].mediumTels.used + mediumTels[timeMarker[i]].used,
+                    }
+                    let l = {
+                        min: telsFree[i].largeTels.min + largeTels[timeMarker[i]].min,
+                        used: telsFree[i].largeTels.used + largeTels[timeMarker[i]].used,
+                    }
                     telsFree.push({
                         id: 'LMS' + timeMarker[i] + timeMarker[i + 1],
                         start: timeMarker[i],
@@ -4315,13 +4924,16 @@ let main_sched_blocksInspector = function(opt_in) {
         }
     }
     let SvgFocusOverlay = function() {
-        let reserved = {}
-        reserved.drag = {}
+        let reserved = {
+        }
+        reserved.drag = {
+        }
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
         function initClipping() {
-            reserved.clipping = {}
+            reserved.clipping = {
+            }
             reserved.drag.box = {
                 x: box.focusOverlay.x,
                 y: box.focusOverlay.y,
@@ -4369,8 +4981,14 @@ let main_sched_blocksInspector = function(opt_in) {
                 return
             }
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             reserved.drag.timescale = d3.scaleLinear()
                 .range([ 0, reserved.drag.box.w ])
                 .domain([ startTime.time, endTime.time ])
@@ -4386,7 +5004,8 @@ let main_sched_blocksInspector = function(opt_in) {
         this.update = update
 
         function createDragColumn(d) {
-            reserved.drag.column = {}
+            reserved.drag.column = {
+            }
             reserved.drag.column.g = reserved.drag.g.append('g')
             reserved.drag.column.g.append('rect')
                 .attr('class', 'area')
@@ -4454,7 +5073,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 .attr('opacity', 1)
         }
         function createDragTimer(d) {
-            reserved.drag.timer = {}
+            reserved.drag.timer = {
+            }
             reserved.drag.timer.g = reserved.drag.g.append('g')
                 .attr('transform', 'translate(' + reserved.drag.position.left + ',' + (reserved.drag.box.h * 0.66) + ')')
             reserved.drag.timer.g.append('line')
@@ -4618,7 +5238,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 reserved.drag.g.remove()
             }
             if (reserved.drag) {
-                reserved.drag = {}
+                reserved.drag = {
+                }
             }
             svgTargets.unhighlightTarget(d)
         }
@@ -4645,8 +5266,14 @@ let main_sched_blocksInspector = function(opt_in) {
                 marg: svg_dims.w[0] * 0.01,
             }
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             reserved.drag.timescale = d3.scaleLinear()
                 .range([ 0, reserved.drag.box.w ])
                 .domain([ startTime.time, endTime.time ])
@@ -4708,7 +5335,8 @@ let main_sched_blocksInspector = function(opt_in) {
             reserved.drag.mousecursor = d3.mouse(reserved.drag.g._groups[0][0])
             reserved.drag.offset = reserved.drag.mousecursor[0] - reserved.drag.position.left
 
-            reserved.drag.mode = {}
+            reserved.drag.mode = {
+            }
             reserved.drag.mode.current = 'general'
             reserved.drag.mode.previous = 'general'
             reserved.drag.atLeastOneTick = false
@@ -4787,9 +5415,13 @@ let main_sched_blocksInspector = function(opt_in) {
                 return d3.timeFormat('%M')(time)
             })
 
-            svgTargets.showPercentTarget({data: {target_id: d.target_id,
-                startTime: reserved.drag.timescale.invert(reserved.drag.position.left),
-                endTime: reserved.drag.timescale.invert(reserved.drag.position.right)}})
+            svgTargets.showPercentTarget({
+                data: {
+                    target_id: d.target_id,
+                    startTime: reserved.drag.timescale.invert(reserved.drag.position.left),
+                    endTime: reserved.drag.timescale.invert(reserved.drag.position.right),
+                },
+            })
             svgTelsConflict.drawTelsAvailabilityCurve(d)
 
             d.time.start = Math.floor(reserved.drag.timescale.invert(reserved.drag.position.left))
@@ -4896,7 +5528,9 @@ let main_sched_blocksInspector = function(opt_in) {
         function checkAndReplace(block1, block2, type) {
             let inter = block1.telescopes[type].ids.filter(value => block2.telescopes[type].ids.includes(value))
             for (let i = 0; i < inter.length; i++) {
-                removeTelescopeFromBlock(block1, {id: inter[i]})
+                removeTelescopeFromBlock(block1, {
+                    id: inter[i],
+                })
                 if (idle[type].length > 0) {
                     addTelescopeToBlock(block1, idle[type].splice(0, 1)[0])
                 }
@@ -4951,7 +5585,10 @@ let main_sched_blocksInspector = function(opt_in) {
     // }
     }
 
-    let conflictFocused = {d: undefined, d3: undefined}
+    let conflictFocused = {
+        d: undefined,
+        d3: undefined,
+    }
     let conflictSquare = []
     let conflict_button = []
     function linkConflicts() {
@@ -4972,7 +5609,8 @@ let main_sched_blocksInspector = function(opt_in) {
                     })
                     .on('mouseover', function(d) {
                         for (let j = 0; j < linked.length; j++) {
-                            let nb = {x: Number(linked[j].d3.attr('x')),
+                            let nb = {
+                                x: Number(linked[j].d3.attr('x')),
                                 y: Number(linked[j].d3.attr('y')),
                                 w: Number(linked[j].d3.attr('width')),
                                 h: Number(linked[j].d3.attr('height')),
@@ -4992,7 +5630,8 @@ let main_sched_blocksInspector = function(opt_in) {
                     })
                     .on('mouseout', function(d) {
                         for (let j = 0; j < linked.length; j++) {
-                            let nb = {x: Number(linked[j].d3.attr('x')),
+                            let nb = {
+                                x: Number(linked[j].d3.attr('x')),
                                 y: Number(linked[j].d3.attr('y')),
                                 w: Number(linked[j].d3.attr('width')),
                                 h: Number(linked[j].d3.attr('height')),
@@ -5085,8 +5724,23 @@ let main_sched_blocksInspector = function(opt_in) {
             // idg = idg.slice(1)
             // if (!checkDuplicata(idg)) {
             let blocks = group.blocks.map(d => all_obs_blocks.filter(ab => ab.obs_block_id === d)[0])
-            conflicts.push({id: group.id, blocks: blocks, small: 70 - group.smallTels.min, medium: 25 - group.mediumTels.min, large: 4 - group.largeTels.min})
-            conflict_button.push({d: {id: group.id, blocks: blocks, small: 70 - group.smallTels.min, medium: 25 - group.mediumTels.min, large: 4 - group.largeTels.min}, d3: undefined})
+            conflicts.push({
+                id: group.id,
+                blocks: blocks,
+                small: 70 - group.smallTels.min,
+                medium: 25 - group.mediumTels.min,
+                large: 4 - group.largeTels.min,
+            })
+            conflict_button.push({
+                d: {
+                    id: group.id,
+                    blocks: blocks,
+                    small: 70 - group.smallTels.min,
+                    medium: 25 - group.mediumTels.min,
+                    large: 4 - group.largeTels.min,
+                },
+                d3: undefined,
+            })
             // }
         }
 
@@ -5101,7 +5755,12 @@ let main_sched_blocksInspector = function(opt_in) {
         let template = {
             tag: 'right_info',
             g: undefined,
-            box: {x: 1, y: 1, w: 1, h: 1},
+            box: {
+                x: 1,
+                y: 1,
+                w: 1,
+                h: 1,
+            },
             debug: {
                 enabled: false,
             },
@@ -5160,15 +5819,21 @@ let main_sched_blocksInspector = function(opt_in) {
                     during: tag + 'zoomsuring',
                     end: tag + 'zoomEnd',
                 },
-                run_loop: new RunLoop({tag: tag}),
+                run_loop: new RunLoop({
+                    tag: tag,
+                }),
                 canScroll: true,
                 scrollVertical: isVertical,
                 scrollHorizontal: !isVertical,
                 scrollHeight: 0,
                 scrollWidth: 0,
                 background: 'transparent',
-                scrollRecH: {h: 4},
-                scrollRecV: {w: 4},
+                scrollRecH: {
+                    h: 4,
+                },
+                scrollRecV: {
+                    w: 4,
+                },
             })
             return scrollBox
         }
@@ -5346,17 +6011,41 @@ let main_sched_blocksInspector = function(opt_in) {
                         let g = d3.select(this)
                         let dimPoly = height * 0.9
                         let poly = [
-                            {x: dimPoly * 0.3, y: dimPoly * 0.0},
-                            {x: dimPoly * 0.7, y: dimPoly * 0.0},
+                            {
+                                x: dimPoly * 0.3,
+                                y: dimPoly * 0.0,
+                            },
+                            {
+                                x: dimPoly * 0.7,
+                                y: dimPoly * 0.0,
+                            },
 
-                            {x: dimPoly * 1, y: dimPoly * 0.3},
-                            {x: dimPoly * 1, y: dimPoly * 0.7},
+                            {
+                                x: dimPoly * 1,
+                                y: dimPoly * 0.3,
+                            },
+                            {
+                                x: dimPoly * 1,
+                                y: dimPoly * 0.7,
+                            },
 
-                            {x: dimPoly * 0.7, y: dimPoly * 1},
-                            {x: dimPoly * 0.3, y: dimPoly * 1},
+                            {
+                                x: dimPoly * 0.7,
+                                y: dimPoly * 1,
+                            },
+                            {
+                                x: dimPoly * 0.3,
+                                y: dimPoly * 1,
+                            },
 
-                            {x: dimPoly * 0.0, y: dimPoly * 0.7},
-                            {x: dimPoly * 0.0, y: dimPoly * 0.3},
+                            {
+                                x: dimPoly * 0.0,
+                                y: dimPoly * 0.7,
+                            },
+                            {
+                                x: dimPoly * 0.0,
+                                y: dimPoly * 0.3,
+                            },
                         ]
                         g.selectAll('polygon')
                             .data([ poly ])
@@ -5533,7 +6222,8 @@ let main_sched_blocksInspector = function(opt_in) {
                     main: {
                         tag: 'telescopeMapping',
                         g: gt,
-                        scroll: {},
+                        scroll: {
+                        },
                         box: box.mapping,
                         background: {
                             fill: 'none',
@@ -5624,14 +6314,16 @@ let main_sched_blocksInspector = function(opt_in) {
                             telescopes: shared.data.server.inst_health,
                             blocks: [], // shared.data.server.blocks.run
                         },
-                        filtered: {},
+                        filtered: {
+                        },
                         modified: [],
                     },
                     debug: {
                         enabled: false,
                     },
                     pattern: {
-                        select: {},
+                        select: {
+                        },
                     },
                     events: {
                         block: {
@@ -5680,7 +6372,8 @@ let main_sched_blocksInspector = function(opt_in) {
 
             new_d3_node(gfore,
                 'rect',
-                {'x': box.icons.x + box.icons.w * 0.6,
+                {
+                    'x': box.icons.x + box.icons.w * 0.6,
                     'y': box.icons.y + box.icons.h * 0.025,
                     'width': box.icons.w * 0.3,
                     height: box.icons.h * 0.3,
@@ -5706,18 +6399,23 @@ let main_sched_blocksInspector = function(opt_in) {
             })
             new_d3_node(gfore,
                 'svg:image',
-                {'x': box.icons.x + box.icons.w * 0.65,
+                {
+                    'x': box.icons.x + box.icons.w * 0.65,
                     'y': box.icons.y + box.icons.h * 0.075,
                     'width': box.icons.w * 0.2,
                     height: box.icons.h * 0.2,
                     'xlink:href': '/static/icons/blocks.svg',
                 },
-                {'pointer-events': 'none', opacity: 0.6}
+                {
+                    'pointer-events': 'none',
+                    opacity: 0.6,
+                }
             )
 
             new_d3_node(gfore,
                 'rect',
-                {'x': box.icons.x + box.icons.w * 0.6,
+                {
+                    'x': box.icons.x + box.icons.w * 0.6,
                     'y': box.icons.y + box.icons.h * 0.35,
                     'width': box.icons.w * 0.3,
                     height: box.icons.h * 0.3,
@@ -5743,18 +6441,23 @@ let main_sched_blocksInspector = function(opt_in) {
             })
             new_d3_node(gfore,
                 'svg:image',
-                {'x': box.icons.x + box.icons.w * 0.65,
+                {
+                    'x': box.icons.x + box.icons.w * 0.65,
                     'y': box.icons.y + box.icons.h * 0.4,
                     'width': box.icons.w * 0.2,
                     height: box.icons.h * 0.2,
                     'xlink:href': '/static/icons/target.svg',
                 },
-                {'pointer-events': 'none', opacity: 0.6}
+                {
+                    'pointer-events': 'none',
+                    opacity: 0.6,
+                }
             )
 
             new_d3_node(gfore,
                 'rect',
-                {'x': box.icons.x + box.icons.w * 0.6,
+                {
+                    'x': box.icons.x + box.icons.w * 0.6,
                     'y': box.icons.y + box.icons.h * 0.675,
                     'width': box.icons.w * 0.3,
                     height: box.icons.h * 0.3,
@@ -5780,13 +6483,17 @@ let main_sched_blocksInspector = function(opt_in) {
             })
             new_d3_node(gfore,
                 'svg:image',
-                {'x': box.icons.x + box.icons.w * 0.65,
+                {
+                    'x': box.icons.x + box.icons.w * 0.65,
                     'y': box.icons.y + box.icons.h * 0.725,
                     'width': box.icons.w * 0.2,
                     height: box.icons.h * 0.2,
                     'xlink:href': '/static/icons/telescope.svg',
                 },
-                {'pointer-events': 'none', opacity: 0.6}
+                {
+                    'pointer-events': 'none',
+                    opacity: 0.6,
+                }
             )
         }
 
@@ -5794,8 +6501,10 @@ let main_sched_blocksInspector = function(opt_in) {
 
         function initOverview() {
             reserved.overview = {
-                modifications: {},
-                conflicts: {},
+                modifications: {
+                },
+                conflicts: {
+                },
             }
             allBox = {
                 blocks: {
@@ -5855,12 +6564,42 @@ let main_sched_blocksInspector = function(opt_in) {
                     .attr('height', headerSize)
                     .attr('fill', color_theme.dark.stroke)
                 let label = [
-                    {x: box.w * 0.0, y: box.y + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.13, text: 'Scheds'},
-                    {x: box.w * 0.13, y: box.y + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.13, text: 'Blocks'},
-                    {x: box.w * (0.26 + 0.185 * 0), y: box.y + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.185, text: 'State'},
-                    {x: box.w * (0.26 + 0.185 * 1), y: box.y + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.185, text: 'Scheduled'},
-                    {x: box.w * (0.26 + 0.185 * 2), y: box.y + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.185, text: 'Pointing'},
-                    {x: box.w * (0.26 + 0.185 * 3), y: box.y + headerSize * 0.5 + txt_size * 0.3, w: box.w * 0.185, text: 'Telescope'},
+                    {
+                        x: box.w * 0.0,
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        w: box.w * 0.13,
+                        text: 'Scheds',
+                    },
+                    {
+                        x: box.w * 0.13,
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        w: box.w * 0.13,
+                        text: 'Blocks',
+                    },
+                    {
+                        x: box.w * (0.26 + 0.185 * 0),
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        w: box.w * 0.185,
+                        text: 'State',
+                    },
+                    {
+                        x: box.w * (0.26 + 0.185 * 1),
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        w: box.w * 0.185,
+                        text: 'Scheduled',
+                    },
+                    {
+                        x: box.w * (0.26 + 0.185 * 2),
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        w: box.w * 0.185,
+                        text: 'Pointing',
+                    },
+                    {
+                        x: box.w * (0.26 + 0.185 * 3),
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        w: box.w * 0.185,
+                        text: 'Telescope',
+                    },
                 ]
                 for (let i = 0; i < label.length; i++) {
                     g.append('text')
@@ -5877,7 +6616,9 @@ let main_sched_blocksInspector = function(opt_in) {
                 let scrollg = g.append('g')
                     .attr('id', 'modifications_information')
                     .attr('transform', 'translate(' + 0 + ',' + box.y + ')')
-                reserved.overview.modifications.scrollBox = initScrollBox('modificationsListScroll', scrollg, box, {enabled: false}, true)
+                reserved.overview.modifications.scrollBox = initScrollBox('modificationsListScroll', scrollg, box, {
+                    enabled: false,
+                }, true)
                 g.append('line')
                     .attr('x1', 0)
                     .attr('y1', box.y + box.h - 2)
@@ -5945,7 +6686,9 @@ let main_sched_blocksInspector = function(opt_in) {
                     .attr('stroke', 'none')
                     .style('opacity', 0.2)
 
-                reserved.overview.conflicts.scrollBox = initScrollBox('conflictListScroll', g, box, {enabled: false}, false)
+                reserved.overview.conflicts.scrollBox = initScrollBox('conflictListScroll', g, box, {
+                    enabled: false,
+                }, false)
             }
             function createSummaryMetrics() {
                 let adjustedBox = allBox.summaryMetrics
@@ -5992,7 +6735,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     .attr('transform', 'translate(' + (adjustedBox.w * 0.36) + ',' + (adjustedBox.h * 0.0) + ')')
                 for (let i = 0; i < 6; i++) {
                     target_icon(tg.append('g').attr('transform', 'translate(' + (adjustedBox.w * 0.12 + (parseInt(i / 3)) * adjustedBox.w * 0.16) + ',' + (adjustedBox.h * 0.05 + adjustedBox.h * 0.3 * (i % 3)) + ')'),
-                        {w: 24, h: 24}, 'T' + i, {
+                        {
+                            w: 24,
+                            h: 24,
+                        }, 'T' + i, {
                             click: function() {},
                             over: function() {},
                             out: function() {},
@@ -6044,7 +6790,8 @@ let main_sched_blocksInspector = function(opt_in) {
             // svgFocusOverlay.blurry()
 
             let allTel = shared.data.server.inst_health
-            let innerOtherBlock = {}
+            let innerOtherBlock = {
+            }
             let box = {
                 x: 0,
                 y: -6,
@@ -6060,9 +6807,12 @@ let main_sched_blocksInspector = function(opt_in) {
                 .attr('width', box.w)
                 .attr('height', box.h)
                 .attr('fill', colorPalette.bright.background)
-            let scroll = initScrollBox('focusedConflictListScroll', otherg, box, {enabled: false}, true)
+            let scroll = initScrollBox('focusedConflictListScroll', otherg, box, {
+                enabled: false,
+            }, true)
             function initTelescope_information(block, box) {
-                innerOtherBlock[block.obs_block_id] = {}
+                innerOtherBlock[block.obs_block_id] = {
+                }
                 let g = scroll.get('innerG').append('g')
                     .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
                 // g.append('rect')
@@ -6117,7 +6867,8 @@ let main_sched_blocksInspector = function(opt_in) {
                     main: {
                         tag: 'telescopeRootTag' + block.obs_block_id,
                         g: gt,
-                        scroll: {},
+                        scroll: {
+                        },
                         box: box,
                         background: {
                             fill: colorPalette.medium.background,
@@ -6218,14 +6969,16 @@ let main_sched_blocksInspector = function(opt_in) {
                         raw: {
                             telescopes: [],
                         },
-                        filtered: {},
+                        filtered: {
+                        },
                         modified: [],
                     },
                     debug: {
                         enabled: false,
                     },
                     pattern: {
-                        select: {},
+                        select: {
+                        },
                     },
                     events: {
                         block: {
@@ -6309,7 +7062,9 @@ let main_sched_blocksInspector = function(opt_in) {
                                 if (t === undefined) {
                                     break
                                 }
-                                addTelescopeToBlock(block, {id: t})
+                                addTelescopeToBlock(block, {
+                                    id: t,
+                                })
                             }
                         }
                     }
@@ -6348,13 +7103,22 @@ let main_sched_blocksInspector = function(opt_in) {
                 innerOtherBlock[block.obs_block_id].updateOtherTelescope_information = function() {
                     let tels = []
                     for (let i = 0; i < block.telescopes.large.ids.length; i++) {
-                        tels.push({id: block.telescopes.large.ids[i], health: allTel.find(x => x.id === block.telescopes.large.ids[i]).val})
+                        tels.push({
+                            id: block.telescopes.large.ids[i],
+                            health: allTel.find(x => x.id === block.telescopes.large.ids[i]).val,
+                        })
                     }
                     for (let i = 0; i < block.telescopes.medium.ids.length; i++) {
-                        tels.push({id: block.telescopes.medium.ids[i], health: allTel.find(x => x.id === block.telescopes.medium.ids[i]).val})
+                        tels.push({
+                            id: block.telescopes.medium.ids[i],
+                            health: allTel.find(x => x.id === block.telescopes.medium.ids[i]).val,
+                        })
                     }
                     for (let i = 0; i < block.telescopes.small.ids.length; i++) {
-                        tels.push({id: block.telescopes.small.ids[i], health: allTel.find(x => x.id === block.telescopes.small.ids[i]).val})
+                        tels.push({
+                            id: block.telescopes.small.ids[i],
+                            health: allTel.find(x => x.id === block.telescopes.small.ids[i]).val,
+                        })
                     }
                     innerOtherBlock[block.obs_block_id].displayer.update_data({
                         data: {
@@ -6367,34 +7131,77 @@ let main_sched_blocksInspector = function(opt_in) {
                     })
                 }
 
-                innerOtherBlock[block.obs_block_id].tels = {}
+                innerOtherBlock[block.obs_block_id].tels = {
+                }
                 innerOtherBlock[block.obs_block_id].tels.large = inputNumber(g,
-                    {x: box.x + 2, y: (box.y + box.h + 1), w: 40, h: 15},
+                    {
+                        x: box.x + 2,
+                        y: (box.y + box.h + 1),
+                        w: 40,
+                        h: 15,
+                    },
                     'large',
-                    {disabled: false, value: block.telescopes.large.min, min: 0, max: block.telescopes.large.max, step: 1},
-                    {change: (d) => {
-                        changeOtherTelescopeNumber('large', d)
-                    }, enter: (d) => {
-                        changeOtherTelescopeNumber('large', d)
-                    }})
+                    {
+                        disabled: false,
+                        value: block.telescopes.large.min,
+                        min: 0,
+                        max: block.telescopes.large.max,
+                        step: 1,
+                    },
+                    {
+                        change: (d) => {
+                            changeOtherTelescopeNumber('large', d)
+                        },
+                        enter: (d) => {
+                            changeOtherTelescopeNumber('large', d)
+                        },
+                    })
                 innerOtherBlock[block.obs_block_id].tels.medium = inputNumber(g,
-                    {x: box.x + (5 + mediumBox.x + mediumBox.w * 0.5 - 20), y: (box.y + box.h + 1), w: 40, h: 15},
+                    {
+                        x: box.x + (5 + mediumBox.x + mediumBox.w * 0.5 - 20),
+                        y: (box.y + box.h + 1),
+                        w: 40,
+                        h: 15,
+                    },
                     'small',
-                    {disabled: false, value: block.telescopes.medium.min, min: 0, max: block.telescopes.medium.max, step: 1},
-                    {change: (d) => {
-                        changeOtherTelescopeNumber('medium', d)
-                    }, enter: (d) => {
-                        changeOtherTelescopeNumber('medium', d)
-                    }})
+                    {
+                        disabled: false,
+                        value: block.telescopes.medium.min,
+                        min: 0,
+                        max: block.telescopes.medium.max,
+                        step: 1,
+                    },
+                    {
+                        change: (d) => {
+                            changeOtherTelescopeNumber('medium', d)
+                        },
+                        enter: (d) => {
+                            changeOtherTelescopeNumber('medium', d)
+                        },
+                    })
                 innerOtherBlock[block.obs_block_id].tels.small = inputNumber(g,
-                    {x: box.x + (smallBox.x + smallBox.w * 0.5 - 25), y: (box.y + box.h + 1), w: 40, h: 15},
+                    {
+                        x: box.x + (smallBox.x + smallBox.w * 0.5 - 25),
+                        y: (box.y + box.h + 1),
+                        w: 40,
+                        h: 15,
+                    },
                     'small',
-                    {disabled: false, value: block.telescopes.small.min, min: 0, max: block.telescopes.small.max, step: 1},
-                    {change: (d) => {
-                        changeOtherTelescopeNumber('small', d)
-                    }, enter: (d) => {
-                        changeOtherTelescopeNumber('small', d)
-                    }})
+                    {
+                        disabled: false,
+                        value: block.telescopes.small.min,
+                        min: 0,
+                        max: block.telescopes.small.max,
+                        step: 1,
+                    },
+                    {
+                        change: (d) => {
+                            changeOtherTelescopeNumber('small', d)
+                        },
+                        enter: (d) => {
+                            changeOtherTelescopeNumber('small', d)
+                        },
+                    })
                 innerOtherBlock[block.obs_block_id].updateOtherTelescope_information()
             }
             let sizeRow = (allBox.modifications.h * 1.5) / 6
@@ -6407,7 +7214,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 }
                 initTelescope_information(conflict.blocks[i], ibox)
             }
-            scroll.resetVerticalScroller({canScroll: true, scrollHeight: sizeRow * conflict.blocks.length})
+            scroll.resetVerticalScroller({
+                canScroll: true,
+                scrollHeight: sizeRow * conflict.blocks.length,
+            })
 
             otherg.append('line')
                 .attr('x1', 0)
@@ -6582,7 +7392,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 openOtherBlocks(d.d)
             }
             else if (conflictFocused.d.id === d.d.id) {
-                conflictFocused = {d: undefined, d3: undefined}
+                conflictFocused = {
+                    d: undefined,
+                    d3: undefined,
+                }
                 closeOtherBlocks(d)
             }
             else {
@@ -6605,12 +7418,30 @@ let main_sched_blocksInspector = function(opt_in) {
                 let line = 25
                 let marg = 2
                 let labels = [
-                    {x: box.w * 0.0, w: box.w * 0.13},
-                    {x: box.w * 0.13, w: box.w * 0.13},
-                    {x: box.w * (0.26 + 0.185 * 0), w: box.w * 0.185},
-                    {x: box.w * (0.26 + 0.185 * 1), w: box.w * 0.185},
-                    {x: box.w * (0.26 + 0.185 * 2), w: box.w * 0.185},
-                    {x: box.w * (0.26 + 0.185 * 3), w: box.w * 0.185},
+                    {
+                        x: box.w * 0.0,
+                        w: box.w * 0.13,
+                    },
+                    {
+                        x: box.w * 0.13,
+                        w: box.w * 0.13,
+                    },
+                    {
+                        x: box.w * (0.26 + 0.185 * 0),
+                        w: box.w * 0.185,
+                    },
+                    {
+                        x: box.w * (0.26 + 0.185 * 1),
+                        w: box.w * 0.185,
+                    },
+                    {
+                        x: box.w * (0.26 + 0.185 * 2),
+                        w: box.w * 0.185,
+                    },
+                    {
+                        x: box.w * (0.26 + 0.185 * 3),
+                        w: box.w * 0.185,
+                    },
                 ]
 
                 let popupOffset = 0
@@ -6641,17 +7472,41 @@ let main_sched_blocksInspector = function(opt_in) {
 
                         let dimPoly = line
                         let poly = [
-                            {x: dimPoly * 0.3, y: dimPoly * 0.0},
-                            {x: dimPoly * 0.7, y: dimPoly * 0.0},
+                            {
+                                x: dimPoly * 0.3,
+                                y: dimPoly * 0.0,
+                            },
+                            {
+                                x: dimPoly * 0.7,
+                                y: dimPoly * 0.0,
+                            },
 
-                            {x: dimPoly * 1, y: dimPoly * 0.3},
-                            {x: dimPoly * 1, y: dimPoly * 0.7},
+                            {
+                                x: dimPoly * 1,
+                                y: dimPoly * 0.3,
+                            },
+                            {
+                                x: dimPoly * 1,
+                                y: dimPoly * 0.7,
+                            },
 
-                            {x: dimPoly * 0.7, y: dimPoly * 1},
-                            {x: dimPoly * 0.3, y: dimPoly * 1},
+                            {
+                                x: dimPoly * 0.7,
+                                y: dimPoly * 1,
+                            },
+                            {
+                                x: dimPoly * 0.3,
+                                y: dimPoly * 1,
+                            },
 
-                            {x: dimPoly * 0.0, y: dimPoly * 0.7},
-                            {x: dimPoly * 0.0, y: dimPoly * 0.3},
+                            {
+                                x: dimPoly * 0.0,
+                                y: dimPoly * 0.7,
+                            },
+                            {
+                                x: dimPoly * 0.0,
+                                y: dimPoly * 0.3,
+                            },
                         ]
                         header.selectAll('polygon')
                             .data([ poly ])
@@ -6691,11 +7546,23 @@ let main_sched_blocksInspector = function(opt_in) {
                         let g = d3.select(this)
                         g.attr('transform', 'translate(' + -5 + ',' + (sched_index * (line + marg) + offset) + ')')
 
-                        let points = [{x: labels[0].w * 0.5, y: labels[0].w * 0.5}]
+                        let points = [{
+                            x: labels[0].w * 0.5,
+                            y: labels[0].w * 0.5,
+                        }]
                         for (let j = 0; j < d.blocks.length; j++) {
-                            points.push({x: labels[0].w * 0.5, y: (line + marg) * ((j + 1) + 0.5)})
-                            points.push({x: line * 2, y: (line + marg) * ((j + 1) + 0.5)})
-                            points.push({x: labels[0].w * 0.5, y: (line + marg) * ((j + 1) + 0.5)})
+                            points.push({
+                                x: labels[0].w * 0.5,
+                                y: (line + marg) * ((j + 1) + 0.5),
+                            })
+                            points.push({
+                                x: line * 2,
+                                y: (line + marg) * ((j + 1) + 0.5),
+                            })
+                            points.push({
+                                x: labels[0].w * 0.5,
+                                y: (line + marg) * ((j + 1) + 0.5),
+                            })
                         }
                         let lineGenerator = d3.line()
                             .x(function(d) {
@@ -7529,7 +8396,11 @@ let main_sched_blocksInspector = function(opt_in) {
                 schedCore(shared.data.copy.modifications, innerg, marg)
 
                 // reserved.overview.modifications.scrollBox.moveVerticalScrollerTo(0.5)
-                reserved.overview.modifications.scrollBox.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (line + marg) * (sched_index + 0)})
+                reserved.overview.modifications.scrollBox.resetVerticalScroller({
+                    canScroll: true,
+                    keepFrac: true,
+                    scrollHeight: (line + marg) * (sched_index + 0),
+                })
                 let scrollProp = reserved.overview.modifications.scrollBox.getScrollProp('vertical')
                 popupOffset = scrollProp.now
             }
@@ -7562,7 +8433,10 @@ let main_sched_blocksInspector = function(opt_in) {
                         .attr('stroke', colorPalette.dark.stroke)
                         .attr('stroke-width', 0.1)
                         .on('click', function() {
-                            focusOnConflict({d3: d3.select(this), d: d})
+                            focusOnConflict({
+                                d3: d3.select(this),
+                                d: d,
+                            })
                         })
                     g.append('text')
                         .text(d.blocks.length + ' obs')
@@ -7598,7 +8472,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     let offX = marg * 1 + (line + marg) * i
                     let offY = marg * 1
                     g.attr('transform', 'translate(' + offX + ',' + offY + ')')
-                    conflict_button.push({d3: g, d: d})
+                    conflict_button.push({
+                        d3: g,
+                        d: d,
+                    })
                 })
                 // let merge = current.merge(enter)
                 // merge.each(function (d, i) {
@@ -7615,7 +8492,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 //   .duration(times.anim_arc)
                 //   .style('opacity', 0)
                 //   .remove()
-                reserved.overview.conflicts.scrollBox.resetHorizontalScroller({canScroll: true, scrollWidth: (line + marg) * shared.data.copy.conflicts.length})
+                reserved.overview.conflicts.scrollBox.resetHorizontalScroller({
+                    canScroll: true,
+                    scrollWidth: (line + marg) * shared.data.copy.conflicts.length,
+                })
             }
 
             updateModifications_information()
@@ -7656,7 +8536,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 main: {
                     tag: 'schedblockFormTag',
                     g: g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: innerbox,
                     background: {
                         fill: color_theme.brighter.background,
@@ -7738,7 +8619,10 @@ let main_sched_blocksInspector = function(opt_in) {
         }
         function focusOn_sched_block(bId) {
             clean()
-            conflictFocused = {d: undefined, d3: undefined}
+            conflictFocused = {
+                d: undefined,
+                d3: undefined,
+            }
             create_sched_blocks_info_panel(bId)
         }
         this.focusOn_sched_block = focusOn_sched_block
@@ -7784,7 +8668,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 main: {
                     tag: 'blockFormTag',
                     g: g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: innerbox,
                     background: {
                         fill: color_theme.brighter.background,
@@ -7850,7 +8735,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 },
                 events: {
                     allTel: function() {
-                        return {allTels: shared.data.server.inst_health, blocks: get_blocksByTime(get_blocksData(), data.time.start, data.time.end)}
+                        return {
+                            allTels: shared.data.server.inst_health,
+                            blocks: get_blocksByTime(get_blocksData(), data.time.start, data.time.end),
+                        }
                     },
                     blurry: function() {
                         svg_events_queue_server.blurry()
@@ -7890,7 +8778,10 @@ let main_sched_blocksInspector = function(opt_in) {
         }
         function focusOn_block(bId) {
             clean()
-            conflictFocused = {d: undefined, d3: undefined}
+            conflictFocused = {
+                d: undefined,
+                d3: undefined,
+            }
             createBlocks_info_panel(bId)
         }
         this.focusOn_block = focusOn_block
@@ -7905,7 +8796,10 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             let data = getBlockById(get_blocksData(), bId).data
             let schedB = get_sched_blocksData()[data.sched_block_id]
-            reserved.obsblockForm.update({block: data, schedB: schedB})
+            reserved.obsblockForm.update({
+                block: data,
+                schedB: schedB,
+            })
         }
         this.updateBlock = updateBlock
 
@@ -7954,7 +8848,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 main: {
                     tag: 'targetFormTag',
                     g: g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: innerbox,
                     background: {
                         fill: color_theme.brighter.background,
@@ -8008,7 +8903,10 @@ let main_sched_blocksInspector = function(opt_in) {
         }
         function focusOnTarget(id) {
             clean()
-            conflictFocused = {d: undefined, d3: undefined}
+            conflictFocused = {
+                d: undefined,
+                d3: undefined,
+            }
             create_target_info_panel(id)
         }
         this.focusOnTarget = focusOnTarget
@@ -8049,7 +8947,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 main: {
                     tag: 'telescopeFormTag',
                     g: g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: innerbox,
                     background: {
                         fill: color_theme.brighter.background,
@@ -8095,7 +8994,10 @@ let main_sched_blocksInspector = function(opt_in) {
         }
         function focusOnTelescope(tel_Id) {
             clean()
-            conflictFocused = {d: undefined, d3: undefined}
+            conflictFocused = {
+                d: undefined,
+                d3: undefined,
+            }
             createTelescope_info_panel(tel_Id)
         }
         this.focusOnTelescope = focusOnTelescope
@@ -8119,7 +9021,8 @@ let main_sched_blocksInspector = function(opt_in) {
     let svgRight_info = new SvgRight_info()
 
     let SvgSummaryMetrics = function() {
-        let reserved = {}
+        let reserved = {
+        }
         let blockQueue
 
         function init_dataBQ() {
@@ -8135,7 +9038,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 main: {
                     tag: 'blockQueueMiddleTag',
                     g: reserved.g.append('g').attr('transform', 'translate(' + adjustedBox.x + ',' + adjustedBox.y + ')'),
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: 'none',
@@ -8150,7 +9054,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -8173,7 +9083,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         run: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.6,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.6,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -8193,7 +9109,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         cancel: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.0,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.33,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -8213,7 +9135,13 @@ let main_sched_blocksInspector = function(opt_in) {
                         modification: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.5,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.47,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -8235,7 +9163,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockQueue2: {
@@ -8251,7 +9185,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -8273,7 +9213,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: -adjustedBox.y, w: adjustedBox.w, h: box.topBox.h + box.event_queue_server.h, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: -adjustedBox.y,
+                            w: adjustedBox.w,
+                            h: box.topBox.h + box.event_queue_server.h,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockTrackShrink: {
@@ -8287,7 +9233,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -8309,7 +9261,13 @@ let main_sched_blocksInspector = function(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockList: {
@@ -8317,18 +9275,27 @@ let main_sched_blocksInspector = function(opt_in) {
                 },
                 blockForm: {
                     mosaic: {
-                        box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w * 0.2,
+                            h: adjustedBox.h,
+                            marg: adjustedBox.marg,
+                        },
                         order: 'n_sched',
                     },
                     forms: {
                         g: undefined,
-                        box: {x: adjustedBox.w * 0.22,
+                        box: {
+                            x: adjustedBox.w * 0.22,
                             y: adjustedBox.h * 0.02,
                             w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
                             h: adjustedBox.h * 0.96,
-                            marg: adjustedBox.marg},
+                            marg: adjustedBox.marg,
+                        },
                         display: 'list',
-                        scroll: {},
+                        scroll: {
+                        },
                     },
                 },
 
@@ -8337,9 +9304,18 @@ let main_sched_blocksInspector = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -8349,7 +9325,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     block: {
                         click: d => focusManager.focusOn('block', d.obs_block_id),
@@ -8377,8 +9354,14 @@ let main_sched_blocksInspector = function(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: [], blocks: []},
-                    over: {sched_blocks: [], blocks: []},
+                    focus: {
+                        sched_blocks: [],
+                        blocks: [],
+                    },
+                    over: {
+                        sched_blocks: [],
+                        blocks: [],
+                    },
                     selection: [],
                 },
             })
@@ -8499,12 +9482,21 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             reserved.g.select('rect#cloak').attr('width', newWidth)
 
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
 
             blockQueue.update_data({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
@@ -8693,7 +9685,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 .style('pointer-events', 'none')
             for (let i = 0; i < 6; i++) {
                 target_icon(tg.append('g').attr('transform', 'translate(' + (adjustedBox.w * 0.12 + (parseInt(i / 3)) * adjustedBox.w * 0.16) + ',' + (adjustedBox.h * 0.5 + adjustedBox.h * 0.12 * (i % 3)) + ')'),
-                    {w: 24, h: 24}, 'T' + i, {
+                    {
+                        w: 24,
+                        h: 24,
+                    }, 'T' + i, {
                         click: function() {},
                         over: function() {},
                         out: function() {},

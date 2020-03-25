@@ -12,7 +12,10 @@
 /* global RunLoop */
 /* global inst_health_col */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/ScrollBox.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/ScrollBox.js',
+})
 
 // ------------------------------------------------------------------
 //
@@ -23,8 +26,15 @@ window.TelescopeDisplayer = function(opt_in) {
         main: {
             tag: 'telescopeQueueRootTag',
             g: undefined,
-            scroll: {},
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            scroll: {
+            },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: color_theme.brighter.background,
                 stroke: color_theme.brighter.stroke,
@@ -47,14 +57,16 @@ window.TelescopeDisplayer = function(opt_in) {
                 telescopes: [],
                 blocks: [],
             },
-            filtered: {},
+            filtered: {
+            },
             modified: [],
         },
         debug: {
             enabled: false,
         },
         pattern: {
-            select: {},
+            select: {
+            },
         },
         input: {
             over: {
@@ -85,7 +97,8 @@ window.TelescopeDisplayer = function(opt_in) {
         if (com.style) {
             return
         }
-        com.style = {}
+        com.style = {
+        }
         com.style.runRecCol = cols_blues[2]
         com.style.telescopeCol = function(opt_in) {
             let state = is_def(opt_in.state)
@@ -154,7 +167,8 @@ window.TelescopeDisplayer = function(opt_in) {
             }
         }
 
-        com.pattern.select = {}
+        com.pattern.select = {
+        }
         com.pattern.select.defs = com.main.g.append('defs')
         // com.pattern.select.patternHover = com.pattern.select.defs.append('pattern')
         //   .attr('id', 'patternHover')
@@ -291,14 +305,20 @@ window.TelescopeDisplayer = function(opt_in) {
                 let b = telescopes[index]
                 let bDisplay = b.display
 
-                let cols = com.style.telescopeCol({ d: b })
+                let cols = com.style.telescopeCol({
+                    d: b,
+                })
 
                 bDisplay.w = timescale(b.endTime) - timescale(b.startTime)
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.5
                 bDisplay.fill = cols.background
-                bDisplay.fill_opacity = com.style.telescopeOpac({ d: b })
-                bDisplay.strokeOpacity = com.style.telescopeOpac({ d: b })
+                bDisplay.fill_opacity = com.style.telescopeOpac({
+                    d: b,
+                })
+                bDisplay.strokeOpacity = com.style.telescopeOpac({
+                    d: b,
+                })
                 bDisplay.strokeDasharray = []
                 bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
@@ -1044,9 +1064,24 @@ window.TelescopeDisplayer = function(opt_in) {
                     smallT.sort(function(a, b) {
                         return ('' + a.id).localeCompare(b.id)
                     })
-                    let lb = {x: com.gridBib.telescope.large.box.x, y: offset.y, w: com.gridBib.telescope.large.box.w, h: sizeRow}
-                    let mb = {x: com.gridBib.telescope.medium.box.x, y: offset.y, w: com.gridBib.telescope.medium.box.w, h: sizeRow}
-                    let sb = {x: com.gridBib.telescope.small.box.x, y: offset.y, w: com.gridBib.telescope.small.box.w, h: sizeRow}
+                    let lb = {
+                        x: com.gridBib.telescope.large.box.x,
+                        y: offset.y,
+                        w: com.gridBib.telescope.large.box.w,
+                        h: sizeRow,
+                    }
+                    let mb = {
+                        x: com.gridBib.telescope.medium.box.x,
+                        y: offset.y,
+                        w: com.gridBib.telescope.medium.box.w,
+                        h: sizeRow,
+                    }
+                    let sb = {
+                        x: com.gridBib.telescope.small.box.x,
+                        y: offset.y,
+                        w: com.gridBib.telescope.small.box.w,
+                        h: sizeRow,
+                    }
                     drawTels(largeT, com.gridBib.telescope.large.g, lb, com.gridBib.telescope.large.opt)
                     drawTels(mediumT, com.gridBib.telescope.medium.g, mb, com.gridBib.telescope.medium.opt)
                     drawTels(smallT, com.gridBib.telescope.small.g, sb, com.gridBib.telescope.small.opt)
@@ -1079,9 +1114,24 @@ window.TelescopeDisplayer = function(opt_in) {
                 smallT.sort(function(a, b) {
                     return ('' + a.id).localeCompare(b.id)
                 })
-                let lb = {x: com.gridBib.telescope.large.box.x, y: offset.y, w: com.gridBib.telescope.large.box.w, h: sizeRow}
-                let mb = {x: com.gridBib.telescope.medium.box.x, y: offset.y, w: com.gridBib.telescope.medium.box.w, h: sizeRow}
-                let sb = {x: com.gridBib.telescope.small.box.x, y: offset.y, w: com.gridBib.telescope.small.box.w, h: sizeRow}
+                let lb = {
+                    x: com.gridBib.telescope.large.box.x,
+                    y: offset.y,
+                    w: com.gridBib.telescope.large.box.w,
+                    h: sizeRow,
+                }
+                let mb = {
+                    x: com.gridBib.telescope.medium.box.x,
+                    y: offset.y,
+                    w: com.gridBib.telescope.medium.box.w,
+                    h: sizeRow,
+                }
+                let sb = {
+                    x: com.gridBib.telescope.small.box.x,
+                    y: offset.y,
+                    w: com.gridBib.telescope.small.box.w,
+                    h: sizeRow,
+                }
                 drawTels(largeT, com.gridBib.telescope.large.g, lb, com.gridBib.telescope.large.opt)
                 drawTels(mediumT, com.gridBib.telescope.medium.g, mb, com.gridBib.telescope.medium.opt)
                 drawTels(smallT, com.gridBib.telescope.small.g, sb, com.gridBib.telescope.small.opt)
@@ -1168,15 +1218,21 @@ window.TelescopeDisplayer = function(opt_in) {
                 during: ntag + 'zoomsuring',
                 end: ntag + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: ntag}),
+            run_loop: new RunLoop({
+                tag: ntag,
+            }),
             canScroll: true,
             scrollVertical: false,
             scrollHorizontal: true,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 2},
-            scrollRecV: {w: 2},
+            scrollRecH: {
+                h: 2,
+            },
+            scrollRecV: {
+                w: 2,
+            },
         })
         com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
         com.main.background = com.main.scroll.scrollG.append('g')
@@ -1196,7 +1252,9 @@ window.TelescopeDisplayer = function(opt_in) {
     this.initBackground = initBackground
 
     function filterData(opt_in) {
-        return {data: com.data.raw.telescopes}
+        return {
+            data: com.data.raw.telescopes,
+        }
         function checkFilter(d, f) {
             let op = f.operation
             let co = f.contains
@@ -1271,8 +1329,17 @@ window.TelescopeDisplayer = function(opt_in) {
 
         let filters = opt_in.filters ? opt_in.filters : com.filters.filtering
 
-        let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
-        let stats = {tot: 0, filtered: 0}
+        let filtered = {
+            done: [],
+            run: [],
+            cancel: [],
+            wait: [],
+            fail: [],
+        }
+        let stats = {
+            tot: 0,
+            filtered: 0,
+        }
         stats.tot = com.data.raw.telescopes.done.length + com.data.raw.telescopes.wait.length + com.data.raw.telescopes.run.length
         // separate telescope according to states
         for (var z = 0; z < com.data.raw.telescopes.done.length; z++) {
@@ -1355,7 +1422,10 @@ window.TelescopeDisplayer = function(opt_in) {
             }
             return data_now
         })
-        return {data: filtered, stats: stats}
+        return {
+            data: filtered,
+            stats: stats,
+        }
     }
     this.filterData = filterData
 
@@ -1520,7 +1590,8 @@ window.TelescopeDisplayer = function(opt_in) {
     function update_data(data_in) {
         com.data.raw = data_in.data.raw
         // com.filters.filtering = updateFiltering()
-        com.data.filtered.telescopes = filterData({}).data
+        com.data.filtered.telescopes = filterData({
+        }).data
         createTelescopesGroup()
 
         if (com.displayer === 'gridBib') {
@@ -1530,7 +1601,8 @@ window.TelescopeDisplayer = function(opt_in) {
     this.update_data = update_data
     function update() {
     // com.filters.filtering = updateFiltering()
-        com.data.filtered = filterData({}).data
+        com.data.filtered = filterData({
+        }).data
         createTelescopesGroup()
         if (com.displayer === 'gridBib') {
             gridBib.update()

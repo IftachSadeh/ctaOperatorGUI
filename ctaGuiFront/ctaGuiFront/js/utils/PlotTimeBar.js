@@ -10,7 +10,8 @@
 /* global deep_copy */
 
 window.PlotTimeBar = function() {
-    let com = {}
+    let com = {
+    }
 
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
@@ -45,16 +46,24 @@ window.PlotTimeBar = function() {
             opt_in.bottomAxisOrientation = 'bottom'
         }
 
-        com.top = {}
-        com.top.axis = {}
-        com.top.scale = {}
-        com.top.g = {}
+        com.top = {
+        }
+        com.top.axis = {
+        }
+        com.top.scale = {
+        }
+        com.top.g = {
+        }
         com.top.g.axis = com.g_box.append('g')
 
-        com.bot = {}
-        com.bot.axis = {}
-        com.bot.scale = {}
-        com.bot.g = {}
+        com.bot = {
+        }
+        com.bot.axis = {
+        }
+        com.bot.scale = {
+        }
+        com.bot.g = {
+        }
         com.bot.g.axis = com.g_box.append('g')
 
         com.top.box = {
@@ -115,13 +124,15 @@ window.PlotTimeBar = function() {
     //   .call(com.bot.axis.y)
     }
     function initMiddle(opt_in) {
-        com.parse = {}
+        com.parse = {
+        }
         com.parse.x = d3.timeParse('%Q')
         com.parse.y = function(d) {
             return +d
         }
 
-        com.middle = {}
+        com.middle = {
+        }
         com.middle.range = com.bot.scale.x.range()
         com.middle.box = {
             x: com.bot.box.x,
@@ -196,7 +207,8 @@ window.PlotTimeBar = function() {
         }
         com.lockerZoom = lockerZoom
 
-        let lockerV = {}
+        let lockerV = {
+        }
         lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
         lockerV.zoomsuring = lockerV.lockerV.slice().concat([ lockerZoom.during ])
         lockerV.zoomEnd = lockerV.lockerV.slice().concat([ lockerZoom.end ])
@@ -222,7 +234,11 @@ window.PlotTimeBar = function() {
             margWidth: com.outerBox.margWidth,
             margHeight: com.outerBox.margHeight,
         }
-        com.boxTrans = { x: opt_in.boxData.x, y: opt_in.boxData.y, k: 1 }
+        com.boxTrans = {
+            x: opt_in.boxData.x,
+            y: opt_in.boxData.y,
+            k: 1,
+        }
         transScaleBox()
 
         // ------------------------------------------------------------------
@@ -248,10 +264,12 @@ window.PlotTimeBar = function() {
     // ------------------------------------------------------------------
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        com.style = {}
+        com.style = {
+        }
 
         com.style.hasOutline = is_def(opt_in.hasOutline) ? opt_in.hasOutline : false
     }
@@ -306,7 +324,8 @@ window.PlotTimeBar = function() {
     // }
     function updateTopAxis(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
         com.top.g.axis.selectAll('.axisX').call(com.top.axis.x)
         opt_in.topScaleX = com.top.scale.x
@@ -447,7 +466,8 @@ window.PlotTimeBar = function() {
 
         let nTopBot = 1
         if (!is_def(com.circClass)) {
-            com.circClass = {}
+            com.circClass = {
+            }
         }
         com.circClass[nTopBot] = com.mainTag + 'circ' + nTopBot
 
@@ -502,9 +522,12 @@ window.PlotTimeBar = function() {
         let lockerZoom = com.lockerZoom
 
         function init_zoomBrush() {
-            com.zoom = {}
-            com.zoom.sel = {}
-            com.zoom.trans = {}
+            com.zoom = {
+            }
+            com.zoom.sel = {
+            }
+            com.zoom.trans = {
+            }
 
             com.zoom.zoom = d3
                 .zoom()
@@ -558,8 +581,14 @@ window.PlotTimeBar = function() {
             com.inUserZoom = is_def(d3.event.sourceEvent)
 
             if (locker.are_free(lockerV.zoomsuring)) {
-                locker.add({ id: lockerZoom.all, override: true })
-                locker.add({ id: lockerZoom.during, override: true })
+                locker.add({
+                    id: lockerZoom.all,
+                    override: true,
+                })
+                locker.add({
+                    id: lockerZoom.during,
+                    override: true,
+                })
 
                 // Update top Axis
                 let trans = d3.event.transform
@@ -573,7 +602,9 @@ window.PlotTimeBar = function() {
                     com.top.scale.x.range().map(trans.invertX, trans)
                 )
 
-                locker.remove({ id: lockerZoom.during })
+                locker.remove({
+                    id: lockerZoom.during,
+                })
             }
         }
         com.zoomEnd = function(ele) {
@@ -619,8 +650,14 @@ window.PlotTimeBar = function() {
             // console.log('brushDuring');
 
             if (locker.are_free(lockerV.zoomsuring)) {
-                locker.add({ id: lockerZoom.all, override: true })
-                locker.add({ id: lockerZoom.during, override: true })
+                locker.add({
+                    id: lockerZoom.all,
+                    override: true,
+                })
+                locker.add({
+                    id: lockerZoom.during,
+                    override: true,
+                })
 
                 if (d3.event.sourceEvent) {
                     let s = d3.event.selection || com.bot.scale.x.range()
@@ -639,7 +676,9 @@ window.PlotTimeBar = function() {
                     })
                 }
 
-                locker.remove({ id: lockerZoom.during })
+                locker.remove({
+                    id: lockerZoom.during,
+                })
             }
         }
         com.brushEnd = function() {

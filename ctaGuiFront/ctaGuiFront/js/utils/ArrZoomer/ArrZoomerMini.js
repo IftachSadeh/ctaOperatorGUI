@@ -49,7 +49,9 @@ window.ArrZoomerMini = function(opt_in0) {
 
     let svg_dims = {
     // w: 500, h: 500, frac_circ_wh: 1,
-        w: 600, h: 600, frac_circ_wh: 0.85,
+        w: 600,
+        h: 600,
+        frac_circ_wh: 0.85,
     }
 
     let site_scale = ele_base.site_scale
@@ -107,14 +109,16 @@ window.ArrZoomerMini = function(opt_in0) {
     }
 
 
-    let com = {}
+    let com = {
+    }
     this_top.com = com
     let zoom_target = null
     let tel_data = null
     let tel_id_types = null
     let prop0 = 'health'
 
-    let miniMapCol = {}
+    let miniMapCol = {
+    }
     miniMapCol.b = [ '#64B5F6' ]
     miniMapCol.p = [ '#9575CD' ]
 
@@ -176,7 +180,8 @@ window.ArrZoomerMini = function(opt_in0) {
             hex_r: 40,
         })
 
-        com.g_base_mini = {}
+        com.g_base_mini = {
+        }
         com.g_base_mini.circ = mini_gs.g_base.append('g')
         com.g_base_mini.text = mini_gs.g_base.append('g')
         com.g_base_mini.rect = mini_gs.g_base.append('g')
@@ -205,7 +210,10 @@ window.ArrZoomerMini = function(opt_in0) {
                 return
             }
       
-            locker.add({ id: ('inZoom' + miniLensTag), override: true })
+            locker.add({
+                id: ('inZoom' + miniLensTag),
+                override: true,
+            })
             return
         }
 
@@ -253,7 +261,8 @@ window.ArrZoomerMini = function(opt_in0) {
                 return
             }
 
-            mini_zoom_view_rec({})
+            mini_zoom_view_rec({
+            })
             // console.log('-svg_zoom_end-svg_zoom_end-', d3.event)
 
             $.each([ 'main', 'mini', 'lens' ], function(i, d) {
@@ -297,7 +306,10 @@ window.ArrZoomerMini = function(opt_in0) {
                 return
             }
 
-            locker.add({ id: ('zoom_sync' + miniLensTag), override: true })
+            locker.add({
+                id: ('zoom_sync' + miniLensTag),
+                override: true,
+            })
             function func_end() {
                 locker.remove(('zoom_sync' + miniLensTag))
             }
@@ -542,7 +554,10 @@ window.ArrZoomerMini = function(opt_in0) {
     //  Blue square on miniMap
     // ------------------------------------------------------------------
     function mini_zoom_view_rec(opt_in) {
-        run_loop.push({ tag: 'mini_zoom_view_rec' + my_unique_id, data: opt_in })
+        run_loop.push({
+            tag: 'mini_zoom_view_rec' + my_unique_id,
+            data: opt_in,
+        })
     }
     this_top.mini_zoom_view_rec = mini_zoom_view_rec
   
@@ -569,7 +584,8 @@ window.ArrZoomerMini = function(opt_in0) {
         let data = []
 
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
         let animT = is_def(opt_in.animT) ? opt_in.animT : times.anim_arc
         // console.log('QQQ animT',animT,scale,Date.now())
@@ -579,7 +595,9 @@ window.ArrZoomerMini = function(opt_in0) {
             trans = [ 0, 0 ]
         }
         else {
-            data = [{ id: 0 }]
+            data = [{
+                id: 0,
+            }]
         }
 
         let base_h = svg_dims.w
@@ -673,7 +691,9 @@ window.ArrZoomerMini = function(opt_in0) {
             })
             .on('click', function(d) {
                 tel_data.vor_dblclick({
-                    source: 'minizoomclick', d: d, is_in_out: false,
+                    source: 'minizoomclick',
+                    d: d,
+                    is_in_out: false,
                 })
                 return
             })
@@ -694,7 +714,10 @@ window.ArrZoomerMini = function(opt_in0) {
             .on('mouseover', instruments.data.hover)
             .on('click', instruments.data.click)
             .on('dblclick', function(d) {
-                instruments.data.dblclick({ d: d, is_in_out: dblclick_zoom_in_out })
+                instruments.data.dblclick({
+                    d: d,
+                    is_in_out: dblclick_zoom_in_out,
+                })
             })
     }
 
@@ -736,7 +759,8 @@ window.ArrZoomerMini = function(opt_in0) {
             func: mini_zoom_view_recOnce,
             n_keep: 1,
         })
-        mini_zoom_view_rec({})
+        mini_zoom_view_rec({
+        })
         miniZoomClick()
 
         set_state_once(data_in)

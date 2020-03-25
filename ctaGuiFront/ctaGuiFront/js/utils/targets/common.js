@@ -93,7 +93,10 @@ window.pointing_icon = function(g, dim, name, events, color_theme) {
         .style('opacity', 0.5)
         .style('pointer-events', 'none')
         .attr('transform', function() {
-            let scale = {w: 1, h: 1}
+            let scale = {
+                w: 1,
+                h: 1,
+            }
             if (dim.h < dim.w) {
                 scale.w = dim.w / dim.h
             }

@@ -40,9 +40,13 @@ sock.widget_table[main_script_tag] = function(opt_in) {
     let w0 = 12
     let div_key = 'main'
 
-    opt_in.widget_func = { sock_func: sock_night_sched, main_func: main_night_sched }
+    opt_in.widget_func = {
+        sock_func: sock_night_sched,
+        main_func: main_night_sched,
+    }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: true,
@@ -97,7 +101,8 @@ let main_night_sched = function(opt_in) {
     // let this_night_sched = this
     // let is_south = window.__site_type__ === 'S'
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_arr_zoomerPlotsSvg + ele_now.id,
@@ -111,17 +116,25 @@ let main_night_sched = function(opt_in) {
     locker.add('in_init')
 
     // function loop
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         svg_main.init_data(data_in.data)
     }
@@ -154,13 +167,18 @@ let main_night_sched = function(opt_in) {
     //
     // -------------------------------------------------------------------
     let SvgMain = function() {
-        let com = {}
-        let svg = {}
+        let com = {
+        }
+        let svg = {
+        }
         // let thisMain = this
 
-        let svg_dims = {}
-        svg_dims.w = {}
-        svg_dims.h = {}
+        let svg_dims = {
+        }
+        svg_dims.w = {
+        }
+        svg_dims.h = {
+        }
         svg_dims.w[0] = 1000
         svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
@@ -199,7 +217,12 @@ let main_night_sched = function(opt_in) {
 
                 return
             }
-            sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+            sock.emit_mouse_move({
+                eleIn: svg_div,
+                data: {
+                    widget_id: widget_id,
+                },
+            })
 
             svg.svg = d3
                 .select(svg_div)
@@ -277,7 +300,9 @@ let main_night_sched = function(opt_in) {
                 g_box: gBlockBox,
                 doPhase: true,
                 click: function(d) {
-                    block_focus({ id: d.id })
+                    block_focus({
+                        id: d.id,
+                    })
                 },
                 boxData: blockBoxData,
                 locker: locker,
@@ -314,7 +339,9 @@ let main_night_sched = function(opt_in) {
                 click: function(opt_in) {
                     // console.log('click',opt_in);
                     if (opt_in.nTel === -1) {
-                        block_focus({ id: opt_in.id })
+                        block_focus({
+                            id: opt_in.id,
+                        })
                     }
                     else {
                         sync_state_send({
@@ -329,7 +356,10 @@ let main_night_sched = function(opt_in) {
                 boxData: telBoxData,
             })
 
-            telTreeMap.set({ tag: 'recCol', data: blockQueue.get('style').recCol })
+            telTreeMap.set({
+                tag: 'recCol',
+                data: blockQueue.get('style').recCol,
+            })
             telTreeMap.set({
                 tag: 'recFillOpac',
                 data: blockQueue.get('style').recFillOpac,
@@ -358,7 +388,11 @@ let main_night_sched = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
+        run_loop.init({
+            tag: 'update_data',
+            func: update_dataOnce,
+            n_keep: 1,
+        })
 
         function update_data(data_in) {
             if (!locker.is_free('in_init')) {
@@ -368,7 +402,10 @@ let main_night_sched = function(opt_in) {
                 return
             }
 
-            run_loop.push({ tag: 'update_data', data: data_in }) //, time:data_in.emit_time
+            run_loop.push({
+                tag: 'update_data',
+                data: data_in,
+            }) //, time:data_in.emit_time
         }
         this.update_data = update_data
 
@@ -388,7 +425,8 @@ let main_night_sched = function(opt_in) {
             //
             // -------------------------------------------------------------------
             let tel_ids = []
-            let inst_health = {}
+            let inst_health = {
+            }
             $.each(data_in.inst_health, function(index, data_now) {
                 tel_ids.push(data_now.id)
                 inst_health[data_now.id] = data_now.val
@@ -398,8 +436,14 @@ let main_night_sched = function(opt_in) {
             // blockQueue.set({ tag: 'time', data: data_in.time_of_night })
             // blockQueue.update(data_in.blocks)
 
-            telTreeMap.set({ tag: 'tel_ids', data: tel_ids })
-            telTreeMap.set({ tag: 'inst_health', data: inst_health })
+            telTreeMap.set({
+                tag: 'tel_ids',
+                data: tel_ids,
+            })
+            telTreeMap.set({
+                tag: 'inst_health',
+                data: inst_health,
+            })
             telTreeMap.update(data_in)
 
             locker.remove(tag_night_sched + 'update_data')
@@ -409,7 +453,11 @@ let main_night_sched = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function block_focus(opt_in) {
-            let data = { type: 'syncObFocus', sync_time: Date.now(), obs_block_id: opt_in.id }
+            let data = {
+                type: 'syncObFocus',
+                sync_time: Date.now(),
+                obs_block_id: opt_in.id,
+            }
             sock.sock_sync_state_send({
                 widget_id: widget_id,
                 type: data.type,
@@ -449,7 +497,8 @@ let main_night_sched = function(opt_in) {
 //
 // -------------------------------------------------------------------
 let TelTreeMap = function() {
-    let com = {}
+    let com = {
+    }
     let mainTag = null
     let box = null
 
@@ -549,11 +598,18 @@ let TelTreeMap = function() {
         let blocks = data_in.blocks.run
 
         let telV = []
-        let obTelIdV = {}
-        let hirchData = { id: 'tel_ids', children: [] }
+        let obTelIdV = {
+        }
+        let hirchData = {
+            id: 'tel_ids',
+            children: [],
+        }
         $.each(blocks, function(index, data_now) {
             let tel_ids = data_now.tel_ids.map(function(d) {
-                return { id: d, nTel: com.tel_ids.indexOf(d) }
+                return {
+                    id: d,
+                    nTel: com.tel_ids.indexOf(d),
+                }
             })
             tel_ids.unshift({
                 id: data_now.obs_block_id,
@@ -583,7 +639,10 @@ let TelTreeMap = function() {
                 id: tel_info.no_sub_arr_name(),
                 nTel: blocks.length,
                 children: telV.map(function(d) {
-                    return { id: d, nTel: com.tel_ids.indexOf(d) }
+                    return {
+                        id: d,
+                        nTel: com.tel_ids.indexOf(d),
+                    }
                 }),
             })
             $.each(telV, function(i, d) {
@@ -676,12 +735,18 @@ let TelTreeMap = function() {
                     h0 = wh0
                 }
 
-                data_now.data.rect = { x: x0, y: y0, w: w0, h: h0 }
+                data_now.data.rect = {
+                    x: x0,
+                    y: y0,
+                    w: w0,
+                    h: h0,
+                }
             })
             // console.log(rectData);
 
             // calc the common size for all circles within a block
-            com.telR = {}
+            com.telR = {
+            }
             let telR = []
             let hirchBlocks = desc.filter(function(d) {
                 return d.height === 1
@@ -927,10 +992,12 @@ let TelTreeMap = function() {
     // -------------------------------------------------------------------
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        com.style = {}
+        com.style = {
+        }
 
         com.style.x = function(d) {
             if (d.height === 1) {
@@ -982,7 +1049,12 @@ let TelTreeMap = function() {
         com.style.fill = function(d, n_obs) {
             if (d.height === 0) {
                 if (d.data.nTel === -1) {
-                    return com.recCol({ d: d, state: 'run', n_obs: n_obs, can_run: true })
+                    return com.recCol({
+                        d: d,
+                        state: 'run',
+                        n_obs: n_obs,
+                        can_run: true,
+                    })
                 }
                 else {
                     return inst_health_col(com.inst_health[d.data.id])
@@ -1004,7 +1076,12 @@ let TelTreeMap = function() {
             if (d.height === 0) {
                 if (d.data.nTel === -1) {
                     return d3
-                        .rgb(com.recCol({ d: d, state: 'run', n_obs: n_obs, can_run: true }))
+                        .rgb(com.recCol({
+                            d: d,
+                            state: 'run',
+                            n_obs: n_obs,
+                            can_run: true,
+                        }))
                         .darker(1.0)
                 }
                 else {
@@ -1013,7 +1090,12 @@ let TelTreeMap = function() {
             }
             else if (d.height === 1) {
                 return d3
-                    .rgb(com.recCol({ d: d, state: 'run', n_obs: n_obs, can_run: true }))
+                    .rgb(com.recCol({
+                        d: d,
+                        state: 'run',
+                        n_obs: n_obs,
+                        can_run: true,
+                    }))
                     .darker(1.0)
             }
             else {
@@ -1071,7 +1153,10 @@ let TelTreeMap = function() {
             }
         }
         com.style.click = function(d) {
-            return com.click({ id: d.data.id, nTel: d.data.nTel })
+            return com.click({
+                id: d.data.id,
+                nTel: d.data.nTel,
+            })
         }
         com.style.text = function(d) {
             if (d.height === 0) {

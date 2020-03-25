@@ -4,8 +4,10 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 from ctaGuiFront.py.utils.ArrZoomer import ArrZoomer
 
 # ------------------------------------------------------------------
-# 
+#
 # ------------------------------------------------------------------
+
+
 class ArrZoomerView():
     # privat lock for this widget type
     lock = BoundedSemaphore(1)
@@ -60,13 +62,13 @@ class ArrZoomerView():
             )
             self.n_icon = wgt['n_icon']
 
-        # override the global logging variable with a 
+        # override the global logging variable with a
         # name corresponding to the current session id
-        self.log = my_log(
-            title=str(self.socket_manager.user_id)
-            + '/' + str(self.socket_manager.sess_id)
-            + '/' + __name__ + '/' + self.widget_id
-        )
+        self.log = my_log(title=(
+            str(self.socket_manager.user_id) +
+            '/' + str(self.socket_manager.sess_id) +
+            '/' + __name__ + '/' + self.widget_id
+        ))
 
         # loop over utils
         for util_now in self.my_utils:

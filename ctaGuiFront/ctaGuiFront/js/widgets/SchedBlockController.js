@@ -36,17 +36,50 @@ var main_script_tag = 'SchedBlockController'
 /* global times */
 /* global deep_copy */
 
-window.load_script({ source: main_script_tag, script: '/js/utils/telescopes/TelescopeDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/telescopes/TelescopeForm.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/targets/TargetDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/targets/common.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/blocks/BlockDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/blocks/ObsblockForm.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/blocks/SchedblockForm.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/targets/TargetForm.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/events/EventDisplayer.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/PlotBrushZoom.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollBox.js' })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/telescopes/TelescopeDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/telescopes/TelescopeForm.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/targets/TargetDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/targets/common.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/blocks/BlockDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/blocks/ObsblockForm.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/blocks/SchedblockForm.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/targets/TargetForm.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/events/EventDisplayer.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotBrushZoom.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollBox.js',
+})
 
 // -------------------------------------------------------------------
 sock.widget_table[main_script_tag] = function(opt_in) {
@@ -56,9 +89,13 @@ sock.widget_table[main_script_tag] = function(opt_in) {
     let w0 = 12
     let div_key = 'main'
 
-    opt_in.widget_func = { sock_func: sock_sched_block_controller, main_func: main_sched_blockController }
+    opt_in.widget_func = {
+        sock_func: sock_sched_block_controller,
+        main_func: main_sched_blockController,
+    }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: false,
@@ -103,7 +140,8 @@ let sock_sched_block_controller = function(opt_in) {
             return
         }
 
-        let data = {}
+        let data = {
+        }
         data.widget_id = opt_in.widget_id
         data.new_block_queue = opt_in.new_block_queue
 
@@ -164,9 +202,12 @@ let main_sched_blockController = function(opt_in) {
         over: undefined,
         mode: 'inspector',
     }
-    let svg = {}
-    let box = {}
-    let svg_dims = {}
+    let svg = {
+    }
+    let box = {
+    }
+    let svg_dims = {
+    }
 
     let blockQueue = null
     let event_queue_server = null
@@ -175,7 +216,8 @@ let main_sched_blockController = function(opt_in) {
     // let this_sched_block_controller = this
     // let is_south = window.__site_type__ === 'S'
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_arr_zoomerPlotsSvg + ele_now.id,
@@ -187,12 +229,16 @@ let main_sched_blockController = function(opt_in) {
     // delay counters
     let locker = new Locker()
     // locker.add('in_init')
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     function init_data(data_in) {
         function initSvg() {
-            svg_dims.w = {}
-            svg_dims.h = {}
+            svg_dims.w = {
+            }
+            svg_dims.h = {
+            }
             svg_dims.w[0] = 1000
             svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
@@ -362,7 +408,8 @@ let main_sched_blockController = function(opt_in) {
             // }
         }
         function initDefaultStyle() {
-            shared.style = {}
+            shared.style = {
+            }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
                 // let endTime = is_def(opt_in.endTime)
@@ -401,11 +448,17 @@ let main_sched_blockController = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         let svg_div_id = sgv_tag.main.id + 'svg'
         let svg_div = sgv_tag.main.widget.get_ele(svg_div_id)
@@ -426,7 +479,12 @@ let main_sched_blockController = function(opt_in) {
             })
             return
         }
-        sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+        sock.emit_mouse_move({
+            eleIn: svg_div,
+            data: {
+                widget_id: widget_id,
+            },
+        })
 
         initSvg()
         initDefaultStyle()
@@ -511,10 +569,17 @@ let main_sched_blockController = function(opt_in) {
         locker.remove('update_data')
     }
     function update_data(data_in) {
-        run_loop.push({ tag: 'update_data', data: data_in })
+        run_loop.push({
+            tag: 'update_data',
+            data: data_in,
+        })
     }
     this.update_data = update_data
-    run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
+    run_loop.init({
+        tag: 'update_data',
+        func: update_dataOnce,
+        n_keep: 1,
+    })
 
     function get_blocksData() {
         return shared.data.server.blocks
@@ -690,12 +755,18 @@ let main_sched_blockController = function(opt_in) {
                 }
                 else {
                     unfocus()
-                    shared.focus = {type: type, id: id}
+                    shared.focus = {
+                        type: type,
+                        id: id,
+                    }
                     focusCore(shared.focus.type, shared.focus.id)
                 }
             }
             else {
-                shared.focus = {type: type, id: id}
+                shared.focus = {
+                    type: type,
+                    id: id,
+                }
                 focusCore(shared.focus.type, shared.focus.id)
             }
         }
@@ -705,12 +776,18 @@ let main_sched_blockController = function(opt_in) {
             if (shared.focus) {
                 if (shared.over) {
                     if (shared.over.type !== type && shared.over.id !== id) {
-                        shared.over = {type: type, id: id}
+                        shared.over = {
+                            type: type,
+                            id: id,
+                        }
                         overCore(type, id)
                     }
                 }
                 else {
-                    shared.over = {type: type, id: id}
+                    shared.over = {
+                        type: type,
+                        id: id,
+                    }
                     if (shared.focus.type === type && shared.focus.id === id) {
                         return
                     }
@@ -718,7 +795,10 @@ let main_sched_blockController = function(opt_in) {
                 }
             }
             else {
-                shared.over = {type: type, id: id}
+                shared.over = {
+                    type: type,
+                    id: id,
+                }
                 overCore(type, id)
             }
         }
@@ -790,7 +870,8 @@ let main_sched_blockController = function(opt_in) {
     }
 
     function create_sched_blocks(blocks) {
-        let temp = {}
+        let temp = {
+        }
         function core(blocks) {
             for (let i = 0; i < blocks.length; i++) {
                 let b = blocks[i]
@@ -844,12 +925,20 @@ let main_sched_blockController = function(opt_in) {
         }
     }
     function getBlockById(blockList, blockId) {
-        let block = {data: undefined, key: undefined, index: undefined}
+        let block = {
+            data: undefined,
+            key: undefined,
+            index: undefined,
+        }
         for (let key in blockList) {
             let group = blockList[key]
             for (let i = 0; i < group.length; i++) {
                 if (group[i].obs_block_id === blockId) {
-                    block = {data: group[i], key: key, index: i}
+                    block = {
+                        data: group[i],
+                        key: key,
+                        index: i,
+                    }
                     return block
                 }
             }
@@ -1089,7 +1178,8 @@ let main_sched_blockController = function(opt_in) {
     //   this.update_data = update_data
     // }
     let Svg_events_queue_server = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let adjustedBox = {
                 x: box.event_queue_server.x,
@@ -1106,7 +1196,8 @@ let main_sched_blockController = function(opt_in) {
                 main: {
                     tag: 'eventDisplayerMiddleTag',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: color_theme.medium.background,
@@ -1128,7 +1219,13 @@ let main_sched_blockController = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: 0, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1150,7 +1247,13 @@ let main_sched_blockController = function(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
 
@@ -1159,9 +1262,18 @@ let main_sched_blockController = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -1171,7 +1283,8 @@ let main_sched_blockController = function(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     event: {
                         click: (d) => {
@@ -1191,8 +1304,14 @@ let main_sched_blockController = function(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: undefined, block: undefined},
-                    over: {sched_blocks: undefined, block: undefined},
+                    focus: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
+                    over: {
+                        sched_blocks: undefined,
+                        block: undefined,
+                    },
                     selection: [],
                 },
             })
@@ -1202,11 +1321,20 @@ let main_sched_blockController = function(opt_in) {
 
         function update_data() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             event_queue_server.update_data({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
@@ -1233,7 +1361,8 @@ let main_sched_blockController = function(opt_in) {
         this.update = update
     }
     let Svg_blocks_queue_server = function() {
-        let reserved = {}
+        let reserved = {
+        }
 
         function init_data() {
             let adjustedBox = {
@@ -1250,7 +1379,8 @@ let main_sched_blockController = function(opt_in) {
                 main: {
                     tag: 'blockQueueInspectorTag',
                     g: reserved.g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: adjustedBox,
                     background: {
                         fill: color_theme.medium.background,
@@ -1265,7 +1395,13 @@ let main_sched_blockController = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1288,7 +1424,13 @@ let main_sched_blockController = function(opt_in) {
                         run: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.6, w: adjustedBox.w, h: adjustedBox.h * 0.6, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.6,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.6,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1308,7 +1450,13 @@ let main_sched_blockController = function(opt_in) {
                         cancel: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.0, w: adjustedBox.w, h: adjustedBox.h * 0.33, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.0,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.33,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1328,7 +1476,13 @@ let main_sched_blockController = function(opt_in) {
                         modification: {
                             enabled: true,
                             g: undefined,
-                            box: {x: 0, y: adjustedBox.h * 0.5, w: adjustedBox.w, h: adjustedBox.h * 0.47, marg: adjustedBox.marg},
+                            box: {
+                                x: 0,
+                                y: adjustedBox.h * 0.5,
+                                w: adjustedBox.w,
+                                h: adjustedBox.h * 0.47,
+                                marg: adjustedBox.marg,
+                            },
                             events: {
                                 click: () => {},
                                 mouseover: () => {},
@@ -1350,7 +1504,13 @@ let main_sched_blockController = function(opt_in) {
                     timeBars: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockQueue2: {
@@ -1366,7 +1526,13 @@ let main_sched_blockController = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1388,7 +1554,13 @@ let main_sched_blockController = function(opt_in) {
                     timeBars: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: -adjustedBox.h, w: adjustedBox.w, h: adjustedBox.h * 4, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: -adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 4,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockTrackShrink: {
@@ -1402,7 +1574,13 @@ let main_sched_blockController = function(opt_in) {
                     axis: {
                         enabled: true,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h, w: adjustedBox.w, h: 0, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h,
+                            w: adjustedBox.w,
+                            h: 0,
+                            marg: adjustedBox.marg,
+                        },
                         axis: undefined,
                         scale: undefined,
                         domain: [ 0, 1000 ],
@@ -1424,7 +1602,13 @@ let main_sched_blockController = function(opt_in) {
                     timeBars: {
                         enabled: false,
                         g: undefined,
-                        box: {x: 0, y: adjustedBox.h * 0.025, w: adjustedBox.w, h: adjustedBox.h * 0.975, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: adjustedBox.h * 0.025,
+                            w: adjustedBox.w,
+                            h: adjustedBox.h * 0.975,
+                            marg: adjustedBox.marg,
+                        },
                     },
                 },
                 blockList: {
@@ -1432,18 +1616,27 @@ let main_sched_blockController = function(opt_in) {
                 },
                 blockForm: {
                     mosaic: {
-                        box: {x: 0, y: 0, w: adjustedBox.w * 0.2, h: adjustedBox.h, marg: adjustedBox.marg},
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: adjustedBox.w * 0.2,
+                            h: adjustedBox.h,
+                            marg: adjustedBox.marg,
+                        },
                         order: 'n_sched',
                     },
                     forms: {
                         g: undefined,
-                        box: {x: adjustedBox.w * 0.22,
+                        box: {
+                            x: adjustedBox.w * 0.22,
                             y: adjustedBox.h * 0.02,
                             w: adjustedBox.w * 0.78 - adjustedBox.h * 0.02,
                             h: adjustedBox.h * 0.96,
-                            marg: adjustedBox.marg},
+                            marg: adjustedBox.marg,
+                        },
                         display: 'list',
-                        scroll: {},
+                        scroll: {
+                        },
                     },
                 },
 
@@ -1452,9 +1645,18 @@ let main_sched_blockController = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {time: 0, date: undefined},
-                    startTime: {time: 0, date: undefined},
-                    endTime: {time: 0, date: undefined},
+                    currentTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    startTime: {
+                        time: 0,
+                        date: undefined,
+                    },
+                    endTime: {
+                        time: 0,
+                        date: undefined,
+                    },
                 },
                 data: {
                     raw: undefined,
@@ -1464,7 +1666,8 @@ let main_sched_blockController = function(opt_in) {
                 debug: {
                     enabled: false,
                 },
-                pattern: {},
+                pattern: {
+                },
                 events: {
                     block: {
                         click: function(id) {
@@ -1481,8 +1684,14 @@ let main_sched_blockController = function(opt_in) {
                     },
                 },
                 input: {
-                    focus: {sched_blocks: [], blocks: []},
-                    over: {sched_blocks: [], blocks: []},
+                    focus: {
+                        sched_blocks: [],
+                        blocks: [],
+                    },
+                    over: {
+                        sched_blocks: [],
+                        blocks: [],
+                    },
                     selection: [],
                 },
             })
@@ -1617,11 +1826,20 @@ let main_sched_blockController = function(opt_in) {
             }
             reserved.g.select('rect#cloak').attr('width', newWidth)
 
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             blockQueue.update_data({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
@@ -1638,12 +1856,21 @@ let main_sched_blockController = function(opt_in) {
 
         function update() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
 
             blockQueue.update({
                 time: {
-                    currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+                    currentTime: {
+                        date: new Date(shared.data.server.time_of_night.date_now),
+                        time: Number(shared.data.server.time_of_night.now),
+                    },
                     startTime: startTime,
                     endTime: endTime,
                 },
@@ -1761,7 +1988,8 @@ let main_sched_blockController = function(opt_in) {
         this.switchMainMode = switchMainMode
     }
     let SvgBrush = function() {
-        let reserved = {}
+        let reserved = {
+        }
         function init_data() {
             let brushBox = {
                 x: box.brushZoom.x,
@@ -1797,7 +2025,13 @@ let main_sched_blockController = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.2, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.2,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -1828,7 +2062,13 @@ let main_sched_blockController = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.95, w: brushBox.w, h: brushBox.h * 0.0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.95,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.0,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -1859,7 +2099,13 @@ let main_sched_blockController = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushBox.h * 0.6, w: brushBox.w, h: brushBox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushBox.h * 0.6,
+                                w: brushBox.w,
+                                h: brushBox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -1889,7 +2135,13 @@ let main_sched_blockController = function(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushBox.h * 0.15, w: brushBox.w, h: brushBox.h * 0.65, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushBox.h * 0.15,
+                            w: brushBox.w,
+                            h: brushBox.h * 0.65,
+                            marg: 0,
+                        },
                         attr: {
                             fill: colorPalette.medium.background,
                         },
@@ -1899,7 +2151,13 @@ let main_sched_blockController = function(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushBox.h * 0.15, w: brushBox.w, h: brushBox.h * 0.65, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushBox.h * 0.15,
+                            w: brushBox.w,
+                            h: brushBox.h * 0.65,
+                            marg: 0,
+                        },
                         attr: {
                             fill: colorPalette.darker.background,
                             opacity: 1,
@@ -1908,11 +2166,19 @@ let main_sched_blockController = function(opt_in) {
                     },
                 },
                 brush: {
-                    coef: {x: 0, y: 0},
+                    coef: {
+                        x: 0,
+                        y: 0,
+                    },
                     callback: () => {},
                 },
                 zoom: {
-                    coef: {kx: 1, ky: 1, x: 0, y: 0},
+                    coef: {
+                        kx: 1,
+                        ky: 1,
+                        x: 0,
+                        y: 0,
+                    },
                     callback: function() {
                         svg_blocks_queue_server.update_data()
                     },
@@ -1937,8 +2203,14 @@ let main_sched_blockController = function(opt_in) {
         this.translateTo = translateTo
 
         function update_data() {
-            let startTime = {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)}
-            let endTime = {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
+            let startTime = {
+                date: new Date(shared.data.server.time_of_night.date_start),
+                time: Number(shared.data.server.time_of_night.start),
+            }
+            let endTime = {
+                date: new Date(shared.data.server.time_of_night.date_end),
+                time: Number(shared.data.server.time_of_night.end),
+            }
 
             brushZoom.updateAxis({
                 id: 'top',
@@ -1959,8 +2231,10 @@ let main_sched_blockController = function(opt_in) {
         this.update = update
     }
     let SvgTargets = function() {
-        let reserved = {}
-        reserved.drag = {}
+        let reserved = {
+        }
+        reserved.drag = {
+        }
 
         function initClipping() {
             let gBlockBox = svg.g.append('g')
@@ -1982,7 +2256,8 @@ let main_sched_blockController = function(opt_in) {
             //   .style('font-size', '8px')
             //   .attr('text-anchor', 'middle')
             //   .attr('transform', 'translate(-5,' + (reserved.box.h * 0.5) + ') rotate(270)')
-            reserved.clipping = {}
+            reserved.clipping = {
+            }
             reserved.clipping.g = gBlockBox.append('g')
             reserved.clipping.g.append('defs').append('svg:clipPath')
                 .attr('id', 'clipTarget')
@@ -2024,8 +2299,14 @@ let main_sched_blockController = function(opt_in) {
 
         function drawTargets() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
                 .domain([ startTime.time, endTime.time ])
@@ -2056,9 +2337,18 @@ let main_sched_blockController = function(opt_in) {
                 ig.append('path')
                     .attr('d', function() {
                         let targetPoints = [
-                            {x: scaleX(d.observability.minimal), y: scaleY(0)},
-                            {x: scaleX(d.observability.optimal), y: scaleY(1)},
-                            {x: scaleX(d.observability.maximal), y: scaleY(0)},
+                            {
+                                x: scaleX(d.observability.minimal),
+                                y: scaleY(0),
+                            },
+                            {
+                                x: scaleX(d.observability.optimal),
+                                y: scaleY(1),
+                            },
+                            {
+                                x: scaleX(d.observability.maximal),
+                                y: scaleY(0),
+                            },
                         ]
                         return lineGenerator(targetPoints)
                     })
@@ -2086,7 +2376,10 @@ let main_sched_blockController = function(opt_in) {
                 let tig = ig.append('g')
                     .attr('id', 'target_icon')
                     .attr('transform', 'translate(' + (scaleX((d.observability.minimal + d.observability.maximal) * 0.5) - 10) + ',' + (reserved.box.h - 20) + ')')
-                target_icon(tig, {w: 15, h: 15}, get_target_short(d), {
+                target_icon(tig, {
+                    w: 15,
+                    h: 15,
+                }, get_target_short(d), {
                     click: function() {
                         focusManager.focusOn('target', d.id)
                     },
@@ -2125,9 +2418,18 @@ let main_sched_blockController = function(opt_in) {
                 let ig = d3.select(this)
                 ig.select('path').attr('d', function(d) {
                     let targetPoints = [
-                        {x: scaleX(d.observability.minimal), y: scaleY(0)},
-                        {x: scaleX(d.observability.optimal), y: scaleY(1)},
-                        {x: scaleX(d.observability.maximal), y: scaleY(0)},
+                        {
+                            x: scaleX(d.observability.minimal),
+                            y: scaleY(0),
+                        },
+                        {
+                            x: scaleX(d.observability.optimal),
+                            y: scaleY(1),
+                        },
+                        {
+                            x: scaleX(d.observability.maximal),
+                            y: scaleY(0),
+                        },
                     ]
                     return lineGenerator(targetPoints)
                 })
@@ -2151,7 +2453,10 @@ let main_sched_blockController = function(opt_in) {
                 .domain([ Number(shared.data.server.time_of_night.start), Number(shared.data.server.time_of_night.end) ])
             function dichotomiePath(targetedX, start, end, path, precision, step, maxStack) {
                 if (step > maxStack) {
-                    return {x: -1, y: -1}
+                    return {
+                        x: -1,
+                        y: -1,
+                    }
                 }
                 let middle = (end + start) * 0.5
                 let point = path.getPointAtLength(middle)
@@ -2168,7 +2473,10 @@ let main_sched_blockController = function(opt_in) {
             let scaleY = d3.scaleLinear()
                 .range([ reserved.box.h, reserved.box.h * 0.2 ])
                 .domain([ 0, 1 ])
-            let projBlockStart = {x: scaleX(block.time.start), y: -1}
+            let projBlockStart = {
+                x: scaleX(block.time.start),
+                y: -1,
+            }
 
             if (projBlockStart.x < target.getPointAtLength(0).x || projBlockStart.x > target.getPointAtLength(target.getTotalLength()).x) {
                 projBlockStart.y = scaleY(0)
@@ -2205,7 +2513,10 @@ let main_sched_blockController = function(opt_in) {
                     .style('fill-opacity', 1)
             }
 
-            let projBlockEnd = {x: scaleX(block.time.end), y: -1}
+            let projBlockEnd = {
+                x: scaleX(block.time.end),
+                y: -1,
+            }
             if (projBlockEnd.x < target.getPointAtLength(0).x || projBlockEnd.x > target.getPointAtLength(target.getTotalLength()).x) {
                 projBlockEnd.y = scaleY(0)
                 reserved.clipping.clipBody.append('text')
@@ -2297,13 +2608,16 @@ let main_sched_blockController = function(opt_in) {
         this.unhighlightTarget = unhighlightTarget
     }
     let SvgTelsConflict = function() {
-        let reserved = {}
-        reserved.drag = {}
+        let reserved = {
+        }
+        reserved.drag = {
+        }
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
         function initClipping() {
-            reserved.clipping = {}
+            reserved.clipping = {
+            }
             reserved.clipping.g = svg.g.append('g')
                 .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
             reserved.clipping.g.append('defs').append('svg:clipPath')
@@ -2527,8 +2841,14 @@ let main_sched_blockController = function(opt_in) {
             let curve = computeTelsCurve(block)
 
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let startTime = {date: axisTop[0].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000}
-            let endTime = {date: axisTop[1].getTime(), time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000}
+            let startTime = {
+                date: axisTop[0].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+            }
+            let endTime = {
+                date: axisTop[1].getTime(),
+                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+            }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
                 .domain([ startTime.time, endTime.time ])
@@ -2902,22 +3222,40 @@ let main_sched_blockController = function(opt_in) {
         function computeTelsCurve(block) {
             function core(b) {
                 if (!largeTels[b.time.start]) {
-                    largeTels[b.time.start] = {min: 0, used: 0}
+                    largeTels[b.time.start] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 4
                 if (!mediumTels[b.time.start]) {
-                    mediumTels[b.time.start] = {min: 0, used: 0}
+                    mediumTels[b.time.start] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 24
                 if (!smallTels[b.time.start]) {
-                    smallTels[b.time.start] = {min: 0, used: 0}
+                    smallTels[b.time.start] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 70
                 if (!largeTels[b.time.end]) {
-                    largeTels[b.time.end] = {min: 0, used: 0}
+                    largeTels[b.time.end] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 4
                 if (!mediumTels[b.time.end]) {
-                    mediumTels[b.time.end] = {min: 0, used: 0}
+                    mediumTels[b.time.end] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 24
                 if (!smallTels[b.time.end]) {
-                    smallTels[b.time.end] = {min: 0, used: 0}
+                    smallTels[b.time.end] = {
+                        min: 0,
+                        used: 0,
+                    }
                 }// 70
 
                 smallTels[b.time.start].min += b.telescopes.small.min
@@ -2937,18 +3275,28 @@ let main_sched_blockController = function(opt_in) {
 
 
                 if (!bIds[b.time.start]) {
-                    bIds[b.time.start] = {type: 'add', ids: []}
+                    bIds[b.time.start] = {
+                        type: 'add',
+                        ids: [],
+                    }
                 }
                 if (!bIds[b.time.end]) {
-                    bIds[b.time.end] = {type: 'rem', ids: []}
+                    bIds[b.time.end] = {
+                        type: 'rem',
+                        ids: [],
+                    }
                 }
                 bIds[b.time.start].ids.push(b.obs_block_id)
                 bIds[b.time.end].ids.push(b.obs_block_id)
             }
-            let largeTels = {}
-            let mediumTels = {}
-            let smallTels = {}
-            let bIds = {}
+            let largeTels = {
+            }
+            let mediumTels = {
+            }
+            let smallTels = {
+            }
+            let bIds = {
+            }
             // smallTels[shared.data.server.time_of_night.start] = 0
             // mediumTels[shared.data.server.time_of_night.start] = 0
             // largeTels[shared.data.server.time_of_night.start] = 0
@@ -2984,9 +3332,18 @@ let main_sched_blockController = function(opt_in) {
                         id: 'LMS' + timeMarker[i] + Number(shared.data.server.time_of_night.start),
                         start: Number(shared.data.server.time_of_night.start),
                         end: timeMarker[i + 1],
-                        smallTels: {min: 0, used: 0},
-                        mediumTels: {min: 0, used: 0},
-                        largeTels: {min: 0, used: 0},
+                        smallTels: {
+                            min: 0,
+                            used: 0,
+                        },
+                        mediumTels: {
+                            min: 0,
+                            used: 0,
+                        },
+                        largeTels: {
+                            min: 0,
+                            used: 0,
+                        },
                         blocks: [],
                     })
                 }
@@ -2995,9 +3352,18 @@ let main_sched_blockController = function(opt_in) {
                         id: 'LMS' + timeMarker[i] + Number(shared.data.server.time_of_night.end),
                         start: timeMarker[i],
                         end: Number(shared.data.server.time_of_night.end),
-                        smallTels: {min: 0, used: 0},
-                        mediumTels: {min: 0, used: 0},
-                        largeTels: {min: 0, used: 0},
+                        smallTels: {
+                            min: 0,
+                            used: 0,
+                        },
+                        mediumTels: {
+                            min: 0,
+                            used: 0,
+                        },
+                        largeTels: {
+                            min: 0,
+                            used: 0,
+                        },
                         blocks: [],
                     })
                 }
@@ -3008,9 +3374,18 @@ let main_sched_blockController = function(opt_in) {
                     else {
                         currentBlockIds = currentBlockIds.concat(bIds[timeMarker[i]].ids.filter(d => currentBlockIds.indexOf(d) < 0))
                     }
-                    let s = {min: telsFree[i].smallTels.min + smallTels[timeMarker[i]].min, used: telsFree[i].smallTels.used + smallTels[timeMarker[i]].used}
-                    let m = {min: telsFree[i].mediumTels.min + mediumTels[timeMarker[i]].min, used: telsFree[i].mediumTels.used + mediumTels[timeMarker[i]].used}
-                    let l = {min: telsFree[i].largeTels.min + largeTels[timeMarker[i]].min, used: telsFree[i].largeTels.used + largeTels[timeMarker[i]].used}
+                    let s = {
+                        min: telsFree[i].smallTels.min + smallTels[timeMarker[i]].min,
+                        used: telsFree[i].smallTels.used + smallTels[timeMarker[i]].used,
+                    }
+                    let m = {
+                        min: telsFree[i].mediumTels.min + mediumTels[timeMarker[i]].min,
+                        used: telsFree[i].mediumTels.used + mediumTels[timeMarker[i]].used,
+                    }
+                    let l = {
+                        min: telsFree[i].largeTels.min + largeTels[timeMarker[i]].min,
+                        used: telsFree[i].largeTels.used + largeTels[timeMarker[i]].used,
+                    }
                     telsFree.push({
                         id: 'LMS' + timeMarker[i] + timeMarker[i + 1],
                         start: timeMarker[i],
@@ -3026,8 +3401,10 @@ let main_sched_blockController = function(opt_in) {
         }
     }
     let SvgFocusOverlay = function() {
-        let reserved = {}
-        reserved.drag = {}
+        let reserved = {
+        }
+        reserved.drag = {
+        }
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
@@ -3043,7 +3420,8 @@ let main_sched_blockController = function(opt_in) {
         this.update = update
 
         function createDragColumn(d) {
-            reserved.drag.column = {}
+            reserved.drag.column = {
+            }
             reserved.drag.column.g = reserved.drag.g.append('g')
             reserved.drag.column.g.append('rect')
                 .attr('class', 'area')
@@ -3111,7 +3489,8 @@ let main_sched_blockController = function(opt_in) {
                 .attr('opacity', 1)
         }
         function createDragTimer(d) {
-            reserved.drag.timer = {}
+            reserved.drag.timer = {
+            }
             reserved.drag.timer.g = reserved.drag.g.append('g')
                 .attr('transform', 'translate(' + reserved.drag.position.left + ',' + (reserved.drag.box.h * 0.66) + ')')
             // reserved.drag.timer.g.append('rect')
@@ -3347,7 +3726,8 @@ let main_sched_blockController = function(opt_in) {
             }
 
             reserved.drag.g.remove()
-            reserved.drag = {}
+            reserved.drag = {
+            }
             svgTargets.unhighlightTarget(d)
         }
         function show_block_info(d) {
@@ -3423,7 +3803,12 @@ let main_sched_blockController = function(opt_in) {
         let template = {
             tag: 'right_info',
             g: undefined,
-            box: {x: 1, y: 1, w: 1, h: 1},
+            box: {
+                x: 1,
+                y: 1,
+                w: 1,
+                h: 1,
+            },
             debug: {
                 enabled: false,
             },
@@ -3480,15 +3865,21 @@ let main_sched_blockController = function(opt_in) {
                     during: tag + 'zoomsuring',
                     end: tag + 'zoomEnd',
                 },
-                run_loop: new RunLoop({tag: tag}),
+                run_loop: new RunLoop({
+                    tag: tag,
+                }),
                 canScroll: true,
                 scrollVertical: true,
                 scrollHorizontal: false,
                 scrollHeight: 0,
                 scrollWidth: 0,
                 background: 'transparent',
-                scrollRecH: {h: 4},
-                scrollRecV: {w: 4},
+                scrollRecH: {
+                    h: 4,
+                },
+                scrollRecV: {
+                    w: 4,
+                },
             })
             return scrollBox
         }
@@ -3611,17 +4002,41 @@ let main_sched_blockController = function(opt_in) {
                         let g = d3.select(this)
                         let dimPoly = height * 0.9
                         let poly = [
-                            {x: dimPoly * 0.3, y: dimPoly * 0.0},
-                            {x: dimPoly * 0.7, y: dimPoly * 0.0},
+                            {
+                                x: dimPoly * 0.3,
+                                y: dimPoly * 0.0,
+                            },
+                            {
+                                x: dimPoly * 0.7,
+                                y: dimPoly * 0.0,
+                            },
 
-                            {x: dimPoly * 1, y: dimPoly * 0.3},
-                            {x: dimPoly * 1, y: dimPoly * 0.7},
+                            {
+                                x: dimPoly * 1,
+                                y: dimPoly * 0.3,
+                            },
+                            {
+                                x: dimPoly * 1,
+                                y: dimPoly * 0.7,
+                            },
 
-                            {x: dimPoly * 0.7, y: dimPoly * 1},
-                            {x: dimPoly * 0.3, y: dimPoly * 1},
+                            {
+                                x: dimPoly * 0.7,
+                                y: dimPoly * 1,
+                            },
+                            {
+                                x: dimPoly * 0.3,
+                                y: dimPoly * 1,
+                            },
 
-                            {x: dimPoly * 0.0, y: dimPoly * 0.7},
-                            {x: dimPoly * 0.0, y: dimPoly * 0.3},
+                            {
+                                x: dimPoly * 0.0,
+                                y: dimPoly * 0.7,
+                            },
+                            {
+                                x: dimPoly * 0.0,
+                                y: dimPoly * 0.3,
+                            },
                         ]
                         g.selectAll('polygon')
                             .data([ poly ])
@@ -3796,7 +4211,8 @@ let main_sched_blockController = function(opt_in) {
                     main: {
                         tag: 'telescopeMapping',
                         g: gt,
-                        scroll: {},
+                        scroll: {
+                        },
                         box: box.mapping,
                         background: {
                             fill: 'none',
@@ -3897,14 +4313,16 @@ let main_sched_blockController = function(opt_in) {
                             telescopes: shared.data.server.inst_health,
                             blocks: [], // shared.data.server.blocks.run
                         },
-                        filtered: {},
+                        filtered: {
+                        },
                         modified: [],
                     },
                     debug: {
                         enabled: false,
                     },
                     pattern: {
-                        select: {},
+                        select: {
+                        },
                     },
                     events: {
                         block: {
@@ -3953,7 +4371,8 @@ let main_sched_blockController = function(opt_in) {
 
             new_d3_node(gfore,
                 'rect',
-                {'x': box.icons.x + box.icons.w * 0.6,
+                {
+                    'x': box.icons.x + box.icons.w * 0.6,
                     'y': box.icons.y + box.icons.h * 0.025,
                     'width': box.icons.w * 0.3,
                     height: box.icons.h * 0.3,
@@ -3979,18 +4398,23 @@ let main_sched_blockController = function(opt_in) {
             })
             new_d3_node(gfore,
                 'svg:image',
-                {'x': box.icons.x + box.icons.w * 0.65,
+                {
+                    'x': box.icons.x + box.icons.w * 0.65,
                     'y': box.icons.y + box.icons.h * 0.075,
                     'width': box.icons.w * 0.2,
                     height: box.icons.h * 0.2,
                     'xlink:href': '/static/icons/blocks.svg',
                 },
-                {'pointer-events': 'none', opacity: 0.6}
+                {
+                    'pointer-events': 'none',
+                    opacity: 0.6,
+                }
             )
 
             new_d3_node(gfore,
                 'rect',
-                {'x': box.icons.x + box.icons.w * 0.6,
+                {
+                    'x': box.icons.x + box.icons.w * 0.6,
                     'y': box.icons.y + box.icons.h * 0.35,
                     'width': box.icons.w * 0.3,
                     height: box.icons.h * 0.3,
@@ -4016,18 +4440,23 @@ let main_sched_blockController = function(opt_in) {
             })
             new_d3_node(gfore,
                 'svg:image',
-                {'x': box.icons.x + box.icons.w * 0.65,
+                {
+                    'x': box.icons.x + box.icons.w * 0.65,
                     'y': box.icons.y + box.icons.h * 0.4,
                     'width': box.icons.w * 0.2,
                     height: box.icons.h * 0.2,
                     'xlink:href': '/static/icons/target.svg',
                 },
-                {'pointer-events': 'none', opacity: 0.6}
+                {
+                    'pointer-events': 'none',
+                    opacity: 0.6,
+                }
             )
 
             new_d3_node(gfore,
                 'rect',
-                {'x': box.icons.x + box.icons.w * 0.6,
+                {
+                    'x': box.icons.x + box.icons.w * 0.6,
                     'y': box.icons.y + box.icons.h * 0.675,
                     'width': box.icons.w * 0.3,
                     height: box.icons.h * 0.3,
@@ -4053,18 +4482,23 @@ let main_sched_blockController = function(opt_in) {
             })
             new_d3_node(gfore,
                 'svg:image',
-                {'x': box.icons.x + box.icons.w * 0.65,
+                {
+                    'x': box.icons.x + box.icons.w * 0.65,
                     'y': box.icons.y + box.icons.h * 0.725,
                     'width': box.icons.w * 0.2,
                     height: box.icons.h * 0.2,
                     'xlink:href': '/static/icons/telescope.svg',
                 },
-                {'pointer-events': 'none', opacity: 0.6}
+                {
+                    'pointer-events': 'none',
+                    opacity: 0.6,
+                }
             )
         }
 
         function initOverview() {
-            reserved.overview = {}
+            reserved.overview = {
+            }
             let allBox
             function createBlocks_information() {
                 let box = allBox.blocks
@@ -4093,32 +4527,80 @@ let main_sched_blockController = function(opt_in) {
                 box.y += headerSize
                 new_d3_node(g,
                     'text',
-                    {'id': 'sbs', 'x': reserved.box.w * 0.44, 'y': box.y, 'text-anchor': 'end', 'fill': color_theme.dark.text},
-                    {'font-size': txt_size + 'px', 'font-weight': 'bold', 'pointer-events': 'none'}
+                    {
+                        'id': 'sbs',
+                        'x': reserved.box.w * 0.44,
+                        'y': box.y,
+                        'text-anchor': 'end',
+                        'fill': color_theme.dark.text,
+                    },
+                    {
+                        'font-size': txt_size + 'px',
+                        'font-weight': 'bold',
+                        'pointer-events': 'none',
+                    }
                 ).text('?') // Object.keys(get_sched_blocksData()).length
                 new_d3_node(g,
                     'text',
-                    {'x': reserved.box.w * 0.45, 'y': box.y, 'text-anchor': 'start', 'fill': color_theme.dark.text},
-                    {'font-size': txt_size + 'px', 'font-weight': '', 'pointer-events': 'none'}
+                    {
+                        'x': reserved.box.w * 0.45,
+                        'y': box.y,
+                        'text-anchor': 'start',
+                        'fill': color_theme.dark.text,
+                    },
+                    {
+                        'font-size': txt_size + 'px',
+                        'font-weight': '',
+                        'pointer-events': 'none',
+                    }
                 ).text('Sbs')
 
                 new_d3_node(g,
                     'text',
-                    {id: 'obs', 'x': reserved.box.w * 0.6, 'y': box.y, 'text-anchor': 'end', 'fill': color_theme.dark.text},
-                    {'font-size': txt_size + 'px', 'font-weight': 'bold', 'pointer-events': 'none'}
+                    {
+                        id: 'obs',
+                        'x': reserved.box.w * 0.6,
+                        'y': box.y,
+                        'text-anchor': 'end',
+                        'fill': color_theme.dark.text,
+                    },
+                    {
+                        'font-size': txt_size + 'px',
+                        'font-weight': 'bold',
+                        'pointer-events': 'none',
+                    }
                 ).text('?')
                 new_d3_node(g,
                     'text',
-                    {'x': reserved.box.w * 0.61, 'y': box.y, 'text-anchor': 'start', 'fill': color_theme.dark.text},
-                    {'font-size': txt_size + 'px', 'font-weight': '', 'pointer-events': 'none'}
+                    {
+                        'x': reserved.box.w * 0.61,
+                        'y': box.y,
+                        'text-anchor': 'start',
+                        'fill': color_theme.dark.text,
+                    },
+                    {
+                        'font-size': txt_size + 'px',
+                        'font-weight': '',
+                        'pointer-events': 'none',
+                    }
                 ).text('Obs')
 
                 let infoState = [
-                    {state: 'run'},
-                    {state: 'done'},
-                    {state: 'fail'},
-                    {state: 'cancel'},
-                    {state: 'wait'},
+                    {
+                        state: 'run',
+                    },
+                    {
+                        state: 'done',
+                    },
+                    {
+                        state: 'fail',
+                    },
+                    {
+                        state: 'cancel',
+                    },
+                    {
+                        state: 'wait',
+                    },
                 ]
 
                 box.y += 4
@@ -4135,8 +4617,14 @@ let main_sched_blockController = function(opt_in) {
                     d3.select(this).append('rect')
                         .attr('y', box.y)
                         .attr('height', txt_size * 2)
-                        .attr('stroke', setCol({state: d.state, can_run: true}).stroke)
-                        .attr('fill', setCol({state: d.state, can_run: true}).background)
+                        .attr('stroke', setCol({
+                            state: d.state,
+                            can_run: true,
+                        }).stroke)
+                        .attr('fill', setCol({
+                            state: d.state,
+                            can_run: true,
+                        }).background)
                         .attr('stroke-width', 0.2)
                     d3.select(this).append('text')
                         .attr('y', box.y + txt_size + txt_size * 0.3)
@@ -4145,7 +4633,10 @@ let main_sched_blockController = function(opt_in) {
                         .attr('text-anchor', 'middle')
                         .style('font-size', txt_size + 'px')
                         .style('pointer-events', 'none')
-                        .attr('fill', setCol({state: d.state, can_run: true}).text)
+                        .attr('fill', setCol({
+                            state: d.state,
+                            can_run: true,
+                        }).text)
                         .attr('stroke', 'none')
                 })
             }
@@ -4182,10 +4673,26 @@ let main_sched_blockController = function(opt_in) {
                     .attr('height', headerSize)
                     .attr('fill', color_theme.dark.stroke)
                 let label = [
-                    {x: box.w * 0.01, y: box.y + headerSize * 0.5 + txt_size * 0.3, text: 'Targets'},
-                    {x: box.w * 0.15, y: box.y + headerSize * 0.5 + txt_size * 0.3, text: 'Scheds'},
-                    {x: box.w * 0.3, y: box.y + headerSize * 0.5 + txt_size * 0.3, text: 'Obs'},
-                    {x: box.w * 0.45, y: box.y + headerSize * 0.5 + txt_size * 0.3, text: 'Running blocks'},
+                    {
+                        x: box.w * 0.01,
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        text: 'Targets',
+                    },
+                    {
+                        x: box.w * 0.15,
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        text: 'Scheds',
+                    },
+                    {
+                        x: box.w * 0.3,
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        text: 'Obs',
+                    },
+                    {
+                        x: box.w * 0.45,
+                        y: box.y + headerSize * 0.5 + txt_size * 0.3,
+                        text: 'Running blocks',
+                    },
                 ]
                 for (let i = 0; i < label.length; i++) {
                     g.append('text')
@@ -4199,8 +4706,13 @@ let main_sched_blockController = function(opt_in) {
                 box.y += headerSize + 0
                 let targ = g.append('g').attr('id', 'targets')
                     .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
-                reserved.overview.scrollBox = initScrollBox('targetRessourceScroll', targ, box, {enabled: false})
-                reserved.overview.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: shared.data.server.targets.length * 40})
+                reserved.overview.scrollBox = initScrollBox('targetRessourceScroll', targ, box, {
+                    enabled: false,
+                })
+                reserved.overview.scrollBox.resetVerticalScroller({
+                    canScroll: true,
+                    scrollHeight: shared.data.server.targets.length * 40,
+                })
                 g.append('line')
                     .attr('x1', box.x)
                     .attr('y1', box.y + box.h)
@@ -4262,7 +4774,8 @@ let main_sched_blockController = function(opt_in) {
                     main: {
                         tag: 'telescopeRootTag',
                         g: gt,
-                        scroll: {},
+                        scroll: {
+                        },
                         box: box,
                         background: {
                             fill: color_theme.medium.background,
@@ -4362,14 +4875,16 @@ let main_sched_blockController = function(opt_in) {
                         raw: {
                             telescopes: [],
                         },
-                        filtered: {},
+                        filtered: {
+                        },
                         modified: [],
                     },
                     debug: {
                         enabled: false,
                     },
                     pattern: {
-                        select: {},
+                        select: {
+                        },
                     },
                     events: {
                         block: {
@@ -4527,11 +5042,31 @@ let main_sched_blockController = function(opt_in) {
           shared.data.server.blocks.wait.length +
           shared.data.server.blocks.run.length
                 let infoState = [
-                    {state: 'run', nb: shared.data.server.blocks.run.length, percent: shared.data.server.blocks.run.length / tot},
-                    {state: 'done', nb: 0, percent: 0},
-                    {state: 'fail', nb: 0, percent: 0},
-                    {state: 'cancel', nb: 0, percent: 0},
-                    {state: 'wait', nb: shared.data.server.blocks.wait.length, percent: shared.data.server.blocks.wait.length / tot},
+                    {
+                        state: 'run',
+                        nb: shared.data.server.blocks.run.length,
+                        percent: shared.data.server.blocks.run.length / tot,
+                    },
+                    {
+                        state: 'done',
+                        nb: 0,
+                        percent: 0,
+                    },
+                    {
+                        state: 'fail',
+                        nb: 0,
+                        percent: 0,
+                    },
+                    {
+                        state: 'cancel',
+                        nb: 0,
+                        percent: 0,
+                    },
+                    {
+                        state: 'wait',
+                        nb: shared.data.server.blocks.wait.length,
+                        percent: shared.data.server.blocks.wait.length / tot,
+                    },
                 ]
                 for (let i = 0; i < shared.data.server.blocks.done.length; i++) {
                     let b = shared.data.server.blocks.done[i]
@@ -4778,7 +5313,10 @@ let main_sched_blockController = function(opt_in) {
                     .duration(times.anim_arc)
                     .style('opacity', 0)
                     .remove()
-                reserved.overview.scrollBox.updateVerticalScroller({canScroll: true, scrollHeight: shared.data.server.targets.length * rectBox.h})
+                reserved.overview.scrollBox.updateVerticalScroller({
+                    canScroll: true,
+                    scrollHeight: shared.data.server.targets.length * rectBox.h,
+                })
             }
             function updateTelescope_information() {
                 reserved.telescopeRunning.update_data({
@@ -4851,7 +5389,8 @@ let main_sched_blockController = function(opt_in) {
                 main: {
                     tag: 'schedblockFormTag',
                     g: g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: innerbox,
                     background: {
                         fill: color_theme.brighter.background,
@@ -4962,7 +5501,8 @@ let main_sched_blockController = function(opt_in) {
                 main: {
                     tag: 'blockFormTag',
                     g: g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: innerbox,
                     background: {
                         fill: color_theme.brighter.background,
@@ -5087,7 +5627,8 @@ let main_sched_blockController = function(opt_in) {
                 main: {
                     tag: 'targetFormTag',
                     g: g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: innerbox,
                     background: {
                         fill: color_theme.brighter.background,
@@ -5181,7 +5722,8 @@ let main_sched_blockController = function(opt_in) {
                 main: {
                     tag: 'telescopeFormTag',
                     g: g,
-                    scroll: {},
+                    scroll: {
+                    },
                     box: innerbox,
                     background: {
                         fill: color_theme.brighter.background,

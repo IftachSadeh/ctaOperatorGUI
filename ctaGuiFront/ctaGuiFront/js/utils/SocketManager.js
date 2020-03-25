@@ -34,7 +34,8 @@ function SocketManager() {
     let this_top = this
     let is_debug = true
     // let gs_idV = []
-    let init_views = {}
+    let init_views = {
+    }
     let is_south = window.__site_type__ === 'S'
     let server_name = null
     let baseApp = window.baseApp
@@ -42,8 +43,10 @@ function SocketManager() {
     let tab_table_main_id = 'table_content'
     this.socket = null
     this.con_stat = null
-    this.all_widgets = {}
-    this.widget_table = {}
+    this.all_widgets = {
+    }
+    this.widget_table = {
+    }
 
     // ---------------------------------------------------------------------------
     // the socket
@@ -59,7 +62,8 @@ function SocketManager() {
             // console.log("initial_connect");
             // console.log('initial_connect',data_in);
 
-            let tel_info = {}
+            let tel_info = {
+            }
             tel_info.tel_ids = data_in.tel_ids
             tel_info.tel_id_to_types = data_in.tel_id_to_types
             tel_info.categorical_types = data_in.categorical_types
@@ -306,7 +310,8 @@ function SocketManager() {
             return
         }
 
-        let data_now = {}
+        let data_now = {
+        }
         data_now.NS = opt_in.NS
         data_now.widget_id = opt_in.widget_id
         data_now.type = opt_in.type
@@ -399,25 +404,31 @@ function SocketManager() {
         let is_first = !is_def(this_top.all_widgets[widget_type])
 
         if (is_first) {
-            this_top.all_widgets[widget_type] = { sock_func: null, widgets: {} }
+            this_top.all_widgets[widget_type] = {
+                sock_func: null,
+                widgets: {
+                },
+            }
         }
+        let widget_data = this_top.all_widgets[widget_type]
 
-        if (!is_def(this_top.all_widgets[widget_type].widgets[widget_id])) {
-            this_top.all_widgets[widget_type].widgets[widget_id] = new widget_func.main_func(
-                opt_in
+        if (!is_def(widget_data.widgets[widget_id])) {
+            widget_data.widgets[widget_id] = (
+                new widget_func.main_func(opt_in)
             )
             init_views[widget_id] = false
 
             if (is_first) {
-                this_top.all_widgets[widget_type].sock_func = new widget_func.sock_func(opt_in)
+                widget_data.sock_func = new widget_func.sock_func(opt_in)
 
                 // common sicket calls, which should be added only once!
                 this_top.socket.on('init_data', function(data_in) {
                     if (data_in.widget_type === widget_type) {
-                        if (is_def(this_top.all_widgets[widget_type].widgets[data_in.widget_id])) {
-                            this_top.all_widgets[widget_type].widgets[data_in.widget_id].init_data(
-                                data_in
-                            )
+                        let widget_now = (
+                            widget_data.widgets[data_in.widget_id]
+                        )
+                        if (is_def(widget_now)) {
+                            widget_now.init_data(data_in)
                             init_views[data_in.widget_id] = true
                         }
                     }
@@ -432,9 +443,9 @@ function SocketManager() {
                     }
 
                     let n_wigit_now = 0
-                    let n_wigits = Object.keys(this_top.all_widgets[widget_type].widgets).length
+                    let n_wigits = Object.keys(widget_data.widgets).length
 
-                    $.each(this_top.all_widgets[widget_type].widgets, function(
+                    $.each(widget_data.widgets, function(
                         widget_id_now,
                         module_now
                     ) {
@@ -446,7 +457,7 @@ function SocketManager() {
                     ? data_in
                     : deep_copy(data_in)
 
-                            this_top.all_widgets[widget_type].widgets[widget_id_now].update_data(
+                            widget_data.widgets[widget_id_now].update_data(
                                 data_update
                             )
                         }
@@ -465,7 +476,7 @@ function SocketManager() {
             })
         }
 
-        return this_top.all_widgets[widget_type].widgets[widget_id]
+        return widget_data.widgets[widget_id]
     }
     // this.set_socket_module = set_socket_module;
 
@@ -491,7 +502,10 @@ function SocketManager() {
     function set_icon_badge(opt_in) {
         if (is_def(opt_in.icon_divs)) {
             $.each(opt_in.icon_divs, function(index, icon_div_now) {
-                icon_badge.set_widget_icon({ icon_div: icon_div_now, n_icon: opt_in.n_icon })
+                icon_badge.set_widget_icon({
+                    icon_div: icon_div_now,
+                    n_icon: opt_in.n_icon,
+                })
             })
         }
     }
@@ -518,7 +532,9 @@ function SocketManager() {
         let gs_name = tab_table_id + 'tbl'
 
         if (has_icon) {
-            icon_divs[0] = { id: main_id + 'icon_div' }
+            icon_divs[0] = {
+                id: main_id + 'icon_div',
+            }
         }
 
         let tab_table_NEW = main_div.appendChild(document.createElement('div'))
@@ -559,7 +575,10 @@ function SocketManager() {
         // -------------------------------------------------------------------
         // proceed once the table has been added (with possible recursive calls to load_script())
         // -------------------------------------------------------------------
-        window.load_script({ source: name_tag, script: main_script_name })
+        window.load_script({
+            source: name_tag,
+            script: main_script_name,
+        })
 
         run_when_ready({
             pass: function() {

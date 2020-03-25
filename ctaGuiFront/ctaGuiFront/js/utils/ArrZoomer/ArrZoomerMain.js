@@ -59,35 +59,51 @@ window.ArrZoomerMain = function(opt_in0) {
     this_top.has_init = false
     // this_top.svgQuick = null
 
-    let com = {}
+    let com = {
+    }
     this_top.com = com
     let s10_eles = []
-    let syncs = {}
+    let syncs = {
+    }
     this_top.syncs = syncs
-    com.vor = {}
-    com.s00 = {}
-    com.s01 = {}
-    com.s10 = {}
-    instruments.data.vor = {}
+    com.vor = {
+    }
+    com.s00 = {
+    }
+    com.s01 = {
+    }
+    com.s10 = {
+    }
+    instruments.data.vor = {
+    }
 
   
-    let focus = {}
+    let focus = {
+    }
 
-    let s1_lbl_xy = {}
-    let arc_func = {}
+    let s1_lbl_xy = {
+    }
+    let arc_func = {
+    }
 
-    let links_2 = {}
+    let links_2 = {
+    }
 
-    let arc_prev = {}
-    arc_prev.ang = {}
-    arc_prev.rad = {}
+    let arc_prev = {
+    }
+    arc_prev.ang = {
+    }
+    arc_prev.rad = {
+    }
 
     let tel_rs = ele_base.tel_rs
     let site_scale = ele_base.site_scale
 
     let svg_dims = {
     // w: 500, h: 500, frac_circ_wh: 1,
-        w: 600, h: 600, frac_circ_wh: 0.85,
+        w: 600,
+        h: 600,
+        frac_circ_wh: 0.85,
     }
     this_top.svg_dims = svg_dims
   
@@ -158,7 +174,11 @@ window.ArrZoomerMain = function(opt_in0) {
         let y = y_marg_top + y_marg + y_width * n_ele_now
         let r = tel_rs.s00[3]
 
-        return { x: x, y: y, r: r }
+        return {
+            x: x,
+            y: y,
+            r: r,
+        }
     }
     this_top.cat_ele_pos = cat_ele_pos
 
@@ -311,8 +331,14 @@ window.ArrZoomerMain = function(opt_in0) {
             }
 
             scale_start = d3.event.transform.k
-            locker.add({ id: 'zoom', override: true })
-            locker.add({ id: 'in_zoom_main', override: true })
+            locker.add({
+                id: 'zoom',
+                override: true,
+            })
+            locker.add({
+                id: 'in_zoom_main',
+                override: true,
+            })
         }
 
         // ------------------------------------------------------------------
@@ -398,7 +424,10 @@ window.ArrZoomerMain = function(opt_in0) {
         //
         // ------------------------------------------------------------------
         function zoom_sync(trans) {
-            locker.add({ id: 'zoom_sync_main', override: true })
+            locker.add({
+                id: 'zoom_sync_main',
+                override: true,
+            })
             function func_end() {
                 locker.remove('zoom_sync_main')
             }
@@ -514,7 +543,10 @@ window.ArrZoomerMain = function(opt_in0) {
             }
 
             let func_start = function() {
-                locker.add({ id: 'auto_zoom_target', override: true })
+                locker.add({
+                    id: 'auto_zoom_target',
+                    override: true,
+                })
                 if (target_name !== '' && target_name !== 'init') {
                     zooms.target = target_name
                 }
@@ -638,13 +670,16 @@ window.ArrZoomerMain = function(opt_in0) {
         //
         // ------------------------------------------------------------------
         run_loop.init({
-            tag: 'click_once' + my_unique_id, func: click_once, n_keep: 1,
+            tag: 'click_once' + my_unique_id,
+            func: click_once,
+            n_keep: 1,
         })
 
         instruments.data.click = function(opt_in) {
             if (locker.are_free([ 'zoom', 'auto_zoom_target' ])) {
                 run_loop.push({
-                    tag: 'click_once' + my_unique_id, data: opt_in,
+                    tag: 'click_once' + my_unique_id,
+                    data: opt_in,
                 })
             }
             return
@@ -657,25 +692,35 @@ window.ArrZoomerMain = function(opt_in0) {
                 }, times.wait_loop / 2)
                 return
             }
-            locker.add({ id: 'vor_zoom_click', override: true })
+            locker.add({
+                id: 'vor_zoom_click',
+                override: true,
+            })
 
             let scale = this_top.get_scale()
             // console.log((scale >= zooms.len["1.0"]),(zooms.target == d.data.id))
 
             if (scale < zooms.len['1.0']) {
                 instruments.data.dblclick({
-                    d: d, is_in_out: dblclick_zoom_in_out,
+                    d: d,
+                    is_in_out: dblclick_zoom_in_out,
                 })
             }
             else if (scale >= zooms.len['1.0'] && zooms.target !== d.data.id) {
-                instruments.data.dblclick({ d: d, is_in_out: false })
+                instruments.data.dblclick({
+                    d: d,
+                    is_in_out: false,
+                })
             }
             else {
                 zooms.target = d.data.id
                 set_state()
             }
 
-            locker.remove({ id: 'vor_zoom_click', delay: times.anim_arc })
+            locker.remove({
+                id: 'vor_zoom_click',
+                delay: times.anim_arc,
+            })
 
             return
         }
@@ -685,14 +730,16 @@ window.ArrZoomerMain = function(opt_in0) {
         // ------------------------------------------------------------------
         run_loop.init({
             tag: 'dblclick_once' + my_unique_id,
-            func: dblclick_once, n_keep: 1,
+            func: dblclick_once,
+            n_keep: 1,
         })
 
         instruments.data.dblclick = function(opt_in) {
             // console.log( opt_in.source);
             if (locker.are_free([ 'zoom', 'auto_zoom_target' ])) {
                 run_loop.push({
-                    tag: 'dblclick_once' + my_unique_id, data: opt_in,
+                    tag: 'dblclick_once' + my_unique_id,
+                    data: opt_in,
                 })
             }
             return
@@ -705,7 +752,10 @@ window.ArrZoomerMain = function(opt_in0) {
                 }, times.wait_loop / 2)
                 return
             }
-            locker.add({ id: 'vor_zoom_dblclick', override: true })
+            locker.add({
+                id: 'vor_zoom_dblclick',
+                override: true,
+            })
 
             let d = opt_in.d
             let zoom_in_out = opt_in.is_in_out
@@ -747,12 +797,15 @@ window.ArrZoomerMain = function(opt_in0) {
 
                 ask_data_s1()
                 props_s1({
-                    tel_Id: zooms.target, click_in: false, prop_in: '',
+                    tel_Id: zooms.target,
+                    click_in: false,
+                    prop_in: '',
                 })
             }
 
             locker.remove({
-                id: 'vor_zoom_dblclick', delay: times.anim_arc,
+                id: 'vor_zoom_dblclick',
+                delay: times.anim_arc,
             })
         }
 
@@ -787,7 +840,8 @@ window.ArrZoomerMain = function(opt_in0) {
                 .on('click', instruments.data.click)
                 .on('dblclick', function(d) {
                     instruments.data.dblclick({
-                        d: d, is_in_out: dblclick_zoom_in_out,
+                        d: d,
+                        is_in_out: dblclick_zoom_in_out,
                     })
                 })
             // .on("mouseover", function(d) {
@@ -814,7 +868,8 @@ window.ArrZoomerMain = function(opt_in0) {
                     let label_y = data_now.r * Math.sin(angle)
 
                     if (s1_lbl_xy[porp_now] === undefined) {
-                        s1_lbl_xy[porp_now] = {}
+                        s1_lbl_xy[porp_now] = {
+                        }
                     }
                     s1_lbl_xy[porp_now][data_now.id] = [ label_x, label_y ]
                 })
@@ -864,7 +919,8 @@ window.ArrZoomerMain = function(opt_in0) {
         // ------------------------------------------------------------------
         function set_tel_data_physical(data_in) {
             // console.log("dataphyzoom", data_in);
-            instruments.data.xyr_physical = {}
+            instruments.data.xyr_physical = {
+            }
             instruments.data.vor.data_physical = []
 
             // ------------------------------------------------------------------
@@ -894,7 +950,8 @@ window.ArrZoomerMain = function(opt_in0) {
             // ------------------------------------------------------------------
             //
             // ------------------------------------------------------------------
-            let xy_cat = {}
+            let xy_cat = {
+            }
             let data_cat = Object.entries(data_in).filter(function(d) {
                 return tel_info.is_categorical_id(ele_base.tel_types[d[0]])
             })
@@ -939,10 +996,15 @@ window.ArrZoomerMain = function(opt_in0) {
                 // translate to the center of the respective hex-cell
                 // let xy = com.svgBck.trans([x,y]);  x = xy[0]; y = xy[1];
                 instruments.data.xyr_physical[id] = {
-                    x: x, y: y, r: r, //isTel: true
+                    x: x,
+                    y: y,
+                    r: r, //isTel: true
                 }
                 instruments.data.vor.data_physical.push({
-                    id: id, x: x, y: y, r: r,
+                    id: id,
+                    x: x,
+                    y: y,
+                    r: r,
                 })
                 // console.log(id, instruments.data.xyr_physical[id], ele_base.tel_types[id], tel_info.is_categorical_id(ele_base.tel_types[id]))
             })
@@ -955,7 +1017,8 @@ window.ArrZoomerMain = function(opt_in0) {
             let vor_links = vor_func.links(
                 instruments.data.vor.data_physical
             )
-            let links_1 = {}
+            let links_1 = {
+            }
             $.each(vor_links, function(index, link_now) {
                 let id_s = link_now.source.id
                 let id_t = link_now.target.id
@@ -1270,7 +1333,8 @@ window.ArrZoomerMain = function(opt_in0) {
 
         if (is_change || is_def(data)) {
             locker.expires({
-                id: 'set_state_lock', duration: times.anim_arc / 2,
+                id: 'set_state_lock',
+                duration: times.anim_arc / 2,
             })
         }
 
@@ -1445,7 +1509,8 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         if (!is_def(com[tag_lbl])) {
-            com[tag_lbl] = {}
+            com[tag_lbl] = {
+            }
             com[tag_lbl].g = main_gs.g_base.append('g')
         }
 
@@ -1541,7 +1606,8 @@ window.ArrZoomerMain = function(opt_in0) {
                         let tag_now = key + porp_now + n_arc_draw_now
                         let is0 = n_arc_draw_now === 0
 
-                        arc_func[tag_now] = {}
+                        arc_func[tag_now] = {
+                        }
                         arc_func[tag_now].rad00 = function(d) {
                             return instruments.data.xyr[d.id].r * (is0 ? 0.85 : 0.81)
                         }
@@ -1595,9 +1661,12 @@ window.ArrZoomerMain = function(opt_in0) {
                     let is0 = n_arc_draw_now === 0
 
                     if (!is_def(arc_prev[tag_now])) {
-                        arc_prev[tag_now] = {}
-                        arc_prev[tag_now].ang = {}
-                        arc_prev[tag_now].rad = {}
+                        arc_prev[tag_now] = {
+                        }
+                        arc_prev[tag_now].ang = {
+                        }
+                        arc_prev[tag_now].rad = {
+                        }
                     }
 
                     let dataVnow = data_in
@@ -1758,7 +1827,8 @@ window.ArrZoomerMain = function(opt_in0) {
                 let tag_now = porp_now + n_arc_draw_now
                 let is0 = n_arc_draw_now === 0
 
-                arc_func[tag_now] = {}
+                arc_func[tag_now] = {
+                }
                 arc_func[tag_now].rad00 = function(d) {
                     return instruments.data.xyr[d.id].r * scale_r[0].health0 * (is0 ? 1 : 0.95)
                 }
@@ -1795,9 +1865,12 @@ window.ArrZoomerMain = function(opt_in0) {
             let is0 = (n_arc_draw_now === 0)
 
             if (!is_def(arc_prev[tag_now])) {
-                arc_prev[tag_now] = {}
-                arc_prev[tag_now].ang = {}
-                arc_prev[tag_now].rad = {}
+                arc_prev[tag_now] = {
+                }
+                arc_prev[tag_now].ang = {
+                }
+                arc_prev[tag_now].rad = {
+                }
             }
 
             let path = com.s01.g
@@ -1950,17 +2023,21 @@ window.ArrZoomerMain = function(opt_in0) {
             let tel_Id = data_in.id
 
             $.each(instruments.props[tel_Id], function(index, porp_now) {
-                instruments.data.prop_data_s1[tel_Id] = {}
+                instruments.data.prop_data_s1[tel_Id] = {
+                }
                 instruments.data.prop_data_s1[tel_Id][porp_now] = null
-                instruments.data.prop_parent_s1[tel_Id] = {}
+                instruments.data.prop_parent_s1[tel_Id] = {
+                }
                 instruments.data.prop_parent_s1[tel_Id][porp_now] = ''
-                instruments.data.prop_title_s1[tel_Id] = {}
+                instruments.data.prop_title_s1[tel_Id] = {
+                }
                 instruments.data.prop_title_s1[tel_Id][porp_now] = ''
             })
 
             // construct the data_base object b hand, as
             // some properties may not be included in instruments.props[tel_Id]
-            instruments.data.data_base_s1[tel_Id] = {}
+            instruments.data.data_base_s1[tel_Id] = {
+            }
             instruments.data.data_base_s1[tel_Id].id = instruments.prop0
             instruments.data.data_base_s1[tel_Id].val = data_in[instruments.prop0]
             instruments.data.data_base_s1[tel_Id].children = []
@@ -2032,7 +2109,8 @@ window.ArrZoomerMain = function(opt_in0) {
             let S10 = function(tel_Id) {
                 let this_S10 = this
                 this_S10.tel_Id = tel_Id
-                this_S10.instruments = {}
+                this_S10.instruments = {
+                }
                 this_S10.instruments.props = instruments.props[tel_Id]
                 this_S10.tau_frac = instruments.tau_fracs[tel_Id]
                 this_S10.instruments.prop_titles = instruments.prop_titles[tel_Id]
@@ -2048,7 +2126,8 @@ window.ArrZoomerMain = function(opt_in0) {
                 let parents = null
                 let hierarchies = null
 
-                this_S10.data_hierarchy = {}
+                this_S10.data_hierarchy = {
+                }
                 $.each(this_S10.instruments.props, function(index, porp_now) {
                     this_S10.data_hierarchy[porp_now] = null
                 })
@@ -2078,26 +2157,37 @@ window.ArrZoomerMain = function(opt_in0) {
                         g_prop_lbl = g_base.append('g')
                         // g_bck_arc.append("rect").attr("width",wh).attr("height",wh).style("stroke",'#2196F3' ).style("fill",'transparent' ).style("stroke-width", 0.1).attr("pointer-events",'none').attr("opacity",0.5);
 
-                        parents = {}
-                        depth_click = {}
+                        parents = {
+                        }
+                        depth_click = {
+                        }
 
-                        arcs = {}
-                        arcs.arc = {}
-                        arcs.tween = {}
+                        arcs = {
+                        }
+                        arcs.arc = {
+                        }
+                        arcs.tween = {
+                        }
                         arcs.is_open = false
                         // arcs.in_prop = ''
 
-                        g_hierarchy = {}
-                        g_trans = {}
-                        hierarchies = {}
+                        g_hierarchy = {
+                        }
+                        g_trans = {
+                        }
+                        hierarchies = {
+                        }
                         $.each(base_node, function(index_data, data_base) {
                             let porp_now = data_base.id
 
                             if (this_S10.instruments.props.indexOf(porp_now) >= 0) {
-                                g_trans[porp_now] = {}
-                                g_hierarchy[porp_now] = {}
+                                g_trans[porp_now] = {
+                                }
+                                g_hierarchy[porp_now] = {
+                                }
                                 g_hierarchy[porp_now].hirch = g_base.append('g')
-                                hierarchies[porp_now] = {}
+                                hierarchies[porp_now] = {
+                                }
                             }
                         })
 
@@ -2305,11 +2395,15 @@ window.ArrZoomerMain = function(opt_in0) {
                             let n_prop = this_S10.instruments.props.indexOf(porp_now)
                             if (n_prop >= 0) {
                                 if (!is_def(arcs[tag_now])) {
-                                    arcs[tag_now] = {}
-                                    arcs[tag_now].ang = {}
-                                    arcs[tag_now].rad = {}
+                                    arcs[tag_now] = {
+                                    }
+                                    arcs[tag_now].ang = {
+                                    }
+                                    arcs[tag_now].rad = {
+                                    }
 
-                                    arc_func[tag_now] = {}
+                                    arc_func[tag_now] = {
+                                    }
                                     arc_func[tag_now].radN1 = function(d) {
                                         return 0
                                     }
@@ -2442,7 +2536,9 @@ window.ArrZoomerMain = function(opt_in0) {
                         }
                     })
 
-                    set_prop_lbl({ prop_in: '' })
+                    set_prop_lbl({
+                        prop_in: '',
+                    })
                 }
                 this_S10.init_bck_arc = init_bck_arc
 
@@ -2476,7 +2572,11 @@ window.ArrZoomerMain = function(opt_in0) {
                     locker.add('s10_bck_arc_change')
 
                     //
-                    hierarchy_style_click({ prop_in: '', id: '', is_open: false })
+                    hierarchy_style_click({
+                        prop_in: '',
+                        id: '',
+                        is_open: false,
+                    })
 
                     //
                     $.each(this_S10.instruments.props, function(index, porp_now) {
@@ -2506,7 +2606,10 @@ window.ArrZoomerMain = function(opt_in0) {
                     set_prev_prop('')
                     locker.remove('s10_bck_arc_change')
 
-                    set_prop_lbl({ prop_in: '', remove: true })
+                    set_prop_lbl({
+                        prop_in: '',
+                        remove: true,
+                    })
 
                     hierarchy_hov_title_out(null)
                 }
@@ -2547,7 +2650,10 @@ window.ArrZoomerMain = function(opt_in0) {
                         return
                     }
 
-                    locker.add({ id: 's10_bck_arc_change', override: true })
+                    locker.add({
+                        id: 's10_bck_arc_change',
+                        override: true,
+                    })
                     function free_me(do_delay) {
                         locker.remove({
                             id: 's10_bck_arc_change',
@@ -2556,7 +2662,9 @@ window.ArrZoomerMain = function(opt_in0) {
                         })
                     }
 
-                    set_prop_lbl({ prop_in: prop_in })
+                    set_prop_lbl({
+                        prop_in: prop_in,
+                    })
 
                     set_prev_prop(prop_in)
 
@@ -2592,7 +2700,9 @@ window.ArrZoomerMain = function(opt_in0) {
                         })
 
                         hierarchy_style_click({
-                            prop_in: prop_in, id: parent_name, is_open: true,
+                            prop_in: prop_in,
+                            id: parent_name,
+                            is_open: true,
                         })
             
                         props_s1({
@@ -2611,7 +2721,9 @@ window.ArrZoomerMain = function(opt_in0) {
                         // console.log('tog_hierarchy',prop_in,'--',depth_click[prop_in],click_in)
 
                         hierarchy_style_click({
-                            prop_in: prop_in, id: prop_in, is_open: click_in,
+                            prop_in: prop_in,
+                            id: prop_in,
+                            is_open: click_in,
                         })
 
                         props_s1({
@@ -2763,7 +2875,9 @@ window.ArrZoomerMain = function(opt_in0) {
 
                     g_base
                         .selectAll('text.' + 'hov_title')
-                        .data([{ id: dIn.data.id }], function(d) {
+                        .data([{
+                            id: dIn.data.id,
+                        }], function(d) {
                             return d.id
                         })
                         .enter()
@@ -2836,8 +2950,10 @@ window.ArrZoomerMain = function(opt_in0) {
                     $.each(base_node, function(index_data, data_base) {
                         let porp_now = data_base.id
 
-                        let get_child = {}
-                        let hierarchy_by_id = {}
+                        let get_child = {
+                        }
+                        let hierarchy_by_id = {
+                        }
                         let max_depth = 0
 
                         function get_all_children(d) {
@@ -2924,7 +3040,8 @@ window.ArrZoomerMain = function(opt_in0) {
                                 pack_node(hierarchy_now)
                             })
 
-                            parents[porp_now] = {}
+                            parents[porp_now] = {
+                            }
                             depth_click[porp_now] = 0
 
                             let hierarchy_all = d3.hierarchy(
@@ -3085,7 +3202,10 @@ window.ArrZoomerMain = function(opt_in0) {
                         return
                     }
 
-                    locker.add({ id: 's10_click_hierarchy', override: true })
+                    locker.add({
+                        id: 's10_click_hierarchy',
+                        override: true,
+                    })
                     function free_me(do_delay) {
                         locker.remove({
                             id: 's10_click_hierarchy',
@@ -3309,7 +3429,10 @@ window.ArrZoomerMain = function(opt_in0) {
             }
 
             s10 = new S10(zooms.target)
-            s10_eles.push({ id: zooms.target, s10: s10 })
+            s10_eles.push({
+                id: zooms.target,
+                s10: s10,
+            })
       
             ;(function() {
                 if (s10_eles.length <= max_ele_keep) {
@@ -3422,7 +3545,8 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         if (scale <= zooms.len['0.1']) {
-            update_map({})
+            update_map({
+            })
             s00_title([], [])
             s01_inner([])
             s01_outer([])
@@ -3452,7 +3576,8 @@ window.ArrZoomerMain = function(opt_in0) {
             })
 
             update_map({
-                focus_0: arr_props_on, focus_1: arr_props_target,
+                focus_0: arr_props_on,
+                focus_1: arr_props_target,
             })
 
             if (zoom_state === 0) {

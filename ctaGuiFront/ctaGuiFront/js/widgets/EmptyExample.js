@@ -39,7 +39,8 @@ sock.widget_table[main_script_tag] = function(opt_in) {
         main_func: main_empty_example,
     }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: true,
@@ -75,7 +76,8 @@ let main_empty_example = function(opt_in) {
     // let is_south = window.__site_type__ === 'S'
     // let this_empty_example = this
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_arr_zoomerPlotsSvg + ele_now.id,
@@ -89,17 +91,25 @@ let main_empty_example = function(opt_in) {
     locker.add('in_init')
 
     // function loop
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
     function init_data(data_in) {
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         svg_main.init_data(data_in)
     }
@@ -117,13 +127,18 @@ let main_empty_example = function(opt_in) {
     //
     // -------------------------------------------------------------------
     let SvgMain = function() {
-        let com = {}
-        let svg = {}
+        let com = {
+        }
+        let svg = {
+        }
         // let thisMain = this
 
-        let svg_dims = {}
-        svg_dims.w = {}
-        svg_dims.h = {}
+        let svg_dims = {
+        }
+        svg_dims.w = {
+        }
+        svg_dims.h = {
+        }
         svg_dims.w[0] = 1000
         svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
 
@@ -157,7 +172,12 @@ let main_empty_example = function(opt_in) {
 
                 return
             }
-            sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+            sock.emit_mouse_move({
+                eleIn: svg_div,
+                data: {
+                    widget_id: widget_id,
+                },
+            })
 
             svg.svg = d3
                 .select(svg_div)
@@ -229,7 +249,11 @@ let main_empty_example = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
+        run_loop.init({
+            tag: 'update_data',
+            func: update_dataOnce,
+            n_keep: 1,
+        })
 
         function update_data(data_in) {
             if (!locker.is_free('in_init')) {
@@ -239,7 +263,10 @@ let main_empty_example = function(opt_in) {
                 return
             }
 
-            run_loop.push({ tag: 'update_data', data: data_in }) //, time:data_in.emit_time
+            run_loop.push({
+                tag: 'update_data',
+                data: data_in,
+            }) //, time:data_in.emit_time
         }
 
         // -------------------------------------------------------------------
@@ -258,7 +285,8 @@ let main_empty_example = function(opt_in) {
             // -------------------------------------------------------------------
             // send some random message to the server ...
             // -------------------------------------------------------------------
-            let myMessageData = {}
+            let myMessageData = {
+            }
             myMessageData.widget_id = opt_in.widget_id
             myMessageData.myMessage = 'myMessage' + unique()
 
@@ -282,7 +310,13 @@ let main_empty_example = function(opt_in) {
 
             let circ = svg.g
                 .selectAll('circle.' + tag_circ)
-                .data([{ id: 0, r: rnd }, { id: 1, r: Math.pow(1 - rnd, 2) }], function(
+                .data([{
+                    id: 0,
+                    r: rnd,
+                }, {
+                    id: 1,
+                    r: Math.pow(1 - rnd, 2),
+                }], function(
                     d
                 ) {
                     return d.id

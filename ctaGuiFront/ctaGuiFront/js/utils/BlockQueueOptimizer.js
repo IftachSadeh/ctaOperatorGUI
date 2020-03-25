@@ -25,7 +25,13 @@ window.BlockQueueOptimizer = function(opt_in) {
         main: {
             tag: 'blockQueueRootTag',
             g: undefined,
-            box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: color_theme.brighter.background,
                 stroke: color_theme.brighter.stroke,
@@ -35,7 +41,13 @@ window.BlockQueueOptimizer = function(opt_in) {
         axis: {
             enabled: true,
             g: undefined,
-            box: { x: 0, y: 300, w: 1000, h: 0, marg: 0 },
+            box: {
+                x: 0,
+                y: 300,
+                w: 1000,
+                h: 0,
+                marg: 0,
+            },
             axis: undefined,
             scale: undefined,
             domain: [ 0, 1000 ],
@@ -58,7 +70,13 @@ window.BlockQueueOptimizer = function(opt_in) {
             run: {
                 enabled: true,
                 g: undefined,
-                box: { x: 0, y: 300 * 0.66, w: 1000, h: 300 * 0.34, marg: 0 },
+                box: {
+                    x: 0,
+                    y: 300 * 0.66,
+                    w: 1000,
+                    h: 300 * 0.34,
+                    marg: 0,
+                },
                 events: {
                     click: () => {},
                     mouseover: () => {},
@@ -78,7 +96,13 @@ window.BlockQueueOptimizer = function(opt_in) {
             cancel: {
                 enabled: true,
                 g: undefined,
-                box: { x: 0, y: 0, w: 1000, h: 300 * 0.2, marg: 0 },
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 1000,
+                    h: 300 * 0.2,
+                    marg: 0,
+                },
                 events: {
                     click: () => {},
                     mouseover: () => {},
@@ -98,7 +122,13 @@ window.BlockQueueOptimizer = function(opt_in) {
             modification: {
                 enabled: true,
                 g: undefined,
-                box: { x: 0, y: 300 * 0.24, w: 1000, h: 300 * 0.36, marg: 0 },
+                box: {
+                    x: 0,
+                    y: 300 * 0.24,
+                    w: 1000,
+                    h: 300 * 0.36,
+                    marg: 0,
+                },
                 events: {
                     click: () => {},
                     mouseover: () => {},
@@ -120,18 +150,39 @@ window.BlockQueueOptimizer = function(opt_in) {
         filters: {
             enabled: false,
             g: undefined,
-            box: { x: 0, y: 300 * 0.15, w: 1000 * 0.12, h: 300 * 0.7, marg: 0 },
+            box: {
+                x: 0,
+                y: 300 * 0.15,
+                w: 1000 * 0.12,
+                h: 300 * 0.7,
+                marg: 0,
+            },
             filters: [],
         },
         timeBars: {
             enabled: true,
             g: undefined,
-            box: { x: 0, y: 0, w: 1000, h: 300, marg: 0 },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
         },
         time: {
-            currentTime: { date: new Date(), time: 0 },
-            startTime: { date: new Date(), time: 0 },
-            endTime: { date: new Date(), time: 1000 },
+            currentTime: {
+                date: new Date(),
+                time: 0,
+            },
+            startTime: {
+                date: new Date(),
+                time: 0,
+            },
+            endTime: {
+                date: new Date(),
+                time: 1000,
+            },
         },
         data: {
             raw: {
@@ -144,17 +195,21 @@ window.BlockQueueOptimizer = function(opt_in) {
         debug: {
             enabled: false,
         },
-        pattern: {},
-        event: {},
+        pattern: {
+        },
+        event: {
+        },
         input: {
             selection: [],
         },
     }
-    let com = {}
+    let com = {
+    }
     com = opt_in
 
     function setDefaultStyle() {
-        com.style = {}
+        com.style = {
+        }
         com.style.runRecCol = cols_blues[2]
         com.style.blockCol = function(opt_in) {
             if (opt_in.d.data.endTime < com.time.currentTime.time) {

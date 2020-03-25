@@ -9,7 +9,8 @@
 /* global deep_copy */
 
 window.ButtonPanel = function() {
-    let com = {}
+    let com = {
+    }
 
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {

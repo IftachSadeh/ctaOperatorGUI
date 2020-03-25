@@ -25,11 +25,26 @@ var main_script_tag = 'WeatherMonitoring'
 /* global ScrollBox */
 /* global PlotBrushZoom */
 
-window.load_script({source: main_script_tag, script: '/js/utils/PlotTimeSeriesV2.js'})
-window.load_script({ source: main_script_tag, script: '/js/utils/ScrollBox.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/PlotTimeBar.js' })
-window.load_script({ source: main_script_tag, script: '/js/utils/PlotBrushZoom.js' })
-window.load_script({ source: 'utils_scrollTable', script: '/js/utils/common_d3.js' })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotTimeSeriesV2.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ScrollBox.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotTimeBar.js',
+})
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/PlotBrushZoom.js',
+})
+window.load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/common_d3.js',
+})
 
 // load additional js files:
 // window.load_script({ source:main_script_tag, script:"/js/utils_scrollGrid.js"});
@@ -51,7 +66,8 @@ sock.widget_table[main_script_tag] = function(opt_in) {
         main_func: main_weather_monitoring,
     }
     opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
-    opt_in.ele_props = {}
+    opt_in.ele_props = {
+    }
     opt_in.ele_props[div_key] = {
         auto_pos: true,
         is_dark_ele: false,
@@ -88,7 +104,8 @@ let main_weather_monitoring = function(opt_in) {
     let icon_divs = opt_in.icon_divs
 
     let shared = {
-        server: {},
+        server: {
+        },
         time: {
             current: undefined,
             from: undefined,
@@ -96,14 +113,18 @@ let main_weather_monitoring = function(opt_in) {
         },
         data: [],
     }
-    let svg = {}
-    let box = {}
-    let svg_dims = {}
+    let svg = {
+    }
+    let box = {
+    }
+    let svg_dims = {
+    }
 
     // let this_sched_block_inspector = this
     // let is_south = window.__site_type__ === 'S'
 
-    let sgv_tag = {}
+    let sgv_tag = {
+    }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
             id: tag_arr_zoomerPlotsSvg + ele_now.id,
@@ -115,12 +136,16 @@ let main_weather_monitoring = function(opt_in) {
     // delay counters
     let locker = new Locker()
     // locker.add('in_init')
-    let run_loop = new RunLoop({ tag: widget_id })
+    let run_loop = new RunLoop({
+        tag: widget_id,
+    })
 
     function init_data(data_in) {
         function initSvg() {
-            svg_dims.w = {}
-            svg_dims.h = {}
+            svg_dims.w = {
+            }
+            svg_dims.h = {
+            }
             svg_dims.w[0] = 1000
             svg_dims.h[0] = svg_dims.w[0] * 1.33 // / sgv_tag.main.whRatio
 
@@ -226,7 +251,10 @@ let main_weather_monitoring = function(opt_in) {
             svg.g = svg.svg.append('g')
         }
         function initBackground() {
-            let pattern = {select: {}}
+            let pattern = {
+                select: {
+                },
+            }
             pattern.select.defs = svg.g.append('defs')
             pattern.select.patternLock = pattern.select.defs.append('pattern')
                 .attr('id', 'patternLock')
@@ -366,7 +394,8 @@ let main_weather_monitoring = function(opt_in) {
             }
         }
         function initDefaultStyle() {
-            shared.style = {}
+            shared.style = {
+            }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
                 // let endTime = is_def(opt_in.endTime)
@@ -405,11 +434,17 @@ let main_weather_monitoring = function(opt_in) {
             }
         }
 
-        if (sock.multiple_inits({ id: widget_id, data: data_in })) {
+        if (sock.multiple_inits({
+            id: widget_id,
+            data: data_in,
+        })) {
             return
         }
 
-        sock.set_icon_badge({ n_icon: data_in.n_icon, icon_divs: icon_divs })
+        sock.set_icon_badge({
+            n_icon: data_in.n_icon,
+            icon_divs: icon_divs,
+        })
 
         let svg_div_id = sgv_tag.main.id + 'svg'
         let svg_divFMId = sgv_tag.main.id + 'FM'
@@ -442,7 +477,12 @@ let main_weather_monitoring = function(opt_in) {
             })
             return
         }
-        sock.emit_mouse_move({ eleIn: svg_div, data: { widget_id: widget_id } })
+        sock.emit_mouse_move({
+            eleIn: svg_div,
+            data: {
+                widget_id: widget_id,
+            },
+        })
 
         initSvg()
         initDefaultStyle()
@@ -500,10 +540,17 @@ let main_weather_monitoring = function(opt_in) {
         locker.remove('update_data')
     }
     function update_data(data_in) {
-        run_loop.push({ tag: 'update_data', data: data_in })
+        run_loop.push({
+            tag: 'update_data',
+            data: data_in,
+        })
     }
     this.update_data = update_data
-    run_loop.init({ tag: 'update_data', func: update_dataOnce, n_keep: 1 })
+    run_loop.init({
+        tag: 'update_data',
+        func: update_dataOnce,
+        n_keep: 1,
+    })
 
     function initScrollBox(tag, g, box, background, isVertical) {
         if (background.enabled) {
@@ -536,15 +583,21 @@ let main_weather_monitoring = function(opt_in) {
                 during: tag + 'zoomsuring',
                 end: tag + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: tag}),
+            run_loop: new RunLoop({
+                tag: tag,
+            }),
             canScroll: true,
             scrollVertical: isVertical,
             scrollHorizontal: !isVertical,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 4},
-            scrollRecV: {w: 4},
+            scrollRecH: {
+                h: 4,
+            },
+            scrollRecV: {
+                w: 4,
+            },
         })
         return scrollBox
     }
@@ -562,7 +615,8 @@ let main_weather_monitoring = function(opt_in) {
         svg_measured_data.selectMeasure(data.id)
     }
     function linearRegression(x, y) {
-        var lr = {}
+        var lr = {
+        }
         var n = y.length
         var sumx = 0
         var sumy = 0
@@ -586,7 +640,10 @@ let main_weather_monitoring = function(opt_in) {
     }
     function updateMesures() {
         let fillfun = function(index) {
-            let status = {current: '', previous: []}
+            let status = {
+                current: '',
+                previous: [],
+            }
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
             status.current.x = new Date(shared.server.time_of_night.date_now)
             for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
@@ -613,7 +670,10 @@ let main_weather_monitoring = function(opt_in) {
     }
     function loadMesures() {
         let fillfun = function(index) {
-            let status = {current: '', previous: []}
+            let status = {
+                current: '',
+                previous: [],
+            }
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
             status.current.x = new Date(shared.server.time_of_night.date_now)
             status.gradient = Math.floor((Math.random() * 20) - 10)
@@ -629,35 +689,161 @@ let main_weather_monitoring = function(opt_in) {
             return status
         }
         shared.server.measures = [
-            {id: 'id0', name: 'Measure1', status: fillfun(1), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: []},
-            {id: 'id1', name: 'Measure2', status: fillfun(2), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: []},
-            {id: 'id2', name: 'Measure3', status: fillfun(3), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: []},
-            {id: 'id3', name: 'Measure4', status: fillfun(4), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: [
-                {id: 'id4', name: 'subMeasure.14', status: fillfun(5), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-            ]},
-            {id: 'id5', name: 'Measure5', status: fillfun(6), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: []},
-            {id: 'id6', name: 'Measure6', status: fillfun(7), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: [
-                {id: 'id7', name: 'subMeasure6.1', status: fillfun(8), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-            ]},
-            {id: 'id8', name: 'Measure7', status: fillfun(9), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: [
-                {id: 'id9', name: 'subMeasure7.1', status: fillfun(10), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-                {id: 'id10', name: 'subMeasure7.2', status: fillfun(11), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-            ]},
-            {id: 'id11', name: 'Measure8', status: fillfun(12), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: [
-                {id: 'id12', name: 'subMeasure8.1', status: fillfun(13), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-                {id: 'id13', name: 'subMeasure8.2', status: fillfun(14), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-                {id: 'id14', name: 'subMeasure8.3', status: fillfun(15), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-                {id: 'id15', name: 'subMeasure8.4', status: fillfun(16), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-                {id: 'id16', name: 'subMeasure8.5', status: fillfun(17), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-            ]},
-            {id: 'id17', name: 'Measure9', status: fillfun(18), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: [
-                {id: 'id18', name: 'subMeasure9.1', status: fillfun(19), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-                {id: 'id19', name: 'subMeasure9.2', status: fillfun(20), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-            ]},
-            {id: 'id20', name: 'Measure10', status: fillfun(21), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: []},
-            {id: 'id21', name: 'Measure11', status: fillfun(22), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))], subMeasures: [
-                {id: 'id22', name: 'subMeasure11.1', status: fillfun(23), unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))]},
-            ]},
+            {
+                id: 'id0',
+                name: 'Measure1',
+                status: fillfun(1),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [],
+            },
+            {
+                id: 'id1',
+                name: 'Measure2',
+                status: fillfun(2),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [],
+            },
+            {
+                id: 'id2',
+                name: 'Measure3',
+                status: fillfun(3),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [],
+            },
+            {
+                id: 'id3',
+                name: 'Measure4',
+                status: fillfun(4),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [
+                    {
+                        id: 'id4',
+                        name: 'subMeasure.14',
+                        status: fillfun(5),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                ],
+            },
+            {
+                id: 'id5',
+                name: 'Measure5',
+                status: fillfun(6),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [],
+            },
+            {
+                id: 'id6',
+                name: 'Measure6',
+                status: fillfun(7),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [
+                    {
+                        id: 'id7',
+                        name: 'subMeasure6.1',
+                        status: fillfun(8),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                ],
+            },
+            {
+                id: 'id8',
+                name: 'Measure7',
+                status: fillfun(9),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [
+                    {
+                        id: 'id9',
+                        name: 'subMeasure7.1',
+                        status: fillfun(10),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                    {
+                        id: 'id10',
+                        name: 'subMeasure7.2',
+                        status: fillfun(11),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                ],
+            },
+            {
+                id: 'id11',
+                name: 'Measure8',
+                status: fillfun(12),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [
+                    {
+                        id: 'id12',
+                        name: 'subMeasure8.1',
+                        status: fillfun(13),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                    {
+                        id: 'id13',
+                        name: 'subMeasure8.2',
+                        status: fillfun(14),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                    {
+                        id: 'id14',
+                        name: 'subMeasure8.3',
+                        status: fillfun(15),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                    {
+                        id: 'id15',
+                        name: 'subMeasure8.4',
+                        status: fillfun(16),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                    {
+                        id: 'id16',
+                        name: 'subMeasure8.5',
+                        status: fillfun(17),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                ],
+            },
+            {
+                id: 'id17',
+                name: 'Measure9',
+                status: fillfun(18),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [
+                    {
+                        id: 'id18',
+                        name: 'subMeasure9.1',
+                        status: fillfun(19),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                    {
+                        id: 'id19',
+                        name: 'subMeasure9.2',
+                        status: fillfun(20),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                ],
+            },
+            {
+                id: 'id20',
+                name: 'Measure10',
+                status: fillfun(21),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [],
+            },
+            {
+                id: 'id21',
+                name: 'Measure11',
+                status: fillfun(22),
+                unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                subMeasures: [
+                    {
+                        id: 'id22',
+                        name: 'subMeasure11.1',
+                        status: fillfun(23),
+                        unit: [ 'C°', '%', 'µg', 'km/h' ][Math.floor((Math.random() * 3))],
+                    },
+                ],
+            },
         ]
     }
     function createUrgentList() {
@@ -665,14 +851,20 @@ let main_weather_monitoring = function(opt_in) {
         for (let i = 0; i < shared.server.sensors.length; i++) {
             for (let j = 0; j < shared.server.sensors[i].length; j++) {
                 if (shared.server.sensors[i][j].status.current === 'ERROR') {
-                    shared.server.urgent.push({type: 'sensor', data: shared.server.sensors[i][j]})
+                    shared.server.urgent.push({
+                        type: 'sensor',
+                        data: shared.server.sensors[i][j],
+                    })
                 }
             }
         }
         for (let i = 0; i < shared.server.measures.length; i++) {
             let d = shared.server.measures[i]
             if (d.status.current.y < 16.6 || d.status.current.y > 83.4) {
-                shared.server.urgent.push({type: 'measure', data: d})
+                shared.server.urgent.push({
+                    type: 'measure',
+                    data: d,
+                })
             }
             // else if (d.status.current.y < 33.2 || d.status.current.y > 66) {
             //
@@ -724,7 +916,13 @@ let main_weather_monitoring = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: plotbox.h, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: plotbox.h,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -755,7 +953,13 @@ let main_weather_monitoring = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'left',
                             mode: 'linear',
                             attr: {
@@ -787,7 +991,13 @@ let main_weather_monitoring = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: plotbox.w, y: 0, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: plotbox.w,
+                                y: 0,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'right',
                             mode: 'linear',
                             attr: {
@@ -815,7 +1025,8 @@ let main_weather_monitoring = function(opt_in) {
                         },
                     },
                 ],
-                content: {},
+                content: {
+                },
             })
         }
         function addBrush(opt_in) {
@@ -836,7 +1047,13 @@ let main_weather_monitoring = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushbox.h * 0.14, w: brushbox.w, h: brushbox.h * 0.2, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushbox.h * 0.14,
+                                w: brushbox.w,
+                                h: brushbox.h * 0.2,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -867,7 +1084,13 @@ let main_weather_monitoring = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: brushbox.h * 0.9, w: brushbox.w, h: brushbox.h * 0.0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: brushbox.h * 0.9,
+                                w: brushbox.w,
+                                h: brushbox.h * 0.0,
+                                marg: 0,
+                            },
                             type: 'top',
                             attr: {
                                 text: {
@@ -897,7 +1120,13 @@ let main_weather_monitoring = function(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushbox.h * 0.15, w: brushbox.w, h: brushbox.h * 0.65, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushbox.h * 0.15,
+                            w: brushbox.w,
+                            h: brushbox.h * 0.65,
+                            marg: 0,
+                        },
                         attr: {
                             fill: colorPalette.medium.background,
                         },
@@ -907,7 +1136,13 @@ let main_weather_monitoring = function(opt_in) {
                     enabled: true,
                     main: {
                         g: undefined,
-                        box: {x: 0, y: brushbox.h * 0.5, w: brushbox.w, h: brushbox.h * 0.3, marg: 0},
+                        box: {
+                            x: 0,
+                            y: brushbox.h * 0.5,
+                            w: brushbox.w,
+                            h: brushbox.h * 0.3,
+                            marg: 0,
+                        },
                         attr: {
                             fill: colorPalette.darkest.background,
                             opacity: 1,
@@ -916,11 +1151,19 @@ let main_weather_monitoring = function(opt_in) {
                     },
                 },
                 brush: {
-                    coef: {x: 0, y: 0},
+                    coef: {
+                        x: 0,
+                        y: 0,
+                    },
                     callback: () => {},
                 },
                 zoom: {
-                    coef: {kx: 1, ky: 1, x: 0, y: 0},
+                    coef: {
+                        kx: 1,
+                        ky: 1,
+                        x: 0,
+                        y: 0,
+                    },
                     callback: function() {
                         plot.updateAxis({
                             id: 'bottom',
@@ -979,8 +1222,14 @@ let main_weather_monitoring = function(opt_in) {
         this.unbindData = unbindData
 
         function update_data() {
-            let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-            let endTime = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
+            let startTime = {
+                date: new Date(shared.time.from),
+                time: Number(shared.time.from.getTime()),
+            }
+            let endTime = {
+                date: new Date(shared.server.time_of_night.date_now),
+                time: Number(shared.server.time_of_night.now),
+            }
             plot.updateAxis({
                 id: 'bottom',
                 domain: [ startTime.date, endTime.date ],
@@ -1297,8 +1546,16 @@ let main_weather_monitoring = function(opt_in) {
                     offset += d.length * (lineSize + 22)
                 })
 
-            scrollbox.updateBox({x: 0, y: 0, w: box.w, h: (box.y * 0.00 + box.h)})
-            scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (offset)})
+            scrollbox.updateBox({
+                x: 0,
+                y: 0,
+                w: box.w,
+                h: (box.y * 0.00 + box.h),
+            })
+            scrollbox.resetVerticalScroller({
+                canScroll: true,
+                scrollHeight: (offset),
+            })
         }
         function defaultDisplay() {
             // svg_measured_data.unshift()
@@ -1307,8 +1564,16 @@ let main_weather_monitoring = function(opt_in) {
                 .duration(200)
                 .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
                 .on('end', function() {
-                    scrollbox.updateBox({x: 0, y: 0, w: box.w, h: box.h})
-                    scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: 0})
+                    scrollbox.updateBox({
+                        x: 0,
+                        y: 0,
+                        w: box.w,
+                        h: box.h,
+                    })
+                    scrollbox.resetVerticalScroller({
+                        canScroll: true,
+                        scrollHeight: 0,
+                    })
                     let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
                     svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
                         .attr('visibility', 'visible')
@@ -1505,7 +1770,10 @@ let main_weather_monitoring = function(opt_in) {
             }
 
             let fillfun = function() {
-                let status = {current: '', previous: []}
+                let status = {
+                    current: '',
+                    previous: [],
+                }
                 let rand = Math.random()
                 if (rand < 0.75) {
                     status.current = 'RUNNING'
@@ -1531,33 +1799,149 @@ let main_weather_monitoring = function(opt_in) {
                 return status
             }
             shared.server.sensors = [
-                [{id: 'id0', name: 'Illuminator', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id1', name: 'Photometer', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id2', name: 'All-sky-camera', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id3', name: 'Ceilometer', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id4', name: 'Ceilometer', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id5', name: 'FRAM', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id6', name: 'LIDARs', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id7', name: 'LIDARs', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id8', name: 'Weather-stations', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id9', name: 'Weather-stations', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id10', name: 'Weather-stations', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id11', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id12', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id13', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id14', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id15', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id16', name: 'Anemometers', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id17', name: 'Precipitation', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id18', name: 'Precipitation', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id19', name: 'Precipitation', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id20', name: 'Dust', status: fillfun(), running: Math.random() < 0.5}],
-                [{id: 'id21', name: 'Accelerometers', status: fillfun(), running: Math.random() < 0.5},
-                    {id: 'id22', name: 'Accelerometers', status: fillfun(), running: true}],
+                [{
+                    id: 'id0',
+                    name: 'Illuminator',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id1',
+                    name: 'Photometer',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id2',
+                    name: 'All-sky-camera',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id3',
+                    name: 'Ceilometer',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id4',
+                    name: 'Ceilometer',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id5',
+                    name: 'FRAM',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id6',
+                    name: 'LIDARs',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id7',
+                    name: 'LIDARs',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id8',
+                    name: 'Weather-stations',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id9',
+                    name: 'Weather-stations',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id10',
+                    name: 'Weather-stations',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id11',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id12',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id13',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id14',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id15',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id16',
+                    name: 'Anemometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id17',
+                    name: 'Precipitation',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id18',
+                    name: 'Precipitation',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id19',
+                    name: 'Precipitation',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id20',
+                    name: 'Dust',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                }],
+                [{
+                    id: 'id21',
+                    name: 'Accelerometers',
+                    status: fillfun(),
+                    running: Math.random() < 0.5,
+                },
+                {
+                    id: 'id22',
+                    name: 'Accelerometers',
+                    status: fillfun(),
+                    running: true,
+                }],
             ]
 
             let main = svg.g.append('g').attr('id', 'hardwareMonitoring')
-            scrollbox = initScrollBox('heatmapScrollbox', main.append('g').attr('id', 'heatmapSensors').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.05) + ')'), box, {}, true)
+            scrollbox = initScrollBox('heatmapScrollbox', main.append('g').attr('id', 'heatmapSensors').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.05) + ')'), box, {
+            }, true)
             // main.append('rect')
             //   .attr('x', box.x)
             //   .attr('y', box.y)
@@ -2059,7 +2443,8 @@ let main_weather_monitoring = function(opt_in) {
             }
 
             let main = svg.g.append('g').attr('id', 'measured_data')
-            scrollbox = initScrollBox('measuredScrollbox', main.append('g').attr('id', 'measured').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.03) + ')'), box, {}, true)
+            scrollbox = initScrollBox('measuredScrollbox', main.append('g').attr('id', 'measured').attr('transform', 'translate(' + box.x + ',' + (box.y + box.h * 0.03) + ')'), box, {
+            }, true)
 
             main.append('rect')
                 .attr('x', box.x)
@@ -2276,7 +2661,13 @@ let main_weather_monitoring = function(opt_in) {
                     .style('font-size', '11px')
             }
             let g = scrollbox.get('innerG')
-            let size = {x: 6, y: 26, w: 30, h: 30, marg: 4}
+            let size = {
+                x: 6,
+                y: 26,
+                w: 30,
+                h: 30,
+                marg: 4,
+            }
 
             let current = g
                 .selectAll('g.urgent')
@@ -2319,7 +2710,8 @@ let main_weather_monitoring = function(opt_in) {
 
             let main = svg.floatingMenuRoot.append('g').attr('id', 'urgentSupervision')
                 .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
-            scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + 0 + ',' + 6 + ')'), box, {}, true)
+            scrollbox = initScrollBox('supervisionScrollbox', main.append('g').attr('id', 'supervision').attr('transform', 'translate(' + 0 + ',' + 6 + ')'), box, {
+            }, true)
 
             // main.append('rect')
             //   .attr('x', box.x)
@@ -2440,7 +2832,9 @@ let main_weather_monitoring = function(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let currentTime = {date: new Date(shared.server.time_of_night.date_now)}
+            let currentTime = {
+                date: new Date(shared.server.time_of_night.date_now),
+            }
             svg.floatingMenuRoot.select('g#fmdate text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
             svg.floatingMenuRoot.select('g#fmdate text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
         }
@@ -2451,7 +2845,8 @@ let main_weather_monitoring = function(opt_in) {
     }
     let SvgFMTimeline = function() {
         let box
-        let stock = {}
+        let stock = {
+        }
 
         function changeBlockTime(a, b) {
             shared.time.range = 1000 * (3600 * (parseInt(a)) + 60 * parseInt(b))
@@ -2466,7 +2861,12 @@ let main_weather_monitoring = function(opt_in) {
                 main: {
                     id: type + 'minus_button',
                     g: g,
-                    box: {x: innerbox.x - 3, y: innerbox.y + 12, width: 9, height: 9},
+                    box: {
+                        x: innerbox.x - 3,
+                        y: innerbox.y + 12,
+                        width: 9,
+                        height: 9,
+                    },
                     background: {
                         common: {
                             style: {
@@ -2484,7 +2884,8 @@ let main_weather_monitoring = function(opt_in) {
                                 stroke: colorPalette.darkest.stroke,
                                 'stroke-width': 0.1,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                 },
@@ -2514,7 +2915,8 @@ let main_weather_monitoring = function(opt_in) {
                             'pointer-events': 'none',
                             'user-select': 'none',
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                 },
                 events: {
@@ -2538,7 +2940,12 @@ let main_weather_monitoring = function(opt_in) {
                 main: {
                     id: type + 'plus_button',
                     g: g,
-                    box: {x: innerbox.x + 6, y: innerbox.y + 12, width: 9, height: 9},
+                    box: {
+                        x: innerbox.x + 6,
+                        y: innerbox.y + 12,
+                        width: 9,
+                        height: 9,
+                    },
                     background: {
                         common: {
                             style: {
@@ -2556,7 +2963,8 @@ let main_weather_monitoring = function(opt_in) {
                                 stroke: colorPalette.darkest.stroke,
                                 'stroke-width': 0.1,
                             },
-                            attr: {},
+                            attr: {
+                            },
                         },
                     },
                 },
@@ -2586,7 +2994,8 @@ let main_weather_monitoring = function(opt_in) {
                             'pointer-events': 'none',
                             'user-select': 'none',
                         },
-                        attr: {},
+                        attr: {
+                        },
                     },
                 },
                 events: {
@@ -2671,16 +3080,25 @@ let main_weather_monitoring = function(opt_in) {
                 h: 18,
             }
 
-            stock.hourOpts = {disabled: false, value: hour, min: 0, max: 23, step: 1}
+            stock.hourOpts = {
+                disabled: false,
+                value: hour,
+                min: 0,
+                max: 23,
+                step: 1,
+            }
             stock.hour = input_date_d3(gDateSelector,
                 hbox,
                 'hour',
                 stock.hourOpts,
-                {change: (d) => {
-                    changeBlockTime(d, stock.minute.property('value'))
-                }, enter: (d) => {
-                    stock.minute.node().focus()
-                }})
+                {
+                    change: (d) => {
+                        changeBlockTime(d, stock.minute.property('value'))
+                    },
+                    enter: (d) => {
+                        stock.minute.node().focus()
+                    },
+                })
             createInput('hour', gDateSelector, hbox)
             gDateSelector.append('text')
                 .text(':')
@@ -2688,16 +3106,25 @@ let main_weather_monitoring = function(opt_in) {
                 .style('font-size', font_size + 'px')
                 .attr('text-anchor', 'middle')
                 .attr('transform', 'translate(' + (hbox.x + hbox.w + 0.5 + 5) + ',' + (hbox.h * 0.5) + ')')
-            stock.minuteOpts = {disabled: false, value: min, min: 0, max: 59, step: 1}
+            stock.minuteOpts = {
+                disabled: false,
+                value: min,
+                min: 0,
+                max: 59,
+                step: 1,
+            }
             stock.minute = input_date_d3(gDateSelector,
                 mbox,
                 'minute',
                 stock.minuteOpts,
-                {change: (d) => {
-                    changeBlockTime(stock.hour.property('value'), d)
-                }, enter: (d) => {
-                    stock.second.node().focus()
-                }})
+                {
+                    change: (d) => {
+                        changeBlockTime(stock.hour.property('value'), d)
+                    },
+                    enter: (d) => {
+                        stock.second.node().focus()
+                    },
+                })
             createInput('minute', gDateSelector, mbox)
 
             let gFromToSelector = main.append('g').attr('transform', 'translate(' + (box.w * 0.03) + ',' + (box.h * 0.7) + ')')
@@ -2722,7 +3149,9 @@ let main_weather_monitoring = function(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let currentTime = {date: new Date(shared.server.time_of_night.date_now)}
+            let currentTime = {
+                date: new Date(shared.server.time_of_night.date_now),
+            }
             svg.floatingMenuRoot.select('text#currentHourTop').text(d3.timeFormat('%b %a %d, %Y')(currentTime.date))
             svg.floatingMenuRoot.select('text#currentHourBottom').text(d3.timeFormat('%H:%M:%S UTC')(currentTime.date))
         }
@@ -2741,8 +3170,16 @@ let main_weather_monitoring = function(opt_in) {
                 return
             }
             let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
-            scrollbox.updateBox({x: 0, y: 0, w: box.pl.w, h: box.pl.h})
-            scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(plotList.length / nbperline))})
+            scrollbox.updateBox({
+                x: 0,
+                y: 0,
+                w: box.pl.w,
+                h: box.pl.h,
+            })
+            scrollbox.resetVerticalScroller({
+                canScroll: true,
+                scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(plotList.length / nbperline)),
+            })
             // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
         }
         this.adjustScrollBox = adjustScrollBox
@@ -2771,7 +3208,13 @@ let main_weather_monitoring = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: opt_in.box.h, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: opt_in.box.h,
+                                marg: 0,
+                            },
                             type: 'bottom',
                             attr: {
                                 text: {
@@ -2802,7 +3245,13 @@ let main_weather_monitoring = function(opt_in) {
                         showAxis: true,
                         main: {
                             g: undefined,
-                            box: {x: 0, y: 0, w: 0, h: 0, marg: 0},
+                            box: {
+                                x: 0,
+                                y: 0,
+                                w: 0,
+                                h: 0,
+                                marg: 0,
+                            },
                             type: 'left',
                             mode: 'linear',
                             attr: {
@@ -2862,7 +3311,8 @@ let main_weather_monitoring = function(opt_in) {
                     //   }
                     // }
                 ],
-                content: {},
+                content: {
+                },
             })
             return plot
         }
@@ -2877,12 +3327,14 @@ let main_weather_monitoring = function(opt_in) {
             let plotlistg = svg.plotList.append('g').attr('id', 'plotList')
                 .style('pointer-events', 'auto')
 
-            scrollbox = initScrollBox('plotListScrollbox', plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + 0 + ',' + 0 + ')'), box.pl, {}, true)
+            scrollbox = initScrollBox('plotListScrollbox', plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + 0 + ',' + 0 + ')'), box.pl, {
+            }, true)
             let pinnedPlot = scrollbox.get('innerG')
 
             let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
             for (var i = 0; i < 8; i++) {
-                let opt_in = {g: pinnedPlot.append('g'),
+                let opt_in = {
+                    g: pinnedPlot.append('g'),
                     box: plotbox,
                 }
                 opt_in.g.attr('transform', 'translate(' + (25 + (plotbox.w + 30) * (i % nbperline)) + ',' + (15 + plotbox.h * 0.15 + (plotbox.h + 20) * parseInt(i / nbperline)) + ')')
@@ -2890,8 +3342,14 @@ let main_weather_monitoring = function(opt_in) {
                 let plot = createPlot(opt_in)
                 plotList.push(plot)
 
-                let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-                let endTime = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
+                let startTime = {
+                    date: new Date(shared.time.from),
+                    time: Number(shared.time.from.getTime()),
+                }
+                let endTime = {
+                    date: new Date(shared.server.time_of_night.date_now),
+                    time: Number(shared.server.time_of_night.now),
+                }
                 plot.updateAxis({
                     id: 'bottom',
                     domain: [ startTime.date, endTime.date ],
@@ -2963,7 +3421,8 @@ let main_weather_monitoring = function(opt_in) {
                 .attr('stroke', '#000000')
                 .attr('stroke-width', '0.4px')
             bck_pattern({
-                com: {},
+                com: {
+                },
                 g_now: maing.append('g').attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.05) + ',' + (obsbox.y + obsbox.h * 0.05) + ')'),
                 g_tag: 'hex',
                 len_wh: [ obsbox.w * 0.9, obsbox.h * 0.9 ],
@@ -3047,8 +3506,14 @@ let main_weather_monitoring = function(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-            let endTime = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
+            let startTime = {
+                date: new Date(shared.time.from),
+                time: Number(shared.time.from.getTime()),
+            }
+            let endTime = {
+                date: new Date(shared.server.time_of_night.date_now),
+                time: Number(shared.server.time_of_night.now),
+            }
             plot.updateAxis({
                 id: 'bottom',
                 domain: [ startTime.date, endTime.date ],

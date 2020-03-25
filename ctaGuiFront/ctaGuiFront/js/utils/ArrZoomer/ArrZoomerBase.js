@@ -60,7 +60,8 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    let elements = {}
+    let elements = {
+    }
     function get_ele(tag) {
         return elements[tag]
     }
@@ -76,29 +77,41 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    let svgs = {}
+    let svgs = {
+    }
     this_top.svgs = svgs
-    svgs.main = {}
-    svgs.mini = {}
-    svgs.ches = {}
-    svgs.tree = {}
-    svgs.lens = {}
+    svgs.main = {
+    }
+    svgs.mini = {
+    }
+    svgs.ches = {
+    }
+    svgs.tree = {
+    }
+    svgs.lens = {
+    }
     svgs.g_svg = svg.append('g')
 
     let interpolate01 = d3.interpolate(0, 1)
     this_top.interpolate01 = interpolate01
 
-    let zooms = {}
+    let zooms = {
+    }
     this_top.zooms = zooms
     zooms.target = ''
 
-    let instruments = {}
+    let instruments = {
+    }
     this_top.instruments = instruments
   
-    instruments.props = {}
-    instruments.props0 = {}
-    instruments.tau_fracs = {}
-    instruments.prop_titles = {}
+    instruments.props = {
+    }
+    instruments.props0 = {
+    }
+    instruments.tau_fracs = {
+    }
+    instruments.prop_titles = {
+    }
     instruments.all_ids = []
     instruments.all_ids0 = []
     instruments.all_props = []
@@ -107,17 +120,26 @@ window.ArrZoomerBase = function(opt_in0) {
     instruments.prop_title0 = 'Health'
     instruments.tau_space = tau / 50
 
-    instruments.data = {}
+    instruments.data = {
+    }
     instruments.data.tel = []
-    instruments.data.id_indices = {}
-    instruments.data.data_base_s1 = {}
-    instruments.data.prop_data_s1 = {}
-    instruments.data.prop_parent_s1 = {}
-    instruments.data.prop_title_s1 = {}
+    instruments.data.id_indices = {
+    }
+    instruments.data.data_base_s1 = {
+    }
+    instruments.data.prop_data_s1 = {
+    }
+    instruments.data.prop_parent_s1 = {
+    }
+    instruments.data.prop_title_s1 = {
+    }
 
-    instruments.scale_r = {}
-    instruments.scale_r[0] = {}
-    instruments.scale_r[1] = {}
+    instruments.scale_r = {
+    }
+    instruments.scale_r[0] = {
+    }
+    instruments.scale_r[1] = {
+    }
 
     instruments.scale_r[0].health0 = 1.1
     instruments.scale_r[0].health1 = 1.2
@@ -135,7 +157,9 @@ window.ArrZoomerBase = function(opt_in0) {
 
     this_top.site_scale = is_south ? 4 / 9 : 1
   
-    this_top.tel_rs = { s00: [ 12, 13, 14, 14 ] }
+    this_top.tel_rs = {
+        s00: [ 12, 13, 14, 14 ],
+    }
     this_top.tel_rs.s00 = this_top.tel_rs.s00.map(
         function(x) {
             return x * this_top.site_scale
@@ -198,7 +222,8 @@ window.ArrZoomerBase = function(opt_in0) {
         instruments.all_ids0.push('')
         instruments.props[''] = []
         instruments.props0[''] = [ instruments.prop0 ]
-        instruments.prop_titles[''] = {}
+        instruments.prop_titles[''] = {
+        }
 
         // --FIXME-- currently sorting by the property name, but
         // should actually be by property title ...
@@ -224,7 +249,8 @@ window.ArrZoomerBase = function(opt_in0) {
 
             instruments.props[id_now] = []
             instruments.props0[id_now] = [ instruments.prop0 ]
-            instruments.prop_titles[id_now] = {}
+            instruments.prop_titles[id_now] = {
+            }
 
             instruments.all_ids.push(id_now)
             instruments.all_ids0.push(id_now)
@@ -270,8 +296,10 @@ window.ArrZoomerBase = function(opt_in0) {
     function set_tel_data(data_in, isInit) {
         if (isInit) {
             instruments.data.tel = []
-            instruments.data.avg = {}
-            instruments.data.id_indices = {}
+            instruments.data.avg = {
+            }
+            instruments.data.id_indices = {
+            }
         }
 
         $.each(data_in, function(id, data_now) {
@@ -281,7 +309,8 @@ window.ArrZoomerBase = function(opt_in0) {
             // if (!isTelTypeIn('main', id)) return
       
             // console.log('==',id,data_now)
-            let tel_data = {}
+            let tel_data = {
+            }
             tel_data.id = id
 
             $.each(instruments.props0[tel_data.id], function(index, porp_now) {
@@ -359,7 +388,8 @@ window.ArrZoomerBase = function(opt_in0) {
     }
     this_top.get_prop_pos_shift = get_prop_pos_shift
 
-    zooms.len = {}
+    zooms.len = {
+    }
     zooms.len['0.0'] = 1
     if (is_south) {
         zooms.len['0.1'] = 2 // - 0.4
@@ -526,7 +556,9 @@ window.ArrZoomerBase = function(opt_in0) {
             eleMini.init_data({
                 instrument_data: {
                     tel: instruments.data.tel,
-                    vor: { data: instruments.data.vor.data },
+                    vor: {
+                        data: instruments.data.vor.data,
+                    },
                     xyr_physical: instruments.data.mini,
                     vor_dblclick: instruments.data.dblclick,
                 },
@@ -559,7 +591,9 @@ window.ArrZoomerBase = function(opt_in0) {
             eleLens.init_data({
                 instrument_data: {
                     tel: instruments.data.tel,
-                    vor: { data: instruments.data.vor.data },
+                    vor: {
+                        data: instruments.data.vor.data,
+                    },
                     xyr_physical: instruments.data.lens,
                     // xyr: instruments.data.xyr,
                     vor_dblclick: instruments.data.dblclick,
@@ -609,13 +643,22 @@ window.ArrZoomerBase = function(opt_in0) {
         }
 
         if (data_in.type === 's00') {
-            run_loop.push({ tag: '_s00_update_' + my_unique_id, data: data_in })
+            run_loop.push({
+                tag: '_s00_update_' + my_unique_id,
+                data: data_in,
+            })
         }
         else if (data_in.type === 's11') {
-            run_loop.push({ tag: '_s11_update_' + my_unique_id, data: data_in })
+            run_loop.push({
+                tag: '_s11_update_' + my_unique_id,
+                data: data_in,
+            })
         }
         else if (data_in.type === 'sub_arr') {
-            run_loop.push({ tag: 'sub_arr_update' + my_unique_id, data: data_in })
+            run_loop.push({
+                tag: 'sub_arr_update' + my_unique_id,
+                data: data_in,
+            })
         }
         else {
             console.error('undefined tag for data_in = ', data_in, ' !!!!!! ')
@@ -735,7 +778,9 @@ window.ArrZoomerBase = function(opt_in0) {
         }
 
         get_ele('main').set_tel_layout({
-            id: 'sub_arr', data: data_in.data, updtId: false,
+            id: 'sub_arr',
+            data: data_in.data,
+            updtId: false,
         })
 
         return
@@ -743,7 +788,9 @@ window.ArrZoomerBase = function(opt_in0) {
 
     function set_tel_layout(id_now) {
         get_ele('main').set_tel_layout({
-            id: id_now, data: null, updtId: true,
+            id: id_now,
+            data: null,
+            updtId: true,
         })
     }
     this_top.set_tel_layout = set_tel_layout
@@ -752,11 +799,15 @@ window.ArrZoomerBase = function(opt_in0) {
     //
     // ------------------------------------------------------------------
     run_loop.init({
-        tag: 'set_state' + my_unique_id, func: set_state_once, n_keep: 1,
+        tag: 'set_state' + my_unique_id,
+        func: set_state_once,
+        n_keep: 1,
     })
 
     function set_state() {
-        run_loop.push({ tag: 'set_state' + my_unique_id })
+        run_loop.push({
+            tag: 'set_state' + my_unique_id,
+        })
     }
     this_top.set_state = set_state
 
@@ -788,7 +839,8 @@ window.ArrZoomerBase = function(opt_in0) {
         }
 
         locker.remove({
-            id: 'set_state_lock', delay: times.anim_arc * 2,
+            id: 'set_state_lock',
+            delay: times.anim_arc * 2,
         })
     }
 
@@ -796,13 +848,16 @@ window.ArrZoomerBase = function(opt_in0) {
     //
     // ------------------------------------------------------------------
     run_loop.init({
-        tag: '_s1_props_' + my_unique_id, func: props_s1_once, n_keep: -1,
+        tag: '_s1_props_' + my_unique_id,
+        func: props_s1_once,
+        n_keep: -1,
     })
 
     function props_s1(opt_in) {
     // console.log('set_state',get_ele('main').get_zoom_state(),get_scale())
         run_loop.push({
-            tag: '_s1_props_' + my_unique_id, data: opt_in,
+            tag: '_s1_props_' + my_unique_id,
+            data: opt_in,
         })
     }
     // this.props_s1 = props_s1;
@@ -848,7 +903,9 @@ window.ArrZoomerBase = function(opt_in0) {
     // has ended, another was already requested too).
     // ------------------------------------------------------------------
     run_loop.init({
-        tag: '_get_data_s1_' + my_unique_id, func: get_data_s1_once, n_keep: 1,
+        tag: '_get_data_s1_' + my_unique_id,
+        func: get_data_s1_once,
+        n_keep: 1,
     })
 
     function get_data_s1(widget_id_in, data_in) {
@@ -860,7 +917,10 @@ window.ArrZoomerBase = function(opt_in0) {
         // console.log('-client- get_data_s1',data_in)
 
         if (get_ele('main').get_zoom_state() === 1) {
-            run_loop.push({ tag: '_get_data_s1_' + my_unique_id, data: data_in })
+            run_loop.push({
+                tag: '_get_data_s1_' + my_unique_id,
+                data: data_in,
+            })
         }
     }
     this_top.get_data_s1 = get_data_s1
@@ -887,7 +947,8 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    let prev_sync = {}
+    let prev_sync = {
+    }
     function get_sync_state(data_in) {
         if (document.hidden) {
             return
@@ -947,7 +1008,8 @@ window.ArrZoomerBase = function(opt_in0) {
 
     function sync_state_send(data_in) {
         run_loop.push({
-            tag: 'sync_state_send' + my_unique_id, data: data_in,
+            tag: 'sync_state_send' + my_unique_id,
+            data: data_in,
         })
     }
     this_top.sync_state_send = sync_state_send
@@ -997,7 +1059,8 @@ window.ArrZoomerBase = function(opt_in0) {
             return
         }
 
-        let data = {}
+        let data = {
+        }
         data.widget_id = widget_id
         data.zoom_state = opt_in.zoom_state
         data.zoom_target = opt_in.zoom_target
@@ -1027,7 +1090,8 @@ window.ArrZoomerBase = function(opt_in0) {
 
         let main_widget_state = get_ele('main').get_widget_state()
     
-        let tree_widget_state = {}
+        let tree_widget_state = {
+        }
         if (get_ele('tree')) {
             tree_widget_state = get_ele('tree').get_widget_state()
         }
@@ -1040,7 +1104,8 @@ window.ArrZoomerBase = function(opt_in0) {
             tree_widget_state['zoom_target_prop'] = get_widget_state()
         }
 
-        let data_widget = {}
+        let data_widget = {
+        }
         data_widget.widget_id = widget_id
         data_widget.zoom_state = main_widget_state.zoom_state
         data_widget.zoom_target = main_widget_state.zoom_target
@@ -1059,6 +1124,22 @@ window.ArrZoomerBase = function(opt_in0) {
         return
     }
     this_top.set_zoom_state = set_zoom_state
+
+    
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    // sock.socket.on('init_data' + 'ArrZoomer', function(data_in) {
+    //     console.log('dddddd', data_in)
+    //     // if (data_in.widget_type === widget_type) {
+    //     //     if (is_def(this_top.all_widgets[widget_type].widgets[data_in.widget_id])) {
+    //     //         this_top.all_widgets[widget_type].widgets[data_in.widget_id].init_data(
+    //     //             data_in
+    //     //         )
+    //     //         init_views[data_in.widget_id] = true
+    //     //     }
+    //     // }
+    // })
 
     // ------------------------------------------------------------------
     // get update for state1 data which was explicitly asked for by a given module

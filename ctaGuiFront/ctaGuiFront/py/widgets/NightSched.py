@@ -33,8 +33,9 @@ class NightSched():
         # the parent of this widget
         self.socket_manager = socket_manager
         my_assert(log=self.log,
-               msg=[" - no socket_manager handed to", self.__class__.__name__],
-               state=(self.socket_manager is not None))
+                  msg=[" - no socket_manager handed to",
+                       self.__class__.__name__],
+                  state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
@@ -74,8 +75,9 @@ class NightSched():
         # override the global logging variable with a name
         # corresponding to the current session id
         self.log = my_log(title=str(self.socket_manager.user_id) + "/" +
-                         str(self.socket_manager.sess_id) + "/" + __name__ + "/"
-                         + self.widget_id)
+                          str(self.socket_manager.sess_id) +
+                          "/" + __name__ + "/"
+                          + self.widget_id)
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
@@ -148,7 +150,8 @@ class NightSched():
             blocks = self.redis.pipe.execute(packed=True)
             NightSched.blocks[key] = sorted(
                 blocks,
-                cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
+                cmp=lambda a, b: int(a['time']['start']) -
+                int(b['time']['start'])
             )
 
         return

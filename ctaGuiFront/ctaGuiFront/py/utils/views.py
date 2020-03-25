@@ -38,7 +38,7 @@ def get_display_userid(request):
 
 
 # ------------------------------------------------------------------
-# login page with authentication - check the DB for 
+# login page with authentication - check the DB for
 # the given user_id/password
 # ------------------------------------------------------------------
 def view_login(request):

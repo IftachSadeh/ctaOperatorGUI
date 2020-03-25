@@ -33,7 +33,7 @@ class SubArrGrp():
         # the parent of this widget
         self.socket_manager = socket_manager
         my_assert(log=self.log, msg=[
-               " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
+            " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
 
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
@@ -67,7 +67,7 @@ class SubArrGrp():
 
         # override the global logging variable with a name corresponding to the current session id
         self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
-                         str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
+                          str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
@@ -145,7 +145,7 @@ class SubArrGrp():
                 inst_pos_now = inst_pos[id_now] if id_now in inst_pos else self.pos0
 
                 data["tel"].append({
-                    "id": id_now, "trgId": trgId, 
+                    "id": id_now, "trgId": trgId,
                     "pntId": pntId, "pos": inst_pos_now,
                 })
 
@@ -164,7 +164,7 @@ class SubArrGrp():
 
             # add the pointing for this block
             data["pnt"].append({
-                "id": pntId, "N": pointing_name, 
+                "id": pntId, "N": pointing_name,
                 "pos": point_pos, "tel_ids": block_tel_ids,
             })
 
@@ -176,7 +176,7 @@ class SubArrGrp():
             inst_pos_now = inst_pos[id_now] if id_now in inst_pos else self.pos0
 
             data["tel"].append({
-                "id": id_now, "trgId": no_sub_arr_name, 
+                "id": id_now, "trgId": no_sub_arr_name,
                 "pntId": no_sub_arr_name, "pos": inst_pos_now,
             })
 

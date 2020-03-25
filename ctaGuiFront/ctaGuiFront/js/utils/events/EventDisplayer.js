@@ -11,7 +11,10 @@
 /* global Locker */
 /* global RunLoop */
 
-load_script({ source: 'utils_scrollTable', script: '/js/utils/ScrollBox.js' })
+load_script({
+    source: 'utils_scrollTable',
+    script: '/js/utils/ScrollBox.js',
+})
 
 // ------------------------------------------------------------------
 //
@@ -22,8 +25,15 @@ window.EventDisplayer = function(opt_in) {
         main: {
             tag: 'eventQueueRootTag',
             g: undefined,
-            scroll: {},
-            box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+            scroll: {
+            },
+            box: {
+                x: 0,
+                y: 0,
+                w: 1000,
+                h: 300,
+                marg: 0,
+            },
             background: {
                 fill: color_theme.brighter.background,
                 stroke: color_theme.brighter.stroke,
@@ -37,7 +47,13 @@ window.EventDisplayer = function(opt_in) {
             axis: {
                 enabled: true,
                 g: undefined,
-                box: {x: 0, y: 300, w: 1000, h: 0, marg: 0},
+                box: {
+                    x: 0,
+                    y: 300,
+                    w: 1000,
+                    h: 0,
+                    marg: 0,
+                },
                 axis: undefined,
                 scale: undefined,
                 domain: [ 0, 1000 ],
@@ -58,7 +74,13 @@ window.EventDisplayer = function(opt_in) {
             timeBars: {
                 enabled: true,
                 g: undefined,
-                box: {x: 0, y: 0, w: 1000, h: 300, marg: 0},
+                box: {
+                    x: 0,
+                    y: 0,
+                    w: 1000,
+                    h: 300,
+                    marg: 0,
+                },
             },
         },
 
@@ -67,21 +89,32 @@ window.EventDisplayer = function(opt_in) {
             filtering: [],
         },
         time: {
-            currentTime: {date: new Date(), time: 0},
-            startTime: {date: new Date(), time: 0},
-            endTime: {date: new Date(), time: 1000},
+            currentTime: {
+                date: new Date(),
+                time: 0,
+            },
+            startTime: {
+                date: new Date(),
+                time: 0,
+            },
+            endTime: {
+                date: new Date(),
+                time: 1000,
+            },
         },
         data: {
             raw: {
                 events: [],
             },
-            filtered: {},
+            filtered: {
+            },
         },
         debug: {
             enabled: false,
         },
         pattern: {
-            select: {},
+            select: {
+            },
         },
         input: {
             over: {
@@ -112,7 +145,8 @@ window.EventDisplayer = function(opt_in) {
         if (com.style) {
             return
         }
-        com.style = {}
+        com.style = {
+        }
         com.style.runRecCol = cols_blues[2]
         com.style.eventCol = function(opt_in) {
             return com.main.color_theme.dark
@@ -121,7 +155,8 @@ window.EventDisplayer = function(opt_in) {
             return 0.5
         }
 
-        com.pattern.select = {}
+        com.pattern.select = {
+        }
         com.pattern.select.defs = com.main.g.append('defs')
         // com.pattern.select.patternHover = com.pattern.select.defs.append('pattern')
         //   .attr('id', 'patternHover')
@@ -234,15 +269,22 @@ window.EventDisplayer = function(opt_in) {
         function setDefaultStyleForEvents(events) {
             for (let index in events) {
                 let b = events[index]
-                let bDisplay = {}
+                let bDisplay = {
+                }
 
-                let cols = com.style.eventCol({ d: b })
+                let cols = com.style.eventCol({
+                    d: b,
+                })
 
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.2
                 bDisplay.fill = cols.background
-                bDisplay.fill_opacity = com.style.eventOpac({ d: b })
-                bDisplay.strokeOpacity = com.style.eventOpac({ d: b })
+                bDisplay.fill_opacity = com.style.eventOpac({
+                    d: b,
+                })
+                bDisplay.strokeOpacity = com.style.eventOpac({
+                    d: b,
+                })
                 bDisplay.strokeDasharray = []
                 bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
@@ -319,7 +361,10 @@ window.EventDisplayer = function(opt_in) {
                 for (let j = 0; j < track.length; j++) {
                     let intersect = false
                     for (let z = 0; z < track[j].length; z++) {
-                        if (timeIntersect(track[j][z], {start: start, end: end})) {
+                        if (timeIntersect(track[j][z], {
+                            start: start,
+                            end: end,
+                        })) {
                             intersect = true
                         } // { // && track[j].type === events[i].name) {
                         // track[j].start = track[j].start < start ? track[j].start : start
@@ -488,7 +533,12 @@ window.EventDisplayer = function(opt_in) {
                 })
 
             rect.each(function(d, i) {
-                let box = {x: timescale(d.start), y: (offsetY + height) * d.track, w: timescale(d.end) - timescale(d.start), h: height}
+                let box = {
+                    x: timescale(d.start),
+                    y: (offsetY + height) * d.track,
+                    w: timescale(d.end) - timescale(d.start),
+                    h: height,
+                }
                 d3.select(this)
                 // .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
                     .attr('opacity', d => d.display.opacity)
@@ -513,12 +563,30 @@ window.EventDisplayer = function(opt_in) {
                             })
                             .curve(d3.curveLinear)
                         return lineGenerator([
-                            {x: box.x, y: box.y},
-                            {x: box.x, y: box.y + box.h},
-                            {x: box.x, y: box.y + box.h * 0.5},
-                            {x: box.x + timescale(d.end) - timescale(d.start), y: box.y + box.h * 0.5},
-                            {x: box.x + timescale(d.end) - timescale(d.start), y: box.y + box.h * 0.3},
-                            {x: box.x + timescale(d.end) - timescale(d.start), y: box.y + box.h * 0.7},
+                            {
+                                x: box.x,
+                                y: box.y,
+                            },
+                            {
+                                x: box.x,
+                                y: box.y + box.h,
+                            },
+                            {
+                                x: box.x,
+                                y: box.y + box.h * 0.5,
+                            },
+                            {
+                                x: box.x + timescale(d.end) - timescale(d.start),
+                                y: box.y + box.h * 0.5,
+                            },
+                            {
+                                x: box.x + timescale(d.end) - timescale(d.start),
+                                y: box.y + box.h * 0.3,
+                            },
+                            {
+                                x: box.x + timescale(d.end) - timescale(d.start),
+                                y: box.y + box.h * 0.7,
+                            },
                         ])
                     })
                 // .attr('x', box.x)
@@ -765,15 +833,22 @@ window.EventDisplayer = function(opt_in) {
         function setDefaultStyleForEvents(events) {
             for (let index in events) {
                 let b = events[index]
-                let bDisplay = {}
+                let bDisplay = {
+                }
 
-                let cols = com.style.eventCol({ d: b })
+                let cols = com.style.eventCol({
+                    d: b,
+                })
 
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.2
                 bDisplay.fill = cols.background
-                bDisplay.fill_opacity = com.style.eventOpac({ d: b })
-                bDisplay.strokeOpacity = com.style.eventOpac({ d: b })
+                bDisplay.fill_opacity = com.style.eventOpac({
+                    d: b,
+                })
+                bDisplay.strokeOpacity = com.style.eventOpac({
+                    d: b,
+                })
                 bDisplay.strokeDasharray = []
                 bDisplay.opacity = b.filtered === true ? 0.05 : 1
 
@@ -851,7 +926,10 @@ window.EventDisplayer = function(opt_in) {
                 for (let j = 0; j < track.length; j++) {
                     let intersect = false
                     for (let z = 0; z < track[j].length; z++) {
-                        if (timeIntersect(track[j][z], {start: start, end: end})) {
+                        if (timeIntersect(track[j][z], {
+                            start: start,
+                            end: end,
+                        })) {
                             intersect = true
                         } // { // && track[j].type === events[i].name) {
                         // track[j].start = track[j].start < start ? track[j].start : start
@@ -1027,11 +1105,19 @@ window.EventDisplayer = function(opt_in) {
                         index_shift += 1
                     }
                 }
-                else if (timeIntersect(d, {start: com.time.startTime.time, end: com.time.endTime.time})) {
+                else if (timeIntersect(d, {
+                    start: com.time.startTime.time,
+                    end: com.time.endTime.time,
+                })) {
                     opac = 1
                     index_shift += 1
                 }
-                let box = {x: com.eventQueue.details.anchor === 'right' ? (com.main.box.w - (2 + 56 * (index_shift + 1))) : 2 + 56 * index_shift, y: 2, w: 50, h: com.main.box.h * 0.5}
+                let box = {
+                    x: com.eventQueue.details.anchor === 'right' ? (com.main.box.w - (2 + 56 * (index_shift + 1))) : 2 + 56 * index_shift,
+                    y: 2,
+                    w: 50,
+                    h: com.main.box.h * 0.5,
+                }
                 d3.select(this)
                 // .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
                     .attr('opacity', d => d.display.opacity)
@@ -1313,15 +1399,21 @@ window.EventDisplayer = function(opt_in) {
                 during: 'eventDisplayerScroll' + 'zoomsuring',
                 end: 'eventDisplayerScroll' + 'zoomEnd',
             },
-            run_loop: new RunLoop({tag: 'eventDisplayerScroll'}),
+            run_loop: new RunLoop({
+                tag: 'eventDisplayerScroll',
+            }),
             canScroll: true,
             scrollVertical: false,
             scrollHorizontal: true,
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {h: 2},
-            scrollRecV: {w: 2},
+            scrollRecH: {
+                h: 2,
+            },
+            scrollRecV: {
+                w: 2,
+            },
         })
         com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
     }
@@ -1413,8 +1505,17 @@ window.EventDisplayer = function(opt_in) {
 
         let filters = opt_in.filters ? opt_in.filters : com.filters.filtering
 
-        let filtered = {done: [], run: [], cancel: [], wait: [], fail: []}
-        let stats = {tot: 0, filtered: 0}
+        let filtered = {
+            done: [],
+            run: [],
+            cancel: [],
+            wait: [],
+            fail: [],
+        }
+        let stats = {
+            tot: 0,
+            filtered: 0,
+        }
         stats.tot = com.data.raw.events.done.length + com.data.raw.events.wait.length + com.data.raw.events.run.length
         // separate event according to states
         for (var z = 0; z < com.data.raw.events.done.length; z++) {
@@ -1497,7 +1598,10 @@ window.EventDisplayer = function(opt_in) {
             }
             return data_now
         })
-        return {data: filtered, stats: stats}
+        return {
+            data: filtered,
+            stats: stats,
+        }
     }
     this.filterData = filterData
     function createEventsGroup() {
@@ -1567,7 +1671,8 @@ window.EventDisplayer = function(opt_in) {
                 })
                 .call(d3.drag()
                     .on('start', function(d) {
-                        com.interaction = {}
+                        com.interaction = {
+                        }
                         com.interaction.oldG = parent
                         com.events.event.drag.start(d)
                     })
@@ -1639,7 +1744,8 @@ window.EventDisplayer = function(opt_in) {
     this.update_data = update_data
     function update() {
         com.filters.filtering = updateFiltering()
-        com.data.filtered = filterData({}).data
+        com.data.filtered = filterData({
+        }).data
         createEventsGroup()
         if (com.displayer === 'eventQueue') {
             eventQueueBib.update()

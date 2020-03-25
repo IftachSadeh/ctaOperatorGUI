@@ -11,7 +11,8 @@
 /* global PlotTimeBar */
 
 window.PlotTimeSeries = function() {
-    let com = {}
+    let com = {
+    }
 
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
@@ -54,7 +55,8 @@ window.PlotTimeSeries = function() {
         }
         com.lockerZoom = lockerZoom
 
-        let lockerV = {}
+        let lockerV = {
+        }
         lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
         lockerV.zoomsuring = lockerV.lockerV.slice().concat([ lockerZoom.during ])
         lockerV.zoomEnd = lockerV.lockerV.slice().concat([ lockerZoom.end ])
@@ -69,20 +71,29 @@ window.PlotTimeSeries = function() {
         // box definition
         // ------------------------------------------------------------------
         com.outerBox = deep_copy(opt_in.boxData)
-        com.boxTrans = { x: opt_in.boxData.x, y: opt_in.boxData.y, k: 1 }
+        com.boxTrans = {
+            x: opt_in.boxData.x,
+            y: opt_in.boxData.y,
+            k: 1,
+        }
         com.g_box = opt_in.g_box
         transScaleBox()
         com.innerBox = com.outerBox
         com.innerBox.x = 0
         com.innerBox.y = 0
 
-        com.bck = {}
+        com.bck = {
+        }
         com.bck.g = com.g_box.append('g')
 
-        com.top = {}
-        com.top.scale = {}
-        com.top.axis = {}
-        com.bot = {}
+        com.top = {
+        }
+        com.top.scale = {
+        }
+        com.top.axis = {
+        }
+        com.bot = {
+        }
         com.timeBar = []
 
         if (!opt_in.hasBotPlot) {
@@ -110,7 +121,8 @@ window.PlotTimeSeries = function() {
         com.top.axis.transY =
       'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
 
-        com.top.g = {}
+        com.top.g = {
+        }
         com.top.g.axis = com.g_box.append('g')
         com.top.g.data = com.g_box.append('g')
         com.top.g.data.attr(
@@ -119,7 +131,8 @@ window.PlotTimeSeries = function() {
         )
         com.top.domain = null
 
-        com.parse = {}
+        com.parse = {
+        }
         com.parse.x = d3.timeParse('%Q')
         com.parse.y = function(d) {
             return +d
@@ -159,7 +172,9 @@ window.PlotTimeSeries = function() {
                 g_box: com.g_box.append('g'),
                 hasBotPlot: true,
                 isPartofPlot: true,
-                style: { hasOutline: true },
+                style: {
+                    hasOutline: true,
+                },
                 boxData: com.bot.box,
                 locker: com.locker,
                 lockerV: [ tagPlot + 'update_data' ],
@@ -187,10 +202,12 @@ window.PlotTimeSeries = function() {
 
     function setStyle(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
-        com.style = {}
+        com.style = {
+        }
 
         com.style.hasOutline = is_def(opt_in.hasOutline) ? opt_in.hasOutline : false
         com.style.bckColor = is_def(opt_in.bckColor) ? opt_in.bckColor : '#F2F2F2'
@@ -265,7 +282,11 @@ window.PlotTimeSeries = function() {
     // com.updateupdateupdate=0;
     function update(data_in) {
         let data = data_in.map(function(d) {
-            return { id: d.x, x: com.parse.x(d.x), y: com.parse.y(d.y) }
+            return {
+                id: d.x,
+                x: com.parse.x(d.x),
+                y: com.parse.y(d.y),
+            }
         })
         data.sort(function(a, b) {
             return a.x - b.x
@@ -294,7 +315,10 @@ window.PlotTimeSeries = function() {
             // probably need to modify
             com.timeBar[i].updateBottomAxisDomain(com.data)
             if (com.overviewLine) {
-                com.timeBar[i].updateLine({ data: com.data, tag: com.mainTag })
+                com.timeBar[i].updateLine({
+                    data: com.data,
+                    tag: com.mainTag,
+                })
             }
         }
     }
@@ -316,7 +340,9 @@ window.PlotTimeSeries = function() {
             .duration(times.anim_arc)
             .call(com.top.axis.y)
 
-        updateCirc({ data: com.data })
+        updateCirc({
+            data: com.data,
+        })
     }
     this.updateAxisPlot = updateAxisPlot
 
@@ -402,7 +428,8 @@ window.PlotTimeSeries = function() {
             let pointerEvents = 'none'
 
             if (!is_def(com.circClass)) {
-                com.circClass = {}
+                com.circClass = {
+                }
             }
             com.circClass[nTopBot] = com.mainTag + 'circ' + nTopBot
 
@@ -456,7 +483,8 @@ window.PlotTimeSeries = function() {
     }
     function updateDomainY(opt_in) {
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
 
         let data = is_def(opt_in.data) ? opt_in.data : com.data
@@ -502,7 +530,8 @@ window.PlotTimeSeries = function() {
         }
 
         if (!is_def(opt_in)) {
-            opt_in = {}
+            opt_in = {
+            }
         }
         let doY = opt_in.doY
         $.each([ false, true ], function(nTopBot, isBot) {
