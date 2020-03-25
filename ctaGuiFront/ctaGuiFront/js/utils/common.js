@@ -555,7 +555,7 @@ window.get_pointing_value = function(pointing) {
 // common telescope properties
 // ------------------------------------------------------------------
 window.tel_info = function() {
-    var is_south = window.__site_type__ === 'S'
+    var is_south = window.SITE_TYPE === 'S'
 
     // ------------------------------------------------------------------
     // names which should match definitions on the python server side
@@ -573,17 +573,17 @@ window.tel_info = function() {
     // ------------------------------------------------------------------
     // telescope ids
     // ------------------------------------------------------------------
-    var tel_ids = window.__socktel_info__.tel_ids
+    var tel_ids = window.SOCKET_INFO.tel_ids
     this.get_ids = function() {
         return deep_copy(tel_ids)
     }
 
-    var tel_id_to_types = window.__socktel_info__.tel_id_to_types
+    var tel_id_to_types = window.SOCKET_INFO.tel_id_to_types
     this.get_id_to_types = function() {
         return deep_copy(tel_id_to_types)
     }
 
-    var categorical_types = window.__socktel_info__.categorical_types
+    var categorical_types = window.SOCKET_INFO.categorical_types
     this.get_categorical_types = function() {
         return deep_copy(categorical_types)
     }
@@ -672,7 +672,7 @@ window.tel_info = function() {
 }
 
 function run_tel_info() {
-    if (window.__socktel_info__ === undefined) {
+    if (window.SOCKET_INFO === undefined) {
         setTimeout(function() {
             run_tel_info()
         }, 10)
@@ -740,15 +740,23 @@ window.inst_health_frac = function(health) {
 // transition times (if the window/tab is inactive, check_is_hidden() makes sure all animations
 // are flushed, and these times are ignored
 // ------------------------------------------------------------------
+let timescale = 1
 var times = {
+    // basic scaling of all times
+    timescale: timescale,
+    // animation duration for general graphical elements
+    anim: 250 * timescale,
+    // animation duration for text
+    anim_txt: 150 * timescale,
+    // base timescale for zooming
+    base_zoom: 350 * timescale,
+    // time to wait between update loop checks
+    wait_loop: 200 * timescale,
+    // time to wait before panel synchronisation
+    wait_sync_state: 250 * timescale,
+    // time to wait between func-queue loop checks
+    wait_queue_loop: 200,
 }
-times.timescale = 1
-times.anim_arc = 250 * times.timescale
-times.anim_txt = 150 * times.timescale
-times.base_zoom = 350 * times.timescale
-times.wait_loop = 200 * times.timescale // time to wait between update loop checks
-times.wait_sync_state = 250 * times.timescale
-times.wait_queue_loop = 200 // time to wait between func-queue loop checks
 window.times = times
 
 // ------------------------------------------------------------------
@@ -836,14 +844,14 @@ window.tog_keyboard_arrow = function(opt_in) {
 
     if (icon_button.icon) {
         if (
-            icon_button.icon === 'unfold-more' ||
-      icon_button.icon === 'unfold-less'
+            icon_button.icon === 'unfold-more'
+      || icon_button.icon === 'unfold-less'
         ) {
             icon_button.icon = more_info.opened ? 'unfold-more' : 'unfold-less'
         }
         else if (
-            icon_button.icon === 'expand-more' ||
-      icon_button.icon === 'expand-less'
+            icon_button.icon === 'expand-more'
+      || icon_button.icon === 'expand-less'
         ) {
             icon_button.icon = more_info.opened ? 'expand-more' : 'expand-less'
         }
@@ -853,8 +861,8 @@ window.tog_keyboard_arrow = function(opt_in) {
             icon_sel.icon = more_info.opened ? 'unfold-more' : 'unfold-less'
         }
         else if (
-            icon_sel.icon === 'expand-more' ||
-      icon_sel.icon === 'expand-less'
+            icon_sel.icon === 'expand-more'
+      || icon_sel.icon === 'expand-less'
         ) {
             icon_sel.icon = more_info.opened ? 'expand-more' : 'expand-less'
         }
@@ -877,8 +885,8 @@ window.tog_keyboard_arrow = function(opt_in) {
 window.dom_add = function(parent_id, ele_add) {
     if (typeof parent_id === 'string' || parent_id instanceof String) {
         if (!(parent_id.indexOf('#') === 0)) {
-            parent_id =
-        '#' + parent_id(document.querySelector(parent_id)).appendChild(ele_add)
+            parent_id
+        = '#' + parent_id(document.querySelector(parent_id)).appendChild(ele_add)
         }
     }
     else {
@@ -1010,7 +1018,8 @@ window.get_selection_box = function(sel) {
 // ------------------------------------------------------------------
 
 // ------------------------------------------------------------------
-// load a script (where loaded scripts can also call this function, allowing recursive behaviour)
+// load a script (where loaded scripts can also call this
+// function, allowing recursive behaviour)
 // ------------------------------------------------------------------
 window.loaded_scripts = {
     queued: [],
@@ -1487,7 +1496,7 @@ window.IconBadge = function() {
             .selectAll('svg')
             .style('position', 'absolute')
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
 
@@ -1549,7 +1558,7 @@ window.IconBadge = function() {
         // optional parameters
         var rad = is_def(opt_in.rad) ? opt_in.rad : base_r
         var delay = is_def(opt_in.delay) ? opt_in.delay : 0
-        var duration = is_def(opt_in.duration) ? opt_in.duration : times.anim_arc
+        var duration = is_def(opt_in.duration) ? opt_in.duration : times.anim
         var show_outline = is_def(opt_in.show_outline) ? opt_in.show_outline : false
         var bigger_icon = is_def(opt_in.bigger_icon) ? opt_in.bigger_icon : false
         var col_back = is_def(opt_in.col_back) ? opt_in.col_back : '#F2F2F2'
@@ -1591,7 +1600,7 @@ window.IconBadge = function() {
 
         var set_r = function(r_in, duration) {
             if (!is_def(duration)) {
-                duration = times.anim_arc
+                duration = times.anim
             }
             var trans = -r_in
             var scale = r_in / base_r
@@ -2100,8 +2109,8 @@ window.bck_pattern = function(opt_in) {
         }
 
         if (
-            (is_def(texture_orient) && com[tag_now].orient !== texture_orient) ||
-      (is_def(texture_size) && com[tag_now].size !== texture_size)
+            (is_def(texture_orient) && com[tag_now].orient !== texture_orient)
+      || (is_def(texture_size) && com[tag_now].size !== texture_size)
         ) {
             if (is_def(texture_orient)) {
                 com[tag_now].orient = texture_orient
@@ -2175,14 +2184,14 @@ window.bck_pattern = function(opt_in) {
             .style('pointer-events', 'none')
             .merge(rect)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('fill', com[tag_now].txtr.url())
             .attr('opacity', opac)
 
         rect
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', '0')
             .remove()
     }
@@ -2221,14 +2230,14 @@ window.bck_pattern = function(opt_in) {
             .attr('vector-effect', 'non-scaling-stroke')
             .merge(path)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('d', com[tag_now].path.mesh())
             .attr('opacity', opac)
 
         path
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', '0')
             .remove()
     }
@@ -2311,8 +2320,8 @@ window.do_zoom_to_target = function(opt_in) {
             center[1] - intpr[1] * scale,
         ]
 
-        return ('translate(' + trans[0] + ',' + trans[1] +
-      ')scale(' + scale + ')')
+        return ('translate(' + trans[0] + ',' + trans[1]
+      + ')scale(' + scale + ')')
     }
 }
 
@@ -2658,5 +2667,5 @@ window.azim_ra = function(data_in) {
 //   var d3G     = opt_in.d3G;
 //   var gradTag = opt_in.gradTag;
 
-//   setTimeout(function () { d3G.selectAll("linearGradient."+gradTag).remove(); }, times.anim_arc*2);
+//   setTimeout(function () { d3G.selectAll("linearGradient."+gradTag).remove(); }, times.anim*2);
 // }

@@ -56,10 +56,10 @@ sock.widget_table[main_script_tag] = function(opt_in) {
     let h0 = 12
     let w0 = 12
     let div_key = 'main'
-    let content = '<div id=\'' + opt_in.base_name + div_key + '\'>' +
+    let content = '<div id=\'' + opt_in.base_name + div_key + '\'>'
   // '<iframe width="600" height="500" id="gmap_canvas" src="https://maps.google.com/maps?q=la%20palma&t=&z=13&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>' +
   // '<iframe width="650" height="650" src="https://embed.windy.com/embed2.html?lat=28.718&lon=-17.849&zoom=11&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=48.683&detailLon=2.133&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" frameborder="0"></iframe>' +
-  '</div>'
+  + '</div>'
 
     opt_in.widget_func = {
         sock_func: sock_weather_monitoring,
@@ -94,7 +94,7 @@ let sock_weather_monitoring = function(opt_in) {}
 let main_weather_monitoring = function(opt_in) {
     // let my_unique_id = unique()
     window.colorPalette = get_color_theme('bright_grey')
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
 
     let widget_type = opt_in.widget_type
     let tag_arr_zoomerPlotsSvg = opt_in.base_name
@@ -121,7 +121,7 @@ let main_weather_monitoring = function(opt_in) {
     }
 
     // let this_sched_block_inspector = this
-    // let is_south = window.__site_type__ === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -647,8 +647,8 @@ let main_weather_monitoring = function(opt_in) {
             status.current = deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[0])
             status.current.x = new Date(shared.server.time_of_night.date_now)
             for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
-                if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined ||
-          shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
+                if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined
+          || shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
                     break
                 }
                 status.previous.push(deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2]))
@@ -678,8 +678,8 @@ let main_weather_monitoring = function(opt_in) {
             status.current.x = new Date(shared.server.time_of_night.date_now)
             status.gradient = Math.floor((Math.random() * 20) - 10)
             for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
-                if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined ||
-          shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
+                if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined
+          || shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
                     break
                 }
                 status.previous.push(deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2]))
@@ -1756,7 +1756,7 @@ let main_weather_monitoring = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         }
@@ -2288,9 +2288,9 @@ let main_weather_monitoring = function(opt_in) {
                 main.append('polygon')
                     .attr('cx', 13 + (lineDim.w * 0.36 / 100 * d.status.current.y))
                     .attr('cy', 16)
-                    .attr('points', (13 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 16 + ' ' +
-            (6 + lineDim.w * 0.36 / 100 * d.status.current.y) + ',' + 24 + ' ' +
-            (20 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 24)
+                    .attr('points', (13 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 16 + ' '
+            + (6 + lineDim.w * 0.36 / 100 * d.status.current.y) + ',' + 24 + ' '
+            + (20 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 24)
                     .attr('r', 3)
                     .attr('fill', '#000000')
                     .attr('stroke', 'none')
@@ -2391,9 +2391,9 @@ let main_weather_monitoring = function(opt_in) {
                 g.select('polygon')
                     .transition()
                     .duration(400)
-                    .attr('points', (13 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 16 + ' ' +
-            (6 + lineDim.w * 0.36 / 100 * d.status.current.y) + ',' + 24 + ' ' +
-            (20 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 24)
+                    .attr('points', (13 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 16 + ' '
+            + (6 + lineDim.w * 0.36 / 100 * d.status.current.y) + ',' + 24 + ' '
+            + (20 + (lineDim.w * 0.36 / 100 * d.status.current.y)) + ',' + 24)
                 g.select('text#valuelabel')
                     .text(d.status.current.y)
                 g.select('text#gradient')
@@ -2429,7 +2429,7 @@ let main_weather_monitoring = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         }
@@ -2695,7 +2695,7 @@ let main_weather_monitoring = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         }

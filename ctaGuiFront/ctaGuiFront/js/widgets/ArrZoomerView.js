@@ -60,7 +60,7 @@ sock.widget_table[main_script_tag] = function(opt_in) {
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-let sock_arr_zoomer = function(opt_in) {
+let sock_arr_zoomer = function(_) {
     return
 }
 
@@ -77,7 +77,7 @@ let main_arr_zoomer = function(opt_in) {
     let widget_ele = opt_in.widget_ele
     let icon_divs = opt_in.icon_divs
 
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -212,10 +212,10 @@ let main_arr_zoomer = function(opt_in) {
             .style('height', '100%')
             .style('top', '0px')
             .style('left', '0px')
-        // .attr("viewBox", "0 0 "+svg_dims.w+" "+svg_dims.h * whRatio)
-        // .classed("svgInGridStack_inner", true)
+            // .attr("viewBox", "0 0 "+svg_dims.w+" "+svg_dims.h * whRatio)
+            // .classed("svgInGridStack_inner", true)
             .style('background', '#383B42')
-        // .style("background", "red").style("border","2px solid red")
+            // .style("background", "red").style("border","2px solid red")
             .on('dblclick.zoom', null)
             .on('wheel', function() {
                 d3.event.preventDefault()
@@ -237,7 +237,6 @@ let main_arr_zoomer = function(opt_in) {
             lock_init_key: arr_zoomer_lock_init_key,
             svg: svg,
         })
-        arr_zoomer_base.init_data(data_in.data.arr_zoomer)
 
         // ------------------------------------------------------------------
         // expose the sync function
@@ -247,30 +246,29 @@ let main_arr_zoomer = function(opt_in) {
         }
         this_top.get_sync_state = get_sync_state
 
-        // ------------------------------------------------------------------
-        //
-        // ------------------------------------------------------------------
-        run_when_ready({
-            pass: function() {
-                return locker.are_free([
-                    arr_zoomer_lock_init_key,
-                    'data_change',
-                    'set_state_lock',
-                ])
-            },
-            execute: function() {
-                locker.remove('in_init')
-            },
-        })
+        locker.remove('in_init')
 
-    // // ------------------------------------------------------------------
-    // // ------------------------------------------------------------------
-    // console.log('XXzoom_to_target_mainXX')
-    // arr_zoomer_base.get_ele('main').zoom_to_target_main({ target:'M_9',  scale:arr_zoomer_base.zooms.len["1.2"], duration_scale:0.1 });
-    // arr_zoomer_base.get_ele('main').zoom_to_target_main({ target:'Lx00',  scale:arr_zoomer_base.zooms.len["1.2"], duration_scale:1.5 });
-    // arr_zoomer_base.get_ele('main').zoom_to_target_main({ target:'init', scale:arr_zoomer_base.zooms.len["0.0"], duration_scale:0.1 });
-    // // ------------------------------------------------------------------
-    // // ------------------------------------------------------------------
+        // ------------------------------------------------------------------
+        // ------------------------------------------------------------------
+        // arr_zoomer_base.get_ele('main').zoom_to_target_main({
+        //     target: 'M_9',
+        //     scale: arr_zoomer_base.zooms.len['1.2'],
+        //     duration_scale: 0.1,
+        // })
+
+        // arr_zoomer_base.get_ele('main').zoom_to_target_main({
+        //     target: 'Lx00',
+        //     scale: arr_zoomer_base.zooms.len['1.2'],
+        //     duration_scale: 1.5,
+        // })
+
+        // arr_zoomer_base.get_ele('main').zoom_to_target_main({
+        //     target: 'init',
+        //     scale: arr_zoomer_base.zooms.len['0.0'],
+        //     duration_scale: 0.1,
+        // })
+        // ------------------------------------------------------------------
+        // ------------------------------------------------------------------
     }
     this_top.init_data = init_data
 }

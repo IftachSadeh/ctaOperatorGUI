@@ -64,7 +64,7 @@ class MockSched():
         self.n_init_cycle = -1
         self.name_prefix = str(getTime())
         if len(self.name_prefix) > 6:
-            self.name_prefix = self.name_prefix[len(self.name_prefix)-6:]
+            self.name_prefix = self.name_prefix[len(self.name_prefix) - 6:]
 
         self.client = PySimpleClient()
         # self.client.makeCompImmortal("ArraySupervisor", True)
@@ -84,7 +84,8 @@ class MockSched():
         self.obs_block_seconds = 1800  # 30 minutes
         # 0.035 -> one minute instead of 30 for gui testing
         self.duration_scale = self.time_of_night.get_timescale()
-        self.duration_night = self.time_of_night.get_total_time_seconds()  # 28800 -> 8 hour night
+        self.duration_night = self.time_of_night.get_total_time_seconds(
+        )  # 28800 -> 8 hour night
         self.prev_reset_time = self.time_of_night.get_reset_time()
 
         # ------------------------------------------------------------------
@@ -134,7 +135,8 @@ class MockSched():
         cb = MyVoid()
         # self.log.info([['r'," ---- MockSched.cancel_sched_blocks() ... "],['g',sched_block_id]])
         self.supervisor.cancelSchedulingBlock(
-            sched_block_id, self.client.activateOffShoot(cb), desc)
+            sched_block_id, self.client.activateOffShoot(cb), desc
+        )
         # self.log.info([['r'," ++++ MockSched.cancel_sched_blocks() ... "],['g',sched_block_id]])
 
         return
@@ -147,17 +149,16 @@ class MockSched():
             try:
                 active = self.supervisor.listSchedulingBlocks()
             except Exception as e:
-                self.log.debug(
-                    [['b', "- Exception - MockSched.listSchedulingBlocks: "], ['r', e]])
+                self.log.debug([['b', "- Exception - MockSched.listSchedulingBlocks: "],
+                                ['r', e]])
                 active = []
-            sched_block_ids = [
-                x for x in active if x not in self.acs_blocks['blocks']]
+            sched_block_ids = [x for x in active if x not in self.acs_blocks['blocks']]
 
         if len(sched_block_ids) == 0:
             return
 
-        self.log.debug(
-            [['r', " - MockSched.cancel_zombie_sched_blocks() ..."], ['y', sched_block_ids]])
+        self.log.debug([['r', " - MockSched.cancel_zombie_sched_blocks() ..."],
+                        ['y', sched_block_ids]])
         for sched_block_id_now in sched_block_ids:
             gevent.spawn(self.cancel_sched_blocks, sched_block_id_now)
 
@@ -173,8 +174,8 @@ class MockSched():
 
             current_blocks = self.acs_blocks['blocks'].keys()
             if len(current_blocks) > 0:
-                self.log.info(
-                    [['r', "- will discard sched blocks: "], ['b', current_blocks]])
+                self.log.info([['r', "- will discard sched blocks: "],
+                               ['b', current_blocks]])
 
             if 0:
                 blabla = 0
@@ -247,18 +248,20 @@ class MockSched():
                 tel_ids = copy.deepcopy(utils.tel_ids)
                 n_tels = len(tel_ids)
                 n_sched_blocks = min(
-                    floor(n_tels/self.min_n_tel_block), self.max_n_sched_block)
-                n_sched_blocks = max(self.rnd_gen.randint(
-                    1, n_sched_blocks), self.min_n_sched_block)
+                    floor(n_tels / self.min_n_tel_block), self.max_n_sched_block
+                )
+                n_sched_blocks = max(
+                    self.rnd_gen.randint(1, n_sched_blocks), self.min_n_sched_block
+                )
                 # n_sched_blocks = 50
                 # n_sched_blocks = 3
 
                 if debug_tmp:
                     print '------------------------------------------------------------'
-                    print (
+                    print(
                         '- n_cycle_now', n_cycle_now, 'tot_block_seconds / percentage:',
-                        tot_block_seconds, (tot_block_seconds /
-                                           float(self.duration_night))
+                        tot_block_seconds,
+                        (tot_block_seconds / float(self.duration_night))
                     )
 
                 # generate random target/pointing ids
@@ -281,13 +284,14 @@ class MockSched():
                 #
                 # ------------------------------------------------------------------
                 for n_sched_block_now in range(n_sched_blocks):
-                    sched_block_id = "schBlock_"+base_name+str(n_sched_block_now)
+                    sched_block_id = "schBlock_" + base_name + str(n_sched_block_now)
 
-                    if n_sched_block_now < n_sched_blocks-1:
-                        n_tel_now = max(self.min_n_tel_block,
-                                      len(tel_ids) - n_sched_blocks)
-                        n_tel_now = self.rnd_gen.randint(
-                            self.min_n_tel_block, n_tel_now)
+                    if n_sched_block_now < n_sched_blocks - 1:
+                        n_tel_now = max(
+                            self.min_n_tel_block,
+                            len(tel_ids) - n_sched_blocks
+                        )
+                        n_tel_now = self.rnd_gen.randint(self.min_n_tel_block, n_tel_now)
                         n_tel_now = min(n_tel_now, len(tel_ids))
                     else:
                         n_tel_now = len(tel_ids) - \
@@ -300,7 +304,8 @@ class MockSched():
 
                     sub_arr = []
                     for sched_tel_id_now in sched_tel_ids:
-                        tel_type = sb.SST if sched_tel_id_now[0] == 'S' else sb.MST if sched_tel_id_now[0] == 'M' else sb.LST
+                        tel_type = sb.SST if sched_tel_id_now[
+                            0] == 'S' else sb.MST if sched_tel_id_now[0] == 'M' else sb.LST
 
                         sub_arr += [sb.Telescope(sched_tel_id_now, tel_type)]
                     # sub_arr = [sb.Telescope("L_0", sb.LST), sb.Telescope(
@@ -311,15 +316,13 @@ class MockSched():
 
                     sched_conf = sb.Configuration(
                         sb.InstrumentConfiguration(
-                            sb.PointingMode(2, sb._divergent(2)),
-                            sb.Subarray([], sub_arr)
-                        ),
-                        "camera",
-                        "rta"
+                            sb.PointingMode(2, sb._divergent(2)), sb.Subarray([], sub_arr)
+                        ), "camera", "rta"
                     )
 
                     n_obs_blocks = self.rnd_gen.randint(
-                        self.min_n_obs_block, self.max_n_obs_block)
+                        self.min_n_obs_block, self.max_n_obs_block
+                    )
 
                     # n_trg = blockTrgPnt[n_sched_block_now]["n_trg"]
                     # n_pnt = blockTrgPnt[n_sched_block_now]["n_pnt"]
@@ -329,16 +332,14 @@ class MockSched():
                         delta_az = self.az_min_max[1] - self.az_min_max[0]
                         delta_zen = self.zen_min_max_tel[1] - self.zen_min_max_tel[0]
                         target_pos[n_trg] = [
-                            (self.rnd_gen.random() *
-                             delta_az + self.az_min_max[0]),
-                            (self.rnd_gen.random() *
-                             delta_zen + self.zen_min_max_tel[0])
+                            (self.rnd_gen.random() * delta_az + self.az_min_max[0]),
+                            (self.rnd_gen.random() * delta_zen + self.zen_min_max_tel[0])
                         ]
 
-                    target_id = "target_"+str(n_trg)
+                    target_id = "target_" + str(n_trg)
 
                     if debug_tmp:
-                        print (
+                        print(
                             ' -- n_sched_block_now / n_tel_now:', n_sched_block_now,
                             n_tel_now, '-------', sched_block_id
                         )
@@ -368,7 +369,7 @@ class MockSched():
                         if obs_block_duration + obs_block_seconds > self.duration_night:
                             is_cycle_done = True
                             if debug_tmp:
-                                print (
+                                print(
                                     ' - is_cycle_done - n_obs_now / startTime / duration:',
                                     n_obs_now, obs_block_duration, obs_block_seconds
                                 )
@@ -392,7 +393,7 @@ class MockSched():
                             point_pos[0] += 360
 
                         if debug_tmp:
-                            print (
+                            print(
                                 ' --- n_obs_now / startTime / duration / scaled_duration:',
                                 n_obs_now, obs_block_duration, obs_block_seconds,
                                 scaled_duration, '-------', obs_block_id
@@ -401,41 +402,34 @@ class MockSched():
                         obs_coords = sb.Coordinates(
                             2,
                             sb.HorizontalCoordinates(
-                                target_pos[n_trg][1], target_pos[n_trg][0])
+                                target_pos[n_trg][1], target_pos[n_trg][0]
+                            )
                         )
                         obs_mode = sb.ObservingMode(
-                            sb.Slewing(1),
-                            sb.ObservingType(2, sb.GridSurvey(1, 1, 1))
+                            sb.Slewing(1), sb.ObservingType(2, sb.GridSurvey(1, 1, 1))
                         )
                         obs_source = sb.Source(
-                            target_id,
-                            sb.placeholder,
-                            sb.High,
-                            sb.RegionOfInterest(100),
-                            obs_mode,
-                            obs_coords
+                            target_id, sb.placeholder, sb.High, sb.RegionOfInterest(100),
+                            obs_mode, obs_coords
                         )
                         obs_conds = sb.ObservingConditions(
-                            sb.DateTime(1),
-                            scaled_duration,
-                            1,
-                            sb.Quality(1, 1, 1),
+                            sb.DateTime(1), scaled_duration, 1, sb.Quality(1, 1, 1),
                             sb.Weather(1, 1, 1, 1)
                         )
                         obs_block = sb.ObservationBlock(
-                            obs_block_id,
-                            obs_source,
-                            obs_conds,
-                            self.script_name,
-                            0
+                            obs_block_id, obs_source, obs_conds, self.script_name, 0
                         )
 
                         # metadata of the observing block
                         _n_sched_blocks = len(self.acs_blocks['blocks'].keys())
                         _n_obs_blocks = len(obs_blocks)
                         metadata = {
-                            'n_sched': _n_sched_blocks, 'n_obs': _n_obs_blocks,
-                            'block_name': str(_n_sched_blocks)+" ("+str(_n_obs_blocks)+")"
+                            'n_sched':
+                            _n_sched_blocks,
+                            'n_obs':
+                            _n_obs_blocks,
+                            'block_name':
+                            str(_n_sched_blocks) + " (" + str(_n_obs_blocks) + ")"
                         }
 
                         # temporary way to store meta-data - should be replaced by
@@ -456,9 +450,7 @@ class MockSched():
 
                     if len(obs_blocks) > 0:
                         sched_block = sb.SchedulingBlock(
-                            sched_block_id,
-                            sb.Proposal("proposalId"),
-                            sched_conf,
+                            sched_block_id, sb.Proposal("proposalId"), sched_conf,
                             obs_blocks
                         )
 
@@ -494,8 +486,9 @@ class MockSched():
             try:
                 active = self.supervisor.listSchedulingBlocks()
             except Exception as e:
-                self.log.debug(
-                    [['b', "- Exception - MockSched.set_active_sched_blocks: "], ['r', e]])
+                self.log.debug([[
+                    'b', "- Exception - MockSched.set_active_sched_blocks: "
+                ], ['r', e]])
                 active = []
 
             obs_block_delays = dict()
@@ -507,10 +500,12 @@ class MockSched():
                 if sched_block_id in active:
                     try:
                         obs_blocks_status = self.supervisor.getSbOperationStatus(
-                            sched_block_id).ob_statuses
+                            sched_block_id
+                        ).ob_statuses
                     except Exception as e:
-                        self.log.debug(
-                            [['b', "- Exception - MockSched.getSbOperationStatus: "], ['r', e]])
+                        self.log.debug([[
+                            'b', "- Exception - MockSched.getSbOperationStatus: "
+                        ], ['r', e]])
 
                 if obs_blocks_status is not None:
                     self.acs_blocks['active'].append(sched_block_id)
@@ -541,10 +536,8 @@ class MockSched():
                             #   OB_TRUNCATED, OB_FAILED
                             # };
 
-                            if (
-                                metadata[obs_block_id]['start_time_exe'] is None and
-                                obs_block_now.status != sb.OB_PENDING
-                            ):
+                            if (metadata[obs_block_id]['start_time_exe'] is None
+                                    and obs_block_now.status != sb.OB_PENDING):
 
                                 time_now = self.time_of_night.get_current_time()
                                 metadata[obs_block_id]['start_time_exe'] = time_now
@@ -554,14 +547,15 @@ class MockSched():
                                 if time_dif > 0:
                                     obs_block_delays[sched_block_id] = time_dif
 
-                                self.log.info([
-                                    ['y', "- obs block is now running: "], ['r',
-                                                                            obs_block_id],
-                                    [
-                                        'g', ' - planned/executed time: ',
-                                        metadata[obs_block_id]['start_time_plan'], ' / ', time_now
-                                    ]
-                                ])
+                                self.log.info(
+                                    [['y', "- obs block is now running: "],
+                                     ['r', obs_block_id],
+                                     [
+                                         'g', ' - planned/executed time: ',
+                                         metadata[obs_block_id]['start_time_plan'], ' / ',
+                                         time_now
+                                     ]]
+                                )
 
                             # phases = obs_block_now.phases
                             # for p in phases:
@@ -575,10 +569,8 @@ class MockSched():
                             #         ]
                             #     ])
 
-                if (
-                    obs_blocks_status is None and
-                    blocks[sched_block_id]['state'] == 'run'
-                ):
+                if (obs_blocks_status is None
+                        and blocks[sched_block_id]['state'] == 'run'):
                     blocks[sched_block_id]['state'] = 'done'
 
                     obs_blocks = blocks[sched_block_id]['sched_block'].observation_blocks
@@ -595,7 +587,10 @@ class MockSched():
                         metadata[obs_block_id]['phases'] = []
 
                     self.log.info([['b', "- sched block is done "], ['r', sched_block_id],
-                                   ['g', ' - currentTime: ', self.time_of_night.get_current_time()]])
+                                   [
+                                       'g', ' - currentTime: ',
+                                       self.time_of_night.get_current_time()
+                                   ]])
 
             # adjust the start time of all future OBs --- this will NOT take care of OBs of
             # currently active SB, which may overshoot the end of the night !
@@ -613,16 +608,16 @@ class MockSched():
                         obs_block_id = obs_block.id
 
                         if metadata[obs_block_id]['start_time_exe'] is None:
-                            updated_obs_blocks += [[obs_block_id,
-                                                  obs_block_delays[sched_block_id]]]
-                            metadata[obs_block_id]['start_time_plan'] += obs_block_delays[sched_block_id]
+                            updated_obs_blocks += [[
+                                obs_block_id, obs_block_delays[sched_block_id]
+                            ]]
+                            metadata[obs_block_id]['start_time_plan'] += obs_block_delays[
+                                sched_block_id]
 
                     if len(updated_obs_blocks) > 0:
-                        self.log.info([
-                            ['b', " -+- updating start_time_plan of",
-                                sched_block_id, " "],
-                            ['y', updated_obs_blocks]
-                        ])
+                        self.log.info([[
+                            'b', " -+- updating start_time_plan of", sched_block_id, " "
+                        ], ['y', updated_obs_blocks]])
 
                     for n_cycle_now in range(len(self.cycle_blocks)):
                         if sched_block in self.cycle_blocks[n_cycle_now]:
@@ -631,8 +626,9 @@ class MockSched():
                 # adjust the start time of all OBs in future SBs
                 self.log.info([['g', "- will delay future SBs ..."]])
 
-                self.delay_sched_blocks(active_sched_block=(
-                    active_sched_block+1), time_dif=max(time_difs))
+                self.delay_sched_blocks(
+                    active_sched_block=(active_sched_block + 1), time_dif=max(time_difs)
+                )
 
             # ------------------------------------------------------------------
             # ????????????????????????????????????????????????????????????????
@@ -659,7 +655,7 @@ class MockSched():
     def delay_sched_blocks(self, active_sched_block=None, time_dif=None):
         if active_sched_block is None:
             active_sched_block = self.active_sched_block
-        if active_sched_block >= len(self.cycle_blocks)-1:
+        if active_sched_block >= len(self.cycle_blocks) - 1:
             return
 
         # get the maximal difference between planned and current time for each
@@ -678,42 +674,39 @@ class MockSched():
         # if any of the OBs is late, adjust the planned start time of all OBs in all SBs
         # and remove any OBs which will overshoot the end of the night
         if time_dif_max > 0:
-            self.log.info([
-                ['r', "- updating start_time_plan by: "],
-                ['b', time_dif_max]
-            ])
+            self.log.info([['r', "- updating start_time_plan by: "], ['b', time_dif_max]])
 
             # perform the adjustment for all future SBs in all cycles
             for n_cycle_now in range(active_sched_block, len(self.cycle_blocks)):
                 sched_blockOverV = []
                 for sched_block in self.cycle_blocks[n_cycle_now]:
-                    self.log.info([
-                        ['b', " -+- updating ", sched_block.id, " "],
-                        ['y', [x.id for x in sched_block.observation_blocks]]
-                    ])
+                    self.log.info([['b', " -+- updating ", sched_block.id, " "],
+                                   ['y', [x.id for x in sched_block.observation_blocks]]])
 
                     # adjust the start time of all OBs in this SB
                     for obs_block in sched_block.observation_blocks:
                         obs_block_id = obs_block.id
-                        self.acs_blocks['metadata'][obs_block_id]['start_time_plan'] += time_dif_max
+                        self.acs_blocks['metadata'][obs_block_id]['start_time_plan'
+                                                                  ] += time_dif_max
 
                         endTime = self.acs_blocks['metadata'][obs_block_id]['start_time_plan'] + \
                             self.acs_blocks['metadata'][obs_block_id]['duration']
 
                         # a simplistic approach - cancel any SB if at least one of
                         # its OBs overshoots the end of the night
-                        if endTime > self.duration_night and (sched_block not in sched_blockOverV):
+                        if endTime > self.duration_night and (
+                                sched_block not in sched_blockOverV):
                             sched_blockOverV.append(sched_block)
 
                 # remove all overshooting SBs from the cycle and apdate the bookkeeping
                 for sched_block in sched_blockOverV:
-                    self.log.info([
-                        ['r', "- cancelling all OBs from future cycle for SB "],
-                        ['p', sched_block.id]
-                    ])
+                    self.log.info([[
+                        'r', "- cancelling all OBs from future cycle for SB "
+                    ], ['p', sched_block.id]])
 
                     for obs_block in sched_block.observation_blocks:
-                        self.acs_blocks['metadata'][obs_block.id]['status'] = sb.OB_CANCELED
+                        self.acs_blocks['metadata'][obs_block.id
+                                                    ]['status'] = sb.OB_CANCELED
                         # self.acs_blocks['metadata'].pop(obs_block.id, None)
 
                     self.acs_blocks['blocks'][sched_block.id]['state'] = 'cancel'
@@ -733,8 +726,10 @@ class MockSched():
 
         has_reset_night = (self.time_of_night.get_reset_time() > self.prev_reset_time)
         if has_reset_night:
-            self.log.info(
-                [['p', " - has_reset_night - will cancel all running blocks and reset cycles ..."]])
+            self.log.info([[
+                'p',
+                " - has_reset_night - will cancel all running blocks and reset cycles ..."
+            ]])
 
         if self.active_sched_block >= len(self.cycle_blocks) or has_reset_night:
             self.n_sched_subs = 0
@@ -789,11 +784,8 @@ class MockSched():
                     break
 
                 if n_sub_tries % 10 == 0:
-                    self.log.info([
-                        ['b', "- waiting to submit "],
-                        ['g', sched_block.id],
-                        ['b', ' - remaining time: ', time_dif]
-                    ])
+                    self.log.info([['b', "- waiting to submit "], ['g', sched_block.id],
+                                   ['b', ' - remaining time: ', time_dif]])
                 n_sub_tries += 1
 
                 sleep(0.5)
@@ -802,29 +794,25 @@ class MockSched():
                 complt = self.supervisor.putSchedulingBlock(sched_block)
 
                 block_meta = self.acs_blocks['metadata']
-                block_times = [
-                    (
-                        (str(x.id) + " --> " + str(block_meta[x.id]['metadata']['n_sched']) +
-                            " (" + str(block_meta[x.id]['metadata']['n_obs']) + ")"),
-                        [
-                            int(floor(block_meta[x.id]['start_time_plan'])),
-                            int(floor(block_meta[x.id]['start_time_plan'] +
-                                      block_meta[x.id]['duration']))
-                        ]
-                    ) for x in sched_block.observation_blocks
-                ]
+                block_times = [((
+                    str(x.id) + " --> " + str(block_meta[x.id]['metadata']['n_sched'])
+                    + " (" + str(block_meta[x.id]['metadata']['n_obs']) + ")"
+                ), [
+                    int(floor(block_meta[x.id]['start_time_plan'])),
+                    int(
+                        floor(
+                            block_meta[x.id]['start_time_plan']
+                            + block_meta[x.id]['duration']
+                        )
+                    )
+                ]) for x in sched_block.observation_blocks]
 
-                self.log.info([
-                    ['y', "- submitted sched block: "],
-                    ['p', sched_block.id, ' '],
-                    ['g', block_times]
-                ])
+                self.log.info([['y', "- submitted sched block: "],
+                               ['p', sched_block.id, ' '], ['g', block_times]])
 
             except Exception as e:
-                self.log.debug([
-                    ['b', "- Exception - MockSched.putSchedulingBlock: "],
-                    ['r', e]
-                ])
+                self.log.debug([['b', "- Exception - MockSched.putSchedulingBlock: "],
+                                ['r', e]])
 
             # as the last action in this thread, update the self.n_sched_subs counter
             self.n_sched_subs -= 1
@@ -844,22 +832,21 @@ class MockSched():
                 status = self.supervisor.getSchedulingBlockStatus(block_name)
                 opstatus = self.supervisor.getSbOperationStatus(block_name)
                 self.log.debug([['y', " - active_scheduling_blocks - "],
-                                ['g', self.acs_blocks['active'], '-> '], ['y', status, ' ']])
+                                ['g', self.acs_blocks['active'], '-> '],
+                                ['y', status, ' ']])
 
                 for nob in range(len(opstatus.ob_statuses)):
                     phases = opstatus.ob_statuses[nob].phases
                     for p in phases:
-                        self.log.debug([
-                            [
-                                'y', " -- phases - ", block_name, ' ',
-                                opstatus.ob_statuses[nob].id, ' ',
-                                opstatus.ob_statuses[nob].status, ' '
-                            ],
-                            [
-                                'g', p.heartbeat_counter, ' ', p.name, ' ',
-                                p.status, ' ', p.progress_message
-                            ]
-                        ])
+                        self.log.debug([[
+                            'y', " -- phases - ", block_name, ' ',
+                            opstatus.ob_statuses[nob].id, ' ',
+                            opstatus.ob_statuses[nob].status, ' '
+                        ],
+                                        [
+                                            'g', p.heartbeat_counter, ' ', p.name, ' ',
+                                            p.status, ' ', p.progress_message
+                                        ]])
 
         return
 

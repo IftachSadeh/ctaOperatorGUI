@@ -185,7 +185,7 @@ let main_sched_blocksInspector = function(opt_in) {
     // let my_unique_id = unique()
     let color_theme = get_color_theme('bright_grey')
     window.colorPalette = get_color_theme('bright_grey')
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
 
     let widget_type = opt_in.widget_type
     let tag_arr_zoomerPlotsSvg = opt_in.base_name
@@ -221,7 +221,7 @@ let main_sched_blocksInspector = function(opt_in) {
     let brushZoom = null
 
     // let this_sched_block_inspector = this
-    // let is_south = window.__site_type__ === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -2111,10 +2111,10 @@ let main_sched_blocksInspector = function(opt_in) {
         let n_sched = createSchedName(shared.data.copy.blocks)
         let n_obs = 0
 
-        newBlock.sched_block_id = 'schBlock_' + (Math.floor(Math.random() * 300000)) +
-    '_' + (Math.floor(Math.random() * 9)) +
-    '_' + (Math.floor(Math.random() * 9)) +
-    '_' + (Math.floor(Math.random() * 9))
+        newBlock.sched_block_id = 'schBlock_' + (Math.floor(Math.random() * 300000))
+    + '_' + (Math.floor(Math.random() * 9))
+    + '_' + (Math.floor(Math.random() * 9))
+    + '_' + (Math.floor(Math.random() * 9))
         newBlock.obs_block_id = newBlock.sched_block_id + '_' + n_obs
         newBlock.timestamp = new Date().getTime()
         newBlock.run_phase = []
@@ -5353,8 +5353,8 @@ let main_sched_blocksInspector = function(opt_in) {
 
             reserved.drag.atLeastOneTick = true
 
-            if (d3.event.dx < 0 &&
-        Math.floor(reserved.drag.timescale.invert(reserved.drag.position.left + d3.event.dx)) < Number(shared.data.server.time_of_night.now)) {
+            if (d3.event.dx < 0
+        && Math.floor(reserved.drag.timescale.invert(reserved.drag.position.left + d3.event.dx)) < Number(shared.data.server.time_of_night.now)) {
                 return
             }
             reserved.drag.position.left += d3.event.dx
@@ -5537,9 +5537,9 @@ let main_sched_blocksInspector = function(opt_in) {
             }
         }
 
-        if (block.telescopes.large.ids.length < block.telescopes.large.min &&
-      block.telescopes.medium.ids.length < block.telescopes.medium.min &&
-      block.telescopes.small.ids.length < block.telescopes.small.min) {
+        if (block.telescopes.large.ids.length < block.telescopes.large.min
+      && block.telescopes.medium.ids.length < block.telescopes.medium.min
+      && block.telescopes.small.ids.length < block.telescopes.small.min) {
             return
         } // continue
 
@@ -5992,7 +5992,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     current
                         .exit()
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 0)
                         .remove()
                     // offsetY += line * 1
@@ -6103,7 +6103,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     current
                         .exit()
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 0)
                         .remove()
                 }
@@ -6187,7 +6187,7 @@ let main_sched_blocksInspector = function(opt_in) {
                 targets
                     .exit()
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
                     .remove()
             }
@@ -7583,7 +7583,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     current
                         .exit()
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 0)
                         .remove()
                 }
@@ -7657,7 +7657,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     current
                         .exit()
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 0)
                         .remove()
                 }
@@ -8389,7 +8389,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     current
                         .exit()
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 0)
                         .remove()
                 }
@@ -8489,7 +8489,7 @@ let main_sched_blocksInspector = function(opt_in) {
                 //   .exit()
                 //   .each(d => console.log(d.id))
                 //   .transition('in_out')
-                //   .duration(times.anim_arc)
+                //   .duration(times.anim)
                 //   .style('opacity', 0)
                 //   .remove()
                 reserved.overview.conflicts.scrollBox.resetHorizontalScroller({

@@ -350,7 +350,6 @@ window.ArrZoomerMini = function(opt_in0) {
         this_top.zoom_sync = zoom_sync
 
 
-
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
@@ -458,7 +457,7 @@ window.ArrZoomerMini = function(opt_in0) {
             .attr('text-anchor', 'middle')
             .merge(text)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('transform', function(d, i) {
                 let shiftVal = 0
                 // let shiftVal = ele_base.tel_rs.s00[3]*2
@@ -466,11 +465,11 @@ window.ArrZoomerMini = function(opt_in0) {
                 //   shiftVal = instruments.data.xyr[d.id].r * (scale_r[1].health1 + 0.5)
                 // }
                 return (
-                    'translate(' +
-          instruments.data.xyr[d.id].x +
-          ',' +
-          (instruments.data.xyr[d.id].y - shiftVal) +
-          ')'
+                    'translate('
+          + instruments.data.xyr[d.id].x
+          + ','
+          + (instruments.data.xyr[d.id].y - shiftVal)
+          + ')'
                 )
             })
             .style('font-size', function(d) {
@@ -484,7 +483,7 @@ window.ArrZoomerMini = function(opt_in0) {
         text
             .exit()
             .transition('exit')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
     
@@ -520,23 +519,23 @@ window.ArrZoomerMini = function(opt_in0) {
             .style('pointer-events', 'none')
             .attr('transform', function(d) {
                 return (
-                    'translate(' +
-          tel_data[pos_tag][d.id].x +
-          ',' +
-          tel_data[pos_tag][d.id].y +
-          ')'
+                    'translate('
+          + tel_data[pos_tag][d.id].x
+          + ','
+          + tel_data[pos_tag][d.id].y
+          + ')'
                 )
             })
             .merge(circ)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('transform', function(d) {
                 return (
-                    'translate(' +
-          tel_data[pos_tag][d.id].x +
-          ',' +
-          tel_data[pos_tag][d.id].y +
-          ')'
+                    'translate('
+          + tel_data[pos_tag][d.id].x
+          + ','
+          + tel_data[pos_tag][d.id].y
+          + ')'
                 )
             })
             .style('fill', function(d) {
@@ -587,7 +586,7 @@ window.ArrZoomerMini = function(opt_in0) {
             opt_in = {
             }
         }
-        let animT = is_def(opt_in.animT) ? opt_in.animT : times.anim_arc
+        let animT = is_def(opt_in.animT) ? opt_in.animT : times.anim
         // console.log('QQQ animT',animT,scale,Date.now())
 
         if (scale < (is_south ? 2 : 1.5)) {
@@ -602,10 +601,10 @@ window.ArrZoomerMini = function(opt_in0) {
 
         let base_h = svg_dims.w
 
-        let w =
-      (1 + (is_south ? 2 * scale / zooms.len['1.3'] : 0)) * base_h / scale
-        let h =
-      (1 + (is_south ? 2 * scale / zooms.len['1.3'] : 0)) * base_h / scale
+        let w
+      = (1 + (is_south ? 2 * scale / zooms.len['1.3'] : 0)) * base_h / scale
+        let h
+      = (1 + (is_south ? 2 * scale / zooms.len['1.3'] : 0)) * base_h / scale
         let x = (base_h / 2 - trans[0]) / scale - w / 2
         let y = (base_h / 2 - trans[1]) / scale - h / 2
 
@@ -648,7 +647,7 @@ window.ArrZoomerMini = function(opt_in0) {
         rect
             .exit()
             .transition('out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', '0')
             .attr('x', x)
             .attr('y', y)

@@ -2,14 +2,17 @@
 from random import Random
 rnd_gen = Random(10987268332)
 waitTime = dict()
-waitTime['config_daq'] = rnd_gen.randint(1,3)
-waitTime['config_camera'] = rnd_gen.randint(1,5)
-waitTime['config_mount'] = rnd_gen.randint(2,7)
-waitTime['finish_daq'] = rnd_gen.randint(1,6)
-waitTime['finish_camera'] = rnd_gen.randint(1,3)
-waitTime['finish_mount'] = rnd_gen.randint(1,2)
+waitTime['config_daq'] = rnd_gen.randint(1, 3)
+waitTime['config_camera'] = rnd_gen.randint(1, 5)
+waitTime['config_mount'] = rnd_gen.randint(2, 7)
+waitTime['finish_daq'] = rnd_gen.randint(1, 6)
+waitTime['finish_camera'] = rnd_gen.randint(1, 3)
+waitTime['finish_mount'] = rnd_gen.randint(1, 2)
+
+
 def getWait(duration, waitType):
-  return waitTime[waitType] if blockDuration > 1 else 1
+    return waitTime[waitType] if blockDuration > 1 else 1
+
 
 # ------------------------------------------------------------------
 
@@ -17,184 +20,190 @@ import tcs
 import daqctrl, inspect
 
 __phases__ = [
-  "configuring", "config_daq", "config_camera", "config_mount",
-  "takeData",
-  "closing", "finish_daq", "finish_camera", "finish_mount"
+    "configuring", "config_daq", "config_camera", "config_mount", "takeData", "closing",
+    "finish_daq", "finish_camera", "finish_mount"
 ]
 
 # install the script by:
 #   cd $INTROOT/config/scripts
 #   ln -s $guiInstalDir/ctaOperatorGUI/ctaGuiBack/ctaGuiBack/acs/guiACS_sched_blocks_script0.py
 
+
 # ------------------------------------------------------------------
 def configuring():
-  coords = observation_block.src.coords
-  p = None
-  try:
-    p = (coords.equatorial.ra, coords.equatorial.dec)
-  except:
-    pass
-  if not p:
+    coords = observation_block.src.coords
+    p = None
     try:
-      p = (coords.horizontal.alt, coords.horizontal.az)
+        p = (coords.equatorial.ra, coords.equatorial.dec)
     except:
-      pass
-  if not p:
+        pass
+    if not p:
+        try:
+            p = (coords.horizontal.alt, coords.horizontal.az)
+        except:
+            pass
+    if not p:
+        try:
+            p = (coords.galactic.lon, coords.galactic.lat)
+        except:
+            pass
+    if not p:
+        p = (0, 0)
+
+    print "Coordinates used: (" + str(p[0]) + ", " + str(p[1]) + ")"
+
     try:
-      p = (coords.galactic.lon, coords.galactic.lat)
+        divergence = schedulingBlock.config.instrument.pointing_mode.divergent_.divergence
+        print "_divergence used: " + str(divergence)
     except:
-      pass
-  if not p:
-    p = (0, 0)
-  
-  print "Coordinates used: (" + str(p[0]) + ", " + str(p[1]) + ")"
-  
-  try:
-    divergence = schedulingBlock.config.instrument.pointing_mode.divergent_.divergence
-    print "_divergence used: " + str(divergence)
-  except:
-    print "Pointing mode is not divergent"
-    pass
-  
-  resources.target = tcs.SkyEquatorialTarget(p[0], p[1], tcs.ICRS, tcs.J2000, 0.0, 0.0, 0.0, 0.0)
+        print "Pointing mode is not divergent"
+        pass
 
-  allowPhaseStart("config_daq")
-  allowPhaseStart("config_camera")
-  allowPhaseStart("config_mount")
+    resources.target = tcs.SkyEquatorialTarget(
+        p[0], p[1], tcs.ICRS, tcs.J2000, 0.0, 0.0, 0.0, 0.0
+    )
 
-  return
+    allowPhaseStart("config_daq")
+    allowPhaseStart("config_camera")
+    allowPhaseStart("config_mount")
+
+    return
+
 
 # ------------------------------------------------------------------
 def config_daq():
-  updatePhase("config_daq", "config_daq has began ...", 0)
+    updatePhase("config_daq", "config_daq has began ...", 0)
 
-  allowPhaseStart("config_camera")
-  allowPhaseStart("config_mount")
+    allowPhaseStart("config_camera")
+    allowPhaseStart("config_mount")
 
-  # operationStatus = daq().operationStatus
-  # # Check daq operational status
-  # if operationStatus != daqctrl.NOMINAL and operationStatus != daqctrl.IDLE: 
-  #   raise RuntimeError('DAQ status not idle/nominal: ' + operationStatus)
-  
-  # # Configure daq
-  # daqConfigured = configureDAQ()
-  # if not daqConfigured:
-  #   raise RuntimeError('DAQ configuration failed')
+    # operationStatus = daq().operationStatus
+    # # Check daq operational status
+    # if operationStatus != daqctrl.NOMINAL and operationStatus != daqctrl.IDLE:
+    #   raise RuntimeError('DAQ status not idle/nominal: ' + operationStatus)
 
-  # add wiating time since waitToFinish is useless ............
-  # telescopes.waitToFinish()
-  wait(getWait(blockDuration,'config_daq'))
+    # # Configure daq
+    # daqConfigured = configureDAQ()
+    # if not daqConfigured:
+    #   raise RuntimeError('DAQ configuration failed')
 
-  updatePhase("config_daq", "config_daq has ended...", 100)
-  
-  return
+    # add wiating time since waitToFinish is useless ............
+    # telescopes.waitToFinish()
+    wait(getWait(blockDuration, 'config_daq'))
+
+    updatePhase("config_daq", "config_daq has ended...", 100)
+
+    return
+
 
 # ------------------------------------------------------------------
 def config_camera():
-  updatePhase("config_camera", "config_camera has began ...", 0)
-  
-  allowPhaseStart("config_mount")
+    updatePhase("config_camera", "config_camera has began ...", 0)
 
-  # cameraConfig = schedulingBlock.config.camera_configuration
-  # telescopes.configureCameras(cameraConfig)
+    allowPhaseStart("config_mount")
 
-  # add wiating time since waitToFinish is useless ............
-  # telescopes.waitToFinish()
-  wait(getWait(blockDuration,'config_camera'))
+    # cameraConfig = schedulingBlock.config.camera_configuration
+    # telescopes.configureCameras(cameraConfig)
 
-  updatePhase("config_camera", "config_camera has ended...", 100)
-  
-  return
+    # add wiating time since waitToFinish is useless ............
+    # telescopes.waitToFinish()
+    wait(getWait(blockDuration, 'config_camera'))
+
+    updatePhase("config_camera", "config_camera has ended...", 100)
+
+    return
+
 
 # ------------------------------------------------------------------
 def config_mount():
-  updatePhase("config_mount", "config_mount has began ...", 0)
+    updatePhase("config_mount", "config_mount has began ...", 0)
 
-  # telescopes.startSlewing(resources.target)
+    # telescopes.startSlewing(resources.target)
 
-  # add wiating time since waitToFinish is useless ............
-  # telescopes.waitToFinish()
-  wait(getWait(blockDuration,'config_mount'))
-  
-  updatePhase("config_mount", "config_mount has ended...", 100)
+    # add wiating time since waitToFinish is useless ............
+    # telescopes.waitToFinish()
+    wait(getWait(blockDuration, 'config_mount'))
 
-  return
+    updatePhase("config_mount", "config_mount has ended...", 100)
+
+    return
+
 
 # ------------------------------------------------------------------
 def takeData():
-  updatePhase("takeData", "takeData has began ...", 0)
+    updatePhase("takeData", "takeData has began ...", 0)
 
-  # daq().moveToNextOutputBlock(daqctrl.ZFITS_ZLIB)
+    # daq().moveToNextOutputBlock(daqctrl.ZFITS_ZLIB)
 
-  # resources.trackingDuration = blockDuration
+    # resources.trackingDuration = blockDuration
 
-  # telescopes.startTracking(resources.trackingDuration,resources.target)
-  # telescopes.startDataTaking()
-  
-  # add wiating time since waitToFinish is useless ............
-  # telescopes.waitToFinish()
-  wait(blockDuration)
+    # telescopes.startTracking(resources.trackingDuration,resources.target)
+    # telescopes.startDataTaking()
 
-  # telescopes.stopDataTaking()
+    # add wiating time since waitToFinish is useless ............
+    # telescopes.waitToFinish()
+    wait(blockDuration)
 
-  updatePhase("takeData", "takeData has ended...", 100)
+    # telescopes.stopDataTaking()
 
-  return
+    updatePhase("takeData", "takeData has ended...", 100)
+
+    return
+
 
 # ------------------------------------------------------------------
 def closing():
-  allowPhaseStart("finish_daq")
-  allowPhaseStart("finish_camera")
-  allowPhaseStart("finish_mount")
+    allowPhaseStart("finish_daq")
+    allowPhaseStart("finish_camera")
+    allowPhaseStart("finish_mount")
 
-  return
+    return
+
 
 # ------------------------------------------------------------------
 def finish_daq():
-  updatePhase("finish_daq", "finish_daq has began ...", 0)
+    updatePhase("finish_daq", "finish_daq has began ...", 0)
 
-  allowPhaseStart("finish_camera")
-  allowPhaseStart("finish_mount")
+    allowPhaseStart("finish_camera")
+    allowPhaseStart("finish_mount")
 
-  # add wiating time since waitToFinish is useless ............
-  # telescopes.waitToFinish()
-  wait(getWait(blockDuration,'finish_daq'))
+    # add wiating time since waitToFinish is useless ............
+    # telescopes.waitToFinish()
+    wait(getWait(blockDuration, 'finish_daq'))
 
-  updatePhase("finish_daq", "finish_daq has ended...", 100)
-  
-  return
+    updatePhase("finish_daq", "finish_daq has ended...", 100)
+
+    return
+
 
 # ------------------------------------------------------------------
 def finish_camera():
-  updatePhase("finish_camera", "finish_camera has began ...", 0)
-  
-  allowPhaseStart("finish_mount")
+    updatePhase("finish_camera", "finish_camera has began ...", 0)
 
-  # add wiating time since waitToFinish is useless ............
-  # telescopes.waitToFinish()
-  wait(getWait(blockDuration,'finish_camera'))
+    allowPhaseStart("finish_mount")
 
-  updatePhase("finish_camera", "finish_camera has ended...", 100)
+    # add wiating time since waitToFinish is useless ............
+    # telescopes.waitToFinish()
+    wait(getWait(blockDuration, 'finish_camera'))
 
-  return
+    updatePhase("finish_camera", "finish_camera has ended...", 100)
+
+    return
+
 
 # ------------------------------------------------------------------
 def finish_mount():
-  updatePhase("finish_mount", "finish_mount has began ...", 0)
-  
-  # add wiating time since waitToFinish is useless ............
-  # telescopes.waitToFinish()
-  wait(getWait(blockDuration,'finish_mount'))
+    updatePhase("finish_mount", "finish_mount has began ...", 0)
 
-  updatePhase("finish_mount", "finish_mount has ended...", 100)
+    # add wiating time since waitToFinish is useless ............
+    # telescopes.waitToFinish()
+    wait(getWait(blockDuration, 'finish_mount'))
 
-  return
+    updatePhase("finish_mount", "finish_mount has ended...", 100)
+
+    return
 
 
 # ------------------------------------------------------------------
 def cleanUp():
-  pass
-
-
-
-
+    pass

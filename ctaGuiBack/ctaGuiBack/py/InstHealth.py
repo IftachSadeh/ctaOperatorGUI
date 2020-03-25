@@ -10,6 +10,7 @@ import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.utils import my_log, my_assert, getTime, flatten_dict
 from ctaGuiUtils.py.RedisManager import RedisManager
 
+
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
@@ -48,19 +49,22 @@ class InstHealth():
     def init(self):
         self.log.info([['g', " - inst_health.init() ..."]])
 
-
         # ------------------------------------------------------------------
         #
         # ------------------------------------------------------------------
         for id_now in self.tel_ids:
             self.inst_health_s0[id_now] = {
-                "health": 100, "status": "run",  # "sub_arr": "0",
-                "camera": 100, "mirror": 100, "mount": 100, "daq": 100, "aux": 100
+                "health": 100,
+                "status": "run",  # "sub_arr": "0",
+                "camera": 100,
+                "mirror": 100,
+                "mount": 100,
+                "daq": 100,
+                "aux": 100
             }
 
             for key, val in self.inst_health_s0[id_now].iteritems():
-                self.redis.pipe.hSet(
-                    name="inst_health;"+str(id_now), key=key, data=val)
+                self.redis.pipe.hSet(name="inst_health;" + str(id_now), key=key, data=val)
 
             # self.redPipe.hmset("inst_health_s0"+str(id_now), self.inst_health_s0[id_now])
 
@@ -72,8 +76,7 @@ class InstHealth():
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()
         for id_now in self.tel_ids:
-            self.inst_health_sub_flat[id_now] = flatten_dict(
-                self.inst_health_sub[id_now])
+            self.inst_health_sub_flat[id_now] = flatten_dict(self.inst_health_sub[id_now])
 
         for id_now in self.tel_ids:
             self.setTelHealth_s1(id_now)
@@ -81,7 +84,10 @@ class InstHealth():
             for key, val in self.inst_health_sub_flat[id_now].iteritems():
                 if 'val' in val['data']:
                     self.redis.pipe.hSet(
-                        name="inst_health;"+str(id_now), key=key, data=val['data']['val'])
+                        name="inst_health;" + str(id_now),
+                        key=key,
+                        data=val['data']['val']
+                    )
 
         self.redis.pipe.execute()
 
@@ -94,9 +100,14 @@ class InstHealth():
     # ------------------------------------------------------------------
     def setTelHealth_s1(self, id_now):
         self.inst_health_s1[id_now] = {
-            "id": id_now, "health": self.inst_health_s0[id_now]["health"], "status": "run",
+            "id":
+            id_now,
+            "health":
+            self.inst_health_s0[id_now]["health"],
+            "status":
+            "run",
             "data": [
-                v for (k,v) in self.inst_health_sub[id_now].items()
+                v for (k, v) in self.inst_health_sub[id_now].items()
                 # self.inst_health_sub[id_now]["camera"],
                 # self.inst_health_sub[id_now]["mirror"],
                 # self.inst_health_sub[id_now]["mount"],
@@ -129,13 +140,20 @@ class InstHealth():
         arr_props = dict()
 
         rnd_props = [
-            'camera', 'mirror', 'mount', 'daq', 'aux',
-            'inst_0', 'inst_1', 'prc_0', 'prc_1',
+            'camera',
+            'mirror',
+            'mount',
+            'daq',
+            'aux',
+            'inst_0',
+            'inst_1',
+            'prc_0',
+            'prc_1',
         ]
         n_rnd_props = len(rnd_props)
 
         for id_now in self.tel_ids:
-            if(rnd_gen.random() > update_frac):
+            if (rnd_gen.random() > update_frac):
                 continue
 
             arr_props[id_now] = self.inst_health_s0[id_now]
@@ -167,8 +185,7 @@ class InstHealth():
             self.inst_health_s1[id_now]["health"] = health_tot
 
             for key, val in self.inst_health_s0[id_now].iteritems():
-                self.redis.pipe.hSet(
-                    name="inst_health;"+str(id_now), key=key, data=val)
+                self.redis.pipe.hSet(name="inst_health;" + str(id_now), key=key, data=val)
 
         self.redis.pipe.execute()
 
@@ -222,7 +239,8 @@ class InstHealth():
                     prop_value = self.inst_health_sub[id_now][prop_name]['val']
                     self.inst_health_s0[id_now][prop_name] = prop_value
                     self.redis.pipe.hSet(
-                        name="inst_health;"+str(id_now), key=prop_name, data=prop_value)
+                        name="inst_health;" + str(id_now), key=prop_name, data=prop_value
+                    )
                     # if id_now=='Ax00':print id_now,prop_name,prop_value
 
                 self.redis.pipe.execute()
@@ -230,15 +248,18 @@ class InstHealth():
 
             time_now = self.time_of_night.get_real_time()
             timeMin = self.time_of_night.get_time_series_start_time()
-            base_name = "inst_health;"+str(id_now)
+            base_name = "inst_health;" + str(id_now)
 
             for key, val in self.inst_health_sub_flat[id_now].iteritems():
                 if 'val' in val['data']:
-                    self.redis.pipe.hSet(
-                        name=base_name, key=key, data=val['data']['val'])
-                    self.redis.pipe.zAdd(name=base_name+";"+key, score=time_now,
-                                         data=val['data']['val'], packed_score=True,
-                                         clip_score=timeMin)
+                    self.redis.pipe.hSet(name=base_name, key=key, data=val['data']['val'])
+                    self.redis.pipe.zAdd(
+                        name=base_name + ";" + key,
+                        score=time_now,
+                        data=val['data']['val'],
+                        packed_score=True,
+                        clip_score=timeMin
+                    )
 
                     # if id_now == 'L_0' and 'camera_1_0' in key:
                     #     print id_now, key, val['data']['val']

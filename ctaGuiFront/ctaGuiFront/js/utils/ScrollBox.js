@@ -553,7 +553,7 @@ window.ScrollBox = function() {
             //   frac = Math.min(1, Math.max(0, frac));
             //   let trans = (-1 * frac * (com.scrollTransV.max - com.scrollTransV.min)) - com.scrollTransV.now;
 
-            //   com.doTrans({trans:trans}); //, duration:times.anim_arc/.2
+            //   com.doTrans({trans:trans}); //, duration:times.anim/.2
             // }
 
             com.scrollTransV.drag.y = is_def(d3.event) ? d3.event.y : com.innerBox.y
@@ -588,11 +588,11 @@ window.ScrollBox = function() {
 
                 let trans = -1 * d3.event.dy
                 // let frac  = (d3.event.y - com.innerBox.y)/com.innerBox.h;
-                let frac =
-          com.scrollTransV.drag.frac +
-          (d3.event.y - com.scrollTransV.drag.y) / com.innerBox.h
-                let delay =
-          Math.abs(trans) > 0 ? doTrans({
+                let frac
+          = com.scrollTransV.drag.frac
+          + (d3.event.y - com.scrollTransV.drag.y) / com.innerBox.h
+                let delay
+          = Math.abs(trans) > 0 ? doTrans({
               frac: frac,
               duration: 0,
           }) : 0
@@ -618,8 +618,8 @@ window.ScrollBox = function() {
         function doTrans(opt_in) {
             let trans = opt_in.trans
             let frac = opt_in.frac
-            let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim_arc
-            duration = duration === 0 ? times.anim_arc : duration
+            let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim
+            duration = duration === 0 ? times.anim : duration
             let isMoved = false
             let delay = 0
 
@@ -645,9 +645,9 @@ window.ScrollBox = function() {
             }
             else if (is_def(frac)) {
                 com.scrollTransV.frac = Math.max(0, Math.min(1, frac))
-                com.scrollTransV.now =
-          com.scrollTransV.max +
-          com.scrollTransV.frac * (com.scrollTransV.min - com.scrollTransV.max)
+                com.scrollTransV.now
+          = com.scrollTransV.max
+          + com.scrollTransV.frac * (com.scrollTransV.min - com.scrollTransV.max)
                 isMoved = true
             }
 
@@ -662,11 +662,11 @@ window.ScrollBox = function() {
                         .attr('transform', function(d, i) {
                             let shift = posShift()
                             return (
-                                'translate(' +
-                shift[0] +
-                ',' +
-                (com.scrollTransV.now + shift[1]) +
-                ')'
+                                'translate('
+                + shift[0]
+                + ','
+                + (com.scrollTransV.now + shift[1])
+                + ')'
                             )
                         })
                     com.clipRecInner
@@ -683,11 +683,11 @@ window.ScrollBox = function() {
                         .attr('transform', function(d, i) {
                             let shift = posShift()
                             return (
-                                'translate(' +
-                -shift[0] +
-                ',' +
-                (-shift[1] - com.scrollTransV.now) +
-                ')'
+                                'translate('
+                + -shift[0]
+                + ','
+                + (-shift[1] - com.scrollTransV.now)
+                + ')'
                             )
                         })
                 }
@@ -695,11 +695,11 @@ window.ScrollBox = function() {
                     com.innerG.attr('transform', function(d, i) {
                         let shift = posShift()
                         return (
-                            'translate(' +
-              shift[0] +
-              ',' +
-              (com.scrollTransV.now + shift[1]) +
-              ')'
+                            'translate('
+              + shift[0]
+              + ','
+              + (com.scrollTransV.now + shift[1])
+              + ')'
                         )
                     })
                     com.clipRecInner.attr('transform', function(d, i) {
@@ -708,11 +708,11 @@ window.ScrollBox = function() {
                     com.clipRecOuter.attr('transform', function(d, i) {
                         let shift = posShift()
                         return (
-                            'translate(' +
-              -shift[0] +
-              ',' +
-              (-shift[1] - com.scrollTransV.now) +
-              ')'
+                            'translate('
+              + -shift[0]
+              + ','
+              + (-shift[1] - com.scrollTransV.now)
+              + ')'
                         )
                     })
                 }
@@ -809,7 +809,7 @@ window.ScrollBox = function() {
                 })
                 .style('opacity', 1)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('x', com.scrollRecV.x)
                 .attr('width', com.scrollRecV.w)
                 .on('end', function(d) {
@@ -819,7 +819,7 @@ window.ScrollBox = function() {
             recBck
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('x', box.x + box.w)
                 .attr('width', 0)
                 .remove()
@@ -854,7 +854,7 @@ window.ScrollBox = function() {
                         })
                     }
                     n_tries += 1
-                }, times.anim_arc / 5)
+                }, times.anim / 5)
             }
 
             if (com.scrollTransV.active) {
@@ -903,7 +903,7 @@ window.ScrollBox = function() {
                 .attr('transform', zoomVerticalScrollBarTrans)
                 .merge(recScroll)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', zoomVerticalScrollBarTrans)
                 .attr('x', box.x + box.w - com.scrollRecV.w + marg)
                 .attr('y', box.y + marg)
@@ -913,7 +913,7 @@ window.ScrollBox = function() {
             recScroll
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc * 3 / 4)
+                .duration(times.anim * 3 / 4)
                 .attr('x', box.x + box.w)
                 .attr('y', box.y + marg)
                 .attr('width', 0)
@@ -935,7 +935,7 @@ window.ScrollBox = function() {
             else {
                 com.scrollBarRecV
                     .transition('move')
-                    .duration(times.anim_arc / 4)
+                    .duration(times.anim / 4)
                     .attr('transform', zoomVerticalScrollBarTrans)
             }
         }
@@ -971,16 +971,16 @@ window.ScrollBox = function() {
         let nClickTries = 0
         function recVerticalBckClickOnce(data_in) {
             if (
-                com.isInZoom ||
-        com.isInDrag ||
-        (com.scrollTransV.active && !is_def(com.scrollBarRecV))
+                com.isInZoom
+        || com.isInDrag
+        || (com.scrollTransV.active && !is_def(com.scrollBarRecV))
             ) {
                 // console.log('delay recVerticalBckClickOnce',[com.isInZoom,com.isInDrag],[com.scrollTrans.active,is_def(com.scrollBarRec)]);
                 if (nClickTries < 100) {
                     setTimeout(function() {
                         nClickTries += 1
                         recVerticalBckClick(data_in)
-                    }, times.anim_arc / 2)
+                    }, times.anim / 2)
                 }
                 else {
                     console.error('cant do recVerticalBckClick ...', data_in)
@@ -996,9 +996,9 @@ window.ScrollBox = function() {
 
             if (is_def(frac)) {
                 frac = Math.min(1, Math.max(0, frac))
-                let trans =
-          -1 * frac * (com.scrollTrans.max - com.scrollTrans.min) -
-          com.scrollTrans.now
+                let trans
+          = -1 * frac * (com.scrollTrans.max - com.scrollTrans.min)
+          - com.scrollTrans.now
 
                 com.doTrans({
                     trans: trans,
@@ -1026,7 +1026,7 @@ window.ScrollBox = function() {
             frac: com.scrollTransV.frac,
             scrollHeight: com.scrollHeight,
         }
-        let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim_arc / 2
+        let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim / 2
 
         if (is_def(opt_in.canScroll)) {
             com.canScroll = opt_in.canScroll
@@ -1243,7 +1243,7 @@ window.ScrollBox = function() {
             //   frac = Math.min(1, Math.max(0, frac));
             //   let trans = (-1 * frac * (com.scrollTransV.max - com.scrollTransV.min)) - com.scrollTransV.now;
 
-            //   com.doTrans({trans:trans}); //, duration:times.anim_arc/.2
+            //   com.doTrans({trans:trans}); //, duration:times.anim/.2
             // }
 
             com.scrollTransH.drag.x = is_def(d3.event) ? d3.event.x : com.innerBox.x
@@ -1277,11 +1277,11 @@ window.ScrollBox = function() {
 
                 let trans = -1 * d3.event.dx
                 // let frac  = (d3.event.y - com.innerBox.y)/com.innerBox.h;
-                let frac =
-          com.scrollTransH.drag.frac +
-          (d3.event.x - com.scrollTransH.drag.x) / com.innerBox.w
-                let delay =
-          Math.abs(trans) > 0 ? doTrans({
+                let frac
+          = com.scrollTransH.drag.frac
+          + (d3.event.x - com.scrollTransH.drag.x) / com.innerBox.w
+                let delay
+          = Math.abs(trans) > 0 ? doTrans({
               frac: frac,
               duration: 0,
           }) : 0
@@ -1306,7 +1306,7 @@ window.ScrollBox = function() {
         function doTrans(opt_in) {
             let trans = opt_in.trans
             let frac = opt_in.frac
-            let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim_arc
+            let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim
             let isMoved = false
             let delay = 0
 
@@ -1332,9 +1332,9 @@ window.ScrollBox = function() {
             }
             else if (is_def(frac)) {
                 com.scrollTransH.frac = Math.max(0, Math.min(1, frac))
-                com.scrollTransH.now =
-          com.scrollTransH.max +
-          com.scrollTransH.frac * (com.scrollTransH.min - com.scrollTransH.max)
+                com.scrollTransH.now
+          = com.scrollTransH.max
+          + com.scrollTransH.frac * (com.scrollTransH.min - com.scrollTransH.max)
                 isMoved = true
             }
 
@@ -1348,11 +1348,11 @@ window.ScrollBox = function() {
                         .attr('transform', function(d, i) {
                             let shift = posShift()
                             return (
-                                'translate(' +
-                (com.scrollTransH.now + shift[0]) +
-                ',' +
-                shift[1] +
-                ')'
+                                'translate('
+                + (com.scrollTransH.now + shift[0])
+                + ','
+                + shift[1]
+                + ')'
                             )
                         })
                     com.clipRecInner
@@ -1367,11 +1367,11 @@ window.ScrollBox = function() {
                         .attr('transform', function(d, i) {
                             let shift = posShift()
                             return (
-                                'translate(' +
-                (-shift[0] - com.scrollTransH.now) +
-                ',' +
-                -shift[1] +
-                ')'
+                                'translate('
+                + (-shift[0] - com.scrollTransH.now)
+                + ','
+                + -shift[1]
+                + ')'
                             )
                         })
                 }
@@ -1379,11 +1379,11 @@ window.ScrollBox = function() {
                     com.innerG.attr('transform', function(d, i) {
                         let shift = posShift()
                         return (
-                            'translate(' +
-              (com.scrollTransH.now + shift[0]) +
-              ',' +
-              shift[1] +
-              ')'
+                            'translate('
+              + (com.scrollTransH.now + shift[0])
+              + ','
+              + shift[1]
+              + ')'
                         )
                     })
                     com.clipRecInner.attr('transform', function(d, i) {
@@ -1392,11 +1392,11 @@ window.ScrollBox = function() {
                     com.clipRecOuter.attr('transform', function(d, i) {
                         let shift = posShift()
                         return (
-                            'translate(' +
-              (-shift[0] - com.scrollTransH.now) +
-              ',' +
-              -shift[1] +
-              ')'
+                            'translate('
+              + (-shift[0] - com.scrollTransH.now)
+              + ','
+              + -shift[1]
+              + ')'
                         )
                     })
                 }
@@ -1496,7 +1496,7 @@ window.ScrollBox = function() {
                 })
                 .style('opacity', 1)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('y', com.scrollRecH.y)
                 .attr('height', com.scrollRecH.h)
                 .on('end', function(d) {
@@ -1506,7 +1506,7 @@ window.ScrollBox = function() {
             recBck
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('y', box.y + box.h)
                 .attr('height', 0)
                 .remove()
@@ -1541,7 +1541,7 @@ window.ScrollBox = function() {
                         })
                     }
                     n_tries += 1
-                }, times.anim_arc / 5)
+                }, times.anim / 5)
             }
 
             if (com.scrollTransH.active) {
@@ -1590,7 +1590,7 @@ window.ScrollBox = function() {
                 .attr('transform', zoomHorizontalScrollBarTrans)
                 .merge(recScroll)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', zoomHorizontalScrollBarTrans)
                 .attr('y', box.y + box.h - com.scrollRecH.h + marg)
                 .attr('x', box.x + marg)
@@ -1599,7 +1599,7 @@ window.ScrollBox = function() {
             recScroll
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc * 3 / 4)
+                .duration(times.anim * 3 / 4)
                 .attr('y', box.y + box.y)
                 .attr('x', box.x + marg)
                 .attr('height', 0)
@@ -1620,7 +1620,7 @@ window.ScrollBox = function() {
             else {
                 com.scrollBarRecH
                     .transition('move')
-                    .duration(times.anim_arc / 4)
+                    .duration(times.anim / 4)
                     .attr('transform', zoomHorizontalScrollBarTrans)
             }
         }
@@ -1656,16 +1656,16 @@ window.ScrollBox = function() {
         let nClickTries = 0
         function recHorizontalBckClickOnce(data_in) {
             if (
-                com.isInZoom ||
-        com.isInDrag ||
-        (com.scrollTransH.active && !is_def(com.scrollBarRecH))
+                com.isInZoom
+        || com.isInDrag
+        || (com.scrollTransH.active && !is_def(com.scrollBarRecH))
             ) {
                 // console.log('delay recHorizontalBckClickOnce',[com.isInZoom,com.isInDrag],[com.scrollTrans.active,is_def(com.scrollBarRec)]);
                 if (nClickTries < 100) {
                     setTimeout(function() {
                         nClickTries += 1
                         recHorizontalBckClick(data_in)
-                    }, times.anim_arc / 2)
+                    }, times.anim / 2)
                 }
                 else {
                     console.error('cant do recHorizontalBckClick ...', data_in)
@@ -1681,9 +1681,9 @@ window.ScrollBox = function() {
 
             if (is_def(frac)) {
                 frac = Math.min(1, Math.max(0, frac))
-                let trans =
-          -1 * frac * (com.scrollTrans.max - com.scrollTrans.min) -
-          com.scrollTrans.now
+                let trans
+          = -1 * frac * (com.scrollTrans.max - com.scrollTrans.min)
+          - com.scrollTrans.now
 
                 com.doTrans({
                     trans: trans,
@@ -1711,7 +1711,7 @@ window.ScrollBox = function() {
             frac: com.scrollTransH.frac,
             scrollWidth: com.scrollWidth,
         }
-        let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim_arc / 2
+        let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim / 2
 
         if (is_def(opt_in.canScroll)) {
             com.canScroll = opt_in.canScroll
@@ -1793,7 +1793,7 @@ window.ScrollBox = function() {
             opt_in = {
             }
         }
-        let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim_arc / 2
+        let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim / 2
 
         if (is_def(opt_in.canScroll)) {
             com.canScroll = opt_in.canScroll
@@ -1971,7 +1971,7 @@ window.ScrollBox = function() {
     this.updateVerticalScroller = updateVerticalScroller
     // function updateScrollerSize (opt_in) {
     //   if (!is_def(opt_in)) opt_in = {}
-    //   let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim_arc / 2
+    //   let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim / 2
     //
     //   if (is_def(opt_in.canScroll)) com.canScroll = opt_in.canScroll
     //   if (is_def(opt_in.scrollVertical)) com.scrollVertical = opt_in.scrollVertical

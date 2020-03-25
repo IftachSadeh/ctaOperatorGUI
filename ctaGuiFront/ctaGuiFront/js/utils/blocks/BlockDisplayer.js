@@ -715,11 +715,11 @@ window.BlockDisplayer = function(opt_in) {
                         let h1 = data_now1.h
                         let o01 = Math.max(data_now0.o, data_now1.o)
 
-                        let hasOverlap =
-                              x1 < min_max.maxX - o01 &&
-                              x1 + w1 > min_max.min_x + o01 &&
-                              y1 < min_max.maxY &&
-                              y1 + h1 > min_max.min_y
+                        let hasOverlap
+                              = x1 < min_max.maxX - o01
+                              && x1 + w1 > min_max.min_x + o01
+                              && y1 < min_max.maxY
+                              && y1 + h1 > min_max.min_y
                         // if(x1 > min_max.maxX-o1 && x1 < min_max.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
 
                         // XXXXXXXXXXXXXXXXXX
@@ -1136,7 +1136,7 @@ window.BlockDisplayer = function(opt_in) {
                     return d.obs_block_id
                 })
             rect.transition()
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .ease(d3.easeLinear)
                 .attr('transform', 'translate(' + box.x + ',' + box.y + ')')
                 .attr('opacity', d => d.display.opacity)
@@ -1144,7 +1144,7 @@ window.BlockDisplayer = function(opt_in) {
                 d3.select(this).attr('opacity', d.display.opacity)
                 d3.select(this).select('rect.back')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .ease(d3.easeLinear)
                     .attr('stroke', d.display.stroke)
                     .style('fill', d.display.fill)
@@ -1158,7 +1158,7 @@ window.BlockDisplayer = function(opt_in) {
                     .style('stroke-dasharray', d.display.strokeDasharray)
                 d3.select(this).select('rect.pattern')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('x', timescale(d.time.start))
                     .attr('y', d.display.y - 2)
                     .attr('width', timescale(d.time.end) - timescale(d.time.start))
@@ -1167,7 +1167,7 @@ window.BlockDisplayer = function(opt_in) {
                     .style('fill-opacity', d.display.patternOpacity)
                 d3.select(this).select('text')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .text(d.metadata.block_name)
                     .style('font-size', function(d) {
                         d.display.size = minTxtSize
@@ -1287,7 +1287,7 @@ window.BlockDisplayer = function(opt_in) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .merge(rectNow)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('x', function(d, i) {
                     return d.x
                 })
@@ -1298,7 +1298,7 @@ window.BlockDisplayer = function(opt_in) {
             // .attr("height", function(d,i) { return d.h; })
 
             // rectNow.exit()
-            //   .transition("in_out").duration(times.anim_arc/2)
+            //   .transition("in_out").duration(times.anim/2)
             //   .attr("width", 0)
             //   .style("opacity", 0)
             //   .remove()
@@ -1503,7 +1503,7 @@ window.BlockDisplayer = function(opt_in) {
             })
             enterAllScheds.merge(allScheds)
                 .transition()
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', function(d, i) {
                     let offsetX = (parseInt(i / 8) + (scheds.length % 8 === 0 ? 0 : 1)) === nLine
                     offsetX = offsetX * (com.main.box.w - ((scheds.length % 8) * width)) * 0.5
@@ -1583,12 +1583,12 @@ window.BlockDisplayer = function(opt_in) {
             rect.each(function(d, i) {
                 d3.select(this)
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
                     .attr('opacity', d.display.opacity)
                 d3.select(this).select('rect.back')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                 // .attr('stroke', d.display.stroke)
                 // .style('fill', d.display.fill)
                 // .style('fill-opacity', 1)
@@ -1601,7 +1601,7 @@ window.BlockDisplayer = function(opt_in) {
                 // .style('stroke-dasharray', [])
                 // d3.select(this).select('rect.pattern')
                 //   .transition('in_out')
-                //   .duration(times.anim_arc)
+                //   .duration(times.anim)
                 //   .attr('x', timescale(d.time.start))
                 //   .attr('y', d.display.y - 2)
                 //   .attr('width', timescale(d.time.endTime) - timescale(d.time.start))
@@ -1610,7 +1610,7 @@ window.BlockDisplayer = function(opt_in) {
                 //   .style('fill-opacity', d.display.patternOpacity)
                 d3.select(this).select('text')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .text(d.metadata.n_obs)
                     .style('font-size', minTxtSize + 'px')
                 // .attr('dy', d.display.size / 3 + 'px')
@@ -1877,7 +1877,7 @@ window.BlockDisplayer = function(opt_in) {
             rect.each(function(d, i) {
                 d3.select(this)
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
                     .attr('opacity', d => d.display.opacity)
                 d3.select(this).select('rect.back')
@@ -1886,7 +1886,7 @@ window.BlockDisplayer = function(opt_in) {
                         com.blockForm.forms.scroll.scrollBox.moveHorizontalScrollerTo(t)
                     })
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                 // .attr('stroke', d.display.stroke)
                 // .style('fill', d.display.fill)
                 // .style('fill-opacity', 1)
@@ -1899,7 +1899,7 @@ window.BlockDisplayer = function(opt_in) {
                 // .style('stroke-dasharray', [])
                 // d3.select(this).select('rect.pattern')
                 //   .transition('in_out')
-                //   .duration(times.anim_arc)
+                //   .duration(times.anim)
                 //   .attr('x', timescale(d.time.start))
                 //   .attr('y', d.display.y - 2)
                 //   .attr('width', timescale(d.time.endTime) - timescale(d.time.start))
@@ -1908,7 +1908,7 @@ window.BlockDisplayer = function(opt_in) {
                 //   .style('fill-opacity', d.display.patternOpacity)
                 d3.select(this).select('text')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .text(d.metadata.n_obs)
                     .style('font-size', minTxtSize + 'px')
                 // .attr('dy', d.display.size / 3 + 'px')
@@ -2234,7 +2234,7 @@ window.BlockDisplayer = function(opt_in) {
             mainOffset = 0
             enterAllScheds.merge(allScheds)
                 .transition()
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .each(function(d, i) {
                     let translate = {
                         y: height * mainOffset,
@@ -2479,7 +2479,7 @@ window.BlockDisplayer = function(opt_in) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .merge(rectNow)
             // .transition('in_out')
-            // .duration(times.anim_arc)
+            // .duration(times.anim)
                 .attr('x', function(d, i) {
                     if (d.x < 0) {
                         return 0
@@ -2496,7 +2496,7 @@ window.BlockDisplayer = function(opt_in) {
             // .attr("height", function(d,i) { return d.h; })
 
             // rectNow.exit()
-            //   .transition("in_out").duration(times.anim_arc/2)
+            //   .transition("in_out").duration(times.anim/2)
             //   .attr("width", 0)
             //   .style("opacity", 0)
             //   .remove()
@@ -2751,7 +2751,7 @@ window.BlockDisplayer = function(opt_in) {
             })
             enterTrack.merge(currentTrack)
                 .transition()
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .ease(d3.easeLinear)
                 .attr('transform', function(d, i) {
                     let translate = {
@@ -2838,7 +2838,7 @@ window.BlockDisplayer = function(opt_in) {
 
                     d3.select(this).select('line#aesthetic')
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .ease(d3.easeLinear)
                         .attr('x1', timescale(d.startT))
                         .attr('y1', height * 0.45)
@@ -2846,7 +2846,7 @@ window.BlockDisplayer = function(opt_in) {
                         .attr('y2', height * 0.45)
                     d3.select(this).select('text#schedId')
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .ease(d3.easeLinear)
                         .style('font-size', Math.max(6, Math.min(18, height * 0.5)) + 'px')
                         .attr('x', function() {
@@ -2882,7 +2882,7 @@ window.BlockDisplayer = function(opt_in) {
                     // .attr('opacity', ((d.startT > com.time.endTime.time) || (d.endT < com.time.startTime.time)) ? 0 : 1)
                     d3.select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .ease(d3.easeLinear)
                         .attr('transform', function(d, i) {
                             let translate = {
@@ -2907,12 +2907,12 @@ window.BlockDisplayer = function(opt_in) {
             rect.each(function(d, i) {
                 d3.select(this)
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('transform', 'translate(' + box.x + ',' + (box.y) + ')')
                     .attr('opacity', d => d.display.opacity)
                 d3.select(this).select('rect.back')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .ease(d3.easeLinear)
                     .attr('x', timescale(d.time.start))
                     .attr('y', 0)
@@ -2925,7 +2925,7 @@ window.BlockDisplayer = function(opt_in) {
                     .style('stroke-dasharray', d.display.strokeDasharray)
                 d3.select(this).select('rect.pattern')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('x', timescale(d.time.start))
                     .attr('y', 0)
                     .attr('width', timescale(d.time.end) - timescale(d.time.start))
@@ -2934,7 +2934,7 @@ window.BlockDisplayer = function(opt_in) {
                     .style('fill-opacity', d.display.patternOpacity)
                 d3.select(this).select('text')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .ease(d3.easeLinear)
                     .text(d.metadata.n_obs)
                     .style('font-size', (box.h * 0.5) + 'px')
@@ -3079,7 +3079,7 @@ window.BlockDisplayer = function(opt_in) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .merge(rectNow)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('x', function(d, i) {
                     return d.x
                 })
@@ -3090,7 +3090,7 @@ window.BlockDisplayer = function(opt_in) {
             // .attr("height", function(d,i) { return d.h; })
 
             // rectNow.exit()
-            //   .transition("in_out").duration(times.anim_arc/2)
+            //   .transition("in_out").duration(times.anim/2)
             //   .attr("width", 0)
             //   .style("opacity", 0)
             //   .remove()

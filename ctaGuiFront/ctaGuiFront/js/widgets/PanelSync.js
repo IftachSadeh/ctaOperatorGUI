@@ -120,7 +120,7 @@ let main_panel_sync = function(opt_in) {
     let widget_ele = opt_in.widget_ele
 
     // let this_panel_sync = this
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
 
     // let sgv_tag = {};
     // $.each(widget_ele, function(index,ele_now) {
@@ -545,7 +545,7 @@ let main_panel_sync = function(opt_in) {
 
                 icon_side_sel
                     .transition('in_out')
-                    .duration(times.anim_arc / 5)
+                    .duration(times.anim / 5)
                     .attr('transform', function(d) {
                         d.x = d3.event.x - shift_main_g[0]
                         d.y = d3.event.y - shift_main_g[1]
@@ -760,7 +760,7 @@ let main_panel_sync = function(opt_in) {
                 // console.log('will delay _update_data_',locker.get_actives(com.lockerUpdateV));
                 setTimeout(function() {
                     update_data(data_in)
-                }, times.anim_arc / 2)
+                }, times.anim / 2)
                 return
             }
 
@@ -793,8 +793,8 @@ let main_panel_sync = function(opt_in) {
                 $.each(child_now0.children, function(nChild1, child_now1) {
                     $.each(child_now1.children, function(nChild2, child_now2) {
                         if (is_def(origV[child_now2.id])) {
-                            data_in.children[nChild0].children[nChild1].children[nChild2] =
-                origV[child_now2.id]
+                            data_in.children[nChild0].children[nChild1].children[nChild2]
+                = origV[child_now2.id]
                         }
                     })
                 })
@@ -819,7 +819,7 @@ let main_panel_sync = function(opt_in) {
 
             locker.remove({
                 id: tag_main + 'update_data',
-                delay: times.anim_arc * 2,
+                delay: times.anim * 2,
             })
 
             // finally update, using the new data
@@ -911,7 +911,7 @@ let main_panel_sync = function(opt_in) {
                 })
                 .merge(circ)
                 .transition('out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 1)
                 .attr('cx', function(d, i) {
                     return d.x
@@ -926,7 +926,7 @@ let main_panel_sync = function(opt_in) {
             circ
                 .exit()
                 .transition('out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .style('opacity', 0)
                 .attr('stroke-width', 0)
                 .style('fill-opacity', 0)
@@ -985,7 +985,7 @@ let main_panel_sync = function(opt_in) {
                     locker.remove({
                         id: tag_main + 'click_empty_grp',
                         override: true,
-                        delay: times.anim_arc * 2,
+                        delay: times.anim * 2,
                     })
                     locker.remove({
                         id: tag_main + 'added_empty_grp',
@@ -1065,7 +1065,7 @@ let main_panel_sync = function(opt_in) {
                     }
                 })
                 .transition('out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 1)
             // .style("opacity", function(d){
             //     // if(d.depth == 1 && d.data.is_empty) return 0.2;
@@ -1085,7 +1085,7 @@ let main_panel_sync = function(opt_in) {
             circ
                 .exit()
                 .transition('out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .style('opacity', 0)
                 .attr('stroke-width', 0)
                 .style('fill-opacity', 0)
@@ -1156,7 +1156,7 @@ let main_panel_sync = function(opt_in) {
                     }
                 })
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', function(d, i) {
                     return 'translate(' + d.x + ',' + d.y + ')'
                 })
@@ -1164,7 +1164,7 @@ let main_panel_sync = function(opt_in) {
             icn
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc / 4)
+                .duration(times.anim / 4)
                 .style('opacity', 0)
                 .remove()
 
@@ -1195,16 +1195,16 @@ let main_panel_sync = function(opt_in) {
                 }
                 let scale_r = 1.2
                 initXYR.r = dIn.data.w / 2
-                initXYR.x =
-          dIn.data.x +
-          dIn.data.w / 2 -
-          shift_main_g[0] -
-          (scale_r - 1) * initXYR.r / 2
-                initXYR.y =
-          dIn.data.y +
-          dIn.data.h / 2 -
-          shift_main_g[1] -
-          (scale_r - 1) * initXYR.r / 2
+                initXYR.x
+          = dIn.data.x
+          + dIn.data.w / 2
+          - shift_main_g[0]
+          - (scale_r - 1) * initXYR.r / 2
+                initXYR.y
+          = dIn.data.y
+          + dIn.data.h / 2
+          - shift_main_g[1]
+          - (scale_r - 1) * initXYR.r / 2
                 initXYR.r *= scale_r
 
                 let dataAdd = {
@@ -1406,7 +1406,7 @@ let main_panel_sync = function(opt_in) {
                     }
                 })
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', function(d) {
                     return 'translate(' + (d.x + d.w / 2) + ',' + (d.y + d.h / 2) + ')'
                 })
@@ -1415,7 +1415,7 @@ let main_panel_sync = function(opt_in) {
             icn
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('opacity', 0)
                 .remove()
 
@@ -1532,8 +1532,8 @@ let main_panel_sync = function(opt_in) {
                 })
                 .merge(txt)
                 .transition('in_out')
-                .duration(times.anim_arc)
-                .delay(times.anim_arc / 2)
+                .duration(times.anim)
+                .delay(times.anim / 2)
                 .attr('transform', function(d) {
                     if (d.depth === 1) {
                         return 'translate(' + d.x + ',' + (d.y - d.r) + ')'
@@ -1577,7 +1577,7 @@ let main_panel_sync = function(opt_in) {
             txt
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .style('fill-opacity', 0)
                 .style('stroke-opacity', 0)
                 .remove()
@@ -1665,7 +1665,7 @@ let main_panel_sync = function(opt_in) {
             vor
                 .exit()
                 .transition('out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .attr('opacity', 0)
                 .remove()
         }
@@ -1679,7 +1679,7 @@ let main_panel_sync = function(opt_in) {
             ) {
                 setTimeout(function() {
                     update_groups()
-                }, times.anim_arc / 2)
+                }, times.anim / 2)
                 return
             }
             locker.add({
@@ -1968,8 +1968,8 @@ let main_panel_sync = function(opt_in) {
                     $.each(child_now0.children, function(nChild1, child_now1) {
                         $.each(child_now1.children, function(nChild2, child_now2) {
                             if (
-                                child_now2.n_icon === n_empty_icon &&
-                child_now1.children.length > 1
+                                child_now2.n_icon === n_empty_icon
+                && child_now1.children.length > 1
                             ) {
                                 rmInd = [ nChild0, nChild1, nChild2 ]
                             }
@@ -2001,7 +2001,7 @@ let main_panel_sync = function(opt_in) {
 
             locker.remove({
                 id: tag_main + 'set_all',
-                delay: times.anim_arc * 2,
+                delay: times.anim * 2,
             })
         }
 

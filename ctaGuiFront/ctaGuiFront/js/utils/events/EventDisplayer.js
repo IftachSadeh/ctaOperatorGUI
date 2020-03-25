@@ -444,7 +444,7 @@ window.EventDisplayer = function(opt_in) {
             // })
             // enterTrack.merge(currentTrack)
             //   .transition()
-            //   .duration(times.anim_arc)
+            //   .duration(times.anim)
             //   .ease(d3.easeLinear)
             //   .attr('transform', function (d, i) {
             //     let translate = {
@@ -454,7 +454,7 @@ window.EventDisplayer = function(opt_in) {
             //     return 'translate(' + translate.x + ',' + translate.y + ')'
             //   })
             // currentTrack.exit()
-            //   .transition('in_out').duration(times.anim_arc)
+            //   .transition('in_out').duration(times.anim)
             //   .attr('width', 0)
             //   .style('opacity', 0)
             //   .remove()
@@ -619,7 +619,7 @@ window.EventDisplayer = function(opt_in) {
                     .attr('y', box.y + box.h * 0.1)
                 // d3.select(this).select('text')
                 //   .transition('in_out')
-                //   .duration(times.anim_arc)
+                //   .duration(times.anim)
                 //   .ease(d3.easeLinear)
                 //   .text(d.name)
                 //   .style('font-size', (box.h * 0.5) + 'px')
@@ -759,7 +759,7 @@ window.EventDisplayer = function(opt_in) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .merge(rectNow)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('x', function(d, i) {
                     return d.x
                 })
@@ -770,7 +770,7 @@ window.EventDisplayer = function(opt_in) {
             // .attr("height", function(d,i) { return d.h; })
 
             // rectNow.exit()
-            //   .transition("in_out").duration(times.anim_arc/2)
+            //   .transition("in_out").duration(times.anim/2)
             //   .attr("width", 0)
             //   .style("opacity", 0)
             //   .remove()
@@ -1009,7 +1009,7 @@ window.EventDisplayer = function(opt_in) {
             // })
             // enterTrack.merge(currentTrack)
             //   .transition()
-            //   .duration(times.anim_arc)
+            //   .duration(times.anim)
             //   .ease(d3.easeLinear)
             //   .attr('transform', function (d, i) {
             //     let translate = {
@@ -1019,7 +1019,7 @@ window.EventDisplayer = function(opt_in) {
             //     return 'translate(' + translate.x + ',' + translate.y + ')'
             //   })
             // currentTrack.exit()
-            //   .transition('in_out').duration(times.anim_arc)
+            //   .transition('in_out').duration(times.anim)
             //   .attr('width', 0)
             //   .style('opacity', 0)
             //   .remove()
@@ -1164,7 +1164,7 @@ window.EventDisplayer = function(opt_in) {
                     .attr('height', box.h * 0.5)
                 // d3.select(this).select('text')
                 //   .transition('in_out')
-                //   .duration(times.anim_arc)
+                //   .duration(times.anim)
                 //   .ease(d3.easeLinear)
                 //   .text(d.name)
                 //   .style('font-size', (box.h * 0.5) + 'px')
@@ -1304,7 +1304,7 @@ window.EventDisplayer = function(opt_in) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .merge(rectNow)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('x', function(d, i) {
                     return d.x
                 })
@@ -1315,7 +1315,7 @@ window.EventDisplayer = function(opt_in) {
             // .attr("height", function(d,i) { return d.h; })
 
             // rectNow.exit()
-            //   .transition("in_out").duration(times.anim_arc/2)
+            //   .transition("in_out").duration(times.anim/2)
             //   .attr("width", 0)
             //   .style("opacity", 0)
             //   .remove()

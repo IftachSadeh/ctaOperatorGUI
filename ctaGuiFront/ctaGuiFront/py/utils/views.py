@@ -24,8 +24,8 @@ def socketio_service(request):
     # socks["/"+"view100"] = socket_manager_view100
 
     for widget_name in utils.all_widgets:
-        if not ('/'+widget_name) in socks:
-            socks['/'+widget_name] = SocketManager
+        if not ('/' + widget_name) in socks:
+            socks['/' + widget_name] = SocketManager
 
     socketio_manage(request.environ, socks, request=request)
 
@@ -52,8 +52,7 @@ def view_login(request):
     if 'username' in request.params and 'password' in request.params:
         login = request.params['username']
         password = request.params['password']
-        db_lookup = DBSession.query(MyModel).filter(
-            MyModel.userId == login).first()
+        db_lookup = DBSession.query(MyModel).filter(MyModel.userId == login).first()
 
         # check if succesfull login
         if db_lookup is not None:

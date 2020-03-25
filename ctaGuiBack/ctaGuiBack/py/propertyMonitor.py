@@ -19,7 +19,6 @@ from Acspy.Common.Callbacks import CBvoid
 from Acspy.Common.Callbacks import CBdouble
 from TelescopeStruct import props, GLOBAL_FREQ, QUEUE_FREQ
 
-
 desc = CBDescIn(5L, 0L, 0L)
 
 
@@ -30,7 +29,6 @@ class PollingThread(threading.Thread):
     """
     class that defines the thread used for polling
     """
-
     def __init__(self, *args, **kwargs):
         super(PollingThread, self).__init__(*args, **kwargs)
         self._stop = threading.Event()
@@ -44,7 +42,6 @@ class MonitorCB(ACS__POA.CBdouble):
     """
     class that defines the callback for the acs components
     """
-
     def __init__(self, key):
         self.log = my_log(title=__name__)
         self.key = key
@@ -55,19 +52,17 @@ class MonitorCB(ACS__POA.CBdouble):
         this method is called when monitoring ends and it writes to redis
         """
         # sets the values into redis; title 10
-        self.r.setex(self.key, 10, json.dumps(
-            {'status': 'done', 'value': completion}))
-        self.log.info(
-            [['g', (" - PropertyMonitorLocal.done.%s - ") % (self.key)], ['p', completion]])
+        self.r.setex(self.key, 10, json.dumps({'status': 'done', 'value': completion}))
+        self.log.info([['g', (" - PropertyMonitorLocal.done.%s - ") % (self.key)],
+                       ['p', completion]])
 
     def working(self, completion, desc, a):
         """
         this method is called when monitoring and it writes to redis
         """
-        self.r.setex(self.key, 10, json.dumps(
-            {'status': 'working', 'value': completion}))
-        self.log.info(
-            [['g', (" - PropertyMonitorLocal.working.%s - ") % (self.key)], ['p', completion]])
+        self.r.setex(self.key, 10, json.dumps({'status': 'working', 'value': completion}))
+        self.log.info([['g', (" - PropertyMonitorLocal.working.%s - ") % (self.key)],
+                       ['p', completion]])
 
 
 # Prefix constants
@@ -119,8 +114,7 @@ class PropertyMonitorQueue:
         self.site_type = site_type
         self.tel_ids = tel_ids[site_type]
 
-        self.r = redis.StrictRedis(
-            host='localhost', port=redis_port[site_type], db=0)
+        self.r = redis.StrictRedis(host='localhost', port=redis_port[site_type], db=0)
 
         # to be on a safe side, clean the counter
         self.r.delete(DICT_SET_NAME)
@@ -137,7 +131,7 @@ class PropertyMonitorQueue:
         """
         while True:
             self.queue_parser()
-            time.sleep(QUEUE_FREQ/10000000)
+            time.sleep(QUEUE_FREQ / 10000000)
 
     def queue_parser(self):
         """
@@ -157,16 +151,16 @@ class PropertyMonitorQueue:
             pop_tel = "Monitor:" + pop_tel
             # Depending on the prefix increment or decrement the counter
             if pop_command == 'UNSUB':
-                self.log.info(
-                    [['g', " - PropertyMonitorQueue.queue_parser.UNSUB - "], ['p', pop_tel]])
+                self.log.info([['g', " - PropertyMonitorQueue.queue_parser.UNSUB - "],
+                               ['p', pop_tel]])
                 # Check if key value is lower than 0
                 if local_queue[pop_tel] <= 0:
                     local_queue.pop(pop_tel, None)
                 else:
                     local_queue[pop_tel] -= 1
             else:
-                self.log.info(
-                    [['g', " - PropertyMonitorQueue.queue_parser.SUB - "], ['p', pop_tel]])
+                self.log.info([['g', " - PropertyMonitorQueue.queue_parser.SUB - "],
+                               ['p', pop_tel]])
                 local_queue[pop_tel] += 1
             print local_queue
 
@@ -220,8 +214,7 @@ class PropertyMonitorGlobal:
         self.site_type = site_type
         self.tel_ids = tel_ids[site_type]
 
-        self.r = redis.StrictRedis(
-            host='localhost', port=redis_port[site_type], db=0)
+        self.r = redis.StrictRedis(host='localhost', port=redis_port[site_type], db=0)
         t = threading.Thread(target=self.tel_global_loop)
         # set the thread to daemon for quicker termination
         t.daemon = True
@@ -234,7 +227,7 @@ class PropertyMonitorGlobal:
         """
         while True:
             self.monitor_component_status()
-            time.sleep(GLOBAL_FREQ/10000000)
+            time.sleep(GLOBAL_FREQ / 10000000)
 
     def monitor_component_status(self):
         """
@@ -251,16 +244,11 @@ class PropertyMonitorGlobal:
             # for each property in the global component
             for xy in glob["props"]:
                 # eval the pollin command and save to dict
-                comp_prop_dict[xy[0]] = eval(
-                    glob["component_name"] + [xy[1]][0])
-                self.log.info([
-                    [
-                        'g',
-                        (" - PropertyMonitorGlobal.monitor_component_status.%s.%s - ") %
-                        (glob["component_name"], xy[0])
-                    ],
-                    ['p', eval(glob["component_name"] + [xy[1]][0])]
-                ])
+                comp_prop_dict[xy[0]] = eval(glob["component_name"] + [xy[1]][0])
+                self.log.info([[
+                    'g', (" - PropertyMonitorGlobal.monitor_component_status.%s.%s - ") %
+                    (glob["component_name"], xy[0])
+                ], ['p', eval(glob["component_name"] + [xy[1]][0])]])
                 # Create key for the component
                 rkey = COMPONENT_PREFIX_GLOBAL + ':%s' % x
                 # Save the dict into redis
@@ -276,8 +264,7 @@ class PropertyMonitorLocal:
 
         self.site_type = site_type
         self.tel_ids = tel_ids[site_type]
-        self.r = redis.StrictRedis(
-            host='localhost', port=redis_port[site_type], db=0)
+        self.r = redis.StrictRedis(host='localhost', port=redis_port[site_type], db=0)
 
         t = threading.Thread(target=self.tel_local_loop)
         # set the thread to daemon for quicker termination
@@ -348,10 +335,12 @@ class PropertyMonitorLocal:
         """
         # creates monitor for the specified component and prop
         mon_create = "mon=%s%s.create_monitor(client.activateOffShoot(cb), desc)" % (
-            component, command)
+            component, command
+        )
         # set the monitoring interval
         mon_timer_trigger = "mon.set_timer_trigger(%d)" % int(
-            params["timer_trigger_interval"])
+            params["timer_trigger_interval"]
+        )
         # create the final string that will be exec'ed
         mon_setup = mon_create + "\n" + mon_timer_trigger + "\n" + \
             "mon.set_value_trigger(%i, %s)" % (
@@ -367,9 +356,13 @@ class PropertyMonitorLocal:
         """
         cb = MonitorCB(rkey_local)
         # creates the monitor from the generated string
-        exec(self.sub_monitoring(props[key]['component_name'],
-                                 props[key]["Monitor"]["additional_parameters"],
-                                 props[key]["Monitor"]["monitoring_command"]))
+        exec (
+            self.sub_monitoring(
+                props[key]['component_name'],
+                props[key]["Monitor"]["additional_parameters"],
+                props[key]["Monitor"]["monitoring_command"]
+            )
+        )
         # adds the reference to the newly created monitor to monitors dict
         encoded_mon = jsonAcs.encode(mon)
         # add the newly created monitor reference to the hset in redis
@@ -437,10 +430,14 @@ class PropertyMonitorLocal:
                     # if a thread for the current property doesn't exist, create it
                     if key not in polling_threads.keys():
                         # create a polling thread
-                        t = PollingThread(target=self.sub_polling, args=(
-                            props[key]["component_name"],
-                            props[key]["Polling"]["additional_parameters"], key,
-                            props[key]["Polling"]["polling_command"]))
+                        t = PollingThread(
+                            target=self.sub_polling,
+                            args=(
+                                props[key]["component_name"],
+                                props[key]["Polling"]["additional_parameters"], key,
+                                props[key]["Polling"]["polling_command"]
+                            )
+                        )
                         polling_threads[key] = t
                         t.start()
 

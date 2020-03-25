@@ -55,8 +55,8 @@ sock.widget_table[main_script_tag] = function(opt_in) {
     let h0 = 12
     let w0 = 12
     let div_key = 'main'
-    let content = '<div id=\'' + opt_in.base_name + div_key + '\'>' +
-  '</div>'
+    let content = '<div id=\'' + opt_in.base_name + div_key + '\'>'
+  + '</div>'
 
     opt_in.widget_func = {
         sock_func: sock_plots_dash,
@@ -116,7 +116,7 @@ let sock_plots_dash = function(opt_in) {
 let main_plots_dash = function(opt_in) {
     // let my_unique_id = unique()
     window.colorPalette = get_color_theme('bright_grey')
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
 
     let widget_type = opt_in.widget_type
     let tag_arr_zoomerPlotsSvg = opt_in.base_name
@@ -143,7 +143,7 @@ let main_plots_dash = function(opt_in) {
     }
 
     // let this_sched_block_inspector = this
-    // let is_south = window.__site_type__ === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -642,8 +642,8 @@ let main_plots_dash = function(opt_in) {
             status.current.x = new Date(shared.server.time_of_night.date_now)
             status.gradient = Math.floor((Math.random() * 20) - 10)
             for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
-                if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined ||
-          shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
+                if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined
+          || shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
                     break
                 }
                 status.previous.push(deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2]))
@@ -668,8 +668,8 @@ let main_plots_dash = function(opt_in) {
             status.current.x = new Date(shared.server.time_of_night.date_now)
             status.gradient = Math.floor((Math.random() * 20) - 10)
             for (let i = 0; i < (shared.time.range / 100 / 3600); i++) {
-                if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined ||
-          shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
+                if (shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2] === undefined
+          || shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2].y === undefined) {
                     break
                 }
                 status.previous.push(deep_copy(shared.server.data_out[Math.floor(index / 4)][index % 4].data[i * 2]))
@@ -2235,9 +2235,9 @@ let main_plots_dash = function(opt_in) {
                     let gMergeTimestamp = allTimestamp.merge(gEnterTimestamp)
                     gMergeTimestamp
                         .attr('cx', function(dd, ii) {
-                            return (d.data.length > 2 && ii < d.data.length - 1) ?
-                                telplot.getAxis('bottom').scale(new Date(dd.x - 100000 * i)) :
-                                4
+                            return (d.data.length > 2 && ii < d.data.length - 1)
+                                ? telplot.getAxis('bottom').scale(new Date(dd.x - 100000 * i))
+                                : 4
                         })
                         .attr('cy', function(dd, ii) {
                             return telplot.getAxis('right').scale(dd.y)
@@ -2385,9 +2385,9 @@ let main_plots_dash = function(opt_in) {
                     })
                     let gMergeTimestamp = allTimestamp.merge(gEnterTimestamp)
                     gMergeTimestamp.each(function(dd, ii) {
-                        let width = (d.data.length > 2 && ii < d.data.length - 1) ?
-                            middleplot.getAxis('bottom').scale(new Date(d.data[ii + 1].timestamp)) - middleplot.getAxis('bottom').scale(new Date(dd.timestamp)) :
-                            4
+                        let width = (d.data.length > 2 && ii < d.data.length - 1)
+                            ? middleplot.getAxis('bottom').scale(new Date(d.data[ii + 1].timestamp)) - middleplot.getAxis('bottom').scale(new Date(dd.timestamp))
+                            : 4
                         let g = d3.select(this)
                         let height = -middleplot.getAxis('right' + d.key).scale(dd.data.length) + middleplot.getAxis('right' + d.key).scale(0)
                         // height = spaceline

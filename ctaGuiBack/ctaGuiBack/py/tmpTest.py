@@ -13,7 +13,6 @@ from utils import tel_ids, redis_port, flatten_dict
 import redis
 from msgpack import packb as pack
 
-
 from Acspy.Clients.SimpleClient import PySimpleClient
 import sb
 import jsonAcs
@@ -33,8 +32,7 @@ class TmpTest():
         self.site_type = site_type
         self.tel_ids = tel_ids[site_type]
 
-        self.redis = redis.StrictRedis(
-            host='localhost', port=redis_port[site_type], db=0)
+        self.redis = redis.StrictRedis(host='localhost', port=redis_port[site_type], db=0)
         self.redPipe = self.redis.pipeline()
 
         self.loop_sleep = 4
@@ -47,22 +45,27 @@ class TmpTest():
         client = PySimpleClient()
         supervisor = client.getComponent("ArraySupervisor")
 
-        config = sb.Configuration(sb.InstrumentConfiguration(
-            sb.PointingMode(2, sb._divergent(2)), sb.Subarray([], [])), "camera", "rta")
+        config = sb.Configuration(
+            sb.InstrumentConfiguration(
+                sb.PointingMode(2, sb._divergent(2)), sb.Subarray([], [])
+            ), "camera", "rta"
+        )
         coords = sb.Coordinates(3, sb.GalacticCoordinates(10, 10))
-        observing_mode = sb.ObservingMode(sb.Slewing(
-            1), sb.ObservingType(2, sb.GridSurvey(1, 1, 1)))
-        src = sb.Source("source", sb.placeholder, sb.High,
-                        sb.RegionOfInterest(100), observing_mode, coords)
-        obs = sb.ObservingConditions(sb.DateTime(
-            1), 60, 1, sb.Quality(1, 1, 1), sb.Weather(1, 1, 1, 1))
+        observing_mode = sb.ObservingMode(
+            sb.Slewing(1), sb.ObservingType(2, sb.GridSurvey(1, 1, 1))
+        )
+        src = sb.Source(
+            "source", sb.placeholder, sb.High, sb.RegionOfInterest(100), observing_mode,
+            coords
+        )
+        obs = sb.ObservingConditions(
+            sb.DateTime(1), 60, 1, sb.Quality(1, 1, 1), sb.Weather(1, 1, 1, 1)
+        )
 
-        ob = sb.ObservationBlock(
-            "ob", src, obs, "guiACS_sched_blocks_script0", 0)
+        ob = sb.ObservationBlock("ob", src, obs, "guiACS_sched_blocks_script0", 0)
         # ob.observing_conditions.duration = 20
         print 'xxxxxxxx', obs, '------', ob.observing_conditions.duration
-        schedulingBlock = sb.SchedulingBlock(
-            "sb", sb.Proposal("id"), config, [ob])
+        schedulingBlock = sb.SchedulingBlock("sb", sb.Proposal("id"), config, [ob])
 
         # Submit the scheduling block to the array supervisor
         print "Submit the scheduling block to the array supervisor"
@@ -100,7 +103,6 @@ class TmpTest():
         # opstatus = supervisor.getSbOperationStatus("sb")
         # print opstatus
         # print ""
-
 
         # active_scheduling_blocks = supervisor.listSchedulingBlocks()
         # print active_scheduling_blocks

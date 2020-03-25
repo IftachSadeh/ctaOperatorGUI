@@ -11,6 +11,7 @@ import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_sub_arr_name, inst_pos_0
 from ctaGuiUtils.py.RedisManager import RedisManager
 
+
 class MockTarget():
     # ------------------------------------------------------------------
     #
@@ -61,26 +62,32 @@ class MockTarget():
             # if self.redis.exists('inst_pos'):
             #     inst_pos_in = self.redis.hGetAll(name="inst_pos", packed=Tr
             target = {
-                "id": "target_"+str(index),
-                "name": "target_"+str(index),
+                "id": "target_" + str(index),
+                "name": "target_" + str(index),
             }
             target["pos"] = [
                 (self.rnd_gen.random() *
                  (self.az_min_max[1] - self.az_min_max[0])) + self.az_min_max[0],
-                (self.rnd_gen.random(
-                ) * (self.zen_min_max_tel[1] - self.zen_min_max_tel[0])) + self.zen_min_max_tel[0]
+                (
+                    self.rnd_gen.random() *
+                    (self.zen_min_max_tel[1] - self.zen_min_max_tel[0])
+                ) + self.zen_min_max_tel[0]
             ]
             minimal = startTime + (step * index) - (self.rnd_gen.random() * offset)
-            optimal = 1500 + startTime + (step * index) + (step * 0.5) + ((self.rnd_gen.random() - 0.5) * offset)
-            maximal = 4000 + startTime + (step * (index + 1)) + (self.rnd_gen.random() * offset)
+            optimal = 1500 + startTime + (step * index) + (step * 0.5) + (
+                (self.rnd_gen.random() - 0.5) * offset
+            )
+            maximal = 4000 + startTime + (step * (index + 1)) + (
+                self.rnd_gen.random() * offset
+            )
             target["observability"] = {
                 "minimal": minimal,
                 "optimal": optimal,
                 "maximal": maximal
             }
-            self.target_ids.append("target_"+str(index))
+            self.target_ids.append("target_" + str(index))
             self.targets.append(target)
-            self.redis.pipe.set(name='target_'+str(index), data=target, packed=True)
+            self.redis.pipe.set(name='target_' + str(index), data=target, packed=True)
         self.redis.pipe.execute()
 
         self.redis.pipe.set(name='target_ids', data=self.target_ids, packed=True)

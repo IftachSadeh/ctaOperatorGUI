@@ -8,13 +8,13 @@ function BaseApp() {
     // ------------------------------------------------------------------
     function init(opt_in) {
         let widget_name = opt_in.widget_name
-        let hasSideMenu = true
+        let has_side_menu = true
         let is_socket_view = true
-        let isLogin = widget_name == 'login'
+        let is_login = widget_name == 'login'
 
         if (widget_name === 'not_found') {
             console.warn('ready(base-app)...', widget_name)
-            let main_div = document.querySelector('#base_app')
+            // let main_div = document.querySelector('#base_app_div')
 
             let title_div = document.querySelector('#title_div')
             let menu_div = title_div.appendChild(document.createElement('div'))
@@ -25,13 +25,13 @@ function BaseApp() {
             )
             menu_div.innerHTML = 'Page not found - Redirecting home ...'
 
-            let topMenu_div = document.querySelector('#top_menu_inner')
-            topMenu_div.setAttribute('style', 'opacity: 0;')
+            let top_menu_div = document.querySelector('#top_menu_inner')
+            top_menu_div.setAttribute('style', 'opacity: 0;')
 
-            hasSideMenu = false
+            has_side_menu = false
             is_socket_view = false
             setTimeout(function() {
-                window.location.replace('/' + window.__app_prefix__ + '/index')
+                window.location.replace('/' + window.APP_PREFIX + '/index')
             }, 2000)
         }
 
@@ -39,24 +39,25 @@ function BaseApp() {
         //
         // -------------------------------------------------------------------
         if (widget_name == 'index') {
-            let main_div = document.querySelector('#base_app')
+            let main_div = document.querySelector('#base_app_div')
 
-            let siteNavMenu_div = main_div.appendChild(document.createElement('div'))
-            siteNavMenu_div.setAttribute('style', 'width: 60%')
+            let site_nav_menu_div = main_div.appendChild(document.createElement('div'))
+            site_nav_menu_div.setAttribute('style', 'width: 60%')
 
-            add_site_nav_menu(siteNavMenu_div)
+            add_site_nav_menu(site_nav_menu_div)
         }
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        if (isLogin) {
-            let main_div = document.querySelector('#base_app')
+        if (is_login) {
+            let main_div = document.querySelector('#base_app_div')
 
             let login_div = main_div.appendChild(document.createElement('div'))
             login_div.setAttribute(
                 'style',
-                'padding: 50px; text-align: center; width: 80%; display: block; margin: auto;'
+                'padding: 50px; text-align: center; '
+                + 'width: 80%; display: block; margin: auto;'
             )
 
             let form = login_div.appendChild(document.createElement('form'))
@@ -65,10 +66,10 @@ function BaseApp() {
             form.classList.add('form')
 
             let entry, row, th
-            let formTbl = form.appendChild(document.createElement('table'))
-            formTbl.classList.add('form-table')
+            let form_table = form.appendChild(document.createElement('table'))
+            form_table.classList.add('form-table')
 
-            row = formTbl.appendChild(document.createElement('tr'))
+            row = form_table.appendChild(document.createElement('tr'))
             th = row.appendChild(document.createElement('th'))
             th.innerHTML = 'Username'
             th.classList.add('form-label')
@@ -81,7 +82,7 @@ function BaseApp() {
             entry.value = 'user0'
             entry.classList.add('form-input')
 
-            row = formTbl.appendChild(document.createElement('tr'))
+            row = form_table.appendChild(document.createElement('tr'))
             th = row.appendChild(document.createElement('th'))
             th.innerHTML = 'Password'
             th.classList.add('form-label')
@@ -96,7 +97,7 @@ function BaseApp() {
             entry.classList.add('form-input')
             // entry.setAttribute("style", 'font-size: 30px; padding: 15px; text-align: left;')
 
-            // row = formTbl.appendChild(document.createElement('tr'))
+            // row = form_table.appendChild(document.createElement('tr'))
             // th = row.appendChild(document.createElement('th'))
             entry = form.appendChild(document.createElement('input'))
             entry.type = 'submit'
@@ -105,9 +106,11 @@ function BaseApp() {
             entry.classList.add('form-btn')
 
             let msg_div = main_div.appendChild(document.createElement('div'))
-            msg_div.innerHTML =
-        'Log-in is implemented for development purposes...<br>' +
-        ' Please use username = \'guest\' and a password \'123\' or \'user0\' with \'xxx\''
+            msg_div.innerHTML = (
+                'Log-in is implemented for development purposes...<br>'
+                + ' Please use username = \'guest\' '
+                + 'and a password \'123\' or \'user0\' with \'xxx\''
+            )
             msg_div.classList.add('menu_header')
             msg_div.setAttribute(
                 'style',
@@ -115,14 +118,14 @@ function BaseApp() {
             )
 
             is_socket_view = false
-            hasSideMenu = false
+            has_side_menu = false
         }
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
         let logout_btn_style
-        if (isLogin) {
+        if (is_login) {
             logout_btn_style = 'opacity:0; pointer-events:none;'
         }
         else {
@@ -137,11 +140,11 @@ function BaseApp() {
             window.location.href = 'logout'
         }
 
-        if (!isLogin) {
-            getConStat_div(false, '').setAttribute('style', 'opacity: 1;')
+        if (!is_login) {
+            get_connection_stat_div(false, '').setAttribute('style', 'opacity: 1;')
         }
 
-        if (!isLogin) {
+        if (!is_login) {
             let server_con_stat_div = document.querySelector('#server_con_stat_div')
             let serverConStatStyle = 'opacity:1; pointer-events:auto;'
             server_con_stat_div.setAttribute('style', serverConStatStyle)
@@ -150,18 +153,20 @@ function BaseApp() {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        let topMenu_div = document.querySelector('#top_menu_left')
-        let togMenu_div = append_ele_after(document.createElement('a'), topMenu_div)
-        let siteName_div = append_ele_after(document.createElement('div'), togMenu_div)
+        let top_menu_div = document.querySelector('#top_menu_left')
+        let tog_menu_div = append_ele_after(document.createElement('a'), top_menu_div)
+        let site_name_div = append_ele_after(document.createElement('div'), tog_menu_div)
 
-        let togMenu = togMenu_div.appendChild(document.createElement('i'))
-        let togMenuStyle = 'margin-right: 10px;'
-        if (!hasSideMenu) {
-            togMenuStyle +=
-        'pointer-events: none; opacity: ' + (isLogin ? 0 : 0.5) + ';'
+        let tog_menu = tog_menu_div.appendChild(document.createElement('i'))
+        let tog_menu_style = 'margin-right: 10px;'
+        if (!has_side_menu) {
+            tog_menu_style += (
+                'pointer-events: none; opacity: '
+                + (is_login ? 0 : 0.5) + ';'
+            )
         }
-        togMenu.setAttribute('style', togMenuStyle)
-        togMenu.classList.add(
+        tog_menu.setAttribute('style', tog_menu_style)
+        tog_menu.classList.add(
             'fa',
             'fa-bars',
             'sized-button',
@@ -169,99 +174,106 @@ function BaseApp() {
             'fa-circle-button-bright'
         )
 
-        if (!isLogin) {
-            siteName_div.innerHTML =
-        'CTA ' + (window.__site_type__ == 'N' ? 'North' : 'South')
+        if (!is_login) {
+            site_name_div.innerHTML = (
+                'CTA ' + (window.SITE_TYPE == 'S' ? 'South' : 'North')
+            )
         }
-        siteName_div.setAttribute('style', 'opacity:0.8; pointer-events:none;')
-        siteName_div.classList.add('menu_header')
+        site_name_div.setAttribute('style', 'opacity:0.8; pointer-events:none;')
+        site_name_div.classList.add('menu_header')
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
         let top_padding_div = document.querySelector('#top_padding_div')
-        let topPaddingStyle =
-      'width: 100%; padding-top: ' + siteName_div.offsetHeight * 3 + 'px;'
-        top_padding_div.setAttribute('style', topPaddingStyle)
+        let top_padding_style = (
+            'width: 100%; padding-top: '
+            + site_name_div.offsetHeight * 3 + 'px;'
+        )
+        top_padding_div.setAttribute('style', top_padding_style)
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        let side_menuW = '50%'
-        let bodyBackgroundColor = '#ececec'
-        let topMenuBackgroundColor = '#383B42'
+        let side_menu_w = '50%'
+        let body_back_color = '#ececec'
+        let top_menu_back_color = '#383B42'
 
-        if (hasSideMenu) {
+        if (has_side_menu) {
             let side_menu_div = document.querySelector('#side_menu')
             side_menu_div.setAttribute('style', 'overflow: hidden;')
 
-            let side_menuBack_div = side_menu_div.appendChild(
+            let side_menu_back_div = side_menu_div.appendChild(
                 document.createElement('div')
             )
-            let side_menuFront_div = side_menu_div.appendChild(
+            let side_menu_front_div = side_menu_div.appendChild(
                 document.createElement('div')
             )
 
-            let side_menuBackStyle =
-        'width: 100%; background-color: ' + topMenuBackgroundColor + ';'
-            side_menuBackStyle += '; opacity: 0; pointer-events: none; '
-            side_menuBackStyle += '; position: fixed; height: 100%; top: 0; '
-            side_menuBack_div.setAttribute('style', side_menuBackStyle)
+            let side_menu_back_style = (
+                'width: 100%; background-color: '
+                + top_menu_back_color
+                + '; opacity: 0; pointer-events: none; '
+                + '; position: fixed; height: 100%; top: 0; '
+            )
+            side_menu_back_div.setAttribute('style', side_menu_back_style)
 
-            let side_menuFrontStyle =
-        'width: 0%; background-color: ' + bodyBackgroundColor + ';'
-            side_menuFrontStyle += ' opacity: 1; position: fixed; top: 0; bottom: 0;'
-            side_menuFrontStyle +=
-        ' padding-top: ' + siteName_div.offsetHeight * 3 + 'px;'
-            side_menuFrontStyle +=
-        ' padding-bottom: ' + siteName_div.offsetHeight * 1 + 'px;'
-            side_menuFrontStyle += ' overflow-x: hidden; '
-            side_menuFront_div.setAttribute('style', side_menuFrontStyle)
-            // side_menuFront_div.style.boxShadow = '0 41px 18px 0 rgba(0, 0, 0, 0.2), 0 16px 70px 0 rgba(0, 0, 0, 0.19);'
+            let side_menu_front_style = (
+                'width: 0%; background-color: ' + body_back_color + ';'
+                + ' opacity: 1; position: fixed; top: 0; bottom: 0;'
+                + ' padding-top: ' + site_name_div.offsetHeight * 3 + 'px;'
+                + ' padding-bottom: ' + site_name_div.offsetHeight * 1 + 'px;'
+                + ' overflow-x: hidden; '
+            )
+            side_menu_front_div.setAttribute('style', side_menu_front_style)
+            // side_menu_front_div.style.boxShadow = '0 41px 18px 0 rgba(0, 0, 0, 0.2), 0 16px 70px 0 rgba(0, 0, 0, 0.19);'
 
-            let isSideMenuOpen = true
-            function togSideMenu() {
-                side_menuBack_div.style.WebkitTransition = 'opacity 0.5s'
-                side_menuBack_div.style.MozTransition = 'opacity 0.5s'
-                if (isSideMenuOpen) {
-                    side_menuBack_div.style.opacity = '0%'
-                    side_menuBack_div.style.pointerEvents = 'none'
+            let is_side_menu_open = true
+            
+            let tog_side_menu = function() {
+                side_menu_back_div.style.WebkitTransition = 'opacity 0.5s'
+                side_menu_back_div.style.MozTransition = 'opacity 0.5s'
+                if (is_side_menu_open) {
+                    side_menu_back_div.style.opacity = '0%'
+                    side_menu_back_div.style.pointerEvents = 'none'
                 }
                 else {
-                    side_menuBack_div.style.opacity = '40%'
-                    side_menuBack_div.style.pointerEvents = 'auto'
+                    side_menu_back_div.style.opacity = '40%'
+                    side_menu_back_div.style.pointerEvents = 'auto'
                 }
 
-                side_menuFront_div.style.WebkitTransition = 'width 0.3s'
-                side_menuFront_div.style.MozTransition = 'width 0.3s'
-                // side_menuFront_div.style.WebkitTransition = 'width 0.6s';
-                // side_menuFront_div.style.MozTransition = 'width 0.6s';
+                side_menu_front_div.style.WebkitTransition = 'width 0.3s'
+                side_menu_front_div.style.MozTransition = 'width 0.3s'
+                // side_menu_front_div.style.WebkitTransition = 'width 0.6s';
+                // side_menu_front_div.style.MozTransition = 'width 0.6s';
 
-                if (isSideMenuOpen) {
-                    side_menuFront_div.style.width = '0%'
-                    side_menuFront_div.style.pointerEvents = 'none'
+                if (is_side_menu_open) {
+                    side_menu_front_div.style.width = '0%'
+                    side_menu_front_div.style.pointerEvents = 'none'
                 }
                 else {
-                    side_menuFront_div.style.width = side_menuW
-                    side_menuFront_div.style.pointerEvents = 'auto'
+                    side_menu_front_div.style.width = side_menu_w
+                    side_menu_front_div.style.pointerEvents = 'auto'
                 }
 
-                isSideMenuOpen = !isSideMenuOpen
+                is_side_menu_open = !is_side_menu_open
+                
+                return
             }
 
-            togMenu_div.onclick = togSideMenu
-            side_menuBack_div.onclick = togSideMenu
-            togSideMenu()
-            // side_menuBack_div.addEventListener('click', function (event) { togSideMenu(); })
-            // setInterval(function(){ togSideMenu() }, 2000);
+            tog_menu_div.onclick = tog_side_menu
+            side_menu_back_div.onclick = tog_side_menu
+            tog_side_menu()
 
-            let side_menuFrontInner_div = side_menuFront_div.appendChild(
+            let side_menu_front_inner_div = side_menu_front_div.appendChild(
                 document.createElement('div')
             )
-            let side_menuFrontInnerStyle = 'width: 95%' // ' padding-left: 2%; '
-            side_menuFrontInner_div.setAttribute('style', side_menuFrontInnerStyle)
+            let side_menu_front_inner_style = 'width: 95%' // ' padding-left: 2%; '
+            side_menu_front_inner_div.setAttribute(
+                'style', side_menu_front_inner_style
+            )
 
-            add_site_nav_menu(side_menuFrontInner_div)
+            add_site_nav_menu(side_menu_front_inner_div)
         }
 
         if (is_socket_view) {
@@ -273,7 +285,7 @@ function BaseApp() {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function getConStat_div(is_server, tag) {
+    function get_connection_stat_div(is_server, tag) {
         if (is_server) {
             return document.querySelector('#' + 'server_con_stat_div' + tag)
         }
@@ -281,11 +293,11 @@ function BaseApp() {
             return document.querySelector('#' + 'user_con_stat_div' + tag)
         }
     }
-    this.getConStat_div = getConStat_div
+    this.get_connection_stat_div = get_connection_stat_div
 
     // let userName_div = document.querySelector("#"+"userName_div")
-    // if(window.__user_id__ !== 'None') {
-    //   userName_div.innerHTML = window.__user_id__
+    // if(window.USER_ID !== 'None') {
+    //   userName_div.innerHTML = window.USER_ID
     //   userName_div.style.opacity = '80%'
     // }
 }
@@ -299,11 +311,12 @@ function append_ele_after(new_ele, target_ele) {
 
     // if the parents lastchild is the target_ele...
     if (parent.lastChild == target_ele) {
-    // add the new_ele after the target element.
+        // add the new_ele after the target element.
         return parent.appendChild(new_ele)
     }
     else {
-    // else the target has siblings, insert the new element between the target and it's next sibling.
+        // else the target has siblings, insert the new
+        // element between the target and it's next sibling.
         return parent.insertBefore(new_ele, target_ele.nextSibling)
     }
 }
@@ -313,10 +326,15 @@ function append_ele_after(new_ele, target_ele) {
 // ------------------------------------------------------------------
 function add_site_nav_menu(parent_ele) {
     let side_menu_btn_grb_div = parent_ele.appendChild(document.createElement('div'))
-    // side_menu_btn_grb_div.innerHTML = 'lllllllllllllllllllllllllllllll'
     side_menu_btn_grb_div.classList.add('site-nav-btn-group')
 
     let btns = [
+        {
+            text: 'Development',
+            onclick: function() {
+                window.location.href = 'view102'
+            },
+        },
         {
             text: 'Home',
             onclick: function() {
@@ -383,12 +401,6 @@ function add_site_nav_menu(parent_ele) {
                 window.location.href = 'view000'
             },
         },
-        {
-            text: 'Development',
-            onclick: function() {
-                window.location.href = 'view102'
-            },
-        },
     ]
 
     $.each(btns, function(i, d) {
@@ -399,10 +411,10 @@ function add_site_nav_menu(parent_ele) {
 
         side_menu_btn.onclick = d.onclick
 
-        let btnTxt = side_menu_btn.appendChild(document.createElement('div'))
-        btnTxt.innerHTML = d.text
-        btnTxt.classList.add('site-nav-btn-text')
+        let btn_text = side_menu_btn.appendChild(document.createElement('div'))
+        btn_text.innerHTML = d.text
+        btn_text.classList.add('site-nav-btn-text')
     })
 }
 
-window.baseApp = new BaseApp()
+window.base_app = new BaseApp()

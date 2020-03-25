@@ -106,7 +106,7 @@ let main_sub_arr_grp = function(opt_in) {
     let icon_divs = opt_in.icon_divs
 
     // let this_sub_arr_grp = this
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -212,34 +212,34 @@ let main_sub_arr_grp = function(opt_in) {
                 pos1 = [ deg_dms(pos[0]), deg_dms(pos[1]) ]
             }
 
-            data_out =
-        formInpt(pos1[0][0], 0) +
-        unit_deg +
-        ' ' +
-        formInpt(pos1[0][1], 0) +
-        unit_arcmin +
-        ' ' +
-        formInpt(pos1[0][2], 1) +
-        unit_arcsec +
-        ' , ' +
-        formInpt(pos1[1][0], 0) +
-        unit_deg +
-        ' ' +
-        formInpt(pos1[1][1], 0) +
-        unit_arcmin +
-        ' ' +
-        formInpt(pos1[1][2], 1) +
-        unit_arcsec
+            data_out
+        = formInpt(pos1[0][0], 0)
+        + unit_deg
+        + ' '
+        + formInpt(pos1[0][1], 0)
+        + unit_arcmin
+        + ' '
+        + formInpt(pos1[0][2], 1)
+        + unit_arcsec
+        + ' , '
+        + formInpt(pos1[1][0], 0)
+        + unit_deg
+        + ' '
+        + formInpt(pos1[1][1], 0)
+        + unit_arcmin
+        + ' '
+        + formInpt(pos1[1][2], 1)
+        + unit_arcsec
 
             return (title + data_out).replace(/ /g, '\u00A0')
         }
         else {
-            data_out =
-        formInpt(pos[0], lblDig) +
-        unit_deg +
-        ' , ' +
-        formInpt(pos[1], lblDig) +
-        unit_deg
+            data_out
+        = formInpt(pos[0], lblDig)
+        + unit_deg
+        + ' , '
+        + formInpt(pos[1], lblDig)
+        + unit_deg
             return (title + data_out).replace(/ /g, '\u00A0')
         }
     }
@@ -259,7 +259,7 @@ let main_sub_arr_grp = function(opt_in) {
     //   // create delay if currently in data update or a previous call of _askInitData
     //   if(!locker.is_free("data_change")) {
     //     // console.log('delay askInitData')
-    //     setTimeout(function () { askInitData(opt_in); }, times.anim_arc*2);
+    //     setTimeout(function () { askInitData(opt_in); }, times.anim*2);
     //     return;
     //   }
     //   // console.log('do askInitData')
@@ -515,8 +515,8 @@ let main_sub_arr_grp = function(opt_in) {
                 tel_data.tel[index1][key] = [ 0, 0 ]
 
                 let target_point_id = ele_now[key + 'Id']
-                let trgPntD =
-          target_point_id !== tel_info.no_sub_arr_name()
+                let trgPntD
+          = target_point_id !== tel_info.no_sub_arr_name()
               ? find_dict_ele_in_obj(tel_data[key], 'id', target_point_id, true)[1]
               : undefined
 
@@ -575,10 +575,10 @@ let main_sub_arr_grp = function(opt_in) {
                 let posDiff = Math.sqrt(Math.pow(posDiff0, 2) + Math.pow(posDiff1, 2))
                 let posDiffDms = deg_dms(posDiff)
 
-                colNow =
-          posDiffDms[0] <= 1 || posDiffDms[0] >= 359
-              ? getColTrack()
-              : getColSlew(posDiff)
+                colNow
+          = posDiffDms[0] <= 1 || posDiffDms[0] >= 359
+                        ? getColTrack()
+                        : getColSlew(posDiff)
             }
 
             tel_data.idToCol[ele_now.id] = colNow
@@ -677,7 +677,7 @@ let main_sub_arr_grp = function(opt_in) {
         ) {
             setTimeout(function() {
                 sync_state_send(data_in)
-            }, times.anim_arc)
+            }, times.anim)
             return
         }
 
@@ -819,7 +819,7 @@ let main_sub_arr_grp = function(opt_in) {
                 locker.remove('zoom')
                 locker.remove({
                     id: 'zoomEndFunc',
-                    delay: times.anim_arc * 1.2,
+                    delay: times.anim * 1.2,
                     override: true,
                 })
 
@@ -875,7 +875,7 @@ let main_sub_arr_grp = function(opt_in) {
                 else {
                     setTimeout(function() {
                         doZoomFuncEnd()
-                    }, times.anim_arc / 2)
+                    }, times.anim / 2)
                 }
             }
 
@@ -979,13 +979,13 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('preserveAspectRatio', 'xMidYMid meet')
                 .attr(
                     'viewBox',
-                    -svg_dims.w[1] / 2 +
-            ' ' +
-            -svg_dims.h[1] / 2 +
-            ' ' +
-            svg_dims.w[1] +
-            ' ' +
-            svg_dims.h[1]
+                    -svg_dims.w[1] / 2
+            + ' '
+            + -svg_dims.h[1] / 2
+            + ' '
+            + svg_dims.w[1]
+            + ' '
+            + svg_dims.h[1]
                 )
                 .style('position', 'relative')
                 .style('width', '100%')
@@ -1036,7 +1036,7 @@ let main_sub_arr_grp = function(opt_in) {
                     return i === 0 ? d3.rgb('#F2F2F2').darker(0.05) : '#F2F2F2'
                 })
                 .transition('in_out')
-                .duration(times.anim_arc / 3)
+                .duration(times.anim / 3)
             // .attr("r", function(d,i) { return svg_dims.w[1]/2; });
                 .attr('r', function(d, i) {
                     return svg_dims.w[1] * (i === 0 ? 1 / 2 : 1 / 2.2)
@@ -1170,7 +1170,7 @@ let main_sub_arr_grp = function(opt_in) {
                 })
                 .merge(txt)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .text(function(d) {
                     return d.txt
                 })
@@ -1180,7 +1180,7 @@ let main_sub_arr_grp = function(opt_in) {
             txt
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('fill-opacity', 0)
                 .style('stroke-opacity', 0)
                 .remove()
@@ -1456,7 +1456,7 @@ let main_sub_arr_grp = function(opt_in) {
                     })
                     .merge(line)
                     .transition('in_out1')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                 // .attr("x1",  function(d,i) { return d[ trgTel+ pos_tags[ pairNow[0] ]][0]; })
                 // .attr("y1",  function(d,i) { return d[ trgTel+ pos_tags[ pairNow[0] ]][1]; })
                     .attr('x2', function(d, i) {
@@ -1484,7 +1484,7 @@ let main_sub_arr_grp = function(opt_in) {
                         if (n_ele_in === 0) {
                             line
                                 .transition('in_out2')
-                                .duration(times.anim_arc)
+                                .duration(times.anim)
                                 .attr('x1', function(d, i) {
                                     return d[trgTel + pos_tags[pairNow[0]]][0]
                                 })
@@ -1497,7 +1497,7 @@ let main_sub_arr_grp = function(opt_in) {
 
                 line
                     .exit()
-                // .transition("in_out").duration(times.anim_arc)
+                // .transition("in_out").duration(times.anim)
                 // .attr("stroke-opacity", "0")
                     .remove()
             })
@@ -1558,7 +1558,7 @@ let main_sub_arr_grp = function(opt_in) {
                         n_ele_in++
                     })
                     .transition('trans')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('transform', function(d) {
                         return 'translate(' + d[tag_now][0] + ',' + d[tag_now][1] + ')'
                     })
@@ -1590,7 +1590,7 @@ let main_sub_arr_grp = function(opt_in) {
                 circ
                     .exit()
                     .transition('in_out')
-                    .duration(times.anim_arc / 2)
+                    .duration(times.anim / 2)
                     .attr('r', 0)
                     .remove()
 
@@ -1612,7 +1612,7 @@ let main_sub_arr_grp = function(opt_in) {
 
                     circ
                         .transition('zoom')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('transform', function(d) {
                             return 'translate(' + d[tag_now][0] + ',' + d[tag_now][1] + ')'
                         })
@@ -1659,7 +1659,7 @@ let main_sub_arr_grp = function(opt_in) {
                 })
                 .merge(trgLbl)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('font-size', function(d) {
                     return getFontSize() + 'px'
                 })
@@ -1670,7 +1670,7 @@ let main_sub_arr_grp = function(opt_in) {
             trgLbl
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('fill-opacity', 0)
                 .style('stroke-opacity', 0)
                 .remove()
@@ -1710,7 +1710,7 @@ let main_sub_arr_grp = function(opt_in) {
                 })
                 .merge(telLbl)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('font-size', function(d) {
                     return getFontSize() + 'px'
                 })
@@ -1721,7 +1721,7 @@ let main_sub_arr_grp = function(opt_in) {
             telLbl
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('fill-opacity', 0)
                 .style('stroke-opacity', 0)
                 .remove()
@@ -1736,7 +1736,7 @@ let main_sub_arr_grp = function(opt_in) {
             }
             else {
                 prevTickAnim = Date.now()
-                minAnimWait = times.anim_arc * 2 // minAnimWait must be >= times.anim_arc !!!
+                minAnimWait = times.anim * 2 // minAnimWait must be >= times.anim !!!
 
                 // update the positions
                 com.nodeUpdateTickPos = function(animFrac) {
@@ -1749,7 +1749,7 @@ let main_sub_arr_grp = function(opt_in) {
                             }
                         })
                         .transition('updtTickepos_dif')
-                        .duration(times.anim_arc * animFrac)
+                        .duration(times.anim * animFrac)
                         .attr('transform', function(d) {
                             return 'translate(' + d.x + ',' + d.y + ')'
                         })
@@ -1763,7 +1763,7 @@ let main_sub_arr_grp = function(opt_in) {
                             com.inst_pos.g
                                 .selectAll('line.' + tag_now)
                                 .transition('in_out')
-                                .duration(times.anim_arc * animFrac)
+                                .duration(times.anim * animFrac)
                                 .attr('x1', function(d, i) {
                                     return com.inst_pos.lblXY[trgTel + d.id].x
                                 })
@@ -1843,7 +1843,7 @@ let main_sub_arr_grp = function(opt_in) {
                 com.inst_pos.g
                     .selectAll('text')
                     .transition('zoom')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('font-size', getFontSize() + 'px')
                     .attr('dy', getFontSize() / 3 + 'px')
             }
@@ -1873,7 +1873,7 @@ let main_sub_arr_grp = function(opt_in) {
             ) {
                 setTimeout(function() {
                     setFocused(opt_in)
-                }, times.anim_arc)
+                }, times.anim)
                 return
             }
             locker.add({
@@ -1884,7 +1884,7 @@ let main_sub_arr_grp = function(opt_in) {
             let tagTelLbl = 'telTitle'
             let tagTrgLbl = 'trgTitle'
             let fadeOpac = 0.05
-            let animTime = times.anim_arc / 2
+            let animTime = times.anim / 2
 
             function is_focused(id_in) {
                 if (!is_def(tel_data.idToFocus[id_in])) {
@@ -1937,7 +1937,7 @@ let main_sub_arr_grp = function(opt_in) {
 
             locker.remove({
                 id: 'setFocused',
-                delay: times.anim_arc,
+                delay: times.anim,
             })
         }
 
@@ -1998,24 +1998,24 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('opacity', opac)
                 .merge(com.grdL)
                 .transition('in_out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .attr('stroke-width', 0)
                 .transition('in_out')
                 .duration(0)
                 .attr('d', com.path)
                 .transition('in_out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .attr('stroke-width', strkW)
 
             com.grdL
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .attr('stroke-width', 0)
                 .remove()
 
             // com.gGrat.selectAll("path."+"grat").filter(function(d,i){ return i%2==1;})
-            //   .transition("in_out").duration(times.anim_arc/2)
+            //   .transition("in_out").duration(times.anim/2)
             //   .attr("stroke-width", 0)
             //   .remove()
 
@@ -2216,14 +2216,14 @@ let main_sub_arr_grp = function(opt_in) {
                     }
                     else {
                         return (
-                            formInpt(dIn[0], 0) +
-              unit_deg +
-              ' ' +
-              formInpt(dIn[1], 0) +
-              unit_arcmin +
-              ' ' +
-              formInpt(dIn[2], 1) +
-              unit_arcsec
+                            formInpt(dIn[0], 0)
+              + unit_deg
+              + ' '
+              + formInpt(dIn[1], 0)
+              + unit_arcmin
+              + ' '
+              + formInpt(dIn[2], 1)
+              + unit_arcsec
                         )
                     }
                 }
@@ -2273,7 +2273,7 @@ let main_sub_arr_grp = function(opt_in) {
                     return d.txt
                 }) // .toFixed(lblPerc)
                 .transition('update')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('fill-opacity', opac)
                 .style('stroke-opacity', Math.min(0.9, opac * 2))
                 .attr('transform', function(d) {
@@ -2290,7 +2290,7 @@ let main_sub_arr_grp = function(opt_in) {
             com.lbl
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('fill-opacity', 0)
                 .style('stroke-opacity', 0)
                 .remove()
@@ -2373,7 +2373,7 @@ let main_sub_arr_grp = function(opt_in) {
                 com.lbl = com.gGrat
                     .selectAll('text.' + 'grat')
                     .transition('update')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('fill-opacity', opac)
                     .style('stroke-opacity', Math.min(0.9, opac * 2))
             }
@@ -2495,13 +2495,13 @@ let main_sub_arr_grp = function(opt_in) {
                 com.svg_zoom_update_state = function() {
                     let scale = get_scale()
 
-                    let changeState =
-            (com.z.prev < com.z['1.0'] && scale >= com.z['1.0']) ||
-            (com.z.prev >= com.z['1.0'] && scale < com.z['1.0']) ||
-            (com.z.prev < com.z['1.1'] && scale >= com.z['1.1']) ||
-            (com.z.prev >= com.z['1.1'] && scale < com.z['1.1']) ||
-            (com.z.prev < com.z['2.0'] && scale >= com.z['2.0']) ||
-            (com.z.prev >= com.z['2.0'] && scale < com.z['2.0'])
+                    let changeState
+            = (com.z.prev < com.z['1.0'] && scale >= com.z['1.0'])
+            || (com.z.prev >= com.z['1.0'] && scale < com.z['1.0'])
+            || (com.z.prev < com.z['1.1'] && scale >= com.z['1.1'])
+            || (com.z.prev >= com.z['1.1'] && scale < com.z['1.1'])
+            || (com.z.prev < com.z['2.0'] && scale >= com.z['2.0'])
+            || (com.z.prev >= com.z['2.0'] && scale < com.z['2.0'])
 
                     if (changeState) {
                         // console.log('svg_zoom_update_state',zoom_state,scale)
@@ -2602,8 +2602,8 @@ let main_sub_arr_grp = function(opt_in) {
                             let min_diff = -1
                             $.each(com.telXY, function(id_now, data_now) {
                                 if (data_now.isTel) {
-                                    let diff_now =
-                    Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
+                                    let diff_now
+                    = Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
                                     if (diff_now < min_diff || min_diff < 0) {
                                         min_diff = diff_now
                                         target_name = id_now
@@ -2746,7 +2746,7 @@ let main_sub_arr_grp = function(opt_in) {
                     .attr('cy', svg_dims.h[1] / 2)
                     .attr('fill', '#F2F2F2')
                     .transition('in_out')
-                    .duration(times.anim_arc / 3)
+                    .duration(times.anim / 3)
                     .attr('r', svg_dims.w[1] / 2.1)
 
                 // initialize the hexagonal background grid
@@ -2885,7 +2885,7 @@ let main_sub_arr_grp = function(opt_in) {
                 })
                 .merge(txt)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .text(function(d) {
                     return d.txt
                 })
@@ -2895,7 +2895,7 @@ let main_sub_arr_grp = function(opt_in) {
             txt
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('fill-opacity', 0)
                 .style('stroke-opacity', 0)
                 .remove()
@@ -2934,7 +2934,7 @@ let main_sub_arr_grp = function(opt_in) {
             if (!(locker.is_free('set_state') && locker.is_free('set_hierarchy'))) {
                 setTimeout(function() {
                     set_hierarchy(isInit)
-                }, times.anim_arc)
+                }, times.anim)
                 return
             }
 
@@ -2947,7 +2947,7 @@ let main_sub_arr_grp = function(opt_in) {
                 com.hirchG
                     .selectAll('circle.' + tag_now)
                     .transition('updt')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('stroke', function(d) {
                         return hirchStyleStroke(d)
                     })
@@ -2957,7 +2957,7 @@ let main_sub_arr_grp = function(opt_in) {
 
                 locker.remove({
                     id: 'set_hierarchy',
-                    delay: times.anim_arc,
+                    delay: times.anim,
                 })
 
                 return
@@ -3006,7 +3006,7 @@ let main_sub_arr_grp = function(opt_in) {
 
             locker.remove({
                 id: 'set_hierarchy',
-                delay: times.anim_arc * 2,
+                delay: times.anim * 2,
             })
         }
 
@@ -3073,7 +3073,7 @@ let main_sub_arr_grp = function(opt_in) {
                     }
                 })
                 .transition('in')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('stroke', function(d) {
                     return hirchStyleStroke(d)
                 })
@@ -3102,7 +3102,7 @@ let main_sub_arr_grp = function(opt_in) {
             circ
                 .exit()
                 .transition('out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('r', 0)
                 .remove()
 
@@ -3162,7 +3162,7 @@ let main_sub_arr_grp = function(opt_in) {
                     d.font_size = [ font_size[0] * scale, font_size[1] * scale ]
                 })
                 .transition('in')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('dy', function(d, i) {
                     if (d.children) {
                         return 0
@@ -3189,17 +3189,17 @@ let main_sub_arr_grp = function(opt_in) {
             text
                 .exit()
                 .transition('out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
 
             function txtTrans(d) {
                 return (
-                    'translate(' +
-          d.x +
-          ',' +
-          (d.y + (d.children ? -d.r : -1 * focused(d, 1) * d.r)) +
-          ')'
+                    'translate('
+          + d.x
+          + ','
+          + (d.y + (d.children ? -d.r : -1 * focused(d, 1) * d.r))
+          + ')'
                 )
             }
         }
@@ -3275,7 +3275,7 @@ let main_sub_arr_grp = function(opt_in) {
                 else {
                     setTimeout(function() {
                         setOnTelIdTry()
-                    }, times.anim_arc / 2)
+                    }, times.anim / 2)
                 }
             }
             setOnTelIdTry()
@@ -3377,7 +3377,7 @@ let main_sub_arr_grp = function(opt_in) {
                 // console.log('delay set_state')
                 setTimeout(function() {
                     set_state(opt_in)
-                }, times.anim_arc)
+                }, times.anim)
                 return
             }
             // console.log('set_state',opt_in)
@@ -3385,8 +3385,8 @@ let main_sub_arr_grp = function(opt_in) {
             locker.add('set_state')
 
             let scale = get_scale()
-            let is_change_focus =
-        tel_data.telHover.sub_arr !== tel_data.telHover.focused_sub_arr
+            let is_change_focus
+        = tel_data.telHover.sub_arr !== tel_data.telHover.focused_sub_arr
 
             if (is_change_focus || type === 'zoom' || type === 'data_change') {
                 tel_data.telHover.focused_sub_arr = tel_data.telHover.sub_arr
@@ -3480,7 +3480,7 @@ let main_sub_arr_grp = function(opt_in) {
             locker.remove('data_change')
             locker.remove({
                 id: 'set_state',
-                delay: times.anim_arc,
+                delay: times.anim,
             })
         }
         this.set_state_once = set_state_once
@@ -3506,8 +3506,8 @@ let main_sub_arr_grp = function(opt_in) {
                 $.each(grpNow.children, function(index1, ele_now) {
                     let tel_Id = ele_now.id
                     let tel_data_now = find_dict_ele_in_obj(tel_data.tel, 'id', tel_Id, true)[1] // if(tel_data_now == undefined) return;
-                    let pnts_now =
-            tel_data_now.pntId === tel_info.no_sub_arr_name()
+                    let pnts_now
+            = tel_data_now.pntId === tel_info.no_sub_arr_name()
                 ? tel_data_now
                 : find_dict_ele_in_obj(tel_data.pnt, 'id', tel_data_now.pntId, true)[1]
 
@@ -3642,9 +3642,9 @@ let main_sub_arr_grp = function(opt_in) {
 
             let scaleRad = [ 1, 0.6, 0.25 ]
 
-            let tableHeight =
-        0.55 *
-        (width / 2 + scaleDeltaTrans0[0][1] + scaleWidth2 - scaleStroke0 * 5)
+            let tableHeight
+        = 0.55
+        * (width / 2 + scaleDeltaTrans0[0][1] + scaleWidth2 - scaleStroke0 * 5)
             let tablePos10 = {
                 x: -width * 0.45,
                 y: width * 0.45 - tableHeight,
@@ -3680,9 +3680,9 @@ let main_sub_arr_grp = function(opt_in) {
                 com[tag_state]['scaleRad0' + index] = scaleRad0 * scaleRadNow
                 com[tag_state]['scaleRad1' + index] = scaleRad1 * scaleRadNow
                 com[tag_state]['scaleRad2' + index] = scaleRad2 * scaleRadNow
-                com[tag_state]['sclR3' + index] =
-          scaleRad1 *
-          (index === 2 ? (scaleRad[0] + scaleRad[1]) / 2 : scaleRad[1])
+                com[tag_state]['sclR3' + index]
+          = scaleRad1
+          * (index === 2 ? (scaleRad[0] + scaleRad[1]) / 2 : scaleRad[1])
                 com[tag_state]['scaleStroke0' + index] = scaleStroke0 * scaleRadNow
 
                 com[tag_state]['centre1' + index] = centre1[index]
@@ -3852,16 +3852,16 @@ let main_sub_arr_grp = function(opt_in) {
                             // if( (Math.floor(Math.random()*1000))%2===0 )
                             $.each([ 0, 1, 2 ], function(index_, index) {
                                 if (
-                                    index === 0 ||
-                  (index === 1 && isDiffMin[0]) ||
-                  (index === 2 && isDiffSec[0])
+                                    index === 0
+                  || (index === 1 && isDiffMin[0])
+                  || (index === 2 && isDiffSec[0])
                                 ) {
                                     data_in.azm[index].push(azm)
                                 }
                                 if (
-                                    index === 0 ||
-                  (index === 1 && isDiffMin[1]) ||
-                  (index === 2 && isDiffSec[1])
+                                    index === 0
+                  || (index === 1 && isDiffMin[1])
+                  || (index === 2 && isDiffSec[1])
                                 ) {
                                     data_in.zen[index].push(zen)
                                 }
@@ -4180,28 +4180,28 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('font-size', lbl.size * (index < 2 ? 1.2 : 1.5) + 'px')
                 .attr('transform', function(d) {
                     return (
-                        'translate(' +
-            center(d.id)[0] +
-            ',' +
-            (center(d.id)[1] + lblOffsetH) +
-            ')'
+                        'translate('
+            + center(d.id)[0]
+            + ','
+            + (center(d.id)[1] + lblOffsetH)
+            + ')'
                     )
                 })
                 .merge(lbl0)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', function(d) {
-                    d.hasMoved =
-            Math.abs(
-                (this_trans(this)[0] - (center(d.id)[0] + d.pos)) /
-                (center(d.id)[0] + d.pos)
-            ) > 0.001
+                    d.hasMoved
+            = Math.abs(
+                            (this_trans(this)[0] - (center(d.id)[0] + d.pos))
+                / (center(d.id)[0] + d.pos)
+                        ) > 0.001
                     return (
-                        'translate(' +
-            (center(d.id)[0] + d.pos) +
-            ',' +
-            (center(d.id)[1] + lblOffsetH) +
-            ')'
+                        'translate('
+            + (center(d.id)[0] + d.pos)
+            + ','
+            + (center(d.id)[1] + lblOffsetH)
+            + ')'
                     )
                 })
                 .tween('text', function(d) {
@@ -4228,7 +4228,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .exit()
                 .attr('class', tag_now + 'lbl0' + 'exit')
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
 
@@ -4260,16 +4260,16 @@ let main_sub_arr_grp = function(opt_in) {
                     })
                     .attr('transform', function(d) {
                         return (
-                            'translate(' +
-              centLbl(d.id)[0] +
-              ',' +
-              (centLbl(d.id)[1] + lbl.offset[1]) +
-              ')'
+                            'translate('
+              + centLbl(d.id)[0]
+              + ','
+              + (centLbl(d.id)[1] + lbl.offset[1])
+              + ')'
                         )
                     })
                     .merge(lbl1)
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('font-size', function(d) {
                         return lbl.size * (index === 2 ? 2 : 1.5) + 'px'
                     })
@@ -4279,7 +4279,7 @@ let main_sub_arr_grp = function(opt_in) {
                     .exit()
                     .attr('class', tag_now + 'lbl1' + 'exit')
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
                     .remove()
             }
@@ -4308,11 +4308,11 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('transform', function(d) {
                     return 'translate(' + center(d.id)[0] + ',' + center(d.id)[1] + ')'
                 })
-            // .transition("enter").duration(times.anim_arc)
+            // .transition("enter").duration(times.anim)
             // .attr("r", function(d){ return scaleRad1+"px"; })
                 .merge(com[tag_now + '0'])
                 .transition('move')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', function(d) {
                     return 'translate(' + center(d.id)[0] + ',' + center(d.id)[1] + ')'
                 })
@@ -4331,7 +4331,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .exit()
                 .attr('class', tag_now + '0' + 'exit')
                 .transition('exit')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', '0')
                 .remove()
 
@@ -4356,23 +4356,23 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('r', '0')
                 .attr('transform', function(d) {
                     return (
-                        'translate(' +
-            (center(d.id)[0] + xyDiff[d.id][0]) +
-            ',' +
-            (center(d.id)[1] + xyDiff[d.id][1]) +
-            ')'
+                        'translate('
+            + (center(d.id)[0] + xyDiff[d.id][0])
+            + ','
+            + (center(d.id)[1] + xyDiff[d.id][1])
+            + ')'
                     )
                 })
                 .merge(com[tag_now + '1'])
                 .transition('move')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', function(d) {
                     return (
-                        'translate(' +
-            (center(d.id)[0] + xyDiff[d.id][0]) +
-            ',' +
-            (center(d.id)[1] + xyDiff[d.id][1]) +
-            ')'
+                        'translate('
+            + (center(d.id)[0] + xyDiff[d.id][0])
+            + ','
+            + (center(d.id)[1] + xyDiff[d.id][1])
+            + ')'
                     )
                 })
                 .style('fill', function(d) {
@@ -4384,7 +4384,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .exit()
                 .attr('class', tag_now + '1' + 'exit')
                 .transition('exit')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('r', '0')
                 .remove()
 
@@ -4483,7 +4483,7 @@ let main_sub_arr_grp = function(opt_in) {
                     return 'translate(' + center(d.id)[0] + ',' + center(d.id)[1] + ')'
                 })
                 .transition('enter')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('stroke-width', function(d) {
                     return scaleStroke0 + 'px'
                 })
@@ -4493,11 +4493,11 @@ let main_sub_arr_grp = function(opt_in) {
             com[tagG]
                 .selectAll('path.' + tag_now + '0')
                 .transition('updateSizeTrans')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', function(d) {
-                    hasMoved =
-            Math.abs((this_trans(this)[0] - center(d.id)[0]) / center(d.id)[0]) >
-            0.001
+                    hasMoved
+            = Math.abs((this_trans(this)[0] - center(d.id)[0]) / center(d.id)[0])
+            > 0.001
                     return 'translate(' + center(d.id)[0] + ',' + center(d.id)[1] + ')'
                 })
                 .style('stroke-width', function(d) {
@@ -4509,7 +4509,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .exit()
                 .attr('class', tag_now + '0' + 'exit')
                 .transition('exit')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', '0')
                 .remove()
 
@@ -4535,7 +4535,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('transform', function(d) {
                     return transSet(true, 0, [ scaleRad0, center(d.id) ], index, false)
                 })
-            // .transition("enter").duration(times.anim_arc)
+            // .transition("enter").duration(times.anim)
             // .attr("r", function(d){ return scaleRad1+"px"; })
 
             if (hasMoved) {
@@ -4543,7 +4543,7 @@ let main_sub_arr_grp = function(opt_in) {
                     .selectAll('circle.' + tag_now + '1')
                 // .each(function(d){ if(d.id == 'M_2')console.log('ring',d.pos); })
                     .transition('updateSizeTrans')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('transform', function(d) {
                         return transSet(
                             true,
@@ -4564,7 +4564,7 @@ let main_sub_arr_grp = function(opt_in) {
                 com[tagG]
                     .selectAll('circle.' + tag_now + '1')
                     .transition('move')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('r', function(d) {
                         return scaleRad1 + 'px'
                     })
@@ -4589,7 +4589,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .exit()
                 .attr('class', tag_now + '1' + 'exit')
                 .transition('exit')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('r', '0')
                 .remove()
 
@@ -4615,14 +4615,14 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('transform', function(d) {
                     return transSet(true, 0, [ scaleRad0, center(d.id) ], index, false)
                 })
-            // .transition("enter").duration(times.anim_arc)
+            // .transition("enter").duration(times.anim)
             // .attr("r", function(d){ return scaleRad1+"px"; })
 
             if (hasMoved) {
                 com[tagG]
                     .selectAll('circle.' + tag_now + '2')
                     .transition('updateSizeTrans')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('transform', function(d) {
                         return transSet(
                             true,
@@ -4640,7 +4640,7 @@ let main_sub_arr_grp = function(opt_in) {
                 com[tagG]
                     .selectAll('circle.' + tag_now + '2')
                     .transition('move')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('r', function(d) {
                         return scaleRad1 + 'px'
                     })
@@ -4662,7 +4662,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .exit()
                 .attr('class', tag_now + '2' + 'exit')
                 .transition('exit')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('r', '0')
                 .remove()
 
@@ -4765,15 +4765,15 @@ let main_sub_arr_grp = function(opt_in) {
                             ],
                             index,
                             true
-                        ) +
-            'rotate(' +
-            d.rot +
-            ')'
+                        )
+            + 'rotate('
+            + d.rot
+            + ')'
                     )
                 })
                 .merge(lbl0)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('font-size', lbl.size + 'px')
                 .attr('transform', function(d, i) {
                     return (
@@ -4786,10 +4786,10 @@ let main_sub_arr_grp = function(opt_in) {
                             ],
                             index,
                             true
-                        ) +
-            'rotate(' +
-            d.rot +
-            ')'
+                        )
+            + 'rotate('
+            + d.rot
+            + ')'
                     )
                 })
                 .style('opacity', 0.8)
@@ -4798,7 +4798,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .exit()
                 .attr('class', tag_now + 'lbl0' + 'exit')
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
 
@@ -4826,23 +4826,23 @@ let main_sub_arr_grp = function(opt_in) {
                 })
                 .attr('transform', function(d) {
                     return (
-                        'translate(' +
-            centLbl(d.id)[0] +
-            ',' +
-            (centLbl(d.id)[1] + lbl.offset[1]) +
-            ')'
+                        'translate('
+            + centLbl(d.id)[0]
+            + ','
+            + (centLbl(d.id)[1] + lbl.offset[1])
+            + ')'
                     )
                 })
                 .merge(lbl1)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', function(d) {
                     return (
-                        'translate(' +
-            centLbl(d.id)[0] +
-            ',' +
-            (centLbl(d.id)[1] + lbl.offset[1]) +
-            ')'
+                        'translate('
+            + centLbl(d.id)[0]
+            + ','
+            + (centLbl(d.id)[1] + lbl.offset[1])
+            + ')'
                     )
                 })
                 .style('font-size', function(d) {
@@ -4854,7 +4854,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .exit()
                 .attr('class', tag_now + 'lbl1' + 'exit')
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
 
@@ -4970,7 +4970,7 @@ let main_sub_arr_grp = function(opt_in) {
                 com.svgHex.g
                     .selectAll('path.' + tag_now)
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('opacity', opac)
             }
         }

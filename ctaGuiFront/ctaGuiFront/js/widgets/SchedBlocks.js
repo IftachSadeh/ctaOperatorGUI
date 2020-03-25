@@ -136,7 +136,7 @@ function main_sched_blocks(opt_in) {
     let telescopeRunning = null
 
     // let this_sched_blocks = this
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
 
     // let sgv_tag = {};
     // $.each(widget_ele, function(index,ele_now) {
@@ -2633,8 +2633,8 @@ function main_sched_blocks(opt_in) {
                 }
             }
             function dispatchConfig(g, run_phase, gt) {
-                g.transition().duration(times.anim_arc).attr('transform', 'translate(' + transConfig + ',0)')
-                // gt.transition().duration(times.anim_arc).attr('transform', 'translate(' + transConfig + ',0)')
+                g.transition().duration(times.anim).attr('transform', 'translate(' + transConfig + ',0)')
+                // gt.transition().duration(times.anim).attr('transform', 'translate(' + transConfig + ',0)')
 
                 g.select('#mount').attr('fill', colorLock) // .attr('stroke-width', 2)
                 g.select('#camera').attr('fill', colorLock) // .attr('stroke-width', 2)
@@ -2656,8 +2656,8 @@ function main_sched_blocks(opt_in) {
                 }
             }
             function dispatchTake(g, run_phase, gt) {
-                g.transition().duration(times.anim_arc).attr('transform', 'translate(' + transTake + ',0), scale(' + scaleTake + ',1)')
-                // gt.transition().duration(times.anim_arc).attr('transform', 'translate(' + transTake + ',0)')
+                g.transition().duration(times.anim).attr('transform', 'translate(' + transTake + ',0), scale(' + scaleTake + ',1)')
+                // gt.transition().duration(times.anim).attr('transform', 'translate(' + transTake + ',0)')
 
                 g.select('text#Mount').attr('opacity', 0)
                 g.select('text#Camera').attr('opacity', 0)
@@ -2670,8 +2670,8 @@ function main_sched_blocks(opt_in) {
                 g.select('#mirror').attr('fill', colorLock) // .attr('stroke-width', 0.2)
             }
             function dispatchFinish(g, run_phase, gt) {
-                g.transition().duration(times.anim_arc).attr('transform', 'translate(' + transFinish + ',0)')
-                // gt.transition().duration(times.anim_arc).attr('transform', 'translate(' + transFinish + ',0)')
+                g.transition().duration(times.anim).attr('transform', 'translate(' + transFinish + ',0)')
+                // gt.transition().duration(times.anim).attr('transform', 'translate(' + transFinish + ',0)')
 
                 g.select('text#Mount').attr('opacity', 1)
                 g.select('text#Camera').attr('opacity', 1)
@@ -2789,7 +2789,7 @@ function main_sched_blocks(opt_in) {
 
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('transform', function() {
                         return 'translate(' + translate.x + ',' + translate.y + ')'
                     })
@@ -2814,13 +2814,13 @@ function main_sched_blocks(opt_in) {
                 // d3.select(this).select('path')
                 //   .data([dataPointFuturTop])
                 //   .transition()
-                //   .duration(times.anim_arc)
+                //   .duration(times.anim)
                 //   .attr('d', lineGenerator)
             })
             current_blocks
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         }

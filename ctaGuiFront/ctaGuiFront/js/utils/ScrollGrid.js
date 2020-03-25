@@ -264,8 +264,8 @@ window.ScrollGrid = function(opt_in) {
             return trans
         }
 
-        let xy_min_max =
-      recWH + recD[mainTag][recLen - 1][xy] - recD[mainTag][0][xy] + 2 * recE
+        let xy_min_max
+      = recWH + recD[mainTag][recLen - 1][xy] - recD[mainTag][0][xy] + 2 * recE
         let fracScale = xy_min_max - wh0
 
         if (recD[mainTag][0][xy] < zooms.xy0) {
@@ -770,7 +770,7 @@ window.ScrollGrid = function(opt_in) {
         else {
             scrollBarRec
                 .transition('move')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('transform', zoom_scrollbarTrans)
         }
     }
@@ -823,7 +823,7 @@ window.ScrollGrid = function(opt_in) {
             .call(com[tagDrag])
             .style('opacity', 1)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('x', isHorz ? x0 : x0 + w0 - scrollRec.w)
             .attr('y', isHorz ? y0 + h0 - scrollRec.w : y0)
             .attr('width', isHorz ? w0 : scrollRec.w)
@@ -835,7 +835,7 @@ window.ScrollGrid = function(opt_in) {
         recBck
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('x', isHorz ? x0 : x0 + w0)
             .attr('y', isHorz ? y0 + h0 : y0)
             .attr('width', isHorz ? w0 : 0)
@@ -869,7 +869,7 @@ window.ScrollGrid = function(opt_in) {
                     })
                 }
                 n_tries += 1
-            }, times.anim_arc / 5)
+            }, times.anim / 5)
         }
 
         if (hasBotTop) {
@@ -889,11 +889,11 @@ window.ScrollGrid = function(opt_in) {
         let xy_min_max = wh0
         if (recLen > 0) {
             if (is_def(recD[mainTag][recLen - 1])) {
-                xy_min_max =
-          recWH +
-          recD[mainTag][recLen - 1][xy] -
-          recD[mainTag][0][xy] +
-          2 * recE
+                xy_min_max
+          = recWH
+          + recD[mainTag][recLen - 1][xy]
+          - recD[mainTag][0][xy]
+          + 2 * recE
             }
         }
         scrollRec.h = wh0 * (wh0 / xy_min_max)
@@ -924,7 +924,7 @@ window.ScrollGrid = function(opt_in) {
             .attr('transform', zoom_scrollbarTrans)
             .merge(recScroll)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('transform', zoom_scrollbarTrans)
             .attr('x', isHorz ? x0 + marg : x0 + w0 - scrollRec.w + marg)
             .attr('y', isHorz ? y0 + h0 - scrollRec.w + marg : y0 + marg)
@@ -934,12 +934,12 @@ window.ScrollGrid = function(opt_in) {
         if (isHorz) {
             recScroll
                 .exit()
-            // .transition("in_out").duration(times.anim_arc/4)
+            // .transition("in_out").duration(times.anim/4)
             // .attr("transform", "translate(0,0)")
             // .attr("width", (w0 - marg*2))
             // .style("opacity","0.05")
                 .transition('in_out')
-                .duration(times.anim_arc * 3 / 4)
+                .duration(times.anim * 3 / 4)
                 .attr('x', x0 + marg)
                 .attr('y', y0 + h0)
                 .attr('height', 0)
@@ -948,12 +948,12 @@ window.ScrollGrid = function(opt_in) {
         else {
             recScroll
                 .exit()
-            // .transition("in_out").duration(times.anim_arc/4)
+            // .transition("in_out").duration(times.anim/4)
             // .attr("transform", "translate(0,0)")
             // .attr("height", (h0 - marg*2))
             // .style("opacity","0.05")
                 .transition('in_out')
-                .duration(times.anim_arc * 3 / 4)
+                .duration(times.anim * 3 / 4)
                 .attr('x', x0 + w0)
                 .attr('y', y0 + marg)
                 .attr('width', 0)
@@ -997,7 +997,7 @@ window.ScrollGrid = function(opt_in) {
         if (!locker.are_free(lockerV.zoomsuring)) {
             setTimeout(function() {
                 recBckClick(data_in)
-            }, times.anim_arc / 2)
+            }, times.anim / 2)
             return
         }
 
@@ -1020,7 +1020,7 @@ window.ScrollGrid = function(opt_in) {
             data_now[xy] -= trans
         })
 
-        let duration = is_def(data_in.duration) ? data_in.duration : times.anim_arc
+        let duration = is_def(data_in.duration) ? data_in.duration : times.anim
 
         let data_out = {
             target_scale: zooms.extent[2],
@@ -1207,8 +1207,8 @@ window.ScrollGrid = function(opt_in) {
             // // zoom_scrollbar();
 
             if (
-                (hasBotTop && !is_def(scrollBarRec)) ||
-        (!hasBotTop && is_def(scrollBarRec))
+                (hasBotTop && !is_def(scrollBarRec))
+        || (!hasBotTop && is_def(scrollBarRec))
             ) {
                 zoom_scrollbarInit()
             }
@@ -1430,7 +1430,7 @@ window.ScrollGrid = function(opt_in) {
 //     })
 //     // .attr("clip-path", function(d){ return "url(#"+tagClipPath+d.scrollGridId+")"; })
 //     .transition('new_ele')
-//     .duration(times.anim_arc)
+//     .duration(times.anim)
 //     .style('opacity', 1)
 
 //   // ------------------------------------------------------------------

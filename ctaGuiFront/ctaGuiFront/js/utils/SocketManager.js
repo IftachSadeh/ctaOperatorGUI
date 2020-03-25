@@ -6,7 +6,7 @@
 /* global times */
 /* global unique */
 /* global is_def */
-/* global baseApp */
+/* global base_app */
 /* global deep_copy */
 /* global setup_view */
 /* global icon_badge */
@@ -19,11 +19,11 @@
 // setup the socket and load resources
 // ---------------------------------------------------------------------------
 // basice setup of the righ-side drawer menu
-// let baseApp = document.querySelector("#baseApp");
-// baseApp.paper_drawerPanel1().drawerWidth  = "40%";
-// baseApp.paper_drawerPanel1().disableSwipe = true;
-// baseApp.paper_drawerPanel1().force_narrow  = true;
-// baseApp.topRightMenuTog  ().setAttribute("style","");
+// let base_app = document.querySelector("#base_app");
+// base_app.paper_drawerPanel1().drawerWidth  = "40%";
+// base_app.paper_drawerPanel1().disableSwipe = true;
+// base_app.paper_drawerPanel1().force_narrow  = true;
+// base_app.topRightMenuTog  ().setAttribute("style","");
 
 // document.getElementById('topRightMenuTog').setAttribute("style","");
 
@@ -36,9 +36,9 @@ function SocketManager() {
     // let gs_idV = []
     let init_views = {
     }
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
     let server_name = null
-    let baseApp = window.baseApp
+    let base_app = window.base_app
     let tab_table_title_id = 'table_title'
     let tab_table_main_id = 'table_content'
     this.socket = null
@@ -52,7 +52,7 @@ function SocketManager() {
     // the socket
     // ---------------------------------------------------------------------------
     function setup_socket() {
-        let widget_name = window.__widget_name__
+        let widget_name = window.WIDGET_NAME
         this_top.socket = io.connect('/' + widget_name)
 
         // -------------------------------------------------------------------
@@ -67,7 +67,7 @@ function SocketManager() {
             tel_info.tel_ids = data_in.tel_ids
             tel_info.tel_id_to_types = data_in.tel_id_to_types
             tel_info.categorical_types = data_in.categorical_types
-            window.__socktel_info__ = tel_info
+            window.SOCKET_INFO = tel_info
 
             validate_server(data_in.server_name)
 
@@ -243,9 +243,9 @@ function SocketManager() {
         let is_user_on_XXX = true
         let off_opacity = '40%'
 
-        let server_btn = baseApp.getConStat_div(true, '_btn')
-        let user_btn = baseApp.getConStat_div(false, '_btn')
-        let user_tog = baseApp.getConStat_div(false, '_tog')
+        let server_btn = base_app.get_connection_stat_div(true, '_btn')
+        let user_btn = base_app.get_connection_stat_div(false, '_btn')
+        let user_tog = base_app.get_connection_stat_div(false, '_tog')
 
         this.user_btn = user_btn
 
@@ -364,8 +364,8 @@ function SocketManager() {
     function emit_mouse_move(opt_in) {
         let eleIn
         if (
-            (typeof opt_in.eleId === 'string' || opt_in.eleId instanceof String) &&
-      is_def(opt_in.eleId)
+            (typeof opt_in.eleId === 'string' || opt_in.eleId instanceof String)
+      && is_def(opt_in.eleId)
         ) {
             eleIn = opt_in.eleId
             if (!(eleIn.indexOf('#') === 0)) {
@@ -421,7 +421,9 @@ function SocketManager() {
             if (is_first) {
                 widget_data.sock_func = new widget_func.sock_func(opt_in)
 
+                // -------------------------------------------------------------------
                 // common sicket calls, which should be added only once!
+                // -------------------------------------------------------------------
                 this_top.socket.on('init_data', function(data_in) {
                     if (data_in.widget_type === widget_type) {
                         let widget_now = (
@@ -452,8 +454,8 @@ function SocketManager() {
                         if (data_in.sess_widget_ids.indexOf(widget_id_now) >= 0) {
                             // make sure we dont sent the same data twice (as it could be modified)
                             n_wigit_now += 1
-                            let data_update =
-                n_wigits === 1 || n_wigit_now === n_wigits
+                            let data_update
+                = n_wigits === 1 || n_wigit_now === n_wigits
                     ? data_in
                     : deep_copy(data_in)
 
@@ -522,7 +524,7 @@ function SocketManager() {
 
         let main_script_name = '/js/widgets/' + name_tag + '.js'
 
-        let main_div = document.querySelector('#base_app')
+        let main_div = document.querySelector('#base_app_div')
         let icon_divs = [ null, null ]
 
         // create the table element
@@ -691,8 +693,8 @@ function SocketManager() {
             // var width = 100 * w0 - 0.5 + '%'
             // var height = h0 * gs_h + 'px'
             // var maxHeight = $(document).height() * 0.8
-            let item_now_style =
-        'width:'
+            let item_now_style
+        = 'width:'
         + width
         // + '; height:'
         // + height
@@ -749,7 +751,7 @@ function SocketManager() {
     //   }
 
     //   function resizeNowOnce () {
-    //     if (Date.now() - prevResize < times.anim_arc) {
+    //     if (Date.now() - prevResize < times.anim) {
     //       resizeNow()
     //       return
     //     }

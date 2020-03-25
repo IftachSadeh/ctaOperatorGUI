@@ -13,6 +13,7 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 from msgpack import packb
 from msgpack import unpackb
 
+
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
@@ -36,10 +37,7 @@ class PubsubTest():
         self.log.info([['y', " --------------------------------------------"]])
         self.log.info([['g', " - PubsubTest.ask_data -  "], ['p', rnd_seed]])
 
-        args = {
-            "func_name": "test_func",
-            "arg0": rnd_seed
-        }
+        args = {"func_name": "test_func", "arg0": rnd_seed}
         self.redis.publish(channel="exe_func_loop", message=packb(args))
 
         return
@@ -66,6 +64,7 @@ class PubsubTest():
                 # call as non-blocking
                 def exe_async_func(args):
                     getattr(self, args["func_name"])(args)
+
                 gevent.spawn(exe_async_func, args)
 
             sleep(0.01)
@@ -76,9 +75,7 @@ class PubsubTest():
     #
     # ------------------------------------------------------------------
     def test_func(self, args=None):
-        self.log.info([
-            ['g', " - PubsubTest.test_func - "], ['p', args["arg0"]]
-        ])
+        self.log.info([['g', " - PubsubTest.test_func - "], ['p', args["arg0"]]])
         return
 
     # ------------------------------------------------------------------

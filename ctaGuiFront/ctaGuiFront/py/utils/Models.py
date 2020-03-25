@@ -27,12 +27,14 @@ class RootFactory(object):
         # 'group:permit_2' has permission to access pages defined by 'permit_b' only
         (Allow, 'group:permit_2', 'permit_b')
     ]
+
     # __acl__ = [ (Allow, Everyone,         'permit_0'),
     #             (Allow, 'group:permit_1', 'permit_1')
     #           ]
 
     def __init__(self, request):
         pass
+
 
 # ------------------------------------------------------------------
 # users are defined by this class
@@ -53,23 +55,24 @@ class MyModel(Base):
 #   rm ctaGuiFront.db ; $VENV/bin/initialize_tutorial_db development.ini
 # ------------------------------------------------------------------
 def initUsers():
-    user_passes = [
-        ["guest", "123", "group:permit_1"],
-        ["user0", "xxx", "group:permit_1"],
-        ["user1", "xxx", "group:permit_1"],
-        ["user2", "xxx", "group:permit_2"]
-    ]
+    user_passes = [["guest", "123", "group:permit_1"], ["user0", "xxx", "group:permit_1"],
+                   ["user1", "xxx", "group:permit_1"], ["user2", "xxx", "group:permit_2"]]
 
     # user_passes = [ ["guest","1234","group:permit_1"] , ["user0","1234","group:permit_1"] , ["user1","1234","group:permit_1"] , ["user2","1234","group:permit_2"]]
     for n_user_now in range(len(user_passes)):
         my_model = MyModel(
-            userId=user_passes[n_user_now][0], passwd=user_passes[n_user_now][1], groups=user_passes[n_user_now][2])
+            userId=user_passes[n_user_now][0],
+            passwd=user_passes[n_user_now][1],
+            groups=user_passes[n_user_now][2]
+        )
         # print 'xxxxxxxxxxxxxxxxxxxxx',user_passes[n_user_now]
 
-        if DBSession.query(MyModel).filter(MyModel.userId == user_passes[n_user_now][0]).first() == None:
+        if DBSession.query(MyModel).filter(MyModel.userId == user_passes[n_user_now][0]
+                                           ).first() == None:
             print " - Adding user/pass: ", user_passes[n_user_now]
             DBSession.add(my_model)
             transaction.commit()
+
 
 # ------------------------------------------------------------------
 # method for extracting the group list for a given user
@@ -77,8 +80,7 @@ def initUsers():
 
 
 def get_groups(user_id, request):
-    db_lookup = DBSession.query(MyModel).filter(
-        MyModel.userId == user_id).first()
+    db_lookup = DBSession.query(MyModel).filter(MyModel.userId == user_id).first()
 
     if db_lookup != None:
         return (db_lookup.groups).split(";")

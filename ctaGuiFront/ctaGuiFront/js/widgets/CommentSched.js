@@ -198,7 +198,7 @@ let main_comment_sched = function(opt_in) {
     let eventQueue = new EventQueue()
 
     // let this_comment_sched = this
-    // let is_south = window.__site_type__ === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -792,8 +792,8 @@ let main_comment_sched = function(opt_in) {
             }
 
             if (
-                data_in.blocks.done[i].exe_state.state === 'cancel' ||
-        data_in.blocks.done[i].exe_state.state === 'fail'
+                data_in.blocks.done[i].exe_state.state === 'cancel'
+        || data_in.blocks.done[i].exe_state.state === 'fail'
             ) {
                 if (is_def(tokens.blockError[data_in.blocks.done[i].exe_state.error])) {
                     if (
@@ -867,8 +867,8 @@ let main_comment_sched = function(opt_in) {
 
             if (checkWithStatesFilters(data_in.blocks.done[i].exe_state)) {
                 if (
-                    data_in.blocks.done[i].exe_state.state === 'cancel' ||
-          data_in.blocks.done[i].exe_state.state === 'fail'
+                    data_in.blocks.done[i].exe_state.state === 'cancel'
+          || data_in.blocks.done[i].exe_state.state === 'fail'
                 ) {
                     if (
                         is_def(
@@ -1388,11 +1388,11 @@ let main_comment_sched = function(opt_in) {
         function init_assoc_ele() {
             reserved.assoc_ele.g.attr(
                 'transform',
-                'translate(' +
-          reserved.assoc_ele.box.x +
-          ',' +
-          reserved.assoc_ele.box.y +
-          ')'
+                'translate('
+          + reserved.assoc_ele.box.x
+          + ','
+          + reserved.assoc_ele.box.y
+          + ')'
             )
 
             reserved.assoc_ele.g
@@ -1406,10 +1406,10 @@ let main_comment_sched = function(opt_in) {
                 .attr('stroke-width', 0)
                 .attr('opacity', 1)
                 .on('mouseover', function() {
-                    // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 1)
+                    // d3.select(this).transition().duration(times.anim).attr('opacity', 1)
                 })
                 .on('mouseout', function() {
-                    // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 0)
+                    // d3.select(this).transition().duration(times.anim).attr('opacity', 0)
                 })
 
             reserved.assoc_ele.g
@@ -1426,11 +1426,11 @@ let main_comment_sched = function(opt_in) {
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            reserved.assoc_ele.box.w * 0.8 +
-            ',' +
-            reserved.assoc_ele.box.h * 0.2 +
-            ')'
+                    'translate('
+            + reserved.assoc_ele.box.w * 0.8
+            + ','
+            + reserved.assoc_ele.box.h * 0.2
+            + ')'
                 )
             reserved.assoc_ele.blocks.icon
                 .append('rect')
@@ -1446,14 +1446,14 @@ let main_comment_sched = function(opt_in) {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('opacity', 1)
                 })
                 .on('mouseout', function() {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('opacity', 0)
                 })
             reserved.assoc_ele.blocks.icon
@@ -1476,11 +1476,11 @@ let main_comment_sched = function(opt_in) {
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            reserved.assoc_ele.box.w * 0.8 +
-            ',' +
-            reserved.assoc_ele.box.h * 0.45 +
-            ')'
+                    'translate('
+            + reserved.assoc_ele.box.w * 0.8
+            + ','
+            + reserved.assoc_ele.box.h * 0.45
+            + ')'
                 )
             reserved.assoc_ele.events.icon
                 .append('rect')
@@ -1496,14 +1496,14 @@ let main_comment_sched = function(opt_in) {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('opacity', 1)
                 })
                 .on('mouseout', function() {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('opacity', 0)
                 })
             reserved.assoc_ele.events.icon
@@ -1525,11 +1525,11 @@ let main_comment_sched = function(opt_in) {
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            reserved.assoc_ele.box.w * 0.8 +
-            ',' +
-            reserved.assoc_ele.box.h * 0.7 +
-            ')'
+                    'translate('
+            + reserved.assoc_ele.box.w * 0.8
+            + ','
+            + reserved.assoc_ele.box.h * 0.7
+            + ')'
                 )
             reserved.assoc_ele.tels.icon
                 .append('rect')
@@ -1545,14 +1545,14 @@ let main_comment_sched = function(opt_in) {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('opacity', 1)
                 })
                 .on('mouseout', function() {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('opacity', 0)
                 })
             reserved.assoc_ele.tels.icon
@@ -1575,11 +1575,11 @@ let main_comment_sched = function(opt_in) {
         function initLog_info() {
             reserved.log_info.g.attr(
                 'transform',
-                'translate(' +
-          reserved.log_info.box.x +
-          ',' +
-          reserved.log_info.box.y +
-          ')'
+                'translate('
+          + reserved.log_info.box.x
+          + ','
+          + reserved.log_info.box.y
+          + ')'
             )
 
             function initScrollBox() {
@@ -1659,10 +1659,10 @@ let main_comment_sched = function(opt_in) {
             //   .attr('stroke-width', 0)
             //   .attr('opacity', 1)
             //   .on('mouseover', function () {
-            //     // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 1)
+            //     // d3.select(this).transition().duration(times.anim).attr('opacity', 1)
             //   })
             //   .on('mouseout', function () {
-            //     // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 0)
+            //     // d3.select(this).transition().duration(times.anim).attr('opacity', 0)
             //   })
             reserved.log_info.g
                 .append('text')
@@ -1762,7 +1762,7 @@ let main_comment_sched = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
 
@@ -1775,22 +1775,22 @@ let main_comment_sched = function(opt_in) {
         function initLogFields() {
             reserved.logFields.g.attr(
                 'transform',
-                'translate(' +
-          reserved.logFields.box.x +
-          ',' +
-          reserved.logFields.box.y +
-          ')'
+                'translate('
+          + reserved.logFields.box.x
+          + ','
+          + reserved.logFields.box.y
+          + ')'
             )
 
             function initTitle() {
                 reserved.logFields.title.g = reserved.logFields.g.append('g')
                 reserved.logFields.title.g.attr(
                     'transform',
-                    'translate(' +
-            reserved.logFields.title.box.x +
-            ',' +
-            reserved.logFields.title.box.y +
-            ')'
+                    'translate('
+            + reserved.logFields.title.box.x
+            + ','
+            + reserved.logFields.title.box.y
+            + ')'
                 )
 
                 reserved.logFields.title.g
@@ -1804,10 +1804,10 @@ let main_comment_sched = function(opt_in) {
                     .attr('stroke-width', 0)
                     .attr('opacity', 1)
                     .on('mouseover', function() {
-                        // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 1)
+                        // d3.select(this).transition().duration(times.anim).attr('opacity', 1)
                     })
                     .on('mouseout', function() {
-                        // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 0)
+                        // d3.select(this).transition().duration(times.anim).attr('opacity', 0)
                     })
                 reserved.logFields.title.g
                     .append('text')
@@ -1829,10 +1829,10 @@ let main_comment_sched = function(opt_in) {
                 //   .attr('stroke-width', 0)
                 //   .attr('opacity', 1)
                 //   .on('mouseover', function () {
-                //     // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 1)
+                //     // d3.select(this).transition().duration(times.anim).attr('opacity', 1)
                 //   })
                 //   .on('mouseout', function () {
-                //     // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 0)
+                //     // d3.select(this).transition().duration(times.anim).attr('opacity', 0)
                 //   })
                 // reserved.logFields.title.g.append('text')
                 //   .text('Log ID')
@@ -1849,11 +1849,11 @@ let main_comment_sched = function(opt_in) {
                 reserved.logFields.header.g = reserved.logFields.g.append('g')
                 reserved.logFields.header.g.attr(
                     'transform',
-                    'translate(' +
-            reserved.logFields.header.box.x +
-            ',' +
-            reserved.logFields.header.box.y +
-            ')'
+                    'translate('
+            + reserved.logFields.header.box.x
+            + ','
+            + reserved.logFields.header.box.y
+            + ')'
                 )
 
                 reserved.logFields.header.g
@@ -1867,10 +1867,10 @@ let main_comment_sched = function(opt_in) {
                     .attr('stroke-width', 0)
                     .attr('opacity', 1)
                     .on('mouseover', function() {
-                        // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 1)
+                        // d3.select(this).transition().duration(times.anim).attr('opacity', 1)
                     })
                     .on('mouseout', function() {
-                        // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 0)
+                        // d3.select(this).transition().duration(times.anim).attr('opacity', 0)
                     })
                 reserved.logFields.header.g
                     .append('text')
@@ -1894,10 +1894,10 @@ let main_comment_sched = function(opt_in) {
                     .attr('stroke-width', 0)
                     .attr('opacity', 1)
                     .on('mouseover', function() {
-                        // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 1)
+                        // d3.select(this).transition().duration(times.anim).attr('opacity', 1)
                     })
                     .on('mouseout', function() {
-                        // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 0)
+                        // d3.select(this).transition().duration(times.anim).attr('opacity', 0)
                     })
                 reserved.logFields.header.g
                     .append('text')
@@ -1916,11 +1916,11 @@ let main_comment_sched = function(opt_in) {
                 reserved.logFields.text.g = reserved.logFields.g.append('g')
                 reserved.logFields.text.g.attr(
                     'transform',
-                    'translate(' +
-            reserved.logFields.text.box.x +
-            ',' +
-            reserved.logFields.text.box.y +
-            ')'
+                    'translate('
+            + reserved.logFields.text.box.x
+            + ','
+            + reserved.logFields.text.box.y
+            + ')'
                 )
 
                 let fo = reserved.logFields.text.g
@@ -1956,10 +1956,10 @@ let main_comment_sched = function(opt_in) {
                 //   .attr('stroke-width', 0)
                 //   .attr('opacity', 1)
                 //   .on('mouseover', function () {
-                //     // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 1)
+                //     // d3.select(this).transition().duration(times.anim).attr('opacity', 1)
                 //   })
                 //   .on('mouseout', function () {
-                //     // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 0)
+                //     // d3.select(this).transition().duration(times.anim).attr('opacity', 0)
                 //   })
                 // reserved.logFields.text.g.append('text')
                 //   .text('_information')
@@ -2212,7 +2212,7 @@ let main_comment_sched = function(opt_in) {
                 current
                     .exit()
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
                     .remove()
             }
@@ -2232,8 +2232,8 @@ let main_comment_sched = function(opt_in) {
                         for (var key in object) {
                             let cpString = string + '.' + key
                             if (
-                                typeof object[key] === 'string' ||
-                object[key] instanceof String
+                                typeof object[key] === 'string'
+                || object[key] instanceof String
                             ) {
                                 dl.push({
                                     key: cpString,
@@ -2252,8 +2252,8 @@ let main_comment_sched = function(opt_in) {
                     for (var key in object) {
                         let cpString = '' + key
                         if (
-                            typeof object[key] === 'string' ||
-              object[key] instanceof String
+                            typeof object[key] === 'string'
+              || object[key] instanceof String
                         ) {
                             dl.push({
                                 key: cpString,
@@ -2641,7 +2641,7 @@ let main_comment_sched = function(opt_in) {
                 //     })
                 //   d3.select(this).select('rect')
                 //     .transition()
-                //     .duration(times.anim_arc)
+                //     .duration(times.anim)
                 //     .attr('x', function (d) {
                 //       return (-offset.x * 0.5) + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
                 //     })
@@ -2690,7 +2690,7 @@ let main_comment_sched = function(opt_in) {
                 // currentTels
                 //   .exit()
                 //   .transition('in_out')
-                //   .duration(times.anim_arc)
+                //   .duration(times.anim)
                 //   .style('opacity', 0)
                 //   .remove()
 
@@ -2839,7 +2839,7 @@ let main_comment_sched = function(opt_in) {
                 current
                     .exit()
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
                     .remove()
 
@@ -2851,11 +2851,11 @@ let main_comment_sched = function(opt_in) {
 
             reserved.logHistory.g.attr(
                 'transform',
-                'translate(' +
-          reserved.logHistory.box.x +
-          ',' +
-          reserved.logHistory.box.y +
-          ')'
+                'translate('
+          + reserved.logHistory.box.x
+          + ','
+          + reserved.logHistory.box.y
+          + ')'
             )
 
             createLogFilter()
@@ -2871,10 +2871,10 @@ let main_comment_sched = function(opt_in) {
             //   .attr('stroke-width', 0)
             //   .attr('opacity', 1)
             //   .on('mouseover', function () {
-            //     // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 1)
+            //     // d3.select(this).transition().duration(times.anim).attr('opacity', 1)
             //   })
             //   .on('mouseout', function () {
-            //     // d3.select(this).transition().duration(times.anim_arc).attr('opacity', 0)
+            //     // d3.select(this).transition().duration(times.anim).attr('opacity', 0)
             //   })
             // reserved.logHistory.g.append('text')
             //   .text('Logs List')
@@ -3177,53 +3177,53 @@ let main_comment_sched = function(opt_in) {
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.block_queue_server.x +
-            ',' +
-            box.block_queue_server.y +
-            ')'
+                    'translate('
+            + box.block_queue_server.x
+            + ','
+            + box.block_queue_server.y
+            + ')'
                 )
 
             reserved.icon.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.block_queue_server_icon.x +
-            ',' +
-            box.block_queue_server_icon.y +
-            ')'
+                    'translate('
+            + box.block_queue_server_icon.x
+            + ','
+            + box.block_queue_server_icon.y
+            + ')'
                 )
                 .attr('opacity', 1)
             reserved.title.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.block_queue_server_title.x +
-            ',' +
-            box.block_queue_server_title.y +
-            ')'
+                    'translate('
+            + box.block_queue_server_title.x
+            + ','
+            + box.block_queue_server_title.y
+            + ')'
                 )
             reserved.filter.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.block_queue_server_filter.x +
-            ',' +
-            box.block_queue_server_filter.y +
-            ')'
+                    'translate('
+            + box.block_queue_server_filter.x
+            + ','
+            + box.block_queue_server_filter.y
+            + ')'
                 )
             reserved.content.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.block_queue_server_content.x +
-            ',' +
-            box.block_queue_server_content.y +
-            ')'
+                    'translate('
+            + box.block_queue_server_content.x
+            + ','
+            + box.block_queue_server_content.y
+            + ')'
                 )
 
             let lineGenerator = d3
@@ -3349,18 +3349,18 @@ let main_comment_sched = function(opt_in) {
                         .select('path')
                         .data([ dataPointFuturTop ])
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('d', lineGenerator)
                     reserved.icon.g
                         .select('image')
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('x', box.block_queue_server_icon.w * 0.2 - 4)
                         .attr('y', box.block_queue_server_icon.h * 0.2 + 4)
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('x', -4)
                         .attr('y', 4)
                         .attr('fill', color_theme.darker.background)
@@ -3506,13 +3506,13 @@ let main_comment_sched = function(opt_in) {
                     .attr('height', box.block_queue_server_title.h * 0.6)
                     .attr(
                         'x',
-                        box.block_queue_server_title.w * 0.075 -
-              box.block_queue_server_title.h * 0.3
+                        box.block_queue_server_title.w * 0.075
+              - box.block_queue_server_title.h * 0.3
                     )
                     .attr(
                         'y',
-                        box.block_queue_server_title.h * 0.6 -
-              box.block_queue_server_title.h * 0.3
+                        box.block_queue_server_title.h * 0.6
+              - box.block_queue_server_title.h * 0.3
                     )
                     .style('pointer-events', 'none')
                 reserved.title.g
@@ -3536,31 +3536,31 @@ let main_comment_sched = function(opt_in) {
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.block_queue_server_title.x +
-            ',' +
-            box.block_queue_server_title.y +
-            ')'
+                    'translate('
+            + box.block_queue_server_title.x
+            + ','
+            + box.block_queue_server_title.y
+            + ')'
                 )
             reserved.filter.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.block_queue_server_filter.x +
-            ',' +
-            box.block_queue_server_filter.y +
-            ')'
+                    'translate('
+            + box.block_queue_server_filter.x
+            + ','
+            + box.block_queue_server_filter.y
+            + ')'
                 )
             reserved.content.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.block_queue_server_content.x +
-            ',' +
-            box.block_queue_server_content.y +
-            ')'
+                    'translate('
+            + box.block_queue_server_content.x
+            + ','
+            + box.block_queue_server_content.y
+            + ')'
                 )
 
             drawBack()
@@ -4030,8 +4030,8 @@ let main_comment_sched = function(opt_in) {
                             x: box.block_queue_server_content.w * 0.22,
                             y: box.block_queue_server_content.h * 0.02,
                             w:
-                box.block_queue_server_content.w * 0.78 -
-                box.block_queue_server_content.h * 0.02,
+                box.block_queue_server_content.w * 0.78
+                - box.block_queue_server_content.h * 0.02,
                             h: box.block_queue_server_content.h * 0.96,
                             marg: box.block_queue_server_content.marg,
                         },
@@ -4215,53 +4215,53 @@ let main_comment_sched = function(opt_in) {
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.event_queue_server.x +
-            ',' +
-            box.event_queue_server.y +
-            ')'
+                    'translate('
+            + box.event_queue_server.x
+            + ','
+            + box.event_queue_server.y
+            + ')'
                 )
 
             reserved.icon.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.event_queue_server_icon.x +
-            ',' +
-            box.event_queue_server_icon.y +
-            ')'
+                    'translate('
+            + box.event_queue_server_icon.x
+            + ','
+            + box.event_queue_server_icon.y
+            + ')'
                 )
                 .attr('opacity', 1)
             reserved.title.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.event_queue_serverTitle.x +
-            ',' +
-            box.event_queue_serverTitle.y +
-            ')'
+                    'translate('
+            + box.event_queue_serverTitle.x
+            + ','
+            + box.event_queue_serverTitle.y
+            + ')'
                 )
             reserved.filter.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.event_queue_serverFilter.x +
-            ',' +
-            box.event_queue_serverFilter.y +
-            ')'
+                    'translate('
+            + box.event_queue_serverFilter.x
+            + ','
+            + box.event_queue_serverFilter.y
+            + ')'
                 )
             reserved.content.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.event_queue_serverContent.x +
-            ',' +
-            box.event_queue_serverContent.y +
-            ')'
+                    'translate('
+            + box.event_queue_serverContent.x
+            + ','
+            + box.event_queue_serverContent.y
+            + ')'
                 )
 
             let lineGenerator = d3
@@ -4332,26 +4332,26 @@ let main_comment_sched = function(opt_in) {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('fill', color_theme.dark.background)
                 })
                 .on('mouseout', function() {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('fill', color_theme.bright.background)
                 })
                 .on('click', function() {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('x', -5)
                         .attr('y', 5)
                     reserved.icon.g
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('opacity', 0)
                         .on('end', function() {
                             reserved.main.mode = 'expand'
@@ -4478,13 +4478,13 @@ let main_comment_sched = function(opt_in) {
                     .attr('height', box.event_queue_serverTitle.h * 0.6)
                     .attr(
                         'x',
-                        box.event_queue_serverTitle.w * 0.075 -
-              box.event_queue_serverTitle.h * 0.3
+                        box.event_queue_serverTitle.w * 0.075
+              - box.event_queue_serverTitle.h * 0.3
                     )
                     .attr(
                         'y',
-                        box.event_queue_serverTitle.h * 0.6 -
-              box.event_queue_serverTitle.h * 0.3
+                        box.event_queue_serverTitle.h * 0.6
+              - box.event_queue_serverTitle.h * 0.3
                     )
                     .style('pointer-events', 'none')
                 reserved.title.g
@@ -4508,31 +4508,31 @@ let main_comment_sched = function(opt_in) {
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.event_queue_serverTitle.x +
-            ',' +
-            box.event_queue_serverTitle.y +
-            ')'
+                    'translate('
+            + box.event_queue_serverTitle.x
+            + ','
+            + box.event_queue_serverTitle.y
+            + ')'
                 )
             reserved.filter.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.event_queue_serverFilter.x +
-            ',' +
-            box.event_queue_serverFilter.y +
-            ')'
+                    'translate('
+            + box.event_queue_serverFilter.x
+            + ','
+            + box.event_queue_serverFilter.y
+            + ')'
                 )
             reserved.content.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.event_queue_serverContent.x +
-            ',' +
-            box.event_queue_serverContent.y +
-            ')'
+                    'translate('
+            + box.event_queue_serverContent.x
+            + ','
+            + box.event_queue_serverContent.y
+            + ')'
                 )
 
             drawBack()
@@ -4693,11 +4693,11 @@ let main_comment_sched = function(opt_in) {
                     .attr('text-anchor', 'middle')
                     .attr(
                         'transform',
-                        'translate(' +
-              (box.x + box.w * 0.5) +
-              ',' +
-              (box.y + box.h - box.w * 0.6) +
-              ')'
+                        'translate('
+              + (box.x + box.w * 0.5)
+              + ','
+              + (box.y + box.h - box.w * 0.6)
+              + ')'
                     )
                 reserved.filters.g
                     .append('rect')
@@ -4768,11 +4768,11 @@ let main_comment_sched = function(opt_in) {
             }
             reserved.filters.g.attr(
                 'transform',
-                'translate(' +
-          reserved.filters.box.x +
-          ',' +
-          reserved.filters.box.y +
-          ')'
+                'translate('
+          + reserved.filters.box.x
+          + ','
+          + reserved.filters.box.y
+          + ')'
             )
             // reserved.filters.g.append('rect')
             //   .attr('x', 0)
@@ -4792,11 +4792,11 @@ let main_comment_sched = function(opt_in) {
                 .attr('text-anchor', 'middle')
                 .attr(
                     'transform',
-                    'translate(' +
-            reserved.filters.box.w * 0.5 +
-            ',' +
-            reserved.filters.box.h * 0.06 +
-            ')'
+                    'translate('
+            + reserved.filters.box.w * 0.5
+            + ','
+            + reserved.filters.box.h * 0.06
+            + ')'
                 )
 
             reserved.filters.g
@@ -4810,11 +4810,11 @@ let main_comment_sched = function(opt_in) {
                 .attr('text-anchor', 'start')
                 .attr(
                     'transform',
-                    'translate(' +
-            reserved.filters.box.w * 0.09 +
-            ',' +
-            reserved.filters.box.h * 0.16 +
-            ')'
+                    'translate('
+            + reserved.filters.box.w * 0.09
+            + ','
+            + reserved.filters.box.h * 0.16
+            + ')'
                 )
             reserved.filters.g
                 .append('rect')
@@ -4837,11 +4837,11 @@ let main_comment_sched = function(opt_in) {
                 .attr('text-anchor', 'start')
                 .attr(
                     'transform',
-                    'translate(' +
-            reserved.filters.box.w * 0.36 +
-            ',' +
-            reserved.filters.box.h * 0.16 +
-            ')'
+                    'translate('
+            + reserved.filters.box.w * 0.36
+            + ','
+            + reserved.filters.box.h * 0.16
+            + ')'
                 )
             reserved.filters.g
                 .append('rect')
@@ -4864,11 +4864,11 @@ let main_comment_sched = function(opt_in) {
                 .attr('text-anchor', 'start')
                 .attr(
                     'transform',
-                    'translate(' +
-            reserved.filters.box.w * 0.66 +
-            ',' +
-            reserved.filters.box.h * 0.16 +
-            ')'
+                    'translate('
+            + reserved.filters.box.w * 0.66
+            + ','
+            + reserved.filters.box.h * 0.16
+            + ')'
                 )
             reserved.filters.g
                 .append('rect')
@@ -4889,11 +4889,11 @@ let main_comment_sched = function(opt_in) {
                 .attr('text-anchor', 'middle')
                 .attr(
                     'transform',
-                    'translate(' +
-            reserved.filters.box.w * 0.5 +
-            ',' +
-            reserved.filters.box.h * 0.3 +
-            ')'
+                    'translate('
+            + reserved.filters.box.w * 0.5
+            + ','
+            + reserved.filters.box.h * 0.3
+            + ')'
                 )
 
             createSystemsHealthFilter('Cam', {
@@ -4986,19 +4986,19 @@ let main_comment_sched = function(opt_in) {
 
             reserved.view.main.g.attr(
                 'transform',
-                'translate(' +
-          reserved.view.main.box.x +
-          ',' +
-          reserved.view.main.box.y +
-          ')'
+                'translate('
+          + reserved.view.main.box.x
+          + ','
+          + reserved.view.main.box.y
+          + ')'
             )
             reserved.view.telsList.g.attr(
                 'transform',
-                'translate(' +
-          reserved.view.telsList.box.x +
-          ',' +
-          reserved.view.telsList.box.y +
-          ')'
+                'translate('
+          + reserved.view.telsList.box.x
+          + ','
+          + reserved.view.telsList.box.y
+          + ')'
             )
 
             // reserved.view.telsList.g.append('rect')
@@ -5075,53 +5075,53 @@ let main_comment_sched = function(opt_in) {
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.tels_queue_server.x +
-            ',' +
-            box.tels_queue_server.y +
-            ')'
+                    'translate('
+            + box.tels_queue_server.x
+            + ','
+            + box.tels_queue_server.y
+            + ')'
                 )
 
             reserved.icon.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.tels_queue_server_icon.x +
-            ',' +
-            box.tels_queue_server_icon.y +
-            ')'
+                    'translate('
+            + box.tels_queue_server_icon.x
+            + ','
+            + box.tels_queue_server_icon.y
+            + ')'
                 )
                 .attr('opacity', 1)
             reserved.title.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.tels_queue_server_title.x +
-            ',' +
-            box.tels_queue_server_title.y +
-            ')'
+                    'translate('
+            + box.tels_queue_server_title.x
+            + ','
+            + box.tels_queue_server_title.y
+            + ')'
                 )
             reserved.filter.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.tels_queue_server_filter.x +
-            ',' +
-            box.tels_queue_server_filter.y +
-            ')'
+                    'translate('
+            + box.tels_queue_server_filter.x
+            + ','
+            + box.tels_queue_server_filter.y
+            + ')'
                 )
             reserved.content.g = reserved.main.g
                 .append('g')
                 .attr(
                     'transform',
-                    'translate(' +
-            box.tels_queue_server_content.x +
-            ',' +
-            box.tels_queue_server_content.y +
-            ')'
+                    'translate('
+            + box.tels_queue_server_content.x
+            + ','
+            + box.tels_queue_server_content.y
+            + ')'
                 )
 
             let lineGenerator = d3
@@ -5192,26 +5192,26 @@ let main_comment_sched = function(opt_in) {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('fill', color_theme.dark.background)
                 })
                 .on('mouseout', function() {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('fill', color_theme.bright.background)
                 })
                 .on('click', function() {
                     d3
                         .select(this)
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('x', -5)
                         .attr('y', 5)
                     reserved.icon.g
                         .transition()
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('opacity', 0)
                         .on('end', function() {
                             reserved.main.mode = 'expand'
@@ -5337,17 +5337,17 @@ let main_comment_sched = function(opt_in) {
                 }
 
                 d3.select(this).attr('transform', function(d) {
-                    let tx =
-            -(parseInt((i + toff) / telsPerRow) % 2) === 0
+                    let tx
+            = -(parseInt((i + toff) / telsPerRow) % 2) === 0
                 ? offset.x * (0.5 + (i + toff) % telsPerRow)
-                : offset.x * (0.0 + telsPerRow) -
-                offset.x * (0.5 + (i + toff) % telsPerRow)
+                : offset.x * (0.0 + telsPerRow)
+                - offset.x * (0.5 + (i + toff) % telsPerRow)
                     if (toff % 2 === 1) {
                         tx += offset.x
                     }
-                    let ty =
-            offset.y * (0.5 + parseInt((i + toff) / telsPerRow)) +
-            toff * offset.ty
+                    let ty
+            = offset.y * (0.5 + parseInt((i + toff) / telsPerRow))
+            + toff * offset.ty
                     return 'translate(' + tx + ',' + ty + ')'
                 })
                 d3
@@ -5410,15 +5410,15 @@ let main_comment_sched = function(opt_in) {
                 d3
                     .select(this)
                     .attr('transform', function(d) {
-                        let tx =
-              -(parseInt((i + toff) / telsPerRow) % 2) === 0
+                        let tx
+              = -(parseInt((i + toff) / telsPerRow) % 2) === 0
                   ? offset.x * (0.5 + (i + toff) % telsPerRow)
-                  : offset.x * (0.0 + telsPerRow) -
-                  offset.x * (0.5 + (i + toff) % telsPerRow)
+                  : offset.x * (0.0 + telsPerRow)
+                  - offset.x * (0.5 + (i + toff) % telsPerRow)
                         // if (toff % 2 === 1) tx += 2 * offset.x
-                        let ty =
-              offset.y * (0.5 + parseInt((i + toff) / telsPerRow)) +
-              toff * offset.ty
+                        let ty
+              = offset.y * (0.5 + parseInt((i + toff) / telsPerRow))
+              + toff * offset.ty
                         return 'translate(' + tx + ',' + ty + ')'
                     })
                     .style('opacity', function() {
@@ -5431,7 +5431,7 @@ let main_comment_sched = function(opt_in) {
                     .select(this)
                     .select('rect')
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('x', function(d) {
                         return -offset.x * 0.5 + strokeSize(d.val) * 0.5 // (-offset.x * (0.5 - (0.15 * (d.val / 100)))) + (4 - (3 * (d.val / 100))) * 0.5
                     })
@@ -5484,7 +5484,7 @@ let main_comment_sched = function(opt_in) {
             currentTels
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         }

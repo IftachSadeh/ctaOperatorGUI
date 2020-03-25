@@ -84,10 +84,10 @@ window.PlotTimeBar = function() {
             margHeight: com.innerBox.margHeight,
         }
 
-        com.top.axis.transX =
-      'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
-        com.bot.axis.transX =
-      'translate(' + com.bot.box.x + ',' + com.bot.box.y + ')'
+        com.top.axis.transX
+      = 'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
+        com.bot.axis.transX
+      = 'translate(' + com.bot.box.x + ',' + com.bot.box.y + ')'
 
         com.top.scale.x = d3.scaleTime().range([ 0, com.top.box.w ])
         com.top.scale.y = d3.scaleLinear().range([ com.bot.box.h, 0 ])
@@ -278,15 +278,15 @@ window.PlotTimeBar = function() {
         let duration = 0
         if (is_def(opt_in)) {
             if (is_def(opt_in.x)) {
-                duration = times.anim_arc
+                duration = times.anim
                 com.boxTrans.x = opt_in.x
             }
             if (is_def(opt_in.y)) {
-                duration = times.anim_arc
+                duration = times.anim
                 com.boxTrans.y = opt_in.y
             }
             if (is_def(opt_in.k)) {
-                duration = times.anim_arc
+                duration = times.anim
                 com.boxTrans.k = opt_in.k
             }
             if (is_def(opt_in.duration)) {
@@ -294,14 +294,14 @@ window.PlotTimeBar = function() {
             }
         }
 
-        let trans =
-      'translate(' +
-      com.boxTrans.x +
-      ',' +
-      com.boxTrans.y +
-      ')scale(' +
-      com.boxTrans.k +
-      ')'
+        let trans
+      = 'translate('
+      + com.boxTrans.x
+      + ','
+      + com.boxTrans.y
+      + ')scale('
+      + com.boxTrans.k
+      + ')'
 
         if (duration > 0) {
             com.g_box
@@ -319,7 +319,7 @@ window.PlotTimeBar = function() {
     //   com.top.g.axis
     //     .selectAll('.axisX')
     //     .transition('in_out')
-    //     .duration(times.anim_arc)
+    //     .duration(times.anim)
     //     .call(com.top.axis.x)
     // }
     function updateTopAxis(opt_in) {
@@ -338,13 +338,13 @@ window.PlotTimeBar = function() {
         com.bot.g.axis
             .selectAll('.axisX')
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .call(com.bot.axis.x)
     }
     function updateBrushPosition() {
         com.bot.g.brush
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .call(com.bot.brush.move, com.middle.range)
     }
     // ------------------------------------------------------------------
@@ -442,7 +442,7 @@ window.PlotTimeBar = function() {
             .attr('stroke', '#000099')
             .merge(line)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('stroke-opacity', 0.5)
             .attr('x1', function(d, i) {
                 return com.bot.scale.x(d.x1)
@@ -460,7 +460,7 @@ window.PlotTimeBar = function() {
         line
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('stroke-opacity', 0)
             .remove()
 
@@ -496,7 +496,7 @@ window.PlotTimeBar = function() {
     //   .attr('pointer-events', pointerEvents)
     //   .merge(circ)
     //   .transition('in_out')
-    //   .duration(times.anim_arc)
+    //   .duration(times.anim)
     //   .style('opacity', 1)
     //   .attr('cx', function (d) {
     //     return topBot.scale.x(d.x)
@@ -508,7 +508,7 @@ window.PlotTimeBar = function() {
     // circ
     //   .exit()
     //   .transition('in_out')
-    //   .duration(times.anim_arc)
+    //   .duration(times.anim)
     //   .style('opacity', 0)
     //   .remove()
     }
@@ -630,7 +630,7 @@ window.PlotTimeBar = function() {
             locker.remove({
                 id: lockerZoom.all,
                 override: true,
-                delay: times.anim_arc,
+                delay: times.anim,
             })
 
             // let sel = Object.keys(com.zoom.sel).filter(function (d) {
@@ -700,7 +700,7 @@ window.PlotTimeBar = function() {
             locker.remove({
                 id: lockerZoom.all,
                 override: true,
-                delay: times.anim_arc,
+                delay: times.anim,
             })
         }
 

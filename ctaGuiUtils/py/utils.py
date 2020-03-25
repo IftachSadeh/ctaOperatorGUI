@@ -45,13 +45,13 @@ allowed_widget_types = {
         'PlotsDash',
         'SubArrGrp',
         'telPntSky',
-        'SchedBlocks', 
+        'SchedBlocks',
         'NightSched',
         'inst_pos_0',
         'ObsBlockControl',
         'EmptyExample',
         'CommentSched',
-        'SchedBlockController', 
+        'SchedBlockController',
         'SchedBlockInspector',
         'WeatherMonitoring',
     ],
@@ -59,6 +59,7 @@ allowed_widget_types = {
         'PanelSync',
     ]
 }
+
 # sync_types = [ "sync_tel_focus" ]
 
 
@@ -77,14 +78,15 @@ class my_log():
 
         self.set_colors(use_colors)
         self.base_title = title
-        self.title = self.colors['c']("" if title is "" else (
-            " ["+title+"]" if use_log_title else ""))
+        self.title = self.colors['c'](
+            "" if title is "" else (" [" + title + "]" if use_log_title else "")
+        )
 
         # common lock for all loggers
         self.lock = my_lock("my_log")
 
         return
-    
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
@@ -116,13 +118,13 @@ class my_log():
                             if len(msg_now) == 2:
                                 msg_str = str(msg_now[1])
                             else:
-                                msg_str = (" ").join([str(ele_now)
-                                                     for ele_now in msg_now[1:]])
+                                msg_str = (" ").join([
+                                    str(ele_now) for ele_now in msg_now[1:]
+                                ])
                         # there is no color indicator, just a list of messages
                         else:
                             color_func = self.colors['']
-                            msg_str = (" ").join([str(ele_now)
-                                                 for ele_now in msg_now])
+                            msg_str = (" ").join([str(ele_now) for ele_now in msg_now])
 
                         # compose the colored output from the (joined list of) messages(s)
                         if add_msg_ele_space and msg != "":
@@ -189,52 +191,57 @@ class my_log():
         col_purple = "\033[35m"
         col_cyan = "\033[36m"
 
-        def no_color(msg): return '' if (str(msg) is '') else str(msg)
+        def no_color(msg):
+            return '' if (str(msg) is '') else str(msg)
 
-        def blue(msg): return '' if (
-            str(msg) is '') else col_blue + str(msg)+col_def
+        def blue(msg):
+            return '' if (str(msg) is '') else col_blue + str(msg) + col_def
 
-        def red(msg): return '' if (
-            str(msg) is '') else col_red + str(msg)+col_def
+        def red(msg):
+            return '' if (str(msg) is '') else col_red + str(msg) + col_def
 
-        def green(msg): return '' if (
-            str(msg) is '') else col_green + str(msg)+col_def
+        def green(msg):
+            return '' if (str(msg) is '') else col_green + str(msg) + col_def
 
-        def light_blue(msg): return '' if (
-            str(msg) is '') else col_light_blue + str(msg)+col_def
+        def light_blue(msg):
+            return '' if (str(msg) is '') else col_light_blue + str(msg) + col_def
 
-        def yellow(msg): return '' if (
-            str(msg) is '') else col_yellow + str(msg)+col_def
+        def yellow(msg):
+            return '' if (str(msg) is '') else col_yellow + str(msg) + col_def
 
-        def purple(msg): return '' if (
-            str(msg) is '') else col_purple + str(msg)+col_def
+        def purple(msg):
+            return '' if (str(msg) is '') else col_purple + str(msg) + col_def
 
-        def cyan(msg): return '' if (
-            str(msg) is '') else col_cyan + str(msg)+col_def
+        def cyan(msg):
+            return '' if (str(msg) is '') else col_cyan + str(msg) + col_def
 
-        def white_on_black(msg): return '' if (
-            str(msg) is '') else col_white_on_black + str(msg)+col_def
+        def white_on_black(msg):
+            return '' if (str(msg) is '') else col_white_on_black + str(msg) + col_def
 
-        def red_on_black(msg): return '' if (
-            str(msg) is '') else col_white_on_black+col_red + str(msg)+col_def
+        def red_on_black(msg):
+            return '' if (str(msg) is ''
+                          ) else col_white_on_black + col_red + str(msg) + col_def
 
-        def blue_on_black(msg): return '' if (
-            str(msg) is '') else col_white_on_black+col_blue + str(msg)+col_def
+        def blue_on_black(msg):
+            return '' if (str(msg) is ''
+                          ) else col_white_on_black + col_blue + str(msg) + col_def
 
-        def yellow_on_black(msg): return '' if (
-            str(msg) is '') else col_white_on_black+col_yellow+str(msg)+col_def
+        def yellow_on_black(msg):
+            return '' if (str(msg) is ''
+                          ) else col_white_on_black + col_yellow + str(msg) + col_def
 
-        def white_on_red(msg): return '' if (
-            str(msg) is '') else col_white_on_red + str(msg)+col_def
+        def white_on_red(msg):
+            return '' if (str(msg) is '') else col_white_on_red + str(msg) + col_def
 
-        def yellow_on_red(msg): return '' if (
-            str(msg) is '') else col_white_on_red+col_yellow + str(msg)+col_def
+        def yellow_on_red(msg):
+            return '' if (str(msg) is ''
+                          ) else col_white_on_red + col_yellow + str(msg) + col_def
 
-        def white_on_yellow(msg): return '' if (
-            str(msg) is '') else col_white_on_yellow + str(msg)+col_def
+        def white_on_yellow(msg):
+            return '' if (str(msg) is '') else col_white_on_yellow + str(msg) + col_def
 
-        def white_on_green(msg): return '' if (
-            str(msg) is '') else col_white_on_green + str(msg)+col_def
+        def white_on_green(msg):
+            return '' if (str(msg) is '') else col_white_on_green + str(msg) + col_def
 
         colors = dict()
 
@@ -262,7 +269,7 @@ class my_log():
         return
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def get_title(self):
         return self.base_title
@@ -279,9 +286,16 @@ class my_lock():
     def __init__(self, name='', seconds_to_check=None):
         self.name = "generic" if name is "" else name
 
-        self.seconds_to_check = max(0.0001, min(
-            0.5, (seconds_to_check if isinstance(seconds_to_check, numbers.Number) else 0.05)))
-        self.n_max_checks = max(5/self.seconds_to_check, 2)
+        self.seconds_to_check = max(
+            0.0001,
+            min(
+                0.5, (
+                    seconds_to_check
+                    if isinstance(seconds_to_check, numbers.Number) else 0.05
+                )
+            )
+        )
+        self.n_max_checks = max(5 / self.seconds_to_check, 2)
 
         if self.name not in my_lock.locks:
             my_lock.locks[self.name] = False
@@ -291,7 +305,7 @@ class my_lock():
         while my_lock.locks[self.name]:
             n_checked += 1
             if n_checked > self.n_max_checks:
-                raise Warning(" - could not get lock for "+self.name+" ...")
+                raise Warning(" - could not get lock for " + self.name + " ...")
                 break
             sleep(self.seconds_to_check)
 
@@ -309,7 +323,7 @@ def my_assert(log=None, msg="", state=False, only_warn=False):
         return
 
     if log is None:
-        log = my_log(title="my_assert/"+__name__)
+        log = my_log(title="my_assert/" + __name__)
 
     if only_warn:
         log.warning([['wr', msg]])
@@ -318,7 +332,6 @@ def my_assert(log=None, msg="", state=False, only_warn=False):
         raise Exception(msg)
 
     return
-
 
 
 # ------------------------------------------------------------------
@@ -331,8 +344,7 @@ class time_of_night():
         self.log = my_log(title=__name__)
 
         if time_of_night.is_active:
-            raise ValueError(
-                'Can not instantiate time_of_night more than once...')
+            raise ValueError('Can not instantiate time_of_night more than once...')
         else:
             time_of_night.is_active = True
 
@@ -378,7 +390,8 @@ class time_of_night():
     # ---------------------------------------------------------------------------
     def get_current_time(self, n_digits=3):
         if n_digits >= 0 and n_digits is not None:
-            return int(floor(self.time_now)) if n_digits == 0 else round(self.time_now, n_digits)
+            return int(floor(self.time_now)
+                       ) if n_digits == 0 else round(self.time_now, n_digits)
         else:
             return self.time_now
 
@@ -413,17 +426,15 @@ class time_of_night():
         self.time_now = time_now
 
         if log is not None:
-            self.log.info([
-                ['r', "- reset_night(): "],
-                ['y', 'time_now:', self.time_now, ', '],
-                ['b', 'n_night:', self.n_night, ', '],
-                ['g', 'real_reset_time:', self.real_reset_time]
-            ])
+            self.log.info([['r', "- reset_night(): "],
+                           ['y', 'time_now:', self.time_now, ', '],
+                           ['b', 'n_night:', self.n_night, ', '],
+                           ['g', 'real_reset_time:', self.real_reset_time]])
 
-        self.redis.pipe.set(name='time_of_night_'+'scale', data=self.timescale)
-        self.redis.pipe.set(name='time_of_night_'+'start', data=time_now)
-        self.redis.pipe.set(name='time_of_night_'+'end', data=self.endTime)
-        self.redis.pipe.set(name='time_of_night_'+'now', data=time_now)
+        self.redis.pipe.set(name='time_of_night_' + 'scale', data=self.timescale)
+        self.redis.pipe.set(name='time_of_night_' + 'start', data=time_now)
+        self.redis.pipe.set(name='time_of_night_' + 'end', data=self.endTime)
+        self.redis.pipe.set(name='time_of_night_' + 'now', data=time_now)
 
         self.redis.pipe.execute()
 
@@ -441,8 +452,7 @@ class time_of_night():
             if self.time_now > self.endTime:
                 self.reset_night()
 
-            self.redis.set(name='time_of_night_'+'now',
-                           data=int(floor(self.time_now)))
+            self.redis.set(name='time_of_night_' + 'now', data=int(floor(self.time_now)))
 
             sleep(sleep_seconds)
 
@@ -453,26 +463,22 @@ class time_of_night():
 #
 # ---------------------------------------------------------------------------
 def get_time_of_night(parent):
-    parent.redis.pipe.get('time_of_night_'+'start')
-    parent.redis.pipe.get('time_of_night_'+'end')
-    parent.redis.pipe.get('time_of_night_'+'now')
+    parent.redis.pipe.get('time_of_night_' + 'start')
+    parent.redis.pipe.get('time_of_night_' + 'end')
+    parent.redis.pipe.get('time_of_night_' + 'now')
 
     time_of_night = parent.redis.pipe.execute()
 
     if len(time_of_night) != 3:
-        parent.log.warning([
-            ['r', ' - ', parent.widget_name, " - could not get time_of_night - "],
-            ['p', str(time_of_night)], ['r', ' - will use fake range ...']
-        ])
+        parent.log.warning([[
+            'r', ' - ', parent.widget_name, " - could not get time_of_night - "
+        ], ['p', str(time_of_night)], ['r', ' - will use fake range ...']])
         time_of_night = [0, 100, 0]
 
-    data = {
-        'start': time_of_night[0],
-        'end': time_of_night[1],
-        'now': time_of_night[2]
-    }
+    data = {'start': time_of_night[0], 'end': time_of_night[1], 'now': time_of_night[2]}
 
     return data
+
 
 # ------------------------------------------------------------------
 #
@@ -481,6 +487,7 @@ def dict_module_func(data, key, val, new_values):
     if key == "id" and val in new_values:
         data['val'] = new_values[val]
     return
+
 
 # ------------------------------------------------------------------
 #
@@ -520,6 +527,7 @@ def traverse_object(data, new_values, module_func=None):
 #       flatten_dictOrig(data=v, flatDict=flatDict, id=id)
 #   return
 
+
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
@@ -532,7 +540,8 @@ def flatten_dict(data_in, id='id', child_ids='children', sibling_ids='siblings')
 
         if isinstance(data, dict):
             for key, ele in data.items():
-                if isinstance(ele, dict) or isinstance(ele, list) or isinstance(ele, tuple):
+                if isinstance(ele, dict) or isinstance(ele, list) or isinstance(ele,
+                                                                                tuple):
                     flatten(data=ele, depth=depth)
                 elif key == id:
                     data_out[ele] = {
@@ -566,7 +575,9 @@ def flatten_dict(data_in, id='id', child_ids='children', sibling_ids='siblings')
                 else:
                     # fixme - try/except instead ...
                     my_assert(
-                        None, " - expect a dict with a key ["+str(id)+"] ?!?! "+str(child), False)
+                        None, " - expect a dict with a key [" + str(id) + "] ?!?! "
+                        + str(child), False
+                    )
 
     for key0, ele0 in data_out.items():
         for key1, ele1 in data_out.items():
@@ -590,11 +601,14 @@ def flatten_dict(data_in, id='id', child_ids='children', sibling_ids='siblings')
 #     return nTimeCount
 # ------------------------------------------------------------------
 
+
 # ---------------------------------------------------------------------------
 # time since epoch in milisecond
 # ---------------------------------------------------------------------------
 def getTime():
-    return int(time.time()*1e3)
+    return int(time.time() * 1e3)
+
+
 # def getDateTimeFormat():
 #   return '%Y/%m/%d,%H:%m:%S'
 # def getDateTimeStr():
@@ -617,7 +631,8 @@ def delta_seconds(date0, date1, is_microseconds=False):
 #
 # ---------------------------------------------------------------------------
 def date_to_string(date_in, time_string='%H:%m:%S'):
-    return str(date_in.date().strftime('%Y/%m/%d')) + "," + str(date_in.time().strftime(time_string))
+    return str(date_in.date().strftime('%Y/%m/%d')
+               ) + "," + str(date_in.time().strftime(time_string))
 
 
 # ---------------------------------------------------------------------------

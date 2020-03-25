@@ -1,75 +1,40 @@
-import os
-import copy
-import gevent
-from gevent import sleep
-from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
-from datetime import datetime
-import random
-from random import Random
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, delta_seconds, get_time_of_night
-from ctaGuiUtils.py.RedisManager import RedisManager
+from ctaGuiUtils.py.utils import get_time_of_night
+from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
 # ------------------------------------------------------------------
-#  obs_block_control
+#  ObsBlockControl
 # ------------------------------------------------------------------
-class ObsBlockControl():
-    # privat lock for this widget type
-    lock = BoundedSemaphore(1)
-
-    # all session ids for this user/widget
-    widget_group_sess = dict()
-
+class ObsBlockControl(BaseWidget):
+    time_of_night = {}
+    inst_health = []
     block_keys = [['wait'], ['run'], ['done', 'cancel', 'fail']]
-
     blocks = {}
     for keys_now in block_keys:
         blocks[keys_now[0]] = []
-
-    time_of_night = {}
-
-    inst_health = []
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
-        self.log = my_log(title=__name__)
+        # standard common initialisations
+        BaseWidget.__init__(
+            self,
+            widget_id=widget_id,
+            socket_manager=socket_manager,
+        )
 
-        # the id of this instance
-        self.widget_id = widget_id
-        # the parent of this widget
-        self.socket_manager = socket_manager
-        my_assert(log=self.log, msg=[
-            " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
-
-        # widget-class and widget group names
-        self.widget_name = self.__class__.__name__
-        self.widget_group = self.socket_manager.user_group_id+''+self.widget_name
-
-        self.redis = RedisManager(name=self.widget_name, log=self.log)
-
-        # turn on periodic data updates
-        self.do_data_updates = True
-        # some etra logging messages for this module
-        self.log_send_packet = False
-        #
-        self.n_icon = -1
-        # self.tel_Id = ""
-
-        # self.tel_ids = self.socket_manager.InstData.get_inst_ids()
+        # ------------------------------------------------------------------
+        # widget-specific initialisations
+        # ------------------------------------------------------------------
         self.tel_ids = self.socket_manager.InstData.get_inst_ids(
             inst_types=['LST', 'MST', 'SST']
         )
 
-        # ------------------------------------------------------------------
-        # need to add lock ?!?!?!?!?
-        # ------------------------------------------------------------------
-        if len(obs_block_control.inst_health) == 0:
+        # FIXME - need to add lock?
+        if len(ObsBlockControl.inst_health) == 0:
             for id_now in self.tel_ids:
-                obs_block_control.inst_health.append({"id": id_now, "val": 0})
+                ObsBlockControl.inst_health.append({"id": id_now, "val": 0})
 
         return
 
@@ -78,14 +43,8 @@ class ObsBlockControl():
     # ------------------------------------------------------------------
 
     def setup(self, *args):
-        with self.socket_manager.lock:
-            wgt = self.redis.hGet(
-                name='all_widgets', key=self.widget_id, packed=True)
-            self.n_icon = wgt["n_icon"]
-
-        # override the global logging variable with a name corresponding to the current session id
-        self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
-                          str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
+        # standard common initialisations
+        BaseWidget.setup(self, *args)
 
         self.widget_state = wgt["widget_state"]
         self.widget_state["focus_id"] = ""
@@ -105,22 +64,25 @@ class ObsBlockControl():
     #
     # ------------------------------------------------------------------
     def back_from_offline(self):
-        # with obs_block_control.lock:
-        #   print '-- back_from_offline',self.widget_name, self.widget_id
+        # standard common initialisations
+        BaseWidget.back_from_offline(self)
+
+        # with ObsBlockControl.lock:
+        #     print('-- back_from_offline',self.widget_name,self.widget_id)
         return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def get_data(self):
-        obs_block_control.time_of_night = get_time_of_night(self)
+        ObsBlockControl.time_of_night = get_time_of_night(self)
         self.get_blocks()
         self.get_tel_health()
 
         data = {
-            "time_of_night": obs_block_control.time_of_night,
-            "inst_health": obs_block_control.inst_health,
-            "blocks": obs_block_control.blocks
+            "time_of_night": ObsBlockControl.time_of_night,
+            "inst_health": ObsBlockControl.inst_health,
+            "blocks": ObsBlockControl.blocks
         }
 
         return data
@@ -131,12 +93,12 @@ class ObsBlockControl():
     def get_tel_health(self):
         self.redis.pipe.reset()
         for id_now in self.tel_ids:
-            self.redis.pipe.hGet(name="inst_health;"+str(id_now), key="health")
+            self.redis.pipe.hGet(name="inst_health;" + str(id_now), key="health")
         redis_data = self.redis.pipe.execute()
 
         for i in range(len(redis_data)):
             id_now = self.tel_ids[i]
-            obs_block_control.inst_health[i]["val"] = redis_data[i]
+            ObsBlockControl.inst_health[i]["val"] = redis_data[i]
 
         return
 
@@ -144,10 +106,10 @@ class ObsBlockControl():
     #
     # ------------------------------------------------------------------
     def get_blocks(self):
-        for keys_now in obs_block_control.block_keys:
+        for keys_now in ObsBlockControl.block_keys:
             self.redis.pipe.reset()
             for key in keys_now:
-                self.redis.pipe.get('obs_block_ids_'+key)
+                self.redis.pipe.get('obs_block_ids_' + key)
 
             data = self.redis.pipe.execute(packed=True)
             obs_block_ids = sum(data, [])  # flatten the list of lists
@@ -158,33 +120,34 @@ class ObsBlockControl():
 
             key = keys_now[0]
             blocks = self.redis.pipe.execute(packed=True)
-            obs_block_control.blocks[key] = sorted(
-                blocks, cmp=lambda a, b: int(a['startTime']) - int(b['startTime']))
+            ObsBlockControl.blocks[key] = sorted(
+                blocks, cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])
+            )
 
-        # print obs_block_control.blocks
+        # print ObsBlockControl.blocks
 
-        # dur = [x['timestamp'] for x in obs_block_control.blocks] ; print dur
-        # print obs_block_control.blocks['wait'][5]['exe_state']
+        # dur = [x['timestamp'] for x in ObsBlockControl.blocks] ; print dur
+        # print ObsBlockControl.blocks['wait'][5]['exe_state']
 
-        # obs_block_control.blocks = [ unpackb(x) for x in redis_data ]
+        # ObsBlockControl.blocks = [ unpackb(x) for x in redis_data ]
 
-        # obs_block_control.blocks = []
+        # ObsBlockControl.blocks = []
         # for block in redis_data:
-        #   obs_block_control.blocks.append(unpackb(block))
+        #   ObsBlockControl.blocks.append(unpackb(block))
 
         # self.sortBlocks()
 
-        # if len(obs_block_control.blocks) > 10: obs_block_control.blocks = obs_block_control.blocks[0:9]
-        # if len(obs_block_control.blocks) > 20: obs_block_control.blocks = obs_block_control.blocks[0:11]
-        # # # # print obs_block_control.blocks
+        # if len(ObsBlockControl.blocks) > 10: ObsBlockControl.blocks = ObsBlockControl.blocks[0:9]
+        # if len(ObsBlockControl.blocks) > 20: ObsBlockControl.blocks = ObsBlockControl.blocks[0:11]
+        # # # # print ObsBlockControl.blocks
         # # for bb in range(9):
         # for bb in range(20):
-        #   if len(obs_block_control.blocks) <= bb: break
-        #   obs_block_control.blocks[bb]['exe_state'] = 'run'
-        #   obs_block_control.blocks[bb]['run_phase'] = ['run_take_data']
-        #   # obs_block_control.blocks[bb]['run_phase'] = ['run_config_mount']
-        #   # print obs_block_control.blocks[bb]
-        #   # if bb < 10: obs_block_control.blocks[bb]['exe_state'] = 'run'
-        #   # else:     obs_block_control.blocks[bb]['exe_state'] = 'wait'
+        #   if len(ObsBlockControl.blocks) <= bb: break
+        #   ObsBlockControl.blocks[bb]['exe_state'] = 'run'
+        #   ObsBlockControl.blocks[bb]['run_phase'] = ['run_take_data']
+        #   # ObsBlockControl.blocks[bb]['run_phase'] = ['run_config_mount']
+        #   # print ObsBlockControl.blocks[bb]
+        #   # if bb < 10: ObsBlockControl.blocks[bb]['exe_state'] = 'run'
+        #   # else:     ObsBlockControl.blocks[bb]['exe_state'] = 'wait'
 
         return

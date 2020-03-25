@@ -99,7 +99,7 @@ let main_night_sched = function(opt_in) {
     let icon_divs = opt_in.icon_divs
 
     // let this_night_sched = this
-    // let is_south = window.__site_type__ === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -695,8 +695,8 @@ let TelTreeMap = function() {
                     if (a.height === 1 && b.height === 1) {
                         // make sure the empty sub-array is always last
                         if (
-                            a.data.id === tel_info.no_sub_arr_name() ||
-              b.data.id === tel_info.no_sub_arr_name()
+                            a.data.id === tel_info.no_sub_arr_name()
+              || b.data.id === tel_info.no_sub_arr_name()
                         ) {
                             return -2 * com.tel_ids.length
                         }
@@ -717,8 +717,8 @@ let TelTreeMap = function() {
             })
             let rectData = desc.filter(function(d) {
                 return (
-                    (d.height === 1 && d.data.id !== tel_info.no_sub_arr_name()) ||
-          d.data.nTel === -1
+                    (d.height === 1 && d.data.id !== tel_info.no_sub_arr_name())
+          || d.data.nTel === -1
                 )
             })
             $.each(rectData, function(index, data_now) {
@@ -754,9 +754,9 @@ let TelTreeMap = function() {
             $.each(hirchBlocks, function(index, data_now) {
                 let id = data_now.data.id
 
-                com.telR[id] =
-          0.5 *
-          min_max_obj({
+                com.telR[id]
+          = 0.5
+          * min_max_obj({
               min_max: 'min',
               data: data_now.children,
               func: function(d, i) {
@@ -812,7 +812,7 @@ let TelTreeMap = function() {
                 .on('click', com.style.click)
                 .merge(circ)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('cx', com.style.cx)
                 .attr('cy', com.style.cy)
                 .attr('r', com.style.r)
@@ -866,7 +866,7 @@ let TelTreeMap = function() {
                 .on('click', com.style.click)
                 .merge(rect)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
             // .attr("x", com.style.x)
             // .attr("y", com.style.y)
             // .attr("width", com.style.width)
@@ -898,7 +898,7 @@ let TelTreeMap = function() {
             rect
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .style('opacity', 0)
                 .remove()
 
@@ -944,7 +944,7 @@ let TelTreeMap = function() {
                 .merge(text)
                 .style('font-size', com.style.font_size)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', com.style.opacity)
                 .attr('x', com.style.textX)
                 .attr('y', com.style.textY)
@@ -955,7 +955,7 @@ let TelTreeMap = function() {
             text
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         }
@@ -964,7 +964,7 @@ let TelTreeMap = function() {
 
             circ
                 .transition('updtCol')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('fill', function(d, i) {
                     return com.style.fill(d, d.data.n_block)
                 })
@@ -976,7 +976,7 @@ let TelTreeMap = function() {
 
             rect
                 .transition('updtCol')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('fill', function(d, i) {
                     return com.style.fill(d, d.data.n_block)
                 })

@@ -1,4 +1,3 @@
-
 # [LINK]documentation: http://www.eso.org/projects/alma/develop/acs/OnlineDocs/ACS_Supported_BACI_Types.pdf
 # section 3.3 monitors; page 16
 # dict holding all the possible properties
@@ -40,7 +39,6 @@ props["doubleRWProp:TEST_JAVA_T1"] = {
     },
     # the name of the component that has the property we want to monitor
     'component_name': 'TEST_JAVA_T1'
-
 }
 
 props["doubleRWProp:TEST_JAVA_T2"] = {
@@ -85,7 +83,8 @@ props["name:supervisor"] = {
 # just add all the properties you want to monitor globally to the dict
 props["TEST_JAVA_T1"] = {
     # the name of the component that we want to monitor the properties on
-    'component_name': 'TEST_JAVA_T1',
+    'component_name':
+    'TEST_JAVA_T1',
     # list of tuples that contain the property and the polling code for it
     'props': [
         # structure (property_name, polling_code)
@@ -95,7 +94,5 @@ props["TEST_JAVA_T1"] = {
 
 props["TEST_JAVA_T2"] = {
     'component_name': 'TEST_JAVA_T2',
-    'props': [
-        ('doubleRWProp', '.doubleRWProp.get_sync()[0]')
-    ]
+    'props': [('doubleRWProp', '.doubleRWProp.get_sync()[0]')]
 }

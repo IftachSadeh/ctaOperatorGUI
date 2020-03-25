@@ -37,9 +37,7 @@ class ObsBlocks():
         self.time_of_night = time_of_night
         self.InstData = InstData
         # self.tel_ids = self.InstData.get_inst_ids()
-        self.tel_ids = self.InstData.get_inst_ids(
-            inst_types=['LST', 'MST', 'SST']
-        )
+        self.tel_ids = self.InstData.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(name=self.class_name, log=self.log)
@@ -55,11 +53,13 @@ class ObsBlocks():
         # self.log.info([['y'," - ObsBlocks - "],['p','got supervisor!']])
 
         self.phases_exe = dict()
-        self.phases_exe["start"] = ["run_config_mount",
-                                   "run_config_camera", "run_config_daq", "run_config_mirror"]
+        self.phases_exe["start"] = [
+            "run_config_mount", "run_config_camera", "run_config_daq", "run_config_mirror"
+        ]
         self.phases_exe["during"] = ["run_take_data"]
-        self.phases_exe["finish"] = ["run_finish_mount",
-                                    "run_finish_camera", "run_finish_daq"]
+        self.phases_exe["finish"] = [
+            "run_finish_mount", "run_finish_camera", "run_finish_daq"
+        ]
 
         self.loop_sleep = 3
 
@@ -83,9 +83,9 @@ class ObsBlocks():
 
         if self.MockSched is None:
             sleep(0.5)
-            self.log.debug([
-                ['r', " - no MockSched ... will try to reset_blocks() again ..."]
-            ])
+            self.log.debug([[
+                'r', " - no MockSched ... will try to reset_blocks() again ..."
+            ]])
             self.reset_blocks()
             return
 
@@ -169,14 +169,14 @@ class ObsBlocks():
                 if state == 'run':
                     for p in phases:
                         if p.status == sb.OB_RUNNING:
-                            phaseName = 'run_'+p.name
+                            phaseName = 'run_' + p.name
                             for phases_exe in self.phases_exe:
                                 if phaseName in self.phases_exe[phases_exe]:
                                     run_phase.append(phaseName)
 
                     if debug_tmp:
-                        self.log.debug(
-                            [['b', " -- run_phase - "], ['y', run_phase, ' '], ['b', tel_ids]])
+                        self.log.debug([['b', " -- run_phase - "], ['y', run_phase, ' '],
+                                        ['b', tel_ids]])
 
                 can_run = True
                 if state == 'cancel' or state == 'fail':
@@ -194,13 +194,13 @@ class ObsBlocks():
                 block["metadata"] = metadata
                 block["timestamp"] = timestamp
                 block["startTime"] = startTime
-                block["endTime"] = startTime+duration
+                block["endTime"] = startTime + duration
                 block["duration"] = duration
                 block["tel_ids"] = tel_ids
                 block["target_id"] = trgId
                 block["target_name"] = trgId
                 block["target_pos"] = target_pos
-                block["point_id"] = sched_blk_id+"_"+obs_block_id
+                block["point_id"] = sched_blk_id + "_" + obs_block_id
                 block["pointing_name"] = block["target_name"] + \
                     "/p_"+str(n_obs_block_now)
                 block["pointing_pos"] = point_pos
@@ -213,19 +213,25 @@ class ObsBlocks():
 
                 obs_block_ids[state].append(obs_block_id)
 
-                self.redis.pipe.set(name=obs_block_id, data=block,
-                                    expire=self.expire, packed=True)
+                self.redis.pipe.set(
+                    name=obs_block_id, data=block, expire=self.expire, packed=True
+                )
 
-        self.redis.pipe.set(name='obs_block_ids_'+'wait',
-                            data=obs_block_ids['wait'], packed=True)
-        self.redis.pipe.set(name='obs_block_ids_'+'run',
-                            data=obs_block_ids['run'], packed=True)
-        self.redis.pipe.set(name='obs_block_ids_'+'done',
-                            data=obs_block_ids['done'], packed=True)
-        self.redis.pipe.set(name='obs_block_ids_'+'cancel',
-                            data=obs_block_ids['cancel'], packed=True)
-        self.redis.pipe.set(name='obs_block_ids_'+'fail',
-                            data=obs_block_ids['fail'], packed=True)
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'wait', data=obs_block_ids['wait'], packed=True
+        )
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'run', data=obs_block_ids['run'], packed=True
+        )
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'done', data=obs_block_ids['done'], packed=True
+        )
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'cancel', data=obs_block_ids['cancel'], packed=True
+        )
+        self.redis.pipe.set(
+            name='obs_block_ids_' + 'fail', data=obs_block_ids['fail'], packed=True
+        )
 
         self.redis.pipe.execute()
 
@@ -241,15 +247,17 @@ class ObsBlocks():
 
         if blocks is None:
             obs_block_ids = self.redis.get(
-                name=('obs_block_ids_'+'run'), packed=True, default_val=[])
+                name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+            )
             for obs_block_id in obs_block_ids:
                 self.redis.pipe.get(obs_block_id)
 
             blocks = self.redis.pipe.execute(packed=True)
 
         # sort so last is first in the list (latest sub-array defined gets the telescope)
-        blocks = sorted(blocks, cmp=lambda a, b: int(
-            b['timestamp']) - int(a['timestamp']))
+        blocks = sorted(
+            blocks, cmp=lambda a, b: int(b['timestamp']) - int(a['timestamp'])
+        )
         # print [a['timestamp'] for a in blocks]
 
         sub_arrs = []
@@ -267,9 +275,7 @@ class ObsBlocks():
                     telV.append({"id": id_now})
 
             # add the telescope list for this block
-            sub_arrs.append({
-                "id": pntId, "N": pointing_name, "children": telV
-            })
+            sub_arrs.append({"id": pntId, "N": pointing_name, "children": telV})
 
         # ------------------------------------------------------------------
         # now take care of all free telescopes
@@ -279,9 +285,7 @@ class ObsBlocks():
         for id_now in all_tel_ids:
             telV.append({"id": id_now})
 
-        sub_arrs.append({
-            "id": no_sub_arr_name, "children": telV
-        })
+        sub_arrs.append({"id": no_sub_arr_name, "children": telV})
 
         # ------------------------------------------------------------------
         # for now - a simple/stupid solution, where we write the sub-arrays and publish each
@@ -298,11 +302,11 @@ class ObsBlocks():
     def loop(self):
         self.log.info([['g', " - starting ObsBlocks.loop ..."]])
 
-        self.redis.pipe.set(name='obs_block_ids_'+'wait', data='')
-        self.redis.pipe.set(name='obs_block_ids_'+'run', data='')
-        self.redis.pipe.set(name='obs_block_ids_'+'done', data='')
-        self.redis.pipe.set(name='obs_block_ids_'+'cancel', data='')
-        self.redis.pipe.set(name='obs_block_ids_'+'fail', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'wait', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'run', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'done', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'cancel', data='')
+        self.redis.pipe.set(name='obs_block_ids_' + 'fail', data='')
 
         self.redis.pipe.execute()
 
@@ -331,9 +335,7 @@ class ObsBlocksNoACS():
         self.time_of_night = time_of_night
         self.InstData = InstData
         # self.tel_ids = self.InstData.get_inst_ids()
-        self.tel_ids = self.InstData.get_inst_ids(
-            inst_types=['LST', 'MST', 'SST']
-        )
+        self.tel_ids = self.InstData.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(name=self.class_name, log=self.log)
@@ -346,12 +348,12 @@ class ObsBlocksNoACS():
         #
         # ------------------------------------------------------------------
         self.max_n_obs_block = 4 if self.site_type == "N" else 7
-        self.max_n_obs_block = min(self.max_n_obs_block, floor(len(self.tel_ids)/4))
+        self.max_n_obs_block = min(self.max_n_obs_block, floor(len(self.tel_ids) / 4))
         self.loop_sleep = 4
 
         self.max_n_cycles = 100
-        self.min_n_sched_block = 2 # 2
-        self.max_n_sched_block = 5 # 5
+        self.min_n_sched_block = 2  # 2
+        self.max_n_sched_block = 5  # 5
         self.min_n_obs_block = 1
         self.max_n_obs_block = 5
         self.min_n_tel_block = 4
@@ -360,18 +362,20 @@ class ObsBlocksNoACS():
         self.n_init_cycle = -1
         self.name_prefix = str(getTime())
         if len(self.name_prefix) > 6:
-            self.name_prefix = self.name_prefix[len(self.name_prefix)-6:]
+            self.name_prefix = self.name_prefix[len(self.name_prefix) - 6:]
 
         self.az_min_max = [-180, 180]
         self.zen_min_max_tel = [0, 70]
         self.zen_min_max_pnt = [0, 20]
 
         self.phases_exe = dict()
-        self.phases_exe["start"] = ["run_config_mount",
-                                   "run_config_camera", "run_config_DAQ", "run_config_mirror"]
+        self.phases_exe["start"] = [
+            "run_config_mount", "run_config_camera", "run_config_DAQ", "run_config_mirror"
+        ]
         self.phases_exe["during"] = ["run_take_data"]
-        self.phases_exe["finish"] = ["run_finish_mount",
-                                    "run_finish_camera", "run_finish_cleanup"]
+        self.phases_exe["finish"] = [
+            "run_finish_mount", "run_finish_camera", "run_finish_cleanup"
+        ]
 
         self.error_rnd_frac = dict()
         self.error_rnd_frac["E1"] = 0.3
@@ -390,12 +394,13 @@ class ObsBlocksNoACS():
         self.phase_rnd_frac["fail"] = 0.1
         self.loop_sleep = 2
 
-        self.obs_block_seconds = 1800 # timedelta(weeks = 0, days = 0, hours = 0, minutes = 30 * self.time_of_night.get_timescale(), seconds = 0, milliseconds = 0, microseconds = 0)  # 1800 = 30 minutes
+        self.obs_block_seconds = 1800  # timedelta(weeks = 0, days = 0, hours = 0, minutes = 30 * self.time_of_night.get_timescale(), seconds = 0, milliseconds = 0, microseconds = 0)  # 1800 = 30 minutes
 
         self.time_of_night.reset_night()
         # self.duration_scale = self.time_of_night.get_timescale() #  0.035 -> one
         # minute instead of 30 for gui testing
-        self.duration_night = self.time_of_night.get_total_time_seconds()  # 28800 -> 8 hour night
+        self.duration_night = self.time_of_night.get_total_time_seconds(
+        )  # 28800 -> 8 hour night
         self.prev_reset_time = self.time_of_night.get_reset_time()
 
         rnd_seed = getTime()
@@ -434,7 +439,7 @@ class ObsBlocksNoACS():
         n_sched_blocks = -1
         tot_block_seconds = 0
         max_block_seconds = self.duration_night - self.obs_block_seconds
-        overhead_seconds = self.obs_block_seconds * 0.05 # timedelta(seconds = 90 * 0.05 * self.time_of_night.get_timescale()) # self.obs_block_seconds * 0.05
+        overhead_seconds = self.obs_block_seconds * 0.05  # timedelta(seconds = 90 * 0.05 * self.time_of_night.get_timescale()) # self.obs_block_seconds * 0.05
 
         target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
         # for obs_block_id in obs_block_ids:
@@ -451,15 +456,19 @@ class ObsBlocksNoACS():
             tel_ids = copy.deepcopy(self.tel_ids)
             n_tels = len(tel_ids)
             # choose number of Scheduling blocks for this part of night (while loop)-----------------------------------------------------
-            n_sched_blocks = min(floor(n_tels/self.min_n_tel_block),
-                             self.max_n_sched_block)
-            n_sched_blocks = max(self.rnd_gen.randint(
-                1, n_sched_blocks), self.min_n_sched_block)
+            n_sched_blocks = min(
+                floor(n_tels / self.min_n_tel_block), self.max_n_sched_block
+            )
+            n_sched_blocks = max(
+                self.rnd_gen.randint(1, n_sched_blocks), self.min_n_sched_block
+            )
             # ---------------------------------------------------------------------
             if debug_tmp:
                 print '-------------------------------------------------------------------------'
-                print ('- n_cycle_now', n_cycle_now, 'tot_block_seconds / percentage:',
-                       tot_block_seconds, (tot_block_seconds/self.duration_night))
+                print(
+                    '- n_cycle_now', n_cycle_now, 'tot_block_seconds / percentage:',
+                    tot_block_seconds, (tot_block_seconds / self.duration_night)
+                )
 
             target_pos = dict()
 
@@ -469,11 +478,11 @@ class ObsBlocksNoACS():
             #
             # ------------------------------------------------------------------
             for n_sched_block_now in range(n_sched_blocks):
-                sched_block_id = "schBlock_"+base_name+str(n_sched_block_now)
+                sched_block_id = "schBlock_" + base_name + str(n_sched_block_now)
 
                 n_sched_blocks += 1
 
-                if n_sched_block_now < n_sched_blocks-1:
+                if n_sched_block_now < n_sched_blocks - 1:
                     n_tel_now = max(self.min_n_tel_block, len(tel_ids) - n_sched_blocks)
                     n_tel_now = self.rnd_gen.randint(self.min_n_tel_block, n_tel_now)
                     n_tel_now = min(n_tel_now, len(tel_ids))
@@ -489,8 +498,8 @@ class ObsBlocksNoACS():
                 tel_ids = [x for x in tel_ids if x not in sched_tel_ids]
                 # choose the number of obs blocks inside this sched_blocks
                 n_obs_blocks = self.rnd_gen.randint(
-                    self.min_n_obs_block, self.max_n_obs_block)
-
+                    self.min_n_obs_block, self.max_n_obs_block
+                )
 
                 # n_trg = n_sched_block_now
                 #
@@ -512,12 +521,18 @@ class ObsBlocksNoACS():
                 target_ids_now = []
                 targets = []
                 for z in range(n_rnd_targets):
-                    n_id = (obs_block_duration / (self.duration_night / len(target_ids))) + 0.75
+                    n_id = (
+                        obs_block_duration / (self.duration_night / len(target_ids))
+                    ) + 0.75
                     n_id = int(n_id + ((self.rnd_gen.random() - 0.5) * 3))
                     n_id = min(max(0, n_id), len(target_ids) - 1)
                     if not (target_ids[n_id] in target_ids_now):
                         target_ids_now.append(target_ids[n_id])
-                        targets.append(self.redis.get(name=target_ids[n_id], packed=True, default_val={}))
+                        targets.append(
+                            self.redis.get(
+                                name=target_ids[n_id], packed=True, default_val={}
+                            )
+                        )
 
                 for n_obs_now in range(n_obs_blocks):
                     obs_block_id = "obs_block_"+base_name + \
@@ -533,13 +548,17 @@ class ObsBlocksNoACS():
                         obs_block_seconds /= 1.5
                     elif rnd < 0.5:
                         obs_block_seconds /= 1.1
-                    obs_block_seconds = int(floor(obs_block_seconds)) # timedelta(seconds = obs_block_seconds)
+                    obs_block_seconds = int(
+                        floor(obs_block_seconds)
+                    )  # timedelta(seconds = obs_block_seconds)
 
                     if obs_block_duration + obs_block_seconds > self.duration_night:
                         is_cycle_done = True
                         if debug_tmp:
-                            print (' - is_cycle_done - n_obs_now / startTime / duration:',
-                                   n_obs_now, obs_block_duration, obs_block_seconds)
+                            print(
+                                ' - is_cycle_done - n_obs_now / startTime / duration:',
+                                n_obs_now, obs_block_duration, obs_block_seconds
+                            )
                         break
 
                     # integrated time for all obs blocks within this sched block
@@ -550,7 +569,10 @@ class ObsBlocksNoACS():
                     all_tel_ids = copy.deepcopy(sched_tel_ids)
                     for z in range(n_rnd_divs):
                         trg = targets[max(0, int(self.rnd_gen.random() * len(targets)))]
-                        pnt = {'id': sched_block_id+"_"+obs_block_id, 'name': trg["name"] + "/p_" + str(n_obs_now) + "-" + str(z)}
+                        pnt = {
+                            'id': sched_block_id + "_" + obs_block_id,
+                            'name': trg["name"] + "/p_" + str(n_obs_now) + "-" + str(z)
+                        }
 
                         point_pos = copy.deepcopy(trg["pos"])
                         point_pos[0] += (self.rnd_gen.random() - 0.5) * 10
@@ -562,7 +584,9 @@ class ObsBlocksNoACS():
                             point_pos[0] += 360
                         pnt['pos'] = point_pos
                         pointings.append(pnt)
-                        tels = random.sample(all_tel_ids, int(len(sched_tel_ids) / n_rnd_divs))
+                        tels = random.sample(
+                            all_tel_ids, int(len(sched_tel_ids) / n_rnd_divs)
+                        )
                         if z == n_rnd_divs - 1:
                             tels = all_tel_ids
                         # and remove them from allTels list
@@ -598,14 +622,38 @@ class ObsBlocksNoACS():
                     #     "/p_"+str(n_obs_now)
                     # block["pointing_pos"] = point_pos
 
-                    time = {'start': obs_block_duration, 'duration': obs_block_seconds-overhead_seconds, 'end': obs_block_duration+obs_block_seconds-overhead_seconds}
+                    time = {
+                        'start': obs_block_duration,
+                        'duration': obs_block_seconds - overhead_seconds,
+                        'end': obs_block_duration + obs_block_seconds - overhead_seconds
+                    }
                     exe_state = {'state': "wait", 'can_run': True}
-                    metadata = {'n_sched': n_sched_blocks, 'n_obs': n_obs_now,
-                                'block_name': str(n_sched_blocks)+" ("+str(n_obs_now)+")"}
+                    metadata = {
+                        'n_sched': n_sched_blocks,
+                        'n_obs': n_obs_now,
+                        'block_name': str(n_sched_blocks) + " (" + str(n_obs_now) + ")"
+                    }
                     # min int(len(filter(lambda x: 'L' in x, sched_tel_ids)) / 3)
-                    telescopes = {'large': {'min': int(len(filter(lambda x: 'L' in x, sched_tel_ids)) / 2), 'max': 4, 'ids': filter(lambda x: 'L' in x, sched_tel_ids)},
-                                  'medium': {'min': int(len(filter(lambda x: 'M' in x, sched_tel_ids)) / 2), 'max': 25, 'ids': filter(lambda x: 'M' in x, sched_tel_ids)},
-                                  'small': {'min': int(len(filter(lambda x: 'S' in x, sched_tel_ids)) / 2), 'max': 70, 'ids': filter(lambda x: 'S' in x, sched_tel_ids)}}
+                    telescopes = {
+                        'large': {
+                            'min':
+                            int(len(filter(lambda x: 'L' in x, sched_tel_ids)) / 2),
+                            'max': 4,
+                            'ids': filter(lambda x: 'L' in x, sched_tel_ids)
+                        },
+                        'medium': {
+                            'min':
+                            int(len(filter(lambda x: 'M' in x, sched_tel_ids)) / 2),
+                            'max': 25,
+                            'ids': filter(lambda x: 'M' in x, sched_tel_ids)
+                        },
+                        'small': {
+                            'min':
+                            int(len(filter(lambda x: 'S' in x, sched_tel_ids)) / 2),
+                            'max': 70,
+                            'ids': filter(lambda x: 'S' in x, sched_tel_ids)
+                        }
+                    }
                     block = dict()
                     block["sched_block_id"] = sched_block_id
                     block["obs_block_id"] = obs_block_id
@@ -633,22 +681,30 @@ class ObsBlocksNoACS():
                     # block["pointing_pos"] = point_pos
                     # block["fullObsBlock"] = self.get_obs_block_template()
                     self.redis.pipe.set(
-                        name=block["obs_block_id"], data=block, expire=self.expire, packed=True)
+                        name=block["obs_block_id"],
+                        data=block,
+                        expire=self.expire,
+                        packed=True
+                    )
 
                     self.all_obs_blocks.append(block)
 
                     obs_block_duration += obs_block_seconds
 
                 # list of duration of all sched blocks within this cycle
-                if tot_obs_block_seconds >  0: # timedelta(seconds = 0):
+                if tot_obs_block_seconds > 0:  # timedelta(seconds = 0):
                     tot_sched_block_seconds += [tot_obs_block_seconds]
             # ------------------------------------------------------------------
 
             # the maximal duration of all blocks within this cycle
             tot_block_seconds += max(tot_sched_block_seconds)
 
-        self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
-        self.redis.pipe.set(name="external_clock_events", data=self.external_clock_events, packed=True)
+        self.redis.pipe.set(
+            name="external_events", data=self.external_events, packed=True
+        )
+        self.redis.pipe.set(
+            name="external_clock_events", data=self.external_clock_events, packed=True
+        )
 
         self.redis.pipe.execute()
 
@@ -741,11 +797,15 @@ class ObsBlocksNoACS():
 
         # move to run state
         # ------------------------------------------------------------------
-        wait_blocks = [x for x in self.all_obs_blocks if x['exe_state']['state'] == 'wait']
+        wait_blocks = [
+            x for x in self.all_obs_blocks if x['exe_state']['state'] == 'wait'
+        ]
 
         has_change = False
         for block in wait_blocks:
-            if time_now < block["time"]["start"] - self.loop_sleep: # datetime.strptime(block["startTime"], "%Y-%m-%d %H:%M:%S"): # - deltatime(self.loop_sleep):
+            if time_now < block["time"][
+                    "start"
+            ] - self.loop_sleep:  # datetime.strptime(block["startTime"], "%Y-%m-%d %H:%M:%S"): # - deltatime(self.loop_sleep):
                 continue
 
             block['exe_state']['state'] = "run"
@@ -755,7 +815,8 @@ class ObsBlocksNoACS():
 
             has_change = True
             self.redis.pipe.set(
-                name=block["obs_block_id"], data=block, expire=self.expire, packed=True)
+                name=block["obs_block_id"], data=block, expire=self.expire, packed=True
+            )
 
         if has_change:
             self.redis.pipe.execute()
@@ -763,15 +824,18 @@ class ObsBlocksNoACS():
             # ------------------------------------------------------------------
             # check for blocks which cant begin as their time is already past
             # ------------------------------------------------------------------
-            wait_blocks = [x for x in self.all_obs_blocks if x['exe_state']
-                     ['state'] == 'wait']
+            wait_blocks = [
+                x for x in self.all_obs_blocks if x['exe_state']['state'] == 'wait'
+            ]
 
             has_change = False
             for block in wait_blocks:
                 # # adjust the starting/ending time
                 # block["endTime"] = block["startTime"] + block["duration"]
 
-                if time_now >= block["time"]["end"] or (self.rnd_gen.random() < self.phase_rnd_frac["cancel"] * 0.1): # datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") or (self.rnd_gen.random() < self.phase_rnd_frac["cancel"] * 0.1):
+                if time_now >= block["time"]["end"] or (
+                        self.rnd_gen.random() < self.phase_rnd_frac["cancel"] * 0.1
+                ):  # datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") or (self.rnd_gen.random() < self.phase_rnd_frac["cancel"] * 0.1):
                     block['exe_state']['state'] = "cancel"
                     if self.rnd_gen.random() < self.error_rnd_frac["E1"]:
                         block['exe_state']['error'] = "E1"
@@ -790,7 +854,11 @@ class ObsBlocksNoACS():
 
                     has_change = True
                     self.redis.pipe.set(
-                        name=block["obs_block_id"], data=block, expire=self.expire, packed=True)
+                        name=block["obs_block_id"],
+                        data=block,
+                        expire=self.expire,
+                        packed=True
+                    )
 
             if has_change:
                 self.redis.pipe.execute()
@@ -828,18 +896,22 @@ class ObsBlocksNoACS():
                 if phaseNow in block['run_phase']:
 
                     if phaseNow in self.phases_exe['start']:
-                        is_done = (self.rnd_gen.random() <
-                                  self.phase_rnd_frac['start'])
+                        is_done = (self.rnd_gen.random() < self.phase_rnd_frac['start'])
                         # if is_done:
                         #   block["endTime"] = block["startTime"] + block["duration"]
 
                     elif phaseNow in self.phases_exe["during"]:
                         is_done = (
-                            time_now >= (block["time"]["end"] -
-                                        block["time"]["duration"] * self.phase_rnd_frac['finish']))# (datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") - timedelta(seconds = int(block["duration"]) * self.phase_rnd_frac['finish'])))
+                            time_now >= (
+                                block["time"]["end"] -
+                                block["time"]["duration"] * self.phase_rnd_frac['finish']
+                            )
+                        )  # (datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S") - timedelta(seconds = int(block["duration"]) * self.phase_rnd_frac['finish'])))
 
                     else:
-                        is_done = (time_now >= block["time"]["end"]) # is_done = (time_now >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"))
+                        is_done = (
+                            time_now >= block["time"]["end"]
+                        )  # is_done = (time_now >= datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"))
 
                     if is_done:
                         block['run_phase'].remove(phaseNow)
@@ -853,14 +925,14 @@ class ObsBlocksNoACS():
                     nextPhase = "finish"
 
                 if nextPhase in self.phases_exe:
-                    block['run_phase'] = copy.deepcopy(
-                        self.phases_exe[nextPhase])
+                    block['run_phase'] = copy.deepcopy(self.phases_exe[nextPhase])
 
                 self.exe_phase[block["obs_block_id"]] = nextPhase
 
             has_change = True
             self.redis.pipe.set(
-                name=block["obs_block_id"], data=block, expire=self.expire, packed=True)
+                name=block["obs_block_id"], data=block, expire=self.expire, packed=True
+            )
 
         if has_change:
             self.redis.pipe.execute()
@@ -877,7 +949,9 @@ class ObsBlocksNoACS():
 
         has_change = False
         for block in runs:
-            if  time_now < block["time"]["end"]: #time_now < datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"):
+            if time_now < block["time"][
+                    "end"
+            ]:  #time_now < datetime.strptime(block["endTime"], "%Y-%m-%d %H:%M:%S"):
                 continue
 
             if self.rnd_gen.random() < self.phase_rnd_frac["cancel"]:
@@ -911,7 +985,8 @@ class ObsBlocksNoACS():
 
             has_change = True
             self.redis.pipe.set(
-                name=block["obs_block_id"], data=block, expire=self.expire, packed=True)
+                name=block["obs_block_id"], data=block, expire=self.expire, packed=True
+            )
 
             self.exe_phase[block["obs_block_id"]] = ""
 
@@ -925,8 +1000,7 @@ class ObsBlocksNoACS():
     # ------------------------------------------------------------------
     def update_exe_statuses(self):
         blocks_run = []
-        obs_block_ids = {"wait": [], "run": [],
-                    "done": [], "cancel": [], "fail": []}
+        obs_block_ids = {"wait": [], "run": [], "done": [], "cancel": [], "fail": []}
 
         for block in self.all_obs_blocks:
             obs_block_id = block['obs_block_id']
@@ -939,7 +1013,7 @@ class ObsBlocksNoACS():
                     blocks_run += [block]
 
         for key, val in obs_block_ids.iteritems():
-            self.redis.pipe.set(name='obs_block_ids_'+key, data=val, packed=True)
+            self.redis.pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
 
         self.redis.pipe.execute()
 
@@ -955,7 +1029,8 @@ class ObsBlocksNoACS():
 
         if blocks is None:
             obs_block_ids = self.redis.get(
-                name=('obs_block_ids_'+'run'), packed=True, default_val=[])
+                name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+            )
             for obs_block_id in obs_block_ids:
                 self.redis.pipe.get(obs_block_id)
 
@@ -966,7 +1041,9 @@ class ObsBlocksNoACS():
         all_tel_ids = copy.deepcopy(self.tel_ids)
 
         for n_block in range(len(blocks)):
-            block_tel_ids = blocks[n_block]["telescopes"]["large"]["ids"] + blocks[n_block]["telescopes"]["medium"]["ids"] + blocks[n_block]["telescopes"]["small"]["ids"]
+            block_tel_ids = blocks[n_block]["telescopes"]["large"]["ids"] + blocks[
+                n_block]["telescopes"]["medium"]["ids"] + blocks[n_block]["telescopes"][
+                    "small"]["ids"]
             pntId = blocks[n_block]["pointings"][0]["id"]
             pointing_name = blocks[n_block]["pointings"][0]["name"]
 
@@ -979,9 +1056,7 @@ class ObsBlocksNoACS():
                     all_tel_ids.remove(id_now)
 
             # add the telescope list for this block
-            sub_arrs.append({
-                "id": pntId, "N": pointing_name, "children": telV
-            })
+            sub_arrs.append({"id": pntId, "N": pointing_name, "children": telV})
 
         # ------------------------------------------------------------------
         # now take care of all free telescopes
@@ -990,9 +1065,7 @@ class ObsBlocksNoACS():
         for id_now in all_tel_ids:
             telV.append({"id": id_now})
 
-        sub_arrs.append({
-            "id": no_sub_arr_name, "children": telV
-        })
+        sub_arrs.append({"id": no_sub_arr_name, "children": telV})
 
         # ------------------------------------------------------------------
         # for now - a simple/stupid solution, where we write the sub-arrays and publish each
@@ -1005,7 +1078,10 @@ class ObsBlocksNoACS():
 
     def external_generate_events(self):
         if self.rnd_gen.random() < 0.001:
-            new_event = {'id': getTime() + random.randint(1, 99999), 'start_time': self.time_of_night.get_current_time()}
+            new_event = {
+                'id': getTime() + random.randint(1, 99999),
+                'start_time': self.time_of_night.get_current_time()
+            }
             new_event['priority'] = random.randint(1, 3)
             if self.rnd_gen.random() < 0.1:
                 new_event['name'] = 'alarm'
@@ -1032,11 +1108,14 @@ class ObsBlocksNoACS():
             #     new_event['name'] = 'chicken'
             #     new_event['icon'] = 'chicken.svg'
             self.external_events.append(new_event)
-        self.redis.pipe.set(name="external_events", data=self.external_events, packed=True)
+        self.redis.pipe.set(
+            name="external_events", data=self.external_events, packed=True
+        )
 
     def external_generate_clock_events(self):
         new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 16, 21, 42).strftime("%Y-%m-%d %H:%M:%S")
+        new_event['start_date'] = datetime(2018, 9, 16, 21,
+                                           42).strftime("%Y-%m-%d %H:%M:%S")
         new_event['end_date'] = ''
         new_event['icon'] = 'moon.svg'
         new_event['name'] = 'Moonrise'
@@ -1045,7 +1124,8 @@ class ObsBlocksNoACS():
         self.external_clock_events.append(new_event)
 
         new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 16, 23, 07).strftime("%Y-%m-%d %H:%M:%S")
+        new_event['start_date'] = datetime(2018, 9, 16, 23,
+                                           07).strftime("%Y-%m-%d %H:%M:%S")
         new_event['end_date'] = datetime(2018, 9, 17, 4, 30).strftime("%Y-%m-%d %H:%M:%S")
         new_event['icon'] = 'rain.svg'
         new_event['name'] = 'Raining'
@@ -1054,7 +1134,8 @@ class ObsBlocksNoACS():
         self.external_clock_events.append(new_event)
 
         new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 17, 1, 03).strftime("%Y-%m-%d %H:%M:%S")
+        new_event['start_date'] = datetime(2018, 9, 17, 1,
+                                           03).strftime("%Y-%m-%d %H:%M:%S")
         new_event['end_date'] = datetime(2018, 9, 17, 2, 00).strftime("%Y-%m-%d %H:%M:%S")
         new_event['icon'] = 'storm.svg'
         new_event['name'] = 'Storm'
@@ -1063,7 +1144,8 @@ class ObsBlocksNoACS():
         self.external_clock_events.append(new_event)
 
         new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 17, 1, 28).strftime("%Y-%m-%d %H:%M:%S")
+        new_event['start_date'] = datetime(2018, 9, 17, 1,
+                                           28).strftime("%Y-%m-%d %H:%M:%S")
         new_event['end_date'] = datetime(2018, 9, 17, 2, 30).strftime("%Y-%m-%d %H:%M:%S")
         new_event['icon'] = 'handshake.svg'
         new_event['name'] = 'Collab'
@@ -1072,7 +1154,8 @@ class ObsBlocksNoACS():
         self.external_clock_events.append(new_event)
 
         new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 17, 5, 21).strftime("%Y-%m-%d %H:%M:%S")
+        new_event['start_date'] = datetime(2018, 9, 17, 5,
+                                           21).strftime("%Y-%m-%d %H:%M:%S")
         new_event['end_date'] = ''
         new_event['icon'] = 'sun.svg'
         new_event['name'] = 'Sunrise'
@@ -1080,7 +1163,9 @@ class ObsBlocksNoACS():
         new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
         self.external_clock_events.append(new_event)
 
-        self.redis.pipe.set(name="external_clock_events", data=self.external_clock_events, packed=True)
+        self.redis.pipe.set(
+            name="external_clock_events", data=self.external_clock_events, packed=True
+        )
 
     def external_add_new_redis_blocks(self):
         if self.redis.exists('obs_block_update'):
@@ -1097,7 +1182,10 @@ class ObsBlocksNoACS():
                     #     if x['obs_block_id'] == obs_block_update[i]['obs_block_id']:
                     #         current = [x][0]
 
-                    current = [x for x in self.all_obs_blocks if x['obs_block_id'] == obs_block_update[i]['obs_block_id']]
+                    current = [
+                        x for x in self.all_obs_blocks
+                        if x['obs_block_id'] == obs_block_update[i]['obs_block_id']
+                    ]
                     if len(current) == 0:
                         current = obs_block_update[i]
                         self.all_obs_blocks.append(current)
@@ -1109,12 +1197,20 @@ class ObsBlocksNoACS():
                         continue
                     total += 1
                     self.redis.pipe.set(
-                        name=obs_block_update[i]["obs_block_id"], data=obs_block_update[i], expire=self.expire, packed=True)
+                        name=obs_block_update[i]["obs_block_id"],
+                        data=obs_block_update[i],
+                        expire=self.expire,
+                        packed=True
+                    )
                     current = obs_block_update[i]
                 else:
                     self.all_obs_blocks.append(obs_block_update[i])
                     self.redis.pipe.set(
-                        name=obs_block_update[i]["obs_block_id"], data=obs_block_update[i], expire=self.expire, packed=True)
+                        name=obs_block_update[i]["obs_block_id"],
+                        data=obs_block_update[i],
+                        expire=self.expire,
+                        packed=True
+                    )
 
             self.update_exe_statuses()
             for block in self.all_obs_blocks:
@@ -1139,11 +1235,13 @@ class ObsBlocksNoACS():
                 self.init()
             else:
                 self.external_add_new_redis_blocks()
-                wait_blocks = [x for x in self.all_obs_blocks if x['exe_state']
-                         ['state'] == 'wait']
-                runs = [x for x in self.all_obs_blocks if x['exe_state']
-                        ['state'] == 'run']
-                if len(wait_blocks)+len(runs) == 0:
+                wait_blocks = [
+                    x for x in self.all_obs_blocks if x['exe_state']['state'] == 'wait'
+                ]
+                runs = [
+                    x for x in self.all_obs_blocks if x['exe_state']['state'] == 'run'
+                ]
+                if len(wait_blocks) + len(runs) == 0:
                     self.init()
                 else:
                     self.wait_to_run()
@@ -1157,4 +1255,6 @@ class ObsBlocksNoACS():
             # sleep(0.5)
 
         return
+
+
 # ------------------------------------------------------------------

@@ -108,7 +108,7 @@ let main_obs_block_control = function(opt_in) {
     let icon_divs = opt_in.icon_divs
 
     // let this_obs_block_control = this
-    // let is_south = window.__site_type__ === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -1238,12 +1238,12 @@ let main_obs_block_control = function(opt_in) {
 
             if (titleText !== '') {
                 let formatInt = d3.format('d')
-                titleText +=
-          ' [ ' +
-          formatInt(focusBlock.startTime) +
-          ' -- ' +
-          formatInt(focusBlock.endTime) +
-          ' ]'
+                titleText
+          += ' [ '
+          + formatInt(focusBlock.startTime)
+          + ' -- '
+          + formatInt(focusBlock.endTime)
+          + ' ]'
             }
 
             let text = data.g
@@ -1347,11 +1347,11 @@ let TelSummary = function() {
         com.g_box = opt_in.g_box.append('g')
         com.g_box.attr(
             'transform',
-            'translate(' +
-        (com.box.x + com.box.w / 2) +
-        ',' +
-        (com.box.y + com.box.h / 2) +
-        ')'
+            'translate('
+        + (com.box.x + com.box.w / 2)
+        + ','
+        + (com.box.y + com.box.h / 2)
+        + ')'
         )
 
         com.style = {
@@ -1638,7 +1638,7 @@ let TelSummary = function() {
             })
             .merge(arcs)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('fill-opacity', function(d) {
                 return d.fill_opacity
             })
@@ -1770,9 +1770,9 @@ let TelSummary = function() {
         let angle = opt_in.index * com.style.tau_frac + com.style.tau_space
         if (opt_in.isEnd) {
             return (
-                angle +
-        (com.style.tau_frac - com.style.tau_space * 2) *
-          (opt_in.isBack ? 1 : opt_in.val)
+                angle
+        + (com.style.tau_frac - com.style.tau_space * 2)
+          * (opt_in.isBack ? 1 : opt_in.val)
             )
         }
         else {
@@ -1982,7 +1982,7 @@ let TelScroll = function() {
             .attr('vector-effect', 'non-scaling-stroke')
             .merge(circ)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
         // .style("opacity", 1)
             .style('fill', function(d) {
                 return inst_health_col(com.inst_health[d.data.id])
@@ -2003,7 +2003,7 @@ let TelScroll = function() {
         circ
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('r', function(d) {
                 return d.w
             })
@@ -2049,7 +2049,7 @@ let TelScroll = function() {
                 return d.size + 'px'
             })
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 1)
             .attr('x', function(d) {
                 return d.x + d.w / 2
@@ -2064,7 +2064,7 @@ let TelScroll = function() {
         text
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
     }
@@ -2258,7 +2258,7 @@ let _obScroll = function() {
             .attr('vector-effect', 'non-scaling-stroke')
             .merge(rect)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('x', function(d) {
                 return d.x
             })
@@ -2278,7 +2278,7 @@ let _obScroll = function() {
         rect
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc / 2)
+            .duration(times.anim / 2)
             .style('opacity', 0)
             .remove()
 
@@ -2324,7 +2324,7 @@ let _obScroll = function() {
                 return d.size / 3 + 'px'
             })
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 1)
             .attr('x', function(d) {
                 return d.x + d.w / 2
@@ -2336,7 +2336,7 @@ let _obScroll = function() {
         textIn
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
     }

@@ -8,10 +8,10 @@
 
     <!-- set a global variable (must come before anything else) -->
     <script>
-        window.__app_prefix__ = '{{app_prefix}}'
-        window.__site_type__ = '{{ns_type}}'
-        window.__widget_name__ = '{{widget_name}}'
-        window.__display_userid__ = '{{display_userid}}'
+        window.APP_PREFIX = '{{app_prefix}}'
+        window.SITE_TYPE = '{{ns_type}}'
+        window.WIDGET_NAME = '{{widget_name}}'
+        window.DISPLAY_USERID = '{{display_userid}}'
     </script>
 
     <meta charset="UTF-8" />
@@ -60,7 +60,7 @@
 
     <div id="title_div" class="menu_header site_header"> CTA operator Interface </div>
 
-    <div id="base_app"></div>
+    <div id="base_app_div"></div>
 
     <div id="side_menu"></div>
     <div id="topMenu" class="horizontal_ele grid_ele_dark" style="width: 100%; display: flex; align-items: center; position: fixed; top: 0; opacity: 1;">
@@ -108,7 +108,7 @@
 
     <script type="text/javascript">
       $.getScript('/js/utils/BaseApp.js', function () {
-        window.baseApp.init({
+        window.base_app.init({
           widget_name: '{{widget_name}}',
         })
       })

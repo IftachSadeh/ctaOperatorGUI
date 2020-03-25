@@ -8,44 +8,25 @@ from ctaGuiUtils.py.utils import my_log, my_assert, flatten_dict
 #  ArrZoomer
 # ------------------------------------------------------------------
 class ArrZoomer():
-    # privat lock for this widget type
+    # privat lock for this util class
     lock = BoundedSemaphore(1)
 
-    # all session ids for this user/widget
-    widget_group_sess = dict()
-
     send_data = {
-        's_0': {'sess_id': [], 'widget_id': []},
+        's_0': {
+            'sess_id': [],
+            'widget_id': []
+        },
         's_1': dict(),
     }
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, parent_widget):
-        self.set_parent_widget(parent_widget)
+    def __init__(self, parent):
+        ArrZoomer.log = my_log(title=(parent.log.get_title() + '/' + __name__))
+
+        self.set_parent_widget(parent)
         self.add_parent_interfaces()
-
-        log_title = parent_widget.log.get_title() + '/' + __name__
-        ArrZoomer.log = my_log(title=log_title)
-
-        # the id of this instance
-        self.widget_id = parent_widget.widget_id
-        # the parent of this widget
-        self.socket_manager = parent_widget.socket_manager
-        # widget-class and widget group names
-        self.widget_name = parent_widget.widget_name
-        # redis interface
-        self.redis = parent_widget.redis
-        # turn on periodic data updates
-        self.do_data_updates = parent_widget.do_data_updates
-        # some etra logging messages for this module
-        self.log_send_packet = parent_widget.log_send_packet
-
-        my_assert(
-            log=ArrZoomer.log, state=(self.socket_manager is not None),
-            msg=[' - no socket_manager handed to', self.__class__.__name__],
-        )
 
         self.zoom_state = None
         self.inst_data = self.socket_manager.InstData
@@ -56,21 +37,46 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    # validate that the parent has all the required properties
+    # copy & validate parent properties
     # ------------------------------------------------------------------
-    def set_parent_widget(self, parent_widget):
-        self.parent_widget = parent_widget
+    def set_parent_widget(self, parent):
+        # keep a reference of the parent widget
+        self.parent = parent
+        # the id of this instance
+        self.widget_id = parent.widget_id
+        # the parent of this widget
+        self.socket_manager = parent.socket_manager
+        # widget-class and widget group names
+        self.widget_name = parent.widget_name
+        # redis interface
+        self.redis = parent.redis
+        # turn on periodic data updates
+        self.do_data_updates = parent.do_data_updates
+        # some etra logging messages for this module
+        self.log_send_packet = parent.log_send_packet
 
+        my_assert(
+            log=ArrZoomer.log,
+            state=(self.socket_manager is not None),
+            msg=[' - no socket_manager handed to', self.__class__.__name__],
+        )
+
+        # validate that all required properties have been defined
         check_init_properties = [
-            'widget_id', 'socket_manager', 'widget_name',
-            'redis', 'do_data_updates', 'log_send_packet', 'n_icon',
+            'widget_id',
+            'socket_manager',
+            'widget_name',
+            'redis',
+            'do_data_updates',
+            'log_send_packet',
+            'n_icon',
         ]
 
         for init_property in check_init_properties:
-            if not hasattr(parent_widget, init_property):
+            if not hasattr(parent, init_property):
                 ArrZoomer.log.error([
-                    ['wr', ' - bad initialisation of ArrZoomer()...',
-                     'Missing: '], ['yr', init_property, ''],
+                    ['wr', ' - bad initialisation of ArrZoomer()...', 'Missing: '],
+                    ['yr', init_property, ''],
                 ])
                 print('FIXME - need proper exception handling ...')
                 raise
@@ -81,22 +87,32 @@ class ArrZoomer():
     # add interface functions to the parent related eg to socket events
     # ------------------------------------------------------------------
     def add_parent_interfaces(self):
+        # arr_zoomer_ask_init_data
+        def ask_init_data():
+            self.ask_init_data()
+            return
+
+        self.parent.arr_zoomer_ask_init_data = ask_init_data
+
         # get_zoomer_state
         def get_zoomer_state():
             return self.zoom_state
-        self.parent_widget.get_zoomer_state = get_zoomer_state
+
+        self.parent.get_zoomer_state = get_zoomer_state
 
         # arr_zoomer_ask_data_s1
         def ask_data_s1(*args):
             self.ask_data_s1(*args)
             return
-        self.parent_widget.arr_zoomer_ask_data_s1 = ask_data_s1
+
+        self.parent.arr_zoomer_ask_data_s1 = ask_data_s1
 
         # arr_zoomer_set_widget_state
         def set_widget_state(*args):
             self.set_widget_state(*args)
             return
-        self.parent_widget.arr_zoomer_set_widget_state = set_widget_state
+
+        self.parent.arr_zoomer_set_widget_state = set_widget_state
 
         return
 
@@ -104,11 +120,13 @@ class ArrZoomer():
     #
     # ------------------------------------------------------------------
     def setup(self, *args):
-        self.n_icon = self.parent_widget.n_icon
+        self.n_icon = self.parent.n_icon
 
         with self.socket_manager.lock:
             wgt = self.redis.hGet(
-                name='all_widgets', key=self.widget_id, packed=True,
+                name='all_widgets',
+                key=self.widget_id,
+                packed=True,
             )
 
         self.zoom_state = wgt['widget_state']
@@ -117,18 +135,6 @@ class ArrZoomer():
 
         self.init_tel_health()
 
-        # ------------------------------------------------------------------
-        # initial dataset and send to client
-        # ------------------------------------------------------------------
-        opt_in = {
-            'widget': self,
-            'data_func': self.get_init_data,
-            'thread_type': 'init_data'# + 'ArrZoomer',
-            # + self.widget_id,
-        }
-
-        self.socket_manager.send_init_widget(opt_in=opt_in)
-        
         # ------------------------------------------------------------------
         # spawn updating threads if needed
         # ------------------------------------------------------------------
@@ -150,14 +156,13 @@ class ArrZoomer():
         )
         if thread_id == -1:
             if self.log_send_packet:
-                ArrZoomer.log.info([
-                    ['y', ' - starting arr_zoomer_update_data('],
-                    ['g', self.socket_manager.user_group_id], ['y', ')']
-                ])
+                ArrZoomer.log.info([['y', ' - starting arr_zoomer_update_data('],
+                                    ['g', self.socket_manager.user_group_id], ['y', ')']])
 
             thread_id = self.socket_manager.set_thread_state(
                 self.socket_manager.user_group_id,
-                'arr_zoomer_update_data', True,
+                'arr_zoomer_update_data',
+                True,
             )
             _ = gevent.spawn(self.update_data, thread_id)
 
@@ -170,14 +175,13 @@ class ArrZoomer():
         )
         if thread_id == -1:
             if self.log_send_packet:
-                ArrZoomer.log.info([
-                    ['y', ' - starting arr_zoomer_update_sub_arr('],
-                    ['g', self.socket_manager.user_group_id], ['y', ')']
-                ])
+                ArrZoomer.log.info([['y', ' - starting arr_zoomer_update_sub_arr('],
+                                    ['g', self.socket_manager.user_group_id], ['y', ')']])
 
             thread_id = self.socket_manager.set_thread_state(
                 self.socket_manager.user_group_id,
-                'arr_zoomer_update_sub_arr', True,
+                'arr_zoomer_update_sub_arr',
+                True,
             )
             _ = gevent.spawn(self.update_sub_arr, thread_id)
 
@@ -192,31 +196,43 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
-    #
+    # initialise dataset and send to client when the client asks for it
     # ------------------------------------------------------------------
-    def get_init_data(self):
-        inst_info = self.inst_data.get_inst_pos()
+    def ask_init_data(self):
+        def get_init_data():
+            inst_info = self.inst_data.get_inst_pos()
 
-        inst_prop_types = dict()
-        inst_prop_types = dict()
-        inst_ids = self.inst_data.get_inst_ids()
-        for id_now in inst_ids:
-            inst_prop_types[id_now] = [
-                {'id': v['id'], 'title': v['title'], }
-                for (k, v) in self.tel_sub_health[id_now].items()
-            ]
+            inst_prop_types = dict()
+            inst_prop_types = dict()
+            inst_ids = self.inst_data.get_inst_ids()
+            for id_now in inst_ids:
+                inst_prop_types[id_now] = [{
+                    'id': v['id'],
+                    'title': v['title'],
+                } for (k, v) in self.tel_sub_health[id_now].items()]
 
-        data = {
-            'arr_zoomer': {
+            data = {
                 'sub_arr': self.sub_arr_grp,
                 'arr_init': inst_info,
                 'arrProp': self.get_tel_health_s0(),
                 'tel_prop_types': inst_prop_types,
                 'tel_types': self.inst_types,
             }
+
+            return data
+
+        # ------------------------------------------------------------------
+        #
+        # ------------------------------------------------------------------
+        opt_in = {
+            'widget': self,
+            'data_func': get_init_data,
+            'thread_type': 'arr_zoomer_get_init_data',
         }
 
-        return data
+        self.socket_manager.send_init_widget(opt_in=opt_in)
+
+        return
 
     # ------------------------------------------------------------------
     #
@@ -243,16 +259,14 @@ class ArrZoomer():
         # a flat dict with references to each level of the original dict
         self.tel_sub_health_flat = dict()
         for id_now in self.inst_ids:
-            self.tel_sub_health_flat[id_now] = flatten_dict(
-                self.tel_sub_health[id_now]
-            )
+            self.tel_sub_health_flat[id_now] = flatten_dict(self.tel_sub_health[id_now])
 
         for id_now in self.inst_ids:
             self.tel_health[id_now] = {
-                'id': id_now, 'health': 0, 'status': '',
-                'data': [
-                    v for (k, v) in self.tel_sub_health[id_now].items()
-                ],
+                'id': id_now,
+                'health': 0,
+                'status': '',
+                'data': [v for (k, v) in self.tel_sub_health[id_now].items()],
             }
 
             self.tel_sub_health_fields[id_now] = []
@@ -274,18 +288,13 @@ class ArrZoomer():
 
         for id_now in self.inst_ids:
             fields[id_now] = ['health', 'status']
-            fields[id_now] += [
-                v['id'] for (k, v)
-                in self.tel_sub_health[id_now].items()
-            ]
+            fields[id_now] += [v['id'] for (k, v) in self.tel_sub_health[id_now].items()]
 
         ids = self.inst_ids if (id_in is None) else [id_in]
 
         self.redis.pipe.reset()
         for id_now in ids:
-            self.redis.pipe.hMget(
-                name='inst_health;'+str(id_now), key=fields[id_now]
-            )
+            self.redis.pipe.hMget(name='inst_health;' + str(id_now), key=fields[id_now])
         redis_data = self.redis.pipe.execute()
 
         for n_id in range(len(redis_data)):
@@ -303,15 +312,13 @@ class ArrZoomer():
     # ------------------------------------------------------------------
     def update_tel_health_s1(self, id_in):
         redis_data = self.redis.hMget(
-            name='inst_health;'+str(id_in),
+            name='inst_health;' + str(id_in),
             key=self.tel_sub_health_fields[id_in],
         )
 
         for n_id in range(len(redis_data)):
             key = self.tel_sub_health_fields[id_in][n_id]
-            self.tel_sub_health_flat[id_in][key]['data']['val'] = (
-                redis_data[n_id]
-            )
+            self.tel_sub_health_flat[id_in][key]['data']['val'] = (redis_data[n_id])
 
         data_s0 = self.get_tel_health_s0(id_in=id_in)
         self.tel_health[id_in]['health'] = data_s0['health']
@@ -331,9 +338,7 @@ class ArrZoomer():
 
         data['data'] = dict()
         for key in self.tel_sub_health_fields[id_in]:
-            data['data'][key] = (
-                self.tel_sub_health_flat[id_in][key]['data']['val']
-            )
+            data['data'][key] = (self.tel_sub_health_flat[id_in][key]['data']['val'])
 
         return data
 
@@ -346,7 +351,8 @@ class ArrZoomer():
             ArrZoomer.log.info([
                 ['b', ' - get_data_s1 '],
                 ['b', self.socket_manager.sess_id, ' , '],
-                ['g', data['zoom_state']], ['b', ' , '],
+                ['g', data['zoom_state']],
+                ['b', ' , '],
                 ['y', data['zoom_target']],
             ])
 
@@ -386,12 +392,14 @@ class ArrZoomer():
     # ------------------------------------------------------------------
     def set_send_data(self):
         ArrZoomer.send_data['s_0'] = {
-            'sess_id': [], 'widget_id': [],
+            'sess_id': [],
+            'widget_id': [],
         }
         ArrZoomer.send_data['s_1'] = dict()
 
         all_widgets = self.redis.hGetAll(
-            name='all_widgets', packed=True,
+            name='all_widgets',
+            packed=True,
         )
 
         for widget_id, widget_now in all_widgets.iteritems():
@@ -400,16 +408,11 @@ class ArrZoomer():
             if widget_id not in self.socket_manager.widget_inits:
                 continue
 
-            ArrZoomer.send_data['s_0']['sess_id'].append(
-                widget_now['sess_id']
-            )
-            ArrZoomer.send_data['s_0']['widget_id'].append(
-                widget_id
-            )
+            ArrZoomer.send_data['s_0']['sess_id'].append(widget_now['sess_id'])
+            ArrZoomer.send_data['s_0']['widget_id'].append(widget_id)
 
             zoomer_state = (
-                self.socket_manager.widget_inits[widget_id]
-                    .get_zoomer_state()
+                self.socket_manager.widget_inits[widget_id].get_zoomer_state()
             )
 
             if zoomer_state['zoom_state'] == 1:
@@ -417,15 +420,14 @@ class ArrZoomer():
 
                 if zoom_target not in ArrZoomer.send_data['s_1']:
                     ArrZoomer.send_data['s_1'][zoom_target] = {
-                        'sess_id': [], 'widget_id': []
+                        'sess_id': [],
+                        'widget_id': []
                     }
 
                 ArrZoomer.send_data['s_1'][zoom_target]['sess_id'].append(
                     widget_now['sess_id']
                 )
-                ArrZoomer.send_data['s_1'][zoom_target]['widget_id'].append(
-                    widget_id,
-                )
+                ArrZoomer.send_data['s_1'][zoom_target]['widget_id'].append(widget_id, )
 
         return
 
@@ -445,9 +447,7 @@ class ArrZoomer():
         for zoom_target in ArrZoomer.send_data['s_1']:
             self.update_tel_health_s1(id_in=zoom_target)
 
-            prop_s1[zoom_target] = self.get_flat_tel_health(
-                zoom_target
-            )
+            prop_s1[zoom_target] = self.get_flat_tel_health(zoom_target)
 
         # ------------------------------------------------------------------
         # transmit the values
@@ -455,14 +455,12 @@ class ArrZoomer():
         data_now = ArrZoomer.send_data['s_0']
         sess_ids = data_now['sess_id']
         widget_ids = data_now['widget_id']
-        emit_data_s0 = {
-            'widget_id': '', 'type': 's00',
-            'data': self.get_tel_health_s0()
-        }
+        emit_data_s0 = {'widget_id': '', 'type': 's00', 'data': self.get_tel_health_s0()}
 
         self.socket_manager.socket_event_widgets(
             event_name='arr_zoomer_update_data',
-            sess_ids=sess_ids, widget_ids=widget_ids,
+            sess_ids=sess_ids,
+            widget_ids=widget_ids,
             data=emit_data_s0,
         )
 
@@ -470,14 +468,12 @@ class ArrZoomer():
             data_now = ArrZoomer.send_data['s_1'][zoom_target]
             sess_ids = data_now['sess_id']
             widget_ids = data_now['widget_id']
-            emit_data_s1 = {
-                'widget_id': '', 'type': 's11',
-                'data': prop_s1[zoom_target]
-            }
+            emit_data_s1 = {'widget_id': '', 'type': 's11', 'data': prop_s1[zoom_target]}
 
             self.socket_manager.socket_event_widgets(
                 event_name='arr_zoomer_update_data',
-                sess_ids=sess_ids, widget_ids=widget_ids,
+                sess_ids=sess_ids,
+                widget_ids=widget_ids,
                 data=emit_data_s1,
             )
 
@@ -493,10 +489,11 @@ class ArrZoomer():
         n_sec_sleep = 10
         sleep(n_sec_sleep)
 
-        def get_thread_id(): return self.socket_manager.get_thread_id(
-            self.socket_manager.user_group_id,
-            'arr_zoomer_update_data',
-        )
+        def get_thread_id():
+            return self.socket_manager.get_thread_id(
+                self.socket_manager.user_group_id,
+                'arr_zoomer_update_data',
+            )
 
         while (get_thread_id() == thread_id):
             self.update_data_once()
@@ -510,10 +507,13 @@ class ArrZoomer():
     def get_sub_arr_grp(self):
         with ArrZoomer.lock:
             sub_arrs = self.redis.get(
-                name='sub_arrs', packed=True, default_val=[],
+                name='sub_arrs',
+                packed=True,
+                default_val=[],
             )
             self.sub_arr_grp = {
-                'id': 'sub_arr', 'children': sub_arrs,
+                'id': 'sub_arr',
+                'children': sub_arrs,
             }
 
         return
@@ -525,10 +525,11 @@ class ArrZoomer():
         n_sec_sleep = 10
         sleep(n_sec_sleep)
 
-        def get_thread_id(): return self.socket_manager.get_thread_id(
-            self.socket_manager.user_group_id,
-            'arr_zoomer_update_sub_arr',
-        )
+        def get_thread_id():
+            return self.socket_manager.get_thread_id(
+                self.socket_manager.user_group_id,
+                'arr_zoomer_update_sub_arr',
+            )
 
         redis_pubsub = None
         while (get_thread_id() == thread_id):
@@ -543,15 +544,12 @@ class ArrZoomer():
                 data_now = ArrZoomer.send_data['s_0']
                 sess_ids = data_now['sess_id']
                 widget_ids = data_now['widget_id']
-                data = {
-                    'widget_id': '',
-                    'type': 'sub_arr',
-                    'data': self.sub_arr_grp
-                }
+                data = {'widget_id': '', 'type': 'sub_arr', 'data': self.sub_arr_grp}
 
                 self.socket_manager.socket_event_widgets(
                     event_name='arr_zoomer_update_data',
-                    sess_ids=sess_ids, widget_ids=widget_ids,
+                    sess_ids=sess_ids,
+                    widget_ids=widget_ids,
                     data=data,
                 )
 
@@ -585,7 +583,6 @@ class ArrZoomer():
 #     throughput from tel
 #     camera server status
 #     on camera initial analyis (pre calibration / event building)
-
 
 # sub-array grouping
 # telescope type grouping

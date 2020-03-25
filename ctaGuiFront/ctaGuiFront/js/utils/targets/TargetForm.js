@@ -403,7 +403,7 @@ window.TargetForm = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
             // offsetY += line * 1
@@ -465,7 +465,7 @@ window.TargetForm = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
             // offsetY += line * 1
@@ -573,7 +573,7 @@ window.TargetForm = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         }
@@ -793,7 +793,7 @@ window.TargetForm = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
             // offsetY += line * 1
@@ -891,7 +891,7 @@ window.TargetForm = function(opt_in) {
             current
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         }

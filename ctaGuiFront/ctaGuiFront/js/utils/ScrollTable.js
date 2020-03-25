@@ -217,7 +217,7 @@ window.ScrollTable = function() {
                 .attr('opacity', 0)
                 .merge(rect)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('opacity', 1)
                 .attr('x', function(d, i) {
                     return d.x

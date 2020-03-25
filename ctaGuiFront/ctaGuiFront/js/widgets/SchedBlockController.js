@@ -183,7 +183,7 @@ let main_sched_blockController = function(opt_in) {
     // let my_unique_id = unique()
     let color_theme = get_color_theme('bright_grey')
     window.colorPalette = get_color_theme('bright_grey')
-    let is_south = window.__site_type__ === 'S'
+    let is_south = window.SITE_TYPE === 'S'
 
     let widget_type = opt_in.widget_type
     let tag_arr_zoomerPlotsSvg = opt_in.base_name
@@ -214,7 +214,7 @@ let main_sched_blockController = function(opt_in) {
     let brushZoom = null
 
     // let this_sched_block_controller = this
-    // let is_south = window.__site_type__ === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
 
     let sgv_tag = {
     }
@@ -3983,7 +3983,7 @@ let main_sched_blockController = function(opt_in) {
                     current
                         .exit()
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 0)
                         .remove()
                     // offsetY += line * 1
@@ -4094,7 +4094,7 @@ let main_sched_blockController = function(opt_in) {
                     current
                         .exit()
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 0)
                         .remove()
                 }
@@ -4177,7 +4177,7 @@ let main_sched_blockController = function(opt_in) {
                 targets
                     .exit()
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
                     .remove()
             }
@@ -5038,9 +5038,9 @@ let main_sched_blockController = function(opt_in) {
                 let box = allBox.blocks
                 let g = reserved.g.select('#blocks_information')
 
-                let tot = shared.data.server.blocks.done.length +
-          shared.data.server.blocks.wait.length +
-          shared.data.server.blocks.run.length
+                let tot = shared.data.server.blocks.done.length
+          + shared.data.server.blocks.wait.length
+          + shared.data.server.blocks.run.length
                 let infoState = [
                     {
                         state: 'run',
@@ -5303,14 +5303,14 @@ let main_sched_blockController = function(opt_in) {
                     current
                         .exit()
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 0)
                         .remove()
                 })
                 targets
                     .exit()
                     .transition('in_out')
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
                     .remove()
                 reserved.overview.scrollBox.updateVerticalScroller({

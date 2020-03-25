@@ -106,7 +106,6 @@ window.ArrZoomerMain = function(opt_in0) {
         frac_circ_wh: 0.85,
     }
     this_top.svg_dims = svg_dims
-  
 
 
     // ------------------------------------------------------------------
@@ -514,8 +513,8 @@ window.ArrZoomerMain = function(opt_in0) {
                 trans_to = [ svg_dims.w / 2, svg_dims.h / 2 ]
             }
             else if (
-                target_name === '' ||
-        !is_def(instruments.data.mini[target_name])) {
+                target_name === ''
+        || !is_def(instruments.data.mini[target_name])) {
                 let scale = this_top.get_scale()
                 let trans = this_top.get_trans()
                 let x = (svg_dims.w / 2 - trans[0]) / scale
@@ -526,8 +525,8 @@ window.ArrZoomerMain = function(opt_in0) {
                 target_name = zooms.target
                 $.each(instruments.data.xyr, function(id_now, data_now) {
                     if (data_now.isTel) {
-                        let diff_now =
-              Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
+                        let diff_now
+              = Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
                         if (diff_now < min_diff || min_diff < 0) {
                             min_diff = diff_now
                             target_name = id_now
@@ -719,7 +718,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
             locker.remove({
                 id: 'vor_zoom_click',
-                delay: times.anim_arc,
+                delay: times.anim,
             })
 
             return
@@ -805,7 +804,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
             locker.remove({
                 id: 'vor_zoom_dblclick',
-                delay: times.anim_arc,
+                delay: times.anim,
             })
         }
 
@@ -1320,7 +1319,7 @@ window.ArrZoomerMain = function(opt_in0) {
         ) {
             setTimeout(function() {
                 set_tel_layout(opt_in)
-            }, times.anim_arc / 2)
+            }, times.anim / 2)
             return
         }
 
@@ -1334,7 +1333,7 @@ window.ArrZoomerMain = function(opt_in0) {
         if (is_change || is_def(data)) {
             locker.expires({
                 id: 'set_state_lock',
-                duration: times.anim_arc / 2,
+                duration: times.anim / 2,
             })
         }
 
@@ -1358,7 +1357,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
             if (this_top.get_zoom_state() === 1) {
                 $.each(s10_eles, function(index, ele_now) {
-                    ele_now.s10.update_pos_g(times.anim_arc)
+                    ele_now.s10.update_pos_g(times.anim)
                 })
             }
         }
@@ -1411,7 +1410,7 @@ window.ArrZoomerMain = function(opt_in0) {
             })
             .merge(circ)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('transform', function(d) {
                 return 'translate(' + d.x + ',' + d.y + ')'
             })
@@ -1422,7 +1421,7 @@ window.ArrZoomerMain = function(opt_in0) {
         circ
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('r', 0)
             .remove()
 
@@ -1454,14 +1453,14 @@ window.ArrZoomerMain = function(opt_in0) {
             .attr('dy', '0px')
             .merge(text)
             .transition('in')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('transform', txtTrans)
             .style('opacity', 1)
 
         text
             .exit()
             .transition('out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
 
@@ -1548,7 +1547,7 @@ window.ArrZoomerMain = function(opt_in0) {
             .attr('text-anchor', 'middle')
             .merge(text)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('transform', function(d, i) {
                 let shiftVal = 0
                 if (is_focused(d, 1)) {
@@ -1558,11 +1557,11 @@ window.ArrZoomerMain = function(opt_in0) {
                     )
                 }
                 return (
-                    'translate(' +
-          instruments.data.xyr[d.id].x +
-          ',' +
-          (instruments.data.xyr[d.id].y - shiftVal) +
-          ')'
+                    'translate('
+          + instruments.data.xyr[d.id].x
+          + ','
+          + (instruments.data.xyr[d.id].y - shiftVal)
+          + ')'
                 )
             })
             .style('font-size', function(d) {
@@ -1576,7 +1575,7 @@ window.ArrZoomerMain = function(opt_in0) {
         text
             .exit()
             .transition('exit')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
   
@@ -1629,9 +1628,9 @@ window.ArrZoomerMain = function(opt_in0) {
                         }
                         arc_func[tag_now].ang01 = function(d) {
                             return (
-                                index * instruments.tau_fracs[key] +
-                instruments.tau_space +
-                (instruments.tau_fracs[key]
+                                index * instruments.tau_fracs[key]
+                + instruments.tau_space
+                + (instruments.tau_fracs[key]
                   - instruments.tau_space * 2)
                 * (is0 ? 1 : inst_health_frac(d[porp_now]))
                             )
@@ -1699,11 +1698,11 @@ window.ArrZoomerMain = function(opt_in0) {
                         })
                         .attr('transform', function(d) {
                             return (
-                                'translate(' +
-                instruments.data.xyr[d.id].x +
-                ',' +
-                instruments.data.xyr[d.id].y +
-                ')'
+                                'translate('
+                + instruments.data.xyr[d.id].x
+                + ','
+                + instruments.data.xyr[d.id].y
+                + ')'
                             )
                         })
                         .each(function(d, i) {
@@ -1719,14 +1718,14 @@ window.ArrZoomerMain = function(opt_in0) {
                         })
                         .merge(path)
                         .transition('in')
-                        .duration(times.anim_arc) // .delay(times.anim_arc)
+                        .duration(times.anim) // .delay(times.anim)
                         .attr('transform', function(d) {
                             return (
-                                'translate(' +
-                instruments.data.xyr[d.id].x +
-                ',' +
-                instruments.data.xyr[d.id].y +
-                ')'
+                                'translate('
+                + instruments.data.xyr[d.id].x
+                + ','
+                + instruments.data.xyr[d.id].y
+                + ')'
                             )
                         })
                         .style('stroke', function(d) {
@@ -1750,7 +1749,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     // ang_str_0:"ang00", ang_str_1:"ang00", ang_end_0:"ang00", ang_end_1:"ang01",
                     // r_in_0:"rad00", r_in_1:"rad00", r_out_0:"rad01", r_out_1:"rad01"
                         .transition('update')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .call(com.arc_tween, {
                             tag_now: tag_now,
                             arc_prev: arc_prev,
@@ -1765,7 +1764,7 @@ window.ArrZoomerMain = function(opt_in0) {
                             r_out_1: 'rad11',
                         })
                         .transition('update')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .call(com.arc_tween, {
                             tag_now: tag_now,
                             arc_prev: arc_prev,
@@ -1785,7 +1784,7 @@ window.ArrZoomerMain = function(opt_in0) {
                         .exit()
                         .transition('out')
                     // .each(function (d, i) {console.log('qquq', i, d); })
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .call(com.arc_tween, {
                             tag_now: tag_now,
                             arc_prev: arc_prev,
@@ -1896,11 +1895,11 @@ window.ArrZoomerMain = function(opt_in0) {
                 })
                 .attr('transform', function(d) {
                     return (
-                        'translate(' +
-            instruments.data.xyr[d.id].x +
-            ',' +
-            instruments.data.xyr[d.id].y +
-            ')'
+                        'translate('
+            + instruments.data.xyr[d.id].x
+            + ','
+            + instruments.data.xyr[d.id].y
+            + ')'
                     )
                 })
                 .each(function(d, i) {
@@ -1915,14 +1914,14 @@ window.ArrZoomerMain = function(opt_in0) {
                 })
                 .merge(path)
                 .transition('in')
-                .duration(times.anim_arc) // .delay(times.anim_arc)
+                .duration(times.anim) // .delay(times.anim)
                 .attr('transform', function(d) {
                     return (
-                        'translate(' +
-            instruments.data.xyr[d.id].x +
-            ',' +
-            instruments.data.xyr[d.id].y +
-            ')'
+                        'translate('
+            + instruments.data.xyr[d.id].x
+            + ','
+            + instruments.data.xyr[d.id].y
+            + ')'
                     )
                 })
                 .style('stroke', function(d) {
@@ -1946,7 +1945,7 @@ window.ArrZoomerMain = function(opt_in0) {
             // ang_str_0:"ang00", ang_str_1:"ang00", ang_end_0:"ang00", ang_end_1:"ang01",
             // r_in_0:"rad00", r_in_1:"rad00", r_out_0:"rad01", r_out_1:"rad01"
                 .transition('update')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .call(com.arc_tween, {
                     tag_now: tag_now,
                     arc_prev: arc_prev,
@@ -1961,7 +1960,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     r_out_1: 'rad11',
                 })
                 .transition('update')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .call(com.arc_tween, {
                     tag_now: tag_now,
                     arc_prev: arc_prev,
@@ -1980,7 +1979,7 @@ window.ArrZoomerMain = function(opt_in0) {
             path
                 .exit()
                 .transition('out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .call(com.arc_tween, {
                     tag_now: tag_now,
                     arc_prev: arc_prev,
@@ -2338,7 +2337,7 @@ window.ArrZoomerMain = function(opt_in0) {
                             return d.h + 'px'
                         })
                         .transition('update1')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .attr('stroke-width', function(d) {
                             return d.strk_w
                         })
@@ -2365,7 +2364,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     title
                         .exit()
                         .transition('exit')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', '0')
                         .remove()
                 }
@@ -2491,8 +2490,8 @@ window.ArrZoomerMain = function(opt_in0) {
                                         d.is_full = false
                                     })
                                     .transition('in_out')
-                                    .duration(times.anim_arc)
-                                    .delay(times.anim_arc)
+                                    .duration(times.anim)
+                                    .delay(times.anim)
                                     .style('opacity', function(d) {
                                         return d.nArc === 0 ? 1 : 0
                                     })
@@ -2520,10 +2519,10 @@ window.ArrZoomerMain = function(opt_in0) {
 
                         //
                         function get_col(d) {
-                            d.col =
-                d.nArc === 0
-                    ? inst_health_col(instruments.data.prop_data_s1[tel_Id][d.porp_now].val)
-                    : '#383b42'
+                            d.col
+                = d.nArc === 0
+                                    ? inst_health_col(instruments.data.prop_data_s1[tel_Id][d.porp_now].val)
+                                    : '#383b42'
                             return d.col
                         }
 
@@ -2586,7 +2585,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                         path
                             .transition('in_out')
-                            .duration(times.anim_arc)
+                            .duration(times.anim)
                             .style('opacity', 0)
                             .call(com.arc_tween, {
                                 tag_now: tag_now,
@@ -2645,7 +2644,7 @@ window.ArrZoomerMain = function(opt_in0) {
                         if (!can_ignore) {
                             setTimeout(function() {
                                 bck_arc_click(opt_in)
-                            }, times.anim_arc / 3)
+                            }, times.anim / 3)
                         }
                         return
                     }
@@ -2657,7 +2656,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     function free_me(do_delay) {
                         locker.remove({
                             id: 's10_bck_arc_change',
-                            delay: do_delay ? times.anim_arc * 1.5 : 0,
+                            delay: do_delay ? times.anim * 1.5 : 0,
                             override: true,
                         })
                     }
@@ -2765,7 +2764,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                     path0
                         .transition('in_out')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 1)
                         .style('fill', '#383b42')
                         .style('fill-opacity', 0.06)
@@ -2788,7 +2787,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                     path1
                         .transition('in_out')
-                        .duration(times.anim_arc / 2)
+                        .duration(times.anim / 2)
                         .call(com.arc_tween, {
                             tag_now: tag_now,
                             arc_prev: arcs,
@@ -2804,7 +2803,7 @@ window.ArrZoomerMain = function(opt_in0) {
                         .style('fill-opacity', 0.07)
                         .style('opacity', 1)
                         .transition('in_out')
-                        .duration(times.anim_arc / 2)
+                        .duration(times.anim / 2)
                         .call(com.arc_tween, {
                             tag_now: tag_now,
                             arc_prev: arcs,
@@ -2829,7 +2828,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                     path
                         .transition('in_out')
-                        .duration(times.anim_arc / 2)
+                        .duration(times.anim / 2)
                         .style('opacity', 0)
                         .call(com.arc_tween, {
                             tag_now: tag_now,
@@ -2898,16 +2897,16 @@ window.ArrZoomerMain = function(opt_in0) {
                             return 'translate(' + dx + ',' + dy + ')'
                         })
                         .attr('dy', function(d) {
-                            let ele_h =
-                -0.5 *
-                get_node_height_by_id({
+                            let ele_h
+                = -0.5
+                * get_node_height_by_id({
                     selction: g_base.selectAll('text.' + 'hov_title'),
                     id: d.id,
                 })
                             return ele_h + 'px'
                         })
                         .transition('update1')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', 1)
                 }
 
@@ -2925,7 +2924,7 @@ window.ArrZoomerMain = function(opt_in0) {
                             return is_def(dIn) ? d.id === dIn.data.id : true
                         })
                         .transition('update1')
-                        .duration(times.anim_arc)
+                        .duration(times.anim)
                         .style('opacity', '0')
                         .remove()
 
@@ -3082,14 +3081,14 @@ window.ArrZoomerMain = function(opt_in0) {
                                                 let parentY = child_now.y - child_now.r
 
                                                 // console.log('move-g in(',parent_name,'):  ',hierarchy_name)
-                                                g_trans[porp_now][hierarchy_name] =
-                          'translate(' +
-                          parentX +
-                          ',' +
-                          parentY +
-                          ')scale(' +
-                          parentR +
-                          ')'
+                                                g_trans[porp_now][hierarchy_name]
+                          = 'translate('
+                          + parentX
+                          + ','
+                          + parentY
+                          + ')scale('
+                          + parentR
+                          + ')'
                                                 g_hierarchy[porp_now][hierarchy_name].attr(
                                                     'transform',
                                                     g_trans[porp_now][hierarchy_name]
@@ -3133,7 +3132,7 @@ window.ArrZoomerMain = function(opt_in0) {
                                         .on('mouseover', hierarchy_hov_title_in)
                                         .on('mouseout', hierarchy_hov_title_out)
                                     // .on('mouseover', function(d){ console.log(d.data.id,d); })
-                                    // .transition("in_out").duration(times.anim_arc)
+                                    // .transition("in_out").duration(times.anim)
                                     // .attr("r",             function(d,i){ return d.r; });
 
                                     function click(d) {
@@ -3198,7 +3197,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     ])) {
                         setTimeout(function() {
                             hierarchy_style_click(opt_in)
-                        }, times.anim_arc / 3)
+                        }, times.anim / 3)
                         return
                     }
 
@@ -3209,7 +3208,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     function free_me(do_delay) {
                         locker.remove({
                             id: 's10_click_hierarchy',
-                            delay: do_delay ? times.anim_arc * 1.5 : 0,
+                            delay: do_delay ? times.anim * 1.5 : 0,
                             override: true,
                         })
                     }
@@ -3237,14 +3236,14 @@ window.ArrZoomerMain = function(opt_in0) {
                             g_hierarchy_now.hirch
                                 .selectAll('circle')
                                 .transition('updt')
-                                .duration(times.anim_arc)
+                                .duration(times.anim)
                                 .style('stroke', 'transparent')
                                 .attr('r', 0)
 
                             $.each(g_hierarchy_now, function(hierarchy_name, g_now) {
                                 g_now
                                     .transition('in_out')
-                                    .duration(times.anim_arc)
+                                    .duration(times.anim)
                                     .attr('transform',
                                         g_trans[porp_all_now][hierarchy_name])
                             })
@@ -3255,8 +3254,8 @@ window.ArrZoomerMain = function(opt_in0) {
                     }
 
                     if (
-                        !is_def(g_hierarchy[prop_in][id]) ||
-            !is_def(hierarchies[prop_in][id])
+                        !is_def(g_hierarchy[prop_in][id])
+            || !is_def(hierarchies[prop_in][id])
                     ) {
                         free_me(true)
                         return
@@ -3282,7 +3281,7 @@ window.ArrZoomerMain = function(opt_in0) {
                         g_hierarchy_now.hirch
                             .selectAll('circle')
                             .transition('updt')
-                            .duration(times.anim_arc)
+                            .duration(times.anim)
                             .attr('r', function(d) {
                                 return is_out(d) ? d.r : 0
                             })
@@ -3315,7 +3314,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                             g_now
                                 .transition('in_out')
-                                .duration(times.anim_arc)
+                                .duration(times.anim)
                                 .attr(
                                     'transform',
                                     in_parents
@@ -3349,7 +3348,7 @@ window.ArrZoomerMain = function(opt_in0) {
                         // console.log('will delay update_hierarchy',data_in);
                         setTimeout(function() {
                             update_hierarchy(data_in)
-                        }, times.anim_arc / 3)
+                        }, times.anim / 3)
                         return
                     }
                     locker.add('update_hierarchy')
@@ -3362,7 +3361,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                         path
                             .transition('update_data')
-                            .duration(times.anim_arc)
+                            .duration(times.anim)
                             .each(function(d) {
                                 if (d.nArc === 0) {
                                     d.col = inst_health_col(
@@ -3386,7 +3385,7 @@ window.ArrZoomerMain = function(opt_in0) {
                                 }
                             })
                             .transition('update_data')
-                            .duration(times.anim_arc)
+                            .duration(times.anim)
                             .style('fill', function(d) {
                                 return hierarchy_style_fill(d, d, depth_click[porp_now] + 1)
                             })
@@ -3657,23 +3656,23 @@ window.ArrZoomerMain = function(opt_in0) {
             .style('pointer-events', 'none')
             .attr('transform', function(d) {
                 return (
-                    'translate(' +
-          instruments.data[pos_tag][d.id].x +
-          ',' +
-          instruments.data[pos_tag][d.id].y +
-          ')'
+                    'translate('
+          + instruments.data[pos_tag][d.id].x
+          + ','
+          + instruments.data[pos_tag][d.id].y
+          + ')'
                 )
             })
             .merge(circ)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('transform', function(d) {
                 return (
-                    'translate(' +
-          instruments.data[pos_tag][d.id].x +
-          ',' +
-          instruments.data[pos_tag][d.id].y +
-          ')'
+                    'translate('
+          + instruments.data[pos_tag][d.id].x
+          + ','
+          + instruments.data[pos_tag][d.id].y
+          + ')'
                 )
             })
             .style('fill', function(d) {

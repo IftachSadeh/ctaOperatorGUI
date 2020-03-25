@@ -116,10 +116,10 @@ window.PlotTimeSeries = function() {
         }
         console.log(com.top)
 
-        com.top.axis.transX =
-      'translate(' + com.top.box.x + ',' + (com.top.box.y + com.top.box.h) + ')'
-        com.top.axis.transY =
-      'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
+        com.top.axis.transX
+      = 'translate(' + com.top.box.x + ',' + (com.top.box.y + com.top.box.h) + ')'
+        com.top.axis.transY
+      = 'translate(' + com.top.box.x + ',' + com.top.box.y + ')'
 
         com.top.g = {
         }
@@ -217,15 +217,15 @@ window.PlotTimeSeries = function() {
         let duration = 0
         if (is_def(opt_in)) {
             if (is_def(opt_in.x)) {
-                duration = times.anim_arc
+                duration = times.anim
                 com.boxTrans.x = opt_in.x
             }
             if (is_def(opt_in.y)) {
-                duration = times.anim_arc
+                duration = times.anim
                 com.boxTrans.y = opt_in.y
             }
             if (is_def(opt_in.k)) {
-                duration = times.anim_arc
+                duration = times.anim
                 com.boxTrans.k = opt_in.k
             }
             if (is_def(opt_in.duration)) {
@@ -233,14 +233,14 @@ window.PlotTimeSeries = function() {
             }
         }
 
-        let trans =
-      'translate(' +
-      com.boxTrans.x +
-      ',' +
-      com.boxTrans.y +
-      ')scale(' +
-      com.boxTrans.k +
-      ')'
+        let trans
+      = 'translate('
+      + com.boxTrans.x
+      + ','
+      + com.boxTrans.y
+      + ')scale('
+      + com.boxTrans.k
+      + ')'
 
         if (duration > 0) {
             com.g_box
@@ -337,7 +337,7 @@ window.PlotTimeSeries = function() {
         com.top.g.axis
             .selectAll('.axisY')
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .call(com.top.axis.y)
 
         updateCirc({
@@ -397,7 +397,7 @@ window.PlotTimeSeries = function() {
             .attr('stroke', '#000099')
             .merge(line)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('stroke-opacity', 0.5)
             .attr('x1', function(d, i) {
                 return com.top.scale.x(d.x1)
@@ -415,7 +415,7 @@ window.PlotTimeSeries = function() {
         line
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('stroke-opacity', 0)
             .remove()
 
@@ -464,7 +464,7 @@ window.PlotTimeSeries = function() {
             //   // .on('click', com.style.click)
             //   .merge(circ)
             //   .transition('in_out')
-            //   .duration(times.anim_arc)
+            //   .duration(times.anim)
             //   .style('opacity', 1)
             //   .attr('cx', function (d) {
             //     return topBot.scale.x(d.x)
@@ -476,7 +476,7 @@ window.PlotTimeSeries = function() {
             // circ
             //   .exit()
             //   .transition('in_out')
-            //   .duration(times.anim_arc)
+            //   .duration(times.anim)
             //   .style('opacity', 0)
             //   .remove()
         })
@@ -518,7 +518,7 @@ window.PlotTimeSeries = function() {
         com.top.g.axis
             .selectAll('.axisY')
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .call(com.top.axis.y)
     }
 
@@ -548,7 +548,7 @@ window.PlotTimeSeries = function() {
             if (doY) {
                 circ
                     .transition('in_out')
-                    .duration(times.anim_arc / 2)
+                    .duration(times.anim / 2)
                     .attr('cy', function(d) {
                         return topBot.scale.y(d.y)
                     })
@@ -567,7 +567,7 @@ window.PlotTimeSeries = function() {
         if (doY) {
             line
                 .transition('in_out')
-                .duration(times.anim_arc / 2)
+                .duration(times.anim / 2)
                 .attr('y1', function(d, i) {
                     return com.top.scale.y(d.y1)
                 })
@@ -594,9 +594,9 @@ window.PlotTimeSeries = function() {
             // note that the order matters, ie: d3.zoomIdentity.scale(k).translate(x,
             // 0) is equivalent to d3.zoomIdentity.translate(x*k, 0).scale(k)
             let domain = opt_in.domain
-            let k =
-        com.top.box.w /
-        (com.top.scale.x(domain[1]) - com.top.scale.x(domain[0]))
+            let k
+        = com.top.box.w
+        / (com.top.scale.x(domain[1]) - com.top.scale.x(domain[0]))
             let x = -com.top.scale.x(domain[0])
             trans = d3.zoomIdentity.scale(k).translate(x, 0)
         }

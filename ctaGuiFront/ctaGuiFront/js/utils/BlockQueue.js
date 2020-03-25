@@ -443,11 +443,11 @@ window.BlockQueue = function(opt_in) {
             com.blocks.cancel.g
                 .attr(
                     'transform',
-                    'translate(' +
-            com.blocks.cancel.box.x +
-            ',' +
-            com.blocks.cancel.box.y +
-            ')'
+                    'translate('
+            + com.blocks.cancel.box.x
+            + ','
+            + com.blocks.cancel.box.y
+            + ')'
                 )
                 .style('opacity', 0)
                 .transition()
@@ -460,11 +460,11 @@ window.BlockQueue = function(opt_in) {
             com.blocks.modification.g
                 .attr(
                     'transform',
-                    'translate(' +
-            com.blocks.modification.box.x +
-            ',' +
-            com.blocks.modification.box.y +
-            ')'
+                    'translate('
+            + com.blocks.modification.box.x
+            + ','
+            + com.blocks.modification.box.y
+            + ')'
                 )
                 .style('opacity', 0)
                 .transition()
@@ -575,8 +575,8 @@ window.BlockQueue = function(opt_in) {
                 },
             }
             com.filters.middle.box.x = 0
-            com.filters.middle.box.y =
-        com.filters.middle.box.y + com.filters.middle.box.h * 0.15
+            com.filters.middle.box.y
+        = com.filters.middle.box.y + com.filters.middle.box.h * 0.15
             com.filters.middle.box.h *= 0.67
 
             // com.filters.middle.g.append('rect')
@@ -595,8 +595,8 @@ window.BlockQueue = function(opt_in) {
                 childs: {
                 },
             }
-            com.filters.bottom.box.y =
-        com.filters.bottom.box.y + com.filters.bottom.box.h * 0.85
+            com.filters.bottom.box.y
+        = com.filters.bottom.box.y + com.filters.bottom.box.h * 0.85
             com.filters.bottom.box.h *= 0.15
 
             com.filters.bottom.g
@@ -621,8 +621,8 @@ window.BlockQueue = function(opt_in) {
                 },
             }
             com.filters.general.box.x = 0
-            com.filters.general.box.y =
-        com.filters.general.box.y + com.filters.general.box.h * 0.15
+            com.filters.general.box.y
+        = com.filters.general.box.y + com.filters.general.box.h * 0.15
             com.filters.general.box.h *= 0.67
 
             // com.filters.general.g.append('rect')
@@ -744,15 +744,15 @@ window.BlockQueue = function(opt_in) {
                     .append('rect')
                     .attr(
                         'x',
-                        (Number(new_button.attr('width')) -
-              Number(new_button.attr('width')) * 3 / 3) /
-              2
+                        (Number(new_button.attr('width'))
+              - Number(new_button.attr('width')) * 3 / 3)
+              / 2
                     )
                     .attr(
                         'y',
-                        (Number(new_button.attr('height')) -
-              Number(new_button.attr('height')) * 3 / 3) /
-              2
+                        (Number(new_button.attr('height'))
+              - Number(new_button.attr('height')) * 3 / 3)
+              / 2
                     )
                     .attr('width', function(d, i) {
                         return Number(new_button.attr('width')) * 3 / 3
@@ -1301,8 +1301,8 @@ window.BlockQueue = function(opt_in) {
             let newGroup = [ blocks[i] ]
             for (var j = 0; j < blocks.length; j++) {
                 if (
-                    i !== j &&
-          is_same_time_begin_after(
+                    i !== j
+          && is_same_time_begin_after(
               blocks[i].x,
               blocks[i].x + blocks[i].w,
               blocks[j].x,
@@ -1350,8 +1350,8 @@ window.BlockQueue = function(opt_in) {
         for (let i = 0; i < length; i++) {
             for (let j = 0; j < length; j++) {
                 if (
-                    i !== j &&
-          useSameTels(group[i].data.tel_ids, group[j].data.tel_ids)
+                    i !== j
+          && useSameTels(group[i].data.tel_ids, group[j].data.tel_ids)
                 ) {
                     return true
                 }
@@ -1439,11 +1439,11 @@ window.BlockQueue = function(opt_in) {
                     let h1 = data_now1.h
                     let o01 = Math.max(data_now0.o, data_now1.o)
 
-                    let hasOverlap =
-            x1 < min_max.maxX - o01 &&
-            x1 + w1 > min_max.min_x + o01 &&
-            y1 < min_max.maxY &&
-            y1 + h1 > min_max.min_y
+                    let hasOverlap
+            = x1 < min_max.maxX - o01
+            && x1 + w1 > min_max.min_x + o01
+            && y1 < min_max.maxY
+            && y1 + h1 > min_max.min_y
                     // if(x1 > min_max.maxX-o1 && x1 < min_max.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
 
                     // XXXXXXXXXXXXXXXXXX
@@ -1522,8 +1522,8 @@ window.BlockQueue = function(opt_in) {
                 // XXXXXXXXXXXXXXXXXX
                 // let hasOverlap = ((x1 < x0+w0+margX/2) && (x1+w1 > x0) && (y1 < y0+h0) && (y1+h1 > y0));
                 // XXXXXXXXXXXXXXXXXX
-                let hasOverlap =
-          x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
+                let hasOverlap
+          = x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
                 if (hasOverlap) {
                     data_now1.y = y0 + h0 + margY / 2
                     // data_now1.y += h0 + margY/2;
@@ -1598,8 +1598,8 @@ window.BlockQueue = function(opt_in) {
                 let x = group[0].x
                 let x2 = x + group[0].w
                 $.each(group, function(index, data_now) {
-                    data_now.newH =
-            data_now.h * coef < data_now.newH ? data_now.h * coef : data_now.newH
+                    data_now.newH
+            = data_now.h * coef < data_now.newH ? data_now.h * coef : data_now.newH
                     if (data_now.x < x) {
                         x = data_now.x
                     }
@@ -1613,9 +1613,9 @@ window.BlockQueue = function(opt_in) {
                     .attr('x', x)
                     .attr(
                         'y',
-                        com.blocks.run.box.y -
-              com.blocks.run.box.h * 0.25 -
-              com.blocks.run.box.marg
+                        com.blocks.run.box.y
+              - com.blocks.run.box.h * 0.25
+              - com.blocks.run.box.marg
                     )
                     .attr('width', x2 - x)
                     .attr('height', com.blocks.run.box.h * 0.12)
@@ -1625,8 +1625,8 @@ window.BlockQueue = function(opt_in) {
             else if (tot > box.h) {
                 let coef = box.h / tot
                 $.each(group, function(index, data_now) {
-                    data_now.newH =
-            data_now.h * coef > data_now.newH ? data_now.h * coef : data_now.newH
+                    data_now.newH
+            = data_now.h * coef > data_now.newH ? data_now.h * coef : data_now.newH
                 })
             }
         })
@@ -1667,8 +1667,8 @@ window.BlockQueue = function(opt_in) {
             if (b.data.sched_block_id === com.input.focus.sched_blocks) {
                 if (
                     !(
-                        com.input.over.sched_blocks !== undefined &&
-            com.input.over.sched_blocks !== com.input.focus.sched_blocks
+                        com.input.over.sched_blocks !== undefined
+            && com.input.over.sched_blocks !== com.input.focus.sched_blocks
                     )
                 ) {
                     // b.stroke = color_theme.blocks.critical.background
@@ -1689,8 +1689,8 @@ window.BlockQueue = function(opt_in) {
             }
             if (b.data.obs_block_id === com.input.focus.block) {
                 if (
-                    com.input.over.block !== undefined &&
-          com.input.over.block !== com.input.focus.block
+                    com.input.over.block !== undefined
+          && com.input.over.block !== com.input.focus.block
                 ) {
                     b.strokeDasharray = [ 8, 4 ]
                 }
@@ -1986,7 +1986,7 @@ window.BlockQueue = function(opt_in) {
                 .select(this)
                 .select('rect.back')
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('stroke', function(d, i) {
                     return d.stroke
                 })
@@ -2062,7 +2062,7 @@ window.BlockQueue = function(opt_in) {
                     return d.size / 3 + 'px'
                 })
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('stroke-opacity', function(d, i) {
                     return d.fill_opacity
                 })
@@ -2079,7 +2079,7 @@ window.BlockQueue = function(opt_in) {
         rect
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
     // ------------------------------------------------------------------
@@ -2096,7 +2096,7 @@ window.BlockQueue = function(opt_in) {
     // text
     //   .exit()
     //   .transition('in_out')
-    //   .duration(times.anim_arc)
+    //   .duration(times.anim)
     //   .style('opacity', 0)
     //   .remove()
     }
@@ -2214,7 +2214,7 @@ window.BlockQueue = function(opt_in) {
             .attr('vector-effect', 'non-scaling-stroke')
             .merge(rectNow)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('x', function(d, i) {
                 return d.x
             })
@@ -2225,7 +2225,7 @@ window.BlockQueue = function(opt_in) {
     // .attr("height", function(d,i) { return d.h; })
 
     // rectNow.exit()
-    //   .transition("in_out").duration(times.anim_arc/2)
+    //   .transition("in_out").duration(times.anim/2)
     //   .attr("width", 0)
     //   .style("opacity", 0)
     //   .remove()

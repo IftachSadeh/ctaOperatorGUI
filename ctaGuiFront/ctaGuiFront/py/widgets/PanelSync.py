@@ -1,65 +1,36 @@
-import os
-import copy
-import gevent
-from gevent import sleep
-from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
 from datetime import datetime
-import random
-from random import Random
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, delta_seconds, date_to_string, getTime
-from ctaGuiUtils.py.RedisManager import RedisManager
+from ctaGuiUtils.py.utils import date_to_string
+from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
 # ------------------------------------------------------------------
 #  PanelSync
 # ------------------------------------------------------------------
-class PanelSync():
-    # privat lock for this widget type
-    lock = BoundedSemaphore(1)
-
-    # all session ids for this user/widget
-    widget_group_sess = dict()
-
+class PanelSync(BaseWidget):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
-        self.log = my_log(title=__name__)
+        # standard common initialisations
+        BaseWidget.__init__(
+            self,
+            widget_id=widget_id,
+            socket_manager=socket_manager,
+        )
 
-        # the id of this instance
-        self.widget_id = widget_id
-        # the parent of this widget
-        self.socket_manager = socket_manager
-        my_assert(log=self.log, msg=[
-            " - no socket_manager handed to", self.__class__.__name__], state=(self.socket_manager is not None))
+        # ------------------------------------------------------------------
+        # widget-specific initialisations
+        # ------------------------------------------------------------------
+        pass
 
-        # widget-class and widget group names
-        self.widget_name = self.__class__.__name__
-        self.widget_group = self.socket_manager.user_group_id+''+self.widget_name
-
-        self.redis = RedisManager(name=self.widget_name, log=self.log)
-
-        # turn on periodic data updates
-        self.do_data_updates = True
-        # some etra logging messages for this module
-        self.log_send_packet = False
-        #
-        self.n_icon = -1
+        return
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def setup(self, *args):
-        with self.socket_manager.lock:
-            wgt = self.redis.hGet(
-                name='all_widgets', key=self.widget_id, packed=True)
-            self.n_icon = wgt["n_icon"]
-
-        # override the global logging variable with a name corresponding to the current session id
-        self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
-                          str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
+        # standard common initialisations
+        BaseWidget.setup(self, *args)
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_init_data}
@@ -67,8 +38,11 @@ class PanelSync():
 
         # start a thread which will call update_data() and send 1Hz data
         # updates to all sessions in the group
-        opt_in = {'widget': self,
-                  'data_func': self.panel_sync_get_groups, 'sleep_seconds': 5}
+        opt_in = {
+            'widget': self,
+            'data_func': self.panel_sync_get_groups,
+            'sleep_seconds': 5
+        }
         self.socket_manager.add_widget_tread(opt_in=opt_in)
 
         return
@@ -77,8 +51,11 @@ class PanelSync():
     #
     # ------------------------------------------------------------------
     def back_from_offline(self):
+        # standard common initialisations
+        BaseWidget.back_from_offline(self)
+
         # with panel_sync.lock:
-        #   print '-- back_from_offline',self.widget_name, self.widget_id
+        #     print('-- back_from_offline',self.widget_name,self.widget_id)
         return
 
     # ------------------------------------------------------------------
@@ -118,8 +95,7 @@ class PanelSync():
         data = args[0]
 
         with self.socket_manager.lock:
-            widget_ids = self.redis.lGet(
-                'user_widgets;'+self.socket_manager.user_id)
+            widget_ids = self.redis.lGet('user_widgets;' + self.socket_manager.user_id)
 
             sync_groups = []
             for child_0 in data["data"]["children"]:
@@ -130,14 +106,17 @@ class PanelSync():
                 sync_group["sync_types"] = dict()
 
                 for child_1 in child_0["children"]:
-                    all_widgets = [
-                        wgt for wgt in child_1 if wgt[0] in widget_ids]
+                    all_widgets = [wgt for wgt in child_1 if wgt[0] in widget_ids]
                     sync_group["sync_states"].append(all_widgets)
 
                 sync_groups.append(sync_group)
 
             self.redis.hSet(
-                name='sync_groups', key=self.socket_manager.user_id, data=sync_groups, packed=True)
+                name='sync_groups',
+                key=self.socket_manager.user_id,
+                data=sync_groups,
+                packed=True
+            )
 
         self.update_sync_groups(ignore_id=self.widget_id)
 
@@ -153,10 +132,10 @@ class PanelSync():
         # ------------------------------------------------------------------
         sess_widgets = [[], []]
         with self.socket_manager.lock:
-            widget_ids = self.redis.lGet(
-                'user_widgets;'+self.socket_manager.user_id)
+            widget_ids = self.redis.lGet('user_widgets;' + self.socket_manager.user_id)
             all_widgets = self.redis.hMget(
-                name='all_widgets', key=widget_ids, packed=True)
+                name='all_widgets', key=widget_ids, packed=True
+            )
 
             for n_widget in range(len(widget_ids)):
                 widget_id = widget_ids[n_widget]
@@ -195,10 +174,10 @@ class PanelSync():
 
     def panel_sync_get_groups(self):
         with self.socket_manager.lock:
-            widget_ids = self.redis.lGet(
-                'user_widgets;'+self.socket_manager.user_id)
+            widget_ids = self.redis.lGet('user_widgets;' + self.socket_manager.user_id)
             all_widgets = self.redis.hMget(
-                name='all_widgets', key=widget_ids, packed=True)
+                name='all_widgets', key=widget_ids, packed=True
+            )
 
             all_sync_widgets = []
             for n_widget in range(len(widget_ids)):
@@ -208,7 +187,7 @@ class PanelSync():
                     continue
                 if widget_now["n_icon"] >= 0:
                     all_sync_widgets.append({
-                        "id": "icn_"+widget_id,
+                        "id": "icn_" + widget_id,
                         "trgWidgId": widget_id,
                         "n_icon": widget_now["n_icon"]
                     })
@@ -217,7 +196,11 @@ class PanelSync():
             children_0 = []
 
             sync_groups = self.redis.hGet(
-                name='sync_groups', key=self.socket_manager.user_id, packed=True, default_val=[])
+                name='sync_groups',
+                key=self.socket_manager.user_id,
+                packed=True,
+                default_val=[]
+            )
 
             for sync_group in sync_groups:
                 sync_states = sync_group["sync_states"]
@@ -245,9 +228,12 @@ class PanelSync():
                     # new groups (e.g., for "grp_0", we have ["grp_0_0","grp_0_1","grp_0_2"])
                     # ------------------------------------------------------------------
                     children_1.append({
-                        "id": str(sync_group["id"])+"_"+str(n_sync_type),
-                        "title": str(sync_group["title"])+" "+str(n_sync_type),
-                        "children": children_2
+                        "id":
+                        str(sync_group["id"]) + "_" + str(n_sync_type),
+                        "title":
+                        str(sync_group["title"]) + " " + str(n_sync_type),
+                        "children":
+                        children_2
                     })
 
                 if n_widget_group > 0:
@@ -265,7 +251,11 @@ class PanelSync():
                     sync_groups.remove(rm_element)
 
                 self.redis.hSet(
-                    name='sync_groups', key=self.socket_manager.user_id, data=sync_groups, packed=True)
+                    name='sync_groups',
+                    key=self.socket_manager.user_id,
+                    data=sync_groups,
+                    packed=True
+                )
 
         all_groups = {
             "date": date_to_string(datetime.utcnow(), '%H:%M:%S:%f'),

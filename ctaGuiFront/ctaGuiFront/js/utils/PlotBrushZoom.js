@@ -225,21 +225,21 @@ window.PlotBrushZoom = function(opt_in) {
             if (reserved.axis[i].main.type === 'top') {
                 reserved.axis[i].main.g.attr(
                     'transform',
-                    'translate(' +
-            reserved.axis[i].main.box.x +
-            ',' +
-            (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h) +
-            ')'
+                    'translate('
+            + reserved.axis[i].main.box.x
+            + ','
+            + (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h)
+            + ')'
                 )
             }
             if (reserved.axis[i].main.type === 'bottom') {
                 reserved.axis[i].main.g.attr(
                     'transform',
-                    'translate(' +
-            reserved.axis[i].main.box.x +
-            ',' +
-            reserved.axis[i].main.box.y +
-            ')'
+                    'translate('
+            + reserved.axis[i].main.box.x
+            + ','
+            + reserved.axis[i].main.box.y
+            + ')'
                 )
             }
             if (!reserved.axis[i].showAxis) {
@@ -354,11 +354,11 @@ window.PlotBrushZoom = function(opt_in) {
             .append('g')
             .attr(
                 'transform',
-                'translate(' +
-          reserved.content.main.box.x +
-          ',' +
-          reserved.content.main.box.y +
-          ')'
+                'translate('
+          + reserved.content.main.box.x
+          + ','
+          + reserved.content.main.box.y
+          + ')'
             )
 
         reserved.content.main.g
@@ -374,16 +374,16 @@ window.PlotBrushZoom = function(opt_in) {
                     y: reserved.zoom.coef.y,
                 }
                 return (
-                    'translate(' +
-          trans.x +
-          ',' +
-          trans.y +
-          ') ' +
-          'scale(' +
-          scale.x +
-          ',' +
-          scale.y +
-          ')'
+                    'translate('
+          + trans.x
+          + ','
+          + trans.y
+          + ') '
+          + 'scale('
+          + scale.x
+          + ','
+          + scale.y
+          + ')'
                 )
             })
             .attr('x', 0)
@@ -470,7 +470,7 @@ window.PlotBrushZoom = function(opt_in) {
     //     // locker.remove({
     //     //   id: lockerZoom.all,
     //     //   override: true,
-    //     //   delay: times.anim_arc
+    //     //   delay: times.anim
     //     // })
     //   }
     //
@@ -493,11 +493,11 @@ window.PlotBrushZoom = function(opt_in) {
             .append('g')
             .attr(
                 'transform',
-                'translate(' +
-          reserved.focus.main.box.x +
-          ',' +
-          reserved.focus.main.box.y +
-          ')'
+                'translate('
+          + reserved.focus.main.box.x
+          + ','
+          + reserved.focus.main.box.y
+          + ')'
             )
 
         reserved.focus.main.g
@@ -513,16 +513,16 @@ window.PlotBrushZoom = function(opt_in) {
                     y: reserved.zoom.coef.y,
                 }
                 return (
-                    'translate(' +
-          trans.x +
-          ',' +
-          trans.y +
-          ') ' +
-          'scale(' +
-          scale.x +
-          ',' +
-          scale.y +
-          ')'
+                    'translate('
+          + trans.x
+          + ','
+          + trans.y
+          + ') '
+          + 'scale('
+          + scale.x
+          + ','
+          + scale.y
+          + ')'
                 )
             })
             .attr('x', 0)
@@ -552,16 +552,16 @@ window.PlotBrushZoom = function(opt_in) {
                 y: reserved.zoom.coef.y,
             }
             return (
-                'translate(' +
-        trans.x +
-        ',' +
-        trans.y +
-        ') ' +
-        'scale(' +
-        scale.x +
-        ',' +
-        scale.y +
-        ')'
+                'translate('
+        + trans.x
+        + ','
+        + trans.y
+        + ') '
+        + 'scale('
+        + scale.x
+        + ','
+        + scale.y
+        + ')'
             )
         })
     }
@@ -603,10 +603,10 @@ window.PlotBrushZoom = function(opt_in) {
             let ratio = [ zoom.kx.point[0] / zoom.x.max, 0 ]
             let offset = {
                 x:
-          (zoom.x.max -
-            zoom.x.max * (1 / zoom.kx.now) -
-            (zoom.x.max - zoom.x.max * (1 / zoom.kx.previous))) *
-          ratio[0],
+          (zoom.x.max
+            - zoom.x.max * (1 / zoom.kx.now)
+            - (zoom.x.max - zoom.x.max * (1 / zoom.kx.previous)))
+          * ratio[0],
             }
 
             reserved.zoom.coef.x = reserved.zoom.coef.x + offset.x + drag.x
@@ -624,10 +624,10 @@ window.PlotBrushZoom = function(opt_in) {
             let ratio = [ 0, zoom.ky.point[1] / zoom.y.max ]
             let offset = {
                 y:
-          (zoom.y.max -
-            zoom.y.max * (1 / zoom.ky.now) -
-            (zoom.y.max - zoom.y.max * (1 / zoom.ky.previous))) *
-          ratio[1],
+          (zoom.y.max
+            - zoom.y.max * (1 / zoom.ky.now)
+            - (zoom.y.max - zoom.y.max * (1 / zoom.ky.previous)))
+          * ratio[1],
             }
 
             reserved.zoom.coef.y = reserved.zoom.coef.y + offset.y + drag.y
@@ -743,7 +743,7 @@ window.PlotBrushZoom = function(opt_in) {
         //   // locker.remove({
         //   //   id: lockerZoom.all,
         //   //   override: true,
-        //   //   delay: times.anim_arc
+        //   //   delay: times.anim
         //   // })
         //
         //   // let sel = Object.keys(reserved.brush.zoom.sel).filter(function (d) {

@@ -362,8 +362,8 @@ window.BlockQueueOld = function() {
     // // ------------------------------------------------------------------
         let box = com.innerBox
         let runFrac = com.blocksIn.run.length === 0 ? 0 : 0.2
-        let runMarg =
-      com.blocksIn.run.length === 0 ? 0 : 2 * (box.x - com.outerBox.x)
+        let runMarg
+      = com.blocksIn.run.length === 0 ? 0 : 2 * (box.x - com.outerBox.x)
 
         let maxDone = min_max_obj({
             min_max: 'max',
@@ -540,9 +540,9 @@ window.BlockQueueOld = function() {
             let y0 = box.y
 
             if (
-                !com.futureCanceled.hide &&
-        com.futureCanceled.shift_y &&
-        !data_now.exe_state.can_run
+                !com.futureCanceled.hide
+        && com.futureCanceled.shift_y
+        && !data_now.exe_state.can_run
             ) {
                 y0 += box.h + 2 * box.marg
             }
@@ -657,11 +657,11 @@ window.BlockQueueOld = function() {
                     let h1 = data_now1.h
                     let o01 = Math.max(data_now0.o, data_now1.o)
 
-                    let hasOverlap =
-            x1 < min_max.maxX - o01 &&
-            x1 + w1 > min_max.min_x + o01 &&
-            y1 < min_max.maxY &&
-            y1 + h1 > min_max.min_y
+                    let hasOverlap
+            = x1 < min_max.maxX - o01
+            && x1 + w1 > min_max.min_x + o01
+            && y1 < min_max.maxY
+            && y1 + h1 > min_max.min_y
                     // if(x1 > min_max.maxX-o1 && x1 < min_max.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
 
                     // XXXXXXXXXXXXXXXXXX
@@ -740,8 +740,8 @@ window.BlockQueueOld = function() {
                 // XXXXXXXXXXXXXXXXXX
                 // let hasOverlap = ((x1 < x0+w0+margX/2) && (x1+w1 > x0) && (y1 < y0+h0) && (y1+h1 > y0));
                 // XXXXXXXXXXXXXXXXXX
-                let hasOverlap =
-          x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
+                let hasOverlap
+          = x1 < x0 + w0 && x1 + w1 > x0 && y1 < y0 + h0 && y1 + h1 > y0
                 if (hasOverlap) {
                     data_now1.y = y0 + h0 + margY / 2
                     // data_now1.y += h0 + margY/2;
@@ -820,7 +820,7 @@ window.BlockQueueOld = function() {
         // .attr("clip-path", "url(#"+com.tagClipPath.inner+")")
             .merge(rect)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 1)
             .attr('stroke', function(d, i) {
                 return d3.rgb(com.style.recCol({
@@ -852,7 +852,7 @@ window.BlockQueueOld = function() {
         rect
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc / 2)
+            .duration(times.anim / 2)
             .attr('width', 0)
             .style('opacity', 0)
             .remove()
@@ -909,7 +909,7 @@ window.BlockQueueOld = function() {
                 return d.size / 3 + 'px'
             })
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', com.style.textOpac)
             .attr('x', function(d, i) {
                 return d.x + d.w / 2
@@ -921,7 +921,7 @@ window.BlockQueueOld = function() {
         text
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
     }
@@ -994,7 +994,7 @@ window.BlockQueueOld = function() {
         // .attr("clip-path", "url(#"+com.tagClipPath.outer+")")
             .merge(rectRun)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('x', function(d, i) {
                 return d.x
             })
@@ -1007,7 +1007,7 @@ window.BlockQueueOld = function() {
         rectRun
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc / 2)
+            .duration(times.anim / 2)
             .attr('x', function(d, i) {
                 return d.x + d.w / 2
             })
@@ -1121,7 +1121,7 @@ window.BlockQueueOld = function() {
             .attr('vector-effect', 'non-scaling-stroke')
             .merge(rectNow)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('x', function(d, i) {
                 return d.x
             })
@@ -1132,7 +1132,7 @@ window.BlockQueueOld = function() {
     // .attr("height", function(d,i) { return d.h; })
 
     // rectNow.exit()
-    //   .transition("in_out").duration(times.anim_arc/2)
+    //   .transition("in_out").duration(times.anim/2)
     //   .attr("width", 0)
     //   .style("opacity", 0)
     //   .remove()

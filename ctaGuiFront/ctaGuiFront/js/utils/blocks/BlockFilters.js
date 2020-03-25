@@ -1084,13 +1084,13 @@ window.BlockFilters = function(opt_in) {
             .on('mouseover', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 1)
             })
             .on('mouseout', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
             })
             .on('click', function() {
@@ -1134,13 +1134,13 @@ window.BlockFilters = function(opt_in) {
             .on('mouseover', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 1)
             })
             .on('mouseout', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
             })
             .on('click', function() {
@@ -1199,13 +1199,13 @@ window.BlockFilters = function(opt_in) {
             .on('mouseover', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 1)
             })
             .on('mouseout', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
             })
             .on('click', function() {
@@ -1582,13 +1582,13 @@ window.BlockFilters = function(opt_in) {
             .on('mouseover', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 1)
             })
             .on('mouseout', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
             })
             .on('click', function() {
@@ -1632,13 +1632,13 @@ window.BlockFilters = function(opt_in) {
             .on('mouseover', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 1)
             })
             .on('mouseout', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
             })
             .on('click', function() {
@@ -1697,13 +1697,13 @@ window.BlockFilters = function(opt_in) {
             .on('mouseover', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 1)
             })
             .on('mouseout', function() {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .style('opacity', 0)
             })
             .on('click', function() {
@@ -1900,7 +1900,7 @@ window.BlockFilters = function(opt_in) {
     //   mergeTokens.each(function (d, i) {
     //     d3.select(this)
     //       .transition()
-    //       .duration(times.anim_arc)
+    //       .duration(times.anim)
     //       .attr('transform', function (d) {
     //         let nLine = parseInt(com.enabled.box.w / (dim.x + dim.w))
     //         let translate = {
@@ -2036,7 +2036,7 @@ window.BlockFilters = function(opt_in) {
     //   mergeTokens.each(function (d, i) {
     //     d3.select(this)
     //       .transition()
-    //       .duration(times.anim_arc)
+    //       .duration(times.anim)
     //       .attr('transform', function () {
     //         let translate = {
     //           y: dim.y * i,
@@ -2172,7 +2172,7 @@ window.BlockFilters = function(opt_in) {
             .on('click', function(d) {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('x', statesBox.x + 0.5)
                     .attr('y', statesBox.y + 0.5)
                     .attr('width', statesBox.w + 1.5)
@@ -2185,7 +2185,7 @@ window.BlockFilters = function(opt_in) {
                     })
             })
             .transition()
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('stroke-width', 0.4)
             .attr('x', statesBox.x)
             .attr('y', statesBox.y)
@@ -2211,7 +2211,7 @@ window.BlockFilters = function(opt_in) {
             .on('click', function(d) {
                 d3.select(this)
                     .transition()
-                    .duration(times.anim_arc)
+                    .duration(times.anim)
                     .attr('x', telsBox.x + 0.5)
                     .attr('y', telsBox.y + 0.5)
                     .attr('width', telsBox.w + 1.5)
@@ -2224,7 +2224,7 @@ window.BlockFilters = function(opt_in) {
                     })
             })
             .transition()
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('stroke-width', 0.4)
             .attr('x', telsBox.x)
             .attr('y', telsBox.y)
@@ -2253,7 +2253,7 @@ window.BlockFilters = function(opt_in) {
                 })
             })
             .transition()
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('stroke-width', 0.4)
             .attr('x', targetsBox.x)
             .attr('y', targetsBox.y)
@@ -2282,7 +2282,7 @@ window.BlockFilters = function(opt_in) {
                 })
             })
             .transition()
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('stroke-width', 0.4)
             .attr('x', timeBox.x)
             .attr('y', timeBox.y)

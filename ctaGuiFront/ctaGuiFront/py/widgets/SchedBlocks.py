@@ -1,29 +1,12 @@
-import os
-import copy
-import gevent
-from gevent import sleep
-from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
-from datetime import datetime
-from datetime import timedelta
-import time
-import random
-from random import Random
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, delta_seconds, get_time_of_night
-from ctaGuiUtils.py.RedisManager import RedisManager
+from datetime import datetime, timedelta
+from ctaGuiUtils.py.utils import get_time_of_night
+from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
 # ------------------------------------------------------------------
 #  SchedBlocks
 # ------------------------------------------------------------------
-class SchedBlocks():
-    # privat lock for this widget type
-    lock = BoundedSemaphore(1)
-
-    # all session ids for this user/widget
-    widget_group_sess = dict()
-
+class SchedBlocks(BaseWidget):
     block_keys = [['wait'], ['run'], ['done', 'cancel', 'fail']]
     blocks = {}
     for keys_now in block_keys:
@@ -36,37 +19,21 @@ class SchedBlocks():
     #
     # ------------------------------------------------------------------
     def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
-        self.log = my_log(title=__name__)
+        # standard common initialisations
+        BaseWidget.__init__(
+            self,
+            widget_id=widget_id,
+            socket_manager=socket_manager,
+        )
 
-        # the id of this instance
-        self.widget_id = widget_id
-        # the parent of this widget
-        self.socket_manager = socket_manager
-        my_assert(log=self.log, msg=[
-            " - no socket_manager handed to", self.__class__.__name__],
-            state=(self.socket_manager is not None))
-
-        # widget-class and widget group names
-        self.widget_name = self.__class__.__name__
-        self.widget_group = self.socket_manager.user_group_id+''+self.widget_name
-
-        self.redis = RedisManager(name=self.widget_name, log=self.log)
-
-        # turn on periodic data updates
-        self.do_data_updates = True
-        # some etra logging messages for this module
-        self.log_send_packet = False
-        #
-        self.n_icon = -1
-
-        # self.tel_ids = self.socket_manager.InstData.get_inst_ids()
+        # ------------------------------------------------------------------
+        # widget-specific initialisations
+        # ------------------------------------------------------------------
         self.tel_ids = self.socket_manager.InstData.get_inst_ids(
             inst_types=['LST', 'MST', 'SST']
         )
 
-        # ------------------------------------------------------------------
-        # need to add lock ?!?!?!?!?
-        # ------------------------------------------------------------------
+        # FIXME - need to add lock?
         if len(SchedBlocks.inst_health) == 0:
             for id_now in self.tel_ids:
                 SchedBlocks.inst_health.append({"id": id_now, "val": 0})
@@ -77,14 +44,8 @@ class SchedBlocks():
     #
     # ------------------------------------------------------------------
     def setup(self, *args):
-        with self.socket_manager.lock:
-            wgt = self.redis.hGet(
-                name='all_widgets', key=self.widget_id, packed=True)
-            self.n_icon = wgt["n_icon"]
-
-        # override the global logging variable with a name corresponding to the current session id
-        self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
-                          str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
+        # standard common initialisations
+        BaseWidget.setup(self, *args)
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
@@ -101,8 +62,11 @@ class SchedBlocks():
     #
     # ------------------------------------------------------------------
     def back_from_offline(self):
+        # standard common initialisations
+        BaseWidget.back_from_offline(self)
+
         # with SchedBlocks.lock:
-        #   print 'back_from_offline',self.widget_name, self.widget_id
+        #     print('-- back_from_offline',self.widget_name,self.widget_id)
         return
 
     # ------------------------------------------------------------------
@@ -116,12 +80,22 @@ class SchedBlocks():
         self.get_tel_health()
         #  int(time.mktime(datetime(2018, 9, 16, 21, 30).timetuple()))
         time_of_night_date = {
-            "date_start": datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
-            "date_end": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(SchedBlocks.time_of_night['end']))).strftime('%Y-%m-%d %H:%M:%S'),
-            "date_now": (datetime(2018, 9, 16, 21, 30) + timedelta(seconds=int(SchedBlocks.time_of_night['now']))).strftime('%Y-%m-%d %H:%M:%S'),
-            "now": int(SchedBlocks.time_of_night['now']),
-            "start": int(SchedBlocks.time_of_night['start']),
-            "end": int(SchedBlocks.time_of_night['end'])
+            "date_start":
+            datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_end": (
+                datetime(2018, 9, 16, 21, 30)
+                + timedelta(seconds=int(SchedBlocks.time_of_night['end']))
+            ).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_now": (
+                datetime(2018, 9, 16, 21, 30)
+                + timedelta(seconds=int(SchedBlocks.time_of_night['now']))
+            ).strftime('%Y-%m-%d %H:%M:%S'),
+            "now":
+            int(SchedBlocks.time_of_night['now']),
+            "start":
+            int(SchedBlocks.time_of_night['start']),
+            "end":
+            int(SchedBlocks.time_of_night['end'])
         }
         data = {
             "time_of_night": time_of_night_date,
@@ -137,7 +111,7 @@ class SchedBlocks():
     def get_tel_health(self):
         self.redis.pipe.reset()
         for id_now in self.tel_ids:
-            self.redis.pipe.hGet(name="inst_health;"+str(id_now), key="health")
+            self.redis.pipe.hGet(name="inst_health;" + str(id_now), key="health")
         redis_data = self.redis.pipe.execute()
 
         for i in range(len(redis_data)):
@@ -171,7 +145,7 @@ class SchedBlocks():
         for keys_now in SchedBlocks.block_keys:
             self.redis.pipe.reset()
             for key in keys_now:
-                self.redis.pipe.get('obs_block_ids_'+key)
+                self.redis.pipe.get('obs_block_ids_' + key)
 
             data = self.redis.pipe.execute(packed=True)
             obs_block_ids = sum(data, [])  # flatten the list of lists
@@ -184,7 +158,9 @@ class SchedBlocks():
             key = keys_now[0]
             blocks = self.redis.pipe.execute(packed=True)
             SchedBlocks.blocks[key] = sorted(
-                blocks, cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start']))
+                blocks,
+                cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
+            )
 
         # SchedBlocks.blocks['run'] = SchedBlocks.blocks['wait'][0:6]
         # for bb in (SchedBlocks.blocks['run']):

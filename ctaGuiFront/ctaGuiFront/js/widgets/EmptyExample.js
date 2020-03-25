@@ -73,7 +73,7 @@ let main_empty_example = function(opt_in) {
     let widget_ele = opt_in.widget_ele
     let icon_divs = opt_in.icon_divs
 
-    // let is_south = window.__site_type__ === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
     // let this_empty_example = this
 
     let sgv_tag = {
@@ -339,7 +339,7 @@ let main_empty_example = function(opt_in) {
                 })
                 .merge(circ)
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('fill-opacity', opac)
                 .style('fill', function(d, i) {
                     return i === 0 ? cols_mix[time % cols_mix.length] : 'transparent'
@@ -354,7 +354,7 @@ let main_empty_example = function(opt_in) {
             circ
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .attr('r', function(d) {
                     return 0
                 })

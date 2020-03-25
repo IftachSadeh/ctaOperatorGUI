@@ -1,62 +1,34 @@
-import os
-import copy
-import gevent
-from gevent import sleep
-from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
-from datetime import datetime, timedelta
 import random
-from random import Random
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, delta_seconds, get_time_of_night, flatten_dict, getTime
-from ctaGuiUtils.py.RedisManager import RedisManager
+from datetime import datetime
+from ctaGuiUtils.py.utils import flatten_dict, getTime
+from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
 # ------------------------------------------------------------------
 #  plots_dash
 # ------------------------------------------------------------------
-class PlotsDash():
-    # privat lock for this widget type
-    lock = BoundedSemaphore(1)
-
-    # all session ids for this user/widget
-    widget_group_sess = dict()
-
+class PlotsDash(BaseWidget):
     time_of_night = {}
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
-        self.log = my_log(title=__name__)
+        # standard common initialisations
+        BaseWidget.__init__(
+            self,
+            widget_id=widget_id,
+            socket_manager=socket_manager,
+        )
 
-        # the id of this instance
-        self.widget_id = widget_id
-        # the parent of this widget
-        self.socket_manager = socket_manager
-        my_assert(log=self.log, msg=[
-            " - no socket_manager handed to", self.__class__.__name__],
-            state=(self.socket_manager is not None))
-
-        # widget-class and widget group names
-        self.widget_name = self.__class__.__name__
-        self.widget_group = self.socket_manager.user_group_id+''+self.widget_name
-
-        self.redis = RedisManager(name=self.widget_name, log=self.log)
-
-        # turn on periodic data updates
-        self.do_data_updates = True
-        # some etra logging messages for this module
-        self.log_send_packet = False
-        #
-        self.n_icon = -1
-
+        # ------------------------------------------------------------------
+        # widget-specific initialisations
+        # ------------------------------------------------------------------
         # INIT TELESCOPES PROPS
         self.tel_category = 'Telescope'
         self.tel_type = ['LST', 'MST', 'SST', 'AUX']
         self.tel_key = ['mirror', 'camera', 'mount', 'daq', 'aux']
-        self.tel_ids = self.socket_manager.InstData.get_inst_ids(
-            inst_types=self.tel_type)
+        self.tel_ids = self.socket_manager.InstData.get_inst_ids(inst_types=self.tel_type)
 
         self.weather_category = 'Weather'
         self.weather_type = ['WS1', 'WS2', 'WS3', 'WS4']
@@ -80,31 +52,52 @@ class PlotsDash():
 
         self.relationship = {
             # 'root': {'name': 'Root', 'children': ['global']},
-            'global': {'name': 'All Data', 'children': [self.tel_category, self.weather_category]},
-            'tel_type': {'name': 'Size', 'children': self.tel_type},
-            'tel_key': {'name': 'Property', 'children': self.tel_key},
-            'tel_ids': {'name': 'Name', 'children': self.tel_ids},
-            'weather_type': {'name': 'Weath. Stat.', 'children': self.weather_type},
-            'weather_key': {'name': 'Measure', 'children': self.weather_key}
+            'global': {
+                'name': 'All Data',
+                'children': [self.tel_category, self.weather_category]
+            },
+            'tel_type': {
+                'name': 'Size',
+                'children': self.tel_type
+            },
+            'tel_key': {
+                'name': 'Property',
+                'children': self.tel_key
+            },
+            'tel_ids': {
+                'name': 'Name',
+                'children': self.tel_ids
+            },
+            'weather_type': {
+                'name': 'Weath. Stat.',
+                'children': self.weather_type
+            },
+            'weather_key': {
+                'name': 'Measure',
+                'children': self.weather_key
+            }
         }
         self.relationship[self.tel_category] = {
-            'name': 'Telescopes', 'children': ['tel_type', 'tel_key', 'tel_ids']}
+            'name': 'Telescopes',
+            'children': ['tel_type', 'tel_key', 'tel_ids']
+        }
         self.relationship[self.weather_category] = {
-            'name': 'Weather', 'children': ['weather_type', 'weather_key']}
+            'name': 'Weather',
+            'children': ['weather_type', 'weather_key']
+        }
         for value in self.tel_type:
-            self.relationship[value] = {
-                'name': value, 'children': ['tel_key', 'tel_ids']}
+            self.relationship[value] = {'name': value, 'children': ['tel_key', 'tel_ids']}
         for value in self.tel_key:
             self.relationship[value] = {
-                'name': value, 'children': ['tel_type', 'tel_ids']}
+                'name': value,
+                'children': ['tel_type', 'tel_ids']
+            }
         for value in self.tel_ids:
             self.relationship[value] = {'name': value, 'children': ['tel_key']}
         for value in self.weather_type:
-            self.relationship[value] = {
-                'name': value, 'children': ['weather_key']}
+            self.relationship[value] = {'name': value, 'children': ['weather_key']}
         for value in self.weather_key:
-            self.relationship[value] = {
-                'name': value, 'children': ['weather_type']}
+            self.relationship[value] = {'name': value, 'children': ['weather_type']}
 
         self.categories = {
             # 'root': 'group',
@@ -159,14 +152,8 @@ class PlotsDash():
     #
     # ------------------------------------------------------------------
     def setup(self, *args):
-        with self.socket_manager.lock:
-            wgt = self.redis.hGet(
-                name='all_widgets', key=self.widget_id, packed=True)
-            self.n_icon = wgt["n_icon"]
-
-        # override the root logging variable with a name corresponding to the current session id
-        self.log = my_log(title=str(self.socket_manager.user_id)+"/" +
-                          str(self.socket_manager.sess_id)+"/"+__name__+"/"+self.widget_id)
+        # standard common initialisations
+        BaseWidget.setup(self, *args)
 
         self.init_tel_health()
         self.init_urgent_current()
@@ -175,18 +162,31 @@ class PlotsDash():
 
         # initial dataset and send to client
         opt_in = {
-            'widget': self, 'data_func': self.get_data,
+            'widget': self,
+            'data_func': self.get_data,
         }
         self.socket_manager.send_init_widget(opt_in=opt_in)
 
         # start a thread which will call update_data() and send 1Hz data updates to
         # all sessions in the group
         opt_in = {
-            'widget': self, 'is_group_thread': False,
+            'widget': self,
+            'is_group_thread': False,
             'data_func': self.get_data,
         }
         self.socket_manager.add_widget_tread(opt_in=opt_in)
 
+        return
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
+    def back_from_offline(self):
+        # standard common initialisations
+        BaseWidget.back_from_offline(self)
+
+        # with PlotsDash.lock:
+        #     print('-- back_from_offline',self.widget_name,self.widget_id)
         return
 
     # ------------------------------------------------------------------
@@ -202,15 +202,14 @@ class PlotsDash():
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()
         for id_now in self.tel_ids:
-            self.inst_health_sub_flat[id_now] = flatten_dict(
-                self.inst_health_sub[id_now])
+            self.inst_health_sub_flat[id_now] = flatten_dict(self.inst_health_sub[id_now])
 
         for id_now in self.tel_ids:
             self.inst_health[id_now] = {
-                "id": id_now, "health": 0, "status": "",
-                "data": [
-                    v for (k, v) in self.inst_health_sub[id_now].items()
-                ]
+                "id": id_now,
+                "health": 0,
+                "status": "",
+                "data": [v for (k, v) in self.inst_health_sub[id_now].items()]
             }
 
             self.inst_health_sub_fields[id_now] = []
@@ -220,14 +219,6 @@ class PlotsDash():
 
         self.get_sub_arr_grp()
 
-        return
-
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def back_from_offline(self):
-        # with PlotsDash.lock:
-        #   print '-- back_from_offline',self.widget_name, self.widget_id
         return
 
     # # ------------------------------------------------------------------
@@ -276,21 +267,28 @@ class PlotsDash():
         for i in range(n_rnd_pin):
             data = []
             for j in range(random.randint(1, 12)):
-                rnd_key = self.tel_key[random.randint(
-                    0, len(self.tel_key) - 1)]
+                rnd_key = self.tel_key[random.randint(0, len(self.tel_key) - 1)]
                 rnd_id = self.tel_ids[random.randint(0, len(self.tel_ids) - 1)]
-                data.append({'data': self.get_tel_data(rnd_id, [rnd_key]), 'keys': [
-                            self.tel_category, rnd_key, rnd_id]})
-            self.pinned_eles.append(
-                {"id": "pinned" + str(i), "timestamp": getTime(), 'data': data, 'context': {}})
+                data.append({
+                    'data': self.get_tel_data(rnd_id, [rnd_key]),
+                    'keys': [self.tel_category, rnd_key, rnd_id]
+                })
+            self.pinned_eles.append({
+                "id": "pinned" + str(i),
+                "timestamp": getTime(),
+                'data': data,
+                'context': {}
+            })
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def get_data(self):
         time_of_night_date = {
-            "date_now": datetime.fromtimestamp(getTime()/1000.0).strftime('%Y-%m-%d %H:%M:%S'),
-            "now": getTime()
+            "date_now":
+            datetime.fromtimestamp(getTime() / 1000.0).strftime('%Y-%m-%d %H:%M:%S'),
+            "now":
+            getTime()
         }
 
         data_out = self.get_tel_data('Mx10', ['camera', 'mount'])
@@ -304,15 +302,27 @@ class PlotsDash():
         data = {
             "time_of_night": time_of_night_date,
             "data_out": self.tel_ids,
-            "hierarchy": {'relationship': self.relationship, 'categories': self.categories, 'keys': self.selected_keys, 'root': 'global', 'depth': 4},
+            "hierarchy": {
+                'relationship': self.relationship,
+                'categories': self.categories,
+                'keys': self.selected_keys,
+                'root': 'global',
+                'depth': 4
+            },
             # "agregate": self.agregate,
             'pinned': self.pinned_eles,
             "urgent": {
-                'telescopes': self.get_tel_health_pinned(),
-                "urgentKey": self.relationship[self.selected_keys[len(self.selected_keys) - 1]]['children'],
-                "urgent_current": ordered_current,
-                "urgentTimestamp": ordered_timestamp,
-                "urgent_past": ordered_past,
+                'telescopes':
+                self.get_tel_health_pinned(),
+                "urgentKey":
+                self.relationship[self.selected_keys[len(self.selected_keys)
+                                                     - 1]]['children'],
+                "urgent_current":
+                ordered_current,
+                "urgentTimestamp":
+                ordered_timestamp,
+                "urgent_past":
+                ordered_past,
             }
             # "inst_healthAggregate":self.agregate_tel_health(inst_health)
         }
@@ -323,14 +333,20 @@ class PlotsDash():
         inst_health = []
         for index in range(len(self.tel_ids)):
             for key in self.tel_key:
-                self.redis.pipe.zGet(
-                    'inst_health;'+self.tel_ids[index]+';'+key)
+                self.redis.pipe.zGet('inst_health;' + self.tel_ids[index] + ';' + key)
             data = self.redis.pipe.execute(packed_score=True)
             n_ele_now = 0
             for key in self.tel_key:
                 data_now = data[n_ele_now]
-                inst_health.append({'id': self.tel_ids[index]+'-'+key, 'keys': [
-                                   self.tel_ids[index], key], 'data': [{'y': x[0]['data'], 'x':x[1]} for x in data_now]})
+                inst_health.append({
+                    'id':
+                    self.tel_ids[index] + '-' + key,
+                    'keys': [self.tel_ids[index], key],
+                    'data': [{
+                        'y': x[0]['data'],
+                        'x': x[1]
+                    } for x in data_now]
+                })
                 n_ele_now += 1
         return inst_health
 
@@ -356,7 +372,7 @@ class PlotsDash():
         res = {"id": id}
         data = {}
         for key in keys_now:
-            self.redis.pipe.zGet('inst_health;'+id+';'+key)
+            self.redis.pipe.zGet('inst_health;' + id + ';' + key)
             data[key] = self.redis.pipe.execute(packed_score=True)
         # n_ele = sum([len(v) for v in keys_now])
         # if len(data) != n_ele:
@@ -365,7 +381,7 @@ class PlotsDash():
         #     my_assert(self.log, " - problem with redis.pipe.execute ?!?! " +
         #            str(len(data))+"/"+str(n_ele), False)
         for key in keys_now:
-            res[key] = [{'y': x[0]['data'], 'x':x[1]} for x in data[key][0]]
+            res[key] = [{'y': x[0]['data'], 'x': x[1]} for x in data[key][0]]
             # res[key].append({'id': id+';'+key, 'data': [{'y': x[0]['data'], 'x':x[1]} for x in data[key]]})
         return res
 
@@ -386,8 +402,7 @@ class PlotsDash():
     def get_sub_arr_grp(self):
         #print 'get_sub_arr_grp'
         with PlotsDash.lock:
-            sub_arrs = self.redis.get(
-                name="sub_arrs", packed=True, default_val=[])
+            sub_arrs = self.redis.get(name="sub_arrs", packed=True, default_val=[])
             self.sub_arr_grp = {"id": "sub_arr", "children": sub_arrs}
 
         return
@@ -421,22 +436,94 @@ class PlotsDash():
     # ------------------------------------------------------------------
     def agregate_tel_health(self, inst_health):
         agregate = {
-            "LST": {"health": 0, "number": 0,
-                    "warning": {"camera": [], "mirror": [], "mount": [], "aux": []},
-                    "critical": {"camera": [], "mirror": [], "mount": [], "aux": []},
-                    "unknow": {"camera": [], "mirror": [], "mount": [], "aux": []}},
-            "MST": {"health": 0, "number": 0,
-                    "warning": {"camera": [], "mirror": [], "mount": [], "aux": []},
-                    "critical": {"camera": [], "mirror": [], "mount": [], "aux": []},
-                    "unknow": {"camera": [], "mirror": [], "mount": [], "aux": []}},
-            "SST": {"health": 0, "number": 0,
-                    "warning": {"camera": [], "mirror": [], "mount": [], "aux": []},
-                    "critical": {"camera": [], "mirror": [], "mount": [], "aux": []},
-                    "unknow": {"camera": [], "mirror": [], "mount": [], "aux": []}},
-            "AUX": {"health": 0, "number": 0,
-                    "warning": {"camera": [], "mirror": [], "mount": [], "aux": []},
-                    "critical": {"camera": [], "mirror": [], "mount": [], "aux": []},
-                    "unknow": {"camera": [], "mirror": [], "mount": [], "aux": []}}
+            "LST": {
+                "health": 0,
+                "number": 0,
+                "warning": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                },
+                "critical": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                },
+                "unknow": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                }
+            },
+            "MST": {
+                "health": 0,
+                "number": 0,
+                "warning": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                },
+                "critical": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                },
+                "unknow": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                }
+            },
+            "SST": {
+                "health": 0,
+                "number": 0,
+                "warning": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                },
+                "critical": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                },
+                "unknow": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                }
+            },
+            "AUX": {
+                "health": 0,
+                "number": 0,
+                "warning": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                },
+                "critical": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                },
+                "unknow": {
+                    "camera": [],
+                    "mirror": [],
+                    "mount": [],
+                    "aux": []
+                }
+            }
         }
 
         for key in inst_health:
@@ -473,9 +560,19 @@ class PlotsDash():
     # ------------------------------------------------------------------
     def get_tel_treshold_types(self, key):
         if key == 'health':
-            return [{"name": "ERROR", "value": "30", "func": "<="},
-                    {"name": "WARNING", "value": "55", "func": "<="},
-                    {"name": "NOMINAL", "value": "100", "func": "<="}]
+            return [{
+                "name": "ERROR",
+                "value": "30",
+                "func": "<="
+            }, {
+                "name": "WARNING",
+                "value": "55",
+                "func": "<="
+            }, {
+                "name": "NOMINAL",
+                "value": "100",
+                "func": "<="
+            }]
         return {}
 
     # ------------------------------------------------------------------
@@ -483,15 +580,45 @@ class PlotsDash():
     # ------------------------------------------------------------------
     def get_tel_measure_types(self, key):
         if key == 'mount':
-            return {"name": "Health", "key": "health", "short": "hlt", "unit": "%", "treshold": self.get_tel_treshold_types("health")}
+            return {
+                "name": "Health",
+                "key": "health",
+                "short": "hlt",
+                "unit": "%",
+                "treshold": self.get_tel_treshold_types("health")
+            }
         if key == 'mirror':
-            return {"name": "Health", "key": "health", "short": "hlt", "unit": "%", "treshold": self.get_tel_treshold_types("health")}
+            return {
+                "name": "Health",
+                "key": "health",
+                "short": "hlt",
+                "unit": "%",
+                "treshold": self.get_tel_treshold_types("health")
+            }
         if key == 'daq':
-            return {"name": "Health", "key": "health", "short": "hlt", "unit": "%", "treshold": self.get_tel_treshold_types("health")}
+            return {
+                "name": "Health",
+                "key": "health",
+                "short": "hlt",
+                "unit": "%",
+                "treshold": self.get_tel_treshold_types("health")
+            }
         if key == 'camera':
-            return {"name": "Health", "key": "health", "short": "hlt", "unit": "%", "treshold": self.get_tel_treshold_types("health")}
+            return {
+                "name": "Health",
+                "key": "health",
+                "short": "hlt",
+                "unit": "%",
+                "treshold": self.get_tel_treshold_types("health")
+            }
         if key == 'aux':
-            return {"name": "Health", "key": "health", "short": "hlt", "unit": "%", "treshold": self.get_tel_treshold_types("health")}
+            return {
+                "name": "Health",
+                "key": "health",
+                "short": "hlt",
+                "unit": "%",
+                "treshold": self.get_tel_treshold_types("health")
+            }
         return {}
 
     # ------------------------------------------------------------------
@@ -502,9 +629,26 @@ class PlotsDash():
         inst_health = self.get_tel_health()
         for tel_id, vect in inst_health.items():
             for key, value in vect.items():
-                if (key != "status" and value != None and self.get_tel_state(int(value)) == "ERROR"):
-                    self.urgent_current.append({"id": tel_id+key, "keys": [tel_id, key, self.socket_manager.InstData.get_tel_type(tel_id), self.tel_category], "name": tel_id, "data": {
-                        "measures": [{"value": value, "timestamp": getTime()}], "type": self.get_tel_measure_types(key)}})
+                if (key != "status" and value != None
+                        and self.get_tel_state(int(value)) == "ERROR"):
+                    self.urgent_current.append({
+                        "id":
+                        tel_id + key,
+                        "keys": [
+                            tel_id, key,
+                            self.socket_manager.InstData.get_tel_type(tel_id),
+                            self.tel_category
+                        ],
+                        "name":
+                        tel_id,
+                        "data": {
+                            "measures": [{
+                                "value": value,
+                                "timestamp": getTime()
+                            }],
+                            "type": self.get_tel_measure_types(key)
+                        }
+                    })
 
     # ------------------------------------------------------------------
     #
@@ -514,16 +658,34 @@ class PlotsDash():
         inst_health = self.get_tel_health()
         for tel_id, vect in inst_health.items():
             for key, value in vect.items():
-                if (key != "status" and value != None and self.get_tel_state(int(value)) == "ERROR"):
-                    self.urgent_current.append({"id": tel_id+key, "keys": [tel_id, key, self.socket_manager.InstData.get_tel_type(tel_id), self.tel_category], "name": tel_id, "data": {
-                        "measures": [{"value": value, "timestamp": getTime()}], "type": self.get_tel_measure_types(key)}})
+                if (key != "status" and value != None
+                        and self.get_tel_state(int(value)) == "ERROR"):
+                    self.urgent_current.append({
+                        "id":
+                        tel_id + key,
+                        "keys": [
+                            tel_id, key,
+                            self.socket_manager.InstData.get_tel_type(tel_id),
+                            self.tel_category
+                        ],
+                        "name":
+                        tel_id,
+                        "data": {
+                            "measures": [{
+                                "value": value,
+                                "timestamp": getTime()
+                            }],
+                            "type": self.get_tel_measure_types(key)
+                        }
+                    })
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def order_urgent_current_key(self):
-        keys = [self.relationship[self.selected_keys[len(
-            self.selected_keys) - 1]]['children']]
+        keys = [
+            self.relationship[self.selected_keys[len(self.selected_keys) - 1]]['children']
+        ]
 
         def order_data(vector, index):
             if index >= len(keys):
@@ -534,9 +696,10 @@ class PlotsDash():
                 for v in vector:
                     if key in v["keys"]:
                         ordered["data"].append(v)
-                ordered["data"] = order_data(ordered["data"], index+1)
+                ordered["data"] = order_data(ordered["data"], index + 1)
                 new_order.append(ordered)
             return new_order
+
         return order_data(self.urgent_current, 0)
 
     # ------------------------------------------------------------------
@@ -553,8 +716,7 @@ class PlotsDash():
             insert = True
             for past in self.urgent_past:
                 if curr["id"] == past["id"]:
-                    past["data"]["measures"].append(
-                        curr["data"]["measures"][0])
+                    past["data"]["measures"].append(curr["data"]["measures"][0])
                     insert = False
                     break
             if insert:
@@ -587,8 +749,9 @@ class PlotsDash():
     #
     # ------------------------------------------------------------------
     def order_urgent_past_key_time(self):
-        keys = [self.relationship[self.selected_keys[len(
-            self.selected_keys) - 1]]['children']]
+        keys = [
+            self.relationship[self.selected_keys[len(self.selected_keys) - 1]]['children']
+        ]
 
         def order_data(vector, index):
             if index >= len(keys):
@@ -599,17 +762,19 @@ class PlotsDash():
                 for v in vector:
                     if key in v["keys"]:
                         ordered["data"].append(v)
-                ordered["data"] = order_data(ordered["data"], index+1)
+                ordered["data"] = order_data(ordered["data"], index + 1)
                 new_order.append(ordered)
             return new_order
+
         return order_data(self.urgent_past, 0)
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def order_urgent_past_key(self):
-        keys = [self.relationship[self.selected_keys[len(
-            self.selected_keys) - 1]]['children']]
+        keys = [
+            self.relationship[self.selected_keys[len(self.selected_keys) - 1]]['children']
+        ]
 
         def order_data(vector, index):
             if index >= len(keys):
@@ -620,9 +785,10 @@ class PlotsDash():
                 for v in vector:
                     if key in v["keys"]:
                         ordered["data"].append(v)
-                ordered["data"] = order_data(ordered["data"], index+1)
+                ordered["data"] = order_data(ordered["data"], index + 1)
                 new_order.append(ordered)
             return new_order
+
         return order_data(self.urgent_past, 0)
 
     # ------------------------------------------------------------------
@@ -644,16 +810,13 @@ class PlotsDash():
         fields = dict()
         for id_now in self.tel_ids:
             fields[id_now] = ["health", "status"]
-            fields[id_now] += [
-                v['id'] for (k, v) in self.inst_health_sub[id_now].items()
-            ]
+            fields[id_now] += [v['id'] for (k, v) in self.inst_health_sub[id_now].items()]
 
         idV = self.tel_ids if (id_in is None) else [id_in]
 
         self.redis.pipe.reset()
         for id_now in idV:
-            self.redis.pipe.hMget(
-                name="inst_health;"+str(id_now), key=fields[id_now])
+            self.redis.pipe.hMget(name="inst_health;" + str(id_now), key=fields[id_now])
         redis_data = self.redis.pipe.execute()
 
         for i in range(len(redis_data)):

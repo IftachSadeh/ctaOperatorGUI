@@ -257,8 +257,8 @@ window.PanelManager = function() {
         .on('end', function(d, i) {
             if (
                 Math.sqrt(
-                    Math.pow(d3.event.x - d.startDragX, 2) +
-            Math.pow(d3.event.y - d.startDragY, 2)
+                    Math.pow(d3.event.x - d.startDragX, 2)
+            + Math.pow(d3.event.y - d.startDragY, 2)
                 ) > 40
             ) {
                 removePanel(d, i)

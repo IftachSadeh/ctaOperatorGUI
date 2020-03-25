@@ -546,8 +546,8 @@ window.dropdown_d3 = function() {
         }
         deployed = true
         drawArrowUp()
-        let max =
-      reserved.options.nb < reserved.options.list.length
+        let max
+      = reserved.options.nb < reserved.options.list.length
           ? reserved.options.nb
           : reserved.options.list.length
         let scrollbox = {
@@ -635,7 +635,7 @@ window.dropdown_d3 = function() {
         current
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
     }

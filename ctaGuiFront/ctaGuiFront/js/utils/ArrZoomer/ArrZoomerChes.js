@@ -70,8 +70,6 @@ window.ArrZoomerChes = function(opt_in_top) {
     }
 
 
-
-
     let com = {
     }
     com.ches_xy = {
@@ -174,11 +172,17 @@ window.ArrZoomerChes = function(opt_in_top) {
             })
             n_ele_row++
 
-            let x =
-        ele_r / ele_shift[0] +
-        ele_r +
-        ((is_south ? 0.3 : 0.15 * 6) + n_ele_now_row) * (ele_space[0] * ele_r)
-            let y = ele_r / ele_shift[1] + ele_r + n_ele_now_col * (ele_space[1] * ele_r)
+            let x = (
+                ele_r / ele_shift[0]
+                + ele_r
+                + ((is_south ? 0.3 : 0.15 * 6) + n_ele_now_row)
+                * (ele_space[0] * ele_r)
+            )
+            let y = (
+                ele_r / ele_shift[1]
+                + ele_r
+                + n_ele_now_col * (ele_space[1] * ele_r)
+            )
 
             com.ches_g.xyr[id_now] = {
                 id: id_now,
@@ -288,11 +292,11 @@ window.ArrZoomerChes = function(opt_in_top) {
             .style('pointer-events', 'none')
             .attr('transform', function(d) {
                 return (
-                    'translate(' +
-          com.ches_g.xyr[d.id].x +
-          ',' +
-          com.ches_g.xyr[d.id].y +
-          ')'
+                    'translate('
+                    + com.ches_g.xyr[d.id].x
+                    + ','
+                    + com.ches_g.xyr[d.id].y
+                    + ')'
                 )
             })
             .style('fill-opacity', fill_opac)
@@ -303,8 +307,8 @@ window.ArrZoomerChes = function(opt_in_top) {
             .style('fill', '#383b42')
             .merge(circ)
             .transition('in_out')
-            .duration(times.anim_arc)
-        // .style("fill", function(d) { return inst_health_col(d[tag_circ],0.5); } )
+            .duration(times.anim)
+            // .style("fill", function(d) { return inst_health_col(d[tag_circ],0.5); } )
             .style('stroke', function(d) {
                 return inst_health_col(d[tag_circ], 0.5)
             })
@@ -312,7 +316,7 @@ window.ArrZoomerChes = function(opt_in_top) {
         circ
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('r', 0)
             .remove()
 
@@ -324,13 +328,13 @@ window.ArrZoomerChes = function(opt_in_top) {
             return index % 2 === 0
                 ? d3.rgb(cols_purples[4]).brighter(0.5)
                 : d3.rgb(cols_blues[3]).brighter(0.1)
-            // return (index%2 == 0) ? d3.rgb(cols_yellows[1]).brighter(0.5) : d3.rgb(cols_greens[4]).brighter(0.1);
         }
         function txt_col_rcb(d) {
             return d3.rgb(txt_col_rc(d)).brighter(0.2)
         }
 
-        // attach new data (select by id, and so will override existing data if has the same id)
+        // attach new data (select by id, and so will override
+        // existing data if has the same id)
         let text = com.ches_g.g.selectAll('text.' + tag_lbl).data(data_in, function(d) {
             return d.id
         })
@@ -359,44 +363,32 @@ window.ArrZoomerChes = function(opt_in_top) {
             .style('font-size', title_size + 'px')
             .attr('transform', function(d, i) {
                 return (
-                    'translate(' +
-          com.ches_g.xyr[d.id].x +
-          ',' +
-          com.ches_g.xyr[d.id].y +
-          ')'
+                    'translate('
+          + com.ches_g.xyr[d.id].x
+          + ','
+          + com.ches_g.xyr[d.id].y
+          + ')'
                 )
             })
             .attr('dy', title_size / 3 + 'px')
             .attr('text-anchor', 'middle')
             .style('font-size', title_size + 'px')
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .delay(100)
             .style('opacity', '1')
 
         text
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
 
         // ------------------------------------------------------------------
         // the highlight function
         // ------------------------------------------------------------------
-        function focus_tel(data_in, is_on) {
-            locker.add('svg_quick_focus_tel')
-
-            let delay = 250
-            setTimeout(function() {
-                if (locker.n_active('svg_quick_focus_tel') === 1) {
-                    _focus_tel(data_in, is_on)
-                }
-                locker.remove('svg_quick_focus_tel')
-            }, delay)
-        }
-
-        function _focus_tel(data_in, is_on) {
+        let focus_tel_once = function(data_in, is_on) {
             let scale_r = is_south ? 2.0 : 1.1
 
             let is_ele_on
@@ -430,7 +422,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             //
             circ
                 .transition('update')
-                .duration(times.anim_arc * (is_on ? 0.5 : 0.1))
+                .duration(times.anim * (is_on ? 0.5 : 0.1))
             // .style("opacity", function(d) { return is_ele_on(d) ? 1 : (is_on?0.5:1);  })
                 .style('fill-opacity', function(d) {
                     return is_ele_on(d) ? 1 : 0
@@ -445,7 +437,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             //
             text
                 .transition('update')
-                .duration(times.anim_arc * (is_on ? 1 : 0.1))
+                .duration(times.anim * (is_on ? 1 : 0.1))
                 .style('font-size', function(d) {
                     return (is_ele_on(d) ? title_size * scale_r : title_size) + 'px'
                 })
@@ -458,6 +450,18 @@ window.ArrZoomerChes = function(opt_in_top) {
                 .style('font-weight', function(d) {
                     return is_ele_on(d) ? 'bold' : 'normal'
                 })
+        }
+
+        function focus_tel(data_in, is_on) {
+            locker.add('svg_quick_focus_tel')
+
+            let delay = 250
+            setTimeout(function() {
+                if (locker.n_active('svg_quick_focus_tel') === 1) {
+                    focus_tel_once(data_in, is_on)
+                }
+                locker.remove('svg_quick_focus_tel')
+            }, delay)
         }
 
 
@@ -474,7 +478,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             .style('opacity', '0')
             .style('stroke-width', 0)
             .style('stroke', '#383B42')
-        // .style("opacity", "0.25").style("stroke-width", "0.75").style("stroke", "#E91E63")//.style("stroke", "white")
+            // .style("opacity", "0.25").style("stroke-width", "0.75").style("stroke", "#E91E63")//.style("stroke", "white")
             .call(function(d) {
                 d.attr('d', vor_ploy_func)
             })
@@ -485,7 +489,7 @@ window.ArrZoomerChes = function(opt_in_top) {
                     is_in_out: false,
                 })
             })
-        // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:true }); }) // dousnt work well...
+            // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:true }); }) // dousnt work well...
             .on('mouseover', function(d) {
                 focus_tel(d, true)
             })
@@ -518,7 +522,8 @@ window.ArrZoomerChes = function(opt_in_top) {
 
         // initialize the target name for hovering->zoom
         this_top.target = zoom_target
-        // programatic zoom to some target and scale - only use the last of any set of ovelapping zoom requests
+        // programatic zoom to some target and scale - only use 
+        // the last of any set of ovelapping zoom requests
         // run_loop.init({
         //   tag: zoom_to_target_tag.ches,
         //   func: do_zoom_to_target,

@@ -223,17 +223,17 @@ window.BlockQueueOptimizer = function(opt_in) {
                 : opt_in.d.data.exe_state.can_run
             let modifiedUser = opt_in.d.data.modifications
                 ? !(
-                    Object.keys(opt_in.d.data.modifications.userModifications).length ===
-              0 &&
-            opt_in.d.data.modifications.userModifications.constructor === Object
+                    Object.keys(opt_in.d.data.modifications.userModifications).length
+              === 0
+            && opt_in.d.data.modifications.userModifications.constructor === Object
                 )
                 : false
             let modifiedOptimizer = opt_in.d.data.modifications
                 ? !(
                     Object.keys(opt_in.d.data.modifications.optimizerModifications)
-                        .length === 0 &&
-            opt_in.d.data.modifications.optimizerModifications.constructor ===
-              Object
+                        .length === 0
+            && opt_in.d.data.modifications.optimizerModifications.constructor
+              === Object
                 )
                 : false
             let created = opt_in.d.data.modifications

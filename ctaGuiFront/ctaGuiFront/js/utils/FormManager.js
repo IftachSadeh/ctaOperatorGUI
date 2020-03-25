@@ -110,7 +110,7 @@ window.FormManager = function() {
             .attr('x', data.x + data.marg + 'px')
             .attr('y', divY)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('opacity', 1)
     }
     this.setForObjPos = setForObjPos
@@ -155,8 +155,8 @@ window.FormManager = function() {
         let preventDefault = is_def(opt_in.preventDefault)
             ? opt_in.preventDefault
             : true
-        let font_size =
-      +opt_in.get_scaleWH().w * (is_def(opt_in.font_scale) ? opt_in.font_scale : 1)
+        let font_size
+      = +opt_in.get_scaleWH().w * (is_def(opt_in.font_scale) ? opt_in.font_scale : 1)
         font_size = font_size * 100 + '%'
 
         let form = com.main_div[id]

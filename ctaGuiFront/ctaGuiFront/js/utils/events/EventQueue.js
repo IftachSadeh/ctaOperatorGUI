@@ -660,11 +660,11 @@ window.EventQueue = function() {
                     let h1 = data_now1.h
                     let o01 = Math.max(data_now0.o, data_now1.o)
 
-                    let hasOverlap =
-                            x1 < min_max.maxX - o01 &&
-                            x1 + w1 > min_max.min_x + o01 &&
-                            y1 < min_max.maxY &&
-                            y1 + h1 > min_max.min_y
+                    let hasOverlap
+                            = x1 < min_max.maxX - o01
+                            && x1 + w1 > min_max.min_x + o01
+                            && y1 < min_max.maxY
+                            && y1 + h1 > min_max.min_y
                     // if(x1 > min_max.maxX-o1 && x1 < min_max.maxX) console.log([index0,data_now0.data.metadata.block_name],[index1,data_now1.data.metadata.block_name]);
 
                     // XXXXXXXXXXXXXXXXXX
@@ -821,7 +821,7 @@ window.EventQueue = function() {
             })
             .merge(rect)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('x', function(d, i) {
                 return com.axis.scale(new Date(d.data.date))
             })
@@ -848,7 +848,7 @@ window.EventQueue = function() {
 
         rect.exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('width', 0)
             .style('opacity', 0)
             .remove()
@@ -969,7 +969,7 @@ window.EventQueue = function() {
             .attr('vector-effect', 'non-scaling-stroke')
             .merge(rectNow)
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('x', function(d, i) {
                 return d.x
             })
@@ -980,7 +980,7 @@ window.EventQueue = function() {
     // .attr("height", function(d,i) { return d.h; })
 
     // rectNow.exit()
-    //   .transition("in_out").duration(times.anim_arc/2)
+    //   .transition("in_out").duration(times.anim/2)
     //   .attr("width", 0)
     //   .style("opacity", 0)
     //   .remove()
@@ -997,7 +997,7 @@ window.EventQueue = function() {
             .attr('y', y + h * 0.5)
             .style('pointer-events', 'none')
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('width', w * 0.8)
             .attr('height', h * 0.8)
             .attr('x', x + w * 0.1)
@@ -1013,7 +1013,7 @@ window.EventQueue = function() {
             .attr('y', y + h * 0.5)
             .style('pointer-events', 'none')
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('width', w * 0.8)
             .attr('height', h * 0.8)
             .attr('x', x + w * 0.1)
@@ -1029,7 +1029,7 @@ window.EventQueue = function() {
             .attr('y', y + h * 0.5)
             .style('pointer-events', 'none')
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .attr('width', w * 0.8)
             .attr('height', h * 0.8)
             .attr('x', x + w * 0.1)

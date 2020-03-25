@@ -49,10 +49,24 @@
         "one-var-declaration-per-line": [
             "error", "initializations"
         ],
+        "operator-linebreak": [
+            "error", "before"
+        ],
         "brace-style": [
             "error", "stroustrup"
         ],
+        "no-unused-vars": [
+            2, 
+            {"args": "after-used", "argsIgnorePattern": "_"}
+        ],
+        "no-nested-ternary": "error",
+        "no-unneeded-ternary": "error",
+        "no-underscore-dangle": "error",
         "curly": "error",
+        "no-multiple-empty-lines": [
+            "error", 
+            { "max": 2, "maxEOF": 3, "maxBOF": 0 }
+        ],
         "keyword-spacing": [
             "error", 
             { "before": true , "after": true }

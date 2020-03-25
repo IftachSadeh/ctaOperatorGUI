@@ -56,7 +56,7 @@ For additional information, see:
     $VENV/bin/easy_install gunicorn pyramid_jinja2
     $VENV/bin/easy_install zope.interface zope.sqlalchemy zope.deprecation SQLAlchemy sqlalchemy transaction
     $VENV/bin/easy_install msgpack-python redis numpy
-    $VENV/bin/easy_install pep8 flake8 pep8-naming autopep8 autoflake
+    $VENV/bin/easy_install pep8 flake8 pep8-naming yapf
     npm install eslint
   ```
 
@@ -254,13 +254,13 @@ The `timeout` sets the maximal time for a greenlet (a gunicorn thread) to be abl
 
 ### Styling conventions
 
-- The python code complies with `pep8`/`flake8`. (One can e.g., do `$VENV/bin/autopep8 -i ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py`, `$VENV/bin/flake8 ctaGuiFront/ctaGuiFront/py/widget_emptyExample.py` etc.)
-- The JavaScript code complies with the [`eslint`](https://eslint.org/). (One can e.g., do `eslint --fix ctaGuiFront/ctaGuiFront/js/widget_emptyExample.js`.) The rules are defined in `ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront/js/.eslintrc.json`.
+- The python code complies with `pep8`/`yapf`, [`yapf`](https://github.com/google/yapf). One can e.g., do `$VENV/bin/yapf --style=py/.yapf -i -r ctaGuiFront/ctaGuiFront/py/`, etc. The rules are defined in `ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront/py/.yapf`.
+- The JavaScript code complies with the [`eslint`](https://eslint.org/). One can e.g., do `eslint --fix ctaGuiFront/ctaGuiFront/js/widget_emptyExample.js`. The rules are defined in `ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront/js/.eslintrc.json`.
 
 <!-- 
 cd ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront
 eslint --fix js/utils/*js js/utils/*/*js js/widgets/*js
-$VENV/bin/autopep8 -i py/widgets/*py py/utils/*py py/__init__.py __init__.py
+$VENV/bin/yapf --style=py/.yapf -i -r ./ ../../ctaGuiBack/ctaGuiBack/ ../../ctaGuiUtils/
 -->
 
 ### Credits

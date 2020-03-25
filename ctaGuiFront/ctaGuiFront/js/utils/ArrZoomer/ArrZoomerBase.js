@@ -289,7 +289,6 @@ window.ArrZoomerBase = function(opt_in0) {
     }
 
 
-
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -337,8 +336,8 @@ window.ArrZoomerBase = function(opt_in0) {
             $.each(instruments.data.tel, function(id, data_now) {
                 // console.log('    ++',id,porp_now,data_now[porp_now])
                 if (
-                    data_now[porp_now] !== undefined &&
-          typeof data_now[porp_now] === 'number'
+                    data_now[porp_now] !== undefined
+          && typeof data_now[porp_now] === 'number'
                 ) {
                     instruments.data.avg[porp_now] += data_now[porp_now]
                 }
@@ -608,7 +607,6 @@ window.ArrZoomerBase = function(opt_in0) {
 
         return
     }
-    this_top.init_data = init_data
 
 
     // ------------------------------------------------------------------
@@ -812,12 +810,12 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.set_state = set_state
 
     function set_state_once() {
-    // create delay if currently in data update or a previous call of set_state_once
+        // create delay if currently in data update or a previous call of set_state_once
         if (!locker.are_free([ 'set_state_lock', 'data_change' ])) {
             // console.log('delay set_state_once',' :',locker.is_free({id:"set_state_lock"}),' - data_updateate:',locker.is_free({id:"set_state_lock"}))
             setTimeout(function() {
                 set_state()
-            }, times.anim_arc)
+            }, times.anim)
             return
         }
         // console.log("set_state");
@@ -840,7 +838,7 @@ window.ArrZoomerBase = function(opt_in0) {
 
         locker.remove({
             id: 'set_state_lock',
-            delay: times.anim_arc * 2,
+            delay: times.anim * 2,
         })
     }
 
@@ -854,7 +852,7 @@ window.ArrZoomerBase = function(opt_in0) {
     })
 
     function props_s1(opt_in) {
-    // console.log('set_state',get_ele('main').get_zoom_state(),get_scale())
+        // console.log('set_state',get_ele('main').get_zoom_state(),get_scale())
         run_loop.push({
             tag: '_s1_props_' + my_unique_id,
             data: opt_in,
@@ -864,7 +862,7 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.props_s1 = props_s1
 
     function props_s1_once(opt_in) {
-    // not sure i need "data_change" or others here .... FIXME
+        // not sure i need "data_change" or others here .... FIXME
         if (!locker.are_free([ 's1_props_change', 'data_change' ])) {
             // console.log('delay props_s1_once....')
             props_s1(opt_in)
@@ -909,7 +907,7 @@ window.ArrZoomerBase = function(opt_in0) {
     })
 
     function get_data_s1(widget_id_in, data_in) {
-    // just in case... should not be needed
+        // just in case... should not be needed
         if (widget_id_in !== widget_id) {
             console.error('id mismatch', widget_id_in, widget_id)
             return
@@ -926,10 +924,9 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.get_data_s1 = get_data_s1
 
     function get_data_s1_once(data_in) {
-        if (
-            get_ele('main').get_zoom_state() === 1 &&
-      get_ele('main').syncs.zoom_target !== data_in.data.id
-        ) {
+        let is_zoom_state = (get_ele('main').get_zoom_state() === 1)
+        let is_data_id = (get_ele('main').syncs.zoom_target !== data_in.data.id)
+        if (is_zoom_state && is_data_id) {
             get_ele('main').syncs.zoom_target = data_in.data.id
 
             get_ele('main').s10_main(data_in.data)
@@ -997,59 +994,40 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.get_sync_state = get_sync_state
 
     // ------------------------------------------------------------------
-    //
+    // ask for update for state1 data for a given module
     // ------------------------------------------------------------------
-    run_loop.init({
-        tag: 'sync_state_send' + my_unique_id,
-        func: _sync_state_send,
-        n_keep: 1,
-        wait: times.wait_sync_state,
-    })
-
-    function sync_state_send(data_in) {
-        run_loop.push({
-            tag: 'sync_state_send' + my_unique_id,
-            data: data_in,
-        })
-    }
-    this_top.sync_state_send = sync_state_send
-
-    function _sync_state_send(data_in) {
+    function sock_ask_init_data() {
         if (sock.con_stat.is_offline()) {
+            setTimeout(function() {
+                sock_ask_init_data()
+            }, 10)
             return
         }
 
-        if (data_in.type === 'sync_tel_focus') {
-            if (
-                !locker.are_free([
-                    'in_init',
-                    'zoom',
-                    'auto_zoom_target',
-                    'set_state_lock',
-                    'data_change',
-                ])
-            ) {
-                setTimeout(function() {
-                    sync_state_send(data_in)
-                }, times.anim_arc)
-                return
-            }
-
-            if (sock.is_same_sync(prev_sync, data_in)) {
-                return
-            }
-        }
-
-        // console.log('send -=- ',widget_id,data_in,prev_sync[ data_in.type]);
-        prev_sync[data_in.type] = data_in
-        sock.sock_sync_state_send({
+        let emit_data = {
+            widget_source: widget_source,
+            widget_name: widget_type,
             widget_id: widget_id,
-            type: data_in.type,
-            data: data_in,
-        })
+            method_name: 'arr_zoomer_ask_init_data',
+        }
+        sock.socket.emit('widget', emit_data)
 
         return
     }
+
+    // ------------------------------------------------------------------
+    // get update for state1 data which was explicitly asked for by a given module
+    // ------------------------------------------------------------------
+    sock.socket.on('arr_zoomer_get_init_data', function(data_in) {
+        run_when_ready({
+            pass: function() {
+                return !sock.con_stat.is_offline()
+            },
+            execute: function() {
+                init_data(data_in.data)
+            },
+        })
+    })
 
     // ------------------------------------------------------------------
     // ask for update for state1 data for a given module
@@ -1125,21 +1103,6 @@ window.ArrZoomerBase = function(opt_in0) {
     }
     this_top.set_zoom_state = set_zoom_state
 
-    
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    // sock.socket.on('init_data' + 'ArrZoomer', function(data_in) {
-    //     console.log('dddddd', data_in)
-    //     // if (data_in.widget_type === widget_type) {
-    //     //     if (is_def(this_top.all_widgets[widget_type].widgets[data_in.widget_id])) {
-    //     //         this_top.all_widgets[widget_type].widgets[data_in.widget_id].init_data(
-    //     //             data_in
-    //     //         )
-    //     //         init_views[data_in.widget_id] = true
-    //     //     }
-    //     // }
-    // })
 
     // ------------------------------------------------------------------
     // get update for state1 data which was explicitly asked for by a given module
@@ -1172,6 +1135,68 @@ window.ArrZoomerBase = function(opt_in0) {
         })
     })
 
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    run_loop.init({
+        tag: 'sync_state_send' + my_unique_id,
+        func: sync_state_send_now,
+        n_keep: 1,
+        wait: times.wait_sync_state,
+    })
+
+    function sync_state_send(data_in) {
+        run_loop.push({
+            tag: 'sync_state_send' + my_unique_id,
+            data: data_in,
+        })
+    }
+    this_top.sync_state_send = sync_state_send
+
+    function sync_state_send_now(data_in) {
+        if (sock.con_stat.is_offline()) {
+            return
+        }
+
+        if (data_in.type === 'sync_tel_focus') {
+            if (
+                !locker.are_free([
+                    'in_init',
+                    'zoom',
+                    'auto_zoom_target',
+                    'set_state_lock',
+                    'data_change',
+                ])
+            ) {
+                setTimeout(function() {
+                    sync_state_send(data_in)
+                }, times.anim)
+                return
+            }
+
+            if (sock.is_same_sync(prev_sync, data_in)) {
+                return
+            }
+        }
+
+        // console.log('send -=- ',widget_id,data_in,prev_sync[ data_in.type]);
+        prev_sync[data_in.type] = data_in
+        sock.sock_sync_state_send({
+            widget_id: widget_id,
+            type: data_in.type,
+            data: data_in,
+        })
+
+        return
+    }
+
+    // ------------------------------------------------------------------
+    // after all is setup, ask for the initialisation data
+    // ------------------------------------------------------------------
+    sock_ask_init_data()
+
     return
 }
+
+
 

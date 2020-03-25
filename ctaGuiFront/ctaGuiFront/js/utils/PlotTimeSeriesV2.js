@@ -198,14 +198,14 @@ window.PlotTimeSeries = function() {
             currentIC
                 .exit()
                 .transition('in_out')
-                .duration(times.anim_arc)
+                .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
         })
         current
             .exit()
             .transition('in_out')
-            .duration(times.anim_arc)
+            .duration(times.anim)
             .style('opacity', 0)
             .remove()
     }
@@ -283,41 +283,41 @@ window.PlotTimeSeries = function() {
             if (reserved.axis[i].main.type === 'bottom') {
                 reserved.axis[i].main.g.attr(
                     'transform',
-                    'translate(' +
-            reserved.axis[i].main.box.x +
-            ',' +
-            (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h) +
-            ')'
+                    'translate('
+            + reserved.axis[i].main.box.x
+            + ','
+            + (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h)
+            + ')'
                 )
             }
             else if (reserved.axis[i].main.type === 'top') {
                 reserved.axis[i].main.g.attr(
                     'transform',
-                    'translate(' +
-            reserved.axis[i].main.box.x +
-            ',' +
-            reserved.axis[i].main.box.y +
-            ')'
+                    'translate('
+            + reserved.axis[i].main.box.x
+            + ','
+            + reserved.axis[i].main.box.y
+            + ')'
                 )
             }
             else if (reserved.axis[i].main.type === 'right') {
                 reserved.axis[i].main.g.attr(
                     'transform',
-                    'translate(' +
-            (reserved.axis[i].main.box.x + reserved.axis[i].main.box.w) +
-            ',' +
-            reserved.axis[i].main.box.y +
-            ')'
+                    'translate('
+            + (reserved.axis[i].main.box.x + reserved.axis[i].main.box.w)
+            + ','
+            + reserved.axis[i].main.box.y
+            + ')'
                 )
             }
             else if (reserved.axis[i].main.type === 'left') {
                 reserved.axis[i].main.g.attr(
                     'transform',
-                    'translate(' +
-            reserved.axis[i].main.box.x +
-            ',' +
-            reserved.axis[i].main.box.y +
-            ')'
+                    'translate('
+            + reserved.axis[i].main.box.x
+            + ','
+            + reserved.axis[i].main.box.y
+            + ')'
                 )
             }
 

@@ -39,8 +39,7 @@ from ctaGuiFront.py.utils.views import view_common
 
 def main(global_config, **settings):
     log.info([['wg', " - Starting pyramid app - ctaGuiFront ..."]])
-    log.info([['p', " - has_acs = "],
-              [('g' if utils.has_acs else 'r'), utils.has_acs]])
+    log.info([['p', " - has_acs = "], [('g' if utils.has_acs else 'r'), utils.has_acs]])
 
     # the app name (corresponding to the directory name)
     app_name = settings['app_name']
@@ -68,17 +67,19 @@ def main(global_config, **settings):
     Base.metadata.bind = engine
 
     authn_policy = AuthTktAuthenticationPolicy(
-        'sosecret', callback=get_groups, hashalg='sha512')
+        'sosecret', callback=get_groups, hashalg='sha512'
+    )
     authz_policy = ACLAuthorizationPolicy()
 
     config = Configurator(
-        settings=settings, root_factory=app_name+'.py.utils.Models.RootFactory')
+        settings=settings, root_factory=app_name + '.py.utils.Models.RootFactory'
+    )
 
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
 
     config.include('pyramid_jinja2')
-    renderer = app_name+":templates/view_common.jinja2"
+    renderer = app_name + ":templates/view_common.jinja2"
 
     # ------------------------------------------------------------------
     # forbidden view, which simply redirects to the login
@@ -88,19 +89,19 @@ def main(global_config, **settings):
     # ------------------------------------------------------------------
     # basic view, open to everyone, for login/logout/redirect
     # ------------------------------------------------------------------
-    config.add_route('login', '/'+utils.app_prefix+'/login')
+    config.add_route('login', '/' + utils.app_prefix + '/login')
     config.add_view(view_login, route_name='login', renderer=renderer)
 
-    config.add_route('logout', '/'+utils.app_prefix+'/logout')
+    config.add_route('logout', '/' + utils.app_prefix + '/logout')
     config.add_view(view_logout, route_name='logout', renderer=renderer)
 
-    config.add_route('not_found', '/'+utils.app_prefix+'/not_found')
+    config.add_route('not_found', '/' + utils.app_prefix + '/not_found')
     config.add_view(view_not_found, context=NotFound, renderer=renderer)
 
     config.add_route('/', '/')
     config.add_view(view_empty, route_name="/", renderer=renderer)
 
-    config.add_route(utils.app_prefix, '/'+utils.app_prefix)
+    config.add_route(utils.app_prefix, '/' + utils.app_prefix)
     config.add_view(view_empty, route_name=utils.app_prefix, renderer=renderer)
 
     # ------------------------------------------------------------------
@@ -109,9 +110,8 @@ def main(global_config, **settings):
     perm = "permit_all"
     # ------------------------------------------------------------------
     # the index page
-    config.add_route("index", '/'+utils.app_prefix+'/'+"index")
-    config.add_view(view_index, route_name='index',
-                    renderer=renderer, permission=perm)
+    config.add_route("index", '/' + utils.app_prefix + '/' + "index")
+    config.add_view(view_index, route_name='index', renderer=renderer, permission=perm)
 
     # the uri for sockets
     config.add_route('socket_io', 'socket.io/*remaining')
@@ -125,12 +125,12 @@ def main(global_config, **settings):
     # list here all views, which use the shared view function
     # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
     utils.all_widgets = [
-        "view102", "view000", "view_refresh_all",
-        "view200", "view201", "view202", "view203", "view204", "view205", "view206", "view207", "view2051"
+        "view102", "view000", "view_refresh_all", "view200", "view201", "view202",
+        "view203", "view204", "view205", "view206", "view207", "view2051"
     ]
 
     for view_name in utils.all_widgets:
-        config.add_route(view_name, '/'+utils.app_prefix+'/'+view_name)
+        config.add_route(view_name, '/' + utils.app_prefix + '/' + view_name)
         config.add_view(
             view_common, route_name=view_name, permission=perm, renderer=renderer
         )
@@ -145,10 +145,10 @@ def main(global_config, **settings):
     config.add_static_view('fonts', 'fonts', cache_max_age=cache_max_age)
     config.add_static_view('static', 'static', cache_max_age=cache_max_age)
     config.add_static_view('styles', 'styles', cache_max_age=cache_max_age)
-    config.add_static_view('templates', 'templates',
-                           cache_max_age=cache_max_age)
+    config.add_static_view('templates', 'templates', cache_max_age=cache_max_age)
     config.add_static_view(
-        'bower_components', 'bower_components', cache_max_age=cache_max_age)
+        'bower_components', 'bower_components', cache_max_age=cache_max_age
+    )
 
     app = config.make_wsgi_app()
 

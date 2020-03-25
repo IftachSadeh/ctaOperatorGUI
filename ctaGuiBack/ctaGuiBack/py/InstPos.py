@@ -11,6 +11,7 @@ import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_sub_arr_name, inst_pos_0
 from ctaGuiUtils.py.RedisManager import RedisManager
 
+
 class InstPos():
     # ------------------------------------------------------------------
     #
@@ -61,7 +62,8 @@ class InstPos():
             inst_pos_in = self.redis.hGetAll(name="inst_pos", packed=True)
 
         obs_block_ids = self.redis.get(
-            name=('obs_block_ids_'+'run'), packed=True, default_val=[])
+            name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+        )
 
         for obs_block_id in obs_block_ids:
             self.redis.pipe.get(obs_block_id)
@@ -72,7 +74,9 @@ class InstPos():
         for n_block in range(len(blocks)):
             if len(blocks[n_block]["pointings"]) == 0:
                 continue
-            tel_ids = blocks[n_block]["telescopes"]["large"]["ids"] + blocks[n_block]["telescopes"]["medium"]["ids"] + blocks[n_block]["telescopes"]["small"]["ids"]
+            tel_ids = blocks[n_block]["telescopes"]["large"]["ids"] + blocks[n_block][
+                "telescopes"]["medium"]["ids"] + blocks[n_block]["telescopes"]["small"][
+                    "ids"]
             point_pos = blocks[n_block]["pointings"][0]["pos"]
 
             for id_now in tel_ids:
@@ -87,31 +91,34 @@ class InstPos():
             if id_now in tel_point_pos:
                 point_pos = tel_point_pos[id_now]
 
-                pos_dif = [(point_pos[0] - inst_pos_now[0]), (point_pos[1] - inst_pos_now[1])]
-                if(pos_dif[0] > 360):
+                pos_dif = [(point_pos[0] - inst_pos_now[0]),
+                           (point_pos[1] - inst_pos_now[1])]
+                if (pos_dif[0] > 360):
                     pos_dif[0] -= 360
-                elif(pos_dif[0] < -360):
+                elif (pos_dif[0] < -360):
                     pos_dif[0] += 360
                 # if(pos_dif[0] > 180):
                 #   pos_dif[0] -= 360
                 # elif(pos_dif[0] < -180):
                 #   pos_dif[0] += 360
-                if(pos_dif[1] >= 90):
+                if (pos_dif[1] >= 90):
                     pos_dif[1] -= 90
 
                 rnd_scale = 1
-                if (pos_dif[0] * pos_dif[0] + pos_dif[1] * pos_dif[1]) < min_delta_pos_sqr:
+                if (pos_dif[0] * pos_dif[0]
+                        + pos_dif[1] * pos_dif[1]) < min_delta_pos_sqr:
                     rnd_scale = -1.5 if (self.rnd_gen.random() < 0.5) else 1.5
 
                 inst_pos_new = [
-                    inst_pos_now[0] + pos_dif[0] * rnd_scale *
-                    self.rnd_gen.random() * frac_delta_pos,
-                    inst_pos_now[1] + pos_dif[1] * rnd_scale *
-                    self.rnd_gen.random() * frac_delta_pos
+                    inst_pos_now[0]
+                    + pos_dif[0] * rnd_scale * self.rnd_gen.random() * frac_delta_pos,
+                    inst_pos_now[1]
+                    + pos_dif[1] * rnd_scale * self.rnd_gen.random() * frac_delta_pos
                 ]
 
-            self.redis.pipe.hSet(name="inst_pos", key=id_now,
-                                 data=inst_pos_new, packed=True)
+            self.redis.pipe.hSet(
+                name="inst_pos", key=id_now, data=inst_pos_new, packed=True
+            )
 
         self.redis.pipe.execute()
 
