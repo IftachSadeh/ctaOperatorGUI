@@ -254,13 +254,13 @@ The `timeout` sets the maximal time for a greenlet (a gunicorn thread) to be abl
 
 ### Styling conventions
 
-- The python code complies with `pep8`/`yapf`, [`yapf`](https://github.com/google/yapf). One can e.g., do `$VENV/bin/yapf --style=py/.yapf -i -r ctaGuiFront/ctaGuiFront/py/`, etc. The rules are defined in `ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront/py/.yapf`.
-- The JavaScript code complies with the [`eslint`](https://eslint.org/). One can e.g., do `eslint --fix ctaGuiFront/ctaGuiFront/js/widget_emptyExample.js`. The rules are defined in `ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront/js/.eslintrc.json`.
+- The python code complies with `pep8`/[`yapf`](https://github.com/google/yapf). One can e.g., do `$VENV/bin/yapf --style=linters/yapf -i -r ctaGuiFront/ctaGuiFront/py/`, etc. The rules are defined in `linters/yapf`.
+- The JavaScript code complies with the [`eslint`](https://eslint.org/). One can e.g., do `eslint --c linters/eslintrc.json --fix ctaGuiFront/ctaGuiFront/js/widgets/EmptyExample.js`. The rules are defined in `linters/eslintrc.json`.
 
 <!-- 
 cd ctaOperatorGUI/ctaOperatorGUI/ctaGuiFront/ctaGuiFront
-eslint --fix js/utils/*js js/utils/*/*js js/widgets/*js
-$VENV/bin/yapf --style=py/.yapf -i -r ./ ../../ctaGuiBack/ctaGuiBack/ ../../ctaGuiUtils/
+eslint --c ../../linters/eslintrc.json --fix js/utils/*js js/utils/*/*js js/widgets/*js
+$VENV/bin/yapf --style=../../linters/yapf -i -r ./ ../../ctaGuiBack/ctaGuiBack/ ../../ctaGuiUtils/
 -->
 
 ### Credits
