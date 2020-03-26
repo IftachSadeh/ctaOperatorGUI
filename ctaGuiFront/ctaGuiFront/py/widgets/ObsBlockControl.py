@@ -127,7 +127,7 @@ class ObsBlockControl(BaseWidget):
             key = keys_now[0]
             blocks = self.redis.pipe.execute(packed=True)
             ObsBlockControl.blocks[key] = sorted(
-                blocks, 
+                blocks,
                 cmp=lambda a, b: int(a['time']['start']) - int(b['time']['start'])
             )
 

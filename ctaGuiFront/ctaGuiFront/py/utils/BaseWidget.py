@@ -66,8 +66,7 @@ class BaseWidget():
         # name corresponding to the current session id
         self.log = my_log(
             title=(
-                str(self.socket_manager.user_id) 
-                + '/' + str(self.socket_manager.sess_id)
+                str(self.socket_manager.user_id) + '/' + str(self.socket_manager.sess_id)
                 + '/' + __name__ + '/' + self.widget_id
             )
         )

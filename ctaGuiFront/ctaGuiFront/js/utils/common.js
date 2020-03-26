@@ -602,7 +602,7 @@ window.tel_info = function() {
 
     let categorical_ids = []
     $.each(tel_ids, function(index, id) {
-        if(categorical_types.indexOf(tel_id_to_types[id]) !== -1) {
+        if (categorical_types.indexOf(tel_id_to_types[id]) !== -1) {
             categorical_ids.push(id)
         }
     })
@@ -1485,7 +1485,6 @@ window.run_when_ready = function(opt_in) {
 // ------------------------------------------------------------------
 // icon-badges for widget identification
 // ------------------------------------------------------------------
-
 window.IconBadge = function() {
     function set_widget_icon(opt_in) {
         var n_icon = opt_in.n_icon
@@ -1828,31 +1827,6 @@ window.IconBadge = function() {
             },
         })
 
-        // function to retreive
-        function load_svg_file(opt_in) {
-            var g_now = opt_in.g
-            var svg_id = opt_in.svg_id
-            var icon_path = opt_in.icon_path
-            var func_end = is_def(opt_in.func_end) ? opt_in.func_end : null
-
-            d3.xml(icon_path, function(error, documentFragment) {
-                if (error) {
-                    console.error('problem with d3.xml() for', svg_id, error)
-                    throw error
-                }
-                var svg_node = documentFragment.getElementsByTagName('svg')
-                if (svg_node[0]) {
-                    var node = g_now.node().appendChild(svg_node[0])
-                    node.id = svg_id // assign an id, and then later do e.g., g.select("#"+id_now);
-                }
-
-                // exec function after we're done here
-                if (is_def(func_end)) {
-                    func_end()
-                }
-            })
-        }
-
         function after_svg(opt_in) {
             var g_now = opt_in.g
             var svg_id = opt_in.svg_id
@@ -2090,6 +2064,34 @@ window.IconBadge = function() {
     this.get = get
 }
 window.icon_badge = new window.IconBadge()
+
+// ------------------------------------------------------------------
+// function to load an external svg file
+// ------------------------------------------------------------------
+function load_svg_file(opt_in) {
+    var g_now = opt_in.g
+    var svg_id = opt_in.svg_id
+    var icon_path = opt_in.icon_path
+    var func_end = is_def(opt_in.func_end) ? opt_in.func_end : null
+
+    d3.xml(icon_path, function(error, documentFragment) {
+        if (error) {
+            console.error('problem with d3.xml() for', svg_id, error)
+            throw error
+        }
+        var svg_node = documentFragment.getElementsByTagName('svg')
+        if (svg_node[0]) {
+            var node = g_now.node().appendChild(svg_node[0])
+            node.id = svg_id // assign an id, and then later do e.g., g.select("#"+id_now);
+        }
+
+        // exec function after we're done here
+        if (is_def(func_end)) {
+            func_end()
+        }
+    })
+}
+window.load_svg_file = load_svg_file
 
 // ------------------------------------------------------------------
 //

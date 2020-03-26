@@ -44,7 +44,6 @@ window.ArrZoomerBase = function(opt_in0) {
     let widget_type = opt_in0.widget_type
     let sock = opt_in0.sock
     let svg = opt_in0.svg
-    let lock_init_key = opt_in0.lock_init_key
 
     let user_opts = opt_in0.user_opts
     let do_ele = user_opts.do_ele
@@ -53,7 +52,11 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.has_init = false
 
     let arr_zoomer_id = 'arr_zoomer' + my_unique_id
-    
+    this_top.arr_zoomer_id = arr_zoomer_id
+
+    let lock_init_key = opt_in0.lock_init_key
+    set_locks()
+
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -155,12 +158,12 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.site_scale = is_south ? 4 / 9 : 1
   
     this_top.tel_rs = {
-        s00: [ 
-            12, 
-            13, 
-            14, 
-            14, 
-            // is_south ? 30 : 14, 
+        s00: [
+            12,
+            13,
+            14,
+            14,
+            // is_south ? 30 : 14,
         ],
     }
     this_top.tel_rs.s00 = this_top.tel_rs.s00.map(
@@ -170,36 +173,6 @@ window.ArrZoomerBase = function(opt_in0) {
     )
 
     let tel_id_types = tel_info.get_ids()
-
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    let lock_init_keys = {
-        main: 'in_arr_zoomer_init_main' + my_unique_id,
-        ches: 'in_arr_zoomer_init_ches' + my_unique_id,
-        mini: 'in_arr_zoomer_init_mini' + my_unique_id,
-        tree: 'in_arr_zoomer_init_tree' + my_unique_id,
-        lens: 'in_arr_zoomer_init_lens' + my_unique_id,
-    }
-    this_top.lock_init_keys = lock_init_keys
-
-    let init_ele_keys = []
-    $.each(do_ele, function(i, d) {
-        if (d) {
-            init_ele_keys.push(lock_init_keys[i])
-            locker.add(lock_init_keys[i])
-        }
-    })
-
-    run_when_ready({
-        pass: function() {
-            return locker.are_free(init_ele_keys)
-        },
-        execute: function() {
-            locker.remove(lock_init_key)
-        },
-    })
-
 
     // // ------------------------------------------------------------------
     // //
@@ -606,6 +579,39 @@ window.ArrZoomerBase = function(opt_in0) {
         return
     }
 
+    // ------------------------------------------------------------------
+    // initialisation locks for this element and its children
+    // ------------------------------------------------------------------
+    function set_locks() {
+        let lock_init_keys = {
+            main: 'in_arr_zoomer_init_main' + my_unique_id,
+            ches: 'in_arr_zoomer_init_ches' + my_unique_id,
+            mini: 'in_arr_zoomer_init_mini' + my_unique_id,
+            tree: 'in_arr_zoomer_init_tree' + my_unique_id,
+            lens: 'in_arr_zoomer_init_lens' + my_unique_id,
+        }
+        this_top.lock_init_keys = lock_init_keys
+
+        let init_ele_keys = []
+        $.each(do_ele, function(i, d) {
+            if (d) {
+                init_ele_keys.push(lock_init_keys[i])
+                locker.add(lock_init_keys[i])
+            }
+        })
+
+        locker.add(lock_init_key)
+        run_when_ready({
+            pass: function() {
+                return locker.are_free(init_ele_keys)
+            },
+            execute: function() {
+                locker.remove(lock_init_key)
+            },
+        })
+
+        return
+    }
 
     // ------------------------------------------------------------------
     //
@@ -941,53 +947,58 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     let prev_sync = {
     }
-    function get_sync_state(data_in) {
-        if (document.hidden) {
+    function get_sync_tel_focus(data_in) {
+        if (document.hidden || sock.con_stat.is_offline()) {
             return
         }
-        if (sock.con_stat.is_offline()) {
+        let is_old_sync = sock.is_old_sync(prev_sync, data_in.data)
+        if (is_old_sync) {
             return
         }
-
-        let has_widget_id = (data_in.sess_widget_ids.indexOf(widget_id) >= 0)
+        
+        let has_widget_id = (
+            data_in.sess_widget_ids.indexOf(widget_id) >= 0
+        )
         let same_widget_id = (widget_id === data_in.widget_id)
-        if (!has_widget_id || same_widget_id) {
+        let same_zoomer_id = (data_in.data.arr_zoomer_id === arr_zoomer_id)
+        if (!has_widget_id || same_widget_id || same_zoomer_id) {
             return
         }
-
-        if (sock.is_old_sync(prev_sync, data_in.data)) {
-            return
-        }
-        // console.log('get  -=- ',widget_id,data_in.data,prev_sync[ data_in.type]);
-
-        prev_sync[data_in.type] = data_in.data
 
         let type = data_in.type
+        prev_sync[type] = data_in.data
+
+        // react to specific events by type
         if (type === 'sync_tel_focus') {
-            // locker.add("get_sync_state");
-
-            let target = data_in.data.target
-            let zoom_state = data_in.data.zoom_state
-
-            let scale = zooms.len['0.0']
-            if (zoom_state === 1) {
-                scale = zooms.len['1.0']
-            }
-
-            get_ele('main').zoom_to_target_main({
-                target: target,
-                scale: scale,
-                duration_scale: 1,
-                end_func: function() {
-                    // locker.remove("get_sync_state");
-                    get_ele('main').ask_data_s1()
-                },
-            })
+            sync_tel_focus(data_in.data)
         }
 
         return
     }
-    this_top.get_sync_state = get_sync_state
+    this_top.get_sync_tel_focus = get_sync_tel_focus
+
+    // ------------------------------------------------------------------
+    // action to take upon getting a 'sync_tel_focus' sync
+    // ------------------------------------------------------------------
+    function sync_tel_focus(data_in) {
+        let target = data_in.target
+        let zoom_state = data_in.zoom_state
+
+        let scale = zooms.len['0.0']
+        if (zoom_state === 1) {
+            scale = zooms.len['1.0']
+        }
+
+        get_ele('main').zoom_to_target_main({
+            target: target,
+            scale: scale,
+            duration_scale: 1,
+            end_func: function() {
+                get_ele('main').ask_data_s1()
+            },
+        })
+        return
+    }
 
     // ------------------------------------------------------------------
     // ask for update for state1 data for a given module
@@ -1170,15 +1181,8 @@ window.ArrZoomerBase = function(opt_in0) {
         }
 
         if (data_in.type === 'sync_tel_focus') {
-            if (
-                !locker.are_free([
-                    'in_init',
-                    'zoom',
-                    'auto_zoom_target',
-                    'set_state_lock',
-                    'data_change',
-                ])
-            ) {
+            let sync_locks = [ 'in_init', 'zoom', 'auto_zoom_target', 'set_state_lock', 'data_change' ]
+            if (!locker.are_free(sync_locks)) {
                 setTimeout(function() {
                     sync_state_send(data_in)
                 }, times.anim)

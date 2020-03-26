@@ -776,7 +776,7 @@ class InstData():
             pos_scale = 0.53
         if InstData.site_type == 'N':
             pos_scale = 1.3
-        
+
         for id_now, ele_now in InstData.inst_info.iteritems():
             for xy_now in ['x', 'y']:
                 ele_now[xy_now] *= pos_scale

@@ -3572,9 +3572,48 @@ let main_weather_monitoring = function(opt_in) {
                 // expose the sync function
                 // ------------------------------------------------------------------
                 function get_sync_state(data_sync_in) {
-                    arr_zoomer_base.get_sync_state(data_sync_in)
+                    arr_zoomer_base.get_sync_tel_focus(data_sync_in)
+                    
+                    if (data_sync_in.type == 'sync_arr_zoomer_prop') {
+                        // check if this came from myself (even for the same widget_id one
+                        // can have multiple zoomers, but arr_zoomer_id is completely unique)
+                        let is_own_sync = (
+                            arr_zoomer_base.arr_zoomer_id
+                            === data_sync_in.data.arr_zoomer_id
+                        )
+                        console.log(' - example - got sync: ', is_own_sync, data_sync_in.data)
+                    }
                 }
                 this_top.get_sync_state = get_sync_state
+
+
+                // ------------------------------------------------------------------
+                // examples of optional customisations
+                // ------------------------------------------------------------------
+                function set_user_styles() {
+                    if (!locker.is_free(arr_zoomer_lock_init_key)) {
+                        setTimeout(function() {
+                            set_user_styles()
+                        }, 10)
+                        return
+                    }
+
+                    let bck_rect_main = arr_zoomer_base.get_ele('main').get_bck_rect()
+                    bck_rect_main
+                        .style('fill', 'transparent' )
+                        .style('stroke', window.cols_blues[0] )
+                        .style('stroke-width', 10)
+                        .attr('opacity', 0.5)
+
+                    let bck_rect_tree = arr_zoomer_base.get_ele('tree').get_bck_rect()
+                    bck_rect_tree
+                        .style('stroke', window.cols_reds[0] )
+                        .style('stroke-width', 10)
+                        .attr('opacity', 0.8)
+
+                    return
+                }
+                set_user_styles()
 
                 return
             }

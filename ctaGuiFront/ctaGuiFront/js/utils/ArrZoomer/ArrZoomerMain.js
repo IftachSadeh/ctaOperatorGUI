@@ -3,11 +3,9 @@
 // ------------------------------------------------------------------
 /* global $ */
 /* global d3 */
-/* global sock */
 /* global times */
 /* global is_def */
-/* global dom_add */
-/* global run_when_ready */
+/* global get_node_height_by_id */
 /* global do_zoom_to_target */
 /* global inst_health_col */
 /* global bck_pattern */
@@ -31,9 +29,10 @@ window.ArrZoomerMain = function(opt_in0) {
     let dblclick_zoom_in_out = is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
 
     let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
-    let vor_show_lines = !false
+    let vor_show_lines = false
     
     let ele_base = opt_in0.ele_base
+    let arr_zoomer_id = ele_base.arr_zoomer_id
 
     let instruments = ele_base.instruments
     let zooms = ele_base.zooms
@@ -161,6 +160,27 @@ window.ArrZoomerMain = function(opt_in0) {
     }
 
     // ------------------------------------------------------------------
+    // add outline rect
+    // ------------------------------------------------------------------
+    if (!no_render) {
+        this_top.bck_rect = main_gs.g_outer.append('rect')
+        this_top.bck_rect
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', svg_dims.w)
+            .attr('height', svg_dims.h)
+            .style('fill', 'transparent' )
+            .style('stroke', '#383B42' )
+            .style('stroke-width', 1)
+            .attr('pointer-events', 'none')
+            .attr('opacity', 1)
+
+    }
+    this_top.get_bck_rect = function() {
+        return this_top.bck_rect
+    }
+
+    // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
     function cat_ele_pos(n_ele_now, n_elements) {
@@ -273,7 +293,6 @@ window.ArrZoomerMain = function(opt_in0) {
     }
     this_top.add_back_shapes = add_back_shapes
 
-
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -292,20 +311,6 @@ window.ArrZoomerMain = function(opt_in0) {
         // add one circle as background
         // ------------------------------------------------------------------
         if (!no_render) {
-            main_gs.g_outer
-                .append('rect')
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr('width', svg_dims.w)
-                .attr('height', svg_dims.h)
-                .style('fill', 'transparent' )
-                .style('stroke', '#383B42' )
-                // .style("stroke",'#F2F2F2' )
-                // .style("stroke",'#2196F3' )
-                .style('stroke-width', 1)
-                .attr('pointer-events', 'none')
-                .attr('opacity', 1)
-
             add_back_shapes(main_gs.g_back, svg_dims)
 
             // the background grid
@@ -320,6 +325,20 @@ window.ArrZoomerMain = function(opt_in0) {
                     hex_r: hex_r,
                 })
             }
+
+            // ------------------------------------------------------------------
+            // test svb background
+            // ------------------------------------------------------------------
+            // let site_svg = main_gs.clipped_bck_pattern_g.append('g')
+            // window.load_svg_file({
+            //     // g: gg1,
+            //     g: site_svg,
+            //     svg_id: 'xxx',
+            //     icon_path: '/static/CTA_N.svg',
+            // })
+            // site_svg.attr('transform', function(d) {
+            //     return 'scale(8)translate(' + '-200' + ', ' + '-140' + ')'
+            // })
         }
 
 
@@ -392,6 +411,8 @@ window.ArrZoomerMain = function(opt_in0) {
                 id: 'in_zoom_main',
                 override: true,
             })
+
+            return
         }
 
         // ------------------------------------------------------------------
@@ -417,6 +438,8 @@ window.ArrZoomerMain = function(opt_in0) {
             })
 
             svg_zoom_update_state()
+         
+            return
         }
 
         // ------------------------------------------------------------------
@@ -466,6 +489,7 @@ window.ArrZoomerMain = function(opt_in0) {
                         sync_time: Date.now(),
                         zoom_state: 0,
                         target: 'init',
+                        arr_zoomer_id: arr_zoomer_id,
                     })
                 }
             }
@@ -506,6 +530,8 @@ window.ArrZoomerMain = function(opt_in0) {
             }
 
             do_zoom_to_target(data_out)
+        
+            return
         }
         this_top.zoom_sync = zoom_sync
 
@@ -991,7 +1017,7 @@ window.ArrZoomerMain = function(opt_in0) {
             // })
 
             // let data_in_wh = {
-            //     x: max_data_x - min_data_x, 
+            //     x: max_data_x - min_data_x,
             //     y: max_data_y - min_data_y,
             // }
             // // if (!is_south) {
@@ -1359,6 +1385,8 @@ window.ArrZoomerMain = function(opt_in0) {
 
             zooms.len.prev = scale
         }
+    
+        return
     }
 
 
@@ -2955,17 +2983,18 @@ window.ArrZoomerMain = function(opt_in0) {
                             return 'translate(' + dx + ',' + dy + ')'
                         })
                         .attr('dy', function(d) {
-                            let ele_h
-                = -0.5
-                * get_node_height_by_id({
-                    selction: g_base.selectAll('text.' + 'hov_title'),
-                    id: d.id,
-                })
+                            let ele_h = -0.5
+                                * get_node_height_by_id({
+                                    selction: g_base.selectAll('text.' + 'hov_title'),
+                                    id: d.id,
+                                })
                             return ele_h + 'px'
                         })
                         .transition('update1')
                         .duration(times.anim)
                         .style('opacity', 1)
+                    
+                    return
                 }
 
                 // ------------------------------------------------------------------
@@ -3286,6 +3315,7 @@ window.ArrZoomerMain = function(opt_in0) {
                             sync_time: Date.now(),
                             tel_Id: zooms.target,
                             propId: arr_zoomer_prop,
+                            arr_zoomer_id: arr_zoomer_id,
                         })
                     }
 
@@ -3313,7 +3343,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                     if (
                         !is_def(g_hierarchy[prop_in][id])
-            || !is_def(hierarchies[prop_in][id])
+                        || !is_def(hierarchies[prop_in][id])
                     ) {
                         free_me(true)
                         return
@@ -3331,8 +3361,8 @@ window.ArrZoomerMain = function(opt_in0) {
                             )
                             return (
                                 is_open
-                && in_parents
-                && (d.data.child_depth > depth_now)
+                                && in_parents
+                                && (d.data.child_depth > depth_now)
                             )
                         }
 
@@ -3657,6 +3687,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     sync_time: Date.now(),
                     zoom_state: this_top.get_zoom_state(),
                     target: zooms.target,
+                    arr_zoomer_id: arr_zoomer_id,
                 })
             }
 
@@ -3787,11 +3818,11 @@ window.ArrZoomerMain = function(opt_in0) {
     //
     // ------------------------------------------------------------------
     function get_widget_state() {
-        return {
+        let data_out = {
             zoom_state: this_top.get_zoom_state(),
             zoom_target: zooms.target,
         }
-        return
+        return data_out
     }
     this_top.get_widget_state = get_widget_state
 

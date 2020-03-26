@@ -191,7 +191,7 @@ function SocketManager() {
         // });
 
         // -------------------------------------------------------------------
-        // run the respective get_sync_state() function for each widget
+        // run the respective sync-state function for each widget
         // -------------------------------------------------------------------
         this_top.socket.on('get_sync_state', function(data_in) {
             if (this_top.con_stat.is_offline()) {

@@ -159,22 +159,19 @@ window.ArrZoomerTree = function(opt_in0) {
         // ------------------------------------------------------------------
         // add one rectangle as background, and to allow click to zoom
         // ------------------------------------------------------------------
-        tree_gs.gS0
-        // .append('g')
-        // .selectAll('rect')
-        // .data([0])
-        // .enter()
-            .append('rect')
+        this_top.bck_rect = tree_gs.gS0.append('rect')
+        this_top.bck_rect
             .attr('x', 0)
             .attr('y', 0)
             .attr('width', svg_dims.w[0])
             .attr('height', svg_dims.h[0])
             .attr('stroke-width', '0')
             .attr('fill', '#F2F2F2')
-        // .attr("fill", "red")
+            // .attr("fill", "red")
+            // .style('opacity', 0.6)
             .style('stroke', '#383B42' )
-        // .style("stroke",'#F2F2F2' )
-        // .style("stroke",'#2196F3' )
+            // .style("stroke",'#F2F2F2' )
+            // .style("stroke",'#2196F3' )
             .style('stroke-width', 1)
             .on('click', function() {
                 let scale = get_ele('main').get_scale()
@@ -188,6 +185,11 @@ window.ArrZoomerTree = function(opt_in0) {
                     })
                 }
             })
+
+
+        this_top.get_bck_rect = function() {
+            return this_top.bck_rect
+        }
 
         // the background grid
         bck_pattern({
@@ -1041,8 +1043,8 @@ window.ArrZoomerTree = function(opt_in0) {
 
         let hasDataBase = (
             !click_in
-      && !remove
-      && is_def(instruments.data.data_base_s1[tel_Id])
+            && !remove
+            && is_def(instruments.data.data_base_s1[tel_Id])
         )
 
         // ------------------------------------------------------------------
@@ -1059,9 +1061,11 @@ window.ArrZoomerTree = function(opt_in0) {
                 duration_scale: 1,
             })
 
-            let data_hierarchy = click_in
-                ? instruments.data.prop_data_s1[tel_Id][prop_in]
-                : instruments.data.data_base_s1[tel_Id]
+            let data_hierarchy = (
+                click_in
+                    ? instruments.data.prop_data_s1[tel_Id][prop_in]
+                    : instruments.data.data_base_s1[tel_Id]
+            )
             let hirch = d3.hierarchy(data_hierarchy)
 
             // if(!click_in) console.log('----===--',instruments.data.data_base_s1[tel_Id])
@@ -1120,13 +1124,13 @@ window.ArrZoomerTree = function(opt_in0) {
         // ------------------------------------------------------------------
         let circs = com.s10.g_hierarchy
             .selectAll('circle.' + tagNodes)
-            .data(desc, get_ele_id) // d.data.id
+            .data(desc, get_ele_id)
 
         circs
             .enter()
             .append('circle')
             .attr('class', tagNodes)
-        // .attr("id", function(d) { return my_unique_id+tagNodes+d.data.id; })
+            // .attr("id", function(d) { return my_unique_id+tagNodes+d.data.id; })
             .attr('r', 0)
             .attr('transform', function(d) {
                 return 'translate(' + d.y + ',' + d.x + ')'
@@ -1264,21 +1268,21 @@ window.ArrZoomerTree = function(opt_in0) {
         function linkFunc(d) {
             return (
                 'M'
-        + d.y
-        + ','
-        + d.x
-        + 'C'
-        + (d.y + d.parent.y) / 2
-        + ','
-        + d.x
-        + ' '
-        + (d.y + d.parent.y) / 2
-        + ','
-        + d.parent.x
-        + ' '
-        + d.parent.y
-        + ','
-        + d.parent.x
+                + d.y
+                + ','
+                + d.x
+                + 'C'
+                + (d.y + d.parent.y) / 2
+                + ','
+                + d.x
+                + ' '
+                + (d.y + d.parent.y) / 2
+                + ','
+                + d.parent.x
+                + ' '
+                + d.parent.y
+                + ','
+                + d.parent.x
             )
         }
 

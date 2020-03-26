@@ -205,15 +205,11 @@ class ArrZoomer():
         filt_inst = [[] for id in self.inst_ids]
         if 'inst_ids' in filt_rules:
             for n_id in range(len(self.inst_ids)):
-                filt_inst[n_id] += [
-                    self.inst_ids[n_id] in filt_rules['inst_ids']
-                ]
+                filt_inst[n_id] += [self.inst_ids[n_id] in filt_rules['inst_ids']]
         if 'inst_types' in filt_rules:
             for n_id in range(len(self.inst_ids)):
                 id = self.inst_ids[n_id]
-                filt_inst[n_id] += [
-                    self.inst_types[id] in filt_rules['inst_types']
-                ]
+                filt_inst[n_id] += [self.inst_types[id] in filt_rules['inst_types']]
         filt_inst = [any(filt) for filt in filt_inst]
 
         if sum(filt_inst) == 0:
@@ -225,20 +221,16 @@ class ArrZoomer():
             ])
 
             return
-            
+
         self.inst_ids = [
-            self.inst_ids[n_id]
-            for n_id in range(len(self.inst_ids))
-            if filt_inst[n_id]
+            self.inst_ids[n_id] for n_id in range(len(self.inst_ids)) if filt_inst[n_id]
         ]
-        self.inst_types = dict(
-            (k,v) for (k,v) in self.inst_types.items()
-            if k in self.inst_ids
-        )
-        self.inst_pos = dict(
-            (k,v) for (k,v) in self.inst_pos.items()
-            if k in self.inst_ids
-        )
+        self.inst_types = dict((k, v)
+                               for (k, v) in self.inst_types.items()
+                               if k in self.inst_ids)
+        self.inst_pos = dict((k, v)
+                             for (k, v) in self.inst_pos.items()
+                             if k in self.inst_ids)
 
         return
 
@@ -252,7 +244,7 @@ class ArrZoomer():
 
         self.init_tel_health()
         self.arr_zoomer_id = data_in['arr_zoomer_id']
-        
+
         # ------------------------------------------------------------------
         # data access function for the socket
         # ------------------------------------------------------------------
@@ -261,10 +253,10 @@ class ArrZoomer():
             inst_prop_types = dict()
 
             for id_now in self.inst_ids:
-                inst_prop_types[id_now] = [
-                    { 'id': v['id'], 'title': v['title'] } 
-                    for (k, v) in self.tel_sub_health[id_now].items()
-                ]
+                inst_prop_types[id_now] = [{
+                    'id': v['id'],
+                    'title': v['title']
+                } for (k, v) in self.tel_sub_health[id_now].items()]
 
             data = {
                 'arr_zoomer_id': self.arr_zoomer_id,
@@ -344,9 +336,7 @@ class ArrZoomer():
 
         for id_now in self.inst_ids:
             fields[id_now] = ['health', 'status']
-            fields[id_now] += [
-                v['id'] for (k, v) in self.tel_sub_health[id_now].items()
-            ]
+            fields[id_now] += [v['id'] for (k, v) in self.tel_sub_health[id_now].items()]
 
         ids = self.inst_ids if (id_in is None) else [id_in]
 
@@ -518,8 +508,8 @@ class ArrZoomer():
         sess_ids = data_now['sess_id']
         widget_ids = data_now['widget_id']
         emit_data_s0 = {
-            'widget_id': '', 
-            'type': 's00', 
+            'widget_id': '',
+            'type': 's00',
             'data': self.get_tel_health_s0(),
         }
 
@@ -535,8 +525,8 @@ class ArrZoomer():
             sess_ids = data_now['sess_id']
             widget_ids = data_now['widget_id']
             emit_data_s1 = {
-                'widget_id': '', 
-                'type': 's11', 
+                'widget_id': '',
+                'type': 's11',
                 'data': prop_s1[zoom_target],
             }
 
@@ -614,7 +604,11 @@ class ArrZoomer():
                 data_now = ArrZoomer.send_data['s_0']
                 sess_ids = data_now['sess_id']
                 widget_ids = data_now['widget_id']
-                data = {'widget_id': '', 'type': 'sub_arr', 'data': self.sub_arr_grp,}
+                data = {
+                    'widget_id': '',
+                    'type': 'sub_arr',
+                    'data': self.sub_arr_grp,
+                }
 
                 self.socket_manager.socket_event_widgets(
                     event_name='arr_zoomer_update_data',
