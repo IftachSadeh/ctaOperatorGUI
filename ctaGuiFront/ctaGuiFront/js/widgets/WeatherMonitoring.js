@@ -45,6 +45,10 @@ window.load_script({
     source: 'utils_scrollTable',
     script: '/js/utils/common_d3.js',
 })
+window.load_script({
+    source: main_script_tag,
+    script: '/js/utils/ArrZoomer/ArrZoomerBase.js',
+})
 
 // load additional js files:
 // window.load_script({ source:main_script_tag, script:"/js/utils_scrollGrid.js"});
@@ -92,11 +96,14 @@ let sock_weather_monitoring = function(opt_in) {}
 // here we go with the content of this particular widget
 // -------------------------------------------------------------------
 let main_weather_monitoring = function(opt_in) {
-    // let my_unique_id = unique()
+    let this_top = this
+    let my_unique_id = unique()
+    let widget_type = opt_in.widget_type
+    let widget_source = opt_in.widget_source
+
     window.colorPalette = get_color_theme('bright_grey')
     let is_south = window.SITE_TYPE === 'S'
 
-    let widget_type = opt_in.widget_type
     let tag_arr_zoomerPlotsSvg = opt_in.base_name
 
     let widget_id = opt_in.widget_id
@@ -159,14 +166,14 @@ let main_weather_monitoring = function(opt_in) {
             svg.svg = d3
                 .select(svg_div)
                 .append('svg')
-            // .attr('preserveAspectRatio', 'xMidYMid meet')
+                // .attr('preserveAspectRatio', 'xMidYMid meet')
                 .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
                 .style('position', 'relative')
                 .style('width', '100%')
                 .style('height', '100%')
                 .style('top', '0%')
                 .style('left', '0%')
-            // .style('max-height', ($(document).height() * 0.8) + 'px')
+                // .style('max-height', ($(document).height() * 0.8) + 'px')
                 .on('dblclick.zoom', null)
 
             d3.select(svg_divFM)
@@ -176,12 +183,12 @@ let main_weather_monitoring = function(opt_in) {
                 .style('top', '0%')
                 .style('left', '0%')
                 .style('pointer-events', 'none')
-            // .style('max-height', ($(document).height() * 0.8) + 'px')
+                // .style('max-height', ($(document).height() * 0.8) + 'px')
             svg.floatingMenu = d3
                 .select(svg_divFM)
                 .append('svg')
-            // .attr('preserveAspectRatio', 'xMidYMid meet')
-            // .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
+                // .attr('preserveAspectRatio', 'xMidYMid meet')
+                // .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
                 .style('width', '100%')
                 .style('height', '100%')
                 .style('top', '0%')
@@ -203,12 +210,12 @@ let main_weather_monitoring = function(opt_in) {
                 .style('top', '0%')
                 .style('left', '200px')
                 .style('pointer-events', 'none')
-            // .style('max-height', ($(document).height() * 0.8) + 'px')
+                // .style('max-height', ($(document).height() * 0.8) + 'px')
             svg.plotList = d3
                 .select(svg_divPL)
                 .append('svg')
-            // .attr('preserveAspectRatio', 'xMidYMid meet')
-            // .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
+                // .attr('preserveAspectRatio', 'xMidYMid meet')
+                // .attr('viewBox', '0 0 ' + svg_dims.w[0] + ' ' + svg_dims.h[0])
                 .style('width', '100%')
                 .style('height', '100%')
                 .style('top', '0%')
@@ -3502,6 +3509,77 @@ let main_weather_monitoring = function(opt_in) {
                 .attr('text-anchor', 'middle')
                 .attr('transform', 'translate(' + (obsbox.x + obsbox.w * 0.72 + 15) + ',' + (obsbox.y + obsbox.h * 0.33 + 22) + ')')
 
+
+            // ------------------------------------------------------------------
+            //
+            // ------------------------------------------------------------------
+            function init_arr_zoomer() {
+                let arr_zoomer_ele_opts = {
+                    do_ele: {
+                        main: true,
+                        // ches: true,
+                        // mini: true,
+                        tree: true,
+                        // lens: !true,
+                    },
+                    trans: {
+                        main: 'translate(85,85)scale(3)',
+                        // ches: 'translate(110,0)scale(3.8)',
+                        tree: 'translate(400,100)scale(3.5)',
+                        // mini: 'translate(5,0)scale(1)',
+                        // lens: 'translate(10,5)scale(0.18)',
+                    },
+                    inst_filter: {
+                        inst_ids: [ 'Lx01', 'Mx04', 'Mx10' ],
+                        inst_types: [ 'AUX', 'PROC' ],
+                    },
+                    main: {
+                        // dblclick_zoom_in_out: false,
+                    },
+                    ches: {
+                        // myOpt: 0,
+                    },
+                    mini: {
+                        // static_zoom: false,
+                    },
+                    tree: {
+                        // aspect_ratio: 6/5,
+                    },
+                    lens: {
+                        // aspect_ratio: 4,
+                        // has_titles: true,
+                        // pointerEvents: true,
+                    },
+                }
+
+                let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id
+
+                let arr_zoomer_base = new ArrZoomerBase({
+                    run_loop: run_loop,
+                    widget_id: widget_id,
+                    widget_source: widget_source,
+                    locker: locker,
+                    is_south: is_south,
+                    widget_type: widget_type,
+                    sock: sock,
+                    user_opts: arr_zoomer_ele_opts,
+                    lock_init_key: arr_zoomer_lock_init_key,
+                    svg: maing,
+                })
+
+                // ------------------------------------------------------------------
+                // expose the sync function
+                // ------------------------------------------------------------------
+                function get_sync_state(data_sync_in) {
+                    arr_zoomer_base.get_sync_state(data_sync_in)
+                }
+                this_top.get_sync_state = get_sync_state
+
+                return
+            }
+            init_arr_zoomer()
+
+            return
         }
         this.init_data = init_data
 

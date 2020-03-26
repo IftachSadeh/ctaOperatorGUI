@@ -18,7 +18,6 @@
 window.ArrZoomerTree = function(opt_in0) {
     let this_top = this
     let run_loop = opt_in0.run_loop
-    let sgv_tag = opt_in0.sgv_tag
     let widget_id = opt_in0.widget_id
     let locker = opt_in0.locker
     let is_south = opt_in0.is_south

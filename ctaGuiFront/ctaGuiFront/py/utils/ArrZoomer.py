@@ -88,8 +88,8 @@ class ArrZoomer():
     # ------------------------------------------------------------------
     def add_parent_interfaces(self):
         # arr_zoomer_ask_init_data
-        def ask_init_data():
-            self.ask_init_data()
+        def ask_init_data(*args):
+            self.ask_init_data(*args)
             return
 
         self.parent.arr_zoomer_ask_init_data = ask_init_data
@@ -198,7 +198,44 @@ class ArrZoomer():
     # ------------------------------------------------------------------
     # initialise dataset and send to client when the client asks for it
     # ------------------------------------------------------------------
-    def ask_init_data(self):
+    def ask_init_data(self, *args):
+        data_in = args[0]
+
+        # ------------------------------------------------------------------
+        # possible filter rules for which instruments to include
+        # ------------------------------------------------------------------
+        if 'inst_filter' in data_in:
+            filt_inst = [[] for id in self.inst_ids]
+            if 'inst_ids' in data_in['inst_filter']:
+                for n_id in range(len(self.inst_ids)):
+                    filt_inst[n_id] += [
+                        self.inst_ids[n_id] in data_in['inst_filter']['inst_ids']
+                    ]
+            if 'inst_types' in data_in['inst_filter']:
+                for n_id in range(len(self.inst_ids)):
+                    id = self.inst_ids[n_id]
+                    filt_inst[n_id] += [
+                        self.inst_types[id] in data_in['inst_filter']['inst_types']
+                    ]
+            filt_inst = [any(filt) for filt in filt_inst]
+
+            if sum(filt_inst) > 0:
+                self.inst_ids = [
+                    self.inst_ids[n_id]
+                    for n_id in range(len(self.inst_ids))
+                    if filt_inst[n_id]
+                ]
+            else:
+                ArrZoomer.log.warn([
+                    ['b', ' - ask_init_data() '],
+                    ['r', 'filters leave no accepted instruments ... will ignore!'],
+                    ['b', ' data_in: '],
+                    ['y', '', data_in],
+                ])
+
+        # ------------------------------------------------------------------
+        # data access function for the socket
+        # ------------------------------------------------------------------
         def get_init_data():
             inst_info = self.inst_data.get_inst_pos()
 
@@ -294,7 +331,10 @@ class ArrZoomer():
 
         self.redis.pipe.reset()
         for id_now in ids:
-            self.redis.pipe.hMget(name='inst_health;' + str(id_now), key=fields[id_now])
+            self.redis.pipe.hMget(
+                name='inst_health;' + str(id_now),
+                key=fields[id_now],
+            )
         redis_data = self.redis.pipe.execute()
 
         for n_id in range(len(redis_data)):

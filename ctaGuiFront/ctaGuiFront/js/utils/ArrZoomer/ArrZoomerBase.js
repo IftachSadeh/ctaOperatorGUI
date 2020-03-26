@@ -41,7 +41,6 @@ window.ArrZoomerBase = function(opt_in0) {
     let this_top = this
     let my_unique_id = unique()
     let run_loop = opt_in0.run_loop
-    let sgv_tag = opt_in0.sgv_tag
     let widget_id = opt_in0.widget_id
     let widget_source = opt_in0.widget_source
     let locker = opt_in0.locker
@@ -51,9 +50,9 @@ window.ArrZoomerBase = function(opt_in0) {
     let svg = opt_in0.svg
     let lock_init_key = opt_in0.lock_init_key
 
-    let ele_opts = opt_in0.ele_opts
-    let do_ele = ele_opts.do_ele
-    // let scale_r = instruments.scale_r
+    let user_opts = opt_in0.user_opts
+    let do_ele = user_opts.do_ele
+    let inst_filter = user_opts.inst_filter
 
     this_top.has_init = false
 
@@ -449,11 +448,11 @@ window.ArrZoomerBase = function(opt_in0) {
         //
         // ------------------------------------------------------------------
         function add_user_opts(opt_in, ele_tag) {
-            if (!is_def(ele_opts[ele_tag])) {
+            if (!is_def(user_opts[ele_tag])) {
                 return
             }
 
-            $.each(ele_opts[ele_tag], function(i, d) {
+            $.each(user_opts[ele_tag], function(i, d) {
                 opt_in[i] = d
             })
 
@@ -465,7 +464,6 @@ window.ArrZoomerBase = function(opt_in0) {
         // ------------------------------------------------------------------
         let ele_opts_main = {
             run_loop: run_loop,
-            sgv_tag: sgv_tag,
             widget_id: widget_id,
             locker: locker,
             is_south: is_south,
@@ -480,8 +478,8 @@ window.ArrZoomerBase = function(opt_in0) {
         eleMain.init_data(data_in)
 
         if (do_ele.main) {
-            if (is_def(ele_opts.trans.main)) {
-                eleMain.set_transform(ele_opts.trans.main)
+            if (is_def(user_opts.trans.main)) {
+                eleMain.set_transform(user_opts.trans.main)
             }
         }
     
@@ -491,7 +489,6 @@ window.ArrZoomerBase = function(opt_in0) {
         if (do_ele.tree) {
             let ele_opts_tree = {
                 run_loop: run_loop,
-                sgv_tag: sgv_tag,
                 widget_id: widget_id,
                 locker: locker,
                 is_south: is_south,
@@ -503,8 +500,8 @@ window.ArrZoomerBase = function(opt_in0) {
             let eleTree = new ArrZoomerTree(ele_opts_tree)
             eleTree.init_data(data_in)
 
-            if (is_def(ele_opts.trans.tree)) {
-                eleTree.set_transform(ele_opts.trans.tree)
+            if (is_def(user_opts.trans.tree)) {
+                eleTree.set_transform(user_opts.trans.tree)
             }
         }
     
@@ -514,7 +511,6 @@ window.ArrZoomerBase = function(opt_in0) {
         if (do_ele.ches) {
             let ele_opts_ches = {
                 run_loop: run_loop,
-                sgv_tag: sgv_tag,
                 widget_id: widget_id,
                 locker: locker,
                 is_south: is_south,
@@ -531,8 +527,8 @@ window.ArrZoomerBase = function(opt_in0) {
                 tel_id_types: tel_id_types,
             })
 
-            if (is_def(ele_opts.trans.ches)) {
-                eleChes.set_transform(ele_opts.trans.ches)
+            if (is_def(user_opts.trans.ches)) {
+                eleChes.set_transform(user_opts.trans.ches)
             }
         }
 
@@ -542,7 +538,6 @@ window.ArrZoomerBase = function(opt_in0) {
         if (do_ele.mini) {
             let ele_opts_mini = {
                 run_loop: run_loop,
-                sgv_tag: sgv_tag,
                 widget_id: widget_id,
                 locker: locker,
                 is_south: is_south,
@@ -564,8 +559,8 @@ window.ArrZoomerBase = function(opt_in0) {
                 tel_id_types: tel_id_types,
             })
 
-            if (is_def(ele_opts.trans.mini)) {
-                eleMini.set_transform(ele_opts.trans.mini)
+            if (is_def(user_opts.trans.mini)) {
+                eleMini.set_transform(user_opts.trans.mini)
             }
         }
 
@@ -575,7 +570,6 @@ window.ArrZoomerBase = function(opt_in0) {
         if (do_ele.lens) {
             let ele_opts_lens = {
                 run_loop: run_loop,
-                sgv_tag: sgv_tag,
                 widget_id: widget_id,
                 locker: locker,
                 is_south: is_south,
@@ -600,8 +594,8 @@ window.ArrZoomerBase = function(opt_in0) {
                 tel_id_types: tel_id_types,
             })
 
-            if (is_def(ele_opts.trans.lens)) {
-                eleLens.set_transform(ele_opts.trans.lens)
+            if (is_def(user_opts.trans.lens)) {
+                eleLens.set_transform(user_opts.trans.lens)
             }
         }
 
@@ -1004,11 +998,18 @@ window.ArrZoomerBase = function(opt_in0) {
             return
         }
 
+        let init_opts = {
+        }
+        if (is_def(inst_filter)) {
+            init_opts.inst_filter = inst_filter
+        }
+
         let emit_data = {
             widget_source: widget_source,
             widget_name: widget_type,
             widget_id: widget_id,
             method_name: 'arr_zoomer_ask_init_data',
+            method_arg: init_opts,
         }
         sock.socket.emit('widget', emit_data)
 

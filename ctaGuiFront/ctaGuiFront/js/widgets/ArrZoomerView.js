@@ -116,6 +116,10 @@ let main_arr_zoomer = function(opt_in) {
             // mini: 'translate(240,0)scale(2.7)',
             // lens: 'translate(245,5)scale(0.60)',
         },
+        inst_filter: {
+            inst_ids: [ 'Lx01', 'Mx04', 'Mx10', 'Mx11', 'Mx17' ],
+            inst_types: [ 'AUX', 'PROC' ],
+        },
         main: {
             // dblclick_zoom_in_out: false,
         },
@@ -216,6 +220,7 @@ let main_arr_zoomer = function(opt_in) {
             // .classed("svgInGridStack_inner", true)
             .style('background', '#383B42')
             // .style("background", "red").style("border","2px solid red")
+            // .style('background', 'white')
             .on('dblclick.zoom', null)
             .on('wheel', function() {
                 d3.event.preventDefault()
@@ -233,7 +238,7 @@ let main_arr_zoomer = function(opt_in) {
             is_south: is_south,
             widget_type: widget_type,
             sock: sock,
-            ele_opts: arr_zoomer_ele_opts,
+            user_opts: arr_zoomer_ele_opts,
             lock_init_key: arr_zoomer_lock_init_key,
             svg: svg,
         })

@@ -17,7 +17,6 @@
 window.ArrZoomerChes = function(opt_in_top) {
     let this_top = this
     let run_loop = opt_in_top.run_loop
-    let sgv_tag = opt_in_top.sgv_tag
     let widget_id = opt_in_top.widget_id
     let locker = opt_in_top.locker
     let is_south = opt_in_top.is_south
@@ -522,7 +521,7 @@ window.ArrZoomerChes = function(opt_in_top) {
 
         // initialize the target name for hovering->zoom
         this_top.target = zoom_target
-        // programatic zoom to some target and scale - only use 
+        // programatic zoom to some target and scale - only use
         // the last of any set of ovelapping zoom requests
         // run_loop.init({
         //   tag: zoom_to_target_tag.ches,

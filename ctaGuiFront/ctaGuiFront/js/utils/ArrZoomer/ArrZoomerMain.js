@@ -20,7 +20,6 @@
 window.ArrZoomerMain = function(opt_in0) {
     let this_top = this
     let run_loop = opt_in0.run_loop
-    let sgv_tag = opt_in0.sgv_tag
     let widget_id = opt_in0.widget_id
     let locker = opt_in0.locker
     let is_south = opt_in0.is_south
@@ -31,6 +30,8 @@ window.ArrZoomerMain = function(opt_in0) {
     let no_render = opt_in0.no_render
     let dblclick_zoom_in_out = is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
 
+    let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
+    
     let ele_base = opt_in0.ele_base
 
     let instruments = ele_base.instruments
@@ -115,11 +116,11 @@ window.ArrZoomerMain = function(opt_in0) {
     main_gs.g = ele_base.svgs.g_svg.append('g')
     main_gs.g_outer = main_gs.g.append('g')
 
-    let unique_clip_id = 'clip' + my_unique_id
+    let clip_main_id = 'clip_main' + my_unique_id
   
     main_gs.g_outer.append('defs')
         .append('clipPath')
-        .attr('id', unique_clip_id)
+        .attr('id', clip_main_id)
         .append('rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -128,7 +129,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
     main_gs.clipped_g = main_gs.g_outer.append('g')
     main_gs.clipped_g.attr('class', 'clipped_g')
-        .attr('clip-path', 'url(#' + unique_clip_id + ')')
+        .attr('clip-path', 'url(#' + clip_main_id + ')')
 
     // ------------------------------------------------------------------
     // initial scale to 100x100 px
@@ -186,16 +187,9 @@ window.ArrZoomerMain = function(opt_in0) {
     //
     // ------------------------------------------------------------------
     function add_back_shapes(g_in, len_wh, tel_data) {
-        g_in
-            .append('circle')
-            .attr('r', (len_wh.w - len_wh.w * (1 - len_wh.frac_circ_wh)) / 2.1)
-            .attr('cx', (len_wh.w + len_wh.w * (1 - len_wh.frac_circ_wh)) / 2)
-            .attr('cy', len_wh.h / 2)
-        // .attr('r', len_wh.w / 2.1)
-        // .attr('cx', len_wh.w / 2)
-        // .attr('cy', (len_wh.h - len_wh.h * (1-len_wh.frac_circ_wh)) / 2)
-            .attr('fill', '#F2F2F2')
-
+        // ------------------------------------------------------------------
+        // calculate dimensions
+        // ------------------------------------------------------------------
         let y_ele = []
         let data_cat = Object.entries(tel_data).filter(function(d) {
             return tel_info.is_categorical_id(ele_base.tel_types[d[0]])
@@ -209,15 +203,71 @@ window.ArrZoomerMain = function(opt_in0) {
         let y_max = Math.max(...y_ele) + tel_rs.s00[3] * 3
         let x_shift = len_wh.w * (1 - len_wh.frac_circ_wh) * 0.1
 
+        let circ_data = {
+            r: (len_wh.w - len_wh.w * (1 - len_wh.frac_circ_wh)) / 2.1,
+            cx: (len_wh.w + len_wh.w * (1 - len_wh.frac_circ_wh)) / 2,
+            cy: len_wh.h / 2,
+        }
+
+        let rec_data = {
+            x: x_shift,
+            y: y_min,
+            width: (len_wh.w * (1 - len_wh.frac_circ_wh)) - 1.5 * x_shift,
+            height: y_max - y_min,
+            rx: len_wh.h * 0.02,
+            ry: len_wh.h * 0.02,
+        }
+
+
+        // ------------------------------------------------------------------
+        // the main visible background elements
+        // ------------------------------------------------------------------
+        g_in
+            .append('circle')
+            .attr('r', circ_data.r)
+            .attr('cx', circ_data.cx)
+            .attr('cy', circ_data.cy)
+            .attr('fill', '#F2F2F2')
+
         g_in
             .append('rect')
-            .attr('x', x_shift)
-            .attr('y', y_min)
-            .attr('width', (len_wh.w * (1 - len_wh.frac_circ_wh)) - 1.5 * x_shift)
-            .attr('height', y_max - y_min)
-            .attr('rx', len_wh.h * 0.02)
-            .attr('ry', len_wh.h * 0.02)
+            .attr('x', rec_data.x)
+            .attr('y', rec_data.y)
+            .attr('width', rec_data.width)
+            .attr('height', rec_data.height)
+            .attr('rx', rec_data.rx)
+            .attr('ry', rec_data.ry)
             .attr('fill', '#F2F2F2')
+
+        // ------------------------------------------------------------------
+        // corresponding clip elements for the bck_pattern()
+        // ------------------------------------------------------------------
+        let clip_bck_pattern_id = 'clip_bck_pattern' + my_unique_id
+        
+        main_gs.bck_pattern_defs = main_gs.g_back.append('defs')
+            .append('clipPath')
+            .attr('id', clip_bck_pattern_id)
+          
+        main_gs.bck_pattern_defs
+            .append('circle')
+            .attr('r', circ_data.r)
+            .attr('cx', circ_data.cx)
+            .attr('cy', circ_data.cy)
+        
+        main_gs.bck_pattern_defs
+            .append('rect')
+            .attr('x', rec_data.x)
+            .attr('y', rec_data.y)
+            .attr('width', rec_data.width)
+            .attr('height', rec_data.height)
+            .attr('rx', rec_data.rx)
+            .attr('ry', rec_data.ry)
+
+        main_gs.clipped_bck_pattern_g = main_gs.g_back.append('g')
+        main_gs.clipped_bck_pattern_g.attr('class', 'clipped_bck_pattern_g')
+            .attr('clip-path', 'url(#' + clip_bck_pattern_id + ')')
+
+
         return
     }
     this_top.add_back_shapes = add_back_shapes
@@ -249,8 +299,8 @@ window.ArrZoomerMain = function(opt_in0) {
                 .attr('height', svg_dims.h)
                 .style('fill', 'transparent' )
                 .style('stroke', '#383B42' )
-            // .style("stroke",'#F2F2F2' )
-            // .style("stroke",'#2196F3' )
+                // .style("stroke",'#F2F2F2' )
+                // .style("stroke",'#2196F3' )
                 .style('stroke-width', 1)
                 .attr('pointer-events', 'none')
                 .attr('opacity', 1)
@@ -258,14 +308,17 @@ window.ArrZoomerMain = function(opt_in0) {
             add_back_shapes(main_gs.g_back, svg_dims, arr_init)
 
             // the background grid
-            bck_pattern({
-                com: com,
-                g_now: main_gs.g_back,
-                g_tag: 'hex',
-                len_wh: [ svg_dims.w, svg_dims.h ],
-                opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
-                hex_r: 18,
-            })
+            if (hex_r > 0) {
+                bck_pattern({
+                    com: com,
+                    // g_now: main_gs.g_back,
+                    g_now: main_gs.clipped_bck_pattern_g,
+                    g_tag: 'hex',
+                    len_wh: [ svg_dims.w, svg_dims.h ],
+                    opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
+                    hex_r: hex_r,
+                })
+            }
         }
 
 
@@ -1285,14 +1338,14 @@ window.ArrZoomerMain = function(opt_in0) {
             set_state()
 
             // update the opacity of the background grid
-            if (change_10) {
+            if (change_10 && hex_r > 0) {
                 bck_pattern({
                     com: com,
                     g_now: main_gs.g_base,
                     g_tag: 'hex',
                     len_wh: [ svg_dims.w, svg_dims.h ],
                     opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
-                    hex_r: 18,
+                    hex_r: hex_r,
                 })
             }
             if (is_state_up(scale, '1.0')) {

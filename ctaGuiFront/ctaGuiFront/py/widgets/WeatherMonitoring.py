@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from ctaGuiUtils.py.utils import get_time_of_night
+from ctaGuiFront.py.utils.ArrZoomer import ArrZoomer
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
@@ -29,6 +30,10 @@ class WeatherMonitoring(BaseWidget):
         self.tel_ids = self.socket_manager.InstData.get_inst_ids(
             inst_types=['LST', 'MST', 'SST']
         )
+
+        # ArrZoomer interface
+        self.ArrZoomer = ArrZoomer(parent=self)
+        self.my_utils += [self.ArrZoomer]
 
         return
 
