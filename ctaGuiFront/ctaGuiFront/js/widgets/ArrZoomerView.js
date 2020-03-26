@@ -118,7 +118,9 @@ let main_arr_zoomer = function(opt_in) {
         },
         inst_filter: {
             // inst_ids: [ 'Lx01', 'Mx04', 'Mx10', 'Mx11', 'Mx17' ],
-            // inst_types: [ 'AUX', 'PROC' ],
+            // inst_ids: [ 'Px00', 'Px01' ],
+            inst_types: [ 'AUX', 'PROC' ],
+            // inst_types: [ 'LST', 'MST', 'SST' ],
         },
         main: {
             // dblclick_zoom_in_out: false,

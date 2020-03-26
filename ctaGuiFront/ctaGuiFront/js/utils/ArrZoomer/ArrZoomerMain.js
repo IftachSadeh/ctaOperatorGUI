@@ -31,7 +31,7 @@ window.ArrZoomerMain = function(opt_in0) {
     let dblclick_zoom_in_out = is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
 
     let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
-    let vor_show_lines = false
+    let vor_show_lines = !false
     
     let ele_base = opt_in0.ele_base
 
@@ -185,19 +185,20 @@ window.ArrZoomerMain = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function add_back_shapes(g_in, len_wh, tel_data) {
+    function add_back_shapes(g_in, len_wh) {
         // ------------------------------------------------------------------
         // calculate dimensions
         // ------------------------------------------------------------------
+        // let data_cat = Object.entries(tel_info.get_ids()).filter(function(d) {
+        //     return tel_info.is_categorical_id(ele_base.tel_types[d[0]])
+        // })
+        
         let y_ele = []
-        let data_cat = Object.entries(tel_data).filter(function(d) {
-            return tel_info.is_categorical_id(ele_base.tel_types[d[0]])
-        })
+        let data_cat = tel_info.get_categorical_ids()
         $.each(data_cat, function(i, d) {
-            let id = d[0]
-            // let data_now = d[1]
             y_ele.push(this_top.cat_ele_pos(i, data_cat.length).y)
         })
+
         let y_min = Math.min(...y_ele) - tel_rs.s00[3] * 3
         let y_max = Math.max(...y_ele) + tel_rs.s00[3] * 3
         let x_shift = len_wh.w * (1 - len_wh.frac_circ_wh) * 0.1
@@ -218,7 +219,6 @@ window.ArrZoomerMain = function(opt_in0) {
             ry: len_wh.h * 0.02,
         }
         // com.bck_rec_data = rec_data
-
 
         // ------------------------------------------------------------------
         // the main visible background elements
@@ -306,7 +306,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 .attr('pointer-events', 'none')
                 .attr('opacity', 1)
 
-            add_back_shapes(main_gs.g_back, svg_dims, arr_init)
+            add_back_shapes(main_gs.g_back, svg_dims)
 
             // the background grid
             if (hex_r > 0) {
@@ -974,39 +974,40 @@ window.ArrZoomerMain = function(opt_in0) {
             }
             instruments.data.vor.data_physical = []
 
-            // ------------------------------------------------------------------
-            // get the width of the initial data (should be most inclusive)
-            // ------------------------------------------------------------------
-            let keys = Object.keys(data_in)
-            let min_data_x = data_in[keys[0]].x
-            let max_data_x = data_in[keys[0]].x
-            let min_data_y = data_in[keys[0]].y
-            let max_data_y = data_in[keys[0]].y
+            // // ------------------------------------------------------------------
+            // // get the width of the initial data (should be most inclusive)
+            // // ------------------------------------------------------------------
+            // let keys = Object.keys(data_in)
+            // let min_data_x = data_in[keys[0]].x
+            // let max_data_x = data_in[keys[0]].x
+            // let min_data_y = data_in[keys[0]].y
+            // let max_data_y = data_in[keys[0]].y
 
-            $.each(data_in, function(id, data_now) {
-                min_data_x = Math.min(min_data_x, data_now.x)
-                max_data_x = Math.max(max_data_x, data_now.x)
-                min_data_y = Math.min(min_data_y, data_now.y)
-                max_data_y = Math.max(max_data_y, data_now.y)
-            })
+            // $.each(data_in, function(id, data_now) {
+            //     min_data_x = Math.min(min_data_x, data_now.x)
+            //     max_data_x = Math.max(max_data_x, data_now.x)
+            //     min_data_y = Math.min(min_data_y, data_now.y)
+            //     max_data_y = Math.max(max_data_y, data_now.y)
+            // })
 
-            let data_in_wh = [
-                max_data_x - min_data_x, max_data_y - min_data_y,
-            ]
-            // if (!is_south) {
-            //     data_in_wh[0] *= 1.1
-            //     data_in_wh[1] *= 1.1
+            // let data_in_wh = {
+            //     x: max_data_x - min_data_x, 
+            //     y: max_data_y - min_data_y,
             // }
-                
-            // console.log(data_in_wh, max_data_x, min_data_x, max_data_y, min_data_y)
-            // // let circ_data = {
-            // //     r: (len_wh.w - len_wh.w * (1 - len_wh.frac_circ_wh)) / 2.1,
-            // //     cx: (len_wh.w + len_wh.w * (1 - len_wh.frac_circ_wh)) / 2,
-            // //     cy: len_wh.h / 2,
+            // // if (!is_south) {
+            // //     data_in_wh[0] *= 1.1
+            // //     data_in_wh[1] *= 1.1
             // // }
-            // // com.bck_circ_data = circ_data
+                
+            // // console.log(data_in_wh, max_data_x, min_data_x, max_data_y, min_data_y)
+            // // // let circ_data = {
+            // // //     r: (len_wh.w - len_wh.w * (1 - len_wh.frac_circ_wh)) / 2.1,
+            // // //     cx: (len_wh.w + len_wh.w * (1 - len_wh.frac_circ_wh)) / 2,
+            // // //     cy: len_wh.h / 2,
+            // // // }
+            // // // com.bck_circ_data = circ_data
 
-            let circ_data = com.bck_circ_data
+            // let circ_data = com.bck_circ_data
 
 
             // ------------------------------------------------------------------
@@ -1017,11 +1018,9 @@ window.ArrZoomerMain = function(opt_in0) {
             let data_cat = Object.entries(data_in).filter(function(d) {
                 return tel_info.is_categorical_id(ele_base.tel_types[d[0]])
             })
-
+            let categorical_ids = tel_info.get_categorical_ids()
             $.each(data_cat, function(i, d) {
-                let id = d[0]
-                // let data_now = d[1]
-                xy_cat[id] = this_top.cat_ele_pos(i, data_cat.length)
+                xy_cat[d[0]] = this_top.cat_ele_pos(i, categorical_ids.length)
             })
 
             $.each(data_in, function(id, data_now) {
@@ -1032,51 +1031,23 @@ window.ArrZoomerMain = function(opt_in0) {
                     r = xy_cat[id].r
                 }
                 else {
-                    if (data_now.t === 'LST') {
+                    if (data_now.type === 'LST') {
                         r = tel_rs.s00[2]
                     }
-                    else if (data_now.t === 'MST') {
+                    else if (data_now.type === 'MST') {
                         r = tel_rs.s00[1]
                     }
-                    else {
+                    else if (data_now.type === 'SST') {
                         r = tel_rs.s00[0]
                     }
+                    else {
+                        r = tel_rs.s00[1]
+                    }
 
+                    x = com.bck_circ_data.cx + data_now.x
+                    y = com.bck_circ_data.cy + data_now.y
 
-
-
-                    let shift_x = circ_data.cx
-                    let shift_y = circ_data.cy
-
-                    let scale_r = 2 * circ_data.r * 0.8
-                    let scaled_x = scale_r * data_now.x / data_in_wh[0]
-                    let scaled_y = scale_r * data_now.y / data_in_wh[1]
-
-                    x = shift_x + scaled_x
-                    y = shift_y + scaled_y
-
-
-                    // // console.log('-ZZZ-', id, [ data_now.x, data_now.y ])
-
-                    // let shift_main_x = (
-                    //     svg_dims.w * (1 - svg_dims.frac_circ_wh)
-                    // )
-                    // let shift_main_y = (
-                    //     svg_dims.h * (1 - svg_dims.frac_circ_wh) / 2
-                    // )
-                    // // let shift_main_y = 0
-          
-                    // let len_w = svg_dims.w * svg_dims.frac_circ_wh
-                    // let len_h = svg_dims.h * svg_dims.frac_circ_wh
-                    // x = (
-                    //     shift_main_x
-                    //     + (1 * data_now.x * len_w / (1.2 * data_in_wh[0]) + len_w / 2)
-                    // )
-                    // y = (
-                    //     shift_main_y
-                    //     + (-1 * data_now.y * len_h / (1.2 * data_in_wh[1]) + len_h / 2)
-                    // )
-
+                    // console.log(id,x,y,r)
                 }
 
                 // translate to the center of the respective hex-cell
@@ -1215,8 +1186,8 @@ window.ArrZoomerMain = function(opt_in0) {
 
         //       let eleR = data_now.r
         //       if (isTel) {
-        //         if (data_now.t === 'LST') eleR = tel_rs.s00[2]
-        //         else if (data_now.t === 'MST') eleR = tel_rs.s00[1]
+        //         if (data_now.type === 'LST') eleR = tel_rs.s00[2]
+        //         else if (data_now.type === 'MST') eleR = tel_rs.s00[1]
         //         else eleR = tel_rs.s00[0]
         //       }
 

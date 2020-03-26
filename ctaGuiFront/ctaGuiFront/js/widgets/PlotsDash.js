@@ -304,10 +304,10 @@ let main_plots_dash = function(opt_in) {
             }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
-                // let endTime = is_def(opt_in.endTime)
-                //   ? opt_in.endTime
+                // let end_time = is_def(opt_in.end_time)
+                //   ? opt_in.end_time
                 //   : undefined
-                // if (endTime < Number(shared.data.server.time_of_night.now)) return colorPalette.blocks.shutdown
+                // if (end_time < Number(shared.data.server.time_of_night.now)) return colorPalette.blocks.shutdown
                 let state = is_def(opt_in.exe_state.state)
                     ? opt_in.exe_state.state
                     : undefined
@@ -942,18 +942,18 @@ let main_plots_dash = function(opt_in) {
         }
         opt_in.g = opt_in.g.append('g') // .style('opacity', 0.8)
         let plotObject = createPlot(opt_in)
-        let start_XXX_time = {
+        let start_time = {
             date: new Date(shared.time.from),
             time: Number(shared.time.from.getTime()),
         }
-        let endTime = {
+        let end_time = {
             date: new Date(shared.server.time_of_night.date_now),
             time: Number(shared.server.time_of_night.now),
         }
 
         plotObject.updateAxis({
             id: 'bottom',
-            domain: [ start_XXX_time.date, endTime.date ],
+            domain: [ start_time.date, end_time.date ],
             range: [ 0, plotb.w ],
         })
         plotObject.updateAxis({
@@ -2820,12 +2820,12 @@ let main_plots_dash = function(opt_in) {
             //   let gMerge = allPlots.merge(gEnter)
             //   let generalIndex = [0, 0]
             //   gMerge.each(function (d, i) {
-            //     // let start_XXX_time = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
-            //     // let endTime = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
+            //     // let start_time = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+            //     // let end_time = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
             //     //
             //     // dd.plotObject.updateAxis({
             //     //   id: 'bottom',
-            //     //   domain: [start_XXX_time.date, endTime.date],
+            //     //   domain: [start_time.date, end_time.date],
             //     //   range: [0, plotb.w]
             //     // })
             //     // dd.plotObject.updateAxis({
@@ -3600,11 +3600,11 @@ let main_plots_dash = function(opt_in) {
 
                             let newplotbox = adjustTemplate(dim, choosenTemplateDim.plot)
                             miniPlotsVect[dd.id].get('main').g.style('visibility', newplotbox.display ? 'visible' : 'hidden')
-                            let start_XXX_time = {
+                            let start_time = {
                                 date: new Date(shared.time.from),
                                 time: Number(shared.time.from.getTime()),
                             }
-                            let endTime = {
+                            let end_time = {
                                 date: new Date(shared.server.time_of_night.date_now),
                                 time: Number(shared.server.time_of_night.now),
                             }
@@ -3613,7 +3613,7 @@ let main_plots_dash = function(opt_in) {
                             miniPlotsVect[dd.id].updateBox(newplotbox)
                             miniPlotsVect[dd.id].updateAxis({
                                 id: 'bottom',
-                                domain: [ start_XXX_time.date, endTime.date ],
+                                domain: [ start_time.date, end_time.date ],
                                 range: [ 0, newplotbox.w ],
                                 box: {
                                     x: 0,

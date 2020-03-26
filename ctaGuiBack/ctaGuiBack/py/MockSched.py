@@ -223,7 +223,7 @@ class MockSched():
 
             self.time_of_night.reset_night(log=self.log)
             self.prev_reset_time = self.time_of_night.get_reset_time()
-            # start_XXX_time = self.time_of_night.get_start_time()
+            # start_time = self.time_of_night.get_start_time()
             self.n_init_cycle += 1
 
             overhead_seconds = 30
@@ -370,7 +370,7 @@ class MockSched():
                             is_cycle_done = True
                             if debug_tmp:
                                 print(
-                                    ' - is_cycle_done - n_obs_now / start_XXX_time / duration:',
+                                    ' - is_cycle_done - n_obs_now / start_time / duration:',
                                     n_obs_now, obs_block_duration, obs_block_seconds
                                 )
                             break
@@ -394,7 +394,7 @@ class MockSched():
 
                         if debug_tmp:
                             print(
-                                ' --- n_obs_now / start_XXX_time / duration / scaled_duration:',
+                                ' --- n_obs_now / start_time / duration / scaled_duration:',
                                 n_obs_now, obs_block_duration, obs_block_seconds,
                                 scaled_duration, '-------', obs_block_id
                             )
@@ -665,8 +665,8 @@ class MockSched():
             for sched_block in self.cycle_blocks[active_sched_block]:
                 obs_block_id = sched_block.observation_blocks[0].id
 
-                start_XXX_time = self.acs_blocks['metadata'][obs_block_id]['start_time_plan']
-                time_dif_now = self.time_of_night.get_current_time() - start_XXX_time
+                start_time = self.acs_blocks['metadata'][obs_block_id]['start_time_plan']
+                time_dif_now = self.time_of_night.get_current_time() - start_time
                 time_dif_max = max(time_dif_max, time_dif_now)
         else:
             time_dif_max = time_dif
@@ -689,12 +689,12 @@ class MockSched():
                         self.acs_blocks['metadata'][obs_block_id]['start_time_plan'
                                                                   ] += time_dif_max
 
-                        endTime = self.acs_blocks['metadata'][obs_block_id]['start_time_plan'] + \
+                        end_time = self.acs_blocks['metadata'][obs_block_id]['start_time_plan'] + \
                             self.acs_blocks['metadata'][obs_block_id]['duration']
 
                         # a simplistic approach - cancel any SB if at least one of
                         # its OBs overshoots the end of the night
-                        if endTime > self.duration_night and (
+                        if end_time > self.duration_night and (
                                 sched_block not in sched_blockOverV):
                             sched_blockOverV.append(sched_block)
 
@@ -778,8 +778,8 @@ class MockSched():
                 if (self.time_of_night.get_reset_time() > self.prev_reset_time):
                     return
 
-                start_XXX_time = self.acs_blocks['metadata'][obs_block_id]['start_time_plan']
-                time_dif = self.time_of_night.get_current_time() - start_XXX_time
+                start_time = self.acs_blocks['metadata'][obs_block_id]['start_time_plan']
+                time_dif = self.time_of_night.get_current_time() - start_time
                 if time_dif >= 0:
                     break
 

@@ -403,62 +403,62 @@ window.ObsblockForm = function(opt_in) {
         g.select('#second').select('input').property('value', sec)
     }
     function changeBlockTime(type, hour, min, sec) {
-        let start_XXX_time = new Date(com.data.time_of_night.date_start)
-        let endTime = new Date(com.data.time_of_night.date_end)
+        let start_time = new Date(com.data.time_of_night.date_start)
+        let end_time = new Date(com.data.time_of_night.date_end)
         switch (type) {
-        case 'start_XXX_time':
-            if (Number(hour) >= 0 && Number(hour) <= endTime.getHours()) {
-                endTime.setHours(Number(hour))
-                endTime.setMinutes(Number(min))
-                endTime.setSeconds(Number(sec))
+        case 'start_time':
+            if (Number(hour) >= 0 && Number(hour) <= end_time.getHours()) {
+                end_time.setHours(Number(hour))
+                end_time.setMinutes(Number(min))
+                end_time.setSeconds(Number(sec))
             }
             else {
-                endTime = new Date(com.data.time_of_night.date_start)
-                endTime.setHours(Number(hour))
-                endTime.setMinutes(Number(min))
-                endTime.setSeconds(Number(sec))
+                end_time = new Date(com.data.time_of_night.date_start)
+                end_time.setHours(Number(hour))
+                end_time.setMinutes(Number(min))
+                end_time.setSeconds(Number(sec))
             }
-            com.data.block.time.start = (endTime - start_XXX_time) / 1000
+            com.data.block.time.start = (end_time - start_time) / 1000
             com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
             break
         case 'duration':
             com.data.block.time.duration = Number(hour) * 3600 + Number(min) * 60 + Number(sec)
             com.data.block.time.end = com.data.block.time.start + com.data.block.time.duration
             break
-        case 'endTime':
-            if (Number(hour) >= 0 && Number(hour) <= endTime.getHours()) {
-                endTime.setHours(Number(hour))
-                endTime.setMinutes(Number(min))
-                endTime.setSeconds(Number(sec))
+        case 'end_time':
+            if (Number(hour) >= 0 && Number(hour) <= end_time.getHours()) {
+                end_time.setHours(Number(hour))
+                end_time.setMinutes(Number(min))
+                end_time.setSeconds(Number(sec))
             }
             else {
-                endTime = new Date(com.data.time_of_night.date_start)
-                endTime.setHours(Number(hour))
-                endTime.setMinutes(Number(min))
-                endTime.setSeconds(Number(sec))
+                end_time = new Date(com.data.time_of_night.date_start)
+                end_time.setHours(Number(hour))
+                end_time.setMinutes(Number(min))
+                end_time.setSeconds(Number(sec))
             }
-            com.data.block.time.end = (endTime - start_XXX_time) / 1000
+            com.data.block.time.end = (end_time - start_time) / 1000
             com.data.block.time.duration = com.data.block.time.end - com.data.block.time.start
             break
         default:
             return
         }
 
-        start_XXX_time = new Date(com.data.time_of_night.date_start)
-        start_XXX_time.setSeconds(start_XXX_time.getSeconds() + com.data.block.time.start)
-        endTime = new Date(com.data.time_of_night.date_start)
-        endTime.setSeconds(endTime.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
-        let duration = new Date(endTime)
-        duration.setHours(duration.getHours() - start_XXX_time.getHours())
-        duration.setMinutes(duration.getMinutes() - start_XXX_time.getMinutes())
-        duration.setSeconds(duration.getSeconds() - start_XXX_time.getSeconds())
-        updateTime('start_XXX_time', start_XXX_time)
+        start_time = new Date(com.data.time_of_night.date_start)
+        start_time.setSeconds(start_time.getSeconds() + com.data.block.time.start)
+        end_time = new Date(com.data.time_of_night.date_start)
+        end_time.setSeconds(end_time.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
+        let duration = new Date(end_time)
+        duration.setHours(duration.getHours() - start_time.getHours())
+        duration.setMinutes(duration.getMinutes() - start_time.getMinutes())
+        duration.setSeconds(duration.getSeconds() - start_time.getSeconds())
+        updateTime('start_time', start_time)
         updateTime('duration', duration)
-        updateTime('endTime', endTime)
+        updateTime('end_time', end_time)
 
         com.schedule.events.click()
         com.events.conflict(com.data.block)
-        com.events.modification(com.data.block, false, (type === 'start_XXX_time' ? 'start_XXX_time' : 'duration'))
+        com.events.modification(com.data.block, false, (type === 'start_time' ? 'start_time' : 'duration'))
     }
     function changeState(newState) {
         com.schedule.events.change(com.data.block, newState)
@@ -810,14 +810,14 @@ window.ObsblockForm = function(opt_in) {
             createInput('second', ig, sbox)
         }
 
-        let start_XXX_time = new Date(com.data.time_of_night.date_start)
-        start_XXX_time.setSeconds(start_XXX_time.getSeconds() + data.time.start)
-        let endTime = new Date(com.data.time_of_night.date_start)
-        endTime.setSeconds(endTime.getSeconds() + data.time.start + data.time.duration)
-        let duration = new Date(endTime)
-        duration.setHours(duration.getHours() - start_XXX_time.getHours())
-        duration.setMinutes(duration.getMinutes() - start_XXX_time.getMinutes())
-        duration.setSeconds(duration.getSeconds() - start_XXX_time.getSeconds())
+        let start_time = new Date(com.data.time_of_night.date_start)
+        start_time.setSeconds(start_time.getSeconds() + data.time.start)
+        let end_time = new Date(com.data.time_of_night.date_start)
+        end_time.setSeconds(end_time.getSeconds() + data.time.start + data.time.duration)
+        let duration = new Date(end_time)
+        duration.setHours(duration.getHours() - start_time.getHours())
+        duration.setMinutes(duration.getMinutes() - start_time.getMinutes())
+        duration.setSeconds(duration.getSeconds() - start_time.getSeconds())
 
         let options = []
         if (data.exe_state.state === 'wait') {
@@ -956,8 +956,8 @@ window.ObsblockForm = function(opt_in) {
             },
         })
 
-        drawTime('start_XXX_time', label[1].x + txt_size * 0.5, label[1].w, 2 + headerSize * 1.5, start_XXX_time)
-        drawTime('endTime', label[2].x + txt_size * 0.5, label[2].w, 2 + headerSize * 1.5, endTime)
+        drawTime('start_time', label[1].x + txt_size * 0.5, label[1].w, 2 + headerSize * 1.5, start_time)
+        drawTime('end_time', label[2].x + txt_size * 0.5, label[2].w, 2 + headerSize * 1.5, end_time)
         drawTime('duration', label[3].x + txt_size * 0.5, label[3].w, 2 + headerSize * 1.5, duration)
 
     // let tbox = {
@@ -984,17 +984,17 @@ window.ObsblockForm = function(opt_in) {
     //   {change: (d) => { changePointing(d) }, enter: (d) => { changePointing(d) }})
     }
     function updateTime_information() {
-        let start_XXX_time = new Date(com.data.time_of_night.date_start)
-        start_XXX_time.setSeconds(start_XXX_time.getSeconds() + com.data.block.time.start)
-        let endTime = new Date(com.data.time_of_night.date_start)
-        endTime.setSeconds(endTime.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
-        let duration = new Date(endTime)
-        duration.setHours(duration.getHours() - start_XXX_time.getHours())
-        duration.setMinutes(duration.getMinutes() - start_XXX_time.getMinutes())
-        duration.setSeconds(duration.getSeconds() - start_XXX_time.getSeconds())
-        updateTime('start_XXX_time', start_XXX_time)
+        let start_time = new Date(com.data.time_of_night.date_start)
+        start_time.setSeconds(start_time.getSeconds() + com.data.block.time.start)
+        let end_time = new Date(com.data.time_of_night.date_start)
+        end_time.setSeconds(end_time.getSeconds() + com.data.block.time.start + com.data.block.time.duration)
+        let duration = new Date(end_time)
+        duration.setHours(duration.getHours() - start_time.getHours())
+        duration.setMinutes(duration.getMinutes() - start_time.getMinutes())
+        duration.setSeconds(duration.getSeconds() - start_time.getSeconds())
+        updateTime('start_time', start_time)
         updateTime('duration', duration)
-        updateTime('endTime', endTime)
+        updateTime('end_time', end_time)
     }
 
     function addNewTarget(target_name) {

@@ -51,9 +51,9 @@ class MockTarget():
     # ------------------------------------------------------------------
     def create_target(self):
         n_rnd_targets = max(5, int(self.rnd_gen.random() * 12))
-        start_XXX_time = 0
-        endTime = 28800
-        step = endTime / (n_rnd_targets + 1)
+        start_time = 0
+        end_time = 28800
+        step = end_time / (n_rnd_targets + 1)
         offset = step * 0.66
 
         self.target_ids = []
@@ -73,11 +73,11 @@ class MockTarget():
                     (self.zen_min_max_tel[1] - self.zen_min_max_tel[0])
                 ) + self.zen_min_max_tel[0]
             ]
-            minimal = start_XXX_time + (step * index) - (self.rnd_gen.random() * offset)
-            optimal = 1500 + start_XXX_time + (step * index) + (step * 0.5) + (
+            minimal = start_time + (step * index) - (self.rnd_gen.random() * offset)
+            optimal = 1500 + start_time + (step * index) + (step * 0.5) + (
                 (self.rnd_gen.random() - 0.5) * offset
             )
-            maximal = 4000 + start_XXX_time + (step * (index + 1)) + (
+            maximal = 4000 + start_time + (step * (index + 1)) + (
                 self.rnd_gen.random() * offset
             )
             target["observability"] = {

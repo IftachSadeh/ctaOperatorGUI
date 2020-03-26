@@ -340,7 +340,7 @@ def my_assert(log=None, msg="", state=False, only_warn=False):
 class time_of_night():
     is_active = False
 
-    def __init__(self, site_type, endTime=None, timescale=None, *args, **kwargs):
+    def __init__(self, site_type, end_time=None, timescale=None, *args, **kwargs):
         self.log = my_log(title=__name__)
 
         if time_of_night.is_active:
@@ -349,9 +349,9 @@ class time_of_night():
             time_of_night.is_active = True
 
         # 28800 -> 8 hour night
-        self.endTime = 28800 if endTime is None else endTime
+        self.end_time = 28800 if end_time is None else end_time
         # 0.035 -> have 30 minutes last for one minute in real time
-        self.timescale = 0.07 if endTime is None else timescale
+        self.timescale = 0.07 if end_time is None else timescale
         # 0.0035 -> have 30 minutes last for 6 sec in real time
         # if not has_acs:
         #   self.timescale /= 2
@@ -377,7 +377,7 @@ class time_of_night():
     #
     # ---------------------------------------------------------------------------
     def get_total_time_seconds(self):
-        return self.endTime
+        return self.end_time
 
     # ---------------------------------------------------------------------------
     def get_n_night(self):
@@ -433,7 +433,7 @@ class time_of_night():
 
         self.redis.pipe.set(name='time_of_night_' + 'scale', data=self.timescale)
         self.redis.pipe.set(name='time_of_night_' + 'start', data=time_now)
-        self.redis.pipe.set(name='time_of_night_' + 'end', data=self.endTime)
+        self.redis.pipe.set(name='time_of_night_' + 'end', data=self.end_time)
         self.redis.pipe.set(name='time_of_night_' + 'now', data=time_now)
 
         self.redis.pipe.execute()
@@ -449,7 +449,7 @@ class time_of_night():
         sleep_seconds = 1
         while True:
             self.time_now += sleep_seconds / self.timescale
-            if self.time_now > self.endTime:
+            if self.time_now > self.end_time:
                 self.reset_night()
 
             self.redis.set(name='time_of_night_' + 'now', data=int(floor(self.time_now)))

@@ -1240,9 +1240,9 @@ let main_obs_block_control = function(opt_in) {
                 let formatInt = d3.format('d')
                 titleText
           += ' [ '
-          + formatInt(focusBlock.start_XXX_time)
+          + formatInt(focusBlock.start_time)
           + ' -- '
-          + formatInt(focusBlock.endTime)
+          + formatInt(focusBlock.end_time)
           + ' ]'
             }
 

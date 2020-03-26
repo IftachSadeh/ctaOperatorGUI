@@ -585,19 +585,29 @@ window.tel_info = function() {
     // ------------------------------------------------------------------
     // telescope ids
     // ------------------------------------------------------------------
-    var tel_ids = window.SOCKET_INFO.tel_ids
+    let tel_ids = window.SOCKET_INFO.tel_ids
     this.get_ids = function() {
         return deep_copy(tel_ids)
     }
 
-    var tel_id_to_types = window.SOCKET_INFO.tel_id_to_types
+    let tel_id_to_types = window.SOCKET_INFO.tel_id_to_types
     this.get_id_to_types = function() {
         return deep_copy(tel_id_to_types)
     }
 
-    var categorical_types = window.SOCKET_INFO.categorical_types
+    let categorical_types = window.SOCKET_INFO.categorical_types
     this.get_categorical_types = function() {
         return deep_copy(categorical_types)
+    }
+
+    let categorical_ids = []
+    $.each(tel_ids, function(index, id) {
+        if(categorical_types.indexOf(tel_id_to_types[id]) !== -1) {
+            categorical_ids.push(id)
+        }
+    })
+    this.get_categorical_ids = function() {
+        return deep_copy(categorical_ids)
     }
 
     // ------------------------------------------------------------------

@@ -300,7 +300,7 @@ window.TelescopeDisplayer = function(opt_in) {
         function setDefaultStyleForTelescopes(telescopes) {
             let timescale = d3.scaleLinear()
                 .range(com.telescopeQueue.axis.range)
-                .domain([ com.time.start_XXX_time.time, com.time.endTime.time ])
+                .domain([ com.time.start_time.time, com.time.end_time.time ])
             for (let index in telescopes) {
                 let b = telescopes[index]
                 let bDisplay = b.display
@@ -309,7 +309,7 @@ window.TelescopeDisplayer = function(opt_in) {
                     d: b,
                 })
 
-                bDisplay.w = timescale(b.endTime) - timescale(b.start_XXX_time)
+                bDisplay.w = timescale(b.end_time) - timescale(b.start_time)
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.5
                 bDisplay.fill = cols.background

@@ -271,11 +271,11 @@ window.BlockDisplayer = function(opt_in) {
                 date: new Date(),
                 time: 0,
             },
-            start_XXX_time: {
+            start_time: {
                 date: new Date(),
                 time: 0,
             },
-            endTime: {
+            end_time: {
                 date: new Date(),
                 time: 1000,
             },
@@ -605,8 +605,8 @@ window.BlockDisplayer = function(opt_in) {
                     .concat(com.data.filtered.wait)
                 let bottomRow = calcBlockRow({
                     type_now: 'bottom',
-                    start: com.time.start_XXX_time.time,
-                    end: com.time.endTime.time,
+                    start: com.time.start_time.time,
+                    end: com.time.end_time.time,
                     data: dataBottom,
                     box: {
                         x: 0,
@@ -836,8 +836,8 @@ window.BlockDisplayer = function(opt_in) {
                 let state = data_now.exe_state.state
                 let n_tels = data_now.tel_ids.length
                 let start = (data_now.time.start - opt_in.start) * xScale
-                let end = (data_now.time.endTime - opt_in.start) * xScale
-                let overlap = (data_now.time.endTime - data_now.time.start) * xScale * 0.2 // allow small overlap in x between blocks
+                let end = (data_now.time.end_time - opt_in.start) * xScale
+                let overlap = (data_now.time.end_time - data_now.time.start) * xScale * 0.2 // allow small overlap in x between blocks
                 let x0 = box.x + start
                 let w0 = end - start
                 let h0 = opt_in.yScale ? (n_tels * yScale) : (box.h * 0.3)
@@ -902,7 +902,7 @@ window.BlockDisplayer = function(opt_in) {
         function setDefaultStyleForBlocks(blocks) {
             let timescale = d3.scaleLinear()
                 .range(com.blockQueue.axis.range)
-                .domain([ com.time.start_XXX_time.time, com.time.endTime.time ])
+                .domain([ com.time.start_time.time, com.time.end_time.time ])
             for (let index in blocks) {
                 let b = blocks[index]
                 let bDisplay = b.display
@@ -911,7 +911,7 @@ window.BlockDisplayer = function(opt_in) {
                     d: b,
                 })
 
-                bDisplay.w = timescale(b.time.endTime) - timescale(b.time.start)
+                bDisplay.w = timescale(b.time.end_time) - timescale(b.time.start)
                 bDisplay.stroke = cols.stroke
                 bDisplay.strokeWidth = 0.5
                 bDisplay.fill = cols.background
@@ -1010,7 +1010,7 @@ window.BlockDisplayer = function(opt_in) {
         }
         this.update = update
         function updateAxis() {
-            com.blockQueue.axis.domain = [ com.time.start_XXX_time.date, com.time.endTime.date ]
+            com.blockQueue.axis.domain = [ com.time.start_time.date, com.time.end_time.date ]
             com.blockQueue.axis.range = [ 0, com.blockQueue.axis.box.w ]
 
             com.blockQueue.axis.scale
@@ -1046,8 +1046,8 @@ window.BlockDisplayer = function(opt_in) {
                     .concat(com.data.filtered.wait)
                 let bottomRow = calcBlockRow({
                     type_now: 'bottom',
-                    start: com.time.start_XXX_time.time,
-                    end: com.time.endTime.time,
+                    start: com.time.start_time.time,
+                    end: com.time.end_time.time,
                     data: dataBottom,
                     box: {
                         x: 0,
@@ -1073,8 +1073,8 @@ window.BlockDisplayer = function(opt_in) {
                     .concat(com.data.filtered.cancel)
                 let topRow = calcBlockRow({
                     type_now: 'top',
-                    start: com.time.start_XXX_time.time,
-                    end: com.time.endTime.time,
+                    start: com.time.start_time.time,
+                    end: com.time.end_time.time,
                     data: dataTop,
                     box: {
                         x: 0,
@@ -1098,8 +1098,8 @@ window.BlockDisplayer = function(opt_in) {
             if (com.blockQueue.blocks.modification.enabled && com.data.modified.length > 0) {
                 let middleRow = calcBlockRow({
                     type_now: 'top',
-                    start: com.time.start_XXX_time.time,
-                    end: com.time.endTime.time,
+                    start: com.time.start_time.time,
+                    end: com.time.end_time.time,
                     data: com.data.modified,
                     box: {
                         x: 0,
@@ -1128,7 +1128,7 @@ window.BlockDisplayer = function(opt_in) {
             let minTxtSize = 6
             let timescale = d3.scaleLinear()
                 .range(com.blockQueue.axis.range)
-                .domain([ com.time.start_XXX_time.time, com.time.endTime.time ])
+                .domain([ com.time.start_time.time, com.time.end_time.time ])
 
             let rect = com.main.scroll.scrollG
                 .selectAll('g.' + com.main.tag + 'blocks')
@@ -1604,7 +1604,7 @@ window.BlockDisplayer = function(opt_in) {
                 //   .duration(times.anim)
                 //   .attr('x', timescale(d.time.start))
                 //   .attr('y', d.display.y - 2)
-                //   .attr('width', timescale(d.time.endTime) - timescale(d.time.start))
+                //   .attr('width', timescale(d.time.end_time) - timescale(d.time.start))
                 //   .attr('height', d.display.h)
                 //   .style('fill', d.display.patternFill)
                 //   .style('fill-opacity', d.display.patternOpacity)
@@ -1902,7 +1902,7 @@ window.BlockDisplayer = function(opt_in) {
                 //   .duration(times.anim)
                 //   .attr('x', timescale(d.time.start))
                 //   .attr('y', d.display.y - 2)
-                //   .attr('width', timescale(d.time.endTime) - timescale(d.time.start))
+                //   .attr('width', timescale(d.time.end_time) - timescale(d.time.start))
                 //   .attr('height', d.display.h)
                 //   .style('fill', d.display.patternFill)
                 //   .style('fill-opacity', d.display.patternOpacity)
@@ -2118,7 +2118,7 @@ window.BlockDisplayer = function(opt_in) {
         }
         this.update = update
         function updateAxis() {
-            com.blockQueue2.axis.domain = [ com.time.start_XXX_time.date, com.time.endTime.date ]
+            com.blockQueue2.axis.domain = [ com.time.start_time.date, com.time.end_time.date ]
             com.blockQueue2.axis.range = [ 0, com.blockQueue2.axis.box.w ]
 
             com.blockQueue2.axis.scale
@@ -2295,7 +2295,7 @@ window.BlockDisplayer = function(opt_in) {
         function setBlockRect(blocks, box) {
             let timescale = d3.scaleLinear()
                 .range(com.blockQueue2.axis.range)
-                .domain([ com.time.start_XXX_time.time, com.time.endTime.time ])
+                .domain([ com.time.start_time.time, com.time.end_time.time ])
 
             let rect = com.main.scroll.scrollG
                 .selectAll('g.' + com.main.tag + 'blocks')
@@ -2352,7 +2352,7 @@ window.BlockDisplayer = function(opt_in) {
         function get_block_rows() {
             let timescale = d3.scaleLinear()
                 .range(com.blockQueue2.axis.range)
-                .domain([ com.time.start_XXX_time.time, com.time.endTime.time ])
+                .domain([ com.time.start_time.time, com.time.end_time.time ])
             let scheds = groupBlocksBySchedule(com.data.filtered)
             let nLine = scheds.length
             let height = com.main.box.h / nLine
@@ -2649,7 +2649,7 @@ window.BlockDisplayer = function(opt_in) {
         }
         this.update = update
         function updateAxis() {
-            com.blockTrackShrink.axis.domain = [ com.time.start_XXX_time.date, com.time.endTime.date ]
+            com.blockTrackShrink.axis.domain = [ com.time.start_time.date, com.time.end_time.date ]
             com.blockTrackShrink.axis.range = [ 0, com.blockTrackShrink.axis.box.w ]
 
             com.blockTrackShrink.axis.scale
@@ -2711,7 +2711,7 @@ window.BlockDisplayer = function(opt_in) {
         function updateSchedulingBlocks() {
             let timescale = d3.scaleLinear()
                 .range(com.blockTrackShrink.axis.range)
-                .domain([ com.time.start_XXX_time.time, com.time.endTime.time ])
+                .domain([ com.time.start_time.time, com.time.end_time.time ])
 
             let scheds = groupBlocksBySchedule(com.data.filtered)
             let tracks = computeTrack(scheds)
@@ -2800,11 +2800,11 @@ window.BlockDisplayer = function(opt_in) {
                             else if (com.blockTrackShrink.sched_blocks.label.position === 'right') {
                                 return (timescale(d.endT)) + 5
                             }
-                            // if (d.startT < com.time.start_XXX_time.time) {
-                            //   if (d.endT > com.time.endTime.time) return (timescale(com.time.start_XXX_time.time)) + 5
+                            // if (d.startT < com.time.start_time.time) {
+                            //   if (d.endT > com.time.end_time.time) return (timescale(com.time.start_time.time)) + 5
                             //   else return (timescale(d.endT)) + 5
-                            // } else if (d.endT > com.time.endTime.time) {
-                            //   if (d.startT < com.time.start_XXX_time.time) return (timescale(com.time.start_XXX_time.time)) + 5
+                            // } else if (d.endT > com.time.end_time.time) {
+                            //   if (d.startT < com.time.start_time.time) return (timescale(com.time.start_time.time)) + 5
                             //   else return (timescale(d.startT)) - 5
                             // }
                             // return (timescale(d.startT)) - 5
@@ -2812,10 +2812,10 @@ window.BlockDisplayer = function(opt_in) {
                         .attr('y', height * 0.75)
                         .style('font-weight', 'bold')
                         .attr('text-anchor', function() {
-                            if (d.startT < com.time.start_XXX_time.time) {
+                            if (d.startT < com.time.start_time.time) {
                                 return 'start'
                             }
-                            else if (d.endT > com.time.endTime.time) {
+                            else if (d.endT > com.time.end_time.time) {
                                 return 'end'
                             }
                             return 'end'
@@ -2856,11 +2856,11 @@ window.BlockDisplayer = function(opt_in) {
                             else if (com.blockTrackShrink.sched_blocks.label.position === 'right') {
                                 return (timescale(d.endT)) + 5
                             }
-                            // if (d.startT < com.time.start_XXX_time.time) {
-                            //   if (d.endT > com.time.endTime.time) return (timescale(com.time.start_XXX_time.time)) + 5
+                            // if (d.startT < com.time.start_time.time) {
+                            //   if (d.endT > com.time.end_time.time) return (timescale(com.time.start_time.time)) + 5
                             //   else return (timescale(d.endT)) + 5
-                            // } else if (d.endT > com.time.endTime.time) {
-                            //   if (d.startT < com.time.start_XXX_time.time) return (timescale(com.time.start_XXX_time.time)) + 5
+                            // } else if (d.endT > com.time.end_time.time) {
+                            //   if (d.startT < com.time.start_time.time) return (timescale(com.time.start_time.time)) + 5
                             //   else return (timescale(d.startT)) - 5
                             // }
                             // return (timescale(d.startT)) - 5
@@ -2872,14 +2872,14 @@ window.BlockDisplayer = function(opt_in) {
                             else if (com.blockTrackShrink.sched_blocks.label.position === 'right') {
                                 return 'start'
                             }
-                            // if (d.startT < com.time.start_XXX_time.time) {
+                            // if (d.startT < com.time.start_time.time) {
                             //   return 'start'
-                            // } else if (d.endT > com.time.endTime.time) {
+                            // } else if (d.endT > com.time.end_time.time) {
                             //   return 'end'
                             // }
                             return 'end'
                         })
-                    // .attr('opacity', ((d.startT > com.time.endTime.time) || (d.endT < com.time.start_XXX_time.time)) ? 0 : 1)
+                    // .attr('opacity', ((d.startT > com.time.end_time.time) || (d.endT < com.time.start_time.time)) ? 0 : 1)
                     d3.select(this)
                         .transition()
                         .duration(times.anim)
@@ -2896,7 +2896,7 @@ window.BlockDisplayer = function(opt_in) {
         function setBlockRect(blocks, box) {
             let timescale = d3.scaleLinear()
                 .range(com.blockTrackShrink.axis.range)
-                .domain([ com.time.start_XXX_time.time, com.time.endTime.time ])
+                .domain([ com.time.start_time.time, com.time.end_time.time ])
 
             let rect = com.main.scroll.scrollG
                 .selectAll('g.' + com.main.tag + 'blocks')
@@ -2955,7 +2955,7 @@ window.BlockDisplayer = function(opt_in) {
         function get_block_rows() {
             let timescale = d3.scaleLinear()
                 .range(com.blockTrackShrink.axis.range)
-                .domain([ com.time.start_XXX_time.time, com.time.endTime.time ])
+                .domain([ com.time.start_time.time, com.time.end_time.time ])
             let scheds = groupBlocksBySchedule(com.data.filtered)
             let nLine = scheds.length
             let height = com.main.box.h / nLine
@@ -2971,7 +2971,7 @@ window.BlockDisplayer = function(opt_in) {
                         y: translate.y,
                         x: timescale(scheds[i].blocks[j].time.start),
                         h: height,
-                        w: timescale(scheds[i].blocks[j].time.endTime) - timescale(scheds[i].blocks[j].time.start),
+                        w: timescale(scheds[i].blocks[j].time.end_time) - timescale(scheds[i].blocks[j].time.start),
                         block: scheds[i].blocks[j],
                     })
                 }
@@ -3575,8 +3575,8 @@ window.BlockDisplayer = function(opt_in) {
             .duration(400)
             .style('opacity', 0)
         com.time.currentTime = data_in.time.currentTime
-        com.time.start_XXX_time = data_in.time.start_XXX_time
-        com.time.endTime = data_in.time.endTime
+        com.time.start_time = data_in.time.start_time
+        com.time.end_time = data_in.time.end_time
         com.data.raw = data_in.data.raw
         com.data.modified = data_in.data.modified
         com.filters.filtering = updateFiltering()

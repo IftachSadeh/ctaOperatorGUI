@@ -44,6 +44,8 @@ class InstData():
             InstData.proc_ids = self.init_proc_ids()
             self.init_proc_pos()
 
+            self.scale_inst_pos()
+
             InstData.inst_Ids = copy.deepcopy(
                 InstData.tel_ids + InstData.aux_ids + InstData.proc_ids
             )
@@ -669,7 +671,6 @@ class InstData():
                     add_factor = 1
                 for xy_now in ['x', 'y']:
                     ele_now[xy_now] *= add_factor
-
         return
 
     # ------------------------------------------------------------------
@@ -766,6 +767,19 @@ class InstData():
         InstData.categorical_types = ['PROC']
 
         return
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
+    def scale_inst_pos(self):
+        if InstData.site_type == 'S':
+            pos_scale = 0.53
+        if InstData.site_type == 'N':
+            pos_scale = 1.3
+        
+        for id_now, ele_now in InstData.inst_info.iteritems():
+            for xy_now in ['x', 'y']:
+                ele_now[xy_now] *= pos_scale
 
     # ------------------------------------------------------------------
     #

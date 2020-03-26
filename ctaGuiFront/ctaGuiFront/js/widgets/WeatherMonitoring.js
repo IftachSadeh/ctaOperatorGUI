@@ -406,10 +406,10 @@ let main_weather_monitoring = function(opt_in) {
             }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
-                // let endTime = is_def(opt_in.endTime)
-                //   ? opt_in.endTime
+                // let end_time = is_def(opt_in.end_time)
+                //   ? opt_in.end_time
                 //   : undefined
-                // if (endTime < Number(shared.data.server.time_of_night.now)) return colorPalette.blocks.shutdown
+                // if (end_time < Number(shared.data.server.time_of_night.now)) return colorPalette.blocks.shutdown
                 let state = is_def(opt_in.exe_state.state)
                     ? opt_in.exe_state.state
                     : undefined
@@ -1230,17 +1230,17 @@ let main_weather_monitoring = function(opt_in) {
         this.unbindData = unbindData
 
         function update_data() {
-            let start_XXX_time = {
+            let start_time = {
                 date: new Date(shared.time.from),
                 time: Number(shared.time.from.getTime()),
             }
-            let endTime = {
+            let end_time = {
                 date: new Date(shared.server.time_of_night.date_now),
                 time: Number(shared.server.time_of_night.now),
             }
             plot.updateAxis({
                 id: 'bottom',
-                domain: [ start_XXX_time.date, endTime.date ],
+                domain: [ start_time.date, end_time.date ],
                 range: [ 0, plotbox.w ],
             })
             plot.updateAxis({
@@ -1256,11 +1256,11 @@ let main_weather_monitoring = function(opt_in) {
 
             brush.updateAxis({
                 id: 'top',
-                domain: [ start_XXX_time.date, endTime.date ],
+                domain: [ start_time.date, end_time.date ],
             })
             brush.updateAxis({
                 id: 'middle',
-                domain: [ start_XXX_time.date, endTime.date ],
+                domain: [ start_time.date, end_time.date ],
             })
         }
         this.update_data = update_data
@@ -3350,17 +3350,17 @@ let main_weather_monitoring = function(opt_in) {
                 let plot = createPlot(opt_in)
                 plotList.push(plot)
 
-                let start_XXX_time = {
+                let start_time = {
                     date: new Date(shared.time.from),
                     time: Number(shared.time.from.getTime()),
                 }
-                let endTime = {
+                let end_time = {
                     date: new Date(shared.server.time_of_night.date_now),
                     time: Number(shared.server.time_of_night.now),
                 }
                 plot.updateAxis({
                     id: 'bottom',
-                    domain: [ start_XXX_time.date, endTime.date ],
+                    domain: [ start_time.date, end_time.date ],
                     range: [ 0, opt_in.box.w ],
                 })
                 plot.updateAxis({
@@ -3585,17 +3585,17 @@ let main_weather_monitoring = function(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let start_XXX_time = {
+            let start_time = {
                 date: new Date(shared.time.from),
                 time: Number(shared.time.from.getTime()),
             }
-            let endTime = {
+            let end_time = {
                 date: new Date(shared.server.time_of_night.date_now),
                 time: Number(shared.server.time_of_night.now),
             }
             plot.updateAxis({
                 id: 'bottom',
-                domain: [ start_XXX_time.date, endTime.date ],
+                domain: [ start_time.date, end_time.date ],
                 range: [ 0, plotbox.w ],
             })
             plot.updateAxis({
@@ -3611,11 +3611,11 @@ let main_weather_monitoring = function(opt_in) {
 
             brush.updateAxis({
                 id: 'top',
-                domain: [ start_XXX_time.date, endTime.date ],
+                domain: [ start_time.date, end_time.date ],
             })
             brush.updateAxis({
                 id: 'middle',
-                domain: [ start_XXX_time.date, endTime.date ],
+                domain: [ start_time.date, end_time.date ],
             })
         }
         this.update_data = update_data

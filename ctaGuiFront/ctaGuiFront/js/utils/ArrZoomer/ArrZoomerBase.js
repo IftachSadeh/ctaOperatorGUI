@@ -29,10 +29,6 @@ window.load_script({
     source: load_script_tag,
     script: '/js/utils/ArrZoomer/ArrZoomerTree.js',
 })
-// window.load_script({
-//   source: main_script_tag,
-//   script: '/js/arr_zoomer/utils_arr_zoomerLens.js'
-// })
 
 // ------------------------------------------------------------------
 //
@@ -159,7 +155,13 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.site_scale = is_south ? 4 / 9 : 1
   
     this_top.tel_rs = {
-        s00: [ 12, 13, 14, 14 ],
+        s00: [ 
+            12, 
+            13, 
+            14, 
+            14, 
+            // is_south ? 30 : 14, 
+        ],
     }
     this_top.tel_rs.s00 = this_top.tel_rs.s00.map(
         function(x) {
@@ -338,7 +340,7 @@ window.ArrZoomerBase = function(opt_in0) {
                 // console.log('    ++',id,porp_now,data_now[porp_now])
                 if (
                     data_now[porp_now] !== undefined
-          && typeof data_now[porp_now] === 'number'
+                    && typeof data_now[porp_now] === 'number'
                 ) {
                     instruments.data.avg[porp_now] += data_now[porp_now]
                 }
