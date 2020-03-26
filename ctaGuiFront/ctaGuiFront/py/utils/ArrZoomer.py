@@ -33,6 +33,8 @@ class ArrZoomer():
         self.inst_ids = self.inst_data.get_inst_ids()
         self.proc_ids = self.inst_data.get_proc_ids()
         self.inst_types = self.inst_data.get_inst_id_to_types()
+        self.inst_pos = self.inst_data.get_inst_pos()
+        self.tel_sub_health = self.inst_data.get_tel_healths()
 
         return
 
@@ -133,8 +135,6 @@ class ArrZoomer():
         self.zoom_state['zoom_state'] = 0
         self.zoom_state['zoom_target'] = ''
 
-        self.init_tel_health()
-
         # ------------------------------------------------------------------
         # spawn updating threads if needed
         # ------------------------------------------------------------------
@@ -196,61 +196,80 @@ class ArrZoomer():
         return
 
     # ------------------------------------------------------------------
+    # filter instruments
+    # ------------------------------------------------------------------
+    def filter_inst(self, filt_rules):
+        # ------------------------------------------------------------------
+        # possible filter rules for which instruments to include
+        # ------------------------------------------------------------------
+        filt_inst = [[] for id in self.inst_ids]
+        if 'inst_ids' in filt_rules:
+            for n_id in range(len(self.inst_ids)):
+                filt_inst[n_id] += [
+                    self.inst_ids[n_id] in filt_rules['inst_ids']
+                ]
+        if 'inst_types' in filt_rules:
+            for n_id in range(len(self.inst_ids)):
+                id = self.inst_ids[n_id]
+                filt_inst[n_id] += [
+                    self.inst_types[id] in filt_rules['inst_types']
+                ]
+        filt_inst = [any(filt) for filt in filt_inst]
+
+        if sum(filt_inst) == 0:
+            ArrZoomer.log.warn([
+                ['b', ' - ask_init_data() '],
+                ['r', 'filters leave no accepted instruments ... will ignore!'],
+                ['b', ' filt_rules: '],
+                ['y', '', filt_rules],
+            ])
+
+            return
+            
+        self.inst_ids = [
+            self.inst_ids[n_id]
+            for n_id in range(len(self.inst_ids))
+            if filt_inst[n_id]
+        ]
+        self.inst_types = dict(
+            (k,v) for (k,v) in self.inst_types.items()
+            if k in self.inst_ids
+        )
+        self.inst_pos = dict(
+            (k,v) for (k,v) in self.inst_pos.items()
+            if k in self.inst_ids
+        )
+
+        return
+
+    # ------------------------------------------------------------------
     # initialise dataset and send to client when the client asks for it
     # ------------------------------------------------------------------
     def ask_init_data(self, *args):
         data_in = args[0]
-
-        # ------------------------------------------------------------------
-        # possible filter rules for which instruments to include
-        # ------------------------------------------------------------------
         if 'inst_filter' in data_in:
-            filt_inst = [[] for id in self.inst_ids]
-            if 'inst_ids' in data_in['inst_filter']:
-                for n_id in range(len(self.inst_ids)):
-                    filt_inst[n_id] += [
-                        self.inst_ids[n_id] in data_in['inst_filter']['inst_ids']
-                    ]
-            if 'inst_types' in data_in['inst_filter']:
-                for n_id in range(len(self.inst_ids)):
-                    id = self.inst_ids[n_id]
-                    filt_inst[n_id] += [
-                        self.inst_types[id] in data_in['inst_filter']['inst_types']
-                    ]
-            filt_inst = [any(filt) for filt in filt_inst]
+            self.filter_inst(data_in['inst_filter'])
 
-            if sum(filt_inst) > 0:
-                self.inst_ids = [
-                    self.inst_ids[n_id]
-                    for n_id in range(len(self.inst_ids))
-                    if filt_inst[n_id]
-                ]
-            else:
-                ArrZoomer.log.warn([
-                    ['b', ' - ask_init_data() '],
-                    ['r', 'filters leave no accepted instruments ... will ignore!'],
-                    ['b', ' data_in: '],
-                    ['y', '', data_in],
-                ])
-
+        self.init_tel_health()
+        self.arr_zoomer_id = data_in['arr_zoomer_id']
+        
         # ------------------------------------------------------------------
         # data access function for the socket
         # ------------------------------------------------------------------
         def get_init_data():
-            inst_info = self.inst_data.get_inst_pos()
+            inst_prop_types = dict()
+            inst_prop_types = dict()
 
-            inst_prop_types = dict()
-            inst_prop_types = dict()
-            inst_ids = self.inst_data.get_inst_ids()
-            for id_now in inst_ids:
-                inst_prop_types[id_now] = [{
-                    'id': v['id'],
-                    'title': v['title'],
-                } for (k, v) in self.tel_sub_health[id_now].items()]
+            for id_now in self.inst_ids:
+                inst_prop_types[id_now] = [
+                    { 'id': v['id'], 'title': v['title'] } 
+                    for (k, v) in self.tel_sub_health[id_now].items()
+                ]
 
             data = {
+                'arr_zoomer_id': self.arr_zoomer_id,
                 'sub_arr': self.sub_arr_grp,
-                'arr_init': inst_info,
+                'arr_init': self.inst_pos,
                 'arrProp': self.get_tel_health_s0(),
                 'tel_prop_types': inst_prop_types,
                 'tel_types': self.inst_types,
@@ -325,7 +344,9 @@ class ArrZoomer():
 
         for id_now in self.inst_ids:
             fields[id_now] = ['health', 'status']
-            fields[id_now] += [v['id'] for (k, v) in self.tel_sub_health[id_now].items()]
+            fields[id_now] += [
+                v['id'] for (k, v) in self.tel_sub_health[id_now].items()
+            ]
 
         ids = self.inst_ids if (id_in is None) else [id_in]
 
@@ -408,6 +429,7 @@ class ArrZoomer():
             prop_s1 = self.tel_health[data['zoom_target']]
 
             emit_data_s1 = {
+                'arr_zoomer_id': self.arr_zoomer_id,
                 'widget_id': data['widget_id'],
                 'type': 's11',
                 'data': prop_s1,
@@ -495,7 +517,11 @@ class ArrZoomer():
         data_now = ArrZoomer.send_data['s_0']
         sess_ids = data_now['sess_id']
         widget_ids = data_now['widget_id']
-        emit_data_s0 = {'widget_id': '', 'type': 's00', 'data': self.get_tel_health_s0()}
+        emit_data_s0 = {
+            'widget_id': '', 
+            'type': 's00', 
+            'data': self.get_tel_health_s0(),
+        }
 
         self.socket_manager.socket_event_widgets(
             event_name='arr_zoomer_update_data',
@@ -508,7 +534,11 @@ class ArrZoomer():
             data_now = ArrZoomer.send_data['s_1'][zoom_target]
             sess_ids = data_now['sess_id']
             widget_ids = data_now['widget_id']
-            emit_data_s1 = {'widget_id': '', 'type': 's11', 'data': prop_s1[zoom_target]}
+            emit_data_s1 = {
+                'widget_id': '', 
+                'type': 's11', 
+                'data': prop_s1[zoom_target],
+            }
 
             self.socket_manager.socket_event_widgets(
                 event_name='arr_zoomer_update_data',
@@ -584,7 +614,7 @@ class ArrZoomer():
                 data_now = ArrZoomer.send_data['s_0']
                 sess_ids = data_now['sess_id']
                 widget_ids = data_now['widget_id']
-                data = {'widget_id': '', 'type': 'sub_arr', 'data': self.sub_arr_grp}
+                data = {'widget_id': '', 'type': 'sub_arr', 'data': self.sub_arr_grp,}
 
                 self.socket_manager.socket_event_widgets(
                     event_name='arr_zoomer_update_data',

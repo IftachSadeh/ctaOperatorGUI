@@ -175,7 +175,7 @@ window.BlockQueueCreator = function(opt_in) {
                 date: new Date(),
                 time: 0,
             },
-            startTime: {
+            start_XXX_time: {
                 date: new Date(),
                 time: 0,
             },

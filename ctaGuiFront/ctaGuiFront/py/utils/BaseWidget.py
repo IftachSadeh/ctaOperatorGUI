@@ -26,7 +26,6 @@ class BaseWidget():
         self.widget_id = widget_id
         # the parent of this widget
         self.socket_manager = socket_manager
-
         # widget-class and widget group names
         self.widget_name = self.__class__.__name__
         # for common threading
@@ -67,7 +66,8 @@ class BaseWidget():
         # name corresponding to the current session id
         self.log = my_log(
             title=(
-                str(self.socket_manager.user_id) + '/' + str(self.socket_manager.sess_id)
+                str(self.socket_manager.user_id) 
+                + '/' + str(self.socket_manager.sess_id)
                 + '/' + __name__ + '/' + self.widget_id
             )
         )

@@ -20,6 +20,7 @@ window.ArrZoomerChes = function(opt_in_top) {
     let widget_id = opt_in_top.widget_id
     let locker = opt_in_top.locker
     let is_south = opt_in_top.is_south
+    // let my_unique_id = unique()
 
     let ele_base = opt_in_top.ele_base
 
@@ -535,7 +536,7 @@ window.ArrZoomerChes = function(opt_in_top) {
         // }
         // this_top.zoomToTrgQuick = zoomToTrgQuick
 
-        set_state_once(data_in)
+        set_state_once()
 
         locker.remove(lock_init_key)
         return
@@ -545,7 +546,7 @@ window.ArrZoomerChes = function(opt_in_top) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function set_state_once(data_in) {
+    function set_state_once() {
         update_chess_map(tel_data.tel, false)
     // update_chess_map(tel_data.tel, is_south ? 2.7 : 5, false)
     }

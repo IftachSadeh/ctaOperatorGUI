@@ -7,6 +7,18 @@
 /* global moment */
 /* global Polymer */
 /* global textures */
+
+// ------------------------------------------------------------------
+// unique identification
+// ------------------------------------------------------------------
+window.unique = function() {
+    var postfix = '00000'
+    var rnd_now = Math.floor(Math.random() * 1e5).toString()
+    var postfix = (postfix + rnd_now).slice(-postfix.length)
+    return '_' + Date.now().toString() + postfix
+}
+var unique = window.unique
+
 // ------------------------------------------------------------------
 // common colors
 // see: https://material.google.com/style/color.html#color-color-palette
@@ -1084,6 +1096,8 @@ var sort_by_func = window.sort_by_func
 //
 // ------------------------------------------------------------------
 window.Locker = function(opt_init) {
+    this.id = 'locker_' + unique()
+    
     var counters = {
     }
     var default_cntr = 'common'
@@ -1177,7 +1191,7 @@ window.Locker = function(opt_init) {
     this.remove = remove
 
     function expires(opt_in) {
-    // var id = default_cntr
+        // var id = default_cntr
         var duration = 10
         if (is_def(opt_in)) {
             if (typeof opt_in !== 'string') {
@@ -2344,7 +2358,6 @@ window.this_trans = function(me) {
 // ------------------------------------------------------------------
 // deep copy an object or array
 // ------------------------------------------------------------------
-
 window.merge_obj = function(obj, src) {
     for (var key in src) {
         if (src.hasOwnProperty(key)) {
@@ -2366,17 +2379,8 @@ window.deep_copy = function(obj_in) {
 var deep_copy = window.deep_copy
 
 // ------------------------------------------------------------------
-//
+// filter array for unique elements
 // ------------------------------------------------------------------
-
-window.unique = function() {
-    var postfix = '00000'
-    var rnd_now = Math.floor(Math.random() * 1e5).toString()
-    var postfix = (postfix + rnd_now).slice(-postfix.length)
-    return '_' + Date.now().toString() + postfix
-}
-var unique = window.unique
-
 window.unique_array = function(data_in) {
     return data_in.filter(function(d, i) {
         return data_in.indexOf(d) === i

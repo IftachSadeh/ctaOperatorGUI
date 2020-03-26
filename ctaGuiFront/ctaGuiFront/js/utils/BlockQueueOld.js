@@ -253,7 +253,7 @@ window.BlockQueueOld = function() {
         // ------------------------------------------------------------------
         if (com.doPhase) {
             $.each(data_in.done, function(index, data_now) {
-                if (data_now.startTime > com.time.now) {
+                if (data_now.start_XXX_time > com.time.now) {
                     data_in.wait.push(data_now)
                     data_in.done[index] = null
                 }
@@ -285,7 +285,7 @@ window.BlockQueueOld = function() {
             $.each(blocksNow, function(i, d) {
                 // the list of properties which will be monitored for change
                 this_update.props[d.obs_block_id] = {
-                    startTime: Math.floor(d.startTime),
+                    start_XXX_time: Math.floor(d.start_XXX_time),
                     endTime: Math.floor(d.endTime),
                     type: type_now,
                     can_run: d.exe_state.can_run,
@@ -374,7 +374,7 @@ window.BlockQueueOld = function() {
         // let minRun = min_max_obj({
         //   min_max: 'min',
         //   data: com.blocksIn.run,
-        //   func: 'startTime',
+        //   func: 'start_XXX_time',
         //   default_val: 0
         // })
         // let maxRun = min_max_obj({
@@ -386,7 +386,7 @@ window.BlockQueueOld = function() {
         let minWait = min_max_obj({
             min_max: 'min',
             data: com.blocksIn.wait,
-            func: 'startTime',
+            func: 'start_XXX_time',
             default_val: 0,
         })
 
@@ -531,7 +531,7 @@ window.BlockQueueOld = function() {
             let id = data_now.obs_block_id
             let state = data_now.exe_state.state
             let n_tels = data_now.tel_ids.length
-            let start = data_now.startTime * xScale
+            let start = data_now.start_XXX_time * xScale
             let end = data_now.endTime * xScale
             let overlap = data_now.duration * xScale * 0.2 // allow small overlap in x between blocks
             let x0 = box.x + start
@@ -703,7 +703,7 @@ window.BlockQueueOld = function() {
                 })
 
                 ovelaps.sort(function(a, b) {
-                    let diffTime = a.data.data.startTime - b.data.data.startTime
+                    let diffTime = a.data.data.start_XXX_time - b.data.data.start_XXX_time
                     let diffTel = b.data.data.tel_ids.length - a.data.data.tel_ids.length
                     return diffTel !== 0 ? diffTel : diffTime
                 })
@@ -1034,7 +1034,7 @@ window.BlockQueueOld = function() {
                     min_max: 'min',
                     data: com.blockRow.run,
                     func: function(d, i) {
-                        return d.data.startTime
+                        return d.data.start_XXX_time
                     },
                 })
                 let time_max = min_max_obj({

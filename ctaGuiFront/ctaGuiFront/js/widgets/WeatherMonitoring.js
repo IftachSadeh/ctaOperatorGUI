@@ -24,6 +24,7 @@ var main_script_tag = 'WeatherMonitoring'
 /* global PlotTimeSeries */
 /* global ScrollBox */
 /* global PlotBrushZoom */
+/* global ArrZoomerBase */
 
 window.load_script({
     source: main_script_tag,
@@ -1229,7 +1230,7 @@ let main_weather_monitoring = function(opt_in) {
         this.unbindData = unbindData
 
         function update_data() {
-            let startTime = {
+            let start_XXX_time = {
                 date: new Date(shared.time.from),
                 time: Number(shared.time.from.getTime()),
             }
@@ -1239,7 +1240,7 @@ let main_weather_monitoring = function(opt_in) {
             }
             plot.updateAxis({
                 id: 'bottom',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
                 range: [ 0, plotbox.w ],
             })
             plot.updateAxis({
@@ -1255,11 +1256,11 @@ let main_weather_monitoring = function(opt_in) {
 
             brush.updateAxis({
                 id: 'top',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
             brush.updateAxis({
                 id: 'middle',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
         }
         this.update_data = update_data
@@ -3349,7 +3350,7 @@ let main_weather_monitoring = function(opt_in) {
                 let plot = createPlot(opt_in)
                 plotList.push(plot)
 
-                let startTime = {
+                let start_XXX_time = {
                     date: new Date(shared.time.from),
                     time: Number(shared.time.from.getTime()),
                 }
@@ -3359,7 +3360,7 @@ let main_weather_monitoring = function(opt_in) {
                 }
                 plot.updateAxis({
                     id: 'bottom',
-                    domain: [ startTime.date, endTime.date ],
+                    domain: [ start_XXX_time.date, endTime.date ],
                     range: [ 0, opt_in.box.w ],
                 })
                 plot.updateAxis({
@@ -3530,8 +3531,8 @@ let main_weather_monitoring = function(opt_in) {
                         // lens: 'translate(10,5)scale(0.18)',
                     },
                     inst_filter: {
-                        inst_ids: [ 'Lx01', 'Mx04', 'Mx10' ],
-                        inst_types: [ 'AUX', 'PROC' ],
+                        // inst_ids: [ 'Lx01', 'Mx04', 'Mx10' ],
+                        // inst_types: [ 'AUX', 'PROC' ],
                     },
                     main: {
                         // dblclick_zoom_in_out: false,
@@ -3584,7 +3585,7 @@ let main_weather_monitoring = function(opt_in) {
         this.init_data = init_data
 
         function update_data() {
-            let startTime = {
+            let start_XXX_time = {
                 date: new Date(shared.time.from),
                 time: Number(shared.time.from.getTime()),
             }
@@ -3594,7 +3595,7 @@ let main_weather_monitoring = function(opt_in) {
             }
             plot.updateAxis({
                 id: 'bottom',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
                 range: [ 0, plotbox.w ],
             })
             plot.updateAxis({
@@ -3610,11 +3611,11 @@ let main_weather_monitoring = function(opt_in) {
 
             brush.updateAxis({
                 id: 'top',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
             brush.updateAxis({
                 id: 'middle',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
         }
         this.update_data = update_data

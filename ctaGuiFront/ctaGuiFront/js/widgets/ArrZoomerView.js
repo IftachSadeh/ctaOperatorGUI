@@ -117,8 +117,8 @@ let main_arr_zoomer = function(opt_in) {
             // lens: 'translate(245,5)scale(0.60)',
         },
         inst_filter: {
-            inst_ids: [ 'Lx01', 'Mx04', 'Mx10', 'Mx11', 'Mx17' ],
-            inst_types: [ 'AUX', 'PROC' ],
+            // inst_ids: [ 'Lx01', 'Mx04', 'Mx10', 'Mx11', 'Mx17' ],
+            // inst_types: [ 'AUX', 'PROC' ],
         },
         main: {
             // dblclick_zoom_in_out: false,
@@ -255,25 +255,27 @@ let main_arr_zoomer = function(opt_in) {
 
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
-        // arr_zoomer_base.get_ele('main').zoom_to_target_main({
-        //     target: 'M_9',
-        //     scale: arr_zoomer_base.zooms.len['1.2'],
-        //     duration_scale: 0.1,
-        // })
-
-        // arr_zoomer_base.get_ele('main').zoom_to_target_main({
-        //     target: 'Lx00',
-        //     scale: arr_zoomer_base.zooms.len['1.2'],
-        //     duration_scale: 1.5,
-        // })
-
-        // arr_zoomer_base.get_ele('main').zoom_to_target_main({
-        //     target: 'init',
-        //     scale: arr_zoomer_base.zooms.len['0.0'],
-        //     duration_scale: 0.1,
-        // })
+        function auto_trans_test() {
+            if (!is_def(arr_zoomer_base.get_ele('main'))) {
+                setTimeout(function() {
+                    auto_trans_test()
+                }, 0.2)
+                return
+            }
+            arr_zoomer_base.get_ele('main').zoom_to_target_main({
+                // target: 'init',
+                target: 'Lx00',
+                scale: arr_zoomer_base.zooms.len['1.2'],
+                // scale: arr_zoomer_base.zooms.len['0.0'],
+                duration_scale: 1.5,
+            })
+            return
+        }
+        // auto_trans_test()
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
+
+        return
     }
     this_top.init_data = init_data
 }

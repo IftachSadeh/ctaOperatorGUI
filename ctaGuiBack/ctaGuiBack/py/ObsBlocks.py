@@ -127,7 +127,7 @@ class ObsBlocks():
                 start_time_plan = schBlocks['metadata'][obs_block_id]["start_time_plan"]
                 start_time_exe = schBlocks['metadata'][obs_block_id]["start_time_exe"]
 
-                startTime = start_time_plan if start_time_exe is None else start_time_exe
+                start_XXX_time = start_time_plan if start_time_exe is None else start_time_exe
 
                 if target_pos[0] > 180:
                     target_pos[0] -= 360
@@ -180,21 +180,21 @@ class ObsBlocks():
 
                 can_run = True
                 if state == 'cancel' or state == 'fail':
-                    can_run = (self.time_of_night.get_current_time() >= startTime)
+                    can_run = (self.time_of_night.get_current_time() >= start_XXX_time)
 
                 exe_state = {'state': state, 'can_run': can_run}
 
                 # if not can_run or state == 'cancel' or state == 'fail':
                 #     print 'cant run:', can_run, sched_blk_id, obs_block_id, state, [
-                #         self.time_of_night.get_current_time(), startTime]
+                #         self.time_of_night.get_current_time(), start_XXX_time]
 
                 block = dict()
                 block["sched_block_id"] = sched_blk_id
                 block["obs_block_id"] = obs_block_id
                 block["metadata"] = metadata
                 block["timestamp"] = timestamp
-                block["startTime"] = startTime
-                block["endTime"] = startTime + duration
+                block["start_XXX_time"] = start_XXX_time
+                block["endTime"] = start_XXX_time + duration
                 block["duration"] = duration
                 block["tel_ids"] = tel_ids
                 block["target_id"] = trgId
@@ -431,7 +431,7 @@ class ObsBlocksNoACS():
 
         self.time_of_night.reset_night()
         self.prev_reset_time = self.time_of_night.get_reset_time()
-        # startTime = self.time_of_night.get_start_time()
+        # start_XXX_time = self.time_of_night.get_start_time()
         self.n_init_cycle += 1
 
         is_cycle_done = False
@@ -556,7 +556,7 @@ class ObsBlocksNoACS():
                         is_cycle_done = True
                         if debug_tmp:
                             print(
-                                ' - is_cycle_done - n_obs_now / startTime / duration:',
+                                ' - is_cycle_done - n_obs_now / start_XXX_time / duration:',
                                 n_obs_now, obs_block_duration, obs_block_seconds
                             )
                         break
@@ -594,7 +594,7 @@ class ObsBlocksNoACS():
                         pnt['tel_ids'] = tels
 
                     if debug_tmp:
-                        print ' --- n_obs_now / startTime / duration:', \
+                        print ' --- n_obs_now / start_XXX_time / duration:', \
                             n_obs_now, obs_block_duration, obs_block_seconds, '-------', obs_block_id
 
                     # exe_state = {'state': "wait", 'can_run': True}
@@ -606,12 +606,12 @@ class ObsBlocksNoACS():
                     # block["metadata"] = metadata
                     # block["timestamp"] = getTime()
                     # block["tel_ids"] = sched_tel_ids
-                    # # block["startTime"] = obs_block_duration.strftime("%Y-%m-%d %H:%M:%S")
+                    # # block["start_XXX_time"] = obs_block_duration.strftime("%Y-%m-%d %H:%M:%S")
                     # # block["duration"] = (obs_block_seconds-overhead_seconds).total_seconds()
                     # # block["endTime"] = (obs_block_duration+(obs_block_seconds-overhead_seconds)).strftime("%Y-%m-%d %H:%M:%S")
-                    # block["startTime"] = obs_block_duration
+                    # block["start_XXX_time"] = obs_block_duration
                     # block["duration"] = obs_block_seconds-overhead_seconds
-                    # block["endTime"] = block["startTime"]+block["duration"]
+                    # block["endTime"] = block["start_XXX_time"]+block["duration"]
                     # block["exe_state"] = exe_state
                     # block["run_phase"] = []
                     # block["target_id"] = target_id
@@ -666,12 +666,12 @@ class ObsBlocksNoACS():
                     block["targets"] = targets
                     block["pointings"] = pointings
                     block["tel_ids"] = sched_tel_ids
-                    # block["startTime"] = obs_block_duration.strftime("%Y-%m-%d %H:%M:%S")
+                    # block["start_XXX_time"] = obs_block_duration.strftime("%Y-%m-%d %H:%M:%S")
                     # block["duration"] = (obs_block_seconds-overhead_seconds).total_seconds()
                     # block["endTime"] = (obs_block_duration+(obs_block_seconds-overhead_seconds)).strftime("%Y-%m-%d %H:%M:%S")
-                    # block["startTime"] = obs_block_duration
+                    # block["start_XXX_time"] = obs_block_duration
                     # block["duration"] = obs_block_seconds-overhead_seconds
-                    # block["endTime"] = block["startTime"]+block["duration"]
+                    # block["endTime"] = block["start_XXX_time"]+block["duration"]
                     # block["target_id"] = target_id
                     # block["target_name"] = target_id
                     # block["target_pos"] = target["pos"]
@@ -805,7 +805,7 @@ class ObsBlocksNoACS():
         for block in wait_blocks:
             if time_now < block["time"][
                     "start"
-            ] - self.loop_sleep:  # datetime.strptime(block["startTime"], "%Y-%m-%d %H:%M:%S"): # - deltatime(self.loop_sleep):
+            ] - self.loop_sleep:  # datetime.strptime(block["start_XXX_time"], "%Y-%m-%d %H:%M:%S"): # - deltatime(self.loop_sleep):
                 continue
 
             block['exe_state']['state'] = "run"
@@ -831,7 +831,7 @@ class ObsBlocksNoACS():
             has_change = False
             for block in wait_blocks:
                 # # adjust the starting/ending time
-                # block["endTime"] = block["startTime"] + block["duration"]
+                # block["endTime"] = block["start_XXX_time"] + block["duration"]
 
                 if time_now >= block["time"]["end"] or (
                         self.rnd_gen.random() < self.phase_rnd_frac["cancel"] * 0.1
@@ -898,7 +898,7 @@ class ObsBlocksNoACS():
                     if phaseNow in self.phases_exe['start']:
                         is_done = (self.rnd_gen.random() < self.phase_rnd_frac['start'])
                         # if is_done:
-                        #   block["endTime"] = block["startTime"] + block["duration"]
+                        #   block["endTime"] = block["start_XXX_time"] + block["duration"]
 
                     elif phaseNow in self.phases_exe["during"]:
                         is_done = (

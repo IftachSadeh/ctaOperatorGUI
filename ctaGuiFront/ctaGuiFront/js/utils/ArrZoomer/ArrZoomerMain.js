@@ -31,6 +31,7 @@ window.ArrZoomerMain = function(opt_in0) {
     let dblclick_zoom_in_out = is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
 
     let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
+    let vor_show_lines = false
     
     let ele_base = opt_in0.ele_base
 
@@ -53,12 +54,10 @@ window.ArrZoomerMain = function(opt_in0) {
     ele_base.set_ele(this_top, 'main')
     let get_ele = ele_base.get_ele
 
-
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
     this_top.has_init = false
-    // this_top.svgQuick = null
 
     let com = {
     }
@@ -208,6 +207,7 @@ window.ArrZoomerMain = function(opt_in0) {
             cx: (len_wh.w + len_wh.w * (1 - len_wh.frac_circ_wh)) / 2,
             cy: len_wh.h / 2,
         }
+        com.bck_circ_data = circ_data
 
         let rec_data = {
             x: x_shift,
@@ -217,6 +217,7 @@ window.ArrZoomerMain = function(opt_in0) {
             rx: len_wh.h * 0.02,
             ry: len_wh.h * 0.02,
         }
+        // com.bck_rec_data = rec_data
 
 
         // ------------------------------------------------------------------
@@ -866,8 +867,6 @@ window.ArrZoomerMain = function(opt_in0) {
         // ------------------------------------------------------------------
         function setVor() {
             let tag_vor = 'vor'
-            let vor_show_lines = false
-
             let polygons = vor_func.polygons(instruments.data.vor.data)
             let vor = com.vor.g
                 .selectAll('path.' + tag_vor)
@@ -994,10 +993,21 @@ window.ArrZoomerMain = function(opt_in0) {
             let data_in_wh = [
                 max_data_x - min_data_x, max_data_y - min_data_y,
             ]
-            if (!is_south) {
-                data_in_wh[0] *= 1.1
-                data_in_wh[1] *= 1.1
-            }
+            // if (!is_south) {
+            //     data_in_wh[0] *= 1.1
+            //     data_in_wh[1] *= 1.1
+            // }
+                
+            // console.log(data_in_wh, max_data_x, min_data_x, max_data_y, min_data_y)
+            // // let circ_data = {
+            // //     r: (len_wh.w - len_wh.w * (1 - len_wh.frac_circ_wh)) / 2.1,
+            // //     cx: (len_wh.w + len_wh.w * (1 - len_wh.frac_circ_wh)) / 2,
+            // //     cy: len_wh.h / 2,
+            // // }
+            // // com.bck_circ_data = circ_data
+
+            let circ_data = com.bck_circ_data
+
 
             // ------------------------------------------------------------------
             //
@@ -1032,16 +1042,40 @@ window.ArrZoomerMain = function(opt_in0) {
                         r = tel_rs.s00[0]
                     }
 
-                    let shift_main_x = svg_dims.w * (1 - svg_dims.frac_circ_wh)
-                    let shift_main_y = svg_dims.h * (1 - svg_dims.frac_circ_wh) / 2
-                    // let shift_main_y = 0
+
+
+
+                    let shift_x = circ_data.cx
+                    let shift_y = circ_data.cy
+
+                    let scale_r = 2 * circ_data.r * 0.8
+                    let scaled_x = scale_r * data_now.x / data_in_wh[0]
+                    let scaled_y = scale_r * data_now.y / data_in_wh[1]
+
+                    x = shift_x + scaled_x
+                    y = shift_y + scaled_y
+
+
+                    // // console.log('-ZZZ-', id, [ data_now.x, data_now.y ])
+
+                    // let shift_main_x = (
+                    //     svg_dims.w * (1 - svg_dims.frac_circ_wh)
+                    // )
+                    // let shift_main_y = (
+                    //     svg_dims.h * (1 - svg_dims.frac_circ_wh) / 2
+                    // )
+                    // // let shift_main_y = 0
           
-                    let len_w = svg_dims.w * svg_dims.frac_circ_wh
-                    let len_h = svg_dims.h * svg_dims.frac_circ_wh
-                    x = shift_main_x + (1 * data_now.x * len_w
-                  / (1.2 * data_in_wh[0]) + len_w / 2)
-                    y = shift_main_y + (-1 * data_now.y * len_h
-                  / (1.2 * data_in_wh[1]) + len_h / 2)
+                    // let len_w = svg_dims.w * svg_dims.frac_circ_wh
+                    // let len_h = svg_dims.h * svg_dims.frac_circ_wh
+                    // x = (
+                    //     shift_main_x
+                    //     + (1 * data_now.x * len_w / (1.2 * data_in_wh[0]) + len_w / 2)
+                    // )
+                    // y = (
+                    //     shift_main_y
+                    //     + (-1 * data_now.y * len_h / (1.2 * data_in_wh[1]) + len_h / 2)
+                    // )
 
                 }
 

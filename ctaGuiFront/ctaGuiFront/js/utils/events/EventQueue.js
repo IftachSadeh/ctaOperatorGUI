@@ -94,7 +94,7 @@ window.EventQueue = function() {
                 date: undefined,
                 time: undefined,
             },
-            startTime: {
+            start_XXX_time: {
                 date: undefined,
                 time: undefined,
             },
@@ -509,7 +509,7 @@ window.EventQueue = function() {
     }
 
     function updateAxis() {
-        com.axis.domain = [ com.data.startTime.date, com.data.endTime.date ]
+        com.axis.domain = [ com.data.start_XXX_time.date, com.data.endTime.date ]
         com.axis.range = [ 0, com.axis.group.box.w ]
 
         com.axis.scale
@@ -528,7 +528,7 @@ window.EventQueue = function() {
         com.data.filtered = filterData()
         com.data.formatedData = calcBlockRow({
             type_now: 'events',
-            start: com.data.startTime.time,
+            start: com.data.start_XXX_time.time,
             end: com.data.endTime.time,
             data: com.data.filtered,
             box: com.blocks.group.box,
@@ -540,7 +540,7 @@ window.EventQueue = function() {
     function update(data_in) {
         com.data.lastRawData = com.data.raw
         com.data.currentTime = data_in.currentTime
-        com.data.startTime = data_in.startTime
+        com.data.start_XXX_time = data_in.start_XXX_time
         com.data.endTime = data_in.endTime
         com.data.raw = data_in.data
 
@@ -706,7 +706,7 @@ window.EventQueue = function() {
                 })
 
                 ovelaps.sort(function(a, b) {
-                    let diffTime = a.data.data.startTime - b.data.data.startTime
+                    let diffTime = a.data.data.start_XXX_time - b.data.data.start_XXX_time
                     let diffTel = b.data.data.tel_ids.length - a.data.data.tel_ids.length
                     return diffTel !== 0 ? diffTel : diffTime
                 })

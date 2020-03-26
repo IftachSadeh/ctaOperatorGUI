@@ -942,7 +942,7 @@ let main_plots_dash = function(opt_in) {
         }
         opt_in.g = opt_in.g.append('g') // .style('opacity', 0.8)
         let plotObject = createPlot(opt_in)
-        let startTime = {
+        let start_XXX_time = {
             date: new Date(shared.time.from),
             time: Number(shared.time.from.getTime()),
         }
@@ -953,7 +953,7 @@ let main_plots_dash = function(opt_in) {
 
         plotObject.updateAxis({
             id: 'bottom',
-            domain: [ startTime.date, endTime.date ],
+            domain: [ start_XXX_time.date, endTime.date ],
             range: [ 0, plotb.w ],
         })
         plotObject.updateAxis({
@@ -2820,12 +2820,12 @@ let main_plots_dash = function(opt_in) {
             //   let gMerge = allPlots.merge(gEnter)
             //   let generalIndex = [0, 0]
             //   gMerge.each(function (d, i) {
-            //     // let startTime = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
+            //     // let start_XXX_time = {date: new Date(shared.time.from), time: Number(shared.time.from.getTime())}
             //     // let endTime = {date: new Date(shared.server.time_of_night.date_now), time: Number(shared.server.time_of_night.now)}
             //     //
             //     // dd.plotObject.updateAxis({
             //     //   id: 'bottom',
-            //     //   domain: [startTime.date, endTime.date],
+            //     //   domain: [start_XXX_time.date, endTime.date],
             //     //   range: [0, plotb.w]
             //     // })
             //     // dd.plotObject.updateAxis({
@@ -3600,7 +3600,7 @@ let main_plots_dash = function(opt_in) {
 
                             let newplotbox = adjustTemplate(dim, choosenTemplateDim.plot)
                             miniPlotsVect[dd.id].get('main').g.style('visibility', newplotbox.display ? 'visible' : 'hidden')
-                            let startTime = {
+                            let start_XXX_time = {
                                 date: new Date(shared.time.from),
                                 time: Number(shared.time.from.getTime()),
                             }
@@ -3613,7 +3613,7 @@ let main_plots_dash = function(opt_in) {
                             miniPlotsVect[dd.id].updateBox(newplotbox)
                             miniPlotsVect[dd.id].updateAxis({
                                 id: 'bottom',
-                                domain: [ startTime.date, endTime.date ],
+                                domain: [ start_XXX_time.date, endTime.date ],
                                 range: [ 0, newplotbox.w ],
                                 box: {
                                     x: 0,

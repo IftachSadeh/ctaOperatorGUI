@@ -374,8 +374,8 @@ window.TargetDisplayer = function(opt_in) {
                 .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
 
             let simulationDurationInMs = 1000
-            let startTime = Date.now()
-            let endTime = startTime + simulationDurationInMs
+            let start_XXX_time = Date.now()
+            let endTime = start_XXX_time + simulationDurationInMs
             simulation.on('tick', function() {
                 // if (Date.now() > endTime) {
                 //   simulation.stop()

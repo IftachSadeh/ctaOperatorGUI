@@ -4050,7 +4050,7 @@ let main_comment_sched = function(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    startTime: {
+                    start_XXX_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -4126,7 +4126,7 @@ let main_comment_sched = function(opt_in) {
                 tel_ids.push(data_now.id)
             })
             console.log(shared.data.server.time_of_night)
-            let startTime = {
+            let start_XXX_time = {
                 date: new Date(shared.data.server.time_of_night.date_start),
                 time: Number(shared.data.server.time_of_night.start),
             }
@@ -4134,14 +4134,14 @@ let main_comment_sched = function(opt_in) {
                 date: new Date(shared.data.server.time_of_night.date_end),
                 time: Number(shared.data.server.time_of_night.end),
             }
-            console.log(startTime)
+            console.log(start_XXX_time)
             block_queue_server.update_data({
                 time: {
                     currentTime: {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    startTime: {
+                    start_XXX_time: {
                         date: new Date(shared.data.server.time_of_night.date_start),
                         time: Number(shared.data.server.time_of_night.start),
                     },
@@ -4172,7 +4172,7 @@ let main_comment_sched = function(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    startTime: {
+                    start_XXX_time: {
                         date: new Date(shared.data.server.time_of_night.date_start),
                         time: Number(shared.data.server.time_of_night.start),
                     },
@@ -4612,7 +4612,7 @@ let main_comment_sched = function(opt_in) {
             //   },
             //   data: {
             //     currentTime: {time: 0, date: undefined},
-            //     startTime: {time: 0, date: undefined},
+            //     start_XXX_time: {time: 0, date: undefined},
             //     endTime: {time: 0, date: undefined},
             //     lastRawData: undefined,
             //     formatedData: undefined
@@ -4634,7 +4634,7 @@ let main_comment_sched = function(opt_in) {
                     date: new Date(data_in.time_of_night.date_now),
                     time: Number(data_in.time_of_night.now),
                 },
-                startTime: {
+                start_XXX_time: {
                     date: new Date(data_in.time_of_night.date_start),
                     time: Number(data_in.time_of_night.start),
                 },
@@ -5518,7 +5518,7 @@ let main_comment_sched = function(opt_in) {
     //
     //     // let startEvent = new Date(com.data_in.data.time_of_night.now).getTime() + ((Math.random() * 3) + 2) * 60000
     //     // let endEvent = new Date(startEvent).getTime() + 10000
-    //     // clockEvents.addEvent({id: 'E' + Math.floor(Math.random() * 1000000), name: 'moonrise', icon: null, startTime: startEvent, endTime: endEvent})
+    //     // clockEvents.addEvent({id: 'E' + Math.floor(Math.random() * 1000000), name: 'moonrise', icon: null, start_XXX_time: startEvent, endTime: endEvent})
     //   }
     //   this.init_data = init_data
     //
@@ -5529,7 +5529,7 @@ let main_comment_sched = function(opt_in) {
     //     // if (rnd < 0.8) {
     //     //   let startEvent = new Date(com.data_in.data.time_of_night.now).getTime() + ((Math.random() * 3) + 0.4) * 60000
     //     //   let endEvent = new Date(startEvent).getTime() + 10000
-    //     //   clockEvents.addEvent({id: Math.floor(Math.random() * 100000), name: 'moonrise', icon: null, startTime: startEvent, endTime: endEvent})
+    //     //   clockEvents.addEvent({id: Math.floor(Math.random() * 100000), name: 'moonrise', icon: null, start_XXX_time: startEvent, endTime: endEvent})
     //     // }
     //   }
     //   this.update_data = update_data

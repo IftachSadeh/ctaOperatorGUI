@@ -762,7 +762,7 @@ function main_sched_blocks(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    startTime: {
+                    start_XXX_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -822,7 +822,7 @@ function main_sched_blocks(opt_in) {
                 time: Number(shared.data.server.time_of_night.now),
             }
             let axisTop = brushZoomPast.getAxis('top').axis.scale().domain()
-            let startTime = {
+            let start_XXX_time = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
@@ -833,7 +833,7 @@ function main_sched_blocks(opt_in) {
             event_queue_serverPast.update_data({
                 time: {
                     currentTime: currentTime,
-                    startTime: startTime,
+                    start_XXX_time: start_XXX_time,
                     endTime: endTime,
                 },
                 data: {
@@ -851,7 +851,7 @@ function main_sched_blocks(opt_in) {
             // block_queue_serverPast.update({
             //   time: {
             //     currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
-            //     startTime: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
+            //     start_XXX_time: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
             //     endTime: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
             //   }
             // })
@@ -982,7 +982,7 @@ function main_sched_blocks(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    startTime: {
+                    start_XXX_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -1042,7 +1042,7 @@ function main_sched_blocks(opt_in) {
                 time: Number(shared.data.server.time_of_night.now),
             }
             let axisTop = brushZoomFutur.getAxis('top').axis.scale().domain()
-            let startTime = {
+            let start_XXX_time = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
@@ -1054,7 +1054,7 @@ function main_sched_blocks(opt_in) {
             event_queue_serverFutur.update_data({
                 time: {
                     currentTime: currentTime,
-                    startTime: startTime,
+                    start_XXX_time: start_XXX_time,
                     endTime: endTime,
                 },
                 data: {
@@ -1071,12 +1071,12 @@ function main_sched_blocks(opt_in) {
         function update() {
             // let date = new Date(shared.data.server.time_of_night.date_now)
             // let currentTime = {date: date, time: Number(shared.data.server.time_of_night.now)}
-            // let startTime = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_of_night.now)}
+            // let start_XXX_time = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_of_night.now)}
             // let endTime = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.time_of_night.now) + (3600 * 8)}
             // block_queue_server_futur.update_data({
             //   time: {
             //     currentTime: currentTime,
-            //     startTime: startTime,
+            //     start_XXX_time: start_XXX_time,
             //     endTime: endTime
             //   }
             // })
@@ -1279,7 +1279,7 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let startTime = {
+            let start_XXX_time = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() - (3600 * 8)),
                 time: Number(shared.data.server.time_of_night.now) - (3600 * 8),
             }
@@ -1290,15 +1290,15 @@ function main_sched_blocks(opt_in) {
 
             brushZoomPast.updateAxis({
                 id: 'top',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
             brushZoomPast.updateAxis({
                 id: 'middle',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
             brushZoomPast.updateAxis({
                 id: 'bottom',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
         }
         this.update_data = update_data
@@ -1501,7 +1501,7 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let startTime = {
+            let start_XXX_time = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()),
                 time: Number(shared.data.server.time_of_night.now),
             }
@@ -1512,15 +1512,15 @@ function main_sched_blocks(opt_in) {
 
             brushZoomFutur.updateAxis({
                 id: 'top',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
             brushZoomFutur.updateAxis({
                 id: 'middle',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
             brushZoomFutur.updateAxis({
                 id: 'bottom',
-                domain: [ startTime.date, endTime.date ],
+                domain: [ start_XXX_time.date, endTime.date ],
             })
         }
         this.update_data = update_data
@@ -1814,7 +1814,7 @@ function main_sched_blocks(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    startTime: {
+                    start_XXX_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -1885,7 +1885,7 @@ function main_sched_blocks(opt_in) {
                 time: Number(shared.data.server.time_of_night.now),
             }
             let axisTop = brushZoomPast.getAxis('bottom').axis.scale().domain()
-            let startTime = {
+            let start_XXX_time = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
@@ -1897,7 +1897,7 @@ function main_sched_blocks(opt_in) {
             block_queue_serverPast.update_data({
                 time: {
                     currentTime: currentTime,
-                    startTime: startTime,
+                    start_XXX_time: start_XXX_time,
                     endTime: endTime,
                 },
                 data: {
@@ -1918,7 +1918,7 @@ function main_sched_blocks(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    startTime: {
+                    start_XXX_time: {
                         date: new Date(shared.data.server.time_of_night.date_start),
                         time: Number(shared.data.server.time_of_night.start),
                     },
@@ -2217,7 +2217,7 @@ function main_sched_blocks(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    startTime: {
+                    start_XXX_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -2288,7 +2288,7 @@ function main_sched_blocks(opt_in) {
                 time: Number(shared.data.server.time_of_night.now),
             }
             let axisTop = brushZoomFutur.getAxis('bottom').axis.scale().domain()
-            let startTime = {
+            let start_XXX_time = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
@@ -2300,7 +2300,7 @@ function main_sched_blocks(opt_in) {
             block_queue_server_futur.update_data({
                 time: {
                     currentTime: currentTime,
-                    startTime: startTime,
+                    start_XXX_time: start_XXX_time,
                     endTime: endTime,
                 },
                 data: {
@@ -2320,7 +2320,7 @@ function main_sched_blocks(opt_in) {
                 date: date,
                 time: Number(shared.data.server.time_of_night.now),
             }
-            let startTime = {
+            let start_XXX_time = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()),
                 time: Number(shared.data.server.time_of_night.now),
             }
@@ -2331,7 +2331,7 @@ function main_sched_blocks(opt_in) {
             block_queue_server_futur.update_data({
                 time: {
                     currentTime: currentTime,
-                    startTime: startTime,
+                    start_XXX_time: start_XXX_time,
                     endTime: endTime,
                 },
             })

@@ -56,6 +56,8 @@ window.ArrZoomerBase = function(opt_in0) {
 
     this_top.has_init = false
 
+    let arr_zoomer_id = 'arr_zoomer' + my_unique_id
+    
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -804,17 +806,14 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.set_state = set_state
 
     function set_state_once() {
-        // create delay if currently in data update or a previous call of set_state_once
+        // create delay if currently in data update or a previous call
         if (!locker.are_free([ 'set_state_lock', 'data_change' ])) {
-            // console.log('delay set_state_once',' :',locker.is_free({id:"set_state_lock"}),' - data_updateate:',locker.is_free({id:"set_state_lock"}))
             setTimeout(function() {
                 set_state()
             }, times.anim)
             return
         }
         // console.log("set_state");
-
-        locker.add('set_state_lock')
 
         get_ele('main').set_state_once()
         if (get_ele('tree')) {
@@ -948,8 +947,9 @@ window.ArrZoomerBase = function(opt_in0) {
             return
         }
 
-        let sess_widget_ids = data_in.sess_widget_ids
-        if (sess_widget_ids.indexOf(widget_id) < 0 || widget_id === data_in.widget_id) {
+        let has_widget_id = (data_in.sess_widget_ids.indexOf(widget_id) >= 0)
+        let same_widget_id = (widget_id === data_in.widget_id)
+        if (!has_widget_id || same_widget_id) {
             return
         }
 
@@ -999,6 +999,7 @@ window.ArrZoomerBase = function(opt_in0) {
         }
 
         let init_opts = {
+            arr_zoomer_id: arr_zoomer_id,
         }
         if (is_def(inst_filter)) {
             init_opts.inst_filter = inst_filter
@@ -1020,6 +1021,9 @@ window.ArrZoomerBase = function(opt_in0) {
     // get update for state1 data which was explicitly asked for by a given module
     // ------------------------------------------------------------------
     sock.socket.on('arr_zoomer_get_init_data', function(data_in) {
+        if (data_in.data.arr_zoomer_id !== arr_zoomer_id) {
+            return
+        }
         run_when_ready({
             pass: function() {
                 return !sock.con_stat.is_offline()
@@ -1075,7 +1079,7 @@ window.ArrZoomerBase = function(opt_in0) {
             tree_widget_state = get_ele('tree').get_widget_state()
         }
         else {
-            function get_widget_state() {
+            let get_widget_state = function() {
                 return {
                     zoom_target_prop: '',
                 }
@@ -1108,15 +1112,18 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     // get update for state1 data which was explicitly asked for by a given module
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_get_data_s1', function(data) {
+    sock.socket.on('arr_zoomer_get_data_s1', function(data_in) {
         if (sock.con_stat.is_offline()) {
             return
         }
-
-        if (data.id !== '' && data.type === 's11') {
-            // console.log('-server- get_data_s1 ',data);
-            if (is_def(sock.all_widgets[widget_type].widgets[data.widget_id])) {
-                this_top.get_data_s1(data.widget_id, data)
+        if (data_in.arr_zoomer_id !== arr_zoomer_id) {
+            return
+        }
+        
+        if (data_in.id !== '' && data_in.type === 's11') {
+            // console.log('-server- get_data_s1 ',data_in);
+            if (is_def(sock.all_widgets[widget_type].widgets[data_in.widget_id])) {
+                this_top.get_data_s1(data_in.widget_id, data_in)
             }
         }
     })
@@ -1124,14 +1131,15 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    sock.socket.on('arr_zoomer_update_data', function(data) {
+    sock.socket.on('arr_zoomer_update_data', function(data_in) {
         if (sock.con_stat.is_offline()) {
             return
         }
 
-        $.each(sock.all_widgets[widget_type].widgets, function(widget_id_now, module_now) {
-            if (data.sess_widget_ids.indexOf(widget_id_now) >= 0) {
-                this_top.update_data(data)
+        let widgets = sock.all_widgets[widget_type].widgets
+        $.each(widgets, function(widget_id_now, module_now) {
+            if (data_in.sess_widget_ids.indexOf(widget_id_now) >= 0) {
+                this_top.update_data(data_in)
             }
         })
     })
@@ -1180,7 +1188,6 @@ window.ArrZoomerBase = function(opt_in0) {
             }
         }
 
-        // console.log('send -=- ',widget_id,data_in,prev_sync[ data_in.type]);
         prev_sync[data_in.type] = data_in
         sock.sock_sync_state_send({
             widget_id: widget_id,

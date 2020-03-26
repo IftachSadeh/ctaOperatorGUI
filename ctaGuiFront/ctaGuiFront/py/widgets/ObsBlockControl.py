@@ -46,8 +46,14 @@ class ObsBlockControl(BaseWidget):
         # standard common initialisations
         BaseWidget.setup(self, *args)
 
-        self.widget_state = wgt["widget_state"]
-        self.widget_state["focus_id"] = ""
+        with self.socket_manager.lock:
+            wgt = self.redis.hGet(
+                name='all_widgets',
+                key=self.widget_id,
+                packed=True,
+            )
+            self.widget_state = wgt["widget_state"]
+            self.widget_state["focus_id"] = ""
 
         # initial dataset and send to client
         opt_in = {'widget': self, 'data_func': self.get_data}
@@ -121,7 +127,7 @@ class ObsBlockControl(BaseWidget):
             key = keys_now[0]
             blocks = self.redis.pipe.execute(packed=True)
             ObsBlockControl.blocks[key] = sorted(
-                blocks, cmp=lambda a, b: int(a['startTime']) - int(b['startTime'])
+                blocks, cmp=lambda a, b: int(a['start_XXX_time']) - int(b['start_XXX_time'])
             )
 
         # print ObsBlockControl.blocks

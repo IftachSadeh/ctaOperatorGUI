@@ -126,10 +126,10 @@ window.SchedblockForm = function(opt_in) {
     this.update = update
 
     function changeBlockTime(block, type, hour, min, sec) {
-        let startTime = new Date(com.data.time_of_night.date_start)
+        let start_XXX_time = new Date(com.data.time_of_night.date_start)
         let endTime = new Date(com.data.time_of_night.date_end)
         switch (type) {
-        case 'startTime':
+        case 'start_XXX_time':
             if (Number(hour) >= 0 && Number(hour) <= endTime.getHours()) {
                 endTime.setHours(Number(hour))
                 endTime.setMinutes(Number(min))
@@ -141,7 +141,7 @@ window.SchedblockForm = function(opt_in) {
                 endTime.setMinutes(Number(min))
                 endTime.setSeconds(Number(sec))
             }
-            block.time.start = (endTime - startTime) / 1000
+            block.time.start = (endTime - start_XXX_time) / 1000
             block.time.end = block.time.start + block.time.duration
             break
         case 'duration':
@@ -160,7 +160,7 @@ window.SchedblockForm = function(opt_in) {
                 endTime.setMinutes(Number(min))
                 endTime.setSeconds(Number(sec))
             }
-            block.time.end = (endTime - startTime) / 1000
+            block.time.end = (endTime - start_XXX_time) / 1000
             block.time.duration = block.time.end - block.time.start
             break
         default:
@@ -178,21 +178,21 @@ window.SchedblockForm = function(opt_in) {
             g.select('#second').select('input').property('value', sec)
         }
 
-        startTime = new Date(com.data.time_of_night.date_start)
-        startTime.setSeconds(startTime.getSeconds() + block.time.start)
+        start_XXX_time = new Date(com.data.time_of_night.date_start)
+        start_XXX_time.setSeconds(start_XXX_time.getSeconds() + block.time.start)
         endTime = new Date(com.data.time_of_night.date_start)
         endTime.setSeconds(endTime.getSeconds() + block.time.start + block.time.duration)
         let duration = new Date(endTime)
-        duration.setHours(duration.getHours() - startTime.getHours())
-        duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
-        duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
-        updateTime('startTime', startTime)
+        duration.setHours(duration.getHours() - start_XXX_time.getHours())
+        duration.setMinutes(duration.getMinutes() - start_XXX_time.getMinutes())
+        duration.setSeconds(duration.getSeconds() - start_XXX_time.getSeconds())
+        updateTime('start_XXX_time', start_XXX_time)
         updateTime('duration', duration)
         updateTime('endTime', endTime)
 
         com.schedule.events.click()
         com.events.conflict(block)
-        com.events.modification(block, false, (type === 'startTime' ? 'startTime' : 'duration'))
+        com.events.modification(block, false, (type === 'start_XXX_time' ? 'start_XXX_time' : 'duration'))
     }
     function changeState(block, newState) {
         com.schedule.events.change(block, newState)
@@ -833,9 +833,9 @@ window.SchedblockForm = function(opt_in) {
                 let ig = g.append('g').attr('id', id)
                     .attr('transform', 'translate(' + ((w - (14 * 3)) * 0.33) + ',0)')
                 ig.append('rect')
-                    .attr('x', label[(id === 'startTime' ? 2 : (id === 'duration' ? 3 : 4))].x)
+                    .attr('x', label[(id === 'start_XXX_time' ? 2 : (id === 'duration' ? 3 : 4))].x)
                     .attr('y', 0)
-                    .attr('width', label[(id === 'startTime' ? 2 : (id === 'duration' ? 3 : 4))].w)
+                    .attr('width', label[(id === 'start_XXX_time' ? 2 : (id === 'duration' ? 3 : 4))].w)
                     .attr('height', line)
                     .style('opacity', 0)
                 let buttong = ig.append('g').style('opacity', 0.1)
@@ -958,9 +958,9 @@ window.SchedblockForm = function(opt_in) {
             //         stock.second.nav.transition().duration(200).style('opacity', 0.1)
             //       })
             //     backg.append('rect')
-            //       .attr('x', label[(id === 'startTime' ? 2 : (id === 'duration' ? 3 : 4))].x)
+            //       .attr('x', label[(id === 'start_XXX_time' ? 2 : (id === 'duration' ? 3 : 4))].x)
             //       .attr('y', 0)
-            //       .attr('width', label[(id === 'startTime' ? 2 : (id === 'duration' ? 3 : 4))].w)
+            //       .attr('width', label[(id === 'start_XXX_time' ? 2 : (id === 'duration' ? 3 : 4))].w)
             //       .attr('height', line)
             //       .style('opacity', 0)
             //   }
@@ -1146,15 +1146,15 @@ window.SchedblockForm = function(opt_in) {
                 },
             })
 
-            let startTime = new Date(com.data.time_of_night.date_start)
-            startTime.setSeconds(startTime.getSeconds() + d.time.start)
+            let start_XXX_time = new Date(com.data.time_of_night.date_start)
+            start_XXX_time.setSeconds(start_XXX_time.getSeconds() + d.time.start)
             let endTime = new Date(com.data.time_of_night.date_start)
             endTime.setSeconds(endTime.getSeconds() + d.time.start + d.time.duration)
             let duration = new Date(endTime)
-            duration.setHours(duration.getHours() - startTime.getHours())
-            duration.setMinutes(duration.getMinutes() - startTime.getMinutes())
-            duration.setSeconds(duration.getSeconds() - startTime.getSeconds())
-            drawTime('startTime', label[2].x, label[2].w, 0, startTime)
+            duration.setHours(duration.getHours() - start_XXX_time.getHours())
+            duration.setMinutes(duration.getMinutes() - start_XXX_time.getMinutes())
+            duration.setSeconds(duration.getSeconds() - start_XXX_time.getSeconds())
+            drawTime('start_XXX_time', label[2].x, label[2].w, 0, start_XXX_time)
             drawTime('duration', label[3].x, label[3].w, 0, duration)
             drawTime('endTime', label[4].x, label[4].w, 0, endTime)
 

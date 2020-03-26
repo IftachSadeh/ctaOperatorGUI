@@ -12,7 +12,8 @@
         ],
         "max-len": [
             "error", 
-            { "code": 90 }
+            // { "code": 90 }
+            { "code": 90, "ignoreComments": true }
         ],
         "no-multi-spaces":[
             "error", 

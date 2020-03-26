@@ -138,11 +138,15 @@ setup_view.view202 = function() {
 // -------------------------------------------------------------------
 setup_view.view203 = function() {
     sock.add_widget({
+      name_tag:"ObsBlockControl", table_title:"Scheduling Block Control", has_icon:true, has_drawer:false
+    })
+    sock.add_widget({
         name_tag: 'PanelSync',
         table_title: 'Panel synchronization',
         has_icon: false,
         has_drawer: false,
     })
+
 }
 
 // -------------------------------------------------------------------
