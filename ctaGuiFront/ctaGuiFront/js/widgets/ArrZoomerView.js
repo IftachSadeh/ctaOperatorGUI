@@ -251,13 +251,13 @@ let main_arr_zoomer = function(opt_in) {
         function get_sync_state(data_sync_in) {
             arr_zoomer_base.get_sync_tel_focus(data_sync_in)
             
-            if (data_sync_in.type == 'sync_arr_zoomer_prop') {
-                let is_own_sync = (
-                    arr_zoomer_base.arr_zoomer_id
-                    === data_sync_in.data.arr_zoomer_id
-                )
-                // console.log('got sync: ', is_own_sync, data_sync_in.data)
-            }
+            // if (data_sync_in.type == 'sync_arr_zoomer_prop') {
+            //     let is_own_sync = (
+            //         arr_zoomer_base.arr_zoomer_id
+            //         === data_sync_in.data.arr_zoomer_id
+            //     )
+            //     // console.log('got sync: ', is_own_sync, data_sync_in.data)
+            // }
         }
         this_top.get_sync_state = get_sync_state
 
@@ -281,7 +281,7 @@ let main_arr_zoomer = function(opt_in) {
             })
             return
         }
-        // auto_trans_test()
+        auto_trans_test()
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
 

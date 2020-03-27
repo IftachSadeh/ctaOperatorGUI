@@ -5,19 +5,37 @@
 /* global Event */
 /* global jQuery */
 /* global moment */
-/* global Polymer */
 /* global textures */
 
 // ------------------------------------------------------------------
 // unique identification
 // ------------------------------------------------------------------
 window.unique = function() {
-    var postfix = '00000'
-    var rnd_now = Math.floor(Math.random() * 1e5).toString()
-    var postfix = (postfix + rnd_now).slice(-postfix.length)
+    let postfix_0 = '00000'
+    let rnd_now = Math.floor(Math.random() * 1e5).toString()
+    let postfix = (postfix_0 + rnd_now).slice(-1 * postfix_0.length)
     return '_' + Date.now().toString() + postfix
 }
-var unique = window.unique
+let unique = window.unique
+
+// ------------------------------------------------------------------
+// check if a variable is defined and not nulled
+// ------------------------------------------------------------------
+window.is_def = function(data_in) {
+    if (data_in === undefined) {
+        return false
+    }
+    else if (data_in === null) {
+        return false
+    }
+    else if (data_in === Infinity) {
+        return false
+    }
+    else {
+        return true
+    }
+}
+let is_def = window.is_def
 
 // ------------------------------------------------------------------
 // common colors
@@ -36,7 +54,7 @@ window.cols_reds = [
     '#F06292',
     '#C2185B',
 ]
-var cols_reds = window.cols_reds
+let cols_reds = window.cols_reds
 
 window.cols_blues = [
     '#2196F3',
@@ -46,10 +64,10 @@ window.cols_blues = [
     '#607D8B',
     '#80DEEA',
 ]
-var cols_blues = window.cols_blues
+let cols_blues = window.cols_blues
 
 window.cols_greens = [ '#8BC34A', '#00E676', '#33691E', '#C0CA33', '#009688' ]
-var cols_greens = window.cols_greens
+let cols_greens = window.cols_greens
 
 window.cols_yellows = [
     '#FFD600',
@@ -60,10 +78,10 @@ window.cols_yellows = [
     '#795548',
     '#FFC107',
 ]
-var cols_yellows = window.cols_yellows
+let cols_yellows = window.cols_yellows
 
 window.cols_purples = [ '#AB47BC', '#9575CD', '#673AB7', '#7B1FA2', '#CD96CD' ]
-var cols_purples = window.cols_purples
+let cols_purples = window.cols_purples
 
 window.cols_mix = [
     cols_reds[0],
@@ -92,7 +110,7 @@ window.cols_mix = [
     cols_yellows[4],
     cols_purples[4],
 ]
-var cols_mix = window.cols_mix
+let cols_mix = window.cols_mix
 
 window.cols_blocks = [
     cols_reds[0],
@@ -420,7 +438,7 @@ window.color_theme = {
         },
     },
 }
-var color_theme = window.color_theme
+let color_theme = window.color_theme
 
 window.get_color_theme = function(name) {
     return color_theme[name]
@@ -499,24 +517,24 @@ window.unit_arcmin = '′'
 window.unit_arcsec = '″'
 
 // Font Awesome icons - unicode for javascript
-var symbols = {
+let symbols = {
+    compass: '\uf14e',
+    random: '\uf074',
+    bars: '\uf0c9',
+    Phi: '\u03D5',
+    phi: '\u03C6',
+    Delta: '\u0394',
+    delta: '\u03B4',
+    space: '\u00A0',
+    sec: '\u00A7', // for observing bloc prefix?????
 }
-symbols.compass = '\uf14e'
-symbols.random = '\uf074'
-symbols.bars = '\uf0c9'
-symbols.Phi = '\u03D5'
-symbols.phi = '\u03C6'
-symbols.Delta = '\u0394'
-symbols.delta = '\u03B4'
-symbols.space = '\u00A0'
-symbols.sec = '\u00A7' // for observing bloc prefix?????
 window.symbols = symbols
 // ------------------------------------------------------------------
 
 // ------------------------------------------------------------------
 // prefixes for labelling
 // ------------------------------------------------------------------
-var prefixes = {
+let prefixes = {
 }
 prefixes.sched = {
 }
@@ -567,7 +585,7 @@ window.get_pointing_value = function(pointing) {
 // common telescope properties
 // ------------------------------------------------------------------
 window.tel_info = function() {
-    var is_south = window.SITE_TYPE === 'S'
+    // let is_south = window.SITE_TYPE === 'S'
 
     // ------------------------------------------------------------------
     // names which should match definitions on the python server side
@@ -620,7 +638,7 @@ window.tel_info = function() {
     // ------------------------------------------------------------------
     // consistent telescope id ordering
     // ------------------------------------------------------------------
-    var order = {
+    let order = {
     }
     $.each(tel_ids, function(i, id) {
         order[id] = i
@@ -631,7 +649,7 @@ window.tel_info = function() {
     }
 
     this.sort_ids = function(opt_in) {
-        var func
+        let func
         if (is_def(opt_in.func)) {
             func = function(d) {
                 return order[opt_in.func(d)]
@@ -642,8 +660,8 @@ window.tel_info = function() {
                 return order[d]
             }
         }
-        var is_ascend = is_def(opt_in.is_ascend) ? opt_in.is_ascend : true
-        var data = opt_in.data
+        let is_ascend = is_def(opt_in.is_ascend) ? opt_in.is_ascend : true
+        let data = opt_in.data
         if (is_def(opt_in.is_inplace) && !opt_in.is_inplace) {
             data = deep_copy(data)
         }
@@ -667,13 +685,13 @@ window.tel_info = function() {
                 return func(a) > func(b) ? -1 : 1
             }
         })
-    // var m1 = data.map(function(d){return d.id});
+    // let m1 = data.map(function(d){return d.id});
     }
 
     // ------------------------------------------------------------------
     // telescope titles
     // ------------------------------------------------------------------
-    var title = {
+    let title = {
     }
     $.each(tel_ids, function(i, id) {
         title[id] = id.replace('_', symbols.space)
@@ -684,7 +702,7 @@ window.tel_info = function() {
             return title[id]
         }
         else {
-            var id_str = String(id)
+            let id_str = String(id)
             while (id_str.includes('_')) {
                 id_str = id_str.replace('_', symbols.space)
             }
@@ -707,7 +725,7 @@ run_tel_info()
 window.get_tel_number = function(tel) {
     return tel.id.split('_')[1]
 }
-// var x = ['L_0','M_11','M_21']
+// let x = ['L_0','M_11','M_21']
 // tel_info.sort_ids({
 //   data: x, //func: function(d,i){console.log(d); return d; },
 // });
@@ -716,14 +734,14 @@ window.get_tel_number = function(tel) {
 // ------------------------------------------------------------------
 // colours for different states (red, yellow, green)
 // ------------------------------------------------------------------
-var TEL_STATES = {
+let TEL_STATES = {
     ERROR: 0,
     WARNING: 1,
     NOMINAL: 2,
 }
 window.TEL_STATES = TEL_STATES
 
-var tel_state_color = {
+let tel_state_color = {
 }
 tel_state_color[TEL_STATES.NOMINAL] = [ '#b5c69c', '#AED581' ]
 tel_state_color[TEL_STATES.WARNING] = [ '#fcd975', '#FFEB3B' ]
@@ -741,10 +759,10 @@ window.get_tel_state = function(health) {
         return TEL_STATES.NOMINAL
     }
 }
-var get_tel_state = window.get_tel_state
+let get_tel_state = window.get_tel_state
 
 window.inst_health_col = function(health, index) {
-    var telState = get_tel_state(health)
+    let telState = get_tel_state(health)
     if (!is_def(index)) {
         return tel_state_color[telState][0]
     }
@@ -763,7 +781,7 @@ window.inst_health_frac = function(health) {
 // are flushed, and these times are ignored
 // ------------------------------------------------------------------
 let timescale = 1
-var times = {
+let times = {
     // basic scaling of all times
     timescale: timescale,
     // animation duration for general graphical elements
@@ -800,7 +818,7 @@ window.vor_ploy_func = function(d) {
 // used for right-side drawer-panel
 // ------------------------------------------------------------------
 window.pin_drawer = function(id_layout, id_drawer) {
-    var ele_layout, ele_drawer
+    let ele_layout, ele_drawer
     if (typeof id_layout === 'string' || id_layout instanceof String) {
         ele_layout = document.getElementById(id_layout)
     }
@@ -821,7 +839,7 @@ window.pin_drawer = function(id_layout, id_drawer) {
 }
 
 window.tog_drawer_with_pin = function(id_layout, id_drawer) {
-    var ele_layout, ele_drawer
+    let ele_layout, ele_drawer
     if (typeof id_layout === 'string' || id_layout instanceof String) {
         ele_layout = document.getElementById(id_layout)
     }
@@ -846,13 +864,13 @@ window.tog_drawer_with_pin = function(id_layout, id_drawer) {
         window.dispatchEvent(new Event('resize'))
     }, 100)
 }
-var tog_drawer_with_pin = window.tog_drawer_with_pin
+let tog_drawer_with_pin = window.tog_drawer_with_pin
 
 // ------------------------------------------------------------------
 // switch icon when toggling iron-collapse elements
 // ------------------------------------------------------------------
 window.tog_keyboard_arrow = function(opt_in) {
-    var more_info, icon_button, icon_sel
+    let more_info, icon_button, icon_sel
     if (typeof opt_in === 'string' || opt_in instanceof String) {
         more_info = document.getElementById(opt_in)
         icon_button = document.getElementById(opt_in + '_fab')
@@ -952,7 +970,7 @@ window.move_node_up = function(node, n_levels_up, stop_name) {
         stop_name = 'svg'
     }
 
-    var parent = node
+    let parent = node
     while (n_levels_up > 0 && parent != null) {
     // console.log('move_node_up',n_levels_up,parent.nodeName)
         if (parent.nodeName === stop_name) {
@@ -974,7 +992,7 @@ d3.selection.prototype.moveNodeUp = function() {
 //
 // ------------------------------------------------------------------
 window.get_node_id = function(opt_in) {
-    var id_tag = is_def(opt_in.id_tag) ? opt_in.id_tag : 'id'
+    let id_tag = is_def(opt_in.id_tag) ? opt_in.id_tag : 'id'
 
     if (is_def(opt_in.get_id)) {
         return opt_in.selction
@@ -991,10 +1009,10 @@ window.get_node_id = function(opt_in) {
             .node()
     }
 }
-var get_node_id = window.get_node_id
+let get_node_id = window.get_node_id
 
 window.get_node_width_by_id = function(opt_in) {
-    var ele_now = get_node_id(opt_in)
+    let ele_now = get_node_id(opt_in)
 
     if (is_def(ele_now)) {
         return ele_now.getBBox().width
@@ -1005,11 +1023,11 @@ window.get_node_width_by_id = function(opt_in) {
 }
 
 window.get_node_height_by_id = function(opt_in) {
-    var ele_now = get_node_id(opt_in)
+    let ele_now = get_node_id(opt_in)
     if (!is_def(opt_in.txt_scale)) {
         opt_in.txt_scale = false
     }
-    var txt_scale = opt_in.txt_scale ? get_txt_scale() : 1
+    let txt_scale = opt_in.txt_scale ? get_txt_scale() : 1
 
     if (is_def(ele_now)) {
         return ele_now.getBBox().height * txt_scale
@@ -1022,10 +1040,10 @@ window.get_node_height_by_id = function(opt_in) {
 window.get_txt_scale = function() {
     return 0.333
 }
-var get_txt_scale = window.get_txt_scale
+let get_txt_scale = window.get_txt_scale
 
 window.get_selection_trans = function(sel) {
-    var trans = sel.attr('transform')
+    let trans = sel.attr('transform')
     trans = trans
         .replace('translate(', '')
         .replace(')', '')
@@ -1047,11 +1065,11 @@ window.loaded_scripts = {
     queued: [],
     loaded: [],
 }
-var loaded_scripts = window.loaded_scripts
+let loaded_scripts = window.loaded_scripts
 
 window.load_script = function(opt_in) {
     // console.log('load_script',opt_in)
-    var debug = false
+    let debug = false
     if (loaded_scripts.queued.indexOf(opt_in.script) < 0) {
         loaded_scripts.queued.push(opt_in.script)
         if (debug) {
@@ -1071,9 +1089,9 @@ window.load_script = function(opt_in) {
 // return sorted array, by the given index
 // ------------------------------------------------------------------
 window.sort_by_func = function(opt_in) {
-    var func = opt_in.func
-    var is_ascend = is_def(opt_in.is_ascend) ? opt_in.is_ascend : true
-    var data = opt_in.data
+    let func = opt_in.func
+    let is_ascend = is_def(opt_in.is_ascend) ? opt_in.is_ascend : true
+    let data = opt_in.data
     if (is_def(opt_in.is_inplace) && !opt_in.is_inplace) {
         data = deep_copy(data)
     }
@@ -1100,7 +1118,7 @@ window.sort_by_func = function(opt_in) {
 
     return data
 }
-var sort_by_func = window.sort_by_func
+let sort_by_func = window.sort_by_func
 
 // ------------------------------------------------------------------
 //
@@ -1108,15 +1126,15 @@ var sort_by_func = window.sort_by_func
 window.Locker = function(opt_init) {
     this.id = 'locker_' + unique()
     
-    var counters = {
+    let counters = {
     }
-    var default_cntr = 'common'
+    let default_cntr = 'common'
 
     // turn a counter on or off
     function add(opt_in) {
-        var id = default_cntr
-        var expire = -1
-        var override = false
+        let id = default_cntr
+        let expire = -1
+        let override = false
         if (is_def(opt_in)) {
             if (typeof opt_in === 'string') {
                 id = opt_in
@@ -1155,9 +1173,9 @@ window.Locker = function(opt_init) {
     this.add = add
 
     function remove(opt_in) {
-        var id = default_cntr
-        var override = false
-        var delay = 0
+        let id = default_cntr
+        let override = false
+        let delay = 0
         if (is_def(opt_in)) {
             if (typeof opt_in === 'string') {
                 id = opt_in
@@ -1201,8 +1219,8 @@ window.Locker = function(opt_init) {
     this.remove = remove
 
     function expires(opt_in) {
-        // var id = default_cntr
-        var duration = 10
+        // let id = default_cntr
+        let duration = 10
         if (is_def(opt_in)) {
             if (typeof opt_in !== 'string') {
                 if (is_def(opt_in.duration)) {
@@ -1233,7 +1251,7 @@ window.Locker = function(opt_init) {
 
     // check if a counter is still active
     function is_free(opt_in) {
-        var id = default_cntr
+        let id = default_cntr
         if (is_def(opt_in)) {
             if (typeof opt_in === 'string') {
                 id = opt_in
@@ -1254,7 +1272,7 @@ window.Locker = function(opt_init) {
     this.is_free = is_free
 
     function are_free(idV) {
-        var are_all_free = true
+        let are_all_free = true
 
         $.each(idV, function(index, id_now) {
             are_all_free = are_all_free && is_free(id_now)
@@ -1266,7 +1284,7 @@ window.Locker = function(opt_init) {
 
     // check the value of the active counter
     function n_active(opt_in) {
-        var id = default_cntr
+        let id = default_cntr
         if (is_def(opt_in)) {
             if (typeof opt_in === 'string') {
                 id = opt_in
@@ -1287,7 +1305,7 @@ window.Locker = function(opt_init) {
     this.n_active = n_active
 
     function n_actives(idV) {
-        var n_active_all = 0
+        let n_active_all = 0
 
         $.each(idV, function(index, id_now) {
             n_active_all += n_active(id_now)
@@ -1306,7 +1324,7 @@ window.Locker = function(opt_init) {
             idV = [ idV ]
         }
 
-        var actives = []
+        let actives = []
         $.each(idV, function(i, d) {
             if (!is_free(d)) {
                 actives.push(d)
@@ -1317,26 +1335,26 @@ window.Locker = function(opt_init) {
     }
     this.get_actives = get_actives
 }
-var Locker = window.Locker
+let Locker = window.Locker
 
 window.RunLoop = function(opt_in) {
-    var base_tag = opt_in.tag
-    var push_wait = 10
-    var runs = {
+    let base_tag = opt_in.tag
+    let push_wait = 10
+    let runs = {
     }
-    var n_keep = {
+    let n_keep = {
     }
-    var wait = {
+    let wait = {
     }
-    var func = {
+    let func = {
     }
-    var locker = new Locker()
+    let locker = new Locker()
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
     function init(opt_in) {
-        var tag = opt_in.tag
+        let tag = opt_in.tag
         n_keep[tag] = is_def(opt_in.n_keep) ? opt_in.n_keep : -1
         func[tag] = opt_in.func
         wait[tag] = is_def(opt_in.wait) ? opt_in.wait : times.wait_loop
@@ -1381,7 +1399,7 @@ window.RunLoop = function(opt_in) {
         locker.add(tag)
 
         // console.log('000',tag,runs[tag].map(function(d){ return d.time}));
-        var n_ele = runs[tag].length
+        let n_ele = runs[tag].length
 
         // sort (in-place) so that the first elements (low date value) come first
         sort_by_func({
@@ -1394,7 +1412,7 @@ window.RunLoop = function(opt_in) {
         // console.log('111',tag,runs[tag].map(function(d){ return d.time}));
 
         // keep the requested number of elements
-        var n_keep_now = n_keep[tag]
+        let n_keep_now = n_keep[tag]
         if (n_keep_now <= 0) {
             runs[tag] = runs[tag].slice(0, n_ele)
         }
@@ -1432,7 +1450,7 @@ window.RunLoop = function(opt_in) {
             return
         }
 
-        var time = parseInt(is_def(opt_in.time) ? opt_in.time : Date.now())
+        let time = parseInt(is_def(opt_in.time) ? opt_in.time : Date.now())
         runs[opt_in.tag].push({
             data: opt_in.data,
             time: time,
@@ -1454,15 +1472,15 @@ window.run_loop_com = new window.RunLoop({
 // ------------------------------------------------------------------
 
 window.run_when_ready = function(opt_in) {
-    var wait = is_def(opt_in.wait) ? opt_in.wait : 10
-    var max_tries = is_def(opt_in.max_tries) ? opt_in.max_tries : 1000
-    var fail_log = is_def(opt_in.fail_log)
+    let wait = is_def(opt_in.wait) ? opt_in.wait : 10
+    let max_tries = is_def(opt_in.max_tries) ? opt_in.max_tries : 1000
+    let fail_log = is_def(opt_in.fail_log)
         ? opt_in.fail_log
         : function() {
             console.error([ 'cant run check_ready() with: ', opt_in ])
         }
 
-    var n_tries = 0
+    let n_tries = 0
     function check_ready() {
         if (!opt_in.pass()) {
             if (n_tries > max_tries) {
@@ -1487,22 +1505,22 @@ window.run_when_ready = function(opt_in) {
 // ------------------------------------------------------------------
 window.IconBadge = function() {
     function set_widget_icon(opt_in) {
-        var n_icon = opt_in.n_icon
+        let n_icon = opt_in.n_icon
 
         if (!is_def(opt_in.icon_div)) {
             return
         }
 
-        var icon_div_id_in = opt_in.icon_div.id
-        var icon_div_ele = opt_in.icon_div.ele
-        var pulse_hov_in = is_def(opt_in.pulse_hov_in) ? opt_in.pulse_hov_in : false
+        let icon_div_id_in = opt_in.icon_div.id
+        let icon_div_ele = opt_in.icon_div.ele
+        let pulse_hov_in = is_def(opt_in.pulse_hov_in) ? opt_in.pulse_hov_in : false
 
         if (!is_def(icon_div_id_in) || !is_def(n_icon) || n_icon < 0) {
             return
         }
 
         // make sure we don't add the same badge twice
-        var icon_div_id
+        let icon_div_id
         if (is_def(icon_div_ele)) {
             icon_div_id = icon_div_ele
         }
@@ -1523,8 +1541,8 @@ window.IconBadge = function() {
             .style('opacity', 0)
             .remove()
 
-        var is_empty_selection = true
-        var svg = d3
+        let is_empty_selection = true
+        let svg = d3
             .select(icon_div_id)
             .style('width', '100%')
             .style('position', 'relative')
@@ -1545,8 +1563,8 @@ window.IconBadge = function() {
             }
         }
 
-        var icon_svg = get(n_icon)
-        var badge = add({
+        let icon_svg = get(n_icon)
+        let badge = add({
             parent_svg: svg,
             icon_file: icon_svg[0],
             text: {
@@ -1559,7 +1577,7 @@ window.IconBadge = function() {
             trans_back: true,
         })
 
-        var data_out = {
+        let data_out = {
             svg: svg,
             icon_svg: icon_svg,
             badge: badge,
@@ -1574,30 +1592,30 @@ window.IconBadge = function() {
     // ------------------------------------------------------------------
     function add(opt_in) {
     // required parameters
-        var base_r = 50
-        var parent_svg = opt_in.parent_svg
-        var icon_file = opt_in.icon_file
+        let base_r = 50
+        let parent_svg = opt_in.parent_svg
+        let icon_file = opt_in.icon_file
 
         // optional parameters
-        var rad = is_def(opt_in.rad) ? opt_in.rad : base_r
-        var delay = is_def(opt_in.delay) ? opt_in.delay : 0
-        var duration = is_def(opt_in.duration) ? opt_in.duration : times.anim
-        var show_outline = is_def(opt_in.show_outline) ? opt_in.show_outline : false
-        var bigger_icon = is_def(opt_in.bigger_icon) ? opt_in.bigger_icon : false
-        var col_back = is_def(opt_in.col_back) ? opt_in.col_back : '#F2F2F2'
-        var col_dark = is_def(opt_in.col_dark) ? opt_in.col_dark : '#383b42'
-        var col_light = is_def(opt_in.col_light) ? opt_in.col_light : '#ececec'
-        var icon_col = is_def(opt_in.icon_col) ? opt_in.icon_col : col_dark
-        var icon_col_up = is_def(opt_in.icon_col_up)
+        let rad = is_def(opt_in.rad) ? opt_in.rad : base_r
+        let delay = is_def(opt_in.delay) ? opt_in.delay : 0
+        let duration = is_def(opt_in.duration) ? opt_in.duration : times.anim
+        let show_outline = is_def(opt_in.show_outline) ? opt_in.show_outline : false
+        let bigger_icon = is_def(opt_in.bigger_icon) ? opt_in.bigger_icon : false
+        let col_back = is_def(opt_in.col_back) ? opt_in.col_back : '#F2F2F2'
+        let col_dark = is_def(opt_in.col_dark) ? opt_in.col_dark : '#383b42'
+        let col_light = is_def(opt_in.col_light) ? opt_in.col_light : '#ececec'
+        let icon_col = is_def(opt_in.icon_col) ? opt_in.icon_col : col_dark
+        let icon_col_up = is_def(opt_in.icon_col_up)
             ? opt_in.icon_col_up
             : d3.rgb(icon_col).darker(2)
-        var pulse_hov_in = is_def(opt_in.pulse_hov_in) ? opt_in.pulse_hov_in : false
-        var pulse_hov_out = is_def(opt_in.pulse_hov_out) ? opt_in.pulse_hov_out : false
-        var col_dark_opac = is_def(opt_in.col_dark_opac) ? opt_in.col_dark_opac : 1
-        var col_light_opac = is_def(opt_in.col_light_opac) ? opt_in.col_light_opac : 1
-        var add_boundbox = is_def(opt_in.add_boundbox) ? opt_in.add_boundbox : false
-        var trans_back = is_def(opt_in.trans_back) ? opt_in.trans_back : false
-        var text = is_def(opt_in.text) ? opt_in.text : null
+        let pulse_hov_in = is_def(opt_in.pulse_hov_in) ? opt_in.pulse_hov_in : false
+        let pulse_hov_out = is_def(opt_in.pulse_hov_out) ? opt_in.pulse_hov_out : false
+        let col_dark_opac = is_def(opt_in.col_dark_opac) ? opt_in.col_dark_opac : 1
+        let col_light_opac = is_def(opt_in.col_light_opac) ? opt_in.col_light_opac : 1
+        let add_boundbox = is_def(opt_in.add_boundbox) ? opt_in.add_boundbox : false
+        let trans_back = is_def(opt_in.trans_back) ? opt_in.trans_back : false
+        let text = is_def(opt_in.text) ? opt_in.text : null
 
         if (trans_back) {
             if (!is_def(opt_in.col_back)) {
@@ -1615,18 +1633,18 @@ window.IconBadge = function() {
         // col_dark = "#104E8B", col_light = "#74CBDE", icon_col = "#9CCC65";
         // col_dark = "#C2185B", col_light = "#F06292", icon_col = "#383b42";
 
-        var g_outer = parent_svg.append('g')
-        var g_inner = g_outer.append('g')
-        var g_circ = g_inner.append('g')
-        var g_svg = g_inner.append('g')
-        var g_txt = g_inner.append('g')
+        let g_outer = parent_svg.append('g')
+        let g_inner = g_outer.append('g')
+        let g_circ = g_inner.append('g')
+        let g_svg = g_inner.append('g')
+        let g_txt = g_inner.append('g')
 
-        var set_r = function(r_in, duration) {
+        let set_r = function(r_in, duration) {
             if (!is_def(duration)) {
                 duration = times.anim
             }
-            var trans = -r_in
-            var scale = r_in / base_r
+            let trans = -r_in
+            let scale = r_in / base_r
             g_inner
                 .transition('badge_set_r')
                 .duration(duration)
@@ -1644,7 +1662,7 @@ window.IconBadge = function() {
             }
         }
 
-        var data = []
+        let data = []
         data.push({
             fill: col_back,
             strokeWidth: 0,
@@ -1704,25 +1722,25 @@ window.IconBadge = function() {
             .attr('cx', base_r)
             .attr('cy', base_r)
             .attr('t', 0)
-            .attr('fill', function(d, i) {
+            .attr('fill', function(d) {
                 return d.fill
             })
-            .style('stroke-width', function(d, i) {
+            .style('stroke-width', function(d) {
                 return d.strokeWidth
             })
-            .style('stroke-opacity', function(d, i) {
+            .style('stroke-opacity', function(d) {
                 return d.strokeOpac
             })
-            .style('stroke', function(d, i) {
+            .style('stroke', function(d) {
                 return d.stroke
             })
-            .style('opacity', function(d, i) {
+            .style('opacity', function(d) {
                 return d.opacity
             })
             .transition('in_out')
             .delay(delay)
             .duration(duration)
-            .attr('r', function(d, i) {
+            .attr('r', function(d) {
                 return d.r
             })
 
@@ -1735,13 +1753,9 @@ window.IconBadge = function() {
                 .attr('class', 'badge') // class list for easy selection
                 .attr('x', 0)
                 .attr('y', 0)
-                .attr('width', function(d, i) {
-                    return base_r * 2
-                })
-                .attr('height', function(d, i) {
-                    return base_r * 2
-                })
-            // .attr("t", 0)
+                .attr('width', base_r * 2)
+                .attr('height', base_r * 2)
+                // .attr("t", 0)
                 .attr('fill', 'transparent')
                 .style('stroke-width', 1)
                 .style('stroke-opacity', 1)
@@ -1754,7 +1768,7 @@ window.IconBadge = function() {
         }
 
         if (is_def(text)) {
-            var txt_size, align, pos
+            let txt_size, align, pos
             if (text.pos === 'topLeft') {
                 txt_size = 28
                 align = 'start'
@@ -1783,23 +1797,15 @@ window.IconBadge = function() {
                 .style('text-anchor', align)
                 .style('font-weight', 'bold')
                 .style('stroke-width', 1.25)
-                .style('stroke', function(d) {
-                    return '#F2F2F2'
-                })
-                .style('fill', function(d) {
-                    return col_dark
-                })
+                .style('stroke', '#F2F2F2')
+                .style('fill', col_dark)
                 .style('pointer-events', 'none')
                 .style('vector-effect', 'non-scaling-stroke')
-                .attr('transform', function(d) {
-                    return 'translate(' + pos[0] + ',' + pos[1] + ')'
-                })
-                .style('font-size', function(d) {
-                    return txt_size + 'px'
-                })
-                .attr('dy', function(d) {
-                    return pos[2] + 'px'
-                })
+                .attr('transform',
+                    'translate(' + pos[0] + ',' + pos[1] + ')'
+                )
+                .style('font-size', txt_size + 'px')
+                .attr('dy', pos[2] + 'px')
                 .style('fill-opacity', 0.9)
                 .style('stroke-opacity', 1)
         }
@@ -1814,7 +1820,7 @@ window.IconBadge = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        var id_now = 'badge' + unique()
+        let id_now = 'badge' + unique()
         load_svg_file({
             g: g_svg,
             icon_path: icon_file,
@@ -1828,16 +1834,16 @@ window.IconBadge = function() {
         })
 
         function after_svg(opt_in) {
-            var g_now = opt_in.g
-            var svg_id = opt_in.svg_id
-            var svg_inner = g_now.select('#' + svg_id)
+            let g_now = opt_in.g
+            let svg_id = opt_in.svg_id
+            let svg_inner = g_now.select('#' + svg_id)
 
-            var svg_ele_types = [ 'path', 'circle', 'polygon' ]
+            let svg_ele_types = [ 'path', 'circle', 'polygon' ]
             $.each(svg_ele_types, function(index_type, type_now) {
                 svg_inner.selectAll(type_now).attr('fill', icon_col)
             })
 
-            var coords = [ 16, 68 ]
+            let coords = [ 16, 68 ]
             svg_inner
                 .attr('x', coords[0] + coords[1] / 2)
                 .attr('y', coords[0] + coords[1] / 2)
@@ -1853,7 +1859,7 @@ window.IconBadge = function() {
                 .attr('height', coords[1])
                 .style('opacity', 1)
 
-            var circ = g_now.selectAll('circle.outline').data([ 0 ])
+            let circ = g_now.selectAll('circle.outline').data([ 0 ])
             circ
                 .enter()
                 .append('circle')
@@ -1882,8 +1888,8 @@ window.IconBadge = function() {
                 .style('opacity', show_outline ? '1' : '0')
 
             function on_hov(scale) {
-                var is_up = scale > 1.001
-                var up_frac = bigger_icon && is_up ? 0.8 : 0.1 * (is_up ? 1 : -1)
+                let is_up = scale > 1.001
+                let up_frac = bigger_icon && is_up ? 0.8 : 0.1 * (is_up ? 1 : -1)
                 // console.log('on_hov',is_up)
 
                 if (is_up) {
@@ -1894,12 +1900,12 @@ window.IconBadge = function() {
                         })
                         .transition('strk_up_down')
                         .duration(duration / 2)
-                        .style('stroke', function(d, i) {
+                        .style('stroke', function(d) {
                             return d3.rgb(d.stroke).darker(1)
                         })
                         .transition('strk_up_down')
                         .duration(duration / 2)
-                        .style('stroke', function(d, i) {
+                        .style('stroke', function(d) {
                             return d.stroke
                         })
 
@@ -1922,12 +1928,12 @@ window.IconBadge = function() {
                     .selectAll('circle.badge')
                     .transition('on_hov')
                     .duration(duration / 2)
-                    .attr('r', function(d, i) {
+                    .attr('r', function(d) {
                         return d.r * (scale + up_frac)
                     })
                     .transition('on_hov')
                     .duration(duration / 2)
-                    .attr('r', function(d, i) {
+                    .attr('r', function(d) {
                         return d.r * scale
                     })
             }
@@ -1946,7 +1952,7 @@ window.IconBadge = function() {
     // credit: _icons made by Freepik from www.flaticon.com
     // ------------------------------------------------------------------
     function get(n_icon) {
-        var icons = [
+        let icons = [
             '/static/frog-jumping.svg',
             '/static/seahorse.svg',
             '/static/fox.svg',
@@ -2049,8 +2055,8 @@ window.IconBadge = function() {
             return [ '', null ]
         }
 
-        var n_icon_now = n_icon % icons.length
-        var icon_txt = Math.floor(0.000001 + n_icon / icons.length)
+        let n_icon_now = n_icon % icons.length
+        let icon_txt = Math.floor(0.000001 + n_icon / icons.length)
         if (icon_txt === 0) {
             icon_txt = null
         }
@@ -2069,19 +2075,19 @@ window.icon_badge = new window.IconBadge()
 // function to load an external svg file
 // ------------------------------------------------------------------
 function load_svg_file(opt_in) {
-    var g_now = opt_in.g
-    var svg_id = opt_in.svg_id
-    var icon_path = opt_in.icon_path
-    var func_end = is_def(opt_in.func_end) ? opt_in.func_end : null
+    let g_now = opt_in.g
+    let svg_id = opt_in.svg_id
+    let icon_path = opt_in.icon_path
+    let func_end = is_def(opt_in.func_end) ? opt_in.func_end : null
 
     d3.xml(icon_path, function(error, documentFragment) {
         if (error) {
             console.error('problem with d3.xml() for', svg_id, error)
             throw error
         }
-        var svg_node = documentFragment.getElementsByTagName('svg')
+        let svg_node = documentFragment.getElementsByTagName('svg')
         if (svg_node[0]) {
-            var node = g_now.node().appendChild(svg_node[0])
+            let node = g_now.node().appendChild(svg_node[0])
             node.id = svg_id // assign an id, and then later do e.g., g.select("#"+id_now);
         }
 
@@ -2098,22 +2104,22 @@ window.load_svg_file = load_svg_file
 // ------------------------------------------------------------------
 
 window.bck_pattern = function(opt_in) {
-    var com = opt_in.com
-    var g_now = opt_in.g_now
-    var g_tag = opt_in.g_tag
-    var opac = opt_in.opac
-    // var lenTag = opt_in.lenTag
-    var texture_orient = opt_in.texture_orient
-    var texture_size = opt_in.texture_size
-    var circ_type = opt_in.circ_type
-    var size = opt_in.size
-    var hex_r = opt_in.hex_r
-    var len_wh = opt_in.len_wh
-    var trans = opt_in.trans
+    let com = opt_in.com
+    let g_now = opt_in.g_now
+    let g_tag = opt_in.g_tag
+    let opac = opt_in.opac
+    // let lenTag = opt_in.lenTag
+    let texture_orient = opt_in.texture_orient
+    let texture_size = opt_in.texture_size
+    let circ_type = opt_in.circ_type
+    let size = opt_in.size
+    let hex_r = opt_in.hex_r
+    let len_wh = opt_in.len_wh
+    let trans = opt_in.trans
 
-    // var g_now   = svg[g_tag];
-    var tag_now = 'svgBck' + g_tag
-    var strk = 0.5
+    // let g_now   = svg[g_tag];
+    let tag_now = 'svgBck' + g_tag
+    let strk = 0.5
     // console.log('==========',texture_orient,is_def(texture_orient),isNaN(texture_orient),hex_r,is_def(hex_r))
 
     // add the hexbin as another layer of the background
@@ -2190,7 +2196,7 @@ window.bck_pattern = function(opt_in) {
             com[tag_now].g.call(com[tag_now].txtr)
         }
 
-        var rect = com[tag_now].g
+        let rect = com[tag_now].g
             .selectAll('rect.' + tag_now)
             .data([{
                 id: 0,
@@ -2238,7 +2244,7 @@ window.bck_pattern = function(opt_in) {
                 .radius(hex_r)
         }
 
-        var path = com[tag_now].g
+        let path = com[tag_now].g
             .selectAll('path.' + tag_now)
             .data([{
                 id: 0,
@@ -2281,8 +2287,8 @@ window.do_zoom_to_target = function(opt_in) {
         opt_in.cent = [ opt_in.wh[0] / 2, opt_in.wh[1] / 2 ]
     }
 
-    var duration = opt_in.duration_scale * times.base_zoom
-    var trans_target = d3.zoomIdentity
+    let duration = opt_in.duration_scale * times.base_zoom
+    let trans_target = d3.zoomIdentity
         .translate(opt_in.cent[0], opt_in.cent[1])
         .scale(opt_in.target_scale)
         .translate(-opt_in.trans_to[0], -opt_in.trans_to[1])
@@ -2294,19 +2300,19 @@ window.do_zoom_to_target = function(opt_in) {
     //   .on("end", opt_in.func_end)
     // return;
 
-    var scale0 = Math.sqrt(opt_in.wh[0] * opt_in.wh[1])
-    var node = d3.zoomTransform(opt_in.svg_zoom_node)
-    var center = [ opt_in.cent[0], opt_in.cent[1] ]
-    var start = [
+    let scale0 = Math.sqrt(opt_in.wh[0] * opt_in.wh[1])
+    let node = d3.zoomTransform(opt_in.svg_zoom_node)
+    let center = [ opt_in.cent[0], opt_in.cent[1] ]
+    let start = [
         (center[0] - node.x) / node.k,
         (center[1] - node.y) / node.k,
         scale0 / node.k,
     ]
-    var end = [
+    let end = [
         opt_in.trans_to[0], opt_in.trans_to[1],
         scale0 / opt_in.target_scale,
     ]
-    var interpol_zoom = d3.interpolateZoom(start, end)
+    let interpol_zoom = d3.interpolateZoom(start, end)
 
     if (is_def(opt_in.func_start)) {
         opt_in.func_start()
@@ -2335,13 +2341,13 @@ window.do_zoom_to_target = function(opt_in) {
             opt_in.func_during()
         }
 
-        var intpr = interpol_zoom(t)
+        let intpr = interpol_zoom(t)
         if (!is_def(intpr[0])) {
             return ''
         }
 
-        var scale = scale0 / intpr[2]
-        var trans = [
+        let scale = scale0 / intpr[2]
+        let trans = [
             center[0] - intpr[0] * scale,
             center[1] - intpr[1] * scale,
         ]
@@ -2356,7 +2362,7 @@ window.do_zoom_to_target = function(opt_in) {
 // ------------------------------------------------------------------
 
 window.this_trans = function(me) {
-    var trans = d3.select(me).attr('transform')
+    let trans = d3.select(me).attr('transform')
     return trans
         .replace('translate(', '')
         .replace(')', '')
@@ -2371,7 +2377,7 @@ window.this_trans = function(me) {
 // deep copy an object or array
 // ------------------------------------------------------------------
 window.merge_obj = function(obj, src) {
-    for (var key in src) {
+    for (let key in src) {
         if (src.hasOwnProperty(key)) {
             obj[key] = src[key]
         }
@@ -2388,7 +2394,7 @@ window.deep_copy = function(obj_in) {
         }, obj_in)
     }
 }
-var deep_copy = window.deep_copy
+let deep_copy = window.deep_copy
 
 // ------------------------------------------------------------------
 // filter array for unique elements
@@ -2400,11 +2406,40 @@ window.unique_array = function(data_in) {
 }
 
 // ------------------------------------------------------------------
+// filter array for unique elements
+// example use:
+//     let d_in = { '0': 11, '22': 22, '-19': -38, '1': 88, }
+//     let d_out = window.filter_array({
+//         data: d_in,
+//         func: function(d, i) {
+//             return d > 0
+//         },
+//         by_key: true,
+//     })
+//     console.log('input', d_in, ' --> output', d_out)
+// ------------------------------------------------------------------
+window.filter_array = function(opt_in) {
+    let by_key = is_def(opt_in.by_key) ? opt_in.by_key : true
+    let index = by_key ? 1 : 0
+    let obj_out = {
+    }
+    let arr_out = Object.entries(opt_in.data).filter(function(d, i) {
+        return opt_in.func(d[index], i)
+    }
+    )
+    $.each(arr_out, function(i, d) {
+        obj_out[d[0]] = d[1]
+    })
+    return obj_out
+}
+
+
+// ------------------------------------------------------------------
 // find element in obkect with key and value match
 // ------------------------------------------------------------------
 
 window.find_dict_ele_in_obj = function(obj_in, key, val, is_debug) {
-    var data_out = [ -1, undefined ]
+    let data_out = [ -1, undefined ]
     $.each(obj_in, function(index, ele_now) {
         if (ele_now[key] === val && data_out[0] === -1) {
             data_out = [ index, ele_now ]
@@ -2422,13 +2457,13 @@ window.find_dict_ele_in_obj = function(obj_in, key, val, is_debug) {
 // ------------------------------------------------------------------
 
 window.replace_all = function(str_in, patt0, patt1) {
-    var data_out = str_in
+    let data_out = str_in
 
     // temporary pattern which is not included in the input string
-    var tmp_pattern = 'TMP_FAKE_PATTERN'
+    let tmp_pattern = 'TMP_FAKE_PATTERN'
     while (data_out.indexOf(tmp_pattern) !== -1) {
-        var sub0 = tmp_pattern.substr(0, tmp_pattern.length - 1)
-        var sub1 = tmp_pattern.substr(tmp_pattern.length - 1, tmp_pattern.length)
+        let sub0 = tmp_pattern.substr(0, tmp_pattern.length - 1)
+        let sub1 = tmp_pattern.substr(tmp_pattern.length - 1, tmp_pattern.length)
         tmp_pattern = sub0 + '_' + sub1
     }
 
@@ -2445,32 +2480,11 @@ window.replace_all = function(str_in, patt0, patt1) {
 // ------------------------------------------------------------------
 // common format for dates
 // ------------------------------------------------------------------
-
 window.date_to_string = function(date_in) {
     return moment(date_in).format('DD/MM/YYYY,HH:mm:ss')
     // return  date_in.getDate()+"/"+(date_in.getMonth()+1)+"/"+date_in.getFullYear()+","
     //        +date_in.getHours()+":"+date_in.getMinutes()+":"+date_in.getSeconds();
 }
-
-// ------------------------------------------------------------------
-// check if a variable is defined and not nulled
-// ------------------------------------------------------------------
-
-window.is_def = function(data_in) {
-    if (data_in === undefined) {
-        return false
-    }
-    else if (data_in === null) {
-        return false
-    }
-    else if (data_in === Infinity) {
-        return false
-    }
-    else {
-        return true
-    }
-}
-var is_def = window.is_def
 
 // ------------------------------------------------------------------
 // numerical
@@ -2493,19 +2507,19 @@ window.round_max = function(inp, data_out) {
 
 // ------------------------------------------------------------------
 window.min_max_obj = function(opt_in) {
-    var func = opt_in.func
+    let func = opt_in.func
     if (typeof opt_in.func === 'string') {
         func = function(d) {
             return d[opt_in.func]
         }
     }
 
-    var mapped = opt_in.data.map(func)
+    let mapped = opt_in.data.map(func)
     if (is_def(opt_in.filt)) {
         mapped = mapped.filter(opt_in.filt)
     }
 
-    var min_max_func = opt_in.min_max === 'max' ? Math.max : Math.min
+    let min_max_func = opt_in.min_max === 'max' ? Math.max : Math.min
 
     if (mapped.length === 0) {
         return is_def(opt_in.default_val) ? opt_in.default_val : null
@@ -2521,36 +2535,35 @@ window.min_max_obj = function(opt_in) {
 // ------------------------------------------------------------------
 // - degree to DMS comversion
 // ------------------------------------------------------------------
-
 window.deg_dms = function(data_in) {
-    // var sign  = (data_in > 0) ? 1 : -1;
+    // let sign  = (data_in > 0) ? 1 : -1;
     // data_in    *= sign;// log(data_in)
-    var deg = data_in | 0 // truncate dd to get degrees
-    var frac = Math.abs(data_in - deg) // get fractional part
-    var min = (frac * 60) | 0 // multiply fraction by 60 and truncate
-    var sec = frac * 3600 - min * 60
+    let deg = data_in | 0 // truncate dd to get degrees
+    let frac = Math.abs(data_in - deg) // get fractional part
+    let min = (frac * 60) | 0 // multiply fraction by 60 and truncate
+    let sec = frac * 3600 - min * 60
     return [ deg, min, sec ]
 }
-var deg_dms = window.deg_dms
+let deg_dms = window.deg_dms
 
 window.dms_deg = function(data_in) {
-    var sign = data_in[0] > 0 ? 1 : -1
+    let sign = data_in[0] > 0 ? 1 : -1
     return data_in[0] + sign * data_in[1] / 60 + sign * data_in[2] / 3600
 }
-// var dms_deg = window.dms_deg
+// let dms_deg = window.dms_deg
 
 window.deg_hms = function(data_in) {
-    var scale = 24 / 360
-    var data_out = deg_dms(data_in * scale)
+    let scale = 24 / 360
+    let data_out = deg_dms(data_in * scale)
     // console. log('---',data_in,data_out)
     return data_out
 }
-// var deg_hms = window.deg_hms
+// let deg_hms = window.deg_hms
 
 window.azim_ra = function(data_in) {
     // return data_in;
 
-    var data_out = data_in
+    let data_out = data_in
     data_out += 60
     if (data_out > 180) {
         data_out -= 360
@@ -2564,7 +2577,7 @@ window.azim_ra = function(data_in) {
 // window.raDecToLongLat = function (data_in) {
 //   return [hmsToDeg(data_in[0]), dms_deg(data_in[1])]
 // }
-// var hmsToDeg = window.hmsToDeg
+// let hmsToDeg = window.hmsToDeg
 
 // window.longLatToRaDec = function (data_in) {
 //   return [deg_hms(data_in[0]), deg_dms(data_in[1])]
@@ -2578,10 +2591,10 @@ window.azim_ra = function(data_in) {
 // // the function exeFunc with an on off (+-1) argument if zooming in or out
 // // ------------------------------------------------------------------
 // function setZoomList(target_div,exeFunc,intgrCondFunc) {
-//   var timeWheel  = 100;
-//   var countWheel = 0;
-//   var prevWheel  = -1;
-//   var wheelEvt   = ('onwheel' in document) ? 'wheel' : (('onmousewheel' in document) ? 'mousewheel' : 'DOMMouseScroll');
+//   let timeWheel  = 100;
+//   let countWheel = 0;
+//   let prevWheel  = -1;
+//   let wheelEvt   = ('onwheel' in document) ? 'wheel' : (('onmousewheel' in document) ? 'mousewheel' : 'DOMMouseScroll');
 
 //   // call a function on wheelEvt, and return false in order to disables the normal scrolling behaviour
 //   $("#"+target_div).on(wheelEvt,function() {
@@ -2594,12 +2607,12 @@ window.azim_ra = function(data_in) {
 //   // ------------------------------------------------------------------
 //   // integrate the change in the mouse wheel over a continuous time period, sampled every timeWheel
 //   // ------------------------------------------------------------------
-//   var checkSetZoom = setInterval(function(){ checkSetZoomFunc(); }, timeWheel);
+//   let checkSetZoom = setInterval(function(){ checkSetZoomFunc(); }, timeWheel);
 
 //   function checkSetZoomFunc() {
 //     if(prevWheel < 0) return;
 
-//     var time_dif = Date.now() - prevWheel;
+//     let time_dif = Date.now() - prevWheel;
 //     if(time_dif > timeWheel) {
 //       exeFunc( ((countWheel > 0) ? 1 : -1) );
 
@@ -2620,7 +2633,7 @@ window.azim_ra = function(data_in) {
 
 //   // keep track of mouse movement - [isMouseMoving -> false] if there is no movement for at least mouseMinStop
 //   // ------------------------------------------------------------------
-//   // var mouseMinStop  = 500, isMouseMoving = false;
+//   // let mouseMinStop  = 500, isMouseMoving = false;
 //   // $('body').onEnd('mousemove', function(e) { isMouseMoving = false; }, mouseMinStop);
 //   // $('body').on   ('mousemove', function(e) { isMouseMoving = true;  }              );
 // }
@@ -2636,21 +2649,21 @@ window.azim_ra = function(data_in) {
 // // add a linear gradiant which may be used for filling stuff
 // // see: http://dev.mikamai.com/post/86583300944/using-svg-gradient-masks-with-d3js
 // // example:
-// //       var optGrad        = {};
+// //       let optGrad        = {};
 // //       optGrad.d3G     = d3G;
 // //       optGrad.gradTag = "maskGrad";
 // //       optGrad.gradXY  = {'x1':'0', 'x2':'1', 'y1':'0', 'y2':'0'};
-// //       optGrad.grad01  = {'start':'70%', 'end':'100%'};
+// //       optGrad.grad_01  = {'start':'70%', 'end':'100%'};
 // //       addLinGrad(optGrad);
 // //       mask.enter().append("mask").attr("id", function(d){ return maskId(d); })
 // //                   .append("rect").style({"fill":"url(#"+gradTag+")", "x":"0", "y":(-txtH), "width":(txtW*0.9), "height":(txtH*2)})
 // // ------------------------------------------------------------------
 
 // function addLinGrad(opt_in) {
-//   var d3G     = opt_in.d3G;
-//   var gradTag = opt_in.gradTag;
-//   var gradXY  = opt_in.gradXY;
-//   var grad01  = opt_in.grad01;
+//   let d3G     = opt_in.d3G;
+//   let gradTag = opt_in.gradTag;
+//   let gradXY  = opt_in.gradXY;
+//   let grad_01  = opt_in.grad_01;
 
 //   if(d3G.selectAll("linearGradient."+gradTag)[0].length != 0) return;
 
@@ -2661,9 +2674,9 @@ window.azim_ra = function(data_in) {
 //                        .classed(gradTag,true) // class not really defined; just used for removal selection
 //                        // .each(function(d){ d.linearGradientId = gradTag; })
 //                        .call(function(grad) {
-//                          if(grad01["-1"]) grad.append("stop").attr({'offset':grad01["-1"], "stop-color":"white", "stop-opacity":"0"});
-//                          if(grad01["0"])  grad.append("stop").attr({'offset':grad01["0"],  "stop-color":"white", "stop-opacity":"1"});
-//                          if(grad01["1"])  grad.append("stop").attr({'offset':grad01["1"],  "stop-color":"white", "stop-opacity":"0"});
+//                          if(grad_01["-1"]) grad.append("stop").attr({'offset':grad_01["-1"], "stop-color":"white", "stop-opacity":"0"});
+//                          if(grad_01["0"])  grad.append("stop").attr({'offset':grad_01["0"],  "stop-color":"white", "stop-opacity":"1"});
+//                          if(grad_01["1"])  grad.append("stop").attr({'offset':grad_01["1"],  "stop-color":"white", "stop-opacity":"0"});
 //                        });
 
 //   // d3G .append('defs')
@@ -2671,17 +2684,17 @@ window.azim_ra = function(data_in) {
 //   //       defs.append('linearGradient')
 //   //           .attr('id', gradTag).attr(gradXY)
 //   //           .call(function(grad) {
-//   //             if(grad01["-1"]) grad.append('stop').attr({'offset':grad01["-1"], 'stop-color':'white', 'stop-opacity':'0'});
-//   //             if(grad01["0"])  grad.append('stop').attr({'offset':grad01["0"],  'stop-color':'white', 'stop-opacity':'1'});
-//   //             if(grad01["1"])  grad.append('stop').attr({'offset':grad01["1"],  'stop-color':'white', 'stop-opacity':'0'});
+//   //             if(grad_01["-1"]) grad.append('stop').attr({'offset':grad_01["-1"], 'stop-color':'white', 'stop-opacity':'0'});
+//   //             if(grad_01["0"])  grad.append('stop').attr({'offset':grad_01["0"],  'stop-color':'white', 'stop-opacity':'1'});
+//   //             if(grad_01["1"])  grad.append('stop').attr({'offset':grad_01["1"],  'stop-color':'white', 'stop-opacity':'0'});
 //   //           });
 //   //     });
 //   // console.log('1',d3G.selectAll('linearGradient'),d3G.selectAll('linearGradient.tbl0_M_13maskGradId') )
 
 // }
 // function rmLinGrad(opt_in) {
-//   var d3G     = opt_in.d3G;
-//   var gradTag = opt_in.gradTag;
+//   let d3G     = opt_in.d3G;
+//   let gradTag = opt_in.gradTag;
 
 //   setTimeout(function () { d3G.selectAll("linearGradient."+gradTag).remove(); }, times.anim*2);
 // }

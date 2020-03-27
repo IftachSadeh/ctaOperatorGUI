@@ -4,13 +4,17 @@
 /* global $ */
 /* global d3 */
 /* global times */
+/* global deep_copy */
 /* global is_def */
+/* global unique */
+/* global tau */
 /* global get_node_height_by_id */
 /* global do_zoom_to_target */
 /* global inst_health_col */
 /* global bck_pattern */
 /* global tel_info */
 /* global vor_ploy_func */
+/* global inst_health_frac */
 
 // ------------------------------------------------------------------
 //
@@ -18,15 +22,17 @@
 window.ArrZoomerMain = function(opt_in0) {
     let this_top = this
     let run_loop = opt_in0.run_loop
-    let widget_id = opt_in0.widget_id
+    // let widget_id = opt_in0.widget_id
     let locker = opt_in0.locker
-    let is_south = opt_in0.is_south
+    // let is_south = opt_in0.is_south
     let my_unique_id = unique()
-    let parentUniqueId = opt_in0.my_unique_id
-    let widget_type = opt_in0.widget_type
+    // let widget_type = opt_in0.widget_type
 
     let no_render = opt_in0.no_render
-    let dblclick_zoom_in_out = is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
+    let dblclick_zoom_in_out = (
+        is_def(opt_in0.dblclick_zoom_in_out)
+            ? opt_in0.dblclick_zoom_in_out : true
+    )
 
     let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
     let vor_show_lines = false
@@ -34,11 +40,11 @@ window.ArrZoomerMain = function(opt_in0) {
     let ele_base = opt_in0.ele_base
     let arr_zoomer_id = ele_base.arr_zoomer_id
 
-    let instruments = ele_base.instruments
+    let insts = ele_base.insts
     let zooms = ele_base.zooms
     let lock_init_key = ele_base.lock_init_keys.main
   
-    let scale_r = instruments.scale_r
+    let scale_r = insts.scale_r
 
     let get_prop_pos_shift = ele_base.get_prop_pos_shift
     let interpolate01 = ele_base.interpolate01
@@ -46,7 +52,7 @@ window.ArrZoomerMain = function(opt_in0) {
     let props_s1 = ele_base.props_s1
     let set_state = ele_base.set_state
     let is_state_up = ele_base.is_state_up
-    let is_state_down = ele_base.is_state_down
+    // let is_state_down = ele_base.is_state_down
     let is_state_change = ele_base.is_state_change
     let sync_state_send = ele_base.sync_state_send
   
@@ -73,7 +79,7 @@ window.ArrZoomerMain = function(opt_in0) {
     }
     com.s10 = {
     }
-    instruments.data.vor = {
+    insts.data.vor = {
     }
 
   
@@ -132,7 +138,7 @@ window.ArrZoomerMain = function(opt_in0) {
     // ------------------------------------------------------------------
     // initial scale to 100x100 px
     // ------------------------------------------------------------------
-    main_gs.g_outer.attr('transform', function(d) {
+    main_gs.g_outer.attr('transform', function() {
         return 'translate(0,0)scale(' + (100 / svg_dims.w) + ')'
     })
 
@@ -215,7 +221,7 @@ window.ArrZoomerMain = function(opt_in0) {
         
         let y_ele = []
         let data_cat = tel_info.get_categorical_ids()
-        $.each(data_cat, function(i, d) {
+        $.each(data_cat, function(i, _) {
             y_ele.push(this_top.cat_ele_pos(i, data_cat.length).y)
         })
 
@@ -298,7 +304,7 @@ window.ArrZoomerMain = function(opt_in0) {
     // ------------------------------------------------------------------
     function init_data(data_in) {
         let arr_init = data_in.arr_init
-        let sub_arr = data_in.sub_arr
+        // let sub_arr = data_in.sub_arr
 
         if (this_top.has_init) {
             return
@@ -346,8 +352,8 @@ window.ArrZoomerMain = function(opt_in0) {
         // run all variations, just to initialize all the variables
         // (but only the last one will take affect - this will be the default value)
         // ------------------------------------------------------------------
-        instruments.data.layout = 'physical' // physical layout as default
-        // instruments.data.layout = "sub_arr";  // sub-array layout as default
+        insts.data.layout = 'physical' // physical layout as default
+        // insts.data.layout = "sub_arr";  // sub-array layout as default
 
         // this_top.set_layout_sub_arr(sub_arr)
         this_top.set_layout_physical(arr_init)
@@ -594,7 +600,7 @@ window.ArrZoomerMain = function(opt_in0) {
             }
             else if (
                 target_name === ''
-        || !is_def(instruments.data.mini[target_name])) {
+        || !is_def(insts.data.mini[target_name])) {
                 let scale = this_top.get_scale()
                 let trans = this_top.get_trans()
                 let x = (svg_dims.w / 2 - trans[0]) / scale
@@ -603,7 +609,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                 let min_diff = -1
                 target_name = zooms.target
-                $.each(instruments.data.xyr, function(id_now, data_now) {
+                $.each(insts.data.xyr, function(id_now, data_now) {
                     if (data_now.isTel) {
                         let diff_now
               = Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
@@ -616,8 +622,8 @@ window.ArrZoomerMain = function(opt_in0) {
             }
             else {
                 trans_to = [
-                    instruments.data.xyr[target_name].x,
-                    instruments.data.xyr[target_name].y,
+                    insts.data.xyr[target_name].x,
+                    insts.data.xyr[target_name].y,
                 ]
             }
 
@@ -727,7 +733,7 @@ window.ArrZoomerMain = function(opt_in0) {
         // create voronoi cells for the dataset.
         // see: https://bl.ocks.org/mbostock/4060366
         // ------------------------------------------------------------------
-        instruments.data.hover = function(d) {
+        insts.data.hover = function(d) {
             if (zooms.target === d.data.id) {
                 return
             }
@@ -754,7 +760,7 @@ window.ArrZoomerMain = function(opt_in0) {
             n_keep: 1,
         })
 
-        instruments.data.click = function(opt_in) {
+        insts.data.click = function(opt_in) {
             if (locker.are_free([ 'zoom', 'auto_zoom_target' ])) {
                 run_loop.push({
                     tag: 'click_once' + my_unique_id,
@@ -767,7 +773,7 @@ window.ArrZoomerMain = function(opt_in0) {
         function click_once(d) {
             if (!locker.is_free('vor_zoom_click')) {
                 setTimeout(function() {
-                    instruments.data.click(d)
+                    insts.data.click(d)
                 }, times.wait_loop / 2)
                 return
             }
@@ -780,13 +786,13 @@ window.ArrZoomerMain = function(opt_in0) {
             // console.log((scale >= zooms.len["1.0"]),(zooms.target == d.data.id))
 
             if (scale < zooms.len['1.0']) {
-                instruments.data.dblclick({
+                insts.data.dblclick({
                     d: d,
                     is_in_out: dblclick_zoom_in_out,
                 })
             }
             else if (scale >= zooms.len['1.0'] && zooms.target !== d.data.id) {
-                instruments.data.dblclick({
+                insts.data.dblclick({
                     d: d,
                     is_in_out: false,
                 })
@@ -813,7 +819,7 @@ window.ArrZoomerMain = function(opt_in0) {
             n_keep: 1,
         })
 
-        instruments.data.dblclick = function(opt_in) {
+        insts.data.dblclick = function(opt_in) {
             // console.log( opt_in.source);
             if (locker.are_free([ 'zoom', 'auto_zoom_target' ])) {
                 run_loop.push({
@@ -827,7 +833,7 @@ window.ArrZoomerMain = function(opt_in0) {
         function dblclick_once(opt_in) {
             if (!locker.is_free('vor_zoom_dblclick')) {
                 setTimeout(function() {
-                    instruments.data.dblclick(opt_in)
+                    insts.data.dblclick(opt_in)
                 }, times.wait_loop / 2)
                 return
             }
@@ -893,7 +899,7 @@ window.ArrZoomerMain = function(opt_in0) {
         // ------------------------------------------------------------------
         function setVor() {
             let tag_vor = 'vor'
-            let polygons = vor_func.polygons(instruments.data.vor.data)
+            let polygons = vor_func.polygons(insts.data.vor.data)
             let vor = com.vor.g
                 .selectAll('path.' + tag_vor)
                 .data(polygons, function(d) {
@@ -913,10 +919,10 @@ window.ArrZoomerMain = function(opt_in0) {
                 .style('stroke-width', '1')
                 .style('opacity', vor_show_lines ? 1 : 0)
                 .style('stroke', '#4F94CD')
-                .on('mouseover', instruments.data.hover)
-                .on('click', instruments.data.click)
+                .on('mouseover', insts.data.hover)
+                .on('click', insts.data.click)
                 .on('dblclick', function(d) {
-                    instruments.data.dblclick({
+                    insts.data.dblclick({
                         d: d,
                         is_in_out: dblclick_zoom_in_out,
                     })
@@ -934,12 +940,12 @@ window.ArrZoomerMain = function(opt_in0) {
             // ------------------------------------------------------------------
             // calculation of coordinates for labels, added next
             // ------------------------------------------------------------------
-            $.each(instruments.data.vor.data, function(index_, data_now) {
-                $.each(instruments.props[data_now.id], function(index, porp_now) {
+            $.each(insts.data.vor.data, function(index_, data_now) {
+                $.each(insts.props[data_now.id], function(index, porp_now) {
                     let angle = (
                         (index + 0.5)
-            * instruments.tau_fracs[data_now.id]
-            + tau / 4
+                        * insts.tau_fracs[data_now.id]
+                        + tau / 4
                     )
                     let label_x = data_now.r * Math.cos(angle)
                     let label_y = data_now.r * Math.sin(angle)
@@ -963,20 +969,20 @@ window.ArrZoomerMain = function(opt_in0) {
                 set_tel_data_physical(data_in)
             }
 
-            if (instruments.data.layout !== 'physical') {
+            if (insts.data.layout !== 'physical') {
                 return
             }
 
-            instruments.data.xyr = instruments.data.xyr_physical
-            instruments.data.vor.data = instruments.data.vor.data_physical
+            insts.data.xyr = insts.data.xyr_physical
+            insts.data.vor.data = insts.data.vor.data_physical
             links_2.xyz = links_2.physical
 
             setVor()
-            this_top._sub_arr_grp_circ([])
+            this_top.sub_arr_grp_circ([])
 
             if (locker.is_free('in_init')) {
                 if (is_def(focus.target)) {
-                    if (is_def(instruments.data.xyr[focus.target])) {
+                    if (is_def(insts.data.xyr[focus.target])) {
                         this_top.zoom_to_target_main({
                             target: focus.target,
                             scale: focus.scale,
@@ -996,9 +1002,9 @@ window.ArrZoomerMain = function(opt_in0) {
         // ------------------------------------------------------------------
         function set_tel_data_physical(data_in) {
             // console.log("dataphyzoom", data_in);
-            instruments.data.xyr_physical = {
+            insts.data.xyr_physical = {
             }
-            instruments.data.vor.data_physical = []
+            insts.data.vor.data_physical = []
 
             // // ------------------------------------------------------------------
             // // get the width of the initial data (should be most inclusive)
@@ -1078,18 +1084,18 @@ window.ArrZoomerMain = function(opt_in0) {
 
                 // translate to the center of the respective hex-cell
                 // let xy = com.svgBck.trans([x,y]);  x = xy[0]; y = xy[1];
-                instruments.data.xyr_physical[id] = {
+                insts.data.xyr_physical[id] = {
                     x: x,
                     y: y,
                     r: r, //isTel: true
                 }
-                instruments.data.vor.data_physical.push({
+                insts.data.vor.data_physical.push({
                     id: id,
                     x: x,
                     y: y,
                     r: r,
                 })
-                // console.log(id, instruments.data.xyr_physical[id], ele_base.tel_types[id], tel_info.is_categorical_id(ele_base.tel_types[id]))
+                // console.log(id, insts.data.xyr_physical[id], ele_base.tel_types[id], tel_info.is_categorical_id(ele_base.tel_types[id]))
             })
 
 
@@ -1098,7 +1104,7 @@ window.ArrZoomerMain = function(opt_in0) {
             // see: http://christophermanning.org/projects/voronoi-diagram-with-force-directed-nodes-and-delaunay-links/
             // ------------------------------------------------------------------
             let vor_links = vor_func.links(
-                instruments.data.vor.data_physical
+                insts.data.vor.data_physical
             )
             let links_1 = {
             }
@@ -1133,8 +1139,8 @@ window.ArrZoomerMain = function(opt_in0) {
                 })
             })
 
-            instruments.data.mini = instruments.data.xyr_physical
-            instruments.data.lens = instruments.data.xyr_physical
+            insts.data.mini = insts.data.xyr_physical
+            insts.data.lens = insts.data.xyr_physical
 
             return
         }
@@ -1148,19 +1154,19 @@ window.ArrZoomerMain = function(opt_in0) {
         //     set_tel_data_sub_arr(data_in)
         //   }
 
-        //   if (instruments.data.layout !== 'sub_arr') return
+        //   if (insts.data.layout !== 'sub_arr') return
       
-        //   instruments.data.xyr = instruments.data.xyr_sub_arr
-        //   instruments.data.vor.data = instruments.data.vor.data_sub_arr
+        //   insts.data.xyr = insts.data.xyr_sub_arr
+        //   insts.data.vor.data = insts.data.vor.data_sub_arr
         //   links_2.xyz = links_2.sub_arr
 
         //   setVor()
 
-        //   this_top._sub_arr_grp_circ(instruments.data.xyr_sub_arr_grp)
+        //   this_top.sub_arr_grp_circ(insts.data.xyr_sub_arr_grp)
 
         //   if (locker.is_free('in_init')) {
         //     if (is_def(focus.target)) {
-        //       if (is_def(instruments.data.xyr[focus.target])) {
+        //       if (is_def(insts.data.xyr[focus.target])) {
         //         // console.log('222222222222');
         //         if (Math.abs(this_top.get_scale() - zooms.len['0.0']) > 0.00001) {
         //           let trans = this_top.get_trans()
@@ -1184,9 +1190,9 @@ window.ArrZoomerMain = function(opt_in0) {
         // //
         // // ------------------------------------------------------------------
         // function set_tel_data_sub_arr (data_in) {
-        //   instruments.data.xyr_sub_arr = {}
-        //   instruments.data.vor.data_sub_arr = []
-        //   instruments.data.xyr_sub_arr_grp = []
+        //   insts.data.xyr_sub_arr = {}
+        //   insts.data.vor.data_sub_arr = []
+        //   insts.data.xyr_sub_arr_grp = []
         //   let hirchScale = 0.9
         //   let hirch = d3.hierarchy(data_in).sum(function (d) {
         //     return 1
@@ -1217,19 +1223,19 @@ window.ArrZoomerMain = function(opt_in0) {
         //         else eleR = tel_rs.s00[0]
         //       }
 
-        //       instruments.data.xyr_sub_arr[id] = {
+        //       insts.data.xyr_sub_arr[id] = {
         //         x: x, y: y, r: eleR, // isTel: isTel,
         //       }
 
         //       if (isTel) {
-        //         instruments.data.vor.data_sub_arr.push({
+        //         insts.data.vor.data_sub_arr.push({
         //           id: id, x: x, y: y, r: eleR,
         //         })
         //       } else {
         //         let title = is_def(data_now.data.N)
         //           ? data_now.data.N
         //           : tel_info.no_sub_arr_title()
-        //         instruments.data.xyr_sub_arr_grp.push({
+        //         insts.data.xyr_sub_arr_grp.push({
         //           id: id,
         //           N: title,
         //           x: x,
@@ -1273,13 +1279,13 @@ window.ArrZoomerMain = function(opt_in0) {
     com.arc_tween = function(transition, opt_in) {
     // if(opt_in.skip != undefined && opt_in.skip) return null;
         function tween_func(d) {
-            if (is_def(opt_in.incIdV)) {
-                if (opt_in.incIdV.indexOf(d.id) === -1) {
+            if (is_def(opt_in.inc_ids)) {
+                if (opt_in.inc_ids.indexOf(d.id) === -1) {
                     return null
                 }
             }
-            if (is_def(opt_in.excIdV)) {
-                if (opt_in.excIdV.indexOf(d.id) >= 0) {
+            if (is_def(opt_in.exc_ids)) {
+                if (opt_in.exc_ids.indexOf(d.id) >= 0) {
                     return null
                 }
             }
@@ -1332,11 +1338,11 @@ window.ArrZoomerMain = function(opt_in0) {
             let arc = d3.arc()
       
             function out_func(t) {
-                let intrNow = interpolate01(t)
-                d.startAngle = ang_str_0 + (ang_str_1 - ang_str_0) * intrNow
-                d.endAngle = ang_end_0 + (ang_end_1 - ang_end_0) * intrNow
-                d.innerRadius = r_in_0 + (r_in_1 - r_in_0) * intrNow
-                d.outerRadius = r_out_0 + (r_out_1 - r_out_0) * intrNow
+                let intrp_now = interpolate01(t)
+                d.startAngle = ang_str_0 + (ang_str_1 - ang_str_0) * intrp_now
+                d.endAngle = ang_end_0 + (ang_end_1 - ang_end_0) * intrp_now
+                d.innerRadius = r_in_0 + (r_in_1 - r_in_0) * intrp_now
+                d.outerRadius = r_out_0 + (r_out_1 - r_out_0) * intrp_now
 
                 opt_in.arc_prev[tag_now].ang[d.id][0] = d.startAngle
                 opt_in.arc_prev[tag_now].ang[d.id][1] = d.endAngle
@@ -1414,7 +1420,7 @@ window.ArrZoomerMain = function(opt_in0) {
         let data = opt_in.data
 
         // check if we are about to change the id
-        let is_change = instruments.data.layout !== id
+        let is_change = insts.data.layout !== id
 
         if (is_change || is_def(data)) {
             locker.expires({
@@ -1425,12 +1431,12 @@ window.ArrZoomerMain = function(opt_in0) {
 
         if (id === 'physical') {
             if (update_id) {
-                instruments.data.layout = id
+                insts.data.layout = id
             }
             this_top.set_layout_physical(data)
         }
         // else if (id === 'sub_arr') {
-        //   if (update_id) instruments.data.layout = id
+        //   if (update_id) insts.data.layout = id
         //   this_top.set_layout_sub_arr(data)
         // }
         else {
@@ -1453,14 +1459,14 @@ window.ArrZoomerMain = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function _sub_arr_grp_circ(data_in) {
+    function sub_arr_grp_circ(data_in) {
         if (no_render) {
             return
         }
 
         if (!locker.is_free('in_init')) {
             setTimeout(function() {
-                _sub_arr_grp_circ(data_in)
+                sub_arr_grp_circ(data_in)
             }, times.wait_loop)
             return
         }
@@ -1483,12 +1489,8 @@ window.ArrZoomerMain = function(opt_in0) {
             .style('stroke-width', 1)
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
-            .style('fill', function(d) {
-                return '#383b42'
-            })
-            .style('stroke', function(d) {
-                return '#383b42'
-            })
+            .style('fill', '#383b42')
+            .style('stroke', '#383b42')
             .style('fill-opacity', 0.02)
             .style('stroke-opacity', 0.3)
             .attr('transform', function(d) {
@@ -1554,7 +1556,7 @@ window.ArrZoomerMain = function(opt_in0) {
             return 'translate(' + d.x + ',' + (d.y - d.r) + ')'
         }
     }
-    this_top._sub_arr_grp_circ = _sub_arr_grp_circ
+    this_top.sub_arr_grp_circ = sub_arr_grp_circ
 
     // ------------------------------------------------------------------
     // add a lable with the
@@ -1601,7 +1603,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
         let text = com[tag_lbl].g
             .selectAll('text.' + tag_lbl)
-            .data(instruments.data.tel, function(d) {
+            .data(insts.data.tel, function(d) {
                 return d.id
             })
 
@@ -1625,28 +1627,30 @@ window.ArrZoomerMain = function(opt_in0) {
             .attr('dy', function(d) {
                 return font_size(d) / 3 + 'px'
             })
-            .attr('transform', function(d, i) {
+            .attr('transform', function(d, _) {
                 return (
-                    'translate(' + instruments.data.xyr[d.id].x + ',' + instruments.data.xyr[d.id].y + ')'
+                    'translate('
+                    + insts.data.xyr[d.id].x
+                    + ',' + insts.data.xyr[d.id].y + ')'
                 )
             })
             .attr('text-anchor', 'middle')
             .merge(text)
             .transition('in_out')
             .duration(times.anim)
-            .attr('transform', function(d, i) {
+            .attr('transform', function(d, _) {
                 let shiftVal = 0
                 if (is_focused(d, 1)) {
                     shiftVal = (
-                        instruments.data.xyr[d.id].r
+                        insts.data.xyr[d.id].r
             * (scale_r[1].health1 + 0.5)
                     )
                 }
                 return (
                     'translate('
-          + instruments.data.xyr[d.id].x
+          + insts.data.xyr[d.id].x
           + ','
-          + (instruments.data.xyr[d.id].y - shiftVal)
+          + (insts.data.xyr[d.id].y - shiftVal)
           + ')'
                 )
             })
@@ -1681,10 +1685,10 @@ window.ArrZoomerMain = function(opt_in0) {
         if (!is_def(com.s01.inner)) {
             com.s01.inner = true
 
-            // let telProps = Object.keys(instruments.props)
-            $.each(instruments.all_ids, function(n_ele, key) {
-                // $.each(instruments.props, function (key, telProps) {
-                $.each(instruments.props[key], function(index, porp_now) {
+            // let telProps = Object.keys(insts.props)
+            $.each(insts.all_ids, function(n_ele, key) {
+                // $.each(insts.props, function (key, telProps) {
+                $.each(insts.props[key], function(index, porp_now) {
                     // console.log('+', key, index, porp_now)
                     $.each([ 0, 1 ], function(n_arc_draw_now, n_arc_draw_now_) {
                         // let tag_now = porp_now + n_arc_draw_now
@@ -1693,32 +1697,37 @@ window.ArrZoomerMain = function(opt_in0) {
 
                         arc_func[tag_now] = {
                         }
-                        arc_func[tag_now].rad00 = function(d) {
-                            return instruments.data.xyr[d.id].r * (is0 ? 0.85 : 0.81)
+                        arc_func[tag_now].rad_00 = function(d) {
+                            return insts.data.xyr[d.id].r * (is0 ? 0.85 : 0.81)
                         }
-                        arc_func[tag_now].rad01 = function(d) {
-                            return instruments.data.xyr[d.id].r * (is0 ? 0.95 : 0.99)
+                        arc_func[tag_now].rad_01 = function(d) {
+                            return insts.data.xyr[d.id].r * (is0 ? 0.95 : 0.99)
                         }
-                        arc_func[tag_now].rad10 = function(d) {
+                        arc_func[tag_now].rad_10 = function(d) {
                             return (
-                                instruments.data.xyr[d.id].r * scale_r[1].inner_h0 * (is0 ? 1 : 0.97)
+                                insts.data.xyr[d.id].r
+                                * scale_r[1].inner_h0 * (is0 ? 1 : 0.97)
                             )
                         }
-                        arc_func[tag_now].rad11 = function(d) {
+                        arc_func[tag_now].rad_11 = function(d) {
                             return (
-                                instruments.data.xyr[d.id].r * scale_r[1].inner_h1 * (is0 ? 1 : 1.03)
+                                insts.data.xyr[d.id].r
+                                * scale_r[1].inner_h1 * (is0 ? 1 : 1.03)
                             )
                         }
-                        arc_func[tag_now].ang00 = function(d) {
-                            return index * instruments.tau_fracs[key] + instruments.tau_space
-                        }
-                        arc_func[tag_now].ang01 = function(d) {
+                        arc_func[tag_now].ang_00 = function(_) {
                             return (
-                                index * instruments.tau_fracs[key]
-                + instruments.tau_space
-                + (instruments.tau_fracs[key]
-                  - instruments.tau_space * 2)
-                * (is0 ? 1 : inst_health_frac(d[porp_now]))
+                                index * insts.tau_fracs[key]
+                                + insts.tau_space
+                            )
+                        }
+                        arc_func[tag_now].ang_01 = function(d) {
+                            return (
+                                index * insts.tau_fracs[key]
+                                + insts.tau_space
+                                + (insts.tau_fracs[key]
+                                  - insts.tau_space * 2)
+                                * (is0 ? 1 : inst_health_frac(d[porp_now]))
                             )
                         }
                     })
@@ -1739,8 +1748,8 @@ window.ArrZoomerMain = function(opt_in0) {
         // let tel_Id = zooms.target
         // DDFF
 
-        $.each(instruments.all_ids, function(n_ele, tel_Id) {
-            $.each(instruments.props[tel_Id], function(index, porp_now) {
+        $.each(insts.all_ids, function(n_ele, tel_Id) {
+            $.each(insts.props[tel_Id], function(index, porp_now) {
                 $.each([ 0, 1 ], function(n_arc_draw_now, n_arc_draw_now_) {
                     let tag_now = tel_Id + porp_now + n_arc_draw_now
                     let is0 = n_arc_draw_now === 0
@@ -1763,7 +1772,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                     let path = com.s01.g
                         .selectAll('path.' + tag_now)
-                        .data(dataVnow, function(d, i) {
+                        .data(dataVnow, function(d, _) {
                             return d.id
                         })
 
@@ -1779,27 +1788,24 @@ window.ArrZoomerMain = function(opt_in0) {
                         })
                         .attr('class', tag_state + ' ' + tag_now)
                     // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
-                        .style('opacity', function(d) {
-                            return is0 ? '0.5' : '1'
-                        })
+                        .style('opacity', (is0 ? '0.5' : '1'))
                         .attr('transform', function(d) {
                             return (
                                 'translate('
-                + instruments.data.xyr[d.id].x
-                + ','
-                + instruments.data.xyr[d.id].y
-                + ')'
+                                + insts.data.xyr[d.id].x
+                                + ','
+                                + insts.data.xyr[d.id].y
+                                + ')'
                             )
                         })
-                        .each(function(d, i) {
-                            // console.log(i,d,tag_now)
+                        .each(function(d, _) {
                             arc_prev[tag_now].ang[d.id] = [
-                                arc_func[tag_now].ang00(d),
-                                arc_func[tag_now].ang00(d),
+                                arc_func[tag_now].ang_00(d),
+                                arc_func[tag_now].ang_00(d),
                             ]
                             arc_prev[tag_now].rad[d.id] = [
-                                arc_func[tag_now].rad00(d),
-                                arc_func[tag_now].rad01(d),
+                                arc_func[tag_now].rad_00(d),
+                                arc_func[tag_now].rad_01(d),
                             ]
                         })
                         .merge(path)
@@ -1808,9 +1814,9 @@ window.ArrZoomerMain = function(opt_in0) {
                         .attr('transform', function(d) {
                             return (
                                 'translate('
-                + instruments.data.xyr[d.id].x
+                + insts.data.xyr[d.id].x
                 + ','
-                + instruments.data.xyr[d.id].y
+                + insts.data.xyr[d.id].y
                 + ')'
                             )
                         })
@@ -1826,43 +1832,43 @@ window.ArrZoomerMain = function(opt_in0) {
                             ang_str_0: null,
                             ang_str_1: null,
                             ang_end_0: null,
-                            ang_end_1: 'ang01',
+                            ang_end_1: 'ang_01',
                             r_in_0: null,
                             r_in_1: null,
                             r_out_0: null,
                             r_out_1: null,
                         })
-                    // ang_str_0:"ang00", ang_str_1:"ang00", ang_end_0:"ang00", ang_end_1:"ang01",
-                    // r_in_0:"rad00", r_in_1:"rad00", r_out_0:"rad01", r_out_1:"rad01"
+                    // ang_str_0:"ang_00", ang_str_1:"ang_00", ang_end_0:"ang_00", ang_end_1:"ang_01",
+                    // r_in_0:"rad_00", r_in_1:"rad_00", r_out_0:"rad_01", r_out_1:"rad_01"
                         .transition('update')
                         .duration(times.anim)
                         .call(com.arc_tween, {
                             tag_now: tag_now,
                             arc_prev: arc_prev,
-                            incIdV: focus_ids,
+                            inc_ids: focus_ids,
                             ang_str_0: null,
                             ang_str_1: null,
                             ang_end_0: null,
                             ang_end_1: null,
                             r_in_0: null,
-                            r_in_1: 'rad10',
+                            r_in_1: 'rad_10',
                             r_out_0: null,
-                            r_out_1: 'rad11',
+                            r_out_1: 'rad_11',
                         })
                         .transition('update')
                         .duration(times.anim)
                         .call(com.arc_tween, {
                             tag_now: tag_now,
                             arc_prev: arc_prev,
-                            excIdV: focus_ids,
+                            exc_ids: focus_ids,
                             ang_str_0: null,
                             ang_str_1: null,
                             ang_end_0: null,
                             ang_end_1: null,
                             r_in_0: null,
-                            r_in_1: 'rad00',
+                            r_in_1: 'rad_00',
                             r_out_0: null,
-                            r_out_1: 'rad01',
+                            r_out_1: 'rad_01',
                         })
 
                     // operate on exiting elements only
@@ -1875,13 +1881,13 @@ window.ArrZoomerMain = function(opt_in0) {
                             tag_now: tag_now,
                             arc_prev: arc_prev,
                             ang_str_0: null,
-                            ang_str_1: 'ang00',
+                            ang_str_1: 'ang_00',
                             ang_end_0: null,
-                            ang_end_1: 'ang00',
+                            ang_end_1: 'ang_00',
                             r_in_0: null,
-                            r_in_1: 'rad00',
+                            r_in_1: 'rad_00',
                             r_out_0: null,
-                            r_out_1: 'rad01',
+                            r_out_1: 'rad_01',
                         })
                         .remove()
                 })
@@ -1895,7 +1901,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
   
     // ------------------------------------------------------------------
-    // outer rings for the instruments.prop0 (equivalent of s00_D metric in s01_D)
+    // outer rings for the insts.prop0 (equivalent of s00_D metric in s01_D)
     // ------------------------------------------------------------------
     function s01_outer(data_in, focuses) {
         if (no_render) {
@@ -1903,7 +1909,7 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         let tag_state = 'state01'
-        let porp_now = instruments.prop0
+        let porp_now = insts.prop0
 
         if (!is_def(com.s01.outer)) {
             com.s01.outer = true
@@ -1914,23 +1920,39 @@ window.ArrZoomerMain = function(opt_in0) {
 
                 arc_func[tag_now] = {
                 }
-                arc_func[tag_now].rad00 = function(d) {
-                    return instruments.data.xyr[d.id].r * scale_r[0].health0 * (is0 ? 1 : 0.95)
+                arc_func[tag_now].rad_00 = function(d) {
+                    return (
+                        insts.data.xyr[d.id].r
+                        * scale_r[0].health0 * (is0 ? 1 : 0.95)
+                    )
                 }
-                arc_func[tag_now].rad01 = function(d) {
-                    return instruments.data.xyr[d.id].r * scale_r[0].health1 * (is0 ? 1 : 1.05)
+                arc_func[tag_now].rad_01 = function(d) {
+                    return (
+                        insts.data.xyr[d.id].r
+                        * scale_r[0].health1 * (is0 ? 1 : 1.05)
+                    )
                 }
-                arc_func[tag_now].rad10 = function(d) {
-                    return instruments.data.xyr[d.id].r * scale_r[1].health0 * (is0 ? 1 : 0.98)
+                arc_func[tag_now].rad_10 = function(d) {
+                    return (
+                        insts.data.xyr[d.id].r
+                        * scale_r[1].health0 * (is0 ? 1 : 0.98)
+                    )
                 }
-                arc_func[tag_now].rad11 = function(d) {
-                    return instruments.data.xyr[d.id].r * scale_r[1].health1 * (is0 ? 1 : 1.02)
+                arc_func[tag_now].rad_11 = function(d) {
+                    return (
+                        insts.data.xyr[d.id].r
+                        * scale_r[1].health1 * (is0 ? 1 : 1.02)
+                    )
                 }
-                arc_func[tag_now].ang00 = function(d) {
+                arc_func[tag_now].ang_00 = function(_) {
                     return 0
                 }
-                arc_func[tag_now].ang01 = function(d) {
-                    return is0 ? tau : tau * inst_health_frac(d[instruments.prop0])
+                arc_func[tag_now].ang_01 = function(d) {
+                    return (
+                        is0
+                            ? tau
+                            : tau * inst_health_frac(d[insts.prop0])
+                    )
                 }
             })
         }
@@ -1976,26 +1998,24 @@ window.ArrZoomerMain = function(opt_in0) {
                 })
                 .attr('class', tag_state + ' ' + tag_now)
             // .style("opacity",  function(d) { return is0 ? "0.1" :  "1" }) // if "#383b42" back-ring (for is0)
-                .style('opacity', function(d) {
-                    return is0 ? '0.5' : '1'
-                })
+                .style('opacity', (is0 ? '0.5' : '1'))
                 .attr('transform', function(d) {
                     return (
                         'translate('
-            + instruments.data.xyr[d.id].x
-            + ','
-            + instruments.data.xyr[d.id].y
-            + ')'
+                        + insts.data.xyr[d.id].x
+                        + ','
+                        + insts.data.xyr[d.id].y
+                        + ')'
                     )
                 })
-                .each(function(d, i) {
+                .each(function(d, _) {
                     arc_prev[tag_now].ang[d.id] = [
-                        arc_func[tag_now].ang00(d),
-                        arc_func[tag_now].ang00(d),
+                        arc_func[tag_now].ang_00(d),
+                        arc_func[tag_now].ang_00(d),
                     ]
                     arc_prev[tag_now].rad[d.id] = [
-                        arc_func[tag_now].rad00(d),
-                        arc_func[tag_now].rad01(d),
+                        arc_func[tag_now].rad_00(d),
+                        arc_func[tag_now].rad_01(d),
                     ]
                 })
                 .merge(path)
@@ -2004,10 +2024,10 @@ window.ArrZoomerMain = function(opt_in0) {
                 .attr('transform', function(d) {
                     return (
                         'translate('
-            + instruments.data.xyr[d.id].x
-            + ','
-            + instruments.data.xyr[d.id].y
-            + ')'
+                        + insts.data.xyr[d.id].x
+                        + ','
+                        + insts.data.xyr[d.id].y
+                        + ')'
                     )
                 })
                 .style('stroke', function(d) {
@@ -2022,43 +2042,43 @@ window.ArrZoomerMain = function(opt_in0) {
                     ang_str_0: null,
                     ang_str_1: null,
                     ang_end_0: null,
-                    ang_end_1: 'ang01',
+                    ang_end_1: 'ang_01',
                     r_in_0: null,
                     r_in_1: null,
                     r_out_0: null,
                     r_out_1: null,
                 })
-            // ang_str_0:"ang00", ang_str_1:"ang00", ang_end_0:"ang00", ang_end_1:"ang01",
-            // r_in_0:"rad00", r_in_1:"rad00", r_out_0:"rad01", r_out_1:"rad01"
+            // ang_str_0:"ang_00", ang_str_1:"ang_00", ang_end_0:"ang_00", ang_end_1:"ang_01",
+            // r_in_0:"rad_00", r_in_1:"rad_00", r_out_0:"rad_01", r_out_1:"rad_01"
                 .transition('update')
                 .duration(times.anim)
                 .call(com.arc_tween, {
                     tag_now: tag_now,
                     arc_prev: arc_prev,
-                    incIdV: focus_ids,
+                    inc_ids: focus_ids,
                     ang_str_0: null,
                     ang_str_1: null,
                     ang_end_0: null,
                     ang_end_1: null,
                     r_in_0: null,
-                    r_in_1: 'rad10',
+                    r_in_1: 'rad_10',
                     r_out_0: null,
-                    r_out_1: 'rad11',
+                    r_out_1: 'rad_11',
                 })
                 .transition('update')
                 .duration(times.anim)
                 .call(com.arc_tween, {
                     tag_now: tag_now,
                     arc_prev: arc_prev,
-                    excIdV: focus_ids,
+                    exc_ids: focus_ids,
                     ang_str_0: null,
                     ang_str_1: null,
                     ang_end_0: null,
                     ang_end_1: null,
                     r_in_0: null,
-                    r_in_1: 'rad00',
+                    r_in_1: 'rad_00',
                     r_out_0: null,
-                    r_out_1: 'rad01',
+                    r_out_1: 'rad_01',
                 })
 
             // operate on exiting elements only
@@ -2070,13 +2090,13 @@ window.ArrZoomerMain = function(opt_in0) {
                     tag_now: tag_now,
                     arc_prev: arc_prev,
                     ang_str_0: null,
-                    ang_str_1: 'ang00',
+                    ang_str_1: 'ang_00',
                     ang_end_0: null,
-                    ang_end_1: 'ang00',
+                    ang_end_1: 'ang_00',
                     r_in_0: null,
-                    r_in_1: 'rad00',
+                    r_in_1: 'rad_00',
                     r_out_0: null,
-                    r_out_1: 'rad01',
+                    r_out_1: 'rad_01',
                 })
                 .remove()
         })
@@ -2099,7 +2119,7 @@ window.ArrZoomerMain = function(opt_in0) {
     //
     // ------------------------------------------------------------------
     function s10_main(data_in) {
-    // console.log('s10_main',zooms.target,data_in);
+        // console.log('s10_main',zooms.target,data_in);
 
         let max_ele_keep = 1
         let base_node = is_def(data_in) ? data_in.data : null
@@ -2107,52 +2127,52 @@ window.ArrZoomerMain = function(opt_in0) {
         if (base_node) {
             let tel_Id = data_in.id
 
-            $.each(instruments.props[tel_Id], function(index, porp_now) {
-                instruments.data.prop_data_s1[tel_Id] = {
+            $.each(insts.props[tel_Id], function(index, porp_now) {
+                insts.data.prop_data_s1[tel_Id] = {
                 }
-                instruments.data.prop_data_s1[tel_Id][porp_now] = null
-                instruments.data.prop_parent_s1[tel_Id] = {
+                insts.data.prop_data_s1[tel_Id][porp_now] = null
+                insts.data.prop_parent_s1[tel_Id] = {
                 }
-                instruments.data.prop_parent_s1[tel_Id][porp_now] = ''
-                instruments.data.prop_title_s1[tel_Id] = {
+                insts.data.prop_parent_s1[tel_Id][porp_now] = ''
+                insts.data.prop_title_s1[tel_Id] = {
                 }
-                instruments.data.prop_title_s1[tel_Id][porp_now] = ''
+                insts.data.prop_title_s1[tel_Id][porp_now] = ''
             })
 
             // construct the data_base object b hand, as
-            // some properties may not be included in instruments.props[tel_Id]
-            instruments.data.data_base_s1[tel_Id] = {
+            // some properties may not be included in insts.props[tel_Id]
+            insts.data.data_base_s1[tel_Id] = {
             }
-            instruments.data.data_base_s1[tel_Id].id = instruments.prop0
-            instruments.data.data_base_s1[tel_Id].val = data_in[instruments.prop0]
-            instruments.data.data_base_s1[tel_Id].children = []
+            insts.data.data_base_s1[tel_Id].id = insts.prop0
+            insts.data.data_base_s1[tel_Id].val = data_in[insts.prop0]
+            insts.data.data_base_s1[tel_Id].children = []
             // console.log('qqqqqqqq',tel_Id,data_in.data.val,data_in.data)
 
             $.each(base_node, function(index_data, child_now) {
                 let porp_now = child_now.id
-                if (instruments.props[tel_Id].indexOf(porp_now) >= 0) {
+                if (insts.props[tel_Id].indexOf(porp_now) >= 0) {
                     // add a reference to each property
-                    instruments.data.prop_data_s1[tel_Id][porp_now] = child_now
-                    instruments.data.prop_parent_s1[tel_Id][porp_now] = porp_now
+                    insts.data.prop_data_s1[tel_Id][porp_now] = child_now
+                    insts.data.prop_parent_s1[tel_Id][porp_now] = porp_now
 
                     // also add a reference for each level of the hierarchy which has a sub-hierarchy of its own
                     add_children(child_now, tel_Id, porp_now)
 
                     // build up the baseData object
-                    instruments.data.data_base_s1[tel_Id].children.push(child_now)
+                    insts.data.data_base_s1[tel_Id].children.push(child_now)
                 }
             })
         }
 
         function add_children(data_now, tel_Id, porp_now) {
             if (data_now.children) {
-                data_now.children.forEach(function(d, i) {
+                data_now.children.forEach(function(d, _) {
                     if (d.children) {
-                        instruments.data.prop_data_s1[tel_Id][d.id] = d
+                        insts.data.prop_data_s1[tel_Id][d.id] = d
                         add_children(d, tel_Id, porp_now)
                     }
-                    instruments.data.prop_parent_s1[tel_Id][d.id] = porp_now
-                    instruments.data.prop_title_s1[tel_Id][d.id] = d.title
+                    insts.data.prop_parent_s1[tel_Id][d.id] = porp_now
+                    insts.data.prop_title_s1[tel_Id][d.id] = d.title
                 })
             }
         }
@@ -2187,1411 +2207,1467 @@ window.ArrZoomerMain = function(opt_in0) {
                 s10 = ele_now.s10
             }
         })
-        if (!s10) {
-            // ------------------------------------------------------------------
-            //
-            // ------------------------------------------------------------------
-            let S10 = function(tel_Id) {
-                let this_S10 = this
-                this_S10.tel_Id = tel_Id
-                this_S10.instruments = {
-                }
-                this_S10.instruments.props = instruments.props[tel_Id]
-                this_S10.tau_frac = instruments.tau_fracs[tel_Id]
-                this_S10.instruments.prop_titles = instruments.prop_titles[tel_Id]
-
-                let my_date = Date.now()
-                let g_base = null
-                let g_bck_arc = null
-                let g_hierarchy = null
-                let g_prop_lbl = null
-                let g_trans = null
-                let arcs = null
-                let depth_click = null
-                let parents = null
-                let hierarchies = null
-
-                this_S10.data_hierarchy = {
-                }
-                $.each(this_S10.instruments.props, function(index, porp_now) {
-                    this_S10.data_hierarchy[porp_now] = null
-                })
-
-                this_S10.get_date = function() {
-                    return my_date
-                }
-
-                let wh = (
-                    instruments.data.xyr[tel_Id].r
-          * scale_r[1].inner_h1 * 1.6
-                )
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function init() {
-                    if (g_base) {
-                        my_date = Date.now()
-                    }
-                    else {
-                        g_base = main_gs.g_base.append('g')
-
-                        update_pos_g(0)
-
-                        g_bck_arc = g_base.append('g')
-                        g_prop_lbl = g_base.append('g')
-                        // g_bck_arc.append("rect").attr("width",wh).attr("height",wh).style("stroke",'#2196F3' ).style("fill",'transparent' ).style("stroke-width", 0.1).attr("pointer-events",'none').attr("opacity",0.5);
-
-                        parents = {
-                        }
-                        depth_click = {
-                        }
-
-                        arcs = {
-                        }
-                        arcs.arc = {
-                        }
-                        arcs.tween = {
-                        }
-                        arcs.is_open = false
-                        // arcs.in_prop = ''
-
-                        g_hierarchy = {
-                        }
-                        g_trans = {
-                        }
-                        hierarchies = {
-                        }
-                        $.each(base_node, function(index_data, data_base) {
-                            let porp_now = data_base.id
-
-                            if (this_S10.instruments.props.indexOf(porp_now) >= 0) {
-                                g_trans[porp_now] = {
-                                }
-                                g_hierarchy[porp_now] = {
-                                }
-                                g_hierarchy[porp_now].hirch = g_base.append('g')
-                                hierarchies[porp_now] = {
-                                }
-                            }
-                        })
-
-                        // // expose the objects (must come after their initialization!)
-                        this_S10.g_base = g_base
-                        this_S10.arcs = arcs
-
-                        // init_bck_arc();
-                        init_hierarchy()
-                    }
-
-                    // console.log('click_bck_arc init')
-                    // init_bck_arc(); // called from bck_arc_click on init anyway...
-                }
-                this_S10.init = init
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function update_pos_g(duration) {
-                    let g_base_trans = [
-                        instruments.data.xyr[tel_Id].x - wh / 2,
-                        instruments.data.xyr[tel_Id].y - wh / 2,
-                    ]
-
-                    g_base
-                        .transition('updtPos')
-                        .duration(duration)
-                        .attr('transform', function(d) {
-                            return 'translate(' + g_base_trans[0] + ',' + g_base_trans[1] + ')'
-                        })
-                }
-                this_S10.update_pos_g = update_pos_g
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function cleanup() {
-                    g_base.remove()
-
-                    g_base = null
-                    g_bck_arc = null
-                    g_hierarchy = null
-                    g_prop_lbl = null
-                    g_trans = null
-                    arcs = null
-                    depth_click = null
-                    parents = null
-                    hierarchies = null
-                }
-                this_S10.cleanup = cleanup
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function set_prop_lbl(opt_in) {
-                    if (no_render) {
-                        return
-                    }
-
-                    // due to delays from locker, this function could be called after the S10 has
-                    // been removed - make a safety check using g_base...
-                    if (!is_def(g_base)) {
-                        return
-                    }
-
-                    let base_tag = 's10_arc'
-                    let tag_lbl = base_tag + '_prop_lbl'
-                    let prop_in = is_def(opt_in.prop_in) ? opt_in.prop_in : ''
-                    let remove = is_def(opt_in.remove) ? opt_in.remove : false
-
-                    if (prop_in !== '') {
-                        if (this_S10.instruments.props.indexOf(prop_in) < 0) {
-                            if (is_def(instruments.data.prop_parent_s1[tel_Id][prop_in])) {
-                                prop_in = instruments.data.prop_parent_s1[tel_Id][prop_in]
-                            }
-                        }
-                    }
-
-                    let text_data = []
-                    if (this_top.get_zoom_state() === 1 && !remove) {
-                        $.each(this_S10.instruments.props, function(index, porp_now) {
-                            let state = 0
-                            if (prop_in !== '') {
-                                state = prop_in === porp_now ? 1 : 2
-                            }
-
-                            let txt_r = (
-                                instruments.data.xyr[tel_Id].r
-                * scale_r[1].inner_h1 * 1.45
-                            )
-                            let xy = get_prop_pos_shift(
-                                'xy',
-                                txt_r,
-                                index,
-                                this_S10.instruments.props.length
-                            )
-
-                            text_data.push({
-                                id: tag_lbl + porp_now,
-                                text: this_S10.instruments.prop_titles[porp_now],
-                                h: 30 / zooms.len['1.3'],
-                                xy: xy,
-                                x: wh / 2 - xy[0],
-                                y: wh / 2 - xy[1],
-                                strk_w: state === 1 ? 3 : 0,
-                                opac: state === 1 ? 0.9 : state === 2 ? 0.1 : 0.7,
-                                anch:
-                  Math.abs(xy[0] / instruments.data.xyr[tel_Id].r) < 0.001
-                      ? 'middle'
-                      : xy[0] < 0 ? 'start' : 'end',
-                            })
-                        })
-                    }
-
-                    let ele_h = null
-
-                    let title = g_prop_lbl
-                        .selectAll('text.' + tag_lbl)
-                        .data(text_data, function(d) {
-                            return d.id
-                        })
-
-                    title
-                        .enter()
-                        .append('text')
-                    // .attr("id", function(d) { return my_unique_id+d.id; })
-                        .text(function(d) {
-                            return d.text
-                        })
-                        .attr('class', base_tag + ' ' + tag_lbl) // class list for easy selection
-                        .style('opacity', '0')
-                        .style('fill', '#383b42')
-                        .attr('stroke-width', function(d) {
-                            return d.strk_w
-                        })
-                        .style('stroke', function(d) {
-                            return '#383b42'
-                        })
-                        .attr('vector-effect', 'non-scaling-stroke')
-                        .style('pointer-events', 'none')
-                        .style('font-weight', 'normal')
-                        .attr('transform', function(d) {
-                            return 'translate(' + d.x + ',' + d.y + ')'
-                        })
-                        .merge(title)
-                        .style('font-size', function(d) {
-                            return d.h + 'px'
-                        })
-                        .transition('update1')
-                        .duration(times.anim)
-                        .attr('stroke-width', function(d) {
-                            return d.strk_w
-                        })
-                        .attr('transform', function(d) {
-                            return 'translate(' + d.x + ',' + d.y + ')'
-                        })
-                        .attr('text-anchor', function(d) {
-                            return d.anch
-                        })
-                        .attr('dy', function(d) {
-                            if (!is_def(ele_h)) {
-                                ele_h = get_node_height_by_id({
-                                    selction: g_prop_lbl.selectAll('text.' + tag_lbl),
-                                    id: d.id,
-                                    txt_scale: true,
-                                })
-                            }
-                            return ele_h + 'px'
-                        })
-                        .style('opacity', function(d) {
-                            return d.opac
-                        })
-
-                    title
-                        .exit()
-                        .transition('exit')
-                        .duration(times.anim)
-                        .style('opacity', '0')
-                        .remove()
-                }
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function init_bck_arc() {
-                    if (no_render) {
-                        return
-                    }
-
-                    // due to delays from locker, this function could be called after the S10 has
-                    // been removed - make a safety check using g_base...
-                    if (!is_def(g_base)) {
-                        return
-                    }
-
-                    // console.log('init_bck_arc')
-                    let props_now = instruments.data.prop_data_s1[tel_Id]
-                    $.each(props_now, function(porp_now, data_now) {
-                        if (data_now) {
-                            let base_tag = 's10_arc'
-                            let tag_now = base_tag + porp_now
-                            // let is0 = 1
-
-                            let n_prop = this_S10.instruments.props.indexOf(porp_now)
-                            if (n_prop >= 0) {
-                                if (!is_def(arcs[tag_now])) {
-                                    arcs[tag_now] = {
-                                    }
-                                    arcs[tag_now].ang = {
-                                    }
-                                    arcs[tag_now].rad = {
-                                    }
-
-                                    arc_func[tag_now] = {
-                                    }
-                                    arc_func[tag_now].radN1 = function(d) {
-                                        return 0
-                                    }
-                                    arc_func[tag_now].rad00 = function(d) {
-                                        return instruments.data.xyr[tel_Id].r * scale_r[1].inner_h1 * 0.1
-                                    }
-                                    arc_func[tag_now].rad01 = function(d) {
-                                        return instruments.data.xyr[tel_Id].r * scale_r[1].inner_h1 * 0.8
-                                    }
-                                    arc_func[tag_now].rad10 = function(d) {
-                                        return instruments.data.xyr[tel_Id].r * scale_r[1].inner_h1 * 0.85
-                                    }
-                                    arc_func[tag_now].rad11 = function(d) {
-                                        return instruments.data.xyr[tel_Id].r * scale_r[1].inner_h1 * 1.35
-                                    }
-                                    arc_func[tag_now].ang00 = function(d) {
-                                        return n_prop * this_S10.tau_frac + instruments.tau_space
-                                    }
-                                    arc_func[tag_now].ang01 = function(d) {
-                                        return (n_prop + 1) * this_S10.tau_frac - instruments.tau_space
-                                    }
-                                    arc_func[tag_now].ang10 = function(d) {
-                                        return 0
-                                    }
-                                    arc_func[tag_now].ang11 = function(d) {
-                                        return tau
-                                    }
-                                    arc_func[tag_now].ang20 = function(d) {
-                                        return n_prop * this_S10.tau_frac
-                                    }
-                                    arc_func[tag_now].ang21 = function(d) {
-                                        return (n_prop + 1) * this_S10.tau_frac
-                                    }
-                                }
-
-                                let path = g_bck_arc
-                                    .selectAll('path.' + tag_now).data([
-                                        {
-                                            id: tag_now + '0',
-                                            porp_now: porp_now,
-                                            nArc: 0,
-                                            is_full: false,
-                                            col: '',
-                                        },
-                                        {
-                                            id: tag_now + '1',
-                                            porp_now: porp_now,
-                                            nArc: 1,
-                                            is_full: false,
-                                            col: '',
-                                        },
-                                    ])
-
-                                // operate on new elements only
-                                path
-                                    .enter()
-                                    .append('path')
-                                    .style('stroke-width', '1')
-                                // .attr("id",        function(d) { return my_unique_id+d.id; })
-                                    .attr('class', function(d) {
-                                        return base_tag + ' ' + tag_now + ' ' + d.id
-                                    })
-                                    .each(function(d, i) {
-                                        arcs[tag_now].ang[d.id] = [
-                                            arc_func[tag_now].ang00(d),
-                                            arc_func[tag_now].ang01(d),
-                                        ]
-                                        arcs[tag_now].rad[d.id] = [
-                                            arc_func[tag_now].rad00(d),
-                                            arc_func[tag_now].rad00(d),
-                                        ]
-                                    })
-                                    .style('stroke', '#383b42')
-                                    .attr('vector-effect', 'non-scaling-stroke')
-                                    .attr('transform', function(d) {
-                                        return 'translate(' + wh / 2 + ',' + wh / 2 + ')'
-                                    })
-                                    .on('click', click)
-                                // .on("mouseover", mouseover)
-                                    .style('fill', get_col)
-                                    .style('opacity', 0)
-                                    .style('fill-opacity', 0)
-                                    .merge(path)
-                                    .each(function(d) {
-                                        d.is_full = false
-                                    })
-                                    .transition('in_out')
-                                    .duration(times.anim)
-                                    .delay(times.anim)
-                                    .style('opacity', function(d) {
-                                        return d.nArc === 0 ? 1 : 0
-                                    })
-                                    .style('fill', get_col)
-                                    .style('fill-opacity', function(d) {
-                                        return d.nArc === 0 ? 0.5 : 0
-                                    })
-                                    .style('stroke-opacity', function(d) {
-                                        return d.nArc === 0 ? 0 : 0.3
-                                    })
-                                    .call(com.arc_tween, {
-                                        tag_now: tag_now,
-                                        arc_prev: arcs,
-                                        ang_str_0: null,
-                                        ang_str_1: 'ang00',
-                                        ang_end_0: null,
-                                        ang_end_1: 'ang01',
-                                        r_in_0: null,
-                                        r_in_1: 'rad00',
-                                        r_out_0: null,
-                                        r_out_1: 'rad01',
-                                    })
-                            }
-                        }
-
-                        //
-                        function get_col(d) {
-                            d.col
-                = d.nArc === 0
-                                    ? inst_health_col(instruments.data.prop_data_s1[tel_Id][d.porp_now].val)
-                                    : '#383b42'
-                            return d.col
-                        }
-
-                        //
-                        function click(d) {
-                            bck_arc_click({
-                                click_in: is_click_in(d.porp_now),
-                                prop_in: d.porp_now,
-                            })
-                        }
-                    })
-
-                    set_prop_lbl({
-                        prop_in: '',
-                    })
-                }
-                this_S10.init_bck_arc = init_bck_arc
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                let prev_focused_prop = ''
-                function is_click_in(prop_in) {
-                    return prev_focused_prop !== prop_in
-                }
-        
-                function set_prev_prop(prop_in) {
-                    prev_focused_prop = prop_in
-                }
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function bck_arc_remove() {
-                    if (no_render) {
-                        return
-                    }
-
-                    // due to delays from locker, this function could
-                    // be called after the S10 has been removed
-                    // - make a safety check using g_base...
-                    if (!is_def(g_base)) {
-                        return
-                    }
-
-                    locker.add('s10_bck_arc_change')
-
-                    //
-                    hierarchy_style_click({
-                        prop_in: '',
-                        id: '',
-                        is_open: false,
-                    })
-
-                    //
-                    $.each(this_S10.instruments.props, function(index, porp_now) {
-                        let base_tag = 's10_arc'
-                        let tag_now = base_tag + porp_now
-                        let path = g_bck_arc.selectAll('path.' + tag_now)
-
-                        path
-                            .transition('in_out')
-                            .duration(times.anim)
-                            .style('opacity', 0)
-                            .call(com.arc_tween, {
-                                tag_now: tag_now,
-                                arc_prev: arcs,
-                                ang_str_0: null,
-                                ang_str_1: 'ang00',
-                                ang_end_0: null,
-                                ang_end_1: null,
-                                r_in_0: null,
-                                r_in_1: 'rad00',
-                                r_out_0: null,
-                                r_out_1: 'rad00',
-                            })
-                            .remove()
-                    })
-
-                    set_prev_prop('')
-                    locker.remove('s10_bck_arc_change')
-
-                    set_prop_lbl({
-                        prop_in: '',
-                        remove: true,
-                    })
-
-                    hierarchy_hov_title_out(null)
-                }
-                this_S10.bck_arc_remove = bck_arc_remove
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function bck_arc_click(opt_in) {
-                    // due to delays from locker, this function could be
-                    // called after the S10 has been removed
-                    // - make a safety check using g_base...
-                    if (!is_def(g_base)) {
-                        return
-                    }
-
-                    let click_in = opt_in.click_in
-                    let prop_in = opt_in.prop_in
-                    let only_open = is_def(opt_in.only_open) ? opt_in.only_open : false
-                    let can_ignore = is_def(opt_in.can_ignore) ? opt_in.can_ignore : true
-
-                    if (this_S10.instruments.props.indexOf(prop_in) < 0 && prop_in != '') {
-                        return
-                    }
-
-                    if (
-                        !locker.are_free([
-                            's10_bck_arc_change',
-                            'data_change',
-                            's10_click_hierarchy',
-                        ])
-                    ) {
-                        if (!can_ignore) {
-                            setTimeout(function() {
-                                bck_arc_click(opt_in)
-                            }, times.anim / 3)
-                        }
-                        return
-                    }
-
-                    locker.add({
-                        id: 's10_bck_arc_change',
-                        override: true,
-                    })
-                    function free_me(do_delay) {
-                        locker.remove({
-                            id: 's10_bck_arc_change',
-                            delay: do_delay ? times.anim * 1.5 : 0,
-                            override: true,
-                        })
-                    }
-
-                    set_prop_lbl({
-                        prop_in: prop_in,
-                    })
-
-                    set_prev_prop(prop_in)
-
-                    // ------------------------------------------------------------------
-                    //
-                    // ------------------------------------------------------------------
-                    $.each(this_S10.instruments.props, function(index, porp_now) {
-                        let base_tag = 's10_arc'
-                        let tag_now = base_tag + porp_now
-                        let path0 = g_bck_arc.selectAll('path.' + tag_now + '0')
-                        let path1 = g_bck_arc.selectAll('path.' + tag_now + '1')
-
-                        if (prop_in === porp_now) {
-                            full_arcs(path0, path1, tag_now, click_in)
-                        }
-                        else {
-                            hide_arcs(path0, tag_now)
-                            hide_arcs(path1, tag_now)
-                        }
-                    })
-
-                    if (only_open && click_in) {
-                        free_me(true)
-                        return
-                    }
-
-                    if (!click_in && depth_click[prop_in] > 0) {
-                        let parent_name = ''
-                        $.each(hierarchies[prop_in], function(id_now, data_now) {
-                            if (data_now.child_depth === depth_click[prop_in]) {
-                                parent_name = data_now.parent_name
-                            }
-                        })
-
-                        hierarchy_style_click({
-                            prop_in: prop_in,
-                            id: parent_name,
-                            is_open: true,
-                        })
-            
-                        props_s1({
-                            tel_Id: tel_Id,
-                            click_in: true,
-                            prop_in: parent_name,
-                            do_func: [ 'tel_hierarchy' ],
-                            debug: 'bck_arc_click',
-                        })
-
-                        free_me(true)
-            
-                        return
-                    }
-                    else {
-                        // console.log('tog_hierarchy',prop_in,'--',depth_click[prop_in],click_in)
-
-                        hierarchy_style_click({
-                            prop_in: prop_in,
-                            id: prop_in,
-                            is_open: click_in,
-                        })
-
-                        props_s1({
-                            tel_Id: tel_Id,
-                            click_in: click_in,
-                            prop_in: prop_in,
-                            do_func: [ 'tel_hierarchy' ],
-                            debug: 'bck_arc_click',
-                        })
-                    }
-
-                    if (!click_in) {
-                        init_bck_arc()
-                        set_prev_prop('')
-                        free_me(true)
-                        return
-                    }
-
-                    //
-                    if (click_in) {
-                        this_top.zoom_to_target_main({
-                            target: tel_Id,
-                            scale: zooms.len['1.2'],
-                            duration_scale: 1,
-                        })
-                    }
-
-                    free_me(true)
-                }
-                this_S10.bck_arc_click = bck_arc_click
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function full_arcs(path0, path1, tag_now, is_open) {
-                    if (no_render) {
-                        return
-                    }
-
-                    path0
-                        .transition('in_out')
-                        .duration(times.anim)
-                        .style('opacity', 1)
-                        .style('fill', '#383b42')
-                        .style('fill-opacity', 0.06)
-                    // .style("fill-opacity", 0.2)
-                        .each(function(d) {
-                            d.is_full = true
-                        })
-                        .call(com.arc_tween, {
-                            tag_now: tag_now,
-                            arc_prev: arcs,
-                            ang_str_0: null,
-                            ang_str_1: 'ang10',
-                            ang_end_0: null,
-                            ang_end_1: 'ang11',
-                            r_in_0: null,
-                            r_in_1: 'radN1',
-                            r_out_0: null,
-                            r_out_1: 'rad01',
-                        })
-
-                    path1
-                        .transition('in_out')
-                        .duration(times.anim / 2)
-                        .call(com.arc_tween, {
-                            tag_now: tag_now,
-                            arc_prev: arcs,
-                            ang_str_0: null,
-                            ang_str_1: null,
-                            ang_end_0: null,
-                            ang_end_1: null,
-                            r_in_0: null,
-                            r_in_1: 'rad10',
-                            r_out_0: null,
-                            r_out_1: 'rad11',
-                        })
-                        .style('fill-opacity', 0.07)
-                        .style('opacity', 1)
-                        .transition('in_out')
-                        .duration(times.anim / 2)
-                        .call(com.arc_tween, {
-                            tag_now: tag_now,
-                            arc_prev: arcs,
-                            ang_str_0: null,
-                            ang_str_1: 'ang20',
-                            ang_end_0: null,
-                            ang_end_1: 'ang21',
-                            r_in_0: null,
-                            r_in_1: null,
-                            r_out_0: null,
-                            r_out_1: null,
-                        })
-                }
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function hide_arcs(path, tag_now) {
-                    if (no_render) {
-                        return
-                    }
-
-                    path
-                        .transition('in_out')
-                        .duration(times.anim / 2)
-                        .style('opacity', 0)
-                        .call(com.arc_tween, {
-                            tag_now: tag_now,
-                            arc_prev: arcs,
-                            ang_str_0: null,
-                            ang_str_1: null,
-                            ang_end_0: null,
-                            ang_end_1: null,
-                            r_in_0: null,
-                            r_in_1: 'radN1',
-                            r_out_0: null,
-                            r_out_1: 'radN1',
-                        })
-                }
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function hierarchy_hov_title_in(dIn) {
-                    if (no_render) {
-                        return
-                    }
-
-                    if (
-                        !locker.are_free([
-                            's10_bck_arc_change',
-                            'data_change',
-                            's10_click_hierarchy',
-                        ])
-                    ) {
-                        return
-                    }
-
-                    hierarchy_hov_title_out(null)
-
-                    let r = tel_rs.s00[2] * scale_r[1].inner_h1 / 3.5
-                    let dx = wh / 2
-                    let dy = (
-                        wh + 2 * r
-            * instruments.data.xyr[tel_Id].r
-            / tel_rs.s00[2]
-                    )
-
-                    g_base
-                        .selectAll('text.' + 'hov_title')
-                        .data([{
-                            id: dIn.data.id,
-                        }], function(d) {
-                            return d.id
-                        })
-                        .enter()
-                        .append('text')
-                        .attr('class', 'hov_title')
-                        .text(dIn.data.title)
-                        .style('opacity', 0)
-                        .style('fill-opacity', 0.8)
-                        .style('fill', '#383b42')
-                        .style('stroke', d3.rgb('#383b42').brighter(0.25))
-                        .attr('vector-effect', 'non-scaling-stroke')
-                        .style('pointer-events', 'none')
-                        .attr('text-anchor', 'middle')
-                        .style('stroke-width', 2)
-                        .style('font-weight', 'bold')
-                        .attr('font-size', r + 'px')
-                        .attr('transform', function(d, i) {
-                            return 'translate(' + dx + ',' + dy + ')'
-                        })
-                        .attr('dy', function(d) {
-                            let ele_h = -0.5
-                                * get_node_height_by_id({
-                                    selction: g_base.selectAll('text.' + 'hov_title'),
-                                    id: d.id,
-                                })
-                            return ele_h + 'px'
-                        })
-                        .transition('update1')
-                        .duration(times.anim)
-                        .style('opacity', 1)
-                    
-                    return
-                }
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function hierarchy_hov_title_out(dIn) {
-                    if (no_render) {
-                        return
-                    }
-
-                    g_base
-                        .selectAll('text.' + 'hov_title')
-                        .filter(function(d) {
-                            return is_def(dIn) ? d.id === dIn.data.id : true
-                        })
-                        .transition('update1')
-                        .duration(times.anim)
-                        .style('opacity', '0')
-                        .remove()
-
-                    return
-                }
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function init_hierarchy() {
-                    if (no_render) {
-                        return
-                    }
-
-                    // due to delays from locker, this function could be
-                    // called after the S10 has been removed
-                    // - make a safety check using g_base...
-                    if (!is_def(g_base)) {
-                        return
-                    }
-
-                    $.each(base_node, function(index_data, data_base) {
-                        let porp_now = data_base.id
-
-                        let get_child = {
-                        }
-                        let hierarchy_by_id = {
-                        }
-                        let max_depth = 0
-
-                        function get_all_children(d) {
-                            return d['child' + String(d.child_depth)]
-                        }
-
-                        function rename_children(data_now, depth_in, parent_name) {
-                            if (!is_def(depth_in)) {
-                                depth_in = -1
-                            }
-                            if (!is_def(parent_name)) {
-                                parent_name = null
-                            }
-
-                            let depth_now = depth_in
-                            depth_now++
-                            max_depth = Math.max(depth_now, max_depth)
-
-                            let child_mame = 'child' + String(depth_now)
-
-                            // access function
-                            if (!is_def(get_child[child_mame])) {
-                                get_child[child_mame] = function(d) {
-                                    return d[child_mame]
-                                }
-                            }
-
-                            // internal variables to keep track of the depth, name of the parent
-                            data_now.child_depth = depth_now
-                            data_now.parent_name = parent_name
-                            parent_name = data_now.id
-
-                            // modify children names and go one level deeper if needed
-                            if (data_now.children) {
-                                // console.log('+++++',data_now.id,child_mame,data_now);
-                                if (!is_def(g_hierarchy[porp_now][data_now.id])) {
-                                    // the baseline g element (parent g from the hirch, or else the first one)
-                                    let parent_name_now = data_now.parent_name
-                                        ? data_now.parent_name
-                                        : 'hirch'
-
-                                    // new baseline g element which may get child-g elements from the hirch
-                                    let g_now = (
-                                        g_hierarchy[porp_now][parent_name_now]
-                                            .append('g')
-                                    )
-                                    g_hierarchy[porp_now][data_now.id] = g_now
-                                    // the first g elelment into which all circles will be appended (so that they
-                                    // are  always at the top of the g element, before any child-g elements)
-                                    g_now = (
-                                        g_hierarchy[porp_now][data_now.id]
-                                            .append('g')
-                                    )
-                                    g_hierarchy[porp_now][data_now.id + 'circ'] = g_now
-                                }
-
-                                data_now[child_mame] = data_now.children
-                                // data_now.children   = null;
-                                data_now[child_mame].forEach(function(d) {
-                                    rename_children(d, depth_now, parent_name)
-                                })
-
-                                hierarchy_by_id[data_now.id] = d3
-                                    .hierarchy(data_now, get_child[child_mame])
-                                    .sum(function(d) {
-                                        return 1
-                                    })
-                                hierarchies[porp_now][data_now.id] = data_now
-                                // console.log('--',data_now.id,child_mame,data_now)
-                            }
-                        }
-
-                        if (this_S10.instruments.props.indexOf(porp_now) >= 0) {
-                            rename_children(data_base)
-
-                            this_S10.data_hierarchy[porp_now] = data_base
-                            // console.log(data_base)
-
-                            $.each(hierarchy_by_id, function(hierarchy_name, hierarchy_now) {
-                                let pack_node = d3
-                                    .pack()
-                                    .size([ wh, wh ])
-                                    .padding(1.5 * site_scale)
-                                pack_node(hierarchy_now)
-                            })
-
-                            parents[porp_now] = {
-                            }
-                            depth_click[porp_now] = 0
-
-                            let hierarchy_all = d3.hierarchy(
-                                data_base, get_all_children
-                            )
-                            let descend = hierarchy_all.descendants()
-              
-                            $.each(descend, function(index, data_now) {
-                                let name_now = data_now.data.id
-                                if (!is_def(parents[porp_now][name_now])) {
-                                    parents[porp_now][name_now] = [ name_now ]
-                                }
-
-                                let parent_now = data_now.parent
-                                while (parent_now) {
-                                    parents[porp_now][name_now].push(parent_now.data.id)
-                                    parent_now = parent_now.parent
-                                }
-                            })
-                            hierarchy_all = null
-                            // console.log('parents -',parents)
-
-                            for (let depth_now = 0; depth_now < max_depth; depth_now++) {
-                                $.each(hierarchy_by_id, function(hierarchy_name, hierarchy_now) {
-                                    if (hierarchy_now.data.child_depth !== depth_now) {
-                                        return
-                                    }
-                                    // console.log(hierarchy_name,hierarchy_now.data.child_depth,hierarchy_now)
-
-                                    let parent_name = hierarchy_now.data.parent_name
-                                    if (parent_name != null) {
-                                        let parent = hierarchy_by_id[parent_name]
-                                        $.each(parent.children, function(index, child_now) {
-                                            // console.log('---- ',parent_name,parent_name,child_now.data.id,child_now)
-                                            if (child_now.data.id === hierarchy_name) {
-                                                let parentR = child_now.r / (wh / 2)
-                                                let parentX = child_now.x - child_now.r
-                                                let parentY = child_now.y - child_now.r
-
-                                                // console.log('move-g in(',parent_name,'):  ',hierarchy_name)
-                                                g_trans[porp_now][hierarchy_name]
-                          = 'translate('
-                          + parentX
-                          + ','
-                          + parentY
-                          + ')scale('
-                          + parentR
-                          + ')'
-                                                g_hierarchy[porp_now][hierarchy_name].attr(
-                                                    'transform',
-                                                    g_trans[porp_now][hierarchy_name]
-                                                )
-                                            }
-                                        })
-                                    }
-
-                                    // console.log('hierarchy_name',hierarchy_name,depth_click)
-                                    g_hierarchy[porp_now][hierarchy_name + 'circ']
-                                        .selectAll('circle.' + hierarchy_name)
-                                        .data(hierarchy_now.descendants())
-                                        .enter()
-                                        .append('circle')
-                                        .attr('class', hierarchy_name)
-                                    // .attr("id",            function(d){ return my_unique_id+hierarchy_name+"_"+d.data.id; })
-                                        .style('opacity', function(d) {
-                                            return hierarchy_style_opac(d, hierarchy_now, 0)
-                                        })
-                                        .style('stroke', function(d) {
-                                            return hierarchy_style_stroke(d, hierarchy_now, 0)
-                                        })
-                                        .style('stroke-width', function(d) {
-                                            return hierarchy_strk_w(d, hierarchy_now, 0)
-                                        })
-                                        .style('fill', function(d) {
-                                            return hierarchy_style_fill(d, hierarchy_now, 0)
-                                        })
-                                        .attr('cx', function(d) {
-                                            return d.x
-                                        })
-                                        .attr('cy', function(d) {
-                                            return d.y
-                                        })
-                                        .attr('r', 0)
-                                        .attr('vector-effect', 'non-scaling-stroke')
-                                        .attr('pointer-events', function(d) {
-                                            return d.data.child_depth === 1 ? 'auto' : 'none'
-                                        })
-                                        .on('click', click)
-                                        .on('mouseover', hierarchy_hov_title_in)
-                                        .on('mouseout', hierarchy_hov_title_out)
-                                    // .on('mouseover', function(d){ console.log(d.data.id,d); })
-                                    // .transition("in_out").duration(times.anim)
-                                    // .attr("r",             function(d,i){ return d.r; });
-
-                                    function click(d) {
-                                        if (
-                                            !locker.are_free([
-                                                's10_bck_arc_change',
-                                                'data_change',
-                                                's10_click_hierarchy',
-                                            ])
-                                        ) {
-                                            return
-                                        }
-
-                                        hierarchy_style_click({
-                                            prop_in: porp_now,
-                                            id: d.data.id,
-                                            is_open: true,
-                                        })
-                    
-                                        props_s1({
-                                            tel_Id: tel_Id,
-                                            click_in: true,
-                                            prop_in: d.data.id,
-                                            debug: 'hirch_click',
-                                        })
-
-                                        // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                                        // FIXME:
-                                        // here we can set non this_S10.instruments.props names if needed.....
-                                        // console.log('_setPropLblInit_hierarchy',d.data.id); set_prop_lbl({ prop_in:d.data.id });
-                                        // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                                    }
-                                })
-                            }
-                        }
-                    })
-                }
-                this_S10.init_hierarchy = init_hierarchy
-
-                // setTimeout(function() {
-                //   console.log('==========================')
-                //   porp_now = "mirror"
-                //   // hierarchy_name = "mirror_1_1"
-                //   hierarchy_name = porp_now
-                //   hierarchy_style_click({ prop_in:porp_now, id:hierarchy_name is_open:true })
-
-                // }, 4000);
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function hierarchy_style_click(opt_in) {
-                    if (no_render) {
-                        return
-                    }
-                    if (!is_def(g_base)) {
-                        return
-                    }
-
-                    if (!locker.are_free([
-                        'data_change', 's10_click_hierarchy',
-                    ])) {
-                        setTimeout(function() {
-                            hierarchy_style_click(opt_in)
-                        }, times.anim / 3)
-                        return
-                    }
-
-                    locker.add({
-                        id: 's10_click_hierarchy',
-                        override: true,
-                    })
-                    function free_me(do_delay) {
-                        locker.remove({
-                            id: 's10_click_hierarchy',
-                            delay: do_delay ? times.anim * 1.5 : 0,
-                            override: true,
-                        })
-                    }
-
-                    let id = opt_in.id
-                    let prop_in = opt_in.prop_in
-                    let is_open = opt_in.is_open
-                    let sync_prop = (
-                        is_def(opt_in.sync_prop) ? opt_in.sync_prop : opt_in.id
-                    )
-                    // console.log('clk',id,'==',prop_in,'--', hierarchies[prop_in])
-
-                    if (this_top.get_zoom_state() === 1) {
-                        let arr_zoomer_prop = is_open ? sync_prop : ''
-                        sync_state_send({
-                            type: 'sync_arr_zoomer_prop',
-                            sync_time: Date.now(),
-                            tel_Id: zooms.target,
-                            propId: arr_zoomer_prop,
-                            arr_zoomer_id: arr_zoomer_id,
-                        })
-                    }
-
-                    if (prop_in === '' || !is_def(prop_in)) {
-                        $.each(g_hierarchy, function(porp_all_now, g_hierarchy_now) {
-                            g_hierarchy_now.hirch
-                                .selectAll('circle')
-                                .transition('updt')
-                                .duration(times.anim)
-                                .style('stroke', 'transparent')
-                                .attr('r', 0)
-
-                            $.each(g_hierarchy_now, function(hierarchy_name, g_now) {
-                                g_now
-                                    .transition('in_out')
-                                    .duration(times.anim)
-                                    .attr('transform',
-                                        g_trans[porp_all_now][hierarchy_name])
-                            })
-                        })
-
-                        free_me(true)
-                        return
-                    }
-
-                    if (
-                        !is_def(g_hierarchy[prop_in][id])
-                        || !is_def(hierarchies[prop_in][id])
-                    ) {
-                        free_me(true)
-                        return
-                    }
-
-                    let depth_now = hierarchies[prop_in][id].child_depth
-                    let child_depth = depth_now + 1
-
-                    depth_click[prop_in] = depth_now
-
-                    $.each(g_hierarchy, function(porp_all_now, g_hierarchy_now) {
-                        function is_out(d) {
-                            let in_parents = (
-                                parents[porp_all_now][d.data.id].indexOf(id) >= 0
-                            )
-                            return (
-                                is_open
-                                && in_parents
-                                && (d.data.child_depth > depth_now)
-                            )
-                        }
-
-                        g_hierarchy_now.hirch
-                            .selectAll('circle')
-                            .transition('updt')
-                            .duration(times.anim)
-                            .attr('r', function(d) {
-                                return is_out(d) ? d.r : 0
-                            })
-                            .attr('pointer-events', function(d) {
-                                return is_out(d) && d.data.child_depth === child_depth
-                                    ? 'auto'
-                                    : 'none'
-                            })
-                            .style('opacity', function(d) {
-                                return hierarchy_style_opac(d, d, child_depth)
-                            })
-                            .style('stroke', function(d) {
-                                return is_out(d)
-                                    ? hierarchy_style_stroke(d, d, child_depth)
-                                    : 'transparent'
-                            })
-                            .style('stroke-width', function(d) {
-                                return hierarchy_strk_w(d, d, child_depth)
-                            })
-                            .style('fill', function(d) {
-                                return hierarchy_style_fill(d, d, child_depth)
-                            })
-                    })
-
-                    $.each(g_hierarchy, function(porp_all_now, g_hierarchy_now) {
-                        $.each(g_hierarchy_now, function(hierarchy_name, g_now) {
-                            let in_parents = (
-                                parents[prop_in][id].indexOf(hierarchy_name) >= 0
-                            )
-
-                            g_now
-                                .transition('in_out')
-                                .duration(times.anim)
-                                .attr(
-                                    'transform',
-                                    in_parents
-                                        ? 'translate(0,0)scale(1)'
-                                        : g_trans[porp_all_now][hierarchy_name]
-                                )
-                        })
-                    })
-
-                    free_me(true)
-                }
-                this_top.hierarchy_style_click = hierarchy_style_click
-
-                // ------------------------------------------------------------------
-                //
-                // ------------------------------------------------------------------
-                function update_hierarchy(data_in) {
-                    // due to delays from locker, this function could be called after the S10 has
-                    // been removed - make a safety check using g_base...
-                    if (!is_def(g_base)) {
-                        return
-                    }
-
-                    if (
-                        !locker.are_free([
-                            's10_bck_arc_change',
-                            's10_click_hierarchy',
-                            'update_hierarchy',
-                        ])
-                    ) {
-                        // console.log('will delay update_hierarchy',data_in);
-                        setTimeout(function() {
-                            update_hierarchy(data_in)
-                        }, times.anim / 3)
-                        return
-                    }
-                    locker.add('update_hierarchy')
-
-                    //
-                    $.each(this_S10.instruments.props, function(index, porp_now) {
-                        let base_tag = 's10_arc'
-                        let tag_now = base_tag + porp_now
-                        let path = g_bck_arc.selectAll('path.' + tag_now)
-
-                        path
-                            .transition('update_data')
-                            .duration(times.anim)
-                            .each(function(d) {
-                                if (d.nArc === 0) {
-                                    d.col = inst_health_col(
-                                        instruments.data.prop_data_s1[tel_Id][porp_now].val
-                                    )
-                                }
-                            })
-                            .style('fill', function(d) {
-                                return d.is_full ? '#383b42' : d.col
-                            })
-                    })
-
-                    //
-                    $.each(g_hierarchy, function(porp_now, hierarchy_now) {
-                        hierarchy_now.hirch
-                            .selectAll('circle')
-                            .each(function(d) {
-                                if (is_def(data_in[d.data.id])) {
-                                    // console.log('updt 111',d.data.id,d);
-                                    d.data.val = data_in[d.data.id]
-                                }
-                            })
-                            .transition('update_data')
-                            .duration(times.anim)
-                            .style('fill', function(d) {
-                                return hierarchy_style_fill(d, d, depth_click[porp_now] + 1)
-                            })
-                    })
-                    // console.log('--------------------------------')
-
-                    locker.remove('update_hierarchy')
-                }
-                this_S10.update_hierarchy = update_hierarchy
-
-                // ------------------------------------------------------------------
-                // utility functions
-                // ------------------------------------------------------------------
-                function hierarchy_style_fill(d, d_ref, depth) {
-                    return d_ref.data.child_depth === depth && d.parent
-                        ? inst_health_col(d.data.val)
-                        : 'transparent'
-                }
-        
-                function hierarchy_strk_w(d, d_ref, depth) {
-                    if (!d.parent) {
-                        return 0
-                    }
-                    else {
-                        return d_ref.data.child_depth === depth ? 0 : 1
-                    }
-                }
-        
-                function hierarchy_style_stroke(d, d_ref, depth) {
-                    return hierarchy_strk_w(d, d_ref, depth) < 0.0001
-                        ? 'transparent'
-                        : '#383b42'
-                }
-        
-                function hierarchy_style_opac(d, d_ref, depth) {
-                    return hierarchy_strk_w(d, d_ref, depth) < 0.0001 ? 0.9 : 1
-                }
-      
-                return
-            }
-
-            s10 = new S10(zooms.target)
+        if (!is_def(s10)) {
+            s10 = new S10({
+                base_node: base_node,
+                tel_Id: zooms.target,
+            })
             s10_eles.push({
                 id: zooms.target,
                 s10: s10,
             })
-      
-            ;(function() {
-                if (s10_eles.length <= max_ele_keep) {
-                    return
-                }
 
-                let debug = false
-                let s10_in = []
-                let s10_out = []
-                let s10_index_date = []
-
-                $.each(s10_eles, function(index, ele_now) {
-                    s10_index_date.push([ index, ele_now.s10.get_date() ])
-                })
-
-                s10_index_date.sort(function(a, b) {
-                    return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0
-                })
-
-                let dbg_txt = ''
-                if (debug) {
-                    $.each(s10_index_date, function(index, ele_now) {
-                        dbg_txt += '[' + s10_eles[ele_now[0]].id + ' , '
-                        dbg_txt += s10_eles[ele_now[0]].s10.get_date() + '] '
-                    })
-                    dbg_txt += ' ---> removing: '
-                }
-
-                $.each(s10_index_date, function(index, ele_now) {
-                    if (index < max_ele_keep) {
-                        s10_in.push(s10_eles[ele_now[0]])
-                    }
-                    else {
-                        s10_out.push(s10_eles[ele_now[0]])
-                    }
-
-                    if (debug) {
-                        if (index >= max_ele_keep) {
-                            dbg_txt += s10_eles[ele_now[0]].id + ' '
-                        }
-                    }
-                })
-                if (debug) {
-                    console.log('- Sorted:', dbg_txt)
-                }
-
-                s10_eles = s10_in
-
-                $.each(s10_out, function(index, ele_now) {
-                    // console.log('- removing:',index,ele_now.id,ele_now.s10,ele_now.s10.g_base)
-                    ele_now.s10.cleanup()
-                    ele_now.s10 = null
-
-                    if (is_def(instruments.data.prop_data_s1[ele_now.id])) {
-                        delete instruments.data.prop_data_s1[ele_now.id]
-                        delete instruments.data.prop_parent_s1[ele_now.id]
-                        delete instruments.data.prop_title_s1[ele_now.id]
-                        delete instruments.data.data_base_s1[ele_now.id]
-                    }
-                })
-
-                s10_in = null
-                s10_out = null
-                s10_index_date = null
-            })()
+            cleanup_s10_eles({
+                max_ele_keep: max_ele_keep,
+            })
         }
 
         s10.init()
-  
+    
         return
     }
     this_top.s10_main = s10_main
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    function S10(opt_s10) {
+        let this_S10 = this
+        let tel_Id = opt_s10.tel_Id
+        let base_node = opt_s10.base_node
+        
+        this_S10.insts = {
+        }
+        this_S10.insts.props = insts.props[tel_Id]
+        this_S10.tau_frac = insts.tau_fracs[tel_Id]
+        this_S10.insts.prop_titles = insts.prop_titles[tel_Id]
+        this_S10.tel_Id = tel_Id
+
+        let my_date = Date.now()
+        let g_base = null
+        let g_bck_arc = null
+        let g_hierarchy = null
+        let g_prop_lbl = null
+        let g_trans = null
+        let arcs = null
+        let depth_click = null
+        let parents = null
+        let hierarchies = null
+
+        this_S10.data_hierarchy = {
+        }
+        $.each(this_S10.insts.props, function(index, porp_now) {
+            this_S10.data_hierarchy[porp_now] = null
+        })
+
+        this_S10.get_date = function() {
+            return my_date
+        }
+
+        let wh = (
+            insts.data.xyr[tel_Id].r
+            * scale_r[1].inner_h1 * 1.6
+        )
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function init() {
+            if (g_base) {
+                my_date = Date.now()
+            }
+            else {
+                g_base = main_gs.g_base.append('g')
+
+                update_pos_g(0)
+
+                g_bck_arc = g_base.append('g')
+                g_prop_lbl = g_base.append('g')
+                // g_bck_arc.append("rect").attr("width",wh).attr("height",wh).style("stroke",'#2196F3' ).style("fill",'transparent' ).style("stroke-width", 0.1).attr("pointer-events",'none').attr("opacity",0.5);
+
+                parents = {
+                }
+                depth_click = {
+                }
+
+                arcs = {
+                }
+                arcs.arc = {
+                }
+                arcs.tween = {
+                }
+                arcs.is_open = false
+                // arcs.in_prop = ''
+
+                g_hierarchy = {
+                }
+                g_trans = {
+                }
+                hierarchies = {
+                }
+                $.each(base_node, function(index_data, data_base) {
+                    let porp_now = data_base.id
+
+                    if (this_S10.insts.props.indexOf(porp_now) >= 0) {
+                        g_trans[porp_now] = {
+                        }
+                        g_hierarchy[porp_now] = {
+                        }
+                        g_hierarchy[porp_now].hirch = g_base.append('g')
+                        hierarchies[porp_now] = {
+                        }
+                    }
+                })
+
+                // // expose the objects (must come after their initialization!)
+                this_S10.g_base = g_base
+                this_S10.arcs = arcs
+
+                // init_bck_arc();
+                init_hierarchy()
+            }
+
+            // console.log('click_bck_arc init')
+            // init_bck_arc(); // called from bck_arc_click on init anyway...
+        }
+        this_S10.init = init
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function update_pos_g(duration) {
+            let g_base_trans = [
+                insts.data.xyr[tel_Id].x - wh / 2,
+                insts.data.xyr[tel_Id].y - wh / 2,
+            ]
+
+            g_base
+                .transition('updtPos')
+                .duration(duration)
+                .attr('transform', function() {
+                    return (
+                        'translate(' + g_base_trans[0]
+                        + ',' + g_base_trans[1] + ')'
+                    )
+                })
+        }
+        this_S10.update_pos_g = update_pos_g
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function cleanup() {
+            g_base.remove()
+
+            g_base = null
+            g_bck_arc = null
+            g_hierarchy = null
+            g_prop_lbl = null
+            g_trans = null
+            arcs = null
+            depth_click = null
+            parents = null
+            hierarchies = null
+        }
+        this_S10.cleanup = cleanup
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function set_prop_lbl(opt_in) {
+            if (no_render) {
+                return
+            }
+
+            // due to delays from locker, this function could be called after the s10 has
+            // been removed - make a safety check using g_base...
+            if (!is_def(g_base)) {
+                return
+            }
+
+            let base_tag = 's10_arc'
+            let tag_lbl = base_tag + '_prop_lbl'
+            let prop_in = is_def(opt_in.prop_in) ? opt_in.prop_in : ''
+            let remove = is_def(opt_in.remove) ? opt_in.remove : false
+
+            if (prop_in !== '') {
+                if (this_S10.insts.props.indexOf(prop_in) < 0) {
+                    if (is_def(insts.data.prop_parent_s1[tel_Id][prop_in])) {
+                        prop_in = insts.data.prop_parent_s1[tel_Id][prop_in]
+                    }
+                }
+            }
+
+            let text_data = []
+            if (this_top.get_zoom_state() === 1 && !remove) {
+                $.each(this_S10.insts.props, function(index, porp_now) {
+                    let state = 0
+                    if (prop_in !== '') {
+                        state = prop_in === porp_now ? 1 : 2
+                    }
+
+                    let txt_r = (
+                        insts.data.xyr[tel_Id].r
+                        * scale_r[1].inner_h1 * 1.45
+                    )
+                    let xy = get_prop_pos_shift(
+                        'xy',
+                        txt_r,
+                        index,
+                        this_S10.insts.props.length
+                    )
+                    let opac = 0.7
+                    if (state === 1) {
+                        opac = 0.9
+                    }
+                    else if (state === 2) {
+                        opac = 0.1
+                    }
+
+                    let anch = 'end'
+                    if (Math.abs(xy[0] / insts.data.xyr[tel_Id].r) < 0.001) {
+                        anch = 'middle'
+                    }
+                    else if (xy[0] < 0) {
+                        anch = 'start'
+                    }
+
+                    text_data.push({
+                        id: tag_lbl + porp_now,
+                        text: this_S10.insts.prop_titles[porp_now],
+                        h: 30 / zooms.len['1.3'],
+                        xy: xy,
+                        x: wh / 2 - xy[0],
+                        y: wh / 2 - xy[1],
+                        strk_w: state === 1 ? 3 : 0,
+                        opac: opac,
+                        anch: anch,
+                    })
+                })
+            }
+
+            let ele_h = null
+
+            let title = g_prop_lbl
+                .selectAll('text.' + tag_lbl)
+                .data(text_data, function(d) {
+                    return d.id
+                })
+
+            title
+                .enter()
+                .append('text')
+            // .attr("id", function(d) { return my_unique_id+d.id; })
+                .text(function(d) {
+                    return d.text
+                })
+                .attr('class', base_tag + ' ' + tag_lbl) // class list for easy selection
+                .style('opacity', '0')
+                .style('fill', '#383b42')
+                .attr('stroke-width', function(d) {
+                    return d.strk_w
+                })
+                .style('stroke', '#383b42')
+                .attr('vector-effect', 'non-scaling-stroke')
+                .style('pointer-events', 'none')
+                .style('font-weight', 'normal')
+                .attr('transform', function(d) {
+                    return 'translate(' + d.x + ',' + d.y + ')'
+                })
+                .merge(title)
+                .style('font-size', function(d) {
+                    return d.h + 'px'
+                })
+                .transition('update1')
+                .duration(times.anim)
+                .attr('stroke-width', function(d) {
+                    return d.strk_w
+                })
+                .attr('transform', function(d) {
+                    return 'translate(' + d.x + ',' + d.y + ')'
+                })
+                .attr('text-anchor', function(d) {
+                    return d.anch
+                })
+                .attr('dy', function(d) {
+                    if (!is_def(ele_h)) {
+                        ele_h = get_node_height_by_id({
+                            selction: g_prop_lbl.selectAll('text.' + tag_lbl),
+                            id: d.id,
+                            txt_scale: true,
+                        })
+                    }
+                    return ele_h + 'px'
+                })
+                .style('opacity', function(d) {
+                    return d.opac
+                })
+
+            title
+                .exit()
+                .transition('exit')
+                .duration(times.anim)
+                .style('opacity', '0')
+                .remove()
+        }
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function init_bck_arc() {
+            if (no_render) {
+                return
+            }
+
+            // due to delays from locker, this function could be called after the s10 has
+            // been removed - make a safety check using g_base...
+            if (!is_def(g_base)) {
+                return
+            }
+
+            // console.log('init_bck_arc')
+            let props_now = insts.data.prop_data_s1[tel_Id]
+            $.each(props_now, function(porp_now, data_now) {
+                if (data_now) {
+                    let base_tag = 's10_arc'
+                    let tag_now = base_tag + porp_now
+                    // let is0 = 1
+
+                    let n_prop = this_S10.insts.props.indexOf(porp_now)
+                    if (n_prop >= 0) {
+                        if (!is_def(arcs[tag_now])) {
+                            arcs[tag_now] = {
+                            }
+                            arcs[tag_now].ang = {
+                            }
+                            arcs[tag_now].rad = {
+                            }
+
+                            arc_func[tag_now] = {
+                            }
+                            arc_func[tag_now].radN1 = function(_) {
+                                return 0
+                            }
+                            arc_func[tag_now].rad_00 = function(_) {
+                                return (
+                                    insts.data.xyr[tel_Id].r
+                                    * scale_r[1].inner_h1 * 0.1
+                                )
+                            }
+                            arc_func[tag_now].rad_01 = function(_) {
+                                return (
+                                    insts.data.xyr[tel_Id].r
+                                    * scale_r[1].inner_h1 * 0.8
+                                )
+                            }
+                            arc_func[tag_now].rad_10 = function(_) {
+                                return (
+                                    insts.data.xyr[tel_Id].r
+                                    * scale_r[1].inner_h1 * 0.85
+                                )
+                            }
+                            arc_func[tag_now].rad_11 = function(_) {
+                                return (
+                                    insts.data.xyr[tel_Id].r
+                                    * scale_r[1].inner_h1 * 1.35
+                                )
+                            }
+                            arc_func[tag_now].ang_00 = function(_) {
+                                return (
+                                    n_prop * this_S10.tau_frac + insts.tau_space
+                                )
+                            }
+                            arc_func[tag_now].ang_01 = function(_) {
+                                return (
+                                    (n_prop + 1) * this_S10.tau_frac - insts.tau_space
+                                )
+                            }
+                            arc_func[tag_now].ang_10 = function(_) {
+                                return 0
+                            }
+                            arc_func[tag_now].ang_11 = function(_) {
+                                return tau
+                            }
+                            arc_func[tag_now].ang20 = function(_) {
+                                return (n_prop * this_S10.tau_frac)
+                            }
+                            arc_func[tag_now].ang21 = function(_) {
+                                return ((n_prop + 1) * this_S10.tau_frac)
+                            }
+                        }
+
+                        let path = g_bck_arc
+                            .selectAll('path.' + tag_now).data([
+                                {
+                                    id: tag_now + '0',
+                                    porp_now: porp_now,
+                                    nArc: 0,
+                                    is_full: false,
+                                    col: '',
+                                },
+                                {
+                                    id: tag_now + '1',
+                                    porp_now: porp_now,
+                                    nArc: 1,
+                                    is_full: false,
+                                    col: '',
+                                },
+                            ])
+
+                        // operate on new elements only
+                        path
+                            .enter()
+                            .append('path')
+                            .style('stroke-width', '1')
+                        // .attr("id",        function(d) { return my_unique_id+d.id; })
+                            .attr('class', function(d) {
+                                return base_tag + ' ' + tag_now + ' ' + d.id
+                            })
+                            .each(function(d) {
+                                arcs[tag_now].ang[d.id] = [
+                                    arc_func[tag_now].ang_00(d),
+                                    arc_func[tag_now].ang_01(d),
+                                ]
+                                arcs[tag_now].rad[d.id] = [
+                                    arc_func[tag_now].rad_00(d),
+                                    arc_func[tag_now].rad_00(d),
+                                ]
+                            })
+                            .style('stroke', '#383b42')
+                            .attr('vector-effect', 'non-scaling-stroke')
+                            .attr('transform', (
+                                'translate(' + wh / 2 + ',' + wh / 2 + ')')
+                            )
+                            .on('click', click)
+                            // .on("mouseover", mouseover)
+                            .style('fill', get_col)
+                            .style('opacity', 0)
+                            .style('fill-opacity', 0)
+                            .merge(path)
+                            .each(function(d) {
+                                d.is_full = false
+                            })
+                            .transition('in_out')
+                            .duration(times.anim)
+                            .delay(times.anim)
+                            .style('opacity', function(d) {
+                                return d.nArc === 0 ? 1 : 0
+                            })
+                            .style('fill', get_col)
+                            .style('fill-opacity', function(d) {
+                                return d.nArc === 0 ? 0.5 : 0
+                            })
+                            .style('stroke-opacity', function(d) {
+                                return d.nArc === 0 ? 0 : 0.3
+                            })
+                            .call(com.arc_tween, {
+                                tag_now: tag_now,
+                                arc_prev: arcs,
+                                ang_str_0: null,
+                                ang_str_1: 'ang_00',
+                                ang_end_0: null,
+                                ang_end_1: 'ang_01',
+                                r_in_0: null,
+                                r_in_1: 'rad_00',
+                                r_out_0: null,
+                                r_out_1: 'rad_01',
+                            })
+                    }
+                }
+
+                //
+                function get_col(d) {
+                    let prop_val = insts.data.prop_data_s1[tel_Id][d.porp_now].val
+                    d.col = (
+                        d.nArc === 0
+                            ? inst_health_col(prop_val)
+                            : '#383b42'
+                    )
+                    return d.col
+                }
+
+                //
+                function click(d) {
+                    bck_arc_click({
+                        click_in: is_click_in(d.porp_now),
+                        prop_in: d.porp_now,
+                    })
+                }
+            })
+
+            set_prop_lbl({
+                prop_in: '',
+            })
+        }
+        this_S10.init_bck_arc = init_bck_arc
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        let prev_focused_prop = ''
+        function is_click_in(prop_in) {
+            return prev_focused_prop !== prop_in
+        }
+
+        function set_prev_prop(prop_in) {
+            prev_focused_prop = prop_in
+        }
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function bck_arc_remove() {
+            if (no_render) {
+                return
+            }
+
+            // due to delays from locker, this function could
+            // be called after the s10 has been removed
+            // - make a safety check using g_base...
+            if (!is_def(g_base)) {
+                return
+            }
+
+            locker.add('s10_bck_arc_change')
+
+            //
+            hierarchy_style_click({
+                prop_in: '',
+                id: '',
+                is_open: false,
+            })
+
+            //
+            $.each(this_S10.insts.props, function(index, porp_now) {
+                let base_tag = 's10_arc'
+                let tag_now = base_tag + porp_now
+                let path = g_bck_arc.selectAll('path.' + tag_now)
+
+                path
+                    .transition('in_out')
+                    .duration(times.anim)
+                    .style('opacity', 0)
+                    .call(com.arc_tween, {
+                        tag_now: tag_now,
+                        arc_prev: arcs,
+                        ang_str_0: null,
+                        ang_str_1: 'ang_00',
+                        ang_end_0: null,
+                        ang_end_1: null,
+                        r_in_0: null,
+                        r_in_1: 'rad_00',
+                        r_out_0: null,
+                        r_out_1: 'rad_00',
+                    })
+                    .remove()
+            })
+
+            set_prev_prop('')
+            locker.remove('s10_bck_arc_change')
+
+            set_prop_lbl({
+                prop_in: '',
+                remove: true,
+            })
+
+            hierarchy_hov_title_out(null)
+        }
+        this_S10.bck_arc_remove = bck_arc_remove
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function bck_arc_click(opt_in) {
+            // due to delays from locker, this function could be
+            // called after the s10 has been removed
+            // - make a safety check using g_base...
+            if (!is_def(g_base)) {
+                return
+            }
+
+            let click_in = opt_in.click_in
+            let prop_in = opt_in.prop_in
+            let only_open = is_def(opt_in.only_open) ? opt_in.only_open : false
+            let can_ignore = is_def(opt_in.can_ignore) ? opt_in.can_ignore : true
+
+            if (this_S10.insts.props.indexOf(prop_in) < 0 && prop_in != '') {
+                return
+            }
+
+            if (
+                !locker.are_free([
+                    's10_bck_arc_change',
+                    'data_change',
+                    's10_click_hierarchy',
+                ])
+            ) {
+                if (!can_ignore) {
+                    setTimeout(function() {
+                        bck_arc_click(opt_in)
+                    }, times.anim / 3)
+                }
+                return
+            }
+
+            locker.add({
+                id: 's10_bck_arc_change',
+                override: true,
+            })
+            function free_me(do_delay) {
+                locker.remove({
+                    id: 's10_bck_arc_change',
+                    delay: do_delay ? times.anim * 1.5 : 0,
+                    override: true,
+                })
+            }
+
+            set_prop_lbl({
+                prop_in: prop_in,
+            })
+
+            set_prev_prop(prop_in)
+
+            // ------------------------------------------------------------------
+            //
+            // ------------------------------------------------------------------
+            $.each(this_S10.insts.props, function(index, porp_now) {
+                let base_tag = 's10_arc'
+                let tag_now = base_tag + porp_now
+                let path0 = g_bck_arc.selectAll('path.' + tag_now + '0')
+                let path1 = g_bck_arc.selectAll('path.' + tag_now + '1')
+
+                if (prop_in === porp_now) {
+                    full_arcs(path0, path1, tag_now, click_in)
+                }
+                else {
+                    hide_arcs(path0, tag_now)
+                    hide_arcs(path1, tag_now)
+                }
+            })
+
+            if (only_open && click_in) {
+                free_me(true)
+                return
+            }
+
+            if (!click_in && depth_click[prop_in] > 0) {
+                let parent_name = ''
+                $.each(hierarchies[prop_in], function(id_now, data_now) {
+                    if (data_now.child_depth === depth_click[prop_in]) {
+                        parent_name = data_now.parent_name
+                    }
+                })
+
+                hierarchy_style_click({
+                    prop_in: prop_in,
+                    id: parent_name,
+                    is_open: true,
+                })
+    
+                props_s1({
+                    tel_Id: tel_Id,
+                    click_in: true,
+                    prop_in: parent_name,
+                    do_func: [ 'tel_hierarchy' ],
+                    debug: 'bck_arc_click',
+                })
+
+                free_me(true)
+    
+                return
+            }
+            else {
+                // console.log('tog_hierarchy',prop_in,'--',depth_click[prop_in],click_in)
+
+                hierarchy_style_click({
+                    prop_in: prop_in,
+                    id: prop_in,
+                    is_open: click_in,
+                })
+
+                props_s1({
+                    tel_Id: tel_Id,
+                    click_in: click_in,
+                    prop_in: prop_in,
+                    do_func: [ 'tel_hierarchy' ],
+                    debug: 'bck_arc_click',
+                })
+            }
+
+            if (!click_in) {
+                init_bck_arc()
+                set_prev_prop('')
+                free_me(true)
+                return
+            }
+
+            //
+            if (click_in) {
+                this_top.zoom_to_target_main({
+                    target: tel_Id,
+                    scale: zooms.len['1.2'],
+                    duration_scale: 1,
+                })
+            }
+
+            free_me(true)
+        }
+        this_S10.bck_arc_click = bck_arc_click
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function full_arcs(path0, path1, tag_now, is_open) {
+            if (no_render) {
+                return
+            }
+
+            path0
+                .transition('in_out')
+                .duration(times.anim)
+                .style('opacity', 1)
+                .style('fill', '#383b42')
+                .style('fill-opacity', 0.06)
+                // .style("fill-opacity", 0.2)
+                .each(function(d) {
+                    d.is_full = true
+                })
+                .call(com.arc_tween, {
+                    tag_now: tag_now,
+                    arc_prev: arcs,
+                    ang_str_0: null,
+                    ang_str_1: 'ang_10',
+                    ang_end_0: null,
+                    ang_end_1: 'ang_11',
+                    r_in_0: null,
+                    r_in_1: 'radN1',
+                    r_out_0: null,
+                    r_out_1: 'rad_01',
+                })
+
+            path1
+                .transition('in_out')
+                .duration(times.anim / 2)
+                .call(com.arc_tween, {
+                    tag_now: tag_now,
+                    arc_prev: arcs,
+                    ang_str_0: null,
+                    ang_str_1: null,
+                    ang_end_0: null,
+                    ang_end_1: null,
+                    r_in_0: null,
+                    r_in_1: 'rad_10',
+                    r_out_0: null,
+                    r_out_1: 'rad_11',
+                })
+                .style('fill-opacity', 0.07)
+                .style('opacity', 1)
+                .transition('in_out')
+                .duration(times.anim / 2)
+                .call(com.arc_tween, {
+                    tag_now: tag_now,
+                    arc_prev: arcs,
+                    ang_str_0: null,
+                    ang_str_1: 'ang20',
+                    ang_end_0: null,
+                    ang_end_1: 'ang21',
+                    r_in_0: null,
+                    r_in_1: null,
+                    r_out_0: null,
+                    r_out_1: null,
+                })
+        }
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function hide_arcs(path, tag_now) {
+            if (no_render) {
+                return
+            }
+
+            path
+                .transition('in_out')
+                .duration(times.anim / 2)
+                .style('opacity', 0)
+                .call(com.arc_tween, {
+                    tag_now: tag_now,
+                    arc_prev: arcs,
+                    ang_str_0: null,
+                    ang_str_1: null,
+                    ang_end_0: null,
+                    ang_end_1: null,
+                    r_in_0: null,
+                    r_in_1: 'radN1',
+                    r_out_0: null,
+                    r_out_1: 'radN1',
+                })
+        }
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function hierarchy_hov_title_in(dIn) {
+            if (no_render) {
+                return
+            }
+
+            if (
+                !locker.are_free([
+                    's10_bck_arc_change',
+                    'data_change',
+                    's10_click_hierarchy',
+                ])
+            ) {
+                return
+            }
+
+            hierarchy_hov_title_out(null)
+
+            let r = tel_rs.s00[2] * scale_r[1].inner_h1 / 3.5
+            let dx = wh / 2
+            let dy = (
+                wh + 2 * r
+                * insts.data.xyr[tel_Id].r
+                / tel_rs.s00[2]
+            )
+
+            g_base
+                .selectAll('text.' + 'hov_title')
+                .data([{
+                    id: dIn.data.id,
+                }], function(d) {
+                    return d.id
+                })
+                .enter()
+                .append('text')
+                .attr('class', 'hov_title')
+                .text(dIn.data.title)
+                .style('opacity', 0)
+                .style('fill-opacity', 0.8)
+                .style('fill', '#383b42')
+                .style('stroke', d3.rgb('#383b42').brighter(0.25))
+                .attr('vector-effect', 'non-scaling-stroke')
+                .style('pointer-events', 'none')
+                .attr('text-anchor', 'middle')
+                .style('stroke-width', 2)
+                .style('font-weight', 'bold')
+                .attr('font-size', r + 'px')
+                .attr('transform', ('translate(' + dx + ',' + dy + ')'))
+                .attr('dy', function(d) {
+                    let ele_h = -0.5
+                        * get_node_height_by_id({
+                            selction: g_base.selectAll('text.' + 'hov_title'),
+                            id: d.id,
+                        })
+                    return ele_h + 'px'
+                })
+                .transition('update1')
+                .duration(times.anim)
+                .style('opacity', 1)
+            
+            return
+        }
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function hierarchy_hov_title_out(dIn) {
+            if (no_render) {
+                return
+            }
+
+            g_base
+                .selectAll('text.' + 'hov_title')
+                .filter(function(d) {
+                    return is_def(dIn) ? d.id === dIn.data.id : true
+                })
+                .transition('update1')
+                .duration(times.anim)
+                .style('opacity', '0')
+                .remove()
+
+            return
+        }
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function init_hierarchy() {
+            if (no_render) {
+                return
+            }
+
+            // due to delays from locker, this function could be
+            // called after the s10 has been removed
+            // - make a safety check using g_base...
+            if (!is_def(g_base)) {
+                return
+            }
+
+            $.each(base_node, function(index_data, data_base) {
+                let porp_now = data_base.id
+
+                let get_child = {
+                }
+                let hierarchy_by_id = {
+                }
+                let max_depth = 0
+
+                function get_all_children(d) {
+                    return d['child' + String(d.child_depth)]
+                }
+
+                function rename_children(data_now, depth_in, parent_name) {
+                    if (!is_def(depth_in)) {
+                        depth_in = -1
+                    }
+                    if (!is_def(parent_name)) {
+                        parent_name = null
+                    }
+
+                    let depth_now = depth_in
+                    depth_now++
+                    max_depth = Math.max(depth_now, max_depth)
+
+                    let child_mame = 'child' + String(depth_now)
+
+                    // access function
+                    if (!is_def(get_child[child_mame])) {
+                        get_child[child_mame] = function(d) {
+                            return d[child_mame]
+                        }
+                    }
+
+                    // internal variables to keep track of the depth, name of the parent
+                    data_now.child_depth = depth_now
+                    data_now.parent_name = parent_name
+                    parent_name = data_now.id
+
+                    // modify children names and go one level deeper if needed
+                    if (data_now.children) {
+                        // console.log('+++++',data_now.id,child_mame,data_now);
+                        if (!is_def(g_hierarchy[porp_now][data_now.id])) {
+                            // the baseline g element (parent g from the hirch, or else the first one)
+                            let parent_name_now = data_now.parent_name
+                                ? data_now.parent_name
+                                : 'hirch'
+
+                            // new baseline g element which may get child-g elements from the hirch
+                            let g_now = (
+                                g_hierarchy[porp_now][parent_name_now]
+                                    .append('g')
+                            )
+                            g_hierarchy[porp_now][data_now.id] = g_now
+                            // the first g elelment into which all circles will be appended (so that they
+                            // are  always at the top of the g element, before any child-g elements)
+                            g_now = (
+                                g_hierarchy[porp_now][data_now.id]
+                                    .append('g')
+                            )
+                            g_hierarchy[porp_now][data_now.id + 'circ'] = g_now
+                        }
+
+                        data_now[child_mame] = data_now.children
+                        // data_now.children   = null;
+                        data_now[child_mame].forEach(function(d) {
+                            rename_children(d, depth_now, parent_name)
+                        })
+
+                        hierarchy_by_id[data_now.id] = d3
+                            .hierarchy(data_now, get_child[child_mame])
+                            .sum(function(_) {
+                                return 1
+                            })
+                        hierarchies[porp_now][data_now.id] = data_now
+                        // console.log('--',data_now.id,child_mame,data_now)
+                    }
+                }
+
+                if (this_S10.insts.props.indexOf(porp_now) >= 0) {
+                    rename_children(data_base)
+
+                    this_S10.data_hierarchy[porp_now] = data_base
+                    // console.log(data_base)
+
+                    $.each(hierarchy_by_id, function(_, hierarchy_now) {
+                        let pack_node = d3
+                            .pack()
+                            .size([ wh, wh ])
+                            .padding(1.5 * site_scale)
+                        pack_node(hierarchy_now)
+                    })
+
+                    parents[porp_now] = {
+                    }
+                    depth_click[porp_now] = 0
+
+                    let hierarchy_all = d3.hierarchy(
+                        data_base, get_all_children
+                    )
+                    let descend = hierarchy_all.descendants()
+      
+                    $.each(descend, function(index, data_now) {
+                        let name_now = data_now.data.id
+                        if (!is_def(parents[porp_now][name_now])) {
+                            parents[porp_now][name_now] = [ name_now ]
+                        }
+
+                        let parent_now = data_now.parent
+                        while (parent_now) {
+                            parents[porp_now][name_now].push(parent_now.data.id)
+                            parent_now = parent_now.parent
+                        }
+                    })
+                    hierarchy_all = null
+                    // console.log('parents -',parents)
+
+                    for (let depth_now = 0; depth_now < max_depth; depth_now++) {
+                        $.each(hierarchy_by_id, function(hierarchy_name, hierarchy_now) {
+                            if (hierarchy_now.data.child_depth !== depth_now) {
+                                return
+                            }
+                            // console.log(hierarchy_name,hierarchy_now.data.child_depth,hierarchy_now)
+
+                            let parent_name = hierarchy_now.data.parent_name
+                            if (parent_name != null) {
+                                let parent = hierarchy_by_id[parent_name]
+                                $.each(parent.children, function(index, child_now) {
+                                    // console.log('---- ',parent_name,parent_name,child_now.data.id,child_now)
+                                    if (child_now.data.id === hierarchy_name) {
+                                        let parentR = child_now.r / (wh / 2)
+                                        let parentX = child_now.x - child_now.r
+                                        let parentY = child_now.y - child_now.r
+
+                                        // console.log('move-g in(',parent_name,'):  ',hierarchy_name)
+                                        g_trans[porp_now][hierarchy_name] = (
+                                            'translate('
+                                            + parentX
+                                            + ','
+                                            + parentY
+                                            + ')scale('
+                                            + parentR
+                                            + ')'
+                                        )
+                                        g_hierarchy[porp_now][hierarchy_name].attr(
+                                            'transform',
+                                            g_trans[porp_now][hierarchy_name]
+                                        )
+                                    }
+                                })
+                            }
+
+                            // console.log('hierarchy_name',hierarchy_name,depth_click)
+                            g_hierarchy[porp_now][hierarchy_name + 'circ']
+                                .selectAll('circle.' + hierarchy_name)
+                                .data(hierarchy_now.descendants())
+                                .enter()
+                                .append('circle')
+                                .attr('class', hierarchy_name)
+                            // .attr("id",            function(d){ return my_unique_id+hierarchy_name+"_"+d.data.id; })
+                                .style('opacity', function(d) {
+                                    return hierarchy_style_opac(d, hierarchy_now, 0)
+                                })
+                                .style('stroke', function(d) {
+                                    return hierarchy_style_stroke(d, hierarchy_now, 0)
+                                })
+                                .style('stroke-width', function(d) {
+                                    return hierarchy_strk_w(d, hierarchy_now, 0)
+                                })
+                                .style('fill', function(d) {
+                                    return hierarchy_style_fill(d, hierarchy_now, 0)
+                                })
+                                .attr('cx', function(d) {
+                                    return d.x
+                                })
+                                .attr('cy', function(d) {
+                                    return d.y
+                                })
+                                .attr('r', 0)
+                                .attr('vector-effect', 'non-scaling-stroke')
+                                .attr('pointer-events', function(d) {
+                                    return d.data.child_depth === 1 ? 'auto' : 'none'
+                                })
+                                .on('click', click)
+                                .on('mouseover', hierarchy_hov_title_in)
+                                .on('mouseout', hierarchy_hov_title_out)
+                            // .on('mouseover', function(d){ console.log(d.data.id,d); })
+                            // .transition("in_out").duration(times.anim)
+                            // .attr("r",             function(d,i){ return d.r; });
+
+                            function click(d) {
+                                if (
+                                    !locker.are_free([
+                                        's10_bck_arc_change',
+                                        'data_change',
+                                        's10_click_hierarchy',
+                                    ])
+                                ) {
+                                    return
+                                }
+
+                                hierarchy_style_click({
+                                    prop_in: porp_now,
+                                    id: d.data.id,
+                                    is_open: true,
+                                })
+            
+                                props_s1({
+                                    tel_Id: tel_Id,
+                                    click_in: true,
+                                    prop_in: d.data.id,
+                                    debug: 'hirch_click',
+                                })
+
+                                // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                                // FIXME:
+                                // here we can set non this_S10.insts.props names if needed.....
+                                // console.log('_setPropLblInit_hierarchy',d.data.id); set_prop_lbl({ prop_in:d.data.id });
+                                // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                            }
+                        })
+                    }
+                }
+            })
+        }
+        this_S10.init_hierarchy = init_hierarchy
+
+        // setTimeout(function() {
+        //   console.log('==========================')
+        //   porp_now = "mirror"
+        //   // hierarchy_name = "mirror_1_1"
+        //   hierarchy_name = porp_now
+        //   hierarchy_style_click({ prop_in:porp_now, id:hierarchy_name is_open:true })
+
+        // }, 4000);
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function hierarchy_style_click(opt_in) {
+            if (no_render) {
+                return
+            }
+            if (!is_def(g_base)) {
+                return
+            }
+
+            if (!locker.are_free([
+                'data_change', 's10_click_hierarchy',
+            ])) {
+                setTimeout(function() {
+                    hierarchy_style_click(opt_in)
+                }, times.anim / 3)
+                return
+            }
+
+            locker.add({
+                id: 's10_click_hierarchy',
+                override: true,
+            })
+            function free_me(do_delay) {
+                locker.remove({
+                    id: 's10_click_hierarchy',
+                    delay: do_delay ? times.anim * 1.5 : 0,
+                    override: true,
+                })
+            }
+
+            let id = opt_in.id
+            let prop_in = opt_in.prop_in
+            let is_open = opt_in.is_open
+            let sync_prop = (
+                is_def(opt_in.sync_prop) ? opt_in.sync_prop : opt_in.id
+            )
+            // console.log('clk',id,'==',prop_in,'--', hierarchies[prop_in])
+
+            if (this_top.get_zoom_state() === 1) {
+                let arr_zoomer_prop = is_open ? sync_prop : ''
+                sync_state_send({
+                    type: 'sync_arr_zoomer_prop',
+                    sync_time: Date.now(),
+                    tel_Id: zooms.target,
+                    propId: arr_zoomer_prop,
+                    arr_zoomer_id: arr_zoomer_id,
+                })
+            }
+
+            if (prop_in === '' || !is_def(prop_in)) {
+                $.each(g_hierarchy, function(porp_all_now, g_hierarchy_now) {
+                    g_hierarchy_now.hirch
+                        .selectAll('circle')
+                        .transition('updt')
+                        .duration(times.anim)
+                        .style('stroke', 'transparent')
+                        .attr('r', 0)
+
+                    $.each(g_hierarchy_now, function(hierarchy_name, g_now) {
+                        g_now
+                            .transition('in_out')
+                            .duration(times.anim)
+                            .attr('transform',
+                                g_trans[porp_all_now][hierarchy_name])
+                    })
+                })
+
+                free_me(true)
+                return
+            }
+
+            if (
+                !is_def(g_hierarchy[prop_in][id])
+                || !is_def(hierarchies[prop_in][id])
+            ) {
+                free_me(true)
+                return
+            }
+
+            let depth_now = hierarchies[prop_in][id].child_depth
+            let child_depth = depth_now + 1
+
+            depth_click[prop_in] = depth_now
+
+            $.each(g_hierarchy, function(porp_all_now, g_hierarchy_now) {
+                function is_out(d) {
+                    let in_parents = (
+                        parents[porp_all_now][d.data.id].indexOf(id) >= 0
+                    )
+                    return (
+                        is_open
+                        && in_parents
+                        && (d.data.child_depth > depth_now)
+                    )
+                }
+
+                g_hierarchy_now.hirch
+                    .selectAll('circle')
+                    .transition('updt')
+                    .duration(times.anim)
+                    .attr('r', function(d) {
+                        return is_out(d) ? d.r : 0
+                    })
+                    .attr('pointer-events', function(d) {
+                        return is_out(d) && d.data.child_depth === child_depth
+                            ? 'auto'
+                            : 'none'
+                    })
+                    .style('opacity', function(d) {
+                        return hierarchy_style_opac(d, d, child_depth)
+                    })
+                    .style('stroke', function(d) {
+                        return is_out(d)
+                            ? hierarchy_style_stroke(d, d, child_depth)
+                            : 'transparent'
+                    })
+                    .style('stroke-width', function(d) {
+                        return hierarchy_strk_w(d, d, child_depth)
+                    })
+                    .style('fill', function(d) {
+                        return hierarchy_style_fill(d, d, child_depth)
+                    })
+            })
+
+            $.each(g_hierarchy, function(porp_all_now, g_hierarchy_now) {
+                $.each(g_hierarchy_now, function(hierarchy_name, g_now) {
+                    let in_parents = (
+                        parents[prop_in][id].indexOf(hierarchy_name) >= 0
+                    )
+
+                    g_now
+                        .transition('in_out')
+                        .duration(times.anim)
+                        .attr(
+                            'transform',
+                            in_parents
+                                ? 'translate(0,0)scale(1)'
+                                : g_trans[porp_all_now][hierarchy_name]
+                        )
+                })
+            })
+
+            free_me(true)
+        }
+        this_top.hierarchy_style_click = hierarchy_style_click
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        function update_hierarchy(data_in) {
+            // due to delays from locker, this function could be called after the s10 has
+            // been removed - make a safety check using g_base...
+            if (!is_def(g_base)) {
+                return
+            }
+
+            if (
+                !locker.are_free([
+                    's10_bck_arc_change',
+                    's10_click_hierarchy',
+                    'update_hierarchy',
+                ])
+            ) {
+                // console.log('will delay update_hierarchy',data_in);
+                setTimeout(function() {
+                    update_hierarchy(data_in)
+                }, times.anim / 3)
+                return
+            }
+            locker.add('update_hierarchy')
+
+            //
+            $.each(this_S10.insts.props, function(index, porp_now) {
+                let base_tag = 's10_arc'
+                let tag_now = base_tag + porp_now
+                let path = g_bck_arc.selectAll('path.' + tag_now)
+
+                path
+                    .transition('update_data')
+                    .duration(times.anim)
+                    .each(function(d) {
+                        if (d.nArc === 0) {
+                            d.col = inst_health_col(
+                                insts.data.prop_data_s1[tel_Id][porp_now].val
+                            )
+                        }
+                    })
+                    .style('fill', function(d) {
+                        return d.is_full ? '#383b42' : d.col
+                    })
+            })
+
+            //
+            $.each(g_hierarchy, function(porp_now, hierarchy_now) {
+                hierarchy_now.hirch
+                    .selectAll('circle')
+                    .each(function(d) {
+                        if (is_def(data_in[d.data.id])) {
+                            // console.log('updt 111',d.data.id,d);
+                            d.data.val = data_in[d.data.id]
+                        }
+                    })
+                    .transition('update_data')
+                    .duration(times.anim)
+                    .style('fill', function(d) {
+                        return hierarchy_style_fill(d, d, depth_click[porp_now] + 1)
+                    })
+            })
+            // console.log('--------------------------------')
+
+            locker.remove('update_hierarchy')
+        }
+        this_S10.update_hierarchy = update_hierarchy
+
+        // ------------------------------------------------------------------
+        // utility functions
+        // ------------------------------------------------------------------
+        function hierarchy_style_fill(d, d_ref, depth) {
+            return d_ref.data.child_depth === depth && d.parent
+                ? inst_health_col(d.data.val)
+                : 'transparent'
+        }
+
+        function hierarchy_strk_w(d, d_ref, depth) {
+            if (!d.parent) {
+                return 0
+            }
+            else {
+                return d_ref.data.child_depth === depth ? 0 : 1
+            }
+        }
+
+        function hierarchy_style_stroke(d, d_ref, depth) {
+            return hierarchy_strk_w(d, d_ref, depth) < 0.0001
+                ? 'transparent'
+                : '#383b42'
+        }
+
+        function hierarchy_style_opac(d, d_ref, depth) {
+            return hierarchy_strk_w(d, d_ref, depth) < 0.0001 ? 0.9 : 1
+        }
+
+        return
+    }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    function cleanup_s10_eles(opt_in) {
+        let max_ele_keep = opt_in.max_ele_keep
+        
+        if (s10_eles.length <= max_ele_keep) {
+            return
+        }
+
+        let debug = false
+        let s10_in = []
+        let s10_out = []
+        let s10_index_date = []
+
+        $.each(s10_eles, function(index, ele_now) {
+            s10_index_date.push([ index, ele_now.s10.get_date() ])
+        })
+
+        s10_index_date.sort(function(a, b) {
+            if (a[1] > b[1]) {
+                return -1
+            }
+            else if (a[1] < b[1]) {
+                return 1
+            }
+            else {
+                return 0
+            }
+            // return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0
+        })
+
+        let dbg_txt = ''
+        if (debug) {
+            $.each(s10_index_date, function(index, ele_now) {
+                dbg_txt += '[' + s10_eles[ele_now[0]].id + ' , '
+                dbg_txt += s10_eles[ele_now[0]].s10.get_date() + '] '
+            })
+            dbg_txt += ' ---> removing: '
+        }
+
+        $.each(s10_index_date, function(index, ele_now) {
+            if (index < max_ele_keep) {
+                s10_in.push(s10_eles[ele_now[0]])
+            }
+            else {
+                s10_out.push(s10_eles[ele_now[0]])
+            }
+
+            if (debug) {
+                if (index >= max_ele_keep) {
+                    dbg_txt += s10_eles[ele_now[0]].id + ' '
+                }
+            }
+        })
+        if (debug) {
+            console.log('- Sorted:', dbg_txt)
+        }
+
+        s10_eles = s10_in
+
+        $.each(s10_out, function(index, ele_now) {
+            // console.log('- removing:',index,ele_now.id,ele_now.s10,ele_now.s10.g_base)
+            ele_now.s10.cleanup()
+            ele_now.s10 = null
+
+            if (is_def(insts.data.prop_data_s1[ele_now.id])) {
+                delete insts.data.prop_data_s1[ele_now.id]
+                delete insts.data.prop_parent_s1[ele_now.id]
+                delete insts.data.prop_title_s1[ele_now.id]
+                delete insts.data.data_base_s1[ele_now.id]
+            }
+        })
+
+        s10_in = null
+        s10_out = null
+        s10_index_date = null
+
+        return
+    }
 
     // ------------------------------------------------------------------
     //
@@ -3639,13 +3715,13 @@ window.ArrZoomerMain = function(opt_in0) {
             s01_outer([])
         }
         else {
-            // let zoom_targetIndex = instruments.data.id_indices[zooms.target];
-            // let arr_props_target = [ instruments.data.tel[zoom_targetIndex] ];
+            // let zoom_targetIndex = insts.data.id_indices[zooms.target];
+            // let arr_props_target = [ insts.data.tel[zoom_targetIndex] ];
 
             let arr_props_on = []
             let arr_props_off = []
             let arr_props_target = []
-            $.each(instruments.data.tel, function(index, data_now) {
+            $.each(insts.data.tel, function(index, data_now) {
                 if (zooms.target === data_now.id || !is_def(links_2.xyz[zooms.target])) {
                     zooms.target = data_now.id
                     arr_props_on.push(data_now)
@@ -3702,12 +3778,12 @@ window.ArrZoomerMain = function(opt_in0) {
     //
     // ------------------------------------------------------------------
     function update_map(opt_in) {
-        let data_in = instruments.data.tel
+        let data_in = insts.data.tel
         let g_now = com.s00.g
         let pos_tag = 'xyr'
         let focus_0 = is_def(opt_in.focus_0) ? opt_in.focus_0 : []
         let focus_1 = is_def(opt_in.focus_1) ? opt_in.focus_1 : []
-        let tag_now = instruments.prop0
+        let tag_now = insts.prop0
 
         let focus_ids = [
             focus_0.map(function(d) {
@@ -3737,7 +3813,7 @@ window.ArrZoomerMain = function(opt_in0) {
             .append('circle')
             .attr('class', tag_now)
             .style('opacity', '0')
-            .attr('r', function(d) {
+            .attr('r', function(_) {
                 return 0
             })
             .style('stroke-width', '0.5')
@@ -3746,9 +3822,9 @@ window.ArrZoomerMain = function(opt_in0) {
             .attr('transform', function(d) {
                 return (
                     'translate('
-          + instruments.data[pos_tag][d.id].x
+          + insts.data[pos_tag][d.id].x
           + ','
-          + instruments.data[pos_tag][d.id].y
+          + insts.data[pos_tag][d.id].y
           + ')'
                 )
             })
@@ -3758,9 +3834,9 @@ window.ArrZoomerMain = function(opt_in0) {
             .attr('transform', function(d) {
                 return (
                     'translate('
-          + instruments.data[pos_tag][d.id].x
+          + insts.data[pos_tag][d.id].x
           + ','
-          + instruments.data[pos_tag][d.id].y
+          + insts.data[pos_tag][d.id].y
           + ')'
                 )
             })
@@ -3782,7 +3858,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 }
             })
             .attr('r', function(d) {
-                let r = instruments.data[pos_tag][d.id].r * scale_r[0].health2
+                let r = insts.data[pos_tag][d.id].r * scale_r[0].health2
                 if (is_focused(d, 1)) {
                     return r * 2
                 }

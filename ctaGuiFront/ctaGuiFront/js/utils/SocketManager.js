@@ -3,15 +3,11 @@
 /* global $ */
 /* global io */
 /* global d3 */
-/* global times */
 /* global unique */
 /* global is_def */
-/* global base_app */
 /* global deep_copy */
 /* global setup_view */
 /* global icon_badge */
-/* global run_loop_com */
-/* global dom_add */
 /* global run_when_ready */
 /* global loaded_scripts */
 
@@ -130,9 +126,9 @@ function SocketManager() {
         // -------------------------------------------------------------------
         function check_is_offline() {
             setTimeout(function() {
-                is_socket_connected = this_top.is_socket_connected()
-                this_top.con_stat.set_server_con_state(is_socket_connected)
-                // if(!is_socket_connected) {
+                let is_con = this_top.is_socket_connected()
+                this_top.con_stat.set_server_con_state(is_con)
+                // if(!is_con) {
                 //   if (this_top.con_stat.user_btn.checked) {
                 //     this_top.con_stat.set_user_con_state_opts(false)
                 //   }
@@ -165,7 +161,7 @@ function SocketManager() {
         // -------------------------------------------------------------------
         // upon leaving the session or leaving the page
         // -------------------------------------------------------------------
-        window.addEventListener('beforeunload', function(event, do_reload) {
+        window.addEventListener('beforeunload', function(_, do_reload) {
             this_top.is_reload = true
             // explicitly needed for firefox, but good in any case...
             if (this_top.socket) {
@@ -224,7 +220,7 @@ function SocketManager() {
         //
         // -------------------------------------------------------------------
         let has_loaded = false
-        this_top.socket.on('join_session_data', function(data) {
+        this_top.socket.on('join_session_data', function(_) {
             if (!has_loaded) {
                 if (is_def(setup_view[widget_name])) {
                     setup_view[widget_name]()
@@ -376,7 +372,7 @@ function SocketManager() {
             eleIn = opt_in.eleIn
         }
 
-        $(eleIn).mousemove(function(e) {
+        $(eleIn).mousemove(function(_) {
             if (Date.now() - prev_mouse_move < wait_mouse_move) {
                 return
             }
@@ -630,7 +626,7 @@ function SocketManager() {
         // let widget_source = 'widget_' + widget_type
         let widget_func = opt_in.widget_func
         let base_name = opt_in.base_name
-        let gs_name = opt_in.gs_name
+        // let gs_name = opt_in.gs_name
         let widget_id = opt_in.widget_id
         let tab_table = opt_in.tab_table
         let icon_divs = opt_in.icon_divs
@@ -683,9 +679,9 @@ function SocketManager() {
             }
 
             let gs_w = ele_props[widget_tag].w
-            let gs_h = ele_props[widget_tag].h
+            // let gs_h = ele_props[widget_tag].h
 
-            var ow = item_now.offsetWidth
+            // var ow = item_now.offsetWidth
             // var h0 = ow * 0.08
             var w_tot = 12
             var w0 = gs_w / w_tot
@@ -693,14 +689,12 @@ function SocketManager() {
             // var width = 100 * w0 - 0.5 + '%'
             // var height = h0 * gs_h + 'px'
             // var maxHeight = $(document).height() * 0.8
-            let item_now_style
-        = 'width:'
-        + width
-        // + '; height:'
-        // + height
-        // + '; max-height:'
-        // + maxHeight
-        // + 'px'
+            let item_now_style = 'width:' + width
+            // + '; height:'
+            // + height
+            // + '; max-height:'
+            // + maxHeight
+            // + 'px'
             item_now.setAttribute('style', item_now_style)
             item_now.classList.add('table_item')
             // tab_table._add_widget(gs_name, ele_props[data_now])

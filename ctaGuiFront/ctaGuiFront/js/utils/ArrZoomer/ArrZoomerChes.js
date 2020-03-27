@@ -3,32 +3,31 @@
 // ------------------------------------------------------------------
 /* global $ */
 /* global d3 */
-/* global sock */
 /* global times */
 /* global is_def */
 /* global inst_health_col */
-/* global bck_pattern */
 /* global tel_info */
 /* global vor_ploy_func */
+/* global cols_blues */
+/* global cols_purples */
+/* global min_max_obj */
+/* global move_node_up */
 
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
 window.ArrZoomerChes = function(opt_in_top) {
     let this_top = this
-    let run_loop = opt_in_top.run_loop
-    let widget_id = opt_in_top.widget_id
     let locker = opt_in_top.locker
     let is_south = opt_in_top.is_south
+    // let run_loop = opt_in_top.run_loop
+    // let widget_id = opt_in_top.widget_id
     // let my_unique_id = unique()
 
     let ele_base = opt_in_top.ele_base
 
     ele_base.set_ele(this_top, 'ches')
 
-
-    let instruments = ele_base.instruments
-    let scale_r = instruments.scale_r
     let lock_init_key = ele_base.lock_init_keys.ches
 
     let base_h = 500
@@ -45,15 +44,15 @@ window.ArrZoomerChes = function(opt_in_top) {
     // scale to 100x100 px (executed after create_ches_map())
     // ------------------------------------------------------------------
     function g_trans() {
-        let transChes = [ -1 * com.ches_xy.x.min, -1 * com.ches_xy.y.min ]
-        ches_gs.g_outer.attr('transform', function(d) {
-            return 'translate(' + transChes[0] + ', ' + transChes[1] + ')'
-        })
+        let trans_ches = [ -1 * com.ches_xy.x.min, -1 * com.ches_xy.y.min ]
+        ches_gs.g_outer.attr('transform',
+            'translate(' + trans_ches[0] + ', ' + trans_ches[1] + ')'
+        )
     
         let scaleChes = 100 / (com.ches_xy.x.max - com.ches_xy.x.min)
-        ches_gs.ches_g_base.attr('transform', function(d) {
-            return 'scale(' + scaleChes + ')'
-        })
+        ches_gs.ches_g_base.attr('transform',
+            'scale(' + scaleChes + ')'
+        )
 
         return
     }
@@ -79,70 +78,19 @@ window.ArrZoomerChes = function(opt_in_top) {
         },
     }
 
-    let zoom_target = null
-    let zoomLen = {
-    }
+    let prop0 = 'health'
     let tel_data = null
     let tel_id_types = null
-    let prop0 = 'health'
-
-    zoomLen['0.0'] = 1
-    if (is_south) {
-        zoomLen['0.1'] = 2 // - 0.4
-        zoomLen['0.2'] = 12 // - 4
-        zoomLen['1.0'] = 15 // - 6
-        zoomLen['1.1'] = zoomLen['1.0'] + 0.1
-        zoomLen['1.2'] = zoomLen['1.0'] + 2
-        zoomLen['1.3'] = 20
-    // zoomLen["0.1"]  = 4  //- 4
-    // zoomLen["0.2"]  = 10 //- 15.5
-    // zoomLen["1.0"]  = 12 //- 16.5
-    // zoomLen["1.1"]  = zoomLen["1.0"] + 0.1
-    // zoomLen["1.2"]  = zoomLen["1.0"] + 2
-    // zoomLen["1.3"]  = 90
-    }
-    else {
-        zoomLen['0.1'] = 2 // - 0.4
-        zoomLen['0.2'] = 5 // - 4
-        zoomLen['1.0'] = 6.5 // - 6
-        zoomLen['1.1'] = zoomLen['1.0'] + 0.1
-        zoomLen['1.2'] = zoomLen['1.0'] + 1
-        zoomLen['1.3'] = 9
-    }
-    zoomLen.prev = zoomLen['0.0']
-
-    // let zoom_to_target_tag = {
-    //   ches: 'zoom_to_target_ches'
-    // }
-
 
     // ------------------------------------------------------------------
     //  Chess function
     // ------------------------------------------------------------------
     function create_ches_map(opt_in) {
-        com.ches_zoom = d3.zoom().scaleExtent([
-            zoomLen['0.0'], zoomLen['1.3'],
-        ])
-        // com.ches_zoom.on('start', com.svg_zoom_start)
-        // com.ches_zoom.on('zoom', com.svg_zoom_duringChes)
-        // com.ches_zoom.on('end', com.svg_zoom_end)
-
         ches_gs.g_outer = ches_gs.ches_g_base.append('g')
 
-        ches_gs.ches_g_base
-            .call(com.ches_zoom)
-            .on('dblclick.zoom', null)
-            .on('wheel', function() {
-                d3.event.preventDefault()
-            })
-
-        // save the svg node to use for d3.zoomTransform() later
-        ches_gs.svgChes_zoom_node = ches_gs.ches_g_base.nodes()[0]
-        // ches_gs.g_ghes_zoomed = ches_gs.g_outer.append('g')
-
-        // add one rectangle as background, and to allow click to zoom
         // ------------------------------------------------------------------
-
+        // add one rectangle as background
+        // ------------------------------------------------------------------
         let g_ches_rec = ches_gs.g_outer.append('g')
 
         com.ches_g = {
@@ -151,12 +99,18 @@ window.ArrZoomerChes = function(opt_in_top) {
         com.ches_g.xyr = {
         }
 
-        // let nRows     = is_south ? 5 : 2;
-        // let n_ele = is_south ? 99 : 19
-        let n_ele_in_row = is_south ? [ 18, 18, 18, 18, 18 ] : [ 8, 8, 8 ]
-        let ele_r = is_south ? base_h / 16 : base_h / 6
-        let ele_space = is_south ? [ 3.9, 2.5 ] : [ 3.1, 1.5 ]
-        let ele_shift = is_south ? [ 2, 2 ] : [ 2, 3 ]
+        let n_ele_in_row = (
+            is_south ? [ 18, 18, 18, 18, 18 ] : [ 8, 8, 8 ]
+        )
+        let ele_r = (
+            is_south ? base_h / 16 : base_h / 6
+        )
+        let ele_space = (
+            is_south ? [ 3.9, 2.5 ] : [ 3.1, 1.5 ]
+        )
+        let ele_shift = (
+            is_south ? [ 2, 2 ] : [ 2, 3 ]
+        )
 
         let vor_data = []
         let n_ele_row = 0
@@ -164,7 +118,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             let n_ele_now_row = n_ele_row
             let n_ele_now_col = 0
 
-            $.each(Array(n_ele_in_row.length), function(i, d) {
+            $.each(Array(n_ele_in_row.length), function(i, _) {
                 if (n_ele_now_row >= n_ele_in_row[i]) {
                     n_ele_now_row -= n_ele_in_row[i]
                     n_ele_now_col++
@@ -227,11 +181,11 @@ window.ArrZoomerChes = function(opt_in_top) {
             .attr('width', (com.ches_xy.x.max - com.ches_xy.x.min))
             .attr('height', (com.ches_xy.y.max - com.ches_xy.y.min))
             .attr('stroke-width', '0')
-            .attr('transform', function(d) {
-                return 'translate(' + com.ches_xy.x.min + ', ' + com.ches_xy.y.min + ')'
-            })
+            .attr('transform',
+                'translate(' + com.ches_xy.x.min + ', ' + com.ches_xy.y.min + ')'
+            )
             .attr('fill', '#383b42')
-        // .attr("fill", "#d698bc")// .attr("fill", "#F2F2F2")
+            // .attr("fill", "#d698bc")// .attr("fill", "#F2F2F2")
 
         if (add_ches_outline) {
             g_ches_rec
@@ -256,6 +210,8 @@ window.ArrZoomerChes = function(opt_in_top) {
             ])
 
         com.ches_g.vor = vor_func.polygons(vor_data)
+
+        return
     }
   
   
@@ -264,7 +220,7 @@ window.ArrZoomerChes = function(opt_in_top) {
     // ------------------------------------------------------------------
     function update_chess_map(data_in, shift_y) {
         let tag_circ = prop0
-        let tag_lbl = 'lbls00title'
+        let tag_lbl = 'lbl_00_title'
         let tag_state = 'state_00'
         // let tag_txt = tag_state + tag_lbl
 
@@ -292,11 +248,8 @@ window.ArrZoomerChes = function(opt_in_top) {
             .style('pointer-events', 'none')
             .attr('transform', function(d) {
                 return (
-                    'translate('
-                    + com.ches_g.xyr[d.id].x
-                    + ','
-                    + com.ches_g.xyr[d.id].y
-                    + ')'
+                    ('translate(' + com.ches_g.xyr[d.id].x + ',')
+                    + (com.ches_g.xyr[d.id].y + ')')
                 )
             })
             .style('fill-opacity', fill_opac)
@@ -323,11 +276,13 @@ window.ArrZoomerChes = function(opt_in_top) {
         function txt_col_rc(d) {
             let index = (
                 com.ches_g.xyr[d.id].rc[0]
-        + com.ches_g.xyr[d.id].rc[1]
+                + com.ches_g.xyr[d.id].rc[1]
             )
-            return index % 2 === 0
-                ? d3.rgb(cols_purples[4]).brighter(0.5)
-                : d3.rgb(cols_blues[3]).brighter(0.1)
+            return (
+                index % 2 === 0
+                    ? d3.rgb(cols_purples[4]).brighter(0.5)
+                    : d3.rgb(cols_blues[3]).brighter(0.1)
+            )
         }
         function txt_col_rcb(d) {
             return d3.rgb(txt_col_rc(d)).brighter(0.2)
@@ -335,9 +290,10 @@ window.ArrZoomerChes = function(opt_in_top) {
 
         // attach new data (select by id, and so will override
         // existing data if has the same id)
-        let text = com.ches_g.g.selectAll('text.' + tag_lbl).data(data_in, function(d) {
-            return d.id
-        })
+        let text = com.ches_g.g.selectAll('text.' + tag_lbl)
+            .data(data_in, function(d) {
+                return d.id
+            })
 
         // operate on new elements only
         text
@@ -346,28 +302,25 @@ window.ArrZoomerChes = function(opt_in_top) {
             .text(function(d) {
                 return tel_info.get_title(d.id)
             })
-        // .attr("id",      function(d) { return my_unique_id+d.id+tag_txt; })
+            // .attr("id",      function(d) { return my_unique_id+d.id+tag_txt; })
             .attr('class', tag_state + ' ' + tag_lbl)
             .style('font-weight', 'normal')
             .attr('stroke-width', text_strk)
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
-            .each(function(d, i) {
+            .each(function(d) {
                 d.font_scale = String(font_scale)
                 d.shift_y = shift_y
             })
-        // .style("stroke",    function(d) { return "#F2F2F2";  return "#383b42"; })
-        // .style("stroke",   function(d) { return inst_health_col(d[tag_circ]); } )
+            // .style("stroke",    function(d) { return "#F2F2F2";  return "#383b42"; })
+            // .style("stroke",   function(d) { return inst_health_col(d[tag_circ]); } )
             .style('stroke', txt_col_rcb)
             .style('fill', txt_col_rc)
             .style('font-size', title_size + 'px')
-            .attr('transform', function(d, i) {
+            .attr('transform', function(d) {
                 return (
-                    'translate('
-          + com.ches_g.xyr[d.id].x
-          + ','
-          + com.ches_g.xyr[d.id].y
-          + ')'
+                    ('translate(' + com.ches_g.xyr[d.id].x + ',')
+                    + (com.ches_g.xyr[d.id].y + ')')
                 )
             })
             .attr('dy', title_size / 3 + 'px')
@@ -392,7 +345,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             let scale_r = is_south ? 2.0 : 1.1
 
             let is_ele_on
-            let data_in_id = is_def(data_in.data) ? data_in.data.id : ''
+            let data_in_id = (is_def(data_in.data) ? data_in.data.id : '')
             if (is_on) {
                 is_ele_on = function(d) {
                     return d.id === data_in_id
@@ -423,7 +376,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             circ
                 .transition('update')
                 .duration(times.anim * (is_on ? 0.5 : 0.1))
-            // .style("opacity", function(d) { return is_ele_on(d) ? 1 : (is_on?0.5:1);  })
+                // .style("opacity", function(d) { return is_ele_on(d) ? 1 : (is_on?0.5:1);  })
                 .style('fill-opacity', function(d) {
                     return is_ele_on(d) ? 1 : 0
                 })
@@ -439,16 +392,24 @@ window.ArrZoomerChes = function(opt_in_top) {
                 .transition('update')
                 .duration(times.anim * (is_on ? 1 : 0.1))
                 .style('font-size', function(d) {
-                    return (is_ele_on(d) ? title_size * scale_r : title_size) + 'px'
+                    return (
+                        (is_ele_on(d) ? title_size * scale_r : title_size) + 'px'
+                    )
                 })
                 .attr('dy', function(d) {
-                    return (is_ele_on(d) ? title_size * scale_r : title_size) / 3 + 'px'
+                    return (
+                        (is_ele_on(d) ? title_size * scale_r : title_size) / 3 + 'px'
+                    )
                 })
                 .attr('stroke-width', function(d) {
-                    return is_ele_on(d) ? text_strk + 0.7 : text_strk
+                    return (
+                        is_ele_on(d) ? text_strk + 0.7 : text_strk
+                    )
                 })
                 .style('font-weight', function(d) {
-                    return is_ele_on(d) ? 'bold' : 'normal'
+                    return (
+                        is_ele_on(d) ? 'bold' : 'normal'
+                    )
                 })
         }
 
@@ -462,6 +423,8 @@ window.ArrZoomerChes = function(opt_in_top) {
                 }
                 locker.remove('svg_quick_focus_tel')
             }, delay)
+
+            return
         }
 
 
@@ -520,22 +483,6 @@ window.ArrZoomerChes = function(opt_in_top) {
         create_ches_map()
         g_trans()
 
-        // initialize the target name for hovering->zoom
-        this_top.target = zoom_target
-        // programatic zoom to some target and scale - only use
-        // the last of any set of ovelapping zoom requests
-        // run_loop.init({
-        //   tag: zoom_to_target_tag.ches,
-        //   func: do_zoom_to_target,
-        //   n_keep: -1
-        // })
-
-        // // the actual function to be called when a zoom needs to be put in the queue
-        // zoomToTrgQuick = function (opt_in) {
-        //   zoom_to_target_now(opt_in, 'ches')
-        // }
-        // this_top.zoomToTrgQuick = zoomToTrgQuick
-
         set_state_once()
 
         locker.remove(lock_init_key)
@@ -548,35 +495,8 @@ window.ArrZoomerChes = function(opt_in_top) {
     // ------------------------------------------------------------------
     function set_state_once() {
         update_chess_map(tel_data.tel, false)
-    // update_chess_map(tel_data.tel, is_south ? 2.7 : 5, false)
     }
     this.set_state_once = set_state_once
-
-    // // ------------------------------------------------------------------
-    // // initialize a global function (to be overriden below)
-    // // ------------------------------------------------------------------
-    // let zoomToTrgQuick = function (opt_in) {
-    //   if (!locker.is_free('in_init')) {
-    //     setTimeout(function () {
-    //       zoomToTrgQuick(opt_in)
-    //     }, times.wait_loop)
-    //   }
-    // }
-    // this_top.zoomToTrgQuick = zoomToTrgQuick
-    // // initialize a couple of functions to be overriden below
-  
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
-    let get_scale = function() {
-        return zoomLen['0.0']
-    }
-    this.get_scale = get_scale
-  
-    let get_trans = function() {
-        return [ 0, 0 ]
-    }
-    this.get_trans = get_trans
 
     return
 }

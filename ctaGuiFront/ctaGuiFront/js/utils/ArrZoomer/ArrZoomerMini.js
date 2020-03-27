@@ -5,19 +5,14 @@
 
 /* global $ */
 /* global d3 */
-/* global sock */
 /* global times */
 /* global is_def */
-/* global dom_add */
-/* global run_when_ready */
-/* global cols_purples */
 /* global do_zoom_to_target */
 /* global inst_health_col */
 /* global bck_pattern */
-/* global cols_blues */
 /* global tel_info */
-/* global move_node_up */
 /* global vor_ploy_func */
+/* global unique */
 
 // ------------------------------------------------------------------
 //
@@ -25,29 +20,36 @@
 window.ArrZoomerMini = function(opt_in0) {
     let this_top = this
     let run_loop = opt_in0.run_loop
-    let widget_id = opt_in0.widget_id
+    // let widget_id = opt_in0.widget_id
     let locker = opt_in0.locker
     let is_south = opt_in0.is_south
     let isLens = opt_in0.isLens
     let my_unique_id = unique()
-    let parentUniqueId = opt_in0.my_unique_id
   
-    let dblclick_zoom_in_out = is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
-    let has_titles = is_def(opt_in0.has_titles) ? opt_in0.has_titles : false
-    let pointerEvents = is_def(opt_in0.pointerEvents) ? opt_in0.pointerEvents : !isLens
-    this_top.static_zoom = is_def(opt_in0.static_zoom) ? opt_in0.static_zoom : true
+    let dblclick_zoom_in_out = (
+        is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
+    )
+    let has_titles = (
+        is_def(opt_in0.has_titles) ? opt_in0.has_titles : false
+    )
+    let pointerEvents = (
+        is_def(opt_in0.pointerEvents) ? opt_in0.pointerEvents : !isLens
+    )
+    this_top.static_zoom = (
+        is_def(opt_in0.static_zoom) ? opt_in0.static_zoom : true
+    )
 
-    let miniLensTag = isLens ? 'Lens' : 'Mini'
+    let mini_lens_tag = isLens ? 'Lens' : 'Mini'
   
     let ele_base = opt_in0.ele_base
-    let instruments = ele_base.instruments
+    let insts = ele_base.insts
     let zooms = ele_base.zooms
-    let lock_init_key = ele_base.lock_init_keys[miniLensTag.toLowerCase()]
+    let lock_init_key = ele_base.lock_init_keys[mini_lens_tag.toLowerCase()]
 
-    let scale_r = instruments.scale_r
+    let scale_r = insts.scale_r
 
     let svg_dims = {
-    // w: 500, h: 500, frac_circ_wh: 1,
+        // w: 500, h: 500, frac_circ_wh: 1,
         w: 600,
         h: 600,
         frac_circ_wh: 0.85,
@@ -55,13 +57,13 @@ window.ArrZoomerMini = function(opt_in0) {
 
     let site_scale = ele_base.site_scale
 
-    let show_vor = false
+    // let show_vor = false
     this_top.has_init = false
 
-    ele_base.set_ele(this_top, miniLensTag.toLowerCase())
+    ele_base.set_ele(this_top, mini_lens_tag.toLowerCase())
     let get_ele = ele_base.get_ele
 
-    let mini_gs = ele_base.svgs[miniLensTag.toLowerCase()]
+    let mini_gs = ele_base.svgs[mini_lens_tag.toLowerCase()]
     mini_gs.g = ele_base.svgs.g_svg.append('g')
     mini_gs.g_mini = mini_gs.g.append('g')
     // mini_gs.g_base = mini_gs.g_mini.append('g')
@@ -83,16 +85,16 @@ window.ArrZoomerMini = function(opt_in0) {
         .attr('clip-path', 'url(#' + unique_clip_id + ')')
 
     mini_gs.g_base = mini_gs.clipped_g.append('g')
-    mini_gs.gBack = mini_gs.g_base.append('g')
+    mini_gs.g_back = mini_gs.g_base.append('g')
 
     // ------------------------------------------------------------------
     // scale to 100x100 px (executed after createChessMap())
     // ------------------------------------------------------------------
     function g_trans() {
-        let scaleMini = 100 / svg_dims.w
-        mini_gs.g_mini.attr('transform', function(d) {
-            return 'translate(0,0)scale(' + scaleMini + ')'
-        })
+        let scale_mini = 100 / svg_dims.w
+        mini_gs.g_mini.attr('transform',
+            'translate(0,0)scale(' + scale_mini + ')'
+        )
         return
     }
 
@@ -113,7 +115,7 @@ window.ArrZoomerMini = function(opt_in0) {
     this_top.com = com
     let zoom_target = null
     let tel_data = null
-    let tel_id_types = null
+    // let tel_id_types = null
     let prop0 = 'health'
 
     let miniMapCol = {
@@ -141,7 +143,7 @@ window.ArrZoomerMini = function(opt_in0) {
             .attr('pointer-events', 'none')
             .attr('opacity', 1)
 
-        mini_gs.gBack
+        mini_gs.g_back
             .append('rect')
             .attr('x', 0)
             .attr('y', 0)
@@ -153,7 +155,7 @@ window.ArrZoomerMini = function(opt_in0) {
         // .style('opacity', isLens?0.1:1)
 
 
-        // mini_gs.gBack
+        // mini_gs.g_back
         //   .append('rect')
         //   .attr('x', 0)
         //   .attr('y', 0)
@@ -167,12 +169,12 @@ window.ArrZoomerMini = function(opt_in0) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        get_ele('main').add_back_shapes(mini_gs.gBack, svg_dims, ele_base.tel_types)
+        get_ele('main').add_back_shapes(mini_gs.g_back, svg_dims, ele_base.tel_types)
 
         // the background grid
         bck_pattern({
             com: com,
-            g_now: mini_gs.gBack,
+            g_now: mini_gs.g_back,
             g_tag: 'g_base_mini',
             len_wh: [ svg_dims.w, svg_dims.h ],
             opac: 0.2,
@@ -204,13 +206,13 @@ window.ArrZoomerMini = function(opt_in0) {
     // ------------------------------------------------------------------
         function svg_zoom_start() {
             if (!locker.are_free([
-                'zoom_sync_main', ('zoom_sync' + miniLensTag), 'in_zoom_main',
+                'zoom_sync_main', ('zoom_sync' + mini_lens_tag), 'in_zoom_main',
             ])) {
                 return
             }
       
             locker.add({
-                id: ('inZoom' + miniLensTag),
+                id: ('inZoom' + mini_lens_tag),
                 override: true,
             })
             return
@@ -221,7 +223,7 @@ window.ArrZoomerMini = function(opt_in0) {
         // ------------------------------------------------------------------
         function svg_zoom_during() {
             if (!locker.are_free([
-                'zoom_sync_main', ('zoom_sync' + miniLensTag), 'in_zoom_main',
+                'zoom_sync_main', ('zoom_sync' + mini_lens_tag), 'in_zoom_main',
             ])) {
                 return
             }
@@ -232,7 +234,7 @@ window.ArrZoomerMini = function(opt_in0) {
             // mini_zoom_view_recOnce({ animT: 0 })
 
             $.each([ 'main', 'mini', 'lens' ], function(i, d) {
-                if (d == miniLensTag) {
+                if (d == mini_lens_tag) {
                     return
                 }
 
@@ -255,7 +257,7 @@ window.ArrZoomerMini = function(opt_in0) {
         // ------------------------------------------------------------------
         function svg_zoom_end() {
             if (!locker.are_free([
-                'zoom_sync_main', ('zoom_sync' + miniLensTag), 'in_zoom_main',
+                'zoom_sync_main', ('zoom_sync' + mini_lens_tag), 'in_zoom_main',
             ])) {
                 return
             }
@@ -265,7 +267,7 @@ window.ArrZoomerMini = function(opt_in0) {
             // console.log('-svg_zoom_end-svg_zoom_end-', d3.event)
 
             $.each([ 'main', 'mini', 'lens' ], function(i, d) {
-                if (d == miniLensTag) {
+                if (d == mini_lens_tag) {
                     return
                 }
 
@@ -278,7 +280,7 @@ window.ArrZoomerMini = function(opt_in0) {
 
 
             // remove the lock before possible zoom_to_target_main()
-            locker.remove(('inZoom' + miniLensTag))
+            locker.remove(('inZoom' + mini_lens_tag))
 
 
             if (Math.abs(this_top.get_scale() - zooms.len['0.0']) < 0.00001) {
@@ -300,17 +302,17 @@ window.ArrZoomerMini = function(opt_in0) {
         // ------------------------------------------------------------------
         function zoom_sync(trans) {
             if (!locker.are_free([
-                ('zoom_sync' + miniLensTag), ('inZoom' + miniLensTag),
+                ('zoom_sync' + mini_lens_tag), ('inZoom' + mini_lens_tag),
             ])) {
                 return
             }
 
             locker.add({
-                id: ('zoom_sync' + miniLensTag),
+                id: ('zoom_sync' + mini_lens_tag),
                 override: true,
             })
             function func_end() {
-                locker.remove(('zoom_sync' + miniLensTag))
+                locker.remove(('zoom_sync' + mini_lens_tag))
             }
 
             let x = (svg_dims.w / 2 - trans.x) / trans.k
@@ -442,41 +444,27 @@ window.ArrZoomerMini = function(opt_in0) {
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
             .style('stroke', '#383b42')
-            .style('font-size', function(d) {
-                return font_size0 + 'px'
-            })
-            .attr('dy', function(d) {
-                return font_size0 / 3 + 'px'
-            })
-            .attr('transform', function(d, i) {
+            .style('font-size', font_size0 + 'px')
+            .attr('dy', font_size0 / 3 + 'px')
+            .attr('transform', function(d) {
                 return (
-                    'translate(' + instruments.data.xyr[d.id].x + ',' + instruments.data.xyr[d.id].y + ')'
+                    'translate(' + insts.data.xyr[d.id].x
+                    + ',' + insts.data.xyr[d.id].y + ')'
                 )
             })
             .attr('text-anchor', 'middle')
             .merge(text)
             .transition('in_out')
             .duration(times.anim)
-            .attr('transform', function(d, i) {
+            .attr('transform', function(d) {
                 let shiftVal = 0
-                // let shiftVal = ele_base.tel_rs.s00[3]*2
-                // if (is_focused(d, 1)) {
-                //   shiftVal = instruments.data.xyr[d.id].r * (scale_r[1].health1 + 0.5)
-                // }
                 return (
-                    'translate('
-          + instruments.data.xyr[d.id].x
-          + ','
-          + (instruments.data.xyr[d.id].y - shiftVal)
-          + ')'
+                    ('translate(' + insts.data.xyr[d.id].x)
+                    + (',' + (insts.data.xyr[d.id].y - shiftVal) + ')')
                 )
             })
-            .style('font-size', function(d) {
-                return font_size0 + 'px'
-            })
-            .attr('dy', function(d) {
-                return font_size0 / 3 + 'px'
-            })
+            .style('font-size', font_size0 + 'px')
+            .attr('dy', font_size0 / 3 + 'px')
             .style('opacity', 1)
 
         text
@@ -709,10 +697,10 @@ window.ArrZoomerMini = function(opt_in0) {
         //   this_top.target = d.data.id
         // })
 
-            .on('mouseover', instruments.data.hover)
-            .on('click', instruments.data.click)
+            .on('mouseover', insts.data.hover)
+            .on('click', insts.data.click)
             .on('dblclick', function(d) {
-                instruments.data.dblclick({
+                insts.data.dblclick({
                     d: d,
                     is_in_out: dblclick_zoom_in_out,
                 })
@@ -729,7 +717,7 @@ window.ArrZoomerMini = function(opt_in0) {
         this_top.has_init = true
 
         tel_data = data_in.instrument_data
-        tel_id_types = data_in.tel_id_types
+        // tel_id_types = data_in.tel_id_types
 
         setupZoom()
         createMiniMap()
@@ -776,7 +764,7 @@ window.ArrZoomerMini = function(opt_in0) {
     // updateMiniMap ({
     //   dataV: tel_data.tel,
     //   g_now: com.g_base_mini.circ,
-    //   pos_tag: miniLensTag.toLowerCase(),
+    //   pos_tag: mini_lens_tag.toLowerCase(),
     // })
     }
     this_top.set_state_once = set_state_once

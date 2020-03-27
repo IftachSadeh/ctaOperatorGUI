@@ -6,10 +6,15 @@
 /* global $ */
 /* global d3 */
 /* global times */
+/* global tau */
 /* global unique */
 /* global is_def */
 /* global run_when_ready */
 /* global tel_info */
+/* global ArrZoomerMain */
+/* global ArrZoomerMini */
+/* global ArrZoomerChes */
+/* global ArrZoomerTree */
 
 let load_script_tag = 'ArrZoomerBase'
 
@@ -100,60 +105,60 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.zooms = zooms
     zooms.target = ''
 
-    let instruments = {
+    let insts = {
     }
-    this_top.instruments = instruments
+    this_top.insts = insts
   
-    instruments.props = {
+    insts.props = {
     }
-    instruments.props0 = {
+    insts.props0 = {
     }
-    instruments.tau_fracs = {
+    insts.tau_fracs = {
     }
-    instruments.prop_titles = {
+    insts.prop_titles = {
     }
-    instruments.all_ids = []
-    instruments.all_ids0 = []
-    instruments.all_props = []
-    instruments.all_props0 = []
-    instruments.prop0 = 'health'
-    instruments.prop_title0 = 'Health'
-    instruments.tau_space = tau / 50
+    insts.all_ids = []
+    insts.all_ids0 = []
+    insts.all_props = []
+    insts.all_props0 = []
+    insts.prop0 = 'health'
+    insts.prop_title0 = 'Health'
+    insts.tau_space = tau / 50
 
-    instruments.data = {
+    insts.data = {
     }
-    instruments.data.tel = []
-    instruments.data.id_indices = {
+    insts.data.tel = []
+    insts.data.id_indices = {
     }
-    instruments.data.data_base_s1 = {
+    insts.data.data_base_s1 = {
     }
-    instruments.data.prop_data_s1 = {
+    insts.data.prop_data_s1 = {
     }
-    instruments.data.prop_parent_s1 = {
+    insts.data.prop_parent_s1 = {
     }
-    instruments.data.prop_title_s1 = {
-    }
-
-    instruments.scale_r = {
-    }
-    instruments.scale_r[0] = {
-    }
-    instruments.scale_r[1] = {
+    insts.data.prop_title_s1 = {
     }
 
-    instruments.scale_r[0].health0 = 1.1
-    instruments.scale_r[0].health1 = 1.2
-    instruments.scale_r[0].health2 = 1.35
-    instruments.scale_r[0].line0 = 1.2
-    instruments.scale_r[0].line1 = 1.8
-    instruments.scale_r[0].percent = 0.6
-    instruments.scale_r[0].label = 1.95
-    instruments.scale_r[0].title = 2.05
+    insts.scale_r = {
+    }
+    insts.scale_r[0] = {
+    }
+    insts.scale_r[1] = {
+    }
 
-    instruments.scale_r[1].health0 = 1.5
-    instruments.scale_r[1].health1 = 1.65
-    instruments.scale_r[1].inner_h0 = 1.25
-    instruments.scale_r[1].inner_h1 = 1.3
+    insts.scale_r[0].health0 = 1.1
+    insts.scale_r[0].health1 = 1.2
+    insts.scale_r[0].health2 = 1.35
+    insts.scale_r[0].line0 = 1.2
+    insts.scale_r[0].line1 = 1.8
+    insts.scale_r[0].percent = 0.6
+    insts.scale_r[0].label = 1.95
+    insts.scale_r[0].title = 2.05
+
+    insts.scale_r[1].health0 = 1.5
+    insts.scale_r[1].health1 = 1.65
+    insts.scale_r[1].inner_h0 = 1.25
+    insts.scale_r[1].inner_h1 = 1.3
 
     this_top.site_scale = is_south ? 4 / 9 : 1
   
@@ -194,18 +199,18 @@ window.ArrZoomerBase = function(opt_in0) {
     function init_inst_props(data_in) {
         let tel_prop_types = data_in.tel_prop_types
     
-        instruments.all_props0.push(instruments.prop0)
-        instruments.all_ids0.push('')
-        instruments.props[''] = []
-        instruments.props0[''] = [ instruments.prop0 ]
-        instruments.prop_titles[''] = {
+        insts.all_props0.push(insts.prop0)
+        insts.all_ids0.push('')
+        insts.props[''] = []
+        insts.props0[''] = [ insts.prop0 ]
+        insts.prop_titles[''] = {
         }
 
         // --FIXME-- currently sorting by the property name, but
         // should actually be by property title ...
         function prop_sort(arr_in) {
-            arr_in.sort().sort(function(a, b) {
-                if (a === instruments.prop0) {
+            arr_in.sort().sort(function(a, _) {
+                if (a === insts.prop0) {
                     return -1
                 }
                 else {
@@ -223,43 +228,46 @@ window.ArrZoomerBase = function(opt_in0) {
             // if (!isTelTypeIn('main', id_now)) return
             // console.log(isTelTypeIn('main', id_now),id_now, typeV)
 
-            instruments.props[id_now] = []
-            instruments.props0[id_now] = [ instruments.prop0 ]
-            instruments.prop_titles[id_now] = {
+            insts.props[id_now] = []
+            insts.props0[id_now] = [ insts.prop0 ]
+            insts.prop_titles[id_now] = {
             }
 
-            instruments.all_ids.push(id_now)
-            instruments.all_ids0.push(id_now)
+            insts.all_ids.push(id_now)
+            insts.all_ids0.push(id_now)
 
             $.each(typeV, function(i, type_now) {
-                instruments.props[id_now].push(type_now.id)
-                instruments.props0[id_now].push(type_now.id)
-                instruments.prop_titles[id_now][type_now.id] = type_now.title
+                insts.props[id_now].push(type_now.id)
+                insts.props0[id_now].push(type_now.id)
+                insts.prop_titles[id_now][type_now.id] = type_now.title
 
-                if (instruments.props[''].indexOf(type_now.id) === -1) {
-                    instruments.props[''].push(type_now.id)
-                    instruments.props0[''].push(type_now.id)
-                    instruments.prop_titles[''][type_now.id] = type_now.title
+                if (insts.props[''].indexOf(type_now.id) === -1) {
+                    insts.props[''].push(type_now.id)
+                    insts.props0[''].push(type_now.id)
+                    insts.prop_titles[''][type_now.id] = type_now.title
                 }
 
-                if (instruments.all_props.indexOf(type_now.id) === -1) {
-                    instruments.all_props.push(type_now.id)
-                    instruments.all_props0.push(type_now.id)
+                if (insts.all_props.indexOf(type_now.id) === -1) {
+                    insts.all_props.push(type_now.id)
+                    insts.all_props0.push(type_now.id)
                 }
             })
-            prop_sorts([ instruments.props[id_now], instruments.props0[id_now] ])
+            prop_sorts([ insts.props[id_now], insts.props0[id_now] ])
 
-            instruments.prop_titles[id_now][instruments.prop0] = instruments.prop_title0
-            instruments.tau_fracs[id_now] = tau / instruments.props[id_now].length
-            instruments.prop_titles[''][instruments.prop0] = instruments.prop_title0
+            insts.prop_titles[id_now][insts.prop0] = insts.prop_title0
+            insts.tau_fracs[id_now] = tau / insts.props[id_now].length
+            insts.prop_titles[''][insts.prop0] = insts.prop_title0
         })
-        instruments.tau_fracs[''] = tau / instruments.props[''].length
+        insts.tau_fracs[''] = tau / insts.props[''].length
 
-        prop_sorts([ instruments.props[''], instruments.props0[''], instruments.all_props, instruments.all_props0 ])
+        prop_sorts([
+            insts.props[''], insts.props0[''],
+            insts.all_props, insts.all_props0,
+        ])
 
-        instruments.props['avg'] = instruments.props[''] // .slice()
-        instruments.props0['avg'] = instruments.props0[''] // .slice()
-        instruments.tau_fracs['avg'] = instruments.tau_fracs['']
+        insts.props['avg'] = insts.props[''] // .slice()
+        insts.props0['avg'] = insts.props0[''] // .slice()
+        insts.tau_fracs['avg'] = insts.tau_fracs['']
 
         return
     }
@@ -270,10 +278,10 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     function set_tel_data(data_in, isInit) {
         if (isInit) {
-            instruments.data.tel = []
-            instruments.data.avg = {
+            insts.data.tel = []
+            insts.data.avg = {
             }
-            instruments.data.id_indices = {
+            insts.data.id_indices = {
             }
         }
 
@@ -288,40 +296,40 @@ window.ArrZoomerBase = function(opt_in0) {
             }
             tel_data.id = id
 
-            $.each(instruments.props0[tel_data.id], function(index, porp_now) {
+            $.each(insts.props0[tel_data.id], function(index, porp_now) {
                 tel_data[porp_now] = is_def(data_now[porp_now])
                     ? Math.round(data_now[porp_now])
                     : 0
             })
 
             if (isInit) {
-                instruments.data.id_indices[id] = instruments.data.tel.length
-                instruments.data.tel.push(tel_data)
+                insts.data.id_indices[id] = insts.data.tel.length
+                insts.data.tel.push(tel_data)
             }
             else {
-                let origIndex = instruments.data.id_indices[id]
-                instruments.data.tel[origIndex] = tel_data
+                let origIndex = insts.data.id_indices[id]
+                insts.data.tel[origIndex] = tel_data
             }
         })
 
         // average of each property
-        instruments.data.avg.id = 'avg'
-        let props_now = instruments.props0[instruments.data.avg.id]
+        insts.data.avg.id = 'avg'
+        let props_now = insts.props0[insts.data.avg.id]
         $.each(props_now, function(index, porp_now) {
-            instruments.data.avg[porp_now] = 0
-            $.each(instruments.data.tel, function(id, data_now) {
+            insts.data.avg[porp_now] = 0
+            $.each(insts.data.tel, function(id, data_now) {
                 // console.log('    ++',id,porp_now,data_now[porp_now])
                 if (
                     data_now[porp_now] !== undefined
                     && typeof data_now[porp_now] === 'number'
                 ) {
-                    instruments.data.avg[porp_now] += data_now[porp_now]
+                    insts.data.avg[porp_now] += data_now[porp_now]
                 }
             })
-            // console.log('--',porp_now,instruments.data.avg[porp_now] , instruments.data.tel.length)
-            instruments.data.avg[porp_now] /= instruments.data.tel.length
+            // console.log('--',porp_now,insts.data.avg[porp_now] , insts.data.tel.length)
+            insts.data.avg[porp_now] /= insts.data.tel.length
         })
-        // console.log('SSS-------------SS',instruments.data, instruments.props0)
+        // console.log('SSS-------------SS',insts.data, insts.props0)
 
         return
     }
@@ -333,7 +341,7 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     function get_tel_props(keys, tel_Id) {
         return keys.filter(function(k) {
-            return instruments.props[tel_Id].indexOf(k) !== -1
+            return insts.props[tel_Id].indexOf(k) !== -1
         })
     }
     this_top.get_tel_props = get_tel_props
@@ -418,7 +426,7 @@ window.ArrZoomerBase = function(opt_in0) {
         set_tel_data(data_in.arrProp, true)
 
         // arbitrary but safe initialization of target
-        zooms.target = instruments.data.tel[0].id
+        zooms.target = insts.data.tel[0].id
 
 
         // ------------------------------------------------------------------
@@ -498,8 +506,8 @@ window.ArrZoomerBase = function(opt_in0) {
             let eleChes = new ArrZoomerChes(ele_opts_ches)
             eleChes.init_data({
                 instrument_data: {
-                    tel: instruments.data.tel,
-                    vor_dblclick: instruments.data.dblclick,
+                    tel: insts.data.tel,
+                    vor_dblclick: insts.data.dblclick,
                 },
                 tel_id_types: tel_id_types,
             })
@@ -526,12 +534,12 @@ window.ArrZoomerBase = function(opt_in0) {
             let eleMini = new ArrZoomerMini(ele_opts_mini)
             eleMini.init_data({
                 instrument_data: {
-                    tel: instruments.data.tel,
+                    tel: insts.data.tel,
                     vor: {
-                        data: instruments.data.vor.data,
+                        data: insts.data.vor.data,
                     },
-                    xyr_physical: instruments.data.mini,
-                    vor_dblclick: instruments.data.dblclick,
+                    xyr_physical: insts.data.mini,
+                    vor_dblclick: insts.data.dblclick,
                 },
                 tel_id_types: tel_id_types,
             })
@@ -560,13 +568,13 @@ window.ArrZoomerBase = function(opt_in0) {
             let eleLens = new ArrZoomerMini(ele_opts_lens)
             eleLens.init_data({
                 instrument_data: {
-                    tel: instruments.data.tel,
+                    tel: insts.data.tel,
                     vor: {
-                        data: instruments.data.vor.data,
+                        data: insts.data.vor.data,
                     },
-                    xyr_physical: instruments.data.lens,
-                    // xyr: instruments.data.xyr,
-                    vor_dblclick: instruments.data.dblclick,
+                    xyr_physical: insts.data.lens,
+                    // xyr: insts.data.xyr,
+                    vor_dblclick: insts.data.dblclick,
                 },
                 tel_id_types: tel_id_types,
             })
@@ -716,15 +724,15 @@ window.ArrZoomerBase = function(opt_in0) {
 
         let new_data = data_in.data.data
         let tel_Id = data_in.data.id
-        let tel_index = instruments.data.id_indices[tel_Id]
+        let tel_index = insts.data.id_indices[tel_Id]
 
         // if by the time the update has arrived,
         // were already gone from this element...
-        if (!is_def(instruments.data.prop_data_s1[tel_Id])) {
-            // console.log('-+-> update_s1: could not find',tel_Id,'in instruments.data.prop_data_s1')
+        if (!is_def(insts.data.prop_data_s1[tel_Id])) {
+            // console.log('-+-> update_s1: could not find',tel_Id,'in insts.data.prop_data_s1')
             return
         }
-        // console.log('````',data_in.data,instruments.data.prop_data_s1[tel_Id]);
+        // console.log('````',data_in.data,insts.data.prop_data_s1[tel_Id]);
 
         locker.add('data_change')
 
@@ -732,14 +740,16 @@ window.ArrZoomerBase = function(opt_in0) {
         // update the underlying data
         // ------------------------------------------------------------------
         let props_now = get_tel_props(
-            Object.keys(instruments.data.prop_data_s1[tel_Id]), tel_Id)
+            Object.keys(insts.data.prop_data_s1[tel_Id]), tel_Id)
     
         $.each(props_now, function(index, porp_now) {
             // update the data container with the s0 updated health
-            instruments.data.prop_data_s1[tel_Id][porp_now].val = instruments.data.tel[tel_index][porp_now]
+            insts.data.prop_data_s1[tel_Id][porp_now].val = (
+                insts.data.tel[tel_index][porp_now]
+            )
 
             // now go through the hirch
-            let data_now = instruments.data.prop_data_s1[tel_Id][porp_now]
+            let data_now = insts.data.prop_data_s1[tel_Id][porp_now]
             update_data_now(data_now)
 
             function update_data_now(d) {
@@ -1181,7 +1191,10 @@ window.ArrZoomerBase = function(opt_in0) {
         }
 
         if (data_in.type === 'sync_tel_focus') {
-            let sync_locks = [ 'in_init', 'zoom', 'auto_zoom_target', 'set_state_lock', 'data_change' ]
+            let sync_locks = [
+                'in_init', 'zoom', 'auto_zoom_target',
+                'set_state_lock', 'data_change',
+            ]
             if (!locker.are_free(sync_locks)) {
                 setTimeout(function() {
                     sync_state_send(data_in)

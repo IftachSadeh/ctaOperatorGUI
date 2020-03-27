@@ -1,7 +1,14 @@
-'use strict'
 /* global $ */
 /* global d3 */
+/* global Locker */
+/* global RunLoop */
+/* global move_node_up */
+/* global times */
+/* global merge_obj */
+/* global add_node_style */
+/* global add_node_attr */
 /* global new_d3_node */
+/* global ScrollBox */
 
 window.new_d3_node = function(g, type, attr, style) {
     let ret = g.append(type)
@@ -21,39 +28,38 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
         .attr('height', box.h + 'px')
         .attr('x', box.x + 'px')
         .attr('y', box.y + 'px')
+    
     let root_div = fo
         .append('xhtml:div')
         .attr('class', 'quantity')
         .attr('id', id)
         .style('width', '100%')
         .style('height', '100%')
+    
     let input = root_div
         .append('input')
         .attr('type', 'number')
-        .attr('min', function(d) {
-            return opt_in.min
-        })
-        .attr('max', function(d) {
-            return opt_in.max
-        })
-        .attr('step', function(d) {
-            return opt_in.step
-        })
+        .attr('min', opt_in.min)
+        .attr('max', opt_in.max)
+        .attr('step', opt_in.step)
         .style('font-size', (opt_in.font_size ? opt_in.font_size : 11) + 'px')
-    // .style('color', '#000000')
+        // .style('color', '#000000')
         .style('border-top-style', 'groove')
         .style('border-right-style', 'hidden')
         .style('border-left-style', 'hidden')
         .style('border-bottom-style', 'groove')
         .style('background', 'transparent')
+    
     input.property('value', function() {
         return opt_in.value
     })
+
     if (opt_in.disabled) {
         input.attr('disabled')
         return
     }
-    input.on('change', function(d) {
+    
+    input.on('change', function() {
         let new_val = parseInt(input.property('value'))
         if (new_val > opt_in.max) {
             new_val = opt_in.max
@@ -63,11 +69,12 @@ window.input_date_d3 = function(g, box, id, opt_in, events) {
         }
         input.property('value', ('0' + new_val).slice(-2))
         events.change(input.property('value'))
+        return
     })
     input.on('focus', function() {
         $(this).select()
     })
-    input.on('wheel', function(d) {
+    input.on('wheel', function() {
         if (!$(this).is(':focus')) {
             return
         }
@@ -143,15 +150,9 @@ window.input_number_d3 = function(g, box, id, opt_in, events) {
     linker.input = root_div
         .append('input')
         .attr('type', 'number')
-        .attr('min', function(d) {
-            return opt_in.min
-        })
-        .attr('max', function(d) {
-            return opt_in.max
-        })
-        .attr('step', function(d) {
-            return opt_in.step
-        })
+        .attr('min', opt_in.min)
+        .attr('max', opt_in.max)
+        .attr('step', opt_in.step)
         .style('font-size', 11 + 'px')
         .style('border-top-style', 'groove')
         .style('border-right-style', 'hidden')
@@ -165,7 +166,7 @@ window.input_number_d3 = function(g, box, id, opt_in, events) {
         linker.input.attr('disabled')
         return
     }
-    linker.input.on('change', function(d) {
+    linker.input.on('change', function() {
         let new_val = parseInt(linker.input.property('value'))
         if (new_val > opt_in.max) {
             new_val = opt_in.max
@@ -175,11 +176,12 @@ window.input_number_d3 = function(g, box, id, opt_in, events) {
         }
         linker.input.property('value', ('' + new_val).slice(-2))
         events.change(linker.input.property('value'))
+        return
     })
     linker.input.on('focus', function() {
         $(this).select()
     })
-    linker.input.on('wheel', function(d) {
+    linker.input.on('wheel', function() {
         if (!$(this).is(':focus')) {
             return
         }
@@ -195,6 +197,7 @@ window.input_number_d3 = function(g, box, id, opt_in, events) {
         }
         linker.input.property('value', ('' + new_val).slice(-2))
         events.change(linker.input.property('value'))
+        return
     })
     linker.input.on('keyup', function() {
         let event = d3.event
@@ -362,7 +365,7 @@ window.dropdown_d3 = function() {
     }
     let back
     let currentValue
-    let arrow
+    // let arrow
     let scrollg
     let deployed = false
 
@@ -568,7 +571,7 @@ window.dropdown_d3 = function() {
             .enter()
             .append('g')
             .attr('class', 'option')
-        enter.each(function(d, i) {
+        enter.each(function(d) {
             let g = d3.select(this)
             let back = new_d3_node(
                 g,
