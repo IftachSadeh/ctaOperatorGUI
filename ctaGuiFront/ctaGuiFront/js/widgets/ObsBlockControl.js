@@ -1881,9 +1881,9 @@ let TelScroll = function() {
         com.tel_ids = []
         com.inst_health = {
         }
-        com.recD = {
+        com.recs = {
         }
-        com.recD.g_base = g_box.append('g')
+        com.recs.g_base = g_box.append('g')
 
         com.scrollGrid = new ScrollGrid({
             id: com.mainTag,
@@ -1891,14 +1891,14 @@ let TelScroll = function() {
             y0: boxData.y,
             w0: boxData.w,
             h0: boxData.h,
-            recH: boxData.h * 0.3,
-            recW: boxData.h * 0.3,
+            rec_h: boxData.h * 0.3,
+            rec_w: boxData.h * 0.3,
             showCounts: false,
             isHorz: true,
             nRows: 2,
-            recD: com.recD,
+            recs: com.recs,
             recV: [],
-            g_box: com.recD.g_base,
+            g_box: com.recs.g_base,
             bckRecOpt: {
                 texture_orient: '5/8',
                 frontProp: {
@@ -1918,7 +1918,7 @@ let TelScroll = function() {
             locker: opt_in.locker,
         })
 
-        com.recD.dataG = com.scrollGrid.getBackDataG()
+        com.recs.dataG = com.scrollGrid.getBackDataG()
     }
     this.init = init
 
@@ -1945,12 +1945,12 @@ let TelScroll = function() {
             recV: recV,
         })
 
-        let dataRec = com.recD[com.mainTag]
+        let dataRec = com.recs[com.mainTag]
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        let circ = com.recD.dataG
+        let circ = com.recs.dataG
             .selectAll('circle.' + tag_circ)
             .data(dataRec, function(d) {
                 return d.id
@@ -2013,7 +2013,7 @@ let TelScroll = function() {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        let text = com.recD.dataG
+        let text = com.recs.dataG
             .selectAll('text.' + tag_txt)
             .data(dataRec, function(d) {
                 return d.id
@@ -2079,8 +2079,8 @@ let TelScroll = function() {
         let tag_circ = com.mainTag + 'circ'
         let tag_txt = com.mainTag + 'circTxt'
 
-        zoom_targets.circ = com.recD.dataG.selectAll('circle.' + tag_circ)
-        zoom_targets.text = com.recD.dataG.selectAll('text.' + tag_txt)
+        zoom_targets.circ = com.recs.dataG.selectAll('circle.' + tag_circ)
+        zoom_targets.text = com.recs.dataG.selectAll('text.' + tag_txt)
     }
 
     // -------------------------------------------------------------------
@@ -2155,9 +2155,9 @@ let _obScroll = function() {
         let g_box = opt_in.g_box
         com.sched_block_id = ''
         com.obV = []
-        com.recD = {
+        com.recs = {
         }
-        com.recD.g_base = g_box.append('g')
+        com.recs.g_base = g_box.append('g')
 
         com.scrollGrid = new ScrollGrid({
             id: com.mainTag,
@@ -2165,14 +2165,14 @@ let _obScroll = function() {
             y0: boxData.y,
             w0: boxData.w,
             h0: boxData.h,
-            recH: boxData.h * 0.5,
-            recW: boxData.h * 0.5,
+            rec_h: boxData.h * 0.5,
+            rec_w: boxData.h * 0.5,
             showCounts: opt_in.showCounts,
             isHorz: true,
             nRows: 1,
-            recD: com.recD,
+            recs: com.recs,
             recV: [],
-            g_box: com.recD.g_base,
+            g_box: com.recs.g_base,
             bckRecOpt: {
                 opac: 0.06,
                 circ_type: 'lighter',
@@ -2195,7 +2195,7 @@ let _obScroll = function() {
             locker: opt_in.locker,
         })
 
-        com.recD.dataG = com.scrollGrid.getBackDataG()
+        com.recs.dataG = com.scrollGrid.getBackDataG()
 
         setStyle(opt_in.style)
     }
@@ -2223,9 +2223,9 @@ let _obScroll = function() {
             recV: recV,
         })
 
-        let dataRec = com.recD[com.mainTag]
+        let dataRec = com.recs[com.mainTag]
 
-        let rect = com.recD.dataG
+        let rect = com.recs.dataG
             .selectAll('rect.' + tagRec)
             .data(dataRec, function(d) {
                 return d.id
@@ -2282,7 +2282,7 @@ let _obScroll = function() {
             .style('opacity', 0)
             .remove()
 
-        let textIn = com.recD.dataG
+        let textIn = com.recs.dataG
             .selectAll('text.' + tag_txt)
             .data(dataRec, function(d) {
                 return d.id
@@ -2351,8 +2351,8 @@ let _obScroll = function() {
         let tagRec = com.mainTag + 'rec'
         let tag_txt = com.mainTag + 'circTxt'
 
-        zoom_targets.rect = com.recD.dataG.selectAll('rect.' + tagRec)
-        zoom_targets.text = com.recD.dataG.selectAll('text.' + tag_txt)
+        zoom_targets.rect = com.recs.dataG.selectAll('rect.' + tagRec)
+        zoom_targets.text = com.recs.dataG.selectAll('text.' + tag_txt)
     }
 
     // -------------------------------------------------------------------

@@ -971,8 +971,8 @@ let main_comment_sched = function(opt_in) {
         //       scrollHeight: 0.1 + historyBox.h,
         //       scrollWidth: 0,
         //       background: 'transparent',
-        //       scrollRecH: {h: 2},
-        //       scrollRecV: {w: 2}
+        //       scroll_rec_h: {h: 2},
+        //       scroll_recs: {w: 2}
         //     })
         //     reserved.inputHistory.local.scroll.scrollG = reserved.inputHistory.local.scroll.scrollBox.get('innerG')
         //   }
@@ -1014,8 +1014,8 @@ let main_comment_sched = function(opt_in) {
         //       scrollHeight: 0.1 + historyBox.h,
         //       scrollWidth: 0,
         //       background: 'transparent',
-        //       scrollRecH: {h: 2},
-        //       scrollRecV: {w: 2}
+        //       scroll_rec_h: {h: 2},
+        //       scroll_recs: {w: 2}
         //     })
         //     reserved.inputHistory.general.scroll.scrollG = reserved.inputHistory.general.scroll.scrollBox.get('innerG')
         //   }
@@ -1249,8 +1249,8 @@ let main_comment_sched = function(opt_in) {
         //       scrollHeight: 0.1 + historyBox.h,
         //       scrollWidth: 0,
         //       background: 'transparent',
-        //       scrollRecH: {h: 6},
-        //       scrollRecV: {w: 6}
+        //       scroll_rec_h: {h: 6},
+        //       scroll_recs: {w: 6}
         //     })
         //     reserved.focusedItem_info.info.scroll.scrollG = reserved.focusedItem_info.fields.scroll.scrollBox.get('innerG')
         //
@@ -1336,8 +1336,8 @@ let main_comment_sched = function(opt_in) {
         //       scrollHeight: 0.1 + historyBox.h,
         //       scrollWidth: 0,
         //       background: 'transparent',
-        //       scrollRecH: {h: 6},
-        //       scrollRecV: {w: 6}
+        //       scroll_rec_h: {h: 6},
+        //       scroll_recs: {w: 6}
         //     })
         //     reserved.focusedItem_info.info.scroll.scrollG = reserved.focusedItem_info.info.scroll.scrollBox.get('innerG')
         //   }
@@ -1637,10 +1637,10 @@ let main_comment_sched = function(opt_in) {
                     scrollHeight: 0,
                     scrollWidth: 0,
                     background: 'transparent',
-                    scrollRecH: {
+                    scroll_rec_h: {
                         h: 0,
                     },
-                    scrollRecV: {
+                    scroll_recs: {
                         w: 0,
                     },
                 })
@@ -2443,10 +2443,10 @@ let main_comment_sched = function(opt_in) {
                         scrollHeight: ob.h * reserved.logHistory.filtering.filters.length,
                         scrollWidth: 0,
                         background: 'transparent',
-                        scrollRecH: {
+                        scroll_rec_h: {
                             h: 1,
                         },
-                        scrollRecV: {
+                        scroll_recs: {
                             w: 1,
                         },
                     })
@@ -2508,10 +2508,10 @@ let main_comment_sched = function(opt_in) {
                         scrollHeight: 0.1 + historyBox.h,
                         scrollWidth: 0,
                         background: 'transparent',
-                        scrollRecH: {
+                        scroll_rec_h: {
                             h: 2,
                         },
-                        scrollRecV: {
+                        scroll_recs: {
                             w: 2,
                         },
                     })

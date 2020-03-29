@@ -25,7 +25,6 @@ var main_script_tag = 'EmptyExample'
 /* global cols_mix */
 /* global unique */
 
-
 // -------------------------------------------------------------------
 sock.widget_table[main_script_tag] = function(opt_in) {
     let x0 = 0
@@ -331,12 +330,8 @@ let main_empty_example = function(opt_in) {
                 .attr('fill', 'transparent')
                 .attr('stroke', 'transparent')
                 .attr('stroke-width', '3')
-                .attr('cx', function(d) {
-                    return svg_dims.w[0] / 2
-                })
-                .attr('cy', function(d) {
-                    return svg_dims.h[0] / 2
-                })
+                .attr('cx', svg_dims.w[0] / 2)
+                .attr('cy', svg_dims.h[0] / 2)
                 .merge(circ)
                 .transition('in_out')
                 .duration(times.anim)
@@ -355,9 +350,7 @@ let main_empty_example = function(opt_in) {
                 .exit()
                 .transition('in_out')
                 .duration(times.anim)
-                .attr('r', function(d) {
-                    return 0
-                })
+                .attr('r', 0)
                 .style('opacity', 0)
                 .remove()
             // -------------------------------------------------------------------

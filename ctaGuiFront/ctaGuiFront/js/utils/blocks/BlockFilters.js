@@ -924,10 +924,10 @@ window.BlockFilters = function(opt_in) {
                 scrollHeight: 0,
                 scrollWidth: 0,
                 background: 'transparent',
-                scrollRecH: {
+                scroll_rec_h: {
                     h: 1,
                 },
-                scrollRecV: {
+                scroll_recs: {
                     w: 1,
                 },
             })
@@ -1422,10 +1422,10 @@ window.BlockFilters = function(opt_in) {
                 scrollHeight: 0,
                 scrollWidth: 0,
                 background: 'transparent',
-                scrollRecH: {
+                scroll_rec_h: {
                     h: 1,
                 },
-                scrollRecV: {
+                scroll_recs: {
                     w: 1,
                 },
             })
@@ -1833,8 +1833,8 @@ window.BlockFilters = function(opt_in) {
     //       scrollHeight: scrollBox.h + 0.01,
     //       scrollWidth: scrollBox.w + 0.01,
     //       background: 'transparent',
-    //       scrollRecH: {h: 2},
-    //       scrollRecV: {w: 2}
+    //       scroll_rec_h: {h: 2},
+    //       scroll_recs: {w: 2}
     //     })
     //     com.enabled.scroll.scrollG = com.enabled.scroll.scrollBox.get('innerG')
     //   }
@@ -1970,8 +1970,8 @@ window.BlockFilters = function(opt_in) {
     //       scrollHeight: scrollBox.h + 0.01,
     //       scrollWidth: scrollBox.w + 0.01,
     //       background: 'transparent',
-    //       scrollRecH: {h: 2},
-    //       scrollRecV: {w: 2}
+    //       scroll_rec_h: {h: 2},
+    //       scroll_recs: {w: 2}
     //     })
     //     com.disabled.scroll.scrollG = com.disabled.scroll.scrollBox.get('innerG')
     //   }
@@ -2658,10 +2658,10 @@ window.BlockFilters = function(opt_in) {
                 scrollHeight: 0,
                 scrollWidth: 0,
                 background: 'transparent',
-                scrollRecH: {
+                scroll_rec_h: {
                     h: 1,
                 },
-                scrollRecV: {
+                scroll_recs: {
                     w: 1,
                 },
             })

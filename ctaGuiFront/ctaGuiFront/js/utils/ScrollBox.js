@@ -150,7 +150,7 @@ window.ScrollBox = function() {
 
         com.scrollOuterG = com.g_box.append('g')
 
-        com.scrollRecInner = com.scrollOuterG
+        com.scroll_rec_inner = com.scrollOuterG
             .selectAll('rect.' + com.mainTag + 'blockBoxInner')
             .data([ com.outerBox ], function(d) {
                 return d.id
@@ -158,7 +158,7 @@ window.ScrollBox = function() {
             .enter()
             .append('rect')
 
-        com.scrollRecInner
+        com.scroll_rec_inner
             .attr('class', com.mainTag + 'blockBoxInner')
             .attr('x', function(d, i) {
                 return d.x
@@ -308,20 +308,20 @@ window.ScrollBox = function() {
     function setBox() {
         let boxMarg = com.outerBox.marg ? com.outerBox.marg : 0
 
-        let scrollMargV = com.scrollRecV.w
+        let scroll_margs = com.scroll_recs.w
         if (!com.sameInnerBoxMarg && !com.scrollTransV.active) {
-            scrollMargV = 0
+            scroll_margs = 0
         }
 
-        let scrollMargH = com.scrollRecH.w
+        let scroll_marg_h = com.scroll_rec_h.w
         if (!com.sameInnerBoxMarg && !com.scrollTransH.active) {
-            scrollMargH = 0
+            scroll_marg_h = 0
         }
 
         com.innerBox.x = com.outerBox.x + boxMarg
         com.innerBox.y = com.outerBox.y + boxMarg
-        com.innerBox.w = com.outerBox.w - boxMarg * 2 //  - scrollMargV
-        com.innerBox.h = com.outerBox.h - boxMarg * 2 //  - scrollMargH
+        com.innerBox.w = com.outerBox.w - boxMarg * 2 //  - scroll_margs
+        com.innerBox.h = com.outerBox.h - boxMarg * 2 //  - scroll_marg_h
         com.innerBox.marg = boxMarg
         com.innerBox.g = com.g_box
 
@@ -458,21 +458,21 @@ window.ScrollBox = function() {
         }
         com.scrollBarRecV = null
 
-        com.scrollRecV = is_def(opt_in.scrollRecV) ? opt_in.scrollRecV : {
+        com.scroll_recs = is_def(opt_in.scroll_recs) ? opt_in.scroll_recs : {
         }
-        if (!is_def(com.scrollRecV.w)) {
-            com.scrollRecV.w = com.outerBox.w * 0.015
+        if (!is_def(com.scroll_recs.w)) {
+            com.scroll_recs.w = com.outerBox.w * 0.015
         }
-        if (!is_def(com.scrollRecV.h)) {
-            com.scrollRecV.h = com.outerBox.h * 0.015
+        if (!is_def(com.scroll_recs.h)) {
+            com.scroll_recs.h = com.outerBox.h * 0.015
         }
-        if (!is_def(com.scrollRecV.marg)) {
-            com.scrollRecV.marg = 0.6
+        if (!is_def(com.scroll_recs.marg)) {
+            com.scroll_recs.marg = 0.6
         }
-        if (!is_def(com.scrollRecV.font_size)) {
-            com.scrollRecV.font_size = com.scrollRecV.w
+        if (!is_def(com.scroll_recs.font_size)) {
+            com.scroll_recs.font_size = com.scroll_recs.w
         }
-        com.scrollRecV.x = com.outerBox.x + com.outerBox.w - com.scrollRecV.w
+        com.scroll_recs.x = com.outerBox.x + com.outerBox.w - com.scroll_recs.w
     }
     function setupVerticalZoom() {
         let zoomLen = [ -1, 1e20, 1e4 ]
@@ -548,7 +548,7 @@ window.ScrollBox = function() {
 
             com.isInDrag = true
 
-            // if(d3.event.x >= com.scrollRec.x) {
+            // if(d3.event.x >= com.scroll_rec.x) {
             //   let frac = (d3.event.y - com.innerBox.y) / (com.innerBox.h);
             //   frac = Math.min(1, Math.max(0, frac));
             //   let trans = (-1 * frac * (com.scrollTransV.max - com.scrollTransV.min)) - com.scrollTransV.now;
@@ -810,8 +810,8 @@ window.ScrollBox = function() {
                 .style('opacity', 1)
                 .transition('in_out')
                 .duration(times.anim)
-                .attr('x', com.scrollRecV.x)
-                .attr('width', com.scrollRecV.w)
+                .attr('x', com.scroll_recs.x)
+                .attr('width', com.scroll_recs.w)
                 .on('end', function(d) {
                     nDone += 1
                 })
@@ -873,7 +873,7 @@ window.ScrollBox = function() {
         // ------------------------------------------------------------------
         function setVerticalRecScroll() {
             let box = com.outerBox
-            let marg = com.scrollRecV.w * com.scrollRecV.marg / 2
+            let marg = com.scroll_recs.w * com.scroll_recs.marg / 2
 
             let dataScroll = com.scrollTransV.active
                 ? [{
@@ -899,16 +899,16 @@ window.ScrollBox = function() {
                 .attr('x', box.x + box.w)
                 .attr('y', box.y + marg)
                 .attr('width', 0)
-                .attr('height', com.scrollRecV.h - marg * 2)
+                .attr('height', com.scroll_recs.h - marg * 2)
                 .attr('transform', zoomVerticalScrollBarTrans)
                 .merge(recScroll)
                 .transition('in_out')
                 .duration(times.anim)
                 .attr('transform', zoomVerticalScrollBarTrans)
-                .attr('x', box.x + box.w - com.scrollRecV.w + marg)
+                .attr('x', box.x + box.w - com.scroll_recs.w + marg)
                 .attr('y', box.y + marg)
-                .attr('width', com.scrollRecV.w - marg * 2)
-                .attr('height', com.scrollRecV.h - marg * 2)
+                .attr('width', com.scroll_recs.w - marg * 2)
+                .attr('height', com.scroll_recs.h - marg * 2)
 
             recScroll
                 .exit()
@@ -945,9 +945,9 @@ window.ScrollBox = function() {
         //
         // ------------------------------------------------------------------
         function zoomVerticalScrollBarTrans() {
-            // let pos = com.scrollTrans.frac * (com.outerBox.h - com.scrollRec.w*2);
+            // let pos = com.scrollTrans.frac * (com.outerBox.h - com.scroll_rec.w*2);
             // return "translate("+(com.outerBox.x)+","+(com.outerBox.y + pos)+")";
-            let pos = com.scrollTransV.frac * (com.outerBox.h - com.scrollRecV.h)
+            let pos = com.scrollTransV.frac * (com.outerBox.h - com.scroll_recs.h)
             return 'translate(0,' + pos + ')'
         }
 
@@ -1109,7 +1109,7 @@ window.ScrollBox = function() {
             com.scrollTransV.frac = 0
             com.scrollTransV.now = com.scrollTransV.min * com.scrollTransV.frac
         }
-        com.scrollRecV.h = boxH * boxH / Math.abs(com.scrollHeight)
+        com.scroll_recs.h = boxH * boxH / Math.abs(com.scrollHeight)
     }
     function updateVerticalScrollState(keepFrac) {
         let boxH = com.innerBox.h // com.outerBox.h - com.outerBox.marg * 2;
@@ -1130,7 +1130,7 @@ window.ScrollBox = function() {
         else if (com.scrollTransV.now > com.scrollTransV.max) {
             com.scrollTransV.now = com.scrollTransV.max
         }
-        com.scrollRecV.h = boxH * boxH / Math.abs(com.scrollHeight)
+        com.scroll_recs.h = boxH * boxH / Math.abs(com.scrollHeight)
     } // NO
 
     function initHorizontalScroll(opt_in) {
@@ -1151,21 +1151,21 @@ window.ScrollBox = function() {
         }
         com.scrollBarRecH = null
 
-        com.scrollRecH = is_def(opt_in.scrollRecH) ? opt_in.scrollRecH : {
+        com.scroll_rec_h = is_def(opt_in.scroll_rec_h) ? opt_in.scroll_rec_h : {
         }
-        if (!is_def(com.scrollRecH.w)) {
-            com.scrollRecH.w = com.outerBox.w * 0.015
+        if (!is_def(com.scroll_rec_h.w)) {
+            com.scroll_rec_h.w = com.outerBox.w * 0.015
         }
-        if (!is_def(com.scrollRecH.h)) {
-            com.scrollRecH.h = com.outerBox.h * 0.015
+        if (!is_def(com.scroll_rec_h.h)) {
+            com.scroll_rec_h.h = com.outerBox.h * 0.015
         }
-        if (!is_def(com.scrollRecH.marg)) {
-            com.scrollRecH.marg = 0.6
+        if (!is_def(com.scroll_rec_h.marg)) {
+            com.scroll_rec_h.marg = 0.6
         }
-        if (!is_def(com.scrollRecH.font_size)) {
-            com.scrollRecH.font_size = com.scrollRecH.w
+        if (!is_def(com.scroll_rec_h.font_size)) {
+            com.scroll_rec_h.font_size = com.scroll_rec_h.w
         }
-        com.scrollRecH.y = com.outerBox.y + com.outerBox.h - com.scrollRecH.h
+        com.scroll_rec_h.y = com.outerBox.y + com.outerBox.h - com.scroll_rec_h.h
     }
     function setupHorizontalZoom() {
         let zoomLen = [ -1, 1e20, 1e4 ]
@@ -1238,7 +1238,7 @@ window.ScrollBox = function() {
 
             com.isInDrag = true
 
-            // if(d3.event.x >= com.scrollRec.x) {
+            // if(d3.event.x >= com.scroll_rec.x) {
             //   let frac = (d3.event.y - com.innerBox.y) / (com.innerBox.h);
             //   frac = Math.min(1, Math.max(0, frac));
             //   let trans = (-1 * frac * (com.scrollTransV.max - com.scrollTransV.min)) - com.scrollTransV.now;
@@ -1490,15 +1490,15 @@ window.ScrollBox = function() {
                 .attr('height', 0)
             // click also does dragStart, but we need it for the smooth transition
                 .on('click', function(d) {
-                    recHorizontalBckClickOnce({
+                    rec_horizontalBckClickOnce({
                         coords: d3.mouse(this),
                     })
                 })
                 .style('opacity', 1)
                 .transition('in_out')
                 .duration(times.anim)
-                .attr('y', com.scrollRecH.y)
-                .attr('height', com.scrollRecH.h)
+                .attr('y', com.scroll_rec_h.y)
+                .attr('height', com.scroll_rec_h.h)
                 .on('end', function(d) {
                     nDone += 1
                 })
@@ -1560,7 +1560,7 @@ window.ScrollBox = function() {
         // ------------------------------------------------------------------
         function setHorizontalRecScroll() {
             let box = com.outerBox
-            let marg = com.scrollRecH.h * com.scrollRecH.marg / 2
+            let marg = com.scroll_rec_h.h * com.scroll_rec_h.marg / 2
 
             let dataScroll = com.scrollTransH.active
                 ? [{
@@ -1585,17 +1585,17 @@ window.ScrollBox = function() {
                 .style('pointer-events', 'none')
                 .attr('y', box.y + box.h)
                 .attr('x', box.x + marg)
-                .attr('width', com.scrollRecH.w)
+                .attr('width', com.scroll_rec_h.w)
                 .attr('height', 0)
                 .attr('transform', zoomHorizontalScrollBarTrans)
                 .merge(recScroll)
                 .transition('in_out')
                 .duration(times.anim)
                 .attr('transform', zoomHorizontalScrollBarTrans)
-                .attr('y', box.y + box.h - com.scrollRecH.h + marg)
+                .attr('y', box.y + box.h - com.scroll_rec_h.h + marg)
                 .attr('x', box.x + marg)
-                .attr('width', com.scrollRecH.w)
-                .attr('height', com.scrollRecH.h - marg * 2)
+                .attr('width', com.scroll_rec_h.w)
+                .attr('height', com.scroll_rec_h.h - marg * 2)
             recScroll
                 .exit()
                 .transition('in_out')
@@ -1630,9 +1630,9 @@ window.ScrollBox = function() {
         //
         // ------------------------------------------------------------------
         function zoomHorizontalScrollBarTrans() {
-            // let pos = com.scrollTrans.frac * (com.outerBox.h - com.scrollRec.w*2);
+            // let pos = com.scrollTrans.frac * (com.outerBox.h - com.scroll_rec.w*2);
             // return "translate("+(com.outerBox.x)+","+(com.outerBox.y + pos)+")";
-            let pos = com.scrollTransH.frac * (com.outerBox.w - com.scrollRecH.w)
+            let pos = com.scrollTransH.frac * (com.outerBox.w - com.scroll_rec_h.w)
             return 'translate(' + pos + ', 0)'
         }
 
@@ -1640,35 +1640,35 @@ window.ScrollBox = function() {
         //
         // ------------------------------------------------------------------
         com.run_loop.init({
-            tag: com.mainTag + 'recHorizontalBckClick',
-            func: recHorizontalBckClickOnce,
+            tag: com.mainTag + 'rec_horizontalBckClick',
+            func: rec_horizontalBckClickOnce,
             n_keep: 1,
         })
 
-        function recHorizontalBckClick(data_in) {
+        function rec_horizontalBckClick(data_in) {
             com.run_loop.push({
-                tag: com.mainTag + 'recHorizontalBckClick',
+                tag: com.mainTag + 'rec_horizontalBckClick',
                 data: data_in,
             })
         }
-        com.recHorizontalBckClick = recHorizontalBckClick
+        com.rec_horizontalBckClick = rec_horizontalBckClick
 
         let nClickTries = 0
-        function recHorizontalBckClickOnce(data_in) {
+        function rec_horizontalBckClickOnce(data_in) {
             if (
                 com.isInZoom
         || com.isInDrag
         || (com.scrollTransH.active && !is_def(com.scrollBarRecH))
             ) {
-                // console.log('delay recHorizontalBckClickOnce',[com.isInZoom,com.isInDrag],[com.scrollTrans.active,is_def(com.scrollBarRec)]);
+                // console.log('delay rec_horizontalBckClickOnce',[com.isInZoom,com.isInDrag],[com.scrollTrans.active,is_def(com.scrollBarRec)]);
                 if (nClickTries < 100) {
                     setTimeout(function() {
                         nClickTries += 1
-                        recHorizontalBckClick(data_in)
+                        rec_horizontalBckClick(data_in)
                     }, times.anim / 2)
                 }
                 else {
-                    console.error('cant do recHorizontalBckClick ...', data_in)
+                    console.error('cant do rec_horizontalBckClick ...', data_in)
                 }
                 return
             }
@@ -1759,7 +1759,7 @@ window.ScrollBox = function() {
         com.scrollTransH.max = 0
         com.scrollTransH.frac = 0
         com.scrollTransH.now = com.scrollTransH.max
-        com.scrollRecH.w = boxW * boxW / Math.abs(com.scrollWidth)
+        com.scroll_rec_h.w = boxW * boxW / Math.abs(com.scrollWidth)
     } // NO
     function updateHorizontalScrollState(keepFrac) {
         let boxW = com.innerBox.w // com.outerBox.h - com.outerBox.marg * 2;
@@ -1780,7 +1780,7 @@ window.ScrollBox = function() {
         else if (com.scrollTransH.now > com.scrollTransH.max) {
             com.scrollTransH.now = com.scrollTransH.max
         }
-        com.scrollRecH.w = boxW * boxW / Math.abs(com.scrollWidth)
+        com.scroll_rec_h.w = boxW * boxW / Math.abs(com.scrollWidth)
     } // NO
 
     function updateBox(box, duration) {

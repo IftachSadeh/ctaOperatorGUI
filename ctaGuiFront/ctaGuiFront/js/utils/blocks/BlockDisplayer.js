@@ -1673,10 +1673,10 @@ window.BlockDisplayer = function(opt_in) {
                 scrollHeight: 0,
                 scrollWidth: com.blockForm.forms.box.w + 0.01,
                 background: 'transparent',
-                scrollRecH: {
+                scroll_rec_h: {
                     h: 4,
                 },
-                scrollRecV: {
+                scroll_recs: {
                     w: 2,
                 },
             })
@@ -3192,10 +3192,10 @@ window.BlockDisplayer = function(opt_in) {
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {
+            scroll_rec_h: {
                 h: 2,
             },
-            scrollRecV: {
+            scroll_recs: {
                 w: 2,
             },
         })

@@ -327,7 +327,7 @@ window.ArrZoomerTree = function(opt_in0) {
         let scale = get_ele('main').get_scale()
         if (scale < zooms.len['1.0']) {
             tel_hierarchy({
-                tel_Id: '',
+                tel_id: '',
                 click_in: false,
                 remove: true,
             })
@@ -335,7 +335,7 @@ window.ArrZoomerTree = function(opt_in0) {
 
         if (scale <= zooms.len['0.1']) {
             let props_in = {
-                tel_Id: 'avg',
+                tel_id: 'avg',
                 props: insts.props[''],
                 props0: insts.props0[''],
                 prop_titles: insts.prop_titles[''],
@@ -348,14 +348,14 @@ window.ArrZoomerTree = function(opt_in0) {
             })
             
             set_sub_prop({
-                tel_Id: 'avg',
+                tel_id: 'avg',
                 prop_in: '',
             })
         }
         else {
             let target_index = insts.data.id_indices[zooms.target]
             let props_in = {
-                tel_Id: zooms.target,
+                tel_id: zooms.target,
                 props: insts.props[zooms.target],
                 props0: insts.props0[zooms.target],
                 prop_titles: insts.prop_titles[''],
@@ -369,7 +369,7 @@ window.ArrZoomerTree = function(opt_in0) {
                 })
 
                 set_sub_prop({
-                    tel_Id: zooms.target,
+                    tel_id: zooms.target,
                     prop_in: '',
                 })
             }
@@ -391,7 +391,7 @@ window.ArrZoomerTree = function(opt_in0) {
         let data_in = opt_in.data_in
         let props_in = opt_in.props_in
         let state = opt_in.state
-        let tel_id_in = props_in.tel_Id
+        let tel_id_in = props_in.tel_id
         let props = props_in.props
         let props0 = props_in.props0
         let prop_titles = props_in.prop_titles
@@ -777,8 +777,8 @@ window.ArrZoomerTree = function(opt_in0) {
 
         $.each(all_props_now, function(_, porp_now) {
             let prop_index = get_prop_index(tel_id_in, porp_now)
-            let txtR = tel_avgs[state].r * scale_r[state].health1 * 1.2
-            let xy = get_prop_pos_shift('xy', txtR, prop_index, props.length)
+            let txt_r = tel_avgs[state].r * scale_r[state].health1 * 1.2
+            let xy = get_prop_pos_shift('xy', txt_r, prop_index, props.length)
             let opac = state === 0 ? 0.7 : 0.9
             if (state === 1 && props.indexOf(porp_now) === -1) {
                 opac *= 0.5
@@ -960,7 +960,7 @@ window.ArrZoomerTree = function(opt_in0) {
             })
 
             props_s1({
-                tel_Id: zooms.target,
+                tel_id: zooms.target,
                 click_in: click_in,
                 prop_in: prop_in,
                 do_func: [ 'bck_arc_click' ],
@@ -1015,13 +1015,13 @@ window.ArrZoomerTree = function(opt_in0) {
             return d.data.id
         }
 
-        let tel_Id = ''
+        let tel_id = ''
         let click_in = false
         let prop_in = ''
         let remove = false
         if (is_def(opt_in)) {
-            if (is_def(opt_in.tel_Id)) {
-                tel_Id = opt_in.tel_Id
+            if (is_def(opt_in.tel_id)) {
+                tel_id = opt_in.tel_id
             }
             if (is_def(opt_in.click_in)) {
                 click_in = opt_in.click_in
@@ -1039,7 +1039,7 @@ window.ArrZoomerTree = function(opt_in0) {
             click_in = prop_in !== ''
         }
 
-        if (zooms.target !== tel_Id || !is_def(insts.data.prop_data_s1[tel_Id])) {
+        if (zooms.target !== tel_id || !is_def(insts.data.prop_data_s1[tel_id])) {
             click_in = false
             remove = true
         }
@@ -1051,7 +1051,7 @@ window.ArrZoomerTree = function(opt_in0) {
         // update the title
         // ------------------------------------------------------------------
         set_sub_prop({
-            tel_Id: tel_Id,
+            tel_id: tel_id,
             prop_in: (click_in ? prop_in : ''),
         })
 
@@ -1059,7 +1059,7 @@ window.ArrZoomerTree = function(opt_in0) {
         //
         // ------------------------------------------------------------------
         if (!remove && prop_in !== '') {
-            if (!is_def(insts.data.prop_data_s1[tel_Id][prop_in])) {
+            if (!is_def(insts.data.prop_data_s1[tel_id][prop_in])) {
                 return
             }
         }
@@ -1082,7 +1082,7 @@ window.ArrZoomerTree = function(opt_in0) {
         let has_data_base = (
             !click_in
             && !remove
-            && is_def(insts.data.data_base_s1[tel_Id])
+            && is_def(insts.data.data_base_s1[tel_id])
         )
 
         // ------------------------------------------------------------------
@@ -1101,8 +1101,8 @@ window.ArrZoomerTree = function(opt_in0) {
 
             let data_hierarchy = (
                 click_in
-                    ? insts.data.prop_data_s1[tel_Id][prop_in]
-                    : insts.data.data_base_s1[tel_Id]
+                    ? insts.data.prop_data_s1[tel_id][prop_in]
+                    : insts.data.data_base_s1[tel_id]
             )
             let hirch = d3.hierarchy(data_hierarchy)
             let tree = d3.tree().size([ tree_h, tree_w ])
@@ -1358,7 +1358,7 @@ window.ArrZoomerTree = function(opt_in0) {
         // ------------------------------------------------------------------
         function vor_click(d) {
             set_sub_prop({
-                tel_Id: tel_Id,
+                tel_id: tel_id,
                 prop_in: d.data.data.id,
             })
 
@@ -1366,7 +1366,7 @@ window.ArrZoomerTree = function(opt_in0) {
             let data_now = d.data.data.id
             let id_now = (is_def(d.data.parent) ? d.data.parent.data.id : data_now)
 
-            let parent_name = insts.data.prop_parent_s1[tel_Id][data_now]
+            let parent_name = insts.data.prop_parent_s1[tel_id][data_now]
             if (parent_name === data_now) {
                 id_now = parent_name
             }
@@ -1478,14 +1478,14 @@ window.ArrZoomerTree = function(opt_in0) {
     // ------------------------------------------------------------------
     function set_sub_prop(opt_in) {
         zoom_target_prop = opt_in.prop_in
-        let tel_Id = opt_in.tel_Id
+        let tel_id = opt_in.tel_id
         let prop_in = opt_in.prop_in
         let parent_name = (
-            prop_in === '' ? null : insts.data.prop_parent_s1[tel_Id][prop_in]
+            prop_in === '' ? null : insts.data.prop_parent_s1[tel_id][prop_in]
         )
 
         tel_prop_title({
-            tel_Id: tel_Id,
+            tel_id: tel_id,
             prop_in: prop_in,
             parent_name: parent_name,
         })
@@ -1497,7 +1497,7 @@ window.ArrZoomerTree = function(opt_in0) {
     //
     // ------------------------------------------------------------------
     function tel_prop_title(opt_in) {
-        let tel_Id = opt_in.tel_Id
+        let tel_id = opt_in.tel_id
         let prop_in = opt_in.prop_in
         let parent_name = opt_in.parent_name
 
@@ -1513,8 +1513,8 @@ window.ArrZoomerTree = function(opt_in0) {
 
         let title_data = []
         title_data.push({
-            id: tag_now + 'tel_Id',
-            text: (tel_Id === 'avg' ? 'Array' : tel_info.get_title(tel_Id)),
+            id: tag_now + 'tel_id',
+            text: (tel_id === 'avg' ? 'Array' : tel_info.get_title(tel_id)),
             x: 20,
             y: tel_avgs[1].h / 2,
             h: 30,
@@ -1524,7 +1524,7 @@ window.ArrZoomerTree = function(opt_in0) {
         if (is_def(parent_name)) {
             title_data.push({
                 id: tag_now + parent_name,
-                text: insts.prop_titles[tel_Id][parent_name],
+                text: insts.prop_titles[tel_id][parent_name],
                 x: 10,
                 y: tel_avgs[1].h / 2,
                 h: 30,
@@ -1534,7 +1534,7 @@ window.ArrZoomerTree = function(opt_in0) {
             if (prop_in !== parent_name) {
                 title_data.push({
                     id: tag_now + prop_in,
-                    text: insts.data.prop_title_s1[tel_Id][prop_in],
+                    text: insts.data.prop_title_s1[tel_id][prop_in],
                     x: 10,
                     y: tel_avgs[1].h / 2,
                     h: 25,
@@ -1639,7 +1639,7 @@ window.ArrZoomerTree = function(opt_in0) {
         let rect_tag = tag_state + '_rectSelect'
         let porp_now = prop_in
         if (prop_in !== '') {
-            porp_now = insts.data.prop_parent_s1[tel_Id][prop_in]
+            porp_now = insts.data.prop_parent_s1[tel_id][prop_in]
         }
 
         let porp_x = (porp_now === '' ? insts.prop0 : porp_now) + 'x'

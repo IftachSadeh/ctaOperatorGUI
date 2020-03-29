@@ -48,7 +48,7 @@ sock.widget_table[main_script_tag] = function(opt_in) {
         sock_func: sock_sub_arr_grp,
         main_func: main_sub_arr_grp,
     }
-    opt_in.widget_div_id = opt_in.widget_id + 'Widget_div'
+    opt_in.widget_div_id = opt_in.widget_id + 'widget_div'
     opt_in.ele_props = {
     }
 
@@ -85,22 +85,13 @@ sock.widget_table[main_script_tag] = function(opt_in) {
 //
 // -------------------------------------------------------------------
 let sock_sub_arr_grp = function(opt_in) {
-    // let widget_type = opt_in.widget_type;
-    // let widget_source = opt_in.widget_source;
-    // this.askInitData = function(opt_in) {
-    //   let emit_data = {
-    //     "widget_source":widget_source, "widget_name":widget_type,
-    //     "widget_id":opt_in.widget_id, "method_name":"sub_arr_grp_askInitData"
-    //   };
-    //   sock.socket.emit("widget", emit_data);
-    //   return;
-    // }
+    return
 }
 
 let main_sub_arr_grp = function(opt_in) {
     // let my_unique_id = unique()
     // let widget_type = opt_in.widget_type
-    let tag_sub_arr_grpSvg = opt_in.base_name
+    let tag_sub_arr_grp_svg = opt_in.base_name
     let widget_id = opt_in.widget_id
     let widget_ele = opt_in.widget_ele
     let icon_divs = opt_in.icon_divs
@@ -112,7 +103,7 @@ let main_sub_arr_grp = function(opt_in) {
     }
     $.each(widget_ele, function(index, ele_now) {
         sgv_tag[ele_now.id] = {
-            id: tag_sub_arr_grpSvg + ele_now.id,
+            id: tag_sub_arr_grp_svg + ele_now.id,
             widget: ele_now.widget,
             whRatio: ele_now.w / ele_now.h,
         }
@@ -147,13 +138,13 @@ let main_sub_arr_grp = function(opt_in) {
     svg_dims.w[1] = svg_dims.w[0] * 1.2
     svg_dims.h[1] = svg_dims.h[0] * 1.2
 
-    let whFrac = 0.05
+    let frac_wh = 0.05
     let wh = [ svg_dims.w[1], svg_dims.h[1] ] // wh[0] *= 0.9; wh[1] *= 0.9;
-    let whPack = [ wh[0] * (1 - whFrac * 2), wh[1] * (1 - whFrac * 2) ]
+    let pack_wh = [ wh[0] * (1 - frac_wh * 2), wh[1] * (1 - frac_wh * 2) ]
 
-    let isRaDec = false
-    let isDHms = false
-    let lblDig = 3
+    let is_ra_dec = false
+    let is_hms = false
+    let lbl_dig = 3
 
     // -------------------------------------------------------------------
     // color
@@ -161,40 +152,40 @@ let main_sub_arr_grp = function(opt_in) {
     // see: http://colors.findthedata.com/saved_search/Pastel-Colors
     //      https://www.google.de/design/spec/style/color.html#color-color-palette
     //      http://riccardoscalco.github.io/crayon/
-    let stateCol = {
+    let state_col = {
     }
-    stateCol.b = [ '#64B5F6' ]
-    stateCol.p = [ '#9575CD' ]
-    stateCol.g = [ '#b5c69c', '#AED581' ]
-    stateCol.y = [ '#fcd975', '#FFEB3B' ]
-    stateCol.r = [ '#ed6d6c', '#EF5350' ]
+    state_col.b = [ '#64B5F6' ]
+    state_col.p = [ '#9575CD' ]
+    state_col.g = [ '#b5c69c', '#AED581' ]
+    state_col.y = [ '#fcd975', '#FFEB3B' ]
+    state_col.r = [ '#ed6d6c', '#EF5350' ]
 
-    let telTrackCol = d3
+    let tel_track_col = d3
         .scaleLinear()
         .domain([ 360, 1 ])
         .range([ '#90CAF9', '#64B5F6' ])
 
-    function getColStop() {
+    function get_col_stop() {
         return cols_reds[8]
     }
-    function getColSlew(d) {
-        return telTrackCol(d)
+    function get_col_slew(d) {
+        return tel_track_col(d)
     }
-    function getColTrack() {
-        return stateCol.g[0]
+    function get_col_track() {
+        return state_col.g[0]
     }
-    function getColStretchBand() {
-        return stateCol.p[0]
+    function get_col_stretch_band() {
+        return state_col.p[0]
     }
 
-    function parsePosTxt(posIn) {
-        if (posIn.length === 0) {
+    function parse_pos_txt(pos_in) {
+        if (pos_in.length === 0) {
             return ''
         }
 
         let title
-        let pos = [ posIn[0], posIn[1] ]
-        if (isRaDec) {
+        let pos = [ pos_in[0], pos_in[1] ]
+        if (is_ra_dec) {
             title = 'RA,Dec: '
             pos[0] = azim_ra(pos[0])
         }
@@ -203,72 +194,45 @@ let main_sub_arr_grp = function(opt_in) {
         }
 
         let data_out
-        if (isDHms) {
+        if (is_hms) {
             let pos1
-            if (isRaDec) {
+            if (is_ra_dec) {
                 pos1 = [ deg_hms(pos[0]), deg_dms(pos[1]) ]
             }
             else {
                 pos1 = [ deg_dms(pos[0]), deg_dms(pos[1]) ]
             }
 
-            data_out
-        = formInpt(pos1[0][0], 0)
-        + unit_deg
-        + ' '
-        + formInpt(pos1[0][1], 0)
-        + unit_arcmin
-        + ' '
-        + formInpt(pos1[0][2], 1)
-        + unit_arcsec
-        + ' , '
-        + formInpt(pos1[1][0], 0)
-        + unit_deg
-        + ' '
-        + formInpt(pos1[1][1], 0)
-        + unit_arcmin
-        + ' '
-        + formInpt(pos1[1][2], 1)
-        + unit_arcsec
+            data_out = (
+                (formInpt(pos1[0][0], 0) + unit_deg + ' ' + formInpt(pos1[0][1], 0))
+                + (unit_arcmin + ' ' + formInpt(pos1[0][2], 1) + unit_arcsec + ' , ')
+                + (formInpt(pos1[1][0], 0) + unit_deg + ' ' + formInpt(pos1[1][1], 0))
+                + (unit_arcmin + ' ' + formInpt(pos1[1][2], 1) + unit_arcsec)
+            )
 
-            return (title + data_out).replace(/ /g, '\u00A0')
+            return (
+                (title + data_out).replace(/ /g, '\u00A0')
+            )
         }
         else {
-            data_out
-        = formInpt(pos[0], lblDig)
-        + unit_deg
-        + ' , '
-        + formInpt(pos[1], lblDig)
-        + unit_deg
-            return (title + data_out).replace(/ /g, '\u00A0')
+            data_out = (
+                (formInpt(pos[0], lbl_dig) + unit_deg + ' , ')
+                + (formInpt(pos[1], lbl_dig) + unit_deg)
+            )
+            return (
+                (title + data_out).replace(/ /g, '\u00A0')
+            )
         }
     }
     function formInpt(input, prec) {
-        return d3.format(' >' + (prec + 3) + ',.' + prec + 'f')(input)
+        return (
+            d3.format(' >' + (prec + 3) + ',.' + prec + 'f')(input)
+        )
     }
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    // run_loop.init({ tag:"askInitData", func:_askInitData, n_keep:1 });
-    // function askInitData(opt_in) {
-    //   run_loop.push({ tag:"askInitData", data:opt_in });
-    //   return;
-    // }
-    // function _askInitData(opt_in) {
-    //   // create delay if currently in data update or a previous call of _askInitData
-    //   if(!locker.is_free("data_change")) {
-    //     // console.log('delay askInitData')
-    //     setTimeout(function () { askInitData(opt_in); }, times.anim*2);
-    //     return;
-    //   }
-    //   // console.log('do askInitData')
-
-    //   sock.all_widgets[widget_type].sock_func.askInitData(opt_in);
-
-    //   return;
-    // }
-
     function init_data(data_init) {
         if (sock.multiple_inits({
             id: widget_id,
@@ -280,7 +244,7 @@ let main_sub_arr_grp = function(opt_in) {
         locker.add('data_change')
 
         let data_in = data_init.data
-        let hasJoinedData = joinTelProps(data_in, true)
+        let has_join_data = join_tel_props(data_in, true)
 
         sock.set_icon_badge({
             n_icon: data_init.n_icon,
@@ -290,8 +254,8 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        svg_sub_arr.init_data(hasJoinedData)
-        svg_sky_pos.init_data(hasJoinedData)
+        svg_sub_arr.init_data(has_join_data)
+        svg_sky_pos.init_data(has_join_data)
 
         locker.remove('data_change')
 
@@ -307,13 +271,15 @@ let main_sub_arr_grp = function(opt_in) {
                     'in_init_sky_pos',
                     'data_change',
                     'set_state',
-                    'setFocused',
+                    'set_focused',
                 ])
             },
             execute: function() {
                 locker.remove('in_init')
             },
         })
+
+        return
     }
     this.init_data = init_data
 
@@ -322,7 +288,7 @@ let main_sub_arr_grp = function(opt_in) {
     // -------------------------------------------------------------------
     run_loop.init({
         tag: 'update_data',
-        func: update_dataOnce,
+        func: update_data_once,
         n_keep: -1,
     })
 
@@ -330,30 +296,30 @@ let main_sub_arr_grp = function(opt_in) {
         run_loop.push({
             tag: 'update_data',
             data: data_in.data,
-        }) //, time:data_in.emit_time
+        })
     }
 
-    function update_dataOnce(data_in) {
+    function update_data_once(data_in) {
         if (
             !locker.are_free([
                 'zoom',
                 'zoom_to_target',
                 'data_change',
                 'set_state',
-                'setFocused',
+                'set_focused',
             ])
         ) {
             setTimeout(function() {
-                update_dataOnce(data_in)
+                update_data_once(data_in)
             }, 10)
             return
         }
         // console.log('update_data')
         locker.add('data_change')
 
-        let hasJoinedData = joinTelProps(data_in, false)
+        let has_join_data = join_tel_props(data_in, false)
 
-        if (hasJoinedData) {
+        if (has_join_data) {
             svg_sub_arr.update_data(data_in)
             svg_sky_pos.update_data(data_in)
         }
@@ -390,154 +356,160 @@ let main_sub_arr_grp = function(opt_in) {
     // console.log(tel_data)
 
         svg_sub_arr.set_state_once(opt_in)
-        svg_sky_pos.setFocused()
+        svg_sky_pos.set_focused()
     }
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function joinTelProps(data_in, isInit) {
+    function join_tel_props(data_in, is_init) {
         locker.add('data_change')
 
-        if (isInit) {
+        if (is_init) {
             tel_data = data_in
             // console.log('xxxxxxxx',data_in);
             // tel_data = deep_copy(data_in); // deep copy
 
-            tel_data.idToCol = {
+            tel_data.id_cols = {
             }
-            tel_data.idToFocus = {
+            tel_data.id_focuses = {
             }
-            tel_data.trgPntFocus = {
+            tel_data.trg_pnt_focus = {
                 trg: {
                 },
                 pnt: {
                 },
             }
 
-            if (!is_def(tel_data.prevState)) {
-                tel_data.prevState = 0
+            if (!is_def(tel_data.prev_state)) {
+                tel_data.prev_state = 0
             }
-            if (!is_def(tel_data.telHover)) {
-                tel_data.telHover = null
+            if (!is_def(tel_data.tel_hover)) {
+                tel_data.tel_hover = null
             }
         }
         else {
             if (is_def(data_in.sub_arr)) {
                 tel_data.sub_arr = data_in.sub_arr
-                // tel_data.sub_arr = deep_copy(data_in.sub_arr); // deep copy
             }
-            // console.log('sub_arr',tel_data.sub_arr)
 
-            $.each(data_in, function(key, data_now0) {
+            $.each(data_in, function(key, data_now_0) {
                 if (key !== 'sub_arr') {
-                    // console. log(key,tel_data[key])
-                    $.each(data_now0, function(index, data_now1) {
-                        let eleV = find_dict_ele_in_obj(tel_data[key], 'id', data_now1.id, false)
+                    $.each(data_now_0, function(index, data_now_1) {
+                        let eles = (
+                            find_dict_ele_in_obj(
+                                tel_data[key], 'id', data_now_1.id, false
+                            )
+                        )
 
-                        // console.log('qqqqqqqqq',eleV);
-                        if (eleV[0] === -1) {
-                            // console.log("found no original element in update_inst_posPntProps()",data_now1);
-                            tel_data[key].push(data_now1)
+                        if (eles[0] === -1) {
+                            tel_data[key].push(data_now_1)
                         }
                         else {
-                            tel_data[key][eleV[0]] = data_now1
+                            tel_data[key][eles[0]] = data_now_1
                         }
                     })
                 }
             })
 
             // check if there are any trg,pnt elements which are not used by any telescope, and remove them
-            $.each([ 'trg', 'pnt' ], function(trgTelIndex, trgTel) {
-                let rmV = []
-                $.each(tel_data[trgTel], function(i, d) {
+            $.each([ 'trg', 'pnt' ], function(trg_tel_index, trg_tel) {
+                let ele_to_rm = []
+                $.each(tel_data[trg_tel], function(i, d) {
                     let target_point_id = d.id
-                    let eleV = find_dict_ele_in_obj(
+                    let eles = find_dict_ele_in_obj(
                         tel_data.tel,
-                        trgTel + 'Id',
+                        trg_tel + '_id',
                         target_point_id,
                         false
                     )
 
                     // add to begning of array, as will need to remove one by one, which will change the length
-                    if (eleV[0] === -1) {
-                        rmV.unshift(i)
+                    if (eles[0] === -1) {
+                        ele_to_rm.unshift(i)
                     }
                 })
 
                 // remove all unused elements
-                $.each(rmV, function(i, d) {
-                    tel_data[trgTel].splice(d, 1)
+                $.each(ele_to_rm, function(i, d) {
+                    tel_data[trg_tel].splice(d, 1)
                 })
-                // console.log('rmV',rmV,tel_data[trgTel])
+                // console.log('ele_to_rm',ele_to_rm,tel_data[trg_tel])
             })
         }
 
         // -------------------------------------------------------------------
         // quick access for each child by the corresponding id
         // -------------------------------------------------------------------
-        tel_data.sub_arrIds = {
+        tel_data.sub_arr_ids = {
         }
-        tel_data.tel_sub_arrId = {
+        tel_data.tel_sub_arr_id = {
         }
-        $.each(tel_data.sub_arr.children, function(index0, sub_arrNow) {
-            tel_data.sub_arrIds[sub_arrNow.id] = sub_arrNow
+        $.each(tel_data.sub_arr.children, function(index_0, sub_arr_now) {
+            tel_data.sub_arr_ids[sub_arr_now.id] = sub_arr_now
 
-            tel_data.tel_sub_arrId[sub_arrNow.id] = sub_arrNow.id
-            $.each(sub_arrNow.children, function(index1, telNow) {
-                tel_data.tel_sub_arrId[telNow.id] = sub_arrNow.id
-                // console.log('set :',sub_arrNow.id,telNow.id)
+            tel_data.tel_sub_arr_id[sub_arr_now.id] = sub_arr_now.id
+            $.each(sub_arr_now.children, function(index_1, telNow) {
+                tel_data.tel_sub_arr_id[telNow.id] = sub_arr_now.id
+                // console.log('set :',sub_arr_now.id,telNow.id)
             })
         })
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        if (!is_def(tel_data.telHover)) {
-            tel_data.telHover = {
+        if (!is_def(tel_data.tel_hover)) {
+            tel_data.tel_hover = {
             }
-            tel_data.telHover.sub_arr = ''
+            tel_data.tel_hover.sub_arr = ''
         }
-        if (!is_def(tel_data.sub_arrIds[tel_data.telHover.sub_arr])) {
-            tel_data.telHover.id = tel_data.sub_arr.children[0].children[0].id
-            tel_data.telHover.focused_sub_arr = ''
-            tel_data.telHover.clicked_sub_arr = ''
-            // console.log('set tel_data.telHover:',sub_arrNow,tel_IdNow)
+        if (!is_def(tel_data.sub_arr_ids[tel_data.tel_hover.sub_arr])) {
+            tel_data.tel_hover.id = tel_data.sub_arr.children[0].children[0].id
+            tel_data.tel_hover.focused_sub_arr = ''
+            tel_data.tel_hover.clicked_sub_arr = ''
         }
-        tel_data.telHover.sub_arr = tel_data.tel_sub_arrId[tel_data.telHover.id]
+        tel_data.tel_hover.sub_arr = tel_data.tel_sub_arr_id[tel_data.tel_hover.id]
 
         // -------------------------------------------------------------------
-        // fill the "trg" and "pnt" elements according to the corresponding data_now.trg, data_now.pnt
+        // fill the "trg" and "pnt" elements according to the
+        // corresponding data_now.trg, data_now.pnt
         // -------------------------------------------------------------------
         // let needInitData = false;
-        $.each([ 'trg', 'pnt' ], function(index0, key) {
-            $.each(tel_data.tel, function(index1, ele_now) {
-                tel_data.tel[index1][key] = [ 0, 0 ]
+        $.each([ 'trg', 'pnt' ], function(index_0, key) {
+            $.each(tel_data.tel, function(index_1, ele_now) {
+                tel_data.tel[index_1][key] = [ 0, 0 ]
 
-                let target_point_id = ele_now[key + 'Id']
-                let trgPntD
-          = target_point_id !== tel_info.no_sub_arr_name()
-              ? find_dict_ele_in_obj(tel_data[key], 'id', target_point_id, true)[1]
-              : undefined
+                let target_point_id = ele_now[key + '_id']
+                let trg_pnts = (
+                    target_point_id !== tel_info.no_sub_arr_name()
+                        ? find_dict_ele_in_obj(
+                            tel_data[key], 'id', target_point_id, true
+                        )[1]
+                        : undefined
+                )
 
-                if (is_def(trgPntD)) {
+                if (is_def(trg_pnts)) {
                     if (target_point_id !== tel_info.no_sub_arr_name()) {
-                        tel_data.tel[index1][key] = trgPntD.pos
+                        tel_data.tel[index_1][key] = trg_pnts.pos
                     }
                 }
 
-                if (target_point_id !== tel_info.no_sub_arr_name() && !is_def(trgPntD)) {
+                if (target_point_id !== tel_info.no_sub_arr_name() && !is_def(trg_pnts)) {
                     // needInitData = true;
+                    let ele_in_obj = find_dict_ele_in_obj(
+                        tel_data[key], 'id', target_point_id, true
+                    )[1]
+                    if (target_point_id === tel_info.no_sub_arr_name()) {
+                        ele_in_obj = '-------'
+                    }
                     console.error(
-                        'pqpqp:',
+                        '-ERROR-:',
                         key,
-                        index1,
+                        index_1,
                         ele_now.id,
                         ele_now,
                         target_point_id,
-                        target_point_id !== tel_info.no_sub_arr_name()
-                            ? find_dict_ele_in_obj(tel_data[key], 'id', target_point_id, true)[1]
-                            : '-------',
+                        ele_in_obj,
                         tel_data
                     )
                 }
@@ -558,31 +530,35 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         // colors
         // -------------------------------------------------------------------
-        let colNow
+        let col_now
         $.each(tel_data.tel, function(index, ele_now) {
-            if (ele_now.pntId === tel_info.no_sub_arr_name()) {
-                colNow = getColStop()
+            if (ele_now.pnt_id === tel_info.no_sub_arr_name()) {
+                col_now = get_col_stop()
             }
             else {
-                let posDiff0 = Math.abs(ele_now.pos[0] - ele_now.pnt[0])
-                let posDiff1 = Math.abs(ele_now.pos[1] - ele_now.pnt[1])
-                if (posDiff0 >= 360) {
-                    posDiff0 -= 360
+                let pos_diff_0 = Math.abs(ele_now.pos[0] - ele_now.pnt[0])
+                let pos_diff_1 = Math.abs(ele_now.pos[1] - ele_now.pnt[1])
+                if (pos_diff_0 >= 360) {
+                    pos_diff_0 -= 360
                 }
-                if (posDiff1 >= 90) {
-                    posDiff1 -= 90
+                if (pos_diff_1 >= 90) {
+                    pos_diff_1 -= 90
                 }
-                let posDiff = Math.sqrt(Math.pow(posDiff0, 2) + Math.pow(posDiff1, 2))
-                let posDiffDms = deg_dms(posDiff)
+                let pos_diff = (
+                    Math.sqrt(Math.pow(pos_diff_0, 2)
+                    + Math.pow(pos_diff_1, 2))
+                )
+                let pos_diff_dms = deg_dms(pos_diff)
 
-                colNow
-          = posDiffDms[0] <= 1 || posDiffDms[0] >= 359
-                        ? getColTrack()
-                        : getColSlew(posDiff)
+                col_now = (
+                    pos_diff_dms[0] <= 1 || pos_diff_dms[0] >= 359
+                        ? get_col_track()
+                        : get_col_slew(pos_diff)
+                )
             }
 
-            tel_data.idToCol[ele_now.id] = colNow
-            tel_data.tel[index].col = colNow
+            tel_data.id_cols[ele_now.id] = col_now
+            tel_data.tel[index].col = col_now
         })
 
         locker.remove('data_change')
@@ -594,7 +570,7 @@ let main_sub_arr_grp = function(opt_in) {
     //
     // -------------------------------------------------------------------
     // function get_sync_state(data_in) {
-    //   svg_sub_arr.zoom_to_target({ target:tel_data.telHover.id, scale:get_scale(), duration_scale:2 });
+    //   svg_sub_arr.zoom_to_target({ target:tel_data.tel_hover.id, scale:get_scale(), duration_scale:2 });
     // }
     // this.get_sync_state = get_sync_state;
 
@@ -648,7 +624,7 @@ let main_sub_arr_grp = function(opt_in) {
     // -------------------------------------------------------------------
     run_loop.init({
         tag: 'sync_state_send',
-        func: sync_state_sendOnce,
+        func: sync_state_send_nce,
         n_keep: 1,
         wait: times.wait_sync_state,
     })
@@ -660,7 +636,7 @@ let main_sub_arr_grp = function(opt_in) {
         })
     }
 
-    function sync_state_sendOnce(data_in) {
+    function sync_state_send_nce(data_in) {
         if (sock.con_stat.is_offline()) {
             return
         }
@@ -698,7 +674,7 @@ let main_sub_arr_grp = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function Svg_sky_pos() {
+    function SvgSkyPos() {
         let this_sky_pos = this
 
         let com = {
@@ -714,14 +690,14 @@ let main_sub_arr_grp = function(opt_in) {
         this.get_scale = get_scale
         this.get_trans = get_trans
 
-        let funcD = {
+        let zoom_funcs = {
         }
-        funcD.zoomFuncDuring = {
+        zoom_funcs.zoom_during = {
         }
-        funcD.zoomFuncEnd = {
+        zoom_funcs.zoom_end = {
         }
-        funcD.updtFocused = {
-        }
+        // zoom_funcs.updt_focused = {
+        // }
 
         let len_sky_pos = {
         }
@@ -756,7 +732,7 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         // background container & zoom behaviour
         // -------------------------------------------------------------------
-        function init_data(hasJoinedData) {
+        function init_data(has_join_data) {
             if (is_def(com.zoom_callable)) {
                 return
             }
@@ -779,7 +755,7 @@ let main_sub_arr_grp = function(opt_in) {
                         return is_def(sgv_tag.sky_pos.widget.get_ele(svg_div_id))
                     },
                     execute: function() {
-                        init_data(hasJoinedData)
+                        init_data(has_join_data)
                     },
                 })
 
@@ -795,15 +771,15 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             // zoom start/on/end functions, attachd to com.svg_zoom
             // -------------------------------------------------------------------
-            let scaleStart = 0
+            let scale_start = 0
             com.svg_zoom_start = function() {
-                scaleStart = d3.event.transform.k
+                scale_start = d3.event.transform.k
                 locker.add({
                     id: 'zoom',
                     override: true,
                 })
                 locker.add({
-                    id: 'zoomEndFunc',
+                    id: 'zoom_end',
                     override: true,
                 })
             }
@@ -818,7 +794,7 @@ let main_sub_arr_grp = function(opt_in) {
             com.svg_zoom_end = function() {
                 locker.remove('zoom')
                 locker.remove({
-                    id: 'zoomEndFunc',
+                    id: 'zoom_end',
                     delay: times.anim * 1.2,
                     override: true,
                 })
@@ -826,10 +802,10 @@ let main_sub_arr_grp = function(opt_in) {
                 com.svg_zoom_update_state()
 
                 // only do this once for each zooming sequence
-                doZoomFuncEnd()
+                do_zoom_end_func()
 
                 // if on minimal zoom, center
-                if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
+                if (Math.abs(d3.event.transform.k - scale_start) > 0.00001) {
                     if (Math.abs(d3.event.transform.k - len_sky_pos.z['0.0']) < 0.00001) {
                         if (locker.are_free([ 'auto_zoom_target' ])) {
                             zoom_to_target({
@@ -846,35 +822,35 @@ let main_sub_arr_grp = function(opt_in) {
             //
             // -------------------------------------------------------------------
             run_loop.init({
-                tag: 'doZoomFuncEnd',
-                func: doZoomFuncEndOnce,
+                tag: 'do_zoom_end_func',
+                func: do_zoom_end_func_once,
                 n_keep: 1,
             })
 
-            function doZoomFuncEnd() {
+            function do_zoom_end_func() {
                 run_loop.push({
-                    tag: 'doZoomFuncEnd',
+                    tag: 'do_zoom_end_func',
                 })
             }
 
-            function doZoomFuncEndOnce() {
+            function do_zoom_end_func_once() {
                 if (
                     locker.are_free([
-                        'zoomEndFunc',
+                        'zoom_end',
                         'set_state',
                         'zoom',
                         'zoom_to_target',
                         'data_change',
-                        'setFocused',
+                        'set_focused',
                     ])
                 ) {
-                    $.each(funcD.zoomFuncEnd, function(tag_now, funcNow) {
+                    $.each(zoom_funcs.zoom_end, function(tag_now, funcNow) {
                         funcNow()
                     })
                 }
                 else {
                     setTimeout(function() {
-                        doZoomFuncEnd()
+                        do_zoom_end_func()
                     }, times.anim / 2)
                 }
             }
@@ -882,6 +858,7 @@ let main_sub_arr_grp = function(opt_in) {
             com.svg_zoom = d3
                 .zoom()
                 .scaleExtent([ len_sky_pos.z['0.0'], len_sky_pos.z['1.0'] ])
+            
             com.svg_zoom.on('start', com.svg_zoom_start)
             com.svg_zoom.on('zoom', com.svg_zoom_during)
             com.svg_zoom.on('end', com.svg_zoom_end)
@@ -973,35 +950,30 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             com.svg = d3
                 .select(svg_div)
-            // .classed("svgInGridStack_outer", true)
+                // .classed("svgInGridStack_outer", true)
                 .style('background', '#383B42')
                 .append('svg')
                 .attr('preserveAspectRatio', 'xMidYMid meet')
                 .attr(
                     'viewBox',
-                    -svg_dims.w[1] / 2
-            + ' '
-            + -svg_dims.h[1] / 2
-            + ' '
-            + svg_dims.w[1]
-            + ' '
-            + svg_dims.h[1]
+                    (-svg_dims.w[1] / 2 + ' ' + -svg_dims.h[1] / 2 + ' ')
+                    + (svg_dims.w[1] + ' ' + svg_dims.h[1])
                 )
                 .style('position', 'relative')
                 .style('width', '100%')
                 .style('height', '100%')
                 .style('top', '0px')
                 .style('left', '0px')
-            // .classed("svgInGridStack_inner", true)
+                // .classed("svgInGridStack_inner", true)
                 .style('background', '#383B42') // .style("background", "blue")// .style("border","1px solid red")
                 .call(com.svg_zoom)
                 .on('wheel', function() {
                     d3.event.preventDefault()
                 })
-            // .on("dblclick.zoom", null)
+                // .on("dblclick.zoom", null)
 
             com.zoom_callable = com.svg.append('g')
-            com.svgOverlay = com.svg.append('g')
+            com.svg_overlay = com.svg.append('g')
 
             // save the svg node to use for d3.zoomTransform() later
             com.svg_zoom_node = com.svg.nodes()[0]
@@ -1018,6 +990,7 @@ let main_sub_arr_grp = function(opt_in) {
             this_sky_pos.get_scale = get_scale
             this_sky_pos.get_trans = get_trans
 
+            // -------------------------------------------------------------------
             // add one circle as background
             // -------------------------------------------------------------------
             com.zoom_callable
@@ -1027,40 +1000,40 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('circle')
                 .attr('r', 0)
-            // .attr("cx", svg_dims.w[1]/2)
-            // .attr("cy", svg_dims.h[1]/2)
+                // .attr("cx", svg_dims.w[1]/2)
+                // .attr("cy", svg_dims.h[1]/2)
                 .attr('cx', 0)
                 .attr('cy', 0)
-            // .attr("fill", "#F2F2F2")
+                // .attr("fill", "#F2F2F2")
                 .attr('fill', function(d, i) {
                     return i === 0 ? d3.rgb('#F2F2F2').darker(0.05) : '#F2F2F2'
                 })
                 .transition('in_out')
                 .duration(times.anim / 3)
-            // .attr("r", function(d,i) { return svg_dims.w[1]/2; });
+                // .attr("r", function(d,i) { return svg_dims.w[1]/2; });
                 .attr('r', function(d, i) {
                     return svg_dims.w[1] * (i === 0 ? 1 / 2 : 1 / 2.2)
                 })
 
             com.zoom_callable.on('mousemove', function() {
-                updateOverText(d3.mouse(this))
+                update_over_text(d3.mouse(this))
             })
 
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
             //
-            initGrat()
+            init_grat()
             //
-            setProjPath()
+            set_proj_path()
             //
-            addGratLines()
+            add_grat_lines()
             //
-            gratLbls([ 0, 0 ], 1)
+            grat_lbls([ 0, 0 ], 1)
             //
-            projTelos()
+            proj_tel_pos()
             // initi overlay coordinate text
-            setOverText()
+            set_over_text()
 
             locker.remove('in_init_sky_pos')
         }
@@ -1069,36 +1042,36 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function setOverText() {
-            if (!is_def(com.overRect)) {
-                com.overRect = {
+        function set_over_text() {
+            if (!is_def(com.over_rect)) {
+                com.over_rect = {
                 }
-                com.overRect.w = svg_dims.w[1]
-                com.overRect.h = svg_dims.h[1] * 0.06
-                com.overRect.x = -com.overRect.w / 2
-                com.overRect.y = svg_dims.h[1] / 2 - com.overRect.h
+                com.over_rect.w = svg_dims.w[1]
+                com.over_rect.h = svg_dims.h[1] * 0.06
+                com.over_rect.x = -com.over_rect.w / 2
+                com.over_rect.y = svg_dims.h[1] / 2 - com.over_rect.h
 
-                com.overRect.data = [
+                com.over_rect.data = [
                     {
                         id: 'coordinates',
-                        x: 15, // com.overRect.w*0.05,
-                        y: com.overRect.h / 2,
+                        x: 15, // com.over_rect.w*0.05,
+                        y: com.over_rect.h / 2,
                         txt: '',
                         size: 15,
                     },
                 ]
 
-                com.svgOverlay
+                com.svg_overlay
                     .style('pointer-events', 'none')
-                    .attr('transform', function(d) {
-                        return 'translate(' + com.overRect.x + ',' + com.overRect.y + ')'
-                    })
+                    .attr('transform', (
+                        'translate(' + com.over_rect.x + ',' + com.over_rect.y + ')'
+                    ))
 
-                let defs = com.svgOverlay.append('defs')
+                let defs = com.svg_overlay.append('defs')
 
                 let grad = defs
                     .append('linearGradient')
-                    .attr('id', 'svgOverlayGrad')
+                    .attr('id', 'svg_overlay_grad')
                     .attr('x1', '0%')
                     .attr('x2', '100%')
                     .attr('y1', '100%')
@@ -1116,19 +1089,19 @@ let main_sub_arr_grp = function(opt_in) {
                     .attr('stop-opacity', 0)
                 // .attr("stop-color", "red").attr("stop-opacity", 1)
 
-                com.svgOverlay
+                com.svg_overlay
                     .append('g')
                     .selectAll('rect')
                     .data([ 0 ])
                     .enter()
                     .append('rect')
                     .style('pointer-events', 'none')
-                    .attr('width', com.overRect.w)
-                    .attr('height', com.overRect.h)
+                    .attr('width', com.over_rect.w)
+                    .attr('height', com.over_rect.h)
                     .attr('x', 0)
                     .attr('y', 0)
                     .style('opacity', 0.7)
-                    .attr('fill', 'url(#svgOverlayGrad)')
+                    .attr('fill', 'url(#svg_overlay_grad)')
                 // .attr("fill","#F2F2F2")
             }
 
@@ -1136,9 +1109,9 @@ let main_sub_arr_grp = function(opt_in) {
             //
             // -------------------------------------------------------------------
             let tag_now = 'coord'
-            let txt = com.svgOverlay
+            let txt = com.svg_overlay
                 .selectAll('text.' + tag_now)
-                .data(com.overRect.data, function(d, i) {
+                .data(com.over_rect.data, function(d) {
                     return d.id
                 })
 
@@ -1151,12 +1124,8 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('text-anchor', 'left')
                 .style('font-weight', 'normal')
                 .style('stroke-width', 0.5)
-                .style('stroke', function(d) {
-                    return '#F2F2F2'
-                })
-                .style('fill', function(d) {
-                    return '#F2F2F2'
-                })
+                .style('stroke', '#F2F2F2')
+                .style('fill', '#F2F2F2')
                 .style('pointer-events', 'none')
                 .style('vector-effect', 'non-scaling-stroke')
                 .style('font-size', function(d) {
@@ -1189,7 +1158,7 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function updateOverText(mousePos) {
+        function update_over_text(mousePos) {
             let transProj = com.proj.invert(mousePos)
 
             let is_out = false
@@ -1203,32 +1172,33 @@ let main_sub_arr_grp = function(opt_in) {
                 transProj[1] *= -1
             }
 
-            com.overRect.data[0].txt = parsePosTxt(transProj)
+            com.over_rect.data[0].txt = parse_pos_txt(transProj)
 
-            setOverText()
+            set_over_text()
         }
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
         function update_data(data_in) {
-            projTelos()
+            proj_tel_pos()
         }
         this_sky_pos.update_data = update_data
 
         // -------------------------------------------------------------------
         // translate coordinates to the skymap
         // -------------------------------------------------------------------
-        function setProjPos() {
-            $.each([ 'trg', 'pnt', 'tel' ], function(trgTelIndex, trgTel) {
-                $.each([ 'pos', 'pnt', 'trg' ], function(index0, pos_tag) {
-                    if (pos_tag === 'pos' || trgTel === 'tel') {
-                        let tag_now = trgTel + pos_tag
+        // FFF
+        function set_proj_pos() {
+            $.each([ 'trg', 'pnt', 'tel' ], function(trg_tel_index, trg_tel) {
+                $.each([ 'pos', 'pnt', 'trg' ], function(index_0, pos_tag) {
+                    if (pos_tag === 'pos' || trg_tel === 'tel') {
+                        let tag_now = trg_tel + '_' + pos_tag
 
-                        $.each(tel_data[trgTel], function(index1, data_now) {
-                            // console.log(tag_now,pos_tag,data_now[pos_tag],tel_data[trgTel][index1]);
-
-                            tel_data[trgTel][index1][tag_now] = projXY(data_now[pos_tag])
+                        $.each(tel_data[trg_tel], function(index_1, data_now) {
+                            tel_data[trg_tel][index_1][tag_now] = (
+                                projXY(data_now[pos_tag])
+                            )
                         })
                     }
                 })
@@ -1242,7 +1212,7 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function projTelos() {
+        function proj_tel_pos() {
             // // fixme !!!!!!!!!!!!!!!!!!!!
             // // fixme !!!!!!!!!!!!!!!!!!!!
             // let tagAzZen = ''
@@ -1254,16 +1224,16 @@ let main_sub_arr_grp = function(opt_in) {
                 com.inst_pos.g = com.zoom_callable.append('g')
                 com.inst_pos.circXY = {
                 }
-                com.inst_pos.lblXY = {
+                com.inst_pos.lbl_xY = {
                 }
             }
             let tagTelLbl = 'telTitle'
-            let tagTrgLbl = 'trgTitle'
+            let tag_trg_lbl = 'trgTitle'
 
             let nLblTicks = 100
             let lblForceStrength = is_south ? -40 : -150
             let multiTickUpdate = false
-            let colLblV = [
+            let col_lbls = [
                 d3.rgb(cols_reds[3]).brighter(0.3),
                 d3.rgb(cols_reds[3]).darker(0.3),
                 d3.rgb(cols_reds[3]).darker(1),
@@ -1272,8 +1242,8 @@ let main_sub_arr_grp = function(opt_in) {
                 d3.rgb(cols_reds[8]).brighter(0.5),
                 '#383b42',
                 d3.rgb(cols_yellows[2]).brighter(0.3),
-                colLblV[2],
-                colLblV[2],
+                col_lbls[2],
+                col_lbls[2],
             ]
 
             let font_size = 0.9 * len_sky_pos.r.tel
@@ -1281,42 +1251,46 @@ let main_sub_arr_grp = function(opt_in) {
                 return font_size * Math.pow(get_scale(), -0.3)
             }
 
-            let scaleFact = 1 / Math.sqrt(get_scale())
-            let scaledR = {
-                trg: scaleFact * len_sky_pos.r.trg,
-                tel: scaleFact * len_sky_pos.r.tel,
-                pnt: scaleFact * len_sky_pos.r.tel / 2,
+            let scale_fact = 1 / Math.sqrt(get_scale())
+            let scaled_r = {
+                trg: scale_fact * len_sky_pos.r.trg,
+                tel: scale_fact * len_sky_pos.r.tel,
+                pnt: scale_fact * len_sky_pos.r.tel / 2,
             }
 
             // translate coordinates to the skymap
-            setProjPos()
+            set_proj_pos()
 
             // -------------------------------------------------------------------
             // label data
             // -------------------------------------------------------------------
-            let trgLblData = []
-            let telLblData = []
-            let forceNodes = []
-            $.each([ 'trg', 'pnt', 'tel' ], function(trgTelIndex, trgTel) {
-                let tag_now = trgTel + 'pos'
-                let data_now = tel_data[trgTel].filter(function(d) {
-                    return filtFunc(trgTel, 'pos', d)
+            let trg_lbl_data = []
+            let tel_lbl_data = []
+            let force_nodes = []
+            $.each([ 'trg', 'pnt', 'tel' ], function(trg_tel_index, trg_tel) {
+                let tag_now = trg_tel + '_' + 'pos'
+                let data_now = tel_data[trg_tel].filter(function(d) {
+                    return filtFunc(trg_tel, 'pos', d)
                 })
 
                 $.each(data_now, function(indexNode, nodeNow) {
-                    let isHov = tel_data.telHover.id === nodeNow.id
-                    // if(trgTelIndex<2)console.log('nodeNow',nodeNow);
-                    if (!isHov && trgTel === 'tel') {
+                    let is_hov = tel_data.tel_hover.id === nodeNow.id
+                    // if(trg_tel_index<2)console.log('nodeNow',nodeNow);
+                    if (!is_hov && trg_tel === 'tel') {
                         return
                     }
 
-                    let id_now = trgTel + nodeNow.id
+                    let id_now = trg_tel + nodeNow.id
                     let data_now = {
                         id: id_now,
-                        type: trgTel,
-                        N: trgTel === 'tel' ? tel_info.get_title(nodeNow.id) : nodeNow.N,
+                        type: trg_tel,
+                        N: (
+                            trg_tel === 'tel'
+                                ? tel_info.get_title(nodeNow.id)
+                                : nodeNow.N
+                        ),
                         x: nodeNow[tag_now][0],
-                        y: nodeNow[tag_now][1] - scaledR[trgTel],
+                        y: nodeNow[tag_now][1] - scaled_r[trg_tel],
                         col: nodeNow.col,
                     }
 
@@ -1325,25 +1299,25 @@ let main_sub_arr_grp = function(opt_in) {
                         y: data_now.y,
                     }
 
-                    if (trgTel === 'tel') {
-                        telLblData.push(data_now)
+                    if (trg_tel === 'tel') {
+                        tel_lbl_data.push(data_now)
                     }
                     else {
-                        trgLblData.push(data_now)
+                        trg_lbl_data.push(data_now)
                     }
 
-                    forceNodes.push(data_now)
+                    force_nodes.push(data_now)
                 })
             })
 
             // -------------------------------------------------------------------
-            // combinations are: trgpos (target), telpos (telescope), telpnt (pointing)
+            // combinations are: trg_pos (target), tel_pos (telescope), tel_pnt (pointing)
             // -------------------------------------------------------------------
-            function filtFunc(trgTel, posPnt, d) {
-                if (d.id === tel_info.no_sub_arr_name() && trgTel === 'trg') {
+            function filtFunc(trg_tel, pos_pnt, d) {
+                if (d.id === tel_info.no_sub_arr_name() && trg_tel === 'trg') {
                     return false
                 }
-                else if (d.pntId === tel_info.no_sub_arr_name() && posPnt === 'pnt') {
+                else if (d.pnt_id === tel_info.no_sub_arr_name() && pos_pnt === 'pnt') {
                     return false
                 }
                 else {
@@ -1369,7 +1343,7 @@ let main_sub_arr_grp = function(opt_in) {
                     {
                         pair: [ 1, 2 ],
                         telTag: 'tel',
-                        tag: 'lineTrgPnt',
+                        tag: 'line_trg_pnt',
                         dash: '10,10',
                     },
                     {
@@ -1395,12 +1369,12 @@ let main_sub_arr_grp = function(opt_in) {
 
             let pos_tags = [ 'pos', 'pnt', 'trg' ]
             $.each(com.inst_pos.lineTags, function(index, ele_now) {
-                let trgTel = ele_now.telTag
+                let trg_tel = ele_now.telTag
                 let pairNow = ele_now.pair
                 let tag_now = ele_now.tag
                 let dash = ele_now.dash
 
-                let data_now = tel_data[trgTel].filter(function(d) {
+                let data_now = tel_data[trg_tel].filter(function(d) {
                     return filtFuncLines(d)
                 })
                 let line = com.inst_pos.g
@@ -1410,15 +1384,15 @@ let main_sub_arr_grp = function(opt_in) {
                     })
 
                 function filtFuncLines(d) {
-                    let isHov = tel_data.telHover.id === d.id
-                    if (!isHov) {
+                    let is_hov = tel_data.tel_hover.id === d.id
+                    if (!is_hov) {
                         return false
                     }
 
-                    if (d.pntId === tel_info.no_sub_arr_name() && index !== 2) {
+                    if (d.pnt_id === tel_info.no_sub_arr_name() && index !== 2) {
                         return false
                     }
-                    else if (d.trgId === tel_info.no_sub_arr_name() && index === 1) {
+                    else if (d.trg_id === tel_info.no_sub_arr_name() && index === 1) {
                         return false
                     }
                     else {
@@ -1431,41 +1405,39 @@ let main_sub_arr_grp = function(opt_in) {
                     .enter()
                     .append('line')
                     .attr('class', tag_now)
-                // .each(  function(d,i) { // xxxxxxxxxxxxx
-                //   if(index < 2) console.log(d,trgTel,pairNow[1], pos_tags[pairNow[1]],  d[ trgTel+ pos_tags[ pairNow[1] ]][0]);
-                // })
-                    .attr('x1', function(d, i) {
-                        return d[trgTel + pos_tags[pairNow[0]]][0]
+                    // .each(  function(d,i) { // xxxxxxxxxxxxx
+                    //   if(index < 2) console.log(d,trg_tel,pairNow[1], pos_tags[pairNow[1]],  d[ trg_tel+ pos_tags[ pairNow[1] ]][0]);
+                    // })
+                    .attr('x1', function(d) {
+                        return d[trg_tel + '_' + pos_tags[pairNow[0]]][0]
                     })
-                    .attr('x2', function(d, i) {
-                        return d[trgTel + pos_tags[pairNow[1]]][0]
+                    .attr('x2', function(d) {
+                        return d[trg_tel + '_' + pos_tags[pairNow[1]]][0]
                     })
-                    .attr('y1', function(d, i) {
-                        return d[trgTel + pos_tags[pairNow[0]]][1]
+                    .attr('y1', function(d) {
+                        return d[trg_tel + '_' + pos_tags[pairNow[0]]][1]
                     })
-                    .attr('y2', function(d, i) {
-                        return d[trgTel + pos_tags[pairNow[1]]][1]
+                    .attr('y2', function(d) {
+                        return d[trg_tel + '_' + pos_tags[pairNow[1]]][1]
                     })
                     .style('stroke-opacity', 0)
                     .style('stroke-width', index < 2 ? 1 : 1)
                     .style('pointer-events', 'none')
                     .style('vector-effect', 'non-scaling-stroke')
                     .style('stroke-dasharray', dash)
-                    .attr('stroke', function(d, i) {
-                        return colLineV[index]
-                    })
+                    .attr('stroke', colLineV[index])
                     .merge(line)
                     .transition('in_out1')
                     .duration(times.anim)
-                // .attr("x1",  function(d,i) { return d[ trgTel+ pos_tags[ pairNow[0] ]][0]; })
-                // .attr("y1",  function(d,i) { return d[ trgTel+ pos_tags[ pairNow[0] ]][1]; })
-                    .attr('x2', function(d, i) {
-                        return d[trgTel + pos_tags[pairNow[1]]][0]
+                // .attr("x1",  function(d,i) { return d[ trg_tel+ pos_tags[ pairNow[0] ]][0]; })
+                // .attr("y1",  function(d,i) { return d[ trg_tel+ pos_tags[ pairNow[0] ]][1]; })
+                    .attr('x2', function(d) {
+                        return d[trg_tel + '_' + pos_tags[pairNow[1]]][0]
                     })
-                    .attr('y2', function(d, i) {
-                        return d[trgTel + pos_tags[pairNow[1]]][1]
+                    .attr('y2', function(d) {
+                        return d[trg_tel + '_' + pos_tags[pairNow[1]]][1]
                     })
-                    .style('stroke-opacity', function(d, i) {
+                    .style('stroke-opacity', function() {
                         if (index === 0) {
                             return 0.6
                         }
@@ -1485,11 +1457,11 @@ let main_sub_arr_grp = function(opt_in) {
                             line
                                 .transition('in_out2')
                                 .duration(times.anim)
-                                .attr('x1', function(d, i) {
-                                    return d[trgTel + pos_tags[pairNow[0]]][0]
+                                .attr('x1', function(d) {
+                                    return d[trg_tel + '_' + pos_tags[pairNow[0]]][0]
                                 })
-                                .attr('y1', function(d, i) {
-                                    return d[trgTel + pos_tags[pairNow[0]]][1]
+                                .attr('y1', function(d) {
+                                    return d[trg_tel + '_' + pos_tags[pairNow[0]]][1]
                                 })
                         }
                     }
@@ -1505,13 +1477,13 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             // circles for target, pointing and telescopes
             // -------------------------------------------------------------------
-            $.each([ 'tel', 'pnt', 'trg' ], function(trgTelIndex, trgTel) {
-                let posPnt = 'pos'
-                let tag_now = trgTel + posPnt
+            $.each([ 'tel', 'pnt', 'trg' ], function(trg_tel_index, trg_tel) {
+                let pos_pnt = 'pos'
+                let tag_now = trg_tel + '_' + pos_pnt
 
-                function selCirc(tagIn) {
-                    let data_now = tel_data[trgTel].filter(function(d) {
-                        return filtFunc(trgTel, posPnt, d)
+                function sel_circ(tag_in) {
+                    let data_now = tel_data[trg_tel].filter(function(d) {
+                        return filtFunc(trg_tel, pos_pnt, d)
                     })
                     return com.inst_pos.g
                         .selectAll('circle.' + tag_now)
@@ -1519,7 +1491,7 @@ let main_sub_arr_grp = function(opt_in) {
                             return tag_now + d.id
                         })
                 }
-                let circ = selCirc()
+                let circ = sel_circ()
 
                 // operate on new elements only
                 let n_ele_in = -1
@@ -1529,22 +1501,13 @@ let main_sub_arr_grp = function(opt_in) {
                     .attr('class', tag_now)
                     .style('vector-effect', 'non-scaling-stroke')
                     .attr('r', 0)
-                    .style('stroke-width', function(d, i) {
-                        if (trgTel === 'trg') {
-                            return 1.5
-                        }
-                        else {
-                            return 1.0
-                        }
-                    })
+                    .style('stroke-width', (trg_tel === 'trg') ? 1.5 : 1)
                     .attr('transform', function(d) {
                         return 'translate(' + d[tag_now][0] + ',' + d[tag_now][1] + ')'
                     })
-                    .attr('fill-opacity', function(d) {
-                        return trgTel === 'trg' ? 0.25 : 0.55
-                    })
+                    .attr('fill-opacity', trg_tel === 'trg' ? 0.25 : 0.55)
                     .on('click', function(d) {
-                        if (trgTel === 'tel') {
+                        if (trg_tel === 'tel') {
                             svg_sub_arr.zoom_to_target({
                                 target: d.id,
                                 scale: svg_sub_arr.com.z['1.0'],
@@ -1552,7 +1515,7 @@ let main_sub_arr_grp = function(opt_in) {
                             })
                         }
                     })
-                    .attr('pointer-events', trgTel === 'tel' ? 'auto' : 'none')
+                    .attr('pointer-events', trg_tel === 'tel' ? 'auto' : 'none')
                     .merge(circ)
                     .each(function() {
                         n_ele_in++
@@ -1562,28 +1525,25 @@ let main_sub_arr_grp = function(opt_in) {
                     .attr('transform', function(d) {
                         return 'translate(' + d[tag_now][0] + ',' + d[tag_now][1] + ')'
                     })
-                    .style('fill', function(d, i) {
-                        if (trgTel === 'tel') {
+                    .style('fill', function(d) {
+                        if (trg_tel === 'tel') {
                             return d.col
                         }
-                        else if (trgTel === 'trg') {
+                        else if (trg_tel === 'trg') {
                             return '#383b42'
                         }
                         else {
                             return 'transparent'
                         }
                     })
-                    .style('stroke', function(d, i) {
-                        if (trgTel === 'tel') {
-                            return d3.rgb(d.col).darker(1)
-                        }
-                        else {
-                            return '#383b42'
-                        }
+                    .style('stroke', function(d) {
+                        return (
+                            (trg_tel === 'tel') ? d3.rgb(d.col).darker(1) : '#383b42'
+                        )
                     })
-                    .on('end', function(d, i) {
+                    .on('end', function(_, i) {
                         if (i === n_ele_in) {
-                            updtCirc()
+                            updt_circ()
                         }
                     })
 
@@ -1594,19 +1554,21 @@ let main_sub_arr_grp = function(opt_in) {
                     .attr('r', 0)
                     .remove()
 
-                function updtCirc() {
-                    let circ = selCirc()
+                function updt_circ() {
+                    let circ = sel_circ()
                     // make sure the projected positions are calculated
                     // (may not be the case for reconnected sessions...)
                     circ.each(function(d, i) {
                         if (!is_def(d[tag_now])) {
-                            console.log.error('test setProjPos()...', i, d)
+                            console.log.error('test set_proj_pos()...', i, d)
                         }
                         if (!is_def(d[tag_now])) {
-                            setProjPos()
+                            set_proj_pos()
                         }
                         if (!is_def(d[tag_now])) {
-                            console.log.error('something is wrong with setProjPos()...', d)
+                            console.log.error(
+                                'something is wrong with set_proj_pos()...', d
+                            )
                         }
                     })
 
@@ -1614,26 +1576,28 @@ let main_sub_arr_grp = function(opt_in) {
                         .transition('zoom')
                         .duration(times.anim)
                         .attr('transform', function(d) {
-                            return 'translate(' + d[tag_now][0] + ',' + d[tag_now][1] + ')'
+                            return (
+                                'translate(' + d[tag_now][0] + ',' + d[tag_now][1] + ')'
+                            )
                         })
-                        .attr('r', scaledR[trgTel])
+                        .attr('r', scaled_r[trg_tel])
                 }
-                funcD.zoomFuncEnd['updtZoomedSize' + tag_now] = updtCirc
+                zoom_funcs.zoom_end['updt_zoomed_size' + tag_now] = updt_circ
             })
 
             // -------------------------------------------------------------------
             // labels
             // -------------------------------------------------------------------
-            let trgLbl = com.inst_pos.g
-                .selectAll('text.' + tagTrgLbl)
-                .data(trgLblData, function(d, i) {
+            let trg_lbl = com.inst_pos.g
+                .selectAll('text.' + tag_trg_lbl)
+                .data(trg_lbl_data, function(d) {
                     return d.id
                 })
 
-            trgLbl
+            trg_lbl
                 .enter()
                 .append('text')
-                .attr('class', tagTrgLbl)
+                .attr('class', tag_trg_lbl)
                 .style('fill-opacity', 0)
                 .style('stroke-opacity', 0)
                 .text(function(d) {
@@ -1642,32 +1606,26 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('stroke-width', 0.5)
-                .style('stroke', function(d) {
-                    return colLblV[2]
-                })
+                .style('stroke', col_lbls[2])
                 .style('fill', function(d) {
-                    return colLblV[d.type === 'trg' ? 0 : 1]
+                    return col_lbls[d.type === 'trg' ? 0 : 1]
                 })
                 .style('pointer-events', 'none')
                 .style('vector-effect', 'non-scaling-stroke')
-                .style('font-size', function(d) {
-                    return getFontSize() + 'px'
-                })
+                .style('font-size', getFontSize() + 'px')
                 .attr('dy', getFontSize() / 3 + 'px')
                 .attr('transform', function(d) {
                     return 'translate(' + d.x + ',' + d.y + ')'
                 })
-                .merge(trgLbl)
+                .merge(trg_lbl)
                 .transition('in_out')
                 .duration(times.anim)
-                .style('font-size', function(d) {
-                    return getFontSize() + 'px'
-                })
+                .style('font-size', getFontSize() + 'px')
                 .attr('dy', getFontSize() / 3 + 'px')
                 .style('fill-opacity', 0.6)
                 .style('stroke-opacity', 1)
 
-            trgLbl
+            trg_lbl
                 .exit()
                 .transition('in_out')
                 .duration(times.anim)
@@ -1677,7 +1635,7 @@ let main_sub_arr_grp = function(opt_in) {
 
             let telLbl = com.inst_pos.g
                 .selectAll('text.' + tagTelLbl)
-                .data(telLblData, function(d, i) {
+                .data(tel_lbl_data, function(d) {
                     return d.id
                 })
 
@@ -1693,17 +1651,11 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('stroke-width', 0.5)
-                .style('stroke', function(d) {
-                    return '#383b42'
-                })
-                .style('fill', function(d) {
-                    return '#383b42'
-                })
+                .style('stroke', '#383b42')
+                .style('fill', '#383b42')
                 .style('pointer-events', 'none')
                 .style('vector-effect', 'non-scaling-stroke')
-                .style('font-size', function(d) {
-                    return getFontSize() + 'px'
-                })
+                .style('font-size', getFontSize() + 'px')
                 .attr('dy', getFontSize() / 3 + 'px')
                 .attr('transform', function(d) {
                     return 'translate(' + d.x + ',' + d.y + ')'
@@ -1711,9 +1663,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .merge(telLbl)
                 .transition('in_out')
                 .duration(times.anim)
-                .style('font-size', function(d) {
-                    return getFontSize() + 'px'
-                })
+                .style('font-size', getFontSize() + 'px')
                 .attr('dy', getFontSize() / 3 + 'px')
                 .style('fill-opacity', 0.8)
                 .style('stroke-opacity', 0.8)
@@ -1731,7 +1681,7 @@ let main_sub_arr_grp = function(opt_in) {
             if (is_def(com.inst_pos[tagTelLbl + 'force'])) {
                 com.inst_pos[tagTelLbl + 'force']
                     .alpha(1)
-                    .nodes(forceNodes)
+                    .nodes(force_nodes)
                     .restart()
             }
             else {
@@ -1743,7 +1693,7 @@ let main_sub_arr_grp = function(opt_in) {
                     com.inst_pos.g
                         .selectAll('text')
                         .each(function(d) {
-                            com.inst_pos.lblXY[d.id] = {
+                            com.inst_pos.lbl_xY[d.id] = {
                                 x: d.x,
                                 y: d.y,
                             }
@@ -1756,7 +1706,7 @@ let main_sub_arr_grp = function(opt_in) {
 
                     $.each(com.inst_pos.lineTags, function(index, ele_now) {
                         if (index > 1) {
-                            let trgTel = ele_now.telTag
+                            let trg_tel = ele_now.telTag
                             // let pairNow = ele_now.pair
                             let tag_now = ele_now.tag
 
@@ -1764,17 +1714,17 @@ let main_sub_arr_grp = function(opt_in) {
                                 .selectAll('line.' + tag_now)
                                 .transition('in_out')
                                 .duration(times.anim * animFrac)
-                                .attr('x1', function(d, i) {
-                                    return com.inst_pos.lblXY[trgTel + d.id].x
+                                .attr('x1', function(d) {
+                                    return com.inst_pos.lbl_xY[trg_tel + d.id].x
                                 })
-                                .attr('y1', function(d, i) {
-                                    return com.inst_pos.lblXY[trgTel + d.id].y
+                                .attr('y1', function(d) {
+                                    return com.inst_pos.lbl_xY[trg_tel + d.id].y
                                 })
-                                .attr('x2', function(d, i) {
-                                    return d[trgTel + 'pos'][0]
+                                .attr('x2', function(d) {
+                                    return d[trg_tel + '_' + 'pos'][0]
                                 })
-                                .attr('y2', function(d, i) {
-                                    return d[trgTel + 'pos'][1]
+                                .attr('y2', function(d) {
+                                    return d[trg_tel + '_' + 'pos'][1]
                                 })
                         }
                     })
@@ -1788,14 +1738,12 @@ let main_sub_arr_grp = function(opt_in) {
                     .force('charge', getForchCharge())
                     .alpha(1)
                     .alphaDecay(1 - Math.pow(0.001, 1 / nLblTicks))
-                    .nodes(forceNodes)
+                    .nodes(force_nodes)
                     .on('tick', nodeUpdateTickVal)
-                    .on('end', function(d) {
-                        com.nodeUpdateTickPos(1)
-                    })
+                    .on('end', com.nodeUpdateTickPos(1))
 
-                funcD.zoomFuncEnd['updtZoomedSize' + tagTelLbl] = updtTxt
-                // funcD.zoomFuncEnd["updtZoomedSize_"+tagTelLbl] = function(){}
+                zoom_funcs.zoom_end['updt_zoomed_size' + tagTelLbl] = updtTxt
+                // zoom_funcs.zoom_end["updt_zoomed_size_"+tagTelLbl] = function(){}
             }
 
             function nodeUpdateTickVal() {
@@ -1804,7 +1752,7 @@ let main_sub_arr_grp = function(opt_in) {
                 // console.log(tickFrac);
 
                 // push nodes toward their designated focus
-                com.inst_pos.g.selectAll('text').each(function(d, i) {
+                com.inst_pos.g.selectAll('text').each(function(d) {
                     if (!is_def(d.x)) {
                         return
                     }
@@ -1835,9 +1783,7 @@ let main_sub_arr_grp = function(opt_in) {
                     .force('charge', getForchCharge())
                     .alpha(1)
                     .restart()
-                    .on('end', function(d) {
-                        com.nodeUpdateTickPos(1)
-                    })
+                    .on('end', com.nodeUpdateTickPos(1))
 
                 // update the title size on zoom
                 com.inst_pos.g
@@ -1853,61 +1799,61 @@ let main_sub_arr_grp = function(opt_in) {
         //
         // -------------------------------------------------------------------
         run_loop.init({
-            tag: 'setFocused',
+            tag: 'set_focused',
             func: setFocusedOnce,
             n_keep: 1,
         })
 
-        function setFocused(data_in) {
+        function set_focused(data_in) {
             run_loop.push({
-                tag: 'setFocused',
+                tag: 'set_focused',
                 data: data_in,
             })
         }
-        this.setFocused = setFocused
+        this.set_focused = set_focused
 
         function setFocusedOnce() {
-            // create delay if currently in data update or a previous call of setFocused
+            // create delay if currently in data update or a previous call of set_focused
             if (
                 !locker.are_free([ 'set_state', 'zoom', 'zoom_to_target', 'data_change' ])
             ) {
                 setTimeout(function() {
-                    setFocused(opt_in)
+                    set_focused(opt_in)
                 }, times.anim)
                 return
             }
             locker.add({
-                id: 'setFocused',
+                id: 'set_focused',
                 override: true,
             })
 
             let tagTelLbl = 'telTitle'
-            let tagTrgLbl = 'trgTitle'
+            let tag_trg_lbl = 'trgTitle'
             let fadeOpac = 0.05
             let animTime = times.anim / 2
 
             function is_focused(id_in) {
-                if (!is_def(tel_data.idToFocus[id_in])) {
+                if (!is_def(tel_data.id_focuses[id_in])) {
                     return true
                 }
-                return tel_data.idToFocus[id_in]
+                return tel_data.id_focuses[id_in]
             }
 
-            $.each([ 'tel', 'pnt', 'trg' ], function(trgTelIndex, trgTel) {
-                let posPnt = 'pos'
-                let tag_now = trgTel + posPnt
+            $.each([ 'tel', 'pnt', 'trg' ], function(trg_tel_index, trg_tel) {
+                let pos_pnt = 'pos'
+                let tag_now = trg_tel + '_' + pos_pnt
 
                 com.inst_pos.g
                     .selectAll('circle.' + tag_now)
                     .transition('fadeInOut')
                     .duration(animTime)
                     .style('opacity', function(d) {
-                        return is_focused(trgTel + d.id) ? 1 : fadeOpac
+                        return is_focused(trg_tel + d.id) ? 1 : fadeOpac
                     })
             })
 
             $.each(com.inst_pos.lineTags, function(index, ele_now) {
-                let trgTel = ele_now.telTag
+                let trg_tel = ele_now.telTag
                 let tag_now = ele_now.tag
 
                 com.inst_pos.g
@@ -1915,7 +1861,7 @@ let main_sub_arr_grp = function(opt_in) {
                     .transition('in_out')
                     .duration(animTime)
                     .style('opacity', function(d) {
-                        return is_focused(trgTel + d.id) ? 1 : fadeOpac
+                        return is_focused(trg_tel + d.id) ? 1 : fadeOpac
                     })
             })
 
@@ -1928,7 +1874,7 @@ let main_sub_arr_grp = function(opt_in) {
                 })
 
             com.inst_pos.g
-                .selectAll('text.' + tagTrgLbl)
+                .selectAll('text.' + tag_trg_lbl)
                 .transition('fadeInOut')
                 .duration(animTime)
                 .style('opacity', function(d) {
@@ -1936,7 +1882,7 @@ let main_sub_arr_grp = function(opt_in) {
                 })
 
             locker.remove({
-                id: 'setFocused',
+                id: 'set_focused',
                 delay: times.anim,
             })
         }
@@ -1944,7 +1890,7 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function initGrat() {
+        function init_grat() {
             com.isPolar = true
             com.followGratLbls = false
 
@@ -1979,7 +1925,7 @@ let main_sub_arr_grp = function(opt_in) {
             // else                          return 3;
         }
 
-        function addGratLines() {
+        function add_grat_lines() {
             // return
             let opac = 0.35
             let strkW = 0.5
@@ -2023,7 +1969,7 @@ let main_sub_arr_grp = function(opt_in) {
             com.gratPrev = getGradPrev()
         }
 
-        function setProjPath() {
+        function set_proj_path() {
             if (com.isPolar) {
                 com.proj = d3
                     .geoAzimuthalEquidistant()
@@ -2046,7 +1992,7 @@ let main_sub_arr_grp = function(opt_in) {
             com.path = d3.geoPath().projection(com.proj)
         }
 
-        function gratLbls(trans, scaleFactor) {
+        function grat_lbls(trans, scaleFactor) {
             // return
             let nAzm = 14
             let nZen = 3
@@ -2054,7 +2000,7 @@ let main_sub_arr_grp = function(opt_in) {
 
             let scale = get_scale()
             let interStep = scaleFactor < 2 ? 5 : 3
-            let colLblV = [
+            let col_lbls = [
                 d3.rgb(cols_purples[4]).darker(0.3),
                 d3.rgb(cols_purples[2]).darker(0.3),
             ]
@@ -2120,8 +2066,8 @@ let main_sub_arr_grp = function(opt_in) {
                 pos1 = com.proj(pos0)
                 txt1 = pos0[0]
 
-                if (isDHms) {
-                    if (isRaDec) {
+                if (is_hms) {
+                    if (is_ra_dec) {
                         txtType = 'hms'
                         text = deg_hms(azim_ra(txt1))
                     }
@@ -2131,7 +2077,7 @@ let main_sub_arr_grp = function(opt_in) {
                     }
                 }
                 else {
-                    if (isRaDec) {
+                    if (is_ra_dec) {
                         txtType = 'deg'
                         text = azim_ra(txt1)
                     }
@@ -2141,8 +2087,8 @@ let main_sub_arr_grp = function(opt_in) {
                     }
                 }
 
-                // if     (isRaDec)  { txtType = "hms"; text = deg_hms(txt1); }
-                // else if(isDHms)   { txtType = "dms"; text = deg_dms(txt1); }
+                // if     (is_ra_dec)  { txtType = "hms"; text = deg_hms(txt1); }
+                // else if(is_hms)   { txtType = "dms"; text = deg_dms(txt1); }
                 // else                     { txtType = "deg"; text = txt1;           }
 
                 // ignore the middle one (ovelaps with zenith)
@@ -2175,7 +2121,7 @@ let main_sub_arr_grp = function(opt_in) {
                 pos1 = com.proj(pos0)
                 txt1 = -1 * pos0[1]
 
-                if (isDHms) {
+                if (is_hms) {
                     txtType = 'hms'
                     text = deg_dms(txt1)
                 }
@@ -2184,8 +2130,8 @@ let main_sub_arr_grp = function(opt_in) {
                     text = txt1
                 }
 
-                // if     (isRaDec)  { txtType = "dms"; text = deg_dms(txt1); }
-                // else if(isDHms)   { txtType = "dms"; text = deg_dms(txt1); }
+                // if     (is_ra_dec)  { txtType = "dms"; text = deg_dms(txt1); }
+                // else if(is_hms)   { txtType = "dms"; text = deg_dms(txt1); }
                 // else                     { txtType = "deg"; text = txt1;           }
 
                 // console.log('-----',nZenNow,[pos1,text,pos0[1],txtType])
@@ -2203,7 +2149,7 @@ let main_sub_arr_grp = function(opt_in) {
                 return d3.format(' >' + (prec + 3) + ',.' + prec + 'f')(input)
             }
 
-            function parsePosTxt(dIn, txtType, isInv) {
+            function parse_pos_txt(dIn, txtType, isInv) {
                 if (txtType === 'dms' || txtType === 'hms') {
                     if (isInv) {
                         let splitDeg = dIn.split(unit_deg)
@@ -2241,7 +2187,7 @@ let main_sub_arr_grp = function(opt_in) {
 
             com.lbl = com.gGrat
                 .selectAll('text.' + 'grat')
-                .data(labelV, function(d, i) {
+                .data(labelV, function(d) {
                     return d.id
                 })
 
@@ -2259,17 +2205,17 @@ let main_sub_arr_grp = function(opt_in) {
                     return gratFont / font_scale(d.V) + 'px'
                 })
                 .style('fill', function(d) {
-                    return colLblV[d.type === 0 ? 0 : 1]
+                    return col_lbls[d.type === 0 ? 0 : 1]
                 })
                 .style('stroke', function(d) {
-                    return d3.rgb(colLblV[d.type === 0 ? 0 : 1]).darker(0.3)
+                    return d3.rgb(col_lbls[d.type === 0 ? 0 : 1]).darker(0.3)
                 })
                 .attr('transform', function(d) {
                     return lblTrans(d.V)
                 })
                 .merge(com.lbl)
                 .text(function(d) {
-                    d.txt = parsePosTxt(d.V[1], d.V[3])
+                    d.txt = parse_pos_txt(d.V[1], d.V[3])
                     return d.txt
                 }) // .toFixed(lblPerc)
                 .transition('update')
@@ -2295,7 +2241,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('stroke-opacity', 0)
                 .remove()
 
-            function lblTrans(d, i) {
+            function lblTrans(d) {
                 return 'translate(' + d[0][0] + ',' + d[0][1] + ')'
                 // let xy = [d[0][0]-center[0] , d[0][1]-center[1]] //[d[0][0]-svg_dims.w[1]/2 , d[0][1]-svg_dims.h[1]/2]
                 // let angle = (Math.atan2(xy[0],-xy[1]) * 360/tau);
@@ -2307,41 +2253,43 @@ let main_sub_arr_grp = function(opt_in) {
 
             function font_scale(d) {
                 let scaleRatio = com.followGratLbls ? Math.abs(d[2]) / maxExtn1 : 0.3
-                let scaleByRad = 1
+                let scale_by_rad = 1
                 if (com.isPolar) {
                     if (scaleRatio > 0.7) {
-                        scaleByRad = 2.2
+                        scale_by_rad = 2.2
                     }
                     else if (scaleRatio > 0.5) {
-                        scaleByRad = 1.7
+                        scale_by_rad = 1.7
                     }
                     else if (scaleRatio > 0.3) {
-                        scaleByRad = 1.5
+                        scale_by_rad = 1.5
                     }
                 }
                 else {
-                    scaleByRad = 2
+                    scale_by_rad = 2
                 }
 
                 let scale = get_scale()
-                let zoomFrac = Math.max(
+                let zoom_frac = Math.max(
                     0.25,
-                    1 - Math.pow((scale - len_sky_pos.z['0.0']) / len_sky_pos.z['1.0'], 0.8)
+                    (1 - Math.pow(
+                        (scale - len_sky_pos.z['0.0']) / len_sky_pos.z['1.0'], 0.8)
+                    )
                 )
-                scaleByRad /= zoomFrac
+                scale_by_rad /= zoom_frac
 
-                let fontScl = scaleFactor > 1 ? scaleFactor * 1.8 : 1.2
-                return fontScl * scaleByRad
+                let font_scl = scaleFactor > 1 ? scaleFactor * 1.8 : 1.2
+                return font_scl * scale_by_rad
             }
         }
 
         function gratFontOpac() {
             let scale = get_scale()
-            let zoomFrac = Math.max(
+            let zoom_frac = Math.max(
                 0.25,
                 1 - Math.pow((scale - len_sky_pos.z['0.0']) / len_sky_pos.z['1.0'], 0.2)
             )
-            let opac = 0.3 * zoomFrac
+            let opac = 0.3 * zoom_frac
             return opac
         }
 
@@ -2361,11 +2309,11 @@ let main_sub_arr_grp = function(opt_in) {
                         com.gratStep[1] / com.gratPrev,
                     ])
 
-                addGratLines()
+                add_grat_lines()
             }
 
             if (com.followGratLbls) {
-                gratLbls(get_trans(), scaleFactor)
+                grat_lbls(get_trans(), scaleFactor)
             }
             else {
                 let opac = gratFontOpac()
@@ -2378,14 +2326,14 @@ let main_sub_arr_grp = function(opt_in) {
                     .style('stroke-opacity', Math.min(0.9, opac * 2))
             }
         }
-        funcD.zoomFuncEnd.updateGratScale = updateGratScale
+        zoom_funcs.zoom_end.updateGratScale = updateGratScale
     }
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function Svg_sub_arr() {
-        let thisSvg_sub_arr = this
+    function SvgSubArr() {
+        let this_svg_sub_arr = this
 
         let com = {
         }
@@ -2437,7 +2385,7 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function init_data(hasJoinedData) {
+        function init_data(has_join_data) {
             // console.log('init_data')
 
             // -------------------------------------------------------------------
@@ -2462,7 +2410,7 @@ let main_sub_arr_grp = function(opt_in) {
                             return is_def(sgv_tag.sub_arr.widget.get_ele(svg_div_id))
                         },
                         execute: function() {
-                            init_data(hasJoinedData)
+                            init_data(has_join_data)
                         },
                     })
 
@@ -2478,9 +2426,9 @@ let main_sub_arr_grp = function(opt_in) {
                 // -------------------------------------------------------------------
                 // zoom start/on/end functions, attachd to com.svg_zoom
                 // -------------------------------------------------------------------
-                let scaleStart = 0
+                let scale_start = 0
                 com.svg_zoom_start = function() {
-                    scaleStart = d3.event.transform.k
+                    scale_start = d3.event.transform.k
                     locker.add({
                         id: 'zoom',
                         override: true,
@@ -2495,13 +2443,14 @@ let main_sub_arr_grp = function(opt_in) {
                 com.svg_zoom_update_state = function() {
                     let scale = get_scale()
 
-                    let changeState
-            = (com.z.prev < com.z['1.0'] && scale >= com.z['1.0'])
-            || (com.z.prev >= com.z['1.0'] && scale < com.z['1.0'])
-            || (com.z.prev < com.z['1.1'] && scale >= com.z['1.1'])
-            || (com.z.prev >= com.z['1.1'] && scale < com.z['1.1'])
-            || (com.z.prev < com.z['2.0'] && scale >= com.z['2.0'])
-            || (com.z.prev >= com.z['2.0'] && scale < com.z['2.0'])
+                    let changeState = (
+                        (com.z.prev < com.z['1.0'] && scale >= com.z['1.0'])
+                        || (com.z.prev >= com.z['1.0'] && scale < com.z['1.0'])
+                        || (com.z.prev < com.z['1.1'] && scale >= com.z['1.1'])
+                        || (com.z.prev >= com.z['1.1'] && scale < com.z['1.1'])
+                        || (com.z.prev < com.z['2.0'] && scale >= com.z['2.0'])
+                        || (com.z.prev >= com.z['2.0'] && scale < com.z['2.0'])
+                    )
 
                     if (changeState) {
                         // console.log('svg_zoom_update_state',zoom_state,scale)
@@ -2530,7 +2479,7 @@ let main_sub_arr_grp = function(opt_in) {
                     com.svg_zoom_update_state()
 
                     // if on minimal zoom, center
-                    if (Math.abs(d3.event.transform.k - scaleStart) > 0.00001) {
+                    if (Math.abs(d3.event.transform.k - scale_start) > 0.00001) {
                         if (Math.abs(d3.event.transform.k - com.z['0.0']) < 0.00001) {
                             if (locker.are_free([ 'auto_zoom_target' ])) {
                                 zoom_to_target({
@@ -2587,20 +2536,20 @@ let main_sub_arr_grp = function(opt_in) {
                         target_scale = get_scale()
                     }
 
-                    let trans_to // = (com.telXY[target_name] == undefined) ? [svg_dims.w[1]/2, svg_dims.h[1]/2] : com.telXY[target_name];
+                    let trans_to // = (com.tel_xy[target_name] == undefined) ? [svg_dims.w[1]/2, svg_dims.h[1]/2] : com.tel_xy[target_name];
                     if (target_name === 'init') {
                         trans_to = [ svg_dims.w[1] / 2, svg_dims.h[1] / 2 ]
                     }
                     else {
-                        if (target_name === '' || !is_def(com.telXY[target_name])) {
+                        if (target_name === '' || !is_def(com.tel_xy[target_name])) {
                             let scale = get_scale()
                             let trans = get_trans()
 
                             let x = (svg_dims.w[1] / 2 - trans[0]) / scale
                             let y = (svg_dims.h[1] / 2 - trans[1]) / scale
-                            target_name = tel_data.telHover.id
+                            target_name = tel_data.tel_hover.id
                             let min_diff = -1
-                            $.each(com.telXY, function(id_now, data_now) {
+                            $.each(com.tel_xy, function(id_now, data_now) {
                                 if (data_now.isTel) {
                                     let diff_now
                     = Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
@@ -2612,9 +2561,12 @@ let main_sub_arr_grp = function(opt_in) {
                             })
                         }
 
-                        tel_data.telHover.id = target_name
-                        tel_data.telHover.sub_arr = tel_data.tel_sub_arrId[target_name]
-                        trans_to = [ com.telXY[target_name].x, com.telXY[target_name].y ]
+                        tel_data.tel_hover.id = target_name
+                        tel_data.tel_hover.sub_arr = tel_data.tel_sub_arr_id[target_name]
+                        trans_to = [
+                            com.tel_xy[target_name].x,
+                            com.tel_xy[target_name].y,
+                        ]
                     }
 
                     let func_start = function() {
@@ -2675,7 +2627,7 @@ let main_sub_arr_grp = function(opt_in) {
                         })
                     }
                 }
-                thisSvg_sub_arr.zoom_to_target = zoom_to_target
+                this_svg_sub_arr.zoom_to_target = zoom_to_target
 
                 // -------------------------------------------------------------------
                 // create the main svg element
@@ -2702,7 +2654,7 @@ let main_sub_arr_grp = function(opt_in) {
                     })
 
                 com.zoom_callable = com.svg.append('g')
-                com.svgOverlay = com.svg.append('g')
+                com.svg_overlay = com.svg.append('g')
 
                 // // -------------------------------------------------------------------
                 // // overlying rect, just to add a frame to the entire svg
@@ -2730,8 +2682,8 @@ let main_sub_arr_grp = function(opt_in) {
                         d3.zoomTransform(com.svg_zoom_node).y,
                     ]
                 }
-                thisSvg_sub_arr.get_scale = get_scale
-                thisSvg_sub_arr.get_trans = get_trans
+                this_svg_sub_arr.get_scale = get_scale
+                this_svg_sub_arr.get_trans = get_trans
 
                 // add one circle as background
                 // -------------------------------------------------------------------
@@ -2753,15 +2705,15 @@ let main_sub_arr_grp = function(opt_in) {
                 hex00()
 
                 //
-                setOverText()
+                set_over_text()
             }
 
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            if (hasJoinedData) {
+            if (has_join_data) {
                 set_hierarchy(true)
-                initState01(true)
+                init_state_01(true)
             }
 
             // // for testing...
@@ -2772,48 +2724,48 @@ let main_sub_arr_grp = function(opt_in) {
 
             locker.remove('in_init_sub_arr')
         }
-        thisSvg_sub_arr.init_data = init_data
+        this_svg_sub_arr.init_data = init_data
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function setOverText() {
-            if (!is_def(com.overRect)) {
-                com.overRect = {
+        function set_over_text() {
+            if (!is_def(com.over_rect)) {
+                com.over_rect = {
                 }
-                com.overRect.w = svg_dims.w[1]
-                com.overRect.h = svg_dims.h[1] * 0.06
-                com.overRect.x = 0
-                com.overRect.y = svg_dims.h[1] - com.overRect.h
+                com.over_rect.w = svg_dims.w[1]
+                com.over_rect.h = svg_dims.h[1] * 0.06
+                com.over_rect.x = 0
+                com.over_rect.y = svg_dims.h[1] - com.over_rect.h
 
-                com.overRect.data = [
+                com.over_rect.data = [
                     {
-                        id: 'tel_Id',
+                        id: 'tel_id',
                         txt: '',
                         size: 15,
                         x: 15,
-                        y: com.overRect.h / 2,
+                        y: com.over_rect.h / 2,
                     },
                     {
                         id: 'coordinates',
                         txt: '',
                         size: 15,
                         x: 60,
-                        y: com.overRect.h / 2,
+                        y: com.over_rect.h / 2,
                     },
                 ]
 
-                com.svgOverlay
+                com.svg_overlay
                     .style('pointer-events', 'none')
-                    .attr('transform', function(d) {
-                        return 'translate(' + com.overRect.x + ',' + com.overRect.y + ')'
-                    })
+                    .attr('transform', (
+                        'translate(' + com.over_rect.x + ',' + com.over_rect.y + ')'
+                    ))
 
-                let defs = com.svgOverlay.append('defs')
+                let defs = com.svg_overlay.append('defs')
 
                 let grad = defs
                     .append('linearGradient')
-                    .attr('id', 'svgOverlayGrad')
+                    .attr('id', 'svg_overlay_grad')
                     .attr('x1', '0%')
                     .attr('x2', '100%')
                     .attr('y1', '100%')
@@ -2831,19 +2783,19 @@ let main_sub_arr_grp = function(opt_in) {
                     .attr('stop-opacity', 0)
                 // .attr("stop-color", "red").attr("stop-opacity", 1)
 
-                com.svgOverlay
+                com.svg_overlay
                     .append('g')
                     .selectAll('rect')
                     .data([ 0 ])
                     .enter()
                     .append('rect')
                     .style('pointer-events', 'none')
-                    .attr('width', com.overRect.w)
-                    .attr('height', com.overRect.h)
+                    .attr('width', com.over_rect.w)
+                    .attr('height', com.over_rect.h)
                     .attr('x', 0)
                     .attr('y', 0)
-                    .attr('fill', 'url(#svgOverlayGrad)')
-                // .attr("fill","#F2F2F2")
+                    .attr('fill', 'url(#svg_overlay_grad)')
+                    // .attr("fill","#F2F2F2")
                     .style('opacity', 0.7)
             }
 
@@ -2851,9 +2803,9 @@ let main_sub_arr_grp = function(opt_in) {
             //
             // -------------------------------------------------------------------
             let tag_now = 'coord'
-            let txt = com.svgOverlay
+            let txt = com.svg_overlay
                 .selectAll('text.' + tag_now)
-                .data(com.overRect.data, function(d, i) {
+                .data(com.over_rect.data, function(d) {
                     return d.id
                 })
 
@@ -2866,12 +2818,8 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('text-anchor', 'left')
                 .style('font-weight', 'normal')
                 .style('stroke-width', 0.5)
-                .style('stroke', function(d) {
-                    return '#F2F2F2'
-                })
-                .style('fill', function(d) {
-                    return '#F2F2F2'
-                })
+                .style('stroke', '#F2F2F2')
+                .style('fill', '#F2F2F2')
                 .style('pointer-events', 'none')
                 .style('vector-effect', 'non-scaling-stroke')
                 .style('font-size', function(d) {
@@ -2904,11 +2852,11 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function updateOverText(txtV) {
-            com.overRect.data[0].txt = txtV[0]
-            com.overRect.data[1].txt = txtV[1]
+        function update_over_text(txtV) {
+            com.over_rect.data[0].txt = txtV[0]
+            com.over_rect.data[1].txt = txtV[1]
 
-            setOverText()
+            set_over_text()
         }
 
         // -------------------------------------------------------------------
@@ -2918,22 +2866,22 @@ let main_sub_arr_grp = function(opt_in) {
             let isNew_sub_arr = is_def(data_in.sub_arr)
             set_hierarchy(isNew_sub_arr)
 
-            initState01(isNew_sub_arr)
+            init_state_01(isNew_sub_arr)
 
             // if(isNew_sub_arr && get_scale() > com.z["0.1"]) {
-            //   zoom_to_target({ target:tel_data.telHover.id, scale:get_scale(), duration_scale:2 });
+            //   zoom_to_target({ target:tel_data.tel_hover.id, scale:get_scale(), duration_scale:2 });
             // }
         }
-        thisSvg_sub_arr.update_data = update_data
+        this_svg_sub_arr.update_data = update_data
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function set_hierarchy(isInit) {
+        function set_hierarchy(is_init) {
             // create delay if currently in data update or a previous call of set_hierarchy
             if (!(locker.is_free('set_state') && locker.is_free('set_hierarchy'))) {
                 setTimeout(function() {
-                    set_hierarchy(isInit)
+                    set_hierarchy(is_init)
                 }, times.anim)
                 return
             }
@@ -2942,17 +2890,17 @@ let main_sub_arr_grp = function(opt_in) {
 
             let tag_now
 
-            if (!isInit) {
-                tag_now = 'telCirc'
-                com.hirchG
+            if (!is_init) {
+                tag_now = 'tel_circ'
+                com.hirch_g
                     .selectAll('circle.' + tag_now)
                     .transition('updt')
                     .duration(times.anim)
                     .style('stroke', function(d) {
-                        return hirchStyleStroke(d)
+                        return hirch_style_stroke(d)
                     })
                     .style('fill', function(d) {
-                        return hirchStyleFill(d)
+                        return hirch_style_fill(d)
                     })
 
                 locker.remove({
@@ -2963,29 +2911,32 @@ let main_sub_arr_grp = function(opt_in) {
                 return
             }
 
-            let shiftXY = [ (svg_dims.w[1] - whPack[0]) / 2, (svg_dims.h[1] - whPack[1]) / 2 ]
+            let shift_xy = [
+                (svg_dims.w[1] - pack_wh[0]) / 2,
+                (svg_dims.h[1] - pack_wh[1]) / 2,
+            ]
 
-            if (!is_def(com.hirchG)) {
-                com.hirchG = com.zoom_callable.append('g')
-                com.hirchG.attr(
+            if (!is_def(com.hirch_g)) {
+                com.hirch_g = com.zoom_callable.append('g')
+                com.hirch_g.attr(
                     'transform',
-                    'translate(' + shiftXY[0] + ',' + shiftXY[1] + ')'
+                    'translate(' + shift_xy[0] + ',' + shift_xy[1] + ')'
                 )
             }
 
-            com.telXY = {
+            com.tel_xy = {
             }
 
             let sub_arr = {
                 id: tel_data.sub_arr.id,
                 children: [],
             }
-            $.each(tel_data.sub_arr.children, function(index, sub_arrNow) {
-                if (sub_arrNow.children.length > 0) {
-                    sub_arr.children.push(sub_arrNow)
-                    // sub_arrNow.children =
+            $.each(tel_data.sub_arr.children, function(index, sub_arr_now) {
+                if (sub_arr_now.children.length > 0) {
+                    sub_arr.children.push(sub_arr_now)
+                    // sub_arr_now.children =
                     tel_info.sort_ids({
-                        data: sub_arrNow.children,
+                        data: sub_arr_now.children,
                         func: function(d) {
                             return d.id
                         },
@@ -2993,16 +2944,16 @@ let main_sub_arr_grp = function(opt_in) {
                 }
             })
 
-            com.hirch = d3.hierarchy(sub_arr).sum(function(d) {
+            com.hirch = d3.hierarchy(sub_arr).sum(function(_) {
                 return 1
             })
-            let packNode = d3
+            let pack_node = d3
                 .pack()
-                .size(whPack)
+                .size(pack_wh)
                 .padding(3)
-            packNode(com.hirch)
+            pack_node(com.hirch)
 
-            setCircTxt(com.hirch.descendants())
+            set_circ_txt(com.hirch.descendants())
 
             locker.remove({
                 id: 'set_hierarchy',
@@ -3010,17 +2961,23 @@ let main_sub_arr_grp = function(opt_in) {
             })
         }
 
-        function setCircTxt(data_in) {
-            let tag_circ = 'telCirc'
-            let tagText = 'telTitle'
+        function set_circ_txt(data_in) {
+            let tag_circ = 'tel_circ'
+            let tag_text = 'telTitle'
 
-            let shiftXY = [ (svg_dims.w[1] - whPack[0]) / 2, (svg_dims.h[1] - whPack[1]) / 2 ]
+            let shift_xy = [
+                (svg_dims.w[1] - pack_wh[0]) / 2,
+                (svg_dims.h[1] - pack_wh[1]) / 2,
+            ]
             function focused(d, scale) {
-                return tel_data.telHover.sub_arr === get_sub_arrId(d) && zoom_state >= scale
+                return (
+                    tel_data.tel_hover.sub_arr === get_sub_arr_id(d)
+                    && zoom_state >= scale
+                )
             }
 
-            let circ = com.hirchG.selectAll('circle.' + tag_circ)
-            let text = com.hirchG.selectAll('text.' + tagText)
+            let circ = com.hirch_g.selectAll('circle.' + tag_circ)
+            let text = com.hirch_g.selectAll('text.' + tag_text)
 
             if (is_def(data_in)) {
                 circ = circ.data(data_in, function(d) {
@@ -3035,68 +2992,77 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('circle')
                 .attr('class', tag_circ)
-                .attr('cx', function(d, i) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function(d, i) {
+                .attr('cy', function(d) {
                     return d.y
                 })
-                .attr('r', function(d, i) {
-                    return 0
-                })
+                .attr('r', 0)
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('stroke-width', '0.5')
                 .style('stroke', function(d) {
-                    return hirchStyleStroke(d)
+                    return hirch_style_stroke(d)
                 })
                 .style('fill', function(d) {
-                    return hirchStyleFill(d)
+                    return hirch_style_fill(d)
                 })
                 .style('stroke-opacity', function(d) {
-                    return hirchStyleOpac(d, 0)
+                    return hirch_style_opac(d, 0)
                 })
                 .style('fill-opacity', function(d) {
-                    return hirchStyleOpac(d, 0)
+                    return hirch_style_opac(d, 0)
                 })
-                .on('mouseover', hirchStyleHover)
+                .on('mouseover', hirch_style_hover)
                 .on('click', hierarchy_style_click)
-                .on('dblclick', hirchStyleDblclick)
+                .on('dblclick', hirch_style_dblclick)
                 .merge(circ)
-                .each(function(d, i) {
-                    com.telXY[d.data.id] = {
+                .each(function(d) {
+                    com.tel_xy[d.data.id] = {
                         isTel: !d.children,
-                        x: d.x + shiftXY[0],
-                        y: d.y + shiftXY[1],
+                        x: d.x + shift_xy[0],
+                        y: d.y + shift_xy[1],
                     }
                     if (!d.children) {
-                        com.packNodeR = d.r
+                        com.pack_node_r = d.r
                     }
                 })
                 .transition('in')
                 .duration(times.anim)
                 .style('stroke', function(d) {
-                    return hirchStyleStroke(d)
+                    return hirch_style_stroke(d)
                 })
                 .style('fill', function(d) {
-                    return hirchStyleFill(d)
+                    return hirch_style_fill(d)
                 })
-                .attr('cx', function(d, i) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function(d, i) {
+                .attr('cy', function(d) {
                     return d.y
                 })
-            // .style("stroke-opacity", function(d) { return hirchStyleOpac(d,0); } )
-            // .style("fill-opacity",   function(d) { return hirchStyleOpac(d,0); } )
-            // .attr("r",  function(d,i){ return hirchStyleRad(d,0); })
                 .style('stroke-opacity', function(d) {
-                    return hirchStyleOpac(d, zoom_state === 0 ? 0 : focused(d, 1) ? 2 : 1)
+                    let state_now = 1
+                    if (zoom_state === 0) {
+                        state_now = 0
+                    }
+                    else if (focused(d, 1)) {
+                        state_now = 2
+                    }
+                    return hirch_style_opac(d, state_now)
                 })
                 .style('fill-opacity', function(d) {
-                    return hirchStyleOpac(d, zoom_state === 0 ? 0 : focused(d, 1) ? 2 : 1)
+                    let state_now = 1
+                    if (zoom_state === 0) {
+                        state_now = 0
+                    }
+                    else if (focused(d, 1)) {
+                        state_now = 2
+                    }
+                    return hirch_style_opac(d, state_now)
                 })
-                .attr('r', function(d, i) {
-                    return hirchStyleRad(d, zoom_state)
+                .attr('r', function(d) {
+                    return hirch_style_rad(d, zoom_state)
                 })
 
             circ
@@ -3126,13 +3092,13 @@ let main_sub_arr_grp = function(opt_in) {
                         return tel_info.get_title(d.children ? d.data.N : d.data.id)
                     }
                 })
-                .attr('class', tagText)
+                .attr('class', tag_text)
                 .style('font-weight', 'bold')
                 .style('opacity', '0')
                 .style('fill', '#383b42')
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
-                .attr('transform', txtTrans)
+                .attr('transform', txt_trans)
                 .style('fill-opacity', function(d) {
                     if (d.children) {
                         return 0.4
@@ -3154,7 +3120,10 @@ let main_sub_arr_grp = function(opt_in) {
                 .merge(text)
                 .each(function(d) {
                     if (!d.children && !is_def(font_size)) {
-                        font_size = [ hirchStyleTitleSize(d, 0), hirchStyleTitleSize(d, 1) ]
+                        font_size = [
+                            hirch_style_title_size(d, 0),
+                            hirch_style_title_size(d, 1),
+                        ]
                     }
                 })
                 .each(function(d) {
@@ -3163,27 +3132,31 @@ let main_sub_arr_grp = function(opt_in) {
                 })
                 .transition('in')
                 .duration(times.anim)
-                .attr('dy', function(d, i) {
+                .attr('dy', function(d) {
                     if (d.children) {
                         return 0
                     }
                     else {
                         return d.font_size[0] / 3 + 'px'
-                    } // (-d.font_size[0]/3)+"px";
+                    }
                 })
-                .attr('transform', txtTrans)
-                .style('opacity', function(d, i) {
+                .attr('transform', txt_trans)
+                .style('opacity', function(d) {
                     return d.parent && !d.children ? 1 : 1
                 })
-                .attr('font-size', function(d, i) {
-                    if (!d.children) {
-                        return (
-                            d.font_size[zoom_state === 0 ? 0 : focused(d, 1) ? 1 : 0] + 'px'
-                        )
-                    }
-                    else {
+                .attr('font-size', function(d) {
+                    if (d.children) {
                         return d.font_size[0] + 'px'
                     }
+                    
+                    let state_now = 0
+                    if (zoom_state === 0) {
+                        state_now = 0
+                    }
+                    else if (focused(d, 1)) {
+                        state_now = 1
+                    }
+                    return d.font_size[state_now] + 'px'
                 })
 
             text
@@ -3193,25 +3166,23 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('opacity', 0)
                 .remove()
 
-            function txtTrans(d) {
+            function txt_trans(d) {
                 return (
                     'translate('
-          + d.x
-          + ','
-          + (d.y + (d.children ? -d.r : -1 * focused(d, 1) * d.r))
-          + ')'
+                      + (d.x + ',')
+                      + (d.y + (d.children ? -d.r : -d.r * focused(d, 1)) + ')')
                 )
             }
         }
 
-        function hirchStyleStroke(d) {
+        function hirch_style_stroke(_) {
             return '#383b42'
-            // return d.children ? "#383b42" : tel_data.idToCol[d.data.id];
+            // return d.children ? "#383b42" : tel_data.id_cols[d.data.id];
         }
-        function hirchStyleFill(d) {
-            return d.children ? '#383b42' : tel_data.idToCol[d.data.id]
+        function hirch_style_fill(d) {
+            return d.children ? '#383b42' : tel_data.id_cols[d.data.id]
         }
-        function hirchStyleOpac(d, scale) {
+        function hirch_style_opac(d, scale) {
             if (!d.parent) {
                 return 0
             }
@@ -3226,7 +3197,7 @@ let main_sub_arr_grp = function(opt_in) {
 
             return opac
         }
-        function hirchStyleRad(d, scale) {
+        function hirch_style_rad(d, scale) {
             if (!d.parent) {
                 return d.r * 10
             }
@@ -3241,11 +3212,11 @@ let main_sub_arr_grp = function(opt_in) {
 
             return r
         }
-        function hirchStyleTitleSize(d, scale) {
+        function hirch_style_title_size(d, scale) {
             return d.r / 2 * (scale === 0 ? 1 : 0.6)
         }
 
-        function hirchStyleHover(d) {
+        function hirch_style_hover(d) {
             if (d.height > 0) {
                 return
             }
@@ -3257,11 +3228,9 @@ let main_sub_arr_grp = function(opt_in) {
         }
 
         function hierarchy_style_click(d) {
-            // console.log('wwwwwww',d);
-            function setOnTelIdTry() {
+            function set_on_tel_id_try() {
                 if (locker.is_free('data_change')) {
-                    // console.log('hov... ',d.data.id)
-                    setOnTelId(d)
+                    set_on_tel_id(d)
 
                     svg_sky_pos.update_data()
 
@@ -3274,13 +3243,15 @@ let main_sub_arr_grp = function(opt_in) {
                 }
                 else {
                     setTimeout(function() {
-                        setOnTelIdTry()
+                        set_on_tel_id_try()
                     }, times.anim / 2)
                 }
             }
-            setOnTelIdTry()
+            set_on_tel_id_try()
+
+            return
         }
-        thisSvg_sub_arr.hierarchy_style_click = hierarchy_style_click
+        this_svg_sub_arr.hierarchy_style_click = hierarchy_style_click
 
         // FIXME !!!!!!!!!!!!!!!!!!!
         // FIXME !!!!!!!!!!!!!!!!!!!
@@ -3290,7 +3261,7 @@ let main_sub_arr_grp = function(opt_in) {
         // FIXME !!!!!!!!!!!!!!!!!!!
         // FIXME !!!!!!!!!!!!!!!!!!!
         // FIXME !!!!!!!!!!!!!!!!!!!
-        function hirchStyleDblclick(d) {
+        function hirch_style_dblclick(d) {
             let scale = get_scale()
 
             if (scale < com.z['1.1'] * 0.999) {
@@ -3301,7 +3272,7 @@ let main_sub_arr_grp = function(opt_in) {
                 })
             }
             else if (scale < com.z['2.0'] * 0.999) {
-                if (tel_data.telHover.sub_arr === tel_data.telHover.clicked_sub_arr) {
+                if (tel_data.tel_hover.sub_arr === tel_data.tel_hover.clicked_sub_arr) {
                     zoom_to_target({
                         target: d.data.id,
                         scale: Math.max(com.z['2.0'], scale),
@@ -3324,40 +3295,37 @@ let main_sub_arr_grp = function(opt_in) {
                 })
             }
 
-            tel_data.telHover.clicked_sub_arr = tel_data.telHover.sub_arr
+            tel_data.tel_hover.clicked_sub_arr = tel_data.tel_hover.sub_arr
         }
 
-        function get_sub_arrId(d) {
-            return d.parent ? tel_data.tel_sub_arrId[d.data.id] : ''
-            // let sub_arrId = "";
-            // if(d.parent) {
-            //   if(d.parent.data.id  == "sub_arr") sub_arrId = d.data.id;
-            //   else                              sub_arrId = d.parent.data.id;
-            // }
-            // // console.log(d.data.id,sub_arrId);
-            // return sub_arrId;
+        function get_sub_arr_id(d) {
+            return (
+                d.parent ? tel_data.tel_sub_arr_id[d.data.id] : ''
+            )
         }
 
-        function setOnTelId(data_in) {
+        function set_on_tel_id(data_in) {
             if (data_in.depth === 0) {
                 return
             }
             locker.add('data_change')
 
-            let sub_arrId = get_sub_arrId(data_in)
+            let sub_arr_id = get_sub_arr_id(data_in)
 
             // if not the root node
             if (data_in.height === 0) {
-                tel_data.telHover.sub_arr = sub_arrId
+                tel_data.tel_hover.sub_arr = sub_arr_id
 
                 // if hovering over a spesific telescope
                 if (!data_in.children) {
-                    tel_data.telHover.id = data_in.data.id
+                    tel_data.tel_hover.id = data_in.data.id
                 }
                 else {
                     // if hovering over a sub_arr but not on a telescope, select the first element in the group
-                    if (tel_data.sub_arrIds[sub_arrId].children.length > 0) {
-                        tel_data.telHover.id = tel_data.sub_arrIds[sub_arrId].children[0].id
+                    if (tel_data.sub_arr_ids[sub_arr_id].children.length > 0) {
+                        tel_data.tel_hover.id = (
+                            tel_data.sub_arr_ids[sub_arr_id].children[0].id
+                        )
                     }
                 }
             }
@@ -3385,71 +3353,74 @@ let main_sub_arr_grp = function(opt_in) {
             locker.add('set_state')
 
             let scale = get_scale()
-            let is_change_focus
-        = tel_data.telHover.sub_arr !== tel_data.telHover.focused_sub_arr
+            let is_change_focus = (
+                tel_data.tel_hover.sub_arr !== tel_data.tel_hover.focused_sub_arr
+            )
 
             if (is_change_focus || type === 'zoom' || type === 'data_change') {
-                tel_data.telHover.focused_sub_arr = tel_data.telHover.sub_arr
+                tel_data.tel_hover.focused_sub_arr = tel_data.tel_hover.sub_arr
 
-                setCircTxt()
+                set_circ_txt()
             }
 
             // -------------------------------------------------------------------
             // derive the tel/trg/pnt focuse state
             // -------------------------------------------------------------------
-            let overTxt = []
-            $.each([ 'trg', 'pnt' ], function(trgTelIndex, trgTel) {
-                $.each(tel_data[trgTel], function(index, ele_now) {
+            let over_txt = []
+            $.each([ 'trg', 'pnt' ], function(trg_tel_index, trg_tel) {
+                $.each(tel_data[trg_tel], function(index, ele_now) {
                     let target_point_id = ele_now.id
-                    tel_data.trgPntFocus[trgTel][target_point_id] = false
+                    tel_data.trg_pnt_focus[trg_tel][target_point_id] = false
                 })
             })
 
             $.each(tel_data.tel, function(index, ele_now) {
-                let tel_Id = ele_now.id
-                let isHov = tel_data.telHover.id === tel_Id
+                let tel_id = ele_now.id
+                let is_hov = tel_data.tel_hover.id === tel_id
 
                 let is_focused = true
                 if (zoom_state > 0) {
                     if (scale < com.z['1.1']) {
-                        is_focused = tel_data.telHover.sub_arr === tel_data.tel_sub_arrId[tel_Id]
+                        is_focused = (
+                            tel_data.tel_hover.sub_arr === tel_data.tel_sub_arr_id[tel_id]
+                        )
                     }
                     else {
-                        is_focused = isHov
+                        is_focused = is_hov
                     }
                 }
 
-                if (isHov) {
-                    overTxt = [ tel_info.get_title(tel_Id), parsePosTxt(ele_now.pos) ]
+                if (is_hov) {
+                    over_txt = [ tel_info.get_title(tel_id), parse_pos_txt(ele_now.pos) ]
                 }
 
-                tel_data.idToFocus['tel' + tel_Id] = is_focused
+                tel_data.id_focuses['tel' + tel_id] = is_focused
 
                 if (is_focused) {
-                    $.each([ 'trg', 'pnt' ], function(trgTelIndex, trgTel) {
-                        let target_point_id = ele_now[trgTel + 'Id']
-                        tel_data.trgPntFocus[trgTel][target_point_id] = true
+                    $.each([ 'trg', 'pnt' ], function(trg_tel_index, trg_tel) {
+                        let target_point_id = ele_now[trg_tel + '_id']
+                        tel_data.trg_pnt_focus[trg_tel][target_point_id] = true
                     })
                 }
             })
 
-            $.each([ 'trg', 'pnt' ], function(trgTelIndex, trgTel) {
-                $.each(tel_data[trgTel], function(index, ele_now) {
+            $.each([ 'trg', 'pnt' ], function(trg_tel_index, trg_tel) {
+                $.each(tel_data[trg_tel], function(index, ele_now) {
                     let target_point_id = ele_now.id
-                    let is_focused = tel_data.trgPntFocus[trgTel][target_point_id]
+                    let is_focused = tel_data.trg_pnt_focus[trg_tel][target_point_id]
 
-                    tel_data.idToFocus[trgTel + target_point_id] = is_focused
+                    tel_data.id_focuses[trg_tel + target_point_id] = is_focused
                 })
             })
 
             // update the overlay text with the coordinates of the focused tel
-            updateOverText(overTxt)
+            update_over_text(over_txt)
 
             // set the main display according to the focused tel/sub-array by zoom state
             if (scale < com.z['1.0']) {
-                if (type !== 'data_change' || tel_data.prevState !== 0) {
-                    tel_data.prevState = 0
-                    tel_data.telHover.focused_sub_arr = ''
+                if (type !== 'data_change' || tel_data.prev_state !== 0) {
+                    tel_data.prev_state = 0
+                    tel_data.tel_hover.focused_sub_arr = ''
 
                     set_state_01(false, '')
                     set_state_10(false, '')
@@ -3458,13 +3429,15 @@ let main_sub_arr_grp = function(opt_in) {
             else if (scale < com.z['2.0']) {
                 set_state_01(true, '')
 
-                if (type !== 'data_change' || tel_data.prevState !== 1 || is_change_focus) {
-                    tel_data.prevState = 1
+                if (type !== 'data_change'
+                        || tel_data.prev_state !== 1
+                        || is_change_focus) {
+                    tel_data.prev_state = 1
                     set_state_10(false, '')
                 }
             }
             else {
-                tel_data.prevState = 2
+                tel_data.prev_state = 2
                 set_state_10(true, '')
 
                 // syncroniz changes with other panels
@@ -3473,7 +3446,7 @@ let main_sub_arr_grp = function(opt_in) {
                     type: 'sync_tel_focus',
                     sync_time: Date.now(),
                     zoom_state: 1,
-                    target: tel_data.telHover.id,
+                    target: tel_data.tel_hover.id,
                 })
             }
 
@@ -3488,38 +3461,44 @@ let main_sub_arr_grp = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function initState01(needInit) {
-            let tagBck = 'sub_arr'
-            let tagG = tagBck + 'telG'
-            let tagTel = tagG + 'ele'
+        function init_state_01(need_init) {
+            let tag_bck = 'sub_arr'
+            let tag_g = tag_bck + 'tel_g'
+            let tag_tel = tag_g + 'ele'
 
-            if (!is_def(com[tagG])) {
-                com[tagG] = com.zoom_callable.append('g')
+            if (!is_def(com[tag_g])) {
+                com[tag_g] = com.zoom_callable.append('g')
             }
 
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            com[tagTel] = {
+            com[tag_tel] = {
             }
-            $.each(tel_data.sub_arr.children, function(index0, grpNow) {
-                $.each(grpNow.children, function(index1, ele_now) {
-                    let tel_Id = ele_now.id
-                    let tel_data_now = find_dict_ele_in_obj(tel_data.tel, 'id', tel_Id, true)[1] // if(tel_data_now == undefined) return;
-                    let pnts_now
-            = tel_data_now.pntId === tel_info.no_sub_arr_name()
-                ? tel_data_now
-                : find_dict_ele_in_obj(tel_data.pnt, 'id', tel_data_now.pntId, true)[1]
+            $.each(tel_data.sub_arr.children, function(index_0, grp_now) {
+                $.each(grp_now.children, function(index_1, ele_now) {
+                    let tel_id = ele_now.id
+                    let tel_data_now = (
+                        find_dict_ele_in_obj(tel_data.tel, 'id', tel_id, true)[1]
+                        // if(tel_data_now == undefined) return;
+                    )
+                    let pnts_now = (
+                        tel_data_now.pnt_id === tel_info.no_sub_arr_name()
+                            ? tel_data_now
+                            : find_dict_ele_in_obj(
+                                tel_data.pnt, 'id', tel_data_now.pnt_id, true
+                            )[1]
+                    )
 
-                    com[tagTel][tel_Id] = {
+                    com[tag_tel][tel_id] = {
                     }
-                    com[tagTel][tel_Id].tels = tel_data_now
-                    com[tagTel][tel_Id].pnts = pnts_now
+                    com[tag_tel][tel_id].tels = tel_data_now
+                    com[tag_tel][tel_id].pnts = pnts_now
                 })
             })
-            // console.log(com[tagTel]);return;
+            // console.log(com[tag_tel]);return;
 
-            if (!needInit) {
+            if (!need_init) {
                 return
             }
 
@@ -3528,178 +3507,200 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             let tag_state = 's01'
 
-            let width = com.packNodeR * 1.7
-            let lblSize = width / 22
-            let lblUnits = [ unit_deg, unit_arcmin, unit_arcsec ]
-            let lblProps = {
-                size: lblSize,
-                units: lblUnits,
-                offset: [ lblSize * 1.5, lblSize * 0.5 ],
+            let width = com.pack_node_r * 1.7
+            let lbl_size = width / 22
+            let lbl_units = [ unit_deg, unit_arcmin, unit_arcsec ]
+            let lbl_props = {
+                size: lbl_size,
+                units: lbl_units,
+                offset: [ lbl_size * 1.5, lbl_size * 0.5 ],
             }
 
-            let scaleRad0 = width / 4.5
-            let scaleRad1 = scaleRad0 / 2
-            let scaleStroke0 = scaleRad0 / 6
-            let scaleRad2 = scaleRad0 * 2.5
-            let scaleWidth0 = width * 0.7
-            let scaleWidth1 = width / 2 - (width - scaleWidth0) / 2
-            let scaleWidth2 = -scaleRad0 - scaleStroke0 * 3
+            let scale_rad_0 = width / 4.5
+            let scale_rad_1 = scale_rad_0 / 2
+            let scale_stroke_0 = scale_rad_0 / 6
+            let scale_rad_2 = scale_rad_0 * 2.5
+            let scale_width_0 = width * 0.7
+            let scale_width_1 = width / 2 - (width - scale_width_0) / 2
+            let scale_width_2 = -scale_rad_0 - scale_stroke_0 * 3
 
-            let scaleDeltaTrans0 = []
-            scaleDeltaTrans0.push([ scaleRad0 / 2.5, -scaleRad0 / 1.5 ])
-            scaleDeltaTrans0.push([
-                scaleDeltaTrans0[0][0] + width / 9,
-                scaleDeltaTrans0[0][1] - width / 9,
+            let scale_delta_trans0 = []
+            scale_delta_trans0.push([ scale_rad_0 / 2.5, -scale_rad_0 / 1.5 ])
+            scale_delta_trans0.push([
+                scale_delta_trans0[0][0] + width / 9,
+                scale_delta_trans0[0][1] - width / 9,
             ])
 
-            let tblFont = lblSize * 1.3
-            // let scaleTable = scaleWidth2 - scaleStroke0 * 3.5
+            let tbl_font = lbl_size * 1.3
+            // let scaleTable = scale_width_2 - scale_stroke_0 * 3.5
 
-            let centre0, centre1, centre2, centre3
-            centre0 = [ -scaleDeltaTrans0[0][0], -scaleDeltaTrans0[0][1] ]
-            centre1 = [ -scaleWidth1, -scaleDeltaTrans0[0][1] - scaleWidth2 ]
-            centre2 = [ -scaleDeltaTrans0[1][0], -scaleDeltaTrans0[1][1] ]
+            let centre_0, centre_1, centre_2, centre_3
+            centre_0 = [ -scale_delta_trans0[0][0], -scale_delta_trans0[0][1] ]
+            centre_1 = [ -scale_width_1, -scale_delta_trans0[0][1] - scale_width_2 ]
+            centre_2 = [ -scale_delta_trans0[1][0], -scale_delta_trans0[1][1] ]
 
-            let centreLabel0 = centre0
-            let centreLabel1 = [
-                centre2[0] - scaleRad2 * 0.15,
-                centre2[1] - scaleRad2 * 1,
+            let centre_label_0 = centre_0
+            let centre_label_1 = [
+                centre_2[0] - scale_rad_2 * 0.15,
+                centre_2[1] - scale_rad_2 * 1,
             ]
-            let centreLabel2 = [ centre1[0], centre1[1] - scaleStroke0 * 1.5 ]
+            let centre_label_2 = [ centre_1[0], centre_1[1] - scale_stroke_0 * 1.5 ]
 
             com[tag_state] = {
             }
-            com[tag_state].tagBck = tagBck
-            com[tag_state].tagG = tagG
-            com[tag_state].lblProps = lblProps
-            com[tag_state].scaleRad0 = scaleRad0
-            com[tag_state].scaleRad1 = scaleRad1
-            com[tag_state].scaleStroke0 = scaleStroke0
-            com[tag_state].scaleRad2 = scaleRad2
-            com[tag_state].scaleWidth0 = scaleWidth0
-            com[tag_state].scaleWidth1 = scaleWidth1
-            com[tag_state].scaleWidth2 = scaleWidth2
-            com[tag_state].scaleDeltaTrans0 = scaleDeltaTrans0
-            com[tag_state].tblFont = tblFont
-            com[tag_state].centre0 = centre0
-            com[tag_state].centre1 = centre1
-            com[tag_state].centre2 = centre2
-            com[tag_state].centreLabel0 = centreLabel0
-            com[tag_state].centreLabel1 = centreLabel1
-            com[tag_state].centreLabel2 = centreLabel2
+            com[tag_state].tag_bck = tag_bck
+            com[tag_state].tag_g = tag_g
+            com[tag_state].lbl_props = lbl_props
+            com[tag_state].scale_rad_0 = scale_rad_0
+            com[tag_state].scale_rad_1 = scale_rad_1
+            com[tag_state].scale_stroke_0 = scale_stroke_0
+            com[tag_state].scale_rad_2 = scale_rad_2
+            com[tag_state].scale_width_0 = scale_width_0
+            com[tag_state].scale_width_1 = scale_width_1
+            com[tag_state].scale_width_2 = scale_width_2
+            com[tag_state].scale_delta_trans0 = scale_delta_trans0
+            com[tag_state].tbl_font = tbl_font
+            com[tag_state].centre_0 = centre_0
+            com[tag_state].centre_1 = centre_1
+            com[tag_state].centre_2 = centre_2
+            com[tag_state].centre_label_0 = centre_label_0
+            com[tag_state].centre_label_1 = centre_label_1
+            com[tag_state].centre_label_2 = centre_label_2
 
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
             tag_state = 's10'
 
-            width = com.packNodeR * 1.5
-            lblSize = width / 30
-            lblUnits = [ unit_deg, unit_arcmin, unit_arcsec ]
-            lblProps = {
-                size: lblSize,
-                units: lblUnits,
-                offset: [ lblSize * 1.3, lblSize * 0.5 ],
+            width = com.pack_node_r * 1.5
+            lbl_size = width / 30
+            lbl_units = [ unit_deg, unit_arcmin, unit_arcsec ]
+            lbl_props = {
+                size: lbl_size,
+                units: lbl_units,
+                offset: [ lbl_size * 1.3, lbl_size * 0.5 ],
             }
 
-            scaleRad0 = width / 4
-            scaleRad1 = scaleRad0 / 3.5
-            scaleStroke0 = scaleRad0 / 8
-            scaleRad2 = scaleRad0 * 2
-            scaleWidth0 = width * 0.7
-            scaleWidth1 = width / 2 - (width - scaleWidth0) / 2
-            scaleWidth2 = -scaleRad0 - scaleStroke0 * 3
+            scale_rad_0 = width / 4
+            scale_rad_1 = scale_rad_0 / 3.5
+            scale_stroke_0 = scale_rad_0 / 8
+            scale_rad_2 = scale_rad_0 * 2
+            scale_width_0 = width * 0.7
+            scale_width_1 = width / 2 - (width - scale_width_0) / 2
+            scale_width_2 = -scale_rad_0 - scale_stroke_0 * 3
 
-            scaleDeltaTrans0 = []
-            scaleDeltaTrans0.push([ width / 4, width / 9 ])
-            scaleDeltaTrans0.push([ -width / 20, scaleDeltaTrans0[0][1] - width / 4 ])
-            scaleDeltaTrans0.push([ -width / 4.5, scaleDeltaTrans0[0][1] - width / 12 ])
-
-            centre0 = [ -scaleDeltaTrans0[0][0] - width / 20, -scaleDeltaTrans0[0][1] ]
-            centre2 = [ -scaleDeltaTrans0[1][0] + width / 20, -scaleDeltaTrans0[1][1] ]
-            centre3 = [ -scaleDeltaTrans0[2][0] + width / 20, -scaleDeltaTrans0[2][1] ]
-
-            centreLabel0 = centre0
-            centreLabel1 = [ centre2[0] - scaleRad2 * 0.15, centre2[1] - scaleRad2 * 1 ]
-            centreLabel2 = [ centre1[0], centre1[1] - scaleStroke0 * 1.5 ]
-
-            centre1 = []
-            let wh1 = []
-            centre1.push([ centre0[0] - scaleRad0, centre0[1] - scaleWidth2 * 1.15 ])
-            wh1.push([ scaleRad0 * 2, scaleStroke0 ])
-            centre1.push([ centre2[0], centre1[0][1] ])
-            wh1.push([ scaleRad0 * 2, scaleStroke0 ])
-            centre1.push([ 0.0 - width * 0.425, centre1[0][1] + wh1[0][1] * 5 ])
-            wh1.push([ width * 0.85, scaleStroke0 * 1.5 ])
-
-            let centLblV = []
-            centLblV.push([ centre1[0][0], centre1[0][1] - wh1[0][1] ])
-            centLblV.push([ centre1[1][0], centre1[1][1] - wh1[1][1] ])
-            centLblV.push([
-                centre1[2][0] - wh1[2][1],
-                centre1[2][1] + wh1[2][1] * 0.6,
+            scale_delta_trans0 = []
+            scale_delta_trans0.push([
+                width / 4, width / 9,
+            ])
+            scale_delta_trans0.push([
+                -width / 20, scale_delta_trans0[0][1] - width / 4,
+            ])
+            scale_delta_trans0.push([
+                -width / 4.5, scale_delta_trans0[0][1] - width / 12,
             ])
 
-            let scaleRad = [ 1, 0.6, 0.25 ]
+            centre_0 = [
+                -scale_delta_trans0[0][0] - width / 20, -scale_delta_trans0[0][1],
+            ]
+            centre_2 = [
+                -scale_delta_trans0[1][0] + width / 20, -scale_delta_trans0[1][1],
+            ]
+            centre_3 = [
+                -scale_delta_trans0[2][0] + width / 20, -scale_delta_trans0[2][1],
+            ]
 
-            let tableHeight
-        = 0.55
-        * (width / 2 + scaleDeltaTrans0[0][1] + scaleWidth2 - scaleStroke0 * 5)
-            let tablePos10 = {
+            centre_label_0 = centre_0
+            centre_label_1 = [
+                centre_2[0] - scale_rad_2 * 0.15, centre_2[1] - scale_rad_2 * 1,
+            ]
+            centre_label_2 = [
+                centre_1[0], centre_1[1] - scale_stroke_0 * 1.5,
+            ]
+
+            centre_1 = []
+            let wh_1 = []
+            centre_1.push([
+                centre_0[0] - scale_rad_0, centre_0[1] - scale_width_2 * 1.15,
+            ])
+            wh_1.push([ scale_rad_0 * 2, scale_stroke_0 ])
+            centre_1.push([
+                centre_2[0], centre_1[0][1],
+            ])
+            wh_1.push([ scale_rad_0 * 2, scale_stroke_0 ])
+            centre_1.push([
+                0.0 - width * 0.425, centre_1[0][1] + wh_1[0][1] * 5,
+            ])
+            wh_1.push([
+                width * 0.85, scale_stroke_0 * 1.5,
+            ])
+
+            let cent_lables = []
+            cent_lables.push([
+                centre_1[0][0], centre_1[0][1] - wh_1[0][1],
+            ])
+            cent_lables.push([
+                centre_1[1][0], centre_1[1][1] - wh_1[1][1],
+            ])
+            cent_lables.push([
+                centre_1[2][0] - wh_1[2][1],
+                centre_1[2][1] + wh_1[2][1] * 0.6,
+            ])
+
+            let scale_rad = [ 1, 0.6, 0.25 ]
+
+            let table_height = 0.55 * (
+                (width / 2 + scale_delta_trans0[0][1])
+                + (scale_width_2 - scale_stroke_0 * 5)
+            )
+            let table_pos_10 = {
                 x: -width * 0.45,
-                y: width * 0.45 - tableHeight,
+                y: width * 0.45 - table_height,
                 w: width * 0.9,
-                h: tableHeight,
+                h: table_height,
             }
 
             com[tag_state] = {
             }
-            com[tag_state].tagBck = tagBck
-            com[tag_state].tagG = tagG
-            com[tag_state].lblProps = lblProps
-            // com[tag_state].scaleRad0    = scaleRad0;
-            // com[tag_state].scaleRad1    = scaleRad1;
-            // com[tag_state].scaleStroke0 = scaleStroke0;
-            // com[tag_state].scaleRad2    = scaleRad2;
-            com[tag_state].scaleWidth0 = scaleWidth0
-            com[tag_state].scaleWidth1 = scaleWidth1
-            com[tag_state].scaleWidth2 = scaleWidth2
-            com[tag_state].scaleDeltaTrans0 = scaleDeltaTrans0
-            com[tag_state].tblFont = tblFont
-            com[tag_state].centre0 = centre0
-            // com[tag_state].centre1     = centre1;
-            com[tag_state].centre2 = centre2
-            com[tag_state].centre3 = centre3
-            com[tag_state].centreLabel0 = centreLabel0
-            com[tag_state].centreLabel1 = centreLabel1
-            com[tag_state].centreLabel2 = centreLabel2
-            com[tag_state].scaleRad = scaleRad
-            com[tag_state].tablePos10 = tablePos10
+            com[tag_state].tag_bck = tag_bck
+            com[tag_state].tag_g = tag_g
+            com[tag_state].lbl_props = lbl_props
+            com[tag_state].scale_width_0 = scale_width_0
+            com[tag_state].scale_width_1 = scale_width_1
+            com[tag_state].scale_width_2 = scale_width_2
+            com[tag_state].scale_delta_trans0 = scale_delta_trans0
+            com[tag_state].tbl_font = tbl_font
+            com[tag_state].centre_0 = centre_0
+            com[tag_state].centre_2 = centre_2
+            com[tag_state].centre_3 = centre_3
+            com[tag_state].centre_label_0 = centre_label_0
+            com[tag_state].centre_label_1 = centre_label_1
+            com[tag_state].centre_label_2 = centre_label_2
+            com[tag_state].scale_rad = scale_rad
+            com[tag_state].table_pos_10 = table_pos_10
 
-            $.each(scaleRad, function(index, scaleRadNow) {
-                com[tag_state]['scaleRad0' + index] = scaleRad0 * scaleRadNow
-                com[tag_state]['scaleRad1' + index] = scaleRad1 * scaleRadNow
-                com[tag_state]['scaleRad2' + index] = scaleRad2 * scaleRadNow
-                com[tag_state]['sclR3' + index]
-          = scaleRad1
-          * (index === 2 ? (scaleRad[0] + scaleRad[1]) / 2 : scaleRad[1])
-                com[tag_state]['scaleStroke0' + index] = scaleStroke0 * scaleRadNow
+            $.each(scale_rad, function(index, scale_radNow) {
+                com[tag_state]['scale_rad_0' + index] = scale_rad_0 * scale_radNow
+                com[tag_state]['scale_rad_1' + index] = scale_rad_1 * scale_radNow
+                com[tag_state]['scale_rad_2' + index] = scale_rad_2 * scale_radNow
+                com[tag_state]['scl_r_3' + index]
+          = scale_rad_1
+          * (index === 2 ? (scale_rad[0] + scale_rad[1]) / 2 : scale_rad[1])
+                com[tag_state]['scale_stroke_0' + index] = scale_stroke_0 * scale_radNow
 
-                com[tag_state]['centre1' + index] = centre1[index]
-                com[tag_state]['wh1' + index] = wh1[index]
-                com[tag_state]['centreLabel3' + index] = centLblV[index]
+                com[tag_state]['centre_1' + index] = centre_1[index]
+                com[tag_state]['wh_1' + index] = wh_1[index]
+                com[tag_state]['centre_label_3' + index] = cent_lables[index]
             })
         }
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function set_state_01(is_on, tel_Id_on) {
-            // console.log('__set_stateS01')
-            let tagBck = 'sub_arr'
-            let tagG = tagBck + 'telG'
-            let tagTel = tagG + 'ele'
-            // let tag_state = 's01'
+        function set_state_01(is_on, tel_id_on) {
+            let tag_bck = 'sub_arr'
+            let tag_g = tag_bck + 'tel_g'
+            let tag_tel = tag_g + 'ele'
 
             let data_in = {
             }
@@ -3707,33 +3708,36 @@ let main_sub_arr_grp = function(opt_in) {
             data_in.zen = []
             if (is_on) {
                 let scale = get_scale()
-                $.each(tel_data.sub_arrIds[tel_data.telHover.sub_arr].children, function(
-                    index,
-                    ele_now
-                ) {
-                    let tel_Id = ele_now.id
+                let children_now = (
+                    tel_data.sub_arr_ids[tel_data.tel_hover.sub_arr].children
+                )
+                $.each(children_now, function(index, ele_now) {
+                    let tel_id = ele_now.id
 
-                    if (tel_Id_on === '' || tel_Id_on === tel_Id) {
-                        let tel_data_now = com[tagTel][tel_Id].tels
-                        let pnts_now = com[tagTel][tel_Id].pnts
-                        let isHov = tel_data.telHover.id === tel_Id && scale >= com.z['1.1']
+                    if (tel_id_on === '' || tel_id_on === tel_id) {
+                        let tel_data_now = com[tag_tel][tel_id].tels
+                        let pnts_now = com[tag_tel][tel_id].pnts
+                        let is_hov = (
+                            tel_data.tel_hover.id === tel_id
+                            && scale >= com.z['1.1']
+                        )
 
-                        // if(tel_Id == 'M_2') console.log('+++',pnts_now.pos)
+                        // if(tel_id == 'M_2') console.log('+++',pnts_now.pos)
                         data_in.azm.push({
-                            id: tel_Id,
+                            id: tel_id,
                             pos: tel_data_now.pos[0],
                             pnt: pnts_now.pos[0],
                             col: tel_data_now.col,
-                            hasLbls: isHov,
-                            hasCentLbl: isHov,
+                            has_lbls: is_hov,
+                            has_cent_lbl: is_hov,
                         })
                         data_in.zen.push({
-                            id: tel_Id,
+                            id: tel_id,
                             pos: tel_data_now.pos[1],
                             pnt: pnts_now.pos[1],
                             col: tel_data_now.col,
-                            hasLbls: isHov,
-                            hasCentLbl: isHov,
+                            has_lbls: is_hov,
+                            has_cent_lbl: is_hov,
                         })
                     }
                 })
@@ -3743,329 +3747,259 @@ let main_sub_arr_grp = function(opt_in) {
             let opt = {
             }
             opt.index = 0
-            opt.isArc = false
+            opt.is_arc = false
             opt.tag_state = 's01'
-            opt.tagType = '0'
-            opt.scaleRad0 = 'scaleRad0'
-            opt.scaleRad1 = 'scaleRad1'
-            opt.scaleStroke0 = 'scaleStroke0'
-            opt.lblProps = 'lblProps'
-            opt.center = 'centre0'
-            opt.centLbl = 'centreLabel0'
+            opt.tag_type = '0'
+            opt.scale_rad_0 = 'scale_rad_0'
+            opt.scale_rad_1 = 'scale_rad_1'
+            opt.scale_stroke_0 = 'scale_stroke_0'
+            opt.lbl_props = 'lbl_props'
+            opt.center = 'centre_0'
+            opt.cent_lbl = 'centre_label_0'
             opt.data = data_in.azm
 
-            addRing(opt)
+            add_ring(opt)
 
             opt = {
             }
             opt.index = 0
-            opt.isArc = true
+            opt.is_arc = true
             opt.tag_state = 's01'
-            opt.tagType = '1'
-            opt.scaleRad0 = 'scaleRad2'
-            opt.scaleRad1 = 'scaleRad1'
-            opt.scaleStroke0 = 'scaleStroke0'
-            opt.lblProps = 'lblProps'
-            opt.center = 'centre2'
-            opt.centLbl = 'centreLabel1'
+            opt.tag_type = '1'
+            opt.scale_rad_0 = 'scale_rad_2'
+            opt.scale_rad_1 = 'scale_rad_1'
+            opt.scale_stroke_0 = 'scale_stroke_0'
+            opt.lbl_props = 'lbl_props'
+            opt.center = 'centre_2'
+            opt.cent_lbl = 'centre_label_1'
             opt.data = data_in.zen
 
-            addRing(opt)
+            add_ring(opt)
 
             data_in = null
         }
 
-        function set_state_10(is_on, tel_Id_on) {
+        // -------------------------------------------------------------------
+        //
+        // -------------------------------------------------------------------
+        function set_state_10(is_on, tel_id_on) {
             // console.log('__set_stateS10')
-            let tagBck = 'sub_arr'
-            let tagG = tagBck + 'telG'
-            let tagTel = tagG + 'ele'
+            let tag_bck = 'sub_arr'
+            let tag_g = tag_bck + 'tel_g'
+            let tag_tel = tag_g + 'ele'
             // let tag_state = 's10'
 
-            let showByPercision = true
+            let show_by_percision = true
 
             let data_in = {
             }
             data_in.azm = [ [], [], [] ]
             data_in.zen = [ [], [], [] ]
-            data_in.posDiff = [] // data_in.tabel = []; data_in.remove = [];
+            data_in.pos_diff = [] // data_in.tabel = []; data_in.remove = [];
 
-            let hov = tel_data.telHover.sub_arr
-            if (is_def(hov)) {
-                if (is_def(tel_data.sub_arrIds[hov])) {
-                    $.each(tel_data.sub_arrIds[hov].children, function(index, ele_now) {
-                        let tel_Id = ele_now.id
+            let hov = tel_data.tel_hover.sub_arr
+            if (is_def(hov) && is_def(tel_data.sub_arr_ids[hov])) {
+                let children_now = tel_data.sub_arr_ids[hov].children
+                $.each(children_now, function(index, ele_now) {
+                    let tel_id = ele_now.id
 
-                        if (is_on && (tel_Id_on === '' || tel_Id_on === tel_Id)) {
-                            let tel_data_now = com[tagTel][tel_Id].tels
-                            let pnts_now = com[tagTel][tel_Id].pnts
-                            let isHov = tel_data.telHover.id === tel_Id
-                            // if(tel_Id=='M_10') console.log(tel_data_now,pnts_now)
+                    if (is_on && (tel_id_on === '' || tel_id_on === tel_id)) {
+                        let tel_data_now = com[tag_tel][tel_id].tels
+                        let pnts_now = com[tag_tel][tel_id].pnts
+                        let is_hov = tel_data.tel_hover.id === tel_id
+                        // if(tel_id=='M_10') console.log(tel_data_now,pnts_now)
 
-                            let posDiff0 = tel_data_now.pos[0] - pnts_now.pos[0]
-                            let posDiff1 = tel_data_now.pos[1] - pnts_now.pos[1]
-                            let posDiff2 = Math.sqrt(
-                                Math.pow(posDiff0, 2) + Math.pow(posDiff1, 2)
-                            )
-                            let posDiffV = [ posDiff0, posDiff1, posDiff2 ]
+                        let pos_diff_0 = tel_data_now.pos[0] - pnts_now.pos[0]
+                        let pos_diff_1 = tel_data_now.pos[1] - pnts_now.pos[1]
+                        let pos_diff_2 = Math.sqrt(
+                            Math.pow(pos_diff_0, 2) + Math.pow(pos_diff_1, 2)
+                        )
+                        let pos_diffs = [ pos_diff_0, pos_diff_1, pos_diff_2 ]
 
-                            let isDiffMin = [ true, true ]
-                            let isDiffSec = [ true, true ]
-                            if (showByPercision) {
-                                $.each([ 0, 1 ], function(index_, index) {
-                                    let posDiff = Math.abs(index === 0 ? posDiff0 : posDiff1)
-                                    if (index === 0) {
-                                        if (posDiff >= 360) {
-                                            posDiff -= 360
-                                        }
+                        let is_diff_min = [ true, true ]
+                        let is_diff_sec = [ true, true ]
+                        if (show_by_percision) {
+                            $.each([ 0, 1 ], function(_, index) {
+                                let pos_diff = Math.abs(
+                                    index === 0 ? pos_diff_0 : pos_diff_1
+                                )
+                                if (index === 0) {
+                                    if (pos_diff >= 360) {
+                                        pos_diff -= 360
                                     }
-                                    else {
-                                        if (posDiff >= 90) {
-                                            posDiff -= 90
-                                        }
+                                }
+                                else {
+                                    if (pos_diff >= 90) {
+                                        pos_diff -= 90
                                     }
-                                    let posDiffDms = deg_dms(posDiff)
-                                    isDiffMin[index] = posDiffDms[0] === 0
-                                    isDiffSec[index] = posDiffDms[0] === 0 && posDiffDms[1] === 0
-
-                                    // if(isHov&&index_==1) console.log('posDiff -',index,'-',Math.abs((index == 0) ? posDiff0 : posDiff1),posDiff,posDiffDms)
-                                })
-                            }
-
-                            let azm = {
-                                id: tel_Id,
-                                pos: tel_data_now.pos[0],
-                                pnt: pnts_now.pos[0],
-                                col: tel_data_now.col,
-                                hasLbls: isHov,
-                                hasCentLbl: isHov,
-                            }
-                            let zen = {
-                                id: tel_Id,
-                                pos: tel_data_now.pos[1],
-                                pnt: pnts_now.pos[1],
-                                col: tel_data_now.col,
-                                hasLbls: isHov,
-                                hasCentLbl: isHov,
-                            }
-
-                            // if( (Math.floor(Math.random()*1000))%2===0 )
-                            $.each([ 0, 1, 2 ], function(index_, index) {
-                                if (
-                                    index === 0
-                  || (index === 1 && isDiffMin[0])
-                  || (index === 2 && isDiffSec[0])
-                                ) {
-                                    data_in.azm[index].push(azm)
                                 }
-                                if (
-                                    index === 0
-                  || (index === 1 && isDiffMin[1])
-                  || (index === 2 && isDiffSec[1])
-                                ) {
-                                    data_in.zen[index].push(zen)
-                                }
+                                let pos_diff_dms = deg_dms(pos_diff)
+                                is_diff_min[index] = pos_diff_dms[0] === 0
+                                is_diff_sec[index] = (
+                                    pos_diff_dms[0] === 0
+                                    && pos_diff_dms[1] === 0
+                                )
                             })
-
-                            if (isHov) {
-                                data_in.posDiff.push({
-                                    id: tel_Id,
-                                    posDiff: posDiffV,
-                                    col: tel_data_now.col,
-                                    hasLbls: isHov,
-                                    hasCentLbl: isHov,
-                                })
-                                // console.log('posDiffV',posDiffV)
-                            }
                         }
-                    })
-                }
+
+                        let azm = {
+                            id: tel_id,
+                            pos: tel_data_now.pos[0],
+                            pnt: pnts_now.pos[0],
+                            col: tel_data_now.col,
+                            has_lbls: is_hov,
+                            has_cent_lbl: is_hov,
+                        }
+                        let zen = {
+                            id: tel_id,
+                            pos: tel_data_now.pos[1],
+                            pnt: pnts_now.pos[1],
+                            col: tel_data_now.col,
+                            has_lbls: is_hov,
+                            has_cent_lbl: is_hov,
+                        }
+
+                        $.each([ 0, 1, 2 ], function(_, index) {
+                            if (
+                                index === 0
+                                || (index === 1 && is_diff_min[0])
+                                || (index === 2 && is_diff_sec[0])
+                            ) {
+                                data_in.azm[index].push(azm)
+                            }
+                            if (
+                                index === 0
+                                || (index === 1 && is_diff_min[1])
+                                || (index === 2 && is_diff_sec[1])
+                            ) {
+                                data_in.zen[index].push(zen)
+                            }
+                        })
+
+                        if (is_hov) {
+                            data_in.pos_diff.push({
+                                id: tel_id,
+                                pos_diff: pos_diffs,
+                                col: tel_data_now.col,
+                                has_lbls: is_hov,
+                                has_cent_lbl: is_hov,
+                            })
+                        }
+                    }
+                })
             }
 
             // -------------------------------------------------------------------
             // azimuth (full circle)
             // -------------------------------------------------------------------
-            $.each([ 0, 1, 2 ], function(index_, index) {
+            $.each([ 0, 1, 2 ], function(_, index) {
                 let opt = {
+                    index: index,
+                    is_arc: false,
+                    tag_state: 's10',
+                    tag_type: '0',
+                    scale_rad_0: 'scale_rad_0' + index,
+                    scale_rad_1: 'scale_rad_1' + index,
+                    scale_stroke_0: 'scale_stroke_0' + index,
+                    lbl_props: 'lbl_props',
+                    center: 'centre_0',
+                    cent_lbl: 'centre_label_0',
+                    data: data_in.azm[index],
                 }
-                opt.index = index
-                opt.isArc = false
-                opt.tag_state = 's10'
-                opt.tagType = '0'
-                opt.scaleRad0 = 'scaleRad0' + index
-                opt.scaleRad1 = 'scaleRad1' + index
-                opt.scaleStroke0 = 'scaleStroke0' + index
-                opt.lblProps = 'lblProps'
-                opt.center = 'centre0'
-                opt.centLbl = 'centreLabel0'
-                opt.data = data_in.azm[index]
 
                 if (is_on || (!is_on && index > 0)) {
-                    addRing(opt)
+                    add_ring(opt)
                 }
             })
 
             // -------------------------------------------------------------------
             // zenith (1/4 of circle)
             // -------------------------------------------------------------------
-            $.each([ 0, 1, 2 ], function(index_, index) {
+            $.each([ 0, 1, 2 ], function(_, index) {
                 let opt = {
+                    index: index,
+                    tag_state: 's10',
+                    tag_type: '1',
+                    scale_rad_0: (index === 0 ? 'scale_rad_2' : 'scale_rad_0') + index,
+                    scale_rad_1: 'scale_rad_1' + index,
+                    scale_stroke_0: 'scale_stroke_0' + index,
+                    lbl_props: 'lbl_props',
+                    center: index === 0 ? 'centre_2' : 'centre_3',
+                    cent_lbl: 'centre_label_1',
+                    data: data_in.zen[index],
                 }
-                opt.index = index
-                opt.tag_state = 's10'
-                opt.tagType = '1'
-                opt.scaleRad0 = (index === 0 ? 'scaleRad2' : 'scaleRad0') + index
-                opt.scaleRad1 = 'scaleRad1' + index
-                opt.scaleStroke0 = 'scaleStroke0' + index
-                opt.lblProps = 'lblProps'
-                opt.center = index === 0 ? 'centre2' : 'centre3'
-                opt.centLbl = 'centreLabel1'
-                // opt.onlyMove   = (index == 0)
-                opt.data = data_in.zen[index]
 
                 if (is_on || (!is_on && index > 0)) {
-                    opt.isArc = index === 0
-                    addRing(opt)
+                    opt.is_arc = index === 0
+                    add_ring(opt)
                 }
             })
 
             // -------------------------------------------------------------------
             // difference between position and pointing (azimuth and zenith combined)
             // -------------------------------------------------------------------
-            $.each([ 0, 1, 2 ], function(index_, index) {
+            $.each([ 0, 1, 2 ], function(_, index) {
                 let opt = {
+                    index: index,
+                    tag_state: 's10',
+                    scale_rad_1: 'scl_r_3' + index,
+                    scale_stroke_0: 'scale_stroke_0' + index,
+                    lbl_props: 'lbl_props',
+                    center: 'centre_1' + index,
+                    cent_lbl: 'centre_label_3' + index,
+                    wh: 'wh_1' + index,
+                    data: data_in.pos_diff,
                 }
-                opt.index = index
-                opt.tag_state = 's10'
-                opt.scaleRad1 = 'sclR3' + index
-                opt.scaleStroke0 = 'scaleStroke0' + index
-                opt.lblProps = 'lblProps'
-                opt.center = 'centre1' + index
-                opt.centLbl = 'centreLabel3' + index
-                opt.wh = 'wh1' + index
-                opt.data = data_in.posDiff
 
-                addStretchBand(opt)
+                add_stretch_band(opt)
             })
 
             data_in = null
 
-            // // -------------------------------------------------------------------
-            // // table with pos/pnt/diff
-            // // -------------------------------------------------------------------
-            // $.each(data_in.tabel, function(index_,data_now) {
-            //   let tel_Id = data_now.id
-            //   let tel_data_now  = data_now.tels
-            //   let pnts_now  = data_now.pnts
-
-            //   let tblFont   = com[tag_state][opt_in.tblFont];
-            //   let tablePos10 = { "x":(com[tag_state].tablePos10.x+com.telXY[tel_Id].x), "y":(com[tag_state].tablePos10.y+com.telXY[tel_Id].y),
-            //                     "w":com[tag_state].tablePos10.w, "h":com[tag_state].tablePos10.h }
-
-            //   // -------------------------------------------------------------------
-            //   // add a table with the positions
-            //   // -------------------------------------------------------------------
-            //   let deg_dms_pos0 = deg_dms(tel_data_now.pos[0]), deg_dms_pos1 = deg_dms(tel_data_now.pos[1]),
-            //       deg_dms_pnt0 = deg_dms(pnts_now.pos[0]), deg_dms_pnt1 = deg_dms(pnts_now.pos[1])
-
-            //   let tblCol  = ['',symbols.phi+unit_deg,symbols.phi+unit_arcmin,symbols.phi+unit_arcsec,symbols.delta+unit_deg,symbols.delta+unit_arcmin,symbols.delta+unit_arcsec]
-
-            //   let tel_deg_dms = deg_dms(tel_data_now.pos[0]), pnt_deg_dms = deg_dms(pnts_now.pos[0]);
-
-            //   let rowTitle = [ "pos","pnt",symbols.Delta ]
-
-            //   let colTitle = [ "", symbols.space+symbols.phi+unit_deg ,   symbols.space+symbols.phi+unit_arcmin ,   symbols.space+symbols.phi+unit_arcsec ,
-            //                        symbols.space+symbols.delta+unit_deg , symbols.space+symbols.delta+unit_arcmin , symbols.space+symbols.delta+unit_arcsec ]
-
-            //   let tblData = []
-            //   tblData.push({ 0:rowTitle[0], 1:tel_data_now.pos[0], 2:deg_dms_pos0[1], 3:deg_dms_pos0[2],
-            //                                 4:tel_data_now.pos[1], 5:deg_dms_pos1[1], 6:deg_dms_pos1[2]  })
-
-            //   tblData.push({ 0:rowTitle[1], 1:pnts_now.pos[0], 2:deg_dms_pnt0[1], 3:deg_dms_pnt0[2],
-            //                                 4:pnts_now.pos[1], 5:deg_dms_pnt1[1], 6:deg_dms_pnt1[2]  })
-
-            //   tblData.push({ 0:rowTitle[2], 1:pnts_now.pos[0]-tel_data_now.pos[0], 2:(deg_dms_pnt0[1]-deg_dms_pos0[1]), 3:(deg_dms_pnt0[2]-deg_dms_pos0[2]),
-            //                                 4:pnts_now.pos[1]-tel_data_now.pos[1], 5:(deg_dms_pnt1[1]-deg_dms_pos1[1]), 6:(deg_dms_pnt1[2]-deg_dms_pos1[2])  })
-
-            //   let tblColProps = { 0:{"title":"",          "type":"s", "width":1,  "format":null,            "font_size":tblFont, "anch":"right","fontWgt":"bold"  } ,
-            //                       1:{"title":colTitle[1], "type":"d", "width":1.4,"format":d3.format(".3f"),"font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
-            //                       2:{"title":colTitle[2], "type":"i", "width":1,  "format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
-            //                       3:{"title":colTitle[3], "type":"i", "width":1,  "format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
-            //                       4:{"title":colTitle[4], "type":"d", "width":1.4,"format":d3.format(".3f"),"font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
-            //                       5:{"title":colTitle[5], "type":"i", "width":1,  "format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
-            //                       6:{"title":colTitle[6], "type":"i", "width":1,  "format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"} ,
-            //                       "-":{"title":"",        "type":"i", "width":0.4,"format":d3.format("d"),  "font_size":tblFont, "anch":"left", "fontWgt":"normal"}
-            //                     }
-
-            //   let optTbl         = {};
-            //   optTbl.com      = com
-            //   optTbl.tagG     = tagG
-            //   optTbl.tag      = "tbl10_"//+tel_Id
-            //   optTbl.pos      = tablePos10
-            //   optTbl.data     = tblData
-            //   optTbl.rowRules = {}//{"rowNumber":[0,2], "rowValue":[ ["col0",["14","15"]], ["col1",[5]] ]}
-            //   optTbl.colsIn   = [0,"-",1,"-",2,3,"-",4,"-",5,6] // list of keys (does not need to be integers) matching selected columns (= keys of tblColProps and tblData)
-            //   optTbl.colProps = tblColProps
-            //   optTbl.lines    = { "row":[1], "col":[1] } // list of row/column positions
-            //   optTbl.flags    = { "addColTitle":true }
-
-            //   addTable(optTbl); //log(tblData)
-            // })
-
-            // // remove unneeded table
-            // if(data_in.tabel.length == 0) {
-            //   let optTbl         = {};
-            //   optTbl.com      = com
-            //   optTbl.tagG     = tagG
-            //   optTbl.tag      = "tbl10_"//+tel_Id
-
-            //   addTable(optTbl);
-            // }
-
-            // return;
+            return
         }
 
         // -------------------------------------------------------------------
         // helper functions for adding elements and for updating positions of sub elements
         // -------------------------------------------------------------------
-        function addStretchBand(opt_in) {
+        function add_stretch_band(opt_in) {
             let index = opt_in.index
             let tag_state = opt_in.tag_state
-            let tagBck = 'sub_arr'
-            let tagG = tagBck + 'telG'
-            let tagTel = tagG + 'ele'
-            let tag_now = tagTel + index + 'band'
+            let tag_bck = 'sub_arr'
+            let tag_g = tag_bck + 'tel_g'
+            let tag_tel = tag_g + 'ele'
+            let tag_now = tag_tel + index + 'band'
             let data = opt_in.data
-            let addMainLbl = false
+            let add_main_lbl = false
 
-            let scaleRad1 = com[tag_state][opt_in.scaleRad1]
-            // let scaleStroke0 = com[tag_state][opt_in.scaleStroke0]
-            let lbl = com[tag_state][opt_in.lblProps]
+            let scale_rad_1 = com[tag_state][opt_in.scale_rad_1]
+            // let scale_stroke_0 = com[tag_state][opt_in.scale_stroke_0]
+            let lbl = com[tag_state][opt_in.lbl_props]
             let wh = com[tag_state][opt_in.wh]
 
-            function xy(tagIn, tel_Id) {
+            function xy(tag_in, tel_id) {
                 return [
-                    com.telXY[tel_Id].x + com[tag_state][opt_in[tagIn]][0],
-                    com.telXY[tel_Id].y + com[tag_state][opt_in[tagIn]][1],
+                    com.tel_xy[tel_id].x + com[tag_state][opt_in[tag_in]][0],
+                    com.tel_xy[tel_id].y + com[tag_state][opt_in[tag_in]][1],
                 ]
             }
-            function center(tel_Id) {
-                return xy('center', tel_Id)
+            function center(tel_id) {
+                return xy('center', tel_id)
             }
-            function centLbl(tel_Id) {
-                return xy('centLbl', tel_Id)
-            }
-
-            let data0 = []
-            let dataLbl = []
-            let dataCentLbl = []
-            let xyDiff = {
+            function cent_lbl(tel_id) {
+                return xy('cent_lbl', tel_id)
             }
 
-            let lblOffsetH = wh[1] * (index < 2 ? 3 : 2)
-            let wFrac = 0.35
-            let nLbls = 3
-            let scaleV = [
+            let data_0 = []
+            let data_lbl = []
+            let data_cent_lbl = []
+            let xy_xiff = {
+            }
+
+            let lbl_offset_h = wh[1] * (index < 2 ? 3 : 2)
+            let w_frac = 0.35
+            let n_lbls = 3
+            let scales = [
                 -(180 + 1e-4),
                 -90,
                 -45,
@@ -4080,76 +4014,81 @@ let main_sub_arr_grp = function(opt_in) {
                 180 + 1e-4,
             ]
 
-            $.each(data, function(indexNow, data_now) {
-                let tel_Id = data_now.id
-                let posDiff = data_now.posDiff[index]
-                if (posDiff > 180) {
-                    posDiff -= 360
+            $.each(data, function(_, data_now) {
+                let tel_id = data_now.id
+                let pos_diff = data_now.pos_diff[index]
+                if (pos_diff > 180) {
+                    pos_diff -= 360
                 }
-                else if (posDiff < -180) {
-                    posDiff += 360
+                else if (pos_diff < -180) {
+                    pos_diff += 360
                 }
 
-                if (data_now.hasCentLbl && index === 2) {
-                    dataCentLbl.push({
-                        id: tel_Id,
+                if (data_now.has_cent_lbl && index === 2) {
+                    data_cent_lbl.push({
+                        id: tel_id,
                     })
                 }
 
-                let scaleIndex = 0
-                let scaleVnow = []
-                $.each(scaleV, function(index_, scaleNow) {
-                    if (index_ < scaleV.length - 1) {
-                        if (posDiff > scaleV[index_] && posDiff <= scaleV[index_ + 1]) {
-                            scaleIndex = index_
+                let scale_index = 0
+                let scales_now = []
+                $.each(scales, function(index, _) {
+                    if (index < scales.length - 1) {
+                        if (pos_diff > scales[index]
+                                && pos_diff <= scales[index + 1]) {
+                            scale_index = index
                         }
-                        scaleVnow.push([ scaleV[index_], scaleV[index_ + 1] ])
+                        scales_now.push([ scales[index], scales[index + 1] ])
                     }
                 })
 
                 let rng
-                let wNow
-                let xNow
+                let w_now
+                let x_now
                 let x0 = 0
-                let w0 = wh[0] * wFrac / (scaleVnow.length - 1)
-                let w1 = wh[0] * (1 - wFrac)
+                let w0 = wh[0] * w_frac / (scales_now.length - 1)
+                let w1 = wh[0] * (1 - w_frac)
                 let w2 = w0 * 0.3
 
-                $.each(scaleVnow, function(index_, scaleNow) {
-                    rng = scaleNow[1] - scaleNow[0]
-                    wNow = index_ === scaleIndex ? w1 : w0
-                    xNow = x0
-                    x0 += wNow
-                    wNow -= w2
+                $.each(scales_now, function(index, scale_now) {
+                    rng = scale_now[1] - scale_now[0]
+                    w_now = (index === scale_index ? w1 : w0)
+                    x_now = x0
+                    x0 += w_now
+                    w_now -= w2
 
-                    if (index_ === scaleIndex) {
-                        xyDiff[tel_Id] = [
-                            xNow + wNow * (posDiff - scaleNow[0]) / rng,
+                    if (index === scale_index) {
+                        xy_xiff[tel_id] = [
+                            x_now + w_now * (pos_diff - scale_now[0]) / rng,
                             wh[1] / 2,
                         ]
 
-                        if (data_now.hasLbls) {
-                            for (let nLblNow = 0; nLblNow < nLbls; nLblNow++) {
-                                let lblX = xNow + nLblNow * wNow / (nLbls - 1)
-                                let lblV = formatLbl(scaleNow[0] + nLblNow * rng / (nLbls - 1))
+                        if (data_now.has_lbls) {
+                            for (let n_lbl_now = 0; n_lbl_now < n_lbls; n_lbl_now++) {
+                                let lbl_x = x_now + n_lbl_now * w_now / (n_lbls - 1)
+                                let lbl_val = (
+                                    formatLbl(
+                                        scale_now[0] + n_lbl_now * rng / (n_lbls - 1)
+                                    )
+                                )
 
-                                dataLbl.push({
-                                    id: tel_Id,
-                                    nLbl: nLblNow,
-                                    val: lblV,
-                                    pos: lblX,
+                                data_lbl.push({
+                                    id: tel_id,
+                                    n_lbl: n_lbl_now,
+                                    val: lbl_val,
+                                    pos: lbl_x,
                                 })
                             }
                         }
                     }
 
-                    data0.push({
-                        id: tel_Id,
-                        nRect: index_,
+                    data_0.push({
+                        id: tel_id,
+                        n_rect: index,
                         rng: rng,
-                        x: xNow,
-                        w: wNow,
-                        opac: wNow <= w0 ? 0.2 : 0.1,
+                        x: x_now,
+                        w: w_now,
+                        opac: w_now <= w0 ? 0.2 : 0.1,
                     })
                 })
             })
@@ -4157,20 +4096,20 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             // labels
             // -------------------------------------------------------------------
-            let lbl0 = com[tagG]
-                .selectAll('text.' + tag_now + 'lbl0')
-                .data(dataLbl, function(d, i) {
-                    return d.id + d.nLbl
+            let lbl_0 = com[tag_g]
+                .selectAll('text.' + tag_now + 'lbl_0')
+                .data(data_lbl, function(d) {
+                    return d.id + d.n_lbl
                 })
 
-            lbl0
+            lbl_0
                 .enter()
                 .append('text')
                 .text(function(d) {
                     return d.val + lbl.units[0]
                 })
-                .attr('class', tag_now + 'lbl0')
-            // .style("stroke", "#383b42")
+                .attr('class', tag_now + 'lbl_0')
+                // .style("stroke", "#383b42")
                 .style('stroke-width', 0)
                 .style('opacity', '0')
                 .style('fill', '#383b42')
@@ -4180,32 +4119,26 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('font-size', lbl.size * (index < 2 ? 1.2 : 1.5) + 'px')
                 .attr('transform', function(d) {
                     return (
-                        'translate('
-            + center(d.id)[0]
-            + ','
-            + (center(d.id)[1] + lblOffsetH)
-            + ')'
+                        ('translate(' + center(d.id)[0])
+                        + (',' + (center(d.id)[1] + lbl_offset_h) + ')')
                     )
                 })
-                .merge(lbl0)
+                .merge(lbl_0)
                 .transition('in_out')
                 .duration(times.anim)
                 .attr('transform', function(d) {
-                    d.hasMoved
-            = Math.abs(
-                            (this_trans(this)[0] - (center(d.id)[0] + d.pos))
-                / (center(d.id)[0] + d.pos)
-                        ) > 0.001
+                    let move = (
+                        (this_trans(this)[0] - (center(d.id)[0] + d.pos))
+                        / (center(d.id)[0] + d.pos)
+                    )
+                    d.has_moved = Math.abs(move) > 0.001
                     return (
-                        'translate('
-            + (center(d.id)[0] + d.pos)
-            + ','
-            + (center(d.id)[1] + lblOffsetH)
-            + ')'
+                        ('translate(' + (center(d.id)[0] + d.pos) + ',')
+                        + ((center(d.id)[1] + lbl_offset_h) + ')')
                     )
                 })
                 .tween('text', function(d) {
-                    if (!d.hasMoved) {
+                    if (!d.has_moved) {
                         return
                     }
 
@@ -4224,9 +4157,9 @@ let main_sub_arr_grp = function(opt_in) {
                 })
                 .style('opacity', 1)
 
-            lbl0
+            lbl_0
                 .exit()
-                .attr('class', tag_now + 'lbl0' + 'exit')
+                .attr('class', tag_now + 'lbl_0' + 'exit')
                 .transition('in_out')
                 .duration(times.anim)
                 .style('opacity', 0)
@@ -4235,49 +4168,44 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            if (addMainLbl) {
-                let lbl1 = com[tagG]
-                    .selectAll('text.' + tag_now + 'lbl1')
-                    .data(dataCentLbl, function(d, i) {
+            if (add_main_lbl) {
+                let lbl_1 = com[tag_g]
+                    .selectAll('text.' + tag_now + 'lbl_1')
+                    .data(data_cent_lbl, function(d) {
                         return d.id
                     })
 
-                lbl1
+                lbl_1
                     .enter()
                     .append('text')
-                    .text(function(d) {
-                        return symbols.Delta
-                    })
-                    .attr('class', tag_now + 'lbl1')
+                    .text(symbols.Delta)
+                    .attr('class', tag_now + 'lbl_1')
                     .style('stroke', '#383b42')
                     .style('opacity', '0')
                     .style('fill', '#383b42')
                     .attr('vector-effect', 'non-scaling-stroke')
                     .style('pointer-events', 'none')
                     .attr('text-anchor', 'middle')
-                    .style('font-size', function(d) {
-                        return lbl.size * (index === 2 ? 2 : 1.5) + 'px'
-                    })
+                    .style('font-size', (
+                        (lbl.size * (index === 2 ? 2 : 1.5)) + 'px'
+                    ))
                     .attr('transform', function(d) {
                         return (
-                            'translate('
-              + centLbl(d.id)[0]
-              + ','
-              + (centLbl(d.id)[1] + lbl.offset[1])
-              + ')'
+                            ('translate(' + cent_lbl(d.id)[0] + ',')
+                            + ((cent_lbl(d.id)[1] + lbl.offset[1]) + ')')
                         )
                     })
-                    .merge(lbl1)
+                    .merge(lbl_1)
                     .transition('in_out')
                     .duration(times.anim)
-                    .style('font-size', function(d) {
-                        return lbl.size * (index === 2 ? 2 : 1.5) + 'px'
-                    })
+                    .style('font-size', (
+                        (lbl.size * (index === 2 ? 2 : 1.5)) + 'px'
+                    ))
                     .style('opacity', 0.7)
 
-                lbl1
+                lbl_1
                     .exit()
-                    .attr('class', tag_now + 'lbl1' + 'exit')
+                    .attr('class', tag_now + 'lbl_1' + 'exit')
                     .transition('in_out')
                     .duration(times.anim)
                     .style('opacity', 0)
@@ -4286,10 +4214,10 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            com[tag_now + '0'] = com[tagG]
+            com[tag_now + '0'] = com[tag_g]
                 .selectAll('rect.' + tag_now + '0')
-                .data(data0, function(d, i) {
-                    return d.id + d.nRect
+                .data(data_0, function(d) {
+                    return d.id + d.n_rect
                 })
 
             com[tag_now + '0']
@@ -4308,15 +4236,15 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('transform', function(d) {
                     return 'translate(' + center(d.id)[0] + ',' + center(d.id)[1] + ')'
                 })
-            // .transition("enter").duration(times.anim)
-            // .attr("r", function(d){ return scaleRad1+"px"; })
+                // .transition("enter").duration(times.anim)
+                // .attr("r", function(d){ return scale_rad_1+"px"; })
                 .merge(com[tag_now + '0'])
                 .transition('move')
                 .duration(times.anim)
                 .attr('transform', function(d) {
                     return 'translate(' + center(d.id)[0] + ',' + center(d.id)[1] + ')'
                 })
-            // .attr("height", (wh[1]+"px"))
+                // .attr("height", (wh[1]+"px"))
                 .style('opacity', function(d) {
                     return d.opac
                 })
@@ -4338,9 +4266,9 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            com[tag_now + '1'] = com[tagG]
+            com[tag_now + '1'] = com[tag_g]
                 .selectAll('circle.' + tag_now + '1')
-                .data(data, function(d, i) {
+                .data(data, function(d) {
                     return d.id
                 })
 
@@ -4348,7 +4276,7 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('circle')
                 .attr('class', tag_now + '1')
-            // .style("stroke", "#383b42")
+                // .style("stroke", "#383b42")
                 .style('opacity', '0.7')
                 .style('stroke-width', '0')
                 .style('fill', 'transparent')
@@ -4356,11 +4284,8 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('r', '0')
                 .attr('transform', function(d) {
                     return (
-                        'translate('
-            + (center(d.id)[0] + xyDiff[d.id][0])
-            + ','
-            + (center(d.id)[1] + xyDiff[d.id][1])
-            + ')'
+                        ('translate(' + (center(d.id)[0] + xy_xiff[d.id][0]))
+                        + (',' + (center(d.id)[1] + xy_xiff[d.id][1]) + ')')
                     )
                 })
                 .merge(com[tag_now + '1'])
@@ -4368,17 +4293,12 @@ let main_sub_arr_grp = function(opt_in) {
                 .duration(times.anim)
                 .attr('transform', function(d) {
                     return (
-                        'translate('
-            + (center(d.id)[0] + xyDiff[d.id][0])
-            + ','
-            + (center(d.id)[1] + xyDiff[d.id][1])
-            + ')'
+                        ('translate(' + (center(d.id)[0] + xy_xiff[d.id][0]))
+                        + (',' + (center(d.id)[1] + xy_xiff[d.id][1]) + ')')
                     )
                 })
-                .style('fill', function(d) {
-                    return getColStretchBand()
-                }) // d.col
-                .attr('r', scaleRad1 + 'px')
+                .style('fill', get_col_stretch_band())
+                .attr('r', scale_rad_1 + 'px')
 
             com[tag_now + '1']
                 .exit()
@@ -4388,75 +4308,77 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('r', '0')
                 .remove()
 
-            data0 = null
-            dataLbl = null
-            dataCentLbl = null
-            xyDiff = null
-            lblOffsetH = null
-            scaleV = null
+            data_0 = null
+            data_lbl = null
+            data_cent_lbl = null
+            xy_xiff = null
+            lbl_offset_h = null
+            scales = null
         }
 
-        function addRing(opt_in) {
-            // console.log('addRing',opt_in)
-
+        // -------------------------------------------------------------------
+        //
+        // -------------------------------------------------------------------
+        function add_ring(opt_in) {
             let index = opt_in.index
-            let isArc = opt_in.isArc
+            let is_arc = opt_in.is_arc
             let tag_state = opt_in.tag_state
-            let tagBck = 'sub_arr'
-            let tagG = tagBck + 'telG'
-            let tagTel = tagG + 'ele'
-            let tag_now = tagTel + index + (isArc ? 'arc' : 'ring') + opt_in.tagType
+            let tag_bck = 'sub_arr'
+            let tag_g = tag_bck + 'tel_g'
+            let tag_tel = tag_g + 'ele'
+            let tag_now = tag_tel + index + (is_arc ? 'arc' : 'ring') + opt_in.tag_type
             let data = opt_in.data
 
-            let scaleRad0 = com[tag_state][opt_in.scaleRad0]
-            let scaleRad1 = com[tag_state][opt_in.scaleRad1]
-            let scaleStroke0 = com[tag_state][opt_in.scaleStroke0]
-            let lbl = com[tag_state][opt_in.lblProps]
+            let scale_rad_0 = com[tag_state][opt_in.scale_rad_0]
+            let scale_rad_1 = com[tag_state][opt_in.scale_rad_1]
+            let scale_stroke_0 = com[tag_state][opt_in.scale_stroke_0]
+            let lbl = com[tag_state][opt_in.lbl_props]
 
-            function xy(tagIn, tel_Id) {
+            function xy(tag_in, tel_id) {
                 return [
-                    com.telXY[tel_Id].x + com[tag_state][opt_in[tagIn]][0],
-                    com.telXY[tel_Id].y + com[tag_state][opt_in[tagIn]][1],
+                    com.tel_xy[tel_id].x + com[tag_state][opt_in[tag_in]][0],
+                    com.tel_xy[tel_id].y + com[tag_state][opt_in[tag_in]][1],
                 ]
             }
-            function center(tel_Id) {
-                return xy('center', tel_Id)
+            function center(tel_id) {
+                return xy('center', tel_id)
             }
-            function centLbl(tel_Id) {
-                return xy('centLbl', tel_Id)
+            function cent_lbl(tel_id) {
+                return xy('cent_lbl', tel_id)
             }
 
-            $.each(data, function(indexNow, data_now) {
-                let tel_Id = data_now.id
+            $.each(data, function(_, data_now) {
+                let tel_id = data_now.id
 
                 if (!is_def(com[tag_now + 'prev'])) {
                     com[tag_now + 'prev'] = {
                     }
                 }
-                if (!is_def(com[tag_now + 'prev'][tel_Id + 'pos'])) {
-                    com[tag_now + 'prev'][tel_Id + 'pos'] = 0
-                    com[tag_now + 'prev'][tel_Id + 'pnt'] = 0
-                    com[tag_now + 'prev'][tel_Id + 'r_0'] = 0
+                if (!is_def(com[tag_now + 'prev'][tel_id + 'pos'])) {
+                    com[tag_now + 'prev'][tel_id + 'pos'] = 0
+                    com[tag_now + 'prev'][tel_id + 'pnt'] = 0
+                    com[tag_now + 'prev'][tel_id + 'r_0'] = 0
                 }
             })
 
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            let arcNow = d3
+            let arc_now = d3
                 .arc()
                 .startAngle(0)
-                .endAngle(isArc ? tau / 4 : tau)
-            function tweenArc(transition) {
+                .endAngle(is_arc ? tau / 4 : tau)
+            
+            function tween_arc(transition) {
                 transition.attrTween('d', function(d) {
-                    let tel_Id = d.id
-                    let r0 = com[tag_now + 'prev'][tel_Id + 'r_0']
-                    com[tag_now + 'prev'][tel_Id + 'r_0'] = scaleRad0
+                    let tel_id = d.id
+                    let r0 = com[tag_now + 'prev'][tel_id + 'r_0']
+                    com[tag_now + 'prev'][tel_id + 'r_0'] = scale_rad_0
 
                     return function(t) {
-                        d.innerRadius = r0 + (scaleRad0 - r0) * interpolate01(t)
+                        d.innerRadius = r0 + (scale_rad_0 - r0) * interpolate01(t)
                         d.outerRadius = d.innerRadius
-                        return arcNow(d)
+                        return arc_now(d)
                     }
                 })
             }
@@ -4464,9 +4386,9 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            com[tag_now + '0'] = com[tagG]
+            com[tag_now + '0'] = com[tag_g]
                 .selectAll('path.' + tag_now + '0')
-                .data(data, function(d, i) {
+                .data(data, function(d) {
                     return d.id
                 })
 
@@ -4484,26 +4406,21 @@ let main_sub_arr_grp = function(opt_in) {
                 })
                 .transition('enter')
                 .duration(times.anim)
-                .style('stroke-width', function(d) {
-                    return scaleStroke0 + 'px'
-                })
-                .call(tweenArc)
+                .style('stroke-width', scale_stroke_0 + 'px')
+                .call(tween_arc)
 
-            let hasMoved
-            com[tagG]
+            let has_moved
+            com[tag_g]
                 .selectAll('path.' + tag_now + '0')
                 .transition('updateSizeTrans')
                 .duration(times.anim)
                 .attr('transform', function(d) {
-                    hasMoved
-            = Math.abs((this_trans(this)[0] - center(d.id)[0]) / center(d.id)[0])
-            > 0.001
+                    let move = (this_trans(this)[0] - center(d.id)[0]) / center(d.id)[0]
+                    has_moved = Math.abs(move) > 0.001
                     return 'translate(' + center(d.id)[0] + ',' + center(d.id)[1] + ')'
                 })
-                .style('stroke-width', function(d) {
-                    return scaleStroke0 + 'px'
-                })
-                .call(tweenArc)
+                .style('stroke-width', scale_stroke_0 + 'px')
+                .call(tween_arc)
 
             com[tag_now + '0']
                 .exit()
@@ -4516,9 +4433,9 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            com[tag_now + '1'] = com[tagG]
+            com[tag_now + '1'] = com[tag_g]
                 .selectAll('circle.' + tag_now + '1')
-                .data(data, function(d, i) {
+                .data(data, function(d) {
                     return d.id
                 })
 
@@ -4526,54 +4443,50 @@ let main_sub_arr_grp = function(opt_in) {
                 .enter()
                 .append('circle')
                 .attr('class', tag_now + '1')
-            // .style("stroke", "#383b42")
+                // .style("stroke", "#383b42")
                 .style('opacity', '0.9')
                 .style('stroke-width', '0')
                 .style('fill', 'transparent')
                 .style('pointer-events', 'none')
                 .attr('r', '0')
                 .attr('transform', function(d) {
-                    return transSet(true, 0, [ scaleRad0, center(d.id) ], index, false)
+                    return transSet(true, 0, [ scale_rad_0, center(d.id) ], index, false)
                 })
-            // .transition("enter").duration(times.anim)
-            // .attr("r", function(d){ return scaleRad1+"px"; })
+                // .transition("enter").duration(times.anim)
+                // .attr("r", function(d){ return scale_rad_1+"px"; })
 
-            if (hasMoved) {
-                com[tagG]
+            if (has_moved) {
+                com[tag_g]
                     .selectAll('circle.' + tag_now + '1')
-                // .each(function(d){ if(d.id == 'M_2')console.log('ring',d.pos); })
+                    // .each(function(d){ if(d.id == 'M_2')console.log('ring',d.pos); })
                     .transition('updateSizeTrans')
                     .duration(times.anim)
                     .attr('transform', function(d) {
                         return transSet(
                             true,
                             d.pos,
-                            [ scaleRad0, center(d.id) ],
+                            [ scale_rad_0, center(d.id) ],
                             index,
                             false
                         )
                     })
-                    .attr('r', function(d) {
-                        return scaleRad1 + 'px'
-                    })
+                    .attr('r', scale_rad_1 + 'px')
                     .style('fill', function(d) {
                         return d.col
                     })
             }
             else {
-                com[tagG]
+                com[tag_g]
                     .selectAll('circle.' + tag_now + '1')
                     .transition('move')
                     .duration(times.anim)
-                    .attr('r', function(d) {
-                        return scaleRad1 + 'px'
-                    })
-                    .attrTween('transform', function(d, i) {
+                    .attr('r', scale_rad_1 + 'px')
+                    .attrTween('transform', function(d) {
                         return transUpdate(
                             true,
                             com[tag_now + 'prev'][d.id + 'pos'],
                             d.pos,
-                            [ scaleRad0, center(d.id) ],
+                            [ scale_rad_0, center(d.id) ],
                             index,
                             d.id,
                             tag_now + 'prev',
@@ -4596,9 +4509,9 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            com[tag_now + '2'] = com[tagG]
+            com[tag_now + '2'] = com[tag_g]
                 .selectAll('circle.' + tag_now + '2')
-                .data(data, function(d, i) {
+                .data(data, function(d) {
                     return d.id
                 })
 
@@ -4608,18 +4521,18 @@ let main_sub_arr_grp = function(opt_in) {
                 .attr('class', tag_now + '2')
                 .style('stroke', '#383b42')
                 .style('opacity', '0.7')
-                .style('stroke-width', 0.1 * scaleRad1 + 'px')
+                .style('stroke-width', 0.1 * scale_rad_1 + 'px')
                 .style('fill', 'transparent')
                 .style('pointer-events', 'none')
                 .attr('r', '0')
                 .attr('transform', function(d) {
-                    return transSet(true, 0, [ scaleRad0, center(d.id) ], index, false)
+                    return transSet(true, 0, [ scale_rad_0, center(d.id) ], index, false)
                 })
-            // .transition("enter").duration(times.anim)
-            // .attr("r", function(d){ return scaleRad1+"px"; })
+                // .transition("enter").duration(times.anim)
+                // .attr("r", function(d){ return scale_rad_1+"px"; })
 
-            if (hasMoved) {
-                com[tagG]
+            if (has_moved) {
+                com[tag_g]
                     .selectAll('circle.' + tag_now + '2')
                     .transition('updateSizeTrans')
                     .duration(times.anim)
@@ -4627,29 +4540,25 @@ let main_sub_arr_grp = function(opt_in) {
                         return transSet(
                             true,
                             d.pnt,
-                            [ scaleRad0, center(d.id) ],
+                            [ scale_rad_0, center(d.id) ],
                             index,
                             false
                         )
                     })
-                    .attr('r', function(d) {
-                        return scaleRad1 + 'px'
-                    })
+                    .attr('r', scale_rad_1 + 'px')
             }
             else {
-                com[tagG]
+                com[tag_g]
                     .selectAll('circle.' + tag_now + '2')
                     .transition('move')
                     .duration(times.anim)
-                    .attr('r', function(d) {
-                        return scaleRad1 + 'px'
-                    })
-                    .attrTween('transform', function(d, i) {
+                    .attr('r', scale_rad_1 + 'px')
+                    .attrTween('transform', function(d) {
                         return transUpdate(
                             true,
                             com[tag_now + 'prev'][d.id + 'pnt'],
                             d.pnt,
-                            [ scaleRad0, center(d.id) ],
+                            [ scale_rad_0, center(d.id) ],
                             index,
                             d.id,
                             tag_now + 'prev',
@@ -4669,83 +4578,85 @@ let main_sub_arr_grp = function(opt_in) {
             // -------------------------------------------------------------------
             // labels
             // -------------------------------------------------------------------
-            let nLbls
-            let dataLbl = []
-            let dataCentLbl = []
-            if (isArc) {
-                nLbls = 6
-                $.each(data, function(indexNow, data_now) {
-                    let tel_Id = data_now.id
+            let n_lbls
+            let data_lbl = []
+            let data_cent_lbl = []
+            if (is_arc) {
+                n_lbls = 6
+                $.each(data, function(_, data_now) {
+                    let tel_id = data_now.id
 
-                    if (data_now.hasLbls) {
-                        for (let nLblNow = 0; nLblNow < nLbls + 1; nLblNow++) {
-                            let posNow = nLblNow * 90 / nLbls
-                            let valNow = 90 - posNow
-                            let rot = nLblNow * (90 / 360) * 360 / nLbls
+                    if (data_now.has_lbls) {
+                        for (let n_lbl_now = 0; n_lbl_now < n_lbls + 1; n_lbl_now++) {
+                            let pos_now = n_lbl_now * 90 / n_lbls
+                            let val_now = 90 - pos_now
+                            let rot = n_lbl_now * (90 / 360) * 360 / n_lbls
 
-                            dataLbl.push({
-                                id: tel_Id,
-                                nLbl: nLblNow,
-                                val: valNow,
-                                pos: posNow,
+                            data_lbl.push({
+                                id: tel_id,
+                                n_lbl: n_lbl_now,
+                                val: val_now,
+                                pos: pos_now,
                                 rot: rot,
                             })
                         }
                     }
 
-                    if (data_now.hasCentLbl && index === 0) {
-                        dataCentLbl.push({
-                            id: tel_Id,
+                    if (data_now.has_cent_lbl && index === 0) {
+                        data_cent_lbl.push({
+                            id: tel_id,
                         })
                     }
                 })
             }
             else {
-                nLbls = [ 10, 6, 3 ]
-                $.each(data, function(indexNow, data_now) {
-                    let tel_Id = data_now.id
+                n_lbls = [ 10, 6, 3 ]
+                $.each(data, function(_, data_now) {
+                    let tel_id = data_now.id
 
-                    if (data_now.hasLbls) {
-                        for (let nLblNow = 0; nLblNow < nLbls[index]; nLblNow++) {
-                            let posNow = nLblNow * (index === 0 ? 360 : 60) / nLbls[index]
-                            if (index === 0 && posNow > 180) {
-                                posNow -= 360
-                            } // log(posNow)
+                    if (data_now.has_lbls) {
+                        for (let n_lbl_now = 0; n_lbl_now < n_lbls[index]; n_lbl_now++) {
+                            let pos_now = (
+                                n_lbl_now * (index === 0 ? 360 : 60) / n_lbls[index]
+                            )
+                            if (index === 0 && pos_now > 180) {
+                                pos_now -= 360
+                            }
 
-                            let rot = nLblNow * 360 / nLbls[index]
+                            let rot = n_lbl_now * 360 / n_lbls[index]
                             if (rot > 90 && rot < 270) {
                                 rot += 180
                             }
 
-                            dataLbl.push({
-                                id: tel_Id,
-                                nLbl: nLblNow,
-                                pos: posNow,
+                            data_lbl.push({
+                                id: tel_id,
+                                n_lbl: n_lbl_now,
+                                pos: pos_now,
                                 rot: rot,
                             })
                         }
 
-                        if (data_now.hasCentLbl && index === 0) {
-                            dataCentLbl.push({
-                                id: tel_Id,
+                        if (data_now.has_cent_lbl && index === 0) {
+                            data_cent_lbl.push({
+                                id: tel_id,
                             })
                         }
                     }
                 })
             }
 
-            let lbl0 = com[tagG]
-                .selectAll('text.' + tag_now + 'lbl0')
-                .data(dataLbl, function(d, i) {
-                    return d.id + d.nLbl
+            let lbl_0 = com[tag_g]
+                .selectAll('text.' + tag_now + 'lbl_0')
+                .data(data_lbl, function(d) {
+                    return d.id + d.n_lbl
                 })
-            lbl0
+            lbl_0
                 .enter()
                 .append('text')
                 .text(function(d) {
                     return d.pos + lbl.units[index]
                 })
-                .attr('class', tag_now + 'lbl0')
+                .attr('class', tag_now + 'lbl_0')
                 .style('stroke', '#383b42')
                 .style('stroke-width', 0.25)
                 .style('opacity', '0')
@@ -4754,155 +4665,146 @@ let main_sub_arr_grp = function(opt_in) {
                 .style('pointer-events', 'none')
                 .attr('text-anchor', 'middle')
                 .style('font-size', lbl.size + 'px')
-                .attr('transform', function(d, i) {
+                .attr('transform', function(d) {
                     return (
                         transSet(
                             true,
                             d.pos,
                             [
-                                scaleRad0 + lbl.offset[0],
+                                scale_rad_0 + lbl.offset[0],
                                 [ center(d.id)[0], center(d.id)[1] + lbl.offset[1] ],
                             ],
                             index,
                             true
                         )
-            + 'rotate('
-            + d.rot
-            + ')'
+                        + ('rotate(' + d.rot + ')')
                     )
                 })
-                .merge(lbl0)
+                .merge(lbl_0)
                 .transition('in_out')
                 .duration(times.anim)
                 .style('font-size', lbl.size + 'px')
-                .attr('transform', function(d, i) {
+                .attr('transform', function(d) {
                     return (
                         transSet(
                             true,
                             d.pos,
                             [
-                                scaleRad0 + lbl.offset[0],
+                                scale_rad_0 + lbl.offset[0],
                                 [ center(d.id)[0], center(d.id)[1] + lbl.offset[1] ],
                             ],
                             index,
                             true
                         )
-            + 'rotate('
-            + d.rot
-            + ')'
+                        + ('rotate(' + d.rot + ')')
                     )
                 })
                 .style('opacity', 0.8)
 
-            lbl0
+            lbl_0
                 .exit()
-                .attr('class', tag_now + 'lbl0' + 'exit')
+                .attr('class', tag_now + 'lbl_0' + 'exit')
                 .transition('in_out')
                 .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
 
-            let lbl1 = com[tagG]
-                .selectAll('text.' + tag_now + 'lbl1')
-                .data(dataCentLbl, function(d, i) {
+            let lbl_1 = com[tag_g]
+                .selectAll('text.' + tag_now + 'lbl_1')
+                .data(data_cent_lbl, function(d) {
                     return d.id
                 })
-            lbl1
+            lbl_1
                 .enter()
                 .append('text')
-                .text(function(d) {
-                    return isArc ? symbols.delta : symbols.phi
-                })
-                .attr('class', tag_now + 'lbl1')
+                .text(is_arc ? symbols.delta : symbols.phi)
+                .attr('class', tag_now + 'lbl_1')
                 .style('stroke', '#383b42')
-            // .style("font-weight", "bold")
+                // .style("font-weight", "bold")
                 .style('opacity', '0')
                 .style('fill', '#383b42')
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('text-anchor', 'middle')
-                .style('font-size', function(d) {
-                    return lbl.size * 2 + 'px'
-                })
+                .style('font-size', lbl.size * 2 + 'px')
                 .attr('transform', function(d) {
                     return (
-                        'translate('
-            + centLbl(d.id)[0]
-            + ','
-            + (centLbl(d.id)[1] + lbl.offset[1])
-            + ')'
+                        ('translate(' + cent_lbl(d.id)[0] + ',')
+                        + ((cent_lbl(d.id)[1] + lbl.offset[1]) + ')')
                     )
                 })
-                .merge(lbl1)
+                .merge(lbl_1)
                 .transition('in_out')
                 .duration(times.anim)
                 .attr('transform', function(d) {
                     return (
-                        'translate('
-            + centLbl(d.id)[0]
-            + ','
-            + (centLbl(d.id)[1] + lbl.offset[1])
-            + ')'
+                        ('translate(' + cent_lbl(d.id)[0] + ',')
+                        + ((cent_lbl(d.id)[1] + lbl.offset[1]) + ')')
                     )
                 })
-                .style('font-size', function(d) {
-                    return lbl.size * 2 + 'px'
-                })
+                .style('font-size', lbl.size * 2 + 'px')
                 .style('opacity', 0.7)
 
-            lbl1
+            lbl_1
                 .exit()
-                .attr('class', tag_now + 'lbl1' + 'exit')
+                .attr('class', tag_now + 'lbl_1' + 'exit')
                 .transition('in_out')
                 .duration(times.anim)
                 .style('opacity', 0)
                 .remove()
 
-            dataLbl = null
-            dataCentLbl = null
-            nLbls = null
+            data_lbl = null
+            data_cent_lbl = null
+            n_lbls = null
         }
 
-        function transSet(isRing, pos, rad, type, isDms) {
-            let dms = isDms ? pos : deg_dms(pos)[type]
-            let typeScale = (type === 0 ? 360 : 60) / tau
+        // -------------------------------------------------------------------
+        //
+        // -------------------------------------------------------------------
+        function transSet(is_ring, pos, rad, type, is_dms) {
+            let dms = is_dms ? pos : deg_dms(pos)[type]
+            let type_scale = (type === 0 ? 360 : 60) / tau
 
-            if (!isRing && type === 0) {
-                typeScale = (dms > 0 ? -1 : 1) * 360 / tau
+            if (!is_ring && type === 0) {
+                type_scale = (dms > 0 ? -1 : 1) * 360 / tau
             }
 
-            let angle = dms / typeScale
-            if (isRing) {
+            let angle = dms / type_scale
+            if (is_ring) {
                 angle -= tau / 4
             } // zero angle shifted to top
 
-            let xyIn = [ rad[0] * Math.cos(angle), rad[0] * Math.sin(angle) ]
-            let xyOut = [ xyIn[0] + rad[1][0], xyIn[1] + rad[1][1] ]
+            let xy_in = [ rad[0] * Math.cos(angle), rad[0] * Math.sin(angle) ]
+            let xy_out = [ xy_in[0] + rad[1][0], xy_in[1] + rad[1][1] ]
 
-            // console.log(dms,typeScale,angle)
-            return 'translate(' + xyOut[0] + ',' + xyOut[1] + ')'
+            return ('translate(' + xy_out[0] + ',' + xy_out[1] + ')')
         }
 
-        function transUpdate(isRing, pos0, pos1, rad, type, id, tag0, tag1) {
-            let prevDms = deg_dms(pos0)
-            let posType0 = prevDms[type]
-            let deltaPos = deg_dms(pos1)[type] - posType0
+        // -------------------------------------------------------------------
+        //
+        // -------------------------------------------------------------------
+        function transUpdate(is_ring, pos0, pos1, rad, type, id, tag0, tag1) {
+            let prev_mms = deg_dms(pos0)
+            let pos_type_0 = prev_mms[type]
+            let delta_pos = deg_dms(pos1)[type] - pos_type_0
 
             if (type > 0) {
-                if (deltaPos < -30) {
-                    deltaPos += 60
+                if (delta_pos < -30) {
+                    delta_pos += 60
                 }
-            } // if(type == 1) console.log(deltaPos)
+            }
 
             return function(t) {
-                prevDms[type] = posType0 + t * deltaPos
-                com[tag0][tag1] = dms_deg(prevDms) // console.log(tag0,tag1)
+                prev_mms[type] = pos_type_0 + t * delta_pos
+                com[tag0][tag1] = dms_deg(prev_mms)
 
-                // if(tag=='pos'&&type==2)console. log(posType0,prevDms[type])
-                return transSet(isRing, prevDms[type], rad, type, true)
+                return transSet(is_ring, prev_mms[type], rad, type, true)
             }
         }
 
+        // -------------------------------------------------------------------
+        //
+        // -------------------------------------------------------------------
         function formatLbl(val) {
             if (Math.abs(val) < 1e-10) {
                 return 0
@@ -4912,7 +4814,7 @@ let main_sub_arr_grp = function(opt_in) {
             }
             else {
                 return d3.format('.1f')(val)
-            } //   d3.format(".2e")(val)
+            }
         }
 
         // -------------------------------------------------------------------
@@ -4933,27 +4835,27 @@ let main_sub_arr_grp = function(opt_in) {
 
             // add the hexbin as another layer of the background
             // -------------------------------------------------------------------
-            if (!is_def(com.svgHex)) {
+            if (!is_def(com.svg_hex)) {
                 let hex_r = 18 // is_south ? 35 : 20;
 
-                com.svgHex = {
+                com.svg_hex = {
                 }
-                com.svgHex.hex = d3
+                com.svg_hex.hex = d3
                     .hexbin()
                     .size([ svg_dims.w[1], svg_dims.h[1] ])
                     .radius(hex_r)
-                com.svgHex.g = com.zoom_callable.append('g')
+                com.svg_hex.g = com.zoom_callable.append('g')
 
-                let xy = com.svgHex.hex([ [ svg_dims.w[1] / 2, -svg_dims.h[1] / 2 ] ])
+                let xy = com.svg_hex.hex([ [ svg_dims.w[1] / 2, -svg_dims.h[1] / 2 ] ])
                 let trans = [ svg_dims.w[1] / 2 - xy[0].x, svg_dims.h[1] / 2 + xy[0].y ]
 
-                com.svgHex.trans = function(xyIn) {
-                    let xyOut = com.svgHex.hex([ xyIn ])
+                com.svg_hex.trans = function(xy_in) {
+                    let xy_out = com.svg_hex.hex([ xy_in ])
 
-                    return [ xyOut[0].x + trans[0], xyOut[0].y + trans[1] ]
+                    return [ xy_out[0].x + trans[0], xy_out[0].y + trans[1] ]
                 }
 
-                com.svgHex.g
+                com.svg_hex.g
                     .selectAll('path.' + tag_now)
                     .data([ 0 ])
                     .enter()
@@ -4964,10 +4866,10 @@ let main_sub_arr_grp = function(opt_in) {
                     .attr('stroke-width', strk)
                     .attr('opacity', opac)
                     .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('d', com.svgHex.hex.mesh())
+                    .attr('d', com.svg_hex.hex.mesh())
             }
             else {
-                com.svgHex.g
+                com.svg_hex.g
                     .selectAll('path.' + tag_now)
                     .transition('in_out')
                     .duration(times.anim)
@@ -4979,6 +4881,6 @@ let main_sub_arr_grp = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    let svg_sub_arr = new Svg_sub_arr()
-    let svg_sky_pos = new Svg_sky_pos()
+    let svg_sub_arr = new SvgSubArr()
+    let svg_sky_pos = new SvgSkyPos()
 }

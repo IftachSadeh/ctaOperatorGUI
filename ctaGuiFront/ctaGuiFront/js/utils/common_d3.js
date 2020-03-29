@@ -513,10 +513,10 @@ window.dropdown_d3 = function() {
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'black',
-            scrollRecH: {
+            scroll_rec_h: {
                 h: 4,
             },
-            scrollRecV: {
+            scroll_recs: {
                 w: 4,
             },
         })

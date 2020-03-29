@@ -103,11 +103,11 @@ class SubArrGrp(BaseWidget):
         for n_block in range(len(blocks)):
             block_tel_ids = blocks[n_block]["tel_ids"]
 
-            trgId = blocks[n_block]['targets'][0]["id"]
+            trg_id = blocks[n_block]['targets'][0]["id"]
             target_name = blocks[n_block]['targets'][0]["name"]
             target_pos = blocks[n_block]['targets'][0]["pos"]
 
-            pntId = blocks[n_block]['pointings'][0]["id"]
+            pnt_id = blocks[n_block]['pointings'][0]["id"]
             pointing_name = blocks[n_block]['pointings'][0]["name"]
             point_pos = blocks[n_block]['pointings'][0]["pos"]
 
@@ -118,8 +118,8 @@ class SubArrGrp(BaseWidget):
 
                 data["tel"].append({
                     "id": id_now,
-                    "trgId": trgId,
-                    "pntId": pntId,
+                    "trg_id": trg_id,
+                    "pnt_id": pnt_id,
                     "pos": inst_pos_now,
                 })
 
@@ -131,12 +131,12 @@ class SubArrGrp(BaseWidget):
                 self.tel_point_pos[id_now] = point_pos
 
             # add the target for this block, if we dont already have it
-            if trgId not in [x["id"] for x in data["trg"]]:
-                data["trg"].append({"id": trgId, "N": target_name, "pos": target_pos})
+            if trg_id not in [x["id"] for x in data["trg"]]:
+                data["trg"].append({"id": trg_id, "N": target_name, "pos": target_pos})
 
             # add the pointing for this block
             data["pnt"].append({
-                "id": pntId,
+                "id": pnt_id,
                 "N": pointing_name,
                 "pos": point_pos,
                 "tel_ids": block_tel_ids,
@@ -151,8 +151,8 @@ class SubArrGrp(BaseWidget):
 
             data["tel"].append({
                 "id": id_now,
-                "trgId": no_sub_arr_name,
-                "pntId": no_sub_arr_name,
+                "trg_id": no_sub_arr_name,
+                "pnt_id": no_sub_arr_name,
                 "pos": inst_pos_now,
             })
 

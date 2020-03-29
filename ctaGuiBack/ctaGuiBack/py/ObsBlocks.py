@@ -103,19 +103,19 @@ class ObsBlocks():
 
         for sched_blk_id, schBlock in schBlocks['blocks'].iteritems():
 
-            sub_arrayTels = schBlock['sched_block'].config.instrument.sub_array.telescopes
-            tel_ids = [x.id for x in sub_arrayTels]
+            sub_array_tels = schBlock['sched_block'].config.instrument.sub_array.telescopes
+            tel_ids = [x.id for x in sub_array_tels]
 
             obs_blocks = schBlock['sched_block'].observation_blocks
 
             for n_obs_block_now in range(len(obs_blocks)):
                 obs_block_now = obs_blocks[n_obs_block_now]
                 obs_block_id = obs_block_now.id
-                trgId = obs_block_now.src.id
+                trg_id = obs_block_now.src.id
                 coords = obs_block_now.src.coords.horizontal
                 target_pos = [coords.az, coords.alt]
 
-                obs_block_json = jsonAcs.encode(obs_block_now)
+                # obs_block_json = jsonAcs.encode(obs_block_now)
 
                 timestamp = schBlocks['metadata'][obs_block_id]["timestamp"]
                 metadata = schBlocks['metadata'][obs_block_id]["metadata"]
@@ -197,8 +197,8 @@ class ObsBlocks():
                 block["end_time"] = start_time + duration
                 block["duration"] = duration
                 block["tel_ids"] = tel_ids
-                block["target_id"] = trgId
-                block["target_name"] = trgId
+                block["target_id"] = trg_id
+                block["target_name"] = trg_id
                 block["target_pos"] = target_pos
                 block["point_id"] = sched_blk_id + "_" + obs_block_id
                 block["pointing_name"] = block["target_name"] + \
@@ -264,28 +264,28 @@ class ObsBlocks():
         all_tel_ids_in = []
         for n_block in range(len(blocks)):
             block_tel_ids = blocks[n_block]["tel_ids"]
-            pntId = blocks[n_block]["point_id"]
+            pnt_id = blocks[n_block]["point_id"]
             pointing_name = blocks[n_block]["pointing_name"]
 
             # compile the telescope list for this block
-            telV = []
+            tels = []
             for id_now in block_tel_ids:
                 if id_now not in all_tel_ids_in:
                     all_tel_ids_in.append(id_now)
-                    telV.append({"id": id_now})
+                    tels.append({"id": id_now})
 
             # add the telescope list for this block
-            sub_arrs.append({"id": pntId, "N": pointing_name, "children": telV})
+            sub_arrs.append({"id": pnt_id, "N": pointing_name, "children": tels})
 
         # ------------------------------------------------------------------
         # now take care of all free telescopes
         # ------------------------------------------------------------------
-        telV = []
+        tels = []
         all_tel_ids = [x for x in self.tel_ids if x not in all_tel_ids_in]
         for id_now in all_tel_ids:
-            telV.append({"id": id_now})
+            tels.append({"id": id_now})
 
-        sub_arrs.append({"id": no_sub_arr_name, "children": telV})
+        sub_arrs.append({"id": no_sub_arr_name, "children": tels})
 
         # ------------------------------------------------------------------
         # for now - a simple/stupid solution, where we write the sub-arrays and publish each
@@ -584,14 +584,14 @@ class ObsBlocksNoACS():
                             point_pos[0] += 360
                         pnt['pos'] = point_pos
                         pointings.append(pnt)
-                        tels = random.sample(
+                        rnd_tels = random.sample(
                             all_tel_ids, int(len(sched_tel_ids) / n_rnd_divs)
                         )
                         if z == n_rnd_divs - 1:
-                            tels = all_tel_ids
+                            rnd_tels = all_tel_ids
                         # and remove them from allTels list
-                        all_tel_ids = [x for x in all_tel_ids if x not in tels]
-                        pnt['tel_ids'] = tels
+                        all_tel_ids = [x for x in all_tel_ids if x not in rnd_tels]
+                        pnt['tel_ids'] = rnd_tels
 
                     if debug_tmp:
                         print ' --- n_obs_now / start_time / duration:', \
@@ -1044,28 +1044,28 @@ class ObsBlocksNoACS():
             block_tel_ids = blocks[n_block]["telescopes"]["large"]["ids"] + blocks[
                 n_block]["telescopes"]["medium"]["ids"] + blocks[n_block]["telescopes"][
                     "small"]["ids"]
-            pntId = blocks[n_block]["pointings"][0]["id"]
+            pnt_id = blocks[n_block]["pointings"][0]["id"]
             pointing_name = blocks[n_block]["pointings"][0]["name"]
 
             # compile the telescope list for this block
-            telV = []
+            tels = []
             for id_now in block_tel_ids:
-                telV.append({"id": id_now})
+                tels.append({"id": id_now})
 
                 if id_now in all_tel_ids:
                     all_tel_ids.remove(id_now)
 
             # add the telescope list for this block
-            sub_arrs.append({"id": pntId, "N": pointing_name, "children": telV})
+            sub_arrs.append({"id": pnt_id, "N": pointing_name, "children": tels})
 
         # ------------------------------------------------------------------
         # now take care of all free telescopes
         # ------------------------------------------------------------------
-        telV = []
+        tels = []
         for id_now in all_tel_ids:
-            telV.append({"id": id_now})
+            tels.append({"id": id_now})
 
-        sub_arrs.append({"id": no_sub_arr_name, "children": telV})
+        sub_arrs.append({"id": no_sub_arr_name, "children": tels})
 
         # ------------------------------------------------------------------
         # for now - a simple/stupid solution, where we write the sub-arrays and publish each

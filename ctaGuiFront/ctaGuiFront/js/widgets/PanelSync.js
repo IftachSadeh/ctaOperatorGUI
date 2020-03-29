@@ -107,7 +107,6 @@ let sock_panel_sync = function(opt_in) {
             method_name: 'setSyncGroups',
             method_arg: data,
         }
-        // console.log(emit_data);
         sock.socket.emit('widget', emit_data)
     }
 }
@@ -122,10 +121,6 @@ let main_panel_sync = function(opt_in) {
     // let this_panel_sync = this
     let is_south = window.SITE_TYPE === 'S'
 
-    // let sgv_tag = {};
-    // $.each(widget_ele, function(index,ele_now) {
-    //   sgv_tag[ele_now.id] = { id:tag_panel_sync_svg+"_"+ele_now.id, whRatio:(ele_now.w/ele_now.h) };
-    // })
     let sgv_tag = {
     }
     $.each(widget_ele, function(index, ele_now) {
@@ -185,11 +180,11 @@ let main_panel_sync = function(opt_in) {
     let SvgMain = function() {
         let com = {
         }
-        let recD = {
+        let recs = {
         }
         let svg = {
         }
-        let grpD = {
+        let grps = {
         }
 
         let scale_r = {
@@ -199,19 +194,19 @@ let main_panel_sync = function(opt_in) {
         scale_r[1] = {
         }
 
-        scale_r[0].health0 = 1.1
-        scale_r[0].health1 = 1.2
-        scale_r[0].health2 = 1.35
-        scale_r[0].line0 = 1.2
-        scale_r[0].line1 = 1.8
+        scale_r[0].health_0 = 1.1
+        scale_r[0].health_1 = 1.2
+        scale_r[0].health_2 = 1.35
+        scale_r[0].line_0 = 1.2
+        scale_r[0].line_1 = 1.8
         scale_r[0].percent = 0.6
         scale_r[0].label = 1.95
         scale_r[0].title = 2.05
 
-        scale_r[1].health0 = 1.5
-        scale_r[1].health1 = 1.65
-        scale_r[1].inner_h0 = 1.25
-        scale_r[1].inner_h1 = 1.3
+        scale_r[1].health_0 = 1.5
+        scale_r[1].health_1 = 1.65
+        scale_r[1].inner_h_0 = 1.25
+        scale_r[1].inner_h_1 = 1.3
 
         this.scale_r = scale_r
 
@@ -228,11 +223,8 @@ let main_panel_sync = function(opt_in) {
         svg_dims.h = {
         }
 
-        // svg_dims.w[0] = 400;
-        // svg_dims.h[0] = svg_dims.w[0];
         svg_dims.w[0] = 1000
         svg_dims.h[0] = svg_dims.w[0] / sgv_tag.main.whRatio
-        // is_south ? 900 : 400;
 
         svg_dims.r = {
         }
@@ -241,21 +233,19 @@ let main_panel_sync = function(opt_in) {
             svg_dims.r.s00 = [ 12 * site_scale, 13 * site_scale, 14 * site_scale ]
         }
 
-        let zoomLen = {
+        let zoom_len = {
         }
-        zoomLen['0'] = 1
-        zoomLen['1'] = 5
-
-        // let cols_blocks = [cols_reds[0], cols_blues[0], cols_greens[2], cols_purples[0]] // cols_yellows[4]
+        zoom_len['0'] = 1
+        zoom_len['1'] = 5
 
         // flag to add a new-group toggle box
-        let canTogEmpty = true
+        let can_tog_empty = true
         // let allowPermEmptyGrp = !false;
 
         // delay after a dragging event
-        let delayAfterDrag = 500
+        let delay_after_drag = 500
         // sllow this time to use the new empty group before a dataupdate removes it
-        let delayAfterAddEmpty = 5000
+        let delay_after_add_empty = 5000
 
         // some initializations
         com.addEmptyGrp = false
@@ -266,18 +256,19 @@ let main_panel_sync = function(opt_in) {
         let tag_main = widget_type
         let tag_icon = tag_main + 'icons'
         let tag_circ = tag_main + 'telCirc'
-        let tagTtl = tag_main + 'telTitle'
+        let tag_ttl = tag_main + 'telTitle'
         let tag_vor = tag_main + 'telVor'
-        let tagGridRec = tag_main + 'colLeft'
-        let tagLeftIn = tag_main + 'data_in'
-        let tagEmpty = tag_main + 'empty'
-        let tagClipPath = tag_main + 'tagClipPath'
+        let tag_grid_rec = tag_main + 'colLeft'
+        let tag_left_in = tag_main + 'data_in'
+        let tag_empty = tag_main + 'empty'
+        let tag_clip_path = tag_main + 'tag_clip_path'
 
         let wh = [ svg_dims.w[0], svg_dims.h[0] ]
-        let sideColW = wh[0] * 0.2
-        let whPack = [ wh[0] - sideColW, wh[1] ] // [ Math.min(wh[0],wh[1])*(1-whFrac*2) , Math.min(wh[0],wh[1])*(1-whFrac*2) ]
-        let shift_main_g = [ sideColW, 0 ]
-        let n_empty_icon = -1 // n_empty_icon = 81; // set high for debugging...
+        let side_col_w = wh[0] * 0.2
+        let wh_pack = [ wh[0] - side_col_w, wh[1] ]
+        let shift_main_g = [ side_col_w, 0 ]
+        let n_empty_icon = -1
+        // n_empty_icon = 81; // set high for debugging...
 
         function groups_to_server() {
             let data = {
@@ -285,27 +276,29 @@ let main_panel_sync = function(opt_in) {
                 children: [],
             }
 
-            updateEmptyGrp()
+            update_empty_grp()
 
-            $.each(grpD.data.children, function(nChild0, child_now0) {
-                if (!is_empty_group(child_now0.id)) {
-                    let childV = []
-                    $.each(child_now0.children, function(nChild1, child_now1) {
-                        childV.push([])
-                        $.each(child_now1.children, function(nChild2, child_now2) {
-                            if (child_now2.n_icon >= 0) {
-                                // console.log('xxxxxxx',child_now2);
-                                childV[nChild1].push([ child_now2.trgWidgId, child_now2.id ])
-                            }
-                        })
-                    })
-
-                    data.children.push({
-                        id: child_now0.id,
-                        title: child_now0.title,
-                        children: childV,
-                    })
+            $.each(grps.data.children, function(nChild0, child_now0) {
+                if (is_empty_group(child_now0.id)) {
+                    return
                 }
+                let children_now = []
+                $.each(child_now0.children, function(nChild1, child_now1) {
+                    children_now.push([])
+                    $.each(child_now1.children, function(nChild2, child_now2) {
+                        if (child_now2.n_icon >= 0) {
+                            children_now[nChild1].push([
+                                child_now2.trgWidgId, child_now2.id,
+                            ])
+                        }
+                    })
+                })
+
+                data.children.push({
+                    id: child_now0.id,
+                    title: child_now0.title,
+                    children: children_now,
+                })
             })
 
             sock.all_widgets[widget_type].sock_func.groups_to_server({
@@ -313,14 +306,14 @@ let main_panel_sync = function(opt_in) {
                 data: data,
             })
 
-            // console.log('groups_to_server',data);
+            return
         }
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
         function init_data(data_in) {
-            grpD.data = data_in.groups
+            grps.data = data_in.groups
 
             if (is_def(svg.svg)) {
                 return
@@ -412,8 +405,8 @@ let main_panel_sync = function(opt_in) {
             //
             // -------------------------------------------------------------------
             svg.recG = svg.g.append('g')
-            recD.g_base = svg.recG.append('g')
-            recD.dataG = svg.recG.append('g')
+            recs.g_base = svg.recG.append('g')
+            recs.dataG = svg.recG.append('g')
 
             svg.mainG = svg.g.append('g')
 
@@ -443,8 +436,8 @@ let main_panel_sync = function(opt_in) {
             //   .enter()
             //   .append("rect")
             //     .attr("x", 0).attr("y", 0)
-            //     .attr("width", whPack[0])
-            //     .attr("height", whPack[1])
+            //     .attr("width", wh_pack[0])
+            //     .attr("height", wh_pack[1])
             //     .attr("fill", "transparent")
             //     .style("stroke", cols_purples[4] )
             //     .style("pointer-events", "none")
@@ -461,8 +454,8 @@ let main_panel_sync = function(opt_in) {
                     .selectAll('circle.' + tag_circ)
                     .style('pointer-events', 'none')
 
-                grpD.hov_id_icon = dIn.data.id
-                grpD.hovIdGrpStart = dIn.parent.data.id
+                grps.hov_id_icon = dIn.data.id
+                grps.hov_id_grp_start = dIn.parent.data.id
             }
 
             com.drag_main_start = function(dIn, thisIn) {
@@ -495,7 +488,7 @@ let main_panel_sync = function(opt_in) {
                 removeDuplicates()
                 groups_to_server()
 
-                grpD.hovIdGrpStart = null
+                grps.hov_id_grp_start = null
             }
 
             com.drag_main_end = function(dIn, thisIn) {
@@ -504,7 +497,7 @@ let main_panel_sync = function(opt_in) {
                 locker.remove({
                     id: tag_main + 'in_drag',
                     override: true,
-                    delay: delayAfterDrag,
+                    delay: delay_after_drag,
                 })
             }
 
@@ -531,8 +524,8 @@ let main_panel_sync = function(opt_in) {
                     override: true,
                 })
 
-                let id_side = sideColClick(dIn)
-                let icons = com.hirchDesc.filter(function(d) {
+                let id_side = side_col_click(dIn)
+                let icons = com.hirch_desc.filter(function(d) {
                     return d.data.id === id_side
                 })
 
@@ -578,7 +571,7 @@ let main_panel_sync = function(opt_in) {
                 locker.remove({
                     id: tag_main + 'in_drag',
                     override: true,
-                    delay: delayAfterDrag,
+                    delay: delay_after_drag,
                 })
             }
 
@@ -592,32 +585,32 @@ let main_panel_sync = function(opt_in) {
             //
             // -------------------------------------------------------------------
             let marg = wh[1] * 0.025
-            let w0 = sideColW - marg * 2
+            let w0 = side_col_w - marg * 2
             let h0 = wh[1] - marg * 2
             let x0 = marg
             let y0 = marg
 
-            if (canTogEmpty) {
+            if (can_tog_empty) {
                 h0 -= w0 + marg
                 initNewGrpSideTog({
                     g_trans_x: x0 - shift_main_g[0],
                     g_trans_y: y0 + h0 + marg,
-                    recW: w0,
+                    rec_w: w0,
                 })
             }
 
-            recD.recOpt = {
-                id: tagGridRec,
-                tagClipPath: tagClipPath,
-                recD: recD,
+            recs.recOpt = {
+                id: tag_grid_rec,
+                tag_clip_path: tag_clip_path,
+                recs: recs,
                 recV: [],
-                g_box: recD.g_base,
+                g_box: recs.g_base,
                 x0: x0,
                 y0: y0,
                 w0: w0,
                 h0: h0,
-                recH: w0 * 0.5,
-                recW: w0 * 0.5,
+                rec_h: w0 * 0.5,
+                rec_w: w0 * 0.5,
                 showCounts: false,
                 isHorz: false,
                 bckRecOpt: {
@@ -626,9 +619,9 @@ let main_panel_sync = function(opt_in) {
                         strkWOcp: 0.2,
                     },
                 },
-                // vorOpt: { mouseover: sideColHov, call: com.dragSide },
+                // vorOpt: { mouseover: side_col_hov, call: com.dragSide },
                 vorOpt: {
-                    mouseover: sideColHov,
+                    mouseover: side_col_hov,
                     call: com.dragSide,
                 },
                 onZoom: {
@@ -639,17 +632,17 @@ let main_panel_sync = function(opt_in) {
                 locker: locker,
                 lockerV: [ tag_main + 'update_data', tag_main + 'in_drag' ],
                 lockerZoom: {
-                    all: tagGridRec + 'zoom',
-                    during: tagGridRec + 'zoomsuring',
-                    end: tagGridRec + 'zoomEnd',
+                    all: tag_grid_rec + 'zoom',
+                    during: tag_grid_rec + 'zoomsuring',
+                    end: tag_grid_rec + 'zoomEnd',
                 },
             }
 
-            com.scrollGrid = new ScrollGrid(recD.recOpt)
+            com.scrollGrid = new ScrollGrid(recs.recOpt)
 
-            recD.dataG = com.scrollGrid.getBackDataG()
-            recD.dataG.attr('clip-path', function(d) {
-                return 'url(#' + tagClipPath + tagGridRec + ')'
+            recs.dataG = com.scrollGrid.getBackDataG()
+            recs.dataG.attr('clip-path', function(d) {
+                return 'url(#' + tag_clip_path + tag_grid_rec + ')'
             })
 
             // -------------------------------------------------------------------
@@ -724,7 +717,7 @@ let main_panel_sync = function(opt_in) {
             tag_main + 'update_data',
             tag_main + 'update_groups',
             tag_main + 'added_empty_grp',
-            tagGridRec + 'zoom',
+            tag_grid_rec + 'zoom',
         ]
         // -------------------------------------------------------------------
         run_loop.init({
@@ -767,11 +760,11 @@ let main_panel_sync = function(opt_in) {
             locker.add(tag_main + 'update_data')
             locker.expires({
                 id: tag_main + 'data_change',
-                duration: delayAfterDrag,
+                duration: delay_after_drag,
             })
             locker.expires({
                 id: tag_main + 'click_empty_grp',
-                duration: delayAfterDrag,
+                duration: delay_after_drag,
             })
 
             // -------------------------------------------------------------------
@@ -779,7 +772,7 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             let origV = {
             }
-            $.each(grpD.data.children, function(nChild0, child_now0) {
+            $.each(grps.data.children, function(nChild0, child_now0) {
                 $.each(child_now0.children, function(nChild1, child_now1) {
                     $.each(child_now1.children, function(nChild2, child_now2) {
                         if (child_now2.n_icon !== n_empty_icon) {
@@ -802,9 +795,9 @@ let main_panel_sync = function(opt_in) {
 
             // // preserve the original empty group, if it remains empty
             // // -------------------------------------------------------------------
-            // updateEmptyGrp();
+            // update_empty_grp();
 
-            // $.each(grpD.data.children, function(nChild0,child_now0) {
+            // $.each(grps.data.children, function(nChild0,child_now0) {
             //   if(is_empty_group(child_now0)) {
             //     let emptyGrpId = child_now0.id;
             //     let allGrpIds  = data_in.children.map(function(d){ return d.id; });
@@ -815,7 +808,7 @@ let main_panel_sync = function(opt_in) {
             // })
 
             // reference the new data in the local obj
-            grpD.data = data_in
+            grps.data = data_in
 
             locker.remove({
                 id: tag_main + 'update_data',
@@ -832,55 +825,55 @@ let main_panel_sync = function(opt_in) {
         function initNewGrpSideTog(opt_in) {
             let g_trans_x = opt_in.g_trans_x
             let g_trans_y = opt_in.g_trans_y
-            let recW = opt_in.recW
+            let rec_w = opt_in.rec_w
 
             com.empty.g.attr('transform', function(d, i) {
                 return 'translate(' + g_trans_x + ',' + g_trans_y + ')'
             })
 
-            let dataEmptyD = {
-                id: 'emptyGroup',
+            let data_empties = {
+                id: 'empty_group',
                 children: [
                     {
-                        id: 'emptyGroup0',
+                        id: 'empty_group_0',
                         title: 'Add/remove',
                         children: [
                             {
-                                id: 'emptyGroup00',
+                                id: 'empty_group_00',
                             },
                             {
-                                id: 'emptyGroup01',
+                                id: 'empty_group_01',
                             },
                             {
-                                id: 'emptyGroup02',
+                                id: 'empty_group_02',
                             },
                         ],
                     },
                 ],
             }
 
-            let hirch = d3.hierarchy(dataEmptyD).sum(function(d) {
+            let hirch = d3.hierarchy(data_empties).sum(function(d) {
                 return 1
             })
-            let packNode = d3
+            let pack_node = d3
                 .pack()
-                .size([ recW, recW ])
+                .size([ rec_w, rec_w ])
                 .padding(5)
-            packNode(hirch)
+            pack_node(hirch)
 
-            let hirchDesc = hirch.descendants()
+            let hirch_desc = hirch.descendants()
 
             let circ = com.empty.g
-                .selectAll('circle.' + tagEmpty)
-                .data(hirchDesc, function(d) {
+                .selectAll('circle.' + tag_empty)
+                .data(hirch_desc, function(d) {
                     return d.data.id
                 }) // console.log('xxx',d.data.id);
 
             circ
                 .enter()
                 .append('circle')
-            // .attr("id", function(d,i) { return my_unique_id+tag_circ+"_"+d.data.id; })
-                .attr('class', tagEmpty)
+                // .attr("id", function(d,i) { return my_unique_id+tag_circ+"_"+d.data.id; })
+                .attr('class', tag_empty)
                 .attr('cx', function(d, i) {
                     return d.x
                 })
@@ -894,20 +887,20 @@ let main_panel_sync = function(opt_in) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('stroke-width', function(d) {
-                    d.data.strkW = d.depth === 2 ? 2.0 : 0.5
-                    return d.data.strkW
+                    d.data.strk_w = d.depth === 2 ? 2.0 : 0.5
+                    return d.data.strk_w
                 })
                 .style('stroke', function(d) {
-                    return hirchStyleStroke(d)
+                    return hirch_style_stroke(d)
                 })
                 .style('fill', function(d) {
-                    return hirchStyleFill(d)
+                    return hirch_style_fill(d)
                 })
                 .style('stroke-opacity', function(d) {
-                    return hirchOpacStrk(d)
+                    return hirch_opac_strk(d)
                 })
                 .style('fill-opacity', function(d) {
-                    return hirchOpacFill(d)
+                    return hirch_opac_fill(d)
                 })
                 .merge(circ)
                 .transition('out')
@@ -932,7 +925,7 @@ let main_panel_sync = function(opt_in) {
                 .style('fill-opacity', 0)
                 .remove()
 
-            setTtl(hirchDesc)
+            setTtl(hirch_desc)
 
             com.empty.g
                 .selectAll('rect')
@@ -941,13 +934,13 @@ let main_panel_sync = function(opt_in) {
                 .append('rect')
                 .attr('x', 0)
                 .attr('y', 0)
-                .attr('width', recW)
-                .attr('height', recW)
+                .attr('width', rec_w)
+                .attr('height', rec_w)
                 .attr('stroke-width', 0)
                 .attr('fill', 'transparent')
                 .on('mouseover', function(d) {
                     // just in case...
-                    grpD.hovIdGrpNow = null
+                    grps.hov_id_grp_now = null
                 })
                 .on('click', function(d) {
                     if (
@@ -973,13 +966,13 @@ let main_panel_sync = function(opt_in) {
 
                     // if(allowPermEmptyGrp) com.addEmptyGrp = !com.addEmptyGrp;
 
-                    updateEmptyGrp()
+                    update_empty_grp()
 
-                    if (com.emptyGrpIndex >= 0) {
+                    if (com.empty_grp_index >= 0) {
                         update_groups()
                     }
                     else {
-                        sideColClick()
+                        side_col_click()
                     }
 
                     locker.remove({
@@ -990,7 +983,7 @@ let main_panel_sync = function(opt_in) {
                     locker.remove({
                         id: tag_main + 'added_empty_grp',
                         override: true,
-                        delay: delayAfterAddEmpty,
+                        delay: delay_after_add_empty,
                     })
                 })
             // .attr("stroke-width", 2).attr("stroke", "red")
@@ -1000,32 +993,32 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function set_hierarchy() {
-            // console.log(grpD.data);
+            // console.log(grps.data);
             // let tag_circ = "telCirc";
 
-            com.hirch = d3.hierarchy(grpD.data).sum(function(d) {
+            com.hirch = d3.hierarchy(grps.data).sum(function(d) {
                 return 1
             })
-            let packNode = d3
+            let pack_node = d3
                 .pack()
-                .size(whPack)
+                .size(wh_pack)
                 .padding(15)
-            packNode(com.hirch)
+            pack_node(com.hirch)
 
-            com.hirchDesc = com.hirch.descendants()
+            com.hirch_desc = com.hirch.descendants()
 
-            grpD.hovIdGrp0 = null
+            grps.hov_id_grp_0 = null
 
             let circ = com.icons.g
                 .selectAll('circle.' + tag_circ)
-                .data(com.hirchDesc, function(d) {
+                .data(com.hirch_desc, function(d) {
                     return d.data.id
                 }) // console.log('xxx',d.data.id);
 
             circ
                 .enter()
                 .append('circle')
-            // .attr("id", function(d,i) { return my_unique_id+tag_circ+"_"+d.data.id; })
+                // .attr("id", function(d,i) { return my_unique_id+tag_circ+"_"+d.data.id; })
                 .attr('class', tag_circ)
                 .attr('cx', function(d, i) {
                     return d.x
@@ -1040,38 +1033,38 @@ let main_panel_sync = function(opt_in) {
                 .attr('vector-effect', 'non-scaling-stroke')
                 .style('pointer-events', 'none')
                 .attr('stroke-width', function(d) {
-                    d.data.strkW = d.depth === 2 ? 2.0 : 0.5
-                    return d.data.strkW
+                    d.data.strk_w = d.depth === 2 ? 2.0 : 0.5
+                    return d.data.strk_w
                 })
                 .style('stroke', function(d) {
-                    return hirchStyleStroke(d)
+                    return hirch_style_stroke(d)
                 })
                 .style('fill', function(d) {
-                    return hirchStyleFill(d)
+                    return hirch_style_fill(d)
                 })
                 .style('stroke-opacity', function(d) {
-                    return hirchOpacStrk(d)
+                    return hirch_opac_strk(d)
                 })
                 .style('fill-opacity', function(d) {
-                    return hirchOpacFill(d)
+                    return hirch_opac_fill(d)
                 })
-            // .on("mouseover", hirchStyleHover).on("click", hierarchy_style_click).on("dblclick", hirchStyleDblclick)
+                // .on("mouseover", hirchStyleHover).on("click", hierarchy_style_click).on("dblclick", hirchStyleDblclick)
                 .merge(circ)
                 .each(function(d) {
                     if (d.depth === 2) {
-                        if (!is_def(grpD.hovIdGrp0)) {
-                            grpD.hovIdGrp0 = d.data.id
+                        if (!is_def(grps.hov_id_grp_0)) {
+                            grps.hov_id_grp_0 = d.data.id
                         }
                     }
                 })
                 .transition('out')
                 .duration(times.anim)
                 .style('opacity', 1)
-            // .style("opacity", function(d){
-            //     // if(d.depth == 1 && d.data.is_empty) return 0.2;
-            //     if(d.depth == 2 && d.parent.data.is_empty) return 0.2;
-            //   return 1;
-            // })
+                // .style("opacity", function(d){
+                //     // if(d.depth == 1 && d.data.is_empty) return 0.2;
+                //     if(d.depth == 2 && d.parent.data.is_empty) return 0.2;
+                //   return 1;
+                // })
                 .attr('cx', function(d, i) {
                     return d.x
                 })
@@ -1096,9 +1089,9 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function set_icons() {
-            let needUpdt = false
-            let sclR = 1
-            let data = com.hirchDesc.filter(function(d) {
+            let need_updt = false
+            let scl_r = 1
+            let data = com.hirch_desc.filter(function(d) {
                 return d.depth === 3
             })
             let icn = com.icons.g.selectAll('g.' + tag_icon).data(data, function(d) {
@@ -1119,10 +1112,10 @@ let main_panel_sync = function(opt_in) {
                         parent_svg: d3.select(this),
                         icon_file: icon_svg[0],
                         text: {
-                            pos: 'topRight',
+                            pos: 'top_right',
                             txt: icon_svg[1],
                         },
-                        rad: d.r * sclR,
+                        rad: d.r * scl_r,
                         delay: 0,
                         pulse_hov_in: true,
                         trans_back: false,
@@ -1142,15 +1135,15 @@ let main_panel_sync = function(opt_in) {
                 .call(com.drag_main)
                 .merge(icn)
                 .style('pointer-events', icon_pntEvt)
-            // .each(function(d,i) { if(d.data.n_icon>=0)console.log(d.data.id,d) })
+                // .each(function(d,i) { if(d.data.n_icon>=0)console.log(d.data.id,d) })
                 .each(function(d, i) {
                     if (is_def(d.data.set_r)) {
-                        d.data.set_r(d.r * sclR)
+                        d.data.set_r(d.r * scl_r)
                     }
                     else {
                         // can happen after a disconnect, that we loose the original element
                         // then, just remove it (no time for transitions!!!), and ask for an update
-                        needUpdt = true
+                        need_updt = true
                         console.log('000 - no d.data.set_r -', d.data.id)
                         com.icons.g.select('#' + d.data.id).remove()
                     }
@@ -1168,7 +1161,7 @@ let main_panel_sync = function(opt_in) {
                 .style('opacity', 0)
                 .remove()
 
-            if (needUpdt) {
+            if (need_updt) {
                 ask_data()
             }
         }
@@ -1179,13 +1172,13 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function sideColHov(d) {
-            // console.log('sideColHov',d.data.id)
+        function side_col_hov(d) {
+            // console.log('side_col_hov',d.data.id)
             // just in case...
-            grpD.hovIdGrpNow = null
+            grps.hov_id_grp_now = null
         }
 
-        function sideColClick(dIn) {
+        function side_col_click(dIn) {
             let id_now = 'icn' + unique()
             if (is_def(dIn)) {
                 let n_icon = dIn.data.data.data.n_icon
@@ -1215,23 +1208,23 @@ let main_panel_sync = function(opt_in) {
                     init: initXYR,
                 }
 
-                updateEmptyGrp()
+                update_empty_grp()
 
-                if (com.emptyGrpIndex >= 0) {
-                    grpD.data.children[com.emptyGrpIndex].children[0].children = [ dataAdd ]
+                if (com.empty_grp_index >= 0) {
+                    grps.data.children[com.empty_grp_index].children[0].children = [ dataAdd ]
                 }
                 else {
                     let nGrp = -1
-                    let grpIdV = grpD.data.children.map(function(d) {
+                    let grpIdV = grps.data.children.map(function(d) {
                         return d.id
                     })
-                    $.each(grpD.data.children, function(nChild0, child_now0) {
+                    $.each(grps.data.children, function(nChild0, child_now0) {
                         if (grpIdV.indexOf('grp' + nChild0) < 0 && nGrp < 0) {
                             nGrp = nChild0
                         }
                     })
                     if (nGrp < 0) {
-                        nGrp = grpD.data.children.length
+                        nGrp = grps.data.children.length
                     }
 
                     let newGrp = {
@@ -1265,12 +1258,12 @@ let main_panel_sync = function(opt_in) {
                             },
                         ],
                     }
-                    grpD.data.children.push(newGrp)
+                    grps.data.children.push(newGrp)
                 }
             }
 
             // if(!allowPermEmptyGrp) com.addEmptyGrp  = !is_def(dIn);
-            grpD.hovIdGrpStart = null
+            grps.hov_id_grp_start = null
             com.addEmptyGrp = !is_def(dIn)
 
             update_groups()
@@ -1285,9 +1278,9 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function initSideCol() {
-            let data = grpD.data.all_sync_widgets
+            let data = grps.data.all_sync_widgets
 
-            let icons_orig = is_def(recD[tagLeftIn]) ? recD[tagLeftIn] : []
+            let icons_orig = is_def(recs[tag_left_in]) ? recs[tag_left_in] : []
             let icons_new = []
             let trgWidgIdV = []
             $.each(icons_orig, function(index0, ele0) {
@@ -1331,7 +1324,7 @@ let main_panel_sync = function(opt_in) {
                 }
             })
 
-            recD[tagLeftIn] = icons_new
+            recs[tag_left_in] = icons_new
             icons_orig = null
             icons_new = null
             trgWidgIdV = null
@@ -1343,7 +1336,7 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function updSideCol() {
-            let recV = recD[tagLeftIn]
+            let recV = recs[tag_left_in]
             if (!is_def(recV)) {
                 recV = []
             }
@@ -1352,10 +1345,10 @@ let main_panel_sync = function(opt_in) {
                 recV: recV,
             })
 
-            let needUpdt = false
-            let sclR = 1
-            let data_now = recD[tagGridRec]
-            let icn = recD.dataG
+            let need_updt = false
+            let scl_r = 1
+            let data_now = recs[tag_grid_rec]
+            let icn = recs.dataG
                 .selectAll('g.a' + tag_icon)
                 .data(data_now, function(d) {
                     return d.data.id
@@ -1374,10 +1367,10 @@ let main_panel_sync = function(opt_in) {
                         parent_svg: d3.select(this),
                         icon_file: icon_svg[0],
                         text: {
-                            pos: 'topRight',
+                            pos: 'top_right',
                             txt: icon_svg[1],
                         },
-                        rad: d.w / 2 * sclR,
+                        rad: d.w / 2 * scl_r,
                         delay: 300,
                         pulse_hov_in: true,
                         trans_back: true,
@@ -1395,14 +1388,14 @@ let main_panel_sync = function(opt_in) {
             // .each(function(d,i) { if(d.data.n_icon>=0)console.log(d.data.id,d) })
                 .each(function(d) {
                     if (is_def(d.data.data.set_r)) {
-                        d.data.data.set_r(d.w / 2 * sclR)
+                        d.data.data.set_r(d.w / 2 * scl_r)
                     }
                     else {
                         // can happen after a disconnect, that we loose the original element
                         // then, just remove it (no time for transitions!!!), and ask for an update
-                        needUpdt = true
+                        need_updt = true
                         console.log('111 - no d.data.data.set_r -', d.data.id)
-                        recD.dataG.select('#' + d.data.id).remove()
+                        recs.dataG.select('#' + d.data.id).remove()
                     }
                 })
                 .transition('in_out')
@@ -1419,7 +1412,7 @@ let main_panel_sync = function(opt_in) {
                 .attr('opacity', 0)
                 .remove()
 
-            if (needUpdt) {
+            if (need_updt) {
                 ask_data()
             }
         }
@@ -1428,7 +1421,7 @@ let main_panel_sync = function(opt_in) {
         //
         // -------------------------------------------------------------------
         function updSideColOnZoom(opt_in) {
-            let icn = recD.dataG.selectAll('g.a' + tag_icon)
+            let icn = recs.dataG.selectAll('g.a' + tag_icon)
             let duration = opt_in.duration
             let trans = function(d) {
                 return 'translate(' + (d.x + d.w / 2) + ',' + (d.y + d.h / 2) + ')'
@@ -1462,10 +1455,10 @@ let main_panel_sync = function(opt_in) {
                 })
             }
             else {
-                updateEmptyGrp()
+                update_empty_grp()
 
                 g_now = com.icons.g
-                data = com.hirchDesc.filter(function(d) {
+                data = com.hirch_desc.filter(function(d) {
                     // console.log(d.data.title,is_empty_group(d));
                     if (d.depth === 0 || d.depth === 3) {
                         return false
@@ -1487,14 +1480,14 @@ let main_panel_sync = function(opt_in) {
                 return d.size + 'px'
             }
 
-            let txt = g_now.selectAll('text.' + tagTtl).data(data, function(d) {
+            let txt = g_now.selectAll('text.' + tag_ttl).data(data, function(d) {
                 return d.data.id
             })
 
             txt
                 .enter()
                 .append('text')
-                .attr('class', tagTtl)
+                .attr('class', tag_ttl)
                 .text('')
                 .style('fill-opacity', 0)
                 .style('stroke-opacity', 0)
@@ -1507,15 +1500,15 @@ let main_panel_sync = function(opt_in) {
                     if (is_def(data_in)) {
                         return d.depth === 1
                             ? '#383b42'
-                            : d3.rgb(hirchStyleStroke(d)).darker(5)
+                            : d3.rgb(hirch_style_stroke(d)).darker(5)
                     }
                     else {
                         return d.depth === 1
                             ? '#383b42'
-                            : d3.rgb(hirchStyleStroke(d)).darker(1)
+                            : d3.rgb(hirch_style_stroke(d)).darker(1)
                     }
                 })
-                .style('fill', hirchStyleStroke)
+                .style('fill', hirch_style_stroke)
                 .style('pointer-events', 'none')
                 .style('vector-effect', 'non-scaling-stroke')
                 .style('font-size', font_size)
@@ -1546,7 +1539,7 @@ let main_panel_sync = function(opt_in) {
                 .attr('dy', function(d) {
                     let dyScale
                     if (!is_def(data_in) && d.depth === 1) {
-                        dyScale = grpD.data.children.length === 1 ? 2 : 1
+                        dyScale = grps.data.children.length === 1 ? 2 : 1
                     }
                     else if (d.depth === 1) {
                         dyScale = 1.5
@@ -1596,7 +1589,7 @@ let main_panel_sync = function(opt_in) {
                 })
                 .extent([ [ 0, 0 ], [ svg_dims.w[0], svg_dims.h[0] ] ])
 
-            let data = com.hirchDesc.filter(function(d) {
+            let data = com.hirch_desc.filter(function(d) {
                 return d.depth === 2
             })
             let vor = com.vor.g
@@ -1625,16 +1618,16 @@ let main_panel_sync = function(opt_in) {
                             type: {
                                 name: 'pulse',
                                 duration: 1500,
-                                col: hirchStyleStroke(d.data),
+                                col: hirch_style_stroke(d.data),
                             },
                         })
 
-                        grpD.hovIdGrpNow = d.data.data.id
+                        grps.hov_id_grp_now = d.data.data.id
                     }
                 })
                 .on('mouseout', function(d) {
                     // console.log('out',is_def(d)?d.data.data.id:"-");
-                    grpD.hovIdGrpNow = null
+                    grps.hov_id_grp_now = null
 
                     highlight({
                         id: d.data.data.id,
@@ -1642,7 +1635,7 @@ let main_panel_sync = function(opt_in) {
                         type: {
                             name: 'pulse',
                             duration: 1500,
-                            col: hirchStyleStroke(d.data),
+                            col: hirch_style_stroke(d.data),
                         },
                     })
                 })
@@ -1691,12 +1684,12 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             let dataTrans = null
             let rmInd = null
-            if (is_def(grpD.hovIdGrpStart)) {
-                $.each(grpD.data.children, function(nChild0, child_now0) {
+            if (is_def(grps.hov_id_grp_start)) {
+                $.each(grps.data.children, function(nChild0, child_now0) {
                     $.each(child_now0.children, function(nChild1, child_now1) {
-                        if (child_now1.id === grpD.hovIdGrpStart) {
+                        if (child_now1.id === grps.hov_id_grp_start) {
                             $.each(child_now1.children, function(nChild2, child_now2) {
-                                if (child_now2.id === grpD.hov_id_icon) {
+                                if (child_now2.id === grps.hov_id_icon) {
                                     dataTrans = child_now2
                                     rmInd = [ nChild0, nChild1, nChild2 ]
                                 }
@@ -1707,24 +1700,24 @@ let main_panel_sync = function(opt_in) {
             }
 
             if (is_def(dataTrans)) {
-                if (is_def(grpD.hovIdGrpNow)) {
-                    $.each(grpD.data.children, function(nChild0, child_now0) {
+                if (is_def(grps.hov_id_grp_now)) {
+                    $.each(grps.data.children, function(nChild0, child_now0) {
                         $.each(child_now0.children, function(nChild1, child_now1) {
-                            if (child_now1.id === grpD.hovIdGrpNow) {
+                            if (child_now1.id === grps.hov_id_grp_now) {
                                 child_now1.children.push(dataTrans)
                             }
                         })
                     })
                 }
 
-                grpD.data.children[rmInd[0]].children[rmInd[1]].children.splice(
+                grps.data.children[rmInd[0]].children[rmInd[1]].children.splice(
                     rmInd[2],
                     1
                 )
 
                 // // add an empty icon_badge if needed
-                // if(grpD.data.children[ rmInd[0] ].children[ rmInd[1] ].children.length == 0) {
-                //   grpD.data.children[ rmInd[0] ].children[ rmInd[1] ].children
+                // if(grps.data.children[ rmInd[0] ].children[ rmInd[1] ].children.length == 0) {
+                //   grps.data.children[ rmInd[0] ].children[ rmInd[1] ].children
                 //     .push({ id:"icn_empty_"+unique(), trgWidgId:"", title:"", n_icon:n_empty_icon });
                 // }
             }
@@ -1735,26 +1728,26 @@ let main_panel_sync = function(opt_in) {
             set_empty_icons()
 
             // -------------------------------------------------------------------
-            // update the com.emptyGrpIndex
+            // update the com.empty_grp_index
             // -------------------------------------------------------------------
-            updateEmptyGrp()
+            update_empty_grp()
 
             // add an empy group if needed
             // -------------------------------------------------------------------
-            if (com.addEmptyGrp && com.emptyGrpIndex < 0) {
+            if (com.addEmptyGrp && com.empty_grp_index < 0) {
                 // find the minimal available index for the new empty group
                 // -------------------------------------------------------------------
                 let nGrp = -1
-                let grpIdV = grpD.data.children.map(function(d) {
+                let grpIdV = grps.data.children.map(function(d) {
                     return d.id
                 })
-                $.each(grpD.data.children, function(nChild0, child_now0) {
+                $.each(grps.data.children, function(nChild0, child_now0) {
                     if (grpIdV.indexOf('grp' + nChild0) < 0 && nGrp < 0) {
                         nGrp = nChild0
                     }
                 })
                 if (nGrp < 0) {
-                    nGrp = grpD.data.children.length
+                    nGrp = grps.data.children.length
                 }
 
                 // -------------------------------------------------------------------
@@ -1798,20 +1791,20 @@ let main_panel_sync = function(opt_in) {
                         },
                     ],
                 }
-                grpD.data.children.push(newGrp)
+                grps.data.children.push(newGrp)
             }
 
             // remove the empty group if needed
             // -------------------------------------------------------------------
-            if (!com.addEmptyGrp && com.emptyGrpIndex >= 0) {
-                grpD.data.children.splice(com.emptyGrpIndex, 1)
+            if (!com.addEmptyGrp && com.empty_grp_index >= 0) {
+                grps.data.children.splice(com.empty_grp_index, 1)
             }
 
             // -------------------------------------------------------------------
             // order groups by name
             // -------------------------------------------------------------------
             if (locker.is_free(tag_main + 'in_drag')) {
-                grpD.data.children = grpD.data.children.sort(function(x, y) {
+                grps.data.children = grps.data.children.sort(function(x, y) {
                     let idX = parseInt(x.id.replace('grp', ''))
                     let idY = parseInt(y.id.replace('grp', ''))
 
@@ -1844,12 +1837,12 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function updateEmptyGrp() {
-            com.emptyGrpIndex = -1
+        function update_empty_grp() {
+            com.empty_grp_index = -1
             com.emptyGrpId = unique()
 
             // let nEmptyGrps = 0
-            $.each(grpD.data.children, function(nChild0, child_now0) {
+            $.each(grps.data.children, function(nChild0, child_now0) {
                 let nEmpties = 0
                 $.each(child_now0.children, function(nChild1, child_now1) {
                     if (child_now1.children.length === 1) {
@@ -1860,12 +1853,12 @@ let main_panel_sync = function(opt_in) {
                 })
                 if (nEmpties === 3) {
                     // nEmptyGrps++
-                    com.emptyGrpIndex = nChild0
+                    com.empty_grp_index = nChild0
                     com.emptyGrpId = child_now0.id
                 }
             })
 
-            // console.log('===',nEmptyGrps,com.emptyGrpIndex,com.emptyGrpId);
+            // console.log('===',nEmptyGrps,com.empty_grp_index,com.emptyGrpId);
         }
 
         function is_empty_group(dIn) {
@@ -1895,7 +1888,7 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         function removeDuplicates() {
             let hasRemoved = false
-            $.each(grpD.data.children, function(nChild0, child_now0) {
+            $.each(grps.data.children, function(nChild0, child_now0) {
                 let ids = {
                 }
                 let hasDuplicates = false
@@ -1917,7 +1910,7 @@ let main_panel_sync = function(opt_in) {
 
                 if (hasDuplicates) {
                     $.each(child_now0.children, function(nChild1, child_now1) {
-                        let childV = []
+                        let children_now = []
                         $.each(child_now1.children, function(nChild2, child_now2) {
                             let id_now = child_now2.trgWidgId
 
@@ -1928,10 +1921,10 @@ let main_panel_sync = function(opt_in) {
                                 }
                             })
                             if (!willRemove) {
-                                childV.push(child_now2)
+                                children_now.push(child_now2)
                             }
                         })
-                        grpD.data.children[nChild0].children[nChild1].children = childV
+                        grps.data.children[nChild0].children[nChild1].children = children_now
                     })
                 }
             })
@@ -1948,7 +1941,7 @@ let main_panel_sync = function(opt_in) {
         // highlight function works ok, and to prevent change od size of group on 1->0 elements
         // -------------------------------------------------------------------
         function set_empty_icons() {
-            $.each(grpD.data.children, function(nChild0, child_now0) {
+            $.each(grps.data.children, function(nChild0, child_now0) {
                 $.each(child_now0.children, function(nChild1, child_now1) {
                     if (child_now1.children.length === 0) {
                         child_now1.children.push({
@@ -1964,7 +1957,7 @@ let main_panel_sync = function(opt_in) {
             let rmInd = 1
             while (is_def(rmInd)) {
                 rmInd = null
-                $.each(grpD.data.children, function(nChild0, child_now0) {
+                $.each(grps.data.children, function(nChild0, child_now0) {
                     $.each(child_now0.children, function(nChild1, child_now1) {
                         $.each(child_now1.children, function(nChild2, child_now2) {
                             if (
@@ -1978,7 +1971,7 @@ let main_panel_sync = function(opt_in) {
                 })
 
                 if (is_def(rmInd)) {
-                    grpD.data.children[rmInd[0]].children[rmInd[1]].children.splice(
+                    grps.data.children[rmInd[0]].children[rmInd[1]].children.splice(
                         rmInd[2],
                         1
                     )
@@ -2020,21 +2013,21 @@ let main_panel_sync = function(opt_in) {
 
             let rRange = [ 1, 1 ]
             let opac = [ 0, 0.2 ]
-            let strkW = [ 0, 0.175 ]
+            let strk_w = [ 0, 0.175 ]
 
             // let circ = com.icons.g.selectAll("circle."+tag_circ).filter(function(d) { return (d.data.id == id); });
-            //   //.data(com.hirchDesc, function(d) { return d.data.id; }) //console.log('xxx',d.data.id);
+            //   //.data(com.hirch_desc, function(d) { return d.data.id; }) //console.log('xxx',d.data.id);
             // circ
             //   .transition("in_out").duration(duration/4)
             //   // .style("opacity",        opac[1])
             //   .attr("r",             function(d,i){ return d.r * rRange[1]; })
-            //   .attr("stroke-width",  function(d,i){ return d.data.strkW * 8; })
-            //   .style("stroke-opacity", function(d) { return hirchOpacStrk(d) / 3; } )
+            //   .attr("stroke-width",  function(d,i){ return d.data.strk_w * 8; })
+            //   .style("stroke-opacity", function(d) { return hirch_opac_strk(d) / 3; } )
             //   .transition("in_out").duration(duration*3/4)
             //   // // .style("opacity",        opac[0])
             //   .attr("r",             function(d,i){ return d.r * rRange[0]; })
-            //   .attr("stroke-width",  function(d,i){ return d.data.strkW; })
-            //   .style("stroke-opacity", function(d) { return hirchOpacStrk(d); } )
+            //   .attr("stroke-width",  function(d,i){ return d.data.strk_w; })
+            //   .style("stroke-opacity", function(d) { return hirch_opac_strk(d); } )
             // return
 
             let circ = com.highlight.g
@@ -2062,7 +2055,7 @@ let main_panel_sync = function(opt_in) {
                 .style('fill', 'transparent')
                 .style('opacity', opac[0])
                 .attr('stroke-width', function(d, i) {
-                    return d.r * strkW[0]
+                    return d.r * strk_w[0]
                 })
                 .merge(circ)
                 .transition('in_out')
@@ -2072,7 +2065,7 @@ let main_panel_sync = function(opt_in) {
                     return d.r * rRange[1]
                 })
                 .attr('stroke-width', function(d, i) {
-                    return d.r * strkW[1]
+                    return d.r * strk_w[1]
                 })
                 .transition('in_out')
                 .duration(duration * 3 / 4)
@@ -2081,7 +2074,7 @@ let main_panel_sync = function(opt_in) {
                     return d.r * rRange[0]
                 })
                 .attr('stroke-width', function(d, i) {
-                    return d.r * strkW[0]
+                    return d.r * strk_w[0]
                 })
                 .transition('in_out')
                 .duration(1)
@@ -2095,7 +2088,7 @@ let main_panel_sync = function(opt_in) {
                 .remove()
         }
 
-        function hirchStyleStroke(d) {
+        function hirch_style_stroke(d) {
             if (d.depth === 2) {
                 let index = getIndexInParent(d)
                 // if(index == 0) return d3.rgb(cols_blues[3]).darker(0.5);
@@ -2121,9 +2114,9 @@ let main_panel_sync = function(opt_in) {
                 // if(index == 2) return d3.rgb('#F06292').brighter(0.0095);
             }
             return '#383b42'
-            // return d3.rgb(hirchStyleFill(d)).darker(1);
+            // return d3.rgb(hirch_style_fill(d)).darker(1);
         }
-        function hirchStyleFill(d) {
+        function hirch_style_fill(d) {
             // if(d.depth == 2) {
             //   let index = getIndexInParent(d);
             //   if(index == 0) return cols_greens[0];
@@ -2133,7 +2126,7 @@ let main_panel_sync = function(opt_in) {
             return '#383b42'
             // return d.children ? "#383b42" : tel_data.idToCol[d.data.id];
         }
-        function hirchOpacFill(d, scale) {
+        function hirch_opac_fill(d, scale) {
             if (d.depth === 0) {
                 return 0
             }
@@ -2151,7 +2144,7 @@ let main_panel_sync = function(opt_in) {
             // else if(d.children) return 0.03;
             // else                return 0;
         }
-        function hirchOpacStrk(d, scale) {
+        function hirch_opac_strk(d, scale) {
             if (d.depth === 0) {
                 return 0
             }

@@ -1568,7 +1568,7 @@ window.IconBadge = function() {
             parent_svg: svg,
             icon_file: icon_svg[0],
             text: {
-                pos: 'topRight',
+                pos: 'top_right',
                 txt: icon_svg[1],
             },
             rad: 0.48,
@@ -1769,12 +1769,12 @@ window.IconBadge = function() {
 
         if (is_def(text)) {
             let txt_size, align, pos
-            if (text.pos === 'topLeft') {
+            if (text.pos === 'top_left') {
                 txt_size = 28
                 align = 'start'
                 pos = [ 5, 0, txt_size ]
             }
-            else if (text.pos === 'topRight') {
+            else if (text.pos === 'top_right') {
                 txt_size = 28
                 align = 'end'
                 pos = [ data[0].r * 2 - 5, 0, txt_size ]

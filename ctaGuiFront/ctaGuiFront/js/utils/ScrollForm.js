@@ -108,7 +108,7 @@ window.ScrollForm = function(opt_in) {
         scrollHorizontal: false,
         scrollHeight: com.main.box.h,
         background: color_theme.dark.background,
-        scrollRecV: {
+        scroll_recs: {
             w: 6,
         },
     })

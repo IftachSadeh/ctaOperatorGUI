@@ -600,10 +600,10 @@ let main_weather_monitoring = function(opt_in) {
             scrollHeight: 0,
             scrollWidth: 0,
             background: 'transparent',
-            scrollRecH: {
+            scroll_rec_h: {
                 h: 4,
             },
-            scrollRecV: {
+            scroll_recs: {
                 w: 4,
             },
         })

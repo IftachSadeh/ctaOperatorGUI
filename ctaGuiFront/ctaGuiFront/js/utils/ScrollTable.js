@@ -80,7 +80,7 @@ window.ScrollTable = function() {
             // canScroll: opt_in.canScroll,
             // scrollHeight: com.outerBox.h*2,
             // scrollHeight: opt_in.scrollHeight,
-            // scrollRec: {w:200},
+            // scroll_rec: {w:200},
         })
 
         com.innerG = com.scrollBox.get('innerG')
@@ -127,9 +127,9 @@ window.ScrollTable = function() {
             scrollHeight: totTableH,
         })
 
-        let totTableW = com.table.rowW
+        let tot_table_w = com.table.rowW
         if (hasScroll) {
-            totTableW -= com.scrollBox.get('scrollRec').w
+            tot_table_w -= com.scrollBox.get('scroll_rec').w
         }
 
         com.table.rowsOut = []
@@ -145,7 +145,7 @@ window.ScrollTable = function() {
             let row = {
                 nRow: nRowNow,
                 cols: [],
-                w: totTableW,
+                w: tot_table_w,
                 h: rowH,
             }
 
