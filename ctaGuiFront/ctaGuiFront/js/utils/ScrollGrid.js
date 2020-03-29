@@ -31,9 +31,11 @@ window.ScrollGrid = function(opt_in) {
 
     let isInvOrder = is_def(opt_in.isInvOrder) ? opt_in.isInvOrder : false
     let showCounts = is_def(opt_in.showCounts) ? opt_in.showCounts : true
-    let tagClipPath = is_def(opt_in.tagClipPath)
-        ? opt_in.tagClipPath
-        : mainTag + 'clipPath'
+    let tag_clip_path = (
+        is_def(opt_in.tag_clip_path)
+            ? opt_in.tag_clip_path
+            : mainTag + 'clipPath'
+    )
     let autoClipPath = is_def(opt_in.autoClipPath) ? opt_in.autoClipPath : true
 
     let bckRecOpt = opt_in.bckRecOpt
@@ -1240,7 +1242,8 @@ window.ScrollGrid = function(opt_in) {
     //
     // ------------------------------------------------------------------
     let defs = com.g_base.append('defs')
-    let clipPath = defs.append('clipPath').attr('id', tagClipPath + mainTag)
+    let clipPath = defs.append('clipPath').attr('id', tag_clip_path + mainTag)
+    // console.log('tag_clip_path + mainTag',tag_clip_path + mainTag)
 
     com.clipRec = clipPath
         .append('rect')
@@ -1250,8 +1253,8 @@ window.ScrollGrid = function(opt_in) {
         .attr('height', h0)
 
     if (autoClipPath) {
-        com.gBckData.attr('clip-path', 'url(#' + tagClipPath + mainTag + ')')
-        com.gFrntData.attr('clip-path', 'url(#' + tagClipPath + mainTag + ')')
+        com.gBckData.attr('clip-path', 'url(#' + tag_clip_path + mainTag + ')')
+        com.gFrntData.attr('clip-path', 'url(#' + tag_clip_path + mainTag + ')')
     }
 
     let frnt = bckRecOpt.frontProp
@@ -1342,7 +1345,7 @@ window.ScrollGrid = function(opt_in) {
 //   let w0 = 400
 //   let h0 = 100
 //   let myId = 'myScrollBox'
-//   let tagClipPath = 'myScrollBoxPath'
+//   let tag_clip_path = 'myScrollBoxPath'
 
 //   let scrollGridOpt = {
 //     // unique id for a given box
@@ -1350,7 +1353,7 @@ window.ScrollGrid = function(opt_in) {
 //     // the group elements (vor in front of data)
 //     g: { gBckData: com.gBckData, gVor: com.gVor },
 //     // the id of the clip-path element corresponding to the geometry of the box
-//     tagClipPath: tagClipPath,
+//     tag_clip_path: tag_clip_path,
 //     // if to aplly automatic clip-path to the entire data-g
 //     autoClipPath: true,
 //     // dictionary which will be filled with the results
@@ -1428,7 +1431,7 @@ window.ScrollGrid = function(opt_in) {
 //     .attr('height', function (d) {
 //       return d.h
 //     })
-//     // .attr("clip-path", function(d){ return "url(#"+tagClipPath+d.scrollGridId+")"; })
+//     // .attr("clip-path", function(d){ return "url(#"+tag_clip_path+d.scrollGridId+")"; })
 //     .transition('new_ele')
 //     .duration(times.anim)
 //     .style('opacity', 1)

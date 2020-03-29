@@ -95,9 +95,9 @@ window.BlockQueueOld = function() {
         com.doRunRect = is_def(opt_in.doRunRect) ? opt_in.doRunRect : true
         com.doTimeRect = is_def(opt_in.doTimeRect) ? opt_in.doTimeRect : true
 
-        com.tagClipPath = opt_in.tagClipPath
-        if (!is_def(com.tagClipPath)) {
-            com.tagClipPath = {
+        com.tag_clip_path = opt_in.tag_clip_path
+        if (!is_def(com.tag_clip_path)) {
+            com.tag_clip_path = {
                 inner: com.mainTag + 'clipPathInner',
                 outer: com.mainTag + 'clipPathOuter',
             }
@@ -817,7 +817,7 @@ window.BlockQueueOld = function() {
         // .style("pointer-events", "none")
             .attr('vector-effect', 'non-scaling-stroke')
             .on('click', com.click)
-        // .attr("clip-path", "url(#"+com.tagClipPath.inner+")")
+        // .attr("clip-path", "url(#"+com.tag_clip_path.inner+")")
             .merge(rect)
             .transition('in_out')
             .duration(times.anim)
@@ -892,7 +892,7 @@ window.BlockQueueOld = function() {
                 return d.y + d.h / 2
             })
             .attr('text-anchor', 'middle')
-        // .attr("clip-path", "url(#"+com.tagClipPath.inner+")")
+        // .attr("clip-path", "url(#"+com.tag_clip_path.inner+")")
             .merge(text)
             .style('font-size', function(d) {
                 d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
@@ -991,7 +991,7 @@ window.BlockQueueOld = function() {
             .style('stroke-opacity', 0.8)
             .style('pointer-events', 'none')
             .attr('vector-effect', 'non-scaling-stroke')
-        // .attr("clip-path", "url(#"+com.tagClipPath.outer+")")
+        // .attr("clip-path", "url(#"+com.tag_clip_path.outer+")")
             .merge(rectRun)
             .transition('in_out')
             .duration(times.anim)

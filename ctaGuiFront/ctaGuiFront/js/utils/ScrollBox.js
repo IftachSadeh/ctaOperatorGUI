@@ -86,9 +86,9 @@ window.ScrollBox = function() {
             })
     }
     function initClipping(opt_in) {
-        com.tagClipPath = opt_in.tagClipPath
-        if (!is_def(com.tagClipPath)) {
-            com.tagClipPath = {
+        com.tag_clip_path = opt_in.tag_clip_path
+        if (!is_def(com.tag_clip_path)) {
+            com.tag_clip_path = {
                 inner: com.mainTag + 'clipPathInner',
                 outer: com.mainTag + 'clipPathOuter',
             }
@@ -99,7 +99,7 @@ window.ScrollBox = function() {
         let defs = com.g_box.append('defs')
         let clipPathInner = defs
             .append('clipPath')
-            .attr('id', com.tagClipPath.inner)
+            .attr('id', com.tag_clip_path.inner)
         com.clipRecInner = clipPathInner
             .append('rect')
             .attr('x', com.outerBox.x)
@@ -108,7 +108,7 @@ window.ScrollBox = function() {
             .attr('height', com.outerBox.h)
         let clipPathOuter = defs
             .append('clipPath')
-            .attr('id', com.tagClipPath.outer)
+            .attr('id', com.tag_clip_path.outer)
         com.clipRecOuter = clipPathOuter
             .append('rect')
             .attr('x', com.outerBox.x)
@@ -177,7 +177,7 @@ window.ScrollBox = function() {
         com.innerG = com.scrollOuterG
             .append('g')
             .attr('class', 'clipping')
-            .attr('clip-path', 'url(#' + com.tagClipPath.outer + ')')
+            .attr('clip-path', 'url(#' + com.tag_clip_path.outer + ')')
 
         com.scrollBarVG = com.g_box.append('g')
         com.scrollBarHG = com.g_box.append('g')

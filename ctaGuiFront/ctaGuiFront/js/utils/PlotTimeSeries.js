@@ -141,9 +141,9 @@ window.PlotTimeSeries = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        com.tagClipPath = opt_in.tagClipPath
-        if (!is_def(com.tagClipPath)) {
-            com.tagClipPath = {
+        com.tag_clip_path = opt_in.tag_clip_path
+        if (!is_def(com.tag_clip_path)) {
+            com.tag_clip_path = {
                 top: com.mainTag + 'clipPathTop',
                 bot: com.mainTag + 'clipPathBot',
             }
@@ -152,14 +152,14 @@ window.PlotTimeSeries = function() {
         topBot.defs = topBot.g.data.append('defs')
         topBot.clipPath = topBot.defs
             .append('clipPath')
-            .attr('id', com.tagClipPath.top)
+            .attr('id', com.tag_clip_path.top)
         topBot.clipRec = topBot.clipPath
             .append('rect')
             .attr('x', 0)
             .attr('y', 0)
             .attr('width', topBot.box.w)
             .attr('height', topBot.box.h)
-        topBot.g.data.attr('clip-path', 'url(#' + com.tagClipPath.top + ')')
+        topBot.g.data.attr('clip-path', 'url(#' + com.tag_clip_path.top + ')')
 
         setStyle(opt_in.style)
         initPlot(opt_in)

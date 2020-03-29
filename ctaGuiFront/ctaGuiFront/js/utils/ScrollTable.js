@@ -44,9 +44,9 @@ window.ScrollTable = function() {
         com.mainTag = opt_in.tag
         com.tagScrollBox = com.mainTag + 'scrollBox'
 
-        com.tagClipPath = opt_in.tagClipPath
-        if (!is_def(com.tagClipPath)) {
-            com.tagClipPath = {
+        com.tag_clip_path = opt_in.tag_clip_path
+        if (!is_def(com.tag_clip_path)) {
+            com.tag_clip_path = {
                 inner: com.mainTag + 'clipPathInner',
                 outer: com.mainTag + 'clipPathOuter',
             }
@@ -86,7 +86,7 @@ window.ScrollTable = function() {
         com.innerG = com.scrollBox.get('innerG')
         com.innerBox = com.scrollBox.get('innerBox')
 
-        com.tagClipPath = com.scrollBox.get('tagClipPath').outer
+        com.tag_clip_path = com.scrollBox.get('tag_clip_path').outer
 
         // ------------------------------------------------------------------
         //

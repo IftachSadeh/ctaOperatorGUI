@@ -10,7 +10,7 @@ class PanelSync(BaseWidget):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, widget_id="", socket_manager=None, *args, **kwargs):
+    def __init__(self, widget_id='', socket_manager=None, *args, **kwargs):
         # standard common initialisations
         BaseWidget.__init__(
             self,
@@ -64,7 +64,7 @@ class PanelSync(BaseWidget):
     def get_init_data(self):
         return {
             'groups': self.panel_sync_get_groups(),
-            "allow_panel_sync": self.socket_manager.allow_panel_sync()
+            'allow_panel_sync': self.socket_manager.allow_panel_sync()
         }
 
     # ------------------------------------------------------------------
@@ -74,7 +74,7 @@ class PanelSync(BaseWidget):
     def ask_data(self):
         emit_data = {
             'widget_type': self.widget_name,
-            'event_name': "update_data",
+            'event_name': 'update_data',
             'data': self.panel_sync_get_groups()
         }
 
@@ -98,16 +98,16 @@ class PanelSync(BaseWidget):
             widget_ids = self.redis.lGet('user_widgets;' + self.socket_manager.user_id)
 
             sync_groups = []
-            for child_0 in data["data"]["children"]:
+            for child_0 in data['data']['children']:
                 sync_group = dict()
-                sync_group["id"] = child_0["id"]
-                sync_group["title"] = child_0["title"]
-                sync_group["sync_states"] = []
-                sync_group["sync_types"] = dict()
+                sync_group['id'] = child_0['id']
+                sync_group['title'] = child_0['title']
+                sync_group['sync_states'] = []
+                sync_group['sync_types'] = dict()
 
-                for child_1 in child_0["children"]:
+                for child_1 in child_0['children']:
                     all_widgets = [wgt for wgt in child_1 if wgt[0] in widget_ids]
-                    sync_group["sync_states"].append(all_widgets)
+                    sync_group['sync_states'].append(all_widgets)
 
                 sync_groups.append(sync_group)
 
@@ -142,12 +142,12 @@ class PanelSync(BaseWidget):
                 widget_now = all_widgets[n_widget]
                 if widget_now is None:
                     continue
-                if widget_now["widget_name"] != self.widget_name:
+                if widget_now['widget_name'] != self.widget_name:
                     continue
                 if ignore_id is not None and ignore_id == widget_id:
                     continue
 
-                sess_widgets[0].append(widget_now["sess_id"])
+                sess_widgets[0].append(widget_now['sess_id'])
                 sess_widgets[1].append(widget_id)
 
         # ------------------------------------------------------------------
@@ -155,7 +155,7 @@ class PanelSync(BaseWidget):
         # ------------------------------------------------------------------
         emit_data = {
             'widget_type': self.widget_name,
-            'event_name': "update_data",
+            'event_name': 'update_data',
             'data': self.panel_sync_get_groups()
         }
 
@@ -185,11 +185,11 @@ class PanelSync(BaseWidget):
                 widget_now = all_widgets[n_widget]
                 if widget_now is None:
                     continue
-                if widget_now["n_icon"] >= 0:
+                if widget_now['n_icon'] >= 0:
                     all_sync_widgets.append({
-                        "id": "icn_" + widget_id,
-                        "trgWidgId": widget_id,
-                        "n_icon": widget_now["n_icon"]
+                        'id': 'icn_' + widget_id,
+                        'trg_widg_id': widget_id,
+                        'n_icon': widget_now['n_icon']
                     })
 
             rm_elements = []
@@ -203,7 +203,7 @@ class PanelSync(BaseWidget):
             )
 
             for sync_group in sync_groups:
-                sync_states = sync_group["sync_states"]
+                sync_states = sync_group['sync_states']
 
                 n_widget_group = 0
                 children_1 = []
@@ -215,32 +215,33 @@ class PanelSync(BaseWidget):
 
                             n_widget_group += 1
                             children_2.append({
-                                "id": icon_id,
-                                "trgWidgId": widget_id,
-                                "n_icon": all_widgets[n_widget]["n_icon"]
+                                'id': icon_id,
+                                'trg_widg_id': widget_id,
+                                'n_icon': all_widgets[n_widget]['n_icon']
                             })
 
                         except Exception:
                             continue
 
                     # ------------------------------------------------------------------
-                    # the sync_group["id"] must correspond to the pattern defined by the client for
-                    # new groups (e.g., for "grp_0", we have ["grp_0_0","grp_0_1","grp_0_2"])
+                    # the sync_group['id'] must correspond to the pattern
+                    # defined by the client for new groups (e.g., for 'grp_0',
+                    # we have ['grp_0_0','grp_0_1','grp_0_2'])
                     # ------------------------------------------------------------------
                     children_1.append({
-                        "id":
-                        str(sync_group["id"]) + "_" + str(n_sync_type),
-                        "title":
-                        str(sync_group["title"]) + " " + str(n_sync_type),
-                        "children":
+                        'id':
+                        str(sync_group['id']) + '_' + str(n_sync_type),
+                        'title':
+                        str(sync_group['title']) + ' ' + str(n_sync_type),
+                        'children':
                         children_2
                     })
 
                 if n_widget_group > 0:
                     children_0.append({
-                        "id": sync_group["id"],
-                        "title": sync_group["title"],
-                        "children": children_1
+                        'id': sync_group['id'],
+                        'title': sync_group['title'],
+                        'children': children_1
                     })
                 else:
                     rm_elements.append(sync_group)
@@ -258,10 +259,10 @@ class PanelSync(BaseWidget):
                 )
 
         all_groups = {
-            "date": date_to_string(datetime.utcnow(), '%H:%M:%S:%f'),
-            "id": "all_groups",
-            "children": children_0,
-            "all_sync_widgets": all_sync_widgets
+            'date': date_to_string(datetime.utcnow(), '%H:%M:%S:%f'),
+            'id': 'all_groups',
+            'children': children_0,
+            'all_sync_widgets': all_sync_widgets
         }
 
         return all_groups

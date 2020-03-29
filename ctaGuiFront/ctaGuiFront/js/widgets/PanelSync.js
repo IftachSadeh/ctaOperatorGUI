@@ -288,7 +288,7 @@ let main_panel_sync = function(opt_in) {
                     $.each(child_now1.children, function(nChild2, child_now2) {
                         if (child_now2.n_icon >= 0) {
                             children_now[nChild1].push([
-                                child_now2.trgWidgId, child_now2.id,
+                                child_now2.trg_widg_id, child_now2.id,
                             ])
                         }
                     })
@@ -633,8 +633,8 @@ let main_panel_sync = function(opt_in) {
                 lockerV: [ tag_main + 'update_data', tag_main + 'in_drag' ],
                 lockerZoom: {
                     all: tag_grid_rec + 'zoom',
-                    during: tag_grid_rec + 'zoomsuring',
-                    end: tag_grid_rec + 'zoomEnd',
+                    during: tag_grid_rec + 'zoom_during',
+                    end: tag_grid_rec + 'zoom_end',
                 },
             }
 
@@ -1182,36 +1182,36 @@ let main_panel_sync = function(opt_in) {
             let id_now = 'icn' + unique()
             if (is_def(dIn)) {
                 let n_icon = dIn.data.data.data.n_icon
-                let trgWidgId = dIn.data.data.data.trgWidgId
+                let trg_widg_id = dIn.data.data.data.trg_widg_id
 
-                let initXYR = {
+                let init_xyr = {
                 }
                 let scale_r = 1.2
-                initXYR.r = dIn.data.w / 2
-                initXYR.x
-          = dIn.data.x
-          + dIn.data.w / 2
-          - shift_main_g[0]
-          - (scale_r - 1) * initXYR.r / 2
-                initXYR.y
-          = dIn.data.y
-          + dIn.data.h / 2
-          - shift_main_g[1]
-          - (scale_r - 1) * initXYR.r / 2
-                initXYR.r *= scale_r
+                init_xyr.r = dIn.data.w / 2
+                
+                init_xyr.x = (
+                    (dIn.data.x + dIn.data.w / 2)
+                    - (shift_main_g[0] - (scale_r - 1) * init_xyr.r / 2)
+                )
+                init_xyr.y = (
+                    (dIn.data.y + dIn.data.h / 2)
+                    - (shift_main_g[1] - (scale_r - 1) * init_xyr.r / 2)
+                )
+                init_xyr.r *= scale_r
 
-                let dataAdd = {
+                let data_add = {
                     id: id_now,
-                    trgWidgId: trgWidgId,
+                    trg_widg_id: trg_widg_id,
                     title: '',
                     n_icon: n_icon,
-                    init: initXYR,
+                    init: init_xyr,
                 }
 
                 update_empty_grp()
 
                 if (com.empty_grp_index >= 0) {
-                    grps.data.children[com.empty_grp_index].children[0].children = [ dataAdd ]
+                    grps.data.children[com.empty_grp_index]
+                        .children[0].children = [ data_add ]
                 }
                 else {
                     let nGrp = -1
@@ -1233,15 +1233,15 @@ let main_panel_sync = function(opt_in) {
                         children: [
                             {
                                 id: 'grp' + nGrp + '_0',
-                                children: [ dataAdd ],
+                                children: [ data_add ],
                             },
-                            // { id:"grp_"+nGrp+"_0", children: [{id:"icn_"+nGrp+"_0"+id_now, trgWidgId:"", n_icon:n_empty_icon}, dataAdd] },
+                            // { id:"grp_"+nGrp+"_0", children: [{id:"icn_"+nGrp+"_0"+id_now, trg_widg_id:"", n_icon:n_empty_icon}, data_add] },
                             {
                                 id: 'grp' + nGrp + '_1',
                                 children: [
                                     {
                                         id: 'icn' + nGrp + '_1' + id_now,
-                                        trgWidgId: '',
+                                        trg_widg_id: '',
                                         n_icon: n_empty_icon,
                                     },
                                 ],
@@ -1251,7 +1251,7 @@ let main_panel_sync = function(opt_in) {
                                 children: [
                                     {
                                         id: 'icn' + nGrp + '_2' + id_now,
-                                        trgWidgId: '',
+                                        trg_widg_id: '',
                                         n_icon: n_empty_icon,
                                     },
                                 ],
@@ -1282,16 +1282,16 @@ let main_panel_sync = function(opt_in) {
 
             let icons_orig = is_def(recs[tag_left_in]) ? recs[tag_left_in] : []
             let icons_new = []
-            let trgWidgIdV = []
+            let trg_widg_idV = []
             $.each(icons_orig, function(index0, ele0) {
                 let id_now = ele0.data.id
-                let trgWidgId = ele0.data.trgWidgId
+                let trg_widg_id = ele0.data.trg_widg_id
 
                 $.each(data, function(index1, ele1) {
-                    if (id_now === ele1.id && trgWidgIdV.indexOf(trgWidgId) < 0) {
+                    if (id_now === ele1.id && trg_widg_idV.indexOf(trg_widg_id) < 0) {
                         icons_new.push(ele0)
 
-                        trgWidgIdV.push(trgWidgId)
+                        trg_widg_idV.push(trg_widg_id)
                     }
                 })
             })
@@ -1299,7 +1299,7 @@ let main_panel_sync = function(opt_in) {
             $.each(data, function(index0, ele0) {
                 if (ele0.n_icon !== n_empty_icon) {
                     let id_now = ele0.id
-                    let trgWidgId = ele0.trgWidgId
+                    let trg_widg_id = ele0.trg_widg_id
                     let eleIndex = -1
 
                     $.each(icons_orig, function(index1, ele1) {
@@ -1308,18 +1308,18 @@ let main_panel_sync = function(opt_in) {
                         }
                     })
 
-                    if (eleIndex < 0 && trgWidgIdV.indexOf(trgWidgId) < 0) {
-                        // console.log(ele0.trgWidgId);
+                    if (eleIndex < 0 && trg_widg_idV.indexOf(trg_widg_id) < 0) {
+                        // console.log(ele0.trg_widg_id);
                         icons_new.push({
                             id: id_now,
                             data: {
                                 id: id_now,
-                                trgWidgId: trgWidgId,
+                                trg_widg_id: trg_widg_id,
                                 n_icon: ele0.n_icon,
                             },
                         })
 
-                        trgWidgIdV.push(trgWidgId)
+                        trg_widg_idV.push(trg_widg_id)
                     }
                 }
             })
@@ -1327,7 +1327,7 @@ let main_panel_sync = function(opt_in) {
             recs[tag_left_in] = icons_new
             icons_orig = null
             icons_new = null
-            trgWidgIdV = null
+            trg_widg_idV = null
 
             updSideCol()
         }
@@ -1718,7 +1718,7 @@ let main_panel_sync = function(opt_in) {
                 // // add an empty icon_badge if needed
                 // if(grps.data.children[ rmInd[0] ].children[ rmInd[1] ].children.length == 0) {
                 //   grps.data.children[ rmInd[0] ].children[ rmInd[1] ].children
-                //     .push({ id:"icn_empty_"+unique(), trgWidgId:"", title:"", n_icon:n_empty_icon });
+                //     .push({ id:"icn_empty_"+unique(), trg_widg_id:"", title:"", n_icon:n_empty_icon });
                 // }
             }
 
@@ -1764,7 +1764,7 @@ let main_panel_sync = function(opt_in) {
                             children: [
                                 {
                                     id: 'icn' + nGrp + '_0' + id_now,
-                                    trgWidgId: '',
+                                    trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
                             ],
@@ -1774,7 +1774,7 @@ let main_panel_sync = function(opt_in) {
                             children: [
                                 {
                                     id: 'icn' + nGrp + '_1' + id_now,
-                                    trgWidgId: '',
+                                    trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
                             ],
@@ -1784,7 +1784,7 @@ let main_panel_sync = function(opt_in) {
                             children: [
                                 {
                                     id: 'icn' + nGrp + '_2' + id_now,
-                                    trgWidgId: '',
+                                    trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
                             ],
@@ -1884,7 +1884,7 @@ let main_panel_sync = function(opt_in) {
         }
 
         // -------------------------------------------------------------------
-        // remove duplicates within a given group, by trgWidgId
+        // remove duplicates within a given group, by trg_widg_id
         // -------------------------------------------------------------------
         function removeDuplicates() {
             let hasRemoved = false
@@ -1894,7 +1894,7 @@ let main_panel_sync = function(opt_in) {
                 let hasDuplicates = false
                 $.each(child_now0.children, function(nChild1, child_now1) {
                     $.each(child_now1.children, function(nChild2, child_now2) {
-                        let id_now = child_now2.trgWidgId
+                        let id_now = child_now2.trg_widg_id
 
                         // do not register the first occurence, just initialize the vector
                         if (!is_def(ids[id_now])) {
@@ -1912,7 +1912,7 @@ let main_panel_sync = function(opt_in) {
                     $.each(child_now0.children, function(nChild1, child_now1) {
                         let children_now = []
                         $.each(child_now1.children, function(nChild2, child_now2) {
-                            let id_now = child_now2.trgWidgId
+                            let id_now = child_now2.trg_widg_id
 
                             let willRemove = false
                             $.each(ids[id_now], function(index, obj_now) {
@@ -1946,7 +1946,7 @@ let main_panel_sync = function(opt_in) {
                     if (child_now1.children.length === 0) {
                         child_now1.children.push({
                             id: 'icnEmpty' + unique(),
-                            trgWidgId: '',
+                            trg_widg_id: '',
                             title: '',
                             n_icon: n_empty_icon,
                         })

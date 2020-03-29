@@ -161,11 +161,11 @@ window.PlotTimeBar = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        com.tagClipPath = opt_in.tagClipPath
+        com.tag_clip_path = opt_in.tag_clip_path
 
         // comment data 2
-        if (!is_def(com.tagClipPath)) {
-            com.tagClipPath = {
+        if (!is_def(com.tag_clip_path)) {
+            com.tag_clip_path = {
                 top: com.mainTag + 'clipPathTop',
                 bot: com.mainTag + 'clipPathBot',
             }
@@ -176,7 +176,7 @@ window.PlotTimeBar = function() {
         topBot.defs = topBot.g.data.append('defs')
         topBot.clipPath = topBot.defs
             .append('clipPath')
-            .attr('id', com.tagClipPath.top)
+            .attr('id', com.tag_clip_path.top)
 
         console.log(topBot.box)
         topBot.clipRec = topBot.clipPath
@@ -185,7 +185,7 @@ window.PlotTimeBar = function() {
             .attr('y', 0)
             .attr('width', com.middle.box.w)
             .attr('height', com.middle.box.h)
-        topBot.g.data.attr('clip-path', 'url(#' + com.tagClipPath.top + ')')
+        topBot.g.data.attr('clip-path', 'url(#' + com.tag_clip_path.top + ')')
     }
     function init(opt_in) {
         if (is_def(com.mainTag)) {
