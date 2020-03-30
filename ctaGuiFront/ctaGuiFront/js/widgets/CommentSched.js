@@ -958,11 +958,11 @@ let main_comment_sched = function(opt_in) {
         //       },
         //       useRelativeCoords: true,
         //       locker: new Locker(),
-        //       lockerV: [widget_id + 'update_data'],
-        //       lockerZoom: {
+        //       lockers: [widget_id + 'update_data'],
+        //       lock_zoom: {
         //         all: 'ScrollBox' + 'zoom',
-        //         during: 'ScrollBox' + 'zoomsuring',
-        //         end: 'ScrollBox' + 'zoomEnd'
+        //         during: 'ScrollBox' + 'zoom_during',
+        //         end: 'ScrollBox' + 'zoom_end'
         //       },
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
         //       canScroll: true,
@@ -1001,11 +1001,11 @@ let main_comment_sched = function(opt_in) {
         //       },
         //       useRelativeCoords: true,
         //       locker: new Locker(),
-        //       lockerV: [widget_id + 'update_data'],
-        //       lockerZoom: {
+        //       lockers: [widget_id + 'update_data'],
+        //       lock_zoom: {
         //         all: 'ScrollBox' + 'zoom',
-        //         during: 'ScrollBox' + 'zoomsuring',
-        //         end: 'ScrollBox' + 'zoomEnd'
+        //         during: 'ScrollBox' + 'zoom_during',
+        //         end: 'ScrollBox' + 'zoom_end'
         //       },
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
         //       canScroll: true,
@@ -1236,11 +1236,11 @@ let main_comment_sched = function(opt_in) {
         //       },
         //       useRelativeCoords: true,
         //       locker: new Locker(),
-        //       lockerV: [widget_id + 'update_data'],
-        //       lockerZoom: {
+        //       lockers: [widget_id + 'update_data'],
+        //       lock_zoom: {
         //         all: 'ScrollBox' + 'zoom',
-        //         during: 'ScrollBox' + 'zoomsuring',
-        //         end: 'ScrollBox' + 'zoomEnd'
+        //         during: 'ScrollBox' + 'zoom_during',
+        //         end: 'ScrollBox' + 'zoom_end'
         //       },
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
         //       canScroll: true,
@@ -1323,11 +1323,11 @@ let main_comment_sched = function(opt_in) {
         //       },
         //       useRelativeCoords: true,
         //       locker: new Locker(),
-        //       lockerV: [widget_id + 'update_data'],
-        //       lockerZoom: {
+        //       lockers: [widget_id + 'update_data'],
+        //       lock_zoom: {
         //         all: 'ScrollBox' + 'zoom',
-        //         during: 'ScrollBox' + 'zoomsuring',
-        //         end: 'ScrollBox' + 'zoomEnd'
+        //         during: 'ScrollBox' + 'zoom_during',
+        //         end: 'ScrollBox' + 'zoom_end'
         //       },
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
         //       canScroll: true,
@@ -1622,11 +1622,11 @@ let main_comment_sched = function(opt_in) {
                     },
                     useRelativeCoords: true,
                     locker: new Locker(),
-                    lockerV: [ widget_id + 'update_data' ],
-                    lockerZoom: {
+                    lockers: [ widget_id + 'update_data' ],
+                    lock_zoom: {
                         all: 'log_infoBox' + 'zoom',
-                        during: 'log_infoBox' + 'zoomsuring',
-                        end: 'log_infoBox' + 'zoomEnd',
+                        during: 'log_infoBox' + 'zoom_during',
+                        end: 'log_infoBox' + 'zoom_end',
                     },
                     run_loop: new RunLoop({
                         tag: 'log_infoScrollBox',
@@ -2428,11 +2428,11 @@ let main_comment_sched = function(opt_in) {
                         },
                         useRelativeCoords: true,
                         locker: new Locker(),
-                        lockerV: [ widget_id + 'update_data' ],
-                        lockerZoom: {
+                        lockers: [ widget_id + 'update_data' ],
+                        lock_zoom: {
                             all: 'ScrollFiltering_box' + 'zoom',
-                            during: 'ScrollFiltering_box' + 'zoomsuring',
-                            end: 'ScrollFiltering_box' + 'zoomEnd',
+                            during: 'ScrollFiltering_box' + 'zoom_during',
+                            end: 'ScrollFiltering_box' + 'zoom_end',
                         },
                         run_loop: new RunLoop({
                             tag: 'inputHistoryFilteringScrollBox',
@@ -2493,11 +2493,11 @@ let main_comment_sched = function(opt_in) {
                         },
                         useRelativeCoords: true,
                         locker: new Locker(),
-                        lockerV: [ widget_id + 'update_data' ],
-                        lockerZoom: {
+                        lockers: [ widget_id + 'update_data' ],
+                        lock_zoom: {
                             all: 'ScrollBox' + 'zoom',
-                            during: 'ScrollBox' + 'zoomsuring',
-                            end: 'ScrollBox' + 'zoomEnd',
+                            during: 'ScrollBox' + 'zoom_during',
+                            end: 'ScrollBox' + 'zoom_end',
                         },
                         run_loop: new RunLoop({
                             tag: 'inputHistoryScrollBox',

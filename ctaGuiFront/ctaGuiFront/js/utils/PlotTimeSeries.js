@@ -45,22 +45,22 @@ window.PlotTimeSeries = function() {
         com.updateDomainY = opt_in.updateDomainY
         com.overviewLine = opt_in.overviewLine
 
-        let lockerZoom = opt_in.lockerZoom
-        if (!is_def(lockerZoom)) {
-            lockerZoom = {
+        let lock_zoom = opt_in.lock_zoom
+        if (!is_def(lock_zoom)) {
+            lock_zoom = {
                 all: com.main_tag + 'zoom',
-                during: com.main_tag + 'zoomsuring',
-                end: com.main_tag + 'zoomEnd',
+                during: com.main_tag + 'zoom_during',
+                end: com.main_tag + 'zoom_end',
             }
         }
-        com.lockerZoom = lockerZoom
+        com.lock_zoom = lock_zoom
 
-        let lockerV = {
+        let lockers = {
         }
-        lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
-        lockerV.zoomsuring = lockerV.lockerV.slice().concat([ lockerZoom.during ])
-        lockerV.zoomEnd = lockerV.lockerV.slice().concat([ lockerZoom.end ])
-        com.lockerV = lockerV
+        lockers.lockers = is_def(opt_in.lockers) ? opt_in.lockers : []
+        lockers.zoom_during = lockers.lockers.slice().concat([ lock_zoom.during ])
+        lockers.zoom_end = lockers.lockers.slice().concat([ lock_zoom.end ])
+        com.lockers = lockers
 
         com.yAxisMarginFrac = is_def(opt_in.yAxisMarginFrac)
             ? opt_in.yAxisMarginFrac
@@ -150,10 +150,10 @@ window.PlotTimeSeries = function() {
         }
         let topBot = com.top
         topBot.defs = topBot.g.data.append('defs')
-        topBot.clipPath = topBot.defs
+        topBot.clip_path = topBot.defs
             .append('clipPath')
             .attr('id', com.tag_clip_path.top)
-        topBot.clipRec = topBot.clipPath
+        topBot.clipRec = topBot.clip_path
             .append('rect')
             .attr('x', 0)
             .attr('y', 0)
@@ -177,11 +177,11 @@ window.PlotTimeSeries = function() {
                 },
                 boxData: com.bot.box,
                 locker: com.locker,
-                lockerV: [ tagPlot + 'update_data' ],
-                lockerZoom: {
+                lockers: [ tagPlot + 'update_data' ],
+                lock_zoom: {
                     all: tagPlot + 'zoom',
-                    during: tagPlot + 'zoomsuring',
-                    end: tagPlot + 'zoomEnd',
+                    during: tagPlot + 'zoom_during',
+                    end: tagPlot + 'zoom_end',
                 },
                 run_loop: null,
             })

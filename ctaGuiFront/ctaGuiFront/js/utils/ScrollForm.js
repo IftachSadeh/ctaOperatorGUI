@@ -94,11 +94,11 @@ window.ScrollForm = function(opt_in) {
         },
         useRelativeCoords: true,
         locker: new Locker(),
-        lockerV: [ com.main.tag + 'update_data' ],
-        lockerZoom: {
+        lockers: [ com.main.tag + 'update_data' ],
+        lock_zoom: {
             all: com.main.tag + 'zoom',
-            during: com.main.tag + 'zoomsuring',
-            end: com.main.tag + 'zoomEnd',
+            during: com.main.tag + 'zoom_during',
+            end: com.main.tag + 'zoom_end',
         },
         run_loop: new RunLoop({
             tag: 'scrollForm',

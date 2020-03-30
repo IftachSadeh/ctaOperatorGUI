@@ -430,9 +430,9 @@ window.PlotBrushZoom = function(opt_in) {
     //
     //     updateFocus()
     //     updateAxes()
-    //     // if (locker.are_free(lockerV.zoomsuring)) {
-    //     //   locker.add({ id: lockerZoom.all, override: true })
-    //     //   locker.add({ id: lockerZoom.during, override: true })
+    //     // if (locker.are_free(lockers.zoom_during)) {
+    //     //   locker.add({ id: lock_zoom.all, override: true })
+    //     //   locker.add({ id: lock_zoom.during, override: true })
     //     //
     //     //   if (d3.event.sourceEvent) {
     //     //     let s = d3.event.selection || reserved.brush.scale.x.range()
@@ -452,7 +452,7 @@ window.PlotBrushZoom = function(opt_in) {
     //     //     })
     //     //   }
     //     //
-    //     //   locker.remove({ id: lockerZoom.during })
+    //     //   locker.remove({ id: lock_zoom.during })
     //     // }
     //   }
     //   let brushEnd = function () {
@@ -468,7 +468,7 @@ window.PlotBrushZoom = function(opt_in) {
     //
     //     reserved.brush.isInBrush = false
     //     // locker.remove({
-    //     //   id: lockerZoom.all,
+    //     //   id: lock_zoom.all,
     //     //   override: true,
     //     //   delay: times.anim
     //     // })
@@ -661,7 +661,7 @@ window.PlotBrushZoom = function(opt_in) {
         // let zoom_start = function (ele) {
         //   reserved.zoom.isInZoom = true
         // }
-        // let zoomsuring = function (ele) {
+        // let zoom_during = function (ele) {
         //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return // ignore zoom-by-brush
         //   // if (reserved.zoom.coef.k - d3.event.transform.k !== 0) {
         //   //   reserved.zoom.coef.k = d3.event.transform.k
@@ -703,11 +703,11 @@ window.PlotBrushZoom = function(opt_in) {
         //   //   reserved.brush.scale.x.range().map(trans.invertX, trans)
         //   // )
         //
-        //   // reserved.brush.inUserZoom = is_def(d3.event.sourceEvent)
+        //   // reserved.brush.in_user_zoom = is_def(d3.event.sourceEvent)
         //
-        //   // if (locker.are_free(lockerV.zoomsuring)) {
-        //   //   locker.add({ id: lockerZoom.all, override: true })
-        //   //   locker.add({ id: lockerZoom.during, override: true })
+        //   // if (locker.are_free(lockers.zoom_during)) {
+        //   //   locker.add({ id: lock_zoom.all, override: true })
+        //   //   locker.add({ id: lock_zoom.during, override: true })
         //   //
         //   //   // Update top Axis
         //   //   let trans = d3.event.transform
@@ -721,10 +721,10 @@ window.PlotBrushZoom = function(opt_in) {
         //   //     reserved.brush.scale.x.range().map(trans.invertX, trans)
         //   //   )
         //   //
-        //   //   locker.remove({ id: lockerZoom.during })
+        //   //   locker.remove({ id: lock_zoom.during })
         //   // }
         // }
-        // let zoomEnd = function (ele) {
+        // let zoom_end = function (ele) {
         //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return // ignore zoom-by-brush
         //
         //   // let trans = d3.event.transform
@@ -741,7 +741,7 @@ window.PlotBrushZoom = function(opt_in) {
         //   // updateAxis()
         //   reserved.zoom.isInZoom = false
         //   // locker.remove({
-        //   //   id: lockerZoom.all,
+        //   //   id: lock_zoom.all,
         //   //   override: true,
         //   //   delay: times.anim
         //   // })
@@ -763,10 +763,10 @@ window.PlotBrushZoom = function(opt_in) {
         //     zoom_start(this)
         //   })
         //   .on('zoom', function (d) {
-        //     zoomsuring(this)
+        //     zoom_during(this)
         //   })
         //   .on('end', function (d) {
-        //     zoomEnd(this)
+        //     zoom_end(this)
         //   })
         reserved.content.main.g
             .on('wheel', function() {

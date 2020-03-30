@@ -148,11 +148,11 @@ window.TargetForm = function(opt_in) {
             },
             useRelativeCoords: true,
             locker: new Locker(),
-            lockerV: [ tag + 'update_data' ],
-            lockerZoom: {
+            lockers: [ tag + 'update_data' ],
+            lock_zoom: {
                 all: tag + 'zoom',
-                during: tag + 'zoomsuring',
-                end: tag + 'zoomEnd',
+                during: tag + 'zoom_during',
+                end: tag + 'zoom_end',
             },
             run_loop: new RunLoop({
                 tag: tag,

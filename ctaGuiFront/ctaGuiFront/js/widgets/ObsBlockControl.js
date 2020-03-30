@@ -419,11 +419,11 @@ let main_obs_block_control = function(opt_in) {
                 },
                 boxData: blockBoxData,
                 locker: locker,
-                lockerV: [ tagObsBlkCnt + 'update_data' ],
-                lockerZoom: {
+                lockers: [ tagObsBlkCnt + 'update_data' ],
+                lock_zoom: {
                     all: tagBlockQueueOld + 'zoom',
-                    during: tagBlockQueueOld + 'zoomsuring',
-                    end: tagBlockQueueOld + 'zoomEnd',
+                    during: tagBlockQueueOld + 'zoom_during',
+                    end: tagBlockQueueOld + 'zoom_end',
                 },
                 run_loop: run_loop,
             })
@@ -454,12 +454,12 @@ let main_obs_block_control = function(opt_in) {
                 g_box: gObBox,
                 boxData: obScrolBoxData,
                 show_counts: true,
-                vorClick: function(d) {
+                vor_click: function(d) {
                     block_focus({
                         id: d.data.id,
                     })
                 },
-                lockerV: [ tagObsBlkCnt + 'update_data' ],
+                lockers: [ tagObsBlkCnt + 'update_data' ],
                 utils: utils,
                 run_loop: run_loop,
                 locker: locker,
@@ -488,7 +488,7 @@ let main_obs_block_control = function(opt_in) {
                 tag: tagTelScroll,
                 g_box: gTelBox,
                 boxData: telScrolBoxData,
-                vorClick: function(opt_in) {
+                vor_click: function(opt_in) {
                     sync_state_send({
                         type: 'sync_tel_focus',
                         sync_time: Date.now(),
@@ -496,7 +496,7 @@ let main_obs_block_control = function(opt_in) {
                         target: opt_in.data.id,
                     })
                 },
-                lockerV: [ tagObsBlkCnt + 'update_data' ],
+                lockers: [ tagObsBlkCnt + 'update_data' ],
                 utils: utils,
                 run_loop: run_loop,
                 locker: locker,
@@ -566,11 +566,11 @@ let main_obs_block_control = function(opt_in) {
                     },
                     boxData: scrollTableData,
                     locker: locker,
-                    lockerV: [ tagObsBlkCnt + 'update_data' ],
-                    lockerZoom: {
+                    lockers: [ tagObsBlkCnt + 'update_data' ],
+                    lock_zoom: {
                         all: tagBlockQueueOld + 'zoom',
-                        during: tagBlockQueueOld + 'zoomsuring',
-                        end: tagBlockQueueOld + 'zoomEnd',
+                        during: tagBlockQueueOld + 'zoom_during',
+                        end: tagBlockQueueOld + 'zoom_end',
                     },
                     run_loop: run_loop,
                 })
@@ -704,11 +704,11 @@ let main_obs_block_control = function(opt_in) {
                     // title: { h:scrollBoxData.h*0.2, text:"asldklksdj" },
                     boxData: scrollBoxData,
                     locker: locker,
-                    lockerV: [ tagObsBlkCnt + 'update_data' ],
-                    lockerZoom: {
+                    lockers: [ tagObsBlkCnt + 'update_data' ],
+                    lock_zoom: {
                         all: tagBlockQueueOld + 'zoom',
-                        during: tagBlockQueueOld + 'zoomsuring',
-                        end: tagBlockQueueOld + 'zoomEnd',
+                        during: tagBlockQueueOld + 'zoom_during',
+                        end: tagBlockQueueOld + 'zoom_end',
                     },
                     run_loop: run_loop,
                 })
@@ -1237,13 +1237,14 @@ let main_obs_block_control = function(opt_in) {
                 : ''
 
             if (titleText !== '') {
-                let formatInt = d3.format('d')
-                titleText
-          += ' [ '
-          + formatInt(focusBlock.start_time)
-          + ' -- '
-          + formatInt(focusBlock.end_time)
-          + ' ]'
+                let format_int = d3.format('d')
+                titleText += (
+                    ' [ '
+                      + format_int(focusBlock.start_time)
+                      + ' -- '
+                      + format_int(focusBlock.end_time)
+                      + ' ]'
+                )
             }
 
             let text = data.g
@@ -1757,12 +1758,12 @@ let TelSummary = function() {
         }
     }
 
-    let formatInt = d3.format('d')
+    let format_int = d3.format('d')
     function tweenText(thisIn, new_val) {
         let prevText = thisIn.text()
         let interpolate = d3.interpolate(prevText, new_val)
         return function(t) {
-            thisIn.text(formatInt(interpolate(t)))
+            thisIn.text(format_int(interpolate(t)))
         }
     }
 
@@ -1906,9 +1907,9 @@ let TelScroll = function() {
                 },
             },
             vor_opt: {
-                click: opt_in.vorClick,
+                click: opt_in.vor_click,
             },
-            lockerV: opt_in.lockerV,
+            lockers: opt_in.lockers,
             on_zoom: {
                 start: on_zoom_start,
                 during: on_zoom_during,
@@ -1918,7 +1919,7 @@ let TelScroll = function() {
             locker: opt_in.locker,
         })
 
-        com.recs.dataG = com.scrollGrid.getBackDataG()
+        com.recs.dataG = com.scrollGrid.get_bck_data_g()
     }
     this.init = init
 
@@ -2183,9 +2184,9 @@ let _obScroll = function() {
             },
             // bck_rec_opt: { texture_orient: "2/8",  front_prop: { strk_opac: 0.2 } },
             vor_opt: {
-                click: opt_in.vorClick,
+                click: opt_in.vor_click,
             },
-            lockerV: opt_in.lockerV,
+            lockers: opt_in.lockers,
             on_zoom: {
                 start: on_zoom_start,
                 during: on_zoom_during,
@@ -2195,7 +2196,7 @@ let _obScroll = function() {
             locker: opt_in.locker,
         })
 
-        com.recs.dataG = com.scrollGrid.getBackDataG()
+        com.recs.dataG = com.scrollGrid.get_bck_data_g()
 
         setStyle(opt_in.style)
     }

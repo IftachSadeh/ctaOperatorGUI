@@ -174,12 +174,12 @@ window.PlotTimeBar = function() {
         let topBot = com.bot
 
         topBot.defs = topBot.g.data.append('defs')
-        topBot.clipPath = topBot.defs
+        topBot.clip_path = topBot.defs
             .append('clipPath')
             .attr('id', com.tag_clip_path.top)
 
         console.log(topBot.box)
-        topBot.clipRec = topBot.clipPath
+        topBot.clipRec = topBot.clip_path
             .append('rect')
             .attr('x', 0)
             .attr('y', 0)
@@ -197,22 +197,22 @@ window.PlotTimeBar = function() {
         com.locker = opt_in.locker
         com.run_loop = opt_in.run_loop
 
-        let lockerZoom = opt_in.lockerZoom
-        if (!is_def(lockerZoom)) {
-            lockerZoom = {
+        let lock_zoom = opt_in.lock_zoom
+        if (!is_def(lock_zoom)) {
+            lock_zoom = {
                 all: com.main_tag + 'zoom',
-                during: com.main_tag + 'zoomsuring',
-                end: com.main_tag + 'zoomEnd',
+                during: com.main_tag + 'zoom_during',
+                end: com.main_tag + 'zoom_end',
             }
         }
-        com.lockerZoom = lockerZoom
+        com.lock_zoom = lock_zoom
 
-        let lockerV = {
+        let lockers = {
         }
-        lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
-        lockerV.zoomsuring = lockerV.lockerV.slice().concat([ lockerZoom.during ])
-        lockerV.zoomEnd = lockerV.lockerV.slice().concat([ lockerZoom.end ])
-        com.lockerV = lockerV
+        lockers.lockers = is_def(opt_in.lockers) ? opt_in.lockers : []
+        lockers.zoom_during = lockers.lockers.slice().concat([ lock_zoom.during ])
+        lockers.zoom_end = lockers.lockers.slice().concat([ lock_zoom.end ])
+        com.lockers = lockers
 
         com.yAxisMarginFrac = is_def(opt_in.yAxisMarginFrac)
             ? opt_in.yAxisMarginFrac
@@ -518,8 +518,8 @@ window.PlotTimeBar = function() {
     // ------------------------------------------------------------------
     function setupZoomBrush() {
         let locker = com.locker
-        let lockerV = com.lockerV
-        let lockerZoom = com.lockerZoom
+        let lockers = com.lockers
+        let lock_zoom = com.lock_zoom
 
         function init_zoomBrush() {
             com.zoom = {
@@ -540,10 +540,10 @@ window.PlotTimeBar = function() {
                     com.zoom_start(this)
                 })
                 .on('zoom', function(d) {
-                    com.zoomsuring(this)
+                    com.zoom_during(this)
                 })
                 .on('end', function(d) {
-                    com.zoomEnd(this)
+                    com.zoom_end(this)
                 })
 
             com.g_box.on('wheel', function() {
@@ -573,20 +573,20 @@ window.PlotTimeBar = function() {
         com.zoom_start = function(ele) {
             com.isInZoom = true
         }
-        com.zoomsuring = function(ele) {
+        com.zoom_during = function(ele) {
             if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
                 return
             } // ignore zoom-by-brush
 
-            com.inUserZoom = is_def(d3.event.sourceEvent)
+            com.in_user_zoom = is_def(d3.event.sourceEvent)
 
-            if (locker.are_free(lockerV.zoomsuring)) {
+            if (locker.are_free(lockers.zoom_during)) {
                 locker.add({
-                    id: lockerZoom.all,
+                    id: lock_zoom.all,
                     override: true,
                 })
                 locker.add({
-                    id: lockerZoom.during,
+                    id: lock_zoom.during,
                     override: true,
                 })
 
@@ -603,11 +603,11 @@ window.PlotTimeBar = function() {
                 )
 
                 locker.remove({
-                    id: lockerZoom.during,
+                    id: lock_zoom.during,
                 })
             }
         }
-        com.zoomEnd = function(ele) {
+        com.zoom_end = function(ele) {
             if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
                 return
             } // ignore zoom-by-brush
@@ -628,7 +628,7 @@ window.PlotTimeBar = function() {
             updateTopAxis()
             com.isInZoom = false
             locker.remove({
-                id: lockerZoom.all,
+                id: lock_zoom.all,
                 override: true,
                 delay: times.anim,
             })
@@ -649,13 +649,13 @@ window.PlotTimeBar = function() {
             } // ignore brush-by-zoom
             // console.log('brushDuring');
 
-            if (locker.are_free(lockerV.zoomsuring)) {
+            if (locker.are_free(lockers.zoom_during)) {
                 locker.add({
-                    id: lockerZoom.all,
+                    id: lock_zoom.all,
                     override: true,
                 })
                 locker.add({
-                    id: lockerZoom.during,
+                    id: lock_zoom.during,
                     override: true,
                 })
 
@@ -677,7 +677,7 @@ window.PlotTimeBar = function() {
                 }
 
                 locker.remove({
-                    id: lockerZoom.during,
+                    id: lock_zoom.during,
                 })
             }
         }
@@ -698,7 +698,7 @@ window.PlotTimeBar = function() {
 
             com.isInBrush = false
             locker.remove({
-                id: lockerZoom.all,
+                id: lock_zoom.all,
                 override: true,
                 delay: times.anim,
             })

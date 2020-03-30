@@ -306,11 +306,11 @@ let main_night_sched = function(opt_in) {
                 },
                 boxData: blockBoxData,
                 locker: locker,
-                lockerV: [ tag_night_sched + 'update_data' ],
-                lockerZoom: {
+                lockers: [ tag_night_sched + 'update_data' ],
+                lock_zoom: {
                     all: tagBlockQueue + 'zoom',
-                    during: tagBlockQueue + 'zoomsuring',
-                    end: tagBlockQueue + 'zoomEnd',
+                    during: tagBlockQueue + 'zoom_during',
+                    end: tagBlockQueue + 'zoom_end',
                 },
                 run_loop: run_loop,
             })

@@ -909,11 +909,11 @@ window.BlockFilters = function(opt_in) {
                 },
                 useRelativeCoords: true,
                 locker: new Locker(),
-                lockerV: [ 'telsFiltersScroll' + 'update_data' ],
-                lockerZoom: {
+                lockers: [ 'telsFiltersScroll' + 'update_data' ],
+                lock_zoom: {
                     all: 'ScrollBox' + 'zoom',
-                    during: 'ScrollBox' + 'zoomsuring',
-                    end: 'ScrollBox' + 'zoomEnd',
+                    during: 'ScrollBox' + 'zoom_during',
+                    end: 'ScrollBox' + 'zoom_end',
                 },
                 run_loop: new RunLoop({
                     tag: 'telsFiltersScroll',
@@ -1407,11 +1407,11 @@ window.BlockFilters = function(opt_in) {
                 },
                 useRelativeCoords: true,
                 locker: new Locker(),
-                lockerV: [ 'targetsFiltersScroll' + 'update_data' ],
-                lockerZoom: {
+                lockers: [ 'targetsFiltersScroll' + 'update_data' ],
+                lock_zoom: {
                     all: 'ScrollBox' + 'zoom',
-                    during: 'ScrollBox' + 'zoomsuring',
-                    end: 'ScrollBox' + 'zoomEnd',
+                    during: 'ScrollBox' + 'zoom_during',
+                    end: 'ScrollBox' + 'zoom_end',
                 },
                 run_loop: new RunLoop({
                     tag: 'targetsFiltersScroll',
@@ -1820,11 +1820,11 @@ window.BlockFilters = function(opt_in) {
     //       },
     //       useRelativeCoords: true,
     //       locker: new Locker(),
-    //       lockerV: ['blocksFiltersScroll' + 'update_data'],
-    //       lockerZoom: {
+    //       lockers: ['blocksFiltersScroll' + 'update_data'],
+    //       lock_zoom: {
     //         all: 'ScrollBox' + 'zoom',
-    //         during: 'ScrollBox' + 'zoomsuring',
-    //         end: 'ScrollBox' + 'zoomEnd'
+    //         during: 'ScrollBox' + 'zoom_during',
+    //         end: 'ScrollBox' + 'zoom_end'
     //       },
     //       run_loop: new RunLoop({tag: 'blocksFiltersScroll'}),
     //       canScroll: true,
@@ -1957,11 +1957,11 @@ window.BlockFilters = function(opt_in) {
     //       },
     //       useRelativeCoords: true,
     //       locker: new Locker(),
-    //       lockerV: ['blocksFiltersScroll' + 'update_data'],
-    //       lockerZoom: {
+    //       lockers: ['blocksFiltersScroll' + 'update_data'],
+    //       lock_zoom: {
     //         all: 'ScrollBox' + 'zoom',
-    //         during: 'ScrollBox' + 'zoomsuring',
-    //         end: 'ScrollBox' + 'zoomEnd'
+    //         during: 'ScrollBox' + 'zoom_during',
+    //         end: 'ScrollBox' + 'zoom_end'
     //       },
     //       run_loop: new RunLoop({tag: 'blocksFiltersScroll'}),
     //       canScroll: true,
@@ -2643,11 +2643,11 @@ window.BlockFilters = function(opt_in) {
                 },
                 useRelativeCoords: true,
                 locker: new Locker(),
-                lockerV: [ 'telsFiltersScroll' + 'update_data' ],
-                lockerZoom: {
+                lockers: [ 'telsFiltersScroll' + 'update_data' ],
+                lock_zoom: {
                     all: 'ScrollBox' + 'zoom',
-                    during: 'ScrollBox' + 'zoomsuring',
-                    end: 'ScrollBox' + 'zoomEnd',
+                    during: 'ScrollBox' + 'zoom_during',
+                    end: 'ScrollBox' + 'zoom_end',
                 },
                 run_loop: new RunLoop({
                     tag: 'telsFiltersScroll',

@@ -576,7 +576,7 @@ window.ArrZoomerTree = function(opt_in0) {
                     //   // console.log('MNM', i, tag_now, '!!!',arc_prev[tag_now].ang[0], '!!!', d)
                     // })
                     // .each(function (d, i) {
-                    //   d.tau_frac_now = tau_fracIn
+                    //   d.tau_frac_now = tau_frac_in
                     // })
                     .call(com.arc_tween, {
                         tag_now: tag_now,

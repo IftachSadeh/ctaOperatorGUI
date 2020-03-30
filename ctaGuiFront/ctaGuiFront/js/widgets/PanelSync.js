@@ -634,8 +634,8 @@ let main_panel_sync = function(opt_in) {
                 },
                 run_loop: run_loop,
                 locker: locker,
-                lockerV: [ tag_main + 'update_data', tag_main + 'in_drag' ],
-                lockerZoom: {
+                lockers: [ tag_main + 'update_data', tag_main + 'in_drag' ],
+                lock_zoom: {
                     all: tag_grid_rec + 'zoom',
                     during: tag_grid_rec + 'zoom_during',
                     end: tag_grid_rec + 'zoom_end',
@@ -644,7 +644,7 @@ let main_panel_sync = function(opt_in) {
 
             com.scroll_grid = new ScrollGrid(recs.recOpt)
 
-            recs.data_g = com.scroll_grid.getBackDataG()
+            recs.data_g = com.scroll_grid.get_bck_data_g()
             recs.data_g.attr('clip-path', (
                 'url(#' + tag_clip_path + tag_grid_rec + ')'
             ))
@@ -1649,7 +1649,7 @@ let main_panel_sync = function(opt_in) {
                     d.attr('d', vor_ploy_func)
                 })
                 // .on("mouseover", tel_data.vorHov)
-                // .on("click",     tel_data.vorClick)
+                // .on("click",     tel_data.vor_click)
                 // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:dblclick_zoom_in_out }); })
 
             if (show_vor) {

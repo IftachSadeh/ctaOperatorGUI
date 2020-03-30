@@ -846,7 +846,7 @@ window.ArrZoomerMain = function(opt_in0) {
             let zoom_in_out = opt_in.is_in_out
             let scale = this_top.get_scale()
             let is_on_target = zooms.target === d.data.id
-            // console.log('vorClick',d.data.id,(scale >= zooms.len["1.0"]),!is_on_target)
+            // console.log('vor_click',d.data.id,(scale >= zooms.len["1.0"]),!is_on_target)
 
             zooms.target = d.data.id
 
@@ -897,7 +897,7 @@ window.ArrZoomerMain = function(opt_in0) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function setVor() {
+        function set_vor() {
             let tag_vor = 'vor'
             let polygons = vor_func.polygons(insts.data.vor.data)
             let vor = com.vor.g
@@ -977,7 +977,7 @@ window.ArrZoomerMain = function(opt_in0) {
             insts.data.vor.data = insts.data.vor.data_physical
             links_2.xyz = links_2.physical
 
-            setVor()
+            set_vor()
             this_top.sub_arr_grp_circ([])
 
             if (locker.is_free('in_init')) {
@@ -1160,7 +1160,7 @@ window.ArrZoomerMain = function(opt_in0) {
         //   insts.data.vor.data = insts.data.vor.data_sub_arr
         //   links_2.xyz = links_2.sub_arr
 
-        //   setVor()
+        //   set_vor()
 
         //   this_top.sub_arr_grp_circ(insts.data.xyr_sub_arr_grp)
 

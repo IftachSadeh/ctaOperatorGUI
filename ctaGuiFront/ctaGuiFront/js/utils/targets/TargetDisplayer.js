@@ -470,11 +470,11 @@ window.TargetDisplayer = function(opt_in) {
             },
             useRelativeCoords: true,
             locker: new Locker(),
-            lockerV: [ ntag + 'update_data' ],
-            lockerZoom: {
+            lockers: [ ntag + 'update_data' ],
+            lock_zoom: {
                 all: ntag + 'zoom',
-                during: ntag + 'zoomsuring',
-                end: ntag + 'zoomEnd',
+                during: ntag + 'zoom_during',
+                end: ntag + 'zoom_end',
             },
             run_loop: new RunLoop({
                 tag: ntag,

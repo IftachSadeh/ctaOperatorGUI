@@ -1393,11 +1393,11 @@ window.EventDisplayer = function(opt_in) {
             },
             useRelativeCoords: true,
             locker: new Locker(),
-            lockerV: [ 'eventDisplayerScroll' + 'update_data' ],
-            lockerZoom: {
+            lockers: [ 'eventDisplayerScroll' + 'update_data' ],
+            lock_zoom: {
                 all: 'eventDisplayerScroll' + 'zoom',
-                during: 'eventDisplayerScroll' + 'zoomsuring',
-                end: 'eventDisplayerScroll' + 'zoomEnd',
+                during: 'eventDisplayerScroll' + 'zoom_during',
+                end: 'eventDisplayerScroll' + 'zoom_end',
             },
             run_loop: new RunLoop({
                 tag: 'eventDisplayerScroll',

@@ -1658,11 +1658,11 @@ window.BlockDisplayer = function(opt_in) {
                 },
                 useRelativeCoords: true,
                 locker: new Locker(),
-                lockerV: [ 'blockDisplayerFormScroll' + 'update_data' ],
-                lockerZoom: {
+                lockers: [ 'blockDisplayerFormScroll' + 'update_data' ],
+                lock_zoom: {
                     all: 'ScrollBox' + 'zoom',
-                    during: 'ScrollBox' + 'zoomsuring',
-                    end: 'ScrollBox' + 'zoomEnd',
+                    during: 'ScrollBox' + 'zoom_during',
+                    end: 'ScrollBox' + 'zoom_end',
                 },
                 run_loop: new RunLoop({
                     tag: 'inputHistoryScrollBox',
@@ -3177,11 +3177,11 @@ window.BlockDisplayer = function(opt_in) {
             },
             useRelativeCoords: true,
             locker: new Locker(),
-            lockerV: [ 'blockDisplayerScroll' + 'update_data' ],
-            lockerZoom: {
+            lockers: [ 'blockDisplayerScroll' + 'update_data' ],
+            lock_zoom: {
                 all: 'blockDisplayerScroll' + 'zoom',
-                during: 'blockDisplayerScroll' + 'zoomsuring',
-                end: 'blockDisplayerScroll' + 'zoomEnd',
+                during: 'blockDisplayerScroll' + 'zoom_during',
+                end: 'blockDisplayerScroll' + 'zoom_end',
             },
             run_loop: new RunLoop({
                 tag: 'blockDisplayerScroll',
