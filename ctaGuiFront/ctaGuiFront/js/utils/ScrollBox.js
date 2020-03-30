@@ -47,7 +47,7 @@ window.ScrollBox = function() {
             .attr('height', com.outerBox.h)
 
         com.outerG
-            .selectAll('rect.' + com.mainTag + 'blockBoxOuter')
+            .selectAll('rect.' + com.main_tag + 'blockBoxOuter')
             .data([ com.outerBox ], function(d) {
                 return d.id
             })
@@ -66,7 +66,7 @@ window.ScrollBox = function() {
                 return d.h
             })
         com.scrollOuterG
-            .selectAll('rect.' + com.mainTag + 'blockBoxInner')
+            .selectAll('rect.' + com.main_tag + 'blockBoxInner')
             .data([ com.outerBox ], function(d) {
                 return d.id
             })
@@ -89,8 +89,8 @@ window.ScrollBox = function() {
         com.tag_clip_path = opt_in.tag_clip_path
         if (!is_def(com.tag_clip_path)) {
             com.tag_clip_path = {
-                inner: com.mainTag + 'clipPathInner',
-                outer: com.mainTag + 'clipPathOuter',
+                inner: com.main_tag + 'clipPathInner',
+                outer: com.main_tag + 'clipPathOuter',
             }
         }
 
@@ -122,13 +122,13 @@ window.ScrollBox = function() {
         com.outerG = com.g_box.append('g')
 
         com.outerG
-            .selectAll('rect.' + com.mainTag + 'blockBoxOuter')
+            .selectAll('rect.' + com.main_tag + 'blockBoxOuter')
             .data([ com.outerBox ], function(d) {
                 return d.id
             })
             .enter()
             .append('rect')
-            .attr('class', com.mainTag + 'blockBoxOuter')
+            .attr('class', com.main_tag + 'blockBoxOuter')
             .attr('x', function(d, i) {
                 return d.x
             })
@@ -151,7 +151,7 @@ window.ScrollBox = function() {
         com.scrollOuterG = com.g_box.append('g')
 
         com.scroll_rec_inner = com.scrollOuterG
-            .selectAll('rect.' + com.mainTag + 'blockBoxInner')
+            .selectAll('rect.' + com.main_tag + 'blockBoxInner')
             .data([ com.outerBox ], function(d) {
                 return d.id
             })
@@ -159,7 +159,7 @@ window.ScrollBox = function() {
             .append('rect')
 
         com.scroll_rec_inner
-            .attr('class', com.mainTag + 'blockBoxInner')
+            .attr('class', com.main_tag + 'blockBoxInner')
             .attr('x', function(d, i) {
                 return d.x
             })
@@ -183,15 +183,15 @@ window.ScrollBox = function() {
         com.scrollBarHG = com.g_box.append('g')
     }
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
 
-        com.mainTag = opt_in.tag
-        com.tag_zoom = com.mainTag + 'zoom'
-        com.tagDrag = com.mainTag + 'drag'
-        com.tagScrollBar = com.mainTag + 'scrollBar'
+        com.main_tag = opt_in.tag
+        com.tag_zoom = com.main_tag + 'zoom'
+        com.tagDrag = com.main_tag + 'drag'
+        com.tagScrollBar = com.main_tag + 'scrollBar'
 
         com.canScroll = is_def(opt_in.canScroll) ? opt_in.canScroll : true
         com.useRelativeCoords = is_def(opt_in.useRelativeCoords)
@@ -203,9 +203,9 @@ window.ScrollBox = function() {
         let lockerZoom = opt_in.lockerZoom
         if (!is_def(lockerZoom)) {
             lockerZoom = {
-                all: com.mainTag + 'zoom',
-                during: com.mainTag + 'zoomsuring',
-                end: com.mainTag + 'zoomEnd',
+                all: com.main_tag + 'zoom',
+                during: com.main_tag + 'zoomsuring',
+                end: com.main_tag + 'zoomEnd',
             }
         }
         com.lockerZoom = lockerZoom
@@ -359,7 +359,7 @@ window.ScrollBox = function() {
         }
 
         if (!is_def(com.titleData.id)) {
-            com.titleData.id = com.mainTag + 'title'
+            com.titleData.id = com.main_tag + 'title'
         }
         if (!is_def(com.titleData.h)) {
             com.titleData.h = com.outerBox.w * 0.05
@@ -765,12 +765,12 @@ window.ScrollBox = function() {
     //
     // ------------------------------------------------------------------
         function zoomVerticalScrollBarInit() {
-            if (!com.locker.is_free(com.mainTag + 'zoomVerticalScrollBarInit')) {
+            if (!com.locker.is_free(com.main_tag + 'zoomVerticalScrollBarInit')) {
                 return
             }
 
             com.locker.add({
-                id: com.mainTag + 'zoomVerticalScrollBarInit',
+                id: com.main_tag + 'zoomVerticalScrollBarInit',
                 override: true,
             })
             com.scrollBarRecV = null
@@ -803,7 +803,7 @@ window.ScrollBox = function() {
                 .attr('height', box.h)
             // click also does dragStart, but we need it for the smooth transition
                 .on('click', function(d) {
-                    recVerticalBckClickOnce({
+                    rec_vertical_bck_click_once({
                         coords: d3.mouse(this),
                     })
                 })
@@ -850,7 +850,7 @@ window.ScrollBox = function() {
                             'rect.' + com.tagScrollBar + 'scroll'
                         )
                         com.locker.remove({
-                            id: com.mainTag + 'zoomVerticalScrollBarInit',
+                            id: com.main_tag + 'zoomVerticalScrollBarInit',
                         })
                     }
                     n_tries += 1
@@ -862,7 +862,7 @@ window.ScrollBox = function() {
             }
             else {
                 com.locker.remove({
-                    id: com.mainTag + 'zoomVerticalScrollBarInit',
+                    id: com.main_tag + 'zoomVerticalScrollBarInit',
                 })
             }
         }
@@ -955,35 +955,35 @@ window.ScrollBox = function() {
         //
         // ------------------------------------------------------------------
         com.run_loop.init({
-            tag: com.mainTag + 'recVerticalBckClick',
-            func: recVerticalBckClickOnce,
+            tag: com.main_tag + 'rec_vertical_bck_click',
+            func: rec_vertical_bck_click_once,
             n_keep: 1,
         })
 
-        function recVerticalBckClick(data_in) {
+        function rec_vertical_bck_click(data_in) {
             com.run_loop.push({
-                tag: com.mainTag + 'recVerticalBckClick',
+                tag: com.main_tag + 'rec_vertical_bck_click',
                 data: data_in,
             })
         }
-        com.recVerticalBckClick = recVerticalBckClick
+        com.rec_vertical_bck_click = rec_vertical_bck_click
 
         let nClickTries = 0
-        function recVerticalBckClickOnce(data_in) {
+        function rec_vertical_bck_click_once(data_in) {
             if (
                 com.isInZoom
         || com.isInDrag
         || (com.scrollTransV.active && !is_def(com.scrollBarRecV))
             ) {
-                // console.log('delay recVerticalBckClickOnce',[com.isInZoom,com.isInDrag],[com.scrollTrans.active,is_def(com.scrollBarRec)]);
+                // console.log('delay rec_vertical_bck_click_once',[com.isInZoom,com.isInDrag],[com.scrollTrans.active,is_def(com.scrollBarRec)]);
                 if (nClickTries < 100) {
                     setTimeout(function() {
                         nClickTries += 1
-                        recVerticalBckClick(data_in)
+                        rec_vertical_bck_click(data_in)
                     }, times.anim / 2)
                 }
                 else {
-                    console.error('cant do recVerticalBckClick ...', data_in)
+                    console.error('cant do rec_vertical_bck_click ...', data_in)
                 }
                 return
             }
@@ -1452,12 +1452,12 @@ window.ScrollBox = function() {
     //
     // ------------------------------------------------------------------
         function zoomHorizontalScrollBarInit() {
-            if (!com.locker.is_free(com.mainTag + 'zoomHorizontalScrollBarInit')) {
+            if (!com.locker.is_free(com.main_tag + 'zoomHorizontalScrollBarInit')) {
                 return
             }
 
             com.locker.add({
-                id: com.mainTag + 'zoomHorizontalScrollBarInit',
+                id: com.main_tag + 'zoomHorizontalScrollBarInit',
                 override: true,
             })
             com.scrollBarRecH = null
@@ -1537,7 +1537,7 @@ window.ScrollBox = function() {
                             'rect.' + com.tagScrollBar + 'scroll'
                         )
                         com.locker.remove({
-                            id: com.mainTag + 'zoomHorizontalScrollBarInit',
+                            id: com.main_tag + 'zoomHorizontalScrollBarInit',
                         })
                     }
                     n_tries += 1
@@ -1549,7 +1549,7 @@ window.ScrollBox = function() {
             }
             else {
                 com.locker.remove({
-                    id: com.mainTag + 'zoomHorizontalScrollBarInit',
+                    id: com.main_tag + 'zoomHorizontalScrollBarInit',
                 })
             }
         }
@@ -1640,14 +1640,14 @@ window.ScrollBox = function() {
         //
         // ------------------------------------------------------------------
         com.run_loop.init({
-            tag: com.mainTag + 'rec_horizontalBckClick',
+            tag: com.main_tag + 'rec_horizontalBckClick',
             func: rec_horizontalBckClickOnce,
             n_keep: 1,
         })
 
         function rec_horizontalBckClick(data_in) {
             com.run_loop.push({
-                tag: com.mainTag + 'rec_horizontalBckClick',
+                tag: com.main_tag + 'rec_horizontalBckClick',
                 data: data_in,
             })
         }

@@ -1747,8 +1747,8 @@ window.BlockQueue = function(opt_in) {
     //
     // ------------------------------------------------------------------
     // function blocksMouseOver (data) {
-    //   let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
-    //   if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
+    //   let totBlocks = com.blocks.run.g.selectAll('g.' + com.main_tag + 'blocks')
+    //   if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.main_tag + 'blocks'))
     //
     //   totBlocks.each(function (d) {
     //     if (d.data.metadata.n_sched === data.data.metadata.n_sched && d.data.metadata.n_obs !== data.data.metadata.n_obs) {
@@ -1759,8 +1759,8 @@ window.BlockQueue = function(opt_in) {
     //   })
     // }
     // function blocksMouseOut (data) {
-    //   let totBlocks = com.blocks.run.g.selectAll('g.' + com.mainTag + 'blocks')
-    //   if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.mainTag + 'blocks'))
+    //   let totBlocks = com.blocks.run.g.selectAll('g.' + com.main_tag + 'blocks')
+    //   if (com.blocks.cancel.g) totBlocks.merge(com.blocks.cancel.g.selectAll('g.' + com.main_tag + 'blocks'))
     //
     //   totBlocks.each(function (d) {
     //     if (d.data.metadata.n_sched === data.data.metadata.n_sched && d.data.metadata.n_obs !== data.data.metadata.n_obs) {
@@ -1827,14 +1827,14 @@ window.BlockQueue = function(opt_in) {
             .domain([ com.time.start_time.time, com.time.end_time.time ])
 
         let rect = g
-            .selectAll('g.' + com.mainTag + 'blocks')
+            .selectAll('g.' + com.main_tag + 'blocks')
             .data(data, function(d) {
                 return d.id
             })
         let rectEnter = rect
             .enter()
             .append('g')
-            .attr('class', com.mainTag + 'blocks')
+            .attr('class', com.main_tag + 'blocks')
         rectEnter.each(function(d, i) {
             let parent = d3.select(this)
             d3
@@ -2046,7 +2046,7 @@ window.BlockQueue = function(opt_in) {
                     if (!is_def(d.size)) {
                         console.error(
                             '_blockQueue_ERROR:',
-                            com.mainTag,
+                            com.main_tag,
                             minTxtSize,
                             d.w,
                             d.h
@@ -2086,7 +2086,7 @@ window.BlockQueue = function(opt_in) {
     //
     // ------------------------------------------------------------------
     // let text = g
-    //   .selectAll('text.' + com.mainTag + 'blocks')
+    //   .selectAll('text.' + com.main_tag + 'blocks')
     //   .data(data, function (d) {
     //     return d.id
     //   })
@@ -2106,21 +2106,21 @@ window.BlockQueue = function(opt_in) {
         let data = []
         if (date === null) {
             let rectNow = com.main.g
-                .selectAll('rect.' + com.mainTag + 'extra')
+                .selectAll('rect.' + com.main_tag + 'extra')
                 .data(data)
             rectNow.exit().remove()
         }
         else {
             data = [ date ]
             let rectNow = com.main.g
-                .selectAll('rect.' + com.mainTag + 'extra')
+                .selectAll('rect.' + com.main_tag + 'extra')
                 .data(data)
                 .attr('transform', 'translate(' + com.axis.box.x + ',' + 0 + ')')
 
             rectNow
                 .enter()
                 .append('rect')
-                .attr('class', com.mainTag + 'extra')
+                .attr('class', com.main_tag + 'extra')
                 .style('opacity', 1)
                 .attr('x', function(d, i) {
                     if (d > com.axis.scale.domain()[1]) {
@@ -2172,7 +2172,7 @@ window.BlockQueue = function(opt_in) {
 
         rectNowData = [
             {
-                id: com.mainTag + 'now',
+                id: com.main_tag + 'now',
                 x: com.axis.scale(com.time.currentTime.date),
                 y: com.timeBars.box.y,
                 w: com.timeBars.box.marg,
@@ -2186,7 +2186,7 @@ window.BlockQueue = function(opt_in) {
         //
         // ------------------------------------------------------------------
         let rectNow = com.timeBars.g
-            .selectAll('rect.' + com.mainTag + 'now')
+            .selectAll('rect.' + com.main_tag + 'now')
             .data(rectNowData, function(d) {
                 return d.id
             })
@@ -2194,7 +2194,7 @@ window.BlockQueue = function(opt_in) {
         rectNow
             .enter()
             .append('rect')
-            .attr('class', com.mainTag + 'now')
+            .attr('class', com.main_tag + 'now')
             .style('opacity', 1)
             .attr('x', function(d, i) {
                 return d.x

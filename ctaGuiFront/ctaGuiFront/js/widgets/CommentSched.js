@@ -127,7 +127,7 @@ let sock_comment_sched = function(opt_in) {
     //   if(sock.con_stat.is_offline()) return;
     //   let data         = {};
     //   data.widget_id = widget_id;
-    //   data.tel_Id    = opt_in.tel_Id;
+    //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
     //     "widget_source":widget_source, "widget_name":widget_type, "widget_id":widget_id,

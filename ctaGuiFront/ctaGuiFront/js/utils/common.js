@@ -669,7 +669,7 @@ window.tel_info = function() {
         data.sort(function(a, b) {
             if (!is_def(func(a)) || !is_def(func(b))) {
                 console.error(
-                    '- Trying to sort unknown tel_Id',
+                    '- Trying to sort unknown tel_id',
                     [ a, b ],
                     [ func(a), func(b) ],
                     opt_in
@@ -1099,7 +1099,7 @@ window.sort_by_func = function(opt_in) {
     data.sort(function(a, b) {
         if (!is_def(func(a)) || !is_def(func(b))) {
             console.error(
-                '- Trying to sort unknown tel_Id',
+                '- Trying to sort unknown tel_id',
                 opt_in,
                 [ a, func(a) ],
                 [ b, func(b) ]
@@ -1962,6 +1962,7 @@ window.IconBadge = function() {
             '/static/owl.svg',
             '/static/gorilla.svg',
             '/static/gecko.svg',
+            '/static/puffin.svg',
             '/static/falcon.svg',
             '/static/deer-running.svg',
             '/static/dolphin.svg',
@@ -1979,16 +1980,19 @@ window.IconBadge = function() {
             '/static/wallaby.svg',
             '/static/lion.svg',
             '/static/giraffe.svg',
+            '/static/arctic-fox.svg',
             '/static/chicken.svg',
             '/static/scorpion-clawed.svg',
             '/static/koala.svg',
             '/static/monkey.svg',
+            '/static/arctic-moose.svg',
             '/static/hammerhead.svg',
             '/static/spider.svg',
             '/static/rabbit.svg',
             '/static/manta-ray.svg',
             '/static/snail.svg',
             '/static/poodle.svg',
+            '/static/wolf.svg',
             '/static/sea-lion.svg',
             '/static/snake.svg',
             '/static/hummingbird.svg',
@@ -2035,6 +2039,7 @@ window.IconBadge = function() {
             '/static/vulture.svg',
             '/static/iguana.svg',
             '/static/pterodactyl.svg',
+            '/static/cow-silhouette.svg',
             '/static/giraffatitan.svg',
             '/static/hawk.svg',
             '/static/deer.svg',
@@ -2118,7 +2123,7 @@ window.bck_pattern = function(opt_in) {
     let trans = opt_in.trans
 
     // let g_now   = svg[g_tag];
-    let tag_now = 'svgBck' + g_tag
+    let tag_now = 'svg_bck' + g_tag
     let strk = 0.5
     // console.log('==========',texture_orient,is_def(texture_orient),isNaN(texture_orient),hex_r,is_def(hex_r))
 

@@ -33,12 +33,12 @@ window.PlotTimeSeries = function() {
     //
     // ------------------------------------------------------------------
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
 
-        com.mainTag = opt_in.tag
+        com.main_tag = opt_in.tag
         com.locker = opt_in.locker
         com.run_loop = opt_in.run_loop
         com.hasBotPlot = !opt_in.hasBotPlot
@@ -48,9 +48,9 @@ window.PlotTimeSeries = function() {
         let lockerZoom = opt_in.lockerZoom
         if (!is_def(lockerZoom)) {
             lockerZoom = {
-                all: com.mainTag + 'zoom',
-                during: com.mainTag + 'zoomsuring',
-                end: com.mainTag + 'zoomEnd',
+                all: com.main_tag + 'zoom',
+                during: com.main_tag + 'zoomsuring',
+                end: com.main_tag + 'zoomEnd',
             }
         }
         com.lockerZoom = lockerZoom
@@ -144,8 +144,8 @@ window.PlotTimeSeries = function() {
         com.tag_clip_path = opt_in.tag_clip_path
         if (!is_def(com.tag_clip_path)) {
             com.tag_clip_path = {
-                top: com.mainTag + 'clipPathTop',
-                bot: com.mainTag + 'clipPathBot',
+                top: com.main_tag + 'clipPathTop',
+                bot: com.main_tag + 'clipPathBot',
             }
         }
         let topBot = com.top
@@ -317,7 +317,7 @@ window.PlotTimeSeries = function() {
             if (com.overviewLine) {
                 com.timeBar[i].updateLine({
                     data: com.data,
-                    tag: com.mainTag,
+                    tag: com.main_tag,
                 })
             }
         }
@@ -366,7 +366,7 @@ window.PlotTimeSeries = function() {
             })
         })
 
-        com.lineClass = com.mainTag + 'line'
+        com.lineClass = com.main_tag + 'line'
         let line = com.top.g.data
             .selectAll('line.' + com.lineClass)
             .data(lineData, function(d) {
@@ -431,7 +431,7 @@ window.PlotTimeSeries = function() {
                 com.circClass = {
                 }
             }
-            com.circClass[nTopBot] = com.mainTag + 'circ' + nTopBot
+            com.circClass[nTopBot] = com.main_tag + 'circ' + nTopBot
 
             // let circ = topBot.g.data
             //   .selectAll('circle.' + com.circClass[nTopBot])

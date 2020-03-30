@@ -123,7 +123,7 @@ let sock_sched_block_controller = function(opt_in) {
     //   if(sock.con_stat.is_offline()) return;
     //   let data         = {};
     //   data.widget_id = widget_id;
-    //   data.tel_Id    = opt_in.tel_Id;
+    //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
     //     'widget_source':widget_source, 'widget_name':widget_type, 'widget_id':widget_id,
@@ -5686,8 +5686,8 @@ let main_sched_blockController = function(opt_in) {
         }
         this.focusOnTarget = focusOnTarget
 
-        function createTelescope_info_panel(tel_Id) {
-            let tel = getTelescopeById(tel_Id)
+        function createTelescope_info_panel(tel_id) {
+            let tel = getTelescopeById(tel_id)
             let innerbox = {
                 x: box.right_info.w * 0.0,
                 y: box.right_info.h * 0.0,
@@ -5767,9 +5767,9 @@ let main_sched_blockController = function(opt_in) {
             })
             reserved.telescopeForm.init()
         }
-        function focusOnTelescope(tel_Id) {
+        function focusOnTelescope(tel_id) {
             clean()
-            createTelescope_info_panel(tel_Id)
+            createTelescope_info_panel(tel_id)
         }
         this.focusOnTelescope = focusOnTelescope
 

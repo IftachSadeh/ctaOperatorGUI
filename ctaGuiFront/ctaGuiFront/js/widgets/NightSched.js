@@ -74,7 +74,7 @@ let sock_night_sched = function(opt_in) {
     //   if(sock.con_stat.is_offline()) return;
     //   let data         = {};
     //   data.widget_id = widget_id;
-    //   data.tel_Id    = opt_in.tel_Id;
+    //   data.tel_id    = opt_in.tel_id;
     //   data.propId   = opt_in.propId;
     //   let emit_data = {
     //     "widget_source":widget_source, "widget_name":widget_type, "widget_id":widget_id,
@@ -477,10 +477,10 @@ let main_night_sched = function(opt_in) {
     //     // console.log(' - main_night_sched - get_sync_state ',data_in.data);
     //     // locker.add("get_sync_state");
 
-    //     let tel_Id  = data_in.data.tel_Id;
+    //     let tel_id  = data_in.data.tel_id;
     //     let propId = data_in.data.propId;
 
-    //     sock.all_widgets[widget_type].sock_func.askTelData({tel_Id:tel_Id, propId:propId});
+    //     sock.all_widgets[widget_type].sock_func.askTelData({tel_id:tel_id, propId:propId});
 
     //   }
 
@@ -499,7 +499,7 @@ let main_night_sched = function(opt_in) {
 let TelTreeMap = function() {
     let com = {
     }
-    let mainTag = null
+    let main_tag = null
     let box = null
 
     this.set = function(opt_in) {
@@ -521,11 +521,11 @@ let TelTreeMap = function() {
     //
     // -------------------------------------------------------------------
     function init(opt_in) {
-        if (is_def(mainTag)) {
+        if (is_def(main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
-        mainTag = opt_in.tag
+        main_tag = opt_in.tag
 
         // com.doTimeRect = is_def(opt_in.doTimeRect) ? opt_in.doTimeRect : true;
         com.click = opt_in.click
@@ -549,13 +549,13 @@ let TelTreeMap = function() {
         box = com.box
 
         g_box
-            .selectAll('rect.' + mainTag + 'telBoxBack')
+            .selectAll('rect.' + main_tag + 'telBoxBack')
             .data([ boxData ], function(d) {
                 return d.id
             })
             .enter()
             .append('rect')
-            .attr('class', mainTag + 'telBoxBack')
+            .attr('class', main_tag + 'telBoxBack')
             .attr('x', function(d, i) {
                 return d.x
             })
@@ -578,7 +578,7 @@ let TelTreeMap = function() {
         bck_pattern({
             com: com,
             g_now: g_box,
-            g_tag: mainTag + 'telBoxBack',
+            g_tag: main_tag + 'telBoxBack',
             len_wh: [ boxData.w, boxData.h ],
             trans: [ boxData.x, boxData.y ],
             opac: 0.06,
@@ -656,8 +656,8 @@ let TelTreeMap = function() {
         let is_new_hierarchy = true
         if (is_def(com.tel_idsObTelIdV)) {
             is_new_hierarchy = false
-            $.each(com.tel_idsObTelIdV, function(tel_IdNow, obs_block_id_now) {
-                if (obTelIdV[tel_IdNow] !== obs_block_id_now) {
+            $.each(com.tel_idsObTelIdV, function(tel_idNow, obs_block_id_now) {
+                if (obTelIdV[tel_idNow] !== obs_block_id_now) {
                     is_new_hierarchy = true
                 }
             })
@@ -784,7 +784,7 @@ let TelTreeMap = function() {
             //
             // -------------------------------------------------------------------
             let circ = box.g
-                .selectAll('circle.' + mainTag + 'inst_health')
+                .selectAll('circle.' + main_tag + 'inst_health')
                 .data(circData, function(d) {
                     return d.data.id
                 })
@@ -792,7 +792,7 @@ let TelTreeMap = function() {
             circ
                 .enter()
                 .append('circle')
-                .attr('class', mainTag + 'inst_health')
+                .attr('class', main_tag + 'inst_health')
                 .style('opacity', 0)
                 .attr('stroke-opacity', 1)
                 .style('fill-opacity', 0.7)
@@ -828,7 +828,7 @@ let TelTreeMap = function() {
 
             // -------------------------------------------------------------------
             let rect = box.g
-                .selectAll('rect.' + mainTag + 'inst_health')
+                .selectAll('rect.' + main_tag + 'inst_health')
                 .data(rectData, function(d) {
                     return d.data.id
                 })
@@ -836,7 +836,7 @@ let TelTreeMap = function() {
             rect
                 .enter()
                 .append('rect')
-                .attr('class', mainTag + 'inst_health')
+                .attr('class', main_tag + 'inst_health')
                 .style('opacity', 0)
                 .attr('stroke-opacity', 1)
                 .attr('vector-effect', 'non-scaling-stroke')
@@ -905,7 +905,7 @@ let TelTreeMap = function() {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            let text = box.g.selectAll('text.' + mainTag + 'inst_health').data(
+            let text = box.g.selectAll('text.' + main_tag + 'inst_health').data(
                 desc.filter(function(d) {
                     return d.height === 0
                 }),
@@ -917,7 +917,7 @@ let TelTreeMap = function() {
             text
                 .enter()
                 .append('text')
-                .attr('class', mainTag + 'inst_health')
+                .attr('class', main_tag + 'inst_health')
             // .text(com.style.text)
                 .text(function(d, i) {
                     if (d.data.nTel === -1) {
@@ -960,7 +960,7 @@ let TelTreeMap = function() {
                 .remove()
         }
         else {
-            let circ = box.g.selectAll('circle.' + mainTag + 'inst_health')
+            let circ = box.g.selectAll('circle.' + main_tag + 'inst_health')
 
             circ
                 .transition('updtCol')
@@ -972,7 +972,7 @@ let TelTreeMap = function() {
                     return com.style.stroke(d, d.data.n_block)
                 })
 
-            let rect = box.g.selectAll('rect.' + mainTag + 'inst_health')
+            let rect = box.g.selectAll('rect.' + main_tag + 'inst_health')
 
             rect
                 .transition('updtCol')

@@ -859,20 +859,20 @@ window.EventQueue = function() {
         let data = []
         if (date === null) {
             let rectNow = com.timeBars.group.g
-                .selectAll('rect.' + com.mainTag + 'extra')
+                .selectAll('rect.' + com.main_tag + 'extra')
                 .data(data)
             rectNow.exit().remove()
         }
         else {
             data = [ date ]
             let rectNow = com.timeBars.group.g
-                .selectAll('rect.' + com.mainTag + 'extra')
+                .selectAll('rect.' + com.main_tag + 'extra')
                 .data(data)
 
             rectNow
                 .enter()
                 .append('rect')
-                .attr('class', com.mainTag + 'extra')
+                .attr('class', com.main_tag + 'extra')
                 .style('opacity', 1)
                 .attr('x', function(d, i) {
                     if (d > com.axis.scale.domain()[1]) {
@@ -923,7 +923,7 @@ window.EventQueue = function() {
 
         rectNowData = [
             {
-                id: com.mainTag + 'now',
+                id: com.main_tag + 'now',
                 x: com.axis.scale(com.data.currentTime.date),
                 y: com.timeBars.group.box.y,
                 w: com.timeBars.group.box.marg,
@@ -939,17 +939,17 @@ window.EventQueue = function() {
         //
         // ------------------------------------------------------------------
         let rectNow = com.timeBars.group.g
-            .selectAll('rect.' + com.mainTag + 'now')
+            .selectAll('rect.' + com.main_tag + 'now')
             .data(rectNowData, function(d) {
                 return d.id
             })
 
-        console.log(com.timeBars.group.g.select('rect.' + com.mainTag + 'now'))
+        console.log(com.timeBars.group.g.select('rect.' + com.main_tag + 'now'))
 
         rectNow
             .enter()
             .append('rect')
-            .attr('class', com.mainTag + 'now')
+            .attr('class', com.main_tag + 'now')
             .style('opacity', 1)
             .attr('x', function(d, i) {
                 return d.x

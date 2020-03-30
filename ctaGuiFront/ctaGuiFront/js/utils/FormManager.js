@@ -35,12 +35,12 @@ window.FormManager = function() {
     //
     // ------------------------------------------------------------------
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
 
-        com.mainTag = opt_in.tag
+        com.main_tag = opt_in.tag
         com.body = {
         }
         com.forObj = {

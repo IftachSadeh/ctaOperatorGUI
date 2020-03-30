@@ -453,7 +453,7 @@ let main_obs_block_control = function(opt_in) {
                 tag: tagObScroll,
                 g_box: gObBox,
                 boxData: obScrolBoxData,
-                showCounts: true,
+                show_counts: true,
                 vorClick: function(d) {
                     block_focus({
                         id: d.data.id,
@@ -631,9 +631,9 @@ let main_obs_block_control = function(opt_in) {
                     tag: tagFormManager,
                 })
 
-                // table.recV = [table.recV[0]]
-                // let fornObj = innerG.selectAll("div."+tagForms).data(table.recV, function(d) { return d.id; })
-                $.each(table.recV, function(i, d) {
+                // table.rec_data = [table.rec_data[0]]
+                // let fornObj = innerG.selectAll("div."+tagForms).data(table.rec_data, function(d) { return d.id; })
+                $.each(table.rec_data, function(i, d) {
                     formManager.addForm({
                         id: d.id,
                         data: d,
@@ -1329,12 +1329,12 @@ let TelSummary = function() {
     //
     // -------------------------------------------------------------------
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
 
-        com.mainTag = opt_in.tag
+        com.main_tag = opt_in.tag
         com.obs_block_id = ''
         com.tel_ids = []
 
@@ -1405,8 +1405,8 @@ let TelSummary = function() {
     //
     // -------------------------------------------------------------------
     function update() {
-        let tagArcs = com.mainTag + 'arcs'
-        let tag_txt = com.mainTag + 'arcTxt'
+        let tagArcs = com.main_tag + 'arcs'
+        let tag_txt = com.main_tag + 'arcTxt'
 
         let n_blockTels = com.tel_ids.length
         let hasTels = n_blockTels > 0
@@ -1421,10 +1421,10 @@ let TelSummary = function() {
             telStateFracs[val] = 0
         })
 
-        $.each(com.tel_ids, function(index, tel_Id) {
-            avgState += com.inst_health[tel_Id]
+        $.each(com.tel_ids, function(index, tel_id) {
+            avgState += com.inst_health[tel_id]
 
-            let state = get_tel_state(com.inst_health[tel_Id])
+            let state = get_tel_state(com.inst_health[tel_id])
             telStates[state] += 1
         })
         if (hasTels) {
@@ -1865,7 +1865,7 @@ let TelScroll = function() {
     //
     // -------------------------------------------------------------------
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
@@ -1873,7 +1873,7 @@ let TelScroll = function() {
         // -------------------------------------------------------------------
         // box definition
         // -------------------------------------------------------------------
-        com.mainTag = opt_in.tag
+        com.main_tag = opt_in.tag
         let boxData = opt_in.boxData
         let g_box = opt_in.g_box
         com.obs_block_id = ''
@@ -1886,33 +1886,33 @@ let TelScroll = function() {
         com.recs.g_base = g_box.append('g')
 
         com.scrollGrid = new ScrollGrid({
-            id: com.mainTag,
+            id: com.main_tag,
             x0: boxData.x,
             y0: boxData.y,
             w0: boxData.w,
             h0: boxData.h,
             rec_h: boxData.h * 0.3,
             rec_w: boxData.h * 0.3,
-            showCounts: false,
-            isHorz: true,
-            nRows: 2,
+            show_counts: false,
+            is_horz: true,
+            n_rows: 2,
             recs: com.recs,
-            recV: [],
+            rec_data: [],
             g_box: com.recs.g_base,
-            bckRecOpt: {
+            bck_rec_opt: {
                 texture_orient: '5/8',
-                frontProp: {
-                    strkWOcp: 0.2,
+                front_prop: {
+                    strk_opac: 0.2,
                 },
             },
-            vorOpt: {
+            vor_opt: {
                 click: opt_in.vorClick,
             },
             lockerV: opt_in.lockerV,
-            onZoom: {
-                start: onZoomStart,
-                during: onZoomDuring,
-                end: onZoomDuring,
+            on_zoom: {
+                start: on_zoom_start,
+                during: on_zoom_during,
+                end: on_zoom_during,
             },
             run_loop: opt_in.run_loop,
             locker: opt_in.locker,
@@ -1926,8 +1926,8 @@ let TelScroll = function() {
     //
     // -------------------------------------------------------------------
     function update() {
-        let tag_circ = com.mainTag + 'circ'
-        let tag_txt = com.mainTag + 'circTxt'
+        let tag_circ = com.main_tag + 'circ'
+        let tag_txt = com.main_tag + 'circTxt'
 
         let blockTelIds = com.obTelIds.slice(0, com.obTelIds.length)
 
@@ -1935,17 +1935,17 @@ let TelScroll = function() {
             return com.tel_ids.indexOf(a) - com.tel_ids.indexOf(b)
         })
 
-        let recV = blockTelIds.map(function(d) {
+        let rec_data = blockTelIds.map(function(d) {
             return {
                 id: d,
             }
         })
 
         com.scrollGrid.update({
-            recV: recV,
+            rec_data: rec_data,
         })
 
-        let dataRec = com.recs[com.mainTag]
+        let dataRec = com.recs[com.main_tag]
 
         // -------------------------------------------------------------------
         //
@@ -2075,9 +2075,9 @@ let TelScroll = function() {
     // -------------------------------------------------------------------
     let zoom_targets = {
     }
-    function onZoomStart(opt_in) {
-        let tag_circ = com.mainTag + 'circ'
-        let tag_txt = com.mainTag + 'circTxt'
+    function on_zoom_start(opt_in) {
+        let tag_circ = com.main_tag + 'circ'
+        let tag_txt = com.main_tag + 'circTxt'
 
         zoom_targets.circ = com.recs.dataG.selectAll('circle.' + tag_circ)
         zoom_targets.text = com.recs.dataG.selectAll('text.' + tag_txt)
@@ -2086,7 +2086,7 @@ let TelScroll = function() {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function onZoomDuring(opt_in) {
+    function on_zoom_during(opt_in) {
         let xy = opt_in.xy
         let delta = opt_in.wh / 2
         let duration = opt_in.duration
@@ -2142,7 +2142,7 @@ let _obScroll = function() {
     //
     // -------------------------------------------------------------------
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
@@ -2150,7 +2150,7 @@ let _obScroll = function() {
         // -------------------------------------------------------------------
         // box definition
         // -------------------------------------------------------------------
-        com.mainTag = opt_in.tag
+        com.main_tag = opt_in.tag
         let boxData = opt_in.boxData
         let g_box = opt_in.g_box
         com.sched_block_id = ''
@@ -2160,36 +2160,36 @@ let _obScroll = function() {
         com.recs.g_base = g_box.append('g')
 
         com.scrollGrid = new ScrollGrid({
-            id: com.mainTag,
+            id: com.main_tag,
             x0: boxData.x,
             y0: boxData.y,
             w0: boxData.w,
             h0: boxData.h,
             rec_h: boxData.h * 0.5,
             rec_w: boxData.h * 0.5,
-            showCounts: opt_in.showCounts,
-            isHorz: true,
-            nRows: 1,
+            show_counts: opt_in.show_counts,
+            is_horz: true,
+            n_rows: 1,
             recs: com.recs,
-            recV: [],
+            rec_data: [],
             g_box: com.recs.g_base,
-            bckRecOpt: {
+            bck_rec_opt: {
                 opac: 0.06,
                 circ_type: 'lighter',
                 size: 10,
-                frontProp: {
-                    strkWOcp: 0.2,
+                front_prop: {
+                    strk_opac: 0.2,
                 },
             },
-            // bckRecOpt: { texture_orient: "2/8",  frontProp: { strkWOcp: 0.2 } },
-            vorOpt: {
+            // bck_rec_opt: { texture_orient: "2/8",  front_prop: { strk_opac: 0.2 } },
+            vor_opt: {
                 click: opt_in.vorClick,
             },
             lockerV: opt_in.lockerV,
-            onZoom: {
-                start: onZoomStart,
-                during: onZoomDuring,
-                end: onZoomDuring,
+            on_zoom: {
+                start: on_zoom_start,
+                during: on_zoom_during,
+                end: on_zoom_during,
             },
             run_loop: opt_in.run_loop,
             locker: opt_in.locker,
@@ -2205,25 +2205,25 @@ let _obScroll = function() {
     //
     // -------------------------------------------------------------------
     function update() {
-        let tagRec = com.mainTag + 'rec'
-        let tag_txt = com.mainTag + 'circTxt'
+        let tagRec = com.main_tag + 'rec'
+        let tag_txt = com.main_tag + 'circTxt'
 
-        let recV = com.obV.map(function(d) {
+        let rec_data = com.obV.map(function(d) {
             return {
                 id: d.obs_block_id,
                 data: d,
             }
         })
 
-        recV.sort(function(a, b) {
+        rec_data.sort(function(a, b) {
             return a.data.metadata.n_obs - b.data.metadata.n_obs
         })
 
         com.scrollGrid.update({
-            recV: recV,
+            rec_data: rec_data,
         })
 
-        let dataRec = com.recs[com.mainTag]
+        let dataRec = com.recs[com.main_tag]
 
         let rect = com.recs.dataG
             .selectAll('rect.' + tagRec)
@@ -2347,9 +2347,9 @@ let _obScroll = function() {
     // -------------------------------------------------------------------
     let zoom_targets = {
     }
-    function onZoomStart(opt_in) {
-        let tagRec = com.mainTag + 'rec'
-        let tag_txt = com.mainTag + 'circTxt'
+    function on_zoom_start(opt_in) {
+        let tagRec = com.main_tag + 'rec'
+        let tag_txt = com.main_tag + 'circTxt'
 
         zoom_targets.rect = com.recs.dataG.selectAll('rect.' + tagRec)
         zoom_targets.text = com.recs.dataG.selectAll('text.' + tag_txt)
@@ -2358,7 +2358,7 @@ let _obScroll = function() {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function onZoomDuring(opt_in) {
+    function on_zoom_during(opt_in) {
         let xy = opt_in.xy
         let delta = opt_in.wh / 2
         let duration = opt_in.duration

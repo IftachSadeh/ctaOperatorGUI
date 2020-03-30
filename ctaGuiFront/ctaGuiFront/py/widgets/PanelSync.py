@@ -91,7 +91,7 @@ class PanelSync(BaseWidget):
     #
     # ------------------------------------------------------------------
 
-    def setSyncGroups(self, *args):
+    def set_sync_groups(self, *args):
         data = args[0]
 
         with self.socket_manager.lock:

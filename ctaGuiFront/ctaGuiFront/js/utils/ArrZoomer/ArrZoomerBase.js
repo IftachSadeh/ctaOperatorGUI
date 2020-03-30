@@ -182,12 +182,12 @@ window.ArrZoomerBase = function(opt_in0) {
     // // ------------------------------------------------------------------
     // //
     // // ------------------------------------------------------------------
-    // function isTelTypeIn(tag, tel_Id) {
+    // function isTelTypeIn(tag, tel_id) {
     //   let tel_types_ele = {
     //     main: ['LST'],
     //   }
 
-    //   let tel_index = tel_types_ele[tag].indexOf(this_top.tel_types[tel_Id])
+    //   let tel_index = tel_types_ele[tag].indexOf(this_top.tel_types[tel_id])
     //   return (tel_index !== -1)
     // }
     // this_top.isTelTypeIn = isTelTypeIn
@@ -339,9 +339,9 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function get_tel_props(keys, tel_Id) {
+    function get_tel_props(keys, tel_id) {
         return keys.filter(function(k) {
-            return insts.props[tel_Id].indexOf(k) !== -1
+            return insts.props[tel_id].indexOf(k) !== -1
         })
     }
     this_top.get_tel_props = get_tel_props
@@ -723,16 +723,16 @@ window.ArrZoomerBase = function(opt_in0) {
         }
 
         let new_data = data_in.data.data
-        let tel_Id = data_in.data.id
-        let tel_index = insts.data.id_indices[tel_Id]
+        let tel_id = data_in.data.id
+        let tel_index = insts.data.id_indices[tel_id]
 
         // if by the time the update has arrived,
         // were already gone from this element...
-        if (!is_def(insts.data.prop_data_s1[tel_Id])) {
-            // console.log('-+-> update_s1: could not find',tel_Id,'in insts.data.prop_data_s1')
+        if (!is_def(insts.data.prop_data_s1[tel_id])) {
+            // console.log('-+-> update_s1: could not find',tel_id,'in insts.data.prop_data_s1')
             return
         }
-        // console.log('````',data_in.data,insts.data.prop_data_s1[tel_Id]);
+        // console.log('````',data_in.data,insts.data.prop_data_s1[tel_id]);
 
         locker.add('data_change')
 
@@ -740,16 +740,16 @@ window.ArrZoomerBase = function(opt_in0) {
         // update the underlying data
         // ------------------------------------------------------------------
         let props_now = get_tel_props(
-            Object.keys(insts.data.prop_data_s1[tel_Id]), tel_Id)
+            Object.keys(insts.data.prop_data_s1[tel_id]), tel_id)
     
         $.each(props_now, function(index, porp_now) {
             // update the data container with the s0 updated health
-            insts.data.prop_data_s1[tel_Id][porp_now].val = (
+            insts.data.prop_data_s1[tel_id][porp_now].val = (
                 insts.data.tel[tel_index][porp_now]
             )
 
             // now go through the hirch
-            let data_now = insts.data.prop_data_s1[tel_Id][porp_now]
+            let data_now = insts.data.prop_data_s1[tel_id][porp_now]
             update_data_now(data_now)
 
             function update_data_now(d) {
@@ -943,7 +943,7 @@ window.ArrZoomerBase = function(opt_in0) {
             get_ele('main').s10_main(data_in.data)
 
             props_s1({
-                tel_Id: data_in.data.id,
+                tel_id: data_in.data.id,
                 click_in: false,
                 prop_in: '',
                 do_func: [ 'bck_arc_click' ],

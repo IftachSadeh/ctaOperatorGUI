@@ -882,7 +882,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                 ask_data_s1()
                 props_s1({
-                    tel_Id: zooms.target,
+                    tel_id: zooms.target,
                     click_in: false,
                     prop_in: '',
                 })
@@ -1083,7 +1083,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 }
 
                 // translate to the center of the respective hex-cell
-                // let xy = com.svgBck.trans([x,y]);  x = xy[0]; y = xy[1];
+                // let xy = com.svg_bck.trans([x,y]);  x = xy[0]; y = xy[1];
                 insts.data.xyr_physical[id] = {
                     x: x,
                     y: y,
@@ -1744,14 +1744,14 @@ window.ArrZoomerMain = function(opt_in0) {
                 focus_ids.push(data_now.id)
             })
         }
-        // let tel_Id = data_in.id
-        // let tel_Id = zooms.target
+        // let tel_id = data_in.id
+        // let tel_id = zooms.target
         // DDFF
 
-        $.each(insts.all_ids, function(n_ele, tel_Id) {
-            $.each(insts.props[tel_Id], function(index, porp_now) {
+        $.each(insts.all_ids, function(n_ele, tel_id) {
+            $.each(insts.props[tel_id], function(index, porp_now) {
                 $.each([ 0, 1 ], function(n_arc_draw_now, n_arc_draw_now_) {
-                    let tag_now = tel_Id + porp_now + n_arc_draw_now
+                    let tag_now = tel_id + porp_now + n_arc_draw_now
                     let is0 = n_arc_draw_now === 0
 
                     if (!is_def(arc_prev[tag_now])) {
@@ -1765,7 +1765,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                     let dataVnow = data_in
                     if (data_in.length > 0) {
-                        if (data_in[0].id != tel_Id) {
+                        if (data_in[0].id != tel_id) {
                             dataVnow = []
                         }
                     }
@@ -2125,54 +2125,54 @@ window.ArrZoomerMain = function(opt_in0) {
         let base_node = is_def(data_in) ? data_in.data : null
 
         if (base_node) {
-            let tel_Id = data_in.id
+            let tel_id = data_in.id
 
-            $.each(insts.props[tel_Id], function(index, porp_now) {
-                insts.data.prop_data_s1[tel_Id] = {
+            $.each(insts.props[tel_id], function(index, porp_now) {
+                insts.data.prop_data_s1[tel_id] = {
                 }
-                insts.data.prop_data_s1[tel_Id][porp_now] = null
-                insts.data.prop_parent_s1[tel_Id] = {
+                insts.data.prop_data_s1[tel_id][porp_now] = null
+                insts.data.prop_parent_s1[tel_id] = {
                 }
-                insts.data.prop_parent_s1[tel_Id][porp_now] = ''
-                insts.data.prop_title_s1[tel_Id] = {
+                insts.data.prop_parent_s1[tel_id][porp_now] = ''
+                insts.data.prop_title_s1[tel_id] = {
                 }
-                insts.data.prop_title_s1[tel_Id][porp_now] = ''
+                insts.data.prop_title_s1[tel_id][porp_now] = ''
             })
 
             // construct the data_base object b hand, as
-            // some properties may not be included in insts.props[tel_Id]
-            insts.data.data_base_s1[tel_Id] = {
+            // some properties may not be included in insts.props[tel_id]
+            insts.data.data_base_s1[tel_id] = {
             }
-            insts.data.data_base_s1[tel_Id].id = insts.prop0
-            insts.data.data_base_s1[tel_Id].val = data_in[insts.prop0]
-            insts.data.data_base_s1[tel_Id].children = []
-            // console.log('qqqqqqqq',tel_Id,data_in.data.val,data_in.data)
+            insts.data.data_base_s1[tel_id].id = insts.prop0
+            insts.data.data_base_s1[tel_id].val = data_in[insts.prop0]
+            insts.data.data_base_s1[tel_id].children = []
+            // console.log('qqqqqqqq',tel_id,data_in.data.val,data_in.data)
 
             $.each(base_node, function(index_data, child_now) {
                 let porp_now = child_now.id
-                if (insts.props[tel_Id].indexOf(porp_now) >= 0) {
+                if (insts.props[tel_id].indexOf(porp_now) >= 0) {
                     // add a reference to each property
-                    insts.data.prop_data_s1[tel_Id][porp_now] = child_now
-                    insts.data.prop_parent_s1[tel_Id][porp_now] = porp_now
+                    insts.data.prop_data_s1[tel_id][porp_now] = child_now
+                    insts.data.prop_parent_s1[tel_id][porp_now] = porp_now
 
                     // also add a reference for each level of the hierarchy which has a sub-hierarchy of its own
-                    add_children(child_now, tel_Id, porp_now)
+                    add_children(child_now, tel_id, porp_now)
 
                     // build up the baseData object
-                    insts.data.data_base_s1[tel_Id].children.push(child_now)
+                    insts.data.data_base_s1[tel_id].children.push(child_now)
                 }
             })
         }
 
-        function add_children(data_now, tel_Id, porp_now) {
+        function add_children(data_now, tel_id, porp_now) {
             if (data_now.children) {
                 data_now.children.forEach(function(d, _) {
                     if (d.children) {
-                        insts.data.prop_data_s1[tel_Id][d.id] = d
-                        add_children(d, tel_Id, porp_now)
+                        insts.data.prop_data_s1[tel_id][d.id] = d
+                        add_children(d, tel_id, porp_now)
                     }
-                    insts.data.prop_parent_s1[tel_Id][d.id] = porp_now
-                    insts.data.prop_title_s1[tel_Id][d.id] = d.title
+                    insts.data.prop_parent_s1[tel_id][d.id] = porp_now
+                    insts.data.prop_title_s1[tel_id][d.id] = d.title
                 })
             }
         }
@@ -2210,7 +2210,7 @@ window.ArrZoomerMain = function(opt_in0) {
         if (!is_def(s10)) {
             s10 = new S10({
                 base_node: base_node,
-                tel_Id: zooms.target,
+                tel_id: zooms.target,
             })
             s10_eles.push({
                 id: zooms.target,
@@ -2233,15 +2233,15 @@ window.ArrZoomerMain = function(opt_in0) {
     // ------------------------------------------------------------------
     function S10(opt_s10) {
         let this_S10 = this
-        let tel_Id = opt_s10.tel_Id
+        let tel_id = opt_s10.tel_id
         let base_node = opt_s10.base_node
         
         this_S10.insts = {
         }
-        this_S10.insts.props = insts.props[tel_Id]
-        this_S10.tau_frac = insts.tau_fracs[tel_Id]
-        this_S10.insts.prop_titles = insts.prop_titles[tel_Id]
-        this_S10.tel_Id = tel_Id
+        this_S10.insts.props = insts.props[tel_id]
+        this_S10.tau_frac = insts.tau_fracs[tel_id]
+        this_S10.insts.prop_titles = insts.prop_titles[tel_id]
+        this_S10.tel_id = tel_id
 
         let my_date = Date.now()
         let g_base = null
@@ -2265,7 +2265,7 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         let wh = (
-            insts.data.xyr[tel_Id].r
+            insts.data.xyr[tel_id].r
             * scale_r[1].inner_h1 * 1.6
         )
 
@@ -2337,8 +2337,8 @@ window.ArrZoomerMain = function(opt_in0) {
         // ------------------------------------------------------------------
         function update_pos_g(duration) {
             let g_base_trans = [
-                insts.data.xyr[tel_Id].x - wh / 2,
-                insts.data.xyr[tel_Id].y - wh / 2,
+                insts.data.xyr[tel_id].x - wh / 2,
+                insts.data.xyr[tel_id].y - wh / 2,
             ]
 
             g_base
@@ -2392,8 +2392,8 @@ window.ArrZoomerMain = function(opt_in0) {
 
             if (prop_in !== '') {
                 if (this_S10.insts.props.indexOf(prop_in) < 0) {
-                    if (is_def(insts.data.prop_parent_s1[tel_Id][prop_in])) {
-                        prop_in = insts.data.prop_parent_s1[tel_Id][prop_in]
+                    if (is_def(insts.data.prop_parent_s1[tel_id][prop_in])) {
+                        prop_in = insts.data.prop_parent_s1[tel_id][prop_in]
                     }
                 }
             }
@@ -2407,7 +2407,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     }
 
                     let txt_r = (
-                        insts.data.xyr[tel_Id].r
+                        insts.data.xyr[tel_id].r
                         * scale_r[1].inner_h1 * 1.45
                     )
                     let xy = get_prop_pos_shift(
@@ -2425,7 +2425,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     }
 
                     let anch = 'end'
-                    if (Math.abs(xy[0] / insts.data.xyr[tel_Id].r) < 0.001) {
+                    if (Math.abs(xy[0] / insts.data.xyr[tel_id].r) < 0.001) {
                         anch = 'middle'
                     }
                     else if (xy[0] < 0) {
@@ -2526,7 +2526,7 @@ window.ArrZoomerMain = function(opt_in0) {
             }
 
             // console.log('init_bck_arc')
-            let props_now = insts.data.prop_data_s1[tel_Id]
+            let props_now = insts.data.prop_data_s1[tel_id]
             $.each(props_now, function(porp_now, data_now) {
                 if (data_now) {
                     let base_tag = 's10_arc'
@@ -2550,25 +2550,25 @@ window.ArrZoomerMain = function(opt_in0) {
                             }
                             arc_func[tag_now].rad_00 = function(_) {
                                 return (
-                                    insts.data.xyr[tel_Id].r
+                                    insts.data.xyr[tel_id].r
                                     * scale_r[1].inner_h1 * 0.1
                                 )
                             }
                             arc_func[tag_now].rad_01 = function(_) {
                                 return (
-                                    insts.data.xyr[tel_Id].r
+                                    insts.data.xyr[tel_id].r
                                     * scale_r[1].inner_h1 * 0.8
                                 )
                             }
                             arc_func[tag_now].rad_10 = function(_) {
                                 return (
-                                    insts.data.xyr[tel_Id].r
+                                    insts.data.xyr[tel_id].r
                                     * scale_r[1].inner_h1 * 0.85
                                 )
                             }
                             arc_func[tag_now].rad_11 = function(_) {
                                 return (
-                                    insts.data.xyr[tel_Id].r
+                                    insts.data.xyr[tel_id].r
                                     * scale_r[1].inner_h1 * 1.35
                                 )
                             }
@@ -2677,7 +2677,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
                 //
                 function get_col(d) {
-                    let prop_val = insts.data.prop_data_s1[tel_Id][d.porp_now].val
+                    let prop_val = insts.data.prop_data_s1[tel_id][d.porp_now].val
                     d.col = (
                         d.nArc === 0
                             ? inst_health_col(prop_val)
@@ -2865,7 +2865,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 })
     
                 props_s1({
-                    tel_Id: tel_Id,
+                    tel_id: tel_id,
                     click_in: true,
                     prop_in: parent_name,
                     do_func: [ 'tel_hierarchy' ],
@@ -2886,7 +2886,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 })
 
                 props_s1({
-                    tel_Id: tel_Id,
+                    tel_id: tel_id,
                     click_in: click_in,
                     prop_in: prop_in,
                     do_func: [ 'tel_hierarchy' ],
@@ -2904,7 +2904,7 @@ window.ArrZoomerMain = function(opt_in0) {
             //
             if (click_in) {
                 this_top.zoom_to_target_main({
-                    target: tel_Id,
+                    target: tel_id,
                     scale: zooms.len['1.2'],
                     duration_scale: 1,
                 })
@@ -3028,7 +3028,7 @@ window.ArrZoomerMain = function(opt_in0) {
             let dx = wh / 2
             let dy = (
                 wh + 2 * r
-                * insts.data.xyr[tel_Id].r
+                * insts.data.xyr[tel_id].r
                 / tel_rs.s00[2]
             )
 
@@ -3313,7 +3313,7 @@ window.ArrZoomerMain = function(opt_in0) {
                                 })
             
                                 props_s1({
-                                    tel_Id: tel_Id,
+                                    tel_id: tel_id,
                                     click_in: true,
                                     prop_in: d.data.id,
                                     debug: 'hirch_click',
@@ -3386,7 +3386,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 sync_state_send({
                     type: 'sync_arr_zoomer_prop',
                     sync_time: Date.now(),
-                    tel_Id: zooms.target,
+                    tel_id: zooms.target,
                     propId: arr_zoomer_prop,
                     arr_zoomer_id: arr_zoomer_id,
                 })
@@ -3526,7 +3526,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     .each(function(d) {
                         if (d.nArc === 0) {
                             d.col = inst_health_col(
-                                insts.data.prop_data_s1[tel_Id][porp_now].val
+                                insts.data.prop_data_s1[tel_id][porp_now].val
                             )
                         }
                     })

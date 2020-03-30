@@ -104,7 +104,7 @@ let sock_panel_sync = function(opt_in) {
             widget_source: widget_source,
             widget_name: widget_type,
             widget_id: data.widget_id,
-            method_name: 'setSyncGroups',
+            method_name: 'set_sync_groups',
             method_arg: data,
         }
         sock.socket.emit('widget', emit_data)
@@ -248,7 +248,7 @@ let main_panel_sync = function(opt_in) {
         let delay_after_add_empty = 5000
 
         // some initializations
-        com.addEmptyGrp = false
+        com.add_empty_grp = false
 
         // -------------------------------------------------------------------
         //
@@ -278,25 +278,25 @@ let main_panel_sync = function(opt_in) {
 
             update_empty_grp()
 
-            $.each(grps.data.children, function(nChild0, child_now0) {
-                if (is_empty_group(child_now0.id)) {
+            $.each(grps.data.children, function(n_child_0, child_now_0) {
+                if (is_empty_group(child_now_0.id)) {
                     return
                 }
                 let children_now = []
-                $.each(child_now0.children, function(nChild1, child_now1) {
+                $.each(child_now_0.children, function(n_child_1, child_now_1) {
                     children_now.push([])
-                    $.each(child_now1.children, function(nChild2, child_now2) {
-                        if (child_now2.n_icon >= 0) {
-                            children_now[nChild1].push([
-                                child_now2.trg_widg_id, child_now2.id,
+                    $.each(child_now_1.children, function(n_child_2, child_now_2) {
+                        if (child_now_2.n_icon >= 0) {
+                            children_now[n_child_1].push([
+                                child_now_2.trg_widg_id, child_now_2.id,
                             ])
                         }
                     })
                 })
 
                 data.children.push({
-                    id: child_now0.id,
-                    title: child_now0.title,
+                    id: child_now_0.id,
+                    title: child_now_0.title,
                     children: children_now,
                 })
             })
@@ -406,7 +406,7 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             svg.recG = svg.g.append('g')
             recs.g_base = svg.recG.append('g')
-            recs.dataG = svg.recG.append('g')
+            recs.data_g = svg.recG.append('g')
 
             svg.mainG = svg.g.append('g')
 
@@ -445,7 +445,7 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            function doDrag_main_start(dIn, thisIn) {
+            function doDrag_main_start(d_in, thisIn) {
                 move_node_up(thisIn, 2)
 
                 com.icons.g.selectAll('g.' + tag_icon).style('pointer-events', 'none')
@@ -454,20 +454,20 @@ let main_panel_sync = function(opt_in) {
                     .selectAll('circle.' + tag_circ)
                     .style('pointer-events', 'none')
 
-                grps.hov_id_icon = dIn.data.id
-                grps.hov_id_grp_start = dIn.parent.data.id
+                grps.hov_id_icon = d_in.data.id
+                grps.hov_id_grp_start = d_in.parent.data.id
             }
 
-            com.drag_main_start = function(dIn, thisIn) {
+            com.drag_main_start = function(d_in, thisIn) {
                 locker.add({
                     id: tag_main + 'in_drag',
                     override: true,
                 })
 
-                doDrag_main_start(dIn, thisIn)
+                doDrag_main_start(d_in, thisIn)
             }
 
-            com.dramain_gsuring = function(dIn, thisIn) {
+            com.dramain_gsuring = function(d_in, thisIn) {
                 d3.select(thisIn).attr('transform', function(d) {
                     d.x = d3.event.x
                     d.y = d3.event.y
@@ -475,7 +475,7 @@ let main_panel_sync = function(opt_in) {
                 })
             }
 
-            function doDrag_main_end(dIn, thisIn) {
+            function doDrag_main_end(d_in, _) {
                 com.icons.g
                     .selectAll('g.' + tag_icon)
                     .style('pointer-events', icon_pntEvt)
@@ -485,14 +485,14 @@ let main_panel_sync = function(opt_in) {
                     .style('pointer-events', 'auto')
 
                 update_groups()
-                removeDuplicates()
+                rm_duplicates()
                 groups_to_server()
 
                 grps.hov_id_grp_start = null
             }
 
-            com.drag_main_end = function(dIn, thisIn) {
-                doDrag_main_end(dIn, thisIn)
+            com.drag_main_end = function(d_in, thisIn) {
+                doDrag_main_end(d_in, thisIn)
 
                 locker.remove({
                     id: tag_main + 'in_drag',
@@ -518,19 +518,23 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             let icon_side = null
             let icon_side_sel = null
-            com.dragSideStart = function(dIn) {
+            com.dragSideStart = function(d_in) {
                 locker.add({
                     id: tag_main + 'in_drag',
                     override: true,
                 })
 
-                let id_side = side_col_click(dIn)
+                let id_side = side_col_click(d_in)
                 let icons = com.hirch_desc.filter(function(d) {
                     return d.data.id === id_side
                 })
 
                 icon_side = icons.length === 0 ? null : icons[0]
-                icon_side_sel = icons.length === 0 ? null : svg.mainG.select('#' + id_side)
+                icon_side_sel = (
+                    icons.length === 0
+                        ? null
+                        : svg.mainG.select('#' + id_side)
+                )
 
                 if (is_def(icon_side_sel)) {
                     move_node_up(icon_side_sel.node(), 2)
@@ -550,7 +554,7 @@ let main_panel_sync = function(opt_in) {
                 }
             }
 
-            com.dragSideDuring = function(dIn) {
+            com.dragSideDuring = function(d_in) {
                 if (!is_def(icon_side)) {
                     return
                 }
@@ -562,7 +566,7 @@ let main_panel_sync = function(opt_in) {
                 })
             }
 
-            com.dragSideEnd = function(dIn) {
+            com.dragSideEnd = function(d_in) {
                 doDrag_main_end(icon_side, this)
 
                 icon_side = null
@@ -592,7 +596,7 @@ let main_panel_sync = function(opt_in) {
 
             if (can_tog_empty) {
                 h0 -= w0 + marg
-                initNewGrpSideTog({
+                initnew_grpSideTog({
                     g_trans_x: x0 - shift_main_g[0],
                     g_trans_y: y0 + h0 + marg,
                     rec_w: w0,
@@ -603,7 +607,7 @@ let main_panel_sync = function(opt_in) {
                 id: tag_grid_rec,
                 tag_clip_path: tag_clip_path,
                 recs: recs,
-                recV: [],
+                rec_data: [],
                 g_box: recs.g_base,
                 x0: x0,
                 y0: y0,
@@ -611,22 +615,22 @@ let main_panel_sync = function(opt_in) {
                 h0: h0,
                 rec_h: w0 * 0.5,
                 rec_w: w0 * 0.5,
-                showCounts: false,
-                isHorz: false,
-                bckRecOpt: {
+                show_counts: false,
+                is_horz: false,
+                bck_rec_opt: {
                     texture_orient: '5/8',
-                    frontProp: {
-                        strkWOcp: 0.2,
+                    front_prop: {
+                        strk_opac: 0.2,
                     },
                 },
-                // vorOpt: { mouseover: side_col_hov, call: com.dragSide },
-                vorOpt: {
+                // vor_opt: { mouseover: side_col_hov, call: com.dragSide },
+                vor_opt: {
                     mouseover: side_col_hov,
                     call: com.dragSide,
                 },
-                onZoom: {
-                    during: updSideColOnZoom,
-                    end: updSideColOnZoom,
+                on_zoom: {
+                    during: upd_side_col_on_zoom,
+                    end: upd_side_col_on_zoom,
                 },
                 run_loop: run_loop,
                 locker: locker,
@@ -638,12 +642,12 @@ let main_panel_sync = function(opt_in) {
                 },
             }
 
-            com.scrollGrid = new ScrollGrid(recs.recOpt)
+            com.scroll_grid = new ScrollGrid(recs.recOpt)
 
-            recs.dataG = com.scrollGrid.getBackDataG()
-            recs.dataG.attr('clip-path', function(d) {
-                return 'url(#' + tag_clip_path + tag_grid_rec + ')'
-            })
+            recs.data_g = com.scroll_grid.getBackDataG()
+            recs.data_g.attr('clip-path', (
+                'url(#' + tag_clip_path + tag_grid_rec + ')'
+            ))
 
             // -------------------------------------------------------------------
             //
@@ -772,22 +776,22 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             let origV = {
             }
-            $.each(grps.data.children, function(nChild0, child_now0) {
-                $.each(child_now0.children, function(nChild1, child_now1) {
-                    $.each(child_now1.children, function(nChild2, child_now2) {
-                        if (child_now2.n_icon !== n_empty_icon) {
-                            origV[child_now2.id] = child_now2
+            $.each(grps.data.children, function(n_child_0, child_now_0) {
+                $.each(child_now_0.children, function(n_child_1, child_now_1) {
+                    $.each(child_now_1.children, function(n_child_2, child_now_2) {
+                        if (child_now_2.n_icon !== n_empty_icon) {
+                            origV[child_now_2.id] = child_now_2
                         }
                     })
                 })
             })
 
-            $.each(data_in.children, function(nChild0, child_now0) {
-                $.each(child_now0.children, function(nChild1, child_now1) {
-                    $.each(child_now1.children, function(nChild2, child_now2) {
-                        if (is_def(origV[child_now2.id])) {
-                            data_in.children[nChild0].children[nChild1].children[nChild2]
-                = origV[child_now2.id]
+            $.each(data_in.children, function(n_child_0, child_now_0) {
+                $.each(child_now_0.children, function(n_child_1, child_now_1) {
+                    $.each(child_now_1.children, function(n_child_2, child_now_2) {
+                        if (is_def(origV[child_now_2.id])) {
+                            data_in.children[n_child_0].children[n_child_1]
+                                .children[n_child_2] = origV[child_now_2.id]
                         }
                     })
                 })
@@ -797,12 +801,12 @@ let main_panel_sync = function(opt_in) {
             // // -------------------------------------------------------------------
             // update_empty_grp();
 
-            // $.each(grps.data.children, function(nChild0,child_now0) {
-            //   if(is_empty_group(child_now0)) {
-            //     let emptyGrpId = child_now0.id;
+            // $.each(grps.data.children, function(n_child_0,child_now_0) {
+            //   if(is_empty_group(child_now_0)) {
+            //     let empty_grp_id = child_now_0.id;
             //     let allGrpIds  = data_in.children.map(function(d){ return d.id; });
-            //     if(allGrpIds.indexOf(emptyGrpId) < 0) {
-            //       data_in.children.push(child_now0);
+            //     if(allGrpIds.indexOf(empty_grp_id) < 0) {
+            //       data_in.children.push(child_now_0);
             //     }
             //   }
             // })
@@ -822,14 +826,14 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function initNewGrpSideTog(opt_in) {
+        function initnew_grpSideTog(opt_in) {
             let g_trans_x = opt_in.g_trans_x
             let g_trans_y = opt_in.g_trans_y
             let rec_w = opt_in.rec_w
 
-            com.empty.g.attr('transform', function(d, i) {
-                return 'translate(' + g_trans_x + ',' + g_trans_y + ')'
-            })
+            com.empty.g.attr('transform', (
+                'translate(' + g_trans_x + ',' + g_trans_y + ')'
+            ))
 
             let data_empties = {
                 id: 'empty_group',
@@ -852,7 +856,7 @@ let main_panel_sync = function(opt_in) {
                 ],
             }
 
-            let hirch = d3.hierarchy(data_empties).sum(function(d) {
+            let hirch = d3.hierarchy(data_empties).sum(function(_) {
                 return 1
             })
             let pack_node = d3
@@ -874,14 +878,14 @@ let main_panel_sync = function(opt_in) {
                 .append('circle')
                 // .attr("id", function(d,i) { return my_unique_id+tag_circ+"_"+d.data.id; })
                 .attr('class', tag_empty)
-                .attr('cx', function(d, i) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function(d, i) {
+                .attr('cy', function(d) {
                     return d.y
                 })
                 .style('opacity', 0)
-                .attr('r', function(d, i) {
+                .attr('r', function(d) {
                     return d.r
                 })
                 .attr('vector-effect', 'non-scaling-stroke')
@@ -906,13 +910,13 @@ let main_panel_sync = function(opt_in) {
                 .transition('out')
                 .duration(times.anim)
                 .style('opacity', 1)
-                .attr('cx', function(d, i) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function(d, i) {
+                .attr('cy', function(d) {
                     return d.y
                 })
-                .attr('r', function(d, i) {
+                .attr('r', function(d) {
                     return d.r
                 })
 
@@ -925,7 +929,7 @@ let main_panel_sync = function(opt_in) {
                 .style('fill-opacity', 0)
                 .remove()
 
-            setTtl(hirch_desc)
+            set_ttl(hirch_desc)
 
             com.empty.g
                 .selectAll('rect')
@@ -938,11 +942,12 @@ let main_panel_sync = function(opt_in) {
                 .attr('height', rec_w)
                 .attr('stroke-width', 0)
                 .attr('fill', 'transparent')
-                .on('mouseover', function(d) {
+                .on('mouseover', function(_) {
                     // just in case...
                     grps.hov_id_grp_now = null
+                    return
                 })
-                .on('click', function(d) {
+                .on('click', function(_) {
                     if (
                         !locker.are_free([
                             tag_main + 'click_empty_grp',
@@ -964,7 +969,7 @@ let main_panel_sync = function(opt_in) {
                         override: true,
                     })
 
-                    // if(allowPermEmptyGrp) com.addEmptyGrp = !com.addEmptyGrp;
+                    // if(allowPermEmptyGrp) com.add_empty_grp = !com.add_empty_grp;
 
                     update_empty_grp()
 
@@ -996,7 +1001,7 @@ let main_panel_sync = function(opt_in) {
             // console.log(grps.data);
             // let tag_circ = "telCirc";
 
-            com.hirch = d3.hierarchy(grps.data).sum(function(d) {
+            com.hirch = d3.hierarchy(grps.data).sum(function(_) {
                 return 1
             })
             let pack_node = d3
@@ -1020,14 +1025,14 @@ let main_panel_sync = function(opt_in) {
                 .append('circle')
                 // .attr("id", function(d,i) { return my_unique_id+tag_circ+"_"+d.data.id; })
                 .attr('class', tag_circ)
-                .attr('cx', function(d, i) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function(d, i) {
+                .attr('cy', function(d) {
                     return d.y
                 })
                 .style('opacity', 0)
-                .attr('r', function(d, i) {
+                .attr('r', function(d) {
                     return d.r
                 })
                 .attr('vector-effect', 'non-scaling-stroke')
@@ -1065,13 +1070,13 @@ let main_panel_sync = function(opt_in) {
                 //     if(d.depth == 2 && d.parent.data.is_empty) return 0.2;
                 //   return 1;
                 // })
-                .attr('cx', function(d, i) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function(d, i) {
+                .attr('cy', function(d) {
                     return d.y
                 })
-                .attr('r', function(d, i) {
+                .attr('r', function(d) {
                     return d.r
                 })
 
@@ -1105,7 +1110,7 @@ let main_panel_sync = function(opt_in) {
                 .attr('id', function(d) {
                     return d.data.id
                 })
-                .each(function(d, i) {
+                .each(function(d) {
                     // console.log('-------',d.data);
                     let icon_svg = icon_badge.get(d.data.n_icon)
                     let badge = icon_badge.add({
@@ -1129,14 +1134,14 @@ let main_panel_sync = function(opt_in) {
                         d.r = d.data.init.r
                     }
                 })
-                .attr('transform', function(d, i) {
+                .attr('transform', function(d) {
                     return 'translate(' + d.x + ',' + d.y + ')'
                 })
                 .call(com.drag_main)
                 .merge(icn)
                 .style('pointer-events', icon_pntEvt)
                 // .each(function(d,i) { if(d.data.n_icon>=0)console.log(d.data.id,d) })
-                .each(function(d, i) {
+                .each(function(d) {
                     if (is_def(d.data.set_r)) {
                         d.data.set_r(d.r * scl_r)
                     }
@@ -1150,7 +1155,7 @@ let main_panel_sync = function(opt_in) {
                 })
                 .transition('in_out')
                 .duration(times.anim)
-                .attr('transform', function(d, i) {
+                .attr('transform', function(d) {
                     return 'translate(' + d.x + ',' + d.y + ')'
                 })
 
@@ -1172,29 +1177,29 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function side_col_hov(d) {
-            // console.log('side_col_hov',d.data.id)
+        function side_col_hov(_) {
             // just in case...
             grps.hov_id_grp_now = null
+            return
         }
 
-        function side_col_click(dIn) {
+        function side_col_click(d_in) {
             let id_now = 'icn' + unique()
-            if (is_def(dIn)) {
-                let n_icon = dIn.data.data.data.n_icon
-                let trg_widg_id = dIn.data.data.data.trg_widg_id
+            if (is_def(d_in)) {
+                let n_icon = d_in.data.data.data.n_icon
+                let trg_widg_id = d_in.data.data.data.trg_widg_id
 
                 let init_xyr = {
                 }
                 let scale_r = 1.2
-                init_xyr.r = dIn.data.w / 2
+                init_xyr.r = d_in.data.w / 2
                 
                 init_xyr.x = (
-                    (dIn.data.x + dIn.data.w / 2)
+                    (d_in.data.x + d_in.data.w / 2)
                     - (shift_main_g[0] - (scale_r - 1) * init_xyr.r / 2)
                 )
                 init_xyr.y = (
-                    (dIn.data.y + dIn.data.h / 2)
+                    (d_in.data.y + d_in.data.h / 2)
                     - (shift_main_g[1] - (scale_r - 1) * init_xyr.r / 2)
                 )
                 init_xyr.r *= scale_r
@@ -1214,43 +1219,43 @@ let main_panel_sync = function(opt_in) {
                         .children[0].children = [ data_add ]
                 }
                 else {
-                    let nGrp = -1
-                    let grpIdV = grps.data.children.map(function(d) {
+                    let n_grp = -1
+                    let grp_ids = grps.data.children.map(function(d) {
                         return d.id
                     })
-                    $.each(grps.data.children, function(nChild0, child_now0) {
-                        if (grpIdV.indexOf('grp' + nChild0) < 0 && nGrp < 0) {
-                            nGrp = nChild0
+                    $.each(grps.data.children, function(n_child_0, child_now_0) {
+                        if (grp_ids.indexOf('grp' + n_child_0) < 0 && n_grp < 0) {
+                            n_grp = n_child_0
                         }
                     })
-                    if (nGrp < 0) {
-                        nGrp = grps.data.children.length
+                    if (n_grp < 0) {
+                        n_grp = grps.data.children.length
                     }
 
-                    let newGrp = {
-                        id: 'grp' + nGrp,
-                        title: 'Group ' + nGrp,
+                    let new_grp = {
+                        id: 'grp' + n_grp,
+                        title: 'Group ' + n_grp,
                         children: [
                             {
-                                id: 'grp' + nGrp + '_0',
+                                id: 'grp' + n_grp + '_0',
                                 children: [ data_add ],
                             },
-                            // { id:"grp_"+nGrp+"_0", children: [{id:"icn_"+nGrp+"_0"+id_now, trg_widg_id:"", n_icon:n_empty_icon}, data_add] },
+                            // { id:"grp_"+n_grp+"_0", children: [{id:"icn_"+n_grp+"_0"+id_now, trg_widg_id:"", n_icon:n_empty_icon}, data_add] },
                             {
-                                id: 'grp' + nGrp + '_1',
+                                id: 'grp' + n_grp + '_1',
                                 children: [
                                     {
-                                        id: 'icn' + nGrp + '_1' + id_now,
+                                        id: 'icn' + n_grp + '_1' + id_now,
                                         trg_widg_id: '',
                                         n_icon: n_empty_icon,
                                     },
                                 ],
                             },
                             {
-                                id: 'grp' + nGrp + '_2',
+                                id: 'grp' + n_grp + '_2',
                                 children: [
                                     {
-                                        id: 'icn' + nGrp + '_2' + id_now,
+                                        id: 'icn' + n_grp + '_2' + id_now,
                                         trg_widg_id: '',
                                         n_icon: n_empty_icon,
                                     },
@@ -1258,18 +1263,18 @@ let main_panel_sync = function(opt_in) {
                             },
                         ],
                     }
-                    grps.data.children.push(newGrp)
+                    grps.data.children.push(new_grp)
                 }
             }
 
-            // if(!allowPermEmptyGrp) com.addEmptyGrp  = !is_def(dIn);
+            // if(!allowPermEmptyGrp) com.add_empty_grp  = !is_def(d_in);
             grps.hov_id_grp_start = null
-            com.addEmptyGrp = !is_def(dIn)
+            com.add_empty_grp = !is_def(d_in)
 
             update_groups()
 
-            // if(!allowPermEmptyGrp) com.addEmptyGrp  = false;
-            com.addEmptyGrp = false
+            // if(!allowPermEmptyGrp) com.add_empty_grp  = false;
+            com.add_empty_grp = false
 
             return id_now
         }
@@ -1277,49 +1282,49 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function initSideCol() {
+        function init_side_col() {
             let data = grps.data.all_sync_widgets
 
             let icons_orig = is_def(recs[tag_left_in]) ? recs[tag_left_in] : []
             let icons_new = []
-            let trg_widg_idV = []
-            $.each(icons_orig, function(index0, ele0) {
-                let id_now = ele0.data.id
-                let trg_widg_id = ele0.data.trg_widg_id
+            let trg_widg_ids = []
+            $.each(icons_orig, function(index_0, ele_0) {
+                let id_now = ele_0.data.id
+                let trg_widg_id = ele_0.data.trg_widg_id
 
-                $.each(data, function(index1, ele1) {
-                    if (id_now === ele1.id && trg_widg_idV.indexOf(trg_widg_id) < 0) {
-                        icons_new.push(ele0)
+                $.each(data, function(index_1, ele_1) {
+                    if (id_now === ele_1.id && trg_widg_ids.indexOf(trg_widg_id) < 0) {
+                        icons_new.push(ele_0)
 
-                        trg_widg_idV.push(trg_widg_id)
+                        trg_widg_ids.push(trg_widg_id)
                     }
                 })
             })
 
-            $.each(data, function(index0, ele0) {
-                if (ele0.n_icon !== n_empty_icon) {
-                    let id_now = ele0.id
-                    let trg_widg_id = ele0.trg_widg_id
-                    let eleIndex = -1
+            $.each(data, function(index_0, ele_0) {
+                if (ele_0.n_icon !== n_empty_icon) {
+                    let id_now = ele_0.id
+                    let trg_widg_id = ele_0.trg_widg_id
+                    let ele_index = -1
 
-                    $.each(icons_orig, function(index1, ele1) {
-                        if (ele1.id === id_now) {
-                            eleIndex = index1
+                    $.each(icons_orig, function(index_1, ele_1) {
+                        if (ele_1.id === id_now) {
+                            ele_index = index_1
                         }
                     })
 
-                    if (eleIndex < 0 && trg_widg_idV.indexOf(trg_widg_id) < 0) {
-                        // console.log(ele0.trg_widg_id);
+                    if (ele_index < 0 && trg_widg_ids.indexOf(trg_widg_id) < 0) {
+                        // console.log(ele_0.trg_widg_id);
                         icons_new.push({
                             id: id_now,
                             data: {
                                 id: id_now,
                                 trg_widg_id: trg_widg_id,
-                                n_icon: ele0.n_icon,
+                                n_icon: ele_0.n_icon,
                             },
                         })
 
-                        trg_widg_idV.push(trg_widg_id)
+                        trg_widg_ids.push(trg_widg_id)
                     }
                 }
             })
@@ -1327,28 +1332,28 @@ let main_panel_sync = function(opt_in) {
             recs[tag_left_in] = icons_new
             icons_orig = null
             icons_new = null
-            trg_widg_idV = null
+            trg_widg_ids = null
 
-            updSideCol()
+            upd_side_col()
         }
 
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function updSideCol() {
-            let recV = recs[tag_left_in]
-            if (!is_def(recV)) {
-                recV = []
+        function upd_side_col() {
+            let rec_data = recs[tag_left_in]
+            if (!is_def(rec_data)) {
+                rec_data = []
             }
 
-            com.scrollGrid.update({
-                recV: recV,
+            com.scroll_grid.update({
+                rec_data: rec_data,
             })
 
             let need_updt = false
             let scl_r = 1
             let data_now = recs[tag_grid_rec]
-            let icn = recs.dataG
+            let icn = recs.data_g
                 .selectAll('g.a' + tag_icon)
                 .data(data_now, function(d) {
                     return d.data.id
@@ -1361,7 +1366,7 @@ let main_panel_sync = function(opt_in) {
                 .attr('id', function(d) {
                     return d.data.id
                 })
-                .each(function(d, i) {
+                .each(function(d) {
                     let icon_svg = icon_badge.get(d.data.data.n_icon)
                     let badge = icon_badge.add({
                         parent_svg: d3.select(this),
@@ -1379,13 +1384,13 @@ let main_panel_sync = function(opt_in) {
                     d.data.data.set_r = badge.set_r
                     // console.log(d.data.id,d.x)
                 })
-                .attr('transform', function(d, i) {
+                .attr('transform', function(d) {
                     return 'translate(' + (d.x + d.w / 2) + ',' + (d.y + d.h / 2) + ')'
                 })
                 .call(com.dragSide)
                 .merge(icn)
                 .style('pointer-events', icon_pntEvt)
-            // .each(function(d,i) { if(d.data.n_icon>=0)console.log(d.data.id,d) })
+                // .each(function(d,i) { if(d.data.n_icon>=0)console.log(d.data.id,d) })
                 .each(function(d) {
                     if (is_def(d.data.data.set_r)) {
                         d.data.data.set_r(d.w / 2 * scl_r)
@@ -1395,7 +1400,7 @@ let main_panel_sync = function(opt_in) {
                         // then, just remove it (no time for transitions!!!), and ask for an update
                         need_updt = true
                         console.log('111 - no d.data.data.set_r -', d.data.id)
-                        recs.dataG.select('#' + d.data.id).remove()
+                        recs.data_g.select('#' + d.data.id).remove()
                     }
                 })
                 .transition('in_out')
@@ -1420,8 +1425,8 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function updSideColOnZoom(opt_in) {
-            let icn = recs.dataG.selectAll('g.a' + tag_icon)
+        function upd_side_col_on_zoom(opt_in) {
+            let icn = recs.data_g.selectAll('g.a' + tag_icon)
             let duration = opt_in.duration
             let trans = function(d) {
                 return 'translate(' + (d.x + d.w / 2) + ',' + (d.y + d.h / 2) + ')'
@@ -1441,7 +1446,7 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function setTtl(data_in) {
+        function set_ttl(data_in) {
             let titles = [ 'Both', 'Sends', 'Gets' ]
 
             let data, g_now
@@ -1554,7 +1559,7 @@ let main_panel_sync = function(opt_in) {
                         return is_def(d.data.title) ? d.data.title : d.data.id
                     }
                     else {
-                        return titles[getIndexInParent(d)]
+                        return titles[get_index_in_parent(d)]
                     }
                 })
                 .style('fill-opacity', function(d) {
@@ -1576,7 +1581,7 @@ let main_panel_sync = function(opt_in) {
                 .remove()
         }
 
-        function setVor() {
+        function set_vor() {
             let show_vor = false
 
             let vor_func = d3
@@ -1643,9 +1648,9 @@ let main_panel_sync = function(opt_in) {
                 .call(function(d) {
                     d.attr('d', vor_ploy_func)
                 })
-            // .on("mouseover", tel_data.vorHov)
-            // .on("click",     tel_data.vorClick)
-            // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:dblclick_zoom_in_out }); })
+                // .on("mouseover", tel_data.vorHov)
+                // .on("click",     tel_data.vorClick)
+                // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:dblclick_zoom_in_out }); })
 
             if (show_vor) {
                 com.vor.g
@@ -1682,16 +1687,18 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             //
             // -------------------------------------------------------------------
-            let dataTrans = null
-            let rmInd = null
+            let data_trans = null
+            let rm_ind = null
             if (is_def(grps.hov_id_grp_start)) {
-                $.each(grps.data.children, function(nChild0, child_now0) {
-                    $.each(child_now0.children, function(nChild1, child_now1) {
-                        if (child_now1.id === grps.hov_id_grp_start) {
-                            $.each(child_now1.children, function(nChild2, child_now2) {
-                                if (child_now2.id === grps.hov_id_icon) {
-                                    dataTrans = child_now2
-                                    rmInd = [ nChild0, nChild1, nChild2 ]
+                $.each(grps.data.children, function(n_child_0, child_now_0) {
+                    $.each(child_now_0.children, function(n_child_1, child_now_1) {
+                        if (child_now_1.id === grps.hov_id_grp_start) {
+                            $.each(child_now_1.children, function(
+                                n_child_2, child_now_2
+                            ) {
+                                if (child_now_2.id === grps.hov_id_icon) {
+                                    data_trans = child_now_2
+                                    rm_ind = [ n_child_0, n_child_1, n_child_2 ]
                                 }
                             })
                         }
@@ -1699,25 +1706,23 @@ let main_panel_sync = function(opt_in) {
                 })
             }
 
-            if (is_def(dataTrans)) {
+            if (is_def(data_trans)) {
                 if (is_def(grps.hov_id_grp_now)) {
-                    $.each(grps.data.children, function(nChild0, child_now0) {
-                        $.each(child_now0.children, function(nChild1, child_now1) {
-                            if (child_now1.id === grps.hov_id_grp_now) {
-                                child_now1.children.push(dataTrans)
+                    $.each(grps.data.children, function(n_child_0, child_now_0) {
+                        $.each(child_now_0.children, function(n_child_1, child_now_1) {
+                            if (child_now_1.id === grps.hov_id_grp_now) {
+                                child_now_1.children.push(data_trans)
                             }
                         })
                     })
                 }
 
-                grps.data.children[rmInd[0]].children[rmInd[1]].children.splice(
-                    rmInd[2],
-                    1
-                )
+                grps.data.children[rm_ind[0]]
+                    .children[rm_ind[1]].children.splice(rm_ind[2], 1)
 
                 // // add an empty icon_badge if needed
-                // if(grps.data.children[ rmInd[0] ].children[ rmInd[1] ].children.length == 0) {
-                //   grps.data.children[ rmInd[0] ].children[ rmInd[1] ].children
+                // if(grps.data.children[ rm_ind[0] ].children[ rm_ind[1] ].children.length == 0) {
+                //   grps.data.children[ rm_ind[0] ].children[ rm_ind[1] ].children
                 //     .push({ id:"icn_empty_"+unique(), trg_widg_id:"", title:"", n_icon:n_empty_icon });
                 // }
             }
@@ -1734,20 +1739,20 @@ let main_panel_sync = function(opt_in) {
 
             // add an empy group if needed
             // -------------------------------------------------------------------
-            if (com.addEmptyGrp && com.empty_grp_index < 0) {
+            if (com.add_empty_grp && com.empty_grp_index < 0) {
                 // find the minimal available index for the new empty group
                 // -------------------------------------------------------------------
-                let nGrp = -1
-                let grpIdV = grps.data.children.map(function(d) {
+                let n_grp = -1
+                let grp_ids = grps.data.children.map(function(d) {
                     return d.id
                 })
-                $.each(grps.data.children, function(nChild0, child_now0) {
-                    if (grpIdV.indexOf('grp' + nChild0) < 0 && nGrp < 0) {
-                        nGrp = nChild0
+                $.each(grps.data.children, function(n_child_0, child_now_0) {
+                    if (grp_ids.indexOf('grp' + n_child_0) < 0 && n_grp < 0) {
+                        n_grp = n_child_0
                     }
                 })
-                if (nGrp < 0) {
-                    nGrp = grps.data.children.length
+                if (n_grp < 0) {
+                    n_grp = grps.data.children.length
                 }
 
                 // -------------------------------------------------------------------
@@ -1755,35 +1760,35 @@ let main_panel_sync = function(opt_in) {
                 // groups ["grp_0_0","grp_0_1","grp_0_2"], as defined exactly by the server
                 // -------------------------------------------------------------------
                 let id_now = unique()
-                let newGrp = {
-                    id: 'grp' + nGrp,
-                    title: 'Group ' + nGrp,
+                let new_grp = {
+                    id: 'grp' + n_grp,
+                    title: 'Group ' + n_grp,
                     children: [
                         {
-                            id: 'grp' + nGrp + '_0',
+                            id: 'grp' + n_grp + '_0',
                             children: [
                                 {
-                                    id: 'icn' + nGrp + '_0' + id_now,
+                                    id: 'icn' + n_grp + '_0' + id_now,
                                     trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
                             ],
                         },
                         {
-                            id: 'grp' + nGrp + '_1',
+                            id: 'grp' + n_grp + '_1',
                             children: [
                                 {
-                                    id: 'icn' + nGrp + '_1' + id_now,
+                                    id: 'icn' + n_grp + '_1' + id_now,
                                     trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
                             ],
                         },
                         {
-                            id: 'grp' + nGrp + '_2',
+                            id: 'grp' + n_grp + '_2',
                             children: [
                                 {
-                                    id: 'icn' + nGrp + '_2' + id_now,
+                                    id: 'icn' + n_grp + '_2' + id_now,
                                     trg_widg_id: '',
                                     n_icon: n_empty_icon,
                                 },
@@ -1791,12 +1796,12 @@ let main_panel_sync = function(opt_in) {
                         },
                     ],
                 }
-                grps.data.children.push(newGrp)
+                grps.data.children.push(new_grp)
             }
 
             // remove the empty group if needed
             // -------------------------------------------------------------------
-            if (!com.addEmptyGrp && com.empty_grp_index >= 0) {
+            if (!com.add_empty_grp && com.empty_grp_index >= 0) {
                 grps.data.children.splice(com.empty_grp_index, 1)
             }
 
@@ -1805,10 +1810,10 @@ let main_panel_sync = function(opt_in) {
             // -------------------------------------------------------------------
             if (locker.is_free(tag_main + 'in_drag')) {
                 grps.data.children = grps.data.children.sort(function(x, y) {
-                    let idX = parseInt(x.id.replace('grp', ''))
-                    let idY = parseInt(y.id.replace('grp', ''))
+                    let id_x = parseInt(x.id.replace('grp', ''))
+                    let id_y = parseInt(y.id.replace('grp', ''))
 
-                    return idX - idY
+                    return id_x - id_y
                 })
             }
 
@@ -1827,7 +1832,7 @@ let main_panel_sync = function(opt_in) {
 
             set_all()
 
-            initSideCol()
+            init_side_col()
 
             locker.remove({
                 id: tag_main + 'update_groups',
@@ -1839,46 +1844,49 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         function update_empty_grp() {
             com.empty_grp_index = -1
-            com.emptyGrpId = unique()
+            com.empty_grp_id = unique()
 
             // let nEmptyGrps = 0
-            $.each(grps.data.children, function(nChild0, child_now0) {
-                let nEmpties = 0
-                $.each(child_now0.children, function(nChild1, child_now1) {
-                    if (child_now1.children.length === 1) {
-                        if (child_now1.children[0].n_icon === n_empty_icon) {
-                            nEmpties++
+            $.each(grps.data.children, function(n_child_0, child_now_0) {
+                let n_empties = 0
+                $.each(child_now_0.children, function(n_child_1, child_now_1) {
+                    if (child_now_1.children.length === 1) {
+                        if (child_now_1.children[0].n_icon === n_empty_icon) {
+                            n_empties++
                         }
                     }
                 })
-                if (nEmpties === 3) {
+                if (n_empties === 3) {
                     // nEmptyGrps++
-                    com.empty_grp_index = nChild0
-                    com.emptyGrpId = child_now0.id
+                    com.empty_grp_index = n_child_0
+                    com.empty_grp_id = child_now_0.id
                 }
             })
 
-            // console.log('===',nEmptyGrps,com.empty_grp_index,com.emptyGrpId);
+            // console.log('===',nEmptyGrps,com.empty_grp_index,com.empty_grp_id);
         }
 
-        function is_empty_group(dIn) {
+        // -------------------------------------------------------------------
+        //
+        // -------------------------------------------------------------------
+        function is_empty_group(d_in) {
             let is_empty = false
-            let dNow = dIn
-            while (is_def(dNow)) {
-                if (is_def(dNow.id)) {
-                    if (com.emptyGrpId === dNow.id) {
+            let d_now = d_in
+            while (is_def(d_now)) {
+                if (is_def(d_now.id)) {
+                    if (com.empty_grp_id === d_now.id) {
                         is_empty = true
                     }
                 }
-                else if (is_def(dNow.data)) {
-                    if (is_def(dNow.data.id)) {
-                        if (com.emptyGrpId === dNow.data.id) {
+                else if (is_def(d_now.data)) {
+                    if (is_def(d_now.data.id)) {
+                        if (com.empty_grp_id === d_now.data.id) {
                             is_empty = true
                         }
                     }
                 }
 
-                dNow = dNow.parent
+                d_now = d_now.parent
             }
             return is_empty
         }
@@ -1886,50 +1894,54 @@ let main_panel_sync = function(opt_in) {
         // -------------------------------------------------------------------
         // remove duplicates within a given group, by trg_widg_id
         // -------------------------------------------------------------------
-        function removeDuplicates() {
-            let hasRemoved = false
-            $.each(grps.data.children, function(nChild0, child_now0) {
+        function rm_duplicates() {
+            let has_removed = false
+            $.each(grps.data.children, function(n_child_0, child_now_0) {
                 let ids = {
                 }
-                let hasDuplicates = false
-                $.each(child_now0.children, function(nChild1, child_now1) {
-                    $.each(child_now1.children, function(nChild2, child_now2) {
-                        let id_now = child_now2.trg_widg_id
+                let has_duplicates = false
+                $.each(child_now_0.children, function(n_child_1, child_now_1) {
+                    $.each(child_now_1.children, function(n_child_2, child_now_2) {
+                        let id_now = child_now_2.trg_widg_id
 
                         // do not register the first occurence, just initialize the vector
                         if (!is_def(ids[id_now])) {
                             ids[id_now] = []
                         }
                         else {
-                            ids[id_now].push([ nChild1, nChild2 ])
-                            hasRemoved = true
-                            hasDuplicates = true
+                            ids[id_now].push([ n_child_1, n_child_2 ])
+                            has_removed = true
+                            has_duplicates = true
                         }
                     })
                 })
 
-                if (hasDuplicates) {
-                    $.each(child_now0.children, function(nChild1, child_now1) {
+                if (has_duplicates) {
+                    $.each(child_now_0.children, function(n_child_1, child_now_1) {
                         let children_now = []
-                        $.each(child_now1.children, function(nChild2, child_now2) {
-                            let id_now = child_now2.trg_widg_id
+                        $.each(child_now_1.children, function(n_child_2, child_now_2) {
+                            let id_now = child_now_2.trg_widg_id
 
-                            let willRemove = false
+                            let will_remove = false
                             $.each(ids[id_now], function(index, obj_now) {
-                                if (obj_now[0] === nChild1 && obj_now[1] === nChild2) {
-                                    willRemove = true
+                                if (
+                                    obj_now[0] === n_child_1
+                                    && obj_now[1] === n_child_2
+                                ) {
+                                    will_remove = true
                                 }
                             })
-                            if (!willRemove) {
-                                children_now.push(child_now2)
+                            if (!will_remove) {
+                                children_now.push(child_now_2)
                             }
                         })
-                        grps.data.children[nChild0].children[nChild1].children = children_now
+                        grps.data.children[n_child_0]
+                            .children[n_child_1].children = children_now
                     })
                 }
             })
 
-            if (hasRemoved) {
+            if (has_removed) {
                 update_groups()
             }
 
@@ -1941,10 +1953,10 @@ let main_panel_sync = function(opt_in) {
         // highlight function works ok, and to prevent change od size of group on 1->0 elements
         // -------------------------------------------------------------------
         function set_empty_icons() {
-            $.each(grps.data.children, function(nChild0, child_now0) {
-                $.each(child_now0.children, function(nChild1, child_now1) {
-                    if (child_now1.children.length === 0) {
-                        child_now1.children.push({
+            $.each(grps.data.children, function(n_child_0, child_now_0) {
+                $.each(child_now_0.children, function(n_child_1, child_now_1) {
+                    if (child_now_1.children.length === 0) {
+                        child_now_1.children.push({
                             id: 'icnEmpty' + unique(),
                             trg_widg_id: '',
                             title: '',
@@ -1954,27 +1966,25 @@ let main_panel_sync = function(opt_in) {
                 })
             })
 
-            let rmInd = 1
-            while (is_def(rmInd)) {
-                rmInd = null
-                $.each(grps.data.children, function(nChild0, child_now0) {
-                    $.each(child_now0.children, function(nChild1, child_now1) {
-                        $.each(child_now1.children, function(nChild2, child_now2) {
+            let rm_ind = 1
+            while (is_def(rm_ind)) {
+                rm_ind = null
+                $.each(grps.data.children, function(n_child_0, child_now_0) {
+                    $.each(child_now_0.children, function(n_child_1, child_now_1) {
+                        $.each(child_now_1.children, function(n_child_2, child_now_2) {
                             if (
-                                child_now2.n_icon === n_empty_icon
-                && child_now1.children.length > 1
+                                child_now_2.n_icon === n_empty_icon
+                                && child_now_1.children.length > 1
                             ) {
-                                rmInd = [ nChild0, nChild1, nChild2 ]
+                                rm_ind = [ n_child_0, n_child_1, n_child_2 ]
                             }
                         })
                     })
                 })
 
-                if (is_def(rmInd)) {
-                    grps.data.children[rmInd[0]].children[rmInd[1]].children.splice(
-                        rmInd[2],
-                        1
-                    )
+                if (is_def(rm_ind)) {
+                    grps.data.children[rm_ind[0]]
+                        .children[rm_ind[1]].children.splice(rm_ind[2], 1)
                 }
             }
         }
@@ -1989,8 +1999,8 @@ let main_panel_sync = function(opt_in) {
 
             set_hierarchy()
             set_icons()
-            setTtl()
-            setVor()
+            set_ttl()
+            set_vor()
 
             locker.remove({
                 id: tag_main + 'set_all',
@@ -2011,7 +2021,7 @@ let main_panel_sync = function(opt_in) {
             let duration = opt_in.type.duration //* ((data.length > 0)?1:0);
             let col = opt_in.type.col
 
-            let rRange = [ 1, 1 ]
+            let r_range = [ 1, 1 ]
             let opac = [ 0, 0.2 ]
             let strk_w = [ 0, 0.175 ]
 
@@ -2020,12 +2030,12 @@ let main_panel_sync = function(opt_in) {
             // circ
             //   .transition("in_out").duration(duration/4)
             //   // .style("opacity",        opac[1])
-            //   .attr("r",             function(d,i){ return d.r * rRange[1]; })
+            //   .attr("r",             function(d,i){ return d.r * r_range[1]; })
             //   .attr("stroke-width",  function(d,i){ return d.data.strk_w * 8; })
             //   .style("stroke-opacity", function(d) { return hirch_opac_strk(d) / 3; } )
             //   .transition("in_out").duration(duration*3/4)
             //   // // .style("opacity",        opac[0])
-            //   .attr("r",             function(d,i){ return d.r * rRange[0]; })
+            //   .attr("r",             function(d,i){ return d.r * r_range[0]; })
             //   .attr("stroke-width",  function(d,i){ return d.data.strk_w; })
             //   .style("stroke-opacity", function(d) { return hirch_opac_strk(d); } )
             // return
@@ -2040,13 +2050,13 @@ let main_panel_sync = function(opt_in) {
                 .enter()
                 .append('circle')
                 .attr('class', id + ' ' + 'all')
-                .attr('cx', function(d, i) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function(d, i) {
+                .attr('cy', function(d) {
                     return d.y
                 })
-                .attr('r', function(d, i) {
+                .attr('r', function(d) {
                     return d.r
                 })
                 .attr('vector-effect', 'non-scaling-stroke')
@@ -2054,26 +2064,26 @@ let main_panel_sync = function(opt_in) {
                 .style('stroke', col)
                 .style('fill', 'transparent')
                 .style('opacity', opac[0])
-                .attr('stroke-width', function(d, i) {
+                .attr('stroke-width', function(d) {
                     return d.r * strk_w[0]
                 })
                 .merge(circ)
                 .transition('in_out')
                 .duration(duration / 4)
                 .style('opacity', opac[1])
-                .attr('r', function(d, i) {
-                    return d.r * rRange[1]
+                .attr('r', function(d) {
+                    return d.r * r_range[1]
                 })
-                .attr('stroke-width', function(d, i) {
+                .attr('stroke-width', function(d) {
                     return d.r * strk_w[1]
                 })
                 .transition('in_out')
                 .duration(duration * 3 / 4)
                 .style('opacity', opac[0])
-                .attr('r', function(d, i) {
-                    return d.r * rRange[0]
+                .attr('r', function(d) {
+                    return d.r * r_range[0]
                 })
-                .attr('stroke-width', function(d, i) {
+                .attr('stroke-width', function(d) {
                     return d.r * strk_w[0]
                 })
                 .transition('in_out')
@@ -2090,7 +2100,7 @@ let main_panel_sync = function(opt_in) {
 
         function hirch_style_stroke(d) {
             if (d.depth === 2) {
-                let index = getIndexInParent(d)
+                let index = get_index_in_parent(d)
                 // if(index == 0) return d3.rgb(cols_blues[3]).darker(0.5);
                 // if(index == 1) return d3.rgb(cols_yellows[6]).brighter(0.1);
                 // if(index == 2) return d3.rgb(cols_reds[4]).brighter(0.95);
@@ -2116,9 +2126,9 @@ let main_panel_sync = function(opt_in) {
             return '#383b42'
             // return d3.rgb(hirch_style_fill(d)).darker(1);
         }
-        function hirch_style_fill(d) {
+        function hirch_style_fill(_) {
             // if(d.depth == 2) {
-            //   let index = getIndexInParent(d);
+            //   let index = get_index_in_parent(d);
             //   if(index == 0) return cols_greens[0];
             //   if(index == 1) return cols_yellows[0];
             //   if(index == 2) return cols_reds[0];
@@ -2126,7 +2136,7 @@ let main_panel_sync = function(opt_in) {
             return '#383b42'
             // return d.children ? "#383b42" : tel_data.idToCol[d.data.id];
         }
-        function hirch_opac_fill(d, scale) {
+        function hirch_opac_fill(d, _) {
             if (d.depth === 0) {
                 return 0
             }
@@ -2144,7 +2154,7 @@ let main_panel_sync = function(opt_in) {
             // else if(d.children) return 0.03;
             // else                return 0;
         }
-        function hirch_opac_strk(d, scale) {
+        function hirch_opac_strk(d, _) {
             if (d.depth === 0) {
                 return 0
             }
@@ -2161,11 +2171,11 @@ let main_panel_sync = function(opt_in) {
             // else if(d.children) return 0.5;
             // else                return 0;
         }
-        function getIndexInParent(d) {
+        function get_index_in_parent(d) {
             let index = -1
-            $.each(d.parent.children, function(nChild, child_now) {
+            $.each(d.parent.children, function(n_child, child_now) {
                 if (child_now.data.id === d.data.id) {
-                    index = nChild
+                    index = n_child
                 }
             })
             return index

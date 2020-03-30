@@ -12,7 +12,7 @@
 window.ScrollGrid = function(opt_in) {
     let com = {
     }
-    let mainTag = opt_in.id
+    let main_tag = opt_in.id
     let recs = opt_in.recs
     let x0 = opt_in.x0
     let y0 = opt_in.y0
@@ -20,64 +20,85 @@ window.ScrollGrid = function(opt_in) {
     let h0 = opt_in.h0
     let m0 = opt_in.m0
     let run_loop = opt_in.run_loop
-    // let focus0 = opt_in.focus0
-    // let recOrder = opt_in.recOrder
-    let isHorz = opt_in.isHorz
-    // let tagVecDataIn = opt_in.tagVecDataIn
+    let is_horz = opt_in.is_horz
     let locker = opt_in.locker
-    // let gIn = opt_in.g
-    let xy = isHorz ? 'x' : 'y'
-    let wh0 = isHorz ? w0 : h0
+    let xy = is_horz ? 'x' : 'y'
+    let wh_0 = is_horz ? w0 : h0
 
-    let isInvOrder = is_def(opt_in.isInvOrder) ? opt_in.isInvOrder : false
-    let showCounts = is_def(opt_in.showCounts) ? opt_in.showCounts : true
+    let is_inv_order = (
+        is_def(opt_in.is_inv_order) ? opt_in.is_inv_order : false
+    )
+    let show_counts = (
+        is_def(opt_in.show_counts) ? opt_in.show_counts : true
+    )
     let tag_clip_path = (
         is_def(opt_in.tag_clip_path)
             ? opt_in.tag_clip_path
-            : mainTag + 'clipPath'
+            : main_tag + 'clipPath'
     )
-    let autoClipPath = is_def(opt_in.autoClipPath) ? opt_in.autoClipPath : true
+    let auto_clip_path = (
+        is_def(opt_in.auto_clip_path) ? opt_in.auto_clip_path : true
+    )
 
-    let bckRecOpt = opt_in.bckRecOpt
-    if (!is_def(bckRecOpt)) {
-        bckRecOpt = {
+    let bck_rec_opt = opt_in.bck_rec_opt
+    if (!is_def(bck_rec_opt)) {
+        bck_rec_opt = {
             texture_orient: '5/8',
-            frontProp: {
-                strkWOcp: 0.2,
+            front_prop: {
+                strk_opac: 0.2,
             },
         }
     }
 
-    let onZoom = is_def(opt_in.onZoom) ? opt_in.onZoom : {
+    let on_zoom = is_def(opt_in.on_zoom) ? opt_in.on_zoom : {
     }
-    // if(!is_def(onZoom.start))  onZoom.start  = function(){};
-    // if(!is_def(onZoom.during)) onZoom.during = function(){};
-    // if(!is_def(onZoom.end))    onZoom.end    = function(){};
 
     com.g_base = opt_in.g_box
-    com.gBack = is_def(opt_in.gBack) ? opt_in.gBack : com.g_base.append('g')
-    com.gBckData = is_def(opt_in.gBckData) ? opt_in.gBckData : com.g_base.append('g')
-    com.gVor = is_def(opt_in.gVor) ? opt_in.gVor : com.g_base.append('g')
-    com.gFrntData = is_def(opt_in.gFrntData)
-        ? opt_in.gFrntData
-        : com.g_base.append('g')
+    com.g_bck = (
+        is_def(opt_in.g_bck) ? opt_in.g_bck : com.g_base.append('g')
+    )
+    com.g_bck_data = (
+        is_def(opt_in.g_bck_data) ? opt_in.g_bck_data : com.g_base.append('g')
+    )
+    com.g_vor = (
+        is_def(opt_in.g_vor) ? opt_in.g_vor : com.g_base.append('g')
+    )
+    com.g_frnt_data = (
+        is_def(opt_in.g_frnt_data) ? opt_in.g_frnt_data : com.g_base.append('g')
+    )
 
-    let recV = is_def(opt_in.recV) ? opt_in.recV : []
-    let vorOpt = is_def(opt_in.vorOpt) ? opt_in.vorOpt : {
-    }
-    // let invertZoom = is_def(opt_in.invertZoom) ? opt_in.invertZoom : !isHorz
+    let rec_data = (
+        is_def(opt_in.rec_data) ? opt_in.rec_data : []
+    )
+    let vor_opt = (
+        is_def(opt_in.vor_opt)
+            ? opt_in.vor_opt
+            : {
+            }
+    )
+    // let invertZoom = is_def(opt_in.invertZoom) ? opt_in.invertZoom : !is_horz
 
-    let nRows = is_def(opt_in.nRows) ? opt_in.nRows : 1
-    let rec_w = is_def(opt_in.rec_w) ? opt_in.rec_w : 45
-    let rec_h = is_def(opt_in.rec_h) ? opt_in.rec_h : rec_w
-    let rec_m = is_def(opt_in.rec_m) ? opt_in.rec_m : Math.min(rec_w, rec_h) * 0.2
-    let rec_e = is_def(opt_in.rec_e) ? opt_in.rec_e : rec_m * 3
-    let rec_wH = isHorz ? rec_w : rec_h
+    let n_rows = (
+        is_def(opt_in.n_rows) ? opt_in.n_rows : 1
+    )
+    let rec_w = (
+        is_def(opt_in.rec_w) ? opt_in.rec_w : 45
+    )
+    let rec_h = (
+        is_def(opt_in.rec_h) ? opt_in.rec_h : rec_w
+    )
+    let rec_m = (
+        is_def(opt_in.rec_m) ? opt_in.rec_m : Math.min(rec_w, rec_h) * 0.2
+    )
+    let rec_e = (
+        is_def(opt_in.rec_e) ? opt_in.rec_e : rec_m * 3
+    )
+    let rec_wH = is_horz ? rec_w : rec_h
 
     let scroll_rec = is_def(opt_in.scroll_rec) ? opt_in.scroll_rec : {
     }
     if (!is_def(scroll_rec.w)) {
-        scroll_rec.w = (isHorz ? h0 : w0) * 0.125
+        scroll_rec.w = (is_horz ? h0 : w0) * 0.125
     }
     if (!is_def(scroll_rec.h)) {
         scroll_rec.h = 0
@@ -92,33 +113,47 @@ window.ScrollGrid = function(opt_in) {
     let lockerZoom = opt_in.lockerZoom
     if (!is_def(lockerZoom)) {
         lockerZoom = {
-            all: mainTag + 'zoom',
-            during: mainTag + 'zoomsuring',
-            end: mainTag + 'zoomEnd',
+            all: main_tag + 'zoom',
+            during: main_tag + 'zoomsuring',
+            end: main_tag + 'zoomEnd',
         }
     }
 
     let lockerV = {
     }
-    lockerV.lockerV = is_def(opt_in.lockerV) ? opt_in.lockerV : []
+    lockerV.lockerV = (
+        is_def(opt_in.lockerV) ? opt_in.lockerV : []
+    )
     lockerV.zoomsuring = lockerV.lockerV.slice().concat([ lockerZoom.during ])
     lockerV.zoomEnd = lockerV.lockerV.slice().concat([ lockerZoom.end ])
 
-    let vor_show_lines = is_def(vorOpt.vor_show_lines) ? vorOpt.vor_show_lines : false
-    let vorMouseover = is_def(vorOpt.mouseover) ? vorOpt.mouseover : null
-    let vorMouseout = is_def(vorOpt.mouseout) ? vorOpt.mouseout : null
-    let vor_dblclick = is_def(vorOpt.dblclick) ? vorOpt.dblclick : null
-    let vorClick = is_def(vorOpt.click) ? vorOpt.click : null
-    let vorCall = is_def(vorOpt.call) ? vorOpt.call : null
+    let vor_show_lines = (
+        is_def(vor_opt.vor_show_lines) ? vor_opt.vor_show_lines : false
+    )
+    let vorMouseover = (
+        is_def(vor_opt.mouseover) ? vor_opt.mouseover : null
+    )
+    let vorMouseout = (
+        is_def(vor_opt.mouseout) ? vor_opt.mouseout : null
+    )
+    let vor_dblclick = (
+        is_def(vor_opt.dblclick) ? vor_opt.dblclick : null
+    )
+    let vorClick = (
+        is_def(vor_opt.click) ? vor_opt.click : null
+    )
+    let vorCall = (
+        is_def(vor_opt.call) ? vor_opt.call : null
+    )
 
-    let gName = mainTag + 'g'
-    let tag_outer = mainTag + 'outer'
-    // let tag_inner = mainTag + 'inner'
-    let tag_zoom = mainTag + 'zoom'
-    let tagDrag = mainTag + 'drag'
-    let tag_vor = mainTag + 'vor'
-    let tagScrollBar = mainTag + 'scrollBar'
-    let tag_txtOut = mainTag + 'recCounters'
+    let gName = main_tag + 'g'
+    let tag_outer = main_tag + 'outer'
+    // let tag_inner = main_tag + 'inner'
+    let tag_zoom = main_tag + 'zoom'
+    let tagDrag = main_tag + 'drag'
+    let tag_vor = main_tag + 'vor'
+    let tagScrollBar = main_tag + 'scrollBar'
+    let tag_txtOut = main_tag + 'recCounters'
 
     let isInDrag = false
     let isInScrollDrag = false
@@ -128,14 +163,14 @@ window.ScrollGrid = function(opt_in) {
     let scrollBarRec = null
 
     let zooms = {
-        xy0: isHorz ? x0 + rec_e : y0 + rec_e,
-        xy1: isHorz ? x0 + w0 - rec_e - rec_w : y0 + h0 - rec_e - rec_h,
-        // delta:    (isHorz ? 1 : -1) * rec_wH * 0.15,
+        xy0: is_horz ? x0 + rec_e : y0 + rec_e,
+        xy1: is_horz ? x0 + w0 - rec_e - rec_w : y0 + h0 - rec_e - rec_h,
+        // delta:    (is_horz ? 1 : -1) * rec_wH * 0.15,
         duration: 0,
         pause: 10,
         extent: [ 1, 1e20, 1e4 ],
         drag: {
-            xy: isHorz ? x0 : y0,
+            xy: is_horz ? x0 : y0,
             frac: 0,
         },
     }
@@ -147,11 +182,11 @@ window.ScrollGrid = function(opt_in) {
     recIn.xyFrac = 0
     recIn.isLastIn = false
 
-    recs[mainTag] = []
+    recs[main_tag] = []
 
     // adjust for a possible top/left margin for a title
     if (is_def(m0)) {
-        if (isHorz) {
+        if (is_horz) {
             h0 -= m0
             y0 += m0
         }
@@ -176,10 +211,10 @@ window.ScrollGrid = function(opt_in) {
         return com[type]
     }
     this.getBackDataG = function() {
-        return com.gBckData
+        return com.g_bck_data
     }
     this.getFrontDataG = function() {
-        return com.gFrntData
+        return com.g_frnt_data
     }
 
     // now add the vor tessalation
@@ -192,7 +227,7 @@ window.ScrollGrid = function(opt_in) {
             scroll_rec_marg = [ 0, 0 ]
         }
         else {
-            scroll_rec_marg = [ isHorz ? 0 : scroll_rec.w, isHorz ? scroll_rec.w : 0 ]
+            scroll_rec_marg = [ is_horz ? 0 : scroll_rec.w, is_horz ? scroll_rec.w : 0 ]
         }
 
         let extent = [
@@ -210,9 +245,9 @@ window.ScrollGrid = function(opt_in) {
             })
             .extent(extent)
 
-        let vor_data = recs[mainTag]
+        let vor_data = recs[main_tag]
 
-        let vor = com.gVor
+        let vor = com.g_vor
             .selectAll('path.' + tag_vor)
             .data(vor_func.polygons(vor_data), function(d) {
                 if (d) {
@@ -249,16 +284,16 @@ window.ScrollGrid = function(opt_in) {
         vor.exit().remove()
 
         if (vorCall) {
-            com.gVor.selectAll('path.' + tag_vor).call(vorCall)
+            com.g_vor.selectAll('path.' + tag_vor).call(vorCall)
         }
         else if (hasBotTop) {
-            com.gVor.selectAll('path.' + tag_vor).call(com[tagDrag])
+            com.g_vor.selectAll('path.' + tag_vor).call(com[tagDrag])
         }
     }
 
     function xyFracZoom(xyFracIn) {
         let trans = 0
-        let recLen = recs[mainTag].length
+        let recLen = recs[main_tag].length
 
         recIn.xyFrac = 0
 
@@ -266,12 +301,14 @@ window.ScrollGrid = function(opt_in) {
             return trans
         }
 
-        let xy_min_max
-      = rec_wH + recs[mainTag][recLen - 1][xy] - recs[mainTag][0][xy] + 2 * rec_e
-        let fracScale = xy_min_max - wh0
+        let xy_min_max = (
+            rec_wH + recs[main_tag][recLen - 1][xy]
+            - recs[main_tag][0][xy] + 2 * rec_e
+        )
+        let fracScale = xy_min_max - wh_0
 
-        if (recs[mainTag][0][xy] < zooms.xy0) {
-            recIn.xyFrac = (zooms.xy0 - recs[mainTag][0][xy]) / fracScale
+        if (recs[main_tag][0][xy] < zooms.xy0) {
+            recIn.xyFrac = (zooms.xy0 - recs[main_tag][0][xy]) / fracScale
             recIn.xyFrac = Math.min(1, Math.max(0, recIn.xyFrac))
         }
 
@@ -290,27 +327,27 @@ window.ScrollGrid = function(opt_in) {
     //
     // ------------------------------------------------------------------
     function updateCounts() {
-        let xy_min = (isHorz ? x0 : y0) - rec_wH / 2
-        let xy_max = (isHorz ? x0 + w0 : y0 + h0) - rec_wH / 2
-        let xyEdgeX = isHorz
+        let xy_min = (is_horz ? x0 : y0) - rec_wH / 2
+        let xy_max = (is_horz ? x0 + w0 : y0 + h0) - rec_wH / 2
+        let xyEdgeX = is_horz
             ? [ x0, x0 + w0 ]
             : [ x0 + w0 - scroll_rec.w / 2, x0 + w0 - scroll_rec.w / 2 ]
-        let xyEdgeY = isHorz
+        let xyEdgeY = is_horz
             ? [ y0 + h0 - scroll_rec.w / 2, y0 + h0 - scroll_rec.w / 2 ]
             : [ y0, y0 + h0 ]
-        // let focusEdge = isHorz ? x0 : y0;
+        // let focusEdge = is_horz ? x0 : y0;
 
         recIn.idV = {
         }
         recIn.xyFrac = 0
         recIn.isLastIn = false
-        let recLen = recs[mainTag].length
+        let recLen = recs[main_tag].length
 
         if (recLen > 0) {
             xyFracZoom()
 
             let nRecOut = [ 0, 0 ]
-            $.each(recs[mainTag], function(index, data_now) {
+            $.each(recs[main_tag], function(index, data_now) {
                 if (data_now[xy] < xy_min) {
                     nRecOut[0] += 1
                 }
@@ -325,13 +362,13 @@ window.ScrollGrid = function(opt_in) {
                 }
             })
 
-            if (showCounts) {
+            if (show_counts) {
                 let textDataOut = []
                 $.each(nRecOut, function(index, nRecOutNow) {
                     if (nRecOutNow > 0) {
                         let rNow = scroll_rec.font_size * (nRecOutNow < 100 ? 1.2 : 1.5)
                         textDataOut.push({
-                            id: mainTag + 'nRecOut' + index,
+                            id: main_tag + 'nRecOut' + index,
                             txt: '' + nRecOutNow,
                             x: xyEdgeX[index],
                             y: xyEdgeY[index],
@@ -340,13 +377,13 @@ window.ScrollGrid = function(opt_in) {
                     }
                 })
 
-                let circOut = com.gVor
+                let circOut = com.g_vor
                     .selectAll('circle.' + tag_txtOut)
                     .data(textDataOut, function(d) {
                         return d.id
                     })
 
-                let textOut = com.gVor
+                let textOut = com.g_vor
                     .selectAll('text.' + tag_txtOut)
                     .data(textDataOut, function(d) {
                         return d.id
@@ -451,9 +488,9 @@ window.ScrollGrid = function(opt_in) {
             if (!hasBotTop) {
                 return
             }
-            if (is_def(onZoom.start)) {
-                onZoom.start({
-                    id: mainTag,
+            if (is_def(on_zoom.start)) {
+                on_zoom.start({
+                    id: main_tag,
                     type: 'start',
                     duration: 0,
                 })
@@ -484,7 +521,7 @@ window.ScrollGrid = function(opt_in) {
                 if (inUserZoom) {
                     let wdX = d3.event.sourceEvent.deltaX
                     let wdY = d3.event.sourceEvent.deltaY
-                    let wdXY = Math.abs(wdX) > Math.abs(wdY) ? -1 * wdX : wdY //* (isHorz?1:-1);
+                    let wdXY = Math.abs(wdX) > Math.abs(wdY) ? -1 * wdX : wdY //* (is_horz?1:-1);
 
                     // trans = is_def(wdXY) ? (((wdXY > 0)?1:-1) * zooms.delta) : 0;
                     trans = is_def(wdXY) ? -1 * wdXY : 0
@@ -502,24 +539,24 @@ window.ScrollGrid = function(opt_in) {
         }
 
         com.doTrans = function(trans) {
-            if (Math.abs(trans) < wh0 * 1e-10) {
+            if (Math.abs(trans) < wh_0 * 1e-10) {
                 return
             }
 
             if (is_def(trans)) {
-                let recLastI = recs[mainTag].length - 1
+                let recLastI = recs[main_tag].length - 1
 
-                if (recs[mainTag][0][xy] + trans > zooms.xy0) {
-                    if (recs[mainTag][0][xy] < zooms.xy0) {
-                        trans = zooms.xy0 - recs[mainTag][0][xy]
+                if (recs[main_tag][0][xy] + trans > zooms.xy0) {
+                    if (recs[main_tag][0][xy] < zooms.xy0) {
+                        trans = zooms.xy0 - recs[main_tag][0][xy]
                     }
                     else {
                         trans = null
                     }
                 }
-                else if (recs[mainTag][recLastI][xy] + trans < zooms.xy1) {
-                    if (recs[mainTag][recLastI][xy] > zooms.xy1) {
-                        trans = zooms.xy1 - recs[mainTag][recLastI][xy]
+                else if (recs[main_tag][recLastI][xy] + trans < zooms.xy1) {
+                    if (recs[main_tag][recLastI][xy] > zooms.xy1) {
+                        trans = zooms.xy1 - recs[main_tag][recLastI][xy]
                     }
                     else {
                         trans = null
@@ -530,13 +567,13 @@ window.ScrollGrid = function(opt_in) {
             if (is_def(trans)) {
                 delay = zooms.pause
 
-                $.each(recs[mainTag], function(index, data_now) {
+                $.each(recs[main_tag], function(index, data_now) {
                     data_now[xy] += trans
                 })
 
-                if (is_def(onZoom.during)) {
-                    onZoom.during({
-                        id: mainTag,
+                if (is_def(on_zoom.during)) {
+                    on_zoom.during({
+                        id: main_tag,
                         type: 'during',
                         xy: xy,
                         wh: rec_wH,
@@ -544,9 +581,9 @@ window.ScrollGrid = function(opt_in) {
                     })
                 }
                 // else {
-                //   let totTrans = recs[mainTag][0][xy] - recs[mainTag][0].xy0;
+                //   let totTrans = recs[main_tag][0][xy] - recs[main_tag][0].xy0;
 
-                //   com.gBckData.attr("transform", function(d,i) {
+                //   com.g_bck_data.attr("transform", function(d,i) {
                 //     return "translate(0,"+totTrans+")";
                 //   })
 
@@ -573,19 +610,19 @@ window.ScrollGrid = function(opt_in) {
                 })
 
                 // let delta    = zooms.delta;
-                let recLastI = recs[mainTag].length - 1
+                let recLastI = recs[main_tag].length - 1
 
                 let trans = null
                 if (recLastI > 0) {
-                    if (recs[mainTag][0][xy] > zooms.xy0) {
-                        trans = zooms.xy0 - recs[mainTag][0][xy]
+                    if (recs[main_tag][0][xy] > zooms.xy0) {
+                        trans = zooms.xy0 - recs[main_tag][0][xy]
                     }
-                    if (recs[mainTag][recLastI][xy] < zooms.xy1) {
-                        trans = zooms.xy1 - recs[mainTag][recLastI][xy]
+                    if (recs[main_tag][recLastI][xy] < zooms.xy1) {
+                        trans = zooms.xy1 - recs[main_tag][recLastI][xy]
                     }
                 }
                 if (is_def(trans)) {
-                    $.each(recs[mainTag], function(index, data_now) {
+                    $.each(recs[main_tag], function(index, data_now) {
                         data_now[xy] += trans
                     })
 
@@ -594,9 +631,9 @@ window.ScrollGrid = function(opt_in) {
                     zoom_scrollbarUpdate()
                 }
 
-                if (is_def(onZoom.end)) {
-                    onZoom.end({
-                        id: mainTag,
+                if (is_def(on_zoom.end)) {
+                    on_zoom.end({
+                        id: main_tag,
                         type: 'end',
                         xy: xy,
                         wh: rec_wH,
@@ -619,7 +656,7 @@ window.ScrollGrid = function(opt_in) {
                             delay: zooms.duration,
                         })
                     },
-                    svg: com.gVor,
+                    svg: com.g_vor,
                     svg_zoom: com[tag_zoom],
                     zoom_callable: com[tag_zoom + 'zoomed'],
                     svg_zoom_node: com[tag_zoom + 'zoom_node'],
@@ -659,16 +696,16 @@ window.ScrollGrid = function(opt_in) {
             // if has a scrill bar and the mouse is over it (otherwise it will interfere with click)
             isInScrollDrag = false
             if (hasBotTop) {
-                if (isHorz && coords[1] > y0 + h0 - scroll_rec.w) {
+                if (is_horz && coords[1] > y0 + h0 - scroll_rec.w) {
                     isInScrollDrag = true
                 }
-                if (!isHorz && coords[0] > x0 + w0 - scroll_rec.w) {
+                if (!is_horz && coords[0] > x0 + w0 - scroll_rec.w) {
                     isInScrollDrag = true
                 }
             }
 
             if (isInScrollDrag) {
-                if (isHorz) {
+                if (is_horz) {
                     zooms.drag.xy = coords[0] - (x0 + zooms.drag.frac * w0)
                 }
                 else {
@@ -685,7 +722,7 @@ window.ScrollGrid = function(opt_in) {
 
             if (isInScrollDrag) {
                 let coords = [ coordsIn[0], coordsIn[1] ]
-                if (isHorz) {
+                if (is_horz) {
                     coords[0] -= zooms.drag.xy
                 }
                 else {
@@ -698,7 +735,7 @@ window.ScrollGrid = function(opt_in) {
                 })
             }
             else {
-                let trans = isHorz ? -d3.event.dx : d3.event.dy
+                let trans = is_horz ? -d3.event.dx : d3.event.dy
                 com.doTrans(trans)
             }
         }
@@ -727,8 +764,8 @@ window.ScrollGrid = function(opt_in) {
             .on('end', com.zoomEnd)
 
         // needed for auotomatic zoom
-        com[tag_zoom + 'zoom_node'] = com.gVor.nodes()[0]
-        com[tag_zoom + 'zoomed'] = com.gVor.append('g')
+        com[tag_zoom + 'zoom_node'] = com.g_vor.nodes()[0]
+        com[tag_zoom + 'zoomed'] = com.g_vor.append('g')
 
         com[tagDrag] = d3.drag()
         com[tagDrag]
@@ -750,10 +787,10 @@ window.ScrollGrid = function(opt_in) {
     // ------------------------------------------------------------------
     function setZoomStatus() {
         if (hasBotTop) {
-            com.gVor.call(com[tag_zoom]).on('dblclick.zoom', null)
+            com.g_vor.call(com[tag_zoom]).on('dblclick.zoom', null)
         }
         else {
-            com.gVor.on('.zoom', null)
+            com.g_vor.on('.zoom', null)
         }
     }
 
@@ -781,12 +818,12 @@ window.ScrollGrid = function(opt_in) {
     //
     // ------------------------------------------------------------------
     function zoom_scrollbarInit() {
-        if (!locker.is_free(mainTag + 'zoom_scrollbarInit')) {
+        if (!locker.is_free(main_tag + 'zoom_scrollbarInit')) {
             return
         }
 
         locker.add({
-            id: mainTag + 'zoom_scrollbarInit',
+            id: main_tag + 'zoom_scrollbarInit',
             override: true,
         })
         scrollBarRec = null
@@ -795,9 +832,9 @@ window.ScrollGrid = function(opt_in) {
         let nDone = 0
         let dataBck = hasBotTop ? [{
             id: 'zoom_scrollbar_bck',
-            x: wh0,
+            x: wh_0,
         }] : []
-        let recBck = com.gVor
+        let recBck = com.g_vor
             .selectAll('rect.' + tagScrollBar + 'bck')
             .data(dataBck, function(d) {
                 return d.id
@@ -813,10 +850,10 @@ window.ScrollGrid = function(opt_in) {
             .style('fill', '#383B42')
             .style('fill-opacity', '0.05')
         // .style("pointer-events", "none")
-            .attr('x', isHorz ? x0 : x0 + w0)
-            .attr('y', isHorz ? y0 + h0 : y0)
-            .attr('width', isHorz ? w0 : 0)
-            .attr('height', isHorz ? 0 : h0)
+            .attr('x', is_horz ? x0 : x0 + w0)
+            .attr('y', is_horz ? y0 + h0 : y0)
+            .attr('width', is_horz ? w0 : 0)
+            .attr('height', is_horz ? 0 : h0)
             .on('click', function(d) {
                 recBckClickOnce({
                     coords: d3.mouse(this),
@@ -826,10 +863,10 @@ window.ScrollGrid = function(opt_in) {
             .style('opacity', 1)
             .transition('in_out')
             .duration(times.anim)
-            .attr('x', isHorz ? x0 : x0 + w0 - scroll_rec.w)
-            .attr('y', isHorz ? y0 + h0 - scroll_rec.w : y0)
-            .attr('width', isHorz ? w0 : scroll_rec.w)
-            .attr('height', isHorz ? scroll_rec.w : h0)
+            .attr('x', is_horz ? x0 : x0 + w0 - scroll_rec.w)
+            .attr('y', is_horz ? y0 + h0 - scroll_rec.w : y0)
+            .attr('width', is_horz ? w0 : scroll_rec.w)
+            .attr('height', is_horz ? scroll_rec.w : h0)
             .on('end', function(d) {
                 nDone += 1
             })
@@ -838,10 +875,10 @@ window.ScrollGrid = function(opt_in) {
             .exit()
             .transition('in_out')
             .duration(times.anim)
-            .attr('x', isHorz ? x0 : x0 + w0)
-            .attr('y', isHorz ? y0 + h0 : y0)
-            .attr('width', isHorz ? w0 : 0)
-            .attr('height', isHorz ? 0 : h0)
+            .attr('x', is_horz ? x0 : x0 + w0)
+            .attr('y', is_horz ? y0 + h0 : y0)
+            .attr('width', is_horz ? w0 : 0)
+            .attr('height', is_horz ? 0 : h0)
             .remove()
             .on('end', function(d) {
                 nDone += 1
@@ -865,9 +902,9 @@ window.ScrollGrid = function(opt_in) {
                         console.error('cant seem to init zoom_scrollbar ...')
                     }
 
-                    scrollBarRec = com.gVor.selectAll('rect.' + tagScrollBar + 'scroll')
+                    scrollBarRec = com.g_vor.selectAll('rect.' + tagScrollBar + 'scroll')
                     locker.remove({
-                        id: mainTag + 'zoom_scrollbarInit',
+                        id: main_tag + 'zoom_scrollbarInit',
                     })
                 }
                 n_tries += 1
@@ -879,7 +916,7 @@ window.ScrollGrid = function(opt_in) {
         }
         else {
             locker.remove({
-                id: mainTag + 'zoom_scrollbarInit',
+                id: main_tag + 'zoom_scrollbarInit',
             })
         }
     }
@@ -887,23 +924,23 @@ window.ScrollGrid = function(opt_in) {
     // ------------------------------------------------------------------
     function set_recScroll() {
         let marg = scroll_rec.w * scroll_rec.marg / 2
-        let recLen = recs[mainTag].length
-        let xy_min_max = wh0
+        let recLen = recs[main_tag].length
+        let xy_min_max = wh_0
         if (recLen > 0) {
-            if (is_def(recs[mainTag][recLen - 1])) {
+            if (is_def(recs[main_tag][recLen - 1])) {
                 xy_min_max
           = rec_wH
-          + recs[mainTag][recLen - 1][xy]
-          - recs[mainTag][0][xy]
+          + recs[main_tag][recLen - 1][xy]
+          - recs[main_tag][0][xy]
           + 2 * rec_e
             }
         }
-        scroll_rec.h = wh0 * (wh0 / xy_min_max)
+        scroll_rec.h = wh_0 * (wh_0 / xy_min_max)
 
         let dataScroll = hasBotTop ? [{
             id: 'zoom_scrollbarScroll',
         }] : []
-        let recScroll = com.gVor
+        let recScroll = com.g_vor
             .selectAll('rect.' + tagScrollBar + 'scroll')
             .data(dataScroll, function(d) {
                 return d.id
@@ -919,21 +956,21 @@ window.ScrollGrid = function(opt_in) {
             .style('fill', '#383B42')
             .style('fill-opacity', '0.9')
             .style('pointer-events', 'none')
-            .attr('x', isHorz ? x0 + marg : x0 + w0)
-            .attr('y', isHorz ? y0 + h0 : y0 + marg)
-            .attr('width', isHorz ? scroll_rec.h - marg * 2 : 0)
-            .attr('height', isHorz ? 0 : scroll_rec.h - marg * 2)
+            .attr('x', is_horz ? x0 + marg : x0 + w0)
+            .attr('y', is_horz ? y0 + h0 : y0 + marg)
+            .attr('width', is_horz ? scroll_rec.h - marg * 2 : 0)
+            .attr('height', is_horz ? 0 : scroll_rec.h - marg * 2)
             .attr('transform', zoom_scrollbarTrans)
             .merge(recScroll)
             .transition('in_out')
             .duration(times.anim)
             .attr('transform', zoom_scrollbarTrans)
-            .attr('x', isHorz ? x0 + marg : x0 + w0 - scroll_rec.w + marg)
-            .attr('y', isHorz ? y0 + h0 - scroll_rec.w + marg : y0 + marg)
-            .attr('width', isHorz ? scroll_rec.h - marg * 2 : scroll_rec.w - marg * 2)
-            .attr('height', isHorz ? scroll_rec.w - marg * 2 : scroll_rec.h - marg * 2)
+            .attr('x', is_horz ? x0 + marg : x0 + w0 - scroll_rec.w + marg)
+            .attr('y', is_horz ? y0 + h0 - scroll_rec.w + marg : y0 + marg)
+            .attr('width', is_horz ? scroll_rec.h - marg * 2 : scroll_rec.w - marg * 2)
+            .attr('height', is_horz ? scroll_rec.w - marg * 2 : scroll_rec.h - marg * 2)
 
-        if (isHorz) {
+        if (is_horz) {
             recScroll
                 .exit()
             // .transition("in_out").duration(times.anim/4)
@@ -968,12 +1005,12 @@ window.ScrollGrid = function(opt_in) {
 
     // ------------------------------------------------------------------
     function zoom_scrollbarTrans() {
-    // let pos = recIn.xyFrac * wh0 - scroll_rec.h * 0.5;
-    // pos = Math.max(0, Math.min(wh0- scroll_rec.h, pos));
+    // let pos = recIn.xyFrac * wh_0 - scroll_rec.h * 0.5;
+    // pos = Math.max(0, Math.min(wh_0- scroll_rec.h, pos));
     // // console.log('pos',recIn.xyFrac,pos);
 
-        let pos = recIn.xyFrac * (wh0 - scroll_rec.h)
-        if (isHorz) {
+        let pos = recIn.xyFrac * (wh_0 - scroll_rec.h)
+        if (is_horz) {
             return 'translate(' + pos + ',0)'
         }
         else {
@@ -983,14 +1020,14 @@ window.ScrollGrid = function(opt_in) {
 
     // ------------------------------------------------------------------
     run_loop.init({
-        tag: mainTag + 'recBckClick',
+        tag: main_tag + 'recBckClick',
         func: recBckClickOnce,
         n_keep: 1,
     })
 
     function recBckClick(data_in) {
         run_loop.push({
-            tag: mainTag + 'recBckClick',
+            tag: main_tag + 'recBckClick',
             data: data_in,
         })
     }
@@ -1010,15 +1047,15 @@ window.ScrollGrid = function(opt_in) {
             return
         }
 
-        // zooms.drag.frac = isHorz ? (data_in.coords[0] - zooms.xy0)/w0 : (data_in.coords[1] - zooms.xy0)/h0;
-        zooms.drag.frac = isHorz
+        // zooms.drag.frac = is_horz ? (data_in.coords[0] - zooms.xy0)/w0 : (data_in.coords[1] - zooms.xy0)/h0;
+        zooms.drag.frac = is_horz
             ? (data_in.coords[0] - x0) / w0
             : (data_in.coords[1] - y0) / h0
         zooms.drag.frac = Math.min(1, Math.max(0, zooms.drag.frac))
 
         let trans = xyFracZoom(zooms.drag.frac)
 
-        $.each(recs[mainTag], function(index, data_now) {
+        $.each(recs[main_tag], function(index, data_now) {
             data_now[xy] -= trans
         })
 
@@ -1034,7 +1071,7 @@ window.ScrollGrid = function(opt_in) {
             func_start: function() {
                 zooms.duration = duration
             },
-            svg: com.gVor,
+            svg: com.g_vor,
             svg_zoom: com[tag_zoom],
             zoom_callable: com[tag_zoom + 'zoomed'],
             svg_zoom_node: com[tag_zoom + 'zoom_node'],
@@ -1047,7 +1084,7 @@ window.ScrollGrid = function(opt_in) {
     // access function for getRecV
     // ------------------------------------------------------------------
     function getRecV() {
-        return recV
+        return rec_data
     }
     this.getRecV = getRecV
 
@@ -1055,40 +1092,40 @@ window.ScrollGrid = function(opt_in) {
     //
     // ------------------------------------------------------------------
     function update(opt_in) {
-    // let recVin = is_def(opt_in.recV) ? opt_in.recV : recV;
-        let recVin = recV
-        if (is_def(opt_in.recV)) {
-            recVin = opt_in.recV
-            recV = recVin
+    // let rec_data_in = is_def(opt_in.rec_data) ? opt_in.rec_data : rec_data;
+        let rec_data_in = rec_data
+        if (is_def(opt_in.rec_data)) {
+            rec_data_in = opt_in.rec_data
+            rec_data = rec_data_in
         }
-        // opt_in.recV = recVin;
+        // opt_in.rec_data = rec_data_in;
 
         // reverse changes the order in-place, so first make a new copy with slice()
-        if (isInvOrder) {
-            recVin = recVin.slice().reverse()
+        if (is_inv_order) {
+            rec_data_in = rec_data_in.slice().reverse()
         }
 
-        let nRecIn = recVin.length
-        let nRows0 = Math.min(nRows, nRecIn)
-        let recVinLen = nRows0 <= 1 ? nRecIn : Math.ceil(nRecIn / nRows0 - 0.0001)
-        let allRecLen = recVinLen * (rec_wH + rec_m) - rec_m
-        hasBotTop = isHorz ? allRecLen > w0 : allRecLen > h0
+        let n_rec_in = rec_data_in.length
+        let n_rows_0 = Math.min(n_rows, n_rec_in)
+        let rec_data_in_len = n_rows_0 <= 1 ? n_rec_in : Math.ceil(n_rec_in / n_rows_0 - 0.0001)
+        let allRecLen = rec_data_in_len * (rec_wH + rec_m) - rec_m
+        hasBotTop = is_horz ? allRecLen > w0 : allRecLen > h0
 
         let xCent = x0
         let yCent = y0
-        if (isHorz) {
+        if (is_horz) {
             let h1 = hasBotTop ? h0 - scroll_rec.w : h0
             xCent += rec_e
-            yCent += (h1 - (rec_h + (nRows0 - 1) * (rec_h + rec_m))) / 2
+            yCent += (h1 - (rec_h + (n_rows_0 - 1) * (rec_h + rec_m))) / 2
         }
         else {
             let w1 = hasBotTop ? w0 - scroll_rec.w : w0
-            xCent += (w1 - (rec_w + (nRows0 - 1) * (rec_w + rec_m))) / 2
+            xCent += (w1 - (rec_w + (n_rows_0 - 1) * (rec_w + rec_m))) / 2
             yCent += rec_e
         }
 
         if (!hasBotTop) {
-            if (isHorz) {
+            if (is_horz) {
                 xCent += (w0 - (allRecLen + 2 * rec_e)) / 2
             }
             else {
@@ -1100,29 +1137,29 @@ window.ScrollGrid = function(opt_in) {
         let yStep = rec_h + rec_m
 
         let index_shift = 0
-        if (isInvOrder && nRecIn > nRows) {
-            index_shift = (nRows0 - nRecIn % nRows0) % nRows0
+        if (is_inv_order && n_rec_in > n_rows) {
+            index_shift = (n_rows_0 - n_rec_in % n_rows_0) % n_rows_0
         }
-        // let index_shift = (isInvOrder && nRecIn > nRows) ? ((nRows0 - nRecIn % nRows0) % nRows0) : 0;
+        // let index_shift = (is_inv_order && n_rec_in > n_rows) ? ((n_rows_0 - n_rec_in % n_rows_0) % n_rows_0) : 0;
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        recs[mainTag] = []
-        $.each(recVin, function(index, recNow) {
-            let indexNow0 = index + index_shift
-            let nRowNow0 = indexNow0 % nRows0
-            let nColNow0 = Math.floor((indexNow0 - nRowNow0) / nRows0 + 0.00001)
+        recs[main_tag] = []
+        $.each(rec_data_in, function(index, recNow) {
+            let index_now_0 = index + index_shift
+            let n_row_now_0 = index_now_0 % n_rows_0
+            let n_col_now_0 = Math.floor((index_now_0 - n_row_now_0) / n_rows_0 + 0.00001)
 
-            let nColNow = isHorz ? nColNow0 : nRowNow0
-            let nRowNow = isHorz ? nRowNow0 : nColNow0
+            let n_col_now = is_horz ? n_col_now_0 : n_row_now_0
+            let n_row_now = is_horz ? n_row_now_0 : n_col_now_0
 
-            let xNow = nColNow * xStep
-            let yNow = nRowNow * yStep
+            let xNow = n_col_now * xStep
+            let yNow = n_row_now * yStep
 
             let data_now = {
             }
-            data_now.scrollGridId = mainTag
+            data_now.scrollGridId = main_tag
             data_now.x = xCent + xNow
             data_now.y = yCent + yNow
             data_now.w = rec_w
@@ -1130,7 +1167,7 @@ window.ScrollGrid = function(opt_in) {
             data_now.id = recNow.id
             data_now.data = recNow
 
-            recs[mainTag].push(data_now)
+            recs[main_tag].push(data_now)
         })
 
         // ------------------------------------------------------------------
@@ -1138,9 +1175,9 @@ window.ScrollGrid = function(opt_in) {
         // ------------------------------------------------------------------
         if (hasBotTop) {
             let trans = null
-            let recLastI = recs[mainTag].length - 1
+            let recLastI = recs[main_tag].length - 1
 
-            $.each(recs[mainTag], function(index, recNow) {
+            $.each(recs[main_tag], function(index, recNow) {
                 // get first element which was already in view
                 if (!is_def(trans)) {
                     if (is_def(recIn.idV[recNow.id])) {
@@ -1148,24 +1185,24 @@ window.ScrollGrid = function(opt_in) {
                     }
                 }
                 // if inverted order, get the last element which was originally in view
-                if (isInvOrder || recIn.isLastIn) {
+                if (is_inv_order || recIn.isLastIn) {
                     if (is_def(recIn.idV[recNow.id])) {
                         trans = recIn.idV[recNow.id] - recNow[xy]
                     }
                 }
             })
 
-            if (recs[mainTag][0][xy] + trans > zooms.xy0) {
-                if (recs[mainTag][0][xy] < zooms.xy0) {
-                    trans = zooms.xy0 - recs[mainTag][0][xy]
+            if (recs[main_tag][0][xy] + trans > zooms.xy0) {
+                if (recs[main_tag][0][xy] < zooms.xy0) {
+                    trans = zooms.xy0 - recs[main_tag][0][xy]
                 }
                 else {
                     trans = null
                 }
             }
-            else if (recs[mainTag][recLastI][xy] + trans < zooms.xy1) {
-                if (recs[mainTag][recLastI][xy] > zooms.xy1) {
-                    trans = zooms.xy1 - recs[mainTag][recLastI][xy]
+            else if (recs[main_tag][recLastI][xy] + trans < zooms.xy1) {
+                if (recs[main_tag][recLastI][xy] > zooms.xy1) {
+                    trans = zooms.xy1 - recs[main_tag][recLastI][xy]
                 }
                 else {
                     trans = null
@@ -1173,7 +1210,7 @@ window.ScrollGrid = function(opt_in) {
             }
 
             if (is_def(trans)) {
-                $.each(recs[mainTag], function(index, data_now) {
+                $.each(recs[main_tag], function(index, data_now) {
                     data_now[xy] += trans
                 })
             }
@@ -1185,15 +1222,15 @@ window.ScrollGrid = function(opt_in) {
         // let outFrac = 0;
         // if(hasBotTop) {
         //   let xy_min = min_max_obj({
-        //     min_max:'min', data:recs[mainTag], func: xy
+        //     min_max:'min', data:recs[main_tag], func: xy
         //   });
         //   let xy_max = min_max_obj({
-        //     min_max:'max', data:recs[mainTag],
-        //     func: isHorz ? function(d,i) { return d.x+d.w; } : function(d,i) { return d.y+d.h; }
+        //     min_max:'max', data:recs[main_tag],
+        //     func: is_horz ? function(d,i) { return d.x+d.w; } : function(d,i) { return d.y+d.h; }
         //   });
-        //   outFrac = (xy_max - xy_min) / ( isHorz?w0:h0 );
+        //   outFrac = (xy_max - xy_min) / ( is_horz?w0:h0 );
         // }
-        // zooms.delta = (isHorz ? 1 : -1) * rec_wH * 0.1 * outFrac;
+        // zooms.delta = (is_horz ? 1 : -1) * rec_wH * 0.1 * outFrac;
 
         // ------------------------------------------------------------------
         // activate/disable the zoom behaviour after updating hasBotTop
@@ -1203,7 +1240,7 @@ window.ScrollGrid = function(opt_in) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        function onZoomEnd() {
+        function on_zoom_end() {
             setVor()
             updateCounts()
             // // zoom_scrollbar();
@@ -1227,8 +1264,8 @@ window.ScrollGrid = function(opt_in) {
             trans_to: [ 0, 0 ],
             wh: [ w0, h0 ],
             cent: null,
-            func_end: onZoomEnd,
-            svg: com.gVor,
+            func_end: on_zoom_end,
+            svg: com.g_vor,
             svg_zoom: com[tag_zoom],
             zoom_callable: com[tag_zoom + 'zoomed'],
             svg_zoom_node: com[tag_zoom + 'zoom_node'],
@@ -1242,8 +1279,8 @@ window.ScrollGrid = function(opt_in) {
     //
     // ------------------------------------------------------------------
     let defs = com.g_base.append('defs')
-    let clipPath = defs.append('clipPath').attr('id', tag_clip_path + mainTag)
-    // console.log('tag_clip_path + mainTag',tag_clip_path + mainTag)
+    let clipPath = defs.append('clipPath').attr('id', tag_clip_path + main_tag)
+    // console.log('tag_clip_path + main_tag',tag_clip_path + main_tag)
 
     com.clipRec = clipPath
         .append('rect')
@@ -1252,12 +1289,12 @@ window.ScrollGrid = function(opt_in) {
         .attr('width', w0)
         .attr('height', h0)
 
-    if (autoClipPath) {
-        com.gBckData.attr('clip-path', 'url(#' + tag_clip_path + mainTag + ')')
-        com.gFrntData.attr('clip-path', 'url(#' + tag_clip_path + mainTag + ')')
+    if (auto_clip_path) {
+        com.g_bck_data.attr('clip-path', 'url(#' + tag_clip_path + main_tag + ')')
+        com.g_frnt_data.attr('clip-path', 'url(#' + tag_clip_path + main_tag + ')')
     }
 
-    let frnt = bckRecOpt.frontProp
+    let frnt = bck_rec_opt.front_prop
     function hasFrnt(prop) {
         return is_def(frnt) ? is_def(frnt[prop]) : false
     }
@@ -1271,7 +1308,7 @@ window.ScrollGrid = function(opt_in) {
         })
     }
 
-    com.gBack
+    com.g_bck
         .selectAll('rect.' + tag_outer)
         .data(bckRecData, function(d) {
             return d.id
@@ -1286,7 +1323,7 @@ window.ScrollGrid = function(opt_in) {
         .attr('stroke', hasFrnt('strk') ? frnt.strk : '#383B42')
         .attr('stroke-width', hasFrnt('strkW') ? frnt.strkW : '1')
         .attr('stroke-opacity', function(d, i) {
-            return i === 0 ? (hasFrnt('strkWOcp') ? frnt.strkWOcp : 1) : 0
+            return i === 0 ? (hasFrnt('strk_opac') ? frnt.strk_opac : 1) : 0
         })
         .attr('fill', function(d, i) {
             return i === 0 ? '#F2F2F2' : hasFrnt('fill') ? frnt.fill : '#383B42'
@@ -1297,22 +1334,22 @@ window.ScrollGrid = function(opt_in) {
     // .attr("transform", "translate("+(x0)+","+(y0)+")")
     // .style("pointer-events", "none")
 
-    if (is_def(bckRecOpt.bck_pattern)) {
-        bck_pattern(bckRecOpt.bck_pattern)
+    if (is_def(bck_rec_opt.bck_pattern)) {
+        bck_pattern(bck_rec_opt.bck_pattern)
     }
-    else if (is_def(bckRecOpt.texture_orient) || is_def(bckRecOpt.circ_type)) {
+    else if (is_def(bck_rec_opt.texture_orient) || is_def(bck_rec_opt.circ_type)) {
         let bckPatOpt = {
             com: com,
-            g_now: com.gBack,
+            g_now: com.g_bck,
             g_tag: gName,
             len_wh: [ w0, h0 ],
             trans: [ x0, y0 ],
-            opac: is_def(bckRecOpt.textureOpac) ? bckRecOpt.textureOpac : 0.06,
+            opac: is_def(bck_rec_opt.textureOpac) ? bck_rec_opt.textureOpac : 0.06,
         }
 
         $.each([ 'texture_orient', 'circ_type', 'size' ], function(index, optType) {
-            if (is_def(bckRecOpt[optType])) {
-                bckPatOpt[optType] = bckRecOpt[optType]
+            if (is_def(bck_rec_opt[optType])) {
+                bckPatOpt[optType] = bck_rec_opt[optType]
             }
         })
 
@@ -1336,8 +1373,8 @@ window.ScrollGrid = function(opt_in) {
 // // ------------------------------------------------------------------
 // function scrollGridExampleUse (com, svg) {
 //   com.g_base = svg.g.append('g')
-//   com.gBckData = com.g_base.append('g')
-//   com.gVor = com.g_base.append('g')
+//   com.g_bck_data = com.g_base.append('g')
+//   com.g_vor = com.g_base.append('g')
 
 //   let sbD = {}
 //   let x0 = 120
@@ -1351,15 +1388,15 @@ window.ScrollGrid = function(opt_in) {
 //     // unique id for a given box
 //     id: myId,
 //     // the group elements (vor in front of data)
-//     g: { gBckData: com.gBckData, gVor: com.gVor },
+//     g: { g_bck_data: com.g_bck_data, g_vor: com.g_vor },
 //     // the id of the clip-path element corresponding to the geometry of the box
 //     tag_clip_path: tag_clip_path,
 //     // if to aplly automatic clip-path to the entire data-g
-//     autoClipPath: true,
+//     auto_clip_path: true,
 //     // dictionary which will be filled with the results
 //     recs: sbD,
 //     // list of data (can be updated later)
-//     recV: [],
+//     rec_data: [],
 //     // dimensions of the box
 //     x0: x0,
 //     y0: y0,
@@ -1369,15 +1406,15 @@ window.ScrollGrid = function(opt_in) {
 //     rec_h: h0 * 0.5,
 //     rec_w: h0 * 0.5,
 //     // boolean to show the number of overflow data elements
-//     showCounts: false,
+//     show_counts: false,
 //     // horizonthal/vertical geometry of the box
-//     isHorz: true,
+//     is_horz: true,
 //     // properties of the background
-//     bckRecOpt: { texture_orient: '5/8', frontProp: { strkWOcp: 0.2 } },
+//     bck_rec_opt: { texture_orient: '5/8', front_prop: { strk_opac: 0.2 } },
 //     // options for the voronoii grid
-//     vorOpt: { click: onVorClick },
+//     vor_opt: { click: onVorClick },
 //     // options for the zooming/scrolling
-//     onZoom: { during: onZoomDuring, end: onZoomDuring },
+//     on_zoom: { during: on_zoom_during, end: on_zoom_during },
 //     // the global let of the queue loop
 //     run_loop: run_loop,
 //     // the global let for the locking variable
@@ -1386,7 +1423,7 @@ window.ScrollGrid = function(opt_in) {
 
 //   com.scrollGrid = new window.ScrollGrid(scrollGridOpt)
 
-//   let recVnow = [
+//   let rec_data_now = [
 //     { id: 'data0', data: { name: 'xxx', number: 10 } },
 //     { id: 'data1', data: { name: 'yyy', number: 9 } },
 //     { id: 'data2', data: { name: 'zzz', number: 98 } },
@@ -1396,10 +1433,10 @@ window.ScrollGrid = function(opt_in) {
 //     { id: 'data6', data: { name: '344', number: 18 } },
 //     { id: 'data7', data: { name: 'opi', number: 44 } }
 //   ]
-//   com.scrollGrid.update({ recV: recVnow })
+//   com.scrollGrid.update({ rec_data: rec_data_now })
 
 //   // console.log(sbD[myId]);
-//   let rect = com.gBckData
+//   let rect = com.g_bck_data
 //     .selectAll('rect.' + 'myScrollBoxRecs')
 //     .data(sbD[myId], function (d) {
 //       return d.id
@@ -1439,9 +1476,9 @@ window.ScrollGrid = function(opt_in) {
 //   // ------------------------------------------------------------------
 //   //
 //   // ------------------------------------------------------------------
-//   function onZoomDuring (opt_in) {
+//   function on_zoom_during (opt_in) {
 //     let xy = opt_in.xy
-//     let rect = com.gBckData.selectAll('rect.' + 'myScrollBoxRecs')
+//     let rect = com.g_bck_data.selectAll('rect.' + 'myScrollBoxRecs')
 //     rect.attr(xy, function (d, i) {
 //       return d[xy]
 //     })

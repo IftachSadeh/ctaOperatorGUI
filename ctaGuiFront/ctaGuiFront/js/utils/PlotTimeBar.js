@@ -166,8 +166,8 @@ window.PlotTimeBar = function() {
         // comment data 2
         if (!is_def(com.tag_clip_path)) {
             com.tag_clip_path = {
-                top: com.mainTag + 'clipPathTop',
-                bot: com.mainTag + 'clipPathBot',
+                top: com.main_tag + 'clipPathTop',
+                bot: com.main_tag + 'clipPathBot',
             }
         }
 
@@ -188,21 +188,21 @@ window.PlotTimeBar = function() {
         topBot.g.data.attr('clip-path', 'url(#' + com.tag_clip_path.top + ')')
     }
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
 
-        com.mainTag = opt_in.tag
+        com.main_tag = opt_in.tag
         com.locker = opt_in.locker
         com.run_loop = opt_in.run_loop
 
         let lockerZoom = opt_in.lockerZoom
         if (!is_def(lockerZoom)) {
             lockerZoom = {
-                all: com.mainTag + 'zoom',
-                during: com.mainTag + 'zoomsuring',
-                end: com.mainTag + 'zoomEnd',
+                all: com.main_tag + 'zoom',
+                during: com.main_tag + 'zoomsuring',
+                end: com.main_tag + 'zoomEnd',
             }
         }
         com.lockerZoom = lockerZoom
@@ -469,7 +469,7 @@ window.PlotTimeBar = function() {
             com.circClass = {
             }
         }
-        com.circClass[nTopBot] = com.mainTag + 'circ' + nTopBot
+        com.circClass[nTopBot] = com.main_tag + 'circ' + nTopBot
 
     // let circ = topBot.g.data
     //   .selectAll('circle.' + com.circClass[nTopBot])
@@ -559,7 +559,7 @@ window.PlotTimeBar = function() {
                 .on('brush', com.brushDuring)
                 .on('end', com.brushEnd)
 
-            com.brushClass = com.mainTag + 'brush'
+            com.brushClass = com.main_tag + 'brush'
             com.bot.g.brush
                 .attr('class', com.brushClass)
                 .call(com.bot.brush)

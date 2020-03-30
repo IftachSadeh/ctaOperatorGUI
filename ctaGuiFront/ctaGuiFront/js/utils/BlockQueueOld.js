@@ -44,21 +44,21 @@ window.BlockQueueOld = function() {
     //
     // ------------------------------------------------------------------
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
 
-        com.mainTag = opt_in.tag
+        com.main_tag = opt_in.tag
         com.locker = opt_in.locker
         com.run_loop = opt_in.run_loop
 
         let lockerZoom = opt_in.lockerZoom
         if (!is_def(lockerZoom)) {
             lockerZoom = {
-                all: com.mainTag + 'zoom',
-                during: com.mainTag + 'zoomsuring',
-                end: com.mainTag + 'zoomEnd',
+                all: com.main_tag + 'zoom',
+                during: com.main_tag + 'zoomsuring',
+                end: com.main_tag + 'zoomEnd',
             }
         }
         com.lockerZoom = lockerZoom
@@ -98,8 +98,8 @@ window.BlockQueueOld = function() {
         com.tag_clip_path = opt_in.tag_clip_path
         if (!is_def(com.tag_clip_path)) {
             com.tag_clip_path = {
-                inner: com.mainTag + 'clipPathInner',
-                outer: com.mainTag + 'clipPathOuter',
+                inner: com.main_tag + 'clipPathInner',
+                outer: com.main_tag + 'clipPathOuter',
             }
         }
 
@@ -125,7 +125,7 @@ window.BlockQueueOld = function() {
 
         com.scrollBox = new ScrollBox()
         com.scrollBox.init({
-            tag: com.mainTag,
+            tag: com.main_tag,
             g_box: com.scrollBoxG,
             boxData: com.outerBox,
             useRelativeCoords: false,
@@ -761,7 +761,7 @@ window.BlockQueueOld = function() {
         let box = com.innerBox
         let minTxtSize = box.w * 0.03
         let rect = com.innerG
-            .selectAll('rect.' + com.mainTag + 'blocks')
+            .selectAll('rect.' + com.main_tag + 'blocks')
             .data(com.blocksAll, function(d) {
                 return d.id
             })
@@ -785,7 +785,7 @@ window.BlockQueueOld = function() {
         rect
             .enter()
             .append('rect')
-            .attr('class', com.mainTag + 'blocks')
+            .attr('class', com.main_tag + 'blocks')
             .style('opacity', 0)
             .attr('x', function(d, i) {
                 return d.x
@@ -862,7 +862,7 @@ window.BlockQueueOld = function() {
         // ------------------------------------------------------------------
         let txtData = com.doText ? com.blocksAll : []
         let text = com.innerG
-            .selectAll('text.' + com.mainTag + 'blocks')
+            .selectAll('text.' + com.main_tag + 'blocks')
             .data(txtData, function(d) {
                 return d.id
             })
@@ -870,7 +870,7 @@ window.BlockQueueOld = function() {
         text
             .enter()
             .append('text')
-            .attr('class', com.mainTag + 'blocks')
+            .attr('class', com.main_tag + 'blocks')
             .text(function(d, i) {
                 return d.data.metadata.block_name
             })
@@ -897,7 +897,7 @@ window.BlockQueueOld = function() {
             .style('font-size', function(d) {
                 d.size = Math.max(minTxtSize, Math.min(d.w, d.h)) / 3
                 if (!is_def(d.size)) {
-                    console.error('_blockQueue_ERROR:', com.mainTag, minTxtSize, d.w, d.h)
+                    console.error('_blockQueue_ERROR:', com.main_tag, minTxtSize, d.w, d.h)
                 } // should not happen....
                 if (!is_def(d.size)) {
                     d.size = 0
@@ -950,7 +950,7 @@ window.BlockQueueOld = function() {
 
             recRunData = [
                 {
-                    id: com.mainTag + 'run',
+                    id: com.main_tag + 'run',
                     x: xMin - com.outerBox.marg / 2,
                     y: com.outerBox.y - com.outerBox.marg / 2,
                     w: xMax - xMin + com.outerBox.marg,
@@ -963,7 +963,7 @@ window.BlockQueueOld = function() {
         //
         // ------------------------------------------------------------------
         let rectRun = com.outerG
-            .selectAll('rect.' + com.mainTag + 'runRange')
+            .selectAll('rect.' + com.main_tag + 'runRange')
             .data(recRunData, function(d) {
                 return d.id
             })
@@ -971,7 +971,7 @@ window.BlockQueueOld = function() {
         rectRun
             .enter()
             .append('rect')
-            .attr('class', com.mainTag + 'runRange')
+            .attr('class', com.main_tag + 'runRange')
             .style('opacity', 1)
             .attr('x', function(d, i) {
                 return d.x + d.w / 2
@@ -1076,7 +1076,7 @@ window.BlockQueueOld = function() {
 
             rectNowData = [
                 {
-                    id: com.mainTag + 'now',
+                    id: com.main_tag + 'now',
                     x: xMin + time_frac * (xMax - xMin) - com.outerBox.marg / 2,
                     y: com.outerBox.y - com.outerBox.marg,
                     w: com.outerBox.marg,
@@ -1092,7 +1092,7 @@ window.BlockQueueOld = function() {
         //
         // ------------------------------------------------------------------
         let rectNow = com.outerG
-            .selectAll('rect.' + com.mainTag + 'now')
+            .selectAll('rect.' + com.main_tag + 'now')
             .data(rectNowData, function(d) {
                 return d.id
             })
@@ -1100,7 +1100,7 @@ window.BlockQueueOld = function() {
         rectNow
             .enter()
             .append('rect')
-            .attr('class', com.mainTag + 'now')
+            .attr('class', com.main_tag + 'now')
             .style('opacity', 1)
             .attr('x', function(d, i) {
                 return d.x

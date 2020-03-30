@@ -36,19 +36,19 @@ window.ScrollTable = function() {
     //
     // ------------------------------------------------------------------
     function init(opt_in) {
-        if (is_def(com.mainTag)) {
+        if (is_def(com.main_tag)) {
             console.error('trying to init more than once ...', opt_in)
             return
         }
 
-        com.mainTag = opt_in.tag
-        com.tagScrollBox = com.mainTag + 'scrollBox'
+        com.main_tag = opt_in.tag
+        com.tagScrollBox = com.main_tag + 'scrollBox'
 
         com.tag_clip_path = opt_in.tag_clip_path
         if (!is_def(com.tag_clip_path)) {
             com.tag_clip_path = {
-                inner: com.mainTag + 'clipPathInner',
-                outer: com.mainTag + 'clipPathOuter',
+                inner: com.main_tag + 'clipPathInner',
+                outer: com.main_tag + 'clipPathOuter',
             }
         }
 
@@ -133,8 +133,8 @@ window.ScrollTable = function() {
         }
 
         com.table.rowsOut = []
-        $.each(com.table.rowsIn, function(nRowNow, rowNow) {
-            // let rowId = com.table.id + nRowNow
+        $.each(com.table.rowsIn, function(n_row_now, rowNow) {
+            // let rowId = com.table.id + n_row_now
             let rowH = rowNow.h * com.table.rowH
 
             let sumW = rowNow.colsIn.map(x => x.w).reduce((a, b) => a + b)
@@ -143,16 +143,16 @@ window.ScrollTable = function() {
             })
 
             let row = {
-                nRow: nRowNow,
+                nRow: n_row_now,
                 cols: [],
                 w: tot_table_w,
                 h: rowH,
             }
 
-            $.each(rowNow.colsIn, function(nColNow, colNow) {
+            $.each(rowNow.colsIn, function(n_col_now, colNow) {
                 row.cols.push({
                     id: colNow.id,
-                    nCol: nColNow,
+                    nCol: n_col_now,
                     w: row.w * colNow.w,
                     h: rowH,
                 })
@@ -163,18 +163,18 @@ window.ScrollTable = function() {
 
         let rowY = com.table.y
         com.table.recs = []
-        com.table.recV = []
-        $.each(com.table.rowsOut, function(nRowNow, rowNow) {
+        com.table.rec_data = []
+        $.each(com.table.rowsOut, function(n_row_now, rowNow) {
             let colX = com.table.x
             com.table.recs.push([])
 
-            $.each(rowNow.cols, function(nColNow, colNow) {
-                // console.log(com.table.rowsIn[nRowNow].colsIn[nColNow]);
+            $.each(rowNow.cols, function(n_col_now, colNow) {
+                // console.log(com.table.rowsIn[n_row_now].colsIn[n_col_now]);
                 let recNow = {
                     id: colNow.id,
-                    data: com.table.rowsIn[nRowNow].colsIn[nColNow],
-                    nRow: nRowNow,
-                    nCol: nColNow,
+                    data: com.table.rowsIn[n_row_now].colsIn[n_col_now],
+                    nRow: n_row_now,
+                    nCol: n_col_now,
                     y: rowY,
                     x: colX,
                     w: colNow.w,
@@ -182,8 +182,8 @@ window.ScrollTable = function() {
                     marg: com.table.marg,
                 }
 
-                com.table.recs[nRowNow].push(recNow)
-                com.table.recV.push(recNow)
+                com.table.recs[n_row_now].push(recNow)
+                com.table.rec_data.push(recNow)
 
                 colX += colNow.w
             })
@@ -194,7 +194,7 @@ window.ScrollTable = function() {
         if (debugRect) {
             let rect = com.innerG
                 .selectAll('rect.' + 'tagScroller')
-                .data(com.table.recV, function(d) {
+                .data(com.table.rec_data, function(d) {
                     return d.id
                 })
 

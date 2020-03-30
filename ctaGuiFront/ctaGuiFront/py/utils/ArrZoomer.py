@@ -199,6 +199,9 @@ class ArrZoomer():
     # filter instruments
     # ------------------------------------------------------------------
     def filter_inst(self, filt_rules):
+        if len(filt_rules.keys()) == 0:
+            return
+
         # ------------------------------------------------------------------
         # possible filter rules for which instruments to include
         # ------------------------------------------------------------------
