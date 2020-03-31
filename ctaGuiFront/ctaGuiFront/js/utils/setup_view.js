@@ -69,6 +69,13 @@ setup_view.view102 = function() {
         has_drawer: false,
     })
 
+    // sock.add_widget({
+    //     name_tag: 'CommentSched',
+    //     table_title: 'Comment Night Schedule',
+    //     has_icon: true,
+    //     has_drawer: false,
+    // })
+
     sock.add_widget({
         name_tag: 'PlotsDash',
         table_title: 'plots Dashboard',
@@ -176,15 +183,6 @@ setup_view.view204 = function() {
 // night_sched
 // -------------------------------------------------------------------
 setup_view.view205 = function() {
-    sock.add_widget({
-        name_tag: 'NightSched',
-        table_title: 'Nightly Schedule',
-        has_icon: true,
-        has_drawer: false,
-    })
-}
-
-setup_view.view2051 = function() {
     sock.add_widget({
         name_tag: 'CommentSched',
         table_title: 'Comment Night Schedule',

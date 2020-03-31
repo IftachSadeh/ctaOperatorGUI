@@ -24,7 +24,7 @@ window.ArrZoomerMain = function(opt_in0) {
     let run_loop = opt_in0.run_loop
     // let widget_id = opt_in0.widget_id
     let locker = opt_in0.locker
-    // let is_south = opt_in0.is_south
+    let is_south = opt_in0.is_south
     let my_unique_id = unique()
     // let widget_type = opt_in0.widget_type
 
@@ -34,11 +34,14 @@ window.ArrZoomerMain = function(opt_in0) {
             ? opt_in0.dblclick_zoom_in_out : true
     )
 
-    let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
-    let vor_show_lines = false
-    
     let ele_base = opt_in0.ele_base
     let arr_zoomer_id = ele_base.arr_zoomer_id
+
+    let has_site_svg = ele_base.has_site_svg
+    let site_bck_svg = ele_base.site_bck_svg
+    
+    let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
+    let vor_show_lines = false
 
     let insts = ele_base.insts
     let zooms = ele_base.zooms
@@ -211,14 +214,14 @@ window.ArrZoomerMain = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function add_back_shapes(g_in, len_wh) {
+    function add_back_shapes(gs, len_wh) {
         // ------------------------------------------------------------------
         // calculate dimensions
         // ------------------------------------------------------------------
         // let data_cat = Object.entries(tel_info.get_ids()).filter(function(d) {
         //     return tel_info.is_categorical_id(ele_base.tel_types[d[0]])
         // })
-        
+
         let y_ele = []
         let data_cat = tel_info.get_categorical_ids()
         $.each(data_cat, function(i, _) {
@@ -244,55 +247,135 @@ window.ArrZoomerMain = function(opt_in0) {
             rx: len_wh.h * 0.02,
             ry: len_wh.h * 0.02,
         }
-        // com.bck_rec_data = rec_data
+        com.bck_rec_data = rec_data
 
         // ------------------------------------------------------------------
         // the main visible background elements
         // ------------------------------------------------------------------
-        g_in
-            .append('circle')
-            .attr('r', circ_data.r)
-            .attr('cx', circ_data.cx)
-            .attr('cy', circ_data.cy)
-            .attr('fill', '#F2F2F2')
+        let bck_data = [ 'circ', 'rec' ]
+        let clip_bck_pattern_g = {}
+        $.each(bck_data, function(_, tag) {
+            clip_bck_pattern_g[tag] = 'clipped_bck_' + tag + '_g'
+        })
+        $.each(bck_data, function(_, tag) {
+            let clip_g_name = clip_bck_pattern_g[tag]
+            let clip_bck_pattern_id = clip_g_name + my_unique_id
 
-        g_in
-            .append('rect')
-            .attr('x', rec_data.x)
-            .attr('y', rec_data.y)
-            .attr('width', rec_data.width)
-            .attr('height', rec_data.height)
-            .attr('rx', rec_data.rx)
-            .attr('ry', rec_data.ry)
-            .attr('fill', '#F2F2F2')
+            gs[clip_g_name] = gs.g_back.append('g')
+            gs[clip_g_name].attr('class', clip_g_name)
+                .attr('clip-path', 'url(#' + clip_bck_pattern_id + ')')
+
+            gs.bck_pattern_defs = gs[clip_g_name].append('defs')
+                .append('clipPath')
+                .attr('id', clip_bck_pattern_id)
+
+            if (tag == 'circ') {
+                gs[clip_g_name]
+                    .append('circle')
+                    .attr('r', circ_data.r)
+                    .attr('cx', circ_data.cx)
+                    .attr('cy', circ_data.cy)
+                    .attr('fill', '#F2F2F2')
+            
+                gs.bck_pattern_defs
+                    .append('circle')
+                    .attr('r', circ_data.r)
+                    .attr('cx', circ_data.cx)
+                    .attr('cy', circ_data.cy)
+            }
+            else {
+                gs[clip_g_name]
+                    .append('rect')
+                    .attr('x', rec_data.x)
+                    .attr('y', rec_data.y)
+                    .attr('width', rec_data.width)
+                    .attr('height', rec_data.height)
+                    .attr('rx', rec_data.rx)
+                    .attr('ry', rec_data.ry)
+                    .attr('fill', '#F2F2F2')
+            
+
+                gs.bck_pattern_defs
+                    .append('rect')
+                    .attr('x', rec_data.x)
+                    .attr('y', rec_data.y)
+                    .attr('width', rec_data.width)
+                    .attr('height', rec_data.height)
+                    .attr('rx', rec_data.rx)
+                    .attr('ry', rec_data.ry)
+            }
+
+            // ------------------------------------------------------------------
+            // corresponding clip elements for the bck_pattern()
+            // ------------------------------------------------------------------
+        })
+
 
         // ------------------------------------------------------------------
-        // corresponding clip elements for the bck_pattern()
+        //
         // ------------------------------------------------------------------
-        let clip_bck_pattern_id = 'clip_bck_pattern' + my_unique_id
-        
-        main_gs.bck_pattern_defs = main_gs.g_back.append('defs')
-            .append('clipPath')
-            .attr('id', clip_bck_pattern_id)
-          
-        main_gs.bck_pattern_defs
-            .append('circle')
-            .attr('r', circ_data.r)
-            .attr('cx', circ_data.cx)
-            .attr('cy', circ_data.cy)
-        
-        main_gs.bck_pattern_defs
-            .append('rect')
-            .attr('x', rec_data.x)
-            .attr('y', rec_data.y)
-            .attr('width', rec_data.width)
-            .attr('height', rec_data.height)
-            .attr('rx', rec_data.rx)
-            .attr('ry', rec_data.ry)
+        if (has_site_svg) {
+            gs.site_svg = gs[clip_bck_pattern_g.circ].append('g')
+            gs.site_svg
+                .attr('transform', function(d) {
+                    return 'scale(2)translate(' + '-55' + ', ' + '-10' + ')'
+                })
 
-        main_gs.clipped_bck_pattern_g = main_gs.g_back.append('g')
-        main_gs.clipped_bck_pattern_g.attr('class', 'clipped_bck_pattern_g')
-            .attr('clip-path', 'url(#' + clip_bck_pattern_id + ')')
+            let bck_id = 'site_bck_id'
+            let site_g = gs.site_svg
+            let style_site_bck = function() {
+                let site_svg = site_g.select('#' + bck_id)
+                
+                // ------------------------------------------------------------------
+                // remove telescope circles (telescope positions)
+                // ------------------------------------------------------------------
+                site_svg
+                    .selectAll('circle')
+                    .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', '0')
+                // ------------------------------------------------------------------
+                // modify rects (buildings)
+                // ------------------------------------------------------------------
+                site_svg
+                    .selectAll('rect')
+                    .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', '0.1')
+                    // .style('fill-opacity', '.15')
+                    // .style('stroke', 'red')
+                // ------------------------------------------------------------------
+                // modify paths (land-contours, ravine, and roads)
+                // ------------------------------------------------------------------
+                site_svg
+                    .selectAll('path')
+                    .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', '0.2')
+                    .style('fill-opacity', '.15')
+                    // .style('stroke', 'red')
+
+                return
+            }
+
+            window.load_svg_file({
+                g: gs.site_svg,
+                svg_id: bck_id,
+                icon_path: site_bck_svg,
+                func_end: style_site_bck,
+            })
+        }
+        // ------------------------------------------------------------------
+        // for debugging - a layer to click and show the local coordinates
+        // in order to position instruments
+        // ------------------------------------------------------------------
+        // com.s01.g
+        //     .append('rect')
+        //     .attr('width', svg_dims.w)
+        //     .attr('height', svg_dims.h)
+        //     .attr('fill', 'red')
+        //     .style('opacity', '0.05')
+        //     .on('click', function(_) {
+        //         console.log(d3.mouse(this))
+        //         return
+        //     })
 
 
         return
@@ -317,34 +400,34 @@ window.ArrZoomerMain = function(opt_in0) {
         // add one circle as background
         // ------------------------------------------------------------------
         if (!no_render) {
-            add_back_shapes(main_gs.g_back, svg_dims)
+            add_back_shapes(main_gs, svg_dims)
 
+            // ------------------------------------------------------------------
             // the background grid
+            // ------------------------------------------------------------------
             if (hex_r > 0) {
+                if (!has_site_svg) {
+                    bck_pattern({
+                        com: com,
+                        // g_now: main_gs.g_back,
+                        g_now: main_gs['clipped_bck_circ_g'],
+                        g_tag: 'hex_circ',
+                        len_wh: [ svg_dims.w, svg_dims.h ],
+                        opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
+                        hex_r: hex_r,
+                    })
+                }
+
                 bck_pattern({
                     com: com,
                     // g_now: main_gs.g_back,
-                    g_now: main_gs.clipped_bck_pattern_g,
-                    g_tag: 'hex',
+                    g_now: main_gs['clipped_bck_rec_g'],
+                    g_tag: 'hex_rec',
                     len_wh: [ svg_dims.w, svg_dims.h ],
                     opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
-                    hex_r: hex_r,
+                    hex_r: hex_r * 0.5,
                 })
             }
-
-            // ------------------------------------------------------------------
-            // test svb background
-            // ------------------------------------------------------------------
-            // let site_svg = main_gs.clipped_bck_pattern_g.append('g')
-            // window.load_svg_file({
-            //     // g: gg1,
-            //     g: site_svg,
-            //     svg_id: 'xxx',
-            //     icon_path: '/static/CTA_N.svg',
-            // })
-            // site_svg.attr('transform', function(d) {
-            //     return 'scale(8)translate(' + '-200' + ', ' + '-140' + ')'
-            // })
         }
 
 
@@ -600,7 +683,8 @@ window.ArrZoomerMain = function(opt_in0) {
             }
             else if (
                 target_name === ''
-        || !is_def(insts.data.mini[target_name])) {
+                || !is_def(insts.data.mini[target_name])) 
+            {
                 let scale = this_top.get_scale()
                 let trans = this_top.get_trans()
                 let x = (svg_dims.w / 2 - trans[0]) / scale
@@ -611,8 +695,9 @@ window.ArrZoomerMain = function(opt_in0) {
                 target_name = zooms.target
                 $.each(insts.data.xyr, function(id_now, data_now) {
                     if (data_now.isTel) {
-                        let diff_now
-              = Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
+                        let diff_now = (
+                            Math.pow(x - data_now.x, 2) + Math.pow(y - data_now.y, 2)
+                        )
                         if (diff_now < min_diff || min_diff < 0) {
                             min_diff = diff_now
                             target_name = id_now
@@ -748,6 +833,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
             zooms.target = d.data.id
             set_state()
+
             return
         }
 
@@ -1076,10 +1162,15 @@ window.ArrZoomerMain = function(opt_in0) {
                         r = tel_rs.s00[1]
                     }
 
-                    x = com.bck_circ_data.cx + data_now.x
-                    y = com.bck_circ_data.cy + data_now.y
-
-                    // console.log(id,x,y,r)
+                    if(is_south) {
+                        x = com.bck_circ_data.cx + data_now.x
+                        y = com.bck_circ_data.cy + data_now.y
+                    }
+                    else {
+                        x = data_now.x
+                        y = data_now.y
+                    }
+                    // console.log(id,x,y,r, data_now)
                 }
 
                 // translate to the center of the respective hex-cell
@@ -1814,10 +1905,10 @@ window.ArrZoomerMain = function(opt_in0) {
                         .attr('transform', function(d) {
                             return (
                                 'translate('
-                + insts.data.xyr[d.id].x
-                + ','
-                + insts.data.xyr[d.id].y
-                + ')'
+                                + insts.data.xyr[d.id].x
+                                + ','
+                                + insts.data.xyr[d.id].y
+                                + ')'
                             )
                         })
                         .style('stroke', function(d) {
@@ -3822,10 +3913,10 @@ window.ArrZoomerMain = function(opt_in0) {
             .attr('transform', function(d) {
                 return (
                     'translate('
-          + insts.data[pos_tag][d.id].x
-          + ','
-          + insts.data[pos_tag][d.id].y
-          + ')'
+                    + insts.data[pos_tag][d.id].x
+                    + ','
+                    + insts.data[pos_tag][d.id].y
+                    + ')'
                 )
             })
             .merge(circ)
@@ -3834,10 +3925,10 @@ window.ArrZoomerMain = function(opt_in0) {
             .attr('transform', function(d) {
                 return (
                     'translate('
-          + insts.data[pos_tag][d.id].x
-          + ','
-          + insts.data[pos_tag][d.id].y
-          + ')'
+                    + insts.data[pos_tag][d.id].x
+                    + ','
+                    + insts.data[pos_tag][d.id].y
+                    + ')'
                 )
             })
             .style('fill', function(d) {

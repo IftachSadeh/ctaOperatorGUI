@@ -69,24 +69,34 @@ For additional information, see:
     cd $ctaBaseDir/ctaGuiFront/
     mkdir -p $ctaBaseDir/ctaGuiFront/logs
     $VENV/bin/python setup.py develop
-    $VENV/bin/initialize_tutorial_db development.ini
+    $VENV/bin/initialize_tutorial_db config_north.ini
     bower install
   ```
     - Notice that the `bower` package manager should be pre-installed.
 
 ### Running the package
 
-- `redis` must be running on port `6379` (configurable by setting the variable `redisPort` in `ctaGuiUtils/py/utils_redis.py`).
+- `redis` must be running on port `6379` for the North site, and `6378` for the South (configurable in in `config_north.ini` and `config_south.ini` files).
 
-- Run the two servers (in two separate sessions) after sourcing the environment variables defined above:
+- Run the two servers (in two separate sessions) after sourcing the environment variables defined above, having the option of running either the North or the South site versions:
   ```bash
     cd $ctaBaseDir/ctaGuiBack/
-    $VENV/bin/gunicorn --reload --bind 0.0.0.0:8888 --paste development.ini
+    $VENV/bin/gunicorn --bind 0.0.0.0:8888 --paste config_north.ini
   ```
 
   ```bash  
     cd $ctaBaseDir/ctaGuiFront/
-    $VENV/bin/gunicorn --reload --bind 0.0.0.0:8090 --paste development.ini
+    $VENV/bin/gunicorn --bind 0.0.0.0:8090 --paste config_north.ini
+  ```
+  or:
+  ```bash
+    cd $ctaBaseDir/ctaGuiBack/
+    $VENV/bin/gunicorn --bind 0.0.0.0:8889 --paste config_south.ini
+  ```
+
+  ```bash  
+    cd $ctaBaseDir/ctaGuiFront/
+    $VENV/bin/gunicorn --bind 0.0.0.0:8091 --paste config_south.ini
   ```
 
 - View the client in a web browser, by navigating to `http://localhost:8090/cta/index`.
@@ -129,7 +139,7 @@ The following details the minimal procedure to add a new widget, `TestExample`, 
 
 We generated a local database file for users and passwords by running
 ```bash
-$VENV/bin/initialize_tutorial_db development.ini
+$VENV/bin/initialize_tutorial_db config_north.ini
 ```
 which creates the file, `ctaGuiFront/ctaGuiFront.db`.
   
@@ -223,7 +233,7 @@ The local server, running under `http://localhost:8090/cta`, will then be served
 
 ### Server domain
 
-One may change the `host`, `port` and `app_prefix` in `development.ini`. For example, the following will set the server to run under `http://127.0.0.1:8095/myOwnPrefix`:
+One may change the `host`, `port` and `app_prefix` in `config_north.ini`. For example, the following will set the server to run under `http://127.0.0.1:8095/myOwnPrefix`:
 ```python
 [server:main]
 ....
@@ -234,7 +244,7 @@ port       = 8095
 
 ### Logging streams
 
-Logging is done with the usual `python` module. Logger formats are set in `development.ini`. By default, all are written to files under `logs/`.
+Logging is done with the usual `python` module. Logger formats are set in `config_north.ini`. By default, all are written to files under `logs/`.
 Some of the streams are also written to the console. In order to add (remove) a log stream from the console, change the corresponding `propagate` flag to 1 (0). For example, the `logger_guni` logger is written both to file and to the console
 ```python
 [logger_guni]
@@ -244,7 +254,7 @@ propagate = 1
 
 ### Timeout
 
-The `development.ini` file includes:
+The `config_north.ini` file includes:
 ```bash
 [server:main]
 ......

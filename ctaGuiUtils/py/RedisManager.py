@@ -3,8 +3,7 @@ import redis
 from gevent import GreenletExit
 from msgpack import packb, unpackb
 
-redis_port = 6379
-
+# redis_port = 6378
 # redis_port = dict()
 # redis_port["N"] = 6379
 # redis_port["S"] = 6379
@@ -288,7 +287,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, name='', log=None, port=redis_port, host='localhost'):
+    def __init__(self, name='', log=None, port=None, host='localhost'):
         super(RedisManager, self).__init__(name=name, log=log)
 
         self.name = name

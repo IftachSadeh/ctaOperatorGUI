@@ -380,12 +380,6 @@ function add_site_nav_menu(parent_ele) {
         {
             text: 'Comment Night Schedule',
             onclick: function() {
-                window.location.href = 'view2051'
-            },
-        },
-        {
-            text: 'Nightly Schedule',
-            onclick: function() {
                 window.location.href = 'view205'
             },
         },

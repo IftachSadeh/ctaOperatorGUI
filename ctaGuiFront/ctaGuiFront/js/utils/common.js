@@ -2270,6 +2270,7 @@ window.bck_pattern = function(opt_in) {
             .duration(times.anim)
             .attr('d', com[tag_now].path.mesh())
             .attr('opacity', opac)
+            // .attr('stroke', cols_blues[0]).attr('opacity', 0.8)
 
         path
             .exit()

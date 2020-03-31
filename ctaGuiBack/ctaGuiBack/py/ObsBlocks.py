@@ -40,7 +40,7 @@ class ObsBlocks():
         self.tel_ids = self.InstData.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
         self.class_name = self.__class__.__name__
-        self.redis = RedisManager(name=self.class_name, log=self.log)
+        self.redis = RedisManager(name=self.class_name, port=utils.redis_port, log=self.log)
 
         self.debug = not True
         self.expire = 86400  # one day
@@ -103,7 +103,9 @@ class ObsBlocks():
 
         for sched_blk_id, schBlock in schBlocks['blocks'].iteritems():
 
-            sub_array_tels = schBlock['sched_block'].config.instrument.sub_array.telescopes
+            sub_array_tels = (
+                schBlock['sched_block'].config.instrument.sub_array.telescopes
+            )
             tel_ids = [x.id for x in sub_array_tels]
 
             obs_blocks = schBlock['sched_block'].observation_blocks
@@ -338,7 +340,7 @@ class ObsBlocksNoACS():
         self.tel_ids = self.InstData.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
         self.class_name = self.__class__.__name__
-        self.redis = RedisManager(name=self.class_name, log=self.log)
+        self.redis = RedisManager(name=self.class_name, port=utils.redis_port, log=self.log)
 
         self.debug = not True
         self.expire = 86400  # one day

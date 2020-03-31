@@ -104,14 +104,17 @@ class InstData():
             elif InstData.site_type == 'N':
                 id_now = 'SA_0'
                 sub_array_tels[id_now] = [
-                    'Lx00',
                     'Lx01',
                     'Lx02',
                     'Lx03',
-                    'Mx04',
+                    'Lx04',
+                    'Mx01',
                 ]
                 id_now = 'SA_1'
                 sub_array_tels[id_now] = [
+                    'Mx02',
+                    'Mx03',
+                    'Mx04',
                     'Mx05',
                     'Mx06',
                     'Mx07',
@@ -274,10 +277,13 @@ class InstData():
             # ------------------------------------------------------------------
             elif InstData.site_type == 'N':
                 tel_ids = [
-                    'Lx00',
                     'Lx01',
                     'Lx02',
                     'Lx03',
+                    'Lx04',
+                    'Mx01',
+                    'Mx02',
+                    'Mx03',
                     'Mx04',
                     'Mx05',
                     'Mx06',
@@ -290,10 +296,6 @@ class InstData():
                     'Mx13',
                     'Mx14',
                     'Mx15',
-                    'Mx16',
-                    'Mx17',
-                    'Mx18',
-                    # 'Lx00', 'Lx01', 'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09',
                 ]
             else:
                 raise
@@ -619,58 +621,45 @@ class InstData():
         # north
         # ------------------------------------------------------------------
         if InstData.site_type == 'N':
-            id_now = "Lx00"
-            add_dict_id(id_now, {'x': 7.23, 'y': -70.05, 'type': 'LST'})
             id_now = "Lx01"
-            add_dict_id(id_now, {'x': -71.29, 'y': -12.3, 'type': 'LST'})
+            add_dict_id(id_now, {'x': 376.159, 'y': 343.521, 'type': 'LST'})
             id_now = "Lx02"
-            add_dict_id(id_now, {'x': -8.2, 'y': 71.82, 'type': 'LST'})
+            add_dict_id(id_now, {'x': 288.810, 'y': 328.030, 'type': 'LST'})
             id_now = "Lx03"
-            add_dict_id(id_now, {'x': 68.07, 'y': 9.31, 'type': 'LST'})
+            add_dict_id(id_now, {'x': 320.642, 'y': 261.530, 'type': 'LST'})
+            id_now = "Lx04"
+            add_dict_id(id_now, {'x': 386.446, 'y': 285.861, 'type': 'LST'})
+            id_now = "Mx01"
+            add_dict_id(id_now, {'x': 344.926, 'y': 404.945, 'type': 'MST'})
+            id_now = "Mx02"
+            add_dict_id(id_now, {'x': 256.740, 'y': 370.062, 'type': 'MST'})
+            id_now = "Mx03"
+            add_dict_id(id_now, {'x': 242.3620, 'y': 254.985, 'type': 'MST'})
             id_now = "Mx04"
-            add_dict_id(id_now, {'x': 0, 'y': 0, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 317.343, 'y': 208.857, 'type': 'MST'})
             id_now = "Mx05"
-            add_dict_id(id_now, {'x': -196.9, 'y': -22.53, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 439.269, 'y': 225.410, 'type': 'MST'})
             id_now = "Mx06"
-            add_dict_id(id_now, {'x': -124.51, 'y': 100.94, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 449.099, 'y': 330.589, 'type': 'MST'})
             id_now = "Mx07"
-            add_dict_id(id_now, {'x': -28.52, 'y': 180.32, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 424.508, 'y': 396.707, 'type': 'MST'})
             id_now = "Mx08"
-            add_dict_id(id_now, {'x': 125.28, 'y': 169.43, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 190.637, 'y': 328.672, 'type': 'MST'})
             id_now = "Mx09"
-            add_dict_id(id_now, {'x': 199.05, 'y': 20.56, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 524.691, 'y': 182.636, 'type': 'MST'})
             id_now = "Mx10"
-            add_dict_id(id_now, {'x': 126.3, 'y': -97.35, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 525.877, 'y': 270.413, 'type': 'MST'})
             id_now = "Mx11"
-            add_dict_id(id_now, {'x': 26.45, 'y': -198.59, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 505.525, 'y': 399.122, 'type': 'MST'})
             id_now = "Mx12"
-            add_dict_id(id_now, {'x': -124.22, 'y': -168.79, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 182.629, 'y': 425.677, 'type': 'MST'})
             id_now = "Mx13"
-            add_dict_id(id_now, {'x': -212.53, 'y': 246.7, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 283.345, 'y': 449.753, 'type': 'MST'})
             id_now = "Mx14"
-            add_dict_id(id_now, {'x': 62.3, 'y': 316.37, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 383.626, 'y': 467.621, 'type': 'MST'})
             id_now = "Mx15"
-            add_dict_id(id_now, {'x': 285.57, 'y': 141.75, 'type': 'MST'})
-            id_now = "Mx16"
-            add_dict_id(id_now, {'x': 267.24, 'y': -131.76, 'type': 'MST'})
-            id_now = "Mx17"
-            add_dict_id(id_now, {'x': -284.99, 'y': -116.01, 'type': 'MST'})
-            id_now = "Mx18"
-            add_dict_id(id_now, {'x': -321.44, 'y': 66.39, 'type': 'MST'})
-
-            # ------------------------------------------------------------------
-            #
-            # ------------------------------------------------------------------
-            for id_now, ele_now in InstData.inst_info.iteritems():
-                ref = sqrt(ele_now['x'] * ele_now['x'] + ele_now['y'] * ele_now['y'])
-                if ref > 210:
-                    add_factor = 0.55
-                elif ref > 100:
-                    add_factor = 0.8
-                else:
-                    add_factor = 1
-                for xy_now in ['x', 'y']:
-                    ele_now[xy_now] *= add_factor
+            add_dict_id(id_now, {'x': 338.955, 'y': 305.371, 'type': 'MST'})
+        
         return
 
     # ------------------------------------------------------------------
@@ -699,6 +688,8 @@ class InstData():
             add_dict_id(id_now, {'x': -210, 'y': -290, 'type': 'AUX'})
 
             for id_now, ele_now in InstData.inst_info.iteritems():
+                # if ele_now['type'] != 'AUX':
+                #     continue
                 ref = sqrt(ele_now['x'] * ele_now['x'] + ele_now['y'] * ele_now['y'])
                 if ref > 900:
                     add_factor = 0.50
@@ -723,22 +714,11 @@ class InstData():
             #
             # ------------------------------------------------------------------
             id_now = "Ax00"
-            add_dict_id(id_now, {'x': 30, 'y': 92, 'type': 'AUX'})
+            add_dict_id(id_now, {'x': 403.866, 'y': 151.528, 'type': 'AUX'})
             id_now = "Ax01"
-            add_dict_id(id_now, {'x': 45, 'y': -35, 'type': 'AUX'})
+            add_dict_id(id_now, {'x': 455.675, 'y': 466.823, 'type': 'AUX'})
             # id_now = "Ax02"
-            # add_dict_id(id_now, {'x': -50, 'y':  -70, 'type': 'AUX'})
-
-            for id_now, ele_now in InstData.inst_info.iteritems():
-                ref = sqrt(ele_now['x'] * ele_now['x'] + ele_now['y'] * ele_now['y'])
-                if ref > 210:
-                    add_factor = 0.55
-                elif ref > 100:
-                    add_factor = 0.8
-                else:
-                    add_factor = 1
-                for xy_now in ['x', 'y']:
-                    ele_now[xy_now] *= add_factor
+            # add_dict_id(id_now, {'x': 158.143, 'y': 264.028, 'type': 'AUX'})
 
         return
 
@@ -775,7 +755,7 @@ class InstData():
         if InstData.site_type == 'S':
             pos_scale = 0.53
         if InstData.site_type == 'N':
-            pos_scale = 1.3
+            pos_scale = 1
 
         for id_now, ele_now in InstData.inst_info.iteritems():
             for xy_now in ['x', 'y']:
@@ -1414,7 +1394,8 @@ class InstData():
     def get_inst_pos(self):
         while InstData.inst_info is None:
             sleep(0.01)
-        return self.inst_info
+
+        return InstData.inst_info
 
     # ------------------------------------------------------------------
     #

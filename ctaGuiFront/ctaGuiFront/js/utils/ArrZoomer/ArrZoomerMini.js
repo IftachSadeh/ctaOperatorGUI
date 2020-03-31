@@ -46,6 +46,10 @@ window.ArrZoomerMini = function(opt_in0) {
     let zooms = ele_base.zooms
     let lock_init_key = ele_base.lock_init_keys[mini_lens_tag.toLowerCase()]
 
+    let has_site_svg = ele_base.has_site_svg
+    let site_bck_svg = ele_base.site_bck_svg
+    let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 40
+
     let scale_r = insts.scale_r
 
     let svg_dims = {
@@ -169,16 +173,29 @@ window.ArrZoomerMini = function(opt_in0) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        get_ele('main').add_back_shapes(mini_gs.g_back, svg_dims, ele_base.tel_types)
+        get_ele('main').add_back_shapes(mini_gs, svg_dims, ele_base.tel_types)
+
+        if (!has_site_svg) {
+            bck_pattern({
+                com: com,
+                // g_now: main_gs.g_back,
+                g_now: mini_gs['clipped_bck_circ_g'],
+                g_tag: 'hex_circ',
+                len_wh: [ svg_dims.w, svg_dims.h ],
+                opac: 0.2,
+                hex_r: hex_r,
+            })
+        }
 
         // the background grid
         bck_pattern({
             com: com,
-            g_now: mini_gs.g_back,
-            g_tag: 'g_base_mini',
+            // g_now: mini_gs.g_back,
+            g_now: mini_gs['clipped_bck_rec_g'],
+            g_tag: 'hex_rec',
             len_wh: [ svg_dims.w, svg_dims.h ],
             opac: 0.2,
-            hex_r: 40,
+            hex_r: hex_r,
         })
 
         com.g_base_mini = {

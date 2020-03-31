@@ -23,7 +23,7 @@ class MockTarget():
         self.site_type = site_type
 
         self.class_name = self.__class__.__name__
-        self.redis = RedisManager(name=self.class_name, log=self.log)
+        self.redis = RedisManager(name=self.class_name, port=utils.redis_port, log=self.log)
 
         # ------------------------------------------------------------------
         #

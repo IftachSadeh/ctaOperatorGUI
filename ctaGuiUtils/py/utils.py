@@ -23,6 +23,13 @@ no_sub_arr_name = "empty_sub_array"
 inst_pos_0 = [0, 90]
 
 # ------------------------------------------------------------------
+# .... FIXME -- bad practice.... upgrade this ....
+# module properties set by config_north.ini
+# ------------------------------------------------------------------
+site_type = None
+redis_port = None
+
+# ------------------------------------------------------------------
 # check if ACS is available (assumed yes if the 'ACSROOT' env variable is defined)
 # ------------------------------------------------------------------
 has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == "dawn.ifh.de")
@@ -358,7 +365,7 @@ class time_of_night():
         # self.timescale /= 20
 
         self.class_name = self.__class__.__name__
-        self.redis = RedisManager(name=self.class_name, log=self.log)
+        self.redis = RedisManager(name=self.class_name, port=redis_port, log=self.log)
 
         self.n_night = -1
 

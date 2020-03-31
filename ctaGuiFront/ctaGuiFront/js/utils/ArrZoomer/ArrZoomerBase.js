@@ -56,6 +56,9 @@ window.ArrZoomerBase = function(opt_in0) {
 
     this_top.has_init = false
 
+    this_top.has_site_svg = !is_south
+    this_top.site_bck_svg = is_south ? '' : '/static/site_layout_North.svg'
+
     let arr_zoomer_id = 'arr_zoomer' + my_unique_id
     this_top.arr_zoomer_id = arr_zoomer_id
 
@@ -573,7 +576,6 @@ window.ArrZoomerBase = function(opt_in0) {
                         data: insts.data.vor.data,
                     },
                     xyr_physical: insts.data.lens,
-                    // xyr: insts.data.xyr,
                     vor_dblclick: insts.data.dblclick,
                 },
                 tel_id_types: tel_id_types,
