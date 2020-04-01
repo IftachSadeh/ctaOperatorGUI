@@ -3730,7 +3730,7 @@ let main_sched_blocksInspector = function(opt_in) {
         }
         reserved.drag = {
         }
-        function initClipping() {
+        function init_clipping() {
             let gBlockBox = svg.g.append('g')
                 .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
             reserved.g = gBlockBox
@@ -3772,7 +3772,7 @@ let main_sched_blocksInspector = function(opt_in) {
                 h: box.tools.h * 0.5,
                 marg: svg_dims.w[0] * 0.01,
             }
-            initClipping()
+            init_clipping()
         }
         this.init_data = init_data
         function update_data() {
@@ -4110,7 +4110,7 @@ let main_sched_blocksInspector = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function initClipping() {
+        function init_clipping() {
             reserved.clipping = {
             }
             reserved.clipping.g = svg.g.append('g')
@@ -4134,7 +4134,7 @@ let main_sched_blocksInspector = function(opt_in) {
                 h: box.tools.h * 0.5,
                 marg: svg_dims.w[0] * 0.01,
             }
-            initClipping()
+            init_clipping()
             // gBlockBox.append('text')
             //   .text('MODIFICATIONS')
             //   .style('fill', color_theme.medium.text)
@@ -4931,7 +4931,7 @@ let main_sched_blocksInspector = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function initClipping() {
+        function init_clipping() {
             reserved.clipping = {
             }
             reserved.drag.box = {
@@ -4959,7 +4959,7 @@ let main_sched_blocksInspector = function(opt_in) {
         }
         function init_data() {
             reserved.hasData = false
-            initClipping()
+            init_clipping()
         }
         this.init_data = init_data
 
@@ -5805,7 +5805,7 @@ let main_sched_blocksInspector = function(opt_in) {
             scrollBox.init({
                 tag: tag,
                 g_box: g,
-                boxData: {
+                box_data: {
                     x: 0,
                     y: 0,
                     w: box.w,
@@ -5824,9 +5824,9 @@ let main_sched_blocksInspector = function(opt_in) {
                 }),
                 canScroll: true,
                 scrollVertical: isVertical,
-                scrollHorizontal: !isVertical,
+                scroll_horizontal: !isVertical,
                 scrollHeight: 0,
-                scrollWidth: 0,
+                scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
                     h: 4,
@@ -6813,7 +6813,7 @@ let main_sched_blocksInspector = function(opt_in) {
             function initTelescope_information(block, box) {
                 innerOtherBlock[block.obs_block_id] = {
                 }
-                let g = scroll.get('innerG').append('g')
+                let g = scroll.get('inner_g').append('g')
                     .attr('transform', 'translate(' + (box.x) + ',' + (box.y) + ')')
                 // g.append('rect')
                 //   .attr('x', 0)
@@ -7214,7 +7214,7 @@ let main_sched_blocksInspector = function(opt_in) {
                 }
                 initTelescope_information(conflict.blocks[i], ibox)
             }
-            scroll.resetVerticalScroller({
+            scroll.reset_vertical_scroller({
                 canScroll: true,
                 scrollHeight: sizeRow * conflict.blocks.length,
             })
@@ -7414,7 +7414,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     return
                 }
                 let box = allBox.modifications
-                let innerg = reserved.overview.modifications.scrollBox.get('innerG')
+                let innerg = reserved.overview.modifications.scrollBox.get('inner_g')
                 let line = 25
                 let marg = 2
                 let labels = [
@@ -8395,13 +8395,13 @@ let main_sched_blocksInspector = function(opt_in) {
                 }
                 schedCore(shared.data.copy.modifications, innerg, marg)
 
-                // reserved.overview.modifications.scrollBox.moveVerticalScrollerTo(0.5)
-                reserved.overview.modifications.scrollBox.resetVerticalScroller({
+                // reserved.overview.modifications.scrollBox.move_vertical_scroller_to(0.5)
+                reserved.overview.modifications.scrollBox.reset_vertical_scroller({
                     canScroll: true,
                     keepFrac: true,
                     scrollHeight: (line + marg) * (sched_index + 0),
                 })
-                let scrollProp = reserved.overview.modifications.scrollBox.getScrollProp('vertical')
+                let scrollProp = reserved.overview.modifications.scrollBox.get_scroll_prop('vertical')
                 popupOffset = scrollProp.now
             }
             function updateConflicts_information() {
@@ -8410,7 +8410,7 @@ let main_sched_blocksInspector = function(opt_in) {
                 // let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
                 let line = 38
                 let marg = 4
-                let innerg = reserved.overview.conflicts.scrollBox.get('innerG')
+                let innerg = reserved.overview.conflicts.scrollBox.get('inner_g')
                 innerg.selectAll('*').remove()
                 let current = innerg
                     .selectAll('g.conflict')
@@ -8492,9 +8492,9 @@ let main_sched_blocksInspector = function(opt_in) {
                 //   .duration(times.anim)
                 //   .style('opacity', 0)
                 //   .remove()
-                reserved.overview.conflicts.scrollBox.resetHorizontalScroller({
+                reserved.overview.conflicts.scrollBox.reset_horizontal_scroller({
                     canScroll: true,
-                    scrollWidth: (line + marg) * shared.data.copy.conflicts.length,
+                    scroll_width: (line + marg) * shared.data.copy.conflicts.length,
                 })
             }
 

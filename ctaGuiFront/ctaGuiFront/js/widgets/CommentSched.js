@@ -949,7 +949,7 @@ let main_comment_sched = function(opt_in) {
         //     reserved.inputHistory.local.scroll.scrollBox.init({
         //       tag: 'inputHistoryScrollBox',
         //       g_box: reserved.inputHistory.local.scroll.scrollBoxG,
-        //       boxData: {
+        //       box_data: {
         //         x: historyBox.x,
         //         y: historyBox.y,
         //         w: historyBox.w,
@@ -967,14 +967,14 @@ let main_comment_sched = function(opt_in) {
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
         //       canScroll: true,
         //       scrollVertical: true,
-        //       scrollHorizontal: false,
+        //       scroll_horizontal: false,
         //       scrollHeight: 0.1 + historyBox.h,
-        //       scrollWidth: 0,
+        //       scroll_width: 0,
         //       background: 'transparent',
         //       scroll_rec_h: {h: 2},
         //       scroll_recs: {w: 2}
         //     })
-        //     reserved.inputHistory.local.scroll.scrollG = reserved.inputHistory.local.scroll.scrollBox.get('innerG')
+        //     reserved.inputHistory.local.scroll.scrollG = reserved.inputHistory.local.scroll.scrollBox.get('inner_g')
         //   }
         //   function initGeneralHistory () {
         //     reserved.inputHistory.general.scroll.scrollBoxG = reserved.inputHistory.general.g.append('g')
@@ -992,7 +992,7 @@ let main_comment_sched = function(opt_in) {
         //     reserved.inputHistory.general.scroll.scrollBox.init({
         //       tag: 'inputHistoryScrollBox',
         //       g_box: reserved.inputHistory.general.scroll.scrollBoxG,
-        //       boxData: {
+        //       box_data: {
         //         x: historyBox.x,
         //         y: historyBox.y,
         //         w: historyBox.w,
@@ -1010,14 +1010,14 @@ let main_comment_sched = function(opt_in) {
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
         //       canScroll: true,
         //       scrollVertical: true,
-        //       scrollHorizontal: false,
+        //       scroll_horizontal: false,
         //       scrollHeight: 0.1 + historyBox.h,
-        //       scrollWidth: 0,
+        //       scroll_width: 0,
         //       background: 'transparent',
         //       scroll_rec_h: {h: 2},
         //       scroll_recs: {w: 2}
         //     })
-        //     reserved.inputHistory.general.scroll.scrollG = reserved.inputHistory.general.scroll.scrollBox.get('innerG')
+        //     reserved.inputHistory.general.scroll.scrollG = reserved.inputHistory.general.scroll.scrollBox.get('inner_g')
         //   }
         //
         //   reserved.inputHistory.main.g.attr('transform', 'translate(' + reserved.inputHistory.main.box.x + ',' + reserved.inputHistory.main.box.y + ')')
@@ -1227,7 +1227,7 @@ let main_comment_sched = function(opt_in) {
         //     reserved.focusedItem_info.fields.scroll.scrollBox.init({
         //       tag: 'inputHistoryScrollBox',
         //       g_box: reserved.focusedItem_info.fields.scroll.scrollBoxG,
-        //       boxData: {
+        //       box_data: {
         //         x: historyBox.x,
         //         y: historyBox.y,
         //         w: historyBox.w,
@@ -1245,14 +1245,14 @@ let main_comment_sched = function(opt_in) {
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
         //       canScroll: true,
         //       scrollVertical: true,
-        //       scrollHorizontal: false,
+        //       scroll_horizontal: false,
         //       scrollHeight: 0.1 + historyBox.h,
-        //       scrollWidth: 0,
+        //       scroll_width: 0,
         //       background: 'transparent',
         //       scroll_rec_h: {h: 6},
         //       scroll_recs: {w: 6}
         //     })
-        //     reserved.focusedItem_info.info.scroll.scrollG = reserved.focusedItem_info.fields.scroll.scrollBox.get('innerG')
+        //     reserved.focusedItem_info.info.scroll.scrollG = reserved.focusedItem_info.fields.scroll.scrollBox.get('inner_g')
         //
         //     let dimField = {
         //       w: reserved.focusedItem_info.fields.box.w,
@@ -1314,7 +1314,7 @@ let main_comment_sched = function(opt_in) {
         //     reserved.focusedItem_info.info.scroll.scrollBox.init({
         //       tag: 'inputHistoryScrollBox',
         //       g_box: reserved.focusedItem_info.info.scroll.scrollBoxG,
-        //       boxData: {
+        //       box_data: {
         //         x: historyBox.x,
         //         y: historyBox.y,
         //         w: historyBox.w,
@@ -1332,14 +1332,14 @@ let main_comment_sched = function(opt_in) {
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
         //       canScroll: true,
         //       scrollVertical: true,
-        //       scrollHorizontal: false,
+        //       scroll_horizontal: false,
         //       scrollHeight: 0.1 + historyBox.h,
-        //       scrollWidth: 0,
+        //       scroll_width: 0,
         //       background: 'transparent',
         //       scroll_rec_h: {h: 6},
         //       scroll_recs: {w: 6}
         //     })
-        //     reserved.focusedItem_info.info.scroll.scrollG = reserved.focusedItem_info.info.scroll.scrollBox.get('innerG')
+        //     reserved.focusedItem_info.info.scroll.scrollG = reserved.focusedItem_info.info.scroll.scrollBox.get('inner_g')
         //   }
         //   reserved.focusedItem_info.main.g.attr('transform', 'translate(' + reserved.focusedItem_info.main.box.x + ',' + reserved.focusedItem_info.main.box.y + ')')
         //   reserved.focusedItem_info.preview = {
@@ -1613,7 +1613,7 @@ let main_comment_sched = function(opt_in) {
                 reserved.log_info.scroll.scrollBox.init({
                     tag: 'log_infoScrollBox',
                     g_box: reserved.log_info.scroll.scrollBoxG,
-                    boxData: {
+                    box_data: {
                         x: box.x,
                         y: box.y,
                         w: box.w,
@@ -1633,9 +1633,9 @@ let main_comment_sched = function(opt_in) {
                     }),
                     canScroll: true,
                     scrollVertical: true,
-                    scrollHorizontal: false,
+                    scroll_horizontal: false,
                     scrollHeight: 0,
-                    scrollWidth: 0,
+                    scroll_width: 0,
                     background: 'transparent',
                     scroll_rec_h: {
                         h: 0,
@@ -1645,7 +1645,7 @@ let main_comment_sched = function(opt_in) {
                     },
                 })
                 reserved.log_info.scroll.scrollG = reserved.log_info.scroll.scrollBox.get(
-                    'innerG'
+                    'inner_g'
                 )
             }
 
@@ -1766,7 +1766,7 @@ let main_comment_sched = function(opt_in) {
                 .style('opacity', 0)
                 .remove()
 
-            reserved.log_info.scroll.scrollBox.resetVerticalScroller({
+            reserved.log_info.scroll.scrollBox.reset_vertical_scroller({
                 canScroll: true,
                 scrollHeight: log.info.length * reserved.log_info.box.h * 0.31,
             })
@@ -1999,13 +1999,13 @@ let main_comment_sched = function(opt_in) {
             let filters = []
             let b = reserved.logHistory.box
 
-            reserved.logHistory.outerBox = {
+            reserved.logHistory.outer_box = {
                 x: 0,
                 y: 0,
                 w: b.w,
                 h: 15,
             }
-            let ob = reserved.logHistory.outerBox
+            let ob = reserved.logHistory.outer_box
             reserved.logHistory.innerBoxFilter = {
                 x: 2,
                 y: 2,
@@ -2419,7 +2419,7 @@ let main_comment_sched = function(opt_in) {
                     reserved.logHistory.filtering.scroll.scrollBox.init({
                         tag: 'inputHistoryFilteringScrollBox',
                         g_box: reserved.logHistory.filtering.scroll.scrollBoxG,
-                        boxData: {
+                        box_data: {
                             x: historyBox.x,
                             y: historyBox.y,
                             w: historyBox.w,
@@ -2439,9 +2439,9 @@ let main_comment_sched = function(opt_in) {
                         }),
                         canScroll: true,
                         scrollVertical: true,
-                        scrollHorizontal: false,
+                        scroll_horizontal: false,
                         scrollHeight: ob.h * reserved.logHistory.filtering.filters.length,
-                        scrollWidth: 0,
+                        scroll_width: 0,
                         background: 'transparent',
                         scroll_rec_h: {
                             h: 1,
@@ -2451,7 +2451,7 @@ let main_comment_sched = function(opt_in) {
                         },
                     })
                     reserved.logHistory.filtering.scroll.scrollG = reserved.logHistory.filtering.scroll.scrollBox.get(
-                        'innerG'
+                        'inner_g'
                     )
                 }
                 initScrollBox()
@@ -2484,7 +2484,7 @@ let main_comment_sched = function(opt_in) {
                     reserved.logHistory.list.scroll.scrollBox.init({
                         tag: 'inputHistoryScrollBox',
                         g_box: reserved.logHistory.list.scroll.scrollBoxG,
-                        boxData: {
+                        box_data: {
                             x: historyBox.x,
                             y: historyBox.y,
                             w: historyBox.w,
@@ -2504,9 +2504,9 @@ let main_comment_sched = function(opt_in) {
                         }),
                         canScroll: true,
                         scrollVertical: true,
-                        scrollHorizontal: false,
+                        scroll_horizontal: false,
                         scrollHeight: 0.1 + historyBox.h,
-                        scrollWidth: 0,
+                        scroll_width: 0,
                         background: 'transparent',
                         scroll_rec_h: {
                             h: 2,
@@ -2516,7 +2516,7 @@ let main_comment_sched = function(opt_in) {
                         },
                     })
                     reserved.logHistory.list.scroll.scrollG = reserved.logHistory.list.scroll.scrollBox.get(
-                        'innerG'
+                        'inner_g'
                     )
                 }
                 initScrollBox()
@@ -2694,7 +2694,7 @@ let main_comment_sched = function(opt_in) {
                 //   .style('opacity', 0)
                 //   .remove()
 
-                reserved.logHistory.list.scroll.scrollBox.resetVerticalScroller({
+                reserved.logHistory.list.scroll.scrollBox.reset_vertical_scroller({
                     canScroll: true,
                     scrollHeight: fl.length * ob.h,
                 })
@@ -2843,7 +2843,7 @@ let main_comment_sched = function(opt_in) {
                     .style('opacity', 0)
                     .remove()
 
-                reserved.logHistory.list.scroll.scrollBox.resetVerticalScroller({
+                reserved.logHistory.list.scroll.scrollBox.reset_vertical_scroller({
                     canScroll: true,
                     scrollHeight: fl.length * ob.h,
                 })

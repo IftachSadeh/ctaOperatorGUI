@@ -2236,7 +2236,7 @@ let main_sched_blockController = function(opt_in) {
         reserved.drag = {
         }
 
-        function initClipping() {
+        function init_clipping() {
             let gBlockBox = svg.g.append('g')
                 .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
             reserved.g = gBlockBox
@@ -2278,7 +2278,7 @@ let main_sched_blockController = function(opt_in) {
                 h: box.tools.h * 0.5,
                 marg: svg_dims.w[0] * 0.01,
             }
-            initClipping()
+            init_clipping()
         }
         this.init_data = init_data
         function update_data() {
@@ -2615,7 +2615,7 @@ let main_sched_blockController = function(opt_in) {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        function initClipping() {
+        function init_clipping() {
             reserved.clipping = {
             }
             reserved.clipping.g = svg.g.append('g')
@@ -2640,7 +2640,7 @@ let main_sched_blockController = function(opt_in) {
                 marg: svg_dims.w[0] * 0.01,
             }
 
-            initClipping()
+            init_clipping()
             // let gBlockBox = svg.g.append('g')
             //   .attr('transform', 'translate(' + reserved.box.x + ',' + reserved.box.y + ')')
 
@@ -3851,7 +3851,7 @@ let main_sched_blockController = function(opt_in) {
             scrollBox.init({
                 tag: tag,
                 g_box: g,
-                boxData: {
+                box_data: {
                     x: 0,
                     y: 0,
                     w: box.w,
@@ -3870,9 +3870,9 @@ let main_sched_blockController = function(opt_in) {
                 }),
                 canScroll: true,
                 scrollVertical: true,
-                scrollHorizontal: false,
+                scroll_horizontal: false,
                 scrollHeight: 0,
-                scrollWidth: 0,
+                scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
                     h: 4,
@@ -4709,7 +4709,7 @@ let main_sched_blockController = function(opt_in) {
                 reserved.overview.scrollBox = initScrollBox('targetRessourceScroll', targ, box, {
                     enabled: false,
                 })
-                reserved.overview.scrollBox.resetVerticalScroller({
+                reserved.overview.scrollBox.reset_vertical_scroller({
                     canScroll: true,
                     scrollHeight: shared.data.server.targets.length * 40,
                 })
@@ -5113,7 +5113,7 @@ let main_sched_blockController = function(opt_in) {
             }
             function updatePointing_information() {
                 let box = allBox.targets
-                let innerg = reserved.overview.scrollBox.get('innerG')
+                let innerg = reserved.overview.scrollBox.get('inner_g')
                 let rectBox = {
                     y: 0,
                     w: box.w,
@@ -5313,7 +5313,7 @@ let main_sched_blockController = function(opt_in) {
                     .duration(times.anim)
                     .style('opacity', 0)
                     .remove()
-                reserved.overview.scrollBox.updateVerticalScroller({
+                reserved.overview.scrollBox.update_vertical_scroller({
                     canScroll: true,
                     scrollHeight: shared.data.server.targets.length * rectBox.h,
                 })

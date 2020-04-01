@@ -226,7 +226,7 @@ window.SchedblockForm = function(opt_in) {
         scrollBox.init({
             tag: tag,
             g_box: g,
-            boxData: {
+            box_data: {
                 x: 0,
                 y: 0,
                 w: box.w,
@@ -245,9 +245,9 @@ window.SchedblockForm = function(opt_in) {
             }),
             canScroll: true,
             scrollVertical: true,
-            scrollHorizontal: false,
+            scroll_horizontal: false,
             scrollHeight: 0,
-            scrollWidth: 0,
+            scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
                 h: 4,
@@ -588,7 +588,7 @@ window.SchedblockForm = function(opt_in) {
         com.schedule.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {
             enabled: false,
         })
-        let innerg = com.schedule.scrollBox.get('innerG')
+        let innerg = com.schedule.scrollBox.get('inner_g')
         let current = innerg
             .selectAll('g.block')
             .data(schedB.blocks, function(d) {
@@ -1191,7 +1191,7 @@ window.SchedblockForm = function(opt_in) {
             .style('opacity', 0)
             .remove()
 
-        com.schedule.scrollBox.resetVerticalScroller({
+        com.schedule.scrollBox.reset_vertical_scroller({
             canScroll: true,
             scrollHeight: line * schedB.blocks.length,
         })
@@ -1208,7 +1208,7 @@ window.SchedblockForm = function(opt_in) {
     }
     function updateTime_information() {
         let schedB = com.data.schedB
-        com.schedule.scrollBox.get('innerG')
+        com.schedule.scrollBox.get('inner_g')
             .selectAll('g.block')
             .each(function(d, i) {
                 let palette = blockStyle(d)
@@ -1400,7 +1400,7 @@ window.SchedblockForm = function(opt_in) {
         }
         let blocktg = g.append('g').attr('transform', 'translate(' + tbox.x + ',' + tbox.y + ')')
         let scrollBoxt = initScrollBox(com.main.tag + 'targetListScroll', blocktg, tbox, back)
-        let innertg = scrollBoxt.get('innerG')
+        let innertg = scrollBoxt.get('inner_g')
 
         target_point = []
         for (let j = 0; j < schedB.blocks.length; j++) {
@@ -1603,7 +1603,7 @@ window.SchedblockForm = function(opt_in) {
         }
         let blockpg = g.append('g').attr('transform', 'translate(' + 0 + ',' + pbox.y + ')')
         let scrollBoxp = initScrollBox(com.main.tag + 'pointingListScroll', blockpg, pbox, back)
-        let innerpg = scrollBoxp.get('innerG')
+        let innerpg = scrollBoxp.get('inner_g')
 
         let marg = 2
         let innerOffset = 0
@@ -1743,7 +1743,7 @@ window.SchedblockForm = function(opt_in) {
                 .remove()
         }
         blockCore(com.data.schedB.blocks, innerpg, marg)
-        scrollBoxp.resetVerticalScroller({
+        scrollBoxp.reset_vertical_scroller({
             canScroll: true,
             scrollHeight: scrollHeight,
         })

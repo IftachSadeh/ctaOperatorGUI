@@ -98,8 +98,8 @@ window.BlockQueueOld = function() {
         com.tag_clip_path = opt_in.tag_clip_path
         if (!is_def(com.tag_clip_path)) {
             com.tag_clip_path = {
-                inner: com.main_tag + 'clipPathInner',
-                outer: com.main_tag + 'clipPathOuter',
+                inner: com.main_tag + 'clip_path_inner',
+                outer: com.main_tag + 'clip_path_outer',
             }
         }
 
@@ -119,15 +119,15 @@ window.BlockQueueOld = function() {
         // box definition
         // ------------------------------------------------------------------
         let g_box = opt_in.g_box
-        com.outerBox = deep_copy(opt_in.boxData)
-        com.outerG = g_box.append('g')
-        com.scrollBoxG = com.outerG.append('g')
+        com.outer_box = deep_copy(opt_in.box_data)
+        com.outer_g = g_box.append('g')
+        com.scrollBoxG = com.outer_g.append('g')
 
         com.scrollBox = new ScrollBox()
         com.scrollBox.init({
             tag: com.main_tag,
             g_box: com.scrollBoxG,
-            boxData: com.outerBox,
+            box_data: com.outer_box,
             useRelativeCoords: false,
             title: opt_in.title,
             locker: opt_in.locker,
@@ -136,7 +136,7 @@ window.BlockQueueOld = function() {
             run_loop: opt_in.run_loop,
         })
 
-        com.innerG = com.scrollBox.get('innerG')
+        com.inner_g = com.scrollBox.get('inner_g')
         com.innerBox = com.scrollBox.get('innerBox')
 
         // ------------------------------------------------------------------
@@ -363,7 +363,7 @@ window.BlockQueueOld = function() {
         let box = com.innerBox
         let runFrac = com.blocksIn.run.length === 0 ? 0 : 0.2
         let runMarg
-      = com.blocksIn.run.length === 0 ? 0 : 2 * (box.x - com.outerBox.x)
+      = com.blocksIn.run.length === 0 ? 0 : 2 * (box.x - com.outer_box.x)
 
         let maxDone = min_max_obj({
             min_max: 'max',
@@ -508,7 +508,7 @@ window.BlockQueueOld = function() {
 
         let hasScroll = yDif > com.innerBox.h + 0.01
 
-        com.scrollBox.resetScroller({
+        com.scrollBox.reset_scroller({
             canScroll: hasScroll,
             scrollHeight: yDif,
         })
@@ -760,7 +760,7 @@ window.BlockQueueOld = function() {
     function setBlockRect() {
         let box = com.innerBox
         let minTxtSize = box.w * 0.03
-        let rect = com.innerG
+        let rect = com.inner_g
             .selectAll('rect.' + com.main_tag + 'blocks')
             .data(com.blocksAll, function(d) {
                 return d.id
@@ -861,7 +861,7 @@ window.BlockQueueOld = function() {
         //
         // ------------------------------------------------------------------
         let txtData = com.doText ? com.blocksAll : []
-        let text = com.innerG
+        let text = com.inner_g
             .selectAll('text.' + com.main_tag + 'blocks')
             .data(txtData, function(d) {
                 return d.id
@@ -951,10 +951,10 @@ window.BlockQueueOld = function() {
             recRunData = [
                 {
                     id: com.main_tag + 'run',
-                    x: xMin - com.outerBox.marg / 2,
-                    y: com.outerBox.y - com.outerBox.marg / 2,
-                    w: xMax - xMin + com.outerBox.marg,
-                    h: com.outerBox.h + com.outerBox.marg,
+                    x: xMin - com.outer_box.marg / 2,
+                    y: com.outer_box.y - com.outer_box.marg / 2,
+                    w: xMax - xMin + com.outer_box.marg,
+                    h: com.outer_box.h + com.outer_box.marg,
                 },
             ]
         }
@@ -962,7 +962,7 @@ window.BlockQueueOld = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        let rectRun = com.outerG
+        let rectRun = com.outer_g
             .selectAll('rect.' + com.main_tag + 'runRange')
             .data(recRunData, function(d) {
                 return d.id
@@ -1077,10 +1077,10 @@ window.BlockQueueOld = function() {
             rectNowData = [
                 {
                     id: com.main_tag + 'now',
-                    x: xMin + time_frac * (xMax - xMin) - com.outerBox.marg / 2,
-                    y: com.outerBox.y - com.outerBox.marg,
-                    w: com.outerBox.marg,
-                    h: com.outerBox.h + com.outerBox.marg * 2,
+                    x: xMin + time_frac * (xMax - xMin) - com.outer_box.marg / 2,
+                    y: com.outer_box.y - com.outer_box.marg,
+                    w: com.outer_box.marg,
+                    h: com.outer_box.h + com.outer_box.marg * 2,
                 },
             ]
         }
@@ -1091,7 +1091,7 @@ window.BlockQueueOld = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        let rectNow = com.outerG
+        let rectNow = com.outer_g
             .selectAll('rect.' + com.main_tag + 'now')
             .data(rectNowData, function(d) {
                 return d.id

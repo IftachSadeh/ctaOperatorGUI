@@ -172,7 +172,7 @@ window.PlotBrushZoom = function(opt_in) {
             'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')'
         )
 
-        initClipping()
+        init_clipping()
         initFocus()
         initContent()
         // initBrush()
@@ -182,7 +182,7 @@ window.PlotBrushZoom = function(opt_in) {
     }
     this.init = init
 
-    function initClipping() {
+    function init_clipping() {
         if (!reserved.clipping.enabled) {
             return
         }

@@ -580,7 +580,7 @@ let main_weather_monitoring = function(opt_in) {
         scrollBox.init({
             tag: tag,
             g_box: g,
-            boxData: {
+            box_data: {
                 x: 0,
                 y: 0,
                 w: box.w,
@@ -599,9 +599,9 @@ let main_weather_monitoring = function(opt_in) {
             }),
             canScroll: true,
             scrollVertical: isVertical,
-            scrollHorizontal: !isVertical,
+            scroll_horizontal: !isVertical,
             scrollHeight: 0,
-            scrollWidth: 0,
+            scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
                 h: 4,
@@ -1278,7 +1278,7 @@ let main_weather_monitoring = function(opt_in) {
         let spaceSize = 6
         let lineSize
         let scrollbox
-        // reserved.overview.modifications.scrollBox.get('innerG')
+        // reserved.overview.modifications.scrollBox.get('inner_g')
         function changeState(from, action) {
             if (from === 'heatmap') {
                 if (currentState === 'default') {
@@ -1557,13 +1557,13 @@ let main_weather_monitoring = function(opt_in) {
                     offset += d.length * (lineSize + 22)
                 })
 
-            scrollbox.updateBox({
+            scrollbox.update_box({
                 x: 0,
                 y: 0,
                 w: box.w,
                 h: (box.y * 0.00 + box.h),
             })
-            scrollbox.resetVerticalScroller({
+            scrollbox.reset_vertical_scroller({
                 canScroll: true,
                 scrollHeight: (offset),
             })
@@ -1575,13 +1575,13 @@ let main_weather_monitoring = function(opt_in) {
                 .duration(200)
                 .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
                 .on('end', function() {
-                    scrollbox.updateBox({
+                    scrollbox.update_box({
                         x: 0,
                         y: 0,
                         w: box.w,
                         h: box.h,
                     })
-                    scrollbox.resetVerticalScroller({
+                    scrollbox.reset_vertical_scroller({
                         canScroll: true,
                         scrollHeight: 0,
                     })
@@ -1974,7 +1974,7 @@ let main_weather_monitoring = function(opt_in) {
                 .attr('text-anchor', 'start')
                 .attr('transform', 'translate(' + (box.x + 2) + ',' + (box.y) + ')')
 
-            let gsens = scrollbox.get('innerG')
+            let gsens = scrollbox.get('inner_g')
             main.append('rect')
                 .attr('x', box.x + box.w * 0.78)
                 .attr('y', (box.y - 14) + 'px')
@@ -2049,13 +2049,13 @@ let main_weather_monitoring = function(opt_in) {
             //   .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
         }
         function selectMeasure(id) {
-            let g = scrollbox.get('innerG').select('g#' + id)
+            let g = scrollbox.get('inner_g').select('g#' + id)
             g.select('rect#background').attr('fill', colorPalette.darkest.background)
             g.data()[0].selected = true
         }
         this.selectMeasure = selectMeasure
         function unselectMeasure(id) {
-            let g = scrollbox.get('innerG').select('g#' + id)
+            let g = scrollbox.get('inner_g').select('g#' + id)
             g.select('rect#background').attr('fill', 'transparent')
             delete g.data()[0]['selected']
         }
@@ -2066,7 +2066,7 @@ let main_weather_monitoring = function(opt_in) {
                 h: 30,
                 marg: 6,
             }
-            let current = scrollbox.get('innerG')
+            let current = scrollbox.get('inner_g')
                 .selectAll('g.measures')
                 .data(shared.server.measures, function(d) {
                     return d.id
@@ -2671,7 +2671,7 @@ let main_weather_monitoring = function(opt_in) {
                     .style('text-anchor', 'end')
                     .style('font-size', '11px')
             }
-            let g = scrollbox.get('innerG')
+            let g = scrollbox.get('inner_g')
             let size = {
                 x: 6,
                 y: 26,
@@ -3181,17 +3181,17 @@ let main_weather_monitoring = function(opt_in) {
                 return
             }
             let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
-            scrollbox.updateBox({
+            scrollbox.update_box({
                 x: 0,
                 y: 0,
                 w: box.pl.w,
                 h: box.pl.h,
             })
-            scrollbox.resetVerticalScroller({
+            scrollbox.reset_vertical_scroller({
                 canScroll: true,
                 scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(plotList.length / nbperline)),
             })
-            // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
+            // scrollbox.update_horizontal_scroller({canScroll: true, scroll_width: 0})
         }
         this.adjustScrollBox = adjustScrollBox
 
@@ -3340,7 +3340,7 @@ let main_weather_monitoring = function(opt_in) {
 
             scrollbox = initScrollBox('plotListScrollbox', plotlistg.append('g').attr('id', 'plotListscroll').attr('transform', 'translate(' + 0 + ',' + 0 + ')'), box.pl, {
             }, true)
-            let pinnedPlot = scrollbox.get('innerG')
+            let pinnedPlot = scrollbox.get('inner_g')
 
             let nbperline = Math.floor(box.pl.w / (plotbox.w + 29))
             for (var i = 0; i < 8; i++) {

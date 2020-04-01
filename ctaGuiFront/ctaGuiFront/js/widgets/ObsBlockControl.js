@@ -417,7 +417,7 @@ let main_obs_block_control = function(opt_in) {
                         id: d.id,
                     })
                 },
-                boxData: blockBoxData,
+                box_data: blockBoxData,
                 locker: locker,
                 lockers: [ tagObsBlkCnt + 'update_data' ],
                 lock_zoom: {
@@ -428,7 +428,7 @@ let main_obs_block_control = function(opt_in) {
                 run_loop: run_loop,
             })
 
-            let blockQueueOldBox = blockQueueOld.get('outerBox')
+            let blockQueueOldBox = blockQueueOld.get('outer_box')
 
             // -------------------------------------------------------------------
             //
@@ -452,7 +452,7 @@ let main_obs_block_control = function(opt_in) {
             obScroll.init({
                 tag: tagObScroll,
                 g_box: gObBox,
-                boxData: obScrolBoxData,
+                box_data: obScrolBoxData,
                 show_counts: true,
                 vor_click: function(d) {
                     block_focus({
@@ -487,7 +487,7 @@ let main_obs_block_control = function(opt_in) {
             telScroll.init({
                 tag: tagTelScroll,
                 g_box: gTelBox,
-                boxData: telScrolBoxData,
+                box_data: telScrolBoxData,
                 vor_click: function(opt_in) {
                     sync_state_send({
                         type: 'sync_tel_focus',
@@ -531,7 +531,7 @@ let main_obs_block_control = function(opt_in) {
                 tag: tagTtelSummary,
                 g_box: gTelSummary,
                 utils: utils,
-                boxData: telSummaryData,
+                box_data: telSummaryData,
             })
 
             // -------------------------------------------------------------------
@@ -564,7 +564,7 @@ let main_obs_block_control = function(opt_in) {
                     title: {
                         text: 'title...',
                     },
-                    boxData: scrollTableData,
+                    box_data: scrollTableData,
                     locker: locker,
                     lockers: [ tagObsBlkCnt + 'update_data' ],
                     lock_zoom: {
@@ -624,7 +624,7 @@ let main_obs_block_control = function(opt_in) {
                     table: table,
                 })
 
-                let innerG = scrollTable.get('innerG')
+                let inner_g = scrollTable.get('inner_g')
                 let tagForms = 'tagForeignObject'
 
                 formManager.init({
@@ -632,12 +632,12 @@ let main_obs_block_control = function(opt_in) {
                 })
 
                 // table.rec_data = [table.rec_data[0]]
-                // let fornObj = innerG.selectAll("div."+tagForms).data(table.rec_data, function(d) { return d.id; })
+                // let fornObj = inner_g.selectAll("div."+tagForms).data(table.rec_data, function(d) { return d.id; })
                 $.each(table.rec_data, function(i, d) {
                     formManager.addForm({
                         id: d.id,
                         data: d,
-                        selection: innerG,
+                        selection: inner_g,
                         formSubFunc: function(opt_in) {
                             console.log('formSubFunc:', opt_in)
                         },
@@ -702,7 +702,7 @@ let main_obs_block_control = function(opt_in) {
                     scrollHeight: scrollBoxData.h * 2,
                     useRelativeCoords: true,
                     // title: { h:scrollBoxData.h*0.2, text:"asldklksdj" },
-                    boxData: scrollBoxData,
+                    box_data: scrollBoxData,
                     locker: locker,
                     lockers: [ tagObsBlkCnt + 'update_data' ],
                     lock_zoom: {
@@ -713,15 +713,15 @@ let main_obs_block_control = function(opt_in) {
                     run_loop: run_loop,
                 })
 
-                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.resetScroller({canScroll:false}); }, 3000);
+                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({canScroll:false}); }, 3000);
 
-                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.resetScroller({canScroll:true, scrollHeight: scrollBoxData.h*5}); }, 6000);
-                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.resetScroller({canScroll:true, scrollHeight: scrollBoxData.h*5/2}); }, 9000);
+                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({canScroll:true, scrollHeight: scrollBoxData.h*5}); }, 6000);
+                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({canScroll:true, scrollHeight: scrollBoxData.h*5/2}); }, 9000);
 
                 // setTimeout(function() { console.log('xxxxxxxxxxx'); let title = scrollBox.get('titleData'); title.text = "77777777"; scrollBox.set({tag:'titleData', data:title}); scrollBox.setTitle(); }, 2000);
 
                 // let scrlBox   = scrollBox.get('innerBox');
-                scrlDataG = scrollBox.get('innerG')
+                scrlDataG = scrollBox.get('inner_g')
 
                 let dd = [
                     {
@@ -891,7 +891,7 @@ let main_obs_block_control = function(opt_in) {
                 }
 
                 let ff = scrollTable
-                    .get('innerG')
+                    .get('inner_g')
                     .append('foreignObject')
                     .attr('x', telScrolBoxData.x + telScrolBoxData.w / 3)
                     .attr('y', telScrolBoxData.x)
@@ -1342,7 +1342,7 @@ let TelSummary = function() {
         // -------------------------------------------------------------------
         // box definition
         // -------------------------------------------------------------------
-        com.box = deep_copy(opt_in.boxData)
+        com.box = deep_copy(opt_in.box_data)
         com.box.r = Math.min(com.box.w, com.box.h) / 2
 
         com.g_box = opt_in.g_box.append('g')
@@ -1370,11 +1370,11 @@ let TelSummary = function() {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        let outerG = com.g_box.append('g')
+        let outer_g = com.g_box.append('g')
         let showOuterRec = false
 
         if (showOuterRec) {
-            outerG
+            outer_g
                 .selectAll('rect')
                 .data([ 0 ])
                 .enter()
@@ -1387,7 +1387,7 @@ let TelSummary = function() {
                 .attr('stroke', '#383b42')
         }
 
-        outerG
+        outer_g
             .selectAll('circle')
             .data([ 0 ])
             .enter()
@@ -1875,7 +1875,7 @@ let TelScroll = function() {
         // box definition
         // -------------------------------------------------------------------
         com.main_tag = opt_in.tag
-        let boxData = opt_in.boxData
+        let box_data = opt_in.box_data
         let g_box = opt_in.g_box
         com.obs_block_id = ''
         com.obTelIds = []
@@ -1888,12 +1888,12 @@ let TelScroll = function() {
 
         com.scrollGrid = new ScrollGrid({
             id: com.main_tag,
-            x0: boxData.x,
-            y0: boxData.y,
-            w0: boxData.w,
-            h0: boxData.h,
-            rec_h: boxData.h * 0.3,
-            rec_w: boxData.h * 0.3,
+            x0: box_data.x,
+            y0: box_data.y,
+            w0: box_data.w,
+            h0: box_data.h,
+            rec_h: box_data.h * 0.3,
+            rec_w: box_data.h * 0.3,
             show_counts: false,
             is_horz: true,
             n_rows: 2,
@@ -2152,7 +2152,7 @@ let _obScroll = function() {
         // box definition
         // -------------------------------------------------------------------
         com.main_tag = opt_in.tag
-        let boxData = opt_in.boxData
+        let box_data = opt_in.box_data
         let g_box = opt_in.g_box
         com.sched_block_id = ''
         com.obV = []
@@ -2162,12 +2162,12 @@ let _obScroll = function() {
 
         com.scrollGrid = new ScrollGrid({
             id: com.main_tag,
-            x0: boxData.x,
-            y0: boxData.y,
-            w0: boxData.w,
-            h0: boxData.h,
-            rec_h: boxData.h * 0.5,
-            rec_w: boxData.h * 0.5,
+            x0: box_data.x,
+            y0: box_data.y,
+            w0: box_data.w,
+            h0: box_data.h,
+            rec_h: box_data.h * 0.5,
+            rec_w: box_data.h * 0.5,
             show_counts: opt_in.show_counts,
             is_horz: true,
             n_rows: 1,

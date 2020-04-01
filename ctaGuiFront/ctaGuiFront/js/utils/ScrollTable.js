@@ -47,8 +47,8 @@ window.ScrollTable = function() {
         com.tag_clip_path = opt_in.tag_clip_path
         if (!is_def(com.tag_clip_path)) {
             com.tag_clip_path = {
-                inner: com.main_tag + 'clipPathInner',
-                outer: com.main_tag + 'clipPathOuter',
+                inner: com.main_tag + 'clip_path_inner',
+                outer: com.main_tag + 'clip_path_outer',
             }
         }
 
@@ -56,19 +56,19 @@ window.ScrollTable = function() {
         // box definition
         // ------------------------------------------------------------------
         let g_box = opt_in.g_box
-        com.outerBox = deep_copy(opt_in.boxData)
+        com.outer_box = deep_copy(opt_in.box_data)
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        com.outerG = g_box.append('g')
-        com.scrollBoxG = com.outerG.append('g')
+        com.outer_g = g_box.append('g')
+        com.scrollBoxG = com.outer_g.append('g')
 
         com.scrollBox = new ScrollBox()
         com.scrollBox.init({
             tag: com.tagScrollBox,
             g_box: com.scrollBoxG,
-            boxData: com.outerBox,
+            box_data: com.outer_box,
             useRelativeCoords: opt_in.useRelativeCoords,
             title: opt_in.title,
             locker: opt_in.locker,
@@ -78,12 +78,12 @@ window.ScrollTable = function() {
             sameInnerBoxMarg: false,
             background: opt_in.background,
             // canScroll: opt_in.canScroll,
-            // scrollHeight: com.outerBox.h*2,
+            // scrollHeight: com.outer_box.h*2,
             // scrollHeight: opt_in.scrollHeight,
             // scroll_rec: {w:200},
         })
 
-        com.innerG = com.scrollBox.get('innerG')
+        com.inner_g = com.scrollBox.get('inner_g')
         com.innerBox = com.scrollBox.get('innerBox')
 
         com.tag_clip_path = com.scrollBox.get('tag_clip_path').outer
@@ -122,7 +122,7 @@ window.ScrollTable = function() {
 
         let hasScroll = totTableH > com.innerBox.h + 0.01
 
-        com.scrollBox.resetScroller({
+        com.scrollBox.reset_scroller({
             canScroll: hasScroll,
             scrollHeight: totTableH,
         })
@@ -192,7 +192,7 @@ window.ScrollTable = function() {
 
         let debugRect = true
         if (debugRect) {
-            let rect = com.innerG
+            let rect = com.inner_g
                 .selectAll('rect.' + 'tagScroller')
                 .data(com.table.rec_data, function(d) {
                     return d.id

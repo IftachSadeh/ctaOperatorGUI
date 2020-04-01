@@ -495,7 +495,7 @@ window.dropdown_d3 = function() {
         scrollBox.init({
             tag: tag,
             g_box: g,
-            boxData: box,
+            box_data: box,
             useRelativeCoords: true,
             locker: new Locker(),
             lockers: [ tag + 'update_data' ],
@@ -509,9 +509,9 @@ window.dropdown_d3 = function() {
             }),
             canScroll: true,
             scrollVertical: true,
-            scrollHorizontal: false,
+            scroll_horizontal: false,
             scrollHeight: 0,
-            scrollWidth: 0,
+            scroll_width: 0,
             background: 'black',
             scroll_rec_h: {
                 h: 4,
@@ -562,7 +562,7 @@ window.dropdown_d3 = function() {
         scrollg = reserved.main.g.append('g')
         move_node_up(scrollg.node())
         let scrollBox = initScrollBox('dropScroll', scrollg, scrollbox)
-        let g = scrollBox.get('innerG')
+        let g = scrollBox.get('inner_g')
 
         let current = g
             .selectAll('g.option')

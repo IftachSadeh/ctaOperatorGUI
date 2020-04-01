@@ -101,7 +101,7 @@ window.PlotTimeSeries = function() {
 
         initAxis()
         initInteraction()
-        initClipping()
+        init_clipping()
 
         reserved.main.g.append('g').attr('id', 'bindedData')
     }
@@ -224,7 +224,7 @@ window.PlotTimeSeries = function() {
     }
     this.unbindData = unbindData
 
-    function initClipping() {
+    function init_clipping() {
         if (!reserved.main.clipping) {
             return
         }
@@ -519,14 +519,14 @@ window.PlotTimeSeries = function() {
     //   }
     //   if (axis.brush.zoom) axis.scale.domain(newDomain)
     // }
-    function updateBox(box) {
+    function update_box(box) {
         reserved.main.box = box
         reserved.main.g.attr('transform', 'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')')
         reserved.clipping.g.select('#clip-rect')
             .attr('width', reserved.main.box.w)
             .attr('height', reserved.main.box.h)
     }
-    this.updateBox = updateBox
+    this.update_box = update_box
     function update_data(opt_in) {
         for (let id in reserved.content) {
             let binded = reserved.content[id]

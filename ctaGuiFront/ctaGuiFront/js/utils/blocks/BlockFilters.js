@@ -900,7 +900,7 @@ window.BlockFilters = function(opt_in) {
             localScroll.scrollBox.init({
                 tag: 'telsFiltersScroll',
                 g_box: localScroll.scrollBoxG,
-                boxData: {
+                box_data: {
                     x: com.beginner.tels.box.w * 0.05,
                     y: com.beginner.tels.box.h * 0.175,
                     w: com.beginner.tels.box.w * 0.9,
@@ -920,9 +920,9 @@ window.BlockFilters = function(opt_in) {
                 }),
                 canScroll: true,
                 scrollVertical: true,
-                scrollHorizontal: false,
+                scroll_horizontal: false,
                 scrollHeight: 0,
-                scrollWidth: 0,
+                scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
                     h: 1,
@@ -931,7 +931,7 @@ window.BlockFilters = function(opt_in) {
                     w: 1,
                 },
             })
-            localScroll.scrollG = localScroll.scrollBox.get('innerG')
+            localScroll.scrollG = localScroll.scrollBox.get('inner_g')
         }
         initScrollBox()
 
@@ -1241,7 +1241,7 @@ window.BlockFilters = function(opt_in) {
             .attr('y', com.beginner.tels.box.h * 0.92 - 5)
             .style('pointer-events', 'none')
 
-        localScroll.scrollBox.resetVerticalScroller({
+        localScroll.scrollBox.reset_vertical_scroller({
             canScroll: true,
             scrollHeight: labelBox.h * tels.length,
         })
@@ -1398,7 +1398,7 @@ window.BlockFilters = function(opt_in) {
             localScroll.scrollBox.init({
                 tag: 'targetsFiltersScroll',
                 g_box: localScroll.scrollBoxG,
-                boxData: {
+                box_data: {
                     x: com.beginner.targets.box.w * 0.05,
                     y: com.beginner.targets.box.h * 0.175,
                     w: com.beginner.targets.box.w * 0.9,
@@ -1418,9 +1418,9 @@ window.BlockFilters = function(opt_in) {
                 }),
                 canScroll: true,
                 scrollVertical: true,
-                scrollHorizontal: false,
+                scroll_horizontal: false,
                 scrollHeight: 0,
-                scrollWidth: 0,
+                scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
                     h: 1,
@@ -1429,7 +1429,7 @@ window.BlockFilters = function(opt_in) {
                     w: 1,
                 },
             })
-            localScroll.scrollG = localScroll.scrollBox.get('innerG')
+            localScroll.scrollG = localScroll.scrollBox.get('inner_g')
         }
         initScrollBox()
 
@@ -1733,7 +1733,7 @@ window.BlockFilters = function(opt_in) {
             .attr('x', com.beginner.targets.box.w * 0.75 - 5)
             .attr('y', com.beginner.targets.box.h * 0.92 - 5)
             .style('pointer-events', 'none')
-        localScroll.scrollBox.resetVerticalScroller({
+        localScroll.scrollBox.reset_vertical_scroller({
             canScroll: true,
             scrollHeight: labelBox.h * targets.length,
         })
@@ -1811,7 +1811,7 @@ window.BlockFilters = function(opt_in) {
     //     com.enabled.scroll.scrollBox.init({
     //       tag: 'blocksFiltersScroll',
     //       g_box: com.enabled.scroll.scrollBoxG,
-    //       boxData: {
+    //       box_data: {
     //         x: scrollBox.x,
     //         y: scrollBox.y,
     //         w: scrollBox.w,
@@ -1829,14 +1829,14 @@ window.BlockFilters = function(opt_in) {
     //       run_loop: new RunLoop({tag: 'blocksFiltersScroll'}),
     //       canScroll: true,
     //       scrollVertical: com.enabled.scroll.direction === 'vertical',
-    //       scrollHorizontal: com.enabled.scroll.direction === 'horizontal',
+    //       scroll_horizontal: com.enabled.scroll.direction === 'horizontal',
     //       scrollHeight: scrollBox.h + 0.01,
-    //       scrollWidth: scrollBox.w + 0.01,
+    //       scroll_width: scrollBox.w + 0.01,
     //       background: 'transparent',
     //       scroll_rec_h: {h: 2},
     //       scroll_recs: {w: 2}
     //     })
-    //     com.enabled.scroll.scrollG = com.enabled.scroll.scrollBox.get('innerG')
+    //     com.enabled.scroll.scrollG = com.enabled.scroll.scrollBox.get('inner_g')
     //   }
     //   initScrollBox()
     //   updateEnabled()
@@ -1911,7 +1911,7 @@ window.BlockFilters = function(opt_in) {
     //       })
     //   })
     //
-    //   com.enabled.scroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: 0})
+    //   com.enabled.scroll.scrollBox.reset_vertical_scroller({canScroll: true, scrollHeight: 0})
     // }
 
     // function initDisabled () {
@@ -1948,7 +1948,7 @@ window.BlockFilters = function(opt_in) {
     //     com.disabled.scroll.scrollBox.init({
     //       tag: 'blocksFiltersScroll',
     //       g_box: com.disabled.scroll.scrollBoxG,
-    //       boxData: {
+    //       box_data: {
     //         x: scrollBox.x,
     //         y: scrollBox.y,
     //         w: scrollBox.w,
@@ -1966,14 +1966,14 @@ window.BlockFilters = function(opt_in) {
     //       run_loop: new RunLoop({tag: 'blocksFiltersScroll'}),
     //       canScroll: true,
     //       scrollVertical: com.disabled.scroll.direction === 'vertical',
-    //       scrollHorizontal: com.disabled.scroll.direction === 'horizontal',
+    //       scroll_horizontal: com.disabled.scroll.direction === 'horizontal',
     //       scrollHeight: scrollBox.h + 0.01,
-    //       scrollWidth: scrollBox.w + 0.01,
+    //       scroll_width: scrollBox.w + 0.01,
     //       background: 'transparent',
     //       scroll_rec_h: {h: 2},
     //       scroll_recs: {w: 2}
     //     })
-    //     com.disabled.scroll.scrollG = com.disabled.scroll.scrollBox.get('innerG')
+    //     com.disabled.scroll.scrollG = com.disabled.scroll.scrollBox.get('inner_g')
     //   }
     //   initScrollBox()
     //   updateDisabled()
@@ -2046,7 +2046,7 @@ window.BlockFilters = function(opt_in) {
     //       })
     //   })
     //
-    //   com.enabled.scroll.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: 0})
+    //   com.enabled.scroll.scrollBox.reset_vertical_scroller({canScroll: true, scrollHeight: 0})
     // }
     // function initContent () {
     //   com.content.g.attr('transform', 'translate(' + (com.content.box.x) + ',' + (com.content.box.y) + ')')
@@ -2634,7 +2634,7 @@ window.BlockFilters = function(opt_in) {
             localScroll.scrollBox.init({
                 tag: 'telsFiltersScroll',
                 g_box: localScroll.scrollBoxG,
-                boxData: {
+                box_data: {
                     x: com.content.box.w * 0.05,
                     y: com.content.box.h * 0.175,
                     w: com.content.box.w * 0.9,
@@ -2654,9 +2654,9 @@ window.BlockFilters = function(opt_in) {
                 }),
                 canScroll: true,
                 scrollVertical: true,
-                scrollHorizontal: false,
+                scroll_horizontal: false,
                 scrollHeight: 0,
-                scrollWidth: 0,
+                scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
                     h: 1,
@@ -2665,7 +2665,7 @@ window.BlockFilters = function(opt_in) {
                     w: 1,
                 },
             })
-            localScroll.scrollG = localScroll.scrollBox.get('innerG')
+            localScroll.scrollG = localScroll.scrollBox.get('inner_g')
         }
         initScrollBox()
 
@@ -2881,7 +2881,7 @@ window.BlockFilters = function(opt_in) {
                 })
                 updateBlockQueue()
             })
-        localScroll.scrollBox.resetVerticalScroller({
+        localScroll.scrollBox.reset_vertical_scroller({
             canScroll: true,
             scrollHeight: labelBox.h * tels.length,
         })

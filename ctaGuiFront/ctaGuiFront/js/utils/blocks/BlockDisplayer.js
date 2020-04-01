@@ -1649,7 +1649,7 @@ window.BlockDisplayer = function(opt_in) {
             com.blockForm.forms.scroll.scrollBox.init({
                 tag: 'blockDisplayerFormScroll',
                 g_box: com.blockForm.forms.scroll.scrollBoxG,
-                boxData: {
+                box_data: {
                     x: 0,
                     y: 0,
                     w: com.blockForm.forms.box.w,
@@ -1669,9 +1669,9 @@ window.BlockDisplayer = function(opt_in) {
                 }),
                 canScroll: true,
                 scrollVertical: false,
-                scrollHorizontal: true,
+                scroll_horizontal: true,
                 scrollHeight: 0,
-                scrollWidth: com.blockForm.forms.box.w + 0.01,
+                scroll_width: com.blockForm.forms.box.w + 0.01,
                 background: 'transparent',
                 scroll_rec_h: {
                     h: 4,
@@ -1680,7 +1680,7 @@ window.BlockDisplayer = function(opt_in) {
                     w: 2,
                 },
             })
-            com.blockForm.forms.scroll.scrollG = com.blockForm.forms.scroll.scrollBox.get('innerG')
+            com.blockForm.forms.scroll.scrollG = com.blockForm.forms.scroll.scrollBox.get('inner_g')
         }
         function init() {
             com.blockForm.forms.g = com.main.g.append('g')
@@ -1853,9 +1853,9 @@ window.BlockDisplayer = function(opt_in) {
                 })
                 bform.update()
             }
-            com.blockForm.forms.scroll.scrollBox.resetHorizontalScroller({
+            com.blockForm.forms.scroll.scrollBox.reset_horizontal_scroller({
                 canScroll: true,
-                scrollWidth: 200 * blocks.length,
+                scroll_width: 200 * blocks.length,
             })
         }
 
@@ -1883,7 +1883,7 @@ window.BlockDisplayer = function(opt_in) {
                 d3.select(this).select('rect.back')
                     .on('click', function() {
                         let t = (1.0 / parseFloat(blocks.length - 1)) * parseFloat(i)
-                        com.blockForm.forms.scroll.scrollBox.moveHorizontalScrollerTo(t)
+                        com.blockForm.forms.scroll.scrollBox.move_horizontal_scroller_to(t)
                     })
                     .transition('in_out')
                     .duration(times.anim)
@@ -3169,7 +3169,7 @@ window.BlockDisplayer = function(opt_in) {
         com.main.scroll.scrollBox.init({
             tag: ntag,
             g_box: com.main.scroll.scrollBoxG,
-            boxData: {
+            box_data: {
                 x: 0,
                 y: 0,
                 w: com.main.box.w,
@@ -3188,9 +3188,9 @@ window.BlockDisplayer = function(opt_in) {
             }),
             canScroll: true,
             scrollVertical: false,
-            scrollHorizontal: true,
+            scroll_horizontal: true,
             scrollHeight: 0,
-            scrollWidth: 0,
+            scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
                 h: 2,
@@ -3199,7 +3199,7 @@ window.BlockDisplayer = function(opt_in) {
                 w: 2,
             },
         })
-        com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
+        com.main.scroll.scrollG = com.main.scroll.scrollBox.get('inner_g')
     }
     function initBackground() {
         com.main.g.append('rect')

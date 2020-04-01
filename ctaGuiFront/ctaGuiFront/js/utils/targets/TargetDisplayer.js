@@ -462,7 +462,7 @@ window.TargetDisplayer = function(opt_in) {
         com.main.scroll.scrollBox.init({
             tag: ntag,
             g_box: com.main.scroll.scrollBoxG,
-            boxData: {
+            box_data: {
                 x: 0,
                 y: 0,
                 w: com.main.box.w,
@@ -481,9 +481,9 @@ window.TargetDisplayer = function(opt_in) {
             }),
             canScroll: true,
             scrollVertical: false,
-            scrollHorizontal: true,
+            scroll_horizontal: true,
             scrollHeight: 0,
-            scrollWidth: 0,
+            scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
                 h: 2,
@@ -492,7 +492,7 @@ window.TargetDisplayer = function(opt_in) {
                 w: 2,
             },
         })
-        com.main.scroll.scrollG = com.main.scroll.scrollBox.get('innerG')
+        com.main.scroll.scrollG = com.main.scroll.scrollBox.get('inner_g')
         com.main.background = com.main.scroll.scrollG.append('g')
         com.main.foreground = com.main.scroll.scrollG.append('g')
     }

@@ -140,7 +140,7 @@ window.TargetForm = function(opt_in) {
         scrollBox.init({
             tag: tag,
             g_box: g,
-            boxData: {
+            box_data: {
                 x: 0,
                 y: 0,
                 w: box.w,
@@ -159,9 +159,9 @@ window.TargetForm = function(opt_in) {
             }),
             canScroll: true,
             scrollVertical: true,
-            scrollHorizontal: false,
+            scroll_horizontal: false,
             scrollHeight: 0,
-            scrollWidth: 0,
+            scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
                 h: 4,
@@ -298,7 +298,7 @@ window.TargetForm = function(opt_in) {
         com.ressource.scrollBox = initScrollBox(com.main.tag + 'targetRessourceScroll', blockg, box, {
             enabled: false,
         })
-        let innerg = com.ressource.scrollBox.get('innerG')
+        let innerg = com.ressource.scrollBox.get('inner_g')
 
         let squareTemplate = {
             '1': [{
@@ -578,7 +578,7 @@ window.TargetForm = function(opt_in) {
                 .remove()
         }
         schedCore(scheds, innerg, 4)
-        com.ressource.scrollBox.resetVerticalScroller({
+        com.ressource.scrollBox.reset_vertical_scroller({
             canScroll: true,
             scrollHeight: 2 + scheds.length * line,
         })
@@ -732,7 +732,7 @@ window.TargetForm = function(opt_in) {
         let scrollBox = initScrollBox(com.main.tag + 'targetListScroll', blockg, tbox, {
             enabled: false,
         })
-        let innerg = scrollBox.get('innerG')
+        let innerg = scrollBox.get('inner_g')
 
         let allPoint = []
         let line = 20
@@ -905,7 +905,7 @@ window.TargetForm = function(opt_in) {
             .attr('stroke', colorPalette.dark.stroke)
             .attr('stroke-width', 0.2)
             .style('opacity', scrollHeight > tbox.h ? 1 : 0)
-        scrollBox.resetVerticalScroller({
+        scrollBox.reset_vertical_scroller({
             canScroll: true,
             scrollHeight: scrollHeight,
         })

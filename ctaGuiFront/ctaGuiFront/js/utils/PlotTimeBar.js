@@ -223,20 +223,20 @@ window.PlotTimeBar = function() {
         setStyle(opt_in.style)
         com.plotTimeSeries = []
         com.g_box = opt_in.g_box
-        com.outerBox = deep_copy(opt_in.boxData)
-        com.outerBox.x = 0
-        com.outerBox.y = 0
+        com.outer_box = deep_copy(opt_in.box_data)
+        com.outer_box.x = 0
+        com.outer_box.y = 0
         com.innerBox = {
-            x: com.outerBox.x,
-            y: com.outerBox.y,
-            w: com.outerBox.w,
-            h: com.outerBox.h,
-            margWidth: com.outerBox.margWidth,
-            margHeight: com.outerBox.margHeight,
+            x: com.outer_box.x,
+            y: com.outer_box.y,
+            w: com.outer_box.w,
+            h: com.outer_box.h,
+            margWidth: com.outer_box.margWidth,
+            margHeight: com.outer_box.margHeight,
         }
         com.boxTrans = {
-            x: opt_in.boxData.x,
-            y: opt_in.boxData.y,
+            x: opt_in.box_data.x,
+            y: opt_in.box_data.y,
             k: 1,
         }
         transScaleBox()

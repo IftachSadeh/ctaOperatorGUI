@@ -85,7 +85,7 @@ window.ScrollForm = function(opt_in) {
     com.scrollBox.init({
         tag: com.main.tag,
         g_box: com.scrollBoxG,
-        boxData: {
+        box_data: {
             x: 0,
             y: 0,
             w: com.main.box.w,
@@ -105,14 +105,14 @@ window.ScrollForm = function(opt_in) {
         }),
         canScroll: true,
         scrollVertical: true,
-        scrollHorizontal: false,
+        scroll_horizontal: false,
         scrollHeight: com.main.box.h,
         background: color_theme.dark.background,
         scroll_recs: {
             w: 6,
         },
     })
-    com.scrollBoxInner = com.scrollBox.get('innerG')
+    com.scrollBoxInner = com.scrollBox.get('inner_g')
     com.scrollBoxG.select('g.clipping').attr('clip-path', '')
 
     let foScroll = com.scrollBoxInner
@@ -657,7 +657,7 @@ window.ScrollForm = function(opt_in) {
 
         createSubForm(com.component.content_div, com.data.data.childs)
 
-        com.scrollBox.resetVerticalScroller({
+        com.scrollBox.reset_vertical_scroller({
             canScroll: true,
             scrollHeight: com.component.content_div._groups[0][0].scrollHeight,
         })

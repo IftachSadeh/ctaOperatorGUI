@@ -456,7 +456,7 @@ let main_plots_dash = function(opt_in) {
         scrollBox.init({
             tag: tag,
             g_box: g,
-            boxData: {
+            box_data: {
                 x: 0,
                 y: 0,
                 w: box.w,
@@ -475,9 +475,9 @@ let main_plots_dash = function(opt_in) {
             }),
             canScroll: true,
             scrollVertical: isVertical,
-            scrollHorizontal: !isVertical,
+            scroll_horizontal: !isVertical,
             scrollHeight: 0,
-            scrollWidth: 0,
+            scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
                 h: 4,
@@ -985,17 +985,17 @@ let main_plots_dash = function(opt_in) {
             for (let i = 0; i < shared.server.urgent.urgent_current.length; i++) {
                 tot += shared.server.urgent.urgent_current[i].length
             }
-            scrollbox.updateBox({
+            scrollbox.update_box({
                 x: 0,
                 y: 40,
                 w: box.pinnedPlots.w,
                 h: box.pinnedPlots.h - 80,
             })
-            scrollbox.resetVerticalScroller({
+            scrollbox.reset_vertical_scroller({
                 canScroll: true,
                 scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(tot / nbperline)),
             })
-            // scrollbox.updateHorizontalScroller({canScroll: true, scrollWidth: 0})
+            // scrollbox.update_horizontal_scroller({canScroll: true, scroll_width: 0})
         }
         this.adjustScrollBox = adjustScrollBox
 
@@ -1433,12 +1433,12 @@ let main_plots_dash = function(opt_in) {
             //   .transition()
             //   .duration(400)
             //   .attr('transform', 'translate(' + trans.translateX + ',' + trans.translateY + ') scale(' + (trans.scaleX < 1 ? 1 : shrinkFrac) + ',' + (trans.scaleY < 1 ? 1 : 1) + ')')
-            // scrollPinnedList.updateBox({x: 0, y: 0, w: scrollBoxList.w * (1 / shrinkFrac), h: scrollBoxList.h})
-            // scrollPinnedList.resetVerticalScroller({canScroll: true, keepFrac: true, scrollHeight: (trans.scaleY < 1 ? 1 : shrinkFrac) * (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
+            // scrollPinnedList.update_box({x: 0, y: 0, w: scrollBoxList.w * (1 / shrinkFrac), h: scrollBoxList.h})
+            // scrollPinnedList.reset_vertical_scroller({canScroll: true, keepFrac: true, scrollHeight: (trans.scaleY < 1 ? 1 : shrinkFrac) * (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
             is_focused = !is_focused
             if (is_focused) {
                 scrollBoxList.w = scrollBoxList.w * shrinkFrac
-                scrollPinnedList.updateBox({
+                scrollPinnedList.update_box({
                     x: 0,
                     y: 0,
                     w: scrollBoxList.w,
@@ -1460,7 +1460,7 @@ let main_plots_dash = function(opt_in) {
             else {
                 unfocusOnPlot()
                 scrollBoxList.w = scrollBoxList.w * (1 / shrinkFrac)
-                scrollPinnedList.updateBox({
+                scrollPinnedList.update_box({
                     x: 0,
                     y: 0,
                     w: scrollBoxList.w,
@@ -1542,7 +1542,7 @@ let main_plots_dash = function(opt_in) {
             }
 
             // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
-            scrollPinnedList.resetVerticalScroller({
+            scrollPinnedList.reset_vertical_scroller({
                 canScroll: true,
                 keepFrac: true,
                 scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
@@ -1603,7 +1603,7 @@ let main_plots_dash = function(opt_in) {
             }
 
             // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
-            scrollPinnedList.resetVerticalScroller({
+            scrollPinnedList.reset_vertical_scroller({
                 canScroll: true,
                 keepFrac: true,
                 scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
@@ -1617,7 +1617,7 @@ let main_plots_dash = function(opt_in) {
             }
             let shrinkFrac = 0.3
             let perline = Math.floor(scrollBoxList.w / dim.w)
-            let allPinned = scrollPinnedList.get('innerG').selectAll('g.pinned')
+            let allPinned = scrollPinnedList.get('inner_g').selectAll('g.pinned')
                 .data(shared.server.pinned, function(d) {
                     return d.id
                 })
@@ -1660,7 +1660,7 @@ let main_plots_dash = function(opt_in) {
                 .style('opacity', 0)
                 .remove()
 
-            // scrollbox.updateBox({x: 0, y: 0, w: rightDim.w, h: rightDim.h})
+            // scrollbox.update_box({x: 0, y: 0, w: rightDim.w, h: rightDim.h})
         }
         function update_data() {
             updatePinnedList()
@@ -2757,7 +2757,7 @@ let main_plots_dash = function(opt_in) {
 
             // function drawItem () {
             //   let nbperline = Math.floor((itemBox.w) / (itemDim.w + itemDim.offsetL))
-            //   allPlots = focusScrollbox.get('innerG').selectAll('g.plot')
+            //   allPlots = focusScrollbox.get('inner_g').selectAll('g.plot')
             //     .data(categoryfocus, function (d) {
             //       return d.id
             //     })
@@ -2934,8 +2934,8 @@ let main_plots_dash = function(opt_in) {
         //     tot += shared.server.urgent.urgent_current[i].data.length
         //   }
         //   let nbperline = Math.floor(rightDim.w / (plotbox.w + offset))
-        //   scrollbox.updateBox({x: 0, y: 0, w: rightDim.w, h: rightDim.h})
-        //   scrollbox.resetVerticalScroller({canScroll: true, scrollHeight: (plotbox.h + offset) * Math.floor(tot / nbperline)})
+        //   scrollbox.update_box({x: 0, y: 0, w: rightDim.w, h: rightDim.h})
+        //   scrollbox.reset_vertical_scroller({canScroll: true, scrollHeight: (plotbox.h + offset) * Math.floor(tot / nbperline)})
         // }
         function findnbperline() {
             let line = []
@@ -3353,7 +3353,7 @@ let main_plots_dash = function(opt_in) {
                     .attr('id', d => d)
                 gEnterGroup.each(function(d, i) {
                     let g = d3.select(this)
-                    // scrollbox.get('innerG').append('g').attr('id', d => d)
+                    // scrollbox.get('inner_g').append('g').attr('id', d => d)
                     g.style('opacity', 0.2)
                     g.append('rect')
                         .attr('id', 'front')
@@ -3414,7 +3414,7 @@ let main_plots_dash = function(opt_in) {
                     .remove()
             }
             function drawItem() {
-                let allGroup = rightItems.selectAll('g.category') // scrollbox.get('innerG').selectAll('g.category')
+                let allGroup = rightItems.selectAll('g.category') // scrollbox.get('inner_g').selectAll('g.category')
                     .data(shared.server.urgent.urgent_current)
                 let gEnterGroup = allGroup.enter()
                     .append('g')
@@ -3610,7 +3610,7 @@ let main_plots_dash = function(opt_in) {
                             }
 
                             // newplotbox.h -= offset
-                            miniPlotsVect[dd.id].updateBox(newplotbox)
+                            miniPlotsVect[dd.id].update_box(newplotbox)
                             miniPlotsVect[dd.id].updateAxis({
                                 id: 'bottom',
                                 domain: [ start_time.date, end_time.date ],

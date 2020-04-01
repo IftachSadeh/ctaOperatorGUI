@@ -949,7 +949,7 @@ window.ScrollGrid = function(opt_in) {
         scroll_rec.h = wh_0 * (wh_0 / xy_min_max)
 
         let data_scroll = has_bot_top ? [{
-            id: 'zoom_scrollbarScroll',
+            id: 'zoom_scrollbar_scroll',
         }] : []
         let rec_scroll = com.g_vor
             .selectAll('rect.' + tag_scroll_bar + 'scroll')

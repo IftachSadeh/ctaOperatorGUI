@@ -883,11 +883,11 @@ class ObsBlocksNoACS():
         #   return
 
         # # runs = [ x for x in self.all_obs_blocks if x['exe_state']['state'] == 'run' ]
-        # # nDone = 0
+        # # n_done = 0
         # # for block in runs:
         # #   if self.exe_phase[block["obs_block_id"]] == "":
-        # #     nDone += 1
-        # # if nDone == len(runs):
+        # #     n_done += 1
+        # # if n_done == len(runs):
         # #   return
 
         runs = [x for x in self.all_obs_blocks if x['exe_state']['state'] == 'run']

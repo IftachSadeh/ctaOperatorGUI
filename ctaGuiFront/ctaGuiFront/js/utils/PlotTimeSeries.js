@@ -70,15 +70,15 @@ window.PlotTimeSeries = function() {
         // ------------------------------------------------------------------
         // box definition
         // ------------------------------------------------------------------
-        com.outerBox = deep_copy(opt_in.boxData)
+        com.outer_box = deep_copy(opt_in.box_data)
         com.boxTrans = {
-            x: opt_in.boxData.x,
-            y: opt_in.boxData.y,
+            x: opt_in.box_data.x,
+            y: opt_in.box_data.y,
             k: 1,
         }
         com.g_box = opt_in.g_box
         transScaleBox()
-        com.innerBox = com.outerBox
+        com.innerBox = com.outer_box
         com.innerBox.x = 0
         com.innerBox.y = 0
 
@@ -175,7 +175,7 @@ window.PlotTimeSeries = function() {
                 style: {
                     hasOutline: true,
                 },
-                boxData: com.bot.box,
+                box_data: com.bot.box,
                 locker: com.locker,
                 lockers: [ tagPlot + 'update_data' ],
                 lock_zoom: {

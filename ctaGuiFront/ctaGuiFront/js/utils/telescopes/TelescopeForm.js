@@ -141,7 +141,7 @@ window.TelescopeForm = function(opt_in) {
         scrollBox.init({
             tag: tag,
             g_box: g,
-            boxData: {
+            box_data: {
                 x: 0,
                 y: 0,
                 w: box.w,
@@ -160,9 +160,9 @@ window.TelescopeForm = function(opt_in) {
             }),
             canScroll: true,
             scrollVertical: true,
-            scrollHorizontal: false,
+            scroll_horizontal: false,
             scrollHeight: 0,
-            scrollWidth: 0,
+            scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
                 h: 4,
@@ -350,7 +350,7 @@ window.TelescopeForm = function(opt_in) {
     //     h: box.h - (headerSize * 1.5)
     //   }
     //   com.ressource.scrollBox = initScrollBox('targetRessourceScroll', blockg, sbox, {enabled: false})
-    //   let innerg = com.ressource.scrollBox.get('innerG')
+    //   let innerg = com.ressource.scrollBox.get('inner_g')
     //
     //   let scheds = []
     //   for (let key in com.data.schedB) {
@@ -622,7 +622,7 @@ window.TelescopeForm = function(opt_in) {
     //   //   .style('opacity', 0)
     //   //   .remove()
     //   //
-    //   // com.ressource.scrollBox.resetVerticalScroller({canScroll: true, scrollHeight: line * inter.length})
+    //   // com.ressource.scrollBox.reset_vertical_scroller({canScroll: true, scrollHeight: line * inter.length})
     //   // blockg.append('line')
     //   //   .attr('x1', box.x)
     //   //   .attr('y1', box.h)
@@ -729,7 +729,7 @@ window.TelescopeForm = function(opt_in) {
         let scrollBox = initScrollBox('targetListScroll', blockg, tbox, {
             enabled: false,
         })
-        let innerg = scrollBox.get('innerG')
+        let innerg = scrollBox.get('inner_g')
 
         let pntsPos = {
         }
