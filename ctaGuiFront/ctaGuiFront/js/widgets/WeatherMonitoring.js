@@ -157,6 +157,9 @@ let main_weather_monitoring = function(opt_in) {
             svg_dims.w[0] = 1000
             svg_dims.h[0] = svg_dims.w[0] * 1.33 // / sgv_tag.main.whRatio
 
+            // svg_dims.w[0] = 500
+            // svg_dims.h[0] = 500
+
             d3.select(svg_div)
                 .style('width', 'calc(100% - 200px)')
                 .style('height', 'calc(100% - 175px)')
@@ -3524,9 +3527,10 @@ let main_weather_monitoring = function(opt_in) {
                         // lens: !true,
                     },
                     trans: {
-                        main: 'translate(85,85)scale(3)',
+                        // main: 'translate(85,85)scale(3)',
+                        main: 'translate(85,85)scale(5)',
                         // ches: 'translate(110,0)scale(3.8)',
-                        tree: 'translate(400,100)scale(3.5)',
+                        tree: 'translate(590,100)scale(3.5)',
                         // mini: 'translate(5,0)scale(1)',
                         // lens: 'translate(10,5)scale(0.18)',
                     },
@@ -3557,6 +3561,7 @@ let main_weather_monitoring = function(opt_in) {
 
                 let arr_zoomer_base = new ArrZoomerBase({
                     run_loop: run_loop,
+                    svg_dims: { w: svg_dims.w[0], h: svg_dims.h[0] },
                     widget_id: widget_id,
                     widget_source: widget_source,
                     locker: locker,
@@ -3565,7 +3570,7 @@ let main_weather_monitoring = function(opt_in) {
                     sock: sock,
                     user_opts: arr_zoomer_ele_opts,
                     lock_init_key: arr_zoomer_lock_init_key,
-                    svg: maing,
+                    svg: svg.g.append('g'),
                 })
 
                 // ------------------------------------------------------------------

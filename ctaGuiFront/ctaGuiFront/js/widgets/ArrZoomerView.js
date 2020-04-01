@@ -89,7 +89,6 @@ let main_arr_zoomer = function(opt_in) {
         }
     })
 
-    // let svg_dims = { w: 500, h: 400 }
     let svg_dims = {
         w: 500,
         h: 350,
@@ -108,6 +107,7 @@ let main_arr_zoomer = function(opt_in) {
             lens: !true,
         },
         trans: {
+            // main: 'translate(0,0)scale(4)', // XRRX XRRX XRRX XRRX
             main: 'translate(0,100)scale(2.5)',
             ches: 'translate(110,0)scale(3.8)',
             tree: 'translate(250,100)scale(2.5)',
@@ -222,7 +222,7 @@ let main_arr_zoomer = function(opt_in) {
             // .classed("svgInGridStack_inner", true)
             .style('background', '#383B42')
             // .style("background", "red").style("border","2px solid red")
-            // .style('background', 'white')
+            // .style('background', 'white') // XRRX XRRX XRRX XRRX
             .on('dblclick.zoom', null)
             .on('wheel', function() {
                 d3.event.preventDefault()
@@ -234,6 +234,7 @@ let main_arr_zoomer = function(opt_in) {
         let arr_zoomer_base = new ArrZoomerBase({
             run_loop: run_loop,
             sgv_tag: sgv_tag,
+            svg_dims: { w: svg_dims.w, h: svg_dims.h },
             widget_id: widget_id,
             widget_source: widget_source,
             locker: locker,

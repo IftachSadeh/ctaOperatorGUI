@@ -634,13 +634,13 @@ class InstData():
             id_now = "Mx02"
             add_dict_id(id_now, {'x': 256.740, 'y': 370.062, 'type': 'MST'})
             id_now = "Mx03"
-            add_dict_id(id_now, {'x': 242.3620, 'y': 254.985, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 230.490, 'y': 257.401, 'type': 'MST'})
             id_now = "Mx04"
             add_dict_id(id_now, {'x': 317.343, 'y': 208.857, 'type': 'MST'})
             id_now = "Mx05"
-            add_dict_id(id_now, {'x': 439.269, 'y': 225.410, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 451.269, 'y': 212.410, 'type': 'MST'})
             id_now = "Mx06"
-            add_dict_id(id_now, {'x': 449.099, 'y': 330.589, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 443.099, 'y': 327.589, 'type': 'MST'})
             id_now = "Mx07"
             add_dict_id(id_now, {'x': 424.508, 'y': 396.707, 'type': 'MST'})
             id_now = "Mx08"
@@ -648,7 +648,7 @@ class InstData():
             id_now = "Mx09"
             add_dict_id(id_now, {'x': 524.691, 'y': 182.636, 'type': 'MST'})
             id_now = "Mx10"
-            add_dict_id(id_now, {'x': 525.877, 'y': 270.413, 'type': 'MST'})
+            add_dict_id(id_now, {'x': 524.877, 'y': 264.413, 'type': 'MST'})
             id_now = "Mx11"
             add_dict_id(id_now, {'x': 505.525, 'y': 399.122, 'type': 'MST'})
             id_now = "Mx12"

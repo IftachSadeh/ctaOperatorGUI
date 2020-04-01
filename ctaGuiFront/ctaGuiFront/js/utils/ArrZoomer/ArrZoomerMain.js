@@ -46,8 +46,10 @@ window.ArrZoomerMain = function(opt_in0) {
     let insts = ele_base.insts
     let zooms = ele_base.zooms
     let lock_init_key = ele_base.lock_init_keys.main
-  
+    let svg_dims_base = ele_base.svg_dims
+
     let scale_r = insts.scale_r
+
 
     let get_prop_pos_shift = ele_base.get_prop_pos_shift
     let interpolate01 = ele_base.interpolate01
@@ -267,6 +269,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
             gs.bck_pattern_defs = gs[clip_g_name].append('defs')
                 .append('clipPath')
+                // .attr('id', clip_bck_pattern_id + (tag !== 'circ'?'':'X'))
                 .attr('id', clip_bck_pattern_id)
 
             if (tag == 'circ') {
@@ -315,48 +318,89 @@ window.ArrZoomerMain = function(opt_in0) {
         //
         // ------------------------------------------------------------------
         if (has_site_svg) {
-            gs.site_svg = gs[clip_bck_pattern_g.circ].append('g')
-            gs.site_svg
-                .attr('transform', function(d) {
-                    return 'scale(2)translate(' + '-55' + ', ' + '-10' + ')'
-                })
+            let site_g = gs[clip_bck_pattern_g.circ].append('g')
+            gs.site_svg = site_g
+            
+            if (is_south) {
+                site_g
+                    .attr('transform', function(d) {
+                        // return 'scale(2)translate(' + '-55' + ', ' + '-10' + ')'
+                    })
+            }
+            else {
+                site_g
+                    .attr('transform', function(d) {
+                        let scale = 8
+                        let trans_x = 4
+                        let trans_y = -5
+                        return (
+                            'scale(' + scale + ')translate(' + trans_x + ', ' + trans_y + ')'
+                        )
+                    })
+            }
 
             let bck_id = 'site_bck_id'
-            let site_g = gs.site_svg
             let style_site_bck = function() {
+                // console.log(site_g)
                 let site_svg = site_g.select('#' + bck_id)
                 
                 // ------------------------------------------------------------------
                 // remove telescope circles (telescope positions)
                 // ------------------------------------------------------------------
                 site_svg
+                    .select('#' + 'layer10')
                     .selectAll('circle')
                     .attr('vector-effect', 'non-scaling-stroke')
                     .attr('opacity', '0')
+                    // .style('stroke-width', 15)
                 // ------------------------------------------------------------------
                 // modify rects (buildings)
                 // ------------------------------------------------------------------
                 site_svg
+                    .select('#' + 'layer3')
                     .selectAll('rect')
-                    .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', '0.1')
-                    // .style('fill-opacity', '.15')
-                    // .style('stroke', 'red')
+                    // .attr('vector-effect', 'non-scaling-stroke')
+                    // .attr('opacity', '0.1')
+                    .style('fill-opacity', '.15')
+                    .style('stroke-width', 0)
+                site_svg
+                    .select('#' + 'layer3')
+                    .selectAll('path')
+                    // .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', '0.6')
                 // ------------------------------------------------------------------
-                // modify paths (land-contours, ravine, and roads)
+                // modify paths land-contours
                 // ------------------------------------------------------------------
                 site_svg
+                    .select('#' + 'layer8')
                     .selectAll('path')
-                    .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', '0.2')
+                    // .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', '0.3')
+                    // .style('stroke', 'blue')
+                // ------------------------------------------------------------------
+                // modify paths ravine
+                // ------------------------------------------------------------------
+                site_svg
+                    .select('#' + 'layer9')
+                    .selectAll('path')
+                    // .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', '0.4')
                     .style('fill-opacity', '.15')
+                // ------------------------------------------------------------------
+                // modify paths roads
+                // ------------------------------------------------------------------
+                site_svg
+                    .select('#' + 'layer7')
+                    .selectAll('path')
+                    // .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', '0.15')
                     // .style('stroke', 'red')
 
                 return
             }
 
             window.load_svg_file({
-                g: gs.site_svg,
+                g: site_g,
                 svg_id: bck_id,
                 icon_path: site_bck_svg,
                 func_end: style_site_bck,
@@ -405,29 +449,7 @@ window.ArrZoomerMain = function(opt_in0) {
             // ------------------------------------------------------------------
             // the background grid
             // ------------------------------------------------------------------
-            if (hex_r > 0) {
-                if (!has_site_svg) {
-                    bck_pattern({
-                        com: com,
-                        // g_now: main_gs.g_back,
-                        g_now: main_gs['clipped_bck_circ_g'],
-                        g_tag: 'hex_circ',
-                        len_wh: [ svg_dims.w, svg_dims.h ],
-                        opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
-                        hex_r: hex_r,
-                    })
-                }
-
-                bck_pattern({
-                    com: com,
-                    // g_now: main_gs.g_back,
-                    g_now: main_gs['clipped_bck_rec_g'],
-                    g_tag: 'hex_rec',
-                    len_wh: [ svg_dims.w, svg_dims.h ],
-                    opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
-                    hex_r: hex_r * 0.5,
-                })
-            }
+            set_bck_pattern()
         }
 
 
@@ -451,6 +473,40 @@ window.ArrZoomerMain = function(opt_in0) {
         return
     }
     this_top.init_data = init_data
+
+
+    // ------------------------------------------------------------------
+    // 
+    // ------------------------------------------------------------------
+    function set_bck_pattern() {
+        if (hex_r <= 0) {
+            return
+        }
+        
+        if (!has_site_svg) {
+            bck_pattern({
+                com: com,
+                // g_now: main_gs.g_back,
+                g_now: main_gs['clipped_bck_circ_g'],
+                g_tag: 'hex_circ',
+                len_wh: [ svg_dims.w, svg_dims.h ],
+                opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
+                hex_r: hex_r,
+            })
+        }
+
+        bck_pattern({
+            com: com,
+            // g_now: main_gs.g_back,
+            g_now: main_gs['clipped_bck_rec_g'],
+            g_tag: 'hex_rec',
+            len_wh: [ svg_dims.w, svg_dims.h ],
+            opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
+            hex_r: hex_r * 0.5,
+        })
+
+        return
+    }
 
 
     // // ------------------------------------------------------------------
@@ -1466,15 +1522,8 @@ window.ArrZoomerMain = function(opt_in0) {
             set_state()
 
             // update the opacity of the background grid
-            if (change_10 && hex_r > 0) {
-                bck_pattern({
-                    com: com,
-                    g_now: main_gs.g_base,
-                    g_tag: 'hex',
-                    len_wh: [ svg_dims.w, svg_dims.h ],
-                    opac: this_top.get_scale() < zooms.len['1.0'] ? 0.15 : 0.07,
-                    hex_r: hex_r,
-                })
+            if (change_10) {
+                set_bck_pattern()
             }
             if (is_state_up(scale, '1.0')) {
                 ask_data_s1()

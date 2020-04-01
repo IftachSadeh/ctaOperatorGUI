@@ -56,6 +56,8 @@ window.ArrZoomerBase = function(opt_in0) {
 
     this_top.has_init = false
 
+    this_top.svg_dims = opt_in0.svg_dims
+    
     this_top.has_site_svg = !is_south
     this_top.site_bck_svg = is_south ? '' : '/static/site_layout_North.svg'
 

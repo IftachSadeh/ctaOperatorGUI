@@ -76,7 +76,7 @@ For additional information, see:
 
 ### Running the package
 
-- `redis` must be running on port `6379` for the North site, and `6378` for the South (configurable in in `config_north.ini` and `config_south.ini` files).
+- `redis` must be running on port `6379` for the North site, and `6378` for the South (configurable in the `config_north.ini` and `config_south.ini` files as `redis_port`).
 
 - Run the two servers (in two separate sessions) after sourcing the environment variables defined above, having the option of running either the North or the South site versions:
   ```bash
