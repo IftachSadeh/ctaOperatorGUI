@@ -128,7 +128,7 @@ window.BlockQueueOld = function() {
             tag: com.main_tag,
             g_box: com.scrollBoxG,
             box_data: com.outer_box,
-            useRelativeCoords: false,
+            use_relative_coords: false,
             title: opt_in.title,
             locker: opt_in.locker,
             lockers: opt_in.lockers,
@@ -142,7 +142,7 @@ window.BlockQueueOld = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        setStyle(opt_in.style)
+        set_style(opt_in.style)
 
         update()
     }
@@ -151,7 +151,7 @@ window.BlockQueueOld = function() {
     // ------------------------------------------------------------------
     // styling
     // ------------------------------------------------------------------
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }
@@ -225,7 +225,7 @@ window.BlockQueueOld = function() {
             }
         }
     }
-    this.setStyle = setStyle
+    this.set_style = set_style
 
     // ------------------------------------------------------------------
     //
@@ -506,11 +506,11 @@ window.BlockQueueOld = function() {
         })
         let yDif = y_max - y_min
 
-        let hasScroll = yDif > com.innerBox.h + 0.01
+        let has_scroll = yDif > com.innerBox.h + 0.01
 
         com.scrollBox.reset_scroller({
-            canScroll: hasScroll,
-            scrollHeight: yDif,
+            can_scroll: has_scroll,
+            scroll_height: yDif,
         })
     }
     this.get_blocks = get_blocks

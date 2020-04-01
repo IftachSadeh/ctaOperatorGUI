@@ -907,7 +907,7 @@ window.BlockFilters = function(opt_in) {
                     h: com.beginner.tels.box.h * 0.68,
                     marg: 0,
                 },
-                useRelativeCoords: true,
+                use_relative_coords: true,
                 locker: new Locker(),
                 lockers: [ 'telsFiltersScroll' + 'update_data' ],
                 lock_zoom: {
@@ -918,10 +918,10 @@ window.BlockFilters = function(opt_in) {
                 run_loop: new RunLoop({
                     tag: 'telsFiltersScroll',
                 }),
-                canScroll: true,
+                can_scroll: true,
                 scrollVertical: true,
                 scroll_horizontal: false,
-                scrollHeight: 0,
+                scroll_height: 0,
                 scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
@@ -1242,8 +1242,8 @@ window.BlockFilters = function(opt_in) {
             .style('pointer-events', 'none')
 
         localScroll.scrollBox.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: labelBox.h * tels.length,
+            can_scroll: true,
+            scroll_height: labelBox.h * tels.length,
         })
     }
     function initTargets() {
@@ -1405,7 +1405,7 @@ window.BlockFilters = function(opt_in) {
                     h: com.beginner.targets.box.h * 0.68,
                     marg: 0,
                 },
-                useRelativeCoords: true,
+                use_relative_coords: true,
                 locker: new Locker(),
                 lockers: [ 'targetsFiltersScroll' + 'update_data' ],
                 lock_zoom: {
@@ -1416,10 +1416,10 @@ window.BlockFilters = function(opt_in) {
                 run_loop: new RunLoop({
                     tag: 'targetsFiltersScroll',
                 }),
-                canScroll: true,
+                can_scroll: true,
                 scrollVertical: true,
                 scroll_horizontal: false,
-                scrollHeight: 0,
+                scroll_height: 0,
                 scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
@@ -1734,8 +1734,8 @@ window.BlockFilters = function(opt_in) {
             .attr('y', com.beginner.targets.box.h * 0.92 - 5)
             .style('pointer-events', 'none')
         localScroll.scrollBox.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: labelBox.h * targets.length,
+            can_scroll: true,
+            scroll_height: labelBox.h * targets.length,
         })
     }
     function initTime() {
@@ -1818,7 +1818,7 @@ window.BlockFilters = function(opt_in) {
     //         h: scrollBox.h,
     //         marg: 0
     //       },
-    //       useRelativeCoords: true,
+    //       use_relative_coords: true,
     //       locker: new Locker(),
     //       lockers: ['blocksFiltersScroll' + 'update_data'],
     //       lock_zoom: {
@@ -1827,10 +1827,10 @@ window.BlockFilters = function(opt_in) {
     //         end: 'ScrollBox' + 'zoom_end'
     //       },
     //       run_loop: new RunLoop({tag: 'blocksFiltersScroll'}),
-    //       canScroll: true,
+    //       can_scroll: true,
     //       scrollVertical: com.enabled.scroll.direction === 'vertical',
     //       scroll_horizontal: com.enabled.scroll.direction === 'horizontal',
-    //       scrollHeight: scrollBox.h + 0.01,
+    //       scroll_height: scrollBox.h + 0.01,
     //       scroll_width: scrollBox.w + 0.01,
     //       background: 'transparent',
     //       scroll_rec_h: {h: 2},
@@ -1911,7 +1911,7 @@ window.BlockFilters = function(opt_in) {
     //       })
     //   })
     //
-    //   com.enabled.scroll.scrollBox.reset_vertical_scroller({canScroll: true, scrollHeight: 0})
+    //   com.enabled.scroll.scrollBox.reset_vertical_scroller({can_scroll: true, scroll_height: 0})
     // }
 
     // function initDisabled () {
@@ -1955,7 +1955,7 @@ window.BlockFilters = function(opt_in) {
     //         h: scrollBox.h,
     //         marg: 0
     //       },
-    //       useRelativeCoords: true,
+    //       use_relative_coords: true,
     //       locker: new Locker(),
     //       lockers: ['blocksFiltersScroll' + 'update_data'],
     //       lock_zoom: {
@@ -1964,10 +1964,10 @@ window.BlockFilters = function(opt_in) {
     //         end: 'ScrollBox' + 'zoom_end'
     //       },
     //       run_loop: new RunLoop({tag: 'blocksFiltersScroll'}),
-    //       canScroll: true,
+    //       can_scroll: true,
     //       scrollVertical: com.disabled.scroll.direction === 'vertical',
     //       scroll_horizontal: com.disabled.scroll.direction === 'horizontal',
-    //       scrollHeight: scrollBox.h + 0.01,
+    //       scroll_height: scrollBox.h + 0.01,
     //       scroll_width: scrollBox.w + 0.01,
     //       background: 'transparent',
     //       scroll_rec_h: {h: 2},
@@ -2046,7 +2046,7 @@ window.BlockFilters = function(opt_in) {
     //       })
     //   })
     //
-    //   com.enabled.scroll.scrollBox.reset_vertical_scroller({canScroll: true, scrollHeight: 0})
+    //   com.enabled.scroll.scrollBox.reset_vertical_scroller({can_scroll: true, scroll_height: 0})
     // }
     // function initContent () {
     //   com.content.g.attr('transform', 'translate(' + (com.content.box.x) + ',' + (com.content.box.y) + ')')
@@ -2641,7 +2641,7 @@ window.BlockFilters = function(opt_in) {
                     h: com.content.box.h * 0.68,
                     marg: 0,
                 },
-                useRelativeCoords: true,
+                use_relative_coords: true,
                 locker: new Locker(),
                 lockers: [ 'telsFiltersScroll' + 'update_data' ],
                 lock_zoom: {
@@ -2652,10 +2652,10 @@ window.BlockFilters = function(opt_in) {
                 run_loop: new RunLoop({
                     tag: 'telsFiltersScroll',
                 }),
-                canScroll: true,
+                can_scroll: true,
                 scrollVertical: true,
                 scroll_horizontal: false,
-                scrollHeight: 0,
+                scroll_height: 0,
                 scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
@@ -2882,8 +2882,8 @@ window.BlockFilters = function(opt_in) {
                 updateBlockQueue()
             })
         localScroll.scrollBox.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: labelBox.h * tels.length,
+            can_scroll: true,
+            scroll_height: labelBox.h * tels.length,
         })
     }
     function create_targetsFilter(opt_in) {

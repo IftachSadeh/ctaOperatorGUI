@@ -42,7 +42,7 @@ window.ScrollTable = function() {
         }
 
         com.main_tag = opt_in.tag
-        com.tagScrollBox = com.main_tag + 'scrollBox'
+        com.tag_scroll_box = com.main_tag + 'scroll_box'
 
         com.tag_clip_path = opt_in.tag_clip_path
         if (!is_def(com.tag_clip_path)) {
@@ -62,43 +62,45 @@ window.ScrollTable = function() {
         //
         // ------------------------------------------------------------------
         com.outer_g = g_box.append('g')
-        com.scrollBoxG = com.outer_g.append('g')
+        com.scroll_box_g = com.outer_g.append('g')
 
-        com.scrollBox = new ScrollBox()
-        com.scrollBox.init({
-            tag: com.tagScrollBox,
-            g_box: com.scrollBoxG,
+        com.scroll_box = new ScrollBox()
+        com.scroll_box.init({
+            tag: com.tag_scroll_box,
+            g_box: com.scroll_box_g,
             box_data: com.outer_box,
-            useRelativeCoords: opt_in.useRelativeCoords,
+            use_relative_coords: opt_in.use_relative_coords,
             title: opt_in.title,
             locker: opt_in.locker,
             lockers: opt_in.lockers,
             lock_zoom: opt_in.lock_zoom,
             run_loop: opt_in.run_loop,
-            sameInnerBoxMarg: false,
+            same_inner_box_marg: false,
             background: opt_in.background,
-            // canScroll: opt_in.canScroll,
-            // scrollHeight: com.outer_box.h*2,
-            // scrollHeight: opt_in.scrollHeight,
+            // can_scroll: opt_in.can_scroll,
+            // scroll_height: com.outer_box.h*2,
+            // scroll_height: opt_in.scroll_height,
             // scroll_rec: {w:200},
         })
 
-        com.inner_g = com.scrollBox.get('inner_g')
-        com.innerBox = com.scrollBox.get('innerBox')
+        com.inner_g = com.scroll_box.get('inner_g')
+        com.inner_box = com.scroll_box.get('inner_box')
 
-        com.tag_clip_path = com.scrollBox.get('tag_clip_path').outer
+        com.tag_clip_path = com.scroll_box.get('tag_clip_path').outer
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        setStyle(opt_in.style)
+        set_style(opt_in.style)
+
+        return
     }
     this.init = init
 
     // ------------------------------------------------------------------
     // styling
     // ------------------------------------------------------------------
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }
@@ -107,93 +109,93 @@ window.ScrollTable = function() {
         com.style = {
         }
     }
-    this.setStyle = setStyle
+    this.set_style = set_style
 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function updateTable(opt_in) {
+    function update_table(opt_in) {
         if (is_def(opt_in.table)) {
             com.table = opt_in.table
         }
 
-        let totTableH = com.table.rowsIn.map(x => x.h).reduce((a, b) => a + b)
-        totTableH = totTableH * com.table.rowH // +com.table.y
+        let tot_table_h = com.table.rows_in.map(x => x.h).reduce((a, b) => a + b)
+        tot_table_h = tot_table_h * com.table.row_h // +com.table.y
 
-        let hasScroll = totTableH > com.innerBox.h + 0.01
+        let has_scroll = tot_table_h > com.inner_box.h + 0.01
 
-        com.scrollBox.reset_scroller({
-            canScroll: hasScroll,
-            scrollHeight: totTableH,
+        com.scroll_box.reset_scroller({
+            can_scroll: has_scroll,
+            scroll_height: tot_table_h,
         })
 
         let tot_table_w = com.table.rowW
-        if (hasScroll) {
-            tot_table_w -= com.scrollBox.get('scroll_rec').w
+        if (has_scroll) {
+            tot_table_w -= com.scroll_box.get('scroll_rec').w
         }
 
-        com.table.rowsOut = []
-        $.each(com.table.rowsIn, function(n_row_now, rowNow) {
+        com.table.rows_out = []
+        $.each(com.table.rows_in, function(n_row_now, row_now) {
             // let rowId = com.table.id + n_row_now
-            let rowH = rowNow.h * com.table.rowH
+            let row_h = row_now.h * com.table.row_h
 
-            let sumW = rowNow.colsIn.map(x => x.w).reduce((a, b) => a + b)
-            $.each(rowNow.colsIn, function(i, d) {
-                rowNow.colsIn[i].w /= sumW
+            let sum_w = row_now.cols_in.map(x => x.w).reduce((a, b) => a + b)
+            $.each(row_now.cols_in, function(i, _) {
+                row_now.cols_in[i].w /= sum_w
             })
 
             let row = {
-                nRow: n_row_now,
+                n_row: n_row_now,
                 cols: [],
                 w: tot_table_w,
-                h: rowH,
+                h: row_h,
             }
 
-            $.each(rowNow.colsIn, function(n_col_now, colNow) {
+            $.each(row_now.cols_in, function(n_col_now, col_now) {
                 row.cols.push({
-                    id: colNow.id,
-                    nCol: n_col_now,
-                    w: row.w * colNow.w,
-                    h: rowH,
+                    id: col_now.id,
+                    n_col: n_col_now,
+                    w: row.w * col_now.w,
+                    h: row_h,
                 })
             })
 
-            com.table.rowsOut.push(row)
+            com.table.rows_out.push(row)
         })
 
-        let rowY = com.table.y
+        let row_y = com.table.y
         com.table.recs = []
         com.table.rec_data = []
-        $.each(com.table.rowsOut, function(n_row_now, rowNow) {
-            let colX = com.table.x
+        $.each(com.table.rows_out, function(n_row_now, row_now) {
+            let col_x = com.table.x
             com.table.recs.push([])
 
-            $.each(rowNow.cols, function(n_col_now, colNow) {
-                // console.log(com.table.rowsIn[n_row_now].colsIn[n_col_now]);
-                let recNow = {
-                    id: colNow.id,
-                    data: com.table.rowsIn[n_row_now].colsIn[n_col_now],
-                    nRow: n_row_now,
-                    nCol: n_col_now,
-                    y: rowY,
-                    x: colX,
-                    w: colNow.w,
-                    h: colNow.h,
+            $.each(row_now.cols, function(n_col_now, col_now) {
+                // console.log(com.table.rows_in[n_row_now].cols_in[n_col_now]);
+                let rec_now = {
+                    id: col_now.id,
+                    data: com.table.rows_in[n_row_now].cols_in[n_col_now],
+                    n_row: n_row_now,
+                    n_col: n_col_now,
+                    y: row_y,
+                    x: col_x,
+                    w: col_now.w,
+                    h: col_now.h,
                     marg: com.table.marg,
                 }
 
-                com.table.recs[n_row_now].push(recNow)
-                com.table.rec_data.push(recNow)
+                com.table.recs[n_row_now].push(rec_now)
+                com.table.rec_data.push(rec_now)
 
-                colX += colNow.w
+                col_x += col_now.w
             })
-            rowY += rowNow.h
+            row_y += row_now.h
         })
 
-        let debugRect = true
-        if (debugRect) {
+        let debug_rect = true
+        if (debug_rect) {
             let rect = com.inner_g
-                .selectAll('rect.' + 'tagScroller')
+                .selectAll('rect.' + 'tag_scroller')
                 .data(com.table.rec_data, function(d) {
                     return d.id
                 })
@@ -201,17 +203,17 @@ window.ScrollTable = function() {
             rect
                 .enter()
                 .append('rect')
-                .attr('class', 'tagScroller')
-                .attr('x', function(d, i) {
+                .attr('class', 'tag_scroller')
+                .attr('x', function(d) {
                     return d.x
                 })
-                .attr('y', function(d, i) {
+                .attr('y', function(d) {
                     return d.y
                 })
-                .attr('width', function(d, i) {
+                .attr('width', function(d) {
                     return d.w
                 })
-                .attr('height', function(d, i) {
+                .attr('height', function(d) {
                     return d.h
                 })
                 .attr('opacity', 0)
@@ -219,16 +221,16 @@ window.ScrollTable = function() {
                 .transition('in_out')
                 .duration(times.anim)
                 .attr('opacity', 1)
-                .attr('x', function(d, i) {
+                .attr('x', function(d) {
                     return d.x
                 })
-                .attr('y', function(d, i) {
+                .attr('y', function(d) {
                     return d.y
                 })
-                .attr('width', function(d, i) {
+                .attr('width', function(d) {
                     return d.w
                 })
-                .attr('height', function(d, i) {
+                .attr('height', function(d) {
                     return d.h
                 })
                 .attr('stroke', '#383B42')
@@ -245,6 +247,10 @@ window.ScrollTable = function() {
                 .style('opacity', 0)
                 .remove()
         }
+    
+        return
     }
-    this.updateTable = updateTable
+    this.update_table = update_table
+
+    return
 }

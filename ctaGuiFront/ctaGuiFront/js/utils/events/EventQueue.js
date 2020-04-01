@@ -133,7 +133,7 @@ window.EventQueue = function() {
         initBlocks()
         initFilters()
         initTimeBars()
-        setStyle()
+        set_style()
     }
     this.init = init
 
@@ -398,7 +398,7 @@ window.EventQueue = function() {
         com.timeBars.group.g = com.g.append('g')
             .attr('transform', 'translate(' + com.timeBars.group.box.x + ',' + com.timeBars.group.box.y + ')')
     }
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }
@@ -472,7 +472,7 @@ window.EventQueue = function() {
             }
         }
     }
-    this.setStyle = setStyle
+    this.set_style = set_style
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------

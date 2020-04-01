@@ -956,7 +956,7 @@ let main_comment_sched = function(opt_in) {
         //         h: historyBox.h,
         //         marg: 0
         //       },
-        //       useRelativeCoords: true,
+        //       use_relative_coords: true,
         //       locker: new Locker(),
         //       lockers: [widget_id + 'update_data'],
         //       lock_zoom: {
@@ -965,10 +965,10 @@ let main_comment_sched = function(opt_in) {
         //         end: 'ScrollBox' + 'zoom_end'
         //       },
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
-        //       canScroll: true,
+        //       can_scroll: true,
         //       scrollVertical: true,
         //       scroll_horizontal: false,
-        //       scrollHeight: 0.1 + historyBox.h,
+        //       scroll_height: 0.1 + historyBox.h,
         //       scroll_width: 0,
         //       background: 'transparent',
         //       scroll_rec_h: {h: 2},
@@ -999,7 +999,7 @@ let main_comment_sched = function(opt_in) {
         //         h: historyBox.h,
         //         marg: 0
         //       },
-        //       useRelativeCoords: true,
+        //       use_relative_coords: true,
         //       locker: new Locker(),
         //       lockers: [widget_id + 'update_data'],
         //       lock_zoom: {
@@ -1008,10 +1008,10 @@ let main_comment_sched = function(opt_in) {
         //         end: 'ScrollBox' + 'zoom_end'
         //       },
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
-        //       canScroll: true,
+        //       can_scroll: true,
         //       scrollVertical: true,
         //       scroll_horizontal: false,
-        //       scrollHeight: 0.1 + historyBox.h,
+        //       scroll_height: 0.1 + historyBox.h,
         //       scroll_width: 0,
         //       background: 'transparent',
         //       scroll_rec_h: {h: 2},
@@ -1234,7 +1234,7 @@ let main_comment_sched = function(opt_in) {
         //         h: historyBox.h,
         //         marg: 0
         //       },
-        //       useRelativeCoords: true,
+        //       use_relative_coords: true,
         //       locker: new Locker(),
         //       lockers: [widget_id + 'update_data'],
         //       lock_zoom: {
@@ -1243,10 +1243,10 @@ let main_comment_sched = function(opt_in) {
         //         end: 'ScrollBox' + 'zoom_end'
         //       },
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
-        //       canScroll: true,
+        //       can_scroll: true,
         //       scrollVertical: true,
         //       scroll_horizontal: false,
-        //       scrollHeight: 0.1 + historyBox.h,
+        //       scroll_height: 0.1 + historyBox.h,
         //       scroll_width: 0,
         //       background: 'transparent',
         //       scroll_rec_h: {h: 6},
@@ -1321,7 +1321,7 @@ let main_comment_sched = function(opt_in) {
         //         h: historyBox.h,
         //         marg: 0
         //       },
-        //       useRelativeCoords: true,
+        //       use_relative_coords: true,
         //       locker: new Locker(),
         //       lockers: [widget_id + 'update_data'],
         //       lock_zoom: {
@@ -1330,10 +1330,10 @@ let main_comment_sched = function(opt_in) {
         //         end: 'ScrollBox' + 'zoom_end'
         //       },
         //       run_loop: new RunLoop({tag: 'inputHistoryScrollBox'}),
-        //       canScroll: true,
+        //       can_scroll: true,
         //       scrollVertical: true,
         //       scroll_horizontal: false,
-        //       scrollHeight: 0.1 + historyBox.h,
+        //       scroll_height: 0.1 + historyBox.h,
         //       scroll_width: 0,
         //       background: 'transparent',
         //       scroll_rec_h: {h: 6},
@@ -1620,7 +1620,7 @@ let main_comment_sched = function(opt_in) {
                         h: box.h,
                         marg: 0,
                     },
-                    useRelativeCoords: true,
+                    use_relative_coords: true,
                     locker: new Locker(),
                     lockers: [ widget_id + 'update_data' ],
                     lock_zoom: {
@@ -1631,10 +1631,10 @@ let main_comment_sched = function(opt_in) {
                     run_loop: new RunLoop({
                         tag: 'log_infoScrollBox',
                     }),
-                    canScroll: true,
+                    can_scroll: true,
                     scrollVertical: true,
                     scroll_horizontal: false,
-                    scrollHeight: 0,
+                    scroll_height: 0,
                     scroll_width: 0,
                     background: 'transparent',
                     scroll_rec_h: {
@@ -1767,8 +1767,8 @@ let main_comment_sched = function(opt_in) {
                 .remove()
 
             reserved.log_info.scroll.scrollBox.reset_vertical_scroller({
-                canScroll: true,
-                scrollHeight: log.info.length * reserved.log_info.box.h * 0.31,
+                can_scroll: true,
+                scroll_height: log.info.length * reserved.log_info.box.h * 0.31,
             })
         }
 
@@ -2426,7 +2426,7 @@ let main_comment_sched = function(opt_in) {
                             h: historyBox.h,
                             marg: 0,
                         },
-                        useRelativeCoords: true,
+                        use_relative_coords: true,
                         locker: new Locker(),
                         lockers: [ widget_id + 'update_data' ],
                         lock_zoom: {
@@ -2437,10 +2437,10 @@ let main_comment_sched = function(opt_in) {
                         run_loop: new RunLoop({
                             tag: 'inputHistoryFilteringScrollBox',
                         }),
-                        canScroll: true,
+                        can_scroll: true,
                         scrollVertical: true,
                         scroll_horizontal: false,
-                        scrollHeight: ob.h * reserved.logHistory.filtering.filters.length,
+                        scroll_height: ob.h * reserved.logHistory.filtering.filters.length,
                         scroll_width: 0,
                         background: 'transparent',
                         scroll_rec_h: {
@@ -2491,7 +2491,7 @@ let main_comment_sched = function(opt_in) {
                             h: historyBox.h,
                             marg: 0,
                         },
-                        useRelativeCoords: true,
+                        use_relative_coords: true,
                         locker: new Locker(),
                         lockers: [ widget_id + 'update_data' ],
                         lock_zoom: {
@@ -2502,10 +2502,10 @@ let main_comment_sched = function(opt_in) {
                         run_loop: new RunLoop({
                             tag: 'inputHistoryScrollBox',
                         }),
-                        canScroll: true,
+                        can_scroll: true,
                         scrollVertical: true,
                         scroll_horizontal: false,
-                        scrollHeight: 0.1 + historyBox.h,
+                        scroll_height: 0.1 + historyBox.h,
                         scroll_width: 0,
                         background: 'transparent',
                         scroll_rec_h: {
@@ -2695,8 +2695,8 @@ let main_comment_sched = function(opt_in) {
                 //   .remove()
 
                 reserved.logHistory.list.scroll.scrollBox.reset_vertical_scroller({
-                    canScroll: true,
-                    scrollHeight: fl.length * ob.h,
+                    can_scroll: true,
+                    scroll_height: fl.length * ob.h,
                 })
             }
             function updateLogList() {
@@ -2844,8 +2844,8 @@ let main_comment_sched = function(opt_in) {
                     .remove()
 
                 reserved.logHistory.list.scroll.scrollBox.reset_vertical_scroller({
-                    canScroll: true,
-                    scrollHeight: fl.length * ob.h,
+                    can_scroll: true,
+                    scroll_height: fl.length * ob.h,
                 })
             }
 

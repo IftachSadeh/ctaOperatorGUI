@@ -154,7 +154,7 @@ window.ObsblockForm = function(opt_in) {
                 w: box.w,
                 h: box.h,
             },
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ tag + 'update_data' ],
             lock_zoom: {
@@ -165,10 +165,10 @@ window.ObsblockForm = function(opt_in) {
             run_loop: new RunLoop({
                 tag: tag,
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: true,
             scroll_horizontal: false,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
@@ -1468,8 +1468,8 @@ window.ObsblockForm = function(opt_in) {
         }
         targetCore(data.targets, innertg, 0)
         scrollBoxt.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: line * data.targets.length,
+            can_scroll: true,
+            scroll_height: line * data.targets.length,
         })
 
         let pbox = {
@@ -1554,8 +1554,8 @@ window.ObsblockForm = function(opt_in) {
         }
         pointingCore(data.pointings, innerpg, 0)
         scrollBoxp.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: line * data.pointings.length,
+            can_scroll: true,
+            scroll_height: line * data.pointings.length,
         })
 
         // function pointingCore (trg, pointings, pg, x, y, w, h) {
@@ -1650,7 +1650,7 @@ window.ObsblockForm = function(opt_in) {
         // let line = box.h * 0.15
         // let marg = line * 0.2
         // let interOffset = 0
-        // let scrollHeight = headerSize * 0.2
+        // let scroll_height = headerSize * 0.2
         // function pointingCore (pointings, g, offset) {
         //   let current = g
         //     .selectAll('g.pointing')
@@ -1697,7 +1697,7 @@ window.ObsblockForm = function(opt_in) {
         //     let g = d3.select(this)
         //     g.attr('transform', 'translate(' + (line * 0.35) + ',' + (offset + (marg + line) * i) + ')')
         //     interOffset += marg + line
-        //     scrollHeight += marg + line
+        //     scroll_height += marg + line
         //   })
         //   current
         //     .exit()
@@ -1744,7 +1744,7 @@ window.ObsblockForm = function(opt_in) {
         //   merge.each(function (d, i) {
         //     let g = d3.select(this)
         //     g.attr('transform', 'translate(' + (0 + line * 0.25) + ',' + (offset + interOffset + (marg + line + 4) * i) + ')')
-        //     scrollHeight += marg + line + 4
+        //     scroll_height += marg + line + 4
         //     // innerOffset += line
         //     pointingCore(d.pointings, g, line * 1.1 + marg)
         //   })
@@ -1763,8 +1763,8 @@ window.ObsblockForm = function(opt_in) {
         //   .attr('y2', tbox.y + tbox.h)
         //   .attr('stroke', colorPalette.dark.stroke)
         //   .attr('stroke-width', 0.4)
-        //   .style('opacity', scrollHeight > tbox.h ? 1 : 0)
-        // scrollBox.reset_vertical_scroller({canScroll: true, scrollHeight: scrollHeight})
+        //   .style('opacity', scroll_height > tbox.h ? 1 : 0)
+        // scrollBox.reset_vertical_scroller({can_scroll: true, scroll_height: scroll_height})
         // let height = box.w * 0.09
         // for (let i = 0; i < data.pointings.length; i++) {
         //   let pg = g.append('g').attr('transform', 'translate(' + (box.w * 0.48) + ',' + (box.h * 0.5) + ')')
@@ -2124,8 +2124,8 @@ window.ObsblockForm = function(opt_in) {
         }
         targetCore(data.targets, innertg, 0)
         com.target.target.scroll.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: line * data.targets.length,
+            can_scroll: true,
+            scroll_height: line * data.targets.length,
         })
 
         let pbox = com.target.pointing.box
@@ -2173,8 +2173,8 @@ window.ObsblockForm = function(opt_in) {
         }
         pointingCore(data.pointings, innerpg, 0)
         com.target.pointing.scroll.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: line * data.pointings.length,
+            can_scroll: true,
+            scroll_height: line * data.pointings.length,
         })
 
         com.targetBlock.update_data({
@@ -3109,8 +3109,8 @@ window.ObsblockForm = function(opt_in) {
             initTelescope_information(blocks[i], ibox)
         }
         scroll.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: sizeRow * blocks.length,
+            can_scroll: true,
+            scroll_height: sizeRow * blocks.length,
         })
 
         otherg.append('line')

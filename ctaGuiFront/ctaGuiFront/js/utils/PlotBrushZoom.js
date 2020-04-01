@@ -137,7 +137,7 @@ window.PlotBrushZoom = function(opt_in) {
     }
     reserved = opt_in
 
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }
@@ -150,7 +150,7 @@ window.PlotBrushZoom = function(opt_in) {
             ? opt_in.hasOutline
             : false
     }
-    this.setStyle = setStyle
+    this.set_style = set_style
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
             reserved[opt_in.tag] = opt_in.data

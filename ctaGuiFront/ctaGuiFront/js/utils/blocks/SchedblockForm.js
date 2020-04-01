@@ -232,7 +232,7 @@ window.SchedblockForm = function(opt_in) {
                 w: box.w,
                 h: box.h,
             },
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ tag + 'update_data' ],
             lock_zoom: {
@@ -243,10 +243,10 @@ window.SchedblockForm = function(opt_in) {
             run_loop: new RunLoop({
                 tag: tag,
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: true,
             scroll_horizontal: false,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
@@ -1192,8 +1192,8 @@ window.SchedblockForm = function(opt_in) {
             .remove()
 
         com.schedule.scrollBox.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: line * schedB.blocks.length,
+            can_scroll: true,
+            scroll_height: line * schedB.blocks.length,
         })
         box.h += headerSize + 3
 
@@ -1472,7 +1472,7 @@ window.SchedblockForm = function(opt_in) {
         //
         // let marg = line * 0.2
         // let interOffset = 0
-        // let scrollHeight = 0
+        // let scroll_height = 0
         //
         // let squareTemplate = {
         //   '1': [{x: 0.5, y: 0.5}],
@@ -1516,7 +1516,7 @@ window.SchedblockForm = function(opt_in) {
         //       out: function () {}
         //     }
         //     pointing_icon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1].split('-')[1], pevents, colorPalette)
-        //     scrollHeight += (marg + line * 0.9)
+        //     scroll_height += (marg + line * 0.9)
         //     // g.append('rect')
         //     //   .attr('x', 0)
         //     //   .attr('y', 0)
@@ -1560,7 +1560,7 @@ window.SchedblockForm = function(opt_in) {
         //       out: function () {}
         //     }
         //     target_icon(g, {w: line * 1.1, h: line * 1.1}, '' + d.name.split('_')[1], tevents, colorPalette)
-        //     scrollHeight += marg + line + 4
+        //     scroll_height += marg + line + 4
         //   })
         //   let merge = current.merge(enter)
         //   merge.each(function (d, i) {
@@ -1607,7 +1607,7 @@ window.SchedblockForm = function(opt_in) {
 
         let marg = 2
         let innerOffset = 0
-        let scrollHeight = 0
+        let scroll_height = 0
         function pointingCore(block, pg, offset) {
             let pointings = block.pointings
             // let pointings = []
@@ -1649,7 +1649,7 @@ window.SchedblockForm = function(opt_in) {
                 let g = d3.select(this)
                 g.attr('transform', 'translate(' + (-line * 0.6) + ',' + (offset + (marg + line * 0.9) * i) + ')')
                 innerOffset += marg + line * 0.9
-                scrollHeight += marg + line * 0.9
+                scroll_height += marg + line * 0.9
             })
             current
                 .exit()
@@ -1733,7 +1733,7 @@ window.SchedblockForm = function(opt_in) {
                 g.attr('transform', 'translate(' + (line * 0.8) + ',' + (offset + innerOffset + line * i) + ')')
                 innerOffset += line
                 pointingCore(d, g, line + marg * 2)
-                scrollHeight = (offset + innerOffset + line * i) + marg * 2
+                scroll_height = (offset + innerOffset + line * i) + marg * 2
             })
             current
                 .exit()
@@ -1744,8 +1744,8 @@ window.SchedblockForm = function(opt_in) {
         }
         blockCore(com.data.schedB.blocks, innerpg, marg)
         scrollBoxp.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: scrollHeight,
+            can_scroll: true,
+            scroll_height: scroll_height,
         })
     }
 }

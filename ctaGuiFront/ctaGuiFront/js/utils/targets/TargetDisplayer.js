@@ -468,7 +468,7 @@ window.TargetDisplayer = function(opt_in) {
                 w: com.main.box.w,
                 h: com.main.box.h,
             },
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ ntag + 'update_data' ],
             lock_zoom: {
@@ -479,10 +479,10 @@ window.TargetDisplayer = function(opt_in) {
             run_loop: new RunLoop({
                 tag: ntag,
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: false,
             scroll_horizontal: true,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {

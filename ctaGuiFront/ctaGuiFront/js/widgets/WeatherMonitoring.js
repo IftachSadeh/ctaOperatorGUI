@@ -586,7 +586,7 @@ let main_weather_monitoring = function(opt_in) {
                 w: box.w,
                 h: box.h,
             },
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ tag + 'update_data' ],
             lock_zoom: {
@@ -597,10 +597,10 @@ let main_weather_monitoring = function(opt_in) {
             run_loop: new RunLoop({
                 tag: tag,
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: isVertical,
             scroll_horizontal: !isVertical,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
@@ -1564,8 +1564,8 @@ let main_weather_monitoring = function(opt_in) {
                 h: (box.y * 0.00 + box.h),
             })
             scrollbox.reset_vertical_scroller({
-                canScroll: true,
-                scrollHeight: (offset),
+                can_scroll: true,
+                scroll_height: (offset),
             })
         }
         function defaultDisplay() {
@@ -1582,8 +1582,8 @@ let main_weather_monitoring = function(opt_in) {
                         h: box.h,
                     })
                     scrollbox.reset_vertical_scroller({
-                        canScroll: true,
-                        scrollHeight: 0,
+                        can_scroll: true,
+                        scroll_height: 0,
                     })
                     let count = svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline').size()
                     svg.g.select('g#hardwareMonitoring').selectAll('g#timestampsline')
@@ -3188,10 +3188,10 @@ let main_weather_monitoring = function(opt_in) {
                 h: box.pl.h,
             })
             scrollbox.reset_vertical_scroller({
-                canScroll: true,
-                scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(plotList.length / nbperline)),
+                can_scroll: true,
+                scroll_height: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(plotList.length / nbperline)),
             })
-            // scrollbox.update_horizontal_scroller({canScroll: true, scroll_width: 0})
+            // scrollbox.update_horizontal_scroller({can_scroll: true, scroll_width: 0})
         }
         this.adjustScrollBox = adjustScrollBox
 

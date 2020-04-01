@@ -55,14 +55,14 @@ window.FormManager = function() {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
-        setStyle(opt_in.style)
+        set_style(opt_in.style)
     }
     this.init = init
 
     // ------------------------------------------------------------------
     // styling
     // ------------------------------------------------------------------
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }
@@ -71,7 +71,7 @@ window.FormManager = function() {
         com.style = {
         }
     }
-    this.setStyle = setStyle
+    this.set_style = set_style
 
     // ------------------------------------------------------------------
     //

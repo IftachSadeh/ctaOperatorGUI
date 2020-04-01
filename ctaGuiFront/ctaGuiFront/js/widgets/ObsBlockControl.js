@@ -559,8 +559,8 @@ let main_obs_block_control = function(opt_in) {
                 scrollTable.init({
                     tag: tagScrollTable,
                     g_box: gScrollTable,
-                    canScroll: true,
-                    useRelativeCoords: true,
+                    can_scroll: true,
+                    use_relative_coords: true,
                     title: {
                         text: 'title...',
                     },
@@ -587,10 +587,10 @@ let main_obs_block_control = function(opt_in) {
                     rowsIn: [],
                 }
 
-                // table.rowsIn.push({ h: 9, colsIn: [{id: '01', w: 0.3}], marg: innerBox.marg })
+                // table.rowsIn.push({ h: 9, cols_in: [{id: '01', w: 0.3}], marg: innerBox.marg })
                 table.rowsIn.push({
                     h: 2,
-                    colsIn: [
+                    cols_in: [
                         {
                             id: '00',
                             w: 0.6,
@@ -606,7 +606,7 @@ let main_obs_block_control = function(opt_in) {
                 })
                 table.rowsIn.push({
                     h: 2,
-                    colsIn: [
+                    cols_in: [
                         {
                             id: '10',
                             w: 0.5,
@@ -620,7 +620,7 @@ let main_obs_block_control = function(opt_in) {
                     ],
                     marg: innerBox.marg,
                 })
-                scrollTable.updateTable({
+                scrollTable.update_table({
                     table: table,
                 })
 
@@ -698,9 +698,9 @@ let main_obs_block_control = function(opt_in) {
                     // },
                     // futureCanceled: { hide:false, shift_y:false },
                     // click: function(d){ block_focus({ id:d.id }); },
-                    canScroll: true,
-                    scrollHeight: scrollBoxData.h * 2,
-                    useRelativeCoords: true,
+                    can_scroll: true,
+                    scroll_height: scrollBoxData.h * 2,
+                    use_relative_coords: true,
                     // title: { h:scrollBoxData.h*0.2, text:"asldklksdj" },
                     box_data: scrollBoxData,
                     locker: locker,
@@ -713,10 +713,10 @@ let main_obs_block_control = function(opt_in) {
                     run_loop: run_loop,
                 })
 
-                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({canScroll:false}); }, 3000);
+                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({can_scroll:false}); }, 3000);
 
-                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({canScroll:true, scrollHeight: scrollBoxData.h*5}); }, 6000);
-                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({canScroll:true, scrollHeight: scrollBoxData.h*5/2}); }, 9000);
+                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({can_scroll:true, scroll_height: scrollBoxData.h*5}); }, 6000);
+                // setTimeout(function() { console.log('xxxxxxxxxxx'); scrollBox.reset_scroller({can_scroll:true, scroll_height: scrollBoxData.h*5/2}); }, 9000);
 
                 // setTimeout(function() { console.log('xxxxxxxxxxx'); let title = scrollBox.get('titleData'); title.text = "77777777"; scrollBox.set({tag:'titleData', data:title}); scrollBox.setTitle(); }, 2000);
 
@@ -2198,7 +2198,7 @@ let _obScroll = function() {
 
         com.recs.dataG = com.scrollGrid.get_bck_data_g()
 
-        setStyle(opt_in.style)
+        set_style(opt_in.style)
     }
     this.init = init
 
@@ -2391,7 +2391,7 @@ let _obScroll = function() {
     // -------------------------------------------------------------------
     // styling
     // -------------------------------------------------------------------
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }

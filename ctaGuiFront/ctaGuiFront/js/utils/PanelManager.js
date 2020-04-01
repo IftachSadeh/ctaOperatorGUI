@@ -416,7 +416,7 @@ window.CustomPanel = function() {
         return com['tab'][prop]
     }
     this.getTabProperties = getTabProperties
-    // function setStyle (style, transition = {duration: 0, delay: 0, ease: d3.easeLinear}) {
+    // function set_style (style, transition = {duration: 0, delay: 0, ease: d3.easeLinear}) {
     //   if (style.tab.back) {
     //     for (let key in style.tab.back) {
     //       console.log(key, style.tab.back[key]);
@@ -452,7 +452,7 @@ window.CustomPanel = function() {
     //       .attr('fill', style.tab.tabName)
     //   }
     // }
-    // this.setStyle = setStyle
+    // this.set_style = set_style
     function set_repaintTab(fun) {
         com.tab.repaint = fun
     }

@@ -147,7 +147,7 @@ window.TelescopeForm = function(opt_in) {
                 w: box.w,
                 h: box.h,
             },
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ tag + 'update_data' ],
             lock_zoom: {
@@ -158,10 +158,10 @@ window.TelescopeForm = function(opt_in) {
             run_loop: new RunLoop({
                 tag: tag,
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: true,
             scroll_horizontal: false,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
@@ -622,7 +622,7 @@ window.TelescopeForm = function(opt_in) {
     //   //   .style('opacity', 0)
     //   //   .remove()
     //   //
-    //   // com.ressource.scrollBox.reset_vertical_scroller({canScroll: true, scrollHeight: line * inter.length})
+    //   // com.ressource.scrollBox.reset_vertical_scroller({can_scroll: true, scroll_height: line * inter.length})
     //   // blockg.append('line')
     //   //   .attr('x1', box.x)
     //   //   .attr('y1', box.h)
@@ -758,7 +758,7 @@ window.TelescopeForm = function(opt_in) {
                     w: line * 1.4,
                     h: line * 1.4,
                 }, 'T' + d.name.split('_')[1], tevents, colorPalette)
-                // scrollHeight += marg + line + 4
+                // scroll_height += marg + line + 4
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -1026,7 +1026,7 @@ window.TelescopeForm = function(opt_in) {
     //
     // let marg = line * 0.2
     // let interOffset = 0
-    // let scrollHeight = 0
+    // let scroll_height = 0
     //
     // function pointingCore (pointings, pg, x, y, w, h) {
     //   pg.attr('transform', 'translate(' + x + ',' + y + ')')
@@ -1059,7 +1059,7 @@ window.TelescopeForm = function(opt_in) {
     //       out: function () {}
     //     }
     //     pointing_icon(g, {w: psize.w, h: psize.h}, '' + d.name.split('/')[1].split('_')[1], pevents, colorPalette)
-    //     scrollHeight += (marg + line * 0.9)
+    //     scroll_height += (marg + line * 0.9)
     //     // g.append('rect')
     //     //   .attr('x', 0)
     //     //   .attr('y', 0)

@@ -5811,7 +5811,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     w: box.w,
                     h: box.h,
                 },
-                useRelativeCoords: true,
+                use_relative_coords: true,
                 locker: new Locker(),
                 lockers: [ tag + 'update_data' ],
                 lock_zoom: {
@@ -5822,10 +5822,10 @@ let main_sched_blocksInspector = function(opt_in) {
                 run_loop: new RunLoop({
                     tag: tag,
                 }),
-                canScroll: true,
+                can_scroll: true,
                 scrollVertical: isVertical,
                 scroll_horizontal: !isVertical,
-                scrollHeight: 0,
+                scroll_height: 0,
                 scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
@@ -7215,8 +7215,8 @@ let main_sched_blocksInspector = function(opt_in) {
                 initTelescope_information(conflict.blocks[i], ibox)
             }
             scroll.reset_vertical_scroller({
-                canScroll: true,
-                scrollHeight: sizeRow * conflict.blocks.length,
+                can_scroll: true,
+                scroll_height: sizeRow * conflict.blocks.length,
             })
 
             otherg.append('line')
@@ -8397,9 +8397,9 @@ let main_sched_blocksInspector = function(opt_in) {
 
                 // reserved.overview.modifications.scrollBox.move_vertical_scroller_to(0.5)
                 reserved.overview.modifications.scrollBox.reset_vertical_scroller({
-                    canScroll: true,
+                    can_scroll: true,
                     keepFrac: true,
-                    scrollHeight: (line + marg) * (sched_index + 0),
+                    scroll_height: (line + marg) * (sched_index + 0),
                 })
                 let scrollProp = reserved.overview.modifications.scrollBox.get_scroll_prop('vertical')
                 popupOffset = scrollProp.now
@@ -8493,7 +8493,7 @@ let main_sched_blocksInspector = function(opt_in) {
                 //   .style('opacity', 0)
                 //   .remove()
                 reserved.overview.conflicts.scrollBox.reset_horizontal_scroller({
-                    canScroll: true,
+                    can_scroll: true,
                     scroll_width: (line + marg) * shared.data.copy.conflicts.length,
                 })
             }

@@ -3857,7 +3857,7 @@ let main_sched_blockController = function(opt_in) {
                     w: box.w,
                     h: box.h,
                 },
-                useRelativeCoords: true,
+                use_relative_coords: true,
                 locker: new Locker(),
                 lockers: [ tag + 'update_data' ],
                 lock_zoom: {
@@ -3868,10 +3868,10 @@ let main_sched_blockController = function(opt_in) {
                 run_loop: new RunLoop({
                     tag: tag,
                 }),
-                canScroll: true,
+                can_scroll: true,
                 scrollVertical: true,
                 scroll_horizontal: false,
-                scrollHeight: 0,
+                scroll_height: 0,
                 scroll_width: 0,
                 background: 'transparent',
                 scroll_rec_h: {
@@ -4710,8 +4710,8 @@ let main_sched_blockController = function(opt_in) {
                     enabled: false,
                 })
                 reserved.overview.scrollBox.reset_vertical_scroller({
-                    canScroll: true,
-                    scrollHeight: shared.data.server.targets.length * 40,
+                    can_scroll: true,
+                    scroll_height: shared.data.server.targets.length * 40,
                 })
                 g.append('line')
                     .attr('x1', box.x)
@@ -5314,8 +5314,8 @@ let main_sched_blockController = function(opt_in) {
                     .style('opacity', 0)
                     .remove()
                 reserved.overview.scrollBox.update_vertical_scroller({
-                    canScroll: true,
-                    scrollHeight: shared.data.server.targets.length * rectBox.h,
+                    can_scroll: true,
+                    scroll_height: shared.data.server.targets.length * rectBox.h,
                 })
             }
             function updateTelescope_information() {

@@ -161,7 +161,7 @@ window.PlotTimeSeries = function() {
             .attr('height', topBot.box.h)
         topBot.g.data.attr('clip-path', 'url(#' + com.tag_clip_path.top + ')')
 
-        setStyle(opt_in.style)
+        set_style(opt_in.style)
         initPlot(opt_in)
 
         if (opt_in.hasBotPlot) {
@@ -200,7 +200,7 @@ window.PlotTimeSeries = function() {
     }
     this.plugPlotTimeBar = plugPlotTimeBar
 
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }
@@ -212,7 +212,7 @@ window.PlotTimeSeries = function() {
         com.style.hasOutline = is_def(opt_in.hasOutline) ? opt_in.hasOutline : false
         com.style.bckColor = is_def(opt_in.bckColor) ? opt_in.bckColor : '#F2F2F2'
     }
-    this.setStyle = setStyle
+    this.set_style = set_style
     function transScaleBox(opt_in) {
         let duration = 0
         if (is_def(opt_in)) {

@@ -146,7 +146,7 @@ window.TargetForm = function(opt_in) {
                 w: box.w,
                 h: box.h,
             },
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ tag + 'update_data' ],
             lock_zoom: {
@@ -157,10 +157,10 @@ window.TargetForm = function(opt_in) {
             run_loop: new RunLoop({
                 tag: tag,
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: true,
             scroll_horizontal: false,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
@@ -579,8 +579,8 @@ window.TargetForm = function(opt_in) {
         }
         schedCore(scheds, innerg, 4)
         com.ressource.scrollBox.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: 2 + scheds.length * line,
+            can_scroll: true,
+            scroll_height: 2 + scheds.length * line,
         })
         blockg.append('line')
             .attr('x1', box.x)
@@ -738,7 +738,7 @@ window.TargetForm = function(opt_in) {
         let line = 20
         let marg = line * 0.2
         let interOffset = 0
-        let scrollHeight = headerSize * 0.2
+        let scroll_height = headerSize * 0.2
         function pointingCore(blocks, pg, offset) {
             let pointings = []
             let linkbetween = {
@@ -782,7 +782,7 @@ window.TargetForm = function(opt_in) {
                     w: line * 1.4,
                     h: line * 0.9,
                 }, get_pointing_short(d) + 'P' + get_pointing_value(d), pevents, colorPalette)
-                scrollHeight += (marg + line * 0.9)
+                scroll_height += (marg + line * 0.9)
             })
             let merge = current.merge(enter)
             merge.each(function(d, i) {
@@ -871,7 +871,7 @@ window.TargetForm = function(opt_in) {
                         d3.select(this).style('cursor', 'default')
                         d3.select(this).attr('fill', colorPalette.dark.background)
                     })
-                scrollHeight += marg + line + 4
+                scroll_height += marg + line + 4
                 g.append('text')
                     .text('S' + d.blocks[0].metadata.n_sched)
                     .style('fill', colorPalette.dark.text)
@@ -904,10 +904,10 @@ window.TargetForm = function(opt_in) {
             .attr('y2', box.h - headerSize * 0.5)
             .attr('stroke', colorPalette.dark.stroke)
             .attr('stroke-width', 0.2)
-            .style('opacity', scrollHeight > tbox.h ? 1 : 0)
+            .style('opacity', scroll_height > tbox.h ? 1 : 0)
         scrollBox.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: scrollHeight,
+            can_scroll: true,
+            scroll_height: scroll_height,
         })
 
         let gt = g.append('g')

@@ -92,7 +92,7 @@ window.ScrollForm = function(opt_in) {
             h: com.main.box.h,
             marg: 0,
         },
-        useRelativeCoords: true,
+        use_relative_coords: true,
         locker: new Locker(),
         lockers: [ com.main.tag + 'update_data' ],
         lock_zoom: {
@@ -103,10 +103,10 @@ window.ScrollForm = function(opt_in) {
         run_loop: new RunLoop({
             tag: 'scrollForm',
         }),
-        canScroll: true,
+        can_scroll: true,
         scrollVertical: true,
         scroll_horizontal: false,
-        scrollHeight: com.main.box.h,
+        scroll_height: com.main.box.h,
         background: color_theme.dark.background,
         scroll_recs: {
             w: 6,
@@ -658,8 +658,8 @@ window.ScrollForm = function(opt_in) {
         createSubForm(com.component.content_div, com.data.data.childs)
 
         com.scrollBox.reset_vertical_scroller({
-            canScroll: true,
-            scrollHeight: com.component.content_div._groups[0][0].scrollHeight,
+            can_scroll: true,
+            scroll_height: com.component.content_div._groups[0][0].scroll_height,
         })
 
     // for (let key in com.data.data) {
@@ -681,13 +681,13 @@ window.ScrollForm = function(opt_in) {
     // }
 
     // let totOffset = 0
-    // let totScrollHeight = com.component.content_div._groups[0][0].scrollHeight
+    // let totScrollHeight = com.component.content_div._groups[0][0].scroll_height
     // let sizes = []
     // for (let key in com.data.data) {
     //   let setOffsetTo = totOffset
-    //   let scrollHeight = com.component.content_div.select('div#id_' + key)._groups[0][0].scrollHeight
-    //   sizes.push([scrollHeight, setOffsetTo])
-    //   totOffset += scrollHeight
+    //   let scroll_height = com.component.content_div.select('div#id_' + key)._groups[0][0].scroll_height
+    //   sizes.push([scroll_height, setOffsetTo])
+    //   totOffset += scroll_height
     // }
     //
     // let ratio = com.component.content_div._groups[0][0].clientHeight / totOffset

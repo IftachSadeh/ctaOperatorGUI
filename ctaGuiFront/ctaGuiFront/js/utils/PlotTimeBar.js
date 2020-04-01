@@ -220,7 +220,7 @@ window.PlotTimeBar = function() {
 
         com.forceUpdate = is_def(opt_in.forceUpdate) ? opt_in.forceUpdate : false
 
-        setStyle(opt_in.style)
+        set_style(opt_in.style)
         com.plotTimeSeries = []
         com.g_box = opt_in.g_box
         com.outer_box = deep_copy(opt_in.box_data)
@@ -262,7 +262,7 @@ window.PlotTimeBar = function() {
     // ------------------------------------------------------------------
     // styling
     // ------------------------------------------------------------------
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }
@@ -273,7 +273,7 @@ window.PlotTimeBar = function() {
 
         com.style.hasOutline = is_def(opt_in.hasOutline) ? opt_in.hasOutline : false
     }
-    this.setStyle = setStyle
+    this.set_style = set_style
     function transScaleBox(opt_in) {
         let duration = 0
         if (is_def(opt_in)) {

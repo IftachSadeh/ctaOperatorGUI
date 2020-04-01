@@ -78,7 +78,7 @@ window.PlotTimeSeries = function() {
         return reserved[type]
     }
 
-    function setStyle(opt_in) {
+    function set_style(opt_in) {
         if (!is_def(opt_in)) {
             opt_in = {
             }
@@ -91,7 +91,7 @@ window.PlotTimeSeries = function() {
             ? opt_in.hasOutline
             : false
     }
-    this.setStyle = setStyle
+    this.set_style = set_style
     function init(opt_in) {
         reserved = opt_in
         reserved.main.g.attr(

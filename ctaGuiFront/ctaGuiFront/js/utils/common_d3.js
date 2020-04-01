@@ -496,7 +496,7 @@ window.dropdown_d3 = function() {
             tag: tag,
             g_box: g,
             box_data: box,
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ tag + 'update_data' ],
             lock_zoom: {
@@ -507,10 +507,10 @@ window.dropdown_d3 = function() {
             run_loop: new RunLoop({
                 tag: tag,
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: true,
             scroll_horizontal: false,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'black',
             scroll_rec_h: {

@@ -462,7 +462,7 @@ let main_plots_dash = function(opt_in) {
                 w: box.w,
                 h: box.h,
             },
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ tag + 'update_data' ],
             lock_zoom: {
@@ -473,10 +473,10 @@ let main_plots_dash = function(opt_in) {
             run_loop: new RunLoop({
                 tag: tag,
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: isVertical,
             scroll_horizontal: !isVertical,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
@@ -992,10 +992,10 @@ let main_plots_dash = function(opt_in) {
                 h: box.pinnedPlots.h - 80,
             })
             scrollbox.reset_vertical_scroller({
-                canScroll: true,
-                scrollHeight: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(tot / nbperline)),
+                can_scroll: true,
+                scroll_height: (15 + plotbox.h * 0.15 + (plotbox.h + 20) * Math.ceil(tot / nbperline)),
             })
-            // scrollbox.update_horizontal_scroller({canScroll: true, scroll_width: 0})
+            // scrollbox.update_horizontal_scroller({can_scroll: true, scroll_width: 0})
         }
         this.adjustScrollBox = adjustScrollBox
 
@@ -1434,7 +1434,7 @@ let main_plots_dash = function(opt_in) {
             //   .duration(400)
             //   .attr('transform', 'translate(' + trans.translateX + ',' + trans.translateY + ') scale(' + (trans.scaleX < 1 ? 1 : shrinkFrac) + ',' + (trans.scaleY < 1 ? 1 : 1) + ')')
             // scrollPinnedList.update_box({x: 0, y: 0, w: scrollBoxList.w * (1 / shrinkFrac), h: scrollBoxList.h})
-            // scrollPinnedList.reset_vertical_scroller({canScroll: true, keepFrac: true, scrollHeight: (trans.scaleY < 1 ? 1 : shrinkFrac) * (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
+            // scrollPinnedList.reset_vertical_scroller({can_scroll: true, keepFrac: true, scroll_height: (trans.scaleY < 1 ? 1 : shrinkFrac) * (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1)})
             is_focused = !is_focused
             if (is_focused) {
                 scrollBoxList.w = scrollBoxList.w * shrinkFrac
@@ -1543,9 +1543,9 @@ let main_plots_dash = function(opt_in) {
 
             // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
             scrollPinnedList.reset_vertical_scroller({
-                canScroll: true,
+                can_scroll: true,
                 keepFrac: true,
-                scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
+                scroll_height: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
             })
         }
         function listBib(g, d, i, caller) {
@@ -1604,9 +1604,9 @@ let main_plots_dash = function(opt_in) {
 
             // let trans = get_transformation(svgPinnedPlotsg.select('g#pinned_eles').attr('transform'))
             scrollPinnedList.reset_vertical_scroller({
-                canScroll: true,
+                can_scroll: true,
                 keepFrac: true,
-                scrollHeight: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
+                scroll_height: (dim.h + dim.marg) * (Math.floor((shared.server.pinned.length) / perline) + 1),
             })
         }
         function updatePinnedList() {
@@ -2935,7 +2935,7 @@ let main_plots_dash = function(opt_in) {
         //   }
         //   let nbperline = Math.floor(rightDim.w / (plotbox.w + offset))
         //   scrollbox.update_box({x: 0, y: 0, w: rightDim.w, h: rightDim.h})
-        //   scrollbox.reset_vertical_scroller({canScroll: true, scrollHeight: (plotbox.h + offset) * Math.floor(tot / nbperline)})
+        //   scrollbox.reset_vertical_scroller({can_scroll: true, scroll_height: (plotbox.h + offset) * Math.floor(tot / nbperline)})
         // }
         function findnbperline() {
             let line = []

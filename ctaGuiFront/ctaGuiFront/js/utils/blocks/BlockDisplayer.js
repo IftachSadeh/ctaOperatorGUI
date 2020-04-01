@@ -1656,7 +1656,7 @@ window.BlockDisplayer = function(opt_in) {
                     h: com.blockForm.forms.box.h,
                     marg: 0,
                 },
-                useRelativeCoords: true,
+                use_relative_coords: true,
                 locker: new Locker(),
                 lockers: [ 'blockDisplayerFormScroll' + 'update_data' ],
                 lock_zoom: {
@@ -1667,10 +1667,10 @@ window.BlockDisplayer = function(opt_in) {
                 run_loop: new RunLoop({
                     tag: 'inputHistoryScrollBox',
                 }),
-                canScroll: true,
+                can_scroll: true,
                 scrollVertical: false,
                 scroll_horizontal: true,
-                scrollHeight: 0,
+                scroll_height: 0,
                 scroll_width: com.blockForm.forms.box.w + 0.01,
                 background: 'transparent',
                 scroll_rec_h: {
@@ -1854,7 +1854,7 @@ window.BlockDisplayer = function(opt_in) {
                 bform.update()
             }
             com.blockForm.forms.scroll.scrollBox.reset_horizontal_scroller({
-                canScroll: true,
+                can_scroll: true,
                 scroll_width: 200 * blocks.length,
             })
         }
@@ -3175,7 +3175,7 @@ window.BlockDisplayer = function(opt_in) {
                 w: com.main.box.w,
                 h: com.main.box.h,
             },
-            useRelativeCoords: true,
+            use_relative_coords: true,
             locker: new Locker(),
             lockers: [ 'blockDisplayerScroll' + 'update_data' ],
             lock_zoom: {
@@ -3186,10 +3186,10 @@ window.BlockDisplayer = function(opt_in) {
             run_loop: new RunLoop({
                 tag: 'blockDisplayerScroll',
             }),
-            canScroll: true,
+            can_scroll: true,
             scrollVertical: false,
             scroll_horizontal: true,
-            scrollHeight: 0,
+            scroll_height: 0,
             scroll_width: 0,
             background: 'transparent',
             scroll_rec_h: {
