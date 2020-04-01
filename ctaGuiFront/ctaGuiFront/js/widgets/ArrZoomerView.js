@@ -234,7 +234,10 @@ let main_arr_zoomer = function(opt_in) {
         let arr_zoomer_base = new ArrZoomerBase({
             run_loop: run_loop,
             sgv_tag: sgv_tag,
-            svg_dims: { w: svg_dims.w, h: svg_dims.h },
+            svg_dims: {
+                w: svg_dims.w,
+                h: svg_dims.h,
+            },
             widget_id: widget_id,
             widget_source: widget_source,
             locker: locker,

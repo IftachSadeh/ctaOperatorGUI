@@ -43,7 +43,7 @@ def main(global_config, **settings):
 
     # southern or northen CTA sites have different telescope configurations
     utils.site_type = settings['site_type']
-    
+
     # the redis port use for this site
     utils.redis_port = settings['redis_port']
 
@@ -123,8 +123,17 @@ def main(global_config, **settings):
     # list here all views, which use the shared view function
     # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
     utils.all_widgets = [
-        'view102', 'view000', 'view_refresh_all', 'view200', 'view201', 'view202',
-        'view203', 'view204', 'view205', 'view206', 'view207',
+        'view102',
+        'view000',
+        'view_refresh_all',
+        'view200',
+        'view201',
+        'view202',
+        'view203',
+        'view204',
+        'view205',
+        'view206',
+        'view207',
     ]
 
     for view_name in utils.all_widgets:

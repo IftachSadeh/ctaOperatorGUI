@@ -3561,7 +3561,10 @@ let main_weather_monitoring = function(opt_in) {
 
                 let arr_zoomer_base = new ArrZoomerBase({
                     run_loop: run_loop,
-                    svg_dims: { w: svg_dims.w[0], h: svg_dims.h[0] },
+                    svg_dims: {
+                        w: svg_dims.w[0],
+                        h: svg_dims.h[0],
+                    },
                     widget_id: widget_id,
                     widget_source: widget_source,
                     locker: locker,

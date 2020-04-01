@@ -40,7 +40,9 @@ class ObsBlocks():
         self.tel_ids = self.InstData.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
         self.class_name = self.__class__.__name__
-        self.redis = RedisManager(name=self.class_name, port=utils.redis_port, log=self.log)
+        self.redis = RedisManager(
+            name=self.class_name, port=utils.redis_port, log=self.log
+        )
 
         self.debug = not True
         self.expire = 86400  # one day
@@ -340,7 +342,9 @@ class ObsBlocksNoACS():
         self.tel_ids = self.InstData.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
 
         self.class_name = self.__class__.__name__
-        self.redis = RedisManager(name=self.class_name, port=utils.redis_port, log=self.log)
+        self.redis = RedisManager(
+            name=self.class_name, port=utils.redis_port, log=self.log
+        )
 
         self.debug = not True
         self.expire = 86400  # one day

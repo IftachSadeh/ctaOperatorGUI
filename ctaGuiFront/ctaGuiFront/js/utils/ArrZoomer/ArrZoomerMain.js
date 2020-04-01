@@ -46,7 +46,7 @@ window.ArrZoomerMain = function(opt_in0) {
     let insts = ele_base.insts
     let zooms = ele_base.zooms
     let lock_init_key = ele_base.lock_init_keys.main
-    let svg_dims_base = ele_base.svg_dims
+    // let svg_dims_base = ele_base.svg_dims
 
     let scale_r = insts.scale_r
 
@@ -334,7 +334,8 @@ window.ArrZoomerMain = function(opt_in0) {
                         let trans_x = 4
                         let trans_y = -5
                         return (
-                            'scale(' + scale + ')translate(' + trans_x + ', ' + trans_y + ')'
+                            ('scale(' + scale + ')')
+                            + ('translate(' + trans_x + ', ' + trans_y + ')')
                         )
                     })
             }
@@ -359,23 +360,33 @@ window.ArrZoomerMain = function(opt_in0) {
                 site_svg
                     .select('#' + 'layer3')
                     .selectAll('rect')
-                    // .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('vector-effect', 'non-scaling-stroke')
                     // .attr('opacity', '0.1')
-                    .style('fill-opacity', '.15')
+                    .style('fill', '#383b42')
+                    .style('stroke', '#383b42')
+                    .style('fill-opacity', .15)
                     .style('stroke-width', 0)
                 site_svg
                     .select('#' + 'layer3')
                     .selectAll('path')
-                    // .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', '0.6')
+                    .attr('vector-effect', 'non-scaling-stroke')
+                    .style('stroke', '#383b42')
+                    .style('stroke-width', 0.2)
+                    .style('stroke-opacity', .6)
+                    .style('fill', '#383b42')
+                    .style('fill-opacity', .03)
+                    // .style('stroke', 'green')
                 // ------------------------------------------------------------------
                 // modify paths land-contours
                 // ------------------------------------------------------------------
                 site_svg
                     .select('#' + 'layer8')
                     .selectAll('path')
-                    // .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', '0.3')
+                    .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', 0.2)
+                    .style('stroke', '#383b42')
+                    .style('stroke-width', 0.8)
+                    .style('stroke-dasharray', 3.5)
                     // .style('stroke', 'blue')
                 // ------------------------------------------------------------------
                 // modify paths ravine
@@ -383,17 +394,24 @@ window.ArrZoomerMain = function(opt_in0) {
                 site_svg
                     .select('#' + 'layer9')
                     .selectAll('path')
-                    // .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', '0.4')
+                    .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('opacity', 0.4)
+                    .style('stroke', '#383b42')
+                    .style('stroke-width', 1)
+                    .style('stroke-dasharray', 2)
+                    .style('stroke-opacity', .15)
                     .style('fill-opacity', '.15')
+                    // .style('stroke', 'blue')
                 // ------------------------------------------------------------------
                 // modify paths roads
                 // ------------------------------------------------------------------
                 site_svg
                     .select('#' + 'layer7')
                     .selectAll('path')
-                    // .attr('vector-effect', 'non-scaling-stroke')
+                    .attr('vector-effect', 'non-scaling-stroke')
                     .attr('opacity', '0.15')
+                    .style('stroke', '#383b42')
+                    .style('stroke-width', 4)
                     // .style('stroke', 'red')
 
                 return
@@ -1783,7 +1801,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 if (is_focused(d, 1)) {
                     shiftVal = (
                         insts.data.xyr[d.id].r
-            * (scale_r[1].health1 + 0.5)
+                        * (scale_r[1].health1 + 0.5)
                     )
                 }
                 return (
@@ -3924,6 +3942,8 @@ window.ArrZoomerMain = function(opt_in0) {
         let focus_0 = is_def(opt_in.focus_0) ? opt_in.focus_0 : []
         let focus_1 = is_def(opt_in.focus_1) ? opt_in.focus_1 : []
         let tag_now = insts.prop0
+        let tag_fore = '_foreground'
+        let tag_back = '_background'
 
         let focus_ids = [
             focus_0.map(function(d) {
@@ -3942,16 +3962,94 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         // operate on new elements only
-        let circ = g_now
-            .selectAll('circle.' + tag_now)
+        let circ_back = g_now
+            .selectAll('circle.' + tag_now + tag_back)
             .data(data_in, function(d) {
                 return d.id
             })
 
-        circ
+        circ_back
             .enter()
             .append('circle')
-            .attr('class', tag_now)
+            .attr('class', tag_now + tag_back)
+            .style('opacity', 1)
+            .style('fill-opacity', 0)
+            .style('stroke-opacity', 0)
+            .attr('r', function(_) {
+                return 0
+            })
+            .style('stroke-width', 0.4)
+            .style('stroke', '#383b42')
+            .style('fill', '#F2F2F2')
+            // .style('fill', 'red')
+            .attr('vector-effect', 'non-scaling-stroke')
+            .style('pointer-events', 'none')
+            .attr('transform', function(d) {
+                return (
+                    'translate('
+                    + insts.data[pos_tag][d.id].x
+                    + ','
+                    + insts.data[pos_tag][d.id].y
+                    + ')'
+                )
+            })
+            .merge(circ_back)
+            .transition('in_out')
+            .duration(times.anim)
+            .attr('transform', function(d) {
+                return (
+                    'translate('
+                    + insts.data[pos_tag][d.id].x
+                    + ','
+                    + insts.data[pos_tag][d.id].y
+                    + ')'
+                )
+            })
+            .style('fill-opacity', function(d) {
+                if (is_focused(d, 1)) {
+                    return 0.9
+                }
+                else if (is_focused(d, 0)) {
+                    return 0.5
+                }
+                else {
+                    return 0.02
+                }
+            })
+            .style('stroke-opacity', function(d) {
+                if (is_focused(d, 1)) {
+                    return 0.05
+                }
+                else if (is_focused(d, 0)) {
+                    return 0.025
+                }
+                else {
+                    return 0
+                }
+            })
+            .attr('r', function(d) {
+                let r = insts.data[pos_tag][d.id].r * scale_r[0].health2
+                if (is_focused(d, 1)) {
+                    return r * 1.5
+                }
+                else if (is_focused(d, 0)) {
+                    return r
+                }
+                else {
+                    return r
+                }
+            })
+
+        let circ_fore = g_now
+            .selectAll('circle.' + tag_now + tag_fore)
+            .data(data_in, function(d) {
+                return d.id
+            })
+
+        circ_fore
+            .enter()
+            .append('circle')
+            .attr('class', tag_now + tag_fore)
             .style('opacity', '0')
             .attr('r', function(_) {
                 return 0
@@ -3968,7 +4066,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     + ')'
                 )
             })
-            .merge(circ)
+            .merge(circ_fore)
             .transition('in_out')
             .duration(times.anim)
             .attr('transform', function(d) {
@@ -4009,7 +4107,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     return r
                 }
             })
-    
+
         return
     }
 

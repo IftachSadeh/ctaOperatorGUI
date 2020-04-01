@@ -49,7 +49,9 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         self.sess_name = ''
         self.log_send_packet = False
 
-        self.redis = RedisManager(name=self.__class__.__name__, port=utils.redis_port, log=self.log)
+        self.redis = RedisManager(
+            name=self.__class__.__name__, port=utils.redis_port, log=self.log
+        )
 
         SocketManager.InstData = InstData(
             site_type=utils.site_type, lock=SocketManager.lock

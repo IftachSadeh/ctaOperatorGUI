@@ -659,7 +659,7 @@ class InstData():
             add_dict_id(id_now, {'x': 383.626, 'y': 467.621, 'type': 'MST'})
             id_now = "Mx15"
             add_dict_id(id_now, {'x': 338.955, 'y': 305.371, 'type': 'MST'})
-        
+
         return
 
     # ------------------------------------------------------------------

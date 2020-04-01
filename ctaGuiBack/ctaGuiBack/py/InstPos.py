@@ -25,7 +25,9 @@ class InstPos():
         self.tel_ids = self.InstData.get_inst_ids()
 
         self.class_name = self.__class__.__name__
-        self.redis = RedisManager(name=self.class_name, port=utils.redis_port, log=self.log)
+        self.redis = RedisManager(
+            name=self.class_name, port=utils.redis_port, log=self.log
+        )
 
         # ------------------------------------------------------------------
         #

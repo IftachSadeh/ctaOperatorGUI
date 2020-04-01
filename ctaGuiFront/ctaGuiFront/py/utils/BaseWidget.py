@@ -32,7 +32,9 @@ class BaseWidget():
         # for common threading
         self.widget_group = (self.socket_manager.user_group_id + '_' + self.widget_name)
         # redis interface
-        self.redis = RedisManager(name=self.widget_name, port=utils.redis_port, log=self.log)
+        self.redis = RedisManager(
+            name=self.widget_name, port=utils.redis_port, log=self.log
+        )
         # turn on periodic data updates
         self.do_data_updates = True
         # some etra logging messages for this module

@@ -228,16 +228,12 @@ class ArrZoomer():
         self.inst_ids = [
             self.inst_ids[n_id] for n_id in range(len(self.inst_ids)) if filt_inst[n_id]
         ]
-        self.inst_types = dict(
-            (k, v)
-            for (k, v) in self.inst_types.items()
-            if k in self.inst_ids
-        )
-        self.inst_pos = dict(
-            (k, v)
-            for (k, v) in self.inst_pos.items()
-            if k in self.inst_ids
-        )
+        self.inst_types = dict((k, v)
+                               for (k, v) in self.inst_types.items()
+                               if k in self.inst_ids)
+        self.inst_pos = dict((k, v)
+                             for (k, v) in self.inst_pos.items()
+                             if k in self.inst_ids)
 
         return
 
