@@ -3,6 +3,7 @@ import logging
 import numbers
 # import time
 from datetime import datetime
+from datetime import timedelta
 import numpy as np
 from math import floor
 from random import Random
@@ -15,11 +16,11 @@ from RedisManager import RedisManager
 # ------------------------------------------------------------------
 # initialize the color dict (may choose not to use colors here)
 # ------------------------------------------------------------------
-# use_log_title = False if os.uname()[1] == "sadehMac" else True
+# use_log_title = False if os.uname()[1] == 'sadehMac' else True
 use_log_title = False
 add_msg_ele_space = False
 
-no_sub_arr_name = "empty_sub_array"
+no_sub_arr_name = 'empty_sub_array'
 inst_pos_0 = [0, 90]
 
 # ------------------------------------------------------------------
@@ -32,19 +33,19 @@ redis_port = None
 # ------------------------------------------------------------------
 # check if ACS is available (assumed yes if the 'ACSROOT' env variable is defined)
 # ------------------------------------------------------------------
-has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == "dawn.ifh.de")
+has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == 'dawn.ifh.de')
 
 # userName = os.getlogin()
 # redis_port = dict()
 # redis_port = 6379
 # #  ugly temporery hack for development:
-# if userName == "verdingi":
+# if userName == 'verdingi':
 #   has_acs = False
 #   redis_port += 1
 
 # ------------------------------------------------------------------
 # for safety, make sure registered widgets can be requested by the client
-# e.g., expect a module file named "AAA.py", containing a class AAA
+# e.g., expect a module file named 'AAA.py', containing a class AAA
 all_widgets = []
 allowed_widget_types = {
     'synced': [
@@ -67,7 +68,7 @@ allowed_widget_types = {
     ]
 }
 
-# sync_types = [ "sync_tel_focus" ]
+# sync_types = [ 'sync_tel_focus' ]
 
 
 # ------------------------------------------------------------------
@@ -80,17 +81,17 @@ class my_log():
     # ------------------------------------------------------------------
     def __init__(self, name='', title='', do_parse_msg=True, use_colors=True):
         self.do_parse_msg = do_parse_msg
-        self.name = "root" if name is "" else name
+        self.name = 'root' if name is '' else name
         self.log = logging.getLogger(self.name)
 
         self.set_colors(use_colors)
         self.base_title = title
         self.title = self.colors['c'](
-            "" if title is "" else (" [" + title + "]" if use_log_title else "")
+            '' if title is '' else (' [' + title + ']' if use_log_title else '')
         )
 
         # common lock for all loggers
-        self.lock = my_lock("my_log")
+        self.lock = my_lock('my_log')
 
         return
 
@@ -105,7 +106,7 @@ class my_log():
         # if the input is a list
         # ------------------------------------------------------------------
         if isinstance(msg_in, list):
-            msg = ""
+            msg = ''
             for msg_now in msg_in:
                 # ------------------------------------------------------------------
                 #  if there is a list of messages
@@ -113,8 +114,8 @@ class my_log():
                 if isinstance(msg_now, list):
                     # list with one element
                     if len(msg_now) == 1:
-                        if add_msg_ele_space and msg != "":
-                            msg += " "
+                        if add_msg_ele_space and msg != '':
+                            msg += ' '
                         msg += str(msg_now[0])
                     # list with multiple elements
                     elif len(msg_now) >= 2:
@@ -125,25 +126,25 @@ class my_log():
                             if len(msg_now) == 2:
                                 msg_str = str(msg_now[1])
                             else:
-                                msg_str = (" ").join([
+                                msg_str = (' ').join([
                                     str(ele_now) for ele_now in msg_now[1:]
                                 ])
                         # there is no color indicator, just a list of messages
                         else:
                             color_func = self.colors['']
-                            msg_str = (" ").join([str(ele_now) for ele_now in msg_now])
+                            msg_str = (' ').join([str(ele_now) for ele_now in msg_now])
 
                         # compose the colored output from the (joined list of) messages(s)
-                        if add_msg_ele_space and msg != "":
-                            msg += color_func(" ")
+                        if add_msg_ele_space and msg != '':
+                            msg += color_func(' ')
                         msg += color_func(msg_str)
 
                 # ------------------------------------------------------------------
                 # if there is a single message (non-list)
                 # ------------------------------------------------------------------
                 else:
-                    if add_msg_ele_space and msg != "":
-                        msg += " "
+                    if add_msg_ele_space and msg != '':
+                        msg += ' '
                     msg += str(msg_now)
 
         # ------------------------------------------------------------------
@@ -184,19 +185,19 @@ class my_log():
     # color output
     # ------------------------------------------------------------------
     def get_col_dict(self, use_colors):
-        col_def = "\033[0m"
-        col_blue = "\033[34m"
-        col_red = "\033[31m"
-        col_light_blue = "\033[94m"
-        col_yellow = "\033[33m"
-        col_underline = "\033[4;30m"
-        col_white_on_black = "\33[40;37;1m"
-        col_white_on_green = "\33[42;37;1m"
-        col_white_on_yellow = "\33[43;37;1m"
-        col_green = "\033[32m"
-        col_white_on_red = "\33[41;37;1m"
-        col_purple = "\033[35m"
-        col_cyan = "\033[36m"
+        col_def = '\033[0m'
+        col_blue = '\033[34m'
+        col_red = '\033[31m'
+        col_light_blue = '\033[94m'
+        col_yellow = '\033[33m'
+        col_underline = '\033[4;30m'
+        col_white_on_black = '\33[40;37;1m'
+        col_white_on_green = '\33[42;37;1m'
+        col_white_on_yellow = '\33[43;37;1m'
+        col_green = '\033[32m'
+        col_white_on_red = '\33[41;37;1m'
+        col_purple = '\033[35m'
+        col_cyan = '\033[36m'
 
         def no_color(msg):
             return '' if (str(msg) is '') else str(msg)
@@ -291,7 +292,7 @@ class my_lock():
     locks = {}
 
     def __init__(self, name='', seconds_to_check=None):
-        self.name = "generic" if name is "" else name
+        self.name = 'generic' if name is '' else name
 
         self.seconds_to_check = max(
             0.0001,
@@ -312,7 +313,7 @@ class my_lock():
         while my_lock.locks[self.name]:
             n_checked += 1
             if n_checked > self.n_max_checks:
-                raise Warning(" - could not get lock for " + self.name + " ...")
+                raise Warning(' - could not get lock for ' + self.name + ' ...')
                 break
             sleep(self.seconds_to_check)
 
@@ -325,29 +326,29 @@ class my_lock():
 # ------------------------------------------------------------------
 # assertion with a msg
 # ------------------------------------------------------------------
-def my_assert(log=None, msg="", state=False, only_warn=False):
+def my_assert(log=None, msg='', state=False, only_warn=False):
     if state:
         return
 
     if log is None:
-        log = my_log(title="my_assert/" + __name__)
+        log = my_log(title='my_assert/' + __name__)
 
     if only_warn:
         log.warning([['wr', msg]])
     else:
-        log.critical([['wr', msg, " - Will terminate !!!!"]])
+        log.critical([['wr', msg, ' - Will terminate !!!!']])
         raise Exception(msg)
 
     return
 
 
-# ------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 #
-# ------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 class ClockSim():
     is_active = False
 
-    def __init__(self, site_type, end_time_sec=None, timescale=None, *args, **kwargs):
+    def __init__(self, site_type, *args, **kwargs):
         self.log = my_log(title=__name__)
 
         if ClockSim.is_active:
@@ -355,36 +356,206 @@ class ClockSim():
         else:
             ClockSim.is_active = True
 
-        # 28800 -> 8 hour night
-        self.end_time_sec = 28800 if end_time_sec is None else end_time_sec
-        # 0.035 -> have 30 minutes last for one minute in real time
-        self.timescale = 0.07 if end_time_sec is None else timescale
-        # 0.0035 -> have 30 minutes last for 6 sec in real time
-        # if not has_acs:
-        #   self.timescale /= 2
-        # self.timescale /= 20
-
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(name=self.class_name, port=redis_port, log=self.log)
 
-        self.n_night = -1
+        self.rnd_gen = Random(11)
 
-        # range in seconds of time-series data to be stored for eg monitoring points
-        self.epoch = datetime.utcfromtimestamp(0)
-        self.time_series_n_seconds = 60 * 30
-        self.second_scale = 1000
+        # speedup simulation. e.g., 60*10 --> every 1 real sec goes to 10 simulated min
+        self.speed_factor = 60 * 10
+        self.speed_factor = 60 * 30 * 1
 
-        self.reset_night()
-
+        self.init_night_times()
         gevent.spawn(self.loop)
 
-
-        print(datetime.utcnow())
-        print(date_to_string(datetime.utcnow()))
-        print(datetime.utcfromtimestamp(0))
-        print((datetime.utcnow() - self.epoch))
+        # # range in seconds of time-series data to be stored for eg monitoring points
+        # self.time_series_n_seconds = 60 * 30
 
         return
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    def loop(self):
+        self.log.info([['g', ' - starting ClockSim.loop ...']])
+
+        sleep_sec = 1
+        if self.speed_factor > (30 * 60 * sleep_sec):
+            raise ValueError('Can not over-pace the loop ...')
+
+        while True:
+            self.time_now += timedelta(seconds=sleep_sec * self.speed_factor)
+            # self.log.info([['g', ' --- self.time_now: '], ['y', self.time_now], ['p', ' (', self.is_night_time_now(), ')']])
+            # self.get_real_time_sec()
+            # self.get_astro_night_start_sec()
+            # self.get_time_series_start_time_sec()
+
+            self.update_n_night()
+
+            secs_now = datetime_to_secs(self.time_now)
+            is_night_now = self.is_night_time_now()
+
+            self.redis.set(
+                name='clock_sim_' + 'time_now_sec',
+                data=secs_now,
+            )
+            self.redis.set(
+                name='clock_sim_' + 'is_night_now',
+                data=is_night_now,
+            )
+            self.redis.set(
+                name='clock_sim_' + 'n_nights',
+                data=self.n_nights,
+            )
+            self.redis.set(
+                name='clock_sim_' + 'astro_night_start_sec',
+                data=self.astro_night_start_sec,
+            )
+            self.redis.set(
+                name='clock_sim_' + 'astro_night_duration_sec',
+                data=self.astro_night_duration_sec,
+            )
+
+            sleep(sleep_sec)
+
+        return
+
+    
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    def init_night_times(self):
+        self.n_nights = -1
+        # start before the first astronomical night
+        self.time_now = epoch_0.replace(hour=12)
+        # self.time_now = epoch_0.replace(day=3, hour=12, minute=0, second=0, microsecond=0)
+
+        self.astro_night_start_sec = datetime_to_secs(epoch_0)
+        self.astro_night_end_sec = datetime_to_secs(epoch_0)
+        self.astro_night_duration_sec = 0
+        self.time_series_start_time_sec = self.astro_night_start_sec
+
+        self.set_night_times()
+
+        return
+    
+
+    # ---------------------------------------------------------------------------
+    # 
+    # ---------------------------------------------------------------------------
+    def set_night_times(self):
+        self.time_series_start_time_sec = self.astro_night_start_sec
+
+        n_days = (self.time_now - epoch_0).days
+
+        # e.g., night begins at 19:10
+        self.astro_night_start_sec = timedelta(
+            days=n_days,
+            hours=self.rnd_gen.randint(18, 19),
+            minutes=self.rnd_gen.randint(0, 59),
+            seconds=0,
+        ).total_seconds()
+
+        # e.g., night ends at 06:40
+        self.astro_night_end_sec = timedelta(
+            days=(n_days + 1),
+            hours=self.rnd_gen.randint(4, 5),
+            minutes=self.rnd_gen.randint(0, 59),
+            seconds=0,
+        ).total_seconds()
+
+        self.astro_night_duration_sec = (
+            self.astro_night_end_sec - self.astro_night_start_sec
+        )
+
+        # night_start = datetime.utcfromtimestamp(self.astro_night_start_sec)
+        #                             .strftime(time_str_formats['time'])
+        night_start = date_to_string(
+            secs_to_datetime(self.astro_night_start_sec), date_string=None,
+        )
+        night_end = date_to_string(
+            secs_to_datetime(self.astro_night_end_sec), date_string=None,
+        )
+        self.log.info([
+            ['b', ' - setting new night: '],
+            ['g', night_start],
+            ['b', ' --> '],
+            ['g', night_end],
+        ])
+
+        return
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    def update_n_night(self):
+        sec_since_midnight = self.get_sec_since_midnight()
+        days_since_epoch = (self.time_now - epoch_0).days
+
+        is_new_day = days_since_epoch > self.n_nights
+        is_past_night_time = sec_since_midnight > self.astro_night_end_sec
+        # print(days_since_epoch, sec_since_midnight, self.astro_night_end_sec, [is_new_day, is_past_night_time])
+
+        if is_new_day and is_past_night_time:
+            self.n_nights = days_since_epoch
+            self.set_night_times()
+
+        return
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    def is_night_time_now(self):
+        time_now_sec = datetime_to_secs(self.time_now)
+        is_night = (
+            time_now_sec > self.astro_night_start_sec
+            and time_now_sec <= self.astro_night_end_sec
+        )
+        return is_night
+
+
+    # ---------------------------------------------------------------------------
+    # 
+    # ---------------------------------------------------------------------------
+    def get_sec_since_midnight(self):
+        days_since_epoch = (self.time_now - epoch_0).days
+        sec_since_midnight = (
+            (self.time_now - epoch_0).seconds
+            + timedelta(days=days_since_epoch).total_seconds()
+        )
+        return sec_since_midnight
+
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    def get_n_nights(self):
+        return self.n_nights
+
+    # ---------------------------------------------------------------------------
+    # the global function for the current system time
+    # ---------------------------------------------------------------------------
+    def get_real_time_sec(self):
+        # print('----', self.time_now, datetime_to_secs(self.time_now))
+        return int(datetime_to_secs(self.time_now))
+
+
+    # ---------------------------------------------------------------------------
+    # beginig of the astronomical night
+    # ---------------------------------------------------------------------------
+    def get_astro_night_start_sec(self):
+        # print('-++-', self.astro_night_start_sec)
+        return int(self.astro_night_start_sec)
+
+
+    # ---------------------------------------------------------------------------
+    # time range for plotting (current night, or previous night if we are
+    # currently at daytime)
+    # ---------------------------------------------------------------------------
+    def get_time_series_start_time_sec(self):
+        # print('-??-', self.time_series_start_time_sec)
+        return int(self.time_series_start_time_sec)
+
 
     # ---------------------------------------------------------------------------
     #
@@ -432,58 +603,66 @@ class ClockSim():
     # def get_start_time_sec(self):
     #     return 0
 
-    # ---------------------------------------------------------------------------
-    def reset_night(self, log=None):
-        self.n_night += 1
-        self.real_reset_time_sec = get_time('msec')
+    # # ---------------------------------------------------------------------------
+    # def reset_night(self, log=None):
+    #     self.n_night += 1
+    #     self.real_reset_time_sec = get_time('msec')
 
-        # time_now_sec = int(floor(self.get_start_time_sec()))
-        # self.time_now_sec = time_now_sec
+    #     # time_now_sec = int(floor(self.get_start_time_sec()))
+    #     # self.time_now_sec = time_now_sec
 
-        # if log is not None:
-        #     self.log.info([
-        #         ['r', "- reset_night(): "],
-        #         ['y', 'time_now_sec:', self.time_now_sec, ', '],
-        #         ['b', 'n_night:', self.n_night, ', '],
-        #         ['g', 'real_reset_time_sec:', self.real_reset_time_sec],
-        #     ])
+    #     # if log is not None:
+    #     #     self.log.info([
+    #     #         ['r', '- reset_night(): '],
+    #     #         ['y', 'time_now_sec:', self.time_now_sec, ', '],
+    #     #         ['b', 'n_night:', self.n_night, ', '],
+    #     #         ['g', 'real_reset_time_sec:', self.real_reset_time_sec],
+    #     #     ])
 
-        # self.redis.pipe.set(name='clock_sim_' + 'scale', data=self.timescale)
-        # self.redis.pipe.set(name='clock_sim_' + 'start', data=time_now_sec)
-        # self.redis.pipe.set(name='clock_sim_' + 'end', data=self.end_time_sec)
-        # self.redis.pipe.set(name='clock_sim_' + 'now', data=time_now_sec)
+    #     # self.redis.pipe.set(name='clock_sim_' + 'scale', data=self.timescale)
+    #     # self.redis.pipe.set(name='clock_sim_' + 'start', data=time_now_sec)
+    #     # self.redis.pipe.set(name='clock_sim_' + 'end', data=self.end_time_sec)
+    #     # self.redis.pipe.set(name='clock_sim_' + 'now', data=time_now_sec)
 
-        # self.redis.pipe.execute()
+    #     # self.redis.pipe.execute()
 
-        return
-
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    def loop(self):
-        return
-        self.log.info([['g', " - starting ClockSim.loop ..."]])
-
-        sleep_seconds = 1
-        while True:
-            self.time_now_sec += sleep_seconds / self.timescale
-            if self.time_now_sec > self.end_time_sec:
-                self.reset_night()
-
-            self.redis.set(name='clock_sim_' + 'now', data=int(floor(self.time_now_sec)))
-
-            # print('--clock_sim---------', self.time_now_sec)
-
-            sleep(sleep_seconds)
-
-        return
+    #     return
 
 
+# ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
+epoch_0 = datetime.utcfromtimestamp(0)
 
 
+def datetime_to_secs(time_now):
+    return (time_now - epoch_0).total_seconds()
 
 
+def secs_to_datetime(secs_now):
+    return epoch_0 + timedelta(seconds=float(secs_now))
 
+
+# ---------------------------------------------------------------------------
+#
+# ---------------------------------------------------------------------------
+def get_clock_sim(parent):
+    parent.redis.pipe.get('clock_sim_' + 'time_now_sec')
+    # parent.redis.pipe.get('time_of_night_' + 'end')
+    # parent.redis.pipe.get('time_of_night_' + 'now')
+
+    clock_sim = parent.redis.pipe.execute()
+
+    if len(clock_sim) != 1:
+        parent.log.warning([[
+            'r', ' - ', parent.widget_name, ' - could not get clock_sim - '
+        ], ['p', str(clock_sim)], ['r', ' - will use fake range ...']])
+        clock_sim = [0, 100, 0]
+
+    data = {'time_now_sec': clock_sim[0]}
+    # data = {'start': clock_sim[0], 'end': clock_sim[1], 'now': clock_sim[2]}
+
+    return data
 
 
 
@@ -596,7 +775,7 @@ class time_of_night():
 
         if log is not None:
             self.log.info([
-                ['r', "- reset_night(): "],
+                ['r', '- reset_night(): '],
                 ['y', 'time_now_sec:', self.time_now_sec, ', '],
                 ['b', 'n_night:', self.n_night, ', '],
                 ['g', 'real_reset_time_sec:', self.real_reset_time_sec],
@@ -615,17 +794,19 @@ class time_of_night():
     #
     # ---------------------------------------------------------------------------
     def loop(self):
-        self.log.info([['g', " - starting time_of_night.loop ..."]])
+        self.log.info([['g', ' - starting time_of_night.loop ...']])
 
-        sleep_seconds = 1
+        sleep_sec = 1
         while True:
-            self.time_now_sec += sleep_seconds / self.timescale
+            self.time_now_sec += sleep_sec / self.timescale
             if self.time_now_sec > self.end_time_sec:
                 self.reset_night()
 
-            self.redis.set(name='time_of_night_' + 'now', data=int(floor(self.time_now_sec)))
+            self.redis.set(
+                name='time_of_night_' + 'now', data=int(floor(self.time_now_sec))
+            )
 
-            sleep(sleep_seconds)
+            sleep(sleep_sec)
 
         return
 
@@ -642,7 +823,7 @@ def get_time_of_night(parent):
 
     if len(time_of_night) != 3:
         parent.log.warning([[
-            'r', ' - ', parent.widget_name, " - could not get time_of_night - "
+            'r', ' - ', parent.widget_name, ' - could not get time_of_night - '
         ], ['p', str(time_of_night)], ['r', ' - will use fake range ...']])
         time_of_night = [0, 100, 0]
 
@@ -651,24 +832,11 @@ def get_time_of_night(parent):
     return data
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
 def dict_module_func(data, key, val, new_values):
-    if key == "id" and val in new_values:
+    if key == 'id' and val in new_values:
         data['val'] = new_values[val]
     return
 
@@ -697,7 +865,7 @@ def traverse_object(data, new_values, module_func=None):
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-# def flatten_dictOrig(data, flatDict, id="id"):
+# def flatten_dictOrig(data, flatDict, id='id'):
 #   if isinstance(data, dict):
 #     for k,v in data.items():
 #       if isinstance(v, dict) or isinstance(v, list) or isinstance(v, tuple):
@@ -759,7 +927,7 @@ def flatten_dict(data_in, id='id', child_ids='children', sibling_ids='siblings')
                 else:
                     # fixme - try/except instead ...
                     my_assert(
-                        None, " - expect a dict with a key [" + str(id) + "] ?!?! "
+                        None, ' - expect a dict with a key [' + str(id) + '] ?!?! '
                         + str(child), False
                     )
 
@@ -800,23 +968,27 @@ def get_time(sec_scale):
     return int(secs * pow(10, scale))
     # return int(time.time() * 1e3)
 
+
 # ---------------------------------------------------------------------------
 # unique initialisation for rnd generator
 # ---------------------------------------------------------------------------
 def get_rnd_seed():
     return int(get_time(sec_scale='msec'))
 
+
 # ---------------------------------------------------------------------------
 # random number
 # ---------------------------------------------------------------------------
 rnd_gen = Random(get_rnd_seed())
+
+
 def get_rnd(n_digits=2, out_type=int):
     n_digits = max(n_digits, 1)
-    output = out_type(rnd_gen.randint(pow(10, n_digits-1), pow(10, n_digits)-1))
+    output = out_type(rnd_gen.randint(pow(10, n_digits - 1), pow(10, n_digits) - 1))
     if out_type is float:
         output = round(output * pow(10, -n_digits), n_digits)
         # output = out_type(('%0' + str(n_digits) + 'f') % output)
-    
+
     return output
 
 
@@ -824,6 +996,7 @@ def get_rnd(n_digits=2, out_type=int):
 #   return '%Y/%m/%d,%H:%m:%S'
 # def getDateTimeStr():
 #   return datetime.utcnow().strftime(getDateTimeFormat())
+
 
 # ---------------------------------------------------------------------------
 #
@@ -840,16 +1013,37 @@ def delta_seconds(date0, date1, is_microseconds=False):
 # ---------------------------------------------------------------------------
 #
 # ---------------------------------------------------------------------------
-def date_to_string(date_in, time_string='%H:%m:%S'):
-    return str(date_in.date().strftime('%Y/%m/%d')
-               ) + "," + str(date_in.time().strftime(time_string))
+time_str_formats = {
+    'date': '%Y/%m/%d',
+    'time': '%H:%m:%S',
+}
+def date_to_string(date_in, time_string='', date_string=''):
+    if time_string == '':
+        time_string = time_str_formats['time']
+    if date_string == '':
+        date_string = time_str_formats['date']
+    
+    output = ''
+    if date_string is not None:
+        output += str(date_in.date().strftime(date_string))
+    if time_string is not None:
+        if output != '':
+            output += ','
+        output += str(date_in.time().strftime(time_string))
+    
+    # output = (
+    #     str(date_in.date().strftime(date_string))
+    #     + ',' + str(date_in.time().strftime(time_string))
+    # )
+
+    return str(output)
 
 
 # ---------------------------------------------------------------------------
 #
 # ---------------------------------------------------------------------------
 def format_float_to_string(x):
-    return str("{0:.4e}".format(x))
+    return str('{0:.4e}'.format(x))
 
 
 # ---------------------------------------------------------------------------
@@ -877,6 +1071,6 @@ def has_data_resampler(arr_in):
 # ------------------------------------------------------------------
 def format_units(units_in):
     units = units_in
-    if units == ".." or units == "-":
-        units = ""
+    if units == '..' or units == '-':
+        units = ''
     return units

@@ -33,8 +33,6 @@ class InstHealth():
         self.inst_health_sub = dict()
         self.inst_health_sub_flat = dict()
 
-        self.time_series_n_seconds = self.time_of_night.time_series_n_seconds
-
         self.loop_sleep = 5
 
         self.init()

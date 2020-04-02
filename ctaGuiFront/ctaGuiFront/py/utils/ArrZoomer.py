@@ -559,6 +559,17 @@ class ArrZoomer():
             )
 
         while (get_thread_id() == thread_id):
+
+            # # testing ....
+            # # testing ....
+            # from ctaGuiUtils.py.utils import get_clock_sim, secs_to_datetime
+            # from datetime import date
+            # xx = get_clock_sim(self)
+            # print(secs_to_datetime(xx['time_now_sec']))
+            # # print(date.fromisoformat(xx['time_now']))
+            # # testing ....
+            # # testing ....
+
             self.update_data_once()
             sleep(n_sec_sleep)
 
