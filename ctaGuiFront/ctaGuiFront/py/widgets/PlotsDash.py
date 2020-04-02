@@ -28,7 +28,9 @@ class PlotsDash(BaseWidget):
         self.tel_category = 'Telescope'
         self.tel_type = ['LST', 'MST', 'SST', 'AUX']
         self.tel_key = ['mirror', 'camera', 'mount', 'daq', 'aux']
-        self.tel_ids = self.socket_manager.inst_data.get_inst_ids(inst_types=self.tel_type)
+        self.tel_ids = self.socket_manager.inst_data.get_inst_ids(
+            inst_types=self.tel_type
+        )
 
         self.weather_category = 'Weather'
         self.weather_type = ['WS1', 'WS2', 'WS3', 'WS4']
@@ -286,7 +288,8 @@ class PlotsDash(BaseWidget):
     def get_data(self):
         time_of_night_date = {
             "date_now":
-            datetime.fromtimestamp(get_time('msec') / 1000.0).strftime('%Y-%m-%d %H:%M:%S'),
+            datetime.fromtimestamp(get_time('msec') / 1000.0
+                                   ).strftime('%Y-%m-%d %H:%M:%S'),
             "now":
             get_time('msec')
         }

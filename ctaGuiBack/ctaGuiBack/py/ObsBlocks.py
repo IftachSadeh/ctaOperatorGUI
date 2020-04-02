@@ -126,8 +126,10 @@ class ObsBlocks():
                 status = schBlocks['metadata'][obs_block_id]['status']
                 phases = schBlocks['metadata'][obs_block_id]['phases']
                 duration = schBlocks['metadata'][obs_block_id]['duration']
-                start_time_sec_plan = schBlocks['metadata'][obs_block_id]['start_time_sec_plan']
-                start_time_sec_exe = schBlocks['metadata'][obs_block_id]['start_time_sec_exe']
+                start_time_sec_plan = schBlocks['metadata'][obs_block_id][
+                    'start_time_sec_plan']
+                start_time_sec_exe = schBlocks['metadata'][obs_block_id][
+                    'start_time_sec_exe']
 
                 start_time_sec = start_time_sec_plan if start_time_sec_exe is None else start_time_sec_exe
 
@@ -455,9 +457,8 @@ class ObsBlocksNoACS():
                 not is_cycle_done:
 
             base_name = (
-                self.name_prefix +'_'
-                + str(self.n_init_cycle) + '_'
-                + str(n_cycle_now) + '_'
+                self.name_prefix + '_' + str(self.n_init_cycle) + '_' + str(n_cycle_now)
+                + '_'
             )
             n_cycle_now += 1
 
@@ -544,8 +545,8 @@ class ObsBlocksNoACS():
 
                 for n_obs_now in range(n_obs_blocks):
                     obs_block_id = (
-                        'obs_block_' + base_name
-                        + str(n_sched_block_now) + '_' + str(n_obs_now)
+                        'obs_block_' + base_name + str(n_sched_block_now) + '_'
+                        + str(n_obs_now)
                     )
 
                     self.exe_phase[obs_block_id] = ''

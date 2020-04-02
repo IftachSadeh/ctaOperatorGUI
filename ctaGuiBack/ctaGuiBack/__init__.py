@@ -72,13 +72,9 @@ def main(global_config, **settings):
         clock_sim=clock_sim,
         inst_data=inst_data
     )
-    
-    InstPos(
-        site_type=utils.site_type,
-        clock_sim=clock_sim,
-        inst_data=inst_data
-    )
-    
+
+    InstPos(site_type=utils.site_type, clock_sim=clock_sim, inst_data=inst_data)
+
     MockTarget(site_type=utils.site_type)
 
     if utils.has_acs:

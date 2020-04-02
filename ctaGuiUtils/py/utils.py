@@ -420,7 +420,6 @@ class ClockSim():
 
         return
 
-    
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
@@ -438,10 +437,9 @@ class ClockSim():
         self.set_night_times()
 
         return
-    
 
     # ---------------------------------------------------------------------------
-    # 
+    #
     # ---------------------------------------------------------------------------
     def set_night_times(self):
         self.time_series_start_time_sec = self.astro_night_start_sec
@@ -471,10 +469,12 @@ class ClockSim():
         # night_start = datetime.utcfromtimestamp(self.astro_night_start_sec)
         #                             .strftime(time_str_formats['time'])
         night_start = date_to_string(
-            secs_to_datetime(self.astro_night_start_sec), date_string=None,
+            secs_to_datetime(self.astro_night_start_sec),
+            date_string=None,
         )
         night_end = date_to_string(
-            secs_to_datetime(self.astro_night_end_sec), date_string=None,
+            secs_to_datetime(self.astro_night_end_sec),
+            date_string=None,
         )
         self.log.info([
             ['b', ' - setting new night: '],
@@ -513,18 +513,14 @@ class ClockSim():
         )
         return is_night
 
-
     # ---------------------------------------------------------------------------
-    # 
+    #
     # ---------------------------------------------------------------------------
     def get_sec_since_midnight(self):
         days_since_epoch = (self.time_now - epoch_0).days
-        sec_since_midnight = (
-            (self.time_now - epoch_0).seconds
-            + timedelta(days=days_since_epoch).total_seconds()
-        )
+        sec_since_midnight = ((self.time_now - epoch_0).seconds
+                              + timedelta(days=days_since_epoch).total_seconds())
         return sec_since_midnight
-
 
     # ---------------------------------------------------------------------------
     #
@@ -539,14 +535,12 @@ class ClockSim():
         # print('----', self.time_now, datetime_to_secs(self.time_now))
         return int(datetime_to_secs(self.time_now))
 
-
     # ---------------------------------------------------------------------------
     # beginig of the astronomical night
     # ---------------------------------------------------------------------------
     def get_astro_night_start_sec(self):
         # print('-++-', self.astro_night_start_sec)
         return int(self.astro_night_start_sec)
-
 
     # ---------------------------------------------------------------------------
     # time range for plotting (current night, or previous night if we are
@@ -555,7 +549,6 @@ class ClockSim():
     def get_time_series_start_time_sec(self):
         # print('-??-', self.time_series_start_time_sec)
         return int(self.time_series_start_time_sec)
-
 
     # ---------------------------------------------------------------------------
     #
@@ -663,21 +656,6 @@ def get_clock_sim(parent):
     # data = {'start': clock_sim[0], 'end': clock_sim[1], 'now': clock_sim[2]}
 
     return data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # ------------------------------------------------------------------
@@ -1017,12 +995,14 @@ time_str_formats = {
     'date': '%Y/%m/%d',
     'time': '%H:%m:%S',
 }
+
+
 def date_to_string(date_in, time_string='', date_string=''):
     if time_string == '':
         time_string = time_str_formats['time']
     if date_string == '':
         date_string = time_str_formats['date']
-    
+
     output = ''
     if date_string is not None:
         output += str(date_in.date().strftime(date_string))
@@ -1030,7 +1010,7 @@ def date_to_string(date_in, time_string='', date_string=''):
         if output != '':
             output += ','
         output += str(date_in.time().strftime(time_string))
-    
+
     # output = (
     #     str(date_in.date().strftime(date_string))
     #     + ',' + str(date_in.time().strftime(time_string))
