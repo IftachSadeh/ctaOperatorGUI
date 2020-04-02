@@ -84,6 +84,7 @@
             "error", "always"
         ],
         "space-infix-ops": "error",
+        "consistent-return": "error",
         "space-before-function-paren": [
             "error", 
             "never"

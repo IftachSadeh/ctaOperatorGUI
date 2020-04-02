@@ -1,14 +1,9 @@
 import gevent
 from gevent import sleep
-from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
-import random
 from random import Random
-import time
-import copy
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_sub_arr_name, inst_pos_0
+from ctaGuiUtils.py.utils import my_log, inst_pos_0
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
@@ -16,13 +11,13 @@ class InstPos():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, site_type, InstData):
+    def __init__(self, site_type, clock_sim, inst_data):
         self.log = my_log(title=__name__)
         self.log.info([['y', " - InstPos - "], ['g', site_type]])
 
         self.site_type = site_type
-        self.InstData = InstData
-        self.tel_ids = self.InstData.get_inst_ids()
+        self.inst_data = inst_data
+        self.tel_ids = self.inst_data.get_inst_ids()
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(

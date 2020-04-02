@@ -1,6 +1,6 @@
 import time
-import ACS__POA
-from ACS import CBDescIn
+# import ACS__POA
+# from ACS import CBDescIn
 from Acspy.Clients.SimpleClient import PySimpleClient
 import random
 from utils import my_log

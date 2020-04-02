@@ -9,14 +9,12 @@ from collections import Counter
 import redis
 import json
 import jsonAcs
-import random
-from random import Random
 # Import ACS
 import ACS__POA
 from ACS import CBDescIn
 from Acspy.Clients.SimpleClient import PySimpleClient
 from Acspy.Common.Callbacks import CBvoid
-from Acspy.Common.Callbacks import CBdouble
+# from Acspy.Common.Callbacks import CBdouble
 from TelescopeStruct import props, GLOBAL_FREQ, QUEUE_FREQ
 
 desc = CBDescIn(5L, 0L, 0L)

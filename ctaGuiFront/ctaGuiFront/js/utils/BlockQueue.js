@@ -173,11 +173,11 @@ window.BlockQueue = function(opt_in) {
                 date: new Date(),
                 time: 0,
             },
-            start_time: {
+            start_time_sec: {
                 date: new Date(),
                 time: 0,
             },
-            end_time: {
+            end_time_sec: {
                 date: new Date(),
                 time: 1000,
             },
@@ -1125,7 +1125,7 @@ window.BlockQueue = function(opt_in) {
     }
 
     function updateAxis() {
-        com.axis.domain = [ com.time.start_time.date, com.time.end_time.date ]
+        com.axis.domain = [ com.time.start_time_sec.date, com.time.end_time_sec.date ]
         com.axis.range = [ 0, com.axis.box.w ]
 
         com.axis.scale.domain(com.axis.domain).range(com.axis.range)
@@ -1168,8 +1168,8 @@ window.BlockQueue = function(opt_in) {
                 .concat(com.data.filtered.wait)
             let bottomRow = calcBlockRow({
                 type_now: 'bottom',
-                start: com.time.start_time.time,
-                end: com.time.end_time.time,
+                start: com.time.start_time_sec.time,
+                end: com.time.end_time_sec.time,
                 data: dataBottom,
                 box: {
                     x: 0,
@@ -1198,8 +1198,8 @@ window.BlockQueue = function(opt_in) {
             let dataTop = [].concat(com.data.filtered.cancel)
             let topRow = calcBlockRow({
                 type_now: 'top',
-                start: com.time.start_time.time,
-                end: com.time.end_time.time,
+                start: com.time.start_time_sec.time,
+                end: com.time.end_time_sec.time,
                 data: dataTop,
                 box: {
                     x: 0,
@@ -1227,8 +1227,8 @@ window.BlockQueue = function(opt_in) {
         if (com.blocks.modification.enabled && com.data.modified.length > 0) {
             let middleRow = calcBlockRow({
                 type_now: 'top',
-                start: com.time.start_time.time,
-                end: com.time.end_time.time,
+                start: com.time.start_time_sec.time,
+                end: com.time.end_time_sec.time,
                 data: com.data.modified,
                 box: {
                     x: 0,
@@ -1262,8 +1262,8 @@ window.BlockQueue = function(opt_in) {
             .duration(400)
             .style('opacity', 0)
         com.time.currentTime = data_in.time.currentTime
-        com.time.start_time = data_in.time.start_time
-        com.time.end_time = data_in.time.end_time
+        com.time.start_time_sec = data_in.time.start_time_sec
+        com.time.end_time_sec = data_in.time.end_time_sec
         com.data.raw = data_in.data.raw
         com.data.modified = data_in.data.modified
 
@@ -1280,8 +1280,8 @@ window.BlockQueue = function(opt_in) {
     this.update_data = update_data
     function update(data_in) {
         com.time.currentTime = data_in.time.currentTime
-        com.time.start_time = data_in.time.start_time
-        com.time.end_time = data_in.time.end_time
+        com.time.start_time_sec = data_in.time.start_time_sec
+        com.time.end_time_sec = data_in.time.end_time_sec
 
         if (com.axis.enabled) {
             updateAxis()
@@ -1485,7 +1485,7 @@ window.BlockQueue = function(opt_in) {
                 })
 
                 ovelaps.sort(function(a, b) {
-                    let diffTime = a.data.data.start_time - b.data.data.start_time
+                    let diffTime = a.data.data.start_time_sec - b.data.data.start_time_sec
                     let diffTel = b.data.data.tel_ids.length - a.data.data.tel_ids.length
                     return diffTel !== 0 ? diffTel : diffTime
                 })
@@ -1557,9 +1557,9 @@ window.BlockQueue = function(opt_in) {
             let id = data_now.obs_block_id
             let state = data_now.exe_state.state
             let n_tels = data_now.tel_ids.length
-            let start = (data_now.start_time - opt_in.start) * xScale
-            let end = (data_now.end_time - opt_in.start) * xScale
-            let overlap = (data_now.end_time - data_now.start_time) * xScale * 0.2 // allow small overlap in x between blocks
+            let start = (data_now.start_time_sec - opt_in.start) * xScale
+            let end = (data_now.end_time_sec - opt_in.start) * xScale
+            let overlap = (data_now.end_time_sec - data_now.start_time_sec) * xScale * 0.2 // allow small overlap in x between blocks
             let x0 = box.x + start
             let w0 = end - start
             let h0 = opt_in.yScale ? n_tels * yScale : box.h * 0.3
@@ -1642,14 +1642,14 @@ window.BlockQueue = function(opt_in) {
         let timescale = d3
             .scaleLinear()
             .range(com.axis.range)
-            .domain([ com.time.start_time.time, com.time.end_time.time ])
+            .domain([ com.time.start_time_sec.time, com.time.end_time_sec.time ])
         for (let index in blocks) {
             let b = blocks[index]
             let cols = com.style.blockCol({
                 d: b,
             })
 
-            b.w = timescale(b.data.end_time) - timescale(b.data.start_time)
+            b.w = timescale(b.data.end_time_sec) - timescale(b.data.start_time_sec)
             b.stroke = cols.stroke
             b.strokeWidth = 0.5
             b.fill = cols.background
@@ -1714,8 +1714,8 @@ window.BlockQueue = function(opt_in) {
                 .concat(com.data.filtered.wait)
             let bottomRow = calcBlockRow({
                 type_now: 'bottom',
-                start: com.time.start_time.time,
-                end: com.time.end_time.time,
+                start: com.time.start_time_sec.time,
+                end: com.time.end_time_sec.time,
                 data: dataBottom,
                 box: {
                     x: 0,
@@ -1824,7 +1824,7 @@ window.BlockQueue = function(opt_in) {
         let timescale = d3
             .scaleLinear()
             .range(com.axis.range)
-            .domain([ com.time.start_time.time, com.time.end_time.time ])
+            .domain([ com.time.start_time_sec.time, com.time.end_time_sec.time ])
 
         let rect = g
             .selectAll('g.' + com.main_tag + 'blocks')
@@ -1842,13 +1842,13 @@ window.BlockQueue = function(opt_in) {
                 .append('rect')
                 .attr('class', 'back')
                 .attr('x', function(d, i) {
-                    return timescale(d.data.start_time)
+                    return timescale(d.data.start_time_sec)
                 })
                 .attr('y', function(d, i) {
                     return d.y - 2
                 })
                 .attr('width', function(d, i) {
-                    return timescale(d.data.end_time) - timescale(d.data.start_time)
+                    return timescale(d.data.end_time_sec) - timescale(d.data.start_time_sec)
                 })
                 .attr('height', function(d, i) {
                     return d.h
@@ -1933,13 +1933,13 @@ window.BlockQueue = function(opt_in) {
                 .append('rect')
                 .attr('class', 'pattern')
                 .attr('x', function(d, i) {
-                    return timescale(d.data.start_time)
+                    return timescale(d.data.start_time_sec)
                 })
                 .attr('y', function(d, i) {
                     return d.y - 2
                 })
                 .attr('width', function(d, i) {
-                    return timescale(d.data.end_time) - timescale(d.data.start_time)
+                    return timescale(d.data.end_time_sec) - timescale(d.data.start_time_sec)
                 })
                 .attr('height', function(d, i) {
                     return d.h
@@ -1973,7 +1973,7 @@ window.BlockQueue = function(opt_in) {
                     return d.stroke
                 })
                 .attr('x', function(d, i) {
-                    return timescale(d.data.start_time + d.data.duration * 0.5)
+                    return timescale(d.data.start_time_sec + d.data.duration * 0.5)
                 })
                 .attr('y', function(d, i) {
                     return d.y + d.h / 2
@@ -1997,13 +1997,13 @@ window.BlockQueue = function(opt_in) {
                     return d.fill_opacity
                 })
                 .attr('x', function(d, i) {
-                    return timescale(d.data.start_time)
+                    return timescale(d.data.start_time_sec)
                 })
                 .attr('y', function(d, i) {
                     return d.y - 2
                 })
                 .attr('width', function(d, i) {
-                    return timescale(d.data.end_time) - timescale(d.data.start_time)
+                    return timescale(d.data.end_time_sec) - timescale(d.data.start_time_sec)
                 })
                 .attr('height', function(d, i) {
                     return d.h
@@ -2021,13 +2021,13 @@ window.BlockQueue = function(opt_in) {
                 .select(this)
                 .select('rect.pattern')
                 .attr('x', function(d, i) {
-                    return timescale(d.data.start_time)
+                    return timescale(d.data.start_time_sec)
                 })
                 .attr('y', function(d, i) {
                     return d.y - 2
                 })
                 .attr('width', function(d, i) {
-                    return timescale(d.data.end_time) - timescale(d.data.start_time)
+                    return timescale(d.data.end_time_sec) - timescale(d.data.start_time_sec)
                 })
                 .attr('height', function(d, i) {
                     return d.h
@@ -2070,7 +2070,7 @@ window.BlockQueue = function(opt_in) {
                     return d.fill_opacity
                 })
                 .attr('x', function(d, i) {
-                    return timescale(d.data.start_time + d.data.duration * 0.5)
+                    return timescale(d.data.start_time_sec + d.data.duration * 0.5)
                 })
                 .attr('y', function(d, i) {
                     return d.y + d.h / 2

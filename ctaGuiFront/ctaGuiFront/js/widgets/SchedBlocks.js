@@ -155,7 +155,7 @@ function main_sched_blocks(opt_in) {
     // delay counters
     let locker = new Locker()
     locker.add('in_init')
-    console.log(' -- FIXME -- use tel_info.get_ids and tel_info.tel_id_to_types as in arr_zoomer.js .... -- see optional filter option in the python file -- self.socket_manager.InstData.get_inst_ids(inst_types=[....])')
+    console.log(' -- FIXME -- use tel_info.get_ids and tel_info.tel_id_to_types as in arr_zoomer.js .... -- see optional filter option in the python file -- self.socket_manager.inst_data.get_inst_ids(inst_types=[....])')
 
     // function loop
     let run_loop = new RunLoop({
@@ -466,10 +466,10 @@ function main_sched_blocks(opt_in) {
             }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
-                let end_time = is_def(opt_in.end_time)
-                    ? opt_in.end_time
+                let end_time_sec = is_def(opt_in.end_time_sec)
+                    ? opt_in.end_time_sec
                     : undefined
-                if (end_time < Number(shared.data.server.time_of_night.now)) {
+                if (end_time_sec < Number(shared.data.server.time_of_night.now)) {
                     return color_theme.blocks.shutdown
                 }
 
@@ -552,8 +552,8 @@ function main_sched_blocks(opt_in) {
         shared.data.server = data_in.data
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
-            ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
-            ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].end_time_sec = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
         }
         // sortBlocksByState()
 
@@ -619,8 +619,8 @@ function main_sched_blocks(opt_in) {
 
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
-            ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
-            ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].end_time_sec = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
         }
         // sortBlocksByState()
         update()
@@ -762,11 +762,11 @@ function main_sched_blocks(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    start_time: {
+                    start_time_sec: {
                         time: 0,
                         date: undefined,
                     },
-                    end_time: {
+                    end_time_sec: {
                         time: 0,
                         date: undefined,
                     },
@@ -822,19 +822,19 @@ function main_sched_blocks(opt_in) {
                 time: Number(shared.data.server.time_of_night.now),
             }
             let axisTop = brushZoomPast.getAxis('top').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
             event_queue_serverPast.update_data({
                 time: {
                     currentTime: currentTime,
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
                 data: {
                     raw: {
@@ -851,8 +851,8 @@ function main_sched_blocks(opt_in) {
             // block_queue_serverPast.update({
             //   time: {
             //     currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
-            //     start_time: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
-            //     end_time: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
+            //     start_time_sec: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
+            //     end_time_sec: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
             //   }
             // })
         }
@@ -982,11 +982,11 @@ function main_sched_blocks(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    start_time: {
+                    start_time_sec: {
                         time: 0,
                         date: undefined,
                     },
-                    end_time: {
+                    end_time_sec: {
                         time: 0,
                         date: undefined,
                     },
@@ -1042,11 +1042,11 @@ function main_sched_blocks(opt_in) {
                 time: Number(shared.data.server.time_of_night.now),
             }
             let axisTop = brushZoomFutur.getAxis('top').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
@@ -1054,8 +1054,8 @@ function main_sched_blocks(opt_in) {
             event_queue_serverFutur.update_data({
                 time: {
                     currentTime: currentTime,
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
                 data: {
                     raw: {
@@ -1071,13 +1071,13 @@ function main_sched_blocks(opt_in) {
         function update() {
             // let date = new Date(shared.data.server.time_of_night.date_now)
             // let currentTime = {date: date, time: Number(shared.data.server.time_of_night.now)}
-            // let start_time = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_of_night.now)}
-            // let end_time = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.time_of_night.now) + (3600 * 8)}
+            // let start_time_sec = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()), time: Number(shared.data.server.time_of_night.now)}
+            // let end_time_sec = {date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)), time: Number(shared.data.server.time_of_night.now) + (3600 * 8)}
             // block_queue_server_futur.update_data({
             //   time: {
             //     currentTime: currentTime,
-            //     start_time: start_time,
-            //     end_time: end_time
+            //     start_time_sec: start_time_sec,
+            //     end_time_sec: end_time_sec
             //   }
             // })
         }
@@ -1279,26 +1279,26 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let start_time = {
+            let start_time_sec = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() - (3600 * 8)),
                 time: Number(shared.data.server.time_of_night.now) - (3600 * 8),
             }
-            let end_time = {
+            let end_time_sec = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()),
                 time: Number(shared.data.server.time_of_night.now),
             }
 
             brushZoomPast.updateAxis({
                 id: 'top',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
             brushZoomPast.updateAxis({
                 id: 'middle',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
             brushZoomPast.updateAxis({
                 id: 'bottom',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
         }
         this.update_data = update_data
@@ -1501,26 +1501,26 @@ function main_sched_blocks(opt_in) {
 
         function update_data() {
             let date = new Date(shared.data.server.time_of_night.date_now)
-            let start_time = {
+            let start_time_sec = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()),
                 time: Number(shared.data.server.time_of_night.now),
             }
-            let end_time = {
+            let end_time_sec = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)),
                 time: Number(shared.data.server.time_of_night.now) + (3600 * 8),
             }
 
             brushZoomFutur.updateAxis({
                 id: 'top',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
             brushZoomFutur.updateAxis({
                 id: 'middle',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
             brushZoomFutur.updateAxis({
                 id: 'bottom',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
         }
         this.update_data = update_data
@@ -1814,11 +1814,11 @@ function main_sched_blocks(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    start_time: {
+                    start_time_sec: {
                         time: 0,
                         date: undefined,
                     },
-                    end_time: {
+                    end_time_sec: {
                         time: 0,
                         date: undefined,
                     },
@@ -1885,11 +1885,11 @@ function main_sched_blocks(opt_in) {
                 time: Number(shared.data.server.time_of_night.now),
             }
             let axisTop = brushZoomPast.getAxis('bottom').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
@@ -1897,8 +1897,8 @@ function main_sched_blocks(opt_in) {
             block_queue_serverPast.update_data({
                 time: {
                     currentTime: currentTime,
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
                 data: {
                     raw: {
@@ -1918,11 +1918,11 @@ function main_sched_blocks(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    start_time: {
+                    start_time_sec: {
                         date: new Date(shared.data.server.time_of_night.date_start),
                         time: Number(shared.data.server.time_of_night.start),
                     },
-                    end_time: {
+                    end_time_sec: {
                         date: new Date(shared.data.server.time_of_night.date_end),
                         time: Number(shared.data.server.time_of_night.end),
                     },
@@ -2217,11 +2217,11 @@ function main_sched_blocks(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    start_time: {
+                    start_time_sec: {
                         time: 0,
                         date: undefined,
                     },
-                    end_time: {
+                    end_time_sec: {
                         time: 0,
                         date: undefined,
                     },
@@ -2288,11 +2288,11 @@ function main_sched_blocks(opt_in) {
                 time: Number(shared.data.server.time_of_night.now),
             }
             let axisTop = brushZoomFutur.getAxis('bottom').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
@@ -2300,8 +2300,8 @@ function main_sched_blocks(opt_in) {
             block_queue_server_futur.update_data({
                 time: {
                     currentTime: currentTime,
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
                 data: {
                     raw: {
@@ -2320,19 +2320,19 @@ function main_sched_blocks(opt_in) {
                 date: date,
                 time: Number(shared.data.server.time_of_night.now),
             }
-            let start_time = {
+            let start_time_sec = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds()),
                 time: Number(shared.data.server.time_of_night.now),
             }
-            let end_time = {
+            let end_time_sec = {
                 date: new Date(shared.data.server.time_of_night.date_now).setSeconds(date.getSeconds() + (3600 * 8)),
                 time: Number(shared.data.server.time_of_night.now) + (3600 * 8),
             }
             block_queue_server_futur.update_data({
                 time: {
                     currentTime: currentTime,
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
             })
         }

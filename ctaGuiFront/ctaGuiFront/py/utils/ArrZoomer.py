@@ -29,7 +29,7 @@ class ArrZoomer():
         self.add_parent_interfaces()
 
         self.zoom_state = None
-        self.inst_data = self.socket_manager.InstData
+        self.inst_data = self.socket_manager.inst_data
         self.inst_ids = self.inst_data.get_inst_ids()
         self.proc_ids = self.inst_data.get_proc_ids()
         self.inst_types = self.inst_data.get_inst_id_to_types()

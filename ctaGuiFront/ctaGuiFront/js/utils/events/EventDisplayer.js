@@ -93,11 +93,11 @@ window.EventDisplayer = function(opt_in) {
                 date: new Date(),
                 time: 0,
             },
-            start_time: {
+            start_time_sec: {
                 date: new Date(),
                 time: 0,
             },
-            end_time: {
+            end_time_sec: {
                 date: new Date(),
                 time: 1000,
             },
@@ -319,7 +319,7 @@ window.EventDisplayer = function(opt_in) {
         }
         this.update = update
         function updateAxis() {
-            com.eventTrack.axis.domain = [ com.time.start_time.date, com.time.end_time.date ]
+            com.eventTrack.axis.domain = [ com.time.start_time_sec.date, com.time.end_time_sec.date ]
             com.eventTrack.axis.range = [ 0, com.eventTrack.axis.box.w ]
             com.eventTrack.axis.scale
                 .domain(com.eventTrack.axis.domain)
@@ -350,9 +350,9 @@ window.EventDisplayer = function(opt_in) {
             for (let i = 0; i < events.length; i++) {
                 let start
                 let end
-                start = events[i].start_time
-                if (events[i].end_time) {
-                    end = events[i].end_time
+                start = events[i].start_time_sec
+                if (events[i].end_time_sec) {
+                    end = events[i].end_time_sec
                 }
                 else {
                     end = start
@@ -498,10 +498,10 @@ window.EventDisplayer = function(opt_in) {
             // //   .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
             //
             // let simulationDurationInMs = 1000
-            // let start_time = Date.now()
-            // let end_time = start_time + simulationDurationInMs
+            // let start_time_sec = Date.now()
+            // let end_time_sec = start_time_sec + simulationDurationInMs
             // simulation.on('tick', function () {
-            //   if (Date.now() > end_time) {
+            //   if (Date.now() > end_time_sec) {
             //     simulation.stop()
             //     return
             //   }
@@ -524,7 +524,7 @@ window.EventDisplayer = function(opt_in) {
 
             let timescale = d3.scaleLinear()
                 .range(com.eventTrack.axis.range)
-                .domain([ com.time.start_time.time, com.time.end_time.time ])
+                .domain([ com.time.start_time_sec.time, com.time.end_time_sec.time ])
 
             let rect = com.main.scroll.scrollG
                 .selectAll('g.' + com.main.tag + 'events')
@@ -635,7 +635,7 @@ window.EventDisplayer = function(opt_in) {
         function get_eventsRows() {
             let timescale = d3.scaleLinear()
                 .range(com.eventTrack.axis.range)
-                .domain([ com.time.start_time.time, com.time.end_time.time ])
+                .domain([ com.time.start_time_sec.time, com.time.end_time_sec.time ])
             let scheds = groupEventsBySchedule(com.data.filtered)
             let nLine = scheds.length
             let height = com.main.box.h / nLine
@@ -649,9 +649,9 @@ window.EventDisplayer = function(opt_in) {
                     }
                     ret.push({
                         y: translate.y,
-                        x: timescale(scheds[i].events[j].start_time),
+                        x: timescale(scheds[i].events[j].start_time_sec),
                         h: height,
-                        w: timescale(scheds[i].events[j].end_time) - timescale(scheds[i].events[j].start_time),
+                        w: timescale(scheds[i].events[j].end_time_sec) - timescale(scheds[i].events[j].start_time_sec),
                         event: scheds[i].events[j],
                     })
                 }
@@ -883,7 +883,7 @@ window.EventDisplayer = function(opt_in) {
         }
         this.update = update
         function updateAxis() {
-            com.eventTrack.axis.domain = [ com.time.start_time.date, com.time.end_time.date ]
+            com.eventTrack.axis.domain = [ com.time.start_time_sec.date, com.time.end_time_sec.date ]
             com.eventTrack.axis.range = [ 0, com.eventTrack.axis.box.w ]
             com.eventTrack.axis.scale
                 .domain(com.eventTrack.axis.domain)
@@ -914,9 +914,9 @@ window.EventDisplayer = function(opt_in) {
             for (let i = 0; i < events.length; i++) {
                 let start
                 let end
-                start = events[i].start_time
-                if (events[i].end_time) {
-                    end = events[i].end_time
+                start = events[i].start_time_sec
+                if (events[i].end_time_sec) {
+                    end = events[i].end_time_sec
                 }
                 else {
                     end = start
@@ -1063,10 +1063,10 @@ window.EventDisplayer = function(opt_in) {
             // //   .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
             //
             // let simulationDurationInMs = 1000
-            // let start_time = Date.now()
-            // let end_time = start_time + simulationDurationInMs
+            // let start_time_sec = Date.now()
+            // let end_time_sec = start_time_sec + simulationDurationInMs
             // simulation.on('tick', function () {
-            //   if (Date.now() > end_time) {
+            //   if (Date.now() > end_time_sec) {
             //     simulation.stop()
             //     return
             //   }
@@ -1089,7 +1089,7 @@ window.EventDisplayer = function(opt_in) {
 
             let timescale = d3.scaleLinear()
                 .range(com.eventTrack.axis.range)
-                .domain([ com.time.start_time.time, com.time.end_time.time ])
+                .domain([ com.time.start_time_sec.time, com.time.end_time_sec.time ])
 
             let rect = com.main.scroll.scrollG
                 .selectAll('g.' + com.main.tag + 'events')
@@ -1100,14 +1100,14 @@ window.EventDisplayer = function(opt_in) {
             rect.each(function(d, i) {
                 let opac = 0
                 if (com.eventQueue.details.range === 'in') {
-                    if (d.start > com.time.start_time.time && d.end < com.time.end_time.time) {
+                    if (d.start > com.time.start_time_sec.time && d.end < com.time.end_time_sec.time) {
                         opac = 1
                         index_shift += 1
                     }
                 }
                 else if (timeIntersect(d, {
-                    start: com.time.start_time.time,
-                    end: com.time.end_time.time,
+                    start: com.time.start_time_sec.time,
+                    end: com.time.end_time_sec.time,
                 })) {
                     opac = 1
                     index_shift += 1
@@ -1180,7 +1180,7 @@ window.EventDisplayer = function(opt_in) {
         function get_eventsRows() {
             let timescale = d3.scaleLinear()
                 .range(com.eventTrack.axis.range)
-                .domain([ com.time.start_time.time, com.time.end_time.time ])
+                .domain([ com.time.start_time_sec.time, com.time.end_time_sec.time ])
             let scheds = groupEventsBySchedule(com.data.filtered)
             let nLine = scheds.length
             let height = com.main.box.h / nLine
@@ -1194,9 +1194,9 @@ window.EventDisplayer = function(opt_in) {
                     }
                     ret.push({
                         y: translate.y,
-                        x: timescale(scheds[i].events[j].start_time),
+                        x: timescale(scheds[i].events[j].start_time_sec),
                         h: height,
-                        w: timescale(scheds[i].events[j].end_time) - timescale(scheds[i].events[j].start_time),
+                        w: timescale(scheds[i].events[j].end_time_sec) - timescale(scheds[i].events[j].start_time_sec),
                         event: scheds[i].events[j],
                     })
                 }
@@ -1725,8 +1725,8 @@ window.EventDisplayer = function(opt_in) {
             .duration(400)
             .style('opacity', 0)
         com.time.currentTime = data_in.time.currentTime
-        com.time.start_time = data_in.time.start_time
-        com.time.end_time = data_in.time.end_time
+        com.time.start_time_sec = data_in.time.start_time_sec
+        com.time.end_time_sec = data_in.time.end_time_sec
         com.data.raw = data_in.data.raw
         com.data.modified = data_in.data.modified
         // com.filters.filtering = updateFiltering()

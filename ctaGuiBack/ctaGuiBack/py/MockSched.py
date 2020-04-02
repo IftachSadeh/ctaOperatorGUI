@@ -1,21 +1,21 @@
 import gevent
 from gevent import sleep
 from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
+from math import floor
 import random
 from random import Random
-import time
 import copy
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, getTime, no_sub_arr_name, has_acs
+from ctaGuiUtils.py.utils import get_rnd, get_time, get_rnd_seed
+from ctaGuiUtils.py.utils import my_log, has_acs
 
 if has_acs:
     import ACS__POA
     from ACS import CBDescIn
     from Acspy.Clients.SimpleClient import PySimpleClient
     import sb
-    import jsonAcs
+    # import jsonAcs
 
 
 # ------------------------------------------------------------------
@@ -62,9 +62,7 @@ class MockSched():
         self.active_sched_block = 0
         self.n_sched_subs = 0
         self.n_init_cycle = -1
-        self.name_prefix = str(getTime())
-        if len(self.name_prefix) > 6:
-            self.name_prefix = self.name_prefix[len(self.name_prefix) - 6:]
+        self.name_prefix = get_rnd(n_digits=6, out_type=str)
 
         self.client = PySimpleClient()
         # self.client.makeCompImmortal("ArraySupervisor", True)
@@ -102,7 +100,7 @@ class MockSched():
 
         self.loop_sleep = 3
 
-        rnd_seed = getTime()
+        rnd_seed = get_rnd_seed()
         # rnd_seed = 10987268332
         self.rnd_gen = Random(rnd_seed)
 
@@ -223,7 +221,7 @@ class MockSched():
 
             self.time_of_night.reset_night(log=self.log)
             self.prev_reset_time = self.time_of_night.get_reset_time()
-            # start_time = self.time_of_night.get_start_time()
+            # start_time_sec = self.time_of_night.get_start_time_sec()
             self.n_init_cycle += 1
 
             overhead_seconds = 30
@@ -240,9 +238,11 @@ class MockSched():
                     n_cycle_now < self.max_n_cycles and \
                     not is_cycle_done:
 
-                # base_name = str(getTime())+"_"
-                base_name = self.name_prefix+"_" + \
-                    str(self.n_init_cycle)+"_"+str(n_cycle_now)+"_"
+                base_name = (
+                    self.name_prefix + "_"
+                    + str(self.n_init_cycle) + "_"
+                    + str(n_cycle_now) + "_"
+                )
                 n_cycle_now += 1
 
                 tel_ids = copy.deepcopy(utils.tel_ids)
@@ -346,7 +346,7 @@ class MockSched():
 
                     obs_blocks = []
                     tot_obs_block_seconds = 0
-                    obs_block_duration = tot_block_seconds
+                    block_duration_sec = tot_block_seconds
 
                     for n_obs_now in range(n_obs_blocks):
                         obs_block_id = "obs_block_"+base_name + \
@@ -366,12 +366,12 @@ class MockSched():
                             obs_block_seconds /= 1.1
                         obs_block_seconds = int(floor(obs_block_seconds))
 
-                        if obs_block_duration + obs_block_seconds > self.duration_night:
+                        if block_duration_sec + obs_block_seconds > self.duration_night:
                             is_cycle_done = True
                             if debug_tmp:
                                 print(
-                                    ' - is_cycle_done - n_obs_now / start_time / duration:',
-                                    n_obs_now, obs_block_duration, obs_block_seconds
+                                    ' - is_cycle_done - n_obs_now / start_time_sec / duration:',
+                                    n_obs_now, block_duration_sec, obs_block_seconds
                                 )
                             break
 
@@ -394,8 +394,8 @@ class MockSched():
 
                         if debug_tmp:
                             print(
-                                ' --- n_obs_now / start_time / duration / scaled_duration:',
-                                n_obs_now, obs_block_duration, obs_block_seconds,
+                                ' --- n_obs_now / start_time_sec / duration / scaled_duration:',
+                                n_obs_now, block_duration_sec, obs_block_seconds,
                                 scaled_duration, '-------', obs_block_id
                             )
 
@@ -436,17 +436,17 @@ class MockSched():
                         # global coordinate access function
                         self.acs_blocks['metadata'][obs_block_id] = {
                             'metadata': metadata,
-                            'timestamp': getTime(),
+                            'timestamp': get_time('msec'),
                             'point_pos': point_pos,
                             'duration': obs_block_seconds,
-                            'start_time_plan': obs_block_duration,
-                            'start_time_exe': None,
+                            'start_time_sec_plan': block_duration_sec,
+                            'start_time_sec_exe': None,
                             'status': sb.OB_PENDING,
                             'phases': []
                         }
 
                         obs_blocks += [obs_block]
-                        obs_block_duration += obs_block_seconds
+                        block_duration_sec += obs_block_seconds
 
                     if len(obs_blocks) > 0:
                         sched_block = sb.SchedulingBlock(
@@ -457,7 +457,7 @@ class MockSched():
                         cycle_blocks_now.append(sched_block)
 
                         self.acs_blocks['blocks'][sched_block_id] = {
-                            'timestamp': getTime(),
+                            'timestamp': get_time('msec'),
                             'state': 'wait',
                             'sched_block': sched_block
                         }
@@ -536,14 +536,14 @@ class MockSched():
                             #   OB_TRUNCATED, OB_FAILED
                             # };
 
-                            if (metadata[obs_block_id]['start_time_exe'] is None
+                            if (metadata[obs_block_id]['start_time_sec_exe'] is None
                                     and obs_block_now.status != sb.OB_PENDING):
 
-                                time_now = self.time_of_night.get_current_time()
-                                metadata[obs_block_id]['start_time_exe'] = time_now
+                                time_now_sec = self.time_of_night.get_current_time()
+                                metadata[obs_block_id]['start_time_sec_exe'] = time_now_sec
 
-                                time_dif = time_now - \
-                                    metadata[obs_block_id]['start_time_plan']
+                                time_dif = time_now_sec - \
+                                    metadata[obs_block_id]['start_time_sec_plan']
                                 if time_dif > 0:
                                     obs_block_delays[sched_block_id] = time_dif
 
@@ -552,8 +552,8 @@ class MockSched():
                                      ['r', obs_block_id],
                                      [
                                          'g', ' - planned/executed time: ',
-                                         metadata[obs_block_id]['start_time_plan'], ' / ',
-                                         time_now
+                                         metadata[obs_block_id]['start_time_sec_plan'], ' / ',
+                                         time_now_sec
                                      ]]
                                 )
 
@@ -586,11 +586,13 @@ class MockSched():
 
                         metadata[obs_block_id]['phases'] = []
 
-                    self.log.info([['b', "- sched block is done "], ['r', sched_block_id],
-                                   [
-                                       'g', ' - currentTime: ',
-                                       self.time_of_night.get_current_time()
-                                   ]])
+                    self.log.info([
+                        ['b', "- sched block is done "], ['r', sched_block_id],
+                        [
+                            'g', ' - currentTime: ',
+                            self.time_of_night.get_current_time(),
+                        ],
+                    ])
 
             # adjust the start time of all future OBs --- this will NOT take care of OBs of
             # currently active SB, which may overshoot the end of the night !
@@ -607,16 +609,16 @@ class MockSched():
                     for obs_block in sched_block.observation_blocks:
                         obs_block_id = obs_block.id
 
-                        if metadata[obs_block_id]['start_time_exe'] is None:
+                        if metadata[obs_block_id]['start_time_sec_exe'] is None:
                             updated_obs_blocks += [[
                                 obs_block_id, obs_block_delays[sched_block_id]
                             ]]
-                            metadata[obs_block_id]['start_time_plan'] += obs_block_delays[
+                            metadata[obs_block_id]['start_time_sec_plan'] += obs_block_delays[
                                 sched_block_id]
 
                     if len(updated_obs_blocks) > 0:
                         self.log.info([[
-                            'b', " -+- updating start_time_plan of", sched_block_id, " "
+                            'b', " -+- updating start_time_sec_plan of", sched_block_id, " "
                         ], ['y', updated_obs_blocks]])
 
                     for n_cycle_now in range(len(self.cycle_blocks)):
@@ -665,8 +667,8 @@ class MockSched():
             for sched_block in self.cycle_blocks[active_sched_block]:
                 obs_block_id = sched_block.observation_blocks[0].id
 
-                start_time = self.acs_blocks['metadata'][obs_block_id]['start_time_plan']
-                time_dif_now = self.time_of_night.get_current_time() - start_time
+                start_time_sec = self.acs_blocks['metadata'][obs_block_id]['start_time_sec_plan']
+                time_dif_now = self.time_of_night.get_current_time() - start_time_sec
                 time_dif_max = max(time_dif_max, time_dif_now)
         else:
             time_dif_max = time_dif
@@ -674,7 +676,7 @@ class MockSched():
         # if any of the OBs is late, adjust the planned start time of all OBs in all SBs
         # and remove any OBs which will overshoot the end of the night
         if time_dif_max > 0:
-            self.log.info([['r', "- updating start_time_plan by: "], ['b', time_dif_max]])
+            self.log.info([['r', "- updating start_time_sec_plan by: "], ['b', time_dif_max]])
 
             # perform the adjustment for all future SBs in all cycles
             for n_cycle_now in range(active_sched_block, len(self.cycle_blocks)):
@@ -686,15 +688,15 @@ class MockSched():
                     # adjust the start time of all OBs in this SB
                     for obs_block in sched_block.observation_blocks:
                         obs_block_id = obs_block.id
-                        self.acs_blocks['metadata'][obs_block_id]['start_time_plan'
+                        self.acs_blocks['metadata'][obs_block_id]['start_time_sec_plan'
                                                                   ] += time_dif_max
 
-                        end_time = self.acs_blocks['metadata'][obs_block_id]['start_time_plan'] + \
+                        end_time_sec = self.acs_blocks['metadata'][obs_block_id]['start_time_sec_plan'] + \
                             self.acs_blocks['metadata'][obs_block_id]['duration']
 
                         # a simplistic approach - cancel any SB if at least one of
                         # its OBs overshoots the end of the night
-                        if end_time > self.duration_night and (
+                        if end_time_sec > self.duration_night and (
                                 sched_block not in sched_blockOverV):
                             sched_blockOverV.append(sched_block)
 
@@ -778,8 +780,8 @@ class MockSched():
                 if (self.time_of_night.get_reset_time() > self.prev_reset_time):
                     return
 
-                start_time = self.acs_blocks['metadata'][obs_block_id]['start_time_plan']
-                time_dif = self.time_of_night.get_current_time() - start_time
+                start_time_sec = self.acs_blocks['metadata'][obs_block_id]['start_time_sec_plan']
+                time_dif = self.time_of_night.get_current_time() - start_time_sec
                 if time_dif >= 0:
                     break
 
@@ -798,10 +800,10 @@ class MockSched():
                     str(x.id) + " --> " + str(block_meta[x.id]['metadata']['n_sched'])
                     + " (" + str(block_meta[x.id]['metadata']['n_obs']) + ")"
                 ), [
-                    int(floor(block_meta[x.id]['start_time_plan'])),
+                    int(floor(block_meta[x.id]['start_time_sec_plan'])),
                     int(
                         floor(
-                            block_meta[x.id]['start_time_plan']
+                            block_meta[x.id]['start_time_sec_plan']
                             + block_meta[x.id]['duration']
                         )
                     )

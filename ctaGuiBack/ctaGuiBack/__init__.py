@@ -44,7 +44,7 @@ def main(global_config, **settings):
     utils.redis_port = settings['redis_port']
 
     my_time_of_night = utils.time_of_night(site_type=utils.site_type)
-    # my_time_of_night = utils.time_of_night(site_type=utils.site_type, timescale = 0.001)
+    clock_sim = utils.ClockSim(site_type=utils.site_type)
 
     # set the list of telescopes for this particular site
     inst_data = InstData(site_type=utils.site_type)
@@ -67,18 +67,18 @@ def main(global_config, **settings):
     #   TmpTest(site_type=site_type)
 
     InstHealth(
-        site_type=utils.site_type, time_of_night=my_time_of_night, InstData=inst_data
+        site_type=utils.site_type, time_of_night=my_time_of_night, clock_sim=clock_sim, inst_data=inst_data
     )
-    InstPos(site_type=utils.site_type, InstData=inst_data)
+    InstPos(site_type=utils.site_type, clock_sim=clock_sim, inst_data=inst_data)
     MockTarget(site_type=utils.site_type)
 
     if utils.has_acs:
         ObsBlocks(
-            site_type=utils.site_type, time_of_night=my_time_of_night, InstData=inst_data
+            site_type=utils.site_type, time_of_night=my_time_of_night, clock_sim=clock_sim, inst_data=inst_data
         )
     else:
         ObsBlocksNoACS(
-            site_type=utils.site_type, time_of_night=my_time_of_night, InstData=inst_data
+            site_type=utils.site_type, time_of_night=my_time_of_night, clock_sim=clock_sim, inst_data=inst_data
         )
 
     # # PubsubTest(site_type=utils.site_type)

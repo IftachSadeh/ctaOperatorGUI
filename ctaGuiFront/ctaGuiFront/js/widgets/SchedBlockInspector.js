@@ -976,10 +976,10 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             shared.style.runRecCol = cols_blues[2]
             shared.style.blockCol = function(opt_in) {
-                // let end_time = is_def(opt_in.end_time)
-                //   ? opt_in.end_time
+                // let end_time_sec = is_def(opt_in.end_time_sec)
+                //   ? opt_in.end_time_sec
                 //   : undefined
-                // if (end_time < Number(shared.data.server.time_of_night.now)) return color_theme.blocks.shutdown
+                // if (end_time_sec < Number(shared.data.server.time_of_night.now)) return color_theme.blocks.shutdown
                 let state = is_def(opt_in.exe_state.state)
                     ? opt_in.exe_state.state
                     : undefined
@@ -1059,8 +1059,8 @@ let main_sched_blocksInspector = function(opt_in) {
         shared.data.server.sched_blocks = create_sched_blocks(shared.data.server.blocks)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
-            ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
-            ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].end_time_sec = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
         }
         let cp = deep_copy(shared.data.server.blocks)
         shared.data.copy = {
@@ -1106,8 +1106,8 @@ let main_sched_blocksInspector = function(opt_in) {
         shared.data.server.sched_blocks = create_sched_blocks(shared.data.server.blocks)
         let ce = shared.data.server.external_clock_events[0]
         for (let i = 0; i < ce.length; i++) {
-            ce[i].start_time = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
-            ce[i].end_time = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].start_time_sec = (new Date(ce[i].start_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
+            ce[i].end_time_sec = ce[i].end_date === '' ? undefined : (new Date(ce[i].end_date).getTime() - new Date(shared.data.server.time_of_night.date_start)) / 1000
         }
         updateRuntoDoneBlocks()
 
@@ -1522,7 +1522,7 @@ let main_sched_blocksInspector = function(opt_in) {
     //
     // -------------------------------------------------------------------
     function setCol(opt_in) {
-        if (opt_in.end_time < Number(shared.data.server.time_of_night.now)) {
+        if (opt_in.end_time_sec < Number(shared.data.server.time_of_night.now)) {
             return color_theme.blocks.shutdown
         }
         let state = is_def(opt_in.state)
@@ -1795,13 +1795,13 @@ let main_sched_blocksInspector = function(opt_in) {
             let tb = shared.data.copy[shared.data.current].optimized.blocks.wait[i]
             for (let j = 0; j < shared.data.copy[shared.data.current].optimized.blocks.run.length; j++) {
                 let mb = shared.data.copy[shared.data.current].optimized.blocks.run[j]
-                if (is_same_time(mb.start_time, mb.end_time, tb.start_time, tb.end_time)) {
+                if (is_same_time(mb.start_time_sec, mb.end_time_sec, tb.start_time_sec, tb.end_time_sec)) {
                     shareSameTels(mb, tb)
                 }
             }
             for (let j = 0; j < shared.data.copy[shared.data.current].optimized.blocks.wait.length; j++) {
                 let mb = shared.data.copy[shared.data.current].optimized.blocks.wait[j]
-                if (is_same_time(mb.start_time, mb.end_time, tb.start_time, tb.end_time)) {
+                if (is_same_time(mb.start_time_sec, mb.end_time_sec, tb.start_time_sec, tb.end_time_sec)) {
                     shareSameTels(mb, tb)
                 }
             }
@@ -2398,8 +2398,8 @@ let main_sched_blocksInspector = function(opt_in) {
     //       },
     //       time: {
     //         currentTime: {time: 0, date: undefined},
-    //         start_time: {time: 0, date: undefined},
-    //         end_time: {time: 0, date: undefined},
+    //         start_time_sec: {time: 0, date: undefined},
+    //         end_time_sec: {time: 0, date: undefined},
     //       },
     //       data: {
     //         raw: undefined,
@@ -2432,8 +2432,8 @@ let main_sched_blocksInspector = function(opt_in) {
     //     blockQueue.update_data({
     //       time: {
     //         currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
-    //         start_time: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
-    //         end_time: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
+    //         start_time_sec: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
+    //         end_time_sec: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
     //       },
     //       data: {
     //         raw: {
@@ -2569,11 +2569,11 @@ let main_sched_blocksInspector = function(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    start_time: {
+                    start_time_sec: {
                         time: 0,
                         date: undefined,
                     },
-                    end_time: {
+                    end_time_sec: {
                         time: 0,
                         date: undefined,
                     },
@@ -2633,11 +2633,11 @@ let main_sched_blocksInspector = function(opt_in) {
 
         function update_data() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
@@ -2647,8 +2647,8 @@ let main_sched_blocksInspector = function(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
                 data: {
                     raw: {
@@ -2665,8 +2665,8 @@ let main_sched_blocksInspector = function(opt_in) {
             // block_queue_serverPast.update({
             //   time: {
             //     currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
-            //     start_time: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
-            //     end_time: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
+            //     start_time_sec: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
+            //     end_time_sec: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
             //   }
             // })
         }
@@ -2891,11 +2891,11 @@ let main_sched_blocksInspector = function(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    start_time: {
+                    start_time_sec: {
                         time: 0,
                         date: undefined,
                     },
-                    end_time: {
+                    end_time_sec: {
                         time: 0,
                         date: undefined,
                     },
@@ -3200,11 +3200,11 @@ let main_sched_blocksInspector = function(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    start_time: {
+                    start_time_sec: {
                         time: 0,
                         date: undefined,
                     },
-                    end_time: {
+                    end_time_sec: {
                         time: 0,
                         date: undefined,
                     },
@@ -3234,7 +3234,7 @@ let main_sched_blocksInspector = function(opt_in) {
                             end: function(d) {
                                 let res = svgFocusOverlay.dragEnd(d)
                                 if (res) {
-                                    changeBlockProperties(d, false, 'start_time')
+                                    changeBlockProperties(d, false, 'start_time_sec')
                                 }
                             },
                         },
@@ -3295,9 +3295,9 @@ let main_sched_blocksInspector = function(opt_in) {
                     else {
                         return color_theme.blocks.shutdown
                     }
-                    // let startT = is_def(opt_in.start_time)
-                    //   ? opt_in.start_time
-                    //   : opt_in.d.start_time
+                    // let startT = is_def(opt_in.start_time_sec)
+                    //   ? opt_in.start_time_sec
+                    //   : opt_in.d.start_time_sec
                     // if (startT < shared.data.server.time_of_night.now) return color_theme.blocks.shutdown
                     // let state = is_def(opt_in.state)
                     //   ? opt_in.state
@@ -3348,9 +3348,9 @@ let main_sched_blocksInspector = function(opt_in) {
                     }
                 },
                 blockPattern: function(opt_in) {
-                    let startT = is_def(opt_in.start_time)
-                        ? opt_in.start_time
-                        : opt_in.d.start_time
+                    let startT = is_def(opt_in.start_time_sec)
+                        ? opt_in.start_time_sec
+                        : opt_in.d.start_time_sec
                     if (startT < shared.data.server.time_of_night.now) {
                         return 'url(#patternLock)'
                     }
@@ -3397,11 +3397,11 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             reserved.g.select('rect#cloak').attr('width', newWidth)
 
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
@@ -3412,8 +3412,8 @@ let main_sched_blocksInspector = function(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
                 data: {
                     raw: {
@@ -3430,8 +3430,8 @@ let main_sched_blocksInspector = function(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
                 data: {
                     raw: {
@@ -3446,11 +3446,11 @@ let main_sched_blocksInspector = function(opt_in) {
 
         function update() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
@@ -3461,8 +3461,8 @@ let main_sched_blocksInspector = function(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
             })
             blockQueue.update({
@@ -3471,8 +3471,8 @@ let main_sched_blocksInspector = function(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
             })
         }
@@ -3698,26 +3698,26 @@ let main_sched_blocksInspector = function(opt_in) {
         this.translateTo = translateTo
 
         function update_data() {
-            let start_time = {
+            let start_time_sec = {
                 date: new Date(shared.data.server.time_of_night.date_start),
                 time: Number(shared.data.server.time_of_night.start),
             }
-            let end_time = {
+            let end_time_sec = {
                 date: new Date(shared.data.server.time_of_night.date_end),
                 time: Number(shared.data.server.time_of_night.end),
             }
 
             brushZoom.updateAxis({
                 id: 'top',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
             brushZoom.updateAxis({
                 id: 'middle',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
             brushZoom.updateAxis({
                 id: 'bottom',
-                domain: [ start_time.date, end_time.date ],
+                domain: [ start_time_sec.date, end_time_sec.date ],
             })
         }
         this.update_data = update_data
@@ -3793,17 +3793,17 @@ let main_sched_blocksInspector = function(opt_in) {
 
         function drawTargets() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
-                .domain([ start_time.time, end_time.time ])
+                .domain([ start_time_sec.time, end_time_sec.time ])
             let scaleY = d3.scaleLinear()
                 .range([ reserved.box.h, reserved.box.h * 0.2 ])
                 .domain([ 0, 1 ])
@@ -4338,17 +4338,17 @@ let main_sched_blocksInspector = function(opt_in) {
             conflictSquare = []
 
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
             let scaleX = d3.scaleLinear()
                 .range([ 0, reserved.box.w ])
-                .domain([ start_time.time, end_time.time ])
+                .domain([ start_time_sec.time, end_time_sec.time ])
             let range = reserved.box.h * 0.33333
             let scaleYSmall = d3.scaleLinear()
                 .range([ 0, range ])
@@ -4981,17 +4981,17 @@ let main_sched_blocksInspector = function(opt_in) {
                 return
             }
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
             reserved.drag.timescale = d3.scaleLinear()
                 .range([ 0, reserved.drag.box.w ])
-                .domain([ start_time.time, end_time.time ])
+                .domain([ start_time_sec.time, end_time_sec.time ])
             let d = getBlockById(get_blocksData(), shared.focus.id).data
             reserved.drag.position = {
                 width: reserved.drag.timescale(d.time.end) - reserved.drag.timescale(d.time.start),
@@ -5266,17 +5266,17 @@ let main_sched_blocksInspector = function(opt_in) {
                 marg: svg_dims.w[0] * 0.01,
             }
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
             reserved.drag.timescale = d3.scaleLinear()
                 .range([ 0, reserved.drag.box.w ])
-                .domain([ start_time.time, end_time.time ])
+                .domain([ start_time_sec.time, end_time_sec.time ])
 
             reserved.drag.position = {
                 width: reserved.drag.timescale(d.time.end) - reserved.drag.timescale(d.time.start),
@@ -5418,8 +5418,8 @@ let main_sched_blocksInspector = function(opt_in) {
             svgTargets.showPercentTarget({
                 data: {
                     target_id: d.target_id,
-                    start_time: reserved.drag.timescale.invert(reserved.drag.position.left),
-                    end_time: reserved.drag.timescale.invert(reserved.drag.position.right),
+                    start_time_sec: reserved.drag.timescale.invert(reserved.drag.position.left),
+                    end_time_sec: reserved.drag.timescale.invert(reserved.drag.position.right),
                 },
             })
             svgTelsConflict.drawTelsAvailabilityCurve(d)
@@ -5443,11 +5443,11 @@ let main_sched_blocksInspector = function(opt_in) {
             svgTelsConflict.drawTelsAvailabilityCurve(d)
             // listAllConflicts()
             // linkConflicts()
-            changeBlockProperties(d, false, 'start_time')
+            changeBlockProperties(d, false, 'start_time_sec')
             // if (!reserved.drag.atLeastOneTick) return
             // console.log('dragEnd')
             // d3.event.sourceEvent.stopPropagation()
-            // if (d.end_time < Number(shared.data.server.time_of_night.now)) return
+            // if (d.end_time_sec < Number(shared.data.server.time_of_night.now)) return
             //
             // let newBlock = deep_copy(d)
             // if (reserved.drag.finalTime) {
@@ -5455,7 +5455,7 @@ let main_sched_blocksInspector = function(opt_in) {
             //   reserved.drag.position.left = reserved.drag.timescale(t)
             // }
             // let newStart = Math.floor(reserved.drag.timescale.invert(reserved.drag.position.left))
-            // let modif = [{prop: 'start_time', old: newBlock.data.start_time, new: newStart}]
+            // let modif = [{prop: 'start_time_sec', old: newBlock.data.start_time_sec, new: newStart}]
             //
             // // if (reserved.drag.mode.current === 'cancel') {
             // //   modif.push({prop: 'state', old: d.exe_state.state, new: 'cancel'})
@@ -9308,11 +9308,11 @@ let main_sched_blocksInspector = function(opt_in) {
                         time: 0,
                         date: undefined,
                     },
-                    start_time: {
+                    start_time_sec: {
                         time: 0,
                         date: undefined,
                     },
-                    end_time: {
+                    end_time_sec: {
                         time: 0,
                         date: undefined,
                     },
@@ -9342,7 +9342,7 @@ let main_sched_blocksInspector = function(opt_in) {
                             end: function(d) {
                                 let res = svgFocusOverlay.dragEnd(d)
                                 if (res) {
-                                    changeBlockProperties(d, false, 'start_time')
+                                    changeBlockProperties(d, false, 'start_time_sec')
                                 }
                             },
                         },
@@ -9403,9 +9403,9 @@ let main_sched_blocksInspector = function(opt_in) {
                     else {
                         return color_theme.blocks.shutdown
                     }
-                    // let startT = is_def(opt_in.start_time)
-                    //   ? opt_in.start_time
-                    //   : opt_in.d.start_time
+                    // let startT = is_def(opt_in.start_time_sec)
+                    //   ? opt_in.start_time_sec
+                    //   : opt_in.d.start_time_sec
                     // if (startT < shared.data.server.time_of_night.now) return color_theme.blocks.shutdown
                     // let state = is_def(opt_in.state)
                     //   ? opt_in.state
@@ -9456,9 +9456,9 @@ let main_sched_blocksInspector = function(opt_in) {
                     }
                 },
                 blockPattern: function(opt_in) {
-                    let startT = is_def(opt_in.start_time)
-                        ? opt_in.start_time
-                        : opt_in.d.start_time
+                    let startT = is_def(opt_in.start_time_sec)
+                        ? opt_in.start_time_sec
+                        : opt_in.d.start_time_sec
                     if (startT < shared.data.server.time_of_night.now) {
                         return 'url(#patternLock)'
                     }
@@ -9482,11 +9482,11 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             reserved.g.select('rect#cloak').attr('width', newWidth)
 
-            let start_time = {
+            let start_time_sec = {
                 date: axisTop[0].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
             }
-            let end_time = {
+            let end_time_sec = {
                 date: axisTop[1].getTime(),
                 time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
             }
@@ -9497,8 +9497,8 @@ let main_sched_blocksInspector = function(opt_in) {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
-                    start_time: start_time,
-                    end_time: end_time,
+                    start_time_sec: start_time_sec,
+                    end_time_sec: end_time_sec,
                 },
                 data: {
                     raw: {

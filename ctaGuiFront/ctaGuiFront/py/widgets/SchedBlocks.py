@@ -29,7 +29,7 @@ class SchedBlocks(BaseWidget):
         # ------------------------------------------------------------------
         # widget-specific initialisations
         # ------------------------------------------------------------------
-        self.tel_ids = self.socket_manager.InstData.get_inst_ids(
+        self.tel_ids = self.socket_manager.inst_data.get_inst_ids(
             inst_types=['LST', 'MST', 'SST']
         )
 

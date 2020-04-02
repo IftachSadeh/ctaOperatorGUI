@@ -56,7 +56,7 @@ For additional information, see:
     $VENV/bin/easy_install gunicorn pyramid_jinja2
     $VENV/bin/easy_install zope.interface zope.sqlalchemy zope.deprecation SQLAlchemy sqlalchemy transaction
     $VENV/bin/easy_install msgpack-python redis numpy
-    $VENV/bin/easy_install pep8 flake8 pep8-naming yapf
+    $VENV/bin/pip install pep8 yapf
     npm install eslint
   ```
 

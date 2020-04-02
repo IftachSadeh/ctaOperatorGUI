@@ -413,8 +413,8 @@ window.ClockEvents = function() {
         }
 
         for (let i = com.popupEvents.length - 1; i >= 0; i--) {
-            let d = new Date(com.popupEvents[i].end_time)
-            if (!(d instanceof Date && !isNaN(d)) || new Date(com.popupEvents[i].end_time) < com.currentDate) {
+            let d = new Date(com.popupEvents[i].end_time_sec)
+            if (!(d instanceof Date && !isNaN(d)) || new Date(com.popupEvents[i].end_time_sec) < com.currentDate) {
                 if (com.popupEvents[i].state === 'finished') {
                     com.pastEvents.push(com.popupEvents.splice(i, 1)[0])
                 }
@@ -443,7 +443,7 @@ window.ClockEvents = function() {
             else if (new Date(events[i].start_date) > com.currentDate) {
                 addInArray(com.timelineEvents, events[i])
             }
-            else if (new Date(events[i].end_time) > com.currentDate) {
+            else if (new Date(events[i].end_time_sec) > com.currentDate) {
                 addInArray(com.popupEvents, events[i])
             }
             else {
@@ -596,7 +596,7 @@ window.ClockEvents = function() {
         // enterG.append('rect')
         //   .attr('class', 'icon')
         //   .attr('x', function (d, i) {
-        //     return (com.axis.scaleX(d.end_time) + com.axis.scaleX(d.start_date)) * 0.5 - 5
+        //     return (com.axis.scaleX(d.end_time_sec) + com.axis.scaleX(d.start_date)) * 0.5 - 5
         //   })
         //   .attr('y', function (d, i) {
         //     return -30
@@ -616,7 +616,7 @@ window.ClockEvents = function() {
 
         // mergedG.selectAll('rect.icon')
         //   .attr('x', function (d, i) {
-        //     return (com.axis.scaleX(d.end_time) + com.axis.scaleX(d.start_date)) * 0.5 - 5
+        //     return (com.axis.scaleX(d.end_time_sec) + com.axis.scaleX(d.start_date)) * 0.5 - 5
         //   })
         //   .attr('y', function (d, i) {
         //     return -30

@@ -10,7 +10,7 @@ from socketio.mixins import BroadcastMixin
 
 import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.utils import my_log, my_assert
-from ctaGuiUtils.py.utils import allowed_widget_types, getTime
+from ctaGuiUtils.py.utils import allowed_widget_types, get_time, get_rnd
 from ctaGuiUtils.py.RedisManager import RedisManager
 from ctaGuiUtils.py.InstData import InstData
 
@@ -53,7 +53,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             name=self.__class__.__name__, port=utils.redis_port, log=self.log
         )
 
-        SocketManager.InstData = InstData(
+        SocketManager.inst_data = InstData(
             site_type=utils.site_type, lock=SocketManager.lock
         )
 
@@ -62,7 +62,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         # ------------------------------------------------------------------
         with SocketManager.lock:
             if SocketManager.server_name is None:
-                SocketManager.server_name = 'server_' + str(getTime())
+                SocketManager.server_name = 'server_' + get_rnd(out_type=str)
 
                 # sess_ids_now = self.redis.lGet('all_sess_ids')
                 # for sess_id in sess_ids_now:
@@ -79,9 +79,9 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         self.emit(
             'initial_connect', {
                 'server_name': SocketManager.server_name,
-                'tel_ids': SocketManager.InstData.get_inst_ids(),
-                'tel_id_to_types': SocketManager.InstData.get_inst_id_to_types(),
-                'categorical_types': SocketManager.InstData.get_categorical_types(),
+                'tel_ids': SocketManager.inst_data.get_inst_ids(),
+                'tel_id_to_types': SocketManager.inst_data.get_inst_id_to_types(),
+                'categorical_types': SocketManager.inst_data.get_categorical_types(),
             }
         )
         return
@@ -353,7 +353,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                         sync_groups.append(sync_group)
 
                     # add the new widget to the requested sync group and sync state
-                    icon_id = 'icn_' + str(getTime())
+                    icon_id = 'icn_' + get_rnd(out_type=str)
                     sync_groups[group_index]['sync_states'][sync_type].append([
                         widget_id, icon_id
                     ])
@@ -658,7 +658,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                     else:
                         data['sess_widget_ids'] = [i for i in idV if i in widget_ids]
 
-                    data['emit_time'] = getTime()
+                    data['emit_time'] = get_time('msec')
 
                     pkt = dict(
                         type='event',
@@ -705,7 +705,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         with SocketManager.lock:
             if self.sess_id in self.socket.server.sockets:
-                data['emit_time'] = getTime()
+                data['emit_time'] = get_time('msec')
 
                 pkt = dict(
                     type='event',
@@ -775,7 +775,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     #         sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
 
     #         for sess_id in sess_ids:
-    #             data = {'emit_time': getTime()}
+    #             data = {'emit_time': get_time('msec')}
 
     #             pkt = dict(type='event', name='refreshAll', args=data,
     #                        endpoint=SocketManager.sess_endpoints[sess_id])

@@ -255,7 +255,8 @@ window.ArrZoomerMain = function(opt_in0) {
         // the main visible background elements
         // ------------------------------------------------------------------
         let bck_data = [ 'circ', 'rec' ]
-        let clip_bck_pattern_g = {}
+        let clip_bck_pattern_g = {
+        }
         $.each(bck_data, function(_, tag) {
             clip_bck_pattern_g[tag] = 'clipped_bck_' + tag + '_g'
         })
@@ -494,7 +495,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
 
     // ------------------------------------------------------------------
-    // 
+    //
     // ------------------------------------------------------------------
     function set_bck_pattern() {
         if (hex_r <= 0) {
@@ -757,8 +758,7 @@ window.ArrZoomerMain = function(opt_in0) {
             }
             else if (
                 target_name === ''
-                || !is_def(insts.data.mini[target_name])) 
-            {
+                || !is_def(insts.data.mini[target_name])) {
                 let scale = this_top.get_scale()
                 let trans = this_top.get_trans()
                 let x = (svg_dims.w / 2 - trans[0]) / scale
@@ -1236,7 +1236,7 @@ window.ArrZoomerMain = function(opt_in0) {
                         r = tel_rs.s00[1]
                     }
 
-                    if(is_south) {
+                    if (is_south) {
                         x = com.bck_circ_data.cx + data_now.x
                         y = com.bck_circ_data.cy + data_now.y
                     }

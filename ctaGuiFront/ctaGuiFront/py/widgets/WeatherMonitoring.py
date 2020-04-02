@@ -27,7 +27,7 @@ class WeatherMonitoring(BaseWidget):
         self.primary_grp = ['LSTS', 'MSTS', 'SSTS', 'AUX']
         self.primary_key = ['mirror', 'camera', 'mount', 'aux']
 
-        self.tel_ids = self.socket_manager.InstData.get_inst_ids(
+        self.tel_ids = self.socket_manager.inst_data.get_inst_ids(
             inst_types=['LST', 'MST', 'SST']
         )
 

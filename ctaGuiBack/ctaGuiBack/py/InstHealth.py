@@ -1,13 +1,11 @@
 import gevent
 from gevent import sleep
-from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
+from math import ceil
 import random
 from random import Random
-import time
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, getTime, flatten_dict
+from ctaGuiUtils.py.utils import my_log, flatten_dict
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
@@ -15,20 +13,20 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 #
 # ------------------------------------------------------------------
 class InstHealth():
-    def __init__(self, site_type, time_of_night, InstData):
+    def __init__(self, site_type, time_of_night, clock_sim, inst_data):
         self.log = my_log(title=__name__)
         self.log.info([['y', " - inst_health - "], ['g', site_type]])
 
         self.site_type = site_type
         self.time_of_night = time_of_night
-        self.InstData = InstData
+        self.inst_data = inst_data
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
             name=self.class_name, port=utils.redis_port, log=self.log
         )
 
-        self.tel_ids = self.InstData.get_inst_ids()
+        self.tel_ids = self.inst_data.get_inst_ids()
 
         self.inst_health_s0 = dict()
         self.inst_health_s1 = dict()
@@ -73,7 +71,7 @@ class InstHealth():
         # ------------------------------------------------------------------
         #
         # ------------------------------------------------------------------
-        self.inst_health_sub = self.InstData.get_tel_healths()
+        self.inst_health_sub = self.inst_data.get_tel_healths()
 
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()
@@ -124,8 +122,8 @@ class InstHealth():
     #
     # ------------------------------------------------------------------
     def rand_s01(self, rnd_seed=-1):
-        idV = self.rand_s0(rnd_seed=rnd_seed)
-        self.rand_s1(tel_id_in=idV, rnd_seed=rnd_seed)
+        ids = self.rand_s0(rnd_seed=rnd_seed)
+        self.rand_s1(tel_id_in=ids, rnd_seed=rnd_seed)
 
         return
 
@@ -191,9 +189,9 @@ class InstHealth():
 
         self.redis.pipe.execute()
 
-        idV = [id_now for id_now in arr_props]
+        ids = [id_now for id_now in arr_props]
 
-        return idV
+        return ids
 
     # ------------------------------------------------------------------
     #
@@ -223,13 +221,13 @@ class InstHealth():
 
             return
 
-        idV = self.tel_ids if (tel_id_in is None) else tel_id_in
+        ids = self.tel_ids if (tel_id_in is None) else tel_id_in
 
         for id_now in self.tel_ids:
             random.shuffle(rnd_props)
 
             # call the randomization function
-            if id_now in idV:
+            if id_now in ids:
                 for prop_name in rnd_props:
                     if prop_name not in self.inst_health_sub[id_now]:
                         continue
@@ -248,8 +246,8 @@ class InstHealth():
                 self.redis.pipe.execute()
                 self.setTelHealth_s1(id_now)
 
-            time_now = self.time_of_night.get_real_time()
-            timeMin = self.time_of_night.get_time_series_start_time()
+            time_now_sec = self.time_of_night.get_real_time_sec()
+            time_min = self.time_of_night.get_time_series_start_time_sec()
             base_name = "inst_health;" + str(id_now)
 
             for key, val in self.inst_health_sub_flat[id_now].iteritems():
@@ -257,10 +255,10 @@ class InstHealth():
                     self.redis.pipe.hSet(name=base_name, key=key, data=val['data']['val'])
                     self.redis.pipe.zAdd(
                         name=base_name + ";" + key,
-                        score=time_now,
+                        score=time_now_sec,
                         data=val['data']['val'],
                         packed_score=True,
-                        clip_score=timeMin
+                        clip_score=time_min
                     )
 
                     # if id_now == 'L_0' and 'camera_1_0' in key:
@@ -271,8 +269,8 @@ class InstHealth():
                     #     self.timeV += 1
                     #     print '------------', self.timeV, val['data']['val']
 
-                    # self.redis.pipe.zAdd(name=base_name+";"+key, score=time_now,
-                    #                      data=val['val'], clip_score=timeMin)
+                    # self.redis.pipe.zAdd(name=base_name+";"+key, score=time_now_sec,
+                    #                      data=val['val'], clip_score=time_min)
 
             self.redis.pipe.execute()
 
@@ -280,12 +278,12 @@ class InstHealth():
         #     for key, val in self.inst_health_sub_flat[id_now].iteritems():
         #         if "val" in val['data']:
         #             self.redis.pipe.zAdd(key=key,
-        #                                  score=self.time_of_night.get_real_time(),
+        #                                  score=self.time_of_night.get_real_time_sec(),
         #                                  data=val['data']['val'])
 
         #             self.redis.redis.zremrangebyscore(key,
         #                                               0,
-        #                                               self.time_of_night.get_time_series_start_time())
+        #                                               self.time_of_night.get_time_series_start_time_sec())
 
         return
 

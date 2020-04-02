@@ -31,8 +31,8 @@ class SchedBlockController(BaseWidget):
         # ------------------------------------------------------------------
         # widget-specific initialisations
         # ------------------------------------------------------------------
-        # self.tel_ids = self.socket_manager.InstData.get_inst_ids()
-        self.tel_ids = self.socket_manager.InstData.get_inst_ids(
+        # self.tel_ids = self.socket_manager.inst_data.get_inst_ids()
+        self.tel_ids = self.socket_manager.inst_data.get_inst_ids(
             inst_types=['LST', 'MST', 'SST']
         )
 
@@ -180,7 +180,7 @@ class SchedBlockController(BaseWidget):
             blocks = self.redis.pipe.execute(packed=True)
             SchedBlockController.blocks[key] = sorted(
                 blocks,
-                #cmp=lambda a, b: int((datetime.strptime(a['start_time'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['start_time'],"%Y-%m-%d %H:%M:%S")).total_seconds())
+                #cmp=lambda a, b: int((datetime.strptime(a['start_time_sec'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['start_time_sec'],"%Y-%m-%d %H:%M:%S")).total_seconds())
                 cmp=lambda a, b: int(a['time']['start']) - \
                 int(b['time']['start'])
             )

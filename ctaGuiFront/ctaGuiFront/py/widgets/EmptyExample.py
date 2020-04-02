@@ -1,5 +1,5 @@
 from random import Random
-from ctaGuiUtils.py.utils import getTime
+from ctaGuiUtils.py.utils import get_time, get_rnd
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
@@ -58,7 +58,7 @@ class EmptyExample(BaseWidget):
     #
     # ------------------------------------------------------------------
     def get_data(self):
-        data = {"rnd": Random(getTime()).random(), 'time': getTime()}
+        data = {"rnd": get_rnd(), 'time': get_time('msec')}
 
         return data
 

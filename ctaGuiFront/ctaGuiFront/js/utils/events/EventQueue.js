@@ -94,11 +94,11 @@ window.EventQueue = function() {
                 date: undefined,
                 time: undefined,
             },
-            start_time: {
+            start_time_sec: {
                 date: undefined,
                 time: undefined,
             },
-            end_time: {
+            end_time_sec: {
                 date: undefined,
                 time: undefined,
             },
@@ -509,7 +509,7 @@ window.EventQueue = function() {
     }
 
     function updateAxis() {
-        com.axis.domain = [ com.data.start_time.date, com.data.end_time.date ]
+        com.axis.domain = [ com.data.start_time_sec.date, com.data.end_time_sec.date ]
         com.axis.range = [ 0, com.axis.group.box.w ]
 
         com.axis.scale
@@ -528,8 +528,8 @@ window.EventQueue = function() {
         com.data.filtered = filterData()
         com.data.formatedData = calcBlockRow({
             type_now: 'events',
-            start: com.data.start_time.time,
-            end: com.data.end_time.time,
+            start: com.data.start_time_sec.time,
+            end: com.data.end_time_sec.time,
             data: com.data.filtered,
             box: com.blocks.group.box,
         })
@@ -540,8 +540,8 @@ window.EventQueue = function() {
     function update(data_in) {
         com.data.lastRawData = com.data.raw
         com.data.currentTime = data_in.currentTime
-        com.data.start_time = data_in.start_time
-        com.data.end_time = data_in.end_time
+        com.data.start_time_sec = data_in.start_time_sec
+        com.data.end_time_sec = data_in.end_time_sec
         com.data.raw = data_in.data
 
 
@@ -706,7 +706,7 @@ window.EventQueue = function() {
                 })
 
                 ovelaps.sort(function(a, b) {
-                    let diffTime = a.data.data.start_time - b.data.data.start_time
+                    let diffTime = a.data.data.start_time_sec - b.data.data.start_time_sec
                     let diffTel = b.data.data.tel_ids.length - a.data.data.tel_ids.length
                     return diffTel !== 0 ? diffTel : diffTime
                 })

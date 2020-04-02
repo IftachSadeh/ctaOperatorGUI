@@ -1,11 +1,11 @@
 import os
 import logging
 import numbers
-import time
+# import time
 from datetime import datetime
-from datetime import timedelta
 import numpy as np
-from math import sqrt, ceil, floor
+from math import floor
+from random import Random
 
 import gevent
 from gevent import sleep
@@ -344,10 +344,170 @@ def my_assert(log=None, msg="", state=False, only_warn=False):
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
+class ClockSim():
+    is_active = False
+
+    def __init__(self, site_type, end_time_sec=None, timescale=None, *args, **kwargs):
+        self.log = my_log(title=__name__)
+
+        if ClockSim.is_active:
+            raise ValueError('Can not instantiate ClockSim more than once...')
+        else:
+            ClockSim.is_active = True
+
+        # 28800 -> 8 hour night
+        self.end_time_sec = 28800 if end_time_sec is None else end_time_sec
+        # 0.035 -> have 30 minutes last for one minute in real time
+        self.timescale = 0.07 if end_time_sec is None else timescale
+        # 0.0035 -> have 30 minutes last for 6 sec in real time
+        # if not has_acs:
+        #   self.timescale /= 2
+        # self.timescale /= 20
+
+        self.class_name = self.__class__.__name__
+        self.redis = RedisManager(name=self.class_name, port=redis_port, log=self.log)
+
+        self.n_night = -1
+
+        # range in seconds of time-series data to be stored for eg monitoring points
+        self.epoch = datetime.utcfromtimestamp(0)
+        self.time_series_n_seconds = 60 * 30
+        self.second_scale = 1000
+
+        self.reset_night()
+
+        gevent.spawn(self.loop)
+
+
+        print(datetime.utcnow())
+        print(date_to_string(datetime.utcnow()))
+        print(datetime.utcfromtimestamp(0))
+        print((datetime.utcnow() - self.epoch))
+
+        return
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    # def get_total_time_seconds(self):
+    #     return self.end_time_sec
+
+    # ---------------------------------------------------------------------------
+    # def get_n_night(self):
+    #     return self.n_night
+
+    # ---------------------------------------------------------------------------
+    # def get_timescale(self):
+    #     return self.timescale
+
+    # ---------------------------------------------------------------------------
+    # def get_current_time(self, n_digits=3):
+    #     if n_digits >= 0 and n_digits is not None:
+    #         return (
+    #             int(floor(self.time_now_sec))
+    #             if n_digits == 0 else round(self.time_now_sec, n_digits)
+    #         )
+    #     else:
+    #         return self.time_now_sec
+
+    # ---------------------------------------------------------------------------
+    # def get_second_scale(self):
+    #     return self.second_scale
+
+    # ---------------------------------------------------------------------------
+    # def get_reset_time(self):
+    #     return self.real_reset_time_sec
+
+    # ---------------------------------------------------------------------------
+    # the global function for the current system time
+    # ---------------------------------------------------------------------------
+    # def get_real_time_sec(self):
+    #     return int((datetime.utcnow() - self.epoch).total_seconds() * self.second_scale)
+
+    # ---------------------------------------------------------------------------
+    # def get_time_series_start_time_sec(self):
+    #     return self.get_real_time_sec() - self.time_series_n_seconds * self.second_scale
+
+    # ---------------------------------------------------------------------------
+    # def get_start_time_sec(self):
+    #     return 0
+
+    # ---------------------------------------------------------------------------
+    def reset_night(self, log=None):
+        self.n_night += 1
+        self.real_reset_time_sec = get_time('msec')
+
+        # time_now_sec = int(floor(self.get_start_time_sec()))
+        # self.time_now_sec = time_now_sec
+
+        # if log is not None:
+        #     self.log.info([
+        #         ['r', "- reset_night(): "],
+        #         ['y', 'time_now_sec:', self.time_now_sec, ', '],
+        #         ['b', 'n_night:', self.n_night, ', '],
+        #         ['g', 'real_reset_time_sec:', self.real_reset_time_sec],
+        #     ])
+
+        # self.redis.pipe.set(name='clock_sim_' + 'scale', data=self.timescale)
+        # self.redis.pipe.set(name='clock_sim_' + 'start', data=time_now_sec)
+        # self.redis.pipe.set(name='clock_sim_' + 'end', data=self.end_time_sec)
+        # self.redis.pipe.set(name='clock_sim_' + 'now', data=time_now_sec)
+
+        # self.redis.pipe.execute()
+
+        return
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    def loop(self):
+        return
+        self.log.info([['g', " - starting ClockSim.loop ..."]])
+
+        sleep_seconds = 1
+        while True:
+            self.time_now_sec += sleep_seconds / self.timescale
+            if self.time_now_sec > self.end_time_sec:
+                self.reset_night()
+
+            self.redis.set(name='clock_sim_' + 'now', data=int(floor(self.time_now_sec)))
+
+            # print('--clock_sim---------', self.time_now_sec)
+
+            sleep(sleep_seconds)
+
+        return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
 class time_of_night():
     is_active = False
 
-    def __init__(self, site_type, end_time=None, timescale=None, *args, **kwargs):
+    def __init__(self, site_type, end_time_sec=None, timescale=None, *args, **kwargs):
         self.log = my_log(title=__name__)
 
         if time_of_night.is_active:
@@ -356,9 +516,9 @@ class time_of_night():
             time_of_night.is_active = True
 
         # 28800 -> 8 hour night
-        self.end_time = 28800 if end_time is None else end_time
+        self.end_time_sec = 28800 if end_time_sec is None else end_time_sec
         # 0.035 -> have 30 minutes last for one minute in real time
-        self.timescale = 0.07 if end_time is None else timescale
+        self.timescale = 0.07 if end_time_sec is None else timescale
         # 0.0035 -> have 30 minutes last for 6 sec in real time
         # if not has_acs:
         #   self.timescale /= 2
@@ -384,7 +544,7 @@ class time_of_night():
     #
     # ---------------------------------------------------------------------------
     def get_total_time_seconds(self):
-        return self.end_time
+        return self.end_time_sec
 
     # ---------------------------------------------------------------------------
     def get_n_night(self):
@@ -397,10 +557,12 @@ class time_of_night():
     # ---------------------------------------------------------------------------
     def get_current_time(self, n_digits=3):
         if n_digits >= 0 and n_digits is not None:
-            return int(floor(self.time_now)
-                       ) if n_digits == 0 else round(self.time_now, n_digits)
+            return (
+                int(floor(self.time_now_sec))
+                if n_digits == 0 else round(self.time_now_sec, n_digits)
+            )
         else:
-            return self.time_now
+            return self.time_now_sec
 
     # ---------------------------------------------------------------------------
     def get_second_scale(self):
@@ -408,40 +570,42 @@ class time_of_night():
 
     # ---------------------------------------------------------------------------
     def get_reset_time(self):
-        return self.real_reset_time
+        return self.real_reset_time_sec
 
     # ---------------------------------------------------------------------------
     # the global function for the current system time
     # ---------------------------------------------------------------------------
-    def get_real_time(self):
+    def get_real_time_sec(self):
         return int((datetime.utcnow() - self.epoch).total_seconds() * self.second_scale)
 
     # ---------------------------------------------------------------------------
-    def get_time_series_start_time(self):
-        return self.get_real_time() - self.time_series_n_seconds * self.second_scale
+    def get_time_series_start_time_sec(self):
+        return self.get_real_time_sec() - self.time_series_n_seconds * self.second_scale
 
     # ---------------------------------------------------------------------------
-    def get_start_time(self):
+    def get_start_time_sec(self):
         return 0
 
     # ---------------------------------------------------------------------------
     def reset_night(self, log=None):
         self.n_night += 1
-        self.real_reset_time = self.get_real_time()
+        self.real_reset_time_sec = self.get_real_time_sec()
 
-        time_now = int(floor(self.get_start_time()))
-        self.time_now = time_now
+        time_now_sec = int(floor(self.get_start_time_sec()))
+        self.time_now_sec = time_now_sec
 
         if log is not None:
-            self.log.info([['r', "- reset_night(): "],
-                           ['y', 'time_now:', self.time_now, ', '],
-                           ['b', 'n_night:', self.n_night, ', '],
-                           ['g', 'real_reset_time:', self.real_reset_time]])
+            self.log.info([
+                ['r', "- reset_night(): "],
+                ['y', 'time_now_sec:', self.time_now_sec, ', '],
+                ['b', 'n_night:', self.n_night, ', '],
+                ['g', 'real_reset_time_sec:', self.real_reset_time_sec],
+            ])
 
         self.redis.pipe.set(name='time_of_night_' + 'scale', data=self.timescale)
-        self.redis.pipe.set(name='time_of_night_' + 'start', data=time_now)
-        self.redis.pipe.set(name='time_of_night_' + 'end', data=self.end_time)
-        self.redis.pipe.set(name='time_of_night_' + 'now', data=time_now)
+        self.redis.pipe.set(name='time_of_night_' + 'start', data=time_now_sec)
+        self.redis.pipe.set(name='time_of_night_' + 'end', data=self.end_time_sec)
+        self.redis.pipe.set(name='time_of_night_' + 'now', data=time_now_sec)
 
         self.redis.pipe.execute()
 
@@ -455,11 +619,11 @@ class time_of_night():
 
         sleep_seconds = 1
         while True:
-            self.time_now += sleep_seconds / self.timescale
-            if self.time_now > self.end_time:
+            self.time_now_sec += sleep_seconds / self.timescale
+            if self.time_now_sec > self.end_time_sec:
                 self.reset_night()
 
-            self.redis.set(name='time_of_night_' + 'now', data=int(floor(self.time_now)))
+            self.redis.set(name='time_of_night_' + 'now', data=int(floor(self.time_now_sec)))
 
             sleep(sleep_seconds)
 
@@ -485,6 +649,19 @@ def get_time_of_night(parent):
     data = {'start': time_of_night[0], 'end': time_of_night[1], 'now': time_of_night[2]}
 
     return data
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ------------------------------------------------------------------
@@ -600,7 +777,7 @@ def flatten_dict(data_in, id='id', child_ids='children', sibling_ids='siblings')
 # for debugging, and easier time counter ...
 # ------------------------------------------------------------------
 # nTimeCount = 0
-# def getTime():
+# def get_time():
 #     global nTimeCount
 #     if nTimeCount > 1e7:
 #         nTimeCount = 0
@@ -612,15 +789,41 @@ def flatten_dict(data_in, id='id', child_ids='children', sibling_ids='siblings')
 # ---------------------------------------------------------------------------
 # time since epoch in milisecond
 # ---------------------------------------------------------------------------
-def getTime():
-    return int(time.time() * 1e3)
+def get_time(sec_scale):
+    if sec_scale == 'sec':
+        scale = 1
+    elif sec_scale == 'msec':
+        scale = 3
+    else:
+        raise
+    secs = (datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds()
+    return int(secs * pow(10, scale))
+    # return int(time.time() * 1e3)
+
+# ---------------------------------------------------------------------------
+# unique initialisation for rnd generator
+# ---------------------------------------------------------------------------
+def get_rnd_seed():
+    return int(get_time(sec_scale='msec'))
+
+# ---------------------------------------------------------------------------
+# random number
+# ---------------------------------------------------------------------------
+rnd_gen = Random(get_rnd_seed())
+def get_rnd(n_digits=2, out_type=int):
+    n_digits = max(n_digits, 1)
+    output = out_type(rnd_gen.randint(pow(10, n_digits-1), pow(10, n_digits)-1))
+    if out_type is float:
+        output = round(output * pow(10, -n_digits), n_digits)
+        # output = out_type(('%0' + str(n_digits) + 'f') % output)
+    
+    return output
 
 
 # def getDateTimeFormat():
 #   return '%Y/%m/%d,%H:%m:%S'
 # def getDateTimeStr():
 #   return datetime.utcnow().strftime(getDateTimeFormat())
-
 
 # ---------------------------------------------------------------------------
 #

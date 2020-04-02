@@ -1,6 +1,6 @@
 import random
 from datetime import datetime
-from ctaGuiUtils.py.utils import flatten_dict, getTime
+from ctaGuiUtils.py.utils import flatten_dict, get_time
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
@@ -28,7 +28,7 @@ class PlotsDash(BaseWidget):
         self.tel_category = 'Telescope'
         self.tel_type = ['LST', 'MST', 'SST', 'AUX']
         self.tel_key = ['mirror', 'camera', 'mount', 'daq', 'aux']
-        self.tel_ids = self.socket_manager.InstData.get_inst_ids(inst_types=self.tel_type)
+        self.tel_ids = self.socket_manager.inst_data.get_inst_ids(inst_types=self.tel_type)
 
         self.weather_category = 'Weather'
         self.weather_type = ['WS1', 'WS2', 'WS3', 'WS4']
@@ -197,7 +197,7 @@ class PlotsDash(BaseWidget):
         self.inst_health_sub_flat = dict()
         self.inst_health_sub_fields = dict()
 
-        self.inst_health_sub = self.socket_manager.InstData.get_tel_healths()
+        self.inst_health_sub = self.socket_manager.inst_data.get_tel_healths()
 
         # a flat dict with references to each level of the original dict
         self.inst_health_sub_flat = dict()
@@ -275,7 +275,7 @@ class PlotsDash(BaseWidget):
                 })
             self.pinned_eles.append({
                 "id": "pinned" + str(i),
-                "timestamp": getTime(),
+                "timestamp": get_time('msec'),
                 'data': data,
                 'context': {}
             })
@@ -286,9 +286,9 @@ class PlotsDash(BaseWidget):
     def get_data(self):
         time_of_night_date = {
             "date_now":
-            datetime.fromtimestamp(getTime() / 1000.0).strftime('%Y-%m-%d %H:%M:%S'),
+            datetime.fromtimestamp(get_time('msec') / 1000.0).strftime('%Y-%m-%d %H:%M:%S'),
             "now":
-            getTime()
+            get_time('msec')
         }
 
         data_out = self.get_tel_data('Mx10', ['camera', 'mount'])
@@ -529,17 +529,17 @@ class PlotsDash(BaseWidget):
         for key in inst_health:
             if (inst_health[key]["health"] is None):
                 continue
-            if self.socket_manager.InstData.is_tel_type(key, 'LST'):
+            if self.socket_manager.inst_data.is_tel_type(key, 'LST'):
                 agregate["LST"]["health"] += float(inst_health[key]["health"])
                 agregate["LST"]["number"] += 1
                 self.check_sytem_health(agregate["LST"], key, inst_health[key])
 
-            elif self.socket_manager.InstData.is_tel_type(key, 'MST'):
+            elif self.socket_manager.inst_data.is_tel_type(key, 'MST'):
                 agregate["MST"]["health"] += float(inst_health[key]["health"])
                 agregate["MST"]["number"] += 1
                 self.check_sytem_health(agregate["MST"], key, inst_health[key])
 
-            elif self.socket_manager.InstData.is_tel_type(key, 'SST'):
+            elif self.socket_manager.inst_data.is_tel_type(key, 'SST'):
                 agregate["SST"]["health"] += float(inst_health[key]["health"])
                 agregate["SST"]["number"] += 1
                 self.check_sytem_health(agregate["SST"], key, inst_health[key])
@@ -636,7 +636,7 @@ class PlotsDash(BaseWidget):
                         tel_id + key,
                         "keys": [
                             tel_id, key,
-                            self.socket_manager.InstData.get_tel_type(tel_id),
+                            self.socket_manager.inst_data.get_tel_type(tel_id),
                             self.tel_category
                         ],
                         "name":
@@ -644,7 +644,7 @@ class PlotsDash(BaseWidget):
                         "data": {
                             "measures": [{
                                 "value": value,
-                                "timestamp": getTime()
+                                "timestamp": get_time('msec')
                             }],
                             "type": self.get_tel_measure_types(key)
                         }
@@ -665,7 +665,7 @@ class PlotsDash(BaseWidget):
                         tel_id + key,
                         "keys": [
                             tel_id, key,
-                            self.socket_manager.InstData.get_tel_type(tel_id),
+                            self.socket_manager.inst_data.get_tel_type(tel_id),
                             self.tel_category
                         ],
                         "name":
@@ -673,7 +673,7 @@ class PlotsDash(BaseWidget):
                         "data": {
                             "measures": [{
                                 "value": value,
-                                "timestamp": getTime()
+                                "timestamp": get_time('msec')
                             }],
                             "type": self.get_tel_measure_types(key)
                         }

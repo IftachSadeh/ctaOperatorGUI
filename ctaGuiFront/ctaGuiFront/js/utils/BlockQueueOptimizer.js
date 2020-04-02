@@ -175,11 +175,11 @@ window.BlockQueueOptimizer = function(opt_in) {
                 date: new Date(),
                 time: 0,
             },
-            start_time: {
+            start_time_sec: {
                 date: new Date(),
                 time: 0,
             },
-            end_time: {
+            end_time_sec: {
                 date: new Date(),
                 time: 1000,
             },
@@ -212,7 +212,7 @@ window.BlockQueueOptimizer = function(opt_in) {
         }
         com.style.runRecCol = cols_blues[2]
         com.style.blockCol = function(opt_in) {
-            if (opt_in.d.data.end_time < com.time.currentTime.time) {
+            if (opt_in.d.data.end_time_sec < com.time.currentTime.time) {
                 return com.blocks.colorPalette.shutdown
             }
             let state = is_def(opt_in.state)
@@ -270,7 +270,7 @@ window.BlockQueueOptimizer = function(opt_in) {
             }
         }
         com.style.blockOpac = function(opt_in) {
-            if (opt_in.d.data.end_time < com.time.currentTime.time) {
+            if (opt_in.d.data.end_time_sec < com.time.currentTime.time) {
                 return com.blocks.colorPalette.shutdown
             }
             let state = is_def(opt_in.state)

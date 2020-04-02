@@ -253,7 +253,7 @@ window.BlockQueueOld = function() {
         // ------------------------------------------------------------------
         if (com.doPhase) {
             $.each(data_in.done, function(index, data_now) {
-                if (data_now.start_time > com.time.now) {
+                if (data_now.start_time_sec > com.time.now) {
                     data_in.wait.push(data_now)
                     data_in.done[index] = null
                 }
@@ -285,8 +285,8 @@ window.BlockQueueOld = function() {
             $.each(blocksNow, function(i, d) {
                 // the list of properties which will be monitored for change
                 this_update.props[d.obs_block_id] = {
-                    start_time: Math.floor(d.start_time),
-                    end_time: Math.floor(d.end_time),
+                    start_time_sec: Math.floor(d.start_time_sec),
+                    end_time_sec: Math.floor(d.end_time_sec),
                     type: type_now,
                     can_run: d.exe_state.can_run,
                     state: d.exe_state.state,
@@ -368,25 +368,25 @@ window.BlockQueueOld = function() {
         let maxDone = min_max_obj({
             min_max: 'max',
             data: com.blocksIn.done,
-            func: 'end_time',
+            func: 'end_time_sec',
             default_val: 0,
         })
         // let minRun = min_max_obj({
         //   min_max: 'min',
         //   data: com.blocksIn.run,
-        //   func: 'start_time',
+        //   func: 'start_time_sec',
         //   default_val: 0
         // })
         // let maxRun = min_max_obj({
         //   min_max: 'max',
         //   data: com.blocksIn.run,
-        //   func: 'end_time',
+        //   func: 'end_time_sec',
         //   default_val: 0
         // })
         let minWait = min_max_obj({
             min_max: 'min',
             data: com.blocksIn.wait,
-            func: 'start_time',
+            func: 'start_time_sec',
             default_val: 0,
         })
 
@@ -531,8 +531,8 @@ window.BlockQueueOld = function() {
             let id = data_now.obs_block_id
             let state = data_now.exe_state.state
             let n_tels = data_now.tel_ids.length
-            let start = data_now.start_time * xScale
-            let end = data_now.end_time * xScale
+            let start = data_now.start_time_sec * xScale
+            let end = data_now.end_time_sec * xScale
             let overlap = data_now.duration * xScale * 0.2 // allow small overlap in x between blocks
             let x0 = box.x + start
             let w0 = end - start
@@ -703,7 +703,7 @@ window.BlockQueueOld = function() {
                 })
 
                 ovelaps.sort(function(a, b) {
-                    let diffTime = a.data.data.start_time - b.data.data.start_time
+                    let diffTime = a.data.data.start_time_sec - b.data.data.start_time_sec
                     let diffTel = b.data.data.tel_ids.length - a.data.data.tel_ids.length
                     return diffTel !== 0 ? diffTel : diffTime
                 })
@@ -1034,14 +1034,14 @@ window.BlockQueueOld = function() {
                     min_max: 'min',
                     data: com.blockRow.run,
                     func: function(d, i) {
-                        return d.data.start_time
+                        return d.data.start_time_sec
                     },
                 })
                 let time_max = min_max_obj({
                     min_max: 'max',
                     data: com.blockRow.run,
                     func: function(d, i) {
-                        return d.data.end_time
+                        return d.data.end_time_sec
                     },
                 })
 

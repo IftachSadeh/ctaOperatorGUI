@@ -1,13 +1,8 @@
 import gevent
 from gevent import sleep
-from gevent.coros import BoundedSemaphore
-from math import sqrt, ceil, floor
-import random
-from random import Random
-import time
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert, getTime
+from ctaGuiUtils.py.utils import my_log
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 from msgpack import packb
