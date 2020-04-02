@@ -385,6 +385,7 @@ class ClockSim():
 
         while True:
             self.time_now += timedelta(seconds=sleep_sec * self.speed_factor)
+            
             # self.log.info([['g', ' --- self.time_now: '], ['y', self.time_now], ['p', ' (', self.is_night_time_now(), ')']])
             # self.get_real_time_sec()
             # self.get_astro_night_start_sec()
@@ -446,7 +447,6 @@ class ClockSim():
 
         n_days = (self.time_now - epoch_0).days
 
-        # e.g., night begins at 19:10
         self.astro_night_start_sec = timedelta(
             days=n_days,
             hours=self.rnd_gen.randint(18, 19),
@@ -466,8 +466,7 @@ class ClockSim():
             self.astro_night_end_sec - self.astro_night_start_sec
         )
 
-        # night_start = datetime.utcfromtimestamp(self.astro_night_start_sec)
-        #                             .strftime(time_str_formats['time'])
+        # night_start = datetime.utcfromtimestamp(self.astro_night_start_sec).strftime('%H:%M:%s')
         night_start = date_to_string(
             secs_to_datetime(self.astro_night_start_sec),
             date_string=None,
@@ -993,7 +992,7 @@ def delta_seconds(date0, date1, is_microseconds=False):
 # ---------------------------------------------------------------------------
 time_str_formats = {
     'date': '%Y/%m/%d',
-    'time': '%H:%m:%S',
+    'time': '%H:%M:%S',
 }
 
 
