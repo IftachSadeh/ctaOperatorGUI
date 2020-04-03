@@ -55,7 +55,7 @@ class MockTarget():
         self.targets = []
         for index in range(n_rnd_targets):
             # if self.redis.exists('inst_pos'):
-            #     inst_pos_in = self.redis.hGetAll(name="inst_pos", packed=Tr
+            #     inst_pos_in = self.redis.h_get_all(name="inst_pos", packed=Tr
             target = {
                 "id": "target_" + str(index),
                 "name": "target_" + str(index),

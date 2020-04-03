@@ -47,7 +47,7 @@ class ObsBlockControl(BaseWidget):
         BaseWidget.setup(self, *args)
 
         with self.socket_manager.lock:
-            wgt = self.redis.hGet(
+            wgt = self.redis.h_get(
                 name='all_widgets',
                 key=self.widget_id,
                 packed=True,
@@ -99,7 +99,7 @@ class ObsBlockControl(BaseWidget):
     def get_tel_health(self):
         self.redis.pipe.reset()
         for id_now in self.tel_ids:
-            self.redis.pipe.hGet(name="inst_health;" + str(id_now), key="health")
+            self.redis.pipe.h_get(name="inst_health;" + str(id_now), key="health")
         redis_data = self.redis.pipe.execute()
 
         for i in range(len(redis_data)):

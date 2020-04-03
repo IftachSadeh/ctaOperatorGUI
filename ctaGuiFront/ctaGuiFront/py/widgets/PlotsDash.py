@@ -336,7 +336,7 @@ class PlotsDash(BaseWidget):
         inst_health = []
         for index in range(len(self.tel_ids)):
             for key in self.tel_key:
-                self.redis.pipe.zGet('inst_health;' + self.tel_ids[index] + ';' + key)
+                self.redis.pipe.z_get('inst_health;' + self.tel_ids[index] + ';' + key)
             data = self.redis.pipe.execute(packed_score=True)
             n_ele_now = 0
             for key in self.tel_key:
@@ -346,11 +346,12 @@ class PlotsDash(BaseWidget):
                     self.tel_ids[index] + '-' + key,
                     'keys': [self.tel_ids[index], key],
                     'data': [{
-                        'y': x[0]['data'],
-                        'x': x[1]
+                        'x': x[0]['data']['time_sec'],
+                        'y': x[0]['data']['value'],
                     } for x in data_now]
                 })
                 n_ele_now += 1
+        
         return inst_health
 
     # ------------------------------------------------------------------
@@ -375,7 +376,7 @@ class PlotsDash(BaseWidget):
         res = {"id": id}
         data = {}
         for key in keys_now:
-            self.redis.pipe.zGet('inst_health;' + id + ';' + key)
+            self.redis.pipe.z_get('inst_health;' + id + ';' + key)
             data[key] = self.redis.pipe.execute(packed_score=True)
         # n_ele = sum([len(v) for v in keys_now])
         # if len(data) != n_ele:
@@ -819,7 +820,7 @@ class PlotsDash(BaseWidget):
 
         self.redis.pipe.reset()
         for id_now in idV:
-            self.redis.pipe.hMget(name="inst_health;" + str(id_now), key=fields[id_now])
+            self.redis.pipe.h_m_get(name="inst_health;" + str(id_now), key=fields[id_now])
         redis_data = self.redis.pipe.execute()
 
         for i in range(len(redis_data)):

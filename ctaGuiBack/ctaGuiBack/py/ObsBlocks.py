@@ -248,7 +248,7 @@ class ObsBlocks():
     #
     # ------------------------------------------------------------------
     def update_sub_arrs(self, blocks=None):
-        # inst_pos = self.redis.hGetAll(name='inst_pos')
+        # inst_pos = self.redis.h_get_all(name='inst_pos')
 
         if blocks is None:
             obs_block_ids = self.redis.get(
@@ -1036,7 +1036,7 @@ class ObsBlocksNoACS():
     #
     # ------------------------------------------------------------------
     def update_sub_arrs(self, blocks=None):
-        # inst_pos = self.redis.hGetAll(name='inst_pos')
+        # inst_pos = self.redis.h_get_all(name='inst_pos')
 
         if blocks is None:
             obs_block_ids = self.redis.get(

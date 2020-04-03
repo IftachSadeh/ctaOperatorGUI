@@ -79,7 +79,7 @@ class SubArrGrp(BaseWidget):
         obs_block_ids = self.redis.get(
             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
         )
-        inst_pos = self.redis.hGetAll(name="inst_pos", packed=True)
+        inst_pos = self.redis.h_get_all(name="inst_pos", packed=True)
 
         data = {
             "tel": [],

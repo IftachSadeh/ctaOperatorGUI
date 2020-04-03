@@ -95,7 +95,7 @@ class PanelSync(BaseWidget):
         data = args[0]
 
         with self.socket_manager.lock:
-            widget_ids = self.redis.lGet('user_widgets;' + self.socket_manager.user_id)
+            widget_ids = self.redis.l_get('user_widgets;' + self.socket_manager.user_id)
 
             sync_groups = []
             for child_0 in data['data']['children']:
@@ -111,7 +111,7 @@ class PanelSync(BaseWidget):
 
                 sync_groups.append(sync_group)
 
-            self.redis.hSet(
+            self.redis.h_set(
                 name='sync_groups',
                 key=self.socket_manager.user_id,
                 data=sync_groups,
@@ -132,8 +132,8 @@ class PanelSync(BaseWidget):
         # ------------------------------------------------------------------
         sess_widgets = [[], []]
         with self.socket_manager.lock:
-            widget_ids = self.redis.lGet('user_widgets;' + self.socket_manager.user_id)
-            all_widgets = self.redis.hMget(
+            widget_ids = self.redis.l_get('user_widgets;' + self.socket_manager.user_id)
+            all_widgets = self.redis.h_m_get(
                 name='all_widgets', key=widget_ids, packed=True
             )
 
@@ -174,8 +174,8 @@ class PanelSync(BaseWidget):
 
     def panel_sync_get_groups(self):
         with self.socket_manager.lock:
-            widget_ids = self.redis.lGet('user_widgets;' + self.socket_manager.user_id)
-            all_widgets = self.redis.hMget(
+            widget_ids = self.redis.l_get('user_widgets;' + self.socket_manager.user_id)
+            all_widgets = self.redis.h_m_get(
                 name='all_widgets', key=widget_ids, packed=True
             )
 
@@ -195,7 +195,7 @@ class PanelSync(BaseWidget):
             rm_elements = []
             children_0 = []
 
-            sync_groups = self.redis.hGet(
+            sync_groups = self.redis.h_get(
                 name='sync_groups',
                 key=self.socket_manager.user_id,
                 packed=True,
@@ -251,7 +251,7 @@ class PanelSync(BaseWidget):
                 for rm_element in rm_elements:
                     sync_groups.remove(rm_element)
 
-                self.redis.hSet(
+                self.redis.h_set(
                     name='sync_groups',
                     key=self.socket_manager.user_id,
                     data=sync_groups,

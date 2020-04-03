@@ -64,7 +64,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             if SocketManager.server_name is None:
                 SocketManager.server_name = 'server_' + get_rnd(out_type=str)
 
-                # sess_ids_now = self.redis.lGet('all_sess_ids')
+                # sess_ids_now = self.redis.l_get('all_sess_ids')
                 # for sess_id in sess_ids_now:
                 #   self.cleanup_session(sess_id)
                 # self.redis.delete('user_ids')
@@ -95,14 +95,14 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         # print 'on_back_from_offline.................'
         # first validate that eg the server hasnt been restarted while this session has been offline
-        sess_ids = self.redis.lGet('all_sess_ids')
+        sess_ids = self.redis.l_get('all_sess_ids')
         server_name = SocketManager.server_name if self.sess_id in sess_ids else ''
 
         self.emit('reconnect', {'server_name': server_name})
 
         # now run any widget specific functions
         with SocketManager.lock:
-            widget_ids = self.redis.lGet('sess_widgets;' + self.sess_id)
+            widget_ids = self.redis.l_get('sess_widgets;' + self.sess_id)
             for widget_id in widget_ids:
                 if widget_id in SocketManager.widget_inits:
                     getattr(SocketManager.widget_inits[widget_id], 'back_from_offline')()
@@ -147,9 +147,9 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                         ['p', self.sess_name, ''], ['y', self.ns_name, '']])
 
         with SocketManager.lock:
-            user_ids = self.redis.lGet('user_ids')
+            user_ids = self.redis.l_get('user_ids')
             if self.user_id not in user_ids:
-                self.redis.lPush(name='user_ids', data=self.user_id)
+                self.redis.r_push(name='user_ids', data=self.user_id)
 
             # ------------------------------------------------------------------
             # all session ids in one list (heartbeat should be first to
@@ -159,7 +159,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 name='sess_heartbeat;' + self.sess_id,
                 expire=(int(SocketManager.sess_expire) * 2)
             )
-            self.redis.lPush(name='all_sess_ids', data=self.sess_id)
+            self.redis.r_push(name='all_sess_ids', data=self.sess_id)
 
             # ------------------------------------------------------------------
             # the socket endpoint type registry for this session
@@ -169,15 +169,15 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             # ------------------------------------------------------------------
             #
             # ------------------------------------------------------------------
-            if not self.redis.hExists(name='sync_groups', key=self.user_id):
-                self.redis.hSet(
+            if not self.redis.h_exists(name='sync_groups', key=self.user_id):
+                self.redis.h_set(
                     name='sync_groups', key=self.user_id, data=[], packed=True
                 )
 
             # ------------------------------------------------------------------
             # list of all sessions for this user
             # ------------------------------------------------------------------
-            self.redis.lPush(name='user_sess_ids;' + self.user_id, data=self.sess_id)
+            self.redis.r_push(name='user_sess_ids;' + self.user_id, data=self.sess_id)
 
         # ------------------------------------------------------------------
         # initiate the threads which does periodic cleanup, heartbeat managment etc.
@@ -260,7 +260,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         # (no need for a 'from dynamicLoadWidget import dynWidg_0' statement)
         # ------------------------------------------------------------------
         with SocketManager.lock:
-            has_widget_id = self.redis.hExists(name='all_widgets', key=widget_id)
+            has_widget_id = self.redis.h_exists(name='all_widgets', key=widget_id)
 
         if not has_widget_id:
             # the following is equivalent e.g., to:
@@ -284,11 +284,11 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 else:
                     n_icon = allowed_widget_types['synced'].index(widget_name)
                     while True:
-                        widget_ids = self.redis.lGet('user_widgets;' + self.user_id)
+                        widget_ids = self.redis.l_get('user_widgets;' + self.user_id)
                         if len(widget_ids) == 0:
                             break
 
-                        all_widgets = self.redis.hMget(
+                        all_widgets = self.redis.h_m_get(
                             name='all_widgets', key=widget_ids, packed=True, filter=True
                         )
                         n_icons = [x['n_icon'] for x in all_widgets]
@@ -308,11 +308,11 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                 widget_now['widget_state'] = dict()
 
                 # register the new widget
-                self.redis.hSet(
+                self.redis.h_set(
                     name='all_widgets', key=widget_id, data=widget_now, packed=True
                 )
-                self.redis.lPush(name='user_widgets;' + self.user_id, data=widget_id)
-                self.redis.lPush(name='sess_widgets;' + self.sess_id, data=widget_id)
+                self.redis.r_push(name='user_widgets;' + self.user_id, data=widget_id)
+                self.redis.r_push(name='sess_widgets;' + self.sess_id, data=widget_id)
 
                 # sync group initialization
                 # ------------------------------------------------------------------
@@ -325,7 +325,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                     sync_type = min(max(sync_type, 0), 2)
 
                 if n_sync_group == 0:
-                    sync_groups = self.redis.hGet(
+                    sync_groups = self.redis.h_get(
                         name='sync_groups', key=self.user_id, packed=True, default_val=[]
                     )
 
@@ -358,7 +358,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                         widget_id, icon_id
                     ])
 
-                    self.redis.hSet(
+                    self.redis.h_set(
                         name='sync_groups',
                         key=self.user_id,
                         data=sync_groups,
@@ -373,7 +373,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         #   widget.method_name(optionalArgs)
         # ------------------------------------------------------------------
         if 'method_name' in data and widget_id in SocketManager.widget_inits:
-            widget_ids = self.redis.lGet('sess_widgets;' + self.sess_id)
+            widget_ids = self.redis.l_get('sess_widgets;' + self.sess_id)
             if 'method_arg' in data:
                 getattr(SocketManager.widget_inits[widget_id], data['method_name'])(
                     data['method_arg']
@@ -406,7 +406,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     def update_sync_group(self):
         widget_ids = []
         with SocketManager.lock:
-            all_widgets = self.redis.hGetAll(name='all_widgets', packed=True)
+            all_widgets = self.redis.h_get_all(name='all_widgets', packed=True)
             for widget_id, widget_now in all_widgets.iteritems():
                 if widget_now['n_icon'] == -1 and widget_id in SocketManager.widget_inits:
                     widget_ids.append(widget_id)
@@ -424,15 +424,15 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             return
         if 'widget_id' not in data_in:
             return
-        if not self.redis.hExists(name='active_widget', key=self.user_id):
+        if not self.redis.h_exists(name='active_widget', key=self.user_id):
             return
         all_sync_ids = []
         with SocketManager.lock:
-            if self.redis.hGet(name='active_widget',
+            if self.redis.h_get(name='active_widget',
                                key=self.user_id) != data_in['widget_id']:
                 return
 
-            sync_groups = self.redis.hGet(
+            sync_groups = self.redis.h_get(
                 name='sync_groups', key=self.user_id, packed=True, default_val=[]
             )
 
@@ -453,7 +453,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                                 and id_now not in all_sync_ids):
                             all_sync_ids.append(id_now)
 
-            self.redis.hSet(
+            self.redis.h_set(
                 name='sync_groups', key=self.user_id, data=sync_groups, packed=True
             )
         data = {
@@ -471,12 +471,12 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     #
     # ------------------------------------------------------------------
     def on_set_active_widget(self, data):
-        active_widget = self.redis.hGet(
+        active_widget = self.redis.h_get(
             name='active_widget', key=self.user_id, default_val=None
         )
 
         if active_widget != data['widget_id']:
-            self.redis.hSet(
+            self.redis.h_set(
                 name='active_widget', key=self.user_id, data=data['widget_id']
             )
 
@@ -634,7 +634,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
             with SocketManager.lock:
                 if sess_ids is None:
-                    sess_ids = self.redis.lGet('all_sess_ids')
+                    sess_ids = self.redis.l_get('all_sess_ids')
 
                 if self.log_send_packet:
                     self.log.info([[
@@ -645,14 +645,14 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                         (',').join(sess_ids) + ']'
                     ]])
 
-                user_sess_ids = self.redis.lGet('user_sess_ids;' + self.user_id)
+                user_sess_ids = self.redis.l_get('user_sess_ids;' + self.user_id)
                 sess_ids = [
                     x for x in sess_ids
                     if (x in self.socket.server.sockets and x in user_sess_ids)
                 ]
 
                 for sess_id in sess_ids:
-                    idV = self.redis.lGet('sess_widgets;' + sess_id)
+                    idV = self.redis.l_get('sess_widgets;' + sess_id)
                     if widget_ids is None:
                         data['sess_widget_ids'] = idV
                     else:
@@ -771,7 +771,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     # # ------------------------------------------------------------------
     # def on_refreshAll(self, has_lock=False):
     #     def doRefresh():
-    #         sess_ids = self.redis.lGet('all_sess_ids')
+    #         sess_ids = self.redis.l_get('all_sess_ids')
     #         sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
 
     #         for sess_id in sess_ids:
@@ -799,7 +799,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         self.log.debug([['r', ' - Connection to '], ['p', self.sess_name],
                         ['r', ' terminated...']])
 
-        sess_ids = self.redis.lGet('all_sess_ids')
+        sess_ids = self.redis.l_get('all_sess_ids')
         if (self.sess_name != '') and (self.sess_id in sess_ids):
             self.on_leave_session()
 
@@ -811,20 +811,20 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     # ------------------------------------------------------------------
     def on_leave_session(self):
         with SocketManager.lock:
-            sess_ids_now = self.redis.lGet('user_sess_ids;' + self.user_id)
+            sess_ids_now = self.redis.l_get('user_sess_ids;' + self.user_id)
             self.log.info([['b', ' - leaving session '],
                            ['y', self.sess_name + ' , ' + self.user_id],
                            ['b', ' where all Ids('], ['g', str(len(sess_ids_now))],
                            ['b', ') = ['], ['p', (',').join(sess_ids_now)], ['b', ']']])
 
             # remove the widgets which belong to this session
-            widget_ids = self.redis.lGet('sess_widgets;' + self.sess_id)
-            sync_groups = self.redis.hGet(
+            widget_ids = self.redis.l_get('sess_widgets;' + self.sess_id)
+            sync_groups = self.redis.h_get(
                 name='sync_groups', key=self.user_id, packed=True, default_val=[]
             )
 
             for widget_id in widget_ids:
-                self.redis.hDel(name='all_widgets', key=widget_id)
+                self.redis.h_del(name='all_widgets', key=widget_id)
 
                 for sync_group in sync_groups:
                     for sync_states in sync_group['sync_states']:
@@ -837,7 +837,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
                 self.clear_threads_type(widget_id)
 
-            self.redis.hSet(
+            self.redis.h_set(
                 name='sync_groups', key=self.user_id, data=sync_groups, packed=True
             )
 
@@ -873,26 +873,26 @@ class SocketManager(BaseNamespace, BroadcastMixin):
             'b', ' - cleanup_session sessionId(', SocketManager.server_name, ') '
         ], ['p', sess_id]])
 
-        user_ids = self.redis.lGet('user_ids')
-        widget_ids = self.redis.lGet('sess_widgets;' + sess_id)
+        user_ids = self.redis.l_get('user_ids')
+        widget_ids = self.redis.l_get('sess_widgets;' + sess_id)
 
         for user_id in user_ids:
-            self.redis.lRem(name='user_sess_ids;' + user_id, data=sess_id)
+            self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
 
         for widget_id in widget_ids:
             self.log.info([[
                 'b', ' - cleanup_session widget_id (', SocketManager.server_name, ') '
             ], ['p', widget_id]])
 
-            self.redis.hDel(name='all_widgets', key=widget_id)
+            self.redis.h_del(name='all_widgets', key=widget_id)
             if widget_id in SocketManager.widget_inits:
                 SocketManager.widget_inits.pop(widget_id, None)
             for user_id in user_ids:
-                self.redis.lRem(name='user_widgets;' + user_id, data=widget_id)
+                self.redis.l_rem(name='user_widgets;' + user_id, data=widget_id)
 
         self.redis.delete('sess_widgets;' + sess_id)
         self.redis.delete('sess_heartbeat;' + sess_id)
-        self.redis.lRem(name='all_sess_ids', data=sess_id)
+        self.redis.l_rem(name='all_sess_ids', data=sess_id)
 
         if sess_id in SocketManager.sess_endpoints:
             SocketManager.sess_endpoints.pop(sess_id, None)
@@ -912,7 +912,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         while (thread_id == self.get_thread_id('shared_thread', 'sess_heartbeat')):
             with SocketManager.lock:
-                sess_ids = self.redis.lGet('all_sess_ids')
+                sess_ids = self.redis.l_get('all_sess_ids')
                 sess_ids = [x for x in sess_ids if x in self.socket.server.sockets]
 
                 for sess_id in sess_ids:
@@ -939,32 +939,32 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         while (thread_id == self.get_thread_id('shared_thread', 'cleanup')):
             with SocketManager.lock:
-                user_ids = self.redis.lGet('user_ids')
-                sess_ids = self.redis.lGet('all_sess_ids')
+                user_ids = self.redis.l_get('user_ids')
+                sess_ids = self.redis.l_get('all_sess_ids')
 
                 for sess_id in sess_ids:
                     if not self.redis.exists('sess_heartbeat;' + sess_id):
                         self.cleanup_session(sess_id)
 
-                sess_ids = self.redis.lGet('all_sess_ids')
+                sess_ids = self.redis.l_get('all_sess_ids')
                 for user_id in user_ids:
-                    sess_ids_now = self.redis.lGet('user_sess_ids;' + user_id)
+                    sess_ids_now = self.redis.l_get('user_sess_ids;' + user_id)
                     zombie_ids = [x for x in sess_ids_now if x not in sess_ids]
                     for sess_id in zombie_ids:
-                        self.redis.lRem(name='user_sess_ids;' + user_id, data=sess_id)
+                        self.redis.l_rem(name='user_sess_ids;' + user_id, data=sess_id)
 
                     # just in case, cleanup any remaining widgets
                     if len(sess_ids_now) == len(zombie_ids):
-                        widget_ids = self.redis.lGet('user_widgets;' + user_id)
+                        widget_ids = self.redis.l_get('user_widgets;' + user_id)
                         for widget_id in widget_ids:
-                            self.redis.hDel(name='all_widgets', key=widget_id)
+                            self.redis.h_del(name='all_widgets', key=widget_id)
                             if widget_id in SocketManager.widget_inits:
                                 SocketManager.widget_inits.pop(widget_id, None)
 
                         self.redis.delete('user_sess_ids;' + user_id)
                         self.redis.delete('user_widgets;' + user_id)
-                        self.redis.hDel(name='active_widget', key=user_id)
-                        self.redis.lRem(name='user_ids', data=user_id)
+                        self.redis.h_del(name='active_widget', key=user_id)
+                        self.redis.l_rem(name='user_ids', data=user_id)
 
                 if not self.redis.exists('user_ids'):
                     break

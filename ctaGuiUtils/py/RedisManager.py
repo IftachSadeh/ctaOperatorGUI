@@ -53,7 +53,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def hSet(self, name=None, key=None, data=None, packed=False):
+    def h_set(self, name=None, key=None, data=None, packed=False):
         try:
             if (name is None) or (key is None):
                 raise
@@ -76,7 +76,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def hDel(self, name=None, key=None):
+    def h_del(self, name=None, key=None):
         try:
             if (name is None) or (key is None):
                 raise
@@ -87,7 +87,7 @@ class RedisBase(object):
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.hDel() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.h_del() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             return False
@@ -95,7 +95,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def hGet(self, name=None, key=None, packed=False, default_val=None):
+    def h_get(self, name=None, key=None, packed=False, default_val=None):
         try:
             if (name is None) or (key is None):
                 raise
@@ -124,7 +124,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def hMget(self, name=None, key=None, packed=False, filter=False):
+    def h_m_get(self, name=None, key=None, packed=False, filter=False):
         try:
             if (name is None) or (key is None):
                 raise
@@ -157,7 +157,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def lPush(self, name=None, data=None, packed=False):
+    def r_push(self, name=None, data=None, packed=False):
         try:
             if (name is None):
                 raise
@@ -174,7 +174,7 @@ class RedisBase(object):
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.lPush() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.r_push() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             return False
@@ -182,7 +182,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def lRem(self, name=None, data=None, packed=False):
+    def l_rem(self, name=None, data=None, packed=False):
         try:
             if (name is None):
                 raise
@@ -196,7 +196,7 @@ class RedisBase(object):
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.lRem() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.l_rem() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             return False
@@ -204,7 +204,7 @@ class RedisBase(object):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def zAdd(
+    def z_add(
         self,
         name=None,
         score=None,
@@ -218,7 +218,8 @@ class RedisBase(object):
                 raise
 
             if packed_score:
-                data = packb({'score': score, 'data': data})
+                data = packb({'data': data})
+                # data = packb({'score': score, 'data': data})
             elif packed and (data is not None):
                 data = packb(data)
 
@@ -229,13 +230,15 @@ class RedisBase(object):
             if (clip_score is not None):
                 out = self.base.zremrangebyscore(name, 0, clip_score)
             # ------------------------------------------------------------------
+            # if name == 'inst_health;Lx03;camera_1':
+            #     print('add', name, score, clip_score)
 
             return out
 
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.zAdd() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.z_add() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             return False
@@ -328,7 +331,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def hGetAll(self, name=None, packed=False):
+    def h_get_all(self, name=None, packed=False):
         try:
             if name is None:
                 raise
@@ -341,7 +344,7 @@ class RedisManager(RedisBase):
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.hGetAll() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.h_get_all() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             data = {}
@@ -351,7 +354,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def zGet(self, name=None, packed=False, packed_score=False):
+    def z_get(self, name=None, packed=False, packed_score=False):
         try:
             if (name is None):
                 raise
@@ -371,7 +374,7 @@ class RedisManager(RedisBase):
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.zGet() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.z_get() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             return []
@@ -381,7 +384,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def lGet(self, name=None, packed=False):
+    def l_get(self, name=None, packed=False):
         try:
             if (name is None):
                 raise
@@ -397,7 +400,7 @@ class RedisManager(RedisBase):
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.lGet() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.l_get() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             return []
@@ -428,7 +431,7 @@ class RedisManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def hExists(self, name=None, key=None):
+    def h_exists(self, name=None, key=None):
         exists = False
 
         try:
@@ -440,7 +443,7 @@ class RedisManager(RedisBase):
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.hExists() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.h_exists() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
 
@@ -574,7 +577,7 @@ class RedisPipeManager(RedisBase):
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def zGet(self, name=None, withscores=True, score_cast_func=int):
+    def z_get(self, name=None, withscores=True, score_cast_func=int):
         try:
             if (name is None):
                 raise
@@ -590,7 +593,7 @@ class RedisPipeManager(RedisBase):
         except Exception:
             if self.log:
                 self.log.error([[
-                    'wr', ' - ', self.name, ' - could not do redis.zGet() for ',
+                    'wr', ' - ', self.name, ' - could not do redis.z_get() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
 

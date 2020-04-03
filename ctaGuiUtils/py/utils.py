@@ -376,6 +376,25 @@ class ClockSim():
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
+    def init_night_times(self):
+        self.n_nights = -1
+        # start before the first astronomical night
+        self.datetime_now = datetime_epoch.replace(hour=12)
+        # self.datetime_now = datetime_epoch.replace(day=3, hour=12, minute=0, second=0, microsecond=0)
+
+        self.astro_night_start_sec = datetime_to_secs(datetime_epoch)
+        self.astro_night_end_sec = datetime_to_secs(datetime_epoch)
+        self.astro_night_duration_sec = 0
+        self.time_series_start_time_sec = self.astro_night_start_sec
+
+        self.set_night_times()
+
+        return
+
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
     def loop(self):
         self.log.info([['g', ' - starting ClockSim.loop ...']])
 
@@ -384,21 +403,21 @@ class ClockSim():
             raise ValueError('Can not over-pace the loop ...')
 
         while True:
-            self.time_now += timedelta(seconds=sleep_sec * self.speed_factor)
+            self.datetime_now += timedelta(seconds=sleep_sec * self.speed_factor)
             
-            # self.log.info([['g', ' --- self.time_now: '], ['y', self.time_now], ['p', ' (', self.is_night_time_now(), ')']])
+            # self.log.info([['g', ' --- self.datetime_now: '], ['y', self.datetime_now], ['p', ' (', self.is_night_time_now(), ')']])
             # self.get_real_time_sec()
             # self.get_astro_night_start_sec()
             # self.get_time_series_start_time_sec()
 
             self.update_n_night()
 
-            secs_now = datetime_to_secs(self.time_now)
+            time_now_sec = datetime_to_secs(self.datetime_now)
             is_night_now = self.is_night_time_now()
 
             self.redis.set(
                 name='clock_sim_' + 'time_now_sec',
-                data=secs_now,
+                data=time_now_sec,
             )
             self.redis.set(
                 name='clock_sim_' + 'is_night_now',
@@ -421,23 +440,6 @@ class ClockSim():
 
         return
 
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    def init_night_times(self):
-        self.n_nights = -1
-        # start before the first astronomical night
-        self.time_now = epoch_0.replace(hour=12)
-        # self.time_now = epoch_0.replace(day=3, hour=12, minute=0, second=0, microsecond=0)
-
-        self.astro_night_start_sec = datetime_to_secs(epoch_0)
-        self.astro_night_end_sec = datetime_to_secs(epoch_0)
-        self.astro_night_duration_sec = 0
-        self.time_series_start_time_sec = self.astro_night_start_sec
-
-        self.set_night_times()
-
-        return
 
     # ---------------------------------------------------------------------------
     #
@@ -445,7 +447,7 @@ class ClockSim():
     def set_night_times(self):
         self.time_series_start_time_sec = self.astro_night_start_sec
 
-        n_days = (self.time_now - epoch_0).days
+        n_days = (self.datetime_now - datetime_epoch).days
 
         self.astro_night_start_sec = timedelta(
             days=n_days,
@@ -476,10 +478,11 @@ class ClockSim():
             date_string=None,
         )
         self.log.info([
-            ['b', ' - setting new night: '],
+            ['b', ' - setting new night: ['],
             ['g', night_start],
             ['b', ' --> '],
             ['g', night_end],
+            ['b', ']'],
         ])
 
         return
@@ -489,7 +492,7 @@ class ClockSim():
     # ---------------------------------------------------------------------------
     def update_n_night(self):
         sec_since_midnight = self.get_sec_since_midnight()
-        days_since_epoch = (self.time_now - epoch_0).days
+        days_since_epoch = (self.datetime_now - datetime_epoch).days
 
         is_new_day = days_since_epoch > self.n_nights
         is_past_night_time = sec_since_midnight > self.astro_night_end_sec
@@ -505,7 +508,7 @@ class ClockSim():
     #
     # ---------------------------------------------------------------------------
     def is_night_time_now(self):
-        time_now_sec = datetime_to_secs(self.time_now)
+        time_now_sec = datetime_to_secs(self.datetime_now)
         is_night = (
             time_now_sec > self.astro_night_start_sec
             and time_now_sec <= self.astro_night_end_sec
@@ -516,8 +519,8 @@ class ClockSim():
     #
     # ---------------------------------------------------------------------------
     def get_sec_since_midnight(self):
-        days_since_epoch = (self.time_now - epoch_0).days
-        sec_since_midnight = ((self.time_now - epoch_0).seconds
+        days_since_epoch = (self.datetime_now - datetime_epoch).days
+        sec_since_midnight = ((self.datetime_now - datetime_epoch).seconds
                               + timedelta(days=days_since_epoch).total_seconds())
         return sec_since_midnight
 
@@ -531,8 +534,8 @@ class ClockSim():
     # the global function for the current system time
     # ---------------------------------------------------------------------------
     def get_real_time_sec(self):
-        # print('----', self.time_now, datetime_to_secs(self.time_now))
-        return int(datetime_to_secs(self.time_now))
+        # print('----', self.datetime_now, datetime_to_secs(self.datetime_now))
+        return int(datetime_to_secs(self.datetime_now))
 
     # ---------------------------------------------------------------------------
     # beginig of the astronomical night
@@ -624,15 +627,15 @@ class ClockSim():
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-epoch_0 = datetime.utcfromtimestamp(0)
+datetime_epoch = datetime.utcfromtimestamp(0)
 
 
-def datetime_to_secs(time_now):
-    return (time_now - epoch_0).total_seconds()
+def datetime_to_secs(datetime_now):
+    return (datetime_now - datetime_epoch).total_seconds()
 
 
 def secs_to_datetime(secs_now):
-    return epoch_0 + timedelta(seconds=float(secs_now))
+    return datetime_epoch + timedelta(seconds=float(secs_now))
 
 
 # ---------------------------------------------------------------------------

@@ -8,7 +8,6 @@ import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.utils import my_log, flatten_dict
 from ctaGuiUtils.py.RedisManager import RedisManager
 
-
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
@@ -62,7 +61,7 @@ class InstHealth():
             }
 
             for key, val in self.inst_health_s0[id_now].iteritems():
-                self.redis.pipe.hSet(name="inst_health;" + str(id_now), key=key, data=val)
+                self.redis.pipe.h_set(name="inst_health;" + str(id_now), key=key, data=val)
 
             # self.redPipe.hmset("inst_health_s0"+str(id_now), self.inst_health_s0[id_now])
 
@@ -81,7 +80,7 @@ class InstHealth():
 
             for key, val in self.inst_health_sub_flat[id_now].iteritems():
                 if 'val' in val['data']:
-                    self.redis.pipe.hSet(
+                    self.redis.pipe.h_set(
                         name="inst_health;" + str(id_now),
                         key=key,
                         data=val['data']['val']
@@ -183,7 +182,7 @@ class InstHealth():
             self.inst_health_s1[id_now]["health"] = health_tot
 
             for key, val in self.inst_health_s0[id_now].iteritems():
-                self.redis.pipe.hSet(name="inst_health;" + str(id_now), key=key, data=val)
+                self.redis.pipe.h_set(name="inst_health;" + str(id_now), key=key, data=val)
 
         self.redis.pipe.execute()
 
@@ -236,7 +235,7 @@ class InstHealth():
                     # sync with the value in self.inst_health_s0
                     prop_value = self.inst_health_sub[id_now][prop_name]['val']
                     self.inst_health_s0[id_now][prop_name] = prop_value
-                    self.redis.pipe.hSet(
+                    self.redis.pipe.h_set(
                         name="inst_health;" + str(id_now), key=prop_name, data=prop_value
                     )
                     # if id_now=='Ax00':print id_now,prop_name,prop_value
@@ -250,11 +249,14 @@ class InstHealth():
 
             for key, val in self.inst_health_sub_flat[id_now].iteritems():
                 if 'val' in val['data']:
-                    self.redis.pipe.hSet(name=base_name, key=key, data=val['data']['val'])
-                    self.redis.pipe.zAdd(
+                    self.redis.pipe.h_set(name=base_name, key=key, data=val['data']['val'])
+                    self.redis.pipe.z_add(
                         name=base_name + ";" + key,
                         score=time_now_sec,
-                        data=val['data']['val'],
+                        data={
+                            'time_sec': time_now_sec,
+                            'value': val['data']['val'],
+                        },
                         packed_score=True,
                         clip_score=time_min
                     )
@@ -267,7 +269,7 @@ class InstHealth():
                     #     self.timeV += 1
                     #     print '------------', self.timeV, val['data']['val']
 
-                    # self.redis.pipe.zAdd(name=base_name+";"+key, score=time_now_sec,
+                    # self.redis.pipe.z_add(name=base_name+";"+key, score=time_now_sec,
                     #                      data=val['val'], clip_score=time_min)
 
             self.redis.pipe.execute()
@@ -275,13 +277,27 @@ class InstHealth():
         # for id_now in self.tel_ids:
         #     for key, val in self.inst_health_sub_flat[id_now].iteritems():
         #         if "val" in val['data']:
-        #             self.redis.pipe.zAdd(key=key,
+        #             self.redis.pipe.z_add(key=key,
         #                                  score=self.time_of_night.get_real_time_sec(),
         #                                  data=val['data']['val'])
 
         #             self.redis.redis.zremrangebyscore(key,
         #                                               0,
         #                                               self.time_of_night.get_time_series_start_time_sec())
+
+        # # self.redis.z_get('inst_health;Lx03;camera_1', packed_score=True)
+        # data = self.redis.z_get('inst_health;Lx03;camera_1', packed_score=True)
+        # print('----------->', data)
+        # return
+        # # self.redis.pipe.z_get('inst_health;Lx03;camera_1')
+        # # data = self.redis.pipe.execute(packed_score=True)
+        # print('--->>> 0  ', data )
+        # print('--->>> 0  ', data[0] )
+        # print('--->>> 0  ', data[0][0] )
+        # print('--->>> 0  ', data[0][0][0]['data'] )
+        # print('--->>> 0  ', data[0][0][1] )
+        # # print('--->>> 1  ', data[0][1] )
+        # # print('--->>> 1  ', data[0][2] )
 
         return
 

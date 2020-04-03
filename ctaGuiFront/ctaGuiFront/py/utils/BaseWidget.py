@@ -57,7 +57,7 @@ class BaseWidget():
     # ------------------------------------------------------------------
     def setup(self, *args):
         with self.socket_manager.lock:
-            wgt = self.redis.hGet(
+            wgt = self.redis.h_get(
                 name='all_widgets',
                 key=self.widget_id,
                 packed=True,

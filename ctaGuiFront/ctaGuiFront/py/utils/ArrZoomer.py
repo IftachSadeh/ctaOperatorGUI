@@ -125,7 +125,7 @@ class ArrZoomer():
         self.n_icon = self.parent.n_icon
 
         with self.socket_manager.lock:
-            wgt = self.redis.hGet(
+            wgt = self.redis.h_get(
                 name='all_widgets',
                 key=self.widget_id,
                 packed=True,
@@ -345,7 +345,7 @@ class ArrZoomer():
 
         self.redis.pipe.reset()
         for id_now in ids:
-            self.redis.pipe.hMget(
+            self.redis.pipe.h_m_get(
                 name='inst_health;' + str(id_now),
                 key=fields[id_now],
             )
@@ -365,7 +365,7 @@ class ArrZoomer():
     #   Load data relative to telescope on focus
     # ------------------------------------------------------------------
     def update_tel_health_s1(self, id_in):
-        redis_data = self.redis.hMget(
+        redis_data = self.redis.h_m_get(
             name='inst_health;' + str(id_in),
             key=self.tel_sub_health_fields[id_in],
         )
@@ -452,7 +452,7 @@ class ArrZoomer():
         }
         ArrZoomer.send_data['s_1'] = dict()
 
-        all_widgets = self.redis.hGetAll(
+        all_widgets = self.redis.h_get_all(
             name='all_widgets',
             packed=True,
         )

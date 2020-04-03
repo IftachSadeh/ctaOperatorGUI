@@ -56,7 +56,7 @@ class InstPos():
 
         inst_pos_in = dict()
         if self.redis.exists('inst_pos'):
-            inst_pos_in = self.redis.hGetAll(name="inst_pos", packed=True)
+            inst_pos_in = self.redis.h_get_all(name="inst_pos", packed=True)
 
         obs_block_ids = self.redis.get(
             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
@@ -113,7 +113,7 @@ class InstPos():
                     + pos_dif[1] * rnd_scale * self.rnd_gen.random() * frac_delta_pos
                 ]
 
-            self.redis.pipe.hSet(
+            self.redis.pipe.h_set(
                 name="inst_pos", key=id_now, data=inst_pos_new, packed=True
             )
 
