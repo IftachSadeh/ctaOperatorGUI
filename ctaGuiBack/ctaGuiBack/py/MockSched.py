@@ -80,13 +80,13 @@ class MockSched():
         self.max_n_free_tels = 5
 
         # self.time_of_night.reset_night()
-        # self.obs_block_seconds = 1800  # 30 minutes
+        # self.obs_block_sec = 1800  # 30 minutes
         # 0.035 -> one minute instead of 30 for gui testing
         # self.duration_scale = self.time_of_night.get_timescale()
         # self.duration_night = self.time_of_night.get_total_time_seconds()  # 28800 -> 8 hour night
         # self.prev_reset_time = self.time_of_night.get_reset_time()
 
-        self.obs_block_seconds = 1800  # 30 minutes
+        self.obs_block_sec = 1800  # 30 minutes
         self.n_nights = -1
         # self.speed_factor = self.clock_sim.get_speed_factor()
         # self.night_duration_sec = self.clock_sim.get_night_duration_sec()
@@ -233,7 +233,7 @@ class MockSched():
 
             # start_time_sec = self.time_of_night.get_start_time_sec()
 
-            overhead_seconds = 30
+            overhead_sec = 30
             is_cycle_done = False
             n_cycle_now = 0
 
@@ -242,15 +242,15 @@ class MockSched():
             night_end_sec = self.clock_sim.get_night_end_sec()
             night_duration_sec = self.clock_sim.get_night_duration_sec()
 
-            tot_block_seconds = night_start_sec
-            max_block_seconds = night_end_sec - self.obs_block_seconds
+            tot_sched_duration_sec = night_start_sec
+            max_block_duration_sec = night_end_sec - self.obs_block_sec
 
             if debug_tmp:
                 print('---------------------------------------------------------------')
                 print('night_duration_sec: ', night_duration_sec)
 
             while True:
-                can_break = not ((tot_block_seconds < max_block_seconds) and
+                can_break = not ((tot_sched_duration_sec < max_block_duration_sec) and
                                  (n_cycle_now < self.max_n_cycles) and
                                  (not is_cycle_done))
                 if can_break:
@@ -278,9 +278,9 @@ class MockSched():
                     print(
                         '- n_cycle_now',
                         n_cycle_now,
-                        'tot_block_seconds / percentage:',
-                        tot_block_seconds,
-                        ((tot_block_seconds - night_start_sec)
+                        'tot_sched_duration_sec / percentage:',
+                        tot_sched_duration_sec,
+                        ((tot_sched_duration_sec - night_start_sec)
                          / float(night_duration_sec)),
                     )
 
@@ -299,7 +299,7 @@ class MockSched():
                 #   blockTrgPnt[n_trg_try] = { 'n_trg':n_trg_now, 'n_pnt':len(blockTrgs[n_trg_now])-1 }
 
                 cycle_blocks_now = []
-                tot_sched_block_seconds = []
+                sched_block_duration_sec = []
                 # ------------------------------------------------------------------
                 #
                 # ------------------------------------------------------------------
@@ -370,8 +370,8 @@ class MockSched():
                         )
 
                     obs_blocks = []
-                    tot_obs_block_seconds = 0
-                    block_duration_sec = tot_block_seconds
+                    tot_obs_block_duration_sec = 0
+                    block_duration_sec = tot_sched_duration_sec
 
                     for n_obs_now in range(n_obs_blocks):
                         obs_block_id = (
@@ -380,20 +380,20 @@ class MockSched():
                         )
 
                         rnd = self.rnd_gen.random()
-                        obs_block_seconds = self.obs_block_seconds
+                        obs_block_sec = self.obs_block_sec
                         # if rnd < 0.1:
-                        #   obs_block_seconds /= 3
+                        #   obs_block_sec /= 3
                         # elif rnd < 0.3:
-                        #   obs_block_seconds /= 2
+                        #   obs_block_sec /= 2
                         if rnd < 0.05:
-                            obs_block_seconds /= 1.8
+                            obs_block_sec /= 1.8
                         elif rnd < 0.3:
-                            obs_block_seconds /= 1.5
+                            obs_block_sec /= 1.5
                         elif rnd < 0.5:
-                            obs_block_seconds /= 1.1
-                        obs_block_seconds = int(floor(obs_block_seconds))
+                            obs_block_sec /= 1.1
+                        obs_block_sec = int(floor(obs_block_sec))
 
-                        planed_block_end_sec = block_duration_sec + obs_block_seconds
+                        planed_block_end_sec = block_duration_sec + obs_block_sec
                         is_cycle_done = (planed_block_end_sec > night_end_sec)
                         if is_cycle_done:
                             if debug_tmp:
@@ -402,19 +402,17 @@ class MockSched():
                                     '/ night_start_sec / duration:',
                                     n_obs_now,
                                     block_duration_sec,
-                                    obs_block_seconds,
+                                    obs_block_sec,
                                 )
                             break
 
                         # integrated time for all obs blocks within this sched block
-                        tot_obs_block_seconds += obs_block_seconds
+                        tot_obs_block_duration_sec += obs_block_sec
 
                         # correct for the fact that the config/finish stages take time and
                         # are not scaled
                         speed_factor = self.clock_sim.get_speed_factor()
-                        scaled_duration = (
-                            obs_block_seconds * speed_factor - overhead_seconds
-                        )
+                        scaled_duration = (obs_block_sec * speed_factor - overhead_sec)
                         scaled_duration = max(1, scaled_duration)
 
                         point_pos = copy.deepcopy(target_pos[n_trg])
@@ -429,7 +427,7 @@ class MockSched():
                         if debug_tmp:
                             print(
                                 ' --- n_obs_now / night_start_sec / duration / scaled_duration:',
-                                n_obs_now, block_duration_sec, obs_block_seconds,
+                                n_obs_now, block_duration_sec, obs_block_sec,
                                 scaled_duration, '-------', obs_block_id
                             )
 
@@ -472,7 +470,7 @@ class MockSched():
                             'metadata': metadata,
                             'timestamp': get_time('msec'),
                             'point_pos': point_pos,
-                            'duration': obs_block_seconds,
+                            'duration': obs_block_sec,
                             'start_time_sec_plan': block_duration_sec,
                             'start_time_sec_exe': None,
                             'status': sb.OB_PENDING,
@@ -480,7 +478,7 @@ class MockSched():
                         }
 
                         obs_blocks += [obs_block]
-                        block_duration_sec += obs_block_seconds
+                        block_duration_sec += obs_block_sec
 
                     if len(obs_blocks) > 0:
                         sched_block = sb.SchedulingBlock(
@@ -499,10 +497,10 @@ class MockSched():
                         }
 
                         # list of duration of all sched blocks within this cycle
-                        tot_sched_block_seconds += [tot_obs_block_seconds]
+                        sched_block_duration_sec += [tot_obs_block_duration_sec]
 
                 # the maximal duration of all blocks within this cycle
-                tot_block_seconds += max(tot_sched_block_seconds)
+                tot_sched_duration_sec += max(sched_block_duration_sec)
 
                 if len(cycle_blocks_now) > 0:
                     self.cycle_blocks.append(cycle_blocks_now)

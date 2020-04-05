@@ -96,9 +96,8 @@ class SchedBlocks(BaseWidget):
         }
         # print(time_of_night_date)
 
-
         # SchedBlocks.time_of_night = get_time_of_night(self)
-        
+
         # #  int(time.mktime(datetime(2018, 9, 16, 21, 30).timetuple()))
         # time_of_night_date = {
         #     "date_start":
@@ -118,7 +117,6 @@ class SchedBlocks(BaseWidget):
         #     "end":
         #     int(SchedBlocks.time_of_night['end'])
         # }
-
 
         data = {
             "time_of_night": time_of_night_date,
