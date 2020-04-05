@@ -66,30 +66,17 @@ def main(global_config, **settings):
     # if utils.has_acs:
     #   TmpTest(site_type=site_type)
 
-    InstHealth(
-        site_type=utils.site_type,
-        time_of_night=my_time_of_night,
-        clock_sim=clock_sim,
-        inst_data=inst_data
-    )
+    InstHealth(site_type=utils.site_type, clock_sim=clock_sim, inst_data=inst_data)
 
     InstPos(site_type=utils.site_type, clock_sim=clock_sim, inst_data=inst_data)
 
     MockTarget(site_type=utils.site_type)
 
     if utils.has_acs:
-        ObsBlocks(
-            site_type=utils.site_type,
-            time_of_night=my_time_of_night,
-            clock_sim=clock_sim,
-            inst_data=inst_data
-        )
+        ObsBlocks(site_type=utils.site_type, clock_sim=clock_sim, inst_data=inst_data)
     else:
         ObsBlocksNoACS(
-            site_type=utils.site_type,
-            time_of_night=my_time_of_night,
-            clock_sim=clock_sim,
-            inst_data=inst_data
+            site_type=utils.site_type, clock_sim=clock_sim, inst_data=inst_data
         )
 
     # # PubsubTest(site_type=utils.site_type)

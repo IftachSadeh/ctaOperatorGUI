@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
-from ctaGuiUtils.py.utils import get_time_of_night
+# from datetime import datetime, timedelta
+# from ctaGuiUtils.py.utils import get_time_of_night
+from ctaGuiUtils.py.utils import get_clock_sim, secs_to_datetime
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
@@ -73,30 +74,52 @@ class SchedBlocks(BaseWidget):
     #
     # ------------------------------------------------------------------
     def get_data(self):
-        SchedBlocks.time_of_night = get_time_of_night(self)
         self.get_blocks()
         self.get_events()
         self.get_clock_events()
         self.get_tel_health()
-        #  int(time.mktime(datetime(2018, 9, 16, 21, 30).timetuple()))
+
+        clock_sim = get_clock_sim(self)
+
+        time_now_sec = clock_sim['time_now_sec']
+        night_start_sec = clock_sim['night_start_sec']
+        night_end_sec = clock_sim['night_end_sec']
+        # print('----', time_now_sec, night_start_sec, night_end_sec)
+
         time_of_night_date = {
-            "date_start":
-            datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
-            "date_end": (
-                datetime(2018, 9, 16, 21, 30)
-                + timedelta(seconds=int(SchedBlocks.time_of_night['end']))
-            ).strftime('%Y-%m-%d %H:%M:%S'),
-            "date_now": (
-                datetime(2018, 9, 16, 21, 30)
-                + timedelta(seconds=int(SchedBlocks.time_of_night['now']))
-            ).strftime('%Y-%m-%d %H:%M:%S'),
-            "now":
-            int(SchedBlocks.time_of_night['now']),
-            "start":
-            int(SchedBlocks.time_of_night['start']),
-            "end":
-            int(SchedBlocks.time_of_night['end'])
+            "date_start": secs_to_datetime(night_start_sec).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_end": secs_to_datetime(night_end_sec).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_now": secs_to_datetime(time_now_sec).strftime('%Y-%m-%d %H:%M:%S'),
+            "now": int(time_now_sec),
+            "start": int(night_start_sec),
+            "end": int(night_end_sec),
         }
+        # print(time_of_night_date)
+
+
+        # SchedBlocks.time_of_night = get_time_of_night(self)
+        
+        # #  int(time.mktime(datetime(2018, 9, 16, 21, 30).timetuple()))
+        # time_of_night_date = {
+        #     "date_start":
+        #     datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
+        #     "date_end": (
+        #         datetime(2018, 9, 16, 21, 30)
+        #         + timedelta(seconds=int(SchedBlocks.time_of_night['end']))
+        #     ).strftime('%Y-%m-%d %H:%M:%S'),
+        #     "date_now": (
+        #         datetime(2018, 9, 16, 21, 30)
+        #         + timedelta(seconds=int(SchedBlocks.time_of_night['now']))
+        #     ).strftime('%Y-%m-%d %H:%M:%S'),
+        #     "now":
+        #     int(SchedBlocks.time_of_night['now']),
+        #     "start":
+        #     int(SchedBlocks.time_of_night['start']),
+        #     "end":
+        #     int(SchedBlocks.time_of_night['end'])
+        # }
+
+
         data = {
             "time_of_night": time_of_night_date,
             "inst_health": SchedBlocks.inst_health,

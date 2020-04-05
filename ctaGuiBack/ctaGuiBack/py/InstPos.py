@@ -13,9 +13,10 @@ class InstPos():
     # ------------------------------------------------------------------
     def __init__(self, site_type, clock_sim, inst_data):
         self.log = my_log(title=__name__)
-        self.log.info([['y', " - InstPos - "], ['g', site_type]])
+        self.log.info([['y', ' - InstPos - '], ['g', site_type]])
 
         self.site_type = site_type
+        self.clock_sim = clock_sim
         self.inst_data = inst_data
         self.tel_ids = self.inst_data.get_inst_ids()
 
@@ -30,6 +31,16 @@ class InstPos():
         rnd_seed = 10989152934
         self.rnd_gen = Random(rnd_seed)
 
+        # minimum interval of simulation-time to wait before randomising values
+        min_wait_update_sec = 10
+        self.check_update_opts = {
+            'prev_update': None,
+            'min_wait': min_wait_update_sec,
+        }
+
+        # minimal real-time delay between randomisations
+        self.loop_sleep = 5
+
         self.init()
 
         gevent.spawn(self.loop)
@@ -40,7 +51,7 @@ class InstPos():
     #
     # ------------------------------------------------------------------
     def init(self):
-        self.log.info([['g', " - InstPos.init() ..."]])
+        self.log.info([['g', ' - InstPos.init() ...']])
 
         self.update_inst_pos()
 
@@ -52,11 +63,10 @@ class InstPos():
     def update_inst_pos(self):
         min_delta_pos_sqr = pow(0.05, 2)
         frac_delta_pos = 0.25
-        max_target_dif = 0.75
 
         inst_pos_in = dict()
         if self.redis.exists('inst_pos'):
-            inst_pos_in = self.redis.h_get_all(name="inst_pos", packed=True)
+            inst_pos_in = self.redis.h_get_all(name='inst_pos', packed=True)
 
         obs_block_ids = self.redis.get(
             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
@@ -69,12 +79,14 @@ class InstPos():
 
         tel_point_pos = dict()
         for n_block in range(len(blocks)):
-            if len(blocks[n_block]["pointings"]) == 0:
+            if len(blocks[n_block]['pointings']) == 0:
                 continue
-            tel_ids = blocks[n_block]["telescopes"]["large"]["ids"] + blocks[n_block][
-                "telescopes"]["medium"]["ids"] + blocks[n_block]["telescopes"]["small"][
-                    "ids"]
-            point_pos = blocks[n_block]["pointings"][0]["pos"]
+            tel_ids = (
+                blocks[n_block]['telescopes']['large']['ids']
+                + blocks[n_block]['telescopes']['medium']['ids']
+                + blocks[n_block]['telescopes']['small']['ids']
+            )
+            point_pos = blocks[n_block]['pointings'][0]['pos']
 
             for id_now in tel_ids:
                 tel_point_pos[id_now] = point_pos
@@ -114,7 +126,7 @@ class InstPos():
                 ]
 
             self.redis.pipe.h_set(
-                name="inst_pos", key=id_now, data=inst_pos_new, packed=True
+                name='inst_pos', key=id_now, data=inst_pos_new, packed=True
             )
 
         self.redis.pipe.execute()
@@ -125,12 +137,16 @@ class InstPos():
     #
     # ------------------------------------------------------------------
     def loop(self):
-        self.log.info([['g', " - starting inst_pos.loop ..."]])
+        self.log.info([['g', ' - starting inst_pos.loop ...']])
         sleep(2)
 
         while True:
-            self.update_inst_pos()
+            need_update = self.clock_sim.need_data_update(
+                update_opts=self.check_update_opts,
+            )
+            if need_update:
+                self.update_inst_pos()
 
-            sleep(2)
+            sleep(self.loop_sleep)
 
         return

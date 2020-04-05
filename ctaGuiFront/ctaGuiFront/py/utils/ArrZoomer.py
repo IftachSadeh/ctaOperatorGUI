@@ -549,7 +549,7 @@ class ArrZoomer():
         if not self.do_data_updates:
             return
 
-        n_sec_sleep = 10
+        n_sec_sleep = 2
         sleep(n_sec_sleep)
 
         def get_thread_id():
@@ -596,7 +596,7 @@ class ArrZoomer():
     #
     # ------------------------------------------------------------------
     def update_sub_arr(self, thread_id):
-        n_sec_sleep = 10
+        n_sec_sleep = 2
         sleep(n_sec_sleep)
 
         def get_thread_id():

@@ -351,7 +351,7 @@ class PlotsDash(BaseWidget):
                     } for x in data_now]
                 })
                 n_ele_now += 1
-        
+
         return inst_health
 
     # ------------------------------------------------------------------

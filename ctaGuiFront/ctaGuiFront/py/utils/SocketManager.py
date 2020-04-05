@@ -429,7 +429,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         all_sync_ids = []
         with SocketManager.lock:
             if self.redis.h_get(name='active_widget',
-                               key=self.user_id) != data_in['widget_id']:
+                                key=self.user_id) != data_in['widget_id']:
                 return
 
             sync_groups = self.redis.h_get(

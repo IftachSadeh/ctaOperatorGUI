@@ -1,6 +1,7 @@
-from datetime import timedelta
-from datetime import datetime
-from ctaGuiUtils.py.utils import get_time_of_night
+# from datetime import timedelta
+# from datetime import datetime
+# from ctaGuiUtils.py.utils import get_time_of_night
+from ctaGuiUtils.py.utils import get_clock_sim, secs_to_datetime
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
@@ -13,7 +14,7 @@ class SchedBlockInspector(BaseWidget):
     for keys_now in block_keys:
         blocks[keys_now[0]] = []
 
-    time_of_night = {}
+    # time_of_night = {}
 
     inst_health = []
 
@@ -75,31 +76,49 @@ class SchedBlockInspector(BaseWidget):
     #
     # ------------------------------------------------------------------
     def get_data(self):
-        SchedBlockInspector.time_of_night = get_time_of_night(self)
-
         self.get_blocks()
         self.get_tel_health()
         self.get_events()
         self.get_clock_events()
         self.get_target()
+
+        clock_sim = get_clock_sim(self)
+
+        time_now_sec = clock_sim['time_now_sec']
+        night_start_sec = clock_sim['night_start_sec']
+        night_end_sec = clock_sim['night_end_sec']
+        # print('----', time_now_sec, night_start_sec, night_end_sec)
+
         time_of_night_date = {
-            "date_start":
-            datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
-            "date_end": (
-                datetime(2018, 9, 16, 21, 30)
-                + timedelta(seconds=int(SchedBlockInspector.time_of_night['end']))
-            ).strftime('%Y-%m-%d %H:%M:%S'),
-            "date_now": (
-                datetime(2018, 9, 16, 21, 30)
-                + timedelta(seconds=int(SchedBlockInspector.time_of_night['now']))
-            ).strftime('%Y-%m-%d %H:%M:%S'),
-            "now":
-            int(SchedBlockInspector.time_of_night['now']),
-            "start":
-            int(SchedBlockInspector.time_of_night['start']),
-            "end":
-            int(SchedBlockInspector.time_of_night['end'])
+            "date_start": secs_to_datetime(night_start_sec).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_end": secs_to_datetime(night_end_sec).strftime('%Y-%m-%d %H:%M:%S'),
+            "date_now": secs_to_datetime(time_now_sec).strftime('%Y-%m-%d %H:%M:%S'),
+            "now": int(time_now_sec),
+            "start": int(night_start_sec),
+            "end": int(night_end_sec),
         }
+        # print(time_of_night_date)
+
+        # SchedBlockInspector.time_of_night = get_time_of_night(self)
+
+        # time_of_night_date = {
+        #     "date_start":
+        #     datetime(2018, 9, 16, 21, 30).strftime('%Y-%m-%d %H:%M:%S'),
+        #     "date_end": (
+        #         datetime(2018, 9, 16, 21, 30)
+        #         + timedelta(seconds=int(SchedBlockInspector.time_of_night['end']))
+        #     ).strftime('%Y-%m-%d %H:%M:%S'),
+        #     "date_now": (
+        #         datetime(2018, 9, 16, 21, 30)
+        #         + timedelta(seconds=int(SchedBlockInspector.time_of_night['now']))
+        #     ).strftime('%Y-%m-%d %H:%M:%S'),
+        #     "now":
+        #     int(SchedBlockInspector.time_of_night['now']),
+        #     "start":
+        #     int(SchedBlockInspector.time_of_night['start']),
+        #     "end":
+        #     int(SchedBlockInspector.time_of_night['end'])
+        # }
 
         data = {
             "time_of_night": time_of_night_date,
@@ -124,6 +143,9 @@ class SchedBlockInspector(BaseWidget):
 
         return
 
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def get_clock_events(self):
         self.redis.pipe.reset()
         self.redis.pipe.get(name="external_clock_events")
@@ -148,6 +170,9 @@ class SchedBlockInspector(BaseWidget):
 
         return
 
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def get_target(self):
         self.redis.pipe.reset()
 
@@ -180,8 +205,7 @@ class SchedBlockInspector(BaseWidget):
             SchedBlockInspector.blocks[key] = sorted(
                 blocks,
                 #cmp=lambda a, b: int((datetime.strptime(a['start_time_sec'],"%Y-%m-%d %H:%M:%S") - datetime.strptime(b['start_time_sec'],"%Y-%m-%d %H:%M:%S")).total_seconds())
-                cmp=lambda a, b: int(a['time']['start']) - \
-                int(b['time']['start'])
+                cmp=(lambda a, b: int(a['time']['start']) - int(b['time']['start']))
             )
 
         return

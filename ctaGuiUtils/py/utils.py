@@ -360,13 +360,25 @@ class ClockSim():
         self.redis = RedisManager(name=self.class_name, port=redis_port, log=self.log)
 
         self.rnd_gen = Random(11)
+        self.debug_datetime_now = False
+        # self.debug_datetime_now = True
+
+        self.skip_daytime = False
+        self.skip_daytime = True
 
         # speedup simulation. e.g., 60*10 --> every 1 real sec goes to 10 simulated min
+        self.speed_factor = 10
+        self.speed_factor = 60 * 1
         self.speed_factor = 60 * 10
-        self.speed_factor = 60 * 30 * 1
+        # self.speed_factor = 60 * 30 * 1
+
+        # minimal real-time delay between randomisations
+        self.loop_sleep = 1
+
+        # safety measure
+        self.max_spped_factor = 30 * 60 * self.loop_sleep
 
         self.init_night_times()
-        gevent.spawn(self.loop)
 
         # # range in seconds of time-series data to be stored for eg monitoring points
         # self.time_series_n_seconds = 60 * 30
@@ -377,10 +389,8 @@ class ClockSim():
     #
     # ---------------------------------------------------------------------------
     def init_night_times(self):
-        self.n_nights = -1
-        # start before the first astronomical night
-        self.datetime_now = datetime_epoch.replace(hour=12)
-        # self.datetime_now = datetime_epoch.replace(day=3, hour=12, minute=0, second=0, microsecond=0)
+        self.n_nights = 0
+        self.datetime_now = None
 
         self.astro_night_start_sec = datetime_to_secs(datetime_epoch)
         self.astro_night_end_sec = datetime_to_secs(datetime_epoch)
@@ -389,8 +399,9 @@ class ClockSim():
 
         self.set_night_times()
 
-        return
+        gevent.spawn(self.loop)
 
+        return
 
     # ---------------------------------------------------------------------------
     #
@@ -398,17 +409,18 @@ class ClockSim():
     def loop(self):
         self.log.info([['g', ' - starting ClockSim.loop ...']])
 
-        sleep_sec = 1
-        if self.speed_factor > (30 * 60 * sleep_sec):
+        if self.speed_factor > self.max_spped_factor:
             raise ValueError('Can not over-pace the loop ...')
 
         while True:
-            self.datetime_now += timedelta(seconds=sleep_sec * self.speed_factor)
-            
-            # self.log.info([['g', ' --- self.datetime_now: '], ['y', self.datetime_now], ['p', ' (', self.is_night_time_now(), ')']])
-            # self.get_real_time_sec()
-            # self.get_astro_night_start_sec()
-            # self.get_time_series_start_time_sec()
+            self.datetime_now += timedelta(seconds=self.loop_sleep * self.speed_factor)
+
+            if self.debug_datetime_now:
+                self.log.info([
+                    ['g', ' --- self.datetime_now: '],
+                    ['y', self.datetime_now],
+                    ['p', ' (', self.is_night_time_now(), ')'],
+                ])
 
             self.update_n_night()
 
@@ -428,30 +440,42 @@ class ClockSim():
                 data=self.n_nights,
             )
             self.redis.set(
-                name='clock_sim_' + 'astro_night_start_sec',
+                name='clock_sim_' + 'night_start_sec',
                 data=self.astro_night_start_sec,
             )
             self.redis.set(
-                name='clock_sim_' + 'astro_night_duration_sec',
-                data=self.astro_night_duration_sec,
+                name='clock_sim_' + 'night_end_sec',
+                data=self.astro_night_end_sec,
             )
 
-            sleep(sleep_sec)
+            sleep(self.loop_sleep)
 
         return
-
 
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
     def set_night_times(self):
+        night_start_hours = self.rnd_gen.randint(18, 19)
+        night_end_hours = self.rnd_gen.randint(4, 5)
+
+        # # short night for debugging
+        # night_start_hours = self.rnd_gen.randint(23, 23)
+        # night_end_hours = self.rnd_gen.randint(2, 2)
+
+        if self.datetime_now is None:
+            self.datetime_now = datetime_epoch.replace(hour=(night_start_hours - 1), )
+
         self.time_series_start_time_sec = self.astro_night_start_sec
 
         n_days = (self.datetime_now - datetime_epoch).days
 
+        if self.skip_daytime:
+            self.datetime_now = self.datetime_now.replace(hour=(night_start_hours - 1), )
+
         self.astro_night_start_sec = timedelta(
             days=n_days,
-            hours=self.rnd_gen.randint(18, 19),
+            hours=night_start_hours,
             minutes=self.rnd_gen.randint(0, 59),
             seconds=0,
         ).total_seconds()
@@ -459,7 +483,7 @@ class ClockSim():
         # e.g., night ends at 06:40
         self.astro_night_end_sec = timedelta(
             days=(n_days + 1),
-            hours=self.rnd_gen.randint(4, 5),
+            hours=night_end_hours,
             minutes=self.rnd_gen.randint(0, 59),
             seconds=0,
         ).total_seconds()
@@ -468,7 +492,6 @@ class ClockSim():
             self.astro_night_end_sec - self.astro_night_start_sec
         )
 
-        # night_start = datetime.utcfromtimestamp(self.astro_night_start_sec).strftime('%H:%M:%s')
         night_start = date_to_string(
             secs_to_datetime(self.astro_night_start_sec),
             date_string=None,
@@ -496,7 +519,7 @@ class ClockSim():
 
         is_new_day = days_since_epoch > self.n_nights
         is_past_night_time = sec_since_midnight > self.astro_night_end_sec
-        # print(days_since_epoch, sec_since_midnight, self.astro_night_end_sec, [is_new_day, is_past_night_time])
+        # print('days_since_epoch', days_since_epoch, sec_since_midnight, self.astro_night_end_sec, [is_new_day, is_past_night_time])
 
         if is_new_day and is_past_night_time:
             self.n_nights = days_since_epoch
@@ -518,6 +541,30 @@ class ClockSim():
     # ---------------------------------------------------------------------------
     #
     # ---------------------------------------------------------------------------
+    def need_data_update(self, update_opts):
+        # updates only happen after min_wait of simulation time
+        time_now = self.get_time_now_sec()
+
+        if (('prev_update' not in update_opts.keys())
+                or (update_opts['prev_update'] is None)):
+            update_opts['prev_update'] = time_now - 2 * update_opts['min_wait']
+
+        time_diff = time_now - update_opts['prev_update']
+        can_update = (time_diff > update_opts['min_wait'])
+
+        # updates only happen during the astronimical night
+        is_night_time = self.is_night_time_now()
+
+        need_update = (is_night_time and can_update)
+        if need_update:
+            update_opts['prev_update'] = time_now
+
+        # print('--', time_now, update_opts['prev_update'], [can_update, is_night_time])
+        return need_update
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
     def get_sec_since_midnight(self):
         days_since_epoch = (self.datetime_now - datetime_epoch).days
         sec_since_midnight = ((self.datetime_now - datetime_epoch).seconds
@@ -530,10 +577,22 @@ class ClockSim():
     def get_n_nights(self):
         return self.n_nights
 
+    def get_speed_factor(self):
+        return self.speed_factor
+
+    def get_night_duration_sec(self):
+        return self.astro_night_duration_sec
+
+    def get_night_start_sec(self):
+        return self.astro_night_start_sec
+
+    def get_night_end_sec(self):
+        return self.astro_night_end_sec
+
     # ---------------------------------------------------------------------------
     # the global function for the current system time
     # ---------------------------------------------------------------------------
-    def get_real_time_sec(self):
+    def get_time_now_sec(self):
         # print('----', self.datetime_now, datetime_to_secs(self.datetime_now))
         return int(datetime_to_secs(self.datetime_now))
 
@@ -551,77 +610,6 @@ class ClockSim():
     def get_time_series_start_time_sec(self):
         # print('-??-', self.time_series_start_time_sec)
         return int(self.time_series_start_time_sec)
-
-    # ---------------------------------------------------------------------------
-    #
-    # ---------------------------------------------------------------------------
-    # def get_total_time_seconds(self):
-    #     return self.end_time_sec
-
-    # ---------------------------------------------------------------------------
-    # def get_n_night(self):
-    #     return self.n_night
-
-    # ---------------------------------------------------------------------------
-    # def get_timescale(self):
-    #     return self.timescale
-
-    # ---------------------------------------------------------------------------
-    # def get_current_time(self, n_digits=3):
-    #     if n_digits >= 0 and n_digits is not None:
-    #         return (
-    #             int(floor(self.time_now_sec))
-    #             if n_digits == 0 else round(self.time_now_sec, n_digits)
-    #         )
-    #     else:
-    #         return self.time_now_sec
-
-    # ---------------------------------------------------------------------------
-    # def get_second_scale(self):
-    #     return self.second_scale
-
-    # ---------------------------------------------------------------------------
-    # def get_reset_time(self):
-    #     return self.real_reset_time_sec
-
-    # ---------------------------------------------------------------------------
-    # the global function for the current system time
-    # ---------------------------------------------------------------------------
-    # def get_real_time_sec(self):
-    #     return int((datetime.utcnow() - self.epoch).total_seconds() * self.second_scale)
-
-    # ---------------------------------------------------------------------------
-    # def get_time_series_start_time_sec(self):
-    #     return self.get_real_time_sec() - self.time_series_n_seconds * self.second_scale
-
-    # ---------------------------------------------------------------------------
-    # def get_start_time_sec(self):
-    #     return 0
-
-    # # ---------------------------------------------------------------------------
-    # def reset_night(self, log=None):
-    #     self.n_night += 1
-    #     self.real_reset_time_sec = get_time('msec')
-
-    #     # time_now_sec = int(floor(self.get_start_time_sec()))
-    #     # self.time_now_sec = time_now_sec
-
-    #     # if log is not None:
-    #     #     self.log.info([
-    #     #         ['r', '- reset_night(): '],
-    #     #         ['y', 'time_now_sec:', self.time_now_sec, ', '],
-    #     #         ['b', 'n_night:', self.n_night, ', '],
-    #     #         ['g', 'real_reset_time_sec:', self.real_reset_time_sec],
-    #     #     ])
-
-    #     # self.redis.pipe.set(name='clock_sim_' + 'scale', data=self.timescale)
-    #     # self.redis.pipe.set(name='clock_sim_' + 'start', data=time_now_sec)
-    #     # self.redis.pipe.set(name='clock_sim_' + 'end', data=self.end_time_sec)
-    #     # self.redis.pipe.set(name='clock_sim_' + 'now', data=time_now_sec)
-
-    #     # self.redis.pipe.execute()
-
-    #     return
 
 
 # ------------------------------------------------------------------
@@ -642,20 +630,27 @@ def secs_to_datetime(secs_now):
 #
 # ---------------------------------------------------------------------------
 def get_clock_sim(parent):
-    parent.redis.pipe.get('clock_sim_' + 'time_now_sec')
-    # parent.redis.pipe.get('time_of_night_' + 'end')
-    # parent.redis.pipe.get('time_of_night_' + 'now')
+    red_keys = [
+        ['time_now_sec', float],
+        ['is_night_now', bool],
+        ['n_nights', int],
+        ['night_start_sec', float],
+        ['night_end_sec', float],
+    ]
+    for key in red_keys:
+        parent.redis.pipe.get('clock_sim_' + key[0])
 
     clock_sim = parent.redis.pipe.execute()
 
-    if len(clock_sim) != 1:
+    if len(clock_sim) != len(red_keys):
         parent.log.warning([[
             'r', ' - ', parent.widget_name, ' - could not get clock_sim - '
         ], ['p', str(clock_sim)], ['r', ' - will use fake range ...']])
-        clock_sim = [0, 100, 0]
+        clock_sim = [0 for i in range(len(red_keys))]
 
-    data = {'time_now_sec': clock_sim[0]}
-    # data = {'start': clock_sim[0], 'end': clock_sim[1], 'now': clock_sim[2]}
+    data = dict((red_keys[i][0], red_keys[i][1](clock_sim[i]))
+                for i in range(len(red_keys)))
+    # print('vvvvvvv', data)
 
     return data
 

@@ -219,7 +219,6 @@ class RedisBase(object):
 
             if packed_score:
                 data = packb({'data': data})
-                # data = packb({'score': score, 'data': data})
             elif packed and (data is not None):
                 data = packb(data)
 
