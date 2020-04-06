@@ -505,10 +505,10 @@ let main_sched_blocksInspector = function(opt_in) {
                     .style('font-size', '24px')
                     .style('pointer-events', 'none')
                     .style('user-select', 'none')
-                let currentTime = {
+                let current_time = {
                     date: new Date(shared.data.server.time_of_night.date_now),
                 }
-                svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
+                svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(current_time.date))
 
                 // svg.back.append('rect')
                 //   .attr('id', 'pushon_server')
@@ -1116,10 +1116,10 @@ let main_sched_blocksInspector = function(opt_in) {
         svgBrush.update_data()
         svgRight_info.update()
 
-        let currentTime = {
+        let current_time = {
             date: new Date(shared.data.server.time_of_night.date_now),
         }
-        svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(currentTime.date))
+        svg.back.select('text#currentHour').text(d3.timeFormat('%H:%M')(current_time.date))
 
         locker.remove('update_data')
     }
@@ -2397,7 +2397,7 @@ let main_sched_blocksInspector = function(opt_in) {
     //         box: {x: 0, y: 0, w: blockBoxData.w, h: blockBoxData.h, marg: blockBoxData.marg}
     //       },
     //       time: {
-    //         currentTime: {time: 0, date: undefined},
+    //         current_time: {time: 0, date: undefined},
     //         start_time_sec: {time: 0, date: undefined},
     //         end_time_sec: {time: 0, date: undefined},
     //       },
@@ -2431,7 +2431,7 @@ let main_sched_blocksInspector = function(opt_in) {
     //     })
     //     blockQueue.update_data({
     //       time: {
-    //         currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+    //         current_time: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
     //         start_time_sec: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
     //         end_time_sec: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
     //       },
@@ -2565,7 +2565,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {
+                    current_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -2643,7 +2643,7 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             event_queue_server.update_data({
                 time: {
-                    currentTime: {
+                    current_time: {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
@@ -2664,7 +2664,7 @@ let main_sched_blocksInspector = function(opt_in) {
         function update() {
             // block_queue_serverPast.update({
             //   time: {
-            //     currentTime: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
+            //     current_time: {date: new Date(shared.data.server.time_of_night.date_now), time: Number(shared.data.server.time_of_night.now)},
             //     start_time_sec: {date: new Date(shared.data.server.time_of_night.date_start), time: Number(shared.data.server.time_of_night.start)},
             //     end_time_sec: {date: new Date(shared.data.server.time_of_night.date_end), time: Number(shared.data.server.time_of_night.end)}
             //   }
@@ -2887,7 +2887,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {
+                    current_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -3196,7 +3196,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {
+                    current_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -3397,21 +3397,22 @@ let main_sched_blocksInspector = function(opt_in) {
             }
             reserved.g.select('rect#cloak').attr('width', newWidth)
 
+            let current_time = {
+                date: new Date(shared.data.server.time_of_night.date_now),
+                time: shared.data.server.time_of_night.now,
+            }
             let start_time_sec = {
-                date: axisTop[0].getTime(),
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+                date: axisTop[0],
+                time: shared.data.server.time_of_night.start,
             }
             let end_time_sec = {
-                date: axisTop[1].getTime(),
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+                date: axisTop[1],
+                time: shared.data.server.time_of_night.end,
             }
 
             blockQueue.update_data({
                 time: {
-                    currentTime: {
-                        date: new Date(shared.data.server.time_of_night.date_now),
-                        time: Number(shared.data.server.time_of_night.now),
-                    },
+                    current_time: current_time,
                     start_time_sec: start_time_sec,
                     end_time_sec: end_time_sec,
                 },
@@ -3426,10 +3427,7 @@ let main_sched_blocksInspector = function(opt_in) {
             blockQueueOverlay.set_line_layout(blockQueue.get_line_layout())
             blockQueueOverlay.update_data({
                 time: {
-                    currentTime: {
-                        date: new Date(shared.data.server.time_of_night.date_now),
-                        time: Number(shared.data.server.time_of_night.now),
-                    },
+                    current_time: current_time,
                     start_time_sec: start_time_sec,
                     end_time_sec: end_time_sec,
                 },
@@ -3446,31 +3444,29 @@ let main_sched_blocksInspector = function(opt_in) {
 
         function update() {
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
+            let current_time = {
+                date: new Date(shared.data.server.time_of_night.date_now),
+                time: shared.data.server.time_of_night.now,
+            }
             let start_time_sec = {
-                date: axisTop[0].getTime(),
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[0].getTime()) / -1000,
+                date: axisTop[0],
+                time: shared.data.server.time_of_night.start,
             }
             let end_time_sec = {
-                date: axisTop[1].getTime(),
-                time: (new Date(shared.data.server.time_of_night.date_start).getTime() - axisTop[1].getTime()) / -1000,
+                date: axisTop[1],
+                time: shared.data.server.time_of_night.end,
             }
 
             blockQueueOverlay.update({
                 time: {
-                    currentTime: {
-                        date: new Date(shared.data.server.time_of_night.date_now),
-                        time: Number(shared.data.server.time_of_night.now),
-                    },
+                    current_time: current_time,
                     start_time_sec: start_time_sec,
                     end_time_sec: end_time_sec,
                 },
             })
             blockQueue.update({
                 time: {
-                    currentTime: {
-                        date: new Date(shared.data.server.time_of_night.date_now),
-                        time: Number(shared.data.server.time_of_night.now),
-                    },
+                    current_time: current_time,
                     start_time_sec: start_time_sec,
                     end_time_sec: end_time_sec,
                 },
@@ -9304,7 +9300,7 @@ let main_sched_blocksInspector = function(opt_in) {
                     filtering: [],
                 },
                 time: {
-                    currentTime: {
+                    current_time: {
                         time: 0,
                         date: undefined,
                     },
@@ -9493,7 +9489,7 @@ let main_sched_blocksInspector = function(opt_in) {
 
             blockQueue.update_data({
                 time: {
-                    currentTime: {
+                    current_time: {
                         date: new Date(shared.data.server.time_of_night.date_now),
                         time: Number(shared.data.server.time_of_night.now),
                     },
