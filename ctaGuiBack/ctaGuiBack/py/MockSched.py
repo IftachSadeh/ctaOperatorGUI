@@ -6,9 +6,10 @@ import random
 from random import Random
 import copy
 
-import ctaGuiUtils.py.utils as utils
+# import ctaGuiUtils.py.utils as utils
 from ctaGuiUtils.py.utils import get_rnd, get_time, get_rnd_seed
 from ctaGuiUtils.py.utils import my_log, has_acs
+from ctaGuiUtils.py.utils import secs_to_datetime, date_to_string
 
 if has_acs:
     import ACS__POA
@@ -30,7 +31,7 @@ class MockSched():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, site_type, clock_sim):
+    def __init__(self, site_type, clock_sim, inst_data):
         self.log = my_log(title=__name__)
         self.log.info([['y', ' - MockSched - '], ['g', site_type]])
 
@@ -50,6 +51,9 @@ class MockSched():
 
         # self.time_of_night = time_of_night
         self.clock_sim = clock_sim
+        self.inst_data = inst_data
+
+        self.tel_ids = self.inst_data.get_inst_ids()
 
         self.debug = True
         self.debug = False
@@ -70,7 +74,7 @@ class MockSched():
         self.supervisor = self.client.getComponent('ArraySupervisor')
         self.log.info([['y', ' - MockSched - '], ['p', 'got supervisor!']])
 
-        self.script_name = 'guiACS_sched_blocks_script0'
+        self.script_name = 'guiACS_schedBlocks_script0'
         self.max_n_cycles = 100
         self.min_n_sched_block = 2
         self.max_n_sched_block = 5
@@ -194,7 +198,7 @@ class MockSched():
                 # # share some common builder utility methods to construct the scheduling blocks
 
                 # config = sb.Configuration(sb.InstrumentConfiguration(
-                #         sb.PointingMode(2, sb._divergent(2)),
+                #         sb.PointingMode(2, sb.Divergent(2)),
                 #         sb.Subarray([], [sb.Telescope('telescope_id', sb.LST)])
                 #     ), 'camera', 'rta')
                 # coords = sb.Coordinates(3, sb.GalacticCoordinates(10, 10))
@@ -262,8 +266,8 @@ class MockSched():
                 )
                 n_cycle_now += 1
 
-                tel_ids = copy.deepcopy(utils.tel_ids)
-                n_tels = len(tel_ids)
+                tel_ids_now = copy.deepcopy(self.tel_ids)
+                n_tels = len(tel_ids_now)
                 n_sched_blocks = min(
                     floor(n_tels / self.min_n_tel_block), self.max_n_sched_block
                 )
@@ -309,18 +313,18 @@ class MockSched():
                     if n_sched_block_now < n_sched_blocks - 1:
                         n_tel_now = max(
                             self.min_n_tel_block,
-                            len(tel_ids) - n_sched_blocks
+                            len(tel_ids_now) - n_sched_blocks
                         )
                         n_tel_now = self.rnd_gen.randint(self.min_n_tel_block, n_tel_now)
-                        n_tel_now = min(n_tel_now, len(tel_ids))
+                        n_tel_now = min(n_tel_now, len(tel_ids_now))
                     else:
-                        n_tel_now = len(tel_ids) - \
+                        n_tel_now = len(tel_ids_now) - \
                             self.rnd_gen.randint(0, self.max_n_free_tels)
                     if n_tel_now < self.min_n_tel_block:
                         continue
 
-                    sched_tel_ids = random.sample(tel_ids, n_tel_now)
-                    tel_ids = [x for x in tel_ids if x not in sched_tel_ids]
+                    sched_tel_ids = random.sample(tel_ids_now, n_tel_now)
+                    tel_ids_now = [x for x in tel_ids_now if x not in sched_tel_ids]
 
                     sub_arr = []
                     for sched_tel_id_now in sched_tel_ids:
@@ -341,7 +345,7 @@ class MockSched():
 
                     sched_conf = sb.Configuration(
                         sb.InstrumentConfiguration(
-                            sb.PointingMode(2, sb._divergent(2)), sb.Subarray([], sub_arr)
+                            sb.PointingMode(2, sb.Divergent(2)), sb.Subarray([], sub_arr)
                         ), 'camera', 'rta'
                     )
 
@@ -627,12 +631,12 @@ class MockSched():
                     self.log.info([
                         ['b', '- sched block is done '],
                         ['r', sched_block_id],
-                        [
-                            'g',
-                            ' - currentTime: ',
-                            # self.time_of_night.get_current_time(),
-                            self.clock_sim.get_time_now_sec(),
-                        ],
+                        ['g', ' - current-time: '],
+                        ['g', date_to_string(
+                            secs_to_datetime(self.clock_sim.get_time_now_sec()),
+                            date_string=None,
+                        )],
+                        ['y', ' ', self.clock_sim.get_time_now_sec()],
                     ])
 
             # ------------------------------------------------------------------
@@ -861,28 +865,49 @@ class MockSched():
                 sleep(0.5)
 
             try:
-                complt = self.supervisor.putSchedulingBlock(sched_block)
+                _ = self.supervisor.putSchedulingBlock(sched_block)
 
                 block_meta = self.acs_blocks['metadata']
-                block_times = [(
+                
+                def block_start_time_sec(x):
+                    return int(
+                        floor(block_meta[x.id]['start_time_sec_plan'])
+                    )
+                
+                def block_end_time_sec(x):
+                    return int(
+                        block_meta[x.id]['start_time_sec_plan']
+                        + block_meta[x.id]['duration']
+                    )
+                
+                def block_start_time(x):
+                    return date_to_string(
+                        secs_to_datetime(block_start_time_sec(x)),
+                        date_string=None,
+                    )
+                
+                def block_end_time(x):
+                    return date_to_string(
+                        secs_to_datetime(block_end_time_sec(x)),
+                        date_string=None,
+                    )
+                
+                block_times_0 = [(
                     ((str(x.id) + ' --> ') +
                      (str(block_meta[x.id]['metadata']['n_sched']) + ' (') +
                      (str(block_meta[x.id]['metadata']['n_obs']) + ')')),
-                    [
-                        int(floor(block_meta[x.id]['start_time_sec_plan'])),
-                        int(
-                            floor(
-                                block_meta[x.id]['start_time_sec_plan']
-                                + block_meta[x.id]['duration']
-                            )
-                        )
-                    ],
+                    [block_start_time_sec(x), block_end_time_sec(x)],
+                ) for x in sched_block.observation_blocks]
+
+                block_times_1 = [(
+                    [block_start_time(x), block_end_time(x)],
                 ) for x in sched_block.observation_blocks]
 
                 self.log.info([
                     ['y', '- submitted sched block: '],
                     ['p', sched_block.id, ' '],
-                    ['g', block_times],
+                    ['g', block_times_0, ' ... '],
+                    ['y', block_times_1],
                 ])
 
             except Exception as e:

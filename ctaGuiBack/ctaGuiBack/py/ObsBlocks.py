@@ -69,6 +69,8 @@ class ObsBlocks():
             'run_finish_daq',
         ]
 
+        self.az_min_max = [-180, 180]
+
         self.loop_sleep = 3
 
         rnd_seed = get_rnd_seed()
@@ -77,7 +79,7 @@ class ObsBlocks():
 
         gevent.spawn(self.loop)
 
-        self.MockSched = MockSched(site_type=site_type, clock_sim=self.clock_sim)
+        self.MockSched = MockSched(site_type=site_type, clock_sim=self.clock_sim, inst_data=self.inst_data,)
 
         return
 
@@ -99,6 +101,8 @@ class ObsBlocks():
             self.reset_blocks()
             return
 
+        night_duration_sec = self.clock_sim.get_night_duration_sec()
+
         sched_blocks = self.MockSched.get_blocks()
 
         obs_block_ids = dict()
@@ -119,6 +123,19 @@ class ObsBlocks():
             tel_ids = [x.id for x in sub_array_tels]
 
             obs_blocks = schBlock['sched_block'].observation_blocks
+
+            block_duration_sec = 0
+            for n_obs_block_now in range(len(obs_blocks)):
+                obs_block_id = obs_blocks[n_obs_block_now].id
+                block_duration_sec += (
+                    sched_blocks['metadata'][obs_block_id]['duration']
+                )
+
+            targets = get_rnd_targets(
+                self=self,
+                night_duration_sec=night_duration_sec,
+                block_duration_sec=block_duration_sec,
+            )
 
             for n_obs_block_now in range(len(obs_blocks)):
                 obs_block_now = obs_blocks[n_obs_block_now]
@@ -209,26 +226,111 @@ class ObsBlocks():
                 #     print 'cant run:', can_run, sched_blk_id, obs_block_id, state, [
                 #         self.time_of_night.get_current_time(), start_time_sec]
 
-                block = dict()
-                block['sched_block_id'] = sched_blk_id
-                block['obs_block_id'] = obs_block_id
-                block['metadata'] = metadata
-                block['timestamp'] = timestamp
-                block['start_time_sec'] = start_time_sec
-                block['end_time_sec'] = start_time_sec + duration
-                block['duration'] = duration
-                block['tel_ids'] = tel_ids
-                block['target_id'] = trg_id
-                block['target_name'] = trg_id
-                block['target_pos'] = target_pos
-                block['point_id'] = sched_blk_id + '_' + obs_block_id
-                block['pointing_name'] = (
-                    block['target_name'] + '/p_' + str(n_obs_block_now)
+
+
+
+
+
+
+
+
+
+                time = {
+                    'start': start_time_sec,
+                    'duration': duration,
+                }
+                time['end'] = time['start'] + time['duration']
+
+                telescopes = {
+                    'large': {
+                        'min':
+                        int(len(filter(lambda x: 'L' in x, tel_ids)) / 2),
+                        'max': 4,
+                        'ids': filter(lambda x: 'L' in x, tel_ids)
+                    },
+                    'medium': {
+                        'min':
+                        int(len(filter(lambda x: 'M' in x, tel_ids)) / 2),
+                        'max': 25,
+                        'ids': filter(lambda x: 'M' in x, tel_ids)
+                    },
+                    'small': {
+                        'min':
+                        int(len(filter(lambda x: 'S' in x, tel_ids)) / 2),
+                        'max': 70,
+                        'ids': filter(lambda x: 'S' in x, tel_ids)
+                    }
+                }
+
+                pointings = get_rnd_pointings(
+                    self=self,
+                    tel_ids=tel_ids,
+                    targets=targets,
+                    sched_block_id=sched_blk_id,
+                    obs_block_id=obs_block_id,
+                    n_obs_now=n_obs_block_now,
                 )
-                block['pointing_pos'] = point_pos
-                block['exe_state'] = exe_state
-                block['run_phase'] = run_phase
-                # block['fullObsBlock'] = obs_block_json
+
+
+
+                block = dict()
+                # block['sched_block_id'] = sched_blk_id
+                # block['obs_block_id'] = obs_block_id
+                # block['metadata'] = metadata
+                # block['timestamp'] = timestamp
+                # block['start_time_sec'] = start_time_sec
+                # block['end_time_sec'] = start_time_sec + duration
+                # block['duration'] = duration
+                # block['tel_ids'] = tel_ids
+                # block['target_id'] = trg_id
+                # block['target_name'] = trg_id
+                # block['target_pos'] = target_pos
+                # block['point_id'] = sched_blk_id + '_' + obs_block_id
+                # block['pointing_name'] = (
+                #     block['target_name'] + '/p_' + str(n_obs_block_now)
+                # )
+                # block['pointing_pos'] = point_pos
+                # block['exe_state'] = exe_state
+                # block['run_phase'] = run_phase
+                # # block['fullObsBlock'] = obs_block_json
+
+                if 1:
+                    block['sched_block_id'] = sched_blk_id
+                    block['obs_block_id'] = obs_block_id
+                    block['time'] = time
+                    block['metadata'] = metadata
+                    block['timestamp'] = timestamp
+                    block['telescopes'] = telescopes
+                    block['exe_state'] = exe_state
+                    block['run_phase'] = run_phase
+                    block['targets'] = targets
+                    block['pointings'] = pointings
+                    block['tel_ids'] = tel_ids
+                if 0:
+                    block['sched_block_id'] = sched_block_id
+                    block['obs_block_id'] = obs_block_id
+                    block['time'] = time
+                    block['metadata'] = metadata
+                    block['timestamp'] = get_time('msec')
+                    block['telescopes'] = telescopes
+                    block['exe_state'] = exe_state
+                    block['run_phase'] = []
+                    
+                    block['targets'] = targets
+                    block['pointings'] = pointings
+                    block['tel_ids'] = sched_tel_ids
+
+                # print('-'*30)
+                # print('RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR')
+                # print('-'*30)
+                # print('targets')
+                # print(targets)
+                # print()
+                # print('pointings')
+                # print(pointings)
+                # print('-'*30)
+
+
 
                 if state == 'run':
                     blocks_run += [block]
@@ -257,66 +359,66 @@ class ObsBlocks():
 
         self.redis.pipe.execute()
 
-        self.update_sub_arrs(blocks=blocks_run)
+        update_sub_arrs(self=self, blocks=blocks_run)
 
         return
 
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def update_sub_arrs(self, blocks=None):
-        # inst_pos = self.redis.h_get_all(name='inst_pos')
+    # # ------------------------------------------------------------------
+    # #
+    # # ------------------------------------------------------------------
+    # def update_sub_arrs(self, blocks=None):
+    #     # inst_pos = self.redis.h_get_all(name='inst_pos')
 
-        if blocks is None:
-            obs_block_ids = self.redis.get(
-                name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
-            )
-            for obs_block_id in obs_block_ids:
-                self.redis.pipe.get(obs_block_id)
+    #     if blocks is None:
+    #         obs_block_ids = self.redis.get(
+    #             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+    #         )
+    #         for obs_block_id in obs_block_ids:
+    #             self.redis.pipe.get(obs_block_id)
 
-            blocks = self.redis.pipe.execute(packed=True)
+    #         blocks = self.redis.pipe.execute(packed=True)
 
-        # sort so last is first in the list (latest sub-array defined gets the telescope)
-        blocks = sorted(
-            blocks, cmp=lambda a, b: int(b['timestamp']) - int(a['timestamp'])
-        )
-        # print [a['timestamp'] for a in blocks]
+    #     # sort so last is first in the list (latest sub-array defined gets the telescope)
+    #     blocks = sorted(
+    #         blocks, cmp=lambda a, b: int(b['timestamp']) - int(a['timestamp'])
+    #     )
+    #     # print [a['timestamp'] for a in blocks]
 
-        sub_arrs = []
-        all_tel_ids_in = []
-        for n_block in range(len(blocks)):
-            block_tel_ids = blocks[n_block]['tel_ids']
-            pnt_id = blocks[n_block]['point_id']
-            pointing_name = blocks[n_block]['pointing_name']
+    #     sub_arrs = []
+    #     all_tel_ids_in = []
+    #     for n_block in range(len(blocks)):
+    #         block_tel_ids = blocks[n_block]['tel_ids']
+    #         pnt_id = blocks[n_block]['point_id']
+    #         pointing_name = blocks[n_block]['pointing_name']
 
-            # compile the telescope list for this block
-            tels = []
-            for id_now in block_tel_ids:
-                if id_now not in all_tel_ids_in:
-                    all_tel_ids_in.append(id_now)
-                    tels.append({'id': id_now})
+    #         # compile the telescope list for this block
+    #         tels = []
+    #         for id_now in block_tel_ids:
+    #             if id_now not in all_tel_ids_in:
+    #                 all_tel_ids_in.append(id_now)
+    #                 tels.append({'id': id_now})
 
-            # add the telescope list for this block
-            sub_arrs.append({'id': pnt_id, 'N': pointing_name, 'children': tels})
+    #         # add the telescope list for this block
+    #         sub_arrs.append({'id': pnt_id, 'N': pointing_name, 'children': tels})
 
-        # ------------------------------------------------------------------
-        # now take care of all free telescopes
-        # ------------------------------------------------------------------
-        tels = []
-        all_tel_ids = [x for x in self.tel_ids if x not in all_tel_ids_in]
-        for id_now in all_tel_ids:
-            tels.append({'id': id_now})
+    #     # ------------------------------------------------------------------
+    #     # now take care of all free telescopes
+    #     # ------------------------------------------------------------------
+    #     tels = []
+    #     all_tel_ids = [x for x in self.tel_ids if x not in all_tel_ids_in]
+    #     for id_now in all_tel_ids:
+    #         tels.append({'id': id_now})
 
-        sub_arrs.append({'id': no_sub_arr_name, 'children': tels})
+    #     sub_arrs.append({'id': no_sub_arr_name, 'children': tels})
 
-        # ------------------------------------------------------------------
-        # for now - a simple/stupid solution, where we write the sub-arrays and publish each
-        # time, even if the content is actually the same ...
-        # ------------------------------------------------------------------
-        self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
-        self.redis.publish(channel='sub_arrs')
+    #     # ------------------------------------------------------------------
+    #     # for now - a simple/stupid solution, where we write the sub-arrays and publish each
+    #     # time, even if the content is actually the same ...
+    #     # ------------------------------------------------------------------
+    #     self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
+    #     self.redis.publish(channel='sub_arrs')
 
-        return
+    #     return
 
     # ------------------------------------------------------------------
     #
@@ -332,7 +434,7 @@ class ObsBlocks():
 
         self.redis.pipe.execute()
 
-        self.update_sub_arrs(blocks=[])
+        update_sub_arrs(self=self, blocks=[])
 
         while True:
             self.reset_blocks()
@@ -479,7 +581,7 @@ class ObsBlocksNoACS():
         # tot_sched_duration_sec = 0
         # max_block_duration_sec = self.duration_night - self.obs_block_sec
 
-        target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
+        # target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
         # for obs_block_id in obs_block_ids:
         #     self.redis.pipe.get(obs_block_id)
 
@@ -573,22 +675,12 @@ class ObsBlocksNoACS():
                 tot_obs_block_duration_sec = 0
                 block_duration_sec = tot_sched_duration_sec
 
-                n_rnd_targets = max(1, int(self.rnd_gen.random() * 3))
-                target_ids_now = []
-                targets = []
-                for z in range(n_rnd_targets):
-                    n_id = (
-                        block_duration_sec / (night_duration_sec / len(target_ids))
-                    ) + 0.75
-                    n_id = int(n_id + ((self.rnd_gen.random() - 0.5) * 3))
-                    n_id = min(max(0, n_id), len(target_ids) - 1)
-                    if not (target_ids[n_id] in target_ids_now):
-                        target_ids_now.append(target_ids[n_id])
-                        targets.append(
-                            self.redis.get(
-                                name=target_ids[n_id], packed=True, default_val={}
-                            )
-                        )
+
+                targets = get_rnd_targets(
+                    self=self,
+                    night_duration_sec=night_duration_sec,
+                    block_duration_sec=block_duration_sec,
+                )
 
                 for n_obs_now in range(n_obs_blocks):
                     obs_block_id = (
@@ -621,34 +713,14 @@ class ObsBlocksNoACS():
                     # integrated time for all obs blocks within this sched block
                     tot_obs_block_duration_sec += obs_block_sec
 
-                    pointings = []
-                    n_rnd_divs = max(1, int(self.rnd_gen.random() * 5))
-                    all_tel_ids = copy.deepcopy(sched_tel_ids)
-                    for z in range(n_rnd_divs):
-                        trg = targets[max(0, int(self.rnd_gen.random() * len(targets)))]
-                        pnt = {
-                            'id': sched_block_id + '_' + obs_block_id,
-                            'name': trg['name'] + '/p_' + str(n_obs_now) + '-' + str(z)
-                        }
-
-                        point_pos = copy.deepcopy(trg['pos'])
-                        point_pos[0] += (self.rnd_gen.random() - 0.5) * 10
-                        point_pos[1] += (self.rnd_gen.random() - 0.5) * 10
-
-                        if point_pos[0] > self.az_min_max[1]:
-                            point_pos[0] -= 360
-                        elif point_pos[0] < self.az_min_max[0]:
-                            point_pos[0] += 360
-                        pnt['pos'] = point_pos
-                        pointings.append(pnt)
-                        rnd_tels = random.sample(
-                            all_tel_ids, int(len(sched_tel_ids) / n_rnd_divs)
-                        )
-                        if z == n_rnd_divs - 1:
-                            rnd_tels = all_tel_ids
-                        # and remove them from allTels list
-                        all_tel_ids = [x for x in all_tel_ids if x not in rnd_tels]
-                        pnt['tel_ids'] = rnd_tels
+                    pointings = get_rnd_pointings(
+                        self=self,
+                        tel_ids=sched_tel_ids,
+                        targets=targets,
+                        sched_block_id=sched_block_id,
+                        obs_block_id=obs_block_id,
+                        n_obs_now=n_obs_now,
+                    )
 
                     if debug_tmp:
                         print(
@@ -1068,66 +1140,64 @@ class ObsBlocksNoACS():
 
         self.redis.pipe.execute()
 
-        self.update_sub_arrs(blocks_run)
+        update_sub_arrs(self=self, blocks=blocks_run)
 
         return
 
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def update_sub_arrs(self, blocks=None):
-        # inst_pos = self.redis.h_get_all(name='inst_pos')
+    # # ------------------------------------------------------------------
+    # #
+    # # ------------------------------------------------------------------
+    # def update_sub_arrs(self, blocks=None):
+    #     if blocks is None:
+    #         obs_block_ids = self.redis.get(
+    #             name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+    #         )
+    #         for obs_block_id in obs_block_ids:
+    #             self.redis.pipe.get(obs_block_id)
 
-        if blocks is None:
-            obs_block_ids = self.redis.get(
-                name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
-            )
-            for obs_block_id in obs_block_ids:
-                self.redis.pipe.get(obs_block_id)
+    #         blocks = self.redis.pipe.execute(packed=True)
 
-            blocks = self.redis.pipe.execute(packed=True)
+    #     #
+    #     sub_arrs = []
+    #     all_tel_ids = copy.deepcopy(self.tel_ids)
 
-        #
-        sub_arrs = []
-        all_tel_ids = copy.deepcopy(self.tel_ids)
+    #     for n_block in range(len(blocks)):
+    #         block_tel_ids = (
+    #             blocks[n_block]['telescopes']['large']['ids']
+    #             + blocks[n_block]['telescopes']['medium']['ids']
+    #             + blocks[n_block]['telescopes']['small']['ids']
+    #         )
+    #         pnt_id = blocks[n_block]['pointings'][0]['id']
+    #         pointing_name = blocks[n_block]['pointings'][0]['name']
 
-        for n_block in range(len(blocks)):
-            block_tel_ids = (
-                blocks[n_block]['telescopes']['large']['ids']
-                + blocks[n_block]['telescopes']['medium']['ids']
-                + blocks[n_block]['telescopes']['small']['ids']
-            )
-            pnt_id = blocks[n_block]['pointings'][0]['id']
-            pointing_name = blocks[n_block]['pointings'][0]['name']
+    #         # compile the telescope list for this block
+    #         tels = []
+    #         for id_now in block_tel_ids:
+    #             tels.append({'id': id_now})
 
-            # compile the telescope list for this block
-            tels = []
-            for id_now in block_tel_ids:
-                tels.append({'id': id_now})
+    #             if id_now in all_tel_ids:
+    #                 all_tel_ids.remove(id_now)
 
-                if id_now in all_tel_ids:
-                    all_tel_ids.remove(id_now)
+    #         # add the telescope list for this block
+    #         sub_arrs.append({'id': pnt_id, 'N': pointing_name, 'children': tels})
 
-            # add the telescope list for this block
-            sub_arrs.append({'id': pnt_id, 'N': pointing_name, 'children': tels})
+    #     # ------------------------------------------------------------------
+    #     # now take care of all free telescopes
+    #     # ------------------------------------------------------------------
+    #     tels = []
+    #     for id_now in all_tel_ids:
+    #         tels.append({'id': id_now})
 
-        # ------------------------------------------------------------------
-        # now take care of all free telescopes
-        # ------------------------------------------------------------------
-        tels = []
-        for id_now in all_tel_ids:
-            tels.append({'id': id_now})
+    #     sub_arrs.append({'id': no_sub_arr_name, 'children': tels})
 
-        sub_arrs.append({'id': no_sub_arr_name, 'children': tels})
+    #     # ------------------------------------------------------------------
+    #     # for now - a simple/stupid solution, where we write the sub-arrays and publish each
+    #     # time, even if the content is actually the same ...
+    #     # ------------------------------------------------------------------
+    #     self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
+    #     self.redis.publish(channel='sub_arrs')
 
-        # ------------------------------------------------------------------
-        # for now - a simple/stupid solution, where we write the sub-arrays and publish each
-        # time, even if the content is actually the same ...
-        # ------------------------------------------------------------------
-        self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
-        self.redis.publish(channel='sub_arrs')
-
-        return
+    #     return
 
     # ------------------------------------------------------------------
     #
@@ -1336,3 +1406,153 @@ class ObsBlocksNoACS():
 
 
 # ------------------------------------------------------------------
+# common functions
+# ------------------------------------------------------------------
+
+# ------------------------------------------------------------------
+# 
+# ------------------------------------------------------------------
+def get_rnd_targets(self, night_duration_sec, block_duration_sec):
+    target_ids_now = []
+    targets = []
+    
+    target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
+
+    n_rnd_targets = max(1, int(self.rnd_gen.random() * 3))
+
+    for z in range(n_rnd_targets):
+        n_id = (
+            block_duration_sec / (night_duration_sec / len(target_ids))
+        )
+        n_id += 0.75
+        n_id = int(n_id + ((self.rnd_gen.random() - 0.5) * 3))
+        n_id = min(max(0, n_id), len(target_ids) - 1)
+        
+        if not (target_ids[n_id] in target_ids_now):
+            target_ids_now.append(target_ids[n_id])
+            
+            targets.append(
+                self.redis.get(
+                    name=target_ids[n_id], packed=True, default_val={}
+                )
+            )
+    return targets
+
+
+# ------------------------------------------------------------------
+# 
+# ------------------------------------------------------------------
+def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_obs_now):
+    pointings = []
+    n_rnd_divs = max(1, int(self.rnd_gen.random() * 5))
+    all_tel_ids = copy.deepcopy(tel_ids)
+    
+    for z in range(n_rnd_divs):
+        trg = targets[max(0, int(self.rnd_gen.random() * len(targets)))]
+        pnt = {
+            'id': sched_block_id + '_' + obs_block_id,
+            'name': trg['name'] + '/p_' + str(n_obs_now) + '-' + str(z)
+        }
+
+        point_pos = copy.deepcopy(trg['pos'])
+        point_pos[0] += (self.rnd_gen.random() - 0.5) * 10
+        point_pos[1] += (self.rnd_gen.random() - 0.5) * 10
+
+        if point_pos[0] > self.az_min_max[1]:
+            point_pos[0] -= 360
+        elif point_pos[0] < self.az_min_max[0]:
+            point_pos[0] += 360
+        pnt['pos'] = point_pos
+        
+        pointings.append(pnt)
+        
+        rnd_tels = random.sample(
+            all_tel_ids, int(len(tel_ids) / n_rnd_divs)
+        )
+        
+        if z == n_rnd_divs - 1:
+            rnd_tels = all_tel_ids
+        
+        # and remove them from allTels list
+        all_tel_ids = [x for x in all_tel_ids if x not in rnd_tels]
+        pnt['tel_ids'] = rnd_tels
+
+        return pointings
+
+# ------------------------------------------------------------------
+# 
+# ------------------------------------------------------------------
+def update_sub_arrs(self, blocks=None):
+    # inst_pos = self.redis.h_get_all(name='inst_pos')
+
+    if blocks is None:
+        obs_block_ids = self.redis.get(
+            name=('obs_block_ids_' + 'run'), packed=True, default_val=[]
+        )
+        for obs_block_id in obs_block_ids:
+            self.redis.pipe.get(obs_block_id)
+
+        blocks = self.redis.pipe.execute(packed=True)
+
+    #
+    sub_arrs = []
+    all_tel_ids = copy.deepcopy(self.tel_ids)
+
+    for n_block in range(len(blocks)):
+        block_tel_ids = (
+            blocks[n_block]['telescopes']['large']['ids']
+            + blocks[n_block]['telescopes']['medium']['ids']
+            + blocks[n_block]['telescopes']['small']['ids']
+        )
+        pnt_id = blocks[n_block]['pointings'][0]['id']
+        pointing_name = blocks[n_block]['pointings'][0]['name']
+
+        # compile the telescope list for this block
+        tels = []
+        for id_now in block_tel_ids:
+            tels.append({'id': id_now})
+
+            if id_now in all_tel_ids:
+                all_tel_ids.remove(id_now)
+
+        # add the telescope list for this block
+        sub_arrs.append({'id': pnt_id, 'N': pointing_name, 'children': tels})
+
+    # ------------------------------------------------------------------
+    # now take care of all free telescopes
+    # ------------------------------------------------------------------
+    tels = []
+    for id_now in all_tel_ids:
+        tels.append({'id': id_now})
+
+    sub_arrs.append({'id': no_sub_arr_name, 'children': tels})
+
+    # ------------------------------------------------------------------
+    # for now - a simple/stupid solution, where we write the sub-arrays and publish each
+    # time, even if the content is actually the same ...
+    # ------------------------------------------------------------------
+    self.redis.set(name='sub_arrs', data=sub_arrs, packed=True)
+    self.redis.publish(channel='sub_arrs')
+
+    return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

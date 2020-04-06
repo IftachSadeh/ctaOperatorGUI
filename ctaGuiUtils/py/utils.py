@@ -33,16 +33,8 @@ redis_port = None
 # ------------------------------------------------------------------
 # check if ACS is available (assumed yes if the 'ACSROOT' env variable is defined)
 # ------------------------------------------------------------------
-# has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == 'dawn.ifh.de')
-has_acs = False
-has_acs = False
-has_acs = False
-has_acs = False
-has_acs = False
-has_acs = False
-has_acs = False
-has_acs = False
-has_acs = False
+has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == 'dawn.ifh.de')
+# has_acs = False
 
 # userName = os.getlogin()
 # redis_port = dict()
@@ -379,8 +371,8 @@ class ClockSim():
         self.debug_short_night = True
 
         # speedup simulation. e.g., 60*10 --> every 1 real sec goes to 10 simulated min
-        self.speed_factor = 10
-        # self.speed_factor = 60 * 1
+        self.speed_factor = 5
+        self.speed_factor = 60 * 5
         # self.speed_factor = 60 * 10
         # self.speed_factor = 60 * 30 * 1
 
@@ -429,9 +421,11 @@ class ClockSim():
 
             if self.debug_datetime_now:
                 self.log.info([
-                    ['g', ' --- self.datetime_now: '],
+                    ['g', ' --- Now (night: '],
+                    ['p', self.is_night_time_now()],
+                    ['g', ') '],
                     ['y', self.datetime_now],
-                    ['p', ' (', self.is_night_time_now(), ')'],
+                    ['c', ' (' + str(datetime_to_secs(self.datetime_now)) + ' sec)'],
                 ])
 
             self.update_n_night()
@@ -469,12 +463,17 @@ class ClockSim():
     # ---------------------------------------------------------------------------
     def set_night_times(self):
         night_start_hours = self.rnd_gen.randint(18, 19)
+        night_start_minutes = self.rnd_gen.randint(0, 59)
         night_end_hours = self.rnd_gen.randint(4, 5)
+        night_end_minutes = self.rnd_gen.randint(0, 59)
 
         # short night for debugging
         if self.debug_short_night:
-            night_start_hours = self.rnd_gen.randint(23, 23)
-            night_end_hours = self.rnd_gen.randint(2, 2)
+            night_start_hours = 23
+            night_start_minutes = 0
+            night_end_hours = 2
+            night_end_minutes = 0
+
 
         if self.datetime_now is None:
             self.datetime_now = datetime_epoch.replace(hour=(night_start_hours - 1), )
@@ -484,12 +483,12 @@ class ClockSim():
         n_days = (self.datetime_now - datetime_epoch).days
 
         if self.skip_daytime:
-            self.datetime_now = self.datetime_now.replace(hour=(night_start_hours - 1), )
+            self.datetime_now = self.datetime_now.replace(hour=(night_start_hours - 1))
 
         self.night_start_sec = timedelta(
             days=n_days,
             hours=night_start_hours,
-            minutes=self.rnd_gen.randint(0, 59),
+            minutes=night_start_minutes,
             seconds=0,
         ).total_seconds()
 
@@ -497,9 +496,14 @@ class ClockSim():
         self.night_end_sec = timedelta(
             days=(n_days + 1),
             hours=night_end_hours,
-            minutes=self.rnd_gen.randint(0, 59),
+            minutes=night_end_minutes,
             seconds=0,
         ).total_seconds()
+        
+        if self.skip_daytime and self.debug_short_night:
+            self.datetime_now = (
+                secs_to_datetime(self.night_start_sec) - timedelta(seconds=10)
+            )
 
         self.night_duration_sec = (self.night_end_sec - self.night_start_sec)
 
