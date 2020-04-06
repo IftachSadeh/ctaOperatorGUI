@@ -168,6 +168,9 @@ class SchedBlockController(BaseWidget):
 
         return
 
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
     def get_target(self):
         self.redis.pipe.reset()
 
@@ -205,6 +208,8 @@ class SchedBlockController(BaseWidget):
 
             # if key == 'run' and len(SchedBlockController.blocks[key]) > 0:
             #     print(SchedBlockController.blocks[key][0])
+        # for k,v in SchedBlockController.blocks.items():
+        #     print(k, len(v))
 
         return
 

@@ -371,8 +371,9 @@ class ClockSim():
         self.debug_short_night = True
 
         # speedup simulation. e.g., 60*10 --> every 1 real sec goes to 10 simulated min
-        self.speed_factor = 5
-        self.speed_factor = 60 * 5
+        self.speed_factor = 10
+        # self.speed_factor = 30
+        # self.speed_factor = 60 * 1
         # self.speed_factor = 60 * 10
         # self.speed_factor = 60 * 30 * 1
 
@@ -421,7 +422,7 @@ class ClockSim():
 
             if self.debug_datetime_now:
                 self.log.info([
-                    ['g', ' --- Now (night: '],
+                    ['g', ' --- Now (night:', self.n_nights, '/', ''],
                     ['p', self.is_night_time_now()],
                     ['g', ') '],
                     ['y', self.datetime_now],
@@ -483,7 +484,10 @@ class ClockSim():
         n_days = (self.datetime_now - datetime_epoch).days
 
         if self.skip_daytime:
-            self.datetime_now = self.datetime_now.replace(hour=(night_start_hours - 1))
+            self.datetime_now = (
+                secs_to_datetime(self.night_start_sec) - timedelta(seconds=30)
+            )
+            # self.datetime_now = self.datetime_now.replace(hour=(night_start_hours - 1))
 
         self.night_start_sec = timedelta(
             days=n_days,

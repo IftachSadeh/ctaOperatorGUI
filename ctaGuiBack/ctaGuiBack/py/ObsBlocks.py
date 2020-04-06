@@ -81,6 +81,14 @@ class ObsBlocks():
 
         self.MockSched = MockSched(site_type=site_type, clock_sim=self.clock_sim, inst_data=self.inst_data,)
 
+        # ------------------------------------------------------------------
+        # temporary hack to be consistent with ObsBlocksNoACS
+        # ------------------------------------------------------------------
+        self.external_events = []
+        self.external_clock_events = []
+        external_generate_clock_events(self)
+        external_generate_events(self)
+
         return
 
     # ------------------------------------------------------------------
@@ -94,7 +102,7 @@ class ObsBlocks():
             self.log.info([['p', ' - ObsBlocks.reset_blocks() ...']])
 
         if self.MockSched is None:
-            sleep(0.5)
+            sleep(0.1)
             self.log.debug([[
                 'r', ' - no MockSched ... will try to reset_blocks() again ...'
             ]])
@@ -124,6 +132,7 @@ class ObsBlocks():
 
             obs_blocks = schBlock['sched_block'].observation_blocks
 
+            # get the total duration of all obs blocks
             block_duration_sec = 0
             for n_obs_block_now in range(len(obs_blocks)):
                 obs_block_id = obs_blocks[n_obs_block_now].id
@@ -140,37 +149,22 @@ class ObsBlocks():
             for n_obs_block_now in range(len(obs_blocks)):
                 obs_block_now = obs_blocks[n_obs_block_now]
                 obs_block_id = obs_block_now.id
-                trg_id = obs_block_now.src.id
-                coords = obs_block_now.src.coords.horizontal
-                target_pos = [coords.az, coords.alt]
+                # trg_id = obs_block_now.src.id
+                # coords = obs_block_now.src.coords.horizontal
 
-                # obs_block_json = jsonAcs.encode(obs_block_now)
-
-                timestamp = sched_blocks['metadata'][obs_block_id]['timestamp']
-                metadata = sched_blocks['metadata'][obs_block_id]['metadata']
-
-                point_pos = sched_blocks['metadata'][obs_block_id]['point_pos']
-                status = sched_blocks['metadata'][obs_block_id]['status']
-                phases = sched_blocks['metadata'][obs_block_id]['phases']
-                duration = sched_blocks['metadata'][obs_block_id]['duration']
-                start_time_sec_plan = sched_blocks['metadata'][obs_block_id][
-                    'start_time_sec_plan']
-                start_time_sec_exe = sched_blocks['metadata'][obs_block_id][
-                    'start_time_sec_exe']
+                sched_metadata = sched_blocks['metadata'][obs_block_id]
+                timestamp = sched_metadata['timestamp']
+                metadata = sched_metadata['metadata']
+                status = sched_metadata['status']
+                phases = sched_metadata['phases']
+                duration = sched_metadata['duration']
+                start_time_sec_plan = sched_metadata['start_time_sec_plan']
+                start_time_sec_exe = sched_metadata['start_time_sec_exe']
 
                 start_time_sec = (
                     start_time_sec_plan
                     if start_time_sec_exe is None else start_time_sec_exe
                 )
-
-                if target_pos[0] > 180:
-                    target_pos[0] -= 360
-                if target_pos[0] < -180:
-                    target_pos[0] += 360
-                if point_pos[0] > 180:
-                    point_pos[0] -= 360
-                if point_pos[0] < -180:
-                    point_pos[0] += 360
 
                 # state of ob
                 if status == sb.OB_PENDING:
@@ -187,17 +181,6 @@ class ObsBlocks():
                 # final sanity check
                 if state == 'run' and sched_blk_id not in active:
                     state = 'done'
-
-                # if debug_tmp:
-                #     for p in phases:
-                #         self.log.debug([
-                #             ['y', ' -- phases - ', sched_blk_id, ' ', obs_block_id, ' '],
-                #             ['p', status, ' '],
-                #             [
-                #                 'g', p.heartbeat_counter, ' ', p.name,
-                #                 ' ', p.status, ' ', p.progress_message
-                #             ]
-                #         ])
 
                 run_phase = []
                 if state == 'run':
@@ -217,23 +200,9 @@ class ObsBlocks():
 
                 can_run = True
                 if state == 'cancel' or state == 'fail':
-                    # can_run = (self.time_of_night.get_current_time() >= start_time_sec)
                     can_run = (self.clock_sim.get_time_now_sec() >= start_time_sec)
 
                 exe_state = {'state': state, 'can_run': can_run}
-
-                # if not can_run or state == 'cancel' or state == 'fail':
-                #     print 'cant run:', can_run, sched_blk_id, obs_block_id, state, [
-                #         self.time_of_night.get_current_time(), start_time_sec]
-
-
-
-
-
-
-
-
-
 
                 time = {
                     'start': start_time_sec,
@@ -271,66 +240,18 @@ class ObsBlocks():
                     n_obs_now=n_obs_block_now,
                 )
 
-
-
                 block = dict()
-                # block['sched_block_id'] = sched_blk_id
-                # block['obs_block_id'] = obs_block_id
-                # block['metadata'] = metadata
-                # block['timestamp'] = timestamp
-                # block['start_time_sec'] = start_time_sec
-                # block['end_time_sec'] = start_time_sec + duration
-                # block['duration'] = duration
-                # block['tel_ids'] = tel_ids
-                # block['target_id'] = trg_id
-                # block['target_name'] = trg_id
-                # block['target_pos'] = target_pos
-                # block['point_id'] = sched_blk_id + '_' + obs_block_id
-                # block['pointing_name'] = (
-                #     block['target_name'] + '/p_' + str(n_obs_block_now)
-                # )
-                # block['pointing_pos'] = point_pos
-                # block['exe_state'] = exe_state
-                # block['run_phase'] = run_phase
-                # # block['fullObsBlock'] = obs_block_json
-
-                if 1:
-                    block['sched_block_id'] = sched_blk_id
-                    block['obs_block_id'] = obs_block_id
-                    block['time'] = time
-                    block['metadata'] = metadata
-                    block['timestamp'] = timestamp
-                    block['telescopes'] = telescopes
-                    block['exe_state'] = exe_state
-                    block['run_phase'] = run_phase
-                    block['targets'] = targets
-                    block['pointings'] = pointings
-                    block['tel_ids'] = tel_ids
-                if 0:
-                    block['sched_block_id'] = sched_block_id
-                    block['obs_block_id'] = obs_block_id
-                    block['time'] = time
-                    block['metadata'] = metadata
-                    block['timestamp'] = get_time('msec')
-                    block['telescopes'] = telescopes
-                    block['exe_state'] = exe_state
-                    block['run_phase'] = []
-                    
-                    block['targets'] = targets
-                    block['pointings'] = pointings
-                    block['tel_ids'] = sched_tel_ids
-
-                # print('-'*30)
-                # print('RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR')
-                # print('-'*30)
-                # print('targets')
-                # print(targets)
-                # print()
-                # print('pointings')
-                # print(pointings)
-                # print('-'*30)
-
-
+                block['sched_block_id'] = sched_blk_id
+                block['obs_block_id'] = obs_block_id
+                block['time'] = time
+                block['metadata'] = metadata
+                block['timestamp'] = timestamp
+                block['telescopes'] = telescopes
+                block['exe_state'] = exe_state
+                block['run_phase'] = run_phase
+                block['targets'] = targets
+                block['pointings'] = pointings
+                block['tel_ids'] = tel_ids
 
                 if state == 'run':
                     blocks_run += [block]
@@ -538,7 +459,7 @@ class ObsBlocksNoACS():
         self.rnd_gen = Random(rnd_seed)
 
         self.external_clock_events = []
-        self.external_generate_clock_events()
+        external_generate_clock_events(self)
 
         self.redis.pipe.delete('obs_block_update')
 
@@ -620,7 +541,6 @@ class ObsBlocksNoACS():
                     [tot_sched_duration_sec, int(100 * precent)],
                 )
 
-            # target_pos = dict()
             sched_block_duration_sec = []
 
             # ------------------------------------------------------------------
@@ -650,21 +570,6 @@ class ObsBlocksNoACS():
                 n_obs_blocks = self.rnd_gen.randint(
                     self.min_n_obs_block, self.max_n_obs_block
                 )
-
-                # n_trg = n_sched_block_now
-                # if not n_trg in target_pos:
-                #     target_pos[n_trg] = [
-                #         (
-                #             self.rnd_gen.random() *
-                #             (self.az_min_max[1] - self.az_min_max[0])
-                #         )
-                #         + self.az_min_max[0],
-                #         (
-                #             self.rnd_gen.random()
-                #             * (self.zen_min_max_tel[1] - self.zen_min_max_tel[0])
-                #         )
-                #         + self.zen_min_max_tel[0]
-                #     ]
 
                 if debug_tmp:
                     print(
@@ -779,21 +684,6 @@ class ObsBlocksNoACS():
                     block['targets'] = targets
                     block['pointings'] = pointings
                     block['tel_ids'] = sched_tel_ids
-
-                    # block['start_time_sec'] = block_duration_sec.strftime('%Y-%m-%d %H:%M:%S')
-                    # block['duration'] = (obs_block_sec-overhead_sec).total_seconds()
-                    # block['end_time_sec'] = (block_duration_sec+(obs_block_sec-overhead_sec)).strftime('%Y-%m-%d %H:%M:%S')
-                    # block['start_time_sec'] = block_duration_sec
-                    # block['duration'] = obs_block_sec-overhead_sec
-                    # block['end_time_sec'] = block['start_time_sec']+block['duration']
-                    # block['target_id'] = target_id
-                    # block['target_name'] = target_id
-                    # block['target_pos'] = target['pos']
-                    # block['point_id'] = sched_block_id+'_'+obs_block_id
-                    # block['pointing_name'] = block['target_name'] + \
-                    #     '/p_'+str(n_obs_now)
-                    # block['pointing_pos'] = point_pos
-                    # block['fullObsBlock'] = self.get_obs_block_template()
 
                     self.redis.pipe.set(
                         name=block['obs_block_id'],
@@ -1202,113 +1092,6 @@ class ObsBlocksNoACS():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def external_generate_events(self):
-        time_now_sec = self.clock_sim.get_time_now_sec()
-
-        if self.rnd_gen.random() < 0.001:
-            new_event = {
-                'id': get_rnd(n_digits=7, out_type=str),
-                'start_time_sec': time_now_sec,
-            }
-            new_event['priority'] = random.randint(1, 3)
-
-            if self.rnd_gen.random() < 0.1:
-                new_event['name'] = 'alarm'
-                new_event['icon'] = 'alarm.svg'
-            elif self.rnd_gen.random() < 0.3:
-                new_event['name'] = 'grb'
-                new_event['icon'] = 'grb.svg'
-            elif self.rnd_gen.random() < 0.5:
-                new_event['name'] = 'hardware'
-                new_event['icon'] = 'hardwareBreak.svg'
-            elif self.rnd_gen.random() < 0.7:
-                new_event['name'] = 'moon'
-                new_event['icon'] = 'moon.svg'
-            elif self.rnd_gen.random() < 1:
-                new_event['name'] = 'sun'
-                new_event['icon'] = 'sun.svg'
-
-            # elif self.rnd_gen.random() < 0.6:
-            #     new_event['name'] = 'dolphin'
-            #     new_event['icon'] = 'dolphin.svg'
-            # elif self.rnd_gen.random() < 0.8:
-            #     new_event['name'] = 'eagle'
-            #     new_event['icon'] = 'eagle.svg'
-            # elif self.rnd_gen.random() < 1:
-            #     new_event['name'] = 'chicken'
-            #     new_event['icon'] = 'chicken.svg'
-
-            self.external_events.append(new_event)
-
-        self.redis.pipe.set(
-            name='external_events', data=self.external_events, packed=True
-        )
-
-        return
-
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def external_generate_clock_events(self):
-        new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 16, 21,
-                                           42).strftime('%Y-%m-%d %H:%M:%S')
-        new_event['end_date'] = ''
-        new_event['icon'] = 'moon.svg'
-        new_event['name'] = 'Moonrise'
-        new_event['comment'] = ''
-        new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
-        self.external_clock_events.append(new_event)
-
-        new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 16, 23,
-                                           07).strftime('%Y-%m-%d %H:%M:%S')
-        new_event['end_date'] = datetime(2018, 9, 17, 4, 30).strftime('%Y-%m-%d %H:%M:%S')
-        new_event['icon'] = 'rain.svg'
-        new_event['name'] = 'Raining'
-        new_event['comment'] = ''
-        new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
-        self.external_clock_events.append(new_event)
-
-        new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 17, 1,
-                                           03).strftime('%Y-%m-%d %H:%M:%S')
-        new_event['end_date'] = datetime(2018, 9, 17, 2, 00).strftime('%Y-%m-%d %H:%M:%S')
-        new_event['icon'] = 'storm.svg'
-        new_event['name'] = 'Storm'
-        new_event['comment'] = ''
-        new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
-        self.external_clock_events.append(new_event)
-
-        new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 17, 1,
-                                           28).strftime('%Y-%m-%d %H:%M:%S')
-        new_event['end_date'] = datetime(2018, 9, 17, 2, 30).strftime('%Y-%m-%d %H:%M:%S')
-        new_event['icon'] = 'handshake.svg'
-        new_event['name'] = 'Collab'
-        new_event['comment'] = ''
-        new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
-        self.external_clock_events.append(new_event)
-
-        new_event = {}
-        new_event['start_date'] = datetime(2018, 9, 17, 5,
-                                           21).strftime('%Y-%m-%d %H:%M:%S')
-        new_event['end_date'] = ''
-        new_event['icon'] = 'sun.svg'
-        new_event['name'] = 'Sunrise'
-        new_event['comment'] = ''
-        new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
-        self.external_clock_events.append(new_event)
-
-        self.redis.pipe.set(
-            name='external_clock_events', data=self.external_clock_events, packed=True
-        )
-
-        return
-
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
     def external_add_new_redis_blocks(self):
         if not self.redis.exists('obs_block_update'):
             return
@@ -1396,7 +1179,7 @@ class ObsBlocksNoACS():
                     self.wait_to_run()
                     self.run_phases()
                     self.run_to_done()
-                    self.external_generate_events()
+                    external_generate_events(self)
 
             self.update_exe_statuses()
 
@@ -1537,6 +1320,113 @@ def update_sub_arrs(self, blocks=None):
     return
 
 
+
+# ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
+def external_generate_events(self):
+    time_now_sec = self.clock_sim.get_time_now_sec()
+
+    if self.rnd_gen.random() < 0.001:
+        new_event = {
+            'id': get_rnd(n_digits=7, out_type=str),
+            'start_time_sec': time_now_sec,
+        }
+        new_event['priority'] = random.randint(1, 3)
+
+        if self.rnd_gen.random() < 0.1:
+            new_event['name'] = 'alarm'
+            new_event['icon'] = 'alarm.svg'
+        elif self.rnd_gen.random() < 0.3:
+            new_event['name'] = 'grb'
+            new_event['icon'] = 'grb.svg'
+        elif self.rnd_gen.random() < 0.5:
+            new_event['name'] = 'hardware'
+            new_event['icon'] = 'hardwareBreak.svg'
+        elif self.rnd_gen.random() < 0.7:
+            new_event['name'] = 'moon'
+            new_event['icon'] = 'moon.svg'
+        elif self.rnd_gen.random() < 1:
+            new_event['name'] = 'sun'
+            new_event['icon'] = 'sun.svg'
+
+        # elif self.rnd_gen.random() < 0.6:
+        #     new_event['name'] = 'dolphin'
+        #     new_event['icon'] = 'dolphin.svg'
+        # elif self.rnd_gen.random() < 0.8:
+        #     new_event['name'] = 'eagle'
+        #     new_event['icon'] = 'eagle.svg'
+        # elif self.rnd_gen.random() < 1:
+        #     new_event['name'] = 'chicken'
+        #     new_event['icon'] = 'chicken.svg'
+
+        self.external_events.append(new_event)
+
+    self.redis.set(
+        name='external_events', data=self.external_events, packed=True
+    )
+
+    return
+
+# ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
+def external_generate_clock_events(self):
+    new_event = {}
+    new_event['start_date'] = datetime(2018, 9, 16, 21,
+                                       42).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['end_date'] = ''
+    new_event['icon'] = 'moon.svg'
+    new_event['name'] = 'Moonrise'
+    new_event['comment'] = ''
+    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    self.external_clock_events.append(new_event)
+
+    new_event = {}
+    new_event['start_date'] = datetime(2018, 9, 16, 23,
+                                       07).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['end_date'] = datetime(2018, 9, 17, 4, 30).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['icon'] = 'rain.svg'
+    new_event['name'] = 'Raining'
+    new_event['comment'] = ''
+    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    self.external_clock_events.append(new_event)
+
+    new_event = {}
+    new_event['start_date'] = datetime(2018, 9, 17, 1,
+                                       03).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['end_date'] = datetime(2018, 9, 17, 2, 00).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['icon'] = 'storm.svg'
+    new_event['name'] = 'Storm'
+    new_event['comment'] = ''
+    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    self.external_clock_events.append(new_event)
+
+    new_event = {}
+    new_event['start_date'] = datetime(2018, 9, 17, 1,
+                                       28).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['end_date'] = datetime(2018, 9, 17, 2, 30).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['icon'] = 'handshake.svg'
+    new_event['name'] = 'Collab'
+    new_event['comment'] = ''
+    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    self.external_clock_events.append(new_event)
+
+    new_event = {}
+    new_event['start_date'] = datetime(2018, 9, 17, 5,
+                                       21).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['end_date'] = ''
+    new_event['icon'] = 'sun.svg'
+    new_event['name'] = 'Sunrise'
+    new_event['comment'] = ''
+    new_event['id'] = 'CE' + str(self.rnd_gen.randint(0, 100000000))
+    self.external_clock_events.append(new_event)
+
+    self.redis.set(
+        name='external_clock_events', data=self.external_clock_events, packed=True
+    )
+
+    return
 
 
 

@@ -78,8 +78,8 @@ class MockSched():
         self.max_n_cycles = 100
         self.min_n_sched_block = 2
         self.max_n_sched_block = 5
-        self.min_n_obs_block = 1
-        self.max_n_obs_block = 3
+        self.min_n_obs_block = 2
+        self.max_n_obs_block = 4
         self.min_n_tel_block = 4
         self.max_n_free_tels = 5
 
@@ -416,8 +416,11 @@ class MockSched():
                         # correct for the fact that the config/finish stages take time and
                         # are not scaled
                         speed_factor = self.clock_sim.get_speed_factor()
-                        scaled_duration = (obs_block_sec * speed_factor - overhead_sec)
+                        # scaled_duration = (obs_block_sec - overhead_sec) / speed_factor
+                        scaled_duration = (obs_block_sec) / speed_factor
                         scaled_duration = max(1, scaled_duration)
+
+                        # print('=>', obs_block_id, obs_block_sec,speed_factor, overhead_sec, '---====================== -->', scaled_duration)
 
                         point_pos = copy.deepcopy(target_pos[n_trg])
                         point_pos[0] += (self.rnd_gen.random() - 0.5) * 10
@@ -475,6 +478,7 @@ class MockSched():
                             'timestamp': get_time('msec'),
                             'point_pos': point_pos,
                             'duration': obs_block_sec,
+                            'scaled_duration': scaled_duration,
                             'start_time_sec_plan': block_duration_sec,
                             'start_time_sec_exe': None,
                             'status': sb.OB_PENDING,
@@ -523,6 +527,7 @@ class MockSched():
         def set_blocks():
             try:
                 active = self.supervisor.listSchedulingBlocks()
+                # print('xxxxxxx active: ', active)
             except Exception as e:
                 self.log.debug([
                     ['b', '- Exception - MockSched.set_active_sched_blocks: '],
@@ -540,7 +545,11 @@ class MockSched():
                     try:
                         obs_blocks_status = self.supervisor.getSbOperationStatus(
                             sched_block_id
-                        ).ob_statuses
+                        )
+                        obs_blocks_status = obs_blocks_status.ob_statuses
+
+                        # print('xxxxxxx obs_blocks_status: ', sched_block_id, (obs_blocks_status is not None))
+
                     except Exception as e:
                         self.log.debug([
                             ['b', '- Exception - MockSched.getSbOperationStatus: '],
@@ -576,6 +585,8 @@ class MockSched():
                     # ------------------------------------------------------------------
                     for obs_block_now in obs_blocks_status:
                         obs_block_id = obs_block_now.id
+
+                        # print('????', obs_block_id, (obs_block_id in metadata), obs_block_now.status)
                         if obs_block_id not in metadata:
                             continue
 
@@ -598,13 +609,20 @@ class MockSched():
 
                         self.log.info([
                             ['y', '- obs block is now running: '],
-                            ['r', obs_block_id],
+                            ['r', obs_block_id, '\n'],
                             [
                                 'g',
-                                ' - planned/executed time: ',
+                                ((' '*20) + '--> planned/executed start:'),
                                 metadata[obs_block_id]['start_time_sec_plan'],
-                                ' / ',
+                                '/',
                                 time_now_sec,
+                            ],
+                            [
+                                'p',
+                                '    duration:',
+                                metadata[obs_block_id]['duration'],
+                                '/',
+                                metadata[obs_block_id]['scaled_duration'],
                             ],
                         ])
 
@@ -787,7 +805,7 @@ class MockSched():
     # ------------------------------------------------------------------
     # move one from wait to run
     # ------------------------------------------------------------------
-    def submit_block_cycle(self):
+    def submit_block_cycle(self): 
         self.log.info([['g', ' - starting MockSched.submit_block_cycle ...']])
 
         # has_reset_night = (self.time_of_night.get_reset_time() > self.prev_reset_time)
@@ -977,6 +995,7 @@ class MockSched():
 
         while True:
             self.set_active_sched_blocks()
+            # print('------------- glob-active: ', self.acs_blocks['active'])
             if len(self.acs_blocks['active']) == 0 and self.n_sched_subs == 0:
                 self.submit_block_cycle()
 
