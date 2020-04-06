@@ -606,9 +606,7 @@ class ObsBlocksNoACS():
                         obs_block_sec /= 1.5
                     elif rnd < 0.5:
                         obs_block_sec /= 1.1
-                    obs_block_sec = int(
-                        floor(obs_block_sec)
-                    )
+                    obs_block_sec = int(floor(obs_block_sec))
 
                     planed_block_end_sec = block_duration_sec + obs_block_sec
                     is_cycle_done = (planed_block_end_sec > night_end_sec)
@@ -1017,7 +1015,7 @@ class ObsBlocksNoACS():
                     block['exe_state']['error'] = 'E4'
                 elif self.rnd_gen.random() < self.error_rnd_frac['E8']:
                     block['exe_state']['error'] = 'E8'
-            
+
             elif self.rnd_gen.random() < self.phase_rnd_frac['fail']:
                 block['exe_state']['state'] = 'fail'
                 if self.rnd_gen.random() < self.error_rnd_frac['E1']:
@@ -1030,7 +1028,7 @@ class ObsBlocksNoACS():
                     block['exe_state']['error'] = 'E4'
                 elif self.rnd_gen.random() < self.error_rnd_frac['E8']:
                     block['exe_state']['error'] = 'E8'
-            
+
             else:
                 block['exe_state']['state'] = 'done'
 
@@ -1143,7 +1141,7 @@ class ObsBlocksNoACS():
                 'start_time_sec': time_now_sec,
             }
             new_event['priority'] = random.randint(1, 3)
-            
+
             if self.rnd_gen.random() < 0.1:
                 new_event['name'] = 'alarm'
                 new_event['icon'] = 'alarm.svg'
@@ -1159,7 +1157,7 @@ class ObsBlocksNoACS():
             elif self.rnd_gen.random() < 1:
                 new_event['name'] = 'sun'
                 new_event['icon'] = 'sun.svg'
-           
+
             # elif self.rnd_gen.random() < 0.6:
             #     new_event['name'] = 'dolphin'
             #     new_event['icon'] = 'dolphin.svg'
@@ -1169,15 +1167,15 @@ class ObsBlocksNoACS():
             # elif self.rnd_gen.random() < 1:
             #     new_event['name'] = 'chicken'
             #     new_event['icon'] = 'chicken.svg'
-           
+
             self.external_events.append(new_event)
 
         self.redis.pipe.set(
             name='external_events', data=self.external_events, packed=True
         )
-    
+
         return
-    
+
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------

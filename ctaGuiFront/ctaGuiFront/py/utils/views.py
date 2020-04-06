@@ -2,7 +2,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import forbidden_view_config
 from pyramid.security import remember, forget
-from Models import DBSession, MyModel
+from Models import db_session, MyModel
 
 # the socket.io manager
 from socketio import socketio_manage
@@ -52,7 +52,7 @@ def view_login(request):
     if 'username' in request.params and 'password' in request.params:
         login = request.params['username']
         password = request.params['password']
-        db_lookup = DBSession.query(MyModel).filter(MyModel.userId == login).first()
+        db_lookup = db_session.query(MyModel).filter(MyModel.userId == login).first()
 
         # check if succesfull login
         if db_lookup is not None:

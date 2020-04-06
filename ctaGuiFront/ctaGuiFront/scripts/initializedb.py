@@ -1,10 +1,10 @@
 import os
 import sys
-import transaction
+# import transaction
 
 from sqlalchemy import engine_from_config
 from pyramid.paster import get_appsettings, setup_logging
-from ..py.models import DBSession, MyModel, Base, initUsers
+from ..py.utils.Models import db_session, sql_base, init_user_passes
 
 
 def usage(argv):
@@ -24,10 +24,10 @@ def main(argv=sys.argv):
     settings = get_appsettings(config_uri)
     engine = engine_from_config(settings, 'sqlalchemy.')
 
-    DBSession.configure(bind=engine)
-    Base.metadata.create_all(engine)
+    db_session.configure(bind=engine)
+    sql_base.metadata.create_all(engine)
     # with transaction.manager:
     #     model = Page('FrontPage', 'This is the front page')
-    #     DBSession.add(model)
+    #     db_session.add(model)
 
-    initUsers()
+    init_user_passes()

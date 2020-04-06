@@ -5,15 +5,14 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
 import transaction
 
-DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-Base = declarative_base()
+db_session = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+sql_base = declarative_base()
+
 
 # ------------------------------------------------------------------
 # define the fctory that sets user privliges
 # see: http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/security.html#protecting-views
 # ------------------------------------------------------------------
-
-
 class RootFactory(object):
     __name__ = None
     __parent__ = None
@@ -39,9 +38,7 @@ class RootFactory(object):
 # ------------------------------------------------------------------
 # users are defined by this class
 # ------------------------------------------------------------------
-
-
-class MyModel(Base):
+class MyModel(sql_base):
     __tablename__ = 'models'
     id = Column(Integer, primary_key=True)
     userId = Column(Text, unique=True)
@@ -54,33 +51,30 @@ class MyModel(Base):
 # to reset the db, do:
 #   rm ctaGuiFront.db ; $VENV/bin/initialize_tutorial_db development.ini
 # ------------------------------------------------------------------
-def initUsers():
+def init_user_passes():
     user_passes = [["guest", "123", "group:permit_1"], ["user0", "xxx", "group:permit_1"],
                    ["user1", "xxx", "group:permit_1"], ["user2", "xxx", "group:permit_2"]]
 
-    # user_passes = [ ["guest","1234","group:permit_1"] , ["user0","1234","group:permit_1"] , ["user1","1234","group:permit_1"] , ["user2","1234","group:permit_2"]]
     for n_user_now in range(len(user_passes)):
         my_model = MyModel(
             userId=user_passes[n_user_now][0],
             passwd=user_passes[n_user_now][1],
             groups=user_passes[n_user_now][2]
         )
-        # print 'xxxxxxxxxxxxxxxxxxxxx',user_passes[n_user_now]
 
-        if DBSession.query(MyModel).filter(MyModel.userId == user_passes[n_user_now][0]
-                                           ).first() == None:
+        user_filt = MyModel.userId == user_passes[n_user_now][0]
+        my_model = db_session.query(MyModel).filter(user_filt).first()
+        if my_model is None:
             print " - Adding user/pass: ", user_passes[n_user_now]
-            DBSession.add(my_model)
+            db_session.add(my_model)
             transaction.commit()
 
 
 # ------------------------------------------------------------------
 # method for extracting the group list for a given user
 # ------------------------------------------------------------------
-
-
 def get_groups(user_id, request):
-    db_lookup = DBSession.query(MyModel).filter(MyModel.userId == user_id).first()
+    db_lookup = db_session.query(MyModel).filter(MyModel.userId == user_id).first()
 
     if db_lookup != None:
         return (db_lookup.groups).split(";")

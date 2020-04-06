@@ -16,7 +16,7 @@ from pyramid.exceptions import NotFound
 from sqlalchemy import engine_from_config
 
 # the Models.py file contains the users/groups/passwords
-from ctaGuiFront.py.utils.Models import DBSession, Base, get_groups
+from ctaGuiFront.py.utils.Models import db_session, sql_base, get_groups
 
 # import the utils module to allow access to some global variables
 import ctaGuiUtils.py.utils as utils
@@ -60,8 +60,8 @@ def main(global_config, **settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     # engine = create_engine('sqlite:///ctaGuiFront.db') # if not set in the .ini file
 
-    DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
+    db_session.configure(bind=engine)
+    sql_base.metadata.bind = engine
 
     authn_policy = AuthTktAuthenticationPolicy(
         'sosecret', callback=get_groups, hashalg='sha512'
@@ -116,7 +116,7 @@ def main(global_config, **settings):
     config.add_view(socketio_service, route_name='socket_io', permission=perm)
 
     # ------------------------------------------------------------------
-    # priviliged view (right now, only for pre-defined users in Models.initUsers)
+    # priviliged view (right now, only for pre-defined users in Models.init_user_passes)
     # ------------------------------------------------------------------
     perm = 'permit_a'
     # ------------------------------------------------------------------
