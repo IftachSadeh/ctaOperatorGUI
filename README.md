@@ -54,11 +54,26 @@ For additional information, see:
     $VENV/bin/easy_install "gevent==1.0.2"
     $VENV/bin/easy_install gevent-websocket gevent-socketio
     $VENV/bin/easy_install gunicorn pyramid_jinja2
-    $VENV/bin/easy_install zope.interface zope.sqlalchemy zope.deprecation SQLAlchemy sqlalchemy transaction
+    $VENV/bin/easy_install zope.interface zope.sqlalchemy zope.deprecation SQLAlchemy transaction
     $VENV/bin/easy_install msgpack-python redis numpy
     $VENV/bin/pip install pep8 yapf
     npm install eslint
   ```
+  for `python v2.7` (currently for ACS compatibility), older versions are necessary:
+  ```bash
+    easy_install --install-dir=$VENV "virtualenv==15.1.0"
+    virtualenv $VENV
+    $VENV/bin/easy_install "gevent==1.0.2"
+    $VENV/bin/easy_install "gevent-websocket==0.10.1" "gevent-socketio==0.3.6"
+    $VENV/bin/easy_install "gunicorn==19.8.1"
+    $VENV/bin/easy_install "pyramid==1.9.2" "Jinja2==2.10" "pyramid_jinja2==2.7"
+    $VENV/bin/easy_install "zope.sqlalchemy==1.0" "zope.interface==4.5.0"  "zope.deprecation==4.3.0"
+    $VENV/bin/easy_install "SQLAlchemy==1.2.8" "transaction==2.2.1"
+    $VENV/bin/easy_install "redis==2.10.6"
+    $VENV/bin/easy_install "msgpack-python==0.5.6"
+    $VENV/bin/pip install pep8 yapf
+  ```
+
 
 - Setup the two sub-packages, `ctaGuiBack` and `ctaGuiFront`:
   ```bash

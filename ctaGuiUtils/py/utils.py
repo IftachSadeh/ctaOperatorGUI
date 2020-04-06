@@ -33,7 +33,16 @@ redis_port = None
 # ------------------------------------------------------------------
 # check if ACS is available (assumed yes if the 'ACSROOT' env variable is defined)
 # ------------------------------------------------------------------
-has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == 'dawn.ifh.de')
+# has_acs = ('ACSROOT' in os.environ)  # (os.uname()[1] == 'dawn.ifh.de')
+has_acs = False
+has_acs = False
+has_acs = False
+has_acs = False
+has_acs = False
+has_acs = False
+has_acs = False
+has_acs = False
+has_acs = False
 
 # userName = os.getlogin()
 # redis_port = dict()
@@ -361,14 +370,17 @@ class ClockSim():
 
         self.rnd_gen = Random(11)
         self.debug_datetime_now = False
-        # self.debug_datetime_now = True
+        self.debug_datetime_now = True
 
         self.skip_daytime = False
-        # self.skip_daytime = True
+        self.skip_daytime = True
+
+        self.debug_short_night = False
+        self.debug_short_night = True
 
         # speedup simulation. e.g., 60*10 --> every 1 real sec goes to 10 simulated min
         self.speed_factor = 10
-        self.speed_factor = 60 * 1
+        # self.speed_factor = 60 * 1
         # self.speed_factor = 60 * 10
         # self.speed_factor = 60 * 30 * 1
 
@@ -459,9 +471,10 @@ class ClockSim():
         night_start_hours = self.rnd_gen.randint(18, 19)
         night_end_hours = self.rnd_gen.randint(4, 5)
 
-        # # short night for debugging
-        # night_start_hours = self.rnd_gen.randint(23, 23)
-        # night_end_hours = self.rnd_gen.randint(2, 2)
+        # short night for debugging
+        if self.debug_short_night:
+            night_start_hours = self.rnd_gen.randint(23, 23)
+            night_end_hours = self.rnd_gen.randint(2, 2)
 
         if self.datetime_now is None:
             self.datetime_now = datetime_epoch.replace(hour=(night_start_hours - 1), )
