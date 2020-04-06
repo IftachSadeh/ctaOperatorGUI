@@ -267,7 +267,7 @@ window.BlockDisplayer = function(opt_in) {
             filtering: [],
         },
         time: {
-            currentTime: {
+            current_time: {
                 date: new Date(),
                 time: 0,
             },
@@ -1246,7 +1246,7 @@ window.BlockDisplayer = function(opt_in) {
             rectNowData = [
                 {
                     id: com.main.tag + 'now',
-                    x: com.blockQueue.axis.scale(com.time.currentTime.date),
+                    x: com.blockQueue.axis.scale(com.time.current_time.date),
                     y: com.blockQueue.timeBars.box.y,
                     w: com.blockQueue.timeBars.box.marg,
                     h: com.blockQueue.timeBars.box.h + com.blockQueue.timeBars.box.marg * 2,
@@ -1495,7 +1495,7 @@ window.BlockDisplayer = function(opt_in) {
                     .attr('y', height * 0.15)
                     .style('font-weight', 'normal')
                     .attr('text-anchor', 'middle')
-                    .style('font-size', (height * 0.2 * 0.75) + 'px')
+                    .style('font-size', (12) + 'px')
                     .attr('dy', 0)
                     .style('pointer-events', 'none')
                     .attr('fill', color_theme.darker.text)
@@ -2224,7 +2224,7 @@ window.BlockDisplayer = function(opt_in) {
                         .attr('y', height * 0.75)
                         .style('font-weight', 'normal')
                         .attr('text-anchor', com.blockQueue2.sched_blocks.label.position === 'left' ? 'end' : 'start')
-                        .style('font-size', (height * 0.6) + 'px')
+                        .style('font-size', (12) + 'px')
                         .style('pointer-events', 'none')
                         .attr('fill', color_theme.darker.text)
                         .attr('stroke', 'none')
@@ -2286,8 +2286,8 @@ window.BlockDisplayer = function(opt_in) {
                             }).join(' ')
                         })
                     d3.select(this).select('text.schedId')
-                        .attr('y', (height * d.nLine) * 0.5 + (height * 0.25))
-                        .style('font-size', (height * 0.6) + 'px')
+                        .attr('y', (height * d.nLine) * 0.5 + (16 * 0.25))
+                        .style('font-size', (16) + 'px')
                     mainOffset += d.nLine
                 })
             allScheds.exit().remove()
@@ -2438,7 +2438,7 @@ window.BlockDisplayer = function(opt_in) {
             rectNowData = [
                 {
                     id: com.main.tag + 'now',
-                    x: com.blockQueue2.axis.scale(com.time.currentTime.date),
+                    x: com.blockQueue2.axis.scale(com.time.current_time.date),
                     y: com.blockQueue2.timeBars.box.y,
                     w: com.blockQueue2.timeBars.box.marg * 0.25,
                     h: com.blockQueue2.timeBars.box.h + com.blockQueue2.timeBars.box.marg * 2,
@@ -3038,7 +3038,7 @@ window.BlockDisplayer = function(opt_in) {
             rectNowData = [
                 {
                     id: com.main.tag + 'now',
-                    x: com.blockTrackShrink.axis.scale(com.time.currentTime.date),
+                    x: com.blockTrackShrink.axis.scale(com.time.current_time.date),
                     y: com.blockTrackShrink.timeBars.box.y,
                     w: com.blockTrackShrink.timeBars.box.marg,
                     h: com.blockTrackShrink.timeBars.box.h + com.blockTrackShrink.timeBars.box.marg * 2,
@@ -3574,7 +3574,7 @@ window.BlockDisplayer = function(opt_in) {
             .transition()
             .duration(400)
             .style('opacity', 0)
-        com.time.currentTime = data_in.time.currentTime
+        com.time.current_time = data_in.time.current_time
         com.time.start_time_sec = data_in.time.start_time_sec
         com.time.end_time_sec = data_in.time.end_time_sec
         com.data.raw = data_in.data.raw
