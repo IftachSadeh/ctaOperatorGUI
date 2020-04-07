@@ -1,37 +1,50 @@
-# ------------------------------------------------------------------
-from random import Random
-rnd_gen = Random(10987268332)
-waitTime = dict()
-waitTime['config_daq'] = rnd_gen.randint(1, 3)
-waitTime['config_camera'] = rnd_gen.randint(1, 5)
-waitTime['config_mount'] = rnd_gen.randint(2, 7)
-waitTime['finish_daq'] = rnd_gen.randint(1, 6)
-waitTime['finish_camera'] = rnd_gen.randint(1, 3)
-waitTime['finish_mount'] = rnd_gen.randint(1, 2)
-
-
-def getWait(duration, waitType):
-    return waitTime[waitType] if blockDuration > 1 else 1
-
+# import tcs
+# import daqctrl, inspect
 
 # ------------------------------------------------------------------
-
-import tcs
-import daqctrl, inspect
-
-__phases__ = [
-    "configuring", "config_daq", "config_camera", "config_mount", "takeData", "closing",
-    "finish_daq", "finish_camera", "finish_mount"
-]
-
 # install the script by:
 #   cd $INTROOT/config/scripts
-#   ln -s $guiInstalDir/ctaOperatorGUI/ctaGuiBack/ctaGuiBack/acs/guiACS_sched_blocks_script0.py
+#   ln -s $guiInstalDir/ctaOperatorGUI/ctaGuiBack/ctaGuiBack/acs/guiACS_schedBlocks_script0.py
+# ------------------------------------------------------------------
+
+# ------------------------------------------------------------------
+from random import Random
+
+rndGen = Random(10987268332)
+waitTime = dict()
+waitTime['config_daq'] = rndGen.randint(1, 3)
+waitTime['config_camera'] = rndGen.randint(1, 5)
+waitTime['config_mount'] = rndGen.randint(2, 7)
+waitTime['finish_daq'] = rndGen.randint(1, 6)
+waitTime['finish_camera'] = rndGen.randint(1, 3)
+waitTime['finish_mount'] = rndGen.randint(1, 2)
+
+
+def get_short_wait(duration, wait_type):
+    return waitTime[wait_type] if duration > 1 else 1
 
 
 # ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
+__phases__ = [
+    "configuring",
+    "config_daq",
+    "config_camera",
+    "config_mount",
+    "take_data",
+    "closing",
+    "finish_daq",
+    "finish_camera",
+    "finish_mount",
+]
+
+
+# ------------------------------------------------------------------
+#
+# ------------------------------------------------------------------
 def configuring():
-    coords = observation_block.src.coords
+    coords = observationBlock.src.coords
     p = None
     try:
         p = (coords.equatorial.ra, coords.equatorial.dec)
@@ -54,14 +67,14 @@ def configuring():
 
     try:
         divergence = schedulingBlock.config.instrument.pointing_mode.divergent_.divergence
-        print "_divergence used: " + str(divergence)
+        print "Divergence used: " + str(divergence)
     except:
         print "Pointing mode is not divergent"
         pass
 
-    resources.target = tcs.SkyEquatorialTarget(
-        p[0], p[1], tcs.ICRS, tcs.J2000, 0.0, 0.0, 0.0, 0.0
-    )
+    # resources.target = tcs.SkyEquatorialTarget(
+    #     p[0], p[1], tcs.ICRS, tcs.J2000, 0.0, 0.0, 0.0, 0.0
+    # )
 
     allowPhaseStart("config_daq")
     allowPhaseStart("config_camera")
@@ -89,7 +102,7 @@ def config_daq():
 
     # add wiating time since waitToFinish is useless ............
     # telescopes.waitToFinish()
-    wait(getWait(blockDuration, 'config_daq'))
+    wait(get_short_wait(blockDuration, 'config_daq'))
 
     updatePhase("config_daq", "config_daq has ended...", 100)
 
@@ -107,7 +120,7 @@ def config_camera():
 
     # add wiating time since waitToFinish is useless ............
     # telescopes.waitToFinish()
-    wait(getWait(blockDuration, 'config_camera'))
+    wait(get_short_wait(blockDuration, 'config_camera'))
 
     updatePhase("config_camera", "config_camera has ended...", 100)
 
@@ -122,7 +135,7 @@ def config_mount():
 
     # add wiating time since waitToFinish is useless ............
     # telescopes.waitToFinish()
-    wait(getWait(blockDuration, 'config_mount'))
+    wait(get_short_wait(blockDuration, 'config_mount'))
 
     updatePhase("config_mount", "config_mount has ended...", 100)
 
@@ -130,8 +143,8 @@ def config_mount():
 
 
 # ------------------------------------------------------------------
-def takeData():
-    updatePhase("takeData", "takeData has began ...", 0)
+def take_data():
+    updatePhase("take_data", "take_data has began ...", 0)
 
     # daq().moveToNextOutputBlock(daqctrl.ZFITS_ZLIB)
 
@@ -146,7 +159,7 @@ def takeData():
 
     # telescopes.stopDataTaking()
 
-    updatePhase("takeData", "takeData has ended...", 100)
+    updatePhase("take_data", "take_data has ended...", 100)
 
     return
 
@@ -169,7 +182,7 @@ def finish_daq():
 
     # add wiating time since waitToFinish is useless ............
     # telescopes.waitToFinish()
-    wait(getWait(blockDuration, 'finish_daq'))
+    wait(get_short_wait(blockDuration, 'finish_daq'))
 
     updatePhase("finish_daq", "finish_daq has ended...", 100)
 
@@ -184,7 +197,7 @@ def finish_camera():
 
     # add wiating time since waitToFinish is useless ............
     # telescopes.waitToFinish()
-    wait(getWait(blockDuration, 'finish_camera'))
+    wait(get_short_wait(blockDuration, 'finish_camera'))
 
     updatePhase("finish_camera", "finish_camera has ended...", 100)
 
@@ -197,7 +210,7 @@ def finish_mount():
 
     # add wiating time since waitToFinish is useless ............
     # telescopes.waitToFinish()
-    wait(getWait(blockDuration, 'finish_mount'))
+    wait(get_short_wait(blockDuration, 'finish_mount'))
 
     updatePhase("finish_mount", "finish_mount has ended...", 100)
 

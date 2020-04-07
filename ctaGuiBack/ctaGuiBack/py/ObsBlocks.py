@@ -79,7 +79,11 @@ class ObsBlocks():
 
         gevent.spawn(self.loop)
 
-        self.MockSched = MockSched(site_type=site_type, clock_sim=self.clock_sim, inst_data=self.inst_data,)
+        self.MockSched = MockSched(
+            site_type=site_type,
+            clock_sim=self.clock_sim,
+            inst_data=self.inst_data,
+        )
 
         # ------------------------------------------------------------------
         # temporary hack to be consistent with ObsBlocksNoACS
@@ -136,9 +140,7 @@ class ObsBlocks():
             block_duration_sec = 0
             for n_obs_block_now in range(len(obs_blocks)):
                 obs_block_id = obs_blocks[n_obs_block_now].id
-                block_duration_sec += (
-                    sched_blocks['metadata'][obs_block_id]['duration']
-                )
+                block_duration_sec += (sched_blocks['metadata'][obs_block_id]['duration'])
 
             targets = get_rnd_targets(
                 self=self,
@@ -212,20 +214,17 @@ class ObsBlocks():
 
                 telescopes = {
                     'large': {
-                        'min':
-                        int(len(filter(lambda x: 'L' in x, tel_ids)) / 2),
+                        'min': int(len(filter(lambda x: 'L' in x, tel_ids)) / 2),
                         'max': 4,
                         'ids': filter(lambda x: 'L' in x, tel_ids)
                     },
                     'medium': {
-                        'min':
-                        int(len(filter(lambda x: 'M' in x, tel_ids)) / 2),
+                        'min': int(len(filter(lambda x: 'M' in x, tel_ids)) / 2),
                         'max': 25,
                         'ids': filter(lambda x: 'M' in x, tel_ids)
                     },
                     'small': {
-                        'min':
-                        int(len(filter(lambda x: 'S' in x, tel_ids)) / 2),
+                        'min': int(len(filter(lambda x: 'S' in x, tel_ids)) / 2),
                         'max': 70,
                         'ids': filter(lambda x: 'S' in x, tel_ids)
                     }
@@ -579,7 +578,6 @@ class ObsBlocksNoACS():
 
                 tot_obs_block_duration_sec = 0
                 block_duration_sec = tot_sched_duration_sec
-
 
                 targets = get_rnd_targets(
                     self=self,
@@ -1192,44 +1190,41 @@ class ObsBlocksNoACS():
 # common functions
 # ------------------------------------------------------------------
 
+
 # ------------------------------------------------------------------
-# 
+#
 # ------------------------------------------------------------------
 def get_rnd_targets(self, night_duration_sec, block_duration_sec):
     target_ids_now = []
     targets = []
-    
+
     target_ids = self.redis.get(name='target_ids', packed=True, default_val=[])
 
     n_rnd_targets = max(1, int(self.rnd_gen.random() * 3))
 
     for z in range(n_rnd_targets):
-        n_id = (
-            block_duration_sec / (night_duration_sec / len(target_ids))
-        )
+        n_id = (block_duration_sec / (night_duration_sec / len(target_ids)))
         n_id += 0.75
         n_id = int(n_id + ((self.rnd_gen.random() - 0.5) * 3))
         n_id = min(max(0, n_id), len(target_ids) - 1)
-        
+
         if not (target_ids[n_id] in target_ids_now):
             target_ids_now.append(target_ids[n_id])
-            
+
             targets.append(
-                self.redis.get(
-                    name=target_ids[n_id], packed=True, default_val={}
-                )
+                self.redis.get(name=target_ids[n_id], packed=True, default_val={})
             )
     return targets
 
 
 # ------------------------------------------------------------------
-# 
+#
 # ------------------------------------------------------------------
 def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_obs_now):
     pointings = []
     n_rnd_divs = max(1, int(self.rnd_gen.random() * 5))
     all_tel_ids = copy.deepcopy(tel_ids)
-    
+
     for z in range(n_rnd_divs):
         trg = targets[max(0, int(self.rnd_gen.random() * len(targets)))]
         pnt = {
@@ -1246,24 +1241,23 @@ def get_rnd_pointings(self, tel_ids, targets, sched_block_id, obs_block_id, n_ob
         elif point_pos[0] < self.az_min_max[0]:
             point_pos[0] += 360
         pnt['pos'] = point_pos
-        
+
         pointings.append(pnt)
-        
-        rnd_tels = random.sample(
-            all_tel_ids, int(len(tel_ids) / n_rnd_divs)
-        )
-        
+
+        rnd_tels = random.sample(all_tel_ids, int(len(tel_ids) / n_rnd_divs))
+
         if z == n_rnd_divs - 1:
             rnd_tels = all_tel_ids
-        
+
         # and remove them from allTels list
         all_tel_ids = [x for x in all_tel_ids if x not in rnd_tels]
         pnt['tel_ids'] = rnd_tels
 
         return pointings
 
+
 # ------------------------------------------------------------------
-# 
+#
 # ------------------------------------------------------------------
 def update_sub_arrs(self, blocks=None):
     # inst_pos = self.redis.h_get_all(name='inst_pos')
@@ -1320,7 +1314,6 @@ def update_sub_arrs(self, blocks=None):
     return
 
 
-
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
@@ -1362,19 +1355,17 @@ def external_generate_events(self):
 
         self.external_events.append(new_event)
 
-    self.redis.set(
-        name='external_events', data=self.external_events, packed=True
-    )
+    self.redis.set(name='external_events', data=self.external_events, packed=True)
 
     return
+
 
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
 def external_generate_clock_events(self):
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 16, 21,
-                                       42).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 16, 21, 42).strftime('%Y-%m-%d %H:%M:%S')
     new_event['end_date'] = ''
     new_event['icon'] = 'moon.svg'
     new_event['name'] = 'Moonrise'
@@ -1383,8 +1374,7 @@ def external_generate_clock_events(self):
     self.external_clock_events.append(new_event)
 
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 16, 23,
-                                       07).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 16, 23, 07).strftime('%Y-%m-%d %H:%M:%S')
     new_event['end_date'] = datetime(2018, 9, 17, 4, 30).strftime('%Y-%m-%d %H:%M:%S')
     new_event['icon'] = 'rain.svg'
     new_event['name'] = 'Raining'
@@ -1393,8 +1383,7 @@ def external_generate_clock_events(self):
     self.external_clock_events.append(new_event)
 
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 17, 1,
-                                       03).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 17, 1, 03).strftime('%Y-%m-%d %H:%M:%S')
     new_event['end_date'] = datetime(2018, 9, 17, 2, 00).strftime('%Y-%m-%d %H:%M:%S')
     new_event['icon'] = 'storm.svg'
     new_event['name'] = 'Storm'
@@ -1403,8 +1392,7 @@ def external_generate_clock_events(self):
     self.external_clock_events.append(new_event)
 
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 17, 1,
-                                       28).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 17, 1, 28).strftime('%Y-%m-%d %H:%M:%S')
     new_event['end_date'] = datetime(2018, 9, 17, 2, 30).strftime('%Y-%m-%d %H:%M:%S')
     new_event['icon'] = 'handshake.svg'
     new_event['name'] = 'Collab'
@@ -1413,8 +1401,7 @@ def external_generate_clock_events(self):
     self.external_clock_events.append(new_event)
 
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 17, 5,
-                                       21).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 17, 5, 21).strftime('%Y-%m-%d %H:%M:%S')
     new_event['end_date'] = ''
     new_event['icon'] = 'sun.svg'
     new_event['name'] = 'Sunrise'
@@ -1427,22 +1414,3 @@ def external_generate_clock_events(self):
     )
 
     return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

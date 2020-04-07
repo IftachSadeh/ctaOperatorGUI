@@ -1862,7 +1862,7 @@ let main_sched_blockController = function(opt_in) {
                 time: shared.data.server.time_of_night.now,
             }
             let axisTop = brushZoom.getAxis('top').axis.scale().domain()
-            console.log(axisTop);
+            console.log(axisTop)
             let start_time_sec = {
                 date: axisTop[0],
                 time: shared.data.server.time_of_night.start,

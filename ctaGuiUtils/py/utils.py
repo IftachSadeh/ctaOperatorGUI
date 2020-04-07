@@ -362,20 +362,19 @@ class ClockSim():
 
         self.rnd_gen = Random(11)
         self.debug_datetime_now = False
-        self.debug_datetime_now = True
+        # self.debug_datetime_now = True
 
         self.skip_daytime = False
         self.skip_daytime = True
 
         self.debug_short_night = False
-        self.debug_short_night = True
+        # self.debug_short_night = True
 
         # speedup simulation. e.g., 60*10 --> every 1 real sec goes to 10 simulated min
-        self.speed_factor = 10
-        # self.speed_factor = 30
+        # self.speed_factor = 10
+        self.speed_factor = 30
         # self.speed_factor = 60 * 1
         # self.speed_factor = 60 * 10
-        # self.speed_factor = 60 * 30 * 1
 
         # minimal real-time delay between randomisations
         self.loop_sleep = 1
@@ -475,19 +474,12 @@ class ClockSim():
             night_end_hours = 2
             night_end_minutes = 0
 
-
         if self.datetime_now is None:
             self.datetime_now = datetime_epoch.replace(hour=(night_start_hours - 1), )
 
         self.time_series_start_time_sec = self.night_start_sec
 
         n_days = (self.datetime_now - datetime_epoch).days
-
-        if self.skip_daytime:
-            self.datetime_now = (
-                secs_to_datetime(self.night_start_sec) - timedelta(seconds=30)
-            )
-            # self.datetime_now = self.datetime_now.replace(hour=(night_start_hours - 1))
 
         self.night_start_sec = timedelta(
             days=n_days,
@@ -503,8 +495,8 @@ class ClockSim():
             minutes=night_end_minutes,
             seconds=0,
         ).total_seconds()
-        
-        if self.skip_daytime and self.debug_short_night:
+
+        if self.skip_daytime or self.debug_short_night:
             self.datetime_now = (
                 secs_to_datetime(self.night_start_sec) - timedelta(seconds=10)
             )

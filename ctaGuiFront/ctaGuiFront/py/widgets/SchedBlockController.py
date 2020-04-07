@@ -169,7 +169,7 @@ class SchedBlockController(BaseWidget):
         return
 
     # ------------------------------------------------------------------
-    # 
+    #
     # ------------------------------------------------------------------
     def get_target(self):
         self.redis.pipe.reset()
