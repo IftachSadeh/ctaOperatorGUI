@@ -546,7 +546,7 @@ class ObsBlocksNoACS():
             #
             # ------------------------------------------------------------------
             for n_sched_block_now in range(n_sched_blocks):
-                sched_block_id = 'schBlock_' + base_name + str(n_sched_block_now)
+                sched_block_id = 'sched_block_' + base_name + str(n_sched_block_now)
 
                 n_sched_blocks += 1
 

@@ -43,7 +43,11 @@ def main(global_config, **settings):
     # the redis port use for this site
     utils.redis_port = settings['redis_port']
 
-    my_time_of_night = utils.time_of_night(site_type=utils.site_type)
+    # ------------------------------------------------------------------
+    # start the time_of_night clock (to be phased out....)
+    utils.time_of_night(site_type=utils.site_type)
+    # ------------------------------------------------------------------
+    
     clock_sim = utils.ClockSim(site_type=utils.site_type)
 
     # set the list of telescopes for this particular site

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from ctaGuiUtils.py.utils import get_time_of_night
+from ctaGuiUtils.py.utils import get_time_of_night, my_assert
 from ctaGuiFront.py.utils.ArrZoomer import ArrZoomer
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
