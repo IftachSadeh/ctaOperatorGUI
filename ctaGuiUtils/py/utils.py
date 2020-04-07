@@ -998,10 +998,9 @@ def delta_seconds(date0, date1, is_microseconds=False):
 #
 # ---------------------------------------------------------------------------
 time_str_formats = {
-    'date': '%Y/%m/%d',
+    'date': '%Y-%m-%d',
     'time': '%H:%M:%S',
 }
-
 
 def date_to_string(date_in, time_string='', date_string=''):
     if time_string == '':
@@ -1014,7 +1013,7 @@ def date_to_string(date_in, time_string='', date_string=''):
         output += str(date_in.date().strftime(date_string))
     if time_string is not None:
         if output != '':
-            output += ','
+            output += ' '
         output += str(date_in.time().strftime(time_string))
 
     # output = (
