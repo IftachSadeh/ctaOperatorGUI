@@ -1002,6 +1002,7 @@ time_str_formats = {
     'time': '%H:%M:%S',
 }
 
+
 def date_to_string(date_in, time_string='', date_string=''):
     if time_string == '':
         time_string = time_str_formats['time']

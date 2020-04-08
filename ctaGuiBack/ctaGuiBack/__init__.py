@@ -47,7 +47,7 @@ def main(global_config, **settings):
     # start the time_of_night clock (to be phased out....)
     utils.time_of_night(site_type=utils.site_type)
     # ------------------------------------------------------------------
-    
+
     clock_sim = utils.ClockSim(site_type=utils.site_type)
 
     # set the list of telescopes for this particular site

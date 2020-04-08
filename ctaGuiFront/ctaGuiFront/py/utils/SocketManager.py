@@ -76,12 +76,17 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     # upon any new connection
     # ------------------------------------------------------------------
     def recv_connect(self):
+        server_name = SocketManager.server_name
+        tel_ids = SocketManager.inst_data.get_inst_ids()
+        tel_id_to_types = SocketManager.inst_data.get_inst_id_to_types()
+        categorical_types = SocketManager.inst_data.get_categorical_types()
+
         self.emit(
             'initial_connect', {
-                'server_name': SocketManager.server_name,
-                'tel_ids': SocketManager.inst_data.get_inst_ids(),
-                'tel_id_to_types': SocketManager.inst_data.get_inst_id_to_types(),
-                'categorical_types': SocketManager.inst_data.get_categorical_types(),
+                'server_name': server_name,
+                'tel_ids': tel_ids,
+                'tel_id_to_types': tel_id_to_types,
+                'categorical_types': categorical_types,
             }
         )
         return

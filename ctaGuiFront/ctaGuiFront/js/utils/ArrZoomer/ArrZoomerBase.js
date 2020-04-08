@@ -58,8 +58,13 @@ window.ArrZoomerBase = function(opt_in0) {
 
     this_top.svg_dims = opt_in0.svg_dims
     
-    this_top.has_site_svg = !is_south
-    this_top.site_bck_svg = is_south ? '' : '/static/site_layout_North.svg'
+    // this_top.has_site_svg = !is_south
+    this_top.has_site_svg = true
+    this_top.site_bck_svg = (
+        is_south
+            ? '/static/site_layouts/site_layout_South.svg'
+            : '/static/site_layouts/site_layout_North.svg'
+    )
 
     let arr_zoomer_id = 'arr_zoomer' + my_unique_id
     this_top.arr_zoomer_id = arr_zoomer_id
@@ -153,7 +158,7 @@ window.ArrZoomerBase = function(opt_in0) {
 
     insts.scale_r[0].health0 = 1.1
     insts.scale_r[0].health1 = 1.2
-    insts.scale_r[0].health2 = 1.35
+    insts.scale_r[0].health2 = is_south ? 1.6 : 1.35
     insts.scale_r[0].line0 = 1.2
     insts.scale_r[0].line1 = 1.8
     insts.scale_r[0].percent = 0.6
@@ -165,7 +170,7 @@ window.ArrZoomerBase = function(opt_in0) {
     insts.scale_r[1].inner_h0 = 1.25
     insts.scale_r[1].inner_h1 = 1.3
 
-    this_top.site_scale = is_south ? 4 / 9 : 1
+    this_top.site_scale = is_south ? 2.5 / 9 : 1
   
     this_top.tel_rs = {
         s00: [
@@ -183,6 +188,53 @@ window.ArrZoomerBase = function(opt_in0) {
     )
 
     let tel_id_types = tel_info.get_ids()
+
+    zooms.len = {
+    }
+    zooms.len['0.0'] = 1
+    if (is_south) {
+        zooms.len['0.1'] = 2 // - 0.4
+        zooms.len['0.1.5'] = 4 // - 4
+        zooms.len['0.2'] = 12 // - 4
+        zooms.len['1.0'] = 15 // - 6
+        zooms.len['1.0'] = 25 // - 6
+        zooms.len['1.1'] = zooms.len['1.0'] + 0.1
+        zooms.len['1.2'] = zooms.len['1.0'] + 2
+        zooms.len['1.3'] = 30
+    // zooms.len["0.1"]  = 4  //- 4
+    // zooms.len["0.2"]  = 10 //- 15.5
+    // zooms.len["1.0"]  = 12 //- 16.5
+    // zooms.len["1.1"]  = zooms.len["1.0"] + 0.1
+    // zooms.len["1.2"]  = zooms.len["1.0"] + 2
+    // zooms.len["1.3"]  = 90
+    }
+    else {
+        zooms.len['0.1'] = 2 // - 0.4
+        zooms.len['0.2'] = 5 // - 4
+        zooms.len['1.0'] = 6.5 // - 6
+        zooms.len['1.1'] = zooms.len['1.0'] + 0.1
+        zooms.len['1.2'] = zooms.len['1.0'] + 1
+        zooms.len['1.3'] = 9
+    }
+    zooms.len.prev = zooms.len['0.0']
+
+    zooms.scale_extent = [ zooms.len['0.0'], zooms.len['1.3'] ]
+
+    function is_state_up(scale, scaleTag) {
+        return zooms.len.prev < zooms.len[scaleTag] && scale >= zooms.len[scaleTag]
+    }
+    this_top.is_state_up = is_state_up
+
+    function is_state_down(scale, scaleTag) {
+        return zooms.len.prev >= zooms.len[scaleTag] && scale < zooms.len[scaleTag]
+    }
+    this_top.is_state_down = is_state_down
+
+    function is_state_change(scale, scaleTag) {
+        return is_state_up(scale, scaleTag) || is_state_down(scale, scaleTag)
+    }
+    this_top.is_state_change = is_state_change
+
 
     // // ------------------------------------------------------------------
     // //
@@ -375,50 +427,6 @@ window.ArrZoomerBase = function(opt_in0) {
         }
     }
     this_top.get_prop_pos_shift = get_prop_pos_shift
-
-    zooms.len = {
-    }
-    zooms.len['0.0'] = 1
-    if (is_south) {
-        zooms.len['0.1'] = 2 // - 0.4
-        zooms.len['0.2'] = 12 // - 4
-        zooms.len['1.0'] = 15 // - 6
-        zooms.len['1.1'] = zooms.len['1.0'] + 0.1
-        zooms.len['1.2'] = zooms.len['1.0'] + 2
-        zooms.len['1.3'] = 20
-    // zooms.len["0.1"]  = 4  //- 4
-    // zooms.len["0.2"]  = 10 //- 15.5
-    // zooms.len["1.0"]  = 12 //- 16.5
-    // zooms.len["1.1"]  = zooms.len["1.0"] + 0.1
-    // zooms.len["1.2"]  = zooms.len["1.0"] + 2
-    // zooms.len["1.3"]  = 90
-    }
-    else {
-        zooms.len['0.1'] = 2 // - 0.4
-        zooms.len['0.2'] = 5 // - 4
-        zooms.len['1.0'] = 6.5 // - 6
-        zooms.len['1.1'] = zooms.len['1.0'] + 0.1
-        zooms.len['1.2'] = zooms.len['1.0'] + 1
-        zooms.len['1.3'] = 9
-    }
-    zooms.len.prev = zooms.len['0.0']
-
-    zooms.scale_extent = [ zooms.len['0.0'], zooms.len['1.3'] ]
-
-    function is_state_up(scale, scaleTag) {
-        return zooms.len.prev < zooms.len[scaleTag] && scale >= zooms.len[scaleTag]
-    }
-    this_top.is_state_up = is_state_up
-
-    function is_state_down(scale, scaleTag) {
-        return zooms.len.prev >= zooms.len[scaleTag] && scale < zooms.len[scaleTag]
-    }
-    this_top.is_state_down = is_state_down
-
-    function is_state_change(scale, scaleTag) {
-        return is_state_up(scale, scaleTag) || is_state_down(scale, scaleTag)
-    }
-    this_top.is_state_change = is_state_change
 
     // ------------------------------------------------------------------
     //

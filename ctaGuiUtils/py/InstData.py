@@ -1,10 +1,7 @@
 from gevent import sleep
-# from gevent.coros import BoundedSemaphore
 import copy
 from math import sqrt
 from utils import my_log, my_assert
-
-# from typing import Iterable
 
 
 # ------------------------------------------------------------------
@@ -20,6 +17,7 @@ class InstData():
     tel_id_to_types = None
     sub_array_tels = None
     tel_id_to_sub_array = None
+    has_init = False
 
     # ------------------------------------------------------------------
     #
@@ -52,6 +50,10 @@ class InstData():
             self.init_tel_health()
             self.set_inst_id_to_types()
 
+            InstData.has_init = True
+
+            return
+
         if InstData.inst_info is None:
             if lock is not None:
                 with lock:
@@ -73,58 +75,27 @@ class InstData():
             # ------------------------------------------------------------------
             # south
             # ------------------------------------------------------------------
-            if InstData.site_type == 'S':
+            if self.is_south_site():
                 id_now = 'SA_0'
-                sub_array_tels[id_now] = [
-                    'Lx00',
-                    'Lx01',
-                    'Lx02',
-                    'Lx03',
-                    'Mx04',
-                ]
+                sub_array_tels[id_now] = ['Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx04']
                 id_now = 'SA_1'
                 sub_array_tels[id_now] = [
-                    'Lx00',
-                    'Lx01',
-                    'Lx02',
-                    'Lx03',
-                    'Mx04',
-                    'Mx05',
-                    'Mx06',
-                    'Mx07',
-                    'Mx08',
-                    'Mx09',
+                    'Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx04', 'Mx05', 'Mx06', 'Mx07',
+                    'Mx08', 'Mx09'
                 ]
 
             # ------------------------------------------------------------------
             # north
             # ------------------------------------------------------------------
-            elif InstData.site_type == 'N':
+            elif not self.is_south_site():
                 id_now = 'SA_0'
-                sub_array_tels[id_now] = [
-                    'Lx01',
-                    'Lx02',
-                    'Lx03',
-                    'Lx04',
-                    'Mx01',
-                ]
+                sub_array_tels[id_now] = ['Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx01']
                 id_now = 'SA_1'
                 sub_array_tels[id_now] = [
-                    'Mx02',
-                    'Mx03',
-                    'Mx04',
-                    'Mx05',
-                    'Mx06',
-                    'Mx07',
-                    'Mx08',
-                    'Mx09',
+                    'Mx02', 'Mx03', 'Mx04', 'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09'
                 ]
                 id_now = 'SA_2'
-                sub_array_tels[id_now] = [
-                    'Mx05',
-                    'Mx06',
-                    'Mx07',
-                ]
+                sub_array_tels[id_now] = ['Mx05', 'Mx06', 'Mx07']
             else:
                 raise
         except Exception:
@@ -167,133 +138,31 @@ class InstData():
             # ------------------------------------------------------------------
             # south
             # ------------------------------------------------------------------
-            if InstData.site_type == 'S':
+            if self.is_south_site():
                 tel_ids = [
-                    'Lx00',
-                    'Lx01',
-                    'Lx02',
-                    'Lx03',
-                    'Mx04',
-                    'Mx05',
-                    'Mx06',
-                    'Mx07',
-                    'Mx08',
-                    'Mx09',
-                    'Mx10',
-                    'Mx11',
-                    'Mx12',
-                    'Mx13',
-                    'Mx14',
-                    'Mx15',
-                    'Mx16',
-                    'Mx17',
-                    'Mx18',
-                    'Mx19',
-                    'Mx20',
-                    'Mx21',
-                    'Mx22',
-                    'Mx23',
-                    'Mx24',
-                    'Mx25',
-                    'Mx26',
-                    'Mx27',
-                    'Mx28',
-                    'Sx29',
-                    'Sx30',
-                    'Sx31',
-                    'Sx32',
-                    'Sx33',
-                    'Sx34',
-                    'Sx35',
-                    'Sx36',
-                    'Sx37',
-                    'Sx38',
-                    'Sx39',
-                    'Sx40',
-                    'Sx41',
-                    'Sx42',
-                    'Sx43',
-                    'Sx44',
-                    'Sx45',
-                    'Sx46',
-                    'Sx47',
-                    'Sx48',
-                    'Sx49',
-                    'Sx50',
-                    'Sx51',
-                    'Sx52',
-                    'Sx53',
-                    'Sx54',
-                    'Sx55',
-                    'Sx56',
-                    'Sx57',
-                    'Sx58',
-                    'Sx59',
-                    'Sx60',
-                    'Sx61',
-                    'Sx62',
-                    'Sx63',
-                    'Sx64',
-                    'Sx65',
-                    'Sx66',
-                    'Sx67',
-                    'Sx68',
-                    'Sx69',
-                    'Sx70',
-                    'Sx71',
-                    'Sx72',
-                    'Sx73',
-                    'Sx74',
-                    'Sx75',
-                    'Sx76',
-                    'Sx77',
-                    'Sx78',
-                    'Sx79',
-                    'Sx80',
-                    'Sx81',
-                    'Sx82',
-                    'Sx83',
-                    'Sx84',
-                    'Sx85',
-                    'Sx86',
-                    'Sx87',
-                    'Sx88',
-                    'Sx89',
-                    'Sx90',
-                    'Sx91',
-                    'Sx92',
-                    'Sx93',
-                    'Sx94',
-                    'Sx95',
-                    'Sx96',
-                    'Sx97',
-                    'Sx98',
+                    'Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx01', 'Mx02', 'Mx03', 'Mx04',
+                    'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09', 'Mx10', 'Mx11', 'Mx12',
+                    'Mx13', 'Mx14', 'Mx15', 'Mx16', 'Mx17', 'Mx18', 'Mx19', 'Mx20',
+                    'Mx21', 'Mx22', 'Mx23', 'Mx24', 'Mx25', 'Sx01', 'Sx02', 'Sx03',
+                    'Sx04', 'Sx05', 'Sx06', 'Sx07', 'Sx08', 'Sx09', 'Sx10', 'Sx11',
+                    'Sx12', 'Sx13', 'Sx14', 'Sx15', 'Sx16', 'Sx17', 'Sx18', 'Sx19',
+                    'Sx20', 'Sx21', 'Sx22', 'Sx23', 'Sx24', 'Sx25', 'Sx26', 'Sx27',
+                    'Sx28', 'Sx29', 'Sx30', 'Sx31', 'Sx32', 'Sx33', 'Sx34', 'Sx35',
+                    'Sx36', 'Sx37', 'Sx38', 'Sx39', 'Sx40', 'Sx41', 'Sx42', 'Sx43',
+                    'Sx44', 'Sx45', 'Sx46', 'Sx47', 'Sx48', 'Sx49', 'Sx50', 'Sx51',
+                    'Sx52', 'Sx53', 'Sx54', 'Sx55', 'Sx56', 'Sx57', 'Sx58', 'Sx59',
+                    'Sx60', 'Sx61', 'Sx62', 'Sx63', 'Sx64', 'Sx65', 'Sx66', 'Sx67',
+                    'Sx68', 'Sx69', 'Sx70'
                 ]
 
             # ------------------------------------------------------------------
             # north
             # ------------------------------------------------------------------
-            elif InstData.site_type == 'N':
+            elif not self.is_south_site():
                 tel_ids = [
-                    'Lx01',
-                    'Lx02',
-                    'Lx03',
-                    'Lx04',
-                    'Mx01',
-                    'Mx02',
-                    'Mx03',
-                    'Mx04',
-                    'Mx05',
-                    'Mx06',
-                    'Mx07',
-                    'Mx08',
-                    'Mx09',
-                    'Mx10',
-                    'Mx11',
-                    'Mx12',
-                    'Mx13',
-                    'Mx14',
-                    'Mx15',
+                    'Lx01', 'Lx02', 'Lx03', 'Lx04', 'Mx01', 'Mx02', 'Mx03', 'Mx04',
+                    'Mx05', 'Mx06', 'Mx07', 'Mx08', 'Mx09', 'Mx10', 'Mx11', 'Mx12',
+                    'Mx13', 'Mx14', 'Mx15'
                 ]
             else:
                 raise
@@ -312,20 +181,11 @@ class InstData():
     def init_aux_ids(self):
         try:
             # south
-            if InstData.site_type == 'S':
-                aux_ids = [
-                    'Ax00',
-                    'Ax01',
-                    'Ax02',
-                    'Ax03',
-                ]
+            if self.is_south_site():
+                aux_ids = ['Ax00', 'Ax01', 'Ax02', 'Ax03']
             # north
-            elif InstData.site_type == 'N':
-                aux_ids = [
-                    'Ax00',
-                    'Ax01',
-                    # 'Ax02',
-                ]
+            elif not self.is_south_site():
+                aux_ids = ['Ax00', 'Ax01']
             else:
                 raise
         except Exception:
@@ -342,11 +202,7 @@ class InstData():
     # ------------------------------------------------------------------
     def init_proc_ids(self):
         try:
-            proc_ids = [
-                'Px00',
-                'Px01',
-                'Px02',
-            ]
+            proc_ids = ['Px00', 'Px01', 'Px02']
         except Exception:
             my_assert(
                 msg=' - trying to do init_proc_ids() with site_type = '
@@ -386,239 +242,210 @@ class InstData():
         # ------------------------------------------------------------------
         # south
         # ------------------------------------------------------------------
-        if InstData.site_type == 'S':
-            id_now = "Lx00"
-            add_dict_id(id_now, {'x': 65, 'y': -20, 'type': 'LST'})
-            id_now = "Lx01"
-            add_dict_id(id_now, {'x': -65, 'y': -20, 'type': 'LST'})
-            id_now = "Lx02"
-            add_dict_id(id_now, {'x': 0, 'y': 80, 'type': 'LST'})
-            id_now = "Lx03"
-            add_dict_id(id_now, {'x': 0, 'y': -110, 'type': 'LST'})
-            id_now = "Mx04"
-            add_dict_id(id_now, {'x': -151.2, 'y': 0, 'type': 'MST'})
-            id_now = "Mx05"
-            add_dict_id(id_now, {'x': 151.2, 'y': 0, 'type': 'MST'})
-            id_now = "Mx06"
-            add_dict_id(id_now, {'x': -105.6, 'y': -136.656, 'type': 'MST'})
-            id_now = "Mx07"
-            add_dict_id(id_now, {'x': 105.6, 'y': -136.656, 'type': 'MST'})
-            id_now = "Mx08"
-            add_dict_id(id_now, {'x': -85.6, 'y': -136.656, 'type': 'MST'})
-            id_now = "Mx09"
-            add_dict_id(id_now, {'x': 85.6, 'y': -136.656, 'type': 'MST'})
-            id_now = "Mx10"
-            add_dict_id(id_now, {'x': 0, 'y': -308.41, 'type': 'MST'})
-            id_now = "Mx11"
-            add_dict_id(id_now, {'x': 0, 'y': 308.41, 'type': 'MST'})
-            id_now = "Mx12"
-            add_dict_id(id_now, {'x': -238.474, 'y': -154.205, 'type': 'MST'})
-            id_now = "Mx13"
-            add_dict_id(id_now, {'x': 238.474, 'y': -154.205, 'type': 'MST'})
-            id_now = "Mx14"
-            add_dict_id(id_now, {'x': -238.474, 'y': 154.205, 'type': 'MST'})
-            id_now = "Mx15"
-            add_dict_id(id_now, {'x': 238.474, 'y': 154.205, 'type': 'MST'})
-            id_now = "Mx16"
-            add_dict_id(id_now, {'x': 0, 'y': -582.17, 'type': 'MST'})
-            id_now = "Mx17"
-            add_dict_id(id_now, {'x': 0, 'y': 582.17, 'type': 'MST'})
-            id_now = "Mx18"
-            add_dict_id(id_now, {'x': 450.155, 'y': -291.085, 'type': 'MST'})
-            id_now = "Mx19"
-            add_dict_id(id_now, {'x': -450.155, 'y': -291.085, 'type': 'MST'})
-            id_now = "Mx20"
-            add_dict_id(id_now, {'x': -450.155, 'y': 291.085, 'type': 'MST'})
-            id_now = "Mx21"
-            add_dict_id(id_now, {'x': 450.155, 'y': 291.085, 'type': 'MST'})
-            id_now = "Mx22"
-            add_dict_id(id_now, {'x': -162.621, 'y': -345.468, 'type': 'MST'})
-            id_now = "Mx23"
-            add_dict_id(id_now, {'x': 162.621, 'y': -345.468, 'type': 'MST'})
-            id_now = "Mx24"
-            add_dict_id(id_now, {'x': -162.621, 'y': 315.468, 'type': 'MST'})
-            id_now = "Mx25"
-            add_dict_id(id_now, {'x': 162.621, 'y': 315.468, 'type': 'MST'})
-            id_now = "Mx26"
-            add_dict_id(id_now, {'x': -325.242, 'y': 0, 'type': 'MST'})
-            id_now = "Mx27"
-            add_dict_id(id_now, {'x': 325.242, 'y': 0, 'type': 'MST'})
-            id_now = "Mx28"
-            add_dict_id(id_now, {'x': 0, 'y': 0, 'type': 'MST'})
-            id_now = "Sx29"
-            add_dict_id(id_now, {'x': -723.527, 'y': 0, 'type': 'SST'})
-            id_now = "Sx30"
-            add_dict_id(id_now, {'x': 723.527, 'y': 0, 'type': 'SST'})
-            id_now = "Sx31"
-            add_dict_id(id_now, {'x': -100, 'y': -494.469, 'type': 'SST'})
-            id_now = "Sx32"
-            add_dict_id(id_now, {'x': 100, 'y': -494.469, 'type': 'SST'})
-            id_now = "Sx33"
-            add_dict_id(id_now, {'x': -100, 'y': 494.469, 'type': 'SST'})
-            id_now = "Sx34"
-            add_dict_id(id_now, {'x': 100, 'y': 494.469, 'type': 'SST'})
-            id_now = "Sx35"
-            add_dict_id(id_now, {'x': 424.824, 'y': -164.823, 'type': 'SST'})
-            id_now = "Sx36"
-            add_dict_id(id_now, {'x': -424.824, 'y': -164.823, 'type': 'SST'})
-            id_now = "Sx37"
-            add_dict_id(id_now, {'x': -424.824, 'y': 164.823, 'type': 'SST'})
-            id_now = "Sx38"
-            add_dict_id(id_now, {'x': 424.824, 'y': 164.823, 'type': 'SST'})
-            id_now = "Sx39"
-            add_dict_id(id_now, {'x': -519.795, 'y': 0, 'type': 'SST'})
-            id_now = "Sx40"
-            add_dict_id(id_now, {'x': 519.795, 'y': 0, 'type': 'SST'})
-            id_now = "Sx41"
-            add_dict_id(id_now, {'x': 569.216, 'y': -662.533, 'type': 'SST'})
-            id_now = "Sx42"
-            add_dict_id(id_now, {'x': -569.216, 'y': -662.533, 'type': 'SST'})
-            id_now = "Sx43"
-            add_dict_id(id_now, {'x': 569.216, 'y': 662.533, 'type': 'SST'})
-            id_now = "Sx44"
-            add_dict_id(id_now, {'x': -569.216, 'y': 662.533, 'type': 'SST'})
-            id_now = "Sx45"
-            add_dict_id(id_now, {'x': -796.903, 'y': -220.844, 'type': 'SST'})
-            id_now = "Sx46"
-            add_dict_id(id_now, {'x': 796.903, 'y': -220.844, 'type': 'SST'})
-            id_now = "Sx47"
-            add_dict_id(id_now, {'x': 796.903, 'y': 220.844, 'type': 'SST'})
-            id_now = "Sx48"
-            add_dict_id(id_now, {'x': -796.903, 'y': 220.844, 'type': 'SST'})
-            id_now = "Sx49"
-            add_dict_id(id_now, {'x': -227.687, 'y': -883.377, 'type': 'SST'})
-            id_now = "Sx50"
-            add_dict_id(id_now, {'x': 227.687, 'y': -883.377, 'type': 'SST'})
-            id_now = "Sx51"
-            add_dict_id(id_now, {'x': -227.687, 'y': 883.377, 'type': 'SST'})
-            id_now = "Sx52"
-            add_dict_id(id_now, {'x': 227.687, 'y': 883.377, 'type': 'SST'})
-            id_now = "Sx53"
-            add_dict_id(id_now, {'x': -944.301, 'y': 0, 'type': 'SST'})
-            id_now = "Sx54"
-            add_dict_id(id_now, {'x': 944.301, 'y': 0, 'type': 'SST'})
-            id_now = "Sx55"
-            add_dict_id(id_now, {'x': 472.151, 'y': -915.923, 'type': 'SST'})
-            id_now = "Sx56"
-            add_dict_id(id_now, {'x': -472.151, 'y': -915.923, 'type': 'SST'})
-            id_now = "Sx57"
-            add_dict_id(id_now, {'x': -472.151, 'y': 915.923, 'type': 'SST'})
-            id_now = "Sx58"
-            add_dict_id(id_now, {'x': 472.151, 'y': 915.923, 'type': 'SST'})
-            id_now = "Sx59"
-            add_dict_id(id_now, {'x': -971.21, 'y': -471.012, 'type': 'SST'})
-            id_now = "Sx60"
-            add_dict_id(id_now, {'x': 971.21, 'y': -471.012, 'type': 'SST'})
-            id_now = "Sx61"
-            add_dict_id(id_now, {'x': -971.21, 'y': 471.012, 'type': 'SST'})
-            id_now = "Sx62"
-            add_dict_id(id_now, {'x': 971.21, 'y': 471.012, 'type': 'SST'})
-            id_now = "Sx63"
-            add_dict_id(id_now, {'x': 849.809, 'y': -706.518, 'type': 'SST'})
-            id_now = "Sx64"
-            add_dict_id(id_now, {'x': -849.809, 'y': -706.518, 'type': 'SST'})
-            id_now = "Sx65"
-            add_dict_id(id_now, {'x': -849.809, 'y': 706.518, 'type': 'SST'})
-            id_now = "Sx66"
-            add_dict_id(id_now, {'x': 849.809, 'y': 706.518, 'type': 'SST'})
-            id_now = "Sx67"
-            add_dict_id(id_now, {'x': 369.912, 'y': -1195.98, 'type': 'SST'})
-            id_now = "Sx68"
-            add_dict_id(id_now, {'x': -369.912, 'y': -1195.98, 'type': 'SST'})
-            id_now = "Sx69"
-            add_dict_id(id_now, {'x': -369.912, 'y': 1195.98, 'type': 'SST'})
-            id_now = "Sx70"
-            add_dict_id(id_now, {'x': 369.912, 'y': 1195.98, 'type': 'SST'})
-            id_now = "Sx71"
-            add_dict_id(id_now, {'x': 1109.73, 'y': -239.197, 'type': 'SST'})
-            id_now = "Sx72"
-            add_dict_id(id_now, {'x': -1109.73, 'y': -239.197, 'type': 'SST'})
-            id_now = "Sx73"
-            add_dict_id(id_now, {'x': -1109.73, 'y': 239.197, 'type': 'SST'})
-            id_now = "Sx74"
-            add_dict_id(id_now, {'x': 1109.73, 'y': 239.197, 'type': 'SST'})
-            id_now = "Sx75"
-            add_dict_id(id_now, {'x': 739.823, 'y': -956.787, 'type': 'SST'})
-            id_now = "Sx76"
-            add_dict_id(id_now, {'x': -739.823, 'y': -956.787, 'type': 'SST'})
-            id_now = "Sx77"
-            add_dict_id(id_now, {'x': -739.823, 'y': 956.787, 'type': 'SST'})
-            id_now = "Sx78"
-            add_dict_id(id_now, {'x': 739.823, 'y': 956.787, 'type': 'SST'})
-            id_now = "Sx79"
-            add_dict_id(id_now, {'x': 403.739, 'y': -391.606, 'type': 'SST'})
-            id_now = "Sx80"
-            add_dict_id(id_now, {'x': -403.739, 'y': -391.606, 'type': 'SST'})
-            id_now = "Sx81"
-            add_dict_id(id_now, {'x': -403.739, 'y': 391.606, 'type': 'SST'})
-            id_now = "Sx82"
-            add_dict_id(id_now, {'x': 403.739, 'y': 391.606, 'type': 'SST'})
-            id_now = "Sx83"
-            add_dict_id(id_now, {'x': 318.611, 'y': -618.073, 'type': 'SST'})
-            id_now = "Sx84"
-            add_dict_id(id_now, {'x': -318.611, 'y': -618.073, 'type': 'SST'})
-            id_now = "Sx85"
-            add_dict_id(id_now, {'x': -318.611, 'y': 618.073, 'type': 'SST'})
-            id_now = "Sx86"
-            add_dict_id(id_now, {'x': 318.611, 'y': 618.073, 'type': 'SST'})
-            id_now = "Sx87"
-            add_dict_id(id_now, {'x': 673.186, 'y': -435.304, 'type': 'SST'})
-            id_now = "Sx88"
-            add_dict_id(id_now, {'x': -673.186, 'y': -435.304, 'type': 'SST'})
-            id_now = "Sx89"
-            add_dict_id(id_now, {'x': -673.186, 'y': 435.304, 'type': 'SST'})
-            id_now = "Sx90"
-            add_dict_id(id_now, {'x': 673.186, 'y': 435.304, 'type': 'SST'})
-            id_now = "Sx91"
-            add_dict_id(id_now, {'x': 168.9, 'y': -225.5, 'type': 'SST'})
-            id_now = "Sx92"
-            add_dict_id(id_now, {'x': -168.9, 'y': -225.5, 'type': 'SST'})
-            id_now = "Sx93"
-            add_dict_id(id_now, {'x': -158.9, 'y': 205.5, 'type': 'SST'})
-            id_now = "Sx94"
-            add_dict_id(id_now, {'x': 158.9, 'y': 205.5, 'type': 'SST'})
-            id_now = "Sx95"
-            add_dict_id(id_now, {'x': 0, 'y': 1100, 'type': 'SST'})
-            id_now = "Sx96"
-            add_dict_id(id_now, {'x': 0, 'y': -1100, 'type': 'SST'})
-            id_now = "Sx97"
-            add_dict_id(id_now, {'x': 0, 'y': -820, 'type': 'SST'})
-            id_now = "Sx98"
-            add_dict_id(id_now, {'x': 0, 'y': 820, 'type': 'SST'})
-
-            # ------------------------------------------------------------------
-            #
-            # ------------------------------------------------------------------
-            id_now = "Mx06"
-            InstData.inst_info[id_now]['x'] -= 50
-            id_now = "Mx07"
-            InstData.inst_info[id_now]['x'] += 50
-            id_now = "Mx08"
-            InstData.inst_info[id_now]['x'] += 5
-            id_now = "Mx09"
-            InstData.inst_info[id_now]['x'] -= 5
-
-            for id_now, ele_now in InstData.inst_info.iteritems():
-                ref = sqrt(ele_now['x'] * ele_now['x'] + ele_now['y'] * ele_now['y'])
-                if ref > 900:
-                    add_factor = 0.50
-                elif ref > 700:
-                    add_factor = 0.55
-                elif ref > 310:
-                    add_factor = 0.65
-                elif ref > 140:
-                    add_factor = 0.75
-                elif ref > 50:
-                    add_factor = 0.90
-                else:
-                    add_factor = 1
-                for xy_now in ['x', 'y']:
-                    ele_now[xy_now] *= add_factor
+        if self.is_south_site():
+            id_now = 'Lx01'
+            add_dict_id(id_now, {'x': -20.000, 'y': 65.000, 'type': 'LST'})
+            id_now = 'Lx02'
+            add_dict_id(id_now, {'x': -20.000, 'y': -65.000, 'type': 'LST'})
+            id_now = 'Lx03'
+            add_dict_id(id_now, {'x': 80.000, 'y': 0.000, 'type': 'LST'})
+            id_now = 'Lx04'
+            add_dict_id(id_now, {'x': -120.000, 'y': 0.000, 'type': 'LST'})
+            id_now = 'Mx01'
+            add_dict_id(id_now, {'x': 0.000, 'y': 0.000, 'type': 'MST'})
+            id_now = 'Mx02'
+            add_dict_id(id_now, {'x': 0.000, 'y': 151.200, 'type': 'MST'})
+            id_now = 'Mx03'
+            add_dict_id(id_now, {'x': 0.000, 'y': -151.200, 'type': 'MST'})
+            id_now = 'Mx04'
+            add_dict_id(id_now, {'x': 146.656, 'y': 75.600, 'type': 'MST'})
+            id_now = 'Mx05'
+            add_dict_id(id_now, {'x': 146.656, 'y': -75.600, 'type': 'MST'})
+            id_now = 'Mx06'
+            add_dict_id(id_now, {'x': -146.656, 'y': 85.600, 'type': 'MST'})
+            id_now = 'Mx07'
+            add_dict_id(id_now, {'x': -146.656, 'y': -85.600, 'type': 'MST'})
+            id_now = 'Mx08'
+            add_dict_id(id_now, {'x': 154.205, 'y': 238.474, 'type': 'MST'})
+            id_now = 'Mx09'
+            add_dict_id(id_now, {'x': 154.205, 'y': -238.474, 'type': 'MST'})
+            id_now = 'Mx10'
+            add_dict_id(id_now, {'x': 308.410, 'y': 0.000, 'type': 'MST'})
+            id_now = 'Mx11'
+            add_dict_id(id_now, {'x': -154.205, 'y': 238.474, 'type': 'MST'})
+            id_now = 'Mx12'
+            add_dict_id(id_now, {'x': -154.205, 'y': -238.474, 'type': 'MST'})
+            id_now = 'Mx13'
+            add_dict_id(id_now, {'x': -308.410, 'y': 0.000, 'type': 'MST'})
+            id_now = 'Mx14'
+            add_dict_id(id_now, {'x': 0.000, 'y': 325.242, 'type': 'MST'})
+            id_now = 'Mx15'
+            add_dict_id(id_now, {'x': 0.000, 'y': -325.242, 'type': 'MST'})
+            id_now = 'Mx16'
+            add_dict_id(id_now, {'x': 315.468, 'y': 162.621, 'type': 'MST'})
+            id_now = 'Mx17'
+            add_dict_id(id_now, {'x': 315.468, 'y': -162.621, 'type': 'MST'})
+            id_now = 'Mx18'
+            add_dict_id(id_now, {'x': -315.468, 'y': 162.621, 'type': 'MST'})
+            id_now = 'Mx19'
+            add_dict_id(id_now, {'x': -315.468, 'y': -162.621, 'type': 'MST'})
+            id_now = 'Mx20'
+            add_dict_id(id_now, {'x': 291.085, 'y': 450.155, 'type': 'MST'})
+            id_now = 'Mx21'
+            add_dict_id(id_now, {'x': 291.085, 'y': -450.155, 'type': 'MST'})
+            id_now = 'Mx22'
+            add_dict_id(id_now, {'x': 582.170, 'y': 0.000, 'type': 'MST'})
+            id_now = 'Mx23'
+            add_dict_id(id_now, {'x': -291.085, 'y': 450.155, 'type': 'MST'})
+            id_now = 'Mx24'
+            add_dict_id(id_now, {'x': -291.085, 'y': -450.155, 'type': 'MST'})
+            id_now = 'Mx25'
+            add_dict_id(id_now, {'x': -582.170, 'y': 0.000, 'type': 'MST'})
+            id_now = 'Sx01'
+            add_dict_id(id_now, {'x': 205.500, 'y': 158.900, 'type': 'SST'})
+            id_now = 'Sx02'
+            add_dict_id(id_now, {'x': 205.500, 'y': -158.900, 'type': 'SST'})
+            id_now = 'Sx03'
+            add_dict_id(id_now, {'x': -205.500, 'y': 158.900, 'type': 'SST'})
+            id_now = 'Sx04'
+            add_dict_id(id_now, {'x': -205.500, 'y': -158.900, 'type': 'SST'})
+            id_now = 'Sx05'
+            add_dict_id(id_now, {'x': 164.823, 'y': 424.824, 'type': 'SST'})
+            id_now = 'Sx06'
+            add_dict_id(id_now, {'x': 164.823, 'y': -424.824, 'type': 'SST'})
+            id_now = 'Sx07'
+            add_dict_id(id_now, {'x': -164.823, 'y': 424.824, 'type': 'SST'})
+            id_now = 'Sx08'
+            add_dict_id(id_now, {'x': -164.823, 'y': -424.824, 'type': 'SST'})
+            id_now = 'Sx09'
+            add_dict_id(id_now, {'x': 494.469, 'y': 110.000, 'type': 'SST'})
+            id_now = 'Sx10'
+            add_dict_id(id_now, {'x': 494.469, 'y': -110.000, 'type': 'SST'})
+            id_now = 'Sx11'
+            add_dict_id(id_now, {'x': -494.469, 'y': 110.000, 'type': 'SST'})
+            id_now = 'Sx12'
+            add_dict_id(id_now, {'x': -494.469, 'y': -110.000, 'type': 'SST'})
+            id_now = 'Sx13'
+            add_dict_id(id_now, {'x': 0.000, 'y': 519.795, 'type': 'SST'})
+            id_now = 'Sx14'
+            add_dict_id(id_now, {'x': 0.000, 'y': -519.795, 'type': 'SST'})
+            id_now = 'Sx15'
+            add_dict_id(id_now, {'x': 391.606, 'y': 403.739, 'type': 'SST'})
+            id_now = 'Sx16'
+            add_dict_id(id_now, {'x': 391.606, 'y': -403.739, 'type': 'SST'})
+            id_now = 'Sx17'
+            add_dict_id(id_now, {'x': -391.606, 'y': 403.739, 'type': 'SST'})
+            id_now = 'Sx18'
+            add_dict_id(id_now, {'x': -391.606, 'y': -403.739, 'type': 'SST'})
+            id_now = 'Sx19'
+            add_dict_id(id_now, {'x': 618.073, 'y': 318.611, 'type': 'SST'})
+            id_now = 'Sx20'
+            add_dict_id(id_now, {'x': 618.073, 'y': -318.611, 'type': 'SST'})
+            id_now = 'Sx21'
+            add_dict_id(id_now, {'x': -618.073, 'y': 318.611, 'type': 'SST'})
+            id_now = 'Sx22'
+            add_dict_id(id_now, {'x': -618.073, 'y': -318.611, 'type': 'SST'})
+            id_now = 'Sx23'
+            add_dict_id(id_now, {'x': 0.000, 'y': 723.527, 'type': 'SST'})
+            id_now = 'Sx24'
+            add_dict_id(id_now, {'x': 0.000, 'y': -723.527, 'type': 'SST'})
+            id_now = 'Sx25'
+            add_dict_id(id_now, {'x': 820.000, 'y': 0.000, 'type': 'SST'})
+            id_now = 'Sx26'
+            add_dict_id(id_now, {'x': -820.000, 'y': 0.000, 'type': 'SST'})
+            id_now = 'Sx27'
+            add_dict_id(id_now, {'x': 435.304, 'y': 673.186, 'type': 'SST'})
+            id_now = 'Sx28'
+            add_dict_id(id_now, {'x': 435.304, 'y': -673.186, 'type': 'SST'})
+            id_now = 'Sx29'
+            add_dict_id(id_now, {'x': -435.304, 'y': 673.186, 'type': 'SST'})
+            id_now = 'Sx30'
+            add_dict_id(id_now, {'x': -435.304, 'y': -673.186, 'type': 'SST'})
+            id_now = 'Sx31'
+            add_dict_id(id_now, {'x': 220.844, 'y': 796.903, 'type': 'SST'})
+            id_now = 'Sx32'
+            add_dict_id(id_now, {'x': 220.844, 'y': -796.903, 'type': 'SST'})
+            id_now = 'Sx33'
+            add_dict_id(id_now, {'x': 662.533, 'y': 569.216, 'type': 'SST'})
+            id_now = 'Sx34'
+            add_dict_id(id_now, {'x': 662.533, 'y': -569.216, 'type': 'SST'})
+            id_now = 'Sx35'
+            add_dict_id(id_now, {'x': 883.377, 'y': 227.687, 'type': 'SST'})
+            id_now = 'Sx36'
+            add_dict_id(id_now, {'x': 883.377, 'y': -227.687, 'type': 'SST'})
+            id_now = 'Sx37'
+            add_dict_id(id_now, {'x': -220.844, 'y': 796.903, 'type': 'SST'})
+            id_now = 'Sx38'
+            add_dict_id(id_now, {'x': -220.844, 'y': -796.903, 'type': 'SST'})
+            id_now = 'Sx39'
+            add_dict_id(id_now, {'x': -662.533, 'y': 569.216, 'type': 'SST'})
+            id_now = 'Sx40'
+            add_dict_id(id_now, {'x': -662.533, 'y': -569.216, 'type': 'SST'})
+            id_now = 'Sx41'
+            add_dict_id(id_now, {'x': -883.377, 'y': 227.687, 'type': 'SST'})
+            id_now = 'Sx42'
+            add_dict_id(id_now, {'x': -883.377, 'y': -227.687, 'type': 'SST'})
+            id_now = 'Sx43'
+            add_dict_id(id_now, {'x': 0.000, 'y': 944.301, 'type': 'SST'})
+            id_now = 'Sx44'
+            add_dict_id(id_now, {'x': 0.000, 'y': -944.301, 'type': 'SST'})
+            id_now = 'Sx45'
+            add_dict_id(id_now, {'x': 915.923, 'y': 472.151, 'type': 'SST'})
+            id_now = 'Sx46'
+            add_dict_id(id_now, {'x': 915.923, 'y': -472.151, 'type': 'SST'})
+            id_now = 'Sx47'
+            add_dict_id(id_now, {'x': -915.923, 'y': 472.151, 'type': 'SST'})
+            id_now = 'Sx48'
+            add_dict_id(id_now, {'x': -915.923, 'y': -472.151, 'type': 'SST'})
+            id_now = 'Sx49'
+            add_dict_id(id_now, {'x': 1100.000, 'y': 0.000, 'type': 'SST'})
+            id_now = 'Sx50'
+            add_dict_id(id_now, {'x': -1100.000, 'y': 0.000, 'type': 'SST'})
+            id_now = 'Sx51'
+            add_dict_id(id_now, {'x': 471.012, 'y': 971.210, 'type': 'SST'})
+            id_now = 'Sx52'
+            add_dict_id(id_now, {'x': 471.012, 'y': -971.210, 'type': 'SST'})
+            id_now = 'Sx53'
+            add_dict_id(id_now, {'x': 706.518, 'y': 849.809, 'type': 'SST'})
+            id_now = 'Sx54'
+            add_dict_id(id_now, {'x': 706.518, 'y': -849.809, 'type': 'SST'})
+            id_now = 'Sx55'
+            add_dict_id(id_now, {'x': -471.012, 'y': 971.210, 'type': 'SST'})
+            id_now = 'Sx56'
+            add_dict_id(id_now, {'x': -471.012, 'y': -971.210, 'type': 'SST'})
+            id_now = 'Sx57'
+            add_dict_id(id_now, {'x': -706.518, 'y': 849.809, 'type': 'SST'})
+            id_now = 'Sx58'
+            add_dict_id(id_now, {'x': -706.518, 'y': -849.809, 'type': 'SST'})
+            id_now = 'Sx59'
+            add_dict_id(id_now, {'x': 239.197, 'y': 1109.735, 'type': 'SST'})
+            id_now = 'Sx60'
+            add_dict_id(id_now, {'x': 239.197, 'y': -1109.735, 'type': 'SST'})
+            id_now = 'Sx61'
+            add_dict_id(id_now, {'x': 956.787, 'y': 739.823, 'type': 'SST'})
+            id_now = 'Sx62'
+            add_dict_id(id_now, {'x': 956.787, 'y': -739.823, 'type': 'SST'})
+            id_now = 'Sx63'
+            add_dict_id(id_now, {'x': -239.197, 'y': 1109.735, 'type': 'SST'})
+            id_now = 'Sx64'
+            add_dict_id(id_now, {'x': -239.197, 'y': -1109.735, 'type': 'SST'})
+            id_now = 'Sx65'
+            add_dict_id(id_now, {'x': -956.787, 'y': 739.823, 'type': 'SST'})
+            id_now = 'Sx66'
+            add_dict_id(id_now, {'x': -956.787, 'y': -739.823, 'type': 'SST'})
+            id_now = 'Sx67'
+            add_dict_id(id_now, {'x': 1195.984, 'y': 369.912, 'type': 'SST'})
+            id_now = 'Sx68'
+            add_dict_id(id_now, {'x': 1195.984, 'y': -369.912, 'type': 'SST'})
+            id_now = 'Sx69'
+            add_dict_id(id_now, {'x': -1195.984, 'y': 369.912, 'type': 'SST'})
+            id_now = 'Sx70'
+            add_dict_id(id_now, {'x': -1195.984, 'y': -369.912, 'type': 'SST'})
 
         # ------------------------------------------------------------------
         # north
         # ------------------------------------------------------------------
-        if InstData.site_type == 'N':
+        if not self.is_south_site():
             id_now = "Lx01"
             add_dict_id(id_now, {'x': 376.159, 'y': 343.521, 'type': 'LST'})
             id_now = "Lx02"
@@ -663,6 +490,54 @@ class InstData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
+    def scale_inst_pos(self):
+        if self.is_south_site():
+            pos_scale = 0.18
+        else:
+            pos_scale = 1
+
+        for id_now, ele_now in InstData.inst_info.iteritems():
+            for xy_now in ['x', 'y']:
+                ele_now[xy_now] *= pos_scale
+
+        if self.is_south_site():
+            # transform the coordinate system, where originally:
+            #     MC x position [->North] in meters.
+            #     MC y position [->West] in meters.
+            for id_now, ele_now in InstData.inst_info.iteritems():
+                x = -1 * ele_now['y']
+                y = -1 * ele_now['x']
+
+                ele_now.update({'x': x, 'y': y})
+
+            # additional scaling for inner telescopes
+            ids_scale = [
+                {
+                    'scale': 1.3,
+                    'ids': ['Lx01', 'Lx02', 'Lx03', 'Lx04'],
+                },
+                {
+                    'scale':
+                    1.1,
+                    'ids': [
+                        'Mx02', 'Mx03', 'Mx04', 'Mx05', 'Mx06', 'Mx07', 'Sx02', 'Sx01',
+                        'Sx03', 'Sx04'
+                    ],
+                },
+            ]
+            for id_scale in ids_scale:
+                for id_now in id_scale['ids']:
+                    ele_now = InstData.inst_info[id_now]
+                    x = id_scale['scale'] * ele_now['x']
+                    y = id_scale['scale'] * ele_now['y']
+
+                    ele_now.update({'x': x, 'y': y})
+
+        return
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def init_aux_pos(self):
         if InstData.inst_info is None:
             InstData.inst_info = dict()
@@ -672,51 +547,24 @@ class InstData():
         # ------------------------------------------------------------------
         # south
         # ------------------------------------------------------------------
-        if InstData.site_type == 'S':
-            # ------------------------------------------------------------------
-            #
-            # ------------------------------------------------------------------
+        if self.is_south_site():
             id_now = "Ax00"
-            add_dict_id(id_now, {'x': 190, 'y': 320, 'type': 'AUX'})
+            add_dict_id(id_now, {'x': 550, 'y': -750, 'type': 'AUX'})
             id_now = "Ax01"
-            add_dict_id(id_now, {'x': 15, 'y': -35, 'type': 'AUX'})
+            add_dict_id(id_now, {'x': 670, 'y': 150, 'type': 'AUX'})
             id_now = "Ax02"
-            add_dict_id(id_now, {'x': -185, 'y': 170, 'type': 'AUX'})
+            add_dict_id(id_now, {'x': -710, 'y': 175, 'type': 'AUX'})
             id_now = "Ax03"
-            add_dict_id(id_now, {'x': -210, 'y': -290, 'type': 'AUX'})
-
-            for id_now, ele_now in InstData.inst_info.iteritems():
-                # if ele_now['type'] != 'AUX':
-                #     continue
-                ref = sqrt(ele_now['x'] * ele_now['x'] + ele_now['y'] * ele_now['y'])
-                if ref > 900:
-                    add_factor = 0.50
-                elif ref > 700:
-                    add_factor = 0.55
-                elif ref > 310:
-                    add_factor = 0.65
-                elif ref > 140:
-                    add_factor = 0.75
-                elif ref > 50:
-                    add_factor = 0.90
-                else:
-                    add_factor = 1
-                for xy_now in ['x', 'y']:
-                    ele_now[xy_now] *= add_factor
+            add_dict_id(id_now, {'x': 1100, 'y': 200, 'type': 'AUX'})
 
         # ------------------------------------------------------------------
         # north
         # ------------------------------------------------------------------
-        if InstData.site_type == 'N':
-            # ------------------------------------------------------------------
-            #
-            # ------------------------------------------------------------------
+        if not self.is_south_site():
             id_now = "Ax00"
             add_dict_id(id_now, {'x': 403.866, 'y': 151.528, 'type': 'AUX'})
             id_now = "Ax01"
             add_dict_id(id_now, {'x': 455.675, 'y': 466.823, 'type': 'AUX'})
-            # id_now = "Ax02"
-            # add_dict_id(id_now, {'x': 158.143, 'y': 264.028, 'type': 'AUX'})
 
         return
 
@@ -745,19 +593,6 @@ class InstData():
         InstData.categorical_types = ['PROC']
 
         return
-
-    # ------------------------------------------------------------------
-    #
-    # ------------------------------------------------------------------
-    def scale_inst_pos(self):
-        if InstData.site_type == 'S':
-            pos_scale = 0.53
-        if InstData.site_type == 'N':
-            pos_scale = 1
-
-        for id_now, ele_now in InstData.inst_info.iteritems():
-            for xy_now in ['x', 'y']:
-                ele_now[xy_now] *= pos_scale
 
     # ------------------------------------------------------------------
     #
@@ -1390,7 +1225,7 @@ class InstData():
     #
     # ------------------------------------------------------------------
     def get_inst_pos(self):
-        while InstData.inst_info is None:
+        while not InstData.has_init:
             sleep(0.01)
 
         return InstData.inst_info
@@ -1430,16 +1265,18 @@ class InstData():
     #
     # ------------------------------------------------------------------
     def get_inst_id_to_types(self):
-        while InstData.tel_id_to_types is None:
+        while not InstData.has_init:
             sleep(0.01)
+
         return copy.deepcopy(InstData.tel_id_to_types)
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def get_categorical_types(self):
-        while InstData.categorical_types is None:
+        while not InstData.has_init:
             sleep(0.01)
+
         return copy.deepcopy(InstData.categorical_types)
 
     # ------------------------------------------------------------------
@@ -1447,13 +1284,13 @@ class InstData():
     # ------------------------------------------------------------------
     def get_inst_ids(self, inst_types=None):
         n_tries, max_n_tries = 0, 1e3
-        while InstData.inst_Ids is None:
+        while not InstData.has_init:
             n_tries += 1
             my_assert(msg=' - cant init InstData ?!?', state=(n_tries < max_n_tries))
             sleep(0.01)
 
         if inst_types is None:
-            inst_Ids = copy.deepcopy(InstData.inst_Ids)
+            inst_ids = copy.deepcopy(InstData.inst_Ids)
         else:
             if isinstance(inst_types, str):
                 inst_types = [inst_types]
@@ -1461,18 +1298,18 @@ class InstData():
             #     my_assert(msg=' - inst_types must be str or list ... ' +
             #            str(inst_types), state=isinstance(inst_types, Iterable))
 
-            inst_Ids = [
+            inst_ids = [
                 i for i in InstData.inst_Ids
                 if any(self.is_tel_type(i, inst_type) for inst_type in inst_types)
             ]
-        return inst_Ids
+        return inst_ids
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def get_proc_ids(self, inst_types=None):
         n_tries, max_n_tries = 0, 1e3
-        while InstData.proc_ids is None:
+        while not InstData.has_init:
             n_tries += 1
             my_assert(msg=' - cant init InstData ?!?', state=(n_tries < max_n_tries))
             sleep(0.01)
@@ -1482,23 +1319,32 @@ class InstData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
+    def is_south_site(self):
+        return (InstData.site_type == 'S')
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
     def get_tel_healths(self):
-        while InstData.inst_health is None:
+        while not InstData.has_init:
             sleep(0.01)
+
         return copy.deepcopy(InstData.inst_health)
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def get_sub_array_insts(self):
-        while InstData.sub_array_tels is None:
+        while not InstData.has_init:
             sleep(0.01)
+
         return copy.deepcopy(InstData.sub_array_tels)
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def get_inst_id_to_sub_array(self):
-        while InstData.tel_id_to_sub_array is None:
+        while not InstData.has_init:
             sleep(0.01)
+
         return copy.deepcopy(InstData.tel_id_to_sub_array)

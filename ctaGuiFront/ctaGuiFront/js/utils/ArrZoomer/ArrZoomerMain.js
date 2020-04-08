@@ -27,6 +27,9 @@ window.ArrZoomerMain = function(opt_in0) {
     let is_south = opt_in0.is_south
     let my_unique_id = unique()
     // let widget_type = opt_in0.widget_type
+    
+    let vor_show_lines = false
+    let debug_pov_center = false
 
     let no_render = opt_in0.no_render
     let dblclick_zoom_in_out = (
@@ -41,7 +44,6 @@ window.ArrZoomerMain = function(opt_in0) {
     let site_bck_svg = ele_base.site_bck_svg
     
     let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
-    let vor_show_lines = false
 
     let insts = ele_base.insts
     let zooms = ele_base.zooms
@@ -160,9 +162,11 @@ window.ArrZoomerMain = function(opt_in0) {
 
     main_gs.g_base = main_gs.clipped_g.append('g')
     main_gs.g_back = main_gs.g_base.append('g')
-    com.vor.g = main_gs.g_base.append('g')
-    com.s00.g = main_gs.g_base.append('g')
-    com.s01.g = main_gs.g_base.append('g')
+    main_gs.g_fore = main_gs.g_base.append('g')
+    
+    com.vor.g = main_gs.g_fore.append('g')
+    com.s00.g = main_gs.g_fore.append('g')
+    com.s01.g = main_gs.g_fore.append('g')
 
     if (no_render) {
         main_gs.g
@@ -280,7 +284,48 @@ window.ArrZoomerMain = function(opt_in0) {
                     .attr('cx', circ_data.cx)
                     .attr('cy', circ_data.cy)
                     .attr('fill', '#F2F2F2')
-            
+                // gs[clip_g_name]
+                //     .append('rect')
+                //     .attr('x', circ_data.cx - circ_data.r)
+                //     .attr('y', circ_data.cy - circ_data.r)
+                //     .attr('width', circ_data.r * 2)
+                //     .attr('height', circ_data.r * 2)
+                //     .attr('rx', rec_data.rx * 10)
+                //     .attr('ry', rec_data.ry * 10)
+                //     .attr('fill', '#F2F2F2')
+                    
+                //     .attr('x', 0)
+                //     .attr('y', 0)
+                //     .attr('width', 1000)
+                //     .attr('height',1000)
+                //     .attr('rx', 0)
+                //     .attr('ry', 0)
+
+                // ------------------------------------------------------------------
+                // for debugging - add a rect with an x-edge at the center:
+                // ------------------------------------------------------------------
+                if (debug_pov_center) {
+                    gs.g_back
+                        .append('rect')
+                        .style('pointer-events', 'none')
+                        .attr('x', circ_data.cx)
+                        .attr('y', 0)
+                        .attr('width', len_wh.w)
+                        .attr('height', len_wh.h)
+                        .attr('fill', 'blue')
+                        .attr('opacity', '0.15')
+                    
+                    gs.g_back
+                        .append('rect')
+                        .style('pointer-events', 'none')
+                        .attr('x', 0)
+                        .attr('y', len_wh.h / 2)
+                        .attr('width', len_wh.w)
+                        .attr('height', len_wh.h)
+                        .attr('fill', 'red')
+                        .attr('opacity', '0.15')
+                }
+
                 gs.bck_pattern_defs
                     .append('circle')
                     .attr('r', circ_data.r)
@@ -297,7 +342,6 @@ window.ArrZoomerMain = function(opt_in0) {
                     .attr('rx', rec_data.rx)
                     .attr('ry', rec_data.ry)
                     .attr('fill', '#F2F2F2')
-            
 
                 gs.bck_pattern_defs
                     .append('rect')
@@ -308,25 +352,89 @@ window.ArrZoomerMain = function(opt_in0) {
                     .attr('rx', rec_data.rx)
                     .attr('ry', rec_data.ry)
             }
-
-            // ------------------------------------------------------------------
-            // corresponding clip elements for the bck_pattern()
-            // ------------------------------------------------------------------
         })
 
 
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
+        let style_site_bck
+        let site_g = gs[clip_bck_pattern_g.circ].append('g')
         if (has_site_svg) {
-            let site_g = gs[clip_bck_pattern_g.circ].append('g')
             gs.site_svg = site_g
-            
+
             if (is_south) {
-                site_g
-                    .attr('transform', function(d) {
-                        // return 'scale(2)translate(' + '-55' + ', ' + '-10' + ')'
-                    })
+                style_site_bck = function() {
+                    let svg_w = site_g.select('#' + bck_id).attr('width')
+                    let svg_shift = -0.5 * svg_w
+
+                    site_g
+                        .attr('transform', function(d) {
+                            let scale = 5.5
+                            let trans_x = com.bck_circ_data.cx
+                            let trans_y = com.bck_circ_data.cy
+                            return (
+                                ('translate(' + trans_x + ', ' + trans_y + ')')
+                                + ('scale(' + scale + ')')
+                                + ('translate(' + svg_shift + ',' + svg_shift + ')')
+                            )
+                        })
+
+
+                    // console.log(site_g)
+                    let site_svg = site_g.select('#' + bck_id)
+
+                    // ------------------------------------------------------------------
+                    // telescope names
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'g563')
+                        .attr('font-size', '0.001px')
+                        .selectAll('text')
+                        .selectAll('tspan')
+                        .style('font-size', '0.5px')
+                    site_svg
+                        .select('#' + 'g563')
+                        .remove()
+                    // ------------------------------------------------------------------
+                    // modify telescope positions
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'g769')
+                        .selectAll('path')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        .style('stroke-width', 2)
+                        .style('fill', 'red')
+                        .style('stroke', 'red')
+                    site_svg
+                        .select('#' + 'g769')
+                        .remove()
+                    // ------------------------------------------------------------------
+                    // modify paths land-contours
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'layer1')
+                        .selectAll('path')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        .attr('opacity', 0.12)
+                        .style('stroke', '#383b42')
+                        .style('stroke-width', 1.1)
+                        .style('stroke-dasharray', 3.5)
+                        // .style('stroke', 'blue')
+                    // ------------------------------------------------------------------
+                    // modify paths roads
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'layer2')
+                        .selectAll('path')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        .attr('opacity', 0.08)
+                        .style('stroke', '#383b42')
+                        .style('stroke-width', 2.2)
+                        // .style('stroke', 'red')
+
+                    return
+                }
             }
             else {
                 site_g
@@ -339,92 +447,98 @@ window.ArrZoomerMain = function(opt_in0) {
                             + ('translate(' + trans_x + ', ' + trans_y + ')')
                         )
                     })
+
+                style_site_bck = function() {
+                    // console.log(site_g)
+                    let site_svg = site_g.select('#' + bck_id)
+                    
+                    // ------------------------------------------------------------------
+                    // remove telescope circles (telescope positions)
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'layer10')
+                        .selectAll('circle')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        // .attr('opacity', '0')
+                        // .style('stroke-width', 15)
+                    site_svg
+                        .select('#' + 'layer10')
+                        .selectAll('circle')
+                        .remove()
+                    
+                    // ------------------------------------------------------------------
+                    // modify rects (buildings)
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'layer3')
+                        .selectAll('rect')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        // .attr('opacity', '0.1')
+                        .style('fill', '#383b42')
+                        .style('stroke', '#383b42')
+                        .style('fill-opacity', .15)
+                        .style('stroke-width', 0)
+                    site_svg
+                        .select('#' + 'layer3')
+                        .selectAll('path')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        .style('stroke', '#383b42')
+                        .style('stroke-width', 0.2)
+                        .style('stroke-opacity', .6)
+                        .style('fill', '#383b42')
+                        .style('fill-opacity', .03)
+                        // .style('stroke', 'green')
+                    // ------------------------------------------------------------------
+                    // modify paths land-contours
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'layer8')
+                        .selectAll('path')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        .attr('opacity', 0.2)
+                        .style('stroke', '#383b42')
+                        .style('stroke-width', 0.8)
+                        .style('stroke-dasharray', 3.5)
+                        // .style('stroke', 'blue')
+                    // ------------------------------------------------------------------
+                    // modify paths ravine
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'layer9')
+                        .selectAll('path')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        .attr('opacity', 0.4)
+                        .style('stroke', '#383b42')
+                        .style('stroke-width', 1)
+                        .style('stroke-dasharray', 2)
+                        .style('stroke-opacity', .15)
+                        .style('fill-opacity', '.15')
+                        // .style('stroke', 'blue')
+                    // ------------------------------------------------------------------
+                    // modify paths roads
+                    // ------------------------------------------------------------------
+                    site_svg
+                        .select('#' + 'layer7')
+                        .selectAll('path')
+                        .attr('vector-effect', 'non-scaling-stroke')
+                        .attr('opacity', '0.15')
+                        .style('stroke', '#383b42')
+                        .style('stroke-width', 4)
+                        // .style('stroke', 'red')
+
+                    return
+                }
             }
-
-            let bck_id = 'site_bck_id'
-            let style_site_bck = function() {
-                // console.log(site_g)
-                let site_svg = site_g.select('#' + bck_id)
-                
-                // ------------------------------------------------------------------
-                // remove telescope circles (telescope positions)
-                // ------------------------------------------------------------------
-                site_svg
-                    .select('#' + 'layer10')
-                    .selectAll('circle')
-                    .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', '0')
-                    // .style('stroke-width', 15)
-                // ------------------------------------------------------------------
-                // modify rects (buildings)
-                // ------------------------------------------------------------------
-                site_svg
-                    .select('#' + 'layer3')
-                    .selectAll('rect')
-                    .attr('vector-effect', 'non-scaling-stroke')
-                    // .attr('opacity', '0.1')
-                    .style('fill', '#383b42')
-                    .style('stroke', '#383b42')
-                    .style('fill-opacity', .15)
-                    .style('stroke-width', 0)
-                site_svg
-                    .select('#' + 'layer3')
-                    .selectAll('path')
-                    .attr('vector-effect', 'non-scaling-stroke')
-                    .style('stroke', '#383b42')
-                    .style('stroke-width', 0.2)
-                    .style('stroke-opacity', .6)
-                    .style('fill', '#383b42')
-                    .style('fill-opacity', .03)
-                    // .style('stroke', 'green')
-                // ------------------------------------------------------------------
-                // modify paths land-contours
-                // ------------------------------------------------------------------
-                site_svg
-                    .select('#' + 'layer8')
-                    .selectAll('path')
-                    .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', 0.2)
-                    .style('stroke', '#383b42')
-                    .style('stroke-width', 0.8)
-                    .style('stroke-dasharray', 3.5)
-                    // .style('stroke', 'blue')
-                // ------------------------------------------------------------------
-                // modify paths ravine
-                // ------------------------------------------------------------------
-                site_svg
-                    .select('#' + 'layer9')
-                    .selectAll('path')
-                    .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', 0.4)
-                    .style('stroke', '#383b42')
-                    .style('stroke-width', 1)
-                    .style('stroke-dasharray', 2)
-                    .style('stroke-opacity', .15)
-                    .style('fill-opacity', '.15')
-                    // .style('stroke', 'blue')
-                // ------------------------------------------------------------------
-                // modify paths roads
-                // ------------------------------------------------------------------
-                site_svg
-                    .select('#' + 'layer7')
-                    .selectAll('path')
-                    .attr('vector-effect', 'non-scaling-stroke')
-                    .attr('opacity', '0.15')
-                    .style('stroke', '#383b42')
-                    .style('stroke-width', 4)
-                    // .style('stroke', 'red')
-
-                return
-            }
-
-            window.load_svg_file({
-                g: site_g,
-                svg_id: bck_id,
-                icon_path: site_bck_svg,
-                func_end: style_site_bck,
-            })
         }
+
+        let bck_id = 'site_bck_id'
+        window.load_svg_file({
+            g: site_g,
+            svg_id: bck_id,
+            icon_path: site_bck_svg,
+            func_end: style_site_bck,
+        })
+
         // ------------------------------------------------------------------
         // for debugging - a layer to click and show the local coordinates
         // in order to position instruments
@@ -1237,8 +1351,8 @@ window.ArrZoomerMain = function(opt_in0) {
                     }
 
                     if (is_south) {
-                        x = com.bck_circ_data.cx + data_now.x
-                        y = com.bck_circ_data.cy + data_now.y
+                        x = data_now.x + com.bck_circ_data.cx
+                        y = data_now.y + com.bck_circ_data.cy
                     }
                     else {
                         x = data_now.x
@@ -1695,7 +1809,7 @@ window.ArrZoomerMain = function(opt_in0) {
             .attr('text-anchor', 'middle')
             .style('stroke', '#383b42')
             .attr('font-size', font_size + 'px')
-        // .attr("dy", (font_size/3)+'px' )
+            // .attr("dy", (font_size/3)+'px' )
             .attr('dy', '0px')
             .merge(text)
             .transition('in')
@@ -1756,7 +1870,7 @@ window.ArrZoomerMain = function(opt_in0) {
         if (!is_def(com[tag_lbl])) {
             com[tag_lbl] = {
             }
-            com[tag_lbl].g = main_gs.g_base.append('g')
+            com[tag_lbl].g = com.s00.g.append('g')
         }
 
         let text = com[tag_lbl].g
@@ -2435,7 +2549,7 @@ window.ArrZoomerMain = function(opt_in0) {
                 my_date = Date.now()
             }
             else {
-                g_base = main_gs.g_base.append('g')
+                g_base = com.s01.g.append('g')
 
                 update_pos_g(0)
 
@@ -2615,11 +2729,11 @@ window.ArrZoomerMain = function(opt_in0) {
             title
                 .enter()
                 .append('text')
-            // .attr("id", function(d) { return my_unique_id+d.id; })
+                // .attr("id", function(d) { return my_unique_id+d.id; })
                 .text(function(d) {
                     return d.text
                 })
-                .attr('class', base_tag + ' ' + tag_lbl) // class list for easy selection
+                .attr('class', base_tag + ' ' + tag_lbl)
                 .style('opacity', '0')
                 .style('fill', '#383b42')
                 .attr('stroke-width', function(d) {
@@ -3185,9 +3299,8 @@ window.ArrZoomerMain = function(opt_in0) {
             let r = tel_rs.s00[2] * scale_r[1].inner_h1 / 3.5
             let dx = wh / 2
             let dy = (
-                wh + 2 * r
-                * insts.data.xyr[tel_id].r
-                / tel_rs.s00[2]
+                wh
+                + (2 * r * insts.data.xyr[tel_id].r / tel_rs.s00[2])
             )
 
             g_base
@@ -3210,14 +3323,14 @@ window.ArrZoomerMain = function(opt_in0) {
                 .attr('text-anchor', 'middle')
                 .style('stroke-width', 2)
                 .style('font-weight', 'bold')
-                .attr('font-size', r + 'px')
+                .style('font-size', r + 'px')
                 .attr('transform', ('translate(' + dx + ',' + dy + ')'))
                 .attr('dy', function(d) {
-                    let ele_h = -0.5
-                        * get_node_height_by_id({
-                            selction: g_base.selectAll('text.' + 'hov_title'),
-                            id: d.id,
-                        })
+                    let ele_h = get_node_height_by_id({
+                        selction: g_base.selectAll('text.' + 'hov_title'),
+                        id: d.id,
+                    })
+                    ele_h *= 1.75
                     return ele_h + 'px'
                 })
                 .transition('update1')
