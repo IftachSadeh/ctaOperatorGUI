@@ -1,6 +1,5 @@
 import copy
 from gevent import sleep
-from ctaGuiUtils.py.utils import no_sub_arr_name
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
@@ -18,6 +17,8 @@ class SubArrGrp(BaseWidget):
             widget_id=widget_id,
             socket_manager=socket_manager,
         )
+
+        self.no_sub_arr_name = self.base_config.no_sub_arr_name
 
         # ------------------------------------------------------------------
         # widget-specific initialisations
@@ -151,8 +152,8 @@ class SubArrGrp(BaseWidget):
 
             data["tel"].append({
                 "id": id_now,
-                "trg_id": no_sub_arr_name,
-                "pnt_id": no_sub_arr_name,
+                "trg_id": self.no_sub_arr_name,
+                "pnt_id": self.no_sub_arr_name,
                 "pos": inst_pos_now,
             })
 

@@ -7,7 +7,7 @@ from random import Random
 import time
 import copy
 
-from utils import my_log, my_assert, getTime, no_sub_arr_name
+from utils import HMILog, my_assert, getTime, no_sub_arr_name
 from utils import tel_ids, redis_port, flatten_dict
 
 import redis
@@ -26,7 +26,7 @@ import jsonAcs
 # ------------------------------------------------------------------
 class TmpTest():
     def __init__(self, site_type):
-        self.log = my_log(title=__name__)
+        self.log = HMILog(title=__name__)
         self.log.info([['y', " - TmpTest - "], ['g', site_type]])
 
         self.site_type = site_type

@@ -1,8 +1,8 @@
 # ------------------------------------------------------------------
 # imports
 # ------------------------------------------------------------------
-from utils import my_log
-from utils import tel_ids, redis_port
+from ctaGuiUtils.py.utils import HMILog
+from ctaGuiUtils.py.utils import tel_ids, redis_port
 import threading
 import time
 from collections import Counter
@@ -41,7 +41,7 @@ class MonitorCB(ACS__POA.CBdouble):
     class that defines the callback for the acs components
     """
     def __init__(self, key):
-        self.log = my_log(title=__name__)
+        self.log = HMILog(title=__name__)
         self.key = key
         self.r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
@@ -106,7 +106,7 @@ dict_of_components[TEST_JAVA_T2.name] = TEST_JAVA_T2
 class PropertyMonitorQueue:
     def __init__(self, site_type):
 
-        self.log = my_log(title=__name__)
+        self.log = HMILog(title=__name__)
         self.log.info([['y', " - PropertyMonitor Queue - "], ['g', site_type]])
 
         self.site_type = site_type
@@ -206,7 +206,7 @@ class PropertyMonitorQueue:
 class PropertyMonitorGlobal:
     def __init__(self, site_type):
 
-        self.log = my_log(title=__name__)
+        self.log = HMILog(title=__name__)
         self.log.info([['y', " - PropertyMonitor Global - "], ['g', site_type]])
 
         self.site_type = site_type
@@ -257,7 +257,7 @@ class PropertyMonitorGlobal:
 class PropertyMonitorLocal:
     def __init__(self, site_type):
 
-        self.log = my_log(title=__name__)
+        self.log = HMILog(title=__name__)
         self.log.info([['y', " - PropertyMonitor Local - "], ['g', site_type]])
 
         self.site_type = site_type

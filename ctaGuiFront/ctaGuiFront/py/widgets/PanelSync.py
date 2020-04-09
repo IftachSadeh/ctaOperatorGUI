@@ -64,7 +64,7 @@ class PanelSync(BaseWidget):
     def get_init_data(self):
         return {
             'groups': self.panel_sync_get_groups(),
-            'allow_panel_sync': self.socket_manager.allow_panel_sync()
+            'allow_panel_sync': self.socket_manager.check_panel_sync()
         }
 
     # ------------------------------------------------------------------

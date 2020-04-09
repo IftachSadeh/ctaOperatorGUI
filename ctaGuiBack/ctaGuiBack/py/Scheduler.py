@@ -6,11 +6,11 @@ from random import Random
 import copy
 from datetime import datetime
 
-import ctaGuiUtils.py.utils as utils
+from ctaGuiUtils.py.utils import has_acs
+from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import get_rnd, get_time, get_rnd_seed
-from ctaGuiUtils.py.utils import my_log, no_sub_arr_name, has_acs
 from ctaGuiUtils.py.RedisManager import RedisManager
-from MockSched import MockSched
+from ctaGuiBack.py.MockSched import MockSched
 
 if has_acs:
     # from Acspy.Clients.SimpleClient import PySimpleClient
@@ -26,21 +26,23 @@ if has_acs:
 # ------------------------------------------------------------------
 #
 # ------------------------------------------------------------------
-class ObsBlocks():
-    def __init__(self, site_type, clock_sim, inst_data):
-        self.log = my_log(title=__name__)
-        self.log.info([['y', ' - ObsBlocks - '], ['g', site_type]])
+class SchedulerACS():
+    def __init__(self, base_config):
+        self.log = LogParser(base_config=base_config, title=__name__)
+        self.log.info([['y', ' - SchedulerACS - '], ['g', base_config.site_type]])
 
-        self.site_type = site_type
-        # self.time_of_night = time_of_night
-        self.clock_sim = clock_sim
-        self.inst_data = inst_data
-        # self.tel_ids = self.inst_data.get_inst_ids()
+        self.base_config = base_config
+        self.site_type = self.base_config.site_type
+        self.clock_sim = self.base_config.clock_sim
+        self.inst_data = self.base_config.inst_data
+
         self.tel_ids = self.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
+
+        self.no_sub_arr_name = self.base_config.no_sub_arr_name
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, port=utils.redis_port, log=self.log
+            name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
         self.debug = not True
@@ -51,7 +53,7 @@ class ObsBlocks():
 
         # self.client = PySimpleClient()
         # self.supervisor = self.client.getComponent('ArraySupervisor')
-        # self.log.info([['y',' - ObsBlocks - '],['p','got supervisor!']])
+        # self.log.info([['y',' - SchedulerACS - '],['p','got supervisor!']])
 
         self.phases_exe = dict()
         self.phases_exe['start'] = [
@@ -79,14 +81,10 @@ class ObsBlocks():
 
         gevent.spawn(self.loop)
 
-        self.MockSched = MockSched(
-            site_type=site_type,
-            clock_sim=self.clock_sim,
-            inst_data=self.inst_data,
-        )
+        self.MockSched = MockSched(base_config=self.base_config)
 
         # ------------------------------------------------------------------
-        # temporary hack to be consistent with ObsBlocksNoACS
+        # temporary hack to be consistent with SchedulerStandalone
         # ------------------------------------------------------------------
         self.external_events = []
         self.external_clock_events = []
@@ -103,7 +101,7 @@ class ObsBlocks():
         # debug_tmp = True
 
         if debug_tmp:
-            self.log.info([['p', ' - ObsBlocks.reset_blocks() ...']])
+            self.log.info([['p', ' - SchedulerACS.reset_blocks() ...']])
 
         if self.MockSched is None:
             sleep(0.1)
@@ -329,7 +327,7 @@ class ObsBlocks():
     #     for id_now in all_tel_ids:
     #         tels.append({'id': id_now})
 
-    #     sub_arrs.append({'id': no_sub_arr_name, 'children': tels})
+    #     sub_arrs.append({'id': self.no_sub_arr_name, 'children': tels})
 
     #     # ------------------------------------------------------------------
     #     # for now - a simple/stupid solution, where we write the sub-arrays and publish each
@@ -344,7 +342,7 @@ class ObsBlocks():
     #
     # ------------------------------------------------------------------
     def loop(self):
-        self.log.info([['g', ' - starting ObsBlocks.loop ...']])
+        self.log.info([['g', ' - starting SchedulerACS.loop ...']])
 
         self.redis.pipe.set(name='obs_block_ids_' + 'wait', data='')
         self.redis.pipe.set(name='obs_block_ids_' + 'run', data='')
@@ -365,26 +363,28 @@ class ObsBlocks():
 
 
 # ------------------------------------------------------------------
+#
 # ------------------------------------------------------------------
-# ------------------------------------------------------------------
-class ObsBlocksNoACS():
+class SchedulerStandalone():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, site_type, clock_sim, inst_data):
-        self.log = my_log(title=__name__)
-        self.log.info([['y', ' - ObsBlocksNoACS - '], ['g', site_type]])
+    def __init__(self, base_config):
+        self.log = LogParser(base_config=base_config, title=__name__)
+        self.log.info([['y', ' - SchedulerStandalone - ']])
 
-        self.site_type = site_type
-        # self.time_of_night = time_of_night
-        self.clock_sim = clock_sim
-        self.inst_data = inst_data
-        # self.tel_ids = self.inst_data.get_inst_ids()
+        self.base_config = base_config
+        self.site_type = self.base_config.site_type
+        self.clock_sim = self.base_config.clock_sim
+        self.inst_data = self.base_config.inst_data
+
         self.tel_ids = self.inst_data.get_inst_ids(inst_types=['LST', 'MST', 'SST'])
+
+        self.no_sub_arr_name = self.base_config.no_sub_arr_name
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, port=utils.redis_port, log=self.log
+            name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
         self.debug = not True
@@ -472,7 +472,7 @@ class ObsBlocksNoACS():
     #
     # ------------------------------------------------------------------
     def init(self):
-        self.log.info([['p', ' - ObsBlocksNoACS.init() ...']])
+        self.log.info([['p', ' - SchedulerStandalone.init() ...']])
         debug_tmp = False
         # debug_tmp = True
 
@@ -1076,7 +1076,7 @@ class ObsBlocksNoACS():
     #     for id_now in all_tel_ids:
     #         tels.append({'id': id_now})
 
-    #     sub_arrs.append({'id': no_sub_arr_name, 'children': tels})
+    #     sub_arrs.append({'id': self.no_sub_arr_name, 'children': tels})
 
     #     # ------------------------------------------------------------------
     #     # for now - a simple/stupid solution, where we write the sub-arrays and publish each
@@ -1157,7 +1157,7 @@ class ObsBlocksNoACS():
     #
     # ------------------------------------------------------------------
     def loop(self):
-        self.log.info([['g', ' - starting ObsBlocksNoACS.loop ...']])
+        self.log.info([['g', ' - starting SchedulerStandalone.loop ...']])
         sleep(2)
 
         while True:
@@ -1302,7 +1302,7 @@ def update_sub_arrs(self, blocks=None):
     for id_now in all_tel_ids:
         tels.append({'id': id_now})
 
-    sub_arrs.append({'id': no_sub_arr_name, 'children': tels})
+    sub_arrs.append({'id': self.no_sub_arr_name, 'children': tels})
 
     # ------------------------------------------------------------------
     # for now - a simple/stupid solution, where we write the sub-arrays and publish each

@@ -222,7 +222,7 @@ let main_comment_sched = function(opt_in) {
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
-    function createDummy_log() {
+    function add_dummy_log() {
         function shuffle(a) {
             for (let i = a.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1))
@@ -286,7 +286,7 @@ let main_comment_sched = function(opt_in) {
             })
         }
     }
-    function addDummy_log() {
+    function addDumLogParser() {
         shared.data.server.logs = com.logs
     }
     function init_data(data_in) {
@@ -736,8 +736,8 @@ let main_comment_sched = function(opt_in) {
 
         com.data_in = data_in
         shared.data.server = data_in.data
-        createDummy_log()
-        addDummy_log()
+        add_dummy_log()
+        addDumLogParser()
 
         svgTextEditor.init_data(data_in.data)
         svg_blocks_queue_server.init_data(data_in.data)
@@ -754,7 +754,7 @@ let main_comment_sched = function(opt_in) {
     function update_data(data_in) {
         com.data_in = data_in
         shared.data.server = data_in.data
-        addDummy_log()
+        addDumLogParser()
 
         // clusterData(com.data_in.data)
         // filterData(com.data_in.data)

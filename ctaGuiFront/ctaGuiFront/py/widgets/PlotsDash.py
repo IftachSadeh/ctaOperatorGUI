@@ -382,8 +382,6 @@ class PlotsDash(BaseWidget):
         # if len(data) != n_ele:
         #     print keys_now
         #     print data
-        #     my_assert(self.log, " - problem with redis.pipe.execute ?!?! " +
-        #            str(len(data))+"/"+str(n_ele), False)
         for key in keys_now:
             res[key] = [{'y': x[0]['data'], 'x': x[1]} for x in data[key][0]]
             # res[key].append({'id': id+';'+key, 'data': [{'y': x[0]['data'], 'x':x[1]} for x in data[key]]})

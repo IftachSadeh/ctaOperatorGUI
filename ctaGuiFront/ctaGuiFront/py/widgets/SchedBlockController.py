@@ -1,7 +1,8 @@
 # from datetime import timedelta
 # from datetime import datetime
 # from ctaGuiUtils.py.utils import get_time_of_night
-from ctaGuiUtils.py.utils import get_clock_sim, secs_to_datetime
+from ctaGuiUtils.py.utils import secs_to_datetime
+from ctaGuiUtils.py.ClockSim import get_clock_sim_data
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
 
@@ -83,7 +84,7 @@ class SchedBlockController(BaseWidget):
         self.get_clock_events()
         self.get_target()
 
-        clock_sim = get_clock_sim(self)
+        clock_sim = get_clock_sim_data(self)
 
         time_now_sec = clock_sim['time_now_sec']
         night_start_sec = clock_sim['night_start_sec']

@@ -6,55 +6,60 @@
 # monkey.patch_all()
 # ------------------------------------------------------------------
 
-# logging interface - important to init the logger vefore importing any ACS -
-from ctaGuiUtils.py.utils import my_log
-
 from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.exceptions import NotFound
 from sqlalchemy import engine_from_config
 
-# the Models.py file contains the users/groups/passwords
-from ctaGuiFront.py.utils.Models import db_session, sql_base, get_groups
-
 # import the utils module to allow access to some global variables
-import ctaGuiUtils.py.utils as utils
+from ctaGuiUtils.py.BaseConfig import BaseConfig
 from ctaGuiUtils.py.InstData import InstData
 
-# the definition of all sockets (including an entry for each view)
-from ctaGuiFront.py.utils.views import socketio_service
-
-# basic views for login, index, redirection etc.
-from ctaGuiFront.py.utils.views import view_login, view_logout, view_index
-from ctaGuiFront.py.utils.views import view_not_found, view_empty, view_forbidden
-# the commmon view used by most (maybe all) widgets
-from ctaGuiFront.py.utils.views import view_common
-
-log = my_log(title=__name__)
+import ctaGuiUtils.py.utils as utils
+# logging interface - important to init the logger vefore importing any ACS ?
+from ctaGuiUtils.py.LogParser import LogParser
+from ctaGuiFront.py.utils.ViewManager import ViewManager
+from ctaGuiFront.py.utils.Models import db_session, sql_base, get_groups
 
 
 def main(global_config, **settings):
+    # the app name (corresponding to the directory name)
+    app_name = settings['app_name']
+    # southern or northen CTA sites have different telescope configurations
+    site_type = settings['site_type']
+    # the redis port use for this site
+    redis_port = settings['redis_port']
+    # define the prefix to all urls (must be non-empy string)
+    app_prefix = settings['app_prefix']
+    # global setting to allow panel syncronization
+    allow_panel_sync = bool(settings['allow_panel_sync'])
+    # Northers or Southern site
+    site_type = settings['site_type']
+    # is this a simulation
+    is_simulation = settings['is_simulation']
+    # port for the redis database
+    redis_port = settings['redis_port']
+
+    # ------------------------------------------------------------------
+    # instantiate the general settings class (must come first!)
+    # ------------------------------------------------------------------
+    base_config = BaseConfig(
+        is_simulation=is_simulation,
+        site_type=site_type,
+        redis_port=redis_port,
+        app_prefix=app_prefix,
+        allow_panel_sync=allow_panel_sync,
+    )
+
+    log = LogParser(base_config=base_config, title=__name__)
     log.info([['wg', ' - Starting pyramid app - ctaGuiFront ...']])
     log.info([['p', ' - has_acs = '], [('g' if utils.has_acs else 'r'), utils.has_acs]])
 
-    # the app name (corresponding to the directory name)
-    app_name = settings['app_name']
-
-    # southern or northen CTA sites have different telescope configurations
-    utils.site_type = settings['site_type']
-
-    # the redis port use for this site
-    utils.redis_port = settings['redis_port']
-
-    # define the prefix to all urls (must be non-empy string)
-    utils.app_prefix = settings['app_prefix']
-
-    # global setting to allow panel syncronization
-    utils.allow_panel_sync = bool(settings['allow_panel_sync'])
-
     # set the list of telescopes for this particular site
-    InstData(site_type=utils.site_type)
+    InstData(base_config=base_config)
+
+    view_manager = ViewManager(base_config=base_config)
 
     # database and authentication
     engine = engine_from_config(settings, 'sqlalchemy.')
@@ -81,25 +86,45 @@ def main(global_config, **settings):
     # ------------------------------------------------------------------
     # forbidden view, which simply redirects to the login
     # ------------------------------------------------------------------
-    config.add_forbidden_view(view_forbidden)
+    config.add_forbidden_view(view_manager.view_forbidden)
 
     # ------------------------------------------------------------------
     # basic view, open to everyone, for login/logout/redirect
     # ------------------------------------------------------------------
-    config.add_route('login', '/' + utils.app_prefix + '/login')
-    config.add_view(view_login, route_name='login', renderer=renderer)
+    config.add_route('login', '/' + app_prefix + '/login')
+    config.add_view(
+        view_manager.view_login,
+        route_name='login',
+        renderer=renderer,
+    )
 
-    config.add_route('logout', '/' + utils.app_prefix + '/logout')
-    config.add_view(view_logout, route_name='logout', renderer=renderer)
+    config.add_route('logout', '/' + app_prefix + '/logout')
+    config.add_view(
+        view_manager.view_logout,
+        route_name='logout',
+        renderer=renderer,
+    )
 
-    config.add_route('not_found', '/' + utils.app_prefix + '/not_found')
-    config.add_view(view_not_found, context=NotFound, renderer=renderer)
+    config.add_route('not_found', '/' + app_prefix + '/not_found')
+    config.add_view(
+        view_manager.view_not_found,
+        context=NotFound,
+        renderer=renderer,
+    )
 
     config.add_route('/', '/')
-    config.add_view(view_empty, route_name='/', renderer=renderer)
+    config.add_view(
+        view_manager.view_empty,
+        route_name='/',
+        renderer=renderer,
+    )
 
-    config.add_route(utils.app_prefix, '/' + utils.app_prefix)
-    config.add_view(view_empty, route_name=utils.app_prefix, renderer=renderer)
+    config.add_route(app_prefix, '/' + app_prefix)
+    config.add_view(
+        view_manager.view_empty,
+        route_name=app_prefix,
+        renderer=renderer,
+    )
 
     # ------------------------------------------------------------------
     # permission to view index page and sockets (set in Models.py for
@@ -108,38 +133,35 @@ def main(global_config, **settings):
     perm = 'permit_all'
     # ------------------------------------------------------------------
     # the index page
-    config.add_route('index', '/' + utils.app_prefix + '/' + 'index')
-    config.add_view(view_index, route_name='index', renderer=renderer, permission=perm)
+    config.add_route('index', '/' + app_prefix + '/' + 'index')
+    config.add_view(
+        view_manager.view_index,
+        route_name='index',
+        renderer=renderer,
+        permission=perm,
+    )
 
     # the uri for sockets
     config.add_route('socket_io', 'socket.io/*remaining')
-    config.add_view(socketio_service, route_name='socket_io', permission=perm)
+    config.add_view(
+        view_manager.socket_view,
+        route_name='socket_io',
+        permission=perm,
+    )
 
     # ------------------------------------------------------------------
     # priviliged view (right now, only for pre-defined users in Models.init_user_passes)
     # ------------------------------------------------------------------
     perm = 'permit_a'
     # ------------------------------------------------------------------
-    # list here all views, which use the shared view function
-    # these would eg be mapped to: [ http://localhost:8090/cta/view200 ]
-    utils.all_widgets = [
-        'view102',
-        'view000',
-        'view_refresh_all',
-        'view200',
-        'view201',
-        'view202',
-        'view203',
-        'view204',
-        'view205',
-        'view206',
-        'view207',
-    ]
 
-    for view_name in utils.all_widgets:
-        config.add_route(view_name, '/' + utils.app_prefix + '/' + view_name)
+    for view_name in base_config.all_widgets:
+        config.add_route(view_name, '/' + app_prefix + '/' + view_name)
         config.add_view(
-            view_common, route_name=view_name, permission=perm, renderer=renderer
+            view_manager.view_common,
+            route_name=view_name,
+            permission=perm,
+            renderer=renderer,
         )
 
     # ------------------------------------------------------------------

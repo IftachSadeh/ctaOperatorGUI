@@ -2,8 +2,7 @@ import gevent
 from gevent import sleep
 from random import Random
 
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, inst_pos_0
+from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
@@ -11,18 +10,21 @@ class InstPos():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, site_type, clock_sim, inst_data):
-        self.log = my_log(title=__name__)
-        self.log.info([['y', ' - InstPos - '], ['g', site_type]])
+    def __init__(self, base_config):
+        self.log = LogParser(base_config=base_config, title=__name__)
+        self.log.info([['y', ' - InstPos - ']])
 
-        self.site_type = site_type
-        self.clock_sim = clock_sim
-        self.inst_data = inst_data
+        self.base_config = base_config
+        self.site_type = self.base_config.site_type
+        self.clock_sim = self.base_config.clock_sim
+        self.inst_data = self.base_config.inst_data
         self.tel_ids = self.inst_data.get_inst_ids()
+
+        self.inst_pos_0 = self.base_config.inst_pos_0
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, port=utils.redis_port, log=self.log
+            name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
         # ------------------------------------------------------------------
@@ -92,9 +94,10 @@ class InstPos():
                 tel_point_pos[id_now] = point_pos
 
         for id_now in self.tel_ids:
-            inst_pos_now = inst_pos_in[id_now] if id_now in inst_pos_in else inst_pos_0
+            inst_pos_now = inst_pos_in[id_now
+                                       ] if id_now in inst_pos_in else self.inst_pos_0
             if inst_pos_now is None:
-                inst_pos_now = inst_pos_0
+                inst_pos_now = self.inst_pos_0
             inst_pos_new = inst_pos_now
 
             if id_now in tel_point_pos:

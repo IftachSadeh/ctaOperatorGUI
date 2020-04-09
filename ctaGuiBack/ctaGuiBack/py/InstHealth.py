@@ -4,8 +4,8 @@ from math import ceil
 import random
 from random import Random
 
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, flatten_dict
+from ctaGuiUtils.py.LogParser import LogParser
+from ctaGuiUtils.py.utils import flatten_dict
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
@@ -13,17 +13,18 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 #
 # ------------------------------------------------------------------
 class InstHealth():
-    def __init__(self, site_type, clock_sim, inst_data):
-        self.log = my_log(title=__name__)
-        self.log.info([['y', " - inst_health - "], ['g', site_type]])
+    def __init__(self, base_config):
+        self.log = LogParser(base_config=base_config, title=__name__)
+        self.log.info([['y', " - InstHealth - "]])
 
-        self.site_type = site_type
-        self.clock_sim = clock_sim
-        self.inst_data = inst_data
+        self.base_config = base_config
+        self.site_type = self.base_config.site_type
+        self.clock_sim = self.base_config.clock_sim
+        self.inst_data = self.base_config.inst_data
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, port=utils.redis_port, log=self.log
+            name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
         self.tel_ids = self.inst_data.get_inst_ids()

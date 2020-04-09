@@ -7,7 +7,8 @@ from random import Random
 import copy
 
 from ctaGuiUtils.py.utils import get_rnd, get_time, get_rnd_seed
-from ctaGuiUtils.py.utils import my_log, has_acs
+from ctaGuiUtils.py.utils import has_acs
+from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.utils import secs_to_datetime, date_to_string
 
 if has_acs:
@@ -30,9 +31,11 @@ class MockSched():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, site_type, clock_sim, inst_data):
-        self.log = my_log(title=__name__)
-        self.log.info([['y', ' - MockSched - '], ['g', site_type]])
+    def __init__(self, base_config):
+        self.log = LogParser(base_config=base_config, title=__name__)
+        self.log.info([['y', ' - MockSched - ']])
+
+        self.base_config = base_config
 
         # ------------------------------------------------------------------
         # sanity check for development only
@@ -48,10 +51,9 @@ class MockSched():
         MockSched.is_active = True
         # ------------------------------------------------------------------
 
-        self.site_type = site_type
-
-        self.clock_sim = clock_sim
-        self.inst_data = inst_data
+        self.site_type = self.base_config.site_type
+        self.clock_sim = self.base_config.clock_sim
+        self.inst_data = self.base_config.inst_data
 
         self.tel_ids = self.inst_data.get_inst_ids()
 

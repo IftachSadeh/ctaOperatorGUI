@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from ctaGuiUtils.py.utils import get_time_of_night, my_assert
+from ctaGuiUtils.py.utils import get_time_of_night
 from ctaGuiFront.py.utils.ArrZoomer import ArrZoomer
 from ctaGuiFront.py.utils.BaseWidget import BaseWidget
 
@@ -106,10 +106,13 @@ class WeatherMonitoring(BaseWidget):
             if len(data) != n_ele:
                 print keys_now
                 print data
-                my_assert(
-                    self.log, " - problem with redis.pipe.execute ?!?! " + str(len(data))
-                    + "/" + str(n_ele), False
-                )
+                self.log.critical([
+                    ['wr', ' problem with redis.pipe.execute ?!?! '],
+                    ['wr', str(len(data)), '/', str(n_ele)],
+                    ['wr', ' --> Will terminate!'],
+                ])
+                raise Exception()
+
             n_ele_now = 0
             for k, v in keys_now.items():
                 data_out[index] = []

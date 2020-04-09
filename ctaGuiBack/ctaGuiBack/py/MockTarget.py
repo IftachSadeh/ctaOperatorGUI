@@ -1,7 +1,6 @@
 from random import Random
 
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log
+from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
@@ -9,15 +8,16 @@ class MockTarget():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, site_type):
-        self.log = my_log(title=__name__)
-        self.log.info([['y', " - MockTarget - "], ['g', site_type]])
+    def __init__(self, base_config):
+        self.log = LogParser(base_config=base_config, title=__name__)
+        self.log.info([['y', " - MockTarget - "]])
 
-        self.site_type = site_type
+        self.base_config = base_config
+        self.site_type = self.base_config.site_type
 
         self.class_name = self.__class__.__name__
         self.redis = RedisManager(
-            name=self.class_name, port=utils.redis_port, log=self.log
+            name=self.class_name, port=self.base_config.redis_port, log=self.log
         )
 
         # ------------------------------------------------------------------

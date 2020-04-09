@@ -1,7 +1,8 @@
 import gevent
 from gevent import sleep
 from gevent.coros import BoundedSemaphore
-from ctaGuiUtils.py.utils import my_log, my_assert, flatten_dict
+from ctaGuiUtils.py.utils import flatten_dict
+from ctaGuiUtils.py.LogParser import LogParser
 
 
 # ------------------------------------------------------------------
@@ -23,7 +24,10 @@ class ArrZoomer():
     #
     # ------------------------------------------------------------------
     def __init__(self, parent):
-        ArrZoomer.log = my_log(title=(parent.log.get_title() + '/' + __name__))
+        ArrZoomer.log = LogParser(
+            base_config=parent.base_config,
+            title=(parent.log.get_title() + '/' + __name__),
+        )
 
         self.set_parent_widget(parent)
         self.add_parent_interfaces()
@@ -56,12 +60,6 @@ class ArrZoomer():
         self.do_data_updates = parent.do_data_updates
         # some etra logging messages for this module
         self.log_send_packet = parent.log_send_packet
-
-        my_assert(
-            log=ArrZoomer.log,
-            state=(self.socket_manager is not None),
-            msg=[' - no socket_manager handed to', self.__class__.__name__],
-        )
 
         # validate that all required properties have been defined
         check_init_properties = [
@@ -562,9 +560,9 @@ class ArrZoomer():
 
             # # testing ....
             # # testing ....
-            # from ctaGuiUtils.py.utils import get_clock_sim, secs_to_datetime
+            # from ctaGuiUtils.py.utils import get_clock_sim_data, secs_to_datetime
             # from datetime import date
-            # xx = get_clock_sim(self)
+            # xx = get_clock_sim_data(self)
             # print(secs_to_datetime(xx['time_now_sec']))
             # # print(date.fromisoformat(xx['time_now']))
             # # testing ....

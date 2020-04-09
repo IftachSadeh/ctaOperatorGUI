@@ -2,7 +2,7 @@ import gevent
 from gevent import sleep
 
 import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log
+from ctaGuiUtils.py.utils import HMILog
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 from msgpack import packb
@@ -14,7 +14,7 @@ from msgpack import unpackb
 # ------------------------------------------------------------------
 class PubsubTest():
     def __init__(self, site_type):
-        self.log = my_log(title=__name__)
+        self.log = HMILog(title=__name__)
         self.log.info([['y', " - PubsubTest - "], ['g', site_type]])
 
         self.class_name = self.__class__.__name__

@@ -4,7 +4,7 @@ import sys
 
 from sqlalchemy import engine_from_config
 from pyramid.paster import get_appsettings, setup_logging
-from ..py.utils.Models import db_session, sql_base, init_user_passes
+from ctaGuiFront.py.utils.Models import db_session, sql_base, init_user_passes
 
 
 def usage(argv):

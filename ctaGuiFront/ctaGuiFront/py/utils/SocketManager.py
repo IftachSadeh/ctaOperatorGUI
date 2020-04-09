@@ -8,11 +8,9 @@ from gevent.coros import BoundedSemaphore
 from socketio.namespace import BaseNamespace
 from socketio.mixins import BroadcastMixin
 
-import ctaGuiUtils.py.utils as utils
-from ctaGuiUtils.py.utils import my_log, my_assert
-from ctaGuiUtils.py.utils import allowed_widget_types, get_time, get_rnd
+from ctaGuiUtils.py.LogParser import LogParser
+from ctaGuiUtils.py.utils import get_time, get_rnd
 from ctaGuiUtils.py.RedisManager import RedisManager
-from ctaGuiUtils.py.InstData import InstData
 
 
 # ------------------------------------------------------------------
@@ -41,7 +39,13 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     def __init__(self, *args, **kwargs):
         super(SocketManager, self).__init__(*args, **kwargs)
 
-        self.log = my_log(title=__name__)
+        self.log = LogParser(base_config=self.base_config, title=__name__)
+
+        self.allowed_widget_types = self.base_config.allowed_widget_types
+        self.redis_port = self.base_config.redis_port
+        self.site_type = self.base_config.site_type
+        self.allow_panel_sync = self.base_config.allow_panel_sync
+
         self.sess_id = None
         self.user_id = ''
         self.user_group = ''
@@ -50,12 +54,10 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         self.log_send_packet = False
 
         self.redis = RedisManager(
-            name=self.__class__.__name__, port=utils.redis_port, log=self.log
+            name=self.__class__.__name__, port=self.redis_port, log=self.log
         )
 
-        SocketManager.inst_data = InstData(
-            site_type=utils.site_type, lock=SocketManager.lock
-        )
+        SocketManager.inst_data = self.base_config.inst_data
 
         # ------------------------------------------------------------------
         # cleanup the database of old sessions upon restart
@@ -139,8 +141,9 @@ class SocketManager(BaseNamespace, BroadcastMixin):
 
         # override the global logging variable with a
         # name corresponding to the current session ids
-        self.log = my_log(
-            title=str(self.user_id) + '/' + str(self.sess_id) + '/' + __name__
+        self.log = LogParser(
+            base_config=self.base_config,
+            title=str(self.user_id) + '/' + str(self.sess_id) + '/' + __name__,
         )
 
         self.log.info([['b', ' -- new session: '], ['g', self.sess_id, '', self.ns_name],
@@ -248,16 +251,20 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         n_sync_group = data['n_sync_group'] if 'n_sync_group' in data else 0
         sync_type = data['sync_type'] if 'sync_type' in data else 0
 
-        if not self.allow_panel_sync():
+        if not self.check_panel_sync():
             n_sync_group = -1
 
         # first make sure the requested widget has been registered as a legitimate class
-        is_panel_sync = (widget_name in allowed_widget_types['not_synced'])
-        if not is_panel_sync and widget_name not in allowed_widget_types['synced']:
-            my_assert(
-                self.log, ' - widget_name=' + widget_name
-                + 'has not been registered in allowed_widget_types ?!?!', False, True
-            )
+        is_panel_sync = (widget_name in self.allowed_widget_types['not_synced'])
+        is_allowed = widget_name in self.allowed_widget_types['synced']
+        if not is_panel_sync and not is_allowed:
+            self.log.critical([
+                ['wr', ' - widget_name =', widget_name, ''],
+                ['wr', 'has not been registered in allowed_widget_types ?!?!'],
+                ['wr', ' --> Will terminate!'],
+            ])
+            raise Exception()
+
             return
 
         # ------------------------------------------------------------------
@@ -287,7 +294,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                     n_sync_group = -1
                     n_icon = -1
                 else:
-                    n_icon = allowed_widget_types['synced'].index(widget_name)
+                    n_icon = self.allowed_widget_types['synced'].index(widget_name)
                     while True:
                         widget_ids = self.redis.l_get('user_widgets;' + self.user_id)
                         if len(widget_ids) == 0:
@@ -299,7 +306,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
                         n_icons = [x['n_icon'] for x in all_widgets]
 
                         if n_icon in n_icons:
-                            n_icon += len(allowed_widget_types['synced'])
+                            n_icon += len(self.allowed_widget_types['synced'])
                         else:
                             break
 
@@ -398,9 +405,9 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     # ------------------------------------------------------------------
     # prevent panle sync based on a global setting & user-name
     # ------------------------------------------------------------------
-    def allow_panel_sync(self):
+    def check_panel_sync(self):
         allow = False
-        if utils.allow_panel_sync:
+        if self.allow_panel_sync:
             allow = (self.user_id != 'guest')
 
         return allow
@@ -425,7 +432,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
     #
     # ------------------------------------------------------------------
     def on_sync_state_send(self, data_in):
-        if not self.allow_panel_sync():
+        if not self.check_panel_sync():
             return
         if 'widget_id' not in data_in:
             return

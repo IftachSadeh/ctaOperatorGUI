@@ -1,7 +1,7 @@
-from gevent import sleep
 import copy
-from math import sqrt
-from utils import my_log, my_assert
+from gevent import sleep
+
+from ctaGuiUtils.py.LogParser import LogParser
 
 
 # ------------------------------------------------------------------
@@ -22,14 +22,17 @@ class InstData():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def __init__(self, site_type, lock=None, *args, **kwargs):
-        self.log = my_log(title=__name__)
+    def __init__(self, base_config, lock=None, *args, **kwargs):
+        self.log = LogParser(base_config=base_config, title=__name__)
 
         def init():
             self.log.debug([['y', " - initializing InstData - "],
                             ['g', 'init_inst_pos()'], ['y', " ..."]])
 
-            InstData.site_type = site_type
+            self.base_config = base_config
+            self.base_config.inst_data = self
+
+            InstData.site_type = self.base_config.site_type
 
             InstData.tel_ids = self.init_tel_ids()
             self.init_inst_pos()
@@ -97,13 +100,13 @@ class InstData():
                 id_now = 'SA_2'
                 sub_array_tels[id_now] = ['Mx05', 'Mx06', 'Mx07']
             else:
-                raise
+                raise Exception()
         except Exception:
-            my_assert(
-                msg=' - trying to do init_sub_array_tels() with site_type = '
-                + str(InstData.site_type),
-                state=False
-            )
+            self.log.critical([
+                ['wr', ' - cant do init_sub_array_tels()...'],
+                ['wr', ' --> Will terminate!'],
+            ])
+            raise Exception()
 
         InstData.sub_array_tels = sub_array_tels
         self.set_tel_id_to_sub_array()
@@ -165,13 +168,13 @@ class InstData():
                     'Mx13', 'Mx14', 'Mx15'
                 ]
             else:
-                raise
+                raise Exception()
         except Exception:
-            my_assert(
-                msg=' - trying to do init_tel_ids() with site_type = '
-                + str(InstData.site_type),
-                state=False
-            )
+            self.log.critical([
+                ['wr', ' - cant do init_tel_ids()...'],
+                ['wr', ' --> Will terminate!'],
+            ])
+            raise Exception()
 
         return tel_ids
 
@@ -187,13 +190,13 @@ class InstData():
             elif not self.is_south_site():
                 aux_ids = ['Ax00', 'Ax01']
             else:
-                raise
+                raise Exception()
         except Exception:
-            my_assert(
-                msg=' - trying to do init_aux_ids() with site_type = '
-                + str(InstData.site_type),
-                state=False
-            )
+            self.log.critical([
+                ['wr', ' - cant do init_aux_ids()...'],
+                ['wr', ' --> Will terminate!'],
+            ])
+            raise Exception()
 
         return aux_ids
 
@@ -204,11 +207,11 @@ class InstData():
         try:
             proc_ids = ['Px00', 'Px01', 'Px02']
         except Exception:
-            my_assert(
-                msg=' - trying to do init_proc_ids() with site_type = '
-                + str(InstData.site_type),
-                state=False
-            )
+            self.log.critical([
+                ['wr', ' - cant do init_proc_ids()...'],
+                ['wr', ' --> Will terminate!'],
+            ])
+            raise Exception()
 
         return proc_ids
 
@@ -222,10 +225,11 @@ class InstData():
                 if id_now not in ids:
                     raise
             except Exception:
-                my_assert(
-                    msg=' - id_now not in InstData for id_now= ' + str(id_now),
-                    state=False
-                )
+                self.log.critical([
+                    ['wr', ' - cant do add_inst_info_id()...'],
+                    ['wr', ' --> Will terminate!'],
+                ])
+                raise Exception()
             return
 
         return add_dict_id
@@ -1237,10 +1241,12 @@ class InstData():
         try:
             tel_type = InstData.inst_info[tel_id]['type']
         except Exception:
-            my_assert(
-                msg=(' - get_tel_type(' + str(tel_id) + '): tel_id not defined?'),
-                state=False
-            )
+            self.log.critical([
+                ['wr', ' - cant do get_tel_type(',
+                 str(tel_id), ')...'],
+                ['wr', ' --> Will terminate!'],
+            ])
+            raise Exception()
 
         return tel_type
 
@@ -1284,19 +1290,24 @@ class InstData():
     # ------------------------------------------------------------------
     def get_inst_ids(self, inst_types=None):
         n_tries, max_n_tries = 0, 1e3
-        while not InstData.has_init:
-            n_tries += 1
-            my_assert(msg=' - cant init InstData ?!?', state=(n_tries < max_n_tries))
-            sleep(0.01)
+        try:
+            while not InstData.has_init:
+                sleep(0.01)
+                n_tries += 1
+                if n_tries > max_n_tries:
+                    raise
+        except Exception:
+            self.log.critical([
+                ['wr', ' - cant do get_inst_ids(', inst_types, ')...'],
+                ['wr', ' --> Will terminate!'],
+            ])
+            raise Exception()
 
         if inst_types is None:
             inst_ids = copy.deepcopy(InstData.inst_Ids)
         else:
             if isinstance(inst_types, str):
                 inst_types = [inst_types]
-            # else:
-            #     my_assert(msg=' - inst_types must be str or list ... ' +
-            #            str(inst_types), state=isinstance(inst_types, Iterable))
 
             inst_ids = [
                 i for i in InstData.inst_Ids
@@ -1309,10 +1320,18 @@ class InstData():
     # ------------------------------------------------------------------
     def get_proc_ids(self, inst_types=None):
         n_tries, max_n_tries = 0, 1e3
-        while not InstData.has_init:
-            n_tries += 1
-            my_assert(msg=' - cant init InstData ?!?', state=(n_tries < max_n_tries))
-            sleep(0.01)
+        try:
+            while not InstData.has_init:
+                sleep(0.01)
+                n_tries += 1
+                if n_tries > max_n_tries:
+                    raise
+        except Exception:
+            self.log.critical([
+                ['wr', ' - cant do get_proc_ids(', inst_types, ')...'],
+                ['wr', ' --> Will terminate!'],
+            ])
+            raise Exception()
 
         return copy.deepcopy(InstData.proc_ids)
 

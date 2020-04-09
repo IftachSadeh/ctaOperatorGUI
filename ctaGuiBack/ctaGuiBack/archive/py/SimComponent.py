@@ -3,7 +3,7 @@ import time
 # from ACS import CBDescIn
 from Acspy.Clients.SimpleClient import PySimpleClient
 import random
-from utils import my_log
+from utils import HMILog
 import threading
 
 # acs client
@@ -16,7 +16,7 @@ t2_double = client.getComponent("TEST_JAVA_T2")
 
 class SimComp:
     def __init__(self, site_type):
-        self.log = my_log(title=__name__)
+        self.log = HMILog(title=__name__)
         self.log.info([['y', " - SimComp - "], ['g', site_type]])
 
         t = threading.Thread(target=self.sim_loop)
