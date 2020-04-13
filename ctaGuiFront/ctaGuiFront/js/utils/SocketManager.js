@@ -48,6 +48,8 @@ function SocketManager() {
     this_top.has_joined_session = false
     this_top.session_props = null
 
+    this_top.state_change_funcs = []
+
     // ---------------------------------------------------------------------------
     // the socket
     // ---------------------------------------------------------------------------
@@ -276,24 +278,36 @@ function SocketManager() {
         }
         this.set_user_con_state_opts = set_user_con_state_opts
 
-        user_btn.addEventListener('change', function(customEvent) {
-            is_user_on = customEvent.target.checked
+        user_btn.addEventListener('change', function(e) {
+            is_user_on = e.target.checked
             return
         })
 
+        let has_changed = null
         function is_offline() {
-            let out = false
+            let is_offline_now = false
             if (!this_top.is_socket_connected()) {
-                out = true
+                is_offline_now = true
             }
             else if (document.hidden) {
-                out = true
+                is_offline_now = true
             }
             else if (!is_server_on || !is_user_on) {
-                out = true
+                is_offline_now = true
             }
-            // console.log('-is_offline-',out, this_top.is_socket_connected())
-            return out
+
+            // run functions which can be registered by other code
+            has_changed = (has_changed !== is_offline_now)
+            $.each(this_top.state_change_funcs, function(_, func) {
+                func({
+                    is_offline: is_offline_now,
+                    has_changed: has_changed,
+                })
+            })
+            has_changed = is_offline_now
+
+            // console.log('-is_offline-',is_offline_now, this_top.is_socket_connected())
+            return is_offline_now
         }
         this.is_offline = is_offline
 

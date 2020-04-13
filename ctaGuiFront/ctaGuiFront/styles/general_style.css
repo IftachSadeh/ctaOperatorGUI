@@ -327,6 +327,7 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
   /*transform: scale(.75);*/
 }
 
+
 .checkbox_slider_bck:before {
   /*opacity: 0.5;*/
   box-shadow: 0px 0px 2px 0px #bdbbbb;
@@ -454,4 +455,14 @@ input:checked + .checkbox_slider_bck:before {
   outline: 0;
   border: 0;
   text-align: left;
+}
+
+/*affect the specific element only */
+.disabled_hierarchy {
+  opacity: 80%;
+}
+/*affect the specific element and all children */
+.disabled_hierarchy * {
+  pointer-events: none;
+  cursor: not-allowed;
 }

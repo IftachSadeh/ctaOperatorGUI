@@ -401,7 +401,13 @@ function BaseApp() {
 
         let opt_menu_w = '80%'
         let is_opt_menu_open = false
-        let opt_menu_div = document.querySelector('#general_ops_div')
+        let opt_menu_div_parent = document.querySelector('#general_ops_div')
+        
+        let opt_menu_div = opt_menu_div_parent.appendChild(
+            document.createElement('div')
+        )
+        opt_menu_div.id = 'general_ops_div_content'
+
         let opt_menu_div_style = (
             ''
             + 'position: fixed;'
@@ -462,10 +468,34 @@ function BaseApp() {
     //
     // -------------------------------------------------------------------
     function setup_opt_socks() {
+        // -------------------------------------------------------------------
+        // disable the menu if the widget is offline
+        // -------------------------------------------------------------------
+        let ops_div = document.querySelector('#general_ops_div')
+        ops_div.style.WebkitTransition = 'all 0.3s'
+        ops_div.style.MozTransition = 'all 0.3s'
+
+        let set_offline_state = function(opt_in) {
+            let is_offline = opt_in.is_offline
+            let has_changed = opt_in.has_changed
+            if (has_changed) {
+                if (is_offline) {
+                    ops_div.classList.add('disabled_hierarchy')
+                }
+                else {
+                    ops_div.classList.remove('disabled_hierarchy')
+                }
+            }
+            return
+        }
+        window.sock.state_change_funcs.push(set_offline_state)
+
+        // -------------------------------------------------------------------
+        //
+        // -------------------------------------------------------------------
         let is_simulation = window.sock.session_props.is_simulation
-        
         if (is_simulation) {
-            let opt_menu_div = document.querySelector('#general_ops_div')
+            let opt_menu_div = document.querySelector('#general_ops_div_content')
             add_clock_sim_opts({
                 main_div: opt_menu_div,
             })
