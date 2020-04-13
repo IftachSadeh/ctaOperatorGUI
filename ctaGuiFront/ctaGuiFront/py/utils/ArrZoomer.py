@@ -276,7 +276,7 @@ class ArrZoomer():
         opt_in = {
             'widget': self,
             'data_func': get_init_data,
-            'thread_type': 'arr_zoomer_get_init_data',
+            'thread_group': 'arr_zoomer_get_init_data',
         }
 
         self.socket_manager.send_init_widget(opt_in=opt_in)

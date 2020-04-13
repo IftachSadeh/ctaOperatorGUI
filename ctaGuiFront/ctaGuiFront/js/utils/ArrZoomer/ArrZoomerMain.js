@@ -2110,8 +2110,8 @@ window.ArrZoomerMain = function(opt_in0) {
                             r_out_0: null,
                             r_out_1: null,
                         })
-                    // ang_str_0:"ang_00", ang_str_1:"ang_00", ang_end_0:"ang_00", ang_end_1:"ang_01",
-                    // r_in_0:"rad_00", r_in_1:"rad_00", r_out_0:"rad_01", r_out_1:"rad_01"
+                        // ang_str_0:"ang_00", ang_str_1:"ang_00", ang_end_0:"ang_00", ang_end_1:"ang_01",
+                        // r_in_0:"rad_00", r_in_1:"rad_00", r_out_0:"rad_01", r_out_1:"rad_01"
                         .transition('update')
                         .duration(times.anim)
                         .call(com.arc_tween, {

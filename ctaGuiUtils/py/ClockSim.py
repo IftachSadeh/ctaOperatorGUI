@@ -5,7 +5,7 @@ import gevent
 from gevent import sleep
 
 from ctaGuiUtils.py.LogParser import LogParser
-from ctaGuiUtils.py.utils import datetime_to_secs, secs_to_datetime, date_to_string
+from ctaGuiUtils.py.utils import datetime_to_secs, secs_to_datetime, date_to_string, get_rnd
 from ctaGuiUtils.py.RedisManager import RedisManager
 
 
@@ -38,28 +38,39 @@ class ClockSim():
         self.debug_datetime_now = False
         # self.debug_datetime_now = True
 
-        self.skip_daytime = False
-        self.skip_daytime = True
-
-        self.debug_short_night = False
-        # self.debug_short_night = True
-
-        # speedup simulation. e.g., 60*10 --> every 1 real sec goes to 10 simulated min
-        # self.speed_factor = 10
-        self.speed_factor = 30
-        # self.speed_factor = 60 * 1
-        # self.speed_factor = 60 * 10
-
-        # minimal real-time delay between randomisations
+        # real-time rate of progress of updates
         self.loop_sleep = 1
 
+        # self.is_skip_daytime = False
+        self.is_skip_daytime = True
+
+        self.is_short_night = False
+        # self.is_short_night = True
+
         # safety measure
-        self.max_spped_factor = 30 * 60 * self.loop_sleep
+        self.min_speed_factor = 1
+        self.max_speed_factor = 10 * 60 * self.loop_sleep
+
+        # speedup simulation e.g.,:
+        #   60*10 --> every 1 real sec goes to 10 simulated min
+        self.speed_factor = 30
+        # self.speed_factor = 10
+
+        self.init_sim_params_from_redis = True
+        # self.init_sim_params_from_redis = False
+
+        self.set_speed_factor(
+            data_in={
+                'speed_factor': self.speed_factor,
+                'is_skip_daytime': self.is_skip_daytime,
+                'is_short_night': self.is_short_night,
+            },
+            from_redis=self.init_sim_params_from_redis,
+        )
 
         self.init_night_times()
 
-        # # range in seconds of time-series data to be stored for eg monitoring points
-        # self.time_series_n_seconds = 60 * 30
+        gevent.spawn(self.pubsub_sim_params)
 
         return
 
@@ -87,9 +98,6 @@ class ClockSim():
     def loop(self):
         self.log.info([['g', ' - starting ClockSim.loop ...']])
 
-        if self.speed_factor > self.max_spped_factor:
-            raise ValueError('Can not over-pace the loop ...')
-
         while True:
             self.datetime_now += timedelta(seconds=self.loop_sleep * self.speed_factor)
 
@@ -108,23 +116,23 @@ class ClockSim():
             is_night_now = self.is_night_time_now()
 
             self.redis.set(
-                name='clock_sim_' + 'time_now_sec',
+                name='clock_sim_time_now_sec',
                 data=time_now_sec,
             )
             self.redis.set(
-                name='clock_sim_' + 'is_night_now',
+                name='clock_sim_is_night_now',
                 data=is_night_now,
             )
             self.redis.set(
-                name='clock_sim_' + 'n_nights',
+                name='clock_sim_n_nights',
                 data=self.n_nights,
             )
             self.redis.set(
-                name='clock_sim_' + 'night_start_sec',
+                name='clock_sim_night_start_sec',
                 data=self.night_start_sec,
             )
             self.redis.set(
-                name='clock_sim_' + 'night_end_sec',
+                name='clock_sim_night_end_sec',
                 data=self.night_end_sec,
             )
 
@@ -142,7 +150,7 @@ class ClockSim():
         night_end_minutes = self.rnd_gen.randint(0, 59)
 
         # short night for debugging
-        if self.debug_short_night:
+        if self.is_short_night:
             night_start_hours = 23
             night_start_minutes = 0
             night_end_hours = 2
@@ -172,7 +180,7 @@ class ClockSim():
             seconds=0,
         ).total_seconds()
 
-        if self.skip_daytime or self.debug_short_night:
+        if self.is_skip_daytime or self.is_short_night:
             self.datetime_now = (
                 secs_to_datetime(self.night_start_sec) - timedelta(seconds=10)
             )
@@ -263,9 +271,107 @@ class ClockSim():
     def get_n_nights(self):
         return self.n_nights
 
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
     def get_speed_factor(self):
         return self.speed_factor
 
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    def set_speed_factor(self, data_in, from_redis=False):
+        speed_factor = data_in['speed_factor']
+        is_skip_daytime = data_in['is_skip_daytime']
+        is_short_night = data_in['is_short_night']
+
+        if from_redis:
+            red_data = self.redis.get(
+                name='clock_sim_sim_params',
+                packed=True,
+            )
+
+            if red_data is not None:
+                speed_factor = red_data['speed_factor']
+                is_skip_daytime = red_data['is_skip_daytime']
+                is_short_night = red_data['is_short_night']
+
+        if speed_factor is not None:
+            speed_factor = float(speed_factor)
+
+            is_ok = (
+                speed_factor >= self.min_speed_factor
+                and speed_factor <= self.max_speed_factor
+            )
+            if not is_ok:
+                raise ValueError(
+                    'trying to set speed_factor out of bounds ...', speed_factor
+                )
+
+            self.speed_factor = float(speed_factor)
+
+        if is_skip_daytime is not None:
+            self.is_skip_daytime = is_skip_daytime
+
+        if is_short_night is not None:
+            self.is_short_night = is_short_night
+
+        self.log.info([
+            ['b', ' - updating clock_sim_sim_params: '],
+            ['c', '   speed_factor: '],
+            ['p', self.speed_factor],
+            ['c', ' , is_skip_daytime: '],
+            ['p', self.is_skip_daytime],
+            ['c', ' , is_short_night: '],
+            ['p', self.is_short_night],
+        ])
+
+        data = {
+            'speed_factor': self.speed_factor,
+            'min_speed_factor': self.min_speed_factor,
+            'max_speed_factor': self.max_speed_factor,
+            'is_skip_daytime': self.is_skip_daytime,
+            'is_short_night': self.is_short_night,
+        }
+        self.redis.set(
+            name='clock_sim_sim_params',
+            packed=True,
+            data=data,
+        )
+
+        self.redis.publish(channel='clock_sim_updated_sim_params')
+
+        return
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
+    def pubsub_sim_params(self):
+        # setup the channel once
+        pubsub_tag = 'clock_sim_set_sim_params'
+        while self.redis.set_pubsub(pubsub_tag) is None:
+            sleep(0.1)
+
+        # listen to changes on the channel and do stuff
+        while True:
+            msg = self.redis.get_pubsub(pubsub_tag, packed=True)
+            if msg is None:
+                continue
+
+            keys = ['speed_factor', 'is_skip_daytime', 'is_short_night']
+            data_out = dict()
+            for key in keys:
+                data_out[key] = msg['data'][key] if key in msg['data'] else None
+
+            self.set_speed_factor(data_in=data_out)
+
+            sleep(0.1)
+
+        return
+
+    # ---------------------------------------------------------------------------
+    #
+    # ---------------------------------------------------------------------------
     def get_night_duration_sec(self):
         return self.night_duration_sec
 

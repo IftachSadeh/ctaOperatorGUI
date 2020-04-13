@@ -173,13 +173,7 @@ window.ArrZoomerBase = function(opt_in0) {
     this_top.site_scale = is_south ? 2.5 / 9 : 1
   
     this_top.tel_rs = {
-        s00: [
-            12,
-            13,
-            14,
-            14,
-            // is_south ? 30 : 14,
-        ],
+        s00: [ 12, 13, 14, 14 ],
     }
     this_top.tel_rs.s00 = this_top.tel_rs.s00.map(
         function(x) {
@@ -220,18 +214,27 @@ window.ArrZoomerBase = function(opt_in0) {
 
     zooms.scale_extent = [ zooms.len['0.0'], zooms.len['1.3'] ]
 
-    function is_state_up(scale, scaleTag) {
-        return zooms.len.prev < zooms.len[scaleTag] && scale >= zooms.len[scaleTag]
+    function is_state_up(scale, scale_tag) {
+        return (
+            zooms.len.prev < zooms.len[scale_tag]
+            && scale >= zooms.len[scale_tag]
+        )
     }
     this_top.is_state_up = is_state_up
 
-    function is_state_down(scale, scaleTag) {
-        return zooms.len.prev >= zooms.len[scaleTag] && scale < zooms.len[scaleTag]
+    function is_state_down(scale, scale_tag) {
+        return (
+            zooms.len.prev >= zooms.len[scale_tag]
+            && scale < zooms.len[scale_tag]
+        )
     }
     this_top.is_state_down = is_state_down
 
-    function is_state_change(scale, scaleTag) {
-        return is_state_up(scale, scaleTag) || is_state_down(scale, scaleTag)
+    function is_state_change(scale, scale_tag) {
+        return (
+            is_state_up(scale, scale_tag)
+            || is_state_down(scale, scale_tag)
+        )
     }
     this_top.is_state_change = is_state_change
 
@@ -333,8 +336,11 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
-    function set_tel_data(data_in, isInit) {
-        if (isInit) {
+    function set_tel_data(opt_in) {
+        let data_in = opt_in.data_in
+        let is_init = opt_in.is_init
+        
+        if (is_init) {
             insts.data.tel = []
             insts.data.avg = {
             }
@@ -359,7 +365,7 @@ window.ArrZoomerBase = function(opt_in0) {
                     : 0
             })
 
-            if (isInit) {
+            if (is_init) {
                 insts.data.id_indices[id] = insts.data.tel.length
                 insts.data.tel.push(tel_data)
             }
@@ -436,7 +442,10 @@ window.ArrZoomerBase = function(opt_in0) {
 
         init_inst_props(data_in)
 
-        set_tel_data(data_in.arrProp, true)
+        set_tel_data({
+            data_in: data_in.arrProp,
+            is_init: true,
+        })
 
         // arbitrary but safe initialization of target
         zooms.target = insts.data.tel[0].id
@@ -660,7 +669,7 @@ window.ArrZoomerBase = function(opt_in0) {
     })
 
     function update_data(data_in) {
-        if (!locker.is_free('in_init')) {
+        if (!locker.is_free(lock_init_key)) {
             return
         }
 
@@ -708,7 +717,10 @@ window.ArrZoomerBase = function(opt_in0) {
         // so that if some id was updated multiple times,
         // the latest value will be kept
         // ------------------------------------------------------------------
-        set_tel_data(data_in.data, false)
+        set_tel_data({
+            data_in: data_in.data,
+            is_init: false,
+        })
 
         // ------------------------------------------------------------------
         //
@@ -1204,7 +1216,7 @@ window.ArrZoomerBase = function(opt_in0) {
 
         if (data_in.type === 'sync_tel_focus') {
             let sync_locks = [
-                'in_init', 'zoom', 'auto_zoom_target',
+                lock_init_key, 'zoom', 'auto_zoom_target',
                 'set_state_lock', 'data_change',
             ]
             if (!locker.are_free(sync_locks)) {

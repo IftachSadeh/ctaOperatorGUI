@@ -59,12 +59,14 @@
     <div id="top_padding_div"></div>
 
     <div id="title_div" class="menu_header site_header"> CTA operator Interface </div>
-
+    
     <div id="base_app_div"></div>
+
+    <div id="general_ops_div"></div>
 
     <div id="side_menu"></div>
     <div id="topMenu" class="horizontal_ele grid_ele_dark" style="width: 100%; display: flex; align-items: center; position: fixed; top: 0; opacity: 1;">
-      <div id="top_menu_inner" class="horizontal_ele " style="width: 100%; margin-top: 12px; margin-bottom: 12px; ">
+      <div id="top_menu_inner" class="horizontal_ele" style="width: 100%; margin-top: 12px; margin-bottom: 12px; ">
         <div style="margin-left: 2%;"></div>
 
         <div id="top_menu_left"></div>
@@ -75,43 +77,20 @@
         <div style="margin-right: 3px;"></div>
 
 
-        <div id="logout_btn_div" style="opacity:1; pointer-events:none;">
-          <div class="tooltip">
-            <div id="logout_btn" class="fa fa-sign-out-alt fa-circle-button fa-circle-button-dark"></div>
-            <span class="tooltiptext">Log out</span>
-          </div>
+        <div id="logout_btn_div" class="tooltip" style="opacity:1; pointer-events:none;">
+          <div id="logout_btn" class="fa fa-sign-out-alt fa-circle-button fa-circle-button-dark" style="padding-left: 10px; padding-right: 10px;"></div>
+          <span class="tooltip-text tooltip-bottom-left">Log out</span>
         </div>
 
-        <div id="user_con_stat_div" style="opacity: 0; pointer-events:none">
-          <div class="tooltip">
-            <div id="user_con_stat_div_tog">
-                <label class="switch">
-                  <input type="checkbox" checked id="user_con_stat_div_btn">
-                  <span class="slider round"></span>
-                </label>
-            </div>
-            <span class="tooltiptext">Connection status</span>
-          </div>
-        </div>
-
-        <div id="server_con_stat_div" style="opacity: 0; pointer-events:none">
-          <div class="tooltip">
-            <div id="server_con_stat_div_btn" style="opacity: 1; pointer-events:none" class="status-indicator status-indicator-on"></div>
-            <span class="tooltiptext">Server status</span>
-          </div>
-        </div>
+        <div id="user_con_stat_div" style="opacity: 0; pointer-events:none"></div>
+        <div id="server_con_stat_div" style="opacity: 0; pointer-events:none"></div>
 
         <div style="margin-right: 2%;"></div>
       </div>
     </div>
 
-
     <script type="text/javascript">
-      $.getScript('/js/utils/BaseApp.js', function () {
-        window.base_app.init({
-          widget_name: '{{widget_name}}',
-        })
-      })
+      $.getScript('/js/utils/BaseApp.js')
     </script>
 
     <!-- <paper-toast opened class='it-bottom' duration='0' text="Log-in is implemented for development purposes... Please use username = 'guest' and a password '123' or 'user0' with 'xxx'"></paper-toast> -->

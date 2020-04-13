@@ -547,37 +547,37 @@ window.prefixes = prefixes
 
 window.get_target_name = function(target) {
     if (!target) {
-        return
+        return null
     }
     return target.name
 }
 window.get_target_short = function(target) {
     if (!target) {
-        return
+        return null
     }
     return target.name.split('_')[1]
 }
 window.get_pointing_name = function(pointing) {
     if (!pointing) {
-        return
+        return null
     }
     return pointing.name.split('/')[1]
 }
 window.get_pointing_target = function(pointing) {
     if (!pointing) {
-        return
+        return null
     }
     return pointing.name.split('/')[0]
 }
 window.get_pointing_short = function(pointing) {
     if (!pointing) {
-        return
+        return null
     }
     return pointing.name.split('/')[1].split('_')[1]
 }
 window.get_pointing_value = function(pointing) {
     if (!pointing) {
-        return
+        return null
     }
     return pointing.name.split('/')[1].split('_')[1].split('-')[1]
 }
@@ -1508,7 +1508,7 @@ window.IconBadge = function() {
         let n_icon = opt_in.n_icon
 
         if (!is_def(opt_in.icon_div)) {
-            return
+            return null
         }
 
         let icon_div_id_in = opt_in.icon_div.id
@@ -1516,7 +1516,7 @@ window.IconBadge = function() {
         let pulse_hov_in = is_def(opt_in.pulse_hov_in) ? opt_in.pulse_hov_in : false
 
         if (!is_def(icon_div_id_in) || !is_def(n_icon) || n_icon < 0) {
-            return
+            return null
         }
 
         // make sure we don't add the same badge twice
@@ -1558,9 +1558,11 @@ window.IconBadge = function() {
             .style('background', 'transparent')
         // .style("background", "red").style('opacity',0.2)//.style("border","1px solid red")
 
+        let data_out = {
+        }
+
         if (is_empty_selection) {
-            return {
-            }
+            return data_out
         }
 
         let icon_svg = get(n_icon)
@@ -1577,7 +1579,7 @@ window.IconBadge = function() {
             trans_back: true,
         })
 
-        let data_out = {
+        data_out = {
             svg: svg,
             icon_svg: icon_svg,
             badge: badge,
@@ -2578,6 +2580,342 @@ window.azim_ra = function(data_in) {
         data_out += 360
     } // for debug
     return data_out
+}
+
+// ------------------------------------------------------------------
+//
+// ------------------------------------------------------------------
+window.add_switch_btn = function(opt_in) {
+    let main_div = opt_in.main_div
+    let top_div_id = opt_in.top_div_id
+    let input_id = opt_in.input_id
+    let checked = opt_in.checked
+    let tooltip = opt_in.tooltip
+
+    let top_div = main_div.appendChild(
+        document.createElement('div')
+    )
+    top_div.id = top_div_id
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    let label = top_div.appendChild(
+        document.createElement('label')
+    )
+    label.classList.add('checkbox_slider')
+
+    let input = label.appendChild(
+        document.createElement('input')
+    )
+    input.id = input_id
+    input.type = 'checkbox'
+    input.checked = checked
+    
+    let span = label.appendChild(
+        document.createElement('span')
+    )
+    span.classList.add('checkbox_slider_bck')
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    if (is_def(tooltip)) {
+        let tooltip_text = tooltip.text
+        let class_list = tooltip.class_list
+        
+        top_div.classList.add('tooltip')
+        let span = top_div.appendChild(
+            document.createElement('span')
+        )
+        span.classList.add('tooltip-text')
+        $.each(class_list, function(_, cls) {
+            span.classList.add(cls)
+        })
+        span.innerHTML = tooltip_text
+    }
+
+    return
+}
+
+
+// ------------------------------------------------------------------
+//
+// ------------------------------------------------------------------
+window.add_status_indicator = function(opt_in) {
+    let main_div = opt_in.main_div
+    let top_div_id = opt_in.top_div_id
+    let input_id = opt_in.input_id
+    let checked = opt_in.checked
+    let tooltip = opt_in.tooltip
+
+    let top_div = main_div.appendChild(
+        document.createElement('div')
+    )
+    top_div.id = top_div_id
+    
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    let div = top_div.appendChild(
+        document.createElement('div')
+    )
+    div.id = input_id
+    div.style = 'pointer-events:none'
+
+    div.classList.add('status-indicator')
+    if (checked) {
+        div.classList.add('status-indicator-on')
+    }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    if (is_def(tooltip)) {
+        let tooltip_text = tooltip.text
+        let class_list = tooltip.class_list
+        
+        top_div.classList.add('tooltip')
+        let span = top_div.appendChild(
+            document.createElement('span')
+        )
+        span.classList.add('tooltip-text')
+        $.each(class_list, function(_, cls) {
+            span.classList.add(cls)
+        })
+        span.innerHTML = tooltip_text
+    }
+
+    return
+}
+
+// ------------------------------------------------------------------
+//
+// ------------------------------------------------------------------
+window.add_slider = function(opt_in) {
+    let main_div = opt_in.main_div
+    let top_div_id = opt_in.top_div_id
+    let slider_id = opt_in.slider_id
+    let slider_type = opt_in.slider_type
+    let input_text = opt_in.input_text
+    let tooltip = opt_in.tooltip
+    // let hover_ranges = opt_in.hover_ranges
+
+    let top_div = main_div.appendChild(
+        document.createElement('div')
+    )
+    top_div.id = top_div_id
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    let slider = top_div.appendChild(
+        document.createElement('input')
+    )
+    slider.classList.add('slider')
+    slider.type = slider_type
+    slider.id = slider_id
+    slider.step = 1
+    slider.min = 0
+    slider.max = 1
+    slider.value = 0
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    if (is_def(input_text)) {
+        let text_id = input_text.id
+        let text_size = input_text.size
+        let is_before = input_text.is_before
+        
+        let text_container
+        if (is_before) {
+            text_container = main_div.insertBefore(
+                document.createElement('a'), top_div
+            )
+        }
+        else {
+            text_container = top_div.appendChild(
+                document.createElement('a')
+            )
+        }
+        text_container.classList.add('slider-text')
+
+        let text = text_container.appendChild(
+            document.createElement('input')
+        )
+        text.classList.add('slider-text-input')
+        text.type = 'text'
+        text.id = text_id
+        text.size = text_size
+        text.value = slider.value
+    }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    // if (is_def(hover_ranges)) {
+    //     // let tooltip_text = tooltip.text
+    //     // let class_list = tooltip.class_list
+        
+    //     top_div.classList.add('tooltip')
+
+    //     let range_min = top_div.appendChild(
+    //         document.createElement('span')
+    //     )
+    //     range_min.classList.add('tooltip-text')
+    //     // range_min.classList.add(class_list)
+    //     range_min.classList.add('tooltip-bottom-left')
+    //     range_min.innerHTML = slider.min
+
+    //     let range_max = top_div.appendChild(
+    //         document.createElement('span')
+    //     )
+    //     range_max.classList.add('tooltip-text')
+    //     range_max.classList.add('tooltip-bottom-left')
+    //     range_max.innerHTML = slider.max
+    // }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    if (is_def(tooltip)) {
+        let tooltip_text = tooltip.text
+        let class_list = tooltip.class_list
+        
+        top_div.classList.add('tooltip')
+        let span = top_div.appendChild(
+            document.createElement('span')
+        )
+        span.classList.add('tooltip-text')
+        $.each(class_list, function(_, cls) {
+            span.classList.add(cls)
+        })
+        span.innerHTML = tooltip_text
+    }
+
+    return
+}
+
+// ------------------------------------------------------------------
+//
+// ------------------------------------------------------------------
+window.add_flex_line = function(opt_in) {
+    let main_div = opt_in.main_div
+    
+    let div_top = main_div.appendChild(
+        document.createElement('div')
+    )
+    div_top.classList.add('floating-div-content-line')
+
+    let div_left = div_top.appendChild(
+        document.createElement('div')
+    )
+    div_left.classList.add('floating-div-content-line')
+    
+    let div_flex = div_top.appendChild(
+        document.createElement('div')
+    )
+    div_flex.classList.add('flex_ele')
+
+    let div_right = div_top.appendChild(
+        document.createElement('div')
+    )
+    div_right.classList.add('floating-div-content-line')
+
+    return {
+        div_top: div_top,
+        div_left: div_left,
+        div_right: div_right,
+    }
+}
+
+// ------------------------------------------------------------------
+//
+// ------------------------------------------------------------------
+window.add_accordion_div = function(opt_in) {
+    let main_div = opt_in.main_div
+    let is_open = opt_in.is_open
+    let title_text = opt_in.title_text
+
+    let top_div = main_div.appendChild(
+        document.createElement('div')
+    )
+    top_div.classList.add('floating-div-content')
+
+    let title_div = top_div.appendChild(
+        document.createElement('div')
+    )
+    let content_div = top_div.appendChild(
+        document.createElement('div')
+    )
+
+    let title_div_tog = title_div.appendChild(
+        document.createElement('a')
+    )
+
+    function tog_click(opt_in) {
+        let main_div = opt_in.main_div
+        let tog_icon = opt_in.tog_icon
+        let is_open_now = true
+
+        tog_icon = tog_icon.appendChild(
+            document.createElement('div')
+        )
+        tog_icon.classList.add('fa')
+        tog_icon.classList.add('fa-chevron-down')
+        tog_icon.classList.add('fa-circle-button')
+        tog_icon.style = 'padding-left: 0px; margin-right: 1px;'
+
+        main_div.style.WebkitTransition = 'all .3s ease-out'
+        main_div.style.MozTransition = 'all .3s ease-out'
+        main_div.style.transition = 'all .3s ease-out'
+        main_div.style.overflow = 'hidden'
+        main_div.style.maxHeight = main_div.scrollHeight + 'px'
+
+        function tog_func() {
+            if (is_open_now) {
+                main_div.style.maxHeight = 0
+                tog_icon.classList.add('fa-chevron-right')
+                tog_icon.classList.remove('fa-chevron-down')
+            }
+            else {
+                main_div.style.maxHeight = main_div.scrollHeight + 'px'
+                tog_icon.classList.add('fa-chevron-down')
+                tog_icon.classList.remove('fa-chevron-right')
+            }
+            is_open_now = !is_open_now
+            return
+        }
+
+        return tog_func
+    }
+    let click_func = tog_click({
+        main_div: content_div,
+        tog_icon: title_div_tog,
+    })
+    title_div_tog.onclick = click_func
+    click_func()
+
+    if (is_open) {
+        setTimeout(function() {
+            click_func()
+        }, times.wait_loop)
+    }
+
+    if (is_def(title_text)) {
+        let title = title_div.appendChild(
+            document.createElement('a')
+        )
+        title.innerHTML = title_text
+        title.classList.add('floating-div-title')
+    }
+
+    let output = {
+        title_div: title_div,
+        content_div: content_div,
+    }
+    return output
 }
 
 // window.raDecToLongLat = function (data_in) {

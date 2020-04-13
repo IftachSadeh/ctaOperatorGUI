@@ -299,7 +299,7 @@ class RedisManager(RedisBase):
         self.pipe = RedisPipeManager(name=name, log=log, redis=self.redis)
         self.base = self.redis
 
-        self.pubSub = dict()
+        self.pubsub = dict()
 
         return
 
@@ -479,13 +479,13 @@ class RedisManager(RedisBase):
             if key is None:
                 raise
 
-            if key not in self.pubSub:
-                pubSub = self.redis.pubsub(
+            if key not in self.pubsub:
+                pubsub = self.redis.pubsub(
                     ignore_subscribe_messages=ignore_subscribe_messages
                 )
-                pubSub.subscribe(key)
+                pubsub.subscribe(key)
 
-                self.pubSub[key] = pubSub
+                self.pubsub[key] = pubsub
 
         except Exception:
             if self.log:
@@ -494,8 +494,8 @@ class RedisManager(RedisBase):
                     str(key)
                 ], ['r', ' ' + str(sys.exc_info())]])
 
-        pubSub = self.pubSub[key] if key in self.pubSub else None
-        return pubSub
+        pubsub = self.pubsub[key] if key in self.pubsub else None
+        return pubsub
 
     # ------------------------------------------------------------------
     #
@@ -504,7 +504,7 @@ class RedisManager(RedisBase):
         msg = None
 
         try:
-            if (key is None) or (key not in self.pubSub):
+            if (key is None) or (key not in self.pubsub):
                 raise
         except Exception:
             if self.log:
@@ -515,7 +515,7 @@ class RedisManager(RedisBase):
             return msg
 
         try:
-            msg = self.pubSub[key].get_message(timeout=timeout)
+            msg = self.pubsub[key].get_message(timeout=timeout)
 
             if packed and isinstance(msg, dict):
                 if 'data' in msg:
@@ -530,6 +530,15 @@ class RedisManager(RedisBase):
                 ], ['r', ' ' + str(sys.exc_info())]])
 
         return msg
+
+    # # ------------------------------------------------------------------
+    # #
+    # # ------------------------------------------------------------------
+    # def has_pubsub(self, key=None, timeout=3600, packed=False):
+    #     if not ((key is None) or (key not in self.pubsub)):
+    #         msg = self.pubsub[key].get_message(timeout=timeout)
+    #         print(msg)
+    #     return not ((key is None) or (key not in self.pubsub))
 
 
 # ------------------------------------------------------------------

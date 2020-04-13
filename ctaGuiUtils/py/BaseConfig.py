@@ -104,5 +104,6 @@ class BaseConfig():
         self.redis_port = redis_port
         self.app_prefix = app_prefix
         self.allow_panel_sync = allow_panel_sync
+        self.is_simulation = is_simulation
 
         return

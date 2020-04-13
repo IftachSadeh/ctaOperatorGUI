@@ -37,12 +37,16 @@ function SocketManager() {
     let base_app = window.base_app
     let tab_table_title_id = 'table_title'
     let tab_table_main_id = 'table_content'
-    this.socket = null
-    this.con_stat = null
-    this.all_widgets = {
+    
+    this_top.socket = null
+    this_top.con_stat = null
+    this_top.all_widgets = {
     }
-    this.widget_table = {
+    this_top.widget_table = {
     }
+
+    this_top.has_joined_session = false
+    this_top.session_props = null
 
     // ---------------------------------------------------------------------------
     // the socket
@@ -219,24 +223,26 @@ function SocketManager() {
         // -------------------------------------------------------------------
         //
         // -------------------------------------------------------------------
-        let has_loaded = false
-        this_top.socket.on('join_session_data', function(_) {
-            if (!has_loaded) {
+        this_top.socket.on('join_session_data', function(data_in) {
+            if (!this_top.has_joined_session) {
                 if (is_def(setup_view[widget_name])) {
                     setup_view[widget_name]()
                 }
-                has_loaded = true
+                this_top.has_joined_session = true
+                this_top.session_props = data_in.session_props
             }
         })
+
+        return
     }
-    this.setup_socket = setup_socket
+    this_top.setup_socket = setup_socket
 
     // -------------------------------------------------------------------
     //
     // -------------------------------------------------------------------
     function connection_state(is_connect) {
-        let is_server_on_XXX = false
-        let is_user_on_XXX = true
+        let is_server_on = false
+        let is_user_on = true
         let off_opacity = '40%'
 
         let server_btn = base_app.get_connection_stat_div(true, '_btn')
@@ -246,7 +252,7 @@ function SocketManager() {
         this.user_btn = user_btn
 
         function set_server_con_state(is_con) {
-            is_server_on_XXX = is_con
+            is_server_on = is_con
             if (is_con) {
                 server_btn.classList.add('status-indicator-on')
             }
@@ -259,11 +265,10 @@ function SocketManager() {
 
         function set_user_con_state_opts(is_con) {
             if (is_con) {
-                user_tog.setAttribute('style', 'opacity:1;')
+                user_tog.style = 'opacity: 1;'
             }
             else {
-                user_tog.setAttribute(
-                    'style',
+                user_tog.style = (
                     'opacity: ' + off_opacity + '; pointer-events: none;'
                 )
             }
@@ -272,7 +277,7 @@ function SocketManager() {
         this.set_user_con_state_opts = set_user_con_state_opts
 
         user_btn.addEventListener('change', function(customEvent) {
-            is_user_on_XXX = customEvent.target.checked
+            is_user_on = customEvent.target.checked
             return
         })
 
@@ -284,7 +289,7 @@ function SocketManager() {
             else if (document.hidden) {
                 out = true
             }
-            else if (!is_server_on_XXX || !is_user_on_XXX) {
+            else if (!is_server_on || !is_user_on) {
                 out = true
             }
             // console.log('-is_offline-',out, this_top.is_socket_connected())
@@ -317,7 +322,7 @@ function SocketManager() {
             this_top.socket.emit('sync_state_send', data_now)
         }
     }
-    this.sock_sync_state_send = sock_sync_state_send
+    this_top.sock_sync_state_send = sock_sync_state_send
 
     // -------------------------------------------------------------------
     //
@@ -337,7 +342,7 @@ function SocketManager() {
         })
         return is_same
     }
-    this.is_same_sync = is_same_sync
+    this_top.is_same_sync = is_same_sync
 
     // -------------------------------------------------------------------
     //
@@ -349,7 +354,7 @@ function SocketManager() {
 
         return prev_sync[data_in.type].sync_time >= data_in.sync_time
     }
-    this.is_old_sync = is_old_sync
+    this_top.is_old_sync = is_old_sync
 
     // -------------------------------------------------------------------
     // the server keeps the id of the current active widget,
@@ -361,7 +366,7 @@ function SocketManager() {
         let eleIn
         if (
             (typeof opt_in.eleId === 'string' || opt_in.eleId instanceof String)
-      && is_def(opt_in.eleId)
+              && is_def(opt_in.eleId)
         ) {
             eleIn = opt_in.eleId
             if (!(eleIn.indexOf('#') === 0)) {
@@ -384,7 +389,7 @@ function SocketManager() {
             // console.log("onmousemove",opt_in.data.widget_id)
         })
     }
-    this.emit_mouse_move = emit_mouse_move
+    this_top.emit_mouse_move = emit_mouse_move
     // $(document).mouseenter(function () { console.log('in'); });
     // $(document).mouseleave(function () { console.log('out'); });
 
@@ -492,7 +497,7 @@ function SocketManager() {
         }
         return false
     }
-    this.multiple_inits = multiple_inits
+    this_top.multiple_inits = multiple_inits
 
     // -------------------------------------------------------------------
     //
@@ -507,7 +512,7 @@ function SocketManager() {
             })
         }
     }
-    this.set_icon_badge = set_icon_badge
+    this_top.set_icon_badge = set_icon_badge
 
     // -------------------------------------------------------------------
     //
@@ -609,13 +614,13 @@ function SocketManager() {
             this_top.widget_table[name_tag](widget_opt)
         }
 
-    // // -------------------------------------------------------------------
-    // // after setting up the event listners, can finally add the element
-    // // -------------------------------------------------------------------
-    // gs_idV.push({ tab_table: tab_table_NEW, gs_name: gs_name })
-    // winResize()
+        // // -------------------------------------------------------------------
+        // // after setting up the event listners, can finally add the element
+        // // -------------------------------------------------------------------
+        // gs_idV.push({ tab_table: tab_table_NEW, gs_name: gs_name })
+        // winResize()
     }
-    this.add_widget = add_widget
+    this_top.add_widget = add_widget
 
     // -------------------------------------------------------------------
     // create the side-menu and widget
@@ -695,7 +700,7 @@ function SocketManager() {
             // + '; max-height:'
             // + maxHeight
             // + 'px'
-            item_now.setAttribute('style', item_now_style)
+            item_now.style = item_now_style
             item_now.classList.add('table_item')
             // tab_table._add_widget(gs_name, ele_props[data_now])
         })
@@ -731,46 +736,48 @@ function SocketManager() {
             },
         })
     }
-    this.add_to_table = add_to_table
-
-    // let prevResize = null
-    // function winResize () {
-    //   console.log(' ..... winResize .........') ; return
-    //   if (is_def(prevResize)) return
-    //   prevResize = Date.now()
-
-    //   run_loop_com.init({ tag: 'winResize', func: resizeNowOnce, n_keep: 1 })
-    //   function resizeNow () {
-    //     run_loop_com.push({ tag: 'winResize' })
-    //   }
-
-    //   function resizeNowOnce () {
-    //     if (Date.now() - prevResize < times.anim) {
-    //       resizeNow()
-    //       return
-    //     }
-
-    //     prevResize = Date.now()
-    //     $.each(gs_idV, function (index, gsNow) {
-    //       gsNow.tab_table.set_all_widget_wh(gsNow.gs_name)
-    //     })
-    //   }
-
-    //   $.each(gs_idV, function (index, gsNow) {
-    //     let tblNow = gsNow.tab_table.get_ele(gsNow.gs_name)
-    //     $(tblNow).on('resizestop', function (event, ui) {
-    //       resizeNow()
-    //     })
-    //   })
-
-    //   window.addEventListener('resize', function (e) {
-    //     resizeNow()
-    //   })
-    // }
-    // // this.winResize = winResize;
+    this_top.add_to_table = add_to_table
 }
+
 
 // -------------------------------------------------------------------
 // the global instance of the socket manager
 // -------------------------------------------------------------------
 window.sock = new SocketManager()
+
+
+// let prevResize = null
+// function winResize () {
+//   console.log(' ..... winResize .........') ; return
+//   if (is_def(prevResize)) return
+//   prevResize = Date.now()
+
+//   run_loop_com.init({ tag: 'winResize', func: resizeNowOnce, n_keep: 1 })
+//   function resizeNow () {
+//     run_loop_com.push({ tag: 'winResize' })
+//   }
+
+//   function resizeNowOnce () {
+//     if (Date.now() - prevResize < times.anim) {
+//       resizeNow()
+//       return
+//     }
+
+//     prevResize = Date.now()
+//     $.each(gs_idV, function (index, gsNow) {
+//       gsNow.tab_table.set_all_widget_wh(gsNow.gs_name)
+//     })
+//   }
+
+//   $.each(gs_idV, function (index, gsNow) {
+//     let tblNow = gsNow.tab_table.get_ele(gsNow.gs_name)
+//     $(tblNow).on('resizestop', function (event, ui) {
+//       resizeNow()
+//     })
+//   })
+
+//   window.addEventListener('resize', function (e) {
+//     resizeNow()
+//   })
+// }
+// // this.winResize = winResize;
