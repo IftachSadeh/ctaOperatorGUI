@@ -114,8 +114,8 @@ svg {
 
 .sized-button {
   text-align: center;
-  margin-left: 1px;
-  margin-right: 1px;
+  /* margins in all directions important for hover/focus border highlights ... */
+  margin: 3px;
   padding: 0px;
   /*-moz-transform: scale(.95);*/
   /*-webkit-transform: scale(.95);*/
@@ -219,26 +219,36 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
   width: 13px;
   height: 13px;
   padding: 0.5em 0.5em;
+  /*border: 0.5px solid #d4d2d2;*/
+
+  -webkit-transition: all 0.2s ease-in;
+  -moz-transition: all 0.2s ease-in;
+  -o-transition: all 0.2s ease-in;
+  transition: all 0.2s ease-in;
 }
 
 .fa-circle-button-bright {
-  /*box-shadow: 0px 0px 2px #383B42;*/
-  background-color: #ececec;
   color: #383B42;
+  background-color: #ececec;
 }
 
+.fa-circle-button-bright:hover {
+  box-shadow: 0px 0px 2px 1px #d4d2d2;
+}
 .fa-circle-button-bright:focus, .fa-circle-button-bright:active {
-  box-shadow: 0px 0px 10px #d4d2d2;
+  box-shadow: 0px 0px 2px 2px #d4d2d2;
 }
 
 .fa-circle-button-dark {
-  /*box-shadow: 0px 0px 2px #383B42;*/
   color: #ececec;
   background-color: #383B42;
 }
 
+.fa-circle-button-dark:hover {
+  box-shadow: 0px 0px 2px 1px #383B42;
+}
 .fa-circle-button-dark:focus, .fa-circle-button-dark:active {
-  box-shadow: 0px 0px 10px #383B42;
+  box-shadow: 0px 0px 2px 2px #383B42;
 }
 
 .tooltip {
@@ -265,6 +275,11 @@ button:focus, .form-btn:focus, .site-nav-btn:focus {
 
 .tooltip .tooltip-bottom-left {
   top: 120%;
+  right: 50%;
+}
+
+.tooltip .tooltip-top-left {
+  top: -120%;
   right: 50%;
 }
 

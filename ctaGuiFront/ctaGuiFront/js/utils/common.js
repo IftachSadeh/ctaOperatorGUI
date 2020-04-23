@@ -2640,6 +2640,61 @@ window.add_switch_btn = function(opt_in) {
 
 
 // ------------------------------------------------------------------
+// 
+// ------------------------------------------------------------------
+window.add_click_btn = function(opt_in) {
+    let main_div = opt_in.main_div
+    let top_div_id = opt_in.top_div_id
+    let is_dark = opt_in.is_dark
+    let icon = opt_in.icon
+    let tooltip = opt_in.tooltip
+
+    let top_div = main_div.appendChild(
+        document.createElement('div')
+    )
+    top_div.id = top_div_id
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    let i = top_div.appendChild(
+        document.createElement('i')
+    )
+    
+    i.classList.add(
+        'fa',
+        icon,
+        'sized-button',
+        'fa-circle-button',
+    )
+    if (is_dark) {
+        i.classList.add('fa-circle-button-dark')
+    }
+    else {
+        i.classList.add('fa-circle-button-bright')
+    }
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    if (is_def(tooltip)) {
+        let tooltip_text = tooltip.text
+        let class_list = tooltip.class_list
+        
+        top_div.classList.add('tooltip')
+        let span = top_div.appendChild(
+            document.createElement('span')
+        )
+        span.classList.add('tooltip-text')
+        $.each(class_list, function(_, cls) {
+            span.classList.add(cls)
+        })
+        span.innerHTML = tooltip_text
+    }
+    return
+}
+
+// ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
 window.add_status_indicator = function(opt_in) {

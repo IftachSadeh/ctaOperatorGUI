@@ -13,11 +13,11 @@ class LogParser():
     #
     # ------------------------------------------------------------------
     def __init__(
-        self, base_config, name='', title='', do_parse_msg=True, use_colors=True
+        self, base_config, name=None, title='', do_parse_msg=True, use_colors=True
     ):
         self.base_config = base_config
         self.do_parse_msg = do_parse_msg
-        self.name = 'root' if name is '' else name
+        self.name = 'root' if name is None else name
         self.log = logging.getLogger(self.name)
 
         self.set_colors(use_colors)

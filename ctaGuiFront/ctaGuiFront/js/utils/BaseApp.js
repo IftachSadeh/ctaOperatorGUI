@@ -5,6 +5,7 @@
 /* global times */
 /* global is_def */
 /* global run_when_ready */
+/* global add_click_btn */
 /* global add_switch_btn */
 /* global add_status_indicator */
 /* global add_flex_line */
@@ -457,6 +458,10 @@ function BaseApp() {
         // ------------------------------------------------------------------
         // add options categories
         // ------------------------------------------------------------------
+        add_server_control_opts({
+            main_div: opt_menu_div,
+        })
+
         add_placeholder_opts({
             main_div: opt_menu_div,
         })
@@ -530,13 +535,52 @@ function BaseApp() {
             main_div: content_div,
         })
 
-        short_night_line.div_left.innerHTML = 'example toggle'
+        short_night_line.div_left.innerHTML = 'Example toggle'
 
         add_switch_btn({
             main_div: short_night_line.div_right,
             top_div_id: base_tag + '_placeholder_opts_container',
             input_id: base_tag + '_placeholder_opts',
             checked: true,
+        })
+     
+        return
+    }
+
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
+    function add_server_control_opts(opt_in) {
+        let main_div = opt_in.main_div
+        let base_tag = 'placeholder_opts'
+
+        // for debugging
+        let is_open = false
+        let accordion = add_accordion_div({
+            main_div: main_div,
+            title_text: 'Server control',
+            is_open: is_open,
+        })
+
+        // let title_div = accordion.title_div
+        let content_div = accordion.content_div
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        let short_night_line = add_flex_line({
+            main_div: content_div,
+        })
+
+        short_night_line.div_left.innerHTML = 'Restart HMI server (placeholder)'
+
+        add_click_btn({
+            main_div: short_night_line.div_right,
+            top_div_id: base_tag + '_restart_server_opts_container',
+            input_id: base_tag + '_restart_server_opts',
+            is_dark: true,
+            icon: 'fa-times-circle',
         })
      
         return
@@ -593,7 +637,7 @@ function BaseApp() {
             checked: true,
             // tooltip: {
             //     text: 'ssssssssssssss',
-            //     class_list: ['tooltip-top-right'],
+            //     class_list: ['tooltip-top-left'],
             // },
         })
 
