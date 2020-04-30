@@ -547,7 +547,7 @@ class ArrZoomer():
         if not self.do_data_updates:
             return
 
-        n_sec_sleep = 2
+        n_sec_sleep = 5
         sleep(n_sec_sleep)
 
         def get_thread_id():
@@ -557,17 +557,6 @@ class ArrZoomer():
             )
 
         while (get_thread_id() == thread_id):
-
-            # # testing ....
-            # # testing ....
-            # from ctaGuiUtils.py.utils import get_clock_sim_data, secs_to_datetime
-            # from datetime import date
-            # xx = get_clock_sim_data(self)
-            # print(secs_to_datetime(xx['time_now_sec']))
-            # # print(date.fromisoformat(xx['time_now']))
-            # # testing ....
-            # # testing ....
-
             self.update_data_once()
             sleep(n_sec_sleep)
 
@@ -594,7 +583,7 @@ class ArrZoomer():
     #
     # ------------------------------------------------------------------
     def update_sub_arr(self, thread_id):
-        n_sec_sleep = 2
+        n_sec_sleep = 5
         sleep(n_sec_sleep)
 
         def get_thread_id():

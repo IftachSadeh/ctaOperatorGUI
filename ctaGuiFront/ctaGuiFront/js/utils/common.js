@@ -762,12 +762,12 @@ window.get_tel_state = function(health) {
 let get_tel_state = window.get_tel_state
 
 window.inst_health_col = function(health, index) {
-    let telState = get_tel_state(health)
+    let tel_state = get_tel_state(health)
     if (!is_def(index)) {
-        return tel_state_color[telState][0]
+        return tel_state_color[tel_state][0]
     }
     else {
-        return d3.rgb(tel_state_color[telState][0]).darker(index)
+        return d3.rgb(tel_state_color[tel_state][0]).darker(index)
     }
 }
 // fraction of health within a red/yellow/green class

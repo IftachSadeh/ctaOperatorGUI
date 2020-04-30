@@ -423,6 +423,7 @@ function BaseApp() {
             + 'max-height: 70%;'
             + 'overflow-x: hidden;'
             + 'border-radius: 6px;'
+            + 'pointer-events: none;'
         )
         opt_menu_div.style = opt_menu_div_style
         opt_menu_div.classList.add('floating-div-container')

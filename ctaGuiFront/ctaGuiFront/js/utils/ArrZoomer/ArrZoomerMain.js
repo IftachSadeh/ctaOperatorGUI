@@ -52,7 +52,6 @@ window.ArrZoomerMain = function(opt_in0) {
 
     let scale_r = insts.scale_r
 
-
     let get_prop_pos_shift = ele_base.get_prop_pos_shift
     let interpolate01 = ele_base.interpolate01
     let set_zoom_state = ele_base.set_zoom_state

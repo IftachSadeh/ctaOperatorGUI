@@ -107,14 +107,6 @@ let main_arr_zoomer = function(opt_in) {
             lens: !true,
         },
         trans: {
-            // main: 'translate(0,0)scale(4)', // XRRX XRRX XRRX XRRX
-            main: 'translate(0,100)scale(2.5)',
-            ches: 'translate(110,0)scale(3.8)',
-            tree: 'translate(250,100)scale(2.5)',
-            mini: 'translate(5,0)scale(1)',
-            lens: 'translate(10,5)scale(0.18)',
-            // mini: 'translate(240,0)scale(2.7)',
-            // lens: 'translate(245,5)scale(0.60)',
         },
         inst_filter: {
             // inst_ids: [ 'Lx01', ],
@@ -143,12 +135,34 @@ let main_arr_zoomer = function(opt_in) {
         },
     }
 
+    if (is_south) {
+        arr_zoomer_ele_opts.trans = {
+            main: 'translate(0,100)scale(2.5)',
+            ches: 'translate(100,0)scale(4.0)',
+            tree: 'translate(250,100)scale(2.5)',
+            mini: 'translate(5,0)scale(1)',
+            lens: 'translate(10,5)scale(0.18)',
+            // mini: 'translate(240,0)scale(2.7)',
+            // lens: 'translate(245,5)scale(0.60)',
+        }
+    }
+    else {
+        arr_zoomer_ele_opts.trans = {
+            main: 'translate(0,100)scale(2.5)',
+            ches: 'translate(100,3)scale(4.1)',
+            tree: 'translate(250,100)scale(2.5)',
+            mini: 'translate(5,0)scale(1)',
+            lens: 'translate(10,5)scale(0.18)',
+            // mini: 'translate(240,0)scale(2.7)',
+            // lens: 'translate(245,5)scale(0.60)',
+        }
+    }
+
     // ------------------------------------------------------------------
     // delay counters
     // ------------------------------------------------------------------
     let locker = new Locker()
     locker.add('in_init')
-    locker.add(arr_zoomer_lock_init_key)
 
     // function loop
     let run_loop = new RunLoop({
