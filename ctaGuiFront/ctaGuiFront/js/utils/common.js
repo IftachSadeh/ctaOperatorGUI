@@ -1011,30 +1011,19 @@ window.get_node_id = function(opt_in) {
 }
 let get_node_id = window.get_node_id
 
-window.get_node_width_by_id = function(opt_in) {
+window.get_node_wh_by_id = function(opt_in) {
     let ele_now = get_node_id(opt_in)
 
-    if (is_def(ele_now)) {
-        return ele_now.getBBox().width
-    }
-    else {
-        return 0
-    }
-}
-
-window.get_node_height_by_id = function(opt_in) {
-    let ele_now = get_node_id(opt_in)
     if (!is_def(opt_in.txt_scale)) {
         opt_in.txt_scale = false
     }
     let txt_scale = opt_in.txt_scale ? get_txt_scale() : 1
 
+    let box = null
     if (is_def(ele_now)) {
-        return ele_now.getBBox().height * txt_scale
+        box = ele_now.getBBox()
     }
-    else {
-        return 0
-    }
+    return box
 }
 
 window.get_txt_scale = function() {

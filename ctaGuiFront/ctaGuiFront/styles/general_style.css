@@ -61,7 +61,8 @@ svg {
 
 .site_header {
   font-size: 30px;
-  padding: 15px;
+  padding-top: 30px;
+  padding-bottom: 15px;
   text-align: center;
 }
 

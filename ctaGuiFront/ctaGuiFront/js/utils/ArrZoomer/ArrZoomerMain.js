@@ -8,7 +8,8 @@
 /* global is_def */
 /* global unique */
 /* global tau */
-/* global get_node_height_by_id */
+/* global get_node_wh_by_id */
+/* global get_txt_scale */
 /* global do_zoom_to_target */
 /* global inst_health_col */
 /* global bck_pattern */
@@ -19,25 +20,25 @@
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-window.ArrZoomerMain = function(opt_in0) {
+window.ArrZoomerMain = function(opt_in_top) {
     let this_top = this
-    let run_loop = opt_in0.run_loop
-    // let widget_id = opt_in0.widget_id
-    let locker = opt_in0.locker
-    let is_south = opt_in0.is_south
+    let run_loop = opt_in_top.run_loop
+    // let widget_id = opt_in_top.widget_id
+    let locker = opt_in_top.locker
+    let is_south = opt_in_top.is_south
     let my_unique_id = unique()
-    // let widget_type = opt_in0.widget_type
+    // let widget_type = opt_in_top.widget_type
     
     let vor_show_lines = false
     let debug_pov_center = false
 
-    let no_render = opt_in0.no_render
+    let no_render = opt_in_top.no_render
     let dblclick_zoom_in_out = (
-        is_def(opt_in0.dblclick_zoom_in_out)
-            ? opt_in0.dblclick_zoom_in_out : true
+        is_def(opt_in_top.dblclick_zoom_in_out)
+            ? opt_in_top.dblclick_zoom_in_out : true
     )
 
-    let ele_base = opt_in0.ele_base
+    let ele_base = opt_in_top.ele_base
     let arr_zoomer_id = ele_base.arr_zoomer_id
 
     let has_site_svg = ele_base.has_site_svg
@@ -45,7 +46,7 @@ window.ArrZoomerMain = function(opt_in0) {
     let health_tag = ele_base.health_tag
     let avg_tag_title = ele_base.avg_tag_title
 
-    let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
+    let hex_r = is_def(opt_in_top.hex_r) ? opt_in_top.hex_r : 30
 
     let insts = ele_base.insts
     let zooms = ele_base.zooms
@@ -112,8 +113,8 @@ window.ArrZoomerMain = function(opt_in0) {
     let tel_rs = ele_base.tel_rs
     let site_scale = ele_base.site_scale
 
+    // basic lenght for absolute scaling of e.g., fonts
     let svg_dims = {
-    // w: 500, h: 500, frac_circ_wh: 1,
         w: 600,
         h: 600,
         frac_circ_wh: 0.85,
@@ -144,10 +145,11 @@ window.ArrZoomerMain = function(opt_in0) {
         .attr('clip-path', 'url(#' + clip_main_id + ')')
 
     // ------------------------------------------------------------------
-    // initial scale to 100x100 px
+    // scale to [ele_base.base_ele_width x ele_base.base_ele_width px]
+    // (executed after create_more_map())
     // ------------------------------------------------------------------
     main_gs.g_outer.attr('transform', function() {
-        return 'translate(0,0)scale(' + (100 / svg_dims.w) + ')'
+        return 'translate(0,0)scale(' + (ele_base.base_ele_width / svg_dims.w) + ')'
     })
 
     // ------------------------------------------------------------------
@@ -2768,11 +2770,11 @@ window.ArrZoomerMain = function(opt_in0) {
                 })
                 .attr('dy', function(d) {
                     if (!is_def(ele_h)) {
-                        ele_h = get_node_height_by_id({
+                        ele_h = get_node_wh_by_id({
                             selction: g_prop_lbl.selectAll('text.' + tag_lbl),
                             id: d.id,
-                            txt_scale: true,
-                        })
+                        }).height
+                        ele_h *= get_txt_scale()
                     }
                     return ele_h + 'px'
                 })
@@ -3331,10 +3333,10 @@ window.ArrZoomerMain = function(opt_in0) {
                 .style('font-size', r + 'px')
                 .attr('transform', ('translate(' + dx + ',' + dy + ')'))
                 .attr('dy', function(d) {
-                    let ele_h = get_node_height_by_id({
+                    let ele_h = get_node_wh_by_id({
                         selction: g_base.selectAll('text.' + 'hov_title'),
                         id: d.id,
-                    })
+                    }).height
                     ele_h *= 1.75
                     return ele_h + 'px'
                 })

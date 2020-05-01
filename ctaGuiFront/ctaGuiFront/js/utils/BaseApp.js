@@ -87,6 +87,9 @@ function BaseApp() {
         //
         // -------------------------------------------------------------------
         if (widget_name == 'index') {
+            let title_div = document.querySelector('#title_div')
+            title_div.innerHTML = 'CTA operator Interface'
+
             let main_div = document.querySelector('#base_app_div')
 
             let site_nav_menu_div = main_div.appendChild(document.createElement('div'))
@@ -99,6 +102,9 @@ function BaseApp() {
         //
         // -------------------------------------------------------------------
         if (is_login) {
+            let title_div = document.querySelector('#title_div')
+            title_div.innerHTML = '<br><br><br>CTA operator Interface'
+
             let main_div = document.querySelector('#base_app_div')
 
             let login_div = main_div.appendChild(document.createElement('div'))
@@ -256,7 +262,7 @@ function BaseApp() {
         let top_padding_div = document.querySelector('#top_padding_div')
         let top_padding_style = (
             'width: 100%; padding-top: '
-            + site_name_div.offsetHeight * 3 + 'px;'
+            + site_name_div.offsetHeight * 2 + 'px;'
         )
         top_padding_div.style = top_padding_style
 

@@ -33,12 +33,29 @@ window.ArrZoomerChes = function(opt_in_top) {
 
     let lock_init_key = ele_base.lock_init_keys.ches
 
-    let base_h = 500
+    // basic lenght for absolute scaling of e.g., fonts
+    let base_w = 100
     let add_ches_outline = false
     let show_vor = false
 
-    let font_scale = is_south ? 4 : 4
-    let title_size = (is_south ? 16 : 17) * font_scale
+    let n_cols = opt_in_top.n_cols
+    let aspect_ratio = opt_in_top.aspect_ratio
+    let font_rect_scale = opt_in_top.font_rect_scale
+
+    if (!is_def(n_cols)) {
+        n_cols = is_south ? 18 : 8
+    }
+    if (!is_def(aspect_ratio)) {
+        aspect_ratio = is_south ? 0.25 : 0.2
+    }
+    if (!is_def(font_rect_scale)) {
+        font_rect_scale = is_south ? 0.7 : 0.6
+    }
+
+    let svg_dims = {
+        w: base_w,
+        h: base_w * aspect_ratio,
+    }
 
     let ches_gs = ele_base.svgs.ches
 
@@ -47,19 +64,14 @@ window.ArrZoomerChes = function(opt_in_top) {
     ches_gs.ches_g_base = ches_gs.ches_g.append('g')
 
     // ------------------------------------------------------------------
-    // scale to 100x100 px (executed after create_ches_map())
+    // scale to [ele_base.base_ele_width x (ele_base.base_ele_width*aspect_ratio) px ]
+    // (executed after create_ches_map())
     // ------------------------------------------------------------------
     function g_trans() {
-        let trans_ches = [ -1 * com.ches_xy.x.min, -1 * com.ches_xy.y.min ]
-        ches_gs.g_outer.attr('transform',
-            'translate(' + trans_ches[0] + ', ' + trans_ches[1] + ')'
-        )
-    
-        let scale_ches = 100 / (com.ches_xy.x.max - com.ches_xy.x.min)
+        let scale_more = ele_base.base_ele_width / base_w
         ches_gs.ches_g_base.attr('transform',
-            'scale(' + scale_ches + ')'
+            'translate(0,0)scale(' + scale_more + ')'
         )
-
         return
     }
 
@@ -76,12 +88,6 @@ window.ArrZoomerChes = function(opt_in_top) {
 
 
     let com = {
-    }
-    com.ches_xy = {
-        x: {
-        },
-        y: {
-        },
     }
 
     let health_tag = ele_base.health_tag
@@ -105,93 +111,57 @@ window.ArrZoomerChes = function(opt_in_top) {
         com.ches_g.xyr = {
         }
 
-        let n_ele_in_row = (
-            is_south ? [ 19, 19, 19, 19, 19 ] : [ 8, 8, 8 ]
-        )
-        let ele_r = (
-            is_south ? base_h / 10 : base_h / 6
-        )
-        let ele_space = (
-            is_south ? [ 3.9, 2.8 ] : [ 3, 1.5 ]
-        )
+        let n_eles = tel_id_types.length
+        let n_rows = Math.ceil(n_eles / n_cols)
+        let cell_w = svg_dims.w / n_cols
+        let cell_h = svg_dims.h / n_rows
+        let cell_r = Math.min(cell_w, cell_h)
 
         let vor_data = []
-        let n_ele_row = 0
-        $.each(tel_id_types, function(index, id_now) {
-            let n_ele_now_row = n_ele_row
-            let n_ele_now_col = 0
 
-            $.each(Array(n_ele_in_row.length), function(i, _) {
-                if (n_ele_now_row >= n_ele_in_row[i]) {
-                    n_ele_now_row -= n_ele_in_row[i]
-                    n_ele_now_col++
+        let n_tel = 0
+        for (let n_row = 0; n_row < n_rows; ++n_row) {
+            for (let n_col = 0; n_col < n_cols; ++n_col) {
+                let id_now = tel_id_types[n_tel]
+                if (!is_def(id_now)) {
+                    break
                 }
-            })
-            n_ele_row++
+                n_tel++
 
-            let text_x = (
-                ele_r + (n_ele_now_row * ele_space[0] * ele_r)
-            )
-            let text_y = (
-                ele_r + (n_ele_now_col * ele_space[1] * ele_r)
-            )
-            let rect_w = ele_space[0] * ele_r
-            let rect_h = ele_space[1] * ele_r
-            let rect_x = text_x - rect_w * 0.5
-            let rect_y = text_y - rect_h * 0.5
+                let rect_x = cell_w * n_col
+                let rect_y = cell_h * n_row
+                let text_x = rect_x + 0.5 * cell_w
+                let text_y = rect_y + 0.5 * cell_h
 
-            com.ches_g.xyr[id_now] = {
-                id: id_now,
-                rc: [ n_ele_now_row, n_ele_now_col ],
-                text_x: text_x,
-                text_y: text_y,
-                text_r: ele_r * 1.5,
-                rect_x: rect_x,
-                rect_y: rect_y,
-                rect_w: rect_w,
-                rect_h: rect_h,
+
+                com.ches_g.xyr[id_now] = {
+                    id: id_now,
+                    rc: [ n_row, n_col ],
+                    text_x: text_x,
+                    text_y: text_y,
+                    text_r: cell_r,
+                    rect_x: rect_x,
+                    rect_y: rect_y,
+                    rect_w: cell_w,
+                    rect_h: cell_h,
+                }
+                vor_data.push({
+                    id: id_now,
+                    x: text_x,
+                    y: text_y,
+                })
             }
-            vor_data.push({
-                id: id_now,
-                x: text_x,
-                y: text_y,
-            })
-        })
-
-        let xyr_flat = Object.values(com.ches_g.xyr)
-        com.ches_xy.x.min = min_max_obj({
-            min_max: 'min',
-            data: xyr_flat,
-            func: (x => x.rect_x - 0.5 * x.rect_w),
-        })
-        com.ches_xy.x.max = min_max_obj({
-            min_max: 'max',
-            data: xyr_flat,
-            func: (x => x.rect_x + 1.5 * x.rect_w),
-        })
-        com.ches_xy.y.min = min_max_obj({
-            min_max: 'min',
-            data: xyr_flat,
-            func: (x => x.rect_y - 0.5 * x.rect_h),
-        })
-        com.ches_xy.y.max = min_max_obj({
-            min_max: 'max',
-            data: xyr_flat,
-            func: (x => x.rect_y + 1.5 * x.rect_h),
-        })
+        }
 
         g_ches_rec
             .append('rect')
             .attr('x', 0)
             .attr('y', 0)
-            .attr('width', (com.ches_xy.x.max - com.ches_xy.x.min))
-            .attr('height', (com.ches_xy.y.max - com.ches_xy.y.min))
+            .attr('width', svg_dims.w)
+            .attr('height', svg_dims.h)
             .attr('stroke-width', '0')
-            .attr('transform',
-                'translate(' + com.ches_xy.x.min + ', ' + com.ches_xy.y.min + ')'
-            )
             .attr('fill', '#383b42')
-            // .attr("fill", "#d698bc")// .attr("fill", "#F2F2F2")
+            // .attr('fill', '#d698bc')// .attr("fill", "#F2F2F2")
 
         if (add_ches_outline) {
             g_ches_rec
@@ -210,10 +180,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             .y(function(d) {
                 return d.y
             })
-            .extent([
-                [ com.ches_xy.x.min, com.ches_xy.y.min ],
-                [ com.ches_xy.x.max, com.ches_xy.y.max ],
-            ])
+            .extent([[ 0, 0 ], [ svg_dims.w, svg_dims.h ]])
 
         com.ches_g.vor = vor_func.polygons(vor_data)
 
@@ -377,28 +344,37 @@ window.ArrZoomerChes = function(opt_in_top) {
             .text(function(d) {
                 return tel_info.get_title(d.id)
             })
-            // .attr("id",      function(d) { return my_unique_id+d.id+tag_txt; })
             .attr('class', tag_state + ' ' + tag_lbl)
             .style('font-weight', 'normal')
             .attr('stroke-width', text_strk)
             .attr('vector-effect', 'non-scaling-stroke')
             .style('pointer-events', 'none')
-            .each(function(d) {
-                d.font_scale = String(font_scale)
-                d.shift_y = shift_y
+            // first set to ['1px'], then scale to [(font_scale * 1)+'px']
+            .style('font-size', '1px')
+            .style('font-size', function(d) {
+
+                let ele_wh = get_node_wh_by_id({
+                    selction: com.ches_g.g.selectAll('text.' + tag_lbl),
+                    id: d.id,
+                })
+                let font_scale_w = com.ches_g.xyr[d.id].rect_w / ele_wh.width
+                let font_scale_h = com.ches_g.xyr[d.id].rect_h / ele_wh.height
+                let font_scale = font_rect_scale * Math.min(font_scale_w)
+
+                d.font_scale = font_scale
+                
+                return font_scale + 'px'
             })
-            // .style('stroke', txt_col_rcb)
-            // .style('fill', txt_col_rc)
-            .style('font-size', title_size + 'px')
+            .attr('dy', function(d) {
+                return (d.font_scale / 3) + 'px'
+            })
+            .attr('text-anchor', 'middle')
             .attr('transform', function(d) {
                 return (
                     ('translate(' + com.ches_g.xyr[d.id].text_x + ',')
                     + (com.ches_g.xyr[d.id].text_y + ')')
                 )
             })
-            .attr('dy', title_size / 3 + 'px')
-            .attr('text-anchor', 'middle')
-            .style('font-size', title_size + 'px')
             .style('opacity', '1')
             .merge(text)
             .transition('in_out')

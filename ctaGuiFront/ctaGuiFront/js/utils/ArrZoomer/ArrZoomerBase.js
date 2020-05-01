@@ -11,8 +11,8 @@
 /* global is_def */
 /* global run_when_ready */
 /* global tel_info */
-/* global get_node_width_by_id */
-/* global get_node_height_by_id */
+/* global get_node_wh_by_id */
+/* global get_txt_scale */
 /* global ArrZoomerMain */
 /* global ArrZoomerMini */
 /* global ArrZoomerChes */
@@ -45,25 +45,29 @@ window.load_script({
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-window.ArrZoomerBase = function(opt_in0) {
+window.ArrZoomerBase = function(opt_in_top) {
     let this_top = this
     let my_unique_id = unique()
-    let run_loop = opt_in0.run_loop
-    let widget_id = opt_in0.widget_id
-    let widget_source = opt_in0.widget_source
-    let locker = opt_in0.locker
-    let is_south = opt_in0.is_south
-    let widget_type = opt_in0.widget_type
-    let sock = opt_in0.sock
-    let svg = opt_in0.svg
+    let run_loop = opt_in_top.run_loop
+    let widget_id = opt_in_top.widget_id
+    let widget_source = opt_in_top.widget_source
+    let locker = opt_in_top.locker
+    let is_south = opt_in_top.is_south
+    let widget_type = opt_in_top.widget_type
+    let sock = opt_in_top.sock
+    let svg = opt_in_top.svg
 
-    let user_opts = opt_in0.user_opts
+    let user_opts = opt_in_top.user_opts
     let do_ele = user_opts.do_ele
     let inst_filter = user_opts.inst_filter
 
+    this_top.base_ele_width = (
+        is_def(user_opts.base_ele_width) ? user_opts.base_ele_width : 100
+    )
+
     this_top.has_init = false
 
-    this_top.svg_dims = opt_in0.svg_dims
+    this_top.svg_dims = opt_in_top.svg_dims
     
     // this_top.has_site_svg = !is_south
     this_top.has_site_svg = true
@@ -76,7 +80,7 @@ window.ArrZoomerBase = function(opt_in0) {
     let arr_zoomer_id = 'arr_zoomer' + my_unique_id
     this_top.arr_zoomer_id = arr_zoomer_id
 
-    let lock_init_key = opt_in0.lock_init_key
+    let lock_init_key = opt_in_top.lock_init_key
     set_locks()
 
     // ------------------------------------------------------------------
@@ -530,10 +534,10 @@ window.ArrZoomerBase = function(opt_in0) {
                 $.each(title_data, function(index_0, data_now_0) {
                     if (index_0 < i) {
                         if (!is_def(ele_wh[0][index_0]) || ele_wh[0][index_0] === 0) {
-                            ele_wh[0][index_0] = get_node_width_by_id({
+                            ele_wh[0][index_0] = get_node_wh_by_id({
                                 selction: g_in.selectAll('text.' + tag_now),
                                 id: data_now_0.id,
-                            })
+                            }).height
                         }
                         x += data_now_0.x + ele_wh[0][index_0]
                     }
@@ -542,11 +546,11 @@ window.ArrZoomerBase = function(opt_in0) {
             }
             else {
                 if (!is_def(ele_wh[1]) || ele_wh[1] === 0) {
-                    ele_wh[1] = get_node_height_by_id({
+                    ele_wh[1] = get_node_wh_by_id({
                         selction: g_in.selectAll('text.' + tag_now),
                         id: title_data[0].id,
-                        txt_scale: true,
-                    })
+                    }).height
+                    ele_wh[1] *= get_txt_scale()
                 }
                 output = d.y + ele_wh[1]
             }
@@ -756,7 +760,7 @@ window.ArrZoomerBase = function(opt_in0) {
                 is_south: is_south,
                 my_unique_id: my_unique_id,
                 ele_base: this_top,
-                isLens: 1,
+                is_lens: 1,
                 static_zoom: false,
             }
             add_user_opts(ele_opts_lens, 'lens')
@@ -790,11 +794,9 @@ window.ArrZoomerBase = function(opt_in0) {
                 is_south: is_south,
                 my_unique_id: my_unique_id,
                 ele_base: this_top,
-                isLens: 1,
-                aspect_ratio: 0.5,
             }
             add_user_opts(ele_opts_more, 'more')
-        
+
             let ele_more = new ArrZoomerMore(ele_opts_more)
             ele_more.init_data({
             })

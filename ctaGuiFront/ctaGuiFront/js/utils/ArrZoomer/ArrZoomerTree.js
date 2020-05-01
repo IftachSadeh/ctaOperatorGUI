@@ -9,23 +9,24 @@
 /* global bck_pattern */
 /* global vor_ploy_func */
 /* global inst_health_frac */
-/* global get_node_height_by_id */
+/* global get_node_wh_by_id */
+/* global get_txt_scale */
 /* global unique */
 /* global tau */
 
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-window.ArrZoomerTree = function(opt_in0) {
-    // console.log(opt_in0)
+window.ArrZoomerTree = function(opt_in_top) {
+    // console.log(opt_in_top)
     let this_top = this
-    // let run_loop = opt_in0.run_loop
-    // let widget_id = opt_in0.widget_id
-    let locker = opt_in0.locker
-    // let is_south = opt_in0.is_south
+    // let run_loop = opt_in_top.run_loop
+    // let widget_id = opt_in_top.widget_id
+    let locker = opt_in_top.locker
+    // let is_south = opt_in_top.is_south
     let my_unique_id = unique()
 
-    let ele_base = opt_in0.ele_base
+    let ele_base = opt_in_top.ele_base
 
     let insts = ele_base.insts
     let zooms = ele_base.zooms
@@ -36,19 +37,20 @@ window.ArrZoomerTree = function(opt_in0) {
     // let avg_tag_title = ele_base.avg_tag_title
     
     let scale_r = insts.scale_r
-    let aspect_ratio = is_def(opt_in0.aspect_ratio) ? opt_in0.aspect_ratio : 1
+    let aspect_ratio = is_def(opt_in_top.aspect_ratio) ? opt_in_top.aspect_ratio : 1
     let get_prop_pos_shift = ele_base.get_prop_pos_shift
     let interpolate01 = ele_base.interpolate01
     let set_zoom_state = ele_base.set_zoom_state
     let props_s1 = ele_base.props_s1
 
-    let has_title = is_def(opt_in0.has_title) ? opt_in0.has_title : true
+    let has_title = is_def(opt_in_top.has_title) ? opt_in_top.has_title : true
 
     this_top.has_init = false
 
     ele_base.set_ele(this_top, 'tree')
     let get_ele = ele_base.get_ele
 
+    // basic lenght for absolute scaling of e.g., fonts
     let len_base = 500
     let svg_dims = {
         w: len_base,
@@ -109,10 +111,11 @@ window.ArrZoomerTree = function(opt_in0) {
     tree_gs.g_s1 = tree_gs.g_base.append('g')
 
     // ------------------------------------------------------------------
-    // scale to 100x100 px
+    // scale to [ele_base.base_ele_width x (ele_base.base_ele_width * aspect_ratio) px]
+    // (executed after create_more_map())
     // ------------------------------------------------------------------
     tree_gs.g_outer.attr('transform',
-        'translate(0,0)scale(' + (100 / svg_dims.w) + ')'
+        'translate(0,0)scale(' + (ele_base.base_ele_width / svg_dims.w) + ')'
     )
 
     // ------------------------------------------------------------------
@@ -881,11 +884,11 @@ window.ArrZoomerTree = function(opt_in0) {
             })
             .attr('dy', function(d) {
                 if (!is_def(ele_h)) {
-                    ele_h = get_node_height_by_id({
+                    ele_h = get_node_wh_by_id({
                         selction: com.s01.g_text.selectAll('text.' + title_tag),
                         id: d.id,
-                        txt_scale: true,
-                    })
+                    }).height
+                    ele_h *= get_txt_scale()
                 }
                 return ele_h + 'px'
             })
@@ -1256,12 +1259,12 @@ window.ArrZoomerTree = function(opt_in0) {
 
         function txt_trans(d, _) {
             let d0 = d.node_r + Math.min(10, d.node_r)
-            let d1 = get_node_height_by_id({
+            let d1 = get_node_wh_by_id({
                 selction: com.s10.g_hierarchy.selectAll('text.' + tag_text),
                 id: get_ele_id(d),
                 get_id: get_ele_id,
-                txt_scale: true,
-            })
+            }).height
+            d1 *= get_txt_scale()
 
             return ('translate(' + (d.y - d0) + ',' + (d.x + d1) + ')')
         }

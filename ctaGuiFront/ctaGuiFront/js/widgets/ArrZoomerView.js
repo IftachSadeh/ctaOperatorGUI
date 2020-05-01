@@ -91,8 +91,6 @@ let main_arr_zoomer = function(opt_in) {
 
     let svg_dims = {
         w: 500,
-        // h: 350, // before adding more
-        h: 600,
     }
     let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id
 
@@ -122,14 +120,16 @@ let main_arr_zoomer = function(opt_in) {
             // dblclick_zoom_in_out: false,
         },
         ches: {
-            // myOpt: 0,
+            n_cols: is_south ? 18 : 8,
+            aspect_ratio: is_south ? 0.25 : 0.2,
+            font_rect_scale: is_south ? 0.7 : 0.6,
         },
         mini: {
             // static_zoom: false,
         },
         tree: {
             // aspect_ratio: 6/5,
-            has_title: !false,
+            has_title: false,
         },
         lens: {
             aspect_ratio: 4,
@@ -137,35 +137,63 @@ let main_arr_zoomer = function(opt_in) {
             // pointerEvents: true,
         },
         more: {
-            // aspect_ratio: 6/5,
+            aspect_ratio: 0.5,
+            // has_title: false,
         },
+        base_ele_width: 100,
     }
 
-    if (is_south) {
-        arr_zoomer_ele_opts.trans = {
-            main: 'translate(0,100)scale(2.5)',
-            ches: 'translate(100,0)scale(4.0)',
-            tree: 'translate(250,100)scale(2.5)',
-            mini: 'translate(5,0)scale(1)',
-            lens: 'translate(10,5)scale(0.18)',
-            // mini: 'translate(240,0)scale(2.7)',
-            // lens: 'translate(245,5)scale(0.60)',
-            more: 'translate(0,100)scale(2.5)',
-        }
+    // symmetric arrangement for elements
+    let base_ele_width = arr_zoomer_ele_opts.base_ele_width
+    let mini_trans_x = 5
+    let mini_scale = 1
+    let mini_h = mini_scale * base_ele_width
+    let ches_trans_x = mini_scale * base_ele_width + mini_trans_x
+    let ches_scale = (svg_dims.w - ches_trans_x - mini_trans_x) / base_ele_width
+    let ches_h = ches_scale * base_ele_width * arr_zoomer_ele_opts.ches.aspect_ratio
+    let mini_trans_y = (mini_h < ches_h) * (0.5 * Math.abs(mini_h - ches_h))
+    let ches_trans_y = (mini_h > ches_h) * (0.5 * Math.abs(mini_h - ches_h))
+    let main_scale = 2.5
+    let main_trans_y = Math.max(mini_h, ches_h)
+    let more_trans_y = main_trans_y + main_scale * base_ele_width
+    let more_scale = 5
+    let more_h = more_scale * base_ele_width * arr_zoomer_ele_opts.more.aspect_ratio
+
+    arr_zoomer_ele_opts.trans = {
+        main: (
+            'translate(0,'+main_trans_y+')scale(2.5)'
+        ),
+        tree: (
+            'translate(250,'+main_trans_y+')scale(2.5)'
+        ),
+        ches: (
+            'translate('+ches_trans_x+','+ches_trans_y
+            +')scale('+ches_scale+')'
+        ),
+        mini: (
+            'translate('+mini_trans_x+','+mini_trans_y
+            +')scale('+mini_scale+')'
+        ),
+        lens: (
+            'translate(10,5)scale(0.18)'
+        ),
+        more: (
+            'translate(0,'+more_trans_y+')scale('+more_scale+')'
+        ),
     }
-    else {
-        arr_zoomer_ele_opts.trans = {
-            main: 'translate(0,100)scale(2.5)',
-            ches: 'translate(100,3)scale(4.1)',
-            tree: 'translate(250,100)scale(2.5)',
-            mini: 'translate(5,0)scale(1)',
-            lens: 'translate(10,5)scale(0.18)',
-            // mini: 'translate(240,0)scale(2.7)',
-            // lens: 'translate(245,5)scale(0.60)',
-            // more: 'translate(0,50)scale(5)',
-            more: 'translate(0,350)scale(5)',
-        }
-    }
+
+    svg_dims.h = more_trans_y + more_h
+
+    // example:
+    //     arr_zoomer_ele_opts.trans = {
+    //         main: 'translate(0,100)scale(2.5)',
+    //         ches: 'translate(100,0)scale(4.0)',
+    //         tree: 'translate(250,100)scale(2.5)',
+    //         mini: 'translate(5,0)scale(1)',
+    //         lens: 'translate(10,5)scale(0.18)',
+    //         more: 'translate(0,350)scale(5)',
+    //     }
+
 
     // ------------------------------------------------------------------
     // delay counters
@@ -188,7 +216,6 @@ let main_arr_zoomer = function(opt_in) {
         })) {
             return
         }
-
 
         // ------------------------------------------------------------------
         // create the main svg element

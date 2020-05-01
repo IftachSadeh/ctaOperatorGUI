@@ -3525,11 +3525,12 @@ let main_weather_monitoring = function(opt_in) {
                         // mini: true,
                         tree: true,
                         // lens: !true,
+                        // more: false,
                     },
                     trans: {
                         // main: 'translate(85,85)scale(3)',
                         main: 'translate(85,85)scale(5)',
-                        // ches: 'translate(110,0)scale(3.8)',
+                        // ches: 'translate(110,0)scale(8)',
                         tree: 'translate(590,100)scale(3.5)',
                         // mini: 'translate(5,0)scale(1)',
                         // lens: 'translate(10,5)scale(0.18)',
@@ -3555,6 +3556,11 @@ let main_weather_monitoring = function(opt_in) {
                         // has_titles: true,
                         // pointerEvents: true,
                     },
+                    more: {
+                        aspect_ratio: 0.5,
+                        // has_title: false,
+                    },
+                    base_ele_width: 100,
                 }
 
                 let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id

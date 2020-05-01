@@ -57,7 +57,7 @@
             "error", "stroustrup"
         ],
         "no-unused-vars": [
-            2, 
+            "warn", 
             {"args": "after-used", "argsIgnorePattern": "_"}
         ],
         "no-nested-ternary": "error",
@@ -65,7 +65,7 @@
         "no-underscore-dangle": "error",
         "curly": "error",
         "no-multiple-empty-lines": [
-            "error", 
+            "warn", 
             { "max": 2, "maxEOF": 3, "maxBOF": 0 }
         ],
         "keyword-spacing": [
@@ -73,7 +73,7 @@
             { "before": true , "after": true }
         ],
         "no-trailing-spaces": [
-            "error", 
+            "warn", 
             { "skipBlankLines": true }
         ],
         "object-property-newline": [

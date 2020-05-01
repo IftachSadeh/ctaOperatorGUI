@@ -13,7 +13,12 @@ window.ArrZoomerMore = function(opt_in_top) {
     let locker = opt_in_top.locker
     // let is_south = opt_in_top.is_south
 
-    let aspect_ratio = opt_in_top.aspect_ratio
+    let aspect_ratio = (
+        is_def(opt_in_top.aspect_ratio) ? opt_in_top.aspect_ratio : 1
+    )
+    let has_title = (
+        is_def(opt_in_top.has_title) ? opt_in_top.has_title : true
+    )
 
     let ele_base = opt_in_top.ele_base
     let insts = ele_base.insts
@@ -21,7 +26,9 @@ window.ArrZoomerMore = function(opt_in_top) {
     ele_base.set_ele(this_top, 'more')
 
     let lock_init_key = ele_base.lock_init_keys.more
+    let avg_tag = ele_base.avg_tag
 
+    // basic lenght for absolute scaling of e.g., fonts
     let svg_dims = {
         w: 500,
     }
@@ -39,30 +46,16 @@ window.ArrZoomerMore = function(opt_in_top) {
     more_gs.more_g_base = more_gs.more_g.append('g')
 
     // ------------------------------------------------------------------
-    // scale to 100x100 px (executed after create_more_map())
+    // scale to [ele_base.base_ele_width x (ele_base.base_ele_width * aspect_ratio) px]
+    // (executed after create_more_map())
     // ------------------------------------------------------------------
     function g_trans() {
-        let scale_more = 100 / svg_dims.w
+        let scale_more = ele_base.base_ele_width / svg_dims.w
         more_gs.more_g_base.attr('transform',
             'translate(0,0)scale(' + scale_more + ')'
         )
         return
     }
-
-
-    // function g_trans() {
-    //     let trans_more = [ -1 * com.more_xy.x.min, -1 * com.more_xy.y.min ]
-    //     more_gs.g_outer.attr('transform',
-    //         'translate(' + trans_more[0] + ', ' + trans_more[1] + ')'
-    //     )
-    
-    //     let scale_more = 100 / (com.more_xy.x.max - com.more_xy.x.min)
-    //     more_gs.more_g_base.attr('transform',
-    //         'scale(' + scale_more + ')'
-    //     )
-
-    //     return
-    // }
 
     // ------------------------------------------------------------------
     // to avoid bugs, this is the g which should be used
@@ -128,6 +121,12 @@ window.ArrZoomerMore = function(opt_in_top) {
         setup_rect()
         g_trans()
 
+        prop_focus({
+            tel_id: avg_tag,
+            prop_in: '',
+            parent_name: '',
+        })
+        
         set_state_once()
 
         locker.remove(lock_init_key)
@@ -146,14 +145,16 @@ window.ArrZoomerMore = function(opt_in_top) {
             prop_in === '' ? null : insts.data.prop_parent_s1[tel_id][prop_in]
         )
 
-        ele_base.tel_prop_title({
-            tel_id: tel_id,
-            prop_in: prop_in,
-            parent_name: parent_name,
-            font_scale: 0.6,
-            g_in: more_gs.more_g_base,
-            g_w: svg_dims.w,
-        })
+        if (has_title) {
+            ele_base.tel_prop_title({
+                tel_id: tel_id,
+                prop_in: prop_in,
+                parent_name: parent_name,
+                font_scale: 0.6,
+                g_in: more_gs.more_g_base,
+                g_w: svg_dims.w,
+            })
+        }
 
         return
     }

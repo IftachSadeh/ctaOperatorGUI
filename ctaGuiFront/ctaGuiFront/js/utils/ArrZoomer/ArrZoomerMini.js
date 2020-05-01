@@ -17,41 +17,42 @@
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-window.ArrZoomerMini = function(opt_in0) {
+window.ArrZoomerMini = function(opt_in_top) {
     let this_top = this
-    let run_loop = opt_in0.run_loop
-    // let widget_id = opt_in0.widget_id
-    let locker = opt_in0.locker
-    let is_south = opt_in0.is_south
-    let isLens = opt_in0.isLens
+    let run_loop = opt_in_top.run_loop
+    // let widget_id = opt_in_top.widget_id
+    let locker = opt_in_top.locker
+    let is_south = opt_in_top.is_south
+    let is_lens = opt_in_top.is_lens
     let my_unique_id = unique()
   
     let dblclick_zoom_in_out = (
-        is_def(opt_in0.dblclick_zoom_in_out) ? opt_in0.dblclick_zoom_in_out : true
+        is_def(opt_in_top.dblclick_zoom_in_out) ? opt_in_top.dblclick_zoom_in_out : true
     )
     let has_titles = (
-        is_def(opt_in0.has_titles) ? opt_in0.has_titles : false
+        is_def(opt_in_top.has_titles) ? opt_in_top.has_titles : false
     )
     let pointerEvents = (
-        is_def(opt_in0.pointerEvents) ? opt_in0.pointerEvents : !isLens
+        is_def(opt_in_top.pointerEvents) ? opt_in_top.pointerEvents : !is_lens
     )
     this_top.static_zoom = (
-        is_def(opt_in0.static_zoom) ? opt_in0.static_zoom : true
+        is_def(opt_in_top.static_zoom) ? opt_in_top.static_zoom : true
     )
 
-    let mini_lens_tag = isLens ? 'Lens' : 'Mini'
+    let mini_lens_tag = is_lens ? 'Lens' : 'Mini'
   
-    let ele_base = opt_in0.ele_base
+    let ele_base = opt_in_top.ele_base
     let insts = ele_base.insts
     let zooms = ele_base.zooms
     let lock_init_key = ele_base.lock_init_keys[mini_lens_tag.toLowerCase()]
 
     let has_site_svg = ele_base.has_site_svg
     // let site_bck_svg = ele_base.site_bck_svg
-    let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 40
+    let hex_r = is_def(opt_in_top.hex_r) ? opt_in_top.hex_r : 40
 
     let scale_r = insts.scale_r
 
+    // basic lenght for absolute scaling of e.g., fonts
     let svg_dims = {
         // w: 500, h: 500, frac_circ_wh: 1,
         w: 600,
@@ -92,10 +93,11 @@ window.ArrZoomerMini = function(opt_in0) {
     mini_gs.g_back = mini_gs.g_base.append('g')
 
     // ------------------------------------------------------------------
-    // scale to 100x100 px (executed after createChessMap())
+    // scale to [ele_base.base_ele_width x ele_base.base_ele_width px]
+    // (executed after create_more_map())
     // ------------------------------------------------------------------
     function g_trans() {
-        let scale_mini = 100 / svg_dims.w
+        let scale_mini = ele_base.base_ele_width / svg_dims.w
         mini_gs.g_mini.attr('transform',
             'translate(0,0)scale(' + scale_mini + ')'
         )
@@ -143,7 +145,7 @@ window.ArrZoomerMini = function(opt_in0) {
             .attr('height', svg_dims.h)
             .style('fill', 'transparent' )
             .style('stroke', '#F2F2F2' )
-            .style('stroke-width', isLens ? 2 : 0)
+            .style('stroke-width', is_lens ? 2 : 0)
             .attr('pointer-events', 'none')
             .attr('opacity', 1)
 
@@ -153,10 +155,10 @@ window.ArrZoomerMini = function(opt_in0) {
             .attr('y', 0)
             .attr('width', svg_dims.w)
             .attr('height', svg_dims.h)
-        // .attr('fill', isLens?'transparent':'#383B42')
+        // .attr('fill', is_lens?'transparent':'#383B42')
             .attr('fill', '#383B42')
         // .attr('fill', '#F2F2F2')
-        // .style('opacity', isLens?0.1:1)
+        // .style('opacity', is_lens?0.1:1)
 
 
         // mini_gs.g_back
@@ -165,10 +167,10 @@ window.ArrZoomerMini = function(opt_in0) {
         //   .attr('y', 0)
         //   .attr('width', svg_dims.w)
         //   .attr('height', svg_dims.h)
-        //   // .attr('fill', isLens?'transparent':'#383B42')
+        //   // .attr('fill', is_lens?'transparent':'#383B42')
         //   // .attr('fill', '#383B42')
         //   .attr('fill', '#F2F2F2')
-        //   .style('opacity', isLens?0.05:0)
+        //   .style('opacity', is_lens?0.05:0)
 
         // ------------------------------------------------------------------
         //
