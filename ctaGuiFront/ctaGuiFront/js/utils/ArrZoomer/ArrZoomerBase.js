@@ -11,10 +11,13 @@
 /* global is_def */
 /* global run_when_ready */
 /* global tel_info */
+/* global get_node_width_by_id */
+/* global get_node_height_by_id */
 /* global ArrZoomerMain */
 /* global ArrZoomerMini */
 /* global ArrZoomerChes */
 /* global ArrZoomerTree */
+/* global ArrZoomerMore */
 
 let load_script_tag = 'ArrZoomerBase'
 
@@ -33,6 +36,10 @@ window.load_script({
 window.load_script({
     source: load_script_tag,
     script: '/js/utils/ArrZoomer/ArrZoomerTree.js',
+})
+window.load_script({
+    source: load_script_tag,
+    script: '/js/utils/ArrZoomer/ArrZoomerMore.js',
 })
 
 // ------------------------------------------------------------------
@@ -92,6 +99,15 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
+    let avg_tag = 'avg'
+    this_top.avg_tag = avg_tag
+    
+    let avg_tag_title = 'Array'
+    this_top.avg_tag_title = avg_tag_title
+
+    let health_tag = null
+    let health_title = null
+
     let svgs = {
     }
     this_top.svgs = svgs
@@ -104,6 +120,8 @@ window.ArrZoomerBase = function(opt_in0) {
     svgs.tree = {
     }
     svgs.lens = {
+    }
+    svgs.more = {
     }
     svgs.g_svg = svg.append('g')
 
@@ -131,8 +149,6 @@ window.ArrZoomerBase = function(opt_in0) {
     insts.all_ids0 = []
     insts.all_props = []
     insts.all_props0 = []
-    insts.prop0 = 'health'
-    insts.prop_title0 = 'Health'
     insts.tau_space = tau / 50
 
     insts.data = {
@@ -258,11 +274,17 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     function init_inst_props(data_in) {
         let tel_prop_types = data_in.tel_prop_types
+
+        health_tag = data_in.health_tag
+        this_top.health_tag = health_tag
+
+        health_title = data_in.health_title
+        this_top.health_title = health_title
     
-        insts.all_props0.push(insts.prop0)
+        insts.all_props0.push(health_tag)
         insts.all_ids0.push('')
         insts.props[''] = []
-        insts.props0[''] = [ insts.prop0 ]
+        insts.props0[''] = [ health_tag ]
         insts.prop_titles[''] = {
         }
 
@@ -270,7 +292,7 @@ window.ArrZoomerBase = function(opt_in0) {
         // should actually be by property title ...
         function prop_sort(arr_in) {
             arr_in.sort().sort(function(a, _) {
-                if (a === insts.prop0) {
+                if (a === health_tag) {
                     return -1
                 }
                 else {
@@ -278,25 +300,25 @@ window.ArrZoomerBase = function(opt_in0) {
                 }
             })
         }
-        function prop_sorts(arr_inV) {
-            $.each(arr_inV, function(i, arrNow) {
+        function prop_sorts(arrs_in) {
+            $.each(arrs_in, function(i, arrNow) {
                 prop_sort(arrNow)
             })
         }
 
-        $.each(tel_prop_types, function(id_now, typeV) {
+        $.each(tel_prop_types, function(id_now, types) {
             // if (!isTelTypeIn('main', id_now)) return
-            // console.log(isTelTypeIn('main', id_now),id_now, typeV)
+            // console.log(isTelTypeIn('main', id_now),id_now, types)
 
             insts.props[id_now] = []
-            insts.props0[id_now] = [ insts.prop0 ]
+            insts.props0[id_now] = [ health_tag ]
             insts.prop_titles[id_now] = {
             }
 
             insts.all_ids.push(id_now)
             insts.all_ids0.push(id_now)
 
-            $.each(typeV, function(i, type_now) {
+            $.each(types, function(i, type_now) {
                 insts.props[id_now].push(type_now.id)
                 insts.props0[id_now].push(type_now.id)
                 insts.prop_titles[id_now][type_now.id] = type_now.title
@@ -314,9 +336,9 @@ window.ArrZoomerBase = function(opt_in0) {
             })
             prop_sorts([ insts.props[id_now], insts.props0[id_now] ])
 
-            insts.prop_titles[id_now][insts.prop0] = insts.prop_title0
+            insts.prop_titles[id_now][health_tag] = health_title
             insts.tau_fracs[id_now] = tau / insts.props[id_now].length
-            insts.prop_titles[''][insts.prop0] = insts.prop_title0
+            insts.prop_titles[''][health_tag] = health_title
         })
         insts.tau_fracs[''] = tau / insts.props[''].length
 
@@ -325,9 +347,9 @@ window.ArrZoomerBase = function(opt_in0) {
             insts.all_props, insts.all_props0,
         ])
 
-        insts.props['avg'] = insts.props[''] // .slice()
-        insts.props0['avg'] = insts.props0[''] // .slice()
-        insts.tau_fracs['avg'] = insts.tau_fracs['']
+        insts.props[avg_tag] = insts.props[''] // .slice()
+        insts.props0[avg_tag] = insts.props0[''] // .slice()
+        insts.tau_fracs[avg_tag] = insts.tau_fracs['']
 
         return
     }
@@ -342,7 +364,7 @@ window.ArrZoomerBase = function(opt_in0) {
         
         if (is_init) {
             insts.data.tel = []
-            insts.data.avg = {
+            insts.data[avg_tag] = {
             }
             insts.data.id_indices = {
             }
@@ -376,21 +398,21 @@ window.ArrZoomerBase = function(opt_in0) {
         })
 
         // average of each property
-        insts.data.avg.id = 'avg'
-        let props_now = insts.props0[insts.data.avg.id]
+        insts.data[avg_tag].id = avg_tag
+        let props_now = insts.props0[insts.data[avg_tag].id]
         $.each(props_now, function(index, porp_now) {
-            insts.data.avg[porp_now] = 0
+            insts.data[avg_tag][porp_now] = 0
             $.each(insts.data.tel, function(id, data_now) {
                 // console.log('    ++',id,porp_now,data_now[porp_now])
                 if (
                     data_now[porp_now] !== undefined
                     && typeof data_now[porp_now] === 'number'
                 ) {
-                    insts.data.avg[porp_now] += data_now[porp_now]
+                    insts.data[avg_tag][porp_now] += data_now[porp_now]
                 }
             })
-            // console.log('--',porp_now,insts.data.avg[porp_now] , insts.data.tel.length)
-            insts.data.avg[porp_now] /= insts.data.tel.length
+            // console.log('--',porp_now,insts.data[avg_tag][porp_now] , insts.data.tel.length)
+            insts.data[avg_tag][porp_now] /= insts.data.tel.length
         })
         // console.log('SSS-------------SS',insts.data, insts.props0)
 
@@ -437,13 +459,165 @@ window.ArrZoomerBase = function(opt_in0) {
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
+    function tel_prop_title(opt_in) {
+        let tel_id = opt_in.tel_id
+        let prop_in = opt_in.prop_in
+        let parent_name = opt_in.parent_name
+        let g_in = opt_in.g_in
+        let g_w = opt_in.g_w
+        let font_scale = is_def(opt_in.font_scale) ? opt_in.font_scale : 1
+
+        if (prop_in !== '' && !is_def(parent_name)) {
+            return
+        }
+
+        let prop_w = g_w / insts.all_props0.length
+        let prop_y = 1.25 * Math.min(prop_w * 0.4, g_w / 15)
+
+        // ------------------------------------------------------------------
+        // title on top
+        // ------------------------------------------------------------------
+        let tag_state = 'state_10'
+        let tag_now = tag_state + '_title'
+
+        let title_data = []
+        title_data.push({
+            id: tag_now + 'tel_id',
+            text: (tel_id === avg_tag ? avg_tag_title : tel_info.get_title(tel_id)),
+            x: 20,
+            y: prop_y,
+            h: 25,
+            strk_w: 1,
+        })
+
+        if (is_def(parent_name)) {
+            title_data.push({
+                id: tag_now + parent_name,
+                text: insts.prop_titles[tel_id][parent_name],
+                x: 10,
+                y: prop_y,
+                h: 25,
+                strk_w: 1,
+            })
+
+            if (prop_in !== parent_name) {
+                title_data.push({
+                    id: tag_now + prop_in,
+                    text: insts.data.prop_title_s1[tel_id][prop_in],
+                    x: 10,
+                    y: prop_y,
+                    h: 22,
+                    strk_w: 0,
+                })
+            }
+        }
+
+        let title = g_in
+            .selectAll('text.' + tag_now)
+            .data(title_data, function(d, i) {
+                return i
+            })
+
+        let ele_wh = [ [], null ]
+        $.each(title_data, function() {
+            ele_wh[0].push(null)
+        })
+
+        function text_pos(d, i, is_x) {
+            let output
+            if (is_x) {
+                let x = d.x
+                $.each(title_data, function(index_0, data_now_0) {
+                    if (index_0 < i) {
+                        if (!is_def(ele_wh[0][index_0]) || ele_wh[0][index_0] === 0) {
+                            ele_wh[0][index_0] = get_node_width_by_id({
+                                selction: g_in.selectAll('text.' + tag_now),
+                                id: data_now_0.id,
+                            })
+                        }
+                        x += data_now_0.x + ele_wh[0][index_0]
+                    }
+                })
+                output = x
+            }
+            else {
+                if (!is_def(ele_wh[1]) || ele_wh[1] === 0) {
+                    ele_wh[1] = get_node_height_by_id({
+                        selction: g_in.selectAll('text.' + tag_now),
+                        id: title_data[0].id,
+                        txt_scale: true,
+                    })
+                }
+                output = d.y + ele_wh[1]
+            }
+
+            return output
+        }
+
+        // add the text
+        title
+            .enter()
+            .append('text')
+            .text(function(d) {
+                return d.text
+            })
+            .attr('class', tag_state + ' ' + tag_now)
+            .style('font-weight', function(d, i) {
+                return (i === 0 ? 'bold' : 'normal')
+            })
+            .style('opacity', 0)
+            .style('fill', '#383b42')
+            .style('stroke-width', function(d) {
+                return d.strk_w
+            })
+            .attr('vector-effect', 'non-scaling-stroke')
+            .style('pointer-events', 'none')
+            .style('stroke', '#383b42')
+            .style('font-size', function(d) {
+                return (font_scale * d.h) + 'px'
+            })
+            .attr('transform', function(d, i) {
+                d.pos = [ g_w * 1.1, text_pos(d, i, false) ]
+                return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
+            })
+            .merge(title)
+            .text(function(d) {
+                return d.text
+            })
+            .transition('update1')
+            .duration(times.anim)
+            .attr('transform', function(d, i) {
+                d.pos = [ text_pos(d, i, true), text_pos(d, i, false) ]
+                return 'translate(' + d.pos[0] + ',' + d.pos[1] + ')'
+            })
+            .style('opacity', 1)
+
+        title
+            .exit()
+            .transition('in_out')
+            .duration(times.anim)
+            .attr('transform', function(d, _) {
+                return ('translate(' + d.pos[0] * 2 + ',' + d.pos[1] + ')')
+            })
+            .style('opacity', 0)
+            .remove()
+
+    
+        return
+    }
+    this_top.tel_prop_title = tel_prop_title
+
+
+    // ------------------------------------------------------------------
+    //
+    // ------------------------------------------------------------------
     function init_data(data_in) {
         this_top.tel_types = data_in.tel_types
 
         init_inst_props(data_in)
 
         set_tel_data({
-            data_in: data_in.arrProp,
+            data_in: data_in.arr_props,
             is_init: true,
         })
 
@@ -481,12 +655,12 @@ window.ArrZoomerBase = function(opt_in0) {
         }
         add_user_opts(ele_opts_main, 'main')
     
-        let eleMain = new ArrZoomerMain(ele_opts_main)
-        eleMain.init_data(data_in)
+        let ele_main = new ArrZoomerMain(ele_opts_main)
+        ele_main.init_data(data_in)
 
         if (do_ele.main) {
             if (is_def(user_opts.trans.main)) {
-                eleMain.set_transform(user_opts.trans.main)
+                ele_main.set_transform(user_opts.trans.main)
             }
         }
     
@@ -504,11 +678,11 @@ window.ArrZoomerBase = function(opt_in0) {
             }
             add_user_opts(ele_opts_tree, 'tree')
       
-            let eleTree = new ArrZoomerTree(ele_opts_tree)
-            eleTree.init_data(data_in)
+            let ele_tree = new ArrZoomerTree(ele_opts_tree)
+            ele_tree.init_data(data_in)
 
             if (is_def(user_opts.trans.tree)) {
-                eleTree.set_transform(user_opts.trans.tree)
+                ele_tree.set_transform(user_opts.trans.tree)
             }
         }
     
@@ -525,8 +699,8 @@ window.ArrZoomerBase = function(opt_in0) {
             }
             add_user_opts(ele_opts_ches, 'ches')
 
-            let eleChes = new ArrZoomerChes(ele_opts_ches)
-            eleChes.init_data({
+            let ele_ches = new ArrZoomerChes(ele_opts_ches)
+            ele_ches.init_data({
                 instrument_data: {
                     tel: insts.data.tel,
                     vor_dblclick: insts.data.dblclick,
@@ -535,7 +709,7 @@ window.ArrZoomerBase = function(opt_in0) {
             })
 
             if (is_def(user_opts.trans.ches)) {
-                eleChes.set_transform(user_opts.trans.ches)
+                ele_ches.set_transform(user_opts.trans.ches)
             }
         }
 
@@ -553,8 +727,8 @@ window.ArrZoomerBase = function(opt_in0) {
             }
             add_user_opts(ele_opts_mini, 'mini')
       
-            let eleMini = new ArrZoomerMini(ele_opts_mini)
-            eleMini.init_data({
+            let ele_mini = new ArrZoomerMini(ele_opts_mini)
+            ele_mini.init_data({
                 instrument_data: {
                     tel: insts.data.tel,
                     vor: {
@@ -567,7 +741,7 @@ window.ArrZoomerBase = function(opt_in0) {
             })
 
             if (is_def(user_opts.trans.mini)) {
-                eleMini.set_transform(user_opts.trans.mini)
+                ele_mini.set_transform(user_opts.trans.mini)
             }
         }
 
@@ -587,8 +761,8 @@ window.ArrZoomerBase = function(opt_in0) {
             }
             add_user_opts(ele_opts_lens, 'lens')
       
-            let eleLens = new ArrZoomerMini(ele_opts_lens)
-            eleLens.init_data({
+            let ele_lens = new ArrZoomerMini(ele_opts_lens)
+            ele_lens.init_data({
                 instrument_data: {
                     tel: insts.data.tel,
                     vor: {
@@ -601,7 +775,32 @@ window.ArrZoomerBase = function(opt_in0) {
             })
 
             if (is_def(user_opts.trans.lens)) {
-                eleLens.set_transform(user_opts.trans.lens)
+                ele_lens.set_transform(user_opts.trans.lens)
+            }
+        }
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
+        if (do_ele.more) {
+            let ele_opts_more = {
+                run_loop: run_loop,
+                widget_id: widget_id,
+                locker: locker,
+                is_south: is_south,
+                my_unique_id: my_unique_id,
+                ele_base: this_top,
+                isLens: 1,
+                aspect_ratio: 0.5,
+            }
+            add_user_opts(ele_opts_more, 'more')
+        
+            let ele_more = new ArrZoomerMore(ele_opts_more)
+            ele_more.init_data({
+            })
+
+            if (is_def(user_opts.trans.more)) {
+                ele_more.set_transform(user_opts.trans.more)
             }
         }
 
@@ -618,6 +817,7 @@ window.ArrZoomerBase = function(opt_in0) {
             mini: 'in_arr_zoomer_init_mini' + my_unique_id,
             tree: 'in_arr_zoomer_init_tree' + my_unique_id,
             lens: 'in_arr_zoomer_init_lens' + my_unique_id,
+            more: 'in_arr_zoomer_init_more' + my_unique_id,
         }
         this_top.lock_init_keys = lock_init_keys
 
@@ -869,6 +1069,9 @@ window.ArrZoomerBase = function(opt_in0) {
         }
         if (get_ele('ches')) {
             get_ele('ches').set_state_once()
+        }
+        if (get_ele('more')) {
+            get_ele('more').set_state_once()
         }
 
         locker.remove({

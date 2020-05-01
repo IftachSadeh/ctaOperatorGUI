@@ -91,7 +91,8 @@ let main_arr_zoomer = function(opt_in) {
 
     let svg_dims = {
         w: 500,
-        h: 350,
+        // h: 350, // before adding more
+        h: 600,
     }
     let arr_zoomer_lock_init_key = 'in_init_arr_zoomer' + my_unique_id
 
@@ -105,6 +106,7 @@ let main_arr_zoomer = function(opt_in) {
             mini: true,
             tree: true,
             lens: !true,
+            more: true,
         },
         trans: {
         },
@@ -127,11 +129,15 @@ let main_arr_zoomer = function(opt_in) {
         },
         tree: {
             // aspect_ratio: 6/5,
+            has_title: !false,
         },
         lens: {
             aspect_ratio: 4,
             has_titles: true,
             // pointerEvents: true,
+        },
+        more: {
+            // aspect_ratio: 6/5,
         },
     }
 
@@ -144,6 +150,7 @@ let main_arr_zoomer = function(opt_in) {
             lens: 'translate(10,5)scale(0.18)',
             // mini: 'translate(240,0)scale(2.7)',
             // lens: 'translate(245,5)scale(0.60)',
+            more: 'translate(0,100)scale(2.5)',
         }
     }
     else {
@@ -155,6 +162,8 @@ let main_arr_zoomer = function(opt_in) {
             lens: 'translate(10,5)scale(0.18)',
             // mini: 'translate(240,0)scale(2.7)',
             // lens: 'translate(245,5)scale(0.60)',
+            // more: 'translate(0,50)scale(5)',
+            more: 'translate(0,350)scale(5)',
         }
     }
 

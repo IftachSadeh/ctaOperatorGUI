@@ -3025,11 +3025,11 @@ function main_sched_blocks(opt_in) {
         let blocks = opt_in.blocks
 
         if (is_def(blocks)) {
-            $.each(blocks, function(index0, data_now0) {
+            $.each(blocks, function(index0, data_now_0) {
                 if (is_def(focusBlock)) {
                     return
                 }
-                $.each(data_now0, function(index1, data_now1) {
+                $.each(data_now_0, function(index1, data_now1) {
                     if (opt_in.focus_id === data_now1.obs_block_id) {
                         focusBlock = data_now1
                     }

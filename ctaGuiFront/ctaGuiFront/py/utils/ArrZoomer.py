@@ -40,6 +40,8 @@ class ArrZoomer():
         self.inst_pos = self.inst_data.get_inst_pos()
         self.tel_sub_health = self.inst_data.get_tel_healths()
 
+        self.inst_data = parent.base_config.inst_data
+
         return
 
     # ------------------------------------------------------------------
@@ -263,9 +265,11 @@ class ArrZoomer():
                 'arr_zoomer_id': self.arr_zoomer_id,
                 'sub_arr': self.sub_arr_grp,
                 'arr_init': self.inst_pos,
-                'arrProp': self.get_tel_health_s0(),
+                'arr_props': self.get_tel_health_s0(),
                 'tel_prop_types': inst_prop_types,
                 'tel_types': self.inst_types,
+                'health_tag': self.inst_data.health_tag,
+                'health_title': self.inst_data.health_title,
             }
 
             return data

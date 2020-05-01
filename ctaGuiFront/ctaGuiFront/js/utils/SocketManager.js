@@ -200,10 +200,10 @@ function SocketManager() {
                 return
             }
 
-            $.each(this_top.all_widgets, function(index0, ele0) {
-                $.each(ele0.widgets, function(index1, ele1) {
-                    if (is_def(ele1.get_sync_state)) {
-                        ele1.get_sync_state(data_in)
+            $.each(this_top.all_widgets, function(index_0, ele_0) {
+                $.each(ele_0.widgets, function(index1, ele_1) {
+                    if (is_def(ele_1.get_sync_state)) {
+                        ele_1.get_sync_state(data_in)
                     }
                 })
             })

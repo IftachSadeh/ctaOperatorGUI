@@ -47,7 +47,7 @@ window.ArrZoomerMini = function(opt_in0) {
     let lock_init_key = ele_base.lock_init_keys[mini_lens_tag.toLowerCase()]
 
     let has_site_svg = ele_base.has_site_svg
-    let site_bck_svg = ele_base.site_bck_svg
+    // let site_bck_svg = ele_base.site_bck_svg
     let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 40
 
     let scale_r = insts.scale_r
@@ -120,7 +120,7 @@ window.ArrZoomerMini = function(opt_in0) {
     let zoom_target = null
     let tel_data = null
     // let tel_id_types = null
-    let prop0 = 'health'
+    let health_tag = ele_base.health_tag
 
     let miniMapCol = {
     }
@@ -436,7 +436,7 @@ window.ArrZoomerMini = function(opt_in0) {
     
         let data_now = tel_data.tel
         let g_now = com.g_base_mini.text
-        let tag_now = prop0
+        let tag_now = health_tag
 
         let font_size0 = 12 * site_scale
         // let font_size0 = 11 * site_scale
@@ -501,7 +501,7 @@ window.ArrZoomerMini = function(opt_in0) {
         let data_now = tel_data.tel
         let g_now = com.g_base_mini.circ
         let pos_tag = 'xyr_physical'
-        let tag_now = prop0
+        let tag_now = health_tag
 
         // operate on new elements only
         let circ = g_now

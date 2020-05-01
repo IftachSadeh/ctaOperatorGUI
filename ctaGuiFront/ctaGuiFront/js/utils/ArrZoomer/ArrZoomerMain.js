@@ -42,7 +42,9 @@ window.ArrZoomerMain = function(opt_in0) {
 
     let has_site_svg = ele_base.has_site_svg
     let site_bck_svg = ele_base.site_bck_svg
-    
+    let health_tag = ele_base.health_tag
+    let avg_tag_title = ele_base.avg_tag_title
+
     let hex_r = is_def(opt_in0.hex_r) ? opt_in0.hex_r : 30
 
     let insts = ele_base.insts
@@ -368,7 +370,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     let svg_shift = -0.5 * svg_w
 
                     site_g
-                        .attr('transform', function(d) {
+                        .attr('transform', function(_) {
                             let scale = 5.5
                             let trans_x = com.bck_circ_data.cx
                             let trans_y = com.bck_circ_data.cy
@@ -437,7 +439,7 @@ window.ArrZoomerMain = function(opt_in0) {
             }
             else {
                 site_g
-                    .attr('transform', function(d) {
+                    .attr('transform', function(_) {
                         let scale = 8
                         let trans_x = 4
                         let trans_y = -5
@@ -704,7 +706,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
             $.each([ 'mini', 'lens' ], function(i, d) {
                 let svg_mini = get_ele(d)
-                if (!svg_mini) {
+                if (!is_def(svg_mini)) {
                     return
                 }
                 if (svg_mini.static_zoom) {
@@ -735,7 +737,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
             $.each([ 'mini', 'lens' ], function(i, d) {
                 let svg_mini = get_ele(d)
-                if (!svg_mini) {
+                if (!is_def(svg_mini)) {
                     return
                 }
                 // if(svg_mini.static_zoom) return
@@ -1119,28 +1121,32 @@ window.ArrZoomerMain = function(opt_in0) {
             let zoom_in_out = opt_in.is_in_out
             let scale = this_top.get_scale()
             let is_on_target = zooms.target === d.data.id
-            // console.log('vor_click',d.data.id,(scale >= zooms.len["1.0"]),!is_on_target)
 
             zooms.target = d.data.id
 
             let scale_to_zoom = 1
-            if (zoom_in_out) {
-                if (scale < zooms.len['1.2']) {
-                    scale_to_zoom = zooms.len['1.2'] + 0.001
-                }
-                else {
-                    scale_to_zoom = zooms.len['0.0']
-                }
+            if (is_def(opt_in.scale_to_zoom)) {
+                scale_to_zoom = opt_in.scale_to_zoom
             }
             else {
-                if (scale < zooms.len['0.2'] * 0.999) {
-                    scale_to_zoom = zooms.len['0.2']
-                }
-                else if (scale < zooms.len['1.0'] * 1.001) {
-                    scale_to_zoom = zooms.len['1.1']
+                if (zoom_in_out) {
+                    if (scale < zooms.len['1.2']) {
+                        scale_to_zoom = zooms.len['1.2'] + 0.001
+                    }
+                    else {
+                        scale_to_zoom = zooms.len['0.0']
+                    }
                 }
                 else {
-                    scale_to_zoom = zooms.len['1.2']
+                    if (scale < zooms.len['0.2'] * 0.999) {
+                        scale_to_zoom = zooms.len['0.2']
+                    }
+                    else if (scale < zooms.len['1.0'] * 1.001) {
+                        scale_to_zoom = zooms.len['1.1']
+                    }
+                    else {
+                        scale_to_zoom = zooms.len['1.2']
+                    }
                 }
             }
 
@@ -1407,12 +1413,12 @@ window.ArrZoomerMain = function(opt_in0) {
 
             links_2.physical = deep_copy(links_1) // deep copy
             $.each(links_1, function(id_s, link_now) {
-                $.each(link_now, function(index0, idT0) {
-                    $.each(links_1[idT0], function(index1, idT1) {
-                        if (links_2.physical[id_s].indexOf(idT1) === -1) {
-                            links_2.physical[id_s].push(idT1)
+                $.each(link_now, function(index_0, id_t0) {
+                    $.each(links_1[id_t0], function(index_1, id_t1) {
+                        if (links_2.physical[id_s].indexOf(id_t1) === -1) {
+                            links_2.physical[id_s].push(id_t1)
                         }
-                        // console.log(index1,links_2.physical[id_s],idT0,idT1)
+                        // console.log(index_1,links_2.physical[id_s],id_t0,id_t1)
                     })
                 })
             })
@@ -1527,11 +1533,11 @@ window.ArrZoomerMain = function(opt_in0) {
         //   })
 
         //   links_2.sub_arr = {}
-        //   $.each(hirch.descendants(), function (index0, data_now0) {
-        //     if (data_now0.height === 1) {
-        //       $.each(data_now0.children, function (index1, data_now1) {
+        //   $.each(hirch.descendants(), function (index_0, data_now_0) {
+        //     if (data_now_0.height === 1) {
+        //       $.each(data_now_0.children, function (index_1, data_now1) {
         //         if (data_now1.height === 0) {
-        //           let all_ids = data_now0.children.map(function (d) {
+        //           let all_ids = data_now_0.children.map(function (d) {
         //             return d.data.id
         //           })
         //           links_2.sub_arr[data_now1.data.id] = []
@@ -1807,7 +1813,7 @@ window.ArrZoomerMain = function(opt_in0) {
             .style('stroke-width', 0.7)
             .attr('text-anchor', 'middle')
             .style('stroke', '#383b42')
-            .attr('font-size', font_size + 'px')
+            .style('font-size', font_size + 'px')
             // .attr("dy", (font_size/3)+'px' )
             .attr('dy', '0px')
             .merge(text)
@@ -2172,7 +2178,7 @@ window.ArrZoomerMain = function(opt_in0) {
 
   
     // ------------------------------------------------------------------
-    // outer rings for the insts.prop0 (equivalent of s00_D metric in s01_D)
+    // outer rings for the health_tag (equivalent of s00_D metric in s01_D)
     // ------------------------------------------------------------------
     function s01_outer(data_in, focuses) {
         if (no_render) {
@@ -2180,7 +2186,7 @@ window.ArrZoomerMain = function(opt_in0) {
         }
 
         let tag_state = 'state01'
-        let porp_now = insts.prop0
+        let porp_now = health_tag
 
         if (!is_def(com.s01.outer)) {
             com.s01.outer = true
@@ -2222,7 +2228,7 @@ window.ArrZoomerMain = function(opt_in0) {
                     return (
                         is0
                             ? tau
-                            : tau * inst_health_frac(d[insts.prop0])
+                            : tau * inst_health_frac(d[health_tag])
                     )
                 }
             })
@@ -2414,8 +2420,8 @@ window.ArrZoomerMain = function(opt_in0) {
             // some properties may not be included in insts.props[tel_id]
             insts.data.data_base_s1[tel_id] = {
             }
-            insts.data.data_base_s1[tel_id].id = insts.prop0
-            insts.data.data_base_s1[tel_id].val = data_in[insts.prop0]
+            insts.data.data_base_s1[tel_id].id = health_tag
+            insts.data.data_base_s1[tel_id].val = data_in[health_tag]
             insts.data.data_base_s1[tel_id].children = []
             // console.log('qqqqqqqq',tel_id,data_in.data.val,data_in.data)
 
@@ -3614,7 +3620,53 @@ window.ArrZoomerMain = function(opt_in0) {
         // ------------------------------------------------------------------
         //
         // ------------------------------------------------------------------
+        function set_prop_title(opt_in) {
+            let tel_id = zooms.target
+            let sync_prop = (
+                is_def(opt_in.sync_prop) ? opt_in.sync_prop : opt_in.id
+            )
+            // console.log('clk',id,'==',prop_in,'--', hierarchies[prop_in])
+
+
+            // ------------------------------------------------------------------
+            // ------------------------------------------------------------------
+            // ------------------------------------------------------------------
+            // move this to main !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            let parent_name = (
+                sync_prop === ''
+                    ? null
+                    : insts.data.prop_parent_s1[zooms.target][sync_prop]
+            )
+            
+
+            let scale = this_top.get_scale()
+            if (scale <= zooms.len['0.1']) {
+                sync_prop = ''
+                parent_name = null
+                tel_id = avg_tag_title
+
+            }
+
+            let more = get_ele('more')
+            if (is_def(more)) {
+                more.prop_focus({
+                    tel_id: tel_id,
+                    prop_in: sync_prop,
+                    parent_name: parent_name,
+                })
+            }
+            // ------------------------------------------------------------------
+            // ------------------------------------------------------------------
+            // ------------------------------------------------------------------
+
+        }
+
+        // ------------------------------------------------------------------
+        //
+        // ------------------------------------------------------------------
         function hierarchy_style_click(opt_in) {
+            set_prop_title(opt_in)
+            
             if (no_render) {
                 return
             }
@@ -4053,7 +4105,7 @@ window.ArrZoomerMain = function(opt_in0) {
         let pos_tag = 'xyr'
         let focus_0 = is_def(opt_in.focus_0) ? opt_in.focus_0 : []
         let focus_1 = is_def(opt_in.focus_1) ? opt_in.focus_1 : []
-        let tag_now = insts.prop0
+        let tag_now = health_tag
         let tag_fore = '_foreground'
         let tag_back = '_background'
 

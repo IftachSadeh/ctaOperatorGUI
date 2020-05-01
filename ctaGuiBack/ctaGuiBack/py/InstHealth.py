@@ -15,7 +15,7 @@ from ctaGuiUtils.py.RedisManager import RedisManager
 class InstHealth():
     def __init__(self, base_config):
         self.log = LogParser(base_config=base_config, title=__name__)
-        self.log.info([['y', " - InstHealth - "]])
+        self.log.info([['y', ' - InstHealth - ']])
 
         self.base_config = base_config
         self.site_type = self.base_config.site_type
@@ -41,6 +41,9 @@ class InstHealth():
             'min_wait': min_wait_update_sec,
         }
 
+        self.inst_data = self.base_config.inst_data
+        self.health_tag = self.inst_data.health_tag
+
         # minimal real-time delay between randomisations
         self.loop_sleep = 5
 
@@ -53,27 +56,27 @@ class InstHealth():
     #
     # ------------------------------------------------------------------
     def init(self):
-        self.log.info([['g', " - inst_health.init() ..."]])
+        self.log.info([['g', ' - inst_health.init() ...']])
         # ------------------------------------------------------------------
         #
         # ------------------------------------------------------------------
         for id_now in self.tel_ids:
             self.inst_health_s0[id_now] = {
-                "health": 100,
-                "status": "run",  # "sub_arr": "0",
-                "camera": 100,
-                "mirror": 100,
-                "mount": 100,
-                "daq": 100,
-                "aux": 100
+                self.health_tag: 100,
+                'status': 'run',
+                'camera': 100,
+                'mirror': 100,
+                'mount': 100,
+                'daq': 100,
+                'aux': 100
             }
 
             for key, val in self.inst_health_s0[id_now].iteritems():
                 self.redis.pipe.h_set(
-                    name="inst_health;" + str(id_now), key=key, data=val
+                    name='inst_health;' + str(id_now), key=key, data=val
                 )
 
-            # self.redPipe.hmset("inst_health_s0"+str(id_now), self.inst_health_s0[id_now])
+            # self.redPipe.hmset('inst_health_s0'+str(id_now), self.inst_health_s0[id_now])
 
         # ------------------------------------------------------------------
         #
@@ -91,7 +94,7 @@ class InstHealth():
             for key, val in self.inst_health_sub_flat[id_now].iteritems():
                 if 'val' in val['data']:
                     self.redis.pipe.h_set(
-                        name="inst_health;" + str(id_now),
+                        name='inst_health;' + str(id_now),
                         key=key,
                         data=val['data']['val']
                     )
@@ -107,19 +110,19 @@ class InstHealth():
     # ------------------------------------------------------------------
     def set_tel_health_s1(self, id_now):
         self.inst_health_s1[id_now] = {
-            "id":
+            'id':
             id_now,
-            "health":
-            self.inst_health_s0[id_now]["health"],
-            "status":
-            "run",
-            "data": [
+            self.health_tag:
+            self.inst_health_s0[id_now][self.health_tag],
+            'status':
+            'run',
+            'data': [
                 v for (k, v) in self.inst_health_sub[id_now].items()
-                # self.inst_health_sub[id_now]["camera"],
-                # self.inst_health_sub[id_now]["mirror"],
-                # self.inst_health_sub[id_now]["mount"],
-                # self.inst_health_sub[id_now]["daq"],
-                # self.inst_health_sub[id_now]["aux"]
+                # self.inst_health_sub[id_now]['camera'],
+                # self.inst_health_sub[id_now]['mirror'],
+                # self.inst_health_sub[id_now]['mount'],
+                # self.inst_health_sub[id_now]['daq'],
+                # self.inst_health_sub[id_now]['aux']
             ]
         }
 
@@ -173,7 +176,7 @@ class InstHealth():
             else:
                 health_tot = rnd_gen.randint(60, 100)
 
-            arr_props[id_now]["health"] = health_tot
+            arr_props[id_now][self.health_tag] = health_tot
 
             bad = 100 - health_tot
             for n_prop_now in range(n_rnd_props):
@@ -189,11 +192,11 @@ class InstHealth():
 
             self.inst_health_s0[id_now] = arr_props[id_now]
 
-            self.inst_health_s1[id_now]["health"] = health_tot
+            self.inst_health_s1[id_now][self.health_tag] = health_tot
 
             for key, val in self.inst_health_s0[id_now].iteritems():
                 self.redis.pipe.h_set(
-                    name="inst_health;" + str(id_now), key=key, data=val
+                    name='inst_health;' + str(id_now), key=key, data=val
                 )
 
         self.redis.pipe.execute()
@@ -207,20 +210,20 @@ class InstHealth():
     # ------------------------------------------------------------------
 
     def rand_s1(self, tel_id_in=None, rnd_seed=-1):
-        rnd_props = ["camera", "mirror", "mount", "daq", "aux", 'inst_0', 'inst_1']
+        rnd_props = ['camera', 'mirror', 'mount', 'daq', 'aux', 'inst_0', 'inst_1']
 
         if rnd_seed < 0:
             rnd_seed = random.randint(0, 100000)
         rnd_gen = Random(rnd_seed)
 
-        # recursive randomization of all "val" values of the dict and its child elements
+        # recursive randomization of all 'val' values of the dict and its child elements
         def set_rnd_props(data_in):
             for key, value in data_in.iteritems():
-                if key == "children":
+                if key == 'children':
                     for child in data_in[key]:
                         set_rnd_props(child)
 
-                if key == "val":
+                if key == 'val':
                     rnd_now = rnd_gen.uniform(-10, 10)
                     if rnd_gen.random() < 0.1:
                         rnd_now = rnd_gen.uniform(-30, 30)
@@ -247,7 +250,7 @@ class InstHealth():
                     prop_value = self.inst_health_sub[id_now][prop_name]['val']
                     self.inst_health_s0[id_now][prop_name] = prop_value
                     self.redis.pipe.h_set(
-                        name="inst_health;" + str(id_now), key=prop_name, data=prop_value
+                        name='inst_health;' + str(id_now), key=prop_name, data=prop_value
                     )
                     # if id_now=='Ax00':print id_now,prop_name,prop_value
 
@@ -256,7 +259,7 @@ class InstHealth():
 
             time_now_sec = self.clock_sim.get_time_now_sec()
             time_min = self.clock_sim.get_time_series_start_time_sec()
-            base_name = "inst_health;" + str(id_now)
+            base_name = 'inst_health;' + str(id_now)
 
             for key, val in self.inst_health_sub_flat[id_now].iteritems():
                 if 'val' in val['data']:
@@ -264,7 +267,7 @@ class InstHealth():
                         name=base_name, key=key, data=val['data']['val']
                     )
                     self.redis.pipe.z_add(
-                        name=base_name + ";" + key,
+                        name=base_name + ';' + key,
                         score=time_now_sec,
                         data={
                             'time_sec': time_now_sec,
@@ -297,7 +300,7 @@ class InstHealth():
     # ------------------------------------------------------------------
 
     def loop(self):
-        self.log.info([['g', " - starting inst_health.loop ..."]])
+        self.log.info([['g', ' - starting inst_health.loop ...']])
         sleep(2)
 
         rnd_seed = 12564654

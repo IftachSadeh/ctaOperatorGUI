@@ -11,9 +11,6 @@
 /* global get_tel_state */
 /* global vor_ploy_func */
 /* global min_max_obj */
-/* global cols_blues */
-/* global cols_purples */
-/* global move_node_up */
 
 
 // ------------------------------------------------------------------
@@ -30,6 +27,9 @@ window.ArrZoomerChes = function(opt_in_top) {
     let ele_base = opt_in_top.ele_base
 
     ele_base.set_ele(this_top, 'ches')
+
+    // let get_ele = ele_base.get_ele
+    let zooms = ele_base.zooms
 
     let lock_init_key = ele_base.lock_init_keys.ches
 
@@ -84,7 +84,7 @@ window.ArrZoomerChes = function(opt_in_top) {
         },
     }
 
-    let prop0 = 'health'
+    let health_tag = ele_base.health_tag
     let tel_data = null
     let tel_id_types = null
 
@@ -225,9 +225,9 @@ window.ArrZoomerChes = function(opt_in_top) {
     //
     // ------------------------------------------------------------------
     function update_chess_map(data_in, shift_y) {
-        let tag_prop = prop0
-        // let tag_circ = prop0 + '_circ'
-        let tag_rect = prop0 + '_rect'
+        let tag_prop = health_tag
+        // let tag_circ = health_tag + '_circ'
+        let tag_rect = health_tag + '_rect'
         let tag_lbl = 'lbl_00_title'
         let tag_state = 'state_00'
         // let tag_txt = tag_state + tag_lbl
@@ -528,6 +528,7 @@ window.ArrZoomerChes = function(opt_in_top) {
                     source: 'com.ches_g.g',
                     d: d,
                     is_in_out: false,
+                    scale_to_zoom: zooms.len['1.2'],
                 })
             })
             // .on("dblclick",  function(d) { tel_data.vor_dblclick({ d:d, is_in_out:true }); }) // dousnt work well...

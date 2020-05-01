@@ -662,8 +662,8 @@ def unpack_object(data_in, log=None):
 
         elif isinstance(data_in, list):
             data = []
-            for data_now0 in data_in:
-                data += [unpack_object(data_now0, log)]
+            for data_now_0 in data_in:
+                data += [unpack_object(data_now_0, log)]
 
         elif isinstance(data_in, dict):
             data = dict()

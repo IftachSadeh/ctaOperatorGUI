@@ -26,8 +26,8 @@ class InstData():
         self.log = LogParser(base_config=base_config, title=__name__)
 
         def init():
-            self.log.debug([['y', " - initializing InstData - "],
-                            ['g', 'init_inst_pos()'], ['y', " ..."]])
+            self.log.debug([['y', ' - initializing InstData - '],
+                            ['g', 'init_inst_pos()'], ['y', ' ...']])
 
             self.base_config = base_config
             self.base_config.inst_data = self
@@ -65,6 +65,20 @@ class InstData():
                 init()
 
         return
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
+    @property
+    def health_tag(self):
+        return 'health'
+
+    # ------------------------------------------------------------------
+    #
+    # ------------------------------------------------------------------
+    @property
+    def health_title(self):
+        return 'Health'
 
     # ------------------------------------------------------------------
     #
@@ -450,43 +464,43 @@ class InstData():
         # north
         # ------------------------------------------------------------------
         if not self.is_south_site():
-            id_now = "Lx01"
+            id_now = 'Lx01'
             add_dict_id(id_now, {'x': 376.159, 'y': 343.521, 'type': 'LST'})
-            id_now = "Lx02"
+            id_now = 'Lx02'
             add_dict_id(id_now, {'x': 288.810, 'y': 328.030, 'type': 'LST'})
-            id_now = "Lx03"
+            id_now = 'Lx03'
             add_dict_id(id_now, {'x': 320.642, 'y': 261.530, 'type': 'LST'})
-            id_now = "Lx04"
+            id_now = 'Lx04'
             add_dict_id(id_now, {'x': 386.446, 'y': 285.861, 'type': 'LST'})
-            id_now = "Mx01"
+            id_now = 'Mx01'
             add_dict_id(id_now, {'x': 344.926, 'y': 404.945, 'type': 'MST'})
-            id_now = "Mx02"
+            id_now = 'Mx02'
             add_dict_id(id_now, {'x': 256.740, 'y': 370.062, 'type': 'MST'})
-            id_now = "Mx03"
+            id_now = 'Mx03'
             add_dict_id(id_now, {'x': 230.490, 'y': 257.401, 'type': 'MST'})
-            id_now = "Mx04"
+            id_now = 'Mx04'
             add_dict_id(id_now, {'x': 317.343, 'y': 208.857, 'type': 'MST'})
-            id_now = "Mx05"
+            id_now = 'Mx05'
             add_dict_id(id_now, {'x': 451.269, 'y': 212.410, 'type': 'MST'})
-            id_now = "Mx06"
+            id_now = 'Mx06'
             add_dict_id(id_now, {'x': 443.099, 'y': 327.589, 'type': 'MST'})
-            id_now = "Mx07"
+            id_now = 'Mx07'
             add_dict_id(id_now, {'x': 424.508, 'y': 396.707, 'type': 'MST'})
-            id_now = "Mx08"
+            id_now = 'Mx08'
             add_dict_id(id_now, {'x': 190.637, 'y': 328.672, 'type': 'MST'})
-            id_now = "Mx09"
+            id_now = 'Mx09'
             add_dict_id(id_now, {'x': 524.691, 'y': 182.636, 'type': 'MST'})
-            id_now = "Mx10"
+            id_now = 'Mx10'
             add_dict_id(id_now, {'x': 524.877, 'y': 264.413, 'type': 'MST'})
-            id_now = "Mx11"
+            id_now = 'Mx11'
             add_dict_id(id_now, {'x': 505.525, 'y': 399.122, 'type': 'MST'})
-            id_now = "Mx12"
+            id_now = 'Mx12'
             add_dict_id(id_now, {'x': 182.629, 'y': 425.677, 'type': 'MST'})
-            id_now = "Mx13"
+            id_now = 'Mx13'
             add_dict_id(id_now, {'x': 283.345, 'y': 449.753, 'type': 'MST'})
-            id_now = "Mx14"
+            id_now = 'Mx14'
             add_dict_id(id_now, {'x': 383.626, 'y': 467.621, 'type': 'MST'})
-            id_now = "Mx15"
+            id_now = 'Mx15'
             add_dict_id(id_now, {'x': 338.955, 'y': 305.371, 'type': 'MST'})
 
         return
@@ -552,22 +566,22 @@ class InstData():
         # south
         # ------------------------------------------------------------------
         if self.is_south_site():
-            id_now = "Ax00"
+            id_now = 'Ax00'
             add_dict_id(id_now, {'x': 550, 'y': -750, 'type': 'AUX'})
-            id_now = "Ax01"
+            id_now = 'Ax01'
             add_dict_id(id_now, {'x': 670, 'y': 150, 'type': 'AUX'})
-            id_now = "Ax02"
+            id_now = 'Ax02'
             add_dict_id(id_now, {'x': -710, 'y': 175, 'type': 'AUX'})
-            id_now = "Ax03"
+            id_now = 'Ax03'
             add_dict_id(id_now, {'x': 1100, 'y': 200, 'type': 'AUX'})
 
         # ------------------------------------------------------------------
         # north
         # ------------------------------------------------------------------
         if not self.is_south_site():
-            id_now = "Ax00"
+            id_now = 'Ax00'
             add_dict_id(id_now, {'x': 403.866, 'y': 151.528, 'type': 'AUX'})
-            id_now = "Ax01"
+            id_now = 'Ax01'
             add_dict_id(id_now, {'x': 455.675, 'y': 466.823, 'type': 'AUX'})
 
         return
@@ -584,11 +598,11 @@ class InstData():
         # ------------------------------------------------------------------
         #
         # ------------------------------------------------------------------
-        id_now = "Px00"
+        id_now = 'Px00'
         add_dict_id(id_now, {'x': 5, 'y': 0, 'type': 'PROC'})
-        id_now = "Px01"
+        id_now = 'Px01'
         add_dict_id(id_now, {'x': 0, 'y': 5, 'type': 'PROC'})
-        id_now = "Px02"
+        id_now = 'Px02'
         add_dict_id(id_now, {'x': 0, 'y': -5, 'type': 'PROC'})
 
         # ------------------------------------------------------------------
@@ -613,202 +627,202 @@ class InstData():
         for id_now in tel_ids:
             inst_health[id_now] = dict()
 
-            inst_health[id_now]["camera"] = {
-                "id":
-                "camera",
-                "title":
-                "Camera",
-                "val":
+            inst_health[id_now]['camera'] = {
+                'id':
+                'camera',
+                'title':
+                'Camera',
+                'val':
                 20,
-                "children": [
+                'children': [
                     {
-                        "id": "camera_0",
-                        "title": "Camera_0",
-                        "val": 100
+                        'id': 'camera_0',
+                        'title': 'Camera_0',
+                        'val': 100
                     },
                     {
-                        "id":
-                        "camera_1",
-                        "title":
-                        "Camera_1",
-                        "val":
+                        'id':
+                        'camera_1',
+                        'title':
+                        'Camera_1',
+                        'val':
                         10,
-                        "children": [
+                        'children': [
                             {
-                                "id": "camera_1_0",
-                                "title": "Camera_1_0",
-                                "val": 3
+                                'id': 'camera_1_0',
+                                'title': 'Camera_1_0',
+                                'val': 3
                             },
                             {
-                                "id": "camera_1_1",
-                                "title": "Camera_1_1",
-                                "val": 78
+                                'id': 'camera_1_1',
+                                'title': 'Camera_1_1',
+                                'val': 78
                             },
                         ]
                     },
                     {
-                        "id": "camera_6",
-                        "title": "Camera_6",
-                        "val": 80
+                        'id': 'camera_6',
+                        'title': 'Camera_6',
+                        'val': 80
                     },
                     {
-                        "id": "camera_8",
-                        "title": "Camera_8",
-                        "val": 80
+                        'id': 'camera_8',
+                        'title': 'Camera_8',
+                        'val': 80
                     },
                 ]
             }
 
-            inst_health[id_now]["mount"] = {
-                "id":
-                "mount",
-                "title":
-                "Mount",
-                "val":
+            inst_health[id_now]['mount'] = {
+                'id':
+                'mount',
+                'title':
+                'Mount',
+                'val':
                 100,
-                "children": [
+                'children': [
                     {
-                        "id": "mount_0",
-                        "title": "Mount_0",
-                        "val": 10
+                        'id': 'mount_0',
+                        'title': 'Mount_0',
+                        'val': 10
                     },
                     {
-                        "id":
-                        "mount_1",
-                        "title":
-                        "Mount_1",
-                        "val":
+                        'id':
+                        'mount_1',
+                        'title':
+                        'Mount_1',
+                        'val':
                         78,
-                        "children": [
+                        'children': [
                             {
-                                "id": "mount_1_0",
-                                "title": "Mount_1_0",
-                                "val": 10
+                                'id': 'mount_1_0',
+                                'title': 'Mount_1_0',
+                                'val': 10
                             },
                             {
-                                "id":
-                                "mount_1_1",
-                                "title":
-                                "Mount_1_1",
-                                "val":
+                                'id':
+                                'mount_1_1',
+                                'title':
+                                'Mount_1_1',
+                                'val':
                                 90,
-                                "children": [
+                                'children': [
                                     {
-                                        "id": "mount_1_1_0",
-                                        "title": "Mount_1_1_0",
-                                        "val": 95
+                                        'id': 'mount_1_1_0',
+                                        'title': 'Mount_1_1_0',
+                                        'val': 95
                                     },
                                     {
-                                        "id": "mount_1_1_1",
-                                        "title": "Mount_1_1_1",
-                                        "val": 95
+                                        'id': 'mount_1_1_1',
+                                        'title': 'Mount_1_1_1',
+                                        'val': 95
                                     },
                                     {
-                                        "id": "mount_1_1_2",
-                                        "title": "Mount_1_1_2",
-                                        "val": 95
+                                        'id': 'mount_1_1_2',
+                                        'title': 'Mount_1_1_2',
+                                        'val': 95
                                     },
                                     {
-                                        "id": "mount_1_1_3",
-                                        "title": "Mount_1_1_3",
-                                        "val": 95
+                                        'id': 'mount_1_1_3',
+                                        'title': 'Mount_1_1_3',
+                                        'val': 95
                                     },
                                 ]
                             },
                             {
-                                "id": "mount_1_2",
-                                "title": "Mount_1_2",
-                                "val": 60
+                                'id': 'mount_1_2',
+                                'title': 'Mount_1_2',
+                                'val': 60
                             },
                             {
-                                "id":
-                                "mount_1_3",
-                                "title":
-                                "Mount_1_3",
-                                "val":
+                                'id':
+                                'mount_1_3',
+                                'title':
+                                'Mount_1_3',
+                                'val':
                                 90,
-                                "children": [
+                                'children': [
                                     {
-                                        "id": "mount_1_3_0",
-                                        "title": "Mount_1_3_0",
-                                        "val": 95
+                                        'id': 'mount_1_3_0',
+                                        'title': 'Mount_1_3_0',
+                                        'val': 95
                                     },
                                     {
-                                        "id": "mount_1_3_1",
-                                        "title": "Mount_1_3_1",
-                                        "val": 95
+                                        'id': 'mount_1_3_1',
+                                        'title': 'Mount_1_3_1',
+                                        'val': 95
                                     },
                                     {
-                                        "id": "mount_1_3_2",
-                                        "title": "Mount_1_3_2",
-                                        "val": 95
+                                        'id': 'mount_1_3_2',
+                                        'title': 'Mount_1_3_2',
+                                        'val': 95
                                     },
                                     {
-                                        "id": "mount_1_3_3",
-                                        "title": "Mount_1_3_3",
-                                        "val": 95
+                                        'id': 'mount_1_3_3',
+                                        'title': 'Mount_1_3_3',
+                                        'val': 95
                                     },
                                 ]
                             },
                             {
-                                "id": "mount_1_4",
-                                "title": "Mount_1_4",
-                                "val": 85
+                                'id': 'mount_1_4',
+                                'title': 'Mount_1_4',
+                                'val': 85
                             },
                         ]
                     },
                     {
-                        "id": "mount_2",
-                        "title": "Mount_2",
-                        "val": 40
+                        'id': 'mount_2',
+                        'title': 'Mount_2',
+                        'val': 40
                     },
                 ]
             }
 
             if InstData.inst_info[id_now]['type'] == 'LST':
-                inst_health[id_now]["mirror"] = {
-                    "id":
-                    "mirror",
-                    "title":
-                    "Mirror",
-                    "val":
+                inst_health[id_now]['mirror'] = {
+                    'id':
+                    'mirror',
+                    'title':
+                    'Mirror',
+                    'val':
                     10,
-                    "children": [
+                    'children': [
                         {
-                            "id": "mirror_0",
-                            "title": "Mirror_0",
-                            "val": 3
+                            'id': 'mirror_0',
+                            'title': 'Mirror_0',
+                            'val': 3
                         },
                         {
-                            "id":
-                            "mirror_1",
-                            "title":
-                            "Mirror_1",
-                            "val":
+                            'id':
+                            'mirror_1',
+                            'title':
+                            'Mirror_1',
+                            'val':
                             78,
-                            "children": [
+                            'children': [
                                 {
-                                    "id": "mirror_1_1",
-                                    "title": "Mirror_0",
-                                    "val": 3
+                                    'id': 'mirror_1_1',
+                                    'title': 'Mirror_0',
+                                    'val': 3
                                 },
                                 {
-                                    "id":
-                                    "mirror_1_0",
-                                    "title":
-                                    "Mirror_1_0",
-                                    "val":
+                                    'id':
+                                    'mirror_1_0',
+                                    'title':
+                                    'Mirror_1_0',
+                                    'val':
                                     28,
-                                    "children": [
+                                    'children': [
                                         {
-                                            "id": "mirror_1_0_0",
-                                            "title": "Mirror_1_0_0",
-                                            "val": 90
+                                            'id': 'mirror_1_0_0',
+                                            'title': 'Mirror_1_0_0',
+                                            'val': 90
                                         },
                                         {
-                                            "id": "mirror_1_0_1",
-                                            "title": "Mirror_1_0_1",
-                                            "val": 90
+                                            'id': 'mirror_1_0_1',
+                                            'title': 'Mirror_1_0_1',
+                                            'val': 90
                                         },
                                     ]
                                 },
@@ -818,99 +832,99 @@ class InstData():
                 }
 
             # else:
-            #     inst_health[id_now]["mirror"] = {
-            #         "id": "mirror", "title": "Mirror", "val": 10,
-            #         "children": [
-            #             {"id": "mirror_0", "title": "Mirror_0", "val": 3},
-            #             {"id": "mirror_1", "title": "Mirror_1", "val": 78},
+            #     inst_health[id_now]['mirror'] = {
+            #         'id': 'mirror', 'title': 'Mirror', 'val': 10,
+            #         'children': [
+            #             {'id': 'mirror_0', 'title': 'Mirror_0', 'val': 3},
+            #             {'id': 'mirror_1', 'title': 'Mirror_1', 'val': 78},
             #         ]
             #     }
 
-            inst_health[id_now]["daq"] = {
-                "id":
-                "daq",
-                "title":
-                "DAQ",
-                "val":
+            inst_health[id_now]['daq'] = {
+                'id':
+                'daq',
+                'title':
+                'DAQ',
+                'val':
                 87,
-                "children": [
+                'children': [
                     {
-                        "id": "daq_3",
-                        "title": "DAQ_3",
-                        "val": 50
+                        'id': 'daq_3',
+                        'title': 'DAQ_3',
+                        'val': 50
                     },
                     {
-                        "id":
-                        "daq_7",
-                        "title":
-                        "DAQ_7",
-                        "val":
+                        'id':
+                        'daq_7',
+                        'title':
+                        'DAQ_7',
+                        'val':
                         50,
-                        "children": [
+                        'children': [
                             {
-                                "id": "daq_7_0",
-                                "title": "DAQ_7_0",
-                                "val": 10
+                                'id': 'daq_7_0',
+                                'title': 'DAQ_7_0',
+                                'val': 10
                             },
                             {
-                                "id": "daq_7_1",
-                                "title": "DAQ_7_1",
-                                "val": 20
+                                'id': 'daq_7_1',
+                                'title': 'DAQ_7_1',
+                                'val': 20
                             },
                             {
-                                "id": "daq_7_2",
-                                "title": "DAQ_7_2",
-                                "val": 85
+                                'id': 'daq_7_2',
+                                'title': 'DAQ_7_2',
+                                'val': 85
                             },
                             {
-                                "id": "daq_7_3",
-                                "title": "DAQ_7_3",
-                                "val": 85
+                                'id': 'daq_7_3',
+                                'title': 'DAQ_7_3',
+                                'val': 85
                             },
                             {
-                                "id": "daq_7_4",
-                                "title": "DAQ_7_4",
-                                "val": 85
+                                'id': 'daq_7_4',
+                                'title': 'DAQ_7_4',
+                                'val': 85
                             },
                             {
-                                "id": "daq_7_5",
-                                "title": "DAQ_7_5",
-                                "val": 85
+                                'id': 'daq_7_5',
+                                'title': 'DAQ_7_5',
+                                'val': 85
                             },
                             {
-                                "id": "daq_7_6",
-                                "title": "DAQ_7_6",
-                                "val": 85
+                                'id': 'daq_7_6',
+                                'title': 'DAQ_7_6',
+                                'val': 85
                             },
                         ]
                     },
                     {
-                        "id":
-                        "daq_8",
-                        "title":
-                        "DAQ_8",
-                        "val":
+                        'id':
+                        'daq_8',
+                        'title':
+                        'DAQ_8',
+                        'val':
                         50,
-                        "children": [
+                        'children': [
                             {
-                                "id": "daq_8_0",
-                                "title": "DAQ_8_0",
-                                "val": 10
+                                'id': 'daq_8_0',
+                                'title': 'DAQ_8_0',
+                                'val': 10
                             },
                             {
-                                "id": "daq_8_1",
-                                "title": "DAQ_8_1",
-                                "val": 90
+                                'id': 'daq_8_1',
+                                'title': 'DAQ_8_1',
+                                'val': 90
                             },
                             {
-                                "id": "daq_8_2",
-                                "title": "DAQ_8_2",
-                                "val": 85
+                                'id': 'daq_8_2',
+                                'title': 'DAQ_8_2',
+                                'val': 85
                             },
                             {
-                                "id": "daq_8_30000",
-                                "title": "DAQ_8_30000",
-                                "val": 85
+                                'id': 'daq_8_30000',
+                                'title': 'DAQ_8_30000',
+                                'val': 85
                             },
                         ]
                     },
@@ -918,61 +932,61 @@ class InstData():
             }
 
             if InstData.inst_info[id_now]['type'] == 'LST':
-                inst_health[id_now]["aux"] = {
-                    "id":
-                    "aux",
-                    "title":
-                    "Aux",
-                    "val":
+                inst_health[id_now]['aux'] = {
+                    'id':
+                    'aux',
+                    'title':
+                    'Aux',
+                    'val':
                     70,
-                    "children": [
+                    'children': [
                         {
-                            "id": "aux_0",
-                            "title": "Aux_0",
-                            "val": 90
+                            'id': 'aux_0',
+                            'title': 'Aux_0',
+                            'val': 90
                         },
                         {
-                            "id":
-                            "aux_1",
-                            "title":
-                            "Aux_1",
-                            "val":
+                            'id':
+                            'aux_1',
+                            'title':
+                            'Aux_1',
+                            'val':
                             78,
-                            "children": [
+                            'children': [
                                 {
-                                    "id": "aux_1_0",
-                                    "title": "Aux_1_0",
-                                    "val": 10
+                                    'id': 'aux_1_0',
+                                    'title': 'Aux_1_0',
+                                    'val': 10
                                 },
                                 {
-                                    "id": "aux_1_4",
-                                    "title": "Aux_1_4",
-                                    "val": 85
+                                    'id': 'aux_1_4',
+                                    'title': 'Aux_1_4',
+                                    'val': 85
                                 },
                             ]
                         },
                         {
-                            "id":
-                            "aux_3",
-                            "title":
-                            "Aux_3",
-                            "val":
+                            'id':
+                            'aux_3',
+                            'title':
+                            'Aux_3',
+                            'val':
                             78,
-                            "children": [
+                            'children': [
                                 {
-                                    "id": "aux_3_0",
-                                    "title": "Aux_3_0",
-                                    "val": 90
+                                    'id': 'aux_3_0',
+                                    'title': 'Aux_3_0',
+                                    'val': 90
                                 },
                                 {
-                                    "id": "aux_3_1",
-                                    "title": "Aux_3_1",
-                                    "val": 15
+                                    'id': 'aux_3_1',
+                                    'title': 'Aux_3_1',
+                                    'val': 15
                                 },
                                 {
-                                    "id": "aux_3_2",
-                                    "title": "Aux_3_2",
-                                    "val": 5
+                                    'id': 'aux_3_2',
+                                    'title': 'Aux_3_2',
+                                    'val': 5
                                 },
                             ]
                         },
@@ -985,93 +999,93 @@ class InstData():
         for id_now in aux_ids:
             inst_health[id_now] = dict()
 
-            inst_health[id_now]["inst_0"] = {
-                "id":
-                "inst_0",
-                "title":
-                "Inst_0",
-                "val":
+            inst_health[id_now]['inst_0'] = {
+                'id':
+                'inst_0',
+                'title':
+                'Inst_0',
+                'val':
                 20,
-                "children": [
+                'children': [
                     {
-                        "id": "inst_00",
-                        "title": "Inst_00",
-                        "val": 100
+                        'id': 'inst_00',
+                        'title': 'Inst_00',
+                        'val': 100
                     },
                     {
-                        "id":
-                        "inst_01",
-                        "title":
-                        "Inst_01",
-                        "val":
+                        'id':
+                        'inst_01',
+                        'title':
+                        'Inst_01',
+                        'val':
                         10,
-                        "children": [
+                        'children': [
                             {
-                                "id": "inst_01_0",
-                                "title": "Inst_01_0",
-                                "val": 3
+                                'id': 'inst_01_0',
+                                'title': 'Inst_01_0',
+                                'val': 3
                             },
                             {
-                                "id": "inst_01_1",
-                                "title": "Inst_01_1",
-                                "val": 78
+                                'id': 'inst_01_1',
+                                'title': 'Inst_01_1',
+                                'val': 78
                             },
                         ]
                     },
                     {
-                        "id": "inst_06",
-                        "title": "Inst_06",
-                        "val": 80
+                        'id': 'inst_06',
+                        'title': 'Inst_06',
+                        'val': 80
                     },
                     {
-                        "id": "inst_08",
-                        "title": "Inst_08",
-                        "val": 80
+                        'id': 'inst_08',
+                        'title': 'Inst_08',
+                        'val': 80
                     },
                 ]
             }
-            inst_health[id_now]["inst_1"] = {
-                "id":
-                "inst_1",
-                "title":
-                "Inst_1",
-                "val":
+            inst_health[id_now]['inst_1'] = {
+                'id':
+                'inst_1',
+                'title':
+                'Inst_1',
+                'val':
                 20,
-                "children": [
+                'children': [
                     {
-                        "id": "inst_10",
-                        "title": "Inst_10",
-                        "val": 100
+                        'id': 'inst_10',
+                        'title': 'Inst_10',
+                        'val': 100
                     },
                     {
-                        "id":
-                        "inst_11",
-                        "title":
-                        "Inst_11",
-                        "val":
+                        'id':
+                        'inst_11',
+                        'title':
+                        'Inst_11',
+                        'val':
                         10,
-                        "children": [
+                        'children': [
                             {
-                                "id": "inst_11_0",
-                                "title": "Inst_11_0",
-                                "val": 3
+                                'id': 'inst_11_0',
+                                'title': 'Inst_11_0',
+                                'val': 3
                             },
                             {
-                                "id": "inst_11_1",
-                                "title": "Inst_11_1",
-                                "val": 78
+                                'id': 'inst_11_1',
+                                'title': 'Inst_11_1',
+                                'val': 78
                             },
                             {
-                                "id": "inst_11_2",
-                                "title": "Inst_11_2",
-                                "val": 78
+                                'id': 'inst_11_2',
+                                'title': 'Inst_11_2',
+                                'val': 78
                             },
                         ]
                     },
                     {
-                        "id": "inst_18",
-                        "title": "Inst_18",
-                        "val": 80
+                        'id': 'inst_18',
+                        'title': 'Inst_18',
+                        'val': 80
                     },
                 ]
             }
@@ -1082,136 +1096,136 @@ class InstData():
         for id_now in proc_ids:
             inst_health[id_now] = dict()
 
-            inst_health[id_now]["prc_0"] = {
-                "id":
-                "prc_0",
-                "title":
-                "Prc_0",
-                "val":
+            inst_health[id_now]['prc_0'] = {
+                'id':
+                'prc_0',
+                'title':
+                'Prc_0',
+                'val':
                 20,
-                "children": [
+                'children': [
                     {
-                        "id": "prc_00",
-                        "title": "Prc_00",
-                        "val": 100
+                        'id': 'prc_00',
+                        'title': 'Prc_00',
+                        'val': 100
                     },
                     {
-                        "id":
-                        "prc_01",
-                        "title":
-                        "Prc_01",
-                        "val":
+                        'id':
+                        'prc_01',
+                        'title':
+                        'Prc_01',
+                        'val':
                         10,
-                        "children": [
+                        'children': [
                             {
-                                "id": "prc_01_0",
-                                "title": "Prc_01_0",
-                                "val": 3
+                                'id': 'prc_01_0',
+                                'title': 'Prc_01_0',
+                                'val': 3
                             },
                             {
-                                "id": "prc_01_1",
-                                "title": "Prc_01_1",
-                                "val": 78
+                                'id': 'prc_01_1',
+                                'title': 'Prc_01_1',
+                                'val': 78
                             },
                             {
-                                "id": "prc_01_2",
-                                "title": "Prc_01_1",
-                                "val": 78
+                                'id': 'prc_01_2',
+                                'title': 'Prc_01_1',
+                                'val': 78
                             },
                         ]
                     },
                     {
-                        "id":
-                        "prc_02",
-                        "title":
-                        "Prc_02",
-                        "val":
+                        'id':
+                        'prc_02',
+                        'title':
+                        'Prc_02',
+                        'val':
                         10,
-                        "children": [
+                        'children': [
                             {
-                                "id": "prc_02_0",
-                                "title": "Prc_02_0",
-                                "val": 3
+                                'id': 'prc_02_0',
+                                'title': 'Prc_02_0',
+                                'val': 3
                             },
                             {
-                                "id": "prc_02_1",
-                                "title": "Prc_02_1",
-                                "val": 78
+                                'id': 'prc_02_1',
+                                'title': 'Prc_02_1',
+                                'val': 78
                             },
                         ]
                     },
                     {
-                        "id": "prc_03",
-                        "title": "Prc_03",
-                        "val": 80
+                        'id': 'prc_03',
+                        'title': 'Prc_03',
+                        'val': 80
                     },
                     {
-                        "id": "prc_04",
-                        "title": "Prc_04",
-                        "val": 80
+                        'id': 'prc_04',
+                        'title': 'Prc_04',
+                        'val': 80
                     },
                     {
-                        "id": "prc_05",
-                        "title": "Prc_05",
-                        "val": 80
+                        'id': 'prc_05',
+                        'title': 'Prc_05',
+                        'val': 80
                     },
                 ]
             }
-            inst_health[id_now]["prc_1"] = {
-                "id":
-                "prc_1",
-                "title":
-                "Prc_1",
-                "val":
+            inst_health[id_now]['prc_1'] = {
+                'id':
+                'prc_1',
+                'title':
+                'Prc_1',
+                'val':
                 20,
-                "children": [
+                'children': [
                     {
-                        "id":
-                        "prc_11",
-                        "title":
-                        "Prc_11",
-                        "val":
+                        'id':
+                        'prc_11',
+                        'title':
+                        'Prc_11',
+                        'val':
                         10,
-                        "children": [
+                        'children': [
                             {
-                                "id": "prc_11_1",
-                                "title": "Prc_11_1",
-                                "val": 78
+                                'id': 'prc_11_1',
+                                'title': 'Prc_11_1',
+                                'val': 78
                             },
                             {
-                                "id": "prc_11_2",
-                                "title": "Prc_11_2",
-                                "val": 78
+                                'id': 'prc_11_2',
+                                'title': 'Prc_11_2',
+                                'val': 78
                             },
                         ]
                     },
                     {
-                        "id": "prc_15",
-                        "title": "Prc_15",
-                        "val": 80
+                        'id': 'prc_15',
+                        'title': 'Prc_15',
+                        'val': 80
                     },
                     {
-                        "id":
-                        "prc_16",
-                        "title":
-                        "Prc_16",
-                        "val":
+                        'id':
+                        'prc_16',
+                        'title':
+                        'Prc_16',
+                        'val':
                         10,
-                        "children": [
+                        'children': [
                             {
-                                "id": "prc_16_1",
-                                "title": "Prc_16_1",
-                                "val": 78
+                                'id': 'prc_16_1',
+                                'title': 'Prc_16_1',
+                                'val': 78
                             },
                             {
-                                "id": "prc_16_2",
-                                "title": "Prc_16_2",
-                                "val": 78
+                                'id': 'prc_16_2',
+                                'title': 'Prc_16_2',
+                                'val': 78
                             },
                             {
-                                "id": "prc_16_4",
-                                "title": "Prc_16_4",
-                                "val": 78
+                                'id': 'prc_16_4',
+                                'title': 'Prc_16_4',
+                                'val': 78
                             },
                         ]
                     },
