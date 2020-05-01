@@ -180,7 +180,7 @@ window.ArrZoomerChes = function(opt_in_top) {
             .y(function(d) {
                 return d.y
             })
-            .extent([[ 0, 0 ], [ svg_dims.w, svg_dims.h ]])
+            .extent([ [ 0, 0 ], [ svg_dims.w, svg_dims.h ] ])
 
         com.ches_g.vor = vor_func.polygons(vor_data)
 

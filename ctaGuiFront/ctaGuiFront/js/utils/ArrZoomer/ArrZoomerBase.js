@@ -537,7 +537,7 @@ window.ArrZoomerBase = function(opt_in_top) {
                             ele_wh[0][index_0] = get_node_wh_by_id({
                                 selction: g_in.selectAll('text.' + tag_now),
                                 id: data_now_0.id,
-                            }).height
+                            }).width
                         }
                         x += data_now_0.x + ele_wh[0][index_0]
                     }

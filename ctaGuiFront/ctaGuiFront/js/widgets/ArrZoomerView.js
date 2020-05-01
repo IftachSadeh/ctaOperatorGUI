@@ -161,24 +161,24 @@ let main_arr_zoomer = function(opt_in) {
 
     arr_zoomer_ele_opts.trans = {
         main: (
-            'translate(0,'+main_trans_y+')scale(2.5)'
+            'translate(0,' + main_trans_y + ')scale(2.5)'
         ),
         tree: (
-            'translate(250,'+main_trans_y+')scale(2.5)'
+            'translate(250,' + main_trans_y + ')scale(2.5)'
         ),
         ches: (
-            'translate('+ches_trans_x+','+ches_trans_y
-            +')scale('+ches_scale+')'
+            'translate(' + ches_trans_x + ',' + ches_trans_y
+            + ')scale(' + ches_scale + ')'
         ),
         mini: (
-            'translate('+mini_trans_x+','+mini_trans_y
-            +')scale('+mini_scale+')'
+            'translate(' + mini_trans_x + ',' + mini_trans_y
+            + ')scale(' + mini_scale + ')'
         ),
         lens: (
             'translate(10,5)scale(0.18)'
         ),
         more: (
-            'translate(0,'+more_trans_y+')scale('+more_scale+')'
+            'translate(0,' + more_trans_y + ')scale(' + more_scale + ')'
         ),
     }
 
