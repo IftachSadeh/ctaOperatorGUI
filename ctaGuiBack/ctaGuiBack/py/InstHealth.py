@@ -41,6 +41,9 @@ class InstHealth():
             'min_wait': min_wait_update_sec,
         }
 
+        # the fraction of telescopes to randomely update
+        self.update_frac = 0.05
+
         self.inst_data = self.base_config.inst_data
         self.health_tag = self.inst_data.health_tag
 
@@ -101,7 +104,7 @@ class InstHealth():
 
         self.redis.pipe.execute()
 
-        self.rand_once()
+        self.rand_once(update_frac=1)
 
         return
 
@@ -131,8 +134,8 @@ class InstHealth():
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
-    def rand_once(self, rnd_seed=-1):
-        ids = self.rand_s0(rnd_seed=rnd_seed)
+    def rand_once(self, rnd_seed=-1, update_frac=None):
+        ids = self.rand_s0(rnd_seed=rnd_seed, update_frac=update_frac)
         self.rand_s1(tel_id_in=ids, rnd_seed=rnd_seed)
 
         return
@@ -141,13 +144,15 @@ class InstHealth():
     #
     # ------------------------------------------------------------------
 
-    def rand_s0(self, rnd_seed=-1):
+    def rand_s0(self, rnd_seed=-1, update_frac=None):
         if rnd_seed < 0:
             rnd_seed = random.randint(0, 100000)
         rnd_gen = Random(rnd_seed)
 
-        update_frac = 0.4
         arr_props = dict()
+
+        if update_frac is None:
+            update_frac = self.update_frac
 
         rnd_props = [
             'camera',
@@ -210,7 +215,7 @@ class InstHealth():
     # ------------------------------------------------------------------
 
     def rand_s1(self, tel_id_in=None, rnd_seed=-1):
-        rnd_props = ['camera', 'mirror', 'mount', 'daq', 'aux', 'inst_0', 'inst_1']
+        rnd_props = ['camera', 'mirror', 'mount', 'daq', 'aux', 'inst_0', 'inst_1',]
 
         if rnd_seed < 0:
             rnd_seed = random.randint(0, 100000)

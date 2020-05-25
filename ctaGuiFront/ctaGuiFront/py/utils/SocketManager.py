@@ -1146,7 +1146,7 @@ class ClockSimDecorator():
             data = self.redis.get('clock_sim_sim_params', packed=True)
             emit_data = {'data': data}
 
-            # sendthe updated value to all sessions
+            # send the updated value to all sessions
             self.socket_manager.socket_event_widgets(
                 event_name='get_sim_clock_sim_params',
                 data=emit_data,

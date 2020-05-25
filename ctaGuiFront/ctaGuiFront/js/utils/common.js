@@ -2890,12 +2890,14 @@ window.add_accordion_div = function(opt_in) {
     let title_div = top_div.appendChild(
         document.createElement('div')
     )
+    title_div.style = 'display: flex;'
+    
     let content_div = top_div.appendChild(
         document.createElement('div')
     )
 
     let title_div_tog = title_div.appendChild(
-        document.createElement('a')
+        document.createElement('div')
     )
 
     function tog_click(opt_in) {
@@ -2903,30 +2905,36 @@ window.add_accordion_div = function(opt_in) {
         let tog_icon = opt_in.tog_icon
         let is_open_now = true
 
-        tog_icon = tog_icon.appendChild(
-            document.createElement('div')
+        let tog_icon_i = tog_icon.appendChild(
+            document.createElement('i')
         )
-        tog_icon.classList.add('fa')
-        tog_icon.classList.add('fa-chevron-down')
-        tog_icon.classList.add('fa-circle-button')
-        tog_icon.style = 'padding-left: 0px; margin-right: 1px;'
+        tog_icon_i.classList.add('fa')
+        tog_icon_i.classList.add('fa-chevron-down')
+        // tog_icon_i.classList.add('fa-circle-button')
+
+        tog_icon.style = (
+            'flex: 0 0 '
+            + (2 * tog_icon_i.scrollWidth)
+            + 'px; text-align: left;'
+        )
 
         main_div.style.WebkitTransition = 'all .3s ease-out'
         main_div.style.MozTransition = 'all .3s ease-out'
         main_div.style.transition = 'all .3s ease-out'
         main_div.style.overflow = 'hidden'
         main_div.style.maxHeight = main_div.scrollHeight + 'px'
+        tog_icon_i.style = 'padding-top: 3px;'
 
         function tog_func() {
             if (is_open_now) {
                 main_div.style.maxHeight = 0
-                tog_icon.classList.add('fa-chevron-right')
-                tog_icon.classList.remove('fa-chevron-down')
+                tog_icon_i.classList.add('fa-chevron-right')
+                tog_icon_i.classList.remove('fa-chevron-down')
             }
             else {
                 main_div.style.maxHeight = main_div.scrollHeight + 'px'
-                tog_icon.classList.add('fa-chevron-down')
-                tog_icon.classList.remove('fa-chevron-right')
+                tog_icon_i.classList.add('fa-chevron-down')
+                tog_icon_i.classList.remove('fa-chevron-right')
             }
             is_open_now = !is_open_now
             return
@@ -2938,7 +2946,7 @@ window.add_accordion_div = function(opt_in) {
         main_div: content_div,
         tog_icon: title_div_tog,
     })
-    title_div_tog.onclick = click_func
+    title_div.onclick = click_func
     click_func()
 
     if (is_open) {
@@ -2949,10 +2957,11 @@ window.add_accordion_div = function(opt_in) {
 
     if (is_def(title_text)) {
         let title = title_div.appendChild(
-            document.createElement('a')
+            document.createElement('span')
         )
         title.innerHTML = title_text
         title.classList.add('floating-div-title')
+        title.style += 'flex: 1;'
     }
 
     let output = {
