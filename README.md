@@ -127,13 +127,13 @@ The following details the minimal procedure to add a new widget, `TestExample`, 
   sed "s/EmptyExample/TestExample/g" js/widgets/EmptyExample.js | sed "s/empty_example/test_example/g" > js/widgets/TestExample.js
   sed "s/EmptyExample/TestExample/g" py/widgets/EmptyExample.py | sed "s/empty_example/test_example/g" > py/widgets/TestExample.py
   ```
-    It is imperative to follow keep the naming scheme consistent (including capitalisation), and to make sure that the `main_script_tag` variable in `js/widgets/TestExample.js` is set to the exact widget name.
+    It is important to keep the naming scheme consistent (including capitalisation), and to make sure that the `main_script_tag` variable in `js/widgets/TestExample.js` is set to the exact widget name.
 
 - Make the following modifications:
-  1. In `ctaGuiUtils/py/utils.py`: add the new widget (`TestExample`) to `allowed_widget_types`. This `dict` is used in `ctaGuiFront/ctaGuiFront/py/utils/SockManager.py` to make sure that a dynamically added widget-class (i.e., `ctaGuiFront/ctaGuiFront/py/widgets/TestExample.py`) is valid.
-  2. In `ctaGuiFront/ctaGuiFront/js/utils/setup_view.js`: add the new view and the new widget to `setup_view`. Here the widgets which are loaded in a given view are defined. The new widget may also be added to an existing view.
-  3. In `ctaGuiFront/ctaGuiFront/js/utils/BaseApp.js`: add the new view (`myNewView`) to the `add_site_nav_menu` function. (This will add an entry to the new view in the main navigation menu in the index page and in side-menu.)
-  4. In `ctaGuiFront/ctaGuiFront/__init__.py`: add the new view (`myNewView`) to `utils.all_widgets`. This lets the server know that the new URL (`http://localhost:8090/cta/myNewView`) is valid.
+  1. In `ctaGuiUtils/py/BaseConfig.py`: add the new widget (`TestExample`) to `allowed_widget_types`. This `dict` is used to make sure that a dynamically added widget-class (i.e., `ctaGuiFront/ctaGuiFront/py/widgets/TestExample.py`) is valid.
+  2. In `ctaGuiUtils/py/BaseConfig.py`: add the new view (`myNewView`) to `utils.all_widgets`. This lets the server know that the new URL (`http://localhost:8090/cta/myNewView`) is valid.
+  3. In `ctaGuiFront/ctaGuiFront/js/utils/setup_view.js`: add the new view and the new widget to `setup_view` (copy the entry for `TestExample`). Here the widgets which are loaded in a given view are defined. The new widget may also be added to an existing view.
+  4. In `ctaGuiFront/ctaGuiFront/js/utils/BaseApp.js`: add the new view (`myNewView`) to the `add_site_nav_menu` function  (copy the entry for `TestExample`). This will add an entry to the new view in the main navigation menu in the index page and in side-menu.
 
 
 ## Comments
