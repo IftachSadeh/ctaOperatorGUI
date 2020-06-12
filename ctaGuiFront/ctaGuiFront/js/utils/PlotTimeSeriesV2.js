@@ -2,12 +2,9 @@
 //
 // ------------------------------------------------------------------
 
-/* global $ */
 /* global d3 */
 /* global times */
 /* global is_def */
-/* global deep_copy */
-/* global PlotTimeBar */
 
 window.PlotTimeSeries = function() {
     let reserved = {
@@ -62,7 +59,6 @@ window.PlotTimeSeries = function() {
         },
         content: [],
     }
-
     this.set = function(opt_in) {
         if (is_def(opt_in.data)) {
             reserved[opt_in.tag] = opt_in.data
@@ -106,6 +102,186 @@ window.PlotTimeSeries = function() {
         reserved.main.g.append('g').attr('id', 'bindedData')
     }
     this.init = init
+    function init_clipping() {
+        if (!reserved.main.clipping) {
+            return
+        }
+        reserved.clipping = {
+        }
+        reserved.clipping.g = reserved.main.g.append('g')
+        reserved.clipping.g
+            .append('defs')
+            .append('svg:clipPath')
+            .attr('id', 'clip')
+            .append('svg:rect')
+            .attr('id', 'clip-rect')
+            .attr('x', '0')
+            .attr('y', '0')
+            .attr('width', reserved.main.box.w)
+            .attr('height', reserved.main.box.h)
+        reserved.clipping.clipBody = reserved.clipping.g
+            .append('g')
+            .attr('clip-path', 'url(#clip)')
+        reserved.clipping.maing = reserved.clipping.clipBody.append('g')
+    }
+
+    function to_axis_template(axis) {
+        if (! axis.meta) {
+            axis.meta = {
+            }
+        }
+    }
+    function initAxis() {
+        for (let i = 0; i < reserved.axis.length; i++) {
+            to_axis_template(reserved.axis[i])
+
+            if (reserved.axis[i].scale_type === 'time') {
+                reserved.axis[i].meta.scale = d3.scaleTime()
+            }
+            else if (reserved.axis[i].scale_type === 'line') {
+                reserved.axis[i].meta.scale = d3.scaleLinear()
+            }
+            else {
+                reserved.axis[i].meta.scale = d3.scaleLinear()
+            }
+
+            reserved.axis[i].meta.scale
+                .range(reserved.axis[i].range)
+                .domain(reserved.axis[i].domain)
+
+            if (reserved.axis[i].scale_location === 'top') {
+                reserved.axis[i].meta.axis = d3.axisTop(reserved.axis[i].meta.scale)
+            }
+            else if (reserved.axis[i].scale_location === 'bottom') {
+                reserved.axis[i].meta.axis = d3.axisBottom(reserved.axis[i].meta.scale)
+            }
+            else if (reserved.axis[i].scale_location === 'left') {
+                reserved.axis[i].meta.axis = d3.axisLeft(reserved.axis[i].meta.scale)
+            }
+            else if (reserved.axis[i].scale_location === 'right') {
+                reserved.axis[i].meta.axis = d3.axisRight(reserved.axis[i].meta.scale)
+            }
+
+            if (reserved.axis[i].scale_type === 'time') {
+                reserved.axis[i].meta.axis.tickFormat(d3.timeFormat('%H:%M'))
+            }
+
+            reserved.axis[i].meta.g = reserved.main.g.append('g')
+            if (reserved.axis[i].scale_location === 'bottom') {
+                reserved.axis[i].meta.g.attr(
+                    'transform',
+                    'translate('
+            + reserved.axis[i].box.x
+            + ','
+            + (reserved.axis[i].box.y + reserved.axis[i].box.h)
+            + ')'
+                )
+            }
+            else if (reserved.axis[i].scale_location === 'top') {
+                reserved.axis[i].meta.g.attr(
+                    'transform',
+                    'translate('
+            + reserved.axis[i].box.x
+            + ','
+            + reserved.axis[i].box.y
+            + ')'
+                )
+            }
+            else if (reserved.axis[i].scale_location === 'right') {
+                reserved.axis[i].meta.g.attr(
+                    'transform',
+                    'translate('
+            + (reserved.axis[i].box.x + reserved.axis[i].box.w)
+            + ','
+            + reserved.axis[i].box.y
+            + ')'
+                )
+            }
+            else if (reserved.axis[i].scale_location === 'left') {
+                reserved.axis[i].meta.g.attr(
+                    'transform',
+                    'translate('
+            + reserved.axis[i].box.x
+            + ','
+            + reserved.axis[i].box.y
+            + ')'
+                )
+            }
+
+            reserved.axis[i].meta.g
+                .attr('class', 'axis')
+                .call(reserved.axis[i].meta.axis)
+                .style('pointer-events', 'none')
+                .style('user-select', 'none')
+            reserved.axis[i].meta.g.style('opacity', 1)
+        }
+    }
+    function initInteraction() {
+        function create_delete_button() {
+            let remg = reserved.main.g
+                .append('g')
+                .attr('id', 'removeGroup')
+                .style('cursor', 'pointer')
+            remg
+                .append('rect')
+                .attr('x', reserved.main.box.w - 15)
+                .attr('y', -15)
+                .attr('width', 15)
+                .attr('height', 15)
+                .attr('stroke', colorPalette.dark.stroke)
+                .attr('stroke-width', 0.2)
+                .attr('fill', colorPalette.blocks.run.background)
+                .style('opacity', '0')
+            remg
+                .append('svg:image')
+                .attr('xlink:href', '/static/icons/cross.svg')
+                .attr('x', reserved.main.box.w - 12.5 + 'px')
+                .attr('y', -12.5 + 'px')
+                .attr('width', 10 + 'px')
+                .attr('height', 10 + 'px')
+                .style('pointer-events', 'none')
+        }
+        function create_pinned_button() {
+            let remg = reserved.main.g
+                .append('g')
+                .attr('id', 'removeGroup')
+                .style('cursor', 'pointer')
+            remg
+                .append('rect')
+                .attr('x', reserved.main.box.w - 36)
+                .attr('y', -15)
+                .attr('width', 15)
+                .attr('height', 15)
+                .attr('stroke', colorPalette.dark.stroke)
+                .attr('stroke-width', 0.2)
+                .attr('fill', colorPalette.blocks.run.background)
+                .style('opacity', '0')
+            remg
+                .append('svg:image')
+                .attr('xlink:href', '/static/icons/pin.svg')
+                .attr('x', reserved.main.box.w - 33.5 + 'px')
+                .attr('y', -12.5 + 'px')
+                .attr('width', 10 + 'px')
+                .attr('height', 10 + 'px')
+                .style('pointer-events', 'none')
+        }
+        for (let key in reserved.interaction) {
+            switch (key) {
+            case 'pinned':
+                if (reserved.interaction[key].enabled) {
+                    create_pinned_button()
+                }
+                break
+            case 'remove':
+                if (reserved.interaction[key].enabled) {
+                    create_delete_button()
+                }
+                break
+            default:
+                break
+            }
+        }
+    }
 
     function bindData(id, data, axisX, axisY) {
         let toBind = true
@@ -223,310 +399,6 @@ window.PlotTimeSeries = function() {
             .remove()
     }
     this.unbindData = unbindData
-
-    function init_clipping() {
-        if (!reserved.main.clipping) {
-            return
-        }
-        reserved.clipping = {
-        }
-        reserved.clipping.g = reserved.main.g.append('g')
-        reserved.clipping.g
-            .append('defs')
-            .append('svg:clipPath')
-            .attr('id', 'clip')
-            .append('svg:rect')
-            .attr('id', 'clip-rect')
-            .attr('x', '0')
-            .attr('y', '0')
-            .attr('width', reserved.main.box.w)
-            .attr('height', reserved.main.box.h)
-        reserved.clipping.clipBody = reserved.clipping.g
-            .append('g')
-            .attr('clip-path', 'url(#clip)')
-        reserved.clipping.maing = reserved.clipping.clipBody.append('g')
-    }
-    function initAxis() {
-        for (let i = 0; i < reserved.axis.length; i++) {
-            if (reserved.axis[i].main.mode === 'time') {
-                reserved.axis[i].scale = d3.scaleTime()
-            }
-            else if (reserved.axis[i].main.mode === 'line') {
-                reserved.axis[i].scale = d3.scaleLinear()
-            }
-            else {
-                reserved.axis[i].scale = d3.scaleLinear()
-            }
-
-            reserved.axis[i].scale
-                .range(reserved.axis[i].range)
-                .domain(reserved.axis[i].domain)
-
-            if (reserved.axis[i].main.type === 'top') {
-                reserved.axis[i].axis = d3.axisTop(reserved.axis[i].scale)
-            }
-            else if (reserved.axis[i].main.type === 'bottom') {
-                reserved.axis[i].axis = d3.axisBottom(reserved.axis[i].scale)
-            }
-            else if (reserved.axis[i].main.type === 'left') {
-                reserved.axis[i].axis = d3.axisLeft(reserved.axis[i].scale)
-            }
-            else if (reserved.axis[i].main.type === 'right') {
-                reserved.axis[i].axis = d3.axisRight(reserved.axis[i].scale)
-            }
-
-            if (reserved.axis[i].main.mode === 'time') {
-                reserved.axis[i].axis.tickFormat(d3.timeFormat('%H:%M'))
-            }
-
-            reserved.axis[i].main.g = reserved.main.g.append('g')
-            if (reserved.axis[i].main.type === 'bottom') {
-                reserved.axis[i].main.g.attr(
-                    'transform',
-                    'translate('
-            + reserved.axis[i].main.box.x
-            + ','
-            + (reserved.axis[i].main.box.y + reserved.axis[i].main.box.h)
-            + ')'
-                )
-            }
-            else if (reserved.axis[i].main.type === 'top') {
-                reserved.axis[i].main.g.attr(
-                    'transform',
-                    'translate('
-            + reserved.axis[i].main.box.x
-            + ','
-            + reserved.axis[i].main.box.y
-            + ')'
-                )
-            }
-            else if (reserved.axis[i].main.type === 'right') {
-                reserved.axis[i].main.g.attr(
-                    'transform',
-                    'translate('
-            + (reserved.axis[i].main.box.x + reserved.axis[i].main.box.w)
-            + ','
-            + reserved.axis[i].main.box.y
-            + ')'
-                )
-            }
-            else if (reserved.axis[i].main.type === 'left') {
-                reserved.axis[i].main.g.attr(
-                    'transform',
-                    'translate('
-            + reserved.axis[i].main.box.x
-            + ','
-            + reserved.axis[i].main.box.y
-            + ')'
-                )
-            }
-
-            if (!reserved.axis[i].showAxis) {
-                continue
-            }
-            reserved.axis[i].main.g
-                .attr('class', 'axis')
-                .call(reserved.axis[i].axis)
-                .style('pointer-events', 'none')
-                .style('user-select', 'none')
-            reserved.axis[i].main.g.style('opacity', 1)
-        }
-    }
-    function initInteraction() {
-        function create_delete_button() {
-            let remg = reserved.main.g
-                .append('g')
-                .attr('id', 'removeGroup')
-                .style('cursor', 'pointer')
-            remg
-                .append('rect')
-                .attr('x', reserved.main.box.w - 15)
-                .attr('y', -15)
-                .attr('width', 15)
-                .attr('height', 15)
-                .attr('stroke', colorPalette.dark.stroke)
-                .attr('stroke-width', 0.2)
-                .attr('fill', colorPalette.blocks.run.background)
-                .style('opacity', '0')
-            remg
-                .append('svg:image')
-                .attr('xlink:href', '/static/icons/cross.svg')
-                .attr('x', reserved.main.box.w - 12.5 + 'px')
-                .attr('y', -12.5 + 'px')
-                .attr('width', 10 + 'px')
-                .attr('height', 10 + 'px')
-                .style('pointer-events', 'none')
-        }
-        function create_pinned_button() {
-            let remg = reserved.main.g
-                .append('g')
-                .attr('id', 'removeGroup')
-                .style('cursor', 'pointer')
-            remg
-                .append('rect')
-                .attr('x', reserved.main.box.w - 36)
-                .attr('y', -15)
-                .attr('width', 15)
-                .attr('height', 15)
-                .attr('stroke', colorPalette.dark.stroke)
-                .attr('stroke-width', 0.2)
-                .attr('fill', colorPalette.blocks.run.background)
-                .style('opacity', '0')
-            remg
-                .append('svg:image')
-                .attr('xlink:href', '/static/icons/pin.svg')
-                .attr('x', reserved.main.box.w - 33.5 + 'px')
-                .attr('y', -12.5 + 'px')
-                .attr('width', 10 + 'px')
-                .attr('height', 10 + 'px')
-                .style('pointer-events', 'none')
-        }
-        for (let key in reserved.interaction) {
-            switch (key) {
-            case 'pinned':
-                if (reserved.interaction[key].enabled) {
-                    create_pinned_button()
-                }
-                break
-            case 'remove':
-                if (reserved.interaction[key].enabled) {
-                    create_delete_button()
-                }
-                break
-            default:
-                break
-            }
-        }
-    }
-    // function addAxis (axis) {
-    //   if (!axis.enabled) return
-    //
-    //   reserved.axis.push(axis)
-    //   axis.scale = d3.scaleTime()
-    //     .range(axis.range)
-    //     .domain(axis.domain)
-    //   if (axis.main.type === 'top') axis.axis = d3.axisTop(axis.scale)
-    //   if (axis.main.type === 'bottom') axis.axis = d3.axisBottom(axis.scale)
-    //   axis.axis.tickFormat(d3.timeFormat('%H:%M'))
-    //   axis.g = main.g.append('g')
-    //     .attr('transform', 'translate(' + axis.main.box.x + ',' + axis.main.box.y + ')')
-    //   axis.g
-    //     .attr('class', 'axis')
-    //     .call(axis.axis)
-    //   axis.g.style('opacity', 1)
-    // }
-    // this.addAxis = addAxis
-    // function removeAxis (axis) {}
-    function getAxis(id) {
-        for (let index = 0; index < reserved.axis.length; index++) {
-            if (reserved.axis[index].id === id) {
-                return reserved.axis[index]
-            }
-        }
-    }
-    this.getAxis = getAxis
-    function getClipping() {
-        return reserved.clipping.maing
-    }
-    this.getClipping = getClipping
-    function updateAxis(axis) {
-        let index = 0
-        for (index; index < reserved.axis.length; index++) {
-            if (reserved.axis[index].id === axis.id) {
-                if (axis.range) {
-                    reserved.axis[index].range = axis.range
-                }
-                if (axis.domain) {
-                    reserved.axis[index].domain = axis.domain
-                }
-                if (axis.box) {
-                    reserved.axis[index].main.box = axis.box
-                }
-                if (axis.tickSize) {
-                    reserved.axis[index].main.attr.tickSize = axis.tickSize
-                }
-                break
-            }
-        }
-        reserved.axis[index].scale
-            .domain(reserved.axis[index].domain)
-            .range(reserved.axis[index].range)
-
-        if (reserved.axis[index].main.type === 'bottom') {
-            reserved.axis[index].main.g.attr('transform', 'translate(' + reserved.axis[index].main.box.x + ',' + (reserved.axis[index].main.box.y + reserved.axis[index].main.box.h) + ')')
-        }
-        else if (reserved.axis[index].main.type === 'top') {
-            reserved.axis[index].main.g.attr('transform', 'translate(' + reserved.axis[index].main.box.x + ',' + reserved.axis[index].main.box.y + ')')
-        }
-        else if (reserved.axis[index].main.type === 'right') {
-            reserved.axis[index].main.g.attr('transform', 'translate(' + (reserved.axis[index].main.box.x + reserved.axis[index].main.box.w) + ',' + reserved.axis[index].main.box.y + ')')
-        }
-        else if (reserved.axis[index].main.type === 'left') {
-            reserved.axis[index].main.g.attr('transform', 'translate(' + (reserved.axis[index].main.box.x) + ',' + reserved.axis[index].main.box.y + ')')
-        }
-        // applyZoomBrush(reserved.axis[index])
-
-        // if (!reserved.axis[index].enabled) return
-        let minTxtSize = reserved.axis[index].main.attr.text.size
-            ? reserved.axis[index].main.attr.text.size
-            : reserved.main.box.w * 0.04
-        // console.log(reserved.axis[index].domain, reserved.axis[index].range);
-        reserved.axis[index].axis.scale(reserved.axis[index].scale)
-        reserved.axis[index].axis.ticks(5)
-        reserved.axis[index].axis.tickSize(reserved.axis[index].main.attr.tickSize)
-        if (!reserved.axis[index].showAxis) {
-            return
-        }
-        reserved.axis[index].main.g.call(reserved.axis[index].axis)
-        reserved.axis[index].main.g
-            .select('path')
-            .attr('stroke-width', 0.3)
-            .attr('stroke', reserved.axis[index].main.attr.path.stroke)
-            .attr('opacity', reserved.axis[index].main.attr.path.enabled ? 1 : 0)
-        reserved.axis[index].main.g
-            .selectAll('g.tick')
-            .selectAll('line')
-            .attr('stroke-width', 0.2)
-            .attr('stroke', reserved.axis[index].main.attr.path.stroke)
-            .attr('opacity', reserved.axis[index].main.attr.path.enabled ? 1 : 0)
-        reserved.axis[index].main.g
-            .selectAll('g.tick')
-            .selectAll('text')
-            .attr('stroke', reserved.axis[index].main.attr.text.stroke)
-            .attr('stroke-width', 0.2)
-            .attr('fill', reserved.axis[index].main.attr.text.fill)
-            .style('font-size', minTxtSize + 'px')
-            .attr('opacity', reserved.axis[index].main.attr.text.enabled ? 1 : 0)
-    }
-    this.updateAxis = updateAxis
-    // function updateAxes () {
-    //   for (let i = 0; i < reserved.axis.length; i++) {
-    //     updateAxis(reserved.axis[i])
-    //   }
-    // }
-    // function applyZoomBrush (axis) {
-    //   axis.scale
-    //     .domain(axis.domain)
-    //     .range(axis.range)
-    //
-    //   let newDomain = deep_copy(axis.domain)
-    //   if (axis.main.type === 'top' || axis.main.type === 'bottom') {
-    //     newDomain[0] = axis.scale.invert(reserved.zoom.coef.x)
-    //     newDomain[1] = axis.scale.invert(reserved.zoom.coef.x + (reserved.focus.main.box.w * reserved.zoom.coef.kx))
-    //   } else if (axis.main.type === 'left' || axis.main.type === 'right') {
-    //     newDomain[0] = axis.scale.invert(reserved.zoom.coef.y)
-    //     newDomain[1] = axis.scale.invert(reserved.zoom.coef.y + (reserved.focus.main.box.h * reserved.zoom.coef.ky))
-    //   }
-    //   if (axis.brush.zoom) axis.scale.domain(newDomain)
-    // }
-    function update_box(box) {
-        reserved.main.box = box
-        reserved.main.g.attr('transform', 'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')')
-        reserved.clipping.g.select('#clip-rect')
-            .attr('width', reserved.main.box.w)
-            .attr('height', reserved.main.box.h)
-    }
-    this.update_box = update_box
     function update_data(opt_in) {
         for (let id in reserved.content) {
             let binded = reserved.content[id]
@@ -552,4 +424,102 @@ window.PlotTimeSeries = function() {
         }
     }
     this.update_data = update_data
+
+    function add_axis(axis) {
+    }
+    this.add_axis = add_axis
+    function remove_axis(axis_id) {}
+    this.remove_axis = remove_axis
+    function getAxis(id) {
+        for (let index = 0; index < reserved.axis.length; index++) {
+            if (reserved.axis[index].id === id) {
+                return reserved.axis[index]
+            }
+        }
+    }
+    this.getAxis = getAxis
+    function updateAxis(axis) {
+        let index = 0
+        for (index; index < reserved.axis.length; index++) {
+            if (reserved.axis[index].id === axis.id) {
+                if (axis.range) {
+                    reserved.axis[index].range = axis.range
+                }
+                if (axis.domain) {
+                    reserved.axis[index].domain = axis.domain
+                }
+                if (axis.box) {
+                    reserved.axis[index].box = axis.box
+                }
+                if (axis.tickSize) {
+                    reserved.axis[index].style.axis.tickSize = axis.tickSize
+                }
+                break
+            }
+        }
+        reserved.axis[index].meta.scale
+            .domain(reserved.axis[index].domain)
+            .range(reserved.axis[index].range)
+
+        if (reserved.axis[index].scale_location === 'bottom') {
+            reserved.axis[index].meta.g.attr('transform', 'translate(' + reserved.axis[index].box.x + ',' + (reserved.axis[index].box.y + reserved.axis[index].box.h) + ')')
+        }
+        else if (reserved.axis[index].scale_location === 'top') {
+            reserved.axis[index].meta.g.attr('transform', 'translate(' + reserved.axis[index].box.x + ',' + reserved.axis[index].box.y + ')')
+        }
+        else if (reserved.axis[index].scale_location === 'right') {
+            reserved.axis[index].meta.g.attr('transform', 'translate(' + (reserved.axis[index].box.x + reserved.axis[index].box.w) + ',' + reserved.axis[index].box.y + ')')
+        }
+        else if (reserved.axis[index].scale_location === 'left') {
+            reserved.axis[index].meta.g.attr('transform', 'translate(' + (reserved.axis[index].box.x) + ',' + reserved.axis[index].box.y + ')')
+        }
+        // applyZoomBrush(reserved.axis[index])
+
+        // if (!reserved.axis[index].enabled) return
+        let minTxtSize = reserved.axis[index].style.text.size
+            ? reserved.axis[index].style.text.size
+            : reserved.main.box.w * 0.04
+        // console.log(reserved.axis[index].domain, reserved.axis[index].range);
+        reserved.axis[index].meta.axis.scale(reserved.axis[index].meta.scale)
+        reserved.axis[index].meta.axis.ticks(5)
+        reserved.axis[index].meta.axis.tickSize(reserved.axis[index].style.axis.tickSize)
+
+        reserved.axis[index].meta.g.call(reserved.axis[index].meta.axis)
+        reserved.axis[index].meta.g
+            .select('path')
+            .attr('stroke-width', 0.3)
+            .attr('stroke', reserved.axis[index].style.path.stroke)
+            .attr('opacity', reserved.axis[index].style.path.visible ? 1 : 0)
+        reserved.axis[index].meta.g
+            .selectAll('g.tick')
+            .selectAll('line')
+            .attr('stroke-width', 0.2)
+            .attr('stroke', reserved.axis[index].style.path.stroke)
+            .attr('opacity', reserved.axis[index].style.path.visible ? 1 : 0)
+        reserved.axis[index].meta.g
+            .selectAll('g.tick')
+            .selectAll('text')
+            .attr('stroke', reserved.axis[index].style.text.stroke)
+            .attr('stroke-width', 0.2)
+            .attr('fill', reserved.axis[index].style.text.fill)
+            .style('font-size', minTxtSize + 'px')
+            .attr('opacity', reserved.axis[index].style.text.visible ? 1 : 0)
+        console.log(reserved.main.g)
+    }
+    this.updateAxis = updateAxis
+
+
+    function getClipping() {
+        return reserved.clipping.maing
+    }
+    this.getClipping = getClipping
+    function update_box(box) {
+        reserved.main.box = box
+        reserved.main.g.attr('transform',
+            'translate(' + reserved.main.box.x + ',' + reserved.main.box.y + ')')
+        reserved.clipping.g.select('#clip-rect')
+            .attr('width', reserved.main.box.w)
+            .attr('height', reserved.main.box.h)
+    }
+    this.update_box = update_box
 }

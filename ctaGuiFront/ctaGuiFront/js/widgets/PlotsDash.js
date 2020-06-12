@@ -207,7 +207,7 @@ let main_plots_dash = function(opt_in) {
                     h: middleSeparation - 20, // svg_dims.h[0] * 0.5
                 }
                 // svgUrgentPlots.adjustScrollBox()
-                svgUrgentPlots.update_data()
+                // svgUrgentPlots.update_data()
 
                 box.pinnedPlots = {
                     x: 0,
@@ -395,7 +395,7 @@ let main_plots_dash = function(opt_in) {
 
         // loadMesures()
 
-        svgUrgentPlots.init_data()
+        // svgUrgentPlots.init_data()
 
         svgPinnedPlots.init_data()
 
@@ -1044,34 +1044,32 @@ let main_plots_dash = function(opt_in) {
                 axis: [
                     {
                         id: 'bottom',
-                        showAxis: true,
-                        main: {
-                            g: undefined,
-                            box: {
-                                x: 0,
-                                y: 0,
-                                w: 0,
-                                h: opt_in.box.h,
-                                marg: 0,
+                        scale_location: 'bottom',
+                        scale_type: 'time',
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: 0,
+                            h: opt_in.box.h,
+                            marg: 0,
+                        },
+                        style: {
+                            text: {
+                                visible: true,
+                                size: 11,
+                                stroke: colorPalette.medium.stroke,
+                                fill: colorPalette.medium.stroke,
                             },
-                            type: 'bottom',
-                            attr: {
-                                text: {
-                                    enabled: false,
-                                    size: 11,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
-                                path: {
-                                    enabled: true,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
+                            path: {
+                                visible: true,
+                                stroke: colorPalette.medium.stroke,
+                                fill: colorPalette.medium.stroke,
+                            },
+                            axis: {
+                                visible: true,
                                 tickSize: -opt_in.box.h,
                             },
                         },
-                        axis: undefined,
-                        scale: undefined,
                         domain: [ 0, 1000 ],
                         range: [ 0, 0 ],
                         brush: {
@@ -1081,35 +1079,32 @@ let main_plots_dash = function(opt_in) {
                     },
                     {
                         id: 'left',
-                        showAxis: true,
-                        main: {
-                            g: undefined,
-                            box: {
-                                x: 0,
-                                y: 0,
-                                w: 0,
-                                h: 0,
-                                marg: 0,
+                        box: {
+                            x: 0,
+                            y: 0,
+                            w: 0,
+                            h: 0,
+                            marg: 0,
+                        },
+                        scale_location: 'left',
+                        scale_type: 'linear',
+                        style: {
+                            text: {
+                                visible: true,
+                                size: 11,
+                                stroke: colorPalette.medium.stroke,
+                                fill: colorPalette.medium.stroke,
                             },
-                            type: 'left',
-                            mode: 'linear',
-                            attr: {
-                                text: {
-                                    enabled: true,
-                                    size: 11,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
-                                path: {
-                                    enabled: true,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
+                            path: {
+                                visible: true,
+                                stroke: colorPalette.medium.stroke,
+                                fill: colorPalette.medium.stroke,
+                            },
+                            axis: {
+                                visible: true,
                                 tickSize: -opt_in.box.w,
                             },
                         },
-                        axis: undefined,
-                        scale: undefined,
                         domain: [ 0, 1000 ],
                         range: [ 0, 0 ],
                         brush: {
@@ -1119,35 +1114,32 @@ let main_plots_dash = function(opt_in) {
                     },
                     {
                         id: 'right',
-                        showAxis: true,
-                        main: {
-                            g: undefined,
-                            box: {
-                                x: scrollBoxPlot.w,
-                                y: 0,
-                                w: 0,
-                                h: 0,
-                                marg: 0,
+                        box: {
+                            x: scrollBoxPlot.w,
+                            y: 0,
+                            w: 0,
+                            h: 0,
+                            marg: 0,
+                        },
+                        scale_location: 'right',
+                        scale_type: 'linear',
+                        style: {
+                            text: {
+                                enabled: true,
+                                size: 11,
+                                stroke: colorPalette.medium.stroke,
+                                fill: colorPalette.medium.stroke,
                             },
-                            type: 'right',
-                            mode: 'linear',
-                            attr: {
-                                text: {
-                                    enabled: true,
-                                    size: 11,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
-                                path: {
-                                    enabled: true,
-                                    stroke: colorPalette.medium.stroke,
-                                    fill: colorPalette.medium.stroke,
-                                },
-                                tickSize: -scrollBoxPlot.w,
+                            path: {
+                                enabled: true,
+                                stroke: colorPalette.medium.stroke,
+                                fill: colorPalette.medium.stroke,
+                            },
+                            axis: {
+                                visible: true,
+                                tickSize: -opt_in.box.w,
                             },
                         },
-                        axis: undefined,
-                        scale: undefined,
                         domain: [ 0, 1000 ],
                         range: [ 0, 0 ],
                         brush: {
@@ -1857,6 +1849,7 @@ let main_plots_dash = function(opt_in) {
             return plot
         }
         function createMiddlePlot(opt_in) {
+            return
             let allGroup = opt_in.g.selectAll('g.group')
                 .data(shared.server.urgent.urgent_current)
             let gEnterGroup = allGroup.enter()
@@ -2319,11 +2312,11 @@ let main_plots_dash = function(opt_in) {
         function drawMiddlePart() {
             let currentDate = new Date(shared.server.time_of_night.date_now)
             let previousDate = new Date(shared.server.time_of_night.date_now).setHours(currentDate.getHours() - 1)
-            middleplot.updateAxis({
-                id: 'bottom',
-                domain: [ previousDate, currentDate ],
-                range: [ 0, middleDim.w ],
-            })
+            // middleplot.updateAxis({
+            //     id: 'bottom',
+            //     domain: [ previousDate, currentDate ],
+            //     range: [ 0, middleDim.w ],
+            // })
             let max = 0
             for (let i = 0; i < shared.server.urgent.urgentTimestamp.length; i++) {
                 for (let j = 0; j < shared.server.urgent.urgentTimestamp[i].data.length; j++) {
@@ -2333,22 +2326,23 @@ let main_plots_dash = function(opt_in) {
                 }
             }
             // max = 100 / shared.server.urgent.urgentKey.length
-            for (let i = 0; i < shared.server.urgent.urgentKey.length; i++) {
-                middleplot.updateAxis({
-                    id: 'right' + shared.server.urgent.urgentKey[i],
-                    domain: [ 0, max ],
-                    range: [ spaceline - 4, 0 ],
-                })
-            }
-            for (let i = 0; i < shared.server.urgent.urgentKey.length; i++) {
-                middleplot.updateAxis({
-                    id: 'left' + shared.server.urgent.urgentKey[i],
-                    domain: [ 0, max ],
-                    range: [ spaceline - 4, 0 ],
-                })
-            }
+            // for (let i = 0; i < shared.server.urgent.urgentKey.length; i++) {
+            //     middleplot.updateAxis({
+            //         id: 'right' + shared.server.urgent.urgentKey[i],
+            //         domain: [ 0, max ],
+            //         range: [ spaceline - 4, 0 ],
+            //     })
+            // }
+            // for (let i = 0; i < shared.server.urgent.urgentKey.length; i++) {
+            //     middleplot.updateAxis({
+            //         id: 'left' + shared.server.urgent.urgentKey[i],
+            //         domain: [ 0, max ],
+            //         range: [ spaceline - 4, 0 ],
+            //     })
+            // }
 
             function drawCurve() {
+                return
                 let allGroup = middleplot.getClipping().select('g#timestampOverlay').selectAll('g.group')
                     .data(shared.server.urgent.urgentTimestamp)
                 let gEnterGroup = allGroup.enter()

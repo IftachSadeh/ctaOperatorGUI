@@ -334,6 +334,7 @@ class PlotsDash(BaseWidget):
 
     def get_tel_health_pinned(self):
         inst_health = []
+        return inst_health
         for index in range(len(self.tel_ids)):
             for key in self.tel_key:
                 self.redis.pipe.z_get('inst_health;' + self.tel_ids[index] + ';' + key)
@@ -341,14 +342,18 @@ class PlotsDash(BaseWidget):
             n_ele_now = 0
             for key in self.tel_key:
                 data_now = data[n_ele_now]
+                innerData = []
+                for x in data_now:
+                    if not isinstance(x[0]['data'], int):
+                        innerData.append({
+                            'x': x[0]['data']['time_sec'],
+                            'y': x[0]['data']['value'],
+                        })
                 inst_health.append({
                     'id':
                     self.tel_ids[index] + '-' + key,
                     'keys': [self.tel_ids[index], key],
-                    'data': [{
-                        'x': x[0]['data']['time_sec'],
-                        'y': x[0]['data']['value'],
-                    } for x in data_now]
+                    'data': innerData
                 })
                 n_ele_now += 1
 

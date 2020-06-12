@@ -119,13 +119,17 @@ class WeatherMonitoring(BaseWidget):
                 for key in v:
                     data_now = data[n_ele_now]
                     n_ele_now += 1
+                    innerData = []
+                    for x in data_now:
+                        if not isinstance(x[0]['data'], int):
+                            innerData.append({
+                                'x': x[0]['data']['time_sec'],
+                                'y': x[0]['data']['value'],
+                            })
                     data_out[index].append({
                         'id':
                         self.tel_ids[index] + ';' + key,
-                        'data': [{
-                            'x': x[0]['data']['time_sec'],
-                            'y': x[0]['data']['value'],
-                        } for x in data_now]
+                        'data': innerData
                     })
 
         data = {"time_of_night": time_of_night_date, "data_out": data_out}
