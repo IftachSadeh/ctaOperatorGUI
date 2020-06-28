@@ -3,8 +3,10 @@ from gevent import sleep
 from random import Random
 from math import ceil
 import importlib
-from gevent.coros import BoundedSemaphore
-
+try: 
+    from gevent.coros import BoundedSemaphore 
+except: 
+    from gevent.lock import BoundedSemaphore 
 from socketio.namespace import BaseNamespace
 from socketio.mixins import BroadcastMixin
 
@@ -444,7 +446,7 @@ class SocketManager(BaseNamespace, BroadcastMixin):
         widget_ids = []
         with SocketManager.lock:
             all_widgets = self.redis.h_get_all(name='all_widgets', packed=True)
-            for widget_id, widget_now in all_widgets.iteritems():
+            for widget_id, widget_now in all_widgets.items():
                 if widget_now['n_icon'] == -1 and widget_id in SocketManager.widget_inits:
                     widget_ids.append(widget_id)
 

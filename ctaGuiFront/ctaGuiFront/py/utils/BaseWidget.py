@@ -1,4 +1,7 @@
-from gevent.coros import BoundedSemaphore
+try: 
+    from gevent.coros import BoundedSemaphore 
+except: 
+    from gevent.lock import BoundedSemaphore 
 from ctaGuiUtils.py.LogParser import LogParser
 from ctaGuiUtils.py.RedisManager import RedisManager
 

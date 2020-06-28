@@ -514,7 +514,7 @@ class InstData():
         else:
             pos_scale = 1
 
-        for id_now, ele_now in InstData.inst_info.iteritems():
+        for id_now, ele_now in InstData.inst_info.items():
             for xy_now in ['x', 'y']:
                 ele_now[xy_now] *= pos_scale
 
@@ -522,7 +522,7 @@ class InstData():
             # transform the coordinate system, where originally:
             #     MC x position [->North] in meters.
             #     MC y position [->West] in meters.
-            for id_now, ele_now in InstData.inst_info.iteritems():
+            for id_now, ele_now in InstData.inst_info.items():
                 x = -1 * ele_now['y']
                 y = -1 * ele_now['x']
 

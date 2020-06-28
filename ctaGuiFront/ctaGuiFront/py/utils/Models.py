@@ -2,10 +2,18 @@ from pyramid.security import Allow, Everyone
 from sqlalchemy import Column, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
-from zope.sqlalchemy import ZopeTransactionExtension
 import transaction
 
-db_session = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+
+
+try:
+    from zope.sqlalchemy import ZopeTransactionExtension
+    db_session = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+except:
+    from zope.sqlalchemy import register
+    db_session = scoped_session(sessionmaker(autoflush=False))
+    register(db_session)
+
 sql_base = declarative_base()
 
 
@@ -65,7 +73,7 @@ def init_user_passes():
         user_filt = MyModel.userId == user_passes[n_user_now][0]
         my_model_filt = db_session.query(MyModel).filter(user_filt).first()
         if my_model_filt is None:
-            print " - Adding user/pass: ", user_passes[n_user_now]
+            print(" - Adding user/pass: ", user_passes[n_user_now])
             db_session.add(my_model)
             transaction.commit()
 

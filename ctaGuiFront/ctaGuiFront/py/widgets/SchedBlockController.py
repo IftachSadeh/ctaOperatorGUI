@@ -235,7 +235,7 @@ class SchedBlockController(BaseWidget):
                     )
                 else:
                     new_blocks.append(data[key][i])
-        for key, val in obs_block_ids.iteritems():
+        for key, val in obs_block_ids.items():
             self.redis.pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
 
         self.redis.pipe.execute()

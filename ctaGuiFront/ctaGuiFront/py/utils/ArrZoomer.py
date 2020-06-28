@@ -1,6 +1,9 @@
 import gevent
 from gevent import sleep
-from gevent.coros import BoundedSemaphore
+try: 
+    from gevent.coros import BoundedSemaphore 
+except: 
+    from gevent.lock import BoundedSemaphore 
 from ctaGuiUtils.py.utils import flatten_dict
 from ctaGuiUtils.py.LogParser import LogParser
 
@@ -323,7 +326,7 @@ class ArrZoomer():
             }
 
             self.tel_sub_health_fields[id_now] = []
-            items = self.tel_sub_health_flat[id_now].iteritems()
+            items = self.tel_sub_health_flat[id_now].items()
             for key, val in items:
                 if 'val' in val['data']:
                     self.tel_sub_health_fields[id_now] += [key]
@@ -459,7 +462,7 @@ class ArrZoomer():
             packed=True,
         )
 
-        for widget_id, widget_now in all_widgets.iteritems():
+        for widget_id, widget_now in all_widgets.items():
             if widget_now['widget_name'] != self.widget_name:
                 continue
             if widget_id not in self.socket_manager.widget_inits:

@@ -125,7 +125,7 @@ class SchedulerACS():
         blocks_run = []
         active = sched_blocks['active']
 
-        for sched_blk_id, schBlock in sched_blocks['blocks'].iteritems():
+        for sched_blk_id, schBlock in sched_blocks['blocks'].items():
 
             sub_array_tels = (
                 schBlock['sched_block'].config.instrument.sub_array.telescopes
@@ -212,19 +212,19 @@ class SchedulerACS():
 
                 telescopes = {
                     'large': {
-                        'min': int(len(filter(lambda x: 'L' in x, tel_ids)) / 2),
+                        'min': int(len(list(filter(lambda x: 'L' in x, tel_ids))) / 2),
                         'max': 4,
-                        'ids': filter(lambda x: 'L' in x, tel_ids)
+                        'ids': list(filter(lambda x: 'L' in x, tel_ids))
                     },
                     'medium': {
-                        'min': int(len(filter(lambda x: 'M' in x, tel_ids)) / 2),
+                        'min': int(len(list(filter(lambda x: 'M' in x, tel_ids))) / 2),
                         'max': 25,
-                        'ids': filter(lambda x: 'M' in x, tel_ids)
+                        'ids': list(filter(lambda x: 'M' in x, tel_ids))
                     },
                     'small': {
-                        'min': int(len(filter(lambda x: 'S' in x, tel_ids)) / 2),
+                        'min': int(len(list(filter(lambda x: 'S' in x, tel_ids))) / 2),
                         'max': 70,
-                        'ids': filter(lambda x: 'S' in x, tel_ids)
+                        'ids': list(filter(lambda x: 'S' in x, tel_ids))
                     }
                 }
 
@@ -652,21 +652,21 @@ class SchedulerStandalone():
                     telescopes = {
                         'large': {
                             'min':
-                            int(len(filter(lambda x: 'L' in x, sched_tel_ids)) / 2),
+                            int(len(list(filter(lambda x: 'L' in x, sched_tel_ids))) / 2),
                             'max': 4,
-                            'ids': filter(lambda x: 'L' in x, sched_tel_ids)
+                            'ids': list(filter(lambda x: 'L' in x, sched_tel_ids))
                         },
                         'medium': {
                             'min':
-                            int(len(filter(lambda x: 'M' in x, sched_tel_ids)) / 2),
+                            int(len(list(filter(lambda x: 'M' in x, sched_tel_ids))) / 2),
                             'max': 25,
-                            'ids': filter(lambda x: 'M' in x, sched_tel_ids)
+                            'ids': list(filter(lambda x: 'M' in x, sched_tel_ids))
                         },
                         'small': {
                             'min':
-                            int(len(filter(lambda x: 'S' in x, sched_tel_ids)) / 2),
+                            int(len(list(filter(lambda x: 'S' in x, sched_tel_ids))) / 2),
                             'max': 70,
-                            'ids': filter(lambda x: 'S' in x, sched_tel_ids)
+                            'ids': list(filter(lambda x: 'S' in x, sched_tel_ids))
                         }
                     }
 
@@ -1023,7 +1023,7 @@ class SchedulerStandalone():
                 if exe_state == 'run':
                     blocks_run += [block]
 
-        for key, val in obs_block_ids.iteritems():
+        for key, val in obs_block_ids.items():
             self.redis.pipe.set(name='obs_block_ids_' + key, data=val, packed=True)
 
         self.redis.pipe.execute()
@@ -1374,7 +1374,7 @@ def external_generate_clock_events(self):
     self.external_clock_events.append(new_event)
 
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 16, 23, 07).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 16, 23, 7).strftime('%Y-%m-%d %H:%M:%S')
     new_event['end_date'] = datetime(2018, 9, 17, 4, 30).strftime('%Y-%m-%d %H:%M:%S')
     new_event['icon'] = 'rain.svg'
     new_event['name'] = 'Raining'
@@ -1383,8 +1383,8 @@ def external_generate_clock_events(self):
     self.external_clock_events.append(new_event)
 
     new_event = {}
-    new_event['start_date'] = datetime(2018, 9, 17, 1, 03).strftime('%Y-%m-%d %H:%M:%S')
-    new_event['end_date'] = datetime(2018, 9, 17, 2, 00).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['start_date'] = datetime(2018, 9, 17, 1, 3).strftime('%Y-%m-%d %H:%M:%S')
+    new_event['end_date'] = datetime(2018, 9, 17, 2, 0).strftime('%Y-%m-%d %H:%M:%S')
     new_event['icon'] = 'storm.svg'
     new_event['name'] = 'Storm'
     new_event['comment'] = ''

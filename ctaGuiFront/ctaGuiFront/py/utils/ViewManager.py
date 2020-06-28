@@ -46,7 +46,14 @@ class ViewManager():
             if not ('/' + widget_name) in socks:
                 socks['/' + widget_name] = SocketManager
 
-        socketio_manage(request.environ, socks, request=request)
+        print('-=-'*30)
+        print(list(request.environ.keys()))
+        print('--+--'*30)
+        # print(request.environ)
+        # print(request.environ['socketio'])
+        # socketio_manage(request.environ, socks, request=request)
+
+        print('----'*30)
 
         return Response('')
 

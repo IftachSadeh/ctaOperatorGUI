@@ -1,6 +1,10 @@
 import gevent
 from gevent import sleep
-from gevent.coros import BoundedSemaphore
+try: 
+    from gevent.coros import BoundedSemaphore 
+except: 
+    from gevent.lock import BoundedSemaphore 
+
 from math import floor
 import random
 from random import Random
@@ -130,7 +134,8 @@ class MockSched():
                 # print 'bbbbbbbbbbbbb Callback done',sched_block_id
                 return
 
-        desc = CBDescIn(0L, 0L, 0L)
+        desc = CBDescIn(0, 0, 0)
+        # desc = CBDescIn(0L, 0L, 0L)
         cb = MyVoid()
         self.supervisor.cancelSchedulingBlock(
             sched_block_id, self.client.activateOffShoot(cb), desc

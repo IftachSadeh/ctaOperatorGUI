@@ -215,7 +215,7 @@ class PlotsDash(BaseWidget):
             }
 
             self.inst_health_sub_fields[id_now] = []
-            for key, val in self.inst_health_sub_flat[id_now].iteritems():
+            for key, val in self.inst_health_sub_flat[id_now].items():
                 if 'val' in val['data']:
                     self.inst_health_sub_fields[id_now] += [key]
 

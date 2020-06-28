@@ -74,7 +74,7 @@ class InstHealth():
                 'aux': 100
             }
 
-            for key, val in self.inst_health_s0[id_now].iteritems():
+            for key, val in self.inst_health_s0[id_now].items():
                 self.redis.pipe.h_set(
                     name='inst_health;' + str(id_now), key=key, data=val
                 )
@@ -94,7 +94,7 @@ class InstHealth():
         for id_now in self.tel_ids:
             self.set_tel_health_s1(id_now)
 
-            for key, val in self.inst_health_sub_flat[id_now].iteritems():
+            for key, val in self.inst_health_sub_flat[id_now].items():
                 if 'val' in val['data']:
                     self.redis.pipe.h_set(
                         name='inst_health;' + str(id_now),
@@ -199,7 +199,7 @@ class InstHealth():
 
             self.inst_health_s1[id_now][self.health_tag] = health_tot
 
-            for key, val in self.inst_health_s0[id_now].iteritems():
+            for key, val in self.inst_health_s0[id_now].items():
                 self.redis.pipe.h_set(
                     name='inst_health;' + str(id_now), key=key, data=val
                 )
@@ -223,7 +223,7 @@ class InstHealth():
 
         # recursive randomization of all 'val' values of the dict and its child elements
         def set_rnd_props(data_in):
-            for key, value in data_in.iteritems():
+            for key, value in data_in.items():
                 if key == 'children':
                     for child in data_in[key]:
                         set_rnd_props(child)
@@ -266,7 +266,7 @@ class InstHealth():
             time_min = self.clock_sim.get_time_series_start_time_sec()
             base_name = 'inst_health;' + str(id_now)
 
-            for key, val in self.inst_health_sub_flat[id_now].iteritems():
+            for key, val in self.inst_health_sub_flat[id_now].items():
                 if 'val' in val['data']:
                     self.redis.pipe.h_set(
                         name=base_name, key=key, data=val['data']['val']

@@ -1,7 +1,8 @@
 import sys
 import redis
 from gevent import GreenletExit
-from msgpack import packb, unpackb
+from msgpack import packb
+from msgpack import unpackb
 
 # redis_port = 6378
 # redis_port = dict()
@@ -42,13 +43,14 @@ class RedisBase(object):
 
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.set() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -64,14 +66,15 @@ class RedisBase(object):
             out = self.base.hset(name, key, data)
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.hset() for ',
                     str(key), ' in ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -84,13 +87,14 @@ class RedisBase(object):
             out = self.base.hdel(name, key)
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.h_del() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -110,7 +114,7 @@ class RedisBase(object):
         except GreenletExit:
             pass
             return default_val
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.hget() for ',
@@ -118,6 +122,7 @@ class RedisBase(object):
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             data = None
+            raise e
 
         return data
 
@@ -143,7 +148,7 @@ class RedisBase(object):
                 if not is_empty(data) and data != [None]:
                     data = unpack_object(data)
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.hmget() for ',
@@ -151,6 +156,7 @@ class RedisBase(object):
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             data = None
+            raise e
 
         return data
 
@@ -171,13 +177,14 @@ class RedisBase(object):
             out = self.base.rpush(name, data)
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.r_push() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -193,13 +200,14 @@ class RedisBase(object):
             out = self.base.lrem(name=name, value=data, count=0)
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.l_rem() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -222,7 +230,8 @@ class RedisBase(object):
             elif packed and (data is not None):
                 data = packb(data)
 
-            out = self.base.zadd(name, score, data)
+            # out = self.base.zadd(name, score, data)
+            out = self.base.zadd(name, {data: score})
 
             # ------------------------------------------------------------------
             # temporary inefficient way to clip the time series.........
@@ -234,13 +243,14 @@ class RedisBase(object):
 
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.z_add() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -253,13 +263,14 @@ class RedisBase(object):
             out = self.base.expire(name, expire)
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.expire() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -272,13 +283,14 @@ class RedisBase(object):
             out = self.base.delete(name)
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.delete() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
 
 # ------------------------------------------------------------------
@@ -318,12 +330,13 @@ class RedisManager(RedisBase):
             elif packed:
                 data = unpack_object(data)
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.get() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
+            raise e
 
         return data
 
@@ -340,13 +353,14 @@ class RedisManager(RedisBase):
             if packed and not is_empty(data):
                 data = unpack_object(data)
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.h_get_all() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             data = {}
+            raise e
 
         return data
 
@@ -370,13 +384,14 @@ class RedisManager(RedisBase):
             else:
                 raise
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.z_get() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             return []
+            raise e
 
         return data
 
@@ -396,13 +411,14 @@ class RedisManager(RedisBase):
         except GreenletExit:
             pass
             return []
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.l_get() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
             return []
+            raise e
 
         return data
 
@@ -418,12 +434,13 @@ class RedisManager(RedisBase):
 
             exists = self.redis.exists(name)
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.exists() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
+            raise e
 
         return exists
 
@@ -439,12 +456,13 @@ class RedisManager(RedisBase):
 
             exists = self.redis.hexists(name, key)
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.h_exists() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
+            raise e
 
         return exists
 
@@ -462,14 +480,14 @@ class RedisManager(RedisBase):
             out = self.redis.publish(channel, message)
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.publish() for ',
                     str(channel)
                 ], ['r', ' ' + str(sys.exc_info())]])
-
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -487,12 +505,13 @@ class RedisManager(RedisBase):
 
                 self.pubsub[key] = pubsub
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.set_pubsub() for ',
                     str(key)
                 ], ['r', ' ' + str(sys.exc_info())]])
+            raise e
 
         pubsub = self.pubsub[key] if key in self.pubsub else None
         return pubsub
@@ -506,13 +525,14 @@ class RedisManager(RedisBase):
         try:
             if (key is None) or (key not in self.pubsub):
                 raise
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - undefined key',
                     str(key), ' for redis.pubsub() ...'
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return msg
+            raise e
+            # return msg
 
         try:
             msg = self.pubsub[key].get_message(timeout=timeout)
@@ -522,12 +542,13 @@ class RedisManager(RedisBase):
                     if not is_empty(msg['data']):
                         msg['data'] = unpack_object(msg['data'])
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.get_pubsub() for ',
                     str(key)
                 ], ['r', ' ' + str(sys.exc_info())]])
+            raise e
 
         return msg
 
@@ -573,14 +594,14 @@ class RedisPipeManager(RedisBase):
 
             return out
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.get() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-
-            return False
+            raise e
+            # return False
 
     # ------------------------------------------------------------------
     #
@@ -598,14 +619,14 @@ class RedisPipeManager(RedisBase):
                 score_cast_func=score_cast_func
             )
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.z_get() for ',
                     str(name)
                 ], ['r', ' ' + str(sys.exc_info())]])
-
-            return False
+            raise e
+            # return False
 
         return out
 
@@ -628,11 +649,12 @@ class RedisPipeManager(RedisBase):
                 data = unpack_object(data)
                 data = [] if data is None else data
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.pipe.execute() ...'
                 ], ['r', ' ' + str(sys.exc_info())]])
+            raise e
 
         return data
 
@@ -644,12 +666,13 @@ class RedisPipeManager(RedisBase):
             self.pipe.reset()
             return True
 
-        except Exception:
+        except Exception as e:
             if self.log:
                 self.log.error([[
                     'wr', ' - ', self.name, ' - could not do redis.pipe.reset()'
                 ], ['r', ' ' + str(sys.exc_info())]])
-            return False
+            raise e
+            # return False
 
 
 # ------------------------------------------------------------------
@@ -657,9 +680,8 @@ class RedisPipeManager(RedisBase):
 # ------------------------------------------------------------------
 def unpack_object(data_in, log=None):
     try:
-        if isinstance(data_in, str):
-            data = unpackb(data_in)
-
+        if isinstance(data_in, (str, bytes)):
+            data = unpackb(data_in, encoding = "utf-8")
         elif isinstance(data_in, list):
             data = []
             for data_now_0 in data_in:
@@ -667,7 +689,7 @@ def unpack_object(data_in, log=None):
 
         elif isinstance(data_in, dict):
             data = dict()
-            for k, v in data_in.iteritems():
+            for k, v in data_in.items():
                 data[k] = unpack_object(v, log)
 
         elif isinstance(data_in, tuple):
@@ -675,19 +697,20 @@ def unpack_object(data_in, log=None):
             for v in data_in:
                 data += (unpack_object(v, log), )
 
-        elif isinstance(data_in, (int, long, float, complex)) or (data_in is None):
+        elif isinstance(data_in, (int, float, complex)) or (data_in is None):
             data = data_in
 
         else:
-            raise
+            raise Exception('unknown data type')
 
-    except Exception:
+    except Exception as e:
         if log:
             log.error([[
                 'wr', ' - ', self.name, ' - could not do unpack_object() for ',
                 str(data_in)
             ], ['r', ' ' + str(sys.exc_info())]])
         data = None
+        raise e
 
     return data
 

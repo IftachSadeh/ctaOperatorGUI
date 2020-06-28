@@ -1,6 +1,9 @@
 import gevent
 from gevent import sleep
-from gevent.coros import BoundedSemaphore
+try: 
+    from gevent.coros import BoundedSemaphore 
+except: 
+    from gevent.lock import BoundedSemaphore 
 from math import sqrt, ceil, floor
 import random
 from random import Random

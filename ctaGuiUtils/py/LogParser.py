@@ -1,5 +1,9 @@
 import logging
-from gevent.coros import BoundedSemaphore
+try: 
+    from gevent.coros import BoundedSemaphore 
+except: 
+    from gevent.lock import BoundedSemaphore 
+
 
 
 # ------------------------------------------------------------------

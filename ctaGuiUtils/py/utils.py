@@ -98,7 +98,7 @@ def traverse_object(data, new_values, module_func=None):
         module_func = dict_module_func
 
     if isinstance(data, dict):
-        for k, v in data.iteritems():
+        for k, v in data.items():
             if isinstance(v, dict) or isinstance(v, list) or isinstance(v, tuple):
                 traverse_object(data=v, new_values=new_values, module_func=module_func)
             else:

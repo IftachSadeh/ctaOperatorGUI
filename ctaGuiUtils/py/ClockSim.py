@@ -291,6 +291,9 @@ class ClockSim():
                 packed=True,
             )
 
+            print(red_data)
+            print('--'*30)
+
             if red_data is not None:
                 speed_factor = red_data['speed_factor']
                 is_skip_daytime = red_data['is_skip_daytime']
