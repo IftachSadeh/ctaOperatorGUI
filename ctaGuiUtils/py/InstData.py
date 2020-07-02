@@ -86,7 +86,7 @@ class InstData():
     def init_sub_array_tels(self):
         sub_array_tels = dict()
 
-        print(' -- FIXME -- implement SBs ....')
+        # print(' -- FIXME -- implement SBs ....')
 
         try:
             # ------------------------------------------------------------------

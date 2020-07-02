@@ -12,17 +12,30 @@ except:
 class LogParser():
     # lock = LogLock('LogParser')
     lock = BoundedSemaphore(1)
+    logging_config = None
+
+    server_name = 'uvicorn'
+    handlers = {
+        '': ['console', 'info_rotating_file_handler'],
+        'server': ['info_rotating_file_handler'],
+    }
 
     # ------------------------------------------------------------------
     #
     # ------------------------------------------------------------------
     def __init__(
-        self, base_config, name=None, title='', do_parse_msg=True, use_colors=True
+        self, base_config, title='', do_parse_msg=True, use_colors=True, log_level='INFO', log_file=None,
     ):
         self.base_config = base_config
         self.do_parse_msg = do_parse_msg
-        self.name = 'root' if name is None else name
-        self.log = logging.getLogger(self.name)
+        self.log_file = log_file
+        self.log_level = log_level
+
+        # before getting the logger
+        self.set_logging_config()
+
+        self.log = logging.getLogger('')
+        self.log.setLevel(self.log_level)
 
         self.set_colors(use_colors)
         self.base_title = title
@@ -34,6 +47,65 @@ class LogParser():
         )
 
         return
+
+    # ------------------------------------------------------------------
+    # 
+    # ------------------------------------------------------------------
+    def set_logging_config(self):
+        if LogParser.logging_config is not None:
+            return
+        
+        if self.log_file is None:
+            raise Exception('trying to configure logging without log_file')
+
+        LogParser.logging_config = { 
+            'version': 1,
+            'disable_existing_loggers': False,
+            'formatters': { 
+                'standard': { 
+                    'format': '[%(asctime)s %(levelname)-5.5s] %(message)s',
+                    'datefmt': '%d/%m, %H:%M:%S',
+                },
+            },
+            'handlers': {
+                'console': { 
+                    # 'level': 'INFO',
+                    'formatter': 'standard',
+                    'class': 'logging.StreamHandler',
+                    # 'stream': 'ext://sys.stdout',  # Default is stderr
+                },
+                'info_rotating_file_handler': {
+                    # 'level': 'INFO',
+                    'formatter': 'standard',
+                    'class': 'logging.handlers.RotatingFileHandler',
+                    'filename': self.log_file,
+                    'mode': 'a',
+                    'maxBytes': 1048576,
+                    'backupCount': 10,
+                },
+            },
+            'loggers': {
+                '': {  # root logger
+                    'handlers': self.handlers[''],
+                    'level': 'INFO',
+                    # 'level': 'WARNING',
+                    'propagate': True,
+                    # 'propagate': False,
+                },
+                self.server_name: {
+                    # 'handlers': ['console', 'info_rotating_file_handler'],
+                    'handlers': self.handlers['server'],
+                    'level': 'WARNING',
+                    # 'level': 'INFO',
+                    'propagate': False,
+                },
+            } 
+        }
+        
+        logging.config.dictConfig(config=LogParser.logging_config)
+
+        return
+    
 
     # ------------------------------------------------------------------
     #
