@@ -37,6 +37,8 @@ class ViewManager():
     # socketio_service
     # ------------------------------------------------------------------
     def socket_view(self, request):
+        print('--+--'*30)
+        
         socks = dict()
         socks["/" + "index"] = SocketManager
         socks["/" + "view_refresh_all"] = SocketManager

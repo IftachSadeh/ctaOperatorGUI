@@ -41,7 +41,7 @@
 
     <!-- socket.io -->
     <!-- <script type="text/javascript" src="/bower_components/gevent-socketio/examples/simple_pyramid_chat/chatter2/static/socket.io.js"></script> -->
-    <script type="text/javascript" src="/bower_components/gevent-socketio-py3/examples/simple_pyramid_chat/chatter2/static/socket.io.js"></script>
+    <!-- <script type="text/javascript" src="/bower_components/gevent-socketio-py3/examples/simple_pyramid_chat/chatter2/static/socket.io.js"></script> -->
 
 
     <!-- ========================================================================= -->
@@ -90,6 +90,53 @@
         <div style="margin-right: 2%;"></div>
       </div>
     </div>
+
+
+
+
+
+
+
+
+
+    <script>
+        // var ws = new WebSocket("ws://localhost:8090/ws");
+        // const socket = new WebSocket('ws://localhost:8090');
+        // var ws = new WebSocket("ws://0.0.0.0:8090/ws")
+        var ws = new WebSocket("ws://127.0.0.1:8090/ws")
+        setTimeout(function() {
+            let mes = ' ++++++++++++++ qwqwewaeweqwewqeqweqqewewqweqwe'
+            console.log(mes)
+            ws.send(mes)
+            ws.send(mes)
+            ws.send(mes)
+            ws.send(mes)
+        }, 100);
+        
+
+        // var ws = new WebSocket("ws://0.0.0.0:8090/socket_io");
+        // ws.onmessage = function(event) {
+        //     var messages = document.getElementById('base_app_div')
+        //     var message = document.createElement('li')
+        //     var content = document.createTextNode(event.data)
+        //     message.appendChild(content)
+        //     messages.appendChild(message)
+        // };
+        // function sendMessage(event) {
+        //     // var input = document.getElementById("messageText")
+        //     // ws.send(input.value)
+        //     // input.value = ''
+        //     // event.preventDefault()
+        // }
+    </script>
+
+
+
+
+
+
+
+
 
     <script type="text/javascript">
       $.getScript('/js/utils/BaseApp.js')
